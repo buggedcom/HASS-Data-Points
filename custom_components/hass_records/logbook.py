@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from homeassistant.core import Event, HomeAssistant, callback
 
-from .const import DOMAIN, EVENT_RECORDED, ATTR_MESSAGE
+from .const import DOMAIN, EVENT_RECORDED, ATTR_MESSAGE, ATTR_ENTITY_IDS
 
 
 def async_describe_events(
@@ -16,14 +16,15 @@ def async_describe_events(
     def async_describe_hass_records_event(event: Event) -> dict:
         data = event.data
         message = data.get(ATTR_MESSAGE, "Event recorded")
-        entity_id = data.get("entity_id")
+        entity_ids: list[str] = data.get(ATTR_ENTITY_IDS, [])
 
         result: dict = {
             "name": "Hass Records",
             "message": message,
         }
-        if entity_id:
-            result["entity_id"] = entity_id
+        # Logbook accepts a single entity_id; use the first one if present
+        if entity_ids:
+            result["entity_id"] = entity_ids[0]
 
         return result
 
