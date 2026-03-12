@@ -21,16 +21,18 @@ record:
       selector:
         text:
           multiline: true
-    entity_id:
-      name: Entity
+    entity_ids:
+      name: Entities
       description: >
-        Optional entity to associate this event with. When supplied, the
-        history and statistics cards can filter events to only show those
-        relevant to the displayed entity.
+        Optional list of entities to associate this event with. When supplied,
+        history and statistics cards filter events to only those relevant to
+        the displayed entity. Events with no entities are global and appear on
+        all charts.
       required: false
       example: "climate.living_room"
       selector:
         entity:
+          multiple: true
     icon:
       name: Icon
       description: MDI icon name for the annotation marker. Defaults to mdi:bookmark.

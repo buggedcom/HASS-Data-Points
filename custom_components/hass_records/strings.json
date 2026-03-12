@@ -1,4 +1,15 @@
 {
+  "config": {
+    "step": {
+      "user": {
+        "title": "Hass Records",
+        "description": "Record custom events and annotate your history and statistics charts."
+      }
+    },
+    "abort": {
+      "already_configured": "Hass Records is already configured."
+    }
+  },
   "services": {
     "record": {
       "name": "Record Event",
@@ -12,9 +23,9 @@
           "name": "Annotation",
           "description": "Detailed tooltip text for chart markers."
         },
-        "entity_id": {
-          "name": "Entity",
-          "description": "Entity to associate this event with."
+        "entity_ids": {
+          "name": "Entities",
+          "description": "Entities to associate this event with. Leave empty for a global event visible on all charts."
         },
         "icon": {
           "name": "Icon",

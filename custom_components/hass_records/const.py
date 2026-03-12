@@ -10,7 +10,7 @@ EVENT_RECORDED = f"{DOMAIN}_event_recorded"
 # Service fields
 ATTR_MESSAGE = "message"
 ATTR_ANNOTATION = "annotation"
-ATTR_ENTITY_ID = "entity_id"
+ATTR_ENTITY_IDS = "entity_ids"
 ATTR_ICON = "icon"
 ATTR_COLOR = "color"
 
