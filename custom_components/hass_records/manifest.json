@@ -1,7 +1,7 @@
 {
   "domain": "hass_records",
   "name": "Hass Records",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "documentation": "https://github.com/yourusername/hass-records",
   "issue_tracker": "https://github.com/yourusername/hass-records/issues",
   "codeowners": [],
