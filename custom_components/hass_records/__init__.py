@@ -27,15 +27,6 @@ from . import websocket_api as ws_api
 
 type HassRecordsConfigEntry = ConfigEntry[HassRecordsStore]
 
-def _color_validator(value):
-    """Accept a hex string like '#ff5722' or an RGB list like [255, 0, 0]."""
-    if isinstance(value, list):
-        if len(value) != 3 or not all(isinstance(c, int) and 0 <= c <= 255 for c in value):
-            raise vol.Invalid("RGB color must be a list of 3 integers 0-255")
-        return "#{:02x}{:02x}{:02x}".format(*value)
-    if isinstance(value, str):
-        return value
-    raise vol.Invalid("Color must be a hex string or RGB list")
 
 
 SERVICE_RECORD_SCHEMA = vol.Schema(
@@ -44,7 +35,13 @@ SERVICE_RECORD_SCHEMA = vol.Schema(
         vol.Optional(ATTR_ANNOTATION): cv.string,
         vol.Optional(ATTR_ENTITY_IDS): vol.All(cv.ensure_list, [cv.entity_id]),
         vol.Optional(ATTR_ICON): cv.string,
-        vol.Optional(ATTR_COLOR): _color_validator,
+        vol.Optional(ATTR_COLOR): vol.Any(
+            cv.string,
+            vol.All(
+                [vol.Coerce(int)],
+                vol.Length(min=3, max=3),
+            ),
+        ),
     }
 )
 
@@ -76,12 +73,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: HassRecordsConfigEntry) 
 
     # Register the record service
     async def handle_record(call: ServiceCall) -> None:
+        color = call.data.get(ATTR_COLOR)
+        # Convert RGB list [R, G, B] to hex string
+        if isinstance(color, list) and len(color) == 3:
+            color = "#{:02x}{:02x}{:02x}".format(*color)
+
         event_data = await store.async_record(
             message=call.data[ATTR_MESSAGE],
             annotation=call.data.get(ATTR_ANNOTATION),
             entity_ids=call.data.get(ATTR_ENTITY_IDS),
             icon=call.data.get(ATTR_ICON),
-            color=call.data.get(ATTR_COLOR),
+            color=color,
         )
         hass.bus.async_fire(EVENT_RECORDED, event_data)
 

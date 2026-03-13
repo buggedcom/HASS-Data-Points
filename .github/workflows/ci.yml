@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ── Python checks ──────────────────────────────────────────
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check Python syntax
+        run: |
+          python -m py_compile custom_components/hass_records/__init__.py
+          python -m py_compile custom_components/hass_records/config_flow.py
+          python -m py_compile custom_components/hass_records/const.py
+          python -m py_compile custom_components/hass_records/logbook.py
+          python -m py_compile custom_components/hass_records/store.py
+          python -m py_compile custom_components/hass_records/websocket_api.py
+
+      # ── JS build & verify ──────────────────────────────────────
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build frontend JS
+        run: bash scripts/build.sh
+
+      - name: Verify JS syntax
+        run: node -c custom_components/hass_records/hass-records-cards.js
+
+      - name: Check built JS is up-to-date
+        run: |
+          if ! git diff --quiet custom_components/hass_records/hass-records-cards.js; then
+            echo "::error::hass-records-cards.js is out of date with src/. Run bash scripts/build.sh and commit the result."
+            git diff --stat custom_components/hass_records/hass-records-cards.js
+            exit 1
+          fi
+
+      # ── Integration structure ──────────────────────────────────
+      - name: Validate manifest.json
+        run: python -c "import json; json.load(open('custom_components/hass_records/manifest.json'))"
+
+      - name: Validate strings.json
+        run: python -c "import json; json.load(open('custom_components/hass_records/strings.json'))"
+
+      - name: Validate services.yaml
+        run: |
+          pip install pyyaml --quiet
+          python -c "import yaml; yaml.safe_load(open('custom_components/hass_records/services.yaml'))"
+
+      - name: Validate hacs.json
+        run: python -c "import json; json.load(open('hacs.json'))"
+
+  hacs:
+    name: HACS Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: HACS Action
+        uses: hacs/action@main
+        with:
+          category: integration
+
