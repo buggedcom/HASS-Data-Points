@@ -18,3 +18,8 @@ SERVICE_RECORD = "record"
 
 # Frontend resource URL (served by integration)
 FRONTEND_URL = "/hass_records/cards.js"
+
+PANEL_COMPONENT = "hass-records-history-panel"
+PANEL_URL_PATH = "hass-records-history"
+PANEL_TITLE = "Records History"
+PANEL_ICON = "mdi:chart-timeline-variant"

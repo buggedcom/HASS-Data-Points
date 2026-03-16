@@ -10,6 +10,14 @@ class HassRecordsHistoryCard extends ChartCardBase {
     this._config = { hours_to_show: 24, ...config };
   }
 
+  _getRange() {
+    const end = this._config.end_time ? new Date(this._config.end_time) : new Date();
+    const start = this._config.start_time
+      ? new Date(this._config.start_time)
+      : new Date(end.getTime() - this._config.hours_to_show * 3600 * 1000);
+    return { start, end };
+  }
+
   get _entityIds() {
     if (this._config.entities) {
       return this._config.entities.map((e) => typeof e === "string" ? e : e.entity);
@@ -18,23 +26,22 @@ class HassRecordsHistoryCard extends ChartCardBase {
   }
 
   async _load() {
-    const now = new Date();
-    const start = new Date(now - this._config.hours_to_show * 3600 * 1000);
+    const { start, end } = this._getRange();
     const t0 = start.getTime();
-    const t1 = now.getTime();
+    const t1 = end.getTime();
 
     try {
       const [histResult, events] = await Promise.all([
         this._hass.connection.sendMessagePromise({
           type: "history/history_during_period",
           start_time: start.toISOString(),
-          end_time: now.toISOString(),
+          end_time: end.toISOString(),
           entity_ids: this._entityIds,
           include_start_time_state: true,
           significant_changes_only: false,
           no_attributes: true,
         }),
-        fetchEvents(this._hass, start.toISOString(), now.toISOString(), this._entityIds),
+        fetchEvents(this._hass, start.toISOString(), end.toISOString(), this._entityIds),
       ]);
 
       this._drawChart(histResult || {}, events, t0, t1);
@@ -119,4 +126,3 @@ class HassRecordsHistoryCard extends ChartCardBase {
     return { title: "History with Events", entity: "sensor.example", hours_to_show: 24 };
   }
 }
-

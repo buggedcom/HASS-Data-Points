@@ -326,7 +326,7 @@ class HassRecordsEditorBase extends HTMLElement {
         picker.style.flex = "1";
         picker.style.minWidth = "0";
         if (this._hass) picker.hass = this._hass;
-        requestAnimationFrame(() => { picker.value = eid || ""; });
+        requestAnimationFrame(() => { picker.label = ""; picker.value = eid || ""; });
         picker.addEventListener("value-changed", (e) => {
           const arr = getArr();
           arr[idx] = e.detail.value || "";
@@ -336,7 +336,8 @@ class HassRecordsEditorBase extends HTMLElement {
         const rm = document.createElement("ha-icon-button");
         rm.setAttribute("label", "Remove");
         rm.style.color = "var(--error-color, #f44336)";
-        rm.style.flexShrink = "0";
+        rm.style.flex = "0 0 auto";
+        rm.style.alignSelf = "center";
         const rmIco = document.createElement("ha-icon");
         rmIco.setAttribute("icon", "mdi:close");
         rm.appendChild(rmIco);
@@ -595,7 +596,6 @@ class HassRecordsListCardEditor extends HassRecordsEditorBase {
     ed.appendChild(this._textField("Card title (optional)", "title"));
     ed.appendChild(this._textField("Hours to show (blank = all time)", "hours_to_show", { type: "number" }));
     ed.appendChild(this._textField("Records per page", "page_size", { type: "number", fallback: "15" }));
-    ed.appendChild(this._textField("Max height of list (px, blank = unlimited)", "max_height", { type: "number" }));
 
     ed.appendChild(this._section("Filtering"));
     ed.appendChild(this._textField("Default message filter (always applied)", "message_filter"));
