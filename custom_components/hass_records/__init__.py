@@ -6,6 +6,7 @@ from pathlib import Path
 import voluptuous as vol
 
 from homeassistant.components.frontend import add_extra_js_url
+from homeassistant.components import panel_custom
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, ServiceCall
@@ -20,6 +21,10 @@ from .const import (
     DOMAIN,
     EVENT_RECORDED,
     FRONTEND_URL,
+    PANEL_COMPONENT,
+    PANEL_ICON,
+    PANEL_TITLE,
+    PANEL_URL_PATH,
     SERVICE_RECORD,
 )
 from .store import HassRecordsStore
@@ -59,6 +64,16 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 
     # Auto-register as a Lovelace module resource so cards are immediately available
     add_extra_js_url(hass, FRONTEND_URL)
+
+    await panel_custom.async_register_panel(
+        hass,
+        webcomponent_name=PANEL_COMPONENT,
+        frontend_url_path=PANEL_URL_PATH,
+        sidebar_title=PANEL_TITLE,
+        sidebar_icon=PANEL_ICON,
+        module_url=FRONTEND_URL,
+        require_admin=False,
+    )
 
     return True
 

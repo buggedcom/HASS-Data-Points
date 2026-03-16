@@ -21,6 +21,9 @@ if (!customElements.get("hass-records-sensor-card")) {
 if (!customElements.get("hass-records-list-card")) {
   customElements.define("hass-records-list-card", HassRecordsListCard);
 }
+if (!customElements.get("hass-records-history-panel")) {
+  customElements.define("hass-records-history-panel", HassRecordsHistoryPanel);
+}
 
 // ── Editor elements ────────────────────────────────────────────────────────
 if (!customElements.get("hass-records-action-card-editor")) {

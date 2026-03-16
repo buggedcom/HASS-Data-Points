@@ -63,24 +63,30 @@ class HassRecordsListCard extends HTMLElement {
     this._rendered = true;
     const cfg = this._config;
     const showSearch = cfg.show_search !== false;
-    const maxHeight = cfg.max_height ? `${cfg.max_height}px` : "none";
 
     this.shadowRoot.innerHTML = `
       <style>
-        :host { display: block; }
-        ha-card { overflow: hidden; }
+        :host { display: block; height: 100%; }
+        ha-card {
+          overflow: hidden;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+        }
 
         .toolbar {
           padding: 12px 16px 0;
           display: flex;
           align-items: center;
           gap: 8px;
+          flex: 0 0 auto;
         }
         .toolbar ha-textfield { flex: 1; }
 
         .list-scroll {
+          flex: 1 1 0;
+          min-height: 0;
           overflow-y: auto;
-          max-height: ${maxHeight};
         }
         
         .ann-expand-chip {
@@ -255,6 +261,7 @@ class HassRecordsListCard extends HTMLElement {
 
         .pagination {
           display: flex;
+          flex: 0 0 auto;
           justify-content: space-between;
           align-items: center;
           padding: 8px 8px;
@@ -313,9 +320,11 @@ class HassRecordsListCard extends HTMLElement {
 
   async _load() {
     const cfg = this._config;
-    let startTime;
-    if (cfg.hours_to_show) {
-      startTime = new Date(Date.now() - cfg.hours_to_show * 3600 * 1000).toISOString();
+    const endTime = cfg.end_time || undefined;
+    let startTime = cfg.start_time || undefined;
+    if (!startTime && cfg.hours_to_show) {
+      const end = endTime ? new Date(endTime) : new Date();
+      startTime = new Date(end.getTime() - cfg.hours_to_show * 3600 * 1000).toISOString();
     }
     const entityIds = cfg.entity
       ? [cfg.entity]
@@ -323,7 +332,7 @@ class HassRecordsListCard extends HTMLElement {
         ? cfg.entities.map((e) => (typeof e === "string" ? e : e.entity))
         : undefined;
 
-    this._allEvents = await fetchEvents(this._hass, startTime, undefined, entityIds);
+    this._allEvents = await fetchEvents(this._hass, startTime, endTime, entityIds);
     this._allEvents = [...this._allEvents].reverse();
     this._renderList();
   }
@@ -580,6 +589,14 @@ class HassRecordsListCard extends HTMLElement {
 
   static getStubConfig() {
     return {};
+  }
+
+  getGridOptions() {
+    const rows = this._config?.show_search !== false ? 4 : 3;
+    return {
+      rows,
+      min_rows: rows,
+    };
   }
 }
 customElements.define("hass-records-list-card", HassRecordsListCard);

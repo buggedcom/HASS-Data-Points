@@ -33,6 +33,7 @@ FILES=(
   "$SRC_DIR/card-statistics.js"
   "$SRC_DIR/card-sensor.js"
   "$SRC_DIR/card-list.js"
+  "$SRC_DIR/panel-history.js"
   "$SRC_DIR/card-editors.js"
   "$SRC_DIR/register.js"
 )
@@ -75,4 +76,3 @@ FOOTER
 sed -i.bak "s/v0\\.3\\.0/v${VERSION}/g" "$OUT_FILE" && rm -f "$OUT_FILE.bak"
 
 echo "✓ Built $OUT_FILE v${VERSION} ($(wc -l < "$OUT_FILE") lines)"
-

@@ -30,21 +30,18 @@ class HassRecordsQuickCard extends HTMLElement {
 
     this.shadowRoot.innerHTML = `
       <style>
-        :host { display: block; }
-        ha-card { padding: 16px; }
-        .card-header {
-          font-size: 1.1em;
-          font-weight: 500;
-          margin-bottom: 12px;
-          color: var(--primary-text-color);
+        :host { display: block; height: 100%; }
+        ha-card {
+          height: 100%;
+          padding: 0 12px;
           display: flex;
-          align-items: center;
-          gap: 8px;
+          flex-direction: column;
+          justify-content: center;
+          overflow: hidden;
+          box-sizing: border-box;
+          position: relative;
         }
-        .header-icon {
-          color: ${esc(cfgColor)};
-          --mdc-icon-size: 22px;
-        }
+        .card-header { display: none; }
         .input-row {
           display: flex;
           gap: 8px;
@@ -58,11 +55,15 @@ class HassRecordsQuickCard extends HTMLElement {
           --mdc-icon-size: 18px;
         }
         .feedback {
-          font-size: 0.82em;
-          margin-top: 8px;
-          padding: 6px 10px;
-          border-radius: 6px;
+          position: absolute;
+          bottom: 2px;
+          left: 12px;
+          right: 12px;
+          font-size: 0.78em;
+          padding: 2px 8px;
+          border-radius: 4px;
           display: none;
+          pointer-events: none;
         }
         .feedback.ok { background: rgba(76,175,80,0.12); color: var(--success-color, #4caf50); }
         .feedback.err { background: rgba(244,67,54,0.12); color: var(--error-color, #f44336); }
@@ -138,6 +139,14 @@ class HassRecordsQuickCard extends HTMLElement {
 
   static getStubConfig() {
     return { title: "Quick Record" };
+  }
+
+  getGridOptions() {
+    return {
+      rows: 1,
+      min_rows: 1,
+      max_rows: 1,
+    };
   }
 }
 

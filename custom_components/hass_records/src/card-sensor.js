@@ -12,16 +12,20 @@ const SENSOR_STYLE = `
   ha-card {
     padding: 0;
     overflow: hidden;
+    height: 100%;
   }
-  
+
   .card-shell {
     height: 100%;
     min-height: 0;
+    display: flex;
+    flex-direction: column;
   }
 
   .card-body {
     display: flex;
     flex-direction: column;
+    flex: 0 0 auto;
     height: calc(
       (var(--hr-body-rows, var(--row-size, 1)) * (var(--row-height, 1px) + var(--row-gap, 0px)))
       - var(--row-gap, 0px)
@@ -32,15 +36,16 @@ const SENSOR_STYLE = `
 
   /* Mirrors the default HA sensor card structure */
   .header {
-    padding: 18px 20px 0;
+    padding: 8px 16px 0;
     display: flex;
     align-items: center;
     justify-content: space-between;
   }
   .name {
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 500;
     color: var(--secondary-text-color);
+    line-height: 40px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -65,8 +70,8 @@ const SENSOR_STYLE = `
     line-height: var(--ha-line-height-condensed);
   }
   .value {
-    font-size: 3.4rem;
-    font-weight: 400;
+    font-size: var(--ha-font-size-3xl);
+    font-weight: var(--ha-font-size-3xl);
     line-height: 0.95;
     letter-spacing: -0.03em;
     color: var(--primary-text-color);
@@ -165,12 +170,14 @@ const SENSOR_STYLE = `
   .ann-section {
     border-top: 1px solid var(--divider-color, #eee);
     display: none;
+    flex: 1 1 0;
+    min-height: 0;
+    flex-direction: column;
+    overflow: hidden;
   }
   .ann-list {
-    max-height: calc(
-      (var(--hr-list-rows, 1) * (var(--row-height, 1px) + var(--row-gap, 0px)))
-      - var(--row-gap, 0px)
-    );
+    flex: 1 1 0;
+    min-height: 0;
     overflow-y: auto;
   }
   .ann-item {
@@ -693,13 +700,13 @@ class HassRecordsSensorCard extends HTMLElement {
     const total = limited.length;
 
     if (!total) {
-      sectionEl.style.display = "block";
+      sectionEl.style.display = "flex";
       listEl.innerHTML = `<div class="ann-empty">No records in this time window.</div>`;
       pagEl.style.display = "none";
       return;
     }
 
-    sectionEl.style.display = "block";
+    sectionEl.style.display = "flex";
 
     // Pagination
     const pageSize = cfg.records_page_size;
