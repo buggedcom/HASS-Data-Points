@@ -1,0 +1,5 @@
+custom_components/hass_datapoints/hass-datapoints-cards.js
+node_modules
+.git
+.claude
+.idea

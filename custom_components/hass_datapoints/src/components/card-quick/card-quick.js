@@ -1,3 +1,5 @@
+import { AMBER, DOMAIN, esc } from "../../lib/shared.js";
+
 /**
  * hass-datapoints-quick-card – Simple one-field quick record card.
  *
@@ -5,7 +7,7 @@
  * Uses HA native <ha-textfield> and <ha-button>.
  */
 
-class HassRecordsQuickCard extends HTMLElement {
+export class HassRecordsQuickCard extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -14,6 +16,7 @@ class HassRecordsQuickCard extends HTMLElement {
 
   setConfig(config) {
     this._config = config || {};
+    if (this._rendered) this._render();
   }
 
   set hass(hass) {
@@ -27,19 +30,21 @@ class HassRecordsQuickCard extends HTMLElement {
     const cfgIcon = cfg.icon || "mdi:bookmark";
     const cfgColor = cfg.color || AMBER;
     const hasTitle = !!(cfg.title);
+    const showAnnotation = !!cfg.show_annotation;
 
     this.shadowRoot.innerHTML = `
       <style>
         :host { display: block; height: 100%; }
         ha-card {
           height: 100%;
-          padding: 0 12px;
+          padding: 12px;
           display: flex;
           flex-direction: column;
           justify-content: center;
           overflow: hidden;
           box-sizing: border-box;
           position: relative;
+          gap: 8px;
         }
         .card-header { display: none; }
         .input-row {
@@ -48,6 +53,28 @@ class HassRecordsQuickCard extends HTMLElement {
           align-items: center;
         }
         .input-row ha-textfield { flex: 1; }
+        .annotation-row {
+          display: grid;
+          gap: 6px;
+        }
+        .annotation-label {
+          font-size: 0.82rem;
+          font-weight: 500;
+          color: var(--secondary-text-color);
+        }
+        .annotation-row textarea {
+          width: 100%;
+          min-height: 92px;
+          resize: vertical;
+          box-sizing: border-box;
+          padding: 10px 12px;
+          border: 1px solid var(--input-outlined-idle-border-color, var(--divider-color, #9e9e9e));
+          border-radius: 12px;
+          background: var(--card-background-color, var(--primary-background-color, #fff));
+          color: var(--primary-text-color);
+          font: inherit;
+          line-height: 1.45;
+        }
         ha-button {
           --mdc-theme-primary: ${esc(cfgColor)};
         }
@@ -81,6 +108,12 @@ class HassRecordsQuickCard extends HTMLElement {
             Record
           </ha-button>
         </div>
+        ${showAnnotation ? `
+        <div class="annotation-row">
+          <label class="annotation-label" for="ann">Annotation</label>
+          <textarea id="ann" placeholder="Detailed note shown on chart hover…"></textarea>
+        </div>
+        ` : ""}
         <div class="feedback" id="feedback"></div>
       </ha-card>`;
 
@@ -107,6 +140,9 @@ class HassRecordsQuickCard extends HTMLElement {
       icon: cfg.icon || "mdi:bookmark",
       color: cfg.color || AMBER,
     };
+    const annEl = this.shadowRoot.getElementById("ann");
+    const annotation = (annEl?.value || "").trim();
+    if (annotation) data.annotation = annotation;
 
     const entityIds = cfg.entity
       ? [cfg.entity]
@@ -120,6 +156,7 @@ class HassRecordsQuickCard extends HTMLElement {
       await this._hass.callService(DOMAIN, "record", data);
       window.dispatchEvent(new CustomEvent("hass-datapoints-event-recorded"));
       msgEl.value = "";
+      if (annEl) annEl.value = "";
       fb.className = "feedback ok";
       fb.textContent = "Recorded!";
       fb.style.display = "block";
@@ -142,11 +179,15 @@ class HassRecordsQuickCard extends HTMLElement {
   }
 
   getGridOptions() {
+    const hasAnnotation = !!this._config?.show_annotation;
     return {
-      rows: 1,
-      min_rows: 1,
-      max_rows: 1,
+      rows: hasAnnotation ? 3 : 1,
+      min_rows: hasAnnotation ? 3 : 1,
+      max_rows: hasAnnotation ? 3 : 1,
     };
   }
-}
 
+  getCardSize() {
+    return this._config?.show_annotation ? 3 : 1;
+  }
+}

@@ -2,8 +2,9 @@
  * Shared constants used by all Hass Records cards.
  */
 
-const DOMAIN = "hass_datapoints";
-const COLORS = [
+export const DOMAIN = "hass_datapoints";
+export const PANEL_URL_PATH = "hass-datapoints-history";
+export const COLORS = [
   "#3b82f6",
   "#ef4444",
   "#10b981",
@@ -11,6 +12,4 @@ const COLORS = [
   "#8b5cf6",
   "#ec4899",
 ];
-const AMBER = "#ff9800";
-
-
+export const AMBER = "#ff9800";

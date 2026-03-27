@@ -1,8 +1,33 @@
+import * as shared from "../../lib/shared.js";
+
+const {
+  areaIcon,
+  areaName,
+  buildDataPointsHistoryPath,
+  confirmDestructiveAction,
+  contrastColor,
+  deleteEvent,
+  DOMAIN,
+  deviceIcon,
+  deviceName,
+  entityIcon,
+  entityName,
+  esc,
+  fetchEvents,
+  fmtDateTime,
+  fmtRelativeTime,
+  labelIcon,
+  labelName,
+  navigateToDataPointsHistory,
+  normalizeTargetSelection,
+  updateEvent,
+} = shared;
+
 /**
  * hass-datapoints-list-card – Activity-style datagrid with search, pagination, edit/delete.
  */
 
-class HassRecordsListCard extends HTMLElement {
+export class HassRecordsListCard extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -15,8 +40,15 @@ class HassRecordsListCard extends HTMLElement {
   }
 
   setConfig(config) {
-    this._config = { ...config };
+    const nextConfig = { ...config };
+    const nextKey = JSON.stringify(nextConfig);
+    if (this._configKey === nextKey) return;
+    this._config = nextConfig;
+    this._configKey = nextKey;
     if (config.page_size) this._pageSize = config.page_size;
+    if (this._rendered && this._hass) {
+      this._load();
+    }
   }
 
   set hass(hass) {
@@ -56,7 +88,59 @@ class HassRecordsListCard extends HTMLElement {
   }
 
   _navigateToEventHistory(ev) {
-    navigateToHistory(this, ev?.entity_ids || []);
+    const range = this._getNavigationContextForEvent(ev);
+    navigateToDataPointsHistory(this, {
+      entity_id: ev?.entity_ids || [],
+      device_id: ev?.device_ids || [],
+      area_id: ev?.area_ids || [],
+      label_id: ev?.label_ids || [],
+    }, {
+      start_time: range?.start_time,
+      end_time: range?.end_time,
+      zoom_start_time: range?.zoom_start_time,
+      zoom_end_time: range?.zoom_end_time,
+      datapoint_scope: this._config?.datapoint_scope,
+    });
+  }
+
+  _getNavigationContextForEvent(ev) {
+    const cfg = this._config || {};
+    const startTime = cfg.start_time || null;
+    const endTime = cfg.end_time || null;
+    const zoomStartTime = cfg.zoom_start_time || null;
+    const zoomEndTime = cfg.zoom_end_time || null;
+    if (startTime && endTime) {
+      return {
+        start_time: startTime,
+        end_time: endTime,
+        zoom_start_time: zoomStartTime,
+        zoom_end_time: zoomEndTime,
+      };
+    }
+    const eventTime = ev?.timestamp ? new Date(ev.timestamp) : null;
+    if (!eventTime || !Number.isFinite(eventTime.getTime())) return null;
+    const start = new Date(eventTime.getTime() - (12 * 3600 * 1000));
+    const end = new Date(eventTime.getTime() + (12 * 3600 * 1000));
+    return {
+      start_time: start.toISOString(),
+      end_time: end.toISOString(),
+    };
+  }
+
+  _getHistoryLinkForEvent(ev) {
+    const range = this._getNavigationContextForEvent(ev);
+    return buildDataPointsHistoryPath({
+      entity_id: ev?.entity_ids || [],
+      device_id: ev?.device_ids || [],
+      area_id: ev?.area_ids || [],
+      label_id: ev?.label_ids || [],
+    }, {
+      start_time: range?.start_time,
+      end_time: range?.end_time,
+      zoom_start_time: range?.zoom_start_time,
+      zoom_end_time: range?.zoom_end_time,
+      datapoint_scope: this._config?.datapoint_scope,
+    });
   }
 
   _render() {
@@ -81,7 +165,47 @@ class HassRecordsListCard extends HTMLElement {
           gap: 8px;
           flex: 0 0 auto;
         }
-        .toolbar ha-textfield { flex: 1; }
+        .toolbar-search-wrap {
+          flex: 1;
+          position: relative;
+          display: flex;
+          align-items: center;
+        }
+        .toolbar-search-icon {
+          position: absolute;
+          left: 12px;
+          color: var(--secondary-text-color);
+          pointer-events: none;
+          --mdc-icon-size: 18px;
+        }
+        .toolbar-search {
+          flex: 1;
+          width: 100%;
+          min-height: 42px;
+          padding: 0 14px 0 40px;
+          border-radius: 12px;
+          border: 1px solid color-mix(in srgb, var(--divider-color, #d8dbe2) 84%, transparent);
+          background: color-mix(in srgb, var(--card-background-color, #fff) 96%, var(--secondary-background-color, rgba(0, 0, 0, 0.04)) 4%);
+          color: var(--primary-text-color);
+          font: inherit;
+          box-sizing: border-box;
+          outline: none;
+          transition:
+            border-color 0.15s ease,
+            box-shadow 0.15s ease,
+            background 0.15s ease;
+        }
+        .toolbar-search::placeholder {
+          color: var(--secondary-text-color);
+        }
+        .toolbar-search:hover {
+          border-color: color-mix(in srgb, var(--primary-color, #03a9f4) 18%, var(--divider-color, #d8dbe2));
+        }
+        .toolbar-search:focus {
+          border-color: color-mix(in srgb, var(--primary-color, #03a9f4) 42%, var(--divider-color, #d8dbe2));
+          box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color, #03a9f4) 14%, transparent);
+          background: var(--card-background-color, #fff);
+        }
 
         .list-scroll {
           flex: 1 1 0;
@@ -105,22 +229,32 @@ class HassRecordsListCard extends HTMLElement {
           font-family: inherit;
         }
 
-        .event-list { padding: 0; }
+        .event-list {
+          padding: 0 12px 12px;
+          box-sizing: border-box;
+        }
         .event-item {
           display: flex;
           align-items: flex-start;
           gap: 12px;
           padding: 10px 16px;
           border-bottom: 1px solid var(--divider-color, #eee);
+          border-radius: 12px;
           position: relative;
           transition: background 0.15s;
           cursor: default;
         }
+        .event-item.simple { align-items: center; }
         .event-item:hover { background: var(--secondary-background-color, rgba(0,0,0,0.02)); }
         .event-item:last-child { border-bottom: none; }
         .event-item.expandable { cursor: pointer; }
+        .event-item.is-hidden .ev-icon-main,
+        .event-item:hover .ev-icon-main {
+          opacity: 0.22;
+        }
 
         .ev-icon-wrap {
+          position: relative;
           width: 36px;
           height: 36px;
           border-radius: 50%;
@@ -128,7 +262,32 @@ class HassRecordsListCard extends HTMLElement {
           align-items: center;
           justify-content: center;
           flex-shrink: 0;
-          margin-top: 2px;
+        }
+        .ev-icon-main {
+          transition: opacity 120ms ease;
+        }
+        .ev-visibility-btn {
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: none;
+          border-radius: 50%;
+          background: color-mix(in srgb, var(--card-background-color, #fff) 84%, transparent);
+          color: var(--primary-text-color);
+          cursor: pointer;
+          opacity: 0;
+          transition: opacity 120ms ease;
+          padding: 0;
+          font: inherit;
+        }
+        .ev-visibility-btn ha-icon { --mdc-icon-size: 15px; }
+        .event-item:hover .ev-visibility-btn,
+        .event-item.is-hidden .ev-visibility-btn,
+        .ev-visibility-btn:focus-visible {
+          opacity: 1;
+          outline: none;
         }
 
         /* ev-body takes full remaining width */
@@ -145,54 +304,57 @@ class HassRecordsListCard extends HTMLElement {
           min-width: 0;
         }
         .ev-message {
-          font-weight: 500;
-          font-size: 0.92em;
+          display: block;
+          font-weight: 600;
+          font-size: 1rem;
+          line-height: 1.45;
           color: var(--primary-text-color);
           word-break: break-word;
         }
-        .ev-time {
-          font-size: 0.75em;
-          color: var(--secondary-text-color);
-          white-space: nowrap;
+        .ev-meta {
+          margin-top: 6px;
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          flex-wrap: wrap;
         }
-        /* Inline time (same row as message, when full message shown) */
-        .ev-time-inline {
-          font-size: 0.75em;
-          color: var(--secondary-text-color);
-          white-space: nowrap;
-          flex-shrink: 0;
-          align-self: center;
-        }
-        .ev-time-actions-inline,
         .ev-time-actions-below {
           display: inline-flex;
           align-items: center;
-          gap: 4px;
+          gap: 0;
         }
-        /* Time below message (when full message hidden) */
-        .ev-time-below {
-          font-size: 0.75em;
-          color: var(--secondary-text-color);
-          margin-top: 1px;
-          display: block;
-        }
-        .ev-history-btn {
+        .ev-history-link {
           display: inline-flex;
           align-items: center;
-          justify-content: center;
-          border: none;
-          background: none;
+          gap: 6px;
           color: var(--secondary-text-color);
           padding: 0;
+          margin: 0;
           cursor: pointer;
           font: inherit;
+          text-align: left;
+          border-radius: 8px;
+          text-decoration: none;
         }
-        .ev-history-btn ha-icon { --mdc-icon-size: 14px; }
+        .ev-history-link:hover,
+        .ev-history-link:focus-visible {
+          color: var(--primary-text-color);
+          outline: none;
+        }
+        .ev-time-below {
+          font-size: 0.92rem;
+          font-weight: 500;
+          line-height: 1.35;
+          color: var(--secondary-text-color);
+          display: block;
+        }
+        .ev-history-link ha-icon { --mdc-icon-size: 18px; }
 
         .ev-full-message {
-          font-size: 0.85em;
-          color: var(--secondary-text-color);
-          margin-top: 2px;
+          font-size: 1rem;
+          line-height: 1.6;
+          color: var(--primary-text-color);
+          margin-top: 10px;
           white-space: pre-wrap;
           word-break: break-word;
         }
@@ -201,17 +363,18 @@ class HassRecordsListCard extends HTMLElement {
         .ev-entities {
           display: flex;
           flex-wrap: wrap;
-          gap: 4px;
-          margin-top: 6px;
+          gap: 8px;
+          margin-top: 8px;
         }
         .ev-entity-chip {
           display: inline-flex;
           align-items: center;
-          gap: 4px;
-          font-size: 0.78em;
+          gap: 6px;
+          font-size: 0.92em;
+          line-height: 1.2;
           color: var(--primary-color);
           background: color-mix(in srgb, var(--primary-color) 12%, transparent);
-          padding: 2px 10px;
+          padding: 6px 12px;
           border-radius: 999px;
           cursor: pointer;
           border: none;
@@ -219,7 +382,15 @@ class HassRecordsListCard extends HTMLElement {
           transition: background 0.15s;
         }
         .ev-entity-chip:hover { background: color-mix(in srgb, var(--primary-color) 22%, transparent); }
-        .ev-entity-chip ha-icon { --mdc-icon-size: 12px; }
+        .ev-entity-chip ha-icon { --mdc-icon-size: 16px; }
+        .ev-dev-badge {
+          display: inline-block;
+          font-size: 0.68em; font-weight: 700; letter-spacing: 0.04em;
+          color: #fff;
+          background: #ff9800;
+          padding: 1px 5px; border-radius: 4px;
+          vertical-align: middle; margin-left: 4px;
+        }
 
         /* Actions sit inside ev-body header row, always visible on hover */
         .ev-actions {
@@ -282,7 +453,10 @@ class HassRecordsListCard extends HTMLElement {
         ${cfg.title ? `<div class="card-header">${esc(cfg.title)}</div>` : ""}
         ${showSearch ? `
         <div class="toolbar">
-          <ha-textfield id="search" placeholder="Search records…" iconTrailing="mdi:magnify" style="flex:1"></ha-textfield>
+          <label class="toolbar-search-wrap" aria-label="Search datapoints">
+            <ha-icon class="toolbar-search-icon" icon="mdi:magnify"></ha-icon>
+            <input id="search" class="toolbar-search" type="search" placeholder="Search datapoints…" aria-label="Search datapoints">
+          </label>
         </div>` : ""}
         <div class="list-scroll" id="list-scroll">
           <div class="event-list" id="list">
@@ -304,6 +478,11 @@ class HassRecordsListCard extends HTMLElement {
       this.shadowRoot.getElementById("search").addEventListener("input", (e) => {
         this._searchQuery = e.target.value.toLowerCase();
         this._page = 0;
+        this.dispatchEvent(new CustomEvent("hass-datapoints-records-search", {
+          bubbles: true,
+          composed: true,
+          detail: { query: this._searchQuery },
+        }));
         this._renderList();
       });
     }
@@ -320,8 +499,8 @@ class HassRecordsListCard extends HTMLElement {
 
   async _load() {
     const cfg = this._config;
-    const endTime = cfg.end_time || undefined;
-    let startTime = cfg.start_time || undefined;
+    const endTime = cfg.zoom_end_time || cfg.end_time || undefined;
+    let startTime = cfg.zoom_start_time || cfg.start_time || undefined;
     if (!startTime && cfg.hours_to_show) {
       const end = endTime ? new Date(endTime) : new Date();
       startTime = new Date(end.getTime() - cfg.hours_to_show * 3600 * 1000).toISOString();
@@ -332,7 +511,12 @@ class HassRecordsListCard extends HTMLElement {
         ? cfg.entities.map((e) => (typeof e === "string" ? e : e.entity))
         : undefined;
 
-    this._allEvents = await fetchEvents(this._hass, startTime, endTime, entityIds);
+    this._allEvents = await fetchEvents(
+      this._hass,
+      startTime,
+      endTime,
+      this._config.datapoint_scope === "all" ? undefined : entityIds,
+    );
     this._allEvents = [...this._allEvents].reverse();
     this._renderList();
   }
@@ -370,7 +554,7 @@ class HassRecordsListCard extends HTMLElement {
       listEl.innerHTML = `
         <div class="empty">
           <ha-icon icon="mdi:bookmark-off-outline"></ha-icon>
-          ${this._searchQuery ? "No matching records." : "No records yet."}
+          ${this._searchQuery ? "No matching datapoints." : "No datapoints yet."}
         </div>`;
       pagEl.style.display = "none";
       return;
@@ -382,33 +566,38 @@ class HassRecordsListCard extends HTMLElement {
       const icon = e.icon || "mdi:bookmark";
       const iconColor = contrastColor(color);
       const entities = e.entity_ids || [];
+      const devices  = e.device_ids || [];
+      const areas    = e.area_ids   || [];
+      const labels   = e.label_ids  || [];
+      const hasRelated = entities.length || devices.length || areas.length || labels.length;
       const isExpandable = !showFullMessage && annText;
-      const historyBtn = `<button class="ev-history-btn" type="button" data-event-id="${esc(e.id)}" title="Open related history" aria-label="Open related history"><ha-icon icon="mdi:history"></ha-icon></button>`;
+      const isHidden = (this._config.hidden_event_ids || []).includes(e.id);
+      const visibilityIcon = isHidden ? "mdi:eye" : "mdi:eye-off";
+      const visibilityLabel = isHidden ? "Show chart marker" : "Hide chart marker";
+      const historyLinkHref = this._getHistoryLinkForEvent(e);
+      const historyLink = `<a class="ev-history-link" href="${esc(historyLinkHref)}" data-event-id="${esc(e.id)}" title="Open related data point history" aria-label="Open related data point history"><ha-icon icon="mdi:history"></ha-icon><span class="ev-time-below" title="${esc(fmtDateTime(e.timestamp))}">${esc(fmtDateTime(e.timestamp))}</span></a>`;
 
-      // When full message is hidden, timestamp goes below the message title.
-      // When full message is shown, timestamp sits inline on the right.
-      const timeInline = showFullMessage
-        ? `<span class="ev-time-actions-inline"><span class="ev-time-inline" title="${esc(fmtDateTime(e.timestamp))}">${fmtRelativeTime(e.timestamp)}</span>${historyBtn}</span>`
-        : "";
-      const timeBelow = !showFullMessage
-        ? `<span class="ev-time-actions-below"><span class="ev-time-below" title="${esc(fmtDateTime(e.timestamp))}">${fmtRelativeTime(e.timestamp)}</span>${historyBtn}</span>`
-        : "";
-
+      const isSimple = !annText && !hasRelated;
       return `
-        <div class="event-item${isExpandable ? " expandable" : ""}" data-id="${esc(e.id)}">
+        <div class="event-item${isExpandable ? " expandable" : ""}${isHidden ? " is-hidden" : ""}${isSimple ? " simple" : ""}" data-id="${esc(e.id)}">
           <div class="ev-icon-wrap" style="background:${esc(color)}">
-            <ha-icon icon="${esc(icon)}" style="--mdc-icon-size:18px;color:${esc(iconColor)}"></ha-icon>
+            <ha-icon class="ev-icon-main" icon="${esc(icon)}" style="--mdc-icon-size:18px;color:${esc(iconColor)}"></ha-icon>
+            <button class="ev-visibility-btn" type="button" data-event-id="${esc(e.id)}" title="${esc(visibilityLabel)}" aria-label="${esc(visibilityLabel)}">
+              <ha-icon icon="${esc(visibilityIcon)}"></ha-icon>
+            </button>
           </div>
           <div class="ev-body">
             <div class="ev-header">
               <div class="ev-header-text">
                 <span class="ev-message">
                   ${esc(e.message)}
+                  ${e.dev ? `<span class="ev-dev-badge">DEV</span>` : ""}
                   ${isExpandable ? `<button class="ann-expand-chip" title="Show annotation">···</button>` : ""}
                 </span>
-                ${timeBelow}
+                <div class="ev-meta">
+                  <span class="ev-time-actions-below">${historyLink}</span>
+                </div>
               </div>
-              ${timeInline}
               ${showActions ? `
               <div class="ev-actions">
                 <ha-icon-button class="edit-btn" label="Edit record">
@@ -420,13 +609,28 @@ class HassRecordsListCard extends HTMLElement {
               </div>` : ""}
             </div>
             ${annText ? `<div class="ev-full-message${showFullMessage ? "" : " hidden"}">${esc(annText)}</div>` : ""}
-            ${showEntities && entities.length ? `
+            ${showEntities && hasRelated ? `
               <div class="ev-entities">
                 ${entities.map((eid) => `
                   <button class="ev-entity-chip" data-entity="${esc(eid)}">
-                    <ha-icon icon="mdi:link-variant"></ha-icon>
+                    <ha-icon icon="${esc(entityIcon(this._hass, eid))}"></ha-icon>
                     ${esc(entityName(this._hass, eid))}
                   </button>`).join("")}
+                ${devices.map((id) => `
+                  <span class="ev-entity-chip">
+                    <ha-icon icon="${esc(deviceIcon(this._hass, id))}"></ha-icon>
+                    ${esc(deviceName(this._hass, id))}
+                  </span>`).join("")}
+                ${areas.map((id) => `
+                  <span class="ev-entity-chip">
+                    <ha-icon icon="${esc(areaIcon(this._hass, id))}"></ha-icon>
+                    ${esc(areaName(this._hass, id))}
+                  </span>`).join("")}
+                ${labels.map((id) => `
+                  <span class="ev-entity-chip">
+                    <ha-icon icon="${esc(labelIcon(this._hass, id))}"></ha-icon>
+                    ${esc(labelName(this._hass, id))}
+                  </span>`).join("")}
               </div>
             ` : ""}
             ${showActions ? `
@@ -471,14 +675,36 @@ class HassRecordsListCard extends HTMLElement {
       });
     }
 
-    listEl.querySelectorAll(".ev-history-btn").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
+    listEl.querySelectorAll(".ev-history-link").forEach((link) => {
+      link.addEventListener("click", (e) => {
+        if (
+          e.defaultPrevented
+          || e.button !== 0
+          || e.metaKey
+          || e.ctrlKey
+          || e.shiftKey
+          || e.altKey
+        ) {
+          return;
+        }
         e.preventDefault();
         e.stopPropagation();
         const item = e.target.closest(".event-item");
         const id = item?.dataset.id;
         const record = this._allEvents.find((ev) => ev.id === id);
         if (record) this._navigateToEventHistory(record);
+      });
+    });
+
+    listEl.querySelectorAll(".ev-visibility-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.dispatchEvent(new CustomEvent("hass-datapoints-toggle-event-visibility", {
+          bubbles: true,
+          composed: true,
+          detail: { eventId: btn.dataset.eventId },
+        }));
       });
     });
 
@@ -503,6 +729,13 @@ class HassRecordsListCard extends HTMLElement {
         const item = e.target.closest(".event-item");
         const id = item?.dataset.id;
         if (!id) return;
+        const message = item.querySelector(".ev-message")?.textContent?.trim() || "this record";
+        const confirmed = await confirmDestructiveAction(this, {
+          title: "Delete record",
+          message: `Delete ${message}?`,
+          confirmLabel: "Delete record",
+        });
+        if (!confirmed) return;
         try {
           await deleteEvent(this._hass, id);
           await this._load();
@@ -599,4 +832,3 @@ class HassRecordsListCard extends HTMLElement {
     };
   }
 }
-customElements.define("hass-datapoints-list-card", HassRecordsListCard);

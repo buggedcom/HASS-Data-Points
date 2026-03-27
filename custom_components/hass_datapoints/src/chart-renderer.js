@@ -1,19 +1,28 @@
+import { fmtTime, hexToRgba } from "./helpers.js";
+
 /**
  * Canvas-based chart renderer – grids, lines, annotations.
  */
 
-class ChartRenderer {
+export class ChartRenderer {
   constructor(canvas, cssWidth, cssHeight) {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d");
     this.cssW = cssWidth;
     this.cssH = cssHeight;
-    this.pad = { top: 24, right: 20, bottom: 36, left: 56 };
+    this.basePad = { top: 24, right: 12, bottom: 48, left: 12 };
+    this.pad = { ...this.basePad };
+    this.labelColor = "rgba(214,218,224,0.92)";
+  }
+
+  static get AXIS_SLOT_WIDTH() {
+    return 30;
   }
 
   get cw() {
     return this.cssW - this.pad.left - this.pad.right;
   }
+
   get ch() {
     return this.cssH - this.pad.top - this.pad.bottom;
   }
@@ -30,16 +39,277 @@ class ChartRenderer {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
-  drawGrid(t0, t1, vMin, vMax, yTicks = 5) {
+  _normalizeAxes(vMinOrAxes, vMax) {
+    const axisColumnWidth = ChartRenderer.AXIS_SLOT_WIDTH;
+    const inputAxes = Array.isArray(vMinOrAxes)
+      ? vMinOrAxes
+      : [{ key: "default", min: vMinOrAxes, max: vMax, side: "left", unit: "", color: null }];
+    const leftAxes = [];
+    const rightAxes = [];
+    const axes = inputAxes.map((axis, index) => {
+      const normalized = {
+        key: axis.key || `axis-${index}`,
+        min: axis.min,
+        max: axis.max,
+        side: axis.side === "right" ? "right" : "left",
+        unit: axis.unit || "",
+        color: axis.color || "rgba(128,128,128,0.85)",
+      };
+      const bucket = normalized.side === "right" ? rightAxes : leftAxes;
+      normalized.slot = bucket.length;
+      bucket.push(normalized);
+      return normalized;
+    });
+
+    this.pad = {
+      top: this.basePad.top,
+      bottom: this.basePad.bottom,
+      left: this.basePad.left + Math.max(1, leftAxes.length) * axisColumnWidth,
+      right: this.basePad.right + rightAxes.length * axisColumnWidth,
+    };
+    this._activeAxes = axes;
+    return axes;
+  }
+
+  _formatAxisTick(v, unit = "") {
+    const numeric =
+      Math.abs(v) >= 1000
+        ? `${(v / 1000).toFixed(1).replace(/\.0$/, "")}k`
+        : v.toFixed(v % 1 !== 0 ? 1 : 0);
+    return numeric;
+  }
+
+  _axisLabelX(axis) {
+    const columnWidth = ChartRenderer.AXIS_SLOT_WIDTH;
+    const leftAxisX = this.pad.left;
+    const rightAxisX = this.pad.left + this.cw;
+    if (axis.side === "right") {
+      return rightAxisX + 10 + axis.slot * columnWidth;
+    }
+    return leftAxisX - 10 - axis.slot * columnWidth;
+  }
+
+  _formatTimeTick(t, t0, t1, tickSpanMs = null) {
+    const value = new Date(t);
+    const spanMs = Math.max(0, t1 - t0);
+    const detailSpanMs = Number.isFinite(tickSpanMs) && tickSpanMs > 0 ? tickSpanMs : spanMs;
+    const start = new Date(t0);
+    const end = new Date(t1);
+    const sameDay =
+      start.getFullYear() === end.getFullYear()
+      && start.getMonth() === end.getMonth()
+      && start.getDate() === end.getDate();
+    const sameMonth =
+      start.getFullYear() === end.getFullYear()
+      && start.getMonth() === end.getMonth();
+
+    if (detailSpanMs <= 2 * 60 * 60 * 1000) {
+      return value.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+    if (detailSpanMs <= 12 * 60 * 60 * 1000) {
+      return value.toLocaleString([], {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+    if (detailSpanMs <= 2 * 24 * 60 * 60 * 1000) {
+      return value.toLocaleString([], {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+      });
+    }
+    if (sameDay) {
+      return value.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+    if (detailSpanMs <= 6 * 60 * 60 * 1000) {
+      return value.toLocaleString([], {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+    if (detailSpanMs <= 24 * 60 * 60 * 1000) {
+      return value.toLocaleString([], {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+      });
+    }
+    if (sameMonth && spanMs <= 14 * 24 * 60 * 60 * 1000) {
+      return value.toLocaleDateString([], { day: "numeric" });
+    }
+    if (spanMs >= 2 * 24 * 60 * 60 * 1000) {
+      return value.toLocaleDateString([], { month: "short", day: "numeric" });
+    }
+    if (spanMs >= 24 * 60 * 60 * 1000) {
+      return value.toLocaleString([], {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    }
+    return fmtTime(value.toISOString());
+  }
+
+  _niceNumber(value, round) {
+    if (!Number.isFinite(value) || value <= 0) return 1;
+    const exponent = Math.floor(Math.log10(value));
+    const fraction = value / (10 ** exponent);
+    let niceFraction;
+    if (round) {
+      if (fraction < 1.5) niceFraction = 1;
+      else if (fraction < 3) niceFraction = 2;
+      else if (fraction < 7) niceFraction = 5;
+      else niceFraction = 10;
+    } else if (fraction <= 1) niceFraction = 1;
+      else if (fraction <= 2) niceFraction = 2;
+      else if (fraction <= 5) niceFraction = 5;
+      else niceFraction = 10;
+    return niceFraction * (10 ** exponent);
+  }
+
+  _buildNiceAxisScale(axis, tickCount) {
+    const rawMin = Number.isFinite(axis.min) ? axis.min : 0;
+    const rawMax = Number.isFinite(axis.max) ? axis.max : 1;
+    if (rawMin === rawMax) {
+      const pad = Math.abs(rawMin || 1);
+      const step = this._niceNumber((pad * 2) / Math.max(1, tickCount), true);
+      const niceMin = Math.floor((rawMin - pad) / step) * step;
+      const niceMax = Math.ceil((rawMax + pad) / step) * step;
+      const ticks = [];
+      for (let value = niceMin; value <= niceMax + (step * 0.5); value += step) {
+        ticks.push(Number(value.toFixed(10)));
+      }
+      return { min: niceMin, max: niceMax, step, ticks };
+    }
+
+    const range = this._niceNumber(rawMax - rawMin, false);
+    const step = this._niceNumber(range / Math.max(1, tickCount), true);
+    const niceMin = Math.floor(rawMin / step) * step;
+    const niceMax = Math.ceil(rawMax / step) * step;
+    const ticks = [];
+    for (let value = niceMin; value <= niceMax + (step * 0.5); value += step) {
+      ticks.push(Number(value.toFixed(10)));
+    }
+    return { min: niceMin, max: niceMax, step, ticks };
+  }
+
+  _alignTimeTick(timestamp, stepMs) {
+    const date = new Date(timestamp);
+    if (stepMs < 60 * 1000) {
+      return Math.floor(timestamp / stepMs) * stepMs;
+    }
+    if (stepMs < 60 * 60 * 1000) {
+      const minutes = Math.max(1, Math.round(stepMs / (60 * 1000)));
+      date.setSeconds(0, 0);
+      date.setMinutes(Math.floor(date.getMinutes() / minutes) * minutes);
+      return date.getTime();
+    }
+    if (stepMs < 24 * 60 * 60 * 1000) {
+      const hours = Math.max(1, Math.round(stepMs / (60 * 60 * 1000)));
+      date.setMinutes(0, 0, 0);
+      date.setHours(Math.floor(date.getHours() / hours) * hours);
+      return date.getTime();
+    }
+    if (stepMs < 7 * 24 * 60 * 60 * 1000) {
+      const days = Math.max(1, Math.round(stepMs / (24 * 60 * 60 * 1000)));
+      date.setHours(0, 0, 0, 0);
+      const dayOfMonth = date.getDate();
+      date.setDate(dayOfMonth - ((dayOfMonth - 1) % days));
+      return date.getTime();
+    }
+    if (stepMs < 30 * 24 * 60 * 60 * 1000) {
+      date.setHours(0, 0, 0, 0);
+      const day = date.getDay();
+      const offset = (day + 6) % 7;
+      date.setDate(date.getDate() - offset);
+      return date.getTime();
+    }
+    date.setHours(0, 0, 0, 0);
+    date.setDate(1);
+    return date.getTime();
+  }
+
+  _getTimeTickStep(targetStepMs) {
+    const candidates = [
+      5 * 60 * 1000,
+      10 * 60 * 1000,
+      15 * 60 * 1000,
+      30 * 60 * 1000,
+      60 * 60 * 1000,
+      2 * 60 * 60 * 1000,
+      3 * 60 * 60 * 1000,
+      6 * 60 * 60 * 1000,
+      12 * 60 * 60 * 1000,
+      24 * 60 * 60 * 1000,
+      2 * 24 * 60 * 60 * 1000,
+      7 * 24 * 60 * 60 * 1000,
+      14 * 24 * 60 * 60 * 1000,
+      30 * 24 * 60 * 60 * 1000,
+    ];
+    return candidates.find((step) => step >= targetStepMs) || candidates[candidates.length - 1];
+  }
+
+  _buildTimeTicks(t0, t1) {
+    const approxTickCount = Math.max(2, Math.min(96, Math.floor(this.cw / 120)));
+    const stepMs = this._getTimeTickStep((t1 - t0) / Math.max(1, approxTickCount));
+    const ticks = [];
+    let tick = this._alignTimeTick(t0, stepMs);
+    if (tick < t0) tick += stepMs;
+    while (tick <= t1) {
+      ticks.push(tick);
+      tick += stepMs;
+    }
+    if (!ticks.length) {
+      ticks.push(t0, t1);
+    }
+    return { ticks, stepMs };
+  }
+
+  drawGrid(t0, t1, vMin, vMax, yTicks = 5, options = {}) {
     const { ctx, pad } = this;
     const gridColor = "rgba(128,128,128,0.15)";
-    const labelColor = "rgba(128,128,128,0.85)";
+    const labelColor = this.labelColor;
+    const fixedAxisOverlay = !!options.fixedAxisOverlay;
+    const hideTimeLabels = !!options.hideTimeLabels;
+    const axes = this._normalizeAxes(vMin, vMax);
+    const unitCounts = axes.reduce((counts, axis) => {
+      if (!axis?.unit) {
+        return counts;
+      }
+      counts.set(axis.unit, (counts.get(axis.unit) || 0) + 1);
+      return counts;
+    }, new Map());
+    const axisLabelColor = (axis) => {
+      const duplicateUnit = !!axis?.unit && (unitCounts.get(axis.unit) || 0) > 1;
+      if (!duplicateUnit || !axis?.color) {
+        return labelColor;
+      }
+      return axis.color;
+    };
+    axes.forEach((axis) => {
+      const scale = this._buildNiceAxisScale(axis, yTicks);
+      axis.min = scale.min;
+      axis.max = scale.max;
+      axis.ticks = scale.ticks;
+    });
+    const primaryAxis = axes[0];
 
-    ctx.font = "10px sans-serif";
+    ctx.font = "12px sans-serif";
 
-    for (let i = 0; i <= yTicks; i++) {
-      const v = vMin + (i / yTicks) * (vMax - vMin);
-      const y = this.yOf(v, vMin, vMax);
+    for (const v of primaryAxis.ticks || []) {
+      const y = this.yOf(v, primaryAxis.min, primaryAxis.max);
 
       ctx.strokeStyle = gridColor;
       ctx.lineWidth = 1;
@@ -48,20 +318,40 @@ class ChartRenderer {
       ctx.lineTo(pad.left + this.cw, y);
       ctx.stroke();
 
-      ctx.fillStyle = labelColor;
-      ctx.textAlign = "right";
-      ctx.textBaseline = "middle";
-      const label =
-        Math.abs(v) >= 1000
-          ? (v / 1000).toFixed(1) + "k"
-          : v.toFixed(v % 1 !== 0 ? 1 : 0);
-      ctx.fillText(label, pad.left - 6, y);
+      if (!fixedAxisOverlay) {
+        ctx.fillStyle = axisLabelColor(primaryAxis);
+        ctx.textAlign = "right";
+        ctx.textBaseline = "middle";
+        ctx.fillText(this._formatAxisTick(v, primaryAxis.unit), this._axisLabelX(primaryAxis), y);
+      }
     }
 
-    const tickCount = Math.max(2, Math.min(6, Math.floor(this.cw / 80)));
-    for (let i = 0; i <= tickCount; i++) {
-      const t = t0 + (i / tickCount) * (t1 - t0);
+    if (!fixedAxisOverlay) {
+      for (const axis of axes.slice(1)) {
+        for (const v of axis.ticks || []) {
+          const y = this.yOf(v, axis.min, axis.max);
+          ctx.fillStyle = axisLabelColor(axis);
+          ctx.textAlign = axis.side === "right" ? "left" : "right";
+          ctx.textBaseline = "middle";
+          ctx.fillText(this._formatAxisTick(v, axis.unit), this._axisLabelX(axis), y);
+        }
+      }
+    }
+
+    if (!fixedAxisOverlay) {
+      for (const axis of axes) {
+        if (!axis.unit) continue;
+        ctx.fillStyle = axisLabelColor(axis);
+        ctx.textAlign = axis.side === "right" ? "left" : "right";
+        ctx.textBaseline = "bottom";
+        ctx.fillText(axis.unit, this._axisLabelX(axis), pad.top - 6);
+      }
+    }
+
+    const { ticks: timeTicks, stepMs: tickSpanMs } = this._buildTimeTicks(t0, t1);
+    for (const t of timeTicks) {
       const x = this.xOf(t, t0, t1);
+      const label = this._formatTimeTick(t, t0, t1, tickSpanMs);
 
       ctx.strokeStyle = "rgba(128,128,128,0.08)";
       ctx.lineWidth = 1;
@@ -70,26 +360,96 @@ class ChartRenderer {
       ctx.lineTo(x, pad.top + this.ch);
       ctx.stroke();
 
-      ctx.fillStyle = labelColor;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "top";
-      ctx.fillText(fmtTime(new Date(t).toISOString()), x, pad.top + this.ch + 6);
+      if (!hideTimeLabels) {
+        ctx.fillStyle = labelColor;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        const labelWidth = ctx.measureText(label).width;
+        const labelX = Math.min(
+          pad.left + this.cw - (labelWidth / 2),
+          Math.max(pad.left + (labelWidth / 2), x),
+        );
+        ctx.fillText(label, labelX, pad.top + this.ch + 6);
+      }
     }
 
     ctx.strokeStyle = "rgba(128,128,128,0.35)";
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(pad.left, pad.top);
-    ctx.lineTo(pad.left, pad.top + this.ch);
+    if (!fixedAxisOverlay) {
+      ctx.moveTo(pad.left, pad.top);
+      ctx.lineTo(pad.left, pad.top + this.ch);
+    }
+    ctx.moveTo(pad.left, pad.top + this.ch);
     ctx.lineTo(pad.left + this.cw, pad.top + this.ch);
+    if (axes.some((axis) => axis.side === "right") && !fixedAxisOverlay) {
+      ctx.moveTo(pad.left + this.cw, pad.top);
+      ctx.lineTo(pad.left + this.cw, pad.top + this.ch);
+    }
     ctx.stroke();
   }
 
-  drawLine(points, color, t0, t1, vMin, vMax) {
+  drawRowLabel(text, color = "rgba(214,218,224,0.85)") {
+    if (!text) {
+      return;
+    }
+    const { ctx, pad } = this;
+    ctx.save();
+    ctx.font = "bold 11px sans-serif";
+    ctx.fillStyle = color;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+    ctx.fillText(text, pad.left + 6, pad.top + 5);
+    ctx.restore();
+  }
+
+  drawLine(points, color, t0, t1, vMin, vMax, options = {}) {
     if (!points.length) return;
     const { ctx, pad } = this;
+    const fillAlpha = Number.isFinite(options.fillAlpha) ? options.fillAlpha : 0;
+    const dashed = !!options.dashed;
+    const dotted = !!options.dotted;
+    const dashPattern = Array.isArray(options.dashPattern)
+      ? options.dashPattern.filter((entry) => Number.isFinite(entry) && entry > 0)
+      : null;
+    const lineOpacity = Number.isFinite(options.lineOpacity) ? options.lineOpacity : 1;
+    const lineWidth = Number.isFinite(options.lineWidth) ? options.lineWidth : 1.75;
 
     ctx.save();
+    ctx.beginPath();
+    ctx.rect(pad.left, pad.top, this.cw, this.ch);
+    ctx.clip();
+    if (dashPattern && dashPattern.length) {
+      ctx.setLineDash(dashPattern);
+    } else if (dotted) {
+      ctx.setLineDash([1, 3]);
+      ctx.lineCap = "round";
+    } else if (dashed) {
+      ctx.setLineDash([6, 4]);
+    }
+    if (lineOpacity < 1) ctx.globalAlpha = lineOpacity;
+    if (fillAlpha > 0) {
+      ctx.beginPath();
+      let first = true;
+      let lastX = pad.left;
+      for (const [t, v] of points) {
+        const x = this.xOf(t, t0, t1);
+        const y = this.yOf(v, vMin, vMax);
+        if (first) {
+          ctx.moveTo(x, pad.top + this.ch);
+          ctx.lineTo(x, y);
+          first = false;
+        } else {
+          ctx.lineTo(x, y);
+        }
+        lastX = x;
+      }
+      ctx.lineTo(lastX, pad.top + this.ch);
+      ctx.closePath();
+      ctx.fillStyle = hexToRgba(color, fillAlpha);
+      ctx.fill();
+    }
+
     ctx.beginPath();
     let first = true;
     for (const [t, v] of points) {
@@ -98,49 +458,64 @@ class ChartRenderer {
       if (first) { ctx.moveTo(x, y); first = false; }
       else ctx.lineTo(x, y);
     }
-    ctx.stroke();
-
-    const lastX = this.xOf(points[points.length - 1][0], t0, t1);
-    const firstX = this.xOf(points[0][0], t0, t1);
-    const baseY = pad.top + this.ch;
-
-    ctx.beginPath();
-    first = true;
-    for (const [t, v] of points) {
-      const x = this.xOf(t, t0, t1);
-      const y = this.yOf(v, vMin, vMax);
-      if (first) { ctx.moveTo(x, y); first = false; }
-      else ctx.lineTo(x, y);
-    }
-    ctx.lineTo(lastX, baseY);
-    ctx.lineTo(firstX, baseY);
-    ctx.closePath();
-
-    const grad = ctx.createLinearGradient(0, pad.top, 0, pad.top + this.ch);
-    grad.addColorStop(0, hexToRgba(color, 0.25));
-    grad.addColorStop(1, hexToRgba(color, 0.02));
-    ctx.fillStyle = grad;
-    ctx.fill();
-
-    ctx.beginPath();
-    first = true;
-    for (const [t, v] of points) {
-      const x = this.xOf(t, t0, t1);
-      const y = this.yOf(v, vMin, vMax);
-      if (first) { ctx.moveTo(x, y); first = false; }
-      else ctx.lineTo(x, y);
-    }
     ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = lineWidth;
     ctx.lineJoin = "round";
     ctx.stroke();
 
     ctx.restore();
   }
 
-  drawAnnotations(events, t0, t1) {
+  drawBars(points, color, t0, t1, vMin, vMax, options = {}) {
+    if (!points.length) return;
+    const { ctx, pad } = this;
+    const fillAlpha = Number.isFinite(options.fillAlpha) ? options.fillAlpha : 0.78;
+    const widthFactor = Number.isFinite(options.widthFactor) ? options.widthFactor : 0.72;
+    const baselineY = this.yOf(Math.max(vMin, 0), vMin, vMax);
+    const xs = points.map(([t]) => this.xOf(t, t0, t1));
+    let minGap = this.cw / Math.max(points.length, 1);
+    for (let i = 1; i < xs.length; i++) {
+      minGap = Math.min(minGap, xs[i] - xs[i - 1]);
+    }
+    const barWidth = Math.max(3, Math.min(28, minGap * widthFactor));
+
+    ctx.save();
+    ctx.fillStyle = hexToRgba(color, fillAlpha);
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1;
+    for (let i = 0; i < points.length; i++) {
+      const [, v] = points[i];
+      const x = xs[i];
+      const y = this.yOf(v, vMin, vMax);
+      const top = Math.min(y, baselineY);
+      const height = Math.max(1, Math.abs(baselineY - y));
+      const left = x - barWidth / 2;
+      ctx.fillRect(left, top, barWidth, height);
+    }
+    ctx.restore();
+  }
+
+  drawStateBands(spans, t0, t1, color = "#03a9f4", alpha = 0.12) {
+    if (!spans?.length) return;
+    const { ctx, pad } = this;
+    ctx.save();
+    ctx.fillStyle = hexToRgba(color, alpha);
+    for (const span of spans) {
+      const start = Math.max(t0, span.start);
+      const end = Math.min(t1, span.end);
+      if (!(start < end)) continue;
+      const x0 = this.xOf(start, t0, t1);
+      const x1 = this.xOf(end, t0, t1);
+      ctx.fillRect(x0, pad.top, Math.max(1, x1 - x0), this.ch);
+    }
+    ctx.restore();
+  }
+
+  drawAnnotations(events, t0, t1, options = {}) {
     const { ctx, pad } = this;
     const hits = [];
+    const showLines = options.showLines !== false;
+    const showMarkers = options.showMarkers !== false;
 
     for (const event of events) {
       const t = new Date(event.timestamp).getTime();
@@ -149,31 +524,35 @@ class ChartRenderer {
       const x = this.xOf(t, t0, t1);
       const color = event.color || "#03a9f4";
 
-      ctx.save();
-      ctx.setLineDash([4, 3]);
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1.5;
-      ctx.globalAlpha = 0.75;
-      ctx.beginPath();
-      ctx.moveTo(x, pad.top + 8);
-      ctx.lineTo(x, pad.top + this.ch);
-      ctx.stroke();
-      ctx.restore();
+      if (showLines) {
+        ctx.save();
+        ctx.setLineDash([4, 3]);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.5;
+        ctx.globalAlpha = 0.75;
+        ctx.beginPath();
+        ctx.moveTo(x, pad.top + 8);
+        ctx.lineTo(x, pad.top + this.ch);
+        ctx.stroke();
+        ctx.restore();
+      }
 
-      const d = 5;
-      ctx.save();
-      ctx.fillStyle = color;
-      ctx.strokeStyle = "rgba(255,255,255,0.8)";
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(x, pad.top - d);
-      ctx.lineTo(x + d, pad.top);
-      ctx.lineTo(x, pad.top + d);
-      ctx.lineTo(x - d, pad.top);
-      ctx.closePath();
-      ctx.fill();
-      ctx.stroke();
-      ctx.restore();
+      if (showMarkers) {
+        const d = 5;
+        ctx.save();
+        ctx.fillStyle = color;
+        ctx.strokeStyle = "rgba(255,255,255,0.8)";
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        ctx.moveTo(x, pad.top - d);
+        ctx.lineTo(x + d, pad.top);
+        ctx.lineTo(x, pad.top + d);
+        ctx.lineTo(x - d, pad.top);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      }
 
       hits.push({ event, x, y: pad.top });
     }
@@ -253,8 +632,10 @@ class ChartRenderer {
 
   _interpolateValue(seriesPoints, t) {
     if (!seriesPoints.length) return null;
-    if (t <= seriesPoints[0][0]) return seriesPoints[0][1];
-    if (t >= seriesPoints[seriesPoints.length - 1][0]) {
+    if (t < seriesPoints[0][0]) return null;
+    if (t > seriesPoints[seriesPoints.length - 1][0]) return null;
+    if (t === seriesPoints[0][0]) return seriesPoints[0][1];
+    if (t === seriesPoints[seriesPoints.length - 1][0]) {
       return seriesPoints[seriesPoints.length - 1][1];
     }
     for (let i = 0; i < seriesPoints.length - 1; i++) {
@@ -317,5 +698,237 @@ class ChartRenderer {
     }
 
     return hits;
+  }
+
+  drawThresholdArea(points, thresholdValue, color, t0, t1, vMin, vMax, options = {}) {
+    if (!Array.isArray(points) || points.length < 2) {
+      return;
+    }
+    if (!Number.isFinite(thresholdValue)) {
+      return;
+    }
+    const mode = options.mode === "below" ? "below" : "above";
+    const fillAlpha = Number.isFinite(options.fillAlpha) ? options.fillAlpha : 0.12;
+    if (fillAlpha <= 0) {
+      return;
+    }
+
+    const segments = [];
+    let currentSegment = [];
+
+    const isInside = (value) => {
+      if (mode === "below") {
+        return value <= thresholdValue;
+      }
+      return value >= thresholdValue;
+    };
+
+    const flushSegment = () => {
+      if (currentSegment.length >= 2) {
+        segments.push(currentSegment);
+      }
+      currentSegment = [];
+    };
+
+    for (let index = 0; index < points.length - 1; index += 1) {
+      const startPoint = points[index];
+      const endPoint = points[index + 1];
+      const startInside = isInside(startPoint[1]);
+      const endInside = isInside(endPoint[1]);
+
+      if (startInside && currentSegment.length === 0) {
+        currentSegment.push(startPoint);
+      }
+
+      if (startInside && endInside) {
+        currentSegment.push(endPoint);
+        continue;
+      }
+
+      if (startInside !== endInside) {
+        const deltaValue = endPoint[1] - startPoint[1];
+        if (deltaValue === 0) {
+          continue;
+        }
+        const fraction = (thresholdValue - startPoint[1]) / deltaValue;
+        const crossingTime = startPoint[0] + ((endPoint[0] - startPoint[0]) * fraction);
+        const crossingPoint = [crossingTime, thresholdValue];
+        if (startInside) {
+          currentSegment.push(crossingPoint);
+          flushSegment();
+        } else {
+          currentSegment.push(crossingPoint);
+          currentSegment.push(endPoint);
+        }
+        continue;
+      }
+
+      if (!startInside && !endInside) {
+        flushSegment();
+      }
+    }
+
+    flushSegment();
+
+    if (!segments.length) {
+      return;
+    }
+
+    const { ctx, pad } = this;
+    const thresholdY = this.yOf(thresholdValue, vMin, vMax);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(pad.left, pad.top, this.cw, this.ch);
+    ctx.clip();
+    ctx.fillStyle = hexToRgba(color, fillAlpha);
+
+    segments.forEach((segment) => {
+      if (!Array.isArray(segment) || segment.length < 2) {
+        return;
+      }
+      ctx.beginPath();
+      const firstPoint = segment[0];
+      ctx.moveTo(this.xOf(firstPoint[0], t0, t1), thresholdY);
+      segment.forEach((point) => {
+        ctx.lineTo(this.xOf(point[0], t0, t1), this.yOf(point[1], vMin, vMax));
+      });
+      const lastPoint = segment[segment.length - 1];
+      ctx.lineTo(this.xOf(lastPoint[0], t0, t1), thresholdY);
+      ctx.closePath();
+      ctx.fill();
+    });
+
+    ctx.restore();
+  }
+
+  /**
+   * Draw diagonal hash marks at gap boundary points to indicate the start/end
+   * of contiguous data ranges.
+   *
+   * @param {Array} boundaryPoints  Array of [timeMs, value] pairs at gap edges
+   * @param {string} color          Stroke colour
+   * @param {number} t0             Start time ms
+   * @param {number} t1             End time ms
+   * @param {number} vMin           Y axis min
+   * @param {number} vMax           Y axis max
+   */
+  drawGapMarkers(boundaryPoints, color, t0, t1, vMin, vMax) {
+    if (!boundaryPoints.length) return;
+    const { ctx, pad } = this;
+    const h = 7;
+    const w = 3;
+    const gap = 2;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(pad.left, pad.top, this.cw, this.ch);
+    ctx.clip();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5;
+    ctx.globalAlpha = 0.55;
+
+    for (let i = 0; i < boundaryPoints.length; i++) {
+      const [t, v] = boundaryPoints[i];
+      const x = this.xOf(t, t0, t1);
+      const y = this.yOf(v, vMin, vMax);
+      // Even indices are opening marks (\\), odd indices are closing marks (//)
+      const dir = i % 2 === 0 ? 1 : -1;
+      for (let d = -gap; d <= gap; d += gap * 2) {
+        ctx.beginPath();
+        ctx.moveTo(x + d - w * dir, y - h);
+        ctx.lineTo(x + d + w * dir, y + h);
+        ctx.stroke();
+      }
+    }
+
+    ctx.restore();
+  }
+
+  drawAnomalyClusters(clusters, color, t0, t1, vMin, vMax, options = {}) {
+    if (!Array.isArray(clusters) || clusters.length === 0) {
+      return;
+    }
+    const strokeAlpha = Number.isFinite(options.strokeAlpha) ? options.strokeAlpha : 0.92;
+    const lineWidth = Number.isFinite(options.lineWidth) ? options.lineWidth : 2;
+    const haloWidth = Number.isFinite(options.haloWidth) ? options.haloWidth : Math.max(2.5, lineWidth + 1.5);
+    const haloColor = typeof options.haloColor === "string" && options.haloColor
+      ? options.haloColor
+      : "rgba(255,255,255,0.9)";
+    const haloAlpha = Number.isFinite(options.haloAlpha) ? options.haloAlpha : 0.9;
+    const fillColor = typeof options.fillColor === "string" && options.fillColor ? options.fillColor : null;
+    const fillAlpha = Number.isFinite(options.fillAlpha) ? options.fillAlpha : 0;
+    const pointPadding = Number.isFinite(options.pointPadding) ? options.pointPadding : 10;
+    const minRadiusX = Number.isFinite(options.minRadiusX) ? options.minRadiusX : 10;
+    const minRadiusY = Number.isFinite(options.minRadiusY) ? options.minRadiusY : 10;
+    const clusterRegions = this.getAnomalyClusterRegions(clusters, t0, t1, vMin, vMax, {
+      pointPadding,
+      minRadiusX,
+      minRadiusY,
+    });
+    const { ctx, pad } = this;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(pad.left, pad.top, this.cw, this.ch);
+    ctx.clip();
+
+    clusterRegions.forEach((region) => {
+      ctx.save();
+      ctx.setLineDash([]);
+      if (fillColor && fillAlpha > 0) {
+        ctx.globalAlpha = fillAlpha;
+        ctx.fillStyle = fillColor;
+        ctx.beginPath();
+        ctx.ellipse(region.centerX, region.centerY, region.radiusX, region.radiusY, 0, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = haloAlpha;
+      ctx.strokeStyle = haloColor;
+      ctx.lineWidth = haloWidth;
+      ctx.beginPath();
+      ctx.ellipse(region.centerX, region.centerY, region.radiusX, region.radiusY, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = strokeAlpha;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = lineWidth;
+      ctx.beginPath();
+      ctx.ellipse(region.centerX, region.centerY, region.radiusX, region.radiusY, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    });
+
+    ctx.restore();
+  }
+
+  getAnomalyClusterRegions(clusters, t0, t1, vMin, vMax, options = {}) {
+    if (!Array.isArray(clusters) || clusters.length === 0) {
+      return [];
+    }
+    const pointPadding = Number.isFinite(options.pointPadding) ? options.pointPadding : 10;
+    const minRadiusX = Number.isFinite(options.minRadiusX) ? options.minRadiusX : 10;
+    const minRadiusY = Number.isFinite(options.minRadiusY) ? options.minRadiusY : 10;
+
+    return clusters.flatMap((cluster) => {
+      if (!Array.isArray(cluster?.points) || cluster.points.length === 0) {
+        return [];
+      }
+      const xs = [];
+      const ys = [];
+      cluster.points.forEach((point) => {
+        xs.push(this.xOf(point.timeMs, t0, t1));
+        ys.push(this.yOf(point.value, vMin, vMax));
+      });
+      const minX = Math.min(...xs);
+      const maxX = Math.max(...xs);
+      const minY = Math.min(...ys);
+      const maxY = Math.max(...ys);
+      return [{
+        centerX: (minX + maxX) / 2,
+        centerY: (minY + maxY) / 2,
+        radiusX: Math.max(minRadiusX, ((maxX - minX) / 2) + pointPadding),
+        radiusY: Math.max(minRadiusY, ((maxY - minY) / 2) + pointPadding),
+        cluster,
+      }];
+    });
   }
 }

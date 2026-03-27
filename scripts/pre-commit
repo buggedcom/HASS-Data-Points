@@ -2,7 +2,7 @@
 #
 # pre-commit hook: rebuild hass-datapoints-cards.js when any src/ file is staged.
 #
-# Install:  ./scripts/install-hooks.sh
+# Install:  pnpm hooks:install
 #           (or manually: ln -sf ../../scripts/pre-commit .git/hooks/pre-commit)
 
 set -euo pipefail
@@ -17,12 +17,16 @@ if [ -z "$STAGED_SRC" ]; then
   exit 0
 fi
 
-echo "[pre-commit] src/ files changed — rebuilding $OUT_FILE …"
+if ! command -v pnpm >/dev/null 2>&1; then
+  echo "[pre-commit] pnpm is required to build frontend assets." >&2
+  exit 1
+fi
 
-bash scripts/build.sh
+echo "[pre-commit] src/ files changed — rebuilding $OUT_FILE via pnpm …"
+
+pnpm build
 
 # Stage the rebuilt output so the commit includes it
 git add "$OUT_FILE"
 
 echo "[pre-commit] ✓ $OUT_FILE rebuilt and staged"
-

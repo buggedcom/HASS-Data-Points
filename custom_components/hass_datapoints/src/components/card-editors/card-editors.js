@@ -1,3 +1,5 @@
+import { AMBER, COLORS, esc } from "../../lib/shared.js";
+
 /**
  * Lovelace card editors for all Hass Records cards.
  *
@@ -81,7 +83,7 @@ const EDITOR_CSS = `
 // ---------------------------------------------------------------------------
 // Base class
 // ---------------------------------------------------------------------------
-class HassRecordsEditorBase extends HTMLElement {
+export class HassRecordsEditorBase extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -92,13 +94,22 @@ class HassRecordsEditorBase extends HTMLElement {
   // HA calls setConfig first, then sets hass
   setConfig(config) {
     this._config = { ...config };
-    this._build();
+    this._needsBuild = true;
+    if (this._hass) {
+      this._needsBuild = false;
+      this._build();
+    }
   }
 
   set hass(h) {
     this._hass = h;
+    if (this._needsBuild) {
+      this._needsBuild = false;
+      this._build();
+      return;
+    }
     // Push hass to every picker already in the shadow root
-    this.shadowRoot.querySelectorAll("ha-entity-picker, ha-icon-picker").forEach((el) => {
+    this.shadowRoot.querySelectorAll("ha-entity-picker, ha-icon-picker, ha-selector").forEach((el) => {
       el.hass = h;
     });
   }
@@ -175,11 +186,11 @@ class HassRecordsEditorBase extends HTMLElement {
     return el;
   }
 
-  // ha-entity-picker
+  // ha-selector (entity)
   _entityPicker(label, key) {
-    const el = document.createElement("ha-entity-picker");
+    const el = document.createElement("ha-selector");
     el.label = label;
-    el.setAttribute("allow-custom-entity", "");
+    el.selector = { entity: {} };
     el.style.display = "block";
     el.style.width = "100%";
     if (this._hass) el.hass = this._hass;
@@ -261,28 +272,17 @@ class HassRecordsEditorBase extends HTMLElement {
     return wrap;
   }
 
-  // ha-select
+  // ha-selector (select)
   _select(label, key, options, fallback = "") {
-    const el = document.createElement("ha-select");
+    const el = document.createElement("ha-selector");
     el.label = label;
     el.style.display = "block";
     el.style.width = "100%";
-
-    options.forEach(([value, text]) => {
-      const item = document.createElement("mwc-list-item");
-      item.value = value;
-      item.textContent = text;
-      el.appendChild(item);
+    el.selector = { select: { options: options.map(([value, text]) => ({ value, label: text })) } };
+    el.value = this._config[key] ?? fallback;
+    el.addEventListener("value-changed", (e) => {
+      this._set(key, e.detail.value || undefined);
     });
-
-    requestAnimationFrame(() => {
-      el.value = this._config[key] != null ? String(this._config[key]) : fallback;
-    });
-
-    el.addEventListener("selected", () => {
-      this._set(key, el.value || undefined);
-    });
-
     return el;
   }
 
@@ -321,12 +321,12 @@ class HassRecordsEditorBase extends HTMLElement {
         const row = document.createElement("div");
         row.className = "ent-row";
 
-        const picker = document.createElement("ha-entity-picker");
-        picker.setAttribute("allow-custom-entity", "");
+        const picker = document.createElement("ha-selector");
+        picker.selector = { entity: {} };
         picker.style.flex = "1";
         picker.style.minWidth = "0";
         if (this._hass) picker.hass = this._hass;
-        requestAnimationFrame(() => { picker.label = ""; picker.value = eid || ""; });
+        requestAnimationFrame(() => { picker.value = eid || ""; });
         picker.addEventListener("value-changed", (e) => {
           const arr = getArr();
           arr[idx] = e.detail.value || "";
@@ -365,7 +365,7 @@ class HassRecordsEditorBase extends HTMLElement {
 
     // Allow hass updates to reach dynamically created pickers
     outer._pushHass = (h) => {
-      list.querySelectorAll("ha-entity-picker").forEach((p) => { p.hass = h; });
+      list.querySelectorAll("ha-selector").forEach((p) => { p.hass = h; });
     };
 
     return outer;
@@ -375,7 +375,7 @@ class HassRecordsEditorBase extends HTMLElement {
 // ---------------------------------------------------------------------------
 // 1. Action Card editor
 // ---------------------------------------------------------------------------
-class HassRecordsActionCardEditor extends HassRecordsEditorBase {
+export class HassRecordsActionCardEditor extends HassRecordsEditorBase {
   _build() {
     this.shadowRoot.innerHTML = EDITOR_CSS;
     const ed = document.createElement("div");
@@ -384,31 +384,49 @@ class HassRecordsActionCardEditor extends HassRecordsEditorBase {
     ed.appendChild(this._section("General"));
     ed.appendChild(this._textField("Card title (optional)", "title"));
 
-    ed.appendChild(this._section("Default icon & colour"));
+    ed.appendChild(this._section("Related items"));
+    ed.appendChild(this._note("Pre-fill entities, devices, areas or labels that are always linked to recordings from this card."));
+    const targetPicker = document.createElement("ha-selector");
+    targetPicker.selector = { target: {} };
+    targetPicker.style.display = "block";
+    targetPicker.style.width = "100%";
+    if (this._hass) targetPicker.hass = this._hass;
+    requestAnimationFrame(() => { targetPicker.value = this._config.target ?? {}; });
+    targetPicker.addEventListener("value-changed", (e) => {
+      const val = e.detail.value;
+      const isEmpty = !val || Object.values(val).every((v) => !v?.length);
+      this._set("target", isEmpty ? undefined : val);
+    });
+    ed.appendChild(targetPicker);
+    ed.appendChild(this._switch("Show always included targets on card", "show_config_targets", { defaultTrue: true }).el);
+    ed.appendChild(this._switch("Allow user to add more related items", "show_target_picker", { defaultTrue: true }).el);
+
+    ed.appendChild(this._section("Datapoint Appearance"));
     ed.appendChild(this._iconPicker("Default icon", "default_icon", "mdi:bookmark"));
     ed.appendChild(this._colorSwatch("Default colour", "default_color", "#03a9f4"));
 
-    ed.appendChild(this._section("Default related items"));
-    ed.appendChild(this._note("Pre-fill related items. Leave blank so the user chooses when recording."));
-    ed.appendChild(this._entityPicker("Single entity (optional)", "entity"));
-    ed.appendChild(this._section("Multiple entities"));
-    this._entList = this._entityList("entities", "Add default related items");
-    ed.appendChild(this._entList);
+    ed.appendChild(this._section("Form fields"));
+    ed.appendChild(this._switch("Show date & time field", "show_date", { defaultTrue: true }).el);
+    ed.appendChild(this._switch("Show annotation field", "show_annotation", { defaultTrue: true }).el);
 
     this.shadowRoot.appendChild(ed);
   }
 
   set hass(h) {
     this._hass = h;
-    this.shadowRoot.querySelectorAll("ha-entity-picker, ha-icon-picker").forEach((el) => { el.hass = h; });
-    this._entList?._pushHass(h);
+    if (this._needsBuild) {
+      this._needsBuild = false;
+      this._build();
+      return;
+    }
+    this.shadowRoot.querySelectorAll("ha-entity-picker, ha-icon-picker, ha-selector").forEach((el) => { el.hass = h; });
   }
 }
 
 // ---------------------------------------------------------------------------
 // 2. Quick Card editor
 // ---------------------------------------------------------------------------
-class HassRecordsQuickCardEditor extends HassRecordsEditorBase {
+export class HassRecordsQuickCardEditor extends HassRecordsEditorBase {
   _build() {
     this.shadowRoot.innerHTML = EDITOR_CSS;
     const ed = document.createElement("div");
@@ -429,12 +447,20 @@ class HassRecordsQuickCardEditor extends HassRecordsEditorBase {
     this._entList = this._entityList("entities", "Add related items");
     ed.appendChild(this._entList);
 
+    ed.appendChild(this._section("Form fields"));
+    ed.appendChild(this._switch("Show annotation field", "show_annotation").el);
+
     this.shadowRoot.appendChild(ed);
   }
 
   set hass(h) {
     this._hass = h;
-    this.shadowRoot.querySelectorAll("ha-entity-picker, ha-icon-picker").forEach((el) => { el.hass = h; });
+    if (this._needsBuild) {
+      this._needsBuild = false;
+      this._build();
+      return;
+    }
+    this.shadowRoot.querySelectorAll("ha-entity-picker, ha-icon-picker, ha-selector").forEach((el) => { el.hass = h; });
     this._entList?._pushHass(h);
   }
 }
@@ -442,7 +468,7 @@ class HassRecordsQuickCardEditor extends HassRecordsEditorBase {
 // ---------------------------------------------------------------------------
 // 3. History Card editor
 // ---------------------------------------------------------------------------
-class HassRecordsHistoryCardEditor extends HassRecordsEditorBase {
+export class HassRecordsHistoryCardEditor extends HassRecordsEditorBase {
   _build() {
     this.shadowRoot.innerHTML = EDITOR_CSS;
     const ed = document.createElement("div");
@@ -459,12 +485,25 @@ class HassRecordsHistoryCardEditor extends HassRecordsEditorBase {
     this._entList = this._entityList("entities");
     ed.appendChild(this._entList);
 
+    ed.appendChild(this._section("Display"));
+    ed.appendChild(this._switchWithHelp(
+      "Show data gaps",
+      "show_data_gaps",
+      "Highlight missing data ranges with dashed lines and boundary markers",
+      { defaultTrue: true },
+    ).el);
+
     this.shadowRoot.appendChild(ed);
   }
 
   set hass(h) {
     this._hass = h;
-    this.shadowRoot.querySelectorAll("ha-entity-picker, ha-icon-picker").forEach((el) => { el.hass = h; });
+    if (this._needsBuild) {
+      this._needsBuild = false;
+      this._build();
+      return;
+    }
+    this.shadowRoot.querySelectorAll("ha-entity-picker, ha-icon-picker, ha-selector").forEach((el) => { el.hass = h; });
     this._entList?._pushHass(h);
   }
 }
@@ -472,7 +511,7 @@ class HassRecordsHistoryCardEditor extends HassRecordsEditorBase {
 // ---------------------------------------------------------------------------
 // 4. Statistics Card editor
 // ---------------------------------------------------------------------------
-class HassRecordsStatisticsCardEditor extends HassRecordsEditorBase {
+export class HassRecordsStatisticsCardEditor extends HassRecordsEditorBase {
   _build() {
     this.shadowRoot.innerHTML = EDITOR_CSS;
     const ed = document.createElement("div");
@@ -483,21 +522,9 @@ class HassRecordsStatisticsCardEditor extends HassRecordsEditorBase {
     ed.appendChild(this._textField("Hours to show", "hours_to_show", { type: "number", fallback: "168" }));
 
     ed.appendChild(this._section("Period"));
-    const periodSel = document.createElement("ha-select");
-    periodSel.label = "Period";
-    periodSel.style.display = "block";
-    periodSel.style.width = "100%";
-    ["5minute", "hour", "day", "week", "month"].forEach((p) => {
-      const item = document.createElement("ha-list-item");
-      item.value = p;
-      item.textContent = p;
-      periodSel.appendChild(item);
-    });
-    ed.appendChild(periodSel);
-    requestAnimationFrame(() => { periodSel.value = this._config.period || "hour"; });
-    periodSel.addEventListener("selected", () => {
-      if (periodSel.value) this._set("period", periodSel.value);
-    });
+    ed.appendChild(this._select("Period", "period", [
+      ["5minute", "5 minutes"], ["hour", "Hour"], ["day", "Day"], ["week", "Week"], ["month", "Month"],
+    ], "hour"));
 
     ed.appendChild(this._section("Stat types"));
     ["mean", "min", "max", "sum", "state"].forEach((st) => {
@@ -527,7 +554,12 @@ class HassRecordsStatisticsCardEditor extends HassRecordsEditorBase {
 
   set hass(h) {
     this._hass = h;
-    this.shadowRoot.querySelectorAll("ha-entity-picker, ha-icon-picker").forEach((el) => { el.hass = h; });
+    if (this._needsBuild) {
+      this._needsBuild = false;
+      this._build();
+      return;
+    }
+    this.shadowRoot.querySelectorAll("ha-entity-picker, ha-icon-picker, ha-selector").forEach((el) => { el.hass = h; });
     this._entList?._pushHass(h);
   }
 }
@@ -535,7 +567,7 @@ class HassRecordsStatisticsCardEditor extends HassRecordsEditorBase {
 // ---------------------------------------------------------------------------
 // 5. Sensor Card editor
 // ---------------------------------------------------------------------------
-class HassRecordsSensorCardEditor extends HassRecordsEditorBase {
+export class HassRecordsSensorCardEditor extends HassRecordsEditorBase {
   _build() {
     this.shadowRoot.innerHTML = EDITOR_CSS;
     const ed = document.createElement("div");
@@ -586,7 +618,7 @@ class HassRecordsSensorCardEditor extends HassRecordsEditorBase {
 // ---------------------------------------------------------------------------
 // 6. List Card editor
 // ---------------------------------------------------------------------------
-class HassRecordsListCardEditor extends HassRecordsEditorBase {
+export class HassRecordsListCardEditor extends HassRecordsEditorBase {
   _build() {
     this.shadowRoot.innerHTML = EDITOR_CSS;
     const ed = document.createElement("div");
@@ -623,7 +655,12 @@ class HassRecordsListCardEditor extends HassRecordsEditorBase {
 
   set hass(h) {
     this._hass = h;
-    this.shadowRoot.querySelectorAll("ha-entity-picker, ha-icon-picker").forEach((el) => { el.hass = h; });
+    if (this._needsBuild) {
+      this._needsBuild = false;
+      this._build();
+      return;
+    }
+    this.shadowRoot.querySelectorAll("ha-entity-picker, ha-icon-picker, ha-selector").forEach((el) => { el.hass = h; });
     this._entList?._pushHass(h);
   }
 }
