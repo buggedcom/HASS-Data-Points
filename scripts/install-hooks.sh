@@ -2,7 +2,7 @@
 #
 # Install git hooks from scripts/ into .git/hooks/
 #
-# Usage:  ./scripts/install-hooks.sh
+# Usage:  pnpm hooks:install
 
 set -euo pipefail
 
@@ -14,4 +14,3 @@ ln -sf "../../scripts/pre-commit" "$HOOKS_DIR/pre-commit"
 chmod +x "$SCRIPT_DIR/pre-commit"
 
 echo "✓ Git hooks installed"
-

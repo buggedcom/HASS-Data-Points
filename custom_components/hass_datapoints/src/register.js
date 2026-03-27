@@ -1,3 +1,20 @@
+import {
+  HassRecordsActionCard,
+  HassRecordsActionCardEditor,
+  HassRecordsDevToolCard,
+  HassRecordsHistoryCard,
+  HassRecordsHistoryCardEditor,
+  HassRecordsHistoryPanel,
+  HassRecordsListCard,
+  HassRecordsListCardEditor,
+  HassRecordsQuickCard,
+  HassRecordsQuickCardEditor,
+  HassRecordsSensorCard,
+  HassRecordsSensorCardEditor,
+  HassRecordsStatisticsCard,
+  HassRecordsStatisticsCardEditor,
+} from "./components/shared.js";
+
 /**
  * Register all custom elements and advertise them to the Lovelace card picker.
  */
@@ -23,6 +40,9 @@ if (!customElements.get("hass-datapoints-list-card")) {
 }
 if (!customElements.get("hass-datapoints-history-panel")) {
   customElements.define("hass-datapoints-history-panel", HassRecordsHistoryPanel);
+}
+if (!customElements.get("hass-datapoints-dev-tool-card")) {
+  customElements.define("hass-datapoints-dev-tool-card", HassRecordsDevToolCard);
 }
 
 // ── Editor elements ────────────────────────────────────────────────────────
@@ -84,6 +104,12 @@ const cardsToAdd = [
     type: "hass-datapoints-list-card",
     name: "Hass Records – List Card",
     description: "Activity-style datagrid to browse, search, edit and delete all recorded events.",
+    preview: false,
+  },
+  {
+    type: "hass-datapoints-dev-tool-card",
+    name: "Hass Records – Dev Tool",
+    description: "Generate demo datapoints from HA history and bulk-delete dev-flagged events.",
     preview: false,
   },
 ];

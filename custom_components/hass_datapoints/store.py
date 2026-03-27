@@ -23,30 +23,53 @@ class HassRecordsStore:
         data = await self._store.async_load()
         if data is not None:
             self._data = data
-            # Migrate legacy single entity_id → entity_ids list
             for event in self._data.get("events", []):
+                # Migrate legacy single entity_id → entity_ids list
                 if "entity_id" in event and "entity_ids" not in event:
                     event["entity_ids"] = [event.pop("entity_id")]
                 elif "entity_ids" not in event:
                     event["entity_ids"] = []
+                # Migrate: add missing target id fields
+                for field in ("device_ids", "area_ids", "label_ids"):
+                    if field not in event:
+                        event[field] = []
+                # Migrate: add dev flag
+                if "dev" not in event:
+                    event["dev"] = False
 
     async def async_record(
         self,
         message: str,
         annotation: str | None = None,
         entity_ids: list[str] | None = None,
+        device_ids: list[str] | None = None,
+        area_ids: list[str] | None = None,
+        label_ids: list[str] | None = None,
         icon: str | None = None,
         color: str | None = None,
+        date: str | None = None,
+        dev: bool = False,
     ) -> dict[str, Any]:
         """Record a new event and persist it."""
+        if date:
+            dt = datetime.fromisoformat(date)
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            ts = dt.isoformat()
+        else:
+            ts = datetime.now(timezone.utc).isoformat()
         event: dict[str, Any] = {
             "id": str(uuid.uuid4()),
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": ts,
             "message": message,
             "annotation": annotation if annotation is not None else message,
             "entity_ids": entity_ids or [],
+            "device_ids": device_ids or [],
+            "area_ids": area_ids or [],
+            "label_ids": label_ids or [],
             "icon": icon or "mdi:bookmark",
             "color": color or "#03a9f4",
+            "dev": dev,
         }
 
         self._data["events"].append(event)
@@ -89,12 +112,32 @@ class HassRecordsStore:
 
         return events
 
+    def get_event_bounds(self) -> tuple[str | None, str | None]:
+        """Return the earliest and latest recorded event timestamps."""
+        timestamps: list[datetime] = []
+        for event in self._data.get("events", []):
+            ts = event.get("timestamp")
+            if not ts:
+                continue
+            try:
+                timestamps.append(datetime.fromisoformat(ts))
+            except ValueError:
+                continue
+
+        if not timestamps:
+            return None, None
+
+        return min(timestamps).isoformat(), max(timestamps).isoformat()
+
     async def async_update_event(
         self,
         event_id: str,
         message: str | None = None,
         annotation: str | None = None,
         entity_ids: list[str] | None = None,
+        device_ids: list[str] | None = None,
+        area_ids: list[str] | None = None,
+        label_ids: list[str] | None = None,
         icon: str | None = None,
         color: str | None = None,
     ) -> dict[str, Any] | None:
@@ -107,6 +150,12 @@ class HassRecordsStore:
                     event["annotation"] = annotation
                 if entity_ids is not None:
                     event["entity_ids"] = entity_ids
+                if device_ids is not None:
+                    event["device_ids"] = device_ids
+                if area_ids is not None:
+                    event["area_ids"] = area_ids
+                if label_ids is not None:
+                    event["label_ids"] = label_ids
                 if icon is not None:
                     event["icon"] = icon
                 if color is not None:
@@ -114,6 +163,16 @@ class HassRecordsStore:
                 await self._store.async_save(self._data)
                 return event
         return None
+
+    async def async_delete_dev_events(self) -> int:
+        """Delete all dev-flagged events. Returns count of deleted events."""
+        original = self._data["events"]
+        kept = [e for e in original if not e.get("dev")]
+        deleted = len(original) - len(kept)
+        if deleted:
+            self._data["events"] = kept
+            await self._store.async_save(self._data)
+        return deleted
 
     async def async_delete_event(self, event_id: str) -> bool:
         """Delete an event by ID. Returns True if found and deleted."""

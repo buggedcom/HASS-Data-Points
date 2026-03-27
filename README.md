@@ -394,7 +394,9 @@ Events are stored in `.storage/hass_datapoints.events` (HA's standard JSON stora
 ```bash
 git clone https://github.com/buggedcom/hass-datapoints.git
 cd hass-datapoints
-./scripts/install-hooks.sh   # install the pre-commit hook
+corepack enable              # optional, but recommended for pnpm
+pnpm install
+pnpm hooks:install          # install the pre-commit hook
 ```
 
 ### Building the frontend
@@ -402,7 +404,7 @@ cd hass-datapoints
 Source files live in `custom_components/hass_datapoints/src/`. The build script concatenates them into a single IIFE in `hass-datapoints-cards.js`:
 
 ```bash
-bash scripts/build.sh
+pnpm build
 ```
 
 A **pre-commit hook** runs automatically — whenever you stage changes to any `src/` file, the hook rebuilds `hass-datapoints-cards.js` and stages it so your commit always includes an up-to-date build.
@@ -421,11 +423,11 @@ If you want to develop on your Mac but test against a Home Assistant instance el
    - `HA_DEV_CONFIG_PATH` to the HA config directory on that machine
 3. Run a one-off sync:
    ```bash
-   bash scripts/dev-sync.sh
+   pnpm dev:sync
    ```
 4. Or run watch mode for local development:
    ```bash
-   bash scripts/dev-watch.sh
+   pnpm dev:watch
    ```
 
 What this does:
@@ -470,7 +472,7 @@ Every push to `main` and every pull request runs the **CI** workflow (`.github/w
 
 - Python syntax checks on all integration modules
 - JS build + syntax verification
-- Checks the committed `hass-datapoints-cards.js` matches what `bash scripts/build.sh` produces
+- Checks the committed `hass-datapoints-cards.js` matches what `pnpm build` produces
 - Validates `manifest.json`, `strings.json`, `services.yaml`, `hacs.json`
 - Runs the official HACS validation action
 

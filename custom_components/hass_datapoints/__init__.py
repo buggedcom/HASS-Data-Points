@@ -14,9 +14,14 @@ from homeassistant.helpers import config_validation as cv
 
 from .const import (
     ATTR_ANNOTATION,
+    ATTR_AREA_IDS,
     ATTR_COLOR,
+    ATTR_DATE,
+    ATTR_DEV,
+    ATTR_DEVICE_IDS,
     ATTR_ENTITY_IDS,
     ATTR_ICON,
+    ATTR_LABEL_IDS,
     ATTR_MESSAGE,
     DOMAIN,
     EVENT_RECORDED,
@@ -39,6 +44,9 @@ SERVICE_RECORD_SCHEMA = vol.Schema(
         vol.Required(ATTR_MESSAGE): cv.string,
         vol.Optional(ATTR_ANNOTATION): cv.string,
         vol.Optional(ATTR_ENTITY_IDS): vol.All(cv.ensure_list, [cv.entity_id]),
+        vol.Optional(ATTR_DEVICE_IDS): vol.All(cv.ensure_list, [cv.string]),
+        vol.Optional(ATTR_AREA_IDS): vol.All(cv.ensure_list, [cv.string]),
+        vol.Optional(ATTR_LABEL_IDS): vol.All(cv.ensure_list, [cv.string]),
         vol.Optional(ATTR_ICON): cv.string,
         vol.Optional(ATTR_COLOR): vol.Any(
             cv.string,
@@ -47,6 +55,8 @@ SERVICE_RECORD_SCHEMA = vol.Schema(
                 vol.Length(min=3, max=3),
             ),
         ),
+        vol.Optional(ATTR_DATE): cv.string,
+        vol.Optional(ATTR_DEV): cv.boolean,
     }
 )
 
@@ -97,8 +107,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: HassRecordsConfigEntry) 
             message=call.data[ATTR_MESSAGE],
             annotation=call.data.get(ATTR_ANNOTATION),
             entity_ids=call.data.get(ATTR_ENTITY_IDS),
+            device_ids=call.data.get(ATTR_DEVICE_IDS),
+            area_ids=call.data.get(ATTR_AREA_IDS),
+            label_ids=call.data.get(ATTR_LABEL_IDS),
             icon=call.data.get(ATTR_ICON),
             color=color,
+            date=call.data.get(ATTR_DATE),
+            dev=call.data.get(ATTR_DEV, False),
         )
         hass.bus.async_fire(EVENT_RECORDED, event_data)
 

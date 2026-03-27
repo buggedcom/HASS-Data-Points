@@ -11,8 +11,13 @@ EVENT_RECORDED = f"{DOMAIN}_event_recorded"
 ATTR_MESSAGE = "message"
 ATTR_ANNOTATION = "annotation"
 ATTR_ENTITY_IDS = "entity_ids"
+ATTR_DEVICE_IDS = "device_ids"
+ATTR_AREA_IDS = "area_ids"
+ATTR_LABEL_IDS = "label_ids"
 ATTR_ICON = "icon"
 ATTR_COLOR = "color"
+ATTR_DATE = "date"
+ATTR_DEV = "dev"
 
 SERVICE_RECORD = "record"
 

@@ -1,3 +1,29 @@
+import * as shared from "../../lib/shared.js";
+
+const {
+  AMBER,
+  attachLineChartHover,
+  attachTooltipBehaviour,
+  buildDataPointsHistoryPath,
+  COLORS,
+  contrastColor,
+  DOMAIN,
+  entityName,
+  esc,
+  fetchEvents,
+  fetchHistoryDuringPeriod,
+  fetchStatisticsDuringPeriod,
+  fmtDateTime,
+  fmtRelativeTime,
+  hexToRgba,
+  hideTooltip,
+  navigateToDataPointsHistory,
+  renderChartAxisOverlays,
+  setupCanvas,
+  showTooltip,
+  ChartRenderer,
+} = shared;
+
 /**
  * hass-datapoints-sensor-card – Sensor card with inline annotation icons on the data line.
  * Layout mirrors the standard HA sensor card:
@@ -189,19 +215,19 @@ const SENSOR_STYLE = `
     cursor: default;
   }
   .ann-item:last-child { border-bottom: none; }
+  .ann-item.simple { align-items: center; }
   .ann-item.expandable { cursor: pointer; }
 
   /* Coloured icon circle – replaces the plain dot */
   .ann-icon-wrap {
     position: relative;
-    width: 28px;
-    height: 28px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    margin-top: 1px;
     box-shadow: 0 0 0 2px var(--card-background-color, #fff);
   }
   @media (prefers-color-scheme: dark) {
@@ -253,6 +279,14 @@ const SENSOR_STYLE = `
     word-break: break-word;
     flex: 1;
     min-width: 0;
+  }
+  .ann-dev-badge {
+    display: inline-block;
+    font-size: 0.68em; font-weight: 700; letter-spacing: 0.04em;
+    color: #fff;
+    background: #ff9800;
+    padding: 1px 5px; border-radius: 4px;
+    vertical-align: middle; margin-left: 4px;
   }
   .ann-time {
     font-size: 0.75em;
@@ -323,7 +357,7 @@ const SENSOR_STYLE = `
   }
 `;
 
-class HassRecordsSensorCard extends HTMLElement {
+export class HassRecordsSensorCard extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -511,11 +545,18 @@ class HassRecordsSensorCard extends HTMLElement {
   }
 
   _navigateToEventHistory(ev) {
-    const entityIds = [
-      this._config?.entity,
-      ...((ev && ev.entity_ids) || []),
-    ];
-    navigateToHistory(this, entityIds);
+    navigateToDataPointsHistory(this, {
+      entity_id: [
+        this._config?.entity,
+        ...((ev && ev.entity_ids) || []),
+      ].filter(Boolean),
+      device_id: ev?.device_ids || [],
+      area_id: ev?.area_ids || [],
+      label_id: ev?.label_ids || [],
+    }, {
+      start_time: Number.isFinite(this._lastT0) ? new Date(this._lastT0).toISOString() : null,
+      end_time: Number.isFinite(this._lastT1) ? new Date(this._lastT1).toISOString() : null,
+    });
   }
 
   _applyLayoutSizing() {
@@ -575,6 +616,22 @@ class HassRecordsSensorCard extends HTMLElement {
     }
   }
 
+  _getHistoryStatesForEntity(entityId, histResult) {
+    if (!histResult) return [];
+    if (Array.isArray(histResult?.[entityId])) return histResult[entityId];
+    if (Array.isArray(histResult)) {
+      if (Array.isArray(histResult[0])) return histResult[0] || [];
+      if (histResult.every((entry) => entry && typeof entry === "object" && !Array.isArray(entry))) {
+        return histResult.filter((entry) => entry.entity_id === entityId);
+      }
+    }
+    if (histResult && typeof histResult === "object") {
+      if (Array.isArray(histResult.result?.[entityId])) return histResult.result[entityId];
+      if (Array.isArray(histResult.result?.[0])) return histResult.result[0] || [];
+    }
+    return [];
+  }
+
   _drawChart(histResult, events, t0, t1) {
     this._lastHistResult = histResult;
     this._lastEvents = events;
@@ -600,12 +657,12 @@ class HassRecordsSensorCard extends HTMLElement {
     renderer.clear();
 
     const series = [];
-    let allVals = [];
+    const allVals = [];
     const entityId = this._config.entity;
     const lineColor = this._config.graph_color || COLORS[0];
     const unit = (this._hass?.states?.[entityId]?.attributes?.unit_of_measurement) || "";
 
-    const stateList = histResult[entityId] || [];
+    const stateList = this._getHistoryStatesForEntity(entityId, histResult);
     const pts = [];
     for (const s of stateList) {
       const v = parseFloat(s.s);
@@ -630,13 +687,13 @@ class HassRecordsSensorCard extends HTMLElement {
     const vMin = Math.min(...allVals);
     const vMax = Math.max(...allVals);
     const range = vMax - vMin;
-    const topPad = range * 0.14 || 0.8;
+    const topPad = range * 0.54 || 0.8;
     const bottomPad = range * 0.03 || 0.2;
     const chartMin = vMin - bottomPad;
     const chartMax = vMax + topPad;
 
     for (const s of series) {
-      renderer.drawLine(s.pts, s.color, t0, t1, chartMin, chartMax);
+      renderer.drawLine(s.pts, s.color, t0, t1, chartMin, chartMax, { fillAlpha: 0.18 });
     }
 
     const visibleEvents = this._visibleEvents(events);
@@ -659,8 +716,8 @@ class HassRecordsSensorCard extends HTMLElement {
         const bgColor = hit.event.color || "#03a9f4";
         const el = document.createElement("div");
         el.className = "ann-icon";
-        el.style.left = hit.x + "px";
-        el.style.top = hit.y + "px";
+        el.style.left = `${hit.x  }px`;
+        el.style.top = `${hit.y  }px`;
         el.style.background = bgColor;
         el.innerHTML = `<ha-icon icon="${esc(hit.event.icon || "mdi:bookmark")}" style="--mdc-icon-size:12px;color:${contrastColor(bgColor)}"></ha-icon>`;
         el.dataset.eventId = hit.event.id;
@@ -726,10 +783,11 @@ class HassRecordsSensorCard extends HTMLElement {
       const visibilityIcon = isHidden ? "mdi:eye" : "mdi:eye-off";
       const visibilityLabel = isHidden ? "Show chart marker" : "Hide chart marker";
 
+      const isSimple = !annText;
       return `
-        <div class="ann-item${!showAnn && annText ? " expandable" : ""}${isHidden ? " is-hidden" : ""}">
+        <div class="ann-item${!showAnn && annText ? " expandable" : ""}${isHidden ? " is-hidden" : ""}${isSimple ? " simple" : ""}">
           <div class="ann-icon-wrap" style="background:${esc(color)}">
-            <ha-icon class="ann-icon-main" icon="${esc(icon)}" style="--mdc-icon-size:14px;color:${esc(iconColor)}"></ha-icon>
+            <ha-icon class="ann-icon-main" icon="${esc(icon)}" style="--mdc-icon-size:18px;color:${esc(iconColor)}"></ha-icon>
             <button class="ann-visibility-btn" type="button" data-event-id="${esc(ev.id)}" title="${esc(visibilityLabel)}" aria-label="${esc(visibilityLabel)}">
               <ha-icon icon="${esc(visibilityIcon)}"></ha-icon>
             </button>
@@ -738,6 +796,7 @@ class HassRecordsSensorCard extends HTMLElement {
             <div class="ann-header">
               <span class="ann-msg">
                 ${esc(ev.message)}
+                ${ev.dev ? `<span class="ann-dev-badge">DEV</span>` : ""}
                 ${annText && !showAnn ? `<button class="ann-expand-chip" title="Show annotation">···</button>` : ""}
               </span>
               <span class="ann-time-wrap">
