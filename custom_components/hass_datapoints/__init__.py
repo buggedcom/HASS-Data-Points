@@ -57,7 +57,7 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     await hass.http.async_register_static_paths([
         StaticPathConfig(
             FRONTEND_URL,
-            str(Path(__file__).parent / "hass-records-cards.js"),
+            str(Path(__file__).parent / "hass-datapoints-cards.js"),
             cache_headers=False,
         )
     ])

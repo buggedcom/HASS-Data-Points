@@ -1,20 +1,20 @@
 #!/usr/bin/env bash
 #
-# Build hass-records-cards.js by concatenating all source files into a single
+# Build hass-datapoints-cards.js by concatenating all source files into a single
 # IIFE that Home Assistant serves as the frontend resource.
 #
 # Usage:  bash scripts/build.sh   (from repo root)
 #         bash build.sh           (from scripts/)
-# Output: custom_components/hass_records/hass-records-cards.js
+# Output: custom_components/hass_datapoints/hass-datapoints-cards.js
 
 set -euo pipefail
 
 # scripts/ lives one level below the repo root
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-SRC_DIR="$REPO_ROOT/custom_components/hass_records/src"
-OUT_FILE="$REPO_ROOT/custom_components/hass_records/hass-records-cards.js"
-MANIFEST="$REPO_ROOT/custom_components/hass_records/manifest.json"
+SRC_DIR="$REPO_ROOT/custom_components/hass_datapoints/src"
+OUT_FILE="$REPO_ROOT/custom_components/hass_datapoints/hass-datapoints-cards.js"
+MANIFEST="$REPO_ROOT/custom_components/hass_datapoints/manifest.json"
 
 # Version: use BUILD_VERSION env var if set, otherwise read from manifest.json
 VERSION="${BUILD_VERSION:-$(python3 -c "import json; print(json.load(open('$MANIFEST'))['version'])")}"
@@ -44,12 +44,12 @@ FILES=(
  * Hass Records – Lovelace Cards  v${VERSION}
  *
  * Cards:
- *   hass-records-action-card      – Full form to record a custom event
- *   hass-records-quick-card       – Simple one-field quick record card
- *   hass-records-history-card     – History chart with event annotation markers
- *   hass-records-statistics-card  – Statistics chart with event annotation markers
- *   hass-records-sensor-card      – Sensor card with inline annotation icons
- *   hass-records-list-card        – Browse, search, edit and delete all events (datagrid)
+ *   hass-datapoints-action-card      – Full form to record a custom event
+ *   hass-datapoints-quick-card       – Simple one-field quick record card
+ *   hass-datapoints-history-card     – History chart with event annotation markers
+ *   hass-datapoints-statistics-card  – Statistics chart with event annotation markers
+ *   hass-datapoints-sensor-card      – Sensor card with inline annotation icons
+ *   hass-datapoints-list-card        – Browse, search, edit and delete all events (datagrid)
  *
  * Visual editors for all cards are included via card-editors.js.
  *

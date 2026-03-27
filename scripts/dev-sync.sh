@@ -37,7 +37,7 @@ require_var HA_DEV_CONFIG_PATH
 
 HA_DEV_USER="${HA_DEV_USER:-root}"
 HA_DEV_PORT="${HA_DEV_PORT:-22}"
-HA_DEV_REMOTE_COMPONENT_PATH="${HA_DEV_REMOTE_COMPONENT_PATH:-$HA_DEV_CONFIG_PATH/custom_components/hass_records}"
+HA_DEV_REMOTE_COMPONENT_PATH="${HA_DEV_REMOTE_COMPONENT_PATH:-$HA_DEV_CONFIG_PATH/custom_components/hass_datapoints}"
 HA_DEV_BUILD="${HA_DEV_BUILD:-1}"
 HA_DEV_DELETE="${HA_DEV_DELETE:-1}"
 
@@ -79,8 +79,10 @@ if [[ -n "${HA_DEV_SSH_KEY:-}" ]]; then
   SSH_OPTS+=(-i "$HA_DEV_SSH_KEY")
 fi
 
-CONTROL_DIR="${HA_DEV_SSH_CONTROL_DIR:-$(mktemp -d "${TMPDIR:-/tmp}/hass-records-ssh.XXXXXX")}"
-CONTROL_PATH="$CONTROL_DIR/control.sock"
+# macOS $TMPDIR is very long; Unix sockets have a ~104-char path limit.
+# Always use /tmp with a short name to stay well under the limit.
+CONTROL_DIR="${HA_DEV_SSH_CONTROL_DIR:-$(mktemp -d /tmp/hd-ssh.XXXXXX)}"
+CONTROL_PATH="$CONTROL_DIR/s"
 SSH_OPTS+=(
   -o "ControlMaster=auto"
   -o "ControlPersist=${HA_DEV_SSH_PERSIST:-10m}"
@@ -114,7 +116,7 @@ ssh "${SSH_OPTS[@]}" "$REMOTE" "mkdir -p \"$REMOTE_PARENT\""
 echo "Syncing custom component to $REMOTE:$HA_DEV_REMOTE_COMPONENT_PATH"
 rsync "${RSYNC_ARGS[@]}" \
   -e "${RSYNC_RSH[*]}" \
-  "$REPO_ROOT/custom_components/hass_records/" \
+  "$REPO_ROOT/custom_components/hass_datapoints/" \
   "$REMOTE:$HA_DEV_REMOTE_COMPONENT_PATH/"
 
 if [[ $DO_RESTART -eq 1 ]]; then

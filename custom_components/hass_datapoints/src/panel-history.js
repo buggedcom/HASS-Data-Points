@@ -1,5 +1,5 @@
 /**
- * hass-records-history-panel – Sidebar panel for annotated history exploration.
+ * hass-datapoints-history-panel – Sidebar panel for annotated history exploration.
  */
 
 const PANEL_HISTORY_STYLE = `
@@ -349,7 +349,7 @@ class HassRecordsHistoryPanel extends HTMLElement {
         <div id="list-host" class="list-host"></div>
       `;
 
-      const chart = document.createElement("hass-records-history-card");
+      const chart = document.createElement("hass-datapoints-history-card");
       chart.setConfig({
         entities: this._entities,
         hours_to_show: this._hours,
@@ -357,7 +357,7 @@ class HassRecordsHistoryPanel extends HTMLElement {
         end_time: this._endTime?.toISOString(),
       });
 
-      const list = document.createElement("hass-records-list-card");
+      const list = document.createElement("hass-datapoints-list-card");
       list.setConfig({
         entities: this._entities,
         hours_to_show: this._hours,

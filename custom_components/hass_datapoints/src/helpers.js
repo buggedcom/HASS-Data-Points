@@ -13,7 +13,7 @@ async function fetchEvents(hass, startTime, endTime, entityIds) {
     const result = await hass.connection.sendMessagePromise(msg);
     return result.events || [];
   } catch (err) {
-    console.warn("[hass-records] fetchEvents failed:", err);
+    console.warn("[hass-datapoints] fetchEvents failed:", err);
     return [];
   }
 }

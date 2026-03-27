@@ -2,12 +2,12 @@
  * Hass Records – Lovelace Cards  v0.3.0
  *
  * Cards:
- *   hass-records-action-card      – Full form to record a custom event
- *   hass-records-quick-card       – Simple one-field quick record card
- *   hass-records-history-card     – History chart with event annotation markers
- *   hass-records-statistics-card  – Statistics chart with event annotation markers
- *   hass-records-sensor-card      – Sensor card with inline annotation icons
- *   hass-records-list-card        – Browse, search, edit and delete all events (datagrid)
+ *   hass-datapoints-action-card      – Full form to record a custom event
+ *   hass-datapoints-quick-card       – Simple one-field quick record card
+ *   hass-datapoints-history-card     – History chart with event annotation markers
+ *   hass-datapoints-statistics-card  – Statistics chart with event annotation markers
+ *   hass-datapoints-sensor-card      – Sensor card with inline annotation icons
+ *   hass-datapoints-list-card        – Browse, search, edit and delete all events (datagrid)
  *
  * Visual editors for all cards are included via card-editors.js.
  *
@@ -21,7 +21,7 @@
    * Shared constants used by all Hass Records cards.
    */
   
-  const DOMAIN = "hass_records";
+  const DOMAIN = "hass_datapoints";
   const COLORS = [
     "#3b82f6",
     "#ef4444",
@@ -50,7 +50,7 @@
       const result = await hass.connection.sendMessagePromise(msg);
       return result.events || [];
     } catch (err) {
-      console.warn("[hass-records] fetchEvents failed:", err);
+      console.warn("[hass-datapoints] fetchEvents failed:", err);
       return [];
     }
   }
@@ -710,7 +710,7 @@
 
 
   /**
-   * hass-records-action-card – Full form to record a custom event.
+   * hass-datapoints-action-card – Full form to record a custom event.
    *
    * Uses HA native elements:
    *   <ha-textfield>      for text inputs
@@ -1014,7 +1014,7 @@
       try {
         await this._hass.callService(DOMAIN, "record", data);
         // Notify sibling cards on the same page to refresh immediately
-        window.dispatchEvent(new CustomEvent("hass-records-event-recorded"));
+        window.dispatchEvent(new CustomEvent("hass-datapoints-event-recorded"));
         msgEl.value = "";
         if (annEl) annEl.value = "";
         // Clear entity rows
@@ -1030,14 +1030,14 @@
         fb.className = "feedback err";
         fb.textContent = `Error: ${e.message || "unknown error"}`;
         fb.style.display = "block";
-        console.error("[hass-records action-card]", e);
+        console.error("[hass-datapoints action-card]", e);
       }
   
       btn.disabled = false;
     }
   
     static getConfigElement() {
-      return document.createElement("hass-records-action-card-editor");
+      return document.createElement("hass-datapoints-action-card-editor");
     }
   
     static getStubConfig() {
@@ -1047,7 +1047,7 @@
 
 
   /**
-   * hass-records-quick-card – Simple one-field quick record card.
+   * hass-datapoints-quick-card – Simple one-field quick record card.
    *
    * Configurable icon and color (defaults to mdi:bookmark / amber).
    * Uses HA native <ha-textfield> and <ha-button>.
@@ -1166,7 +1166,7 @@
       const fb = this.shadowRoot.getElementById("feedback");
       try {
         await this._hass.callService(DOMAIN, "record", data);
-        window.dispatchEvent(new CustomEvent("hass-records-event-recorded"));
+        window.dispatchEvent(new CustomEvent("hass-datapoints-event-recorded"));
         msgEl.value = "";
         fb.className = "feedback ok";
         fb.textContent = "Recorded!";
@@ -1176,13 +1176,13 @@
         fb.className = "feedback err";
         fb.textContent = `Error: ${e.message || "unknown error"}`;
         fb.style.display = "block";
-        console.error("[hass-records quick-card]", e);
+        console.error("[hass-datapoints quick-card]", e);
       }
       btn.disabled = false;
     }
   
     static getConfigElement() {
-      return document.createElement("hass-records-quick-card-editor");
+      return document.createElement("hass-datapoints-quick-card-editor");
     }
   
     static getStubConfig() {
@@ -1260,13 +1260,13 @@
 
 
   /**
-   * hass-records-history-card – History line chart with annotation markers.
+   * hass-datapoints-history-card – History line chart with annotation markers.
    */
   
   class HassRecordsHistoryCard extends ChartCardBase {
     setConfig(config) {
       if (!config.entity && !config.entities) {
-        throw new Error("hass-records-history-card: define `entity` or `entities`");
+        throw new Error("hass-datapoints-history-card: define `entity` or `entities`");
       }
       this._config = { hours_to_show: 24, ...config };
     }
@@ -1308,7 +1308,7 @@
         this._drawChart(histResult || {}, events, t0, t1);
       } catch (err) {
         this.shadowRoot.getElementById("loading").textContent = "Failed to load data.";
-        console.error("[hass-records history-card]", err);
+        console.error("[hass-datapoints history-card]", err);
       }
     }
   
@@ -1380,7 +1380,7 @@
     }
   
     static getConfigElement() {
-      return document.createElement("hass-records-history-card-editor");
+      return document.createElement("hass-datapoints-history-card-editor");
     }
   
     static getStubConfig() {
@@ -1390,13 +1390,13 @@
 
 
   /**
-   * hass-records-statistics-card – Statistics chart with annotation markers.
+   * hass-datapoints-statistics-card – Statistics chart with annotation markers.
    */
   
   class HassRecordsStatisticsCard extends ChartCardBase {
     setConfig(config) {
       if (!config.entity && !config.entities) {
-        throw new Error("hass-records-statistics-card: define `entity` or `entities`");
+        throw new Error("hass-datapoints-statistics-card: define `entity` or `entities`");
       }
       this._config = {
         hours_to_show: 24,
@@ -1440,7 +1440,7 @@
         this._drawChart(statsResult || {}, events, t0, t1);
       } catch (err) {
         this.shadowRoot.getElementById("loading").textContent = "Failed to load statistics.";
-        console.error("[hass-records statistics-card]", err);
+        console.error("[hass-datapoints statistics-card]", err);
       }
     }
   
@@ -1521,7 +1521,7 @@
     }
   
     static getConfigElement() {
-      return document.createElement("hass-records-statistics-card-editor");
+      return document.createElement("hass-datapoints-statistics-card-editor");
     }
   
     static getStubConfig() {
@@ -1538,7 +1538,7 @@
 
 
   /**
-   * hass-records-sensor-card – Sensor card with inline annotation icons on the data line.
+   * hass-datapoints-sensor-card – Sensor card with inline annotation icons on the data line.
    * Layout mirrors the standard HA sensor card:
    *   row 1 – name (left)  +  ha-state-icon (right)
    *   row 2 – numeric value  +  unit
@@ -1880,7 +1880,7 @@
   
     setConfig(config) {
       if (!config.entity) {
-        throw new Error("hass-records-sensor-card: `entity` is required");
+        throw new Error("hass-datapoints-sensor-card: `entity` is required");
       }
       this._config = {
         hours_to_show: 24,
@@ -2110,7 +2110,7 @@
       } catch (err) {
         const loadEl = this.shadowRoot.getElementById("loading");
         if (loadEl) loadEl.textContent = "Failed to load data.";
-        console.error("[hass-records sensor-card]", err);
+        console.error("[hass-datapoints sensor-card]", err);
       }
     }
   
@@ -2393,7 +2393,7 @@
     }
   
     static getConfigElement() {
-      return document.createElement("hass-records-sensor-card-editor");
+      return document.createElement("hass-datapoints-sensor-card-editor");
     }
   
     static getStubConfig() {
@@ -2411,7 +2411,7 @@
 
 
   /**
-   * hass-records-list-card – Activity-style datagrid with search, pagination, edit/delete.
+   * hass-datapoints-list-card – Activity-style datagrid with search, pagination, edit/delete.
    */
   
   class HassRecordsListCard extends HTMLElement {
@@ -2444,7 +2444,7 @@
     disconnectedCallback() {
       if (this._unsubscribe) { this._unsubscribe(); this._unsubscribe = null; }
       if (this._windowListener) {
-        window.removeEventListener("hass-records-event-recorded", this._windowListener);
+        window.removeEventListener("hass-datapoints-event-recorded", this._windowListener);
         this._windowListener = null;
       }
     }
@@ -2457,7 +2457,7 @@
       }).catch(() => {});
   
       this._windowListener = () => this._load();
-      window.addEventListener("hass-records-event-recorded", this._windowListener);
+      window.addEventListener("hass-datapoints-event-recorded", this._windowListener);
     }
   
     _updateEditHass() {
@@ -2919,7 +2919,7 @@
             await deleteEvent(this._hass, id);
             await this._load();
           } catch (err) {
-            console.error("[hass-records list-card] delete failed", err);
+            console.error("[hass-datapoints list-card] delete failed", err);
           }
         });
       });
@@ -2981,7 +2981,7 @@
             form.classList.remove("open");
             await this._load();
           } catch (err) {
-            console.error("[hass-records list-card] update failed", err);
+            console.error("[hass-datapoints list-card] update failed", err);
           }
         });
       });
@@ -2996,7 +2996,7 @@
     }
   
     static getConfigElement() {
-      return document.createElement("hass-records-list-card-editor");
+      return document.createElement("hass-datapoints-list-card-editor");
     }
   
     static getStubConfig() {
@@ -3011,11 +3011,11 @@
       };
     }
   }
-  customElements.define("hass-records-list-card", HassRecordsListCard);
+  customElements.define("hass-datapoints-list-card", HassRecordsListCard);
 
 
   /**
-   * hass-records-history-panel – Sidebar panel for annotated history exploration.
+   * hass-datapoints-history-panel – Sidebar panel for annotated history exploration.
    */
   
   const PANEL_HISTORY_STYLE = `
@@ -3365,7 +3365,7 @@
           <div id="list-host" class="list-host"></div>
         `;
   
-        const chart = document.createElement("hass-records-history-card");
+        const chart = document.createElement("hass-datapoints-history-card");
         chart.setConfig({
           entities: this._entities,
           hours_to_show: this._hours,
@@ -3373,7 +3373,7 @@
           end_time: this._endTime?.toISOString(),
         });
   
-        const list = document.createElement("hass-records-list-card");
+        const list = document.createElement("hass-datapoints-list-card");
         list.setConfig({
           entities: this._entities,
           hours_to_show: this._hours,
@@ -4034,46 +4034,46 @@
    */
   
   // ── Card elements ──────────────────────────────────────────────────────────
-  if (!customElements.get("hass-records-action-card")) {
-    customElements.define("hass-records-action-card", HassRecordsActionCard);
+  if (!customElements.get("hass-datapoints-action-card")) {
+    customElements.define("hass-datapoints-action-card", HassRecordsActionCard);
   }
-  if (!customElements.get("hass-records-quick-card")) {
-    customElements.define("hass-records-quick-card", HassRecordsQuickCard);
+  if (!customElements.get("hass-datapoints-quick-card")) {
+    customElements.define("hass-datapoints-quick-card", HassRecordsQuickCard);
   }
-  if (!customElements.get("hass-records-history-card")) {
-    customElements.define("hass-records-history-card", HassRecordsHistoryCard);
+  if (!customElements.get("hass-datapoints-history-card")) {
+    customElements.define("hass-datapoints-history-card", HassRecordsHistoryCard);
   }
-  if (!customElements.get("hass-records-statistics-card")) {
-    customElements.define("hass-records-statistics-card", HassRecordsStatisticsCard);
+  if (!customElements.get("hass-datapoints-statistics-card")) {
+    customElements.define("hass-datapoints-statistics-card", HassRecordsStatisticsCard);
   }
-  if (!customElements.get("hass-records-sensor-card")) {
-    customElements.define("hass-records-sensor-card", HassRecordsSensorCard);
+  if (!customElements.get("hass-datapoints-sensor-card")) {
+    customElements.define("hass-datapoints-sensor-card", HassRecordsSensorCard);
   }
-  if (!customElements.get("hass-records-list-card")) {
-    customElements.define("hass-records-list-card", HassRecordsListCard);
+  if (!customElements.get("hass-datapoints-list-card")) {
+    customElements.define("hass-datapoints-list-card", HassRecordsListCard);
   }
-  if (!customElements.get("hass-records-history-panel")) {
-    customElements.define("hass-records-history-panel", HassRecordsHistoryPanel);
+  if (!customElements.get("hass-datapoints-history-panel")) {
+    customElements.define("hass-datapoints-history-panel", HassRecordsHistoryPanel);
   }
   
   // ── Editor elements ────────────────────────────────────────────────────────
-  if (!customElements.get("hass-records-action-card-editor")) {
-    customElements.define("hass-records-action-card-editor", HassRecordsActionCardEditor);
+  if (!customElements.get("hass-datapoints-action-card-editor")) {
+    customElements.define("hass-datapoints-action-card-editor", HassRecordsActionCardEditor);
   }
-  if (!customElements.get("hass-records-quick-card-editor")) {
-    customElements.define("hass-records-quick-card-editor", HassRecordsQuickCardEditor);
+  if (!customElements.get("hass-datapoints-quick-card-editor")) {
+    customElements.define("hass-datapoints-quick-card-editor", HassRecordsQuickCardEditor);
   }
-  if (!customElements.get("hass-records-history-card-editor")) {
-    customElements.define("hass-records-history-card-editor", HassRecordsHistoryCardEditor);
+  if (!customElements.get("hass-datapoints-history-card-editor")) {
+    customElements.define("hass-datapoints-history-card-editor", HassRecordsHistoryCardEditor);
   }
-  if (!customElements.get("hass-records-statistics-card-editor")) {
-    customElements.define("hass-records-statistics-card-editor", HassRecordsStatisticsCardEditor);
+  if (!customElements.get("hass-datapoints-statistics-card-editor")) {
+    customElements.define("hass-datapoints-statistics-card-editor", HassRecordsStatisticsCardEditor);
   }
-  if (!customElements.get("hass-records-sensor-card-editor")) {
-    customElements.define("hass-records-sensor-card-editor", HassRecordsSensorCardEditor);
+  if (!customElements.get("hass-datapoints-sensor-card-editor")) {
+    customElements.define("hass-datapoints-sensor-card-editor", HassRecordsSensorCardEditor);
   }
-  if (!customElements.get("hass-records-list-card-editor")) {
-    customElements.define("hass-records-list-card-editor", HassRecordsListCardEditor);
+  if (!customElements.get("hass-datapoints-list-card-editor")) {
+    customElements.define("hass-datapoints-list-card-editor", HassRecordsListCardEditor);
   }
   
   
@@ -4082,37 +4082,37 @@
   const registeredTypes = new Set(window.customCards.map((c) => c.type));
   const cardsToAdd = [
     {
-      type: "hass-records-action-card",
+      type: "hass-datapoints-action-card",
       name: "Hass Records – Action Card",
       description: "Full form to record a custom event with message, annotation, icon, colour and entity association.",
       preview: false,
     },
     {
-      type: "hass-records-quick-card",
+      type: "hass-datapoints-quick-card",
       name: "Hass Records – Quick Card",
       description: "Simple one-field card to quickly record a note with a bookmark icon.",
       preview: false,
     },
     {
-      type: "hass-records-history-card",
+      type: "hass-datapoints-history-card",
       name: "Hass Records – History Card",
       description: "History line chart with coloured annotation markers for recorded events.",
       preview: false,
     },
     {
-      type: "hass-records-statistics-card",
+      type: "hass-datapoints-statistics-card",
       name: "Hass Records – Statistics Card",
       description: "Statistics line chart with coloured annotation markers for recorded events.",
       preview: false,
     },
     {
-      type: "hass-records-sensor-card",
+      type: "hass-datapoints-sensor-card",
       name: "Hass Records – Sensor Card",
       description: "Sensor card with line chart — annotations shown as icons on the data line.",
       preview: false,
     },
     {
-      type: "hass-records-list-card",
+      type: "hass-datapoints-list-card",
       name: "Hass Records – List Card",
       description: "Activity-style datagrid to browse, search, edit and delete all recorded events.",
       preview: false,
@@ -4125,7 +4125,7 @@
   });
   
   console.info(
-    "%c HASS-RECORDS %c v0.3.0 loaded ",
+    "%c hass-datapoints %c v0.3.0 loaded ",
     "color:#fff;background:#03a9f4;font-weight:bold;padding:2px 6px;border-radius:3px 0 0 3px",
     "color:#03a9f4;background:#fff;font-weight:bold;padding:2px 6px;border:1px solid #03a9f4;border-radius:0 3px 3px 0"
   );

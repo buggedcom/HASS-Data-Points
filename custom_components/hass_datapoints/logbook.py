@@ -13,7 +13,7 @@ def async_describe_events(
     """Describe how Hass Records events appear in the logbook."""
 
     @callback
-    def async_describe_hass_records_event(event: Event) -> dict:
+    def async_describe_hass_datapoints_event(event: Event) -> dict:
         data = event.data
         message = data.get(ATTR_MESSAGE, "Event recorded")
         entity_ids: list[str] = data.get(ATTR_ENTITY_IDS, [])
@@ -37,4 +37,4 @@ def async_describe_events(
 
         return result
 
-    async_describe_event(DOMAIN, EVENT_RECORDED, async_describe_hass_records_event)
+    async_describe_event(DOMAIN, EVENT_RECORDED, async_describe_hass_datapoints_event)

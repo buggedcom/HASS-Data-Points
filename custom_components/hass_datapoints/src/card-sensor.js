@@ -1,5 +1,5 @@
 /**
- * hass-records-sensor-card – Sensor card with inline annotation icons on the data line.
+ * hass-datapoints-sensor-card – Sensor card with inline annotation icons on the data line.
  * Layout mirrors the standard HA sensor card:
  *   row 1 – name (left)  +  ha-state-icon (right)
  *   row 2 – numeric value  +  unit
@@ -341,7 +341,7 @@ class HassRecordsSensorCard extends HTMLElement {
 
   setConfig(config) {
     if (!config.entity) {
-      throw new Error("hass-records-sensor-card: `entity` is required");
+      throw new Error("hass-datapoints-sensor-card: `entity` is required");
     }
     this._config = {
       hours_to_show: 24,
@@ -571,7 +571,7 @@ class HassRecordsSensorCard extends HTMLElement {
     } catch (err) {
       const loadEl = this.shadowRoot.getElementById("loading");
       if (loadEl) loadEl.textContent = "Failed to load data.";
-      console.error("[hass-records sensor-card]", err);
+      console.error("[hass-datapoints sensor-card]", err);
     }
   }
 
@@ -854,7 +854,7 @@ class HassRecordsSensorCard extends HTMLElement {
   }
 
   static getConfigElement() {
-    return document.createElement("hass-records-sensor-card-editor");
+    return document.createElement("hass-datapoints-sensor-card-editor");
   }
 
   static getStubConfig() {

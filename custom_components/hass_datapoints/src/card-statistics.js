@@ -1,11 +1,11 @@
 /**
- * hass-records-statistics-card – Statistics chart with annotation markers.
+ * hass-datapoints-statistics-card – Statistics chart with annotation markers.
  */
 
 class HassRecordsStatisticsCard extends ChartCardBase {
   setConfig(config) {
     if (!config.entity && !config.entities) {
-      throw new Error("hass-records-statistics-card: define `entity` or `entities`");
+      throw new Error("hass-datapoints-statistics-card: define `entity` or `entities`");
     }
     this._config = {
       hours_to_show: 24,
@@ -49,7 +49,7 @@ class HassRecordsStatisticsCard extends ChartCardBase {
       this._drawChart(statsResult || {}, events, t0, t1);
     } catch (err) {
       this.shadowRoot.getElementById("loading").textContent = "Failed to load statistics.";
-      console.error("[hass-records statistics-card]", err);
+      console.error("[hass-datapoints statistics-card]", err);
     }
   }
 
@@ -130,7 +130,7 @@ class HassRecordsStatisticsCard extends ChartCardBase {
   }
 
   static getConfigElement() {
-    return document.createElement("hass-records-statistics-card-editor");
+    return document.createElement("hass-datapoints-statistics-card-editor");
   }
 
   static getStubConfig() {

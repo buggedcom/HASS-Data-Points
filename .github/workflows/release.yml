@@ -30,7 +30,7 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           python3 -c "
           import json, pathlib
-          p = pathlib.Path('custom_components/hass_records/manifest.json')
+          p = pathlib.Path('custom_components/hass_datapoints/manifest.json')
           m = json.loads(p.read_text())
           m['version'] = '$VERSION'
           p.write_text(json.dumps(m, indent=2) + '\n')
@@ -48,7 +48,7 @@ jobs:
         run: bash scripts/build.sh
 
       - name: Verify JS syntax
-        run: node -c custom_components/hass_records/hass-records-cards.js
+        run: node -c custom_components/hass_datapoints/hass-datapoints-cards.js
 
       # ── Validate Python ────────────────────────────────────────
       - name: Set up Python
@@ -58,26 +58,26 @@ jobs:
 
       - name: Check Python syntax
         run: |
-          python -m py_compile custom_components/hass_records/__init__.py
-          python -m py_compile custom_components/hass_records/config_flow.py
-          python -m py_compile custom_components/hass_records/const.py
-          python -m py_compile custom_components/hass_records/logbook.py
-          python -m py_compile custom_components/hass_records/store.py
-          python -m py_compile custom_components/hass_records/websocket_api.py
+          python -m py_compile custom_components/hass_datapoints/__init__.py
+          python -m py_compile custom_components/hass_datapoints/config_flow.py
+          python -m py_compile custom_components/hass_datapoints/const.py
+          python -m py_compile custom_components/hass_datapoints/logbook.py
+          python -m py_compile custom_components/hass_datapoints/store.py
+          python -m py_compile custom_components/hass_datapoints/websocket_api.py
 
       # ── Package the integration ────────────────────────────────
       - name: Create release zip
         run: |
           cd custom_components
-          zip -r ../hass-records.zip hass_records/ \
-            -x "hass_records/src/*" \
-            -x "hass_records/__pycache__/*"
+          zip -r ../hass-datapoints.zip hass_datapoints/ \
+            -x "hass_datapoints/src/*" \
+            -x "hass_datapoints/__pycache__/*"
 
       # ── Create GitHub Release ──────────────────────────────────
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: "Hass Records ${{ steps.version.outputs.tag }}"
+          name: "Hass Data Points ${{ steps.version.outputs.tag }}"
           generate_release_notes: true
-          files: hass-records.zip
+          files: hass-datapoints.zip
 
