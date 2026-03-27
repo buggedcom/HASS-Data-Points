@@ -27,7 +27,7 @@ WATCH_INTERVAL="${HA_DEV_WATCH_INTERVAL:-2}"
 snapshot() {
   (
     cd "$REPO_ROOT"
-    find custom_components/hass_records scripts \
+    find custom_components/hass_datapoints scripts \
       -type f \
       \( -name '*.js' -o -name '*.py' -o -name '*.json' -o -name '*.yaml' -o -name '*.sh' \) \
       | LC_ALL=C sort \
@@ -37,7 +37,7 @@ snapshot() {
 
 LAST_HASH=""
 
-echo "Starting hass-records watch mode..."
+echo "Starting hass-datapoints watch mode..."
 echo "Polling every ${WATCH_INTERVAL}s"
 
 while true; do

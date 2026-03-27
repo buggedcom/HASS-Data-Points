@@ -1,5 +1,5 @@
 /**
- * hass-records-action-card – Full form to record a custom event.
+ * hass-datapoints-action-card – Full form to record a custom event.
  *
  * Uses HA native elements:
  *   <ha-textfield>      for text inputs
@@ -303,7 +303,7 @@ class HassRecordsActionCard extends HTMLElement {
     try {
       await this._hass.callService(DOMAIN, "record", data);
       // Notify sibling cards on the same page to refresh immediately
-      window.dispatchEvent(new CustomEvent("hass-records-event-recorded"));
+      window.dispatchEvent(new CustomEvent("hass-datapoints-event-recorded"));
       msgEl.value = "";
       if (annEl) annEl.value = "";
       // Clear entity rows
@@ -319,14 +319,14 @@ class HassRecordsActionCard extends HTMLElement {
       fb.className = "feedback err";
       fb.textContent = `Error: ${e.message || "unknown error"}`;
       fb.style.display = "block";
-      console.error("[hass-records action-card]", e);
+      console.error("[hass-datapoints action-card]", e);
     }
 
     btn.disabled = false;
   }
 
   static getConfigElement() {
-    return document.createElement("hass-records-action-card-editor");
+    return document.createElement("hass-datapoints-action-card-editor");
   }
 
   static getStubConfig() {

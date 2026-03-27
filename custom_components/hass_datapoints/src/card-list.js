@@ -1,5 +1,5 @@
 /**
- * hass-records-list-card – Activity-style datagrid with search, pagination, edit/delete.
+ * hass-datapoints-list-card – Activity-style datagrid with search, pagination, edit/delete.
  */
 
 class HassRecordsListCard extends HTMLElement {
@@ -32,7 +32,7 @@ class HassRecordsListCard extends HTMLElement {
   disconnectedCallback() {
     if (this._unsubscribe) { this._unsubscribe(); this._unsubscribe = null; }
     if (this._windowListener) {
-      window.removeEventListener("hass-records-event-recorded", this._windowListener);
+      window.removeEventListener("hass-datapoints-event-recorded", this._windowListener);
       this._windowListener = null;
     }
   }
@@ -45,7 +45,7 @@ class HassRecordsListCard extends HTMLElement {
     }).catch(() => {});
 
     this._windowListener = () => this._load();
-    window.addEventListener("hass-records-event-recorded", this._windowListener);
+    window.addEventListener("hass-datapoints-event-recorded", this._windowListener);
   }
 
   _updateEditHass() {
@@ -507,7 +507,7 @@ class HassRecordsListCard extends HTMLElement {
           await deleteEvent(this._hass, id);
           await this._load();
         } catch (err) {
-          console.error("[hass-records list-card] delete failed", err);
+          console.error("[hass-datapoints list-card] delete failed", err);
         }
       });
     });
@@ -569,7 +569,7 @@ class HassRecordsListCard extends HTMLElement {
           form.classList.remove("open");
           await this._load();
         } catch (err) {
-          console.error("[hass-records list-card] update failed", err);
+          console.error("[hass-datapoints list-card] update failed", err);
         }
       });
     });
@@ -584,7 +584,7 @@ class HassRecordsListCard extends HTMLElement {
   }
 
   static getConfigElement() {
-    return document.createElement("hass-records-list-card-editor");
+    return document.createElement("hass-datapoints-list-card-editor");
   }
 
   static getStubConfig() {
@@ -599,4 +599,4 @@ class HassRecordsListCard extends HTMLElement {
     };
   }
 }
-customElements.define("hass-records-list-card", HassRecordsListCard);
+customElements.define("hass-datapoints-list-card", HassRecordsListCard);

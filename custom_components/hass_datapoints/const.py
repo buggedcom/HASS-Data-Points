@@ -1,8 +1,8 @@
 """Constants for Hass Records."""
 
-DOMAIN = "hass_records"
+DOMAIN = "hass_datapoints"
 
-STORAGE_KEY = "hass_records.events"
+STORAGE_KEY = "hass_datapoints.events"
 STORAGE_VERSION = 1
 
 EVENT_RECORDED = f"{DOMAIN}_event_recorded"
@@ -17,9 +17,9 @@ ATTR_COLOR = "color"
 SERVICE_RECORD = "record"
 
 # Frontend resource URL (served by integration)
-FRONTEND_URL = "/hass_records/cards.js"
+FRONTEND_URL = "/hass_datapoints/cards.js"
 
-PANEL_COMPONENT = "hass-records-history-panel"
-PANEL_URL_PATH = "hass-records-history"
-PANEL_TITLE = "Records History"
+PANEL_COMPONENT = "hass-datapoints-history-panel"
+PANEL_URL_PATH = "hass-datapoints-history"
+PANEL_TITLE = "Data Points"
 PANEL_ICON = "mdi:chart-timeline-variant"

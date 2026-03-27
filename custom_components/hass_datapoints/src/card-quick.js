@@ -1,5 +1,5 @@
 /**
- * hass-records-quick-card – Simple one-field quick record card.
+ * hass-datapoints-quick-card – Simple one-field quick record card.
  *
  * Configurable icon and color (defaults to mdi:bookmark / amber).
  * Uses HA native <ha-textfield> and <ha-button>.
@@ -118,7 +118,7 @@ class HassRecordsQuickCard extends HTMLElement {
     const fb = this.shadowRoot.getElementById("feedback");
     try {
       await this._hass.callService(DOMAIN, "record", data);
-      window.dispatchEvent(new CustomEvent("hass-records-event-recorded"));
+      window.dispatchEvent(new CustomEvent("hass-datapoints-event-recorded"));
       msgEl.value = "";
       fb.className = "feedback ok";
       fb.textContent = "Recorded!";
@@ -128,13 +128,13 @@ class HassRecordsQuickCard extends HTMLElement {
       fb.className = "feedback err";
       fb.textContent = `Error: ${e.message || "unknown error"}`;
       fb.style.display = "block";
-      console.error("[hass-records quick-card]", e);
+      console.error("[hass-datapoints quick-card]", e);
     }
     btn.disabled = false;
   }
 
   static getConfigElement() {
-    return document.createElement("hass-records-quick-card-editor");
+    return document.createElement("hass-datapoints-quick-card-editor");
   }
 
   static getStubConfig() {

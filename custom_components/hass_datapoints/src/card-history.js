@@ -1,11 +1,11 @@
 /**
- * hass-records-history-card – History line chart with annotation markers.
+ * hass-datapoints-history-card – History line chart with annotation markers.
  */
 
 class HassRecordsHistoryCard extends ChartCardBase {
   setConfig(config) {
     if (!config.entity && !config.entities) {
-      throw new Error("hass-records-history-card: define `entity` or `entities`");
+      throw new Error("hass-datapoints-history-card: define `entity` or `entities`");
     }
     this._config = { hours_to_show: 24, ...config };
   }
@@ -47,7 +47,7 @@ class HassRecordsHistoryCard extends ChartCardBase {
       this._drawChart(histResult || {}, events, t0, t1);
     } catch (err) {
       this.shadowRoot.getElementById("loading").textContent = "Failed to load data.";
-      console.error("[hass-records history-card]", err);
+      console.error("[hass-datapoints history-card]", err);
     }
   }
 
@@ -119,7 +119,7 @@ class HassRecordsHistoryCard extends ChartCardBase {
   }
 
   static getConfigElement() {
-    return document.createElement("hass-records-history-card-editor");
+    return document.createElement("hass-datapoints-history-card-editor");
   }
 
   static getStubConfig() {

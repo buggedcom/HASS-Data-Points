@@ -2,7 +2,7 @@
  * Shared constants used by all Hass Records cards.
  */
 
-const DOMAIN = "hass_records";
+const DOMAIN = "hass_datapoints";
 const COLORS = [
   "#3b82f6",
   "#ef4444",

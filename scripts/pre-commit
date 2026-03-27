@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 #
-# pre-commit hook: rebuild hass-records-cards.js when any src/ file is staged.
+# pre-commit hook: rebuild hass-datapoints-cards.js when any src/ file is staged.
 #
 # Install:  ./scripts/install-hooks.sh
 #           (or manually: ln -sf ../../scripts/pre-commit .git/hooks/pre-commit)
 
 set -euo pipefail
 
-SRC_DIR="custom_components/hass_records/src"
-OUT_FILE="custom_components/hass_records/hass-records-cards.js"
+SRC_DIR="custom_components/hass_datapoints/src"
+OUT_FILE="custom_components/hass_datapoints/hass-datapoints-cards.js"
 
 # Check if any src/ JS files are staged
 STAGED_SRC=$(git diff --cached --name-only --diff-filter=ACMR -- "$SRC_DIR/*.js" 2>/dev/null || true)
