@@ -23,6 +23,7 @@ export class ChartCardBase extends HTMLElement {
     this._loadInFlight = false;
     this._hasStartedInitialLoad = false;
     this._windowListener = null;
+    this._previousSeriesEndpoints = new Map();
   }
 
   get _entityIds() {

@@ -14,17 +14,22 @@
     "dev:sync": "bash scripts/dev-sync.sh",
     "dev:watch": "bash scripts/dev-watch.sh",
     "hooks:install": "bash scripts/install-hooks.sh",
-    "lint:eslint": "eslint \"custom_components/hass_datapoints/src/**/*.js\" --cache --cache-strategy=content --cache-location=node_modules/.cache/eslint/.eslintcache --max-warnings=0",
-    "format:eslint": "eslint \"custom_components/hass_datapoints/src/**/*.js\" --cache --cache-strategy=content --cache-location=node_modules/.cache/eslint/.eslintcache --fix",
+    "lint:eslint": "eslint \"custom_components/hass_datapoints/src/**/*.{js,ts}\" --cache --cache-strategy=content --cache-location=node_modules/.cache/eslint/.eslintcache --max-warnings=0",
+    "format:eslint": "eslint \"custom_components/hass_datapoints/src/**/*.{js,ts}\" --cache --cache-strategy=content --cache-location=node_modules/.cache/eslint/.eslintcache --fix",
     "lint:prettier": "prettier . --cache --check",
     "format:prettier": "prettier . --cache --write",
     "lint:types": "tsc --noEmit",
     "lint": "pnpm run lint:eslint && pnpm run lint:prettier && pnpm run lint:types",
-    "format": "pnpm run format:eslint && pnpm run format:prettier"
+    "format": "pnpm run format:eslint && pnpm run format:prettier",
+    "storybook": "storybook dev -p 6006",
+    "build:storybook": "storybook build"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.39.1",
+    "@storybook/addon-a11y": "^10.3.3",
+    "@storybook/addon-vitest": "^10.3.3",
+    "@storybook/web-components-vite": "^10.3.3",
     "eslint": "^9.39.1",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^10.1.8",
@@ -34,13 +39,20 @@
     "eslint-plugin-unused-imports": "^4.3.0",
     "eslint-plugin-wc": "^2.0.3",
     "globals": "^16.4.0",
+    "happy-dom": "^20.8.9",
     "prettier": "^3.6.2",
+    "storybook": "^10.3.3",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.2",
     "vite": "^7.1.11",
-    "vitest": "^2.1.9"
+    "vitest": "^3.2.4",
+    "playwright": "^1.58.2",
+    "@vitest/browser": "3.2.4",
+    "@vitest/coverage-v8": "3.2.4"
   },
   "dependencies": {
-    "@kipk/load-ha-components": "^1.0.3"
+    "@kipk/load-ha-components": "^1.0.3",
+    "@lit/context": "^1.1.6",
+    "lit": "^3.3.2"
   }
 }

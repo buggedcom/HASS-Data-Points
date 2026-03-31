@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { loadLegacyScripts, repoPath } from "../../__tests__/load-legacy-script.ts";
+import { loadLegacyScripts, repoPath } from "@/lib/__tests__/load-legacy-script";
 
 let cacheLib;
 

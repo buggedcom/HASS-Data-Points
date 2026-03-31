@@ -1,24 +1,16 @@
-import * as shared from "../../lib/shared.js";
-
-const {
+import {
   addUnit,
-  areaIcon,
-  areaName,
   COLORS,
-  buildDataPointsHistoryPath,
   buildHistoryPagePreferencesPayload,
   buildHistorySeriesRows,
   clampNumber,
   confirmDestructiveAction,
   contrastColor,
-  createChartZoomRange,
+  DOMAIN,
   DAY_MS,
-  deviceIcon,
-  deviceName,
   downloadHistorySpreadsheet,
   ensureHaComponents,
   endOfUnit,
-  entityIcon,
   entityName,
   esc,
   extractRangeValue,
@@ -28,20 +20,15 @@ const {
   formatContextLabel,
   formatPeriodSelectionLabel,
   formatRangeDateTime,
-  formatRangeDuration,
   formatRangeSummary,
   formatScaleLabel,
-  getWeekLabel,
   historySeriesRowHasConfiguredAnalysis,
-  labelIcon,
-  labelName,
   makeDateWindowId,
   normalizeDateWindows,
   normalizeEntityIds,
   normalizeHistoryPagePreferences,
   normalizeHistorySeriesAnalysis,
   normalizeHistorySeriesRows,
-  normalizeTargetSelection,
   normalizeTargetValue,
   panelConfigTarget,
   parseDateValue,
@@ -72,7 +59,7 @@ const {
   MINUTE_MS,
   PANEL_HISTORY_PREFERENCES_KEY,
   WEEK_MS,
-} = shared;
+} from "@/lib/shared";
 
 const DATA_GAP_THRESHOLD_OPTIONS = [
   { value: "auto", label: "Auto-detect" },
@@ -366,6 +353,7 @@ const PANEL_HISTORY_STYLE = `
     grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
     align-items: stretch;
     padding: 0;
+    transition: grid-template-columns 400ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .page-content.sidebar-collapsed {
@@ -383,6 +371,7 @@ const PANEL_HISTORY_STYLE = `
     padding: var(--dp-spacing-lg);
     border-right: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 88%, transparent);
     overflow-y: auto;
+    transition: padding 400ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .page-sidebar.collapsed {
@@ -411,6 +400,15 @@ const PANEL_HISTORY_STYLE = `
   .sidebar-toggle-button:hover,
   .sidebar-toggle-button:focus-visible {
     --icon-primary-color: var(--primary-text-color);
+  }
+
+  .sidebar-toggle-button ha-icon {
+    display: block;
+    transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .page-sidebar.collapsed .sidebar-toggle-button ha-icon {
+    transform: rotate(180deg);
   }
 
   .content {
@@ -533,6 +531,39 @@ const PANEL_HISTORY_STYLE = `
     width: 14px;
     height: 14px;
     margin: 0;
+  }
+
+  /* ── Collapsed-sidebar target popup ──────────────────────────────────── */
+
+  .collapsed-target-popup {
+    position: fixed;
+    z-index: 9;
+    width: 300px;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    background: var(--card-background-color, #fff);
+    border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 88%, transparent);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  }
+
+  .collapsed-target-popup[hidden] {
+    display: none;
+  }
+
+  /* Row inside popup: remove card styling (popup is the card) and collapse the drag-handle column */
+  .collapsed-target-popup .history-target-row {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    padding-bottom: calc(var(--spacing, 8px) * 1.125);
+    grid-template-columns: 0 minmax(0, 1fr) auto;
+  }
+
+  .collapsed-target-popup .history-target-row:hover {
+    border-color: transparent;
+    background: transparent;
   }
 
   .history-target-empty {
@@ -1836,6 +1867,16 @@ const PANEL_HISTORY_STYLE = `
     outline-offset: 2px;
   }
 
+  @keyframes dp-live-breathe {
+    0%, 100% { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18), 0 0 0 0 rgba(239, 83, 80, 0); }
+    50%       { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18), 0 0 0 5px rgba(239, 83, 80, 0.2); }
+  }
+
+  .range-handle.is-live {
+    background: #ef5350;
+    animation: dp-live-breathe 3s ease-in-out infinite;
+  }
+
   .range-tooltip {
     position: absolute;
     top: 43px;
@@ -1857,6 +1898,13 @@ const PANEL_HISTORY_STYLE = `
     visibility: hidden;
     transition: opacity 120ms ease, visibility 120ms ease;
     z-index: 8;
+  }
+
+  .range-tooltip-live-hint {
+    display: block;
+    font-size: 0.78rem;
+    opacity: 0.72;
+    margin-top: 4px;
   }
 
   .range-tooltip::after {
@@ -2246,6 +2294,10 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._contentKey = "";
     this._contentSplitRatio = 0.44;
     this._sidebarCollapsed = false;
+    this._collapsedPopupEntityId = null;
+    this._collapsedPopupAnchorEl = null;
+    this._collapsedPopupOutsideClickHandler = null;
+    this._collapsedPopupKeyHandler = null;
     this._datapointScope = "linked";
     this._showChartDatapointIcons = true;
     this._showChartDatapointLines = true;
@@ -2423,6 +2475,8 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._onContentSplitPointerMove = (ev) => this._handleContentSplitPointerMove(ev);
     this._onContentSplitPointerUp = (ev) => this._finishContentSplitPointer(ev);
     this._onCollapsedSidebarClick = (ev) => this._handleCollapsedSidebarClick(ev);
+    this._onEventRecorded = () => this._handleEventRecorded();
+    this._haEventUnsubscribe = null;
     this._onPopState = () => {
       this._initFromContext();
       if (this._rendered) {
@@ -2441,6 +2495,12 @@ export class HassRecordsHistoryPanel extends HTMLElement {
 
   set hass(hass) {
     this._hass = hass;
+    if (!this._haEventUnsubscribe && this._hass?.connection) {
+      this._hass.connection
+        .subscribeEvents(() => this._handleEventRecorded(), `${DOMAIN}_event_recorded`)
+        .then((unsub) => { this._haEventUnsubscribe = unsub; })
+        .catch(() => {});
+    }
     if (!this._rendered) {
       this._rendered = true;
       this._initFromContext();
@@ -2477,6 +2537,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     window.addEventListener("location-changed", this._onLocationChanged);
     window.addEventListener("pointerdown", this._onWindowPointerDown, true);
     window.addEventListener("resize", this._onWindowResize);
+    window.addEventListener("hass-datapoints-event-recorded", this._onEventRecorded);
     this.addEventListener("hass-datapoints-chart-hover", this._onChartHover);
     this.addEventListener("hass-datapoints-chart-zoom", this._onChartZoom);
     this.addEventListener("hass-datapoints-records-search", this._onRecordsSearch);
@@ -2506,6 +2567,11 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     window.removeEventListener("location-changed", this._onLocationChanged);
     window.removeEventListener("pointerdown", this._onWindowPointerDown, true);
     window.removeEventListener("resize", this._onWindowResize);
+    window.removeEventListener("hass-datapoints-event-recorded", this._onEventRecorded);
+    if (this._haEventUnsubscribe) {
+      this._haEventUnsubscribe();
+      this._haEventUnsubscribe = null;
+    }
     this.removeEventListener("hass-datapoints-chart-hover", this._onChartHover);
     this.removeEventListener("hass-datapoints-chart-zoom", this._onChartZoom);
     this.removeEventListener("hass-datapoints-records-search", this._onRecordsSearch);
@@ -2767,6 +2833,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
           </div>
           <div class="content" id="content"></div>
         </div>
+        <div id="collapsed-target-popup" class="collapsed-target-popup" hidden></div>
       </ha-top-app-bar-fixed>
     `;
     this._topAppBarEl = this.shadowRoot.querySelector("ha-top-app-bar-fixed");
@@ -3556,11 +3623,10 @@ export class HassRecordsHistoryPanel extends HTMLElement {
   _syncSidebarUi() {
     this._pageContentEl?.classList.toggle("sidebar-collapsed", this._sidebarCollapsed);
     this._pageSidebarEl?.classList.toggle("collapsed", this._sidebarCollapsed);
-    const icon = this._sidebarCollapsed ? "mdi:menu" : "mdi:menu-open";
     const label = this._sidebarCollapsed ? "Expand targets sidebar" : "Collapse targets sidebar";
-    const iconEl = this._sidebarToggleButtonEl?.querySelector("ha-icon");
-    if (iconEl) iconEl.icon = icon;
-    if (this._sidebarToggleButtonEl) this._sidebarToggleButtonEl.label = label;
+    if (this._sidebarToggleButtonEl) {
+      this._sidebarToggleButtonEl.label = label;
+    }
   }
 
   _applyContentSplitLayout() {
@@ -3610,6 +3676,9 @@ export class HassRecordsHistoryPanel extends HTMLElement {
 
   _toggleSidebarCollapsed() {
     this._sidebarCollapsed = !this._sidebarCollapsed;
+    if (!this._sidebarCollapsed) {
+      this._hideCollapsedTargetPopup();
+    }
     this._saveSessionState();
     this._syncSidebarUi();
     window.requestAnimationFrame(() => {
@@ -4185,276 +4254,14 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       if (collapsedSummaryEl) {
         collapsedSummaryEl.innerHTML = `<div class="history-targets-collapsed-empty" title="No targets selected"></div>`;
       }
+      this._refreshCollapsedTargetPopup();
       return;
     }
 
     this._targetRowsEl.innerHTML = `
       <div class="history-target-table" role="table" aria-label="History chart targets">
         <div class="history-target-table-body" role="rowgroup">
-          ${this._seriesRows.map((row, index) => {
-            const analysis = normalizeHistorySeriesAnalysis(row.analysis);
-            const supportsAnalysis = isAnalysisSupportedForRow(row);
-            const hasConfiguredAnalysis = historySeriesRowHasConfiguredAnalysis(row);
-            const isExpanded = supportsAnalysis && analysis.expanded === true;
-            const canShowDeltaAnalysis = !!this._selectedComparisonWindowId;
-            const hasActiveAnalysis = hasActiveSeriesAnalysis(analysis, canShowDeltaAnalysis);
-            const rowName = entityName(this._hass, row.entity_id) || row.entity_id;
-            const unit = this._hass?.states?.[row.entity_id]?.attributes?.unit_of_measurement || "";
-            return `
-            <div class="history-target-row ${row.visible === false ? "is-hidden" : ""} ${isExpanded ? "analysis-open" : ""}" role="row" data-series-reorder-index="${index}" ${supportsAnalysis ? `data-series-row-entity-id="${esc(row.entity_id)}"` : ""}>
-              <button type="button" class="history-target-drag-handle" draggable="true" data-series-drag-index="${index}" aria-label="Drag to reorder ${esc(rowName)}" title="Drag to reorder">
-                <ha-icon icon="mdi:drag-vertical"></ha-icon>
-              </button>
-              <div class="history-target-name" role="cell" title="${esc(entityName(this._hass, row.entity_id) || row.entity_id)}">
-                <div role="cell" class="history-target-controls">
-                  <label class="history-target-color-field" style="--row-color:${esc(row.color)};--row-icon-color:${deriveSwatchIconColor(row.color)}">
-                    <input type="color" class="history-target-color" data-series-color-index="${index}" value="${esc(row.color)}" aria-label="Line color for ${esc(row.entity_id)}">
-                    <span class="history-target-color-icon" aria-hidden="true">
-                      <ha-state-icon data-series-icon-entity-id="${esc(row.entity_id)}"></ha-state-icon>
-                    </span>
-                  </label>
-                </div>
-                <div class="history-target-name-text">
-                  ${esc(entityName(this._hass, row.entity_id) || row.entity_id)}
-                  <div class="history-target-entity-id">${esc(row.entity_id)}</div>
-                </div>
-              </div>
-              <div role="cell" class="history-target-actions">
-                ${supportsAnalysis ? `
-                  <button
-                    type="button"
-                    class="history-target-analysis-toggle ${hasConfiguredAnalysis ? "configured" : ""}"
-                    data-series-analysis-toggle-entity-id="${esc(row.entity_id)}"
-                    aria-label="${isExpanded ? "Collapse" : "Expand"} analysis options for ${esc(rowName)}"
-                    aria-expanded="${isExpanded ? "true" : "false"}"
-                    title="${hasConfiguredAnalysis ? "Analysis configured" : "Configure analysis"}"
-                  >
-                    <ha-icon icon="${isExpanded ? "mdi:chevron-up" : "mdi:chevron-down"}"></ha-icon>
-                  </button>
-                ` : ""}
-                <label class="history-target-visible-toggle" title="${row.visible === false ? "Show" : "Hide"} ${esc(entityName(this._hass, row.entity_id) || row.entity_id)}">
-                  <input
-                    type="checkbox"
-                    data-series-visible-entity-id="${esc(row.entity_id)}"
-                    aria-label="Show ${esc(entityName(this._hass, row.entity_id) || row.entity_id)} on chart"
-                    ${row.visible === false ? "" : "checked"}
-                  >
-                  <span class="history-target-visible-toggle-track"></span>
-                </label>
-                <button type="button" class="history-target-remove" data-series-remove-index="${index}" aria-label="Remove ${esc(row.entity_id)}">
-                  <ha-icon icon="mdi:close"></ha-icon>
-                </button>
-              </div>
-              ${supportsAnalysis && isExpanded ? `
-                <div class="history-target-analysis" role="cell">
-                  <div class="history-target-analysis-grid">
-                    <label class="history-target-analysis-option ${!hasActiveAnalysis ? "is-disabled" : ""}">
-                      <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::hide_source_series" ${analysis.hide_source_series && hasActiveAnalysis ? "checked" : ""} ${!hasActiveAnalysis ? "disabled" : ""}>
-                      <span>Hide source series</span>
-                    </label>
-                    <div class="history-target-analysis-group ${analysis.show_trend_lines ? "is-open" : ""}">
-                      <label class="history-target-analysis-option">
-                        <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::show_trend_lines" ${analysis.show_trend_lines ? "checked" : ""}>
-                        <span>Show trend lines</span>
-                      </label>
-                      ${analysis.show_trend_lines ? `
-                        <div class="history-target-analysis-group-body">
-                          <label class="history-target-analysis-option">
-                            <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::show_trend_crosshairs" ${analysis.show_trend_crosshairs ? "checked" : ""}>
-                            <span>Show trend crosshairs</span>
-                          </label>
-                          <label class="history-target-analysis-field">
-                            <span class="history-target-analysis-field-label">Trend method</span>
-                            <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::trend_method">
-                              ${renderAnalysisSelectOptions(ANALYSIS_TREND_METHOD_OPTIONS, analysis.trend_method)}
-                            </select>
-                          </label>
-                          ${analysis.trend_method === "rolling_average" ? `
-                            <label class="history-target-analysis-field">
-                              <span class="history-target-analysis-field-label">Trend window</span>
-                              <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::trend_window">
-                                ${renderAnalysisSelectOptions(ANALYSIS_TREND_WINDOW_OPTIONS, analysis.trend_window)}
-                              </select>
-                            </label>
-                          ` : ""}
-                        </div>
-                      ` : ""}
-                    </div>
-                    <label class="history-target-analysis-option">
-                      <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::show_summary_stats" ${analysis.show_summary_stats ? "checked" : ""}>
-                      <span>Show min / max / mean</span>
-                    </label>
-                    <div class="history-target-analysis-group ${analysis.show_rate_of_change ? "is-open" : ""}">
-                      <label class="history-target-analysis-option">
-                        <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::show_rate_of_change" ${analysis.show_rate_of_change ? "checked" : ""}>
-                        <span>Show rate of change</span>
-                      </label>
-                      ${analysis.show_rate_of_change ? `
-                        <div class="history-target-analysis-group-body">
-                          <label class="history-target-analysis-field">
-                            <span class="history-target-analysis-field-label">Rate window</span>
-                            <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::rate_window">
-                              ${renderAnalysisSelectOptions(ANALYSIS_RATE_WINDOW_OPTIONS, analysis.rate_window)}
-                            </select>
-                          </label>
-                        </div>
-                      ` : ""}
-                    </div>
-                    <div class="history-target-analysis-group ${analysis.show_threshold_analysis ? "is-open" : ""}">
-                      <label class="history-target-analysis-option">
-                        <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::show_threshold_analysis" ${analysis.show_threshold_analysis ? "checked" : ""}>
-                        <span>Show threshold analysis</span>
-                      </label>
-                      ${analysis.show_threshold_analysis ? `
-                        <div class="history-target-analysis-group-body">
-                          <label class="history-target-analysis-option">
-                            <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::show_threshold_shading" ${analysis.show_threshold_shading ? "checked" : ""}>
-                            <span>Shade threshold area</span>
-                          </label>
-                          <label class="history-target-analysis-field">
-                            <span class="history-target-analysis-field-label">Threshold</span>
-                            <div class="history-target-analysis-toggle-group">
-                              <input
-                                class="history-target-analysis-input"
-                                type="number"
-                                step="any"
-                                inputmode="decimal"
-                                data-series-analysis-input="${esc(row.entity_id)}::threshold_value"
-                                value="${esc(analysis.threshold_value)}"
-                                placeholder="Threshold"
-                              >
-                              <span class="sidebar-analysis-threshold-unit">${esc(unit)}</span>
-                            </div>
-                          </label>
-                          ${analysis.show_threshold_shading ? `
-                            <label class="history-target-analysis-field">
-                              <span class="history-target-analysis-field-label">Shade area</span>
-                              <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::threshold_direction">
-                                <option value="above" ${analysis.threshold_direction !== "below" ? "selected" : ""}>Shade above</option>
-                                <option value="below" ${analysis.threshold_direction === "below" ? "selected" : ""}>Shade below</option>
-                              </select>
-                            </label>
-                          ` : ""}
-                        </div>
-                      ` : ""}
-                    </div>
-                    <div class="history-target-analysis-group ${analysis.show_anomalies ? "is-open" : ""}">
-                      <label class="history-target-analysis-option">
-                        <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::show_anomalies" ${analysis.show_anomalies ? "checked" : ""}>
-                        <span>Show anomalies</span>
-                      </label>
-                      ${analysis.show_anomalies ? `
-                        <div class="history-target-analysis-group-body">
-                          <label class="history-target-analysis-field">
-                            <span class="history-target-analysis-field-label">Sensitivity</span>
-                            <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::anomaly_sensitivity">
-                              ${renderAnalysisSelectOptions(ANALYSIS_ANOMALY_SENSITIVITY_OPTIONS, analysis.anomaly_sensitivity)}
-                            </select>
-                          </label>
-                          <div class="history-target-analysis-method-list">
-                            ${ANALYSIS_ANOMALY_METHOD_OPTIONS.map((opt) => {
-                              const isChecked = analysis.anomaly_methods.includes(opt.value);
-                              return `
-                              <div class="history-target-analysis-method-item">
-                                <label class="history-target-analysis-option">
-                                  <input type="checkbox"
-                                    data-series-analysis-option="${esc(row.entity_id)}::anomaly_method_toggle_${esc(opt.value)}"
-                                    ${isChecked ? "checked" : ""}>
-                                  <span>${esc(opt.label)}</span>
-                                  ${opt.help ? `
-                                    <span class="analysis-method-help" id="amh-${esc(row.entity_id.replace(/\./g, "-"))}-${esc(opt.value)}" tabindex="0">?</span>
-                                    <ha-tooltip for="amh-${esc(row.entity_id.replace(/\./g, "-"))}-${esc(opt.value)}" placement="right" hoist>${esc(opt.help)}</ha-tooltip>
-                                  ` : ""}
-                                  ${isChecked ? `<span class="analysis-computing-spinner" data-analysis-spinner="${esc(row.entity_id)}"></span>` : ""}
-                                </label>
-                                ${isChecked && opt.value === "rate_of_change" ? `
-                                  <div class="history-target-analysis-method-subopts">
-                                    <label class="history-target-analysis-field">
-                                      <span class="history-target-analysis-field-label">Rate window</span>
-                                      <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::anomaly_rate_window">
-                                        ${renderAnalysisSelectOptions(ANALYSIS_ANOMALY_RATE_WINDOW_OPTIONS, analysis.anomaly_rate_window)}
-                                      </select>
-                                    </label>
-                                  </div>
-                                ` : ""}
-                                ${isChecked && opt.value === "rolling_zscore" ? `
-                                  <div class="history-target-analysis-method-subopts">
-                                    <label class="history-target-analysis-field">
-                                      <span class="history-target-analysis-field-label">Rolling window</span>
-                                      <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::anomaly_zscore_window">
-                                        ${renderAnalysisSelectOptions(ANALYSIS_ANOMALY_ZSCORE_WINDOW_OPTIONS, analysis.anomaly_zscore_window)}
-                                      </select>
-                                    </label>
-                                  </div>
-                                ` : ""}
-                                ${isChecked && opt.value === "persistence" ? `
-                                  <div class="history-target-analysis-method-subopts">
-                                    <label class="history-target-analysis-field">
-                                      <span class="history-target-analysis-field-label">Min flat duration</span>
-                                      <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::anomaly_persistence_window">
-                                        ${renderAnalysisSelectOptions(ANALYSIS_ANOMALY_PERSISTENCE_WINDOW_OPTIONS, analysis.anomaly_persistence_window)}
-                                      </select>
-                                    </label>
-                                  </div>
-                                ` : ""}
-                                ${isChecked && opt.value === "comparison_window" ? `
-                                  <div class="history-target-analysis-method-subopts">
-                                    <label class="history-target-analysis-field">
-                                      <span class="history-target-analysis-field-label">Compare to window</span>
-                                      <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::anomaly_comparison_window_id">
-                                        <option value="" ${!analysis.anomaly_comparison_window_id ? "selected" : ""}>— select window —</option>
-                                        ${this._comparisonWindows.map((win) => `<option value="${esc(win.id)}" ${analysis.anomaly_comparison_window_id === win.id ? "selected" : ""}>${esc(win.label || win.id)}</option>`).join("")}
-                                        <option value="__add_new__">+ Add date window</option>
-                                      </select>
-                                    </label>
-                                  </div>
-                                ` : ""}
-                              </div>`;
-                            }).join("")}
-                          </div>
-                          ${analysis.anomaly_methods.length >= 2 ? `
-                            <label class="history-target-analysis-field">
-                              <span class="history-target-analysis-field-label">When methods overlap</span>
-                              <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::anomaly_overlap_mode">
-                                ${renderAnalysisSelectOptions(ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS, analysis.anomaly_overlap_mode)}
-                              </select>
-                            </label>
-                          ` : ""}
-                        </div>
-                      ` : ""}
-                    </div>
-                    <div class="history-target-analysis-group ${analysis.show_delta_analysis && canShowDeltaAnalysis ? "is-open" : ""}">
-                      <label class="history-target-analysis-option top">
-                        <input
-                          type="checkbox"
-                          data-series-analysis-option="${esc(row.entity_id)}::show_delta_analysis"
-                          ${analysis.show_delta_analysis && canShowDeltaAnalysis ? "checked" : ""}
-                          ${canShowDeltaAnalysis ? "" : "disabled"}
-                        >
-                        <span>Show delta vs selected date window<br />
-                            ${!canShowDeltaAnalysis ? `
-                            <span class="history-target-analysis-option-help-text">Select a date window tab to enable delta analysis.</span>
-                 ` : ""}</span>
-                      </label>
-                      ${analysis.show_delta_analysis && canShowDeltaAnalysis ? `
-                        <div class="history-target-analysis-group-body">
-                          <label class="history-target-analysis-option">
-                            <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::show_delta_tooltip" ${analysis.show_delta_tooltip ? "checked" : ""}>
-                            <span>Show delta in tooltip</span>
-                          </label>
-                          <label class="history-target-analysis-option">
-                            <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::show_delta_lines" ${analysis.show_delta_lines ? "checked" : ""}>
-                            <span>Show delta lines</span>
-                          </label>
-                        </div>
-                      ` : ""}
-                    </div>
-                  </div>
-                </div>
-              ` : ""}
-            </div>
-          `;
-          }).join("")}
+          ${this._seriesRows.map((row, index) => this._buildSingleRowHTML(row, index, { includeDragHandle: true })).join("")}
         </div>
       </div>
     `;
@@ -4549,12 +4356,18 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       iconEl.hass = this._hass;
     });
     collapsedSummaryEl?.querySelectorAll("[data-series-collapsed-entity-id]").forEach((button) => {
-      button.addEventListener("click", () => {
+      button.addEventListener("click", (ev) => {
+        ev.stopPropagation();
         const entityId = String(button.dataset.seriesCollapsedEntityId || "");
-        const row = this._seriesRows.find((entry) => entry.entity_id === entityId);
-        this._updateSeriesRowVisibilityByEntityId(entityId, row?.visible === false);
+        if (this._collapsedPopupEntityId === entityId) {
+          this._hideCollapsedTargetPopup();
+        } else {
+          this._showCollapsedTargetPopup(entityId, button);
+        }
       });
     });
+
+    this._refreshCollapsedTargetPopup();
 
     // Drag-to-reorder bindings
     this._targetRowsEl.querySelectorAll("[data-series-drag-index]").forEach((handle) => {
@@ -4650,6 +4463,447 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._saveSessionState();
     this._renderTargetRows();
     this._renderContent();
+  }
+
+  /** Generate the HTML for a single target row.
+   *  @param {object} row  - series row object
+   *  @param {number} index - position in _seriesRows
+   *  @param {{ includeDragHandle?: boolean }} opts
+   */
+  _buildSingleRowHTML(row, index, { includeDragHandle = true } = {}) {
+    const analysis = normalizeHistorySeriesAnalysis(row.analysis);
+    const supportsAnalysis = isAnalysisSupportedForRow(row);
+    const hasConfiguredAnalysis = historySeriesRowHasConfiguredAnalysis(row);
+    const isExpanded = supportsAnalysis && analysis.expanded === true;
+    const canShowDeltaAnalysis = !!this._selectedComparisonWindowId;
+    const hasActiveAnalysis = hasActiveSeriesAnalysis(analysis, canShowDeltaAnalysis);
+    const rowName = entityName(this._hass, row.entity_id) || row.entity_id;
+    const unit = this._hass?.states?.[row.entity_id]?.attributes?.unit_of_measurement || "";
+    return `
+      <div class="history-target-row ${row.visible === false ? "is-hidden" : ""} ${isExpanded ? "analysis-open" : ""}" role="row" data-series-reorder-index="${index}" ${supportsAnalysis ? `data-series-row-entity-id="${esc(row.entity_id)}"` : ""}>
+        ${includeDragHandle ? `
+          <button type="button" class="history-target-drag-handle" draggable="true" data-series-drag-index="${index}" aria-label="Drag to reorder ${esc(rowName)}" title="Drag to reorder">
+            <ha-icon icon="mdi:drag-vertical"></ha-icon>
+          </button>
+        ` : ""}
+        <div class="history-target-name" role="cell" title="${esc(entityName(this._hass, row.entity_id) || row.entity_id)}">
+          <div role="cell" class="history-target-controls">
+            <label class="history-target-color-field" style="--row-color:${esc(row.color)};--row-icon-color:${deriveSwatchIconColor(row.color)}">
+              <input type="color" class="history-target-color" data-series-color-index="${index}" value="${esc(row.color)}" aria-label="Line color for ${esc(row.entity_id)}">
+              <span class="history-target-color-icon" aria-hidden="true">
+                <ha-state-icon data-series-icon-entity-id="${esc(row.entity_id)}"></ha-state-icon>
+              </span>
+            </label>
+          </div>
+          <div class="history-target-name-text">
+            ${esc(entityName(this._hass, row.entity_id) || row.entity_id)}
+            <div class="history-target-entity-id">${esc(row.entity_id)}</div>
+          </div>
+        </div>
+        <div role="cell" class="history-target-actions">
+          ${supportsAnalysis ? `
+            <button
+              type="button"
+              class="history-target-analysis-toggle ${hasConfiguredAnalysis ? "configured" : ""}"
+              data-series-analysis-toggle-entity-id="${esc(row.entity_id)}"
+              aria-label="${isExpanded ? "Collapse" : "Expand"} analysis options for ${esc(rowName)}"
+              aria-expanded="${isExpanded ? "true" : "false"}"
+              title="${hasConfiguredAnalysis ? "Analysis configured" : "Configure analysis"}"
+            >
+              <ha-icon icon="${isExpanded ? "mdi:chevron-up" : "mdi:chevron-down"}"></ha-icon>
+            </button>
+          ` : ""}
+          <label class="history-target-visible-toggle" title="${row.visible === false ? "Show" : "Hide"} ${esc(entityName(this._hass, row.entity_id) || row.entity_id)}">
+            <input
+              type="checkbox"
+              data-series-visible-entity-id="${esc(row.entity_id)}"
+              aria-label="Show ${esc(entityName(this._hass, row.entity_id) || row.entity_id)} on chart"
+              ${row.visible === false ? "" : "checked"}
+            >
+            <span class="history-target-visible-toggle-track"></span>
+          </label>
+          <button type="button" class="history-target-remove" data-series-remove-index="${index}" aria-label="Remove ${esc(row.entity_id)}">
+            <ha-icon icon="mdi:close"></ha-icon>
+          </button>
+        </div>
+        ${supportsAnalysis && isExpanded ? `
+          <div class="history-target-analysis" role="cell">
+            <div class="history-target-analysis-grid">
+              <label class="history-target-analysis-option ${!hasActiveAnalysis ? "is-disabled" : ""}">
+                <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::hide_source_series" ${analysis.hide_source_series && hasActiveAnalysis ? "checked" : ""} ${!hasActiveAnalysis ? "disabled" : ""}>
+                <span>Hide source series</span>
+              </label>
+              <div class="history-target-analysis-group ${analysis.show_trend_lines ? "is-open" : ""}">
+                <label class="history-target-analysis-option">
+                  <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::show_trend_lines" ${analysis.show_trend_lines ? "checked" : ""}>
+                  <span>Show trend lines</span>
+                </label>
+                ${analysis.show_trend_lines ? `
+                  <div class="history-target-analysis-group-body">
+                    <label class="history-target-analysis-option">
+                      <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::show_trend_crosshairs" ${analysis.show_trend_crosshairs ? "checked" : ""}>
+                      <span>Show trend crosshairs</span>
+                    </label>
+                    <label class="history-target-analysis-field">
+                      <span class="history-target-analysis-field-label">Trend method</span>
+                      <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::trend_method">
+                        ${renderAnalysisSelectOptions(ANALYSIS_TREND_METHOD_OPTIONS, analysis.trend_method)}
+                      </select>
+                    </label>
+                    ${analysis.trend_method === "rolling_average" ? `
+                      <label class="history-target-analysis-field">
+                        <span class="history-target-analysis-field-label">Trend window</span>
+                        <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::trend_window">
+                          ${renderAnalysisSelectOptions(ANALYSIS_TREND_WINDOW_OPTIONS, analysis.trend_window)}
+                        </select>
+                      </label>
+                    ` : ""}
+                  </div>
+                ` : ""}
+              </div>
+              <label class="history-target-analysis-option">
+                <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::show_summary_stats" ${analysis.show_summary_stats ? "checked" : ""}>
+                <span>Show min / max / mean</span>
+              </label>
+              <div class="history-target-analysis-group ${analysis.show_rate_of_change ? "is-open" : ""}">
+                <label class="history-target-analysis-option">
+                  <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::show_rate_of_change" ${analysis.show_rate_of_change ? "checked" : ""}>
+                  <span>Show rate of change</span>
+                </label>
+                ${analysis.show_rate_of_change ? `
+                  <div class="history-target-analysis-group-body">
+                    <label class="history-target-analysis-field">
+                      <span class="history-target-analysis-field-label">Rate window</span>
+                      <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::rate_window">
+                        ${renderAnalysisSelectOptions(ANALYSIS_RATE_WINDOW_OPTIONS, analysis.rate_window)}
+                      </select>
+                    </label>
+                  </div>
+                ` : ""}
+              </div>
+              <div class="history-target-analysis-group ${analysis.show_threshold_analysis ? "is-open" : ""}">
+                <label class="history-target-analysis-option">
+                  <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::show_threshold_analysis" ${analysis.show_threshold_analysis ? "checked" : ""}>
+                  <span>Show threshold analysis</span>
+                </label>
+                ${analysis.show_threshold_analysis ? `
+                  <div class="history-target-analysis-group-body">
+                    <label class="history-target-analysis-option">
+                      <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::show_threshold_shading" ${analysis.show_threshold_shading ? "checked" : ""}>
+                      <span>Shade threshold area</span>
+                    </label>
+                    <label class="history-target-analysis-field">
+                      <span class="history-target-analysis-field-label">Threshold</span>
+                      <div class="history-target-analysis-toggle-group">
+                        <input
+                          class="history-target-analysis-input"
+                          type="number"
+                          step="any"
+                          inputmode="decimal"
+                          data-series-analysis-input="${esc(row.entity_id)}::threshold_value"
+                          value="${esc(analysis.threshold_value)}"
+                          placeholder="Threshold"
+                        >
+                        <span class="sidebar-analysis-threshold-unit">${esc(unit)}</span>
+                      </div>
+                    </label>
+                    ${analysis.show_threshold_shading ? `
+                      <label class="history-target-analysis-field">
+                        <span class="history-target-analysis-field-label">Shade area</span>
+                        <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::threshold_direction">
+                          <option value="above" ${analysis.threshold_direction !== "below" ? "selected" : ""}>Shade above</option>
+                          <option value="below" ${analysis.threshold_direction === "below" ? "selected" : ""}>Shade below</option>
+                        </select>
+                      </label>
+                    ` : ""}
+                  </div>
+                ` : ""}
+              </div>
+              <div class="history-target-analysis-group ${analysis.show_anomalies ? "is-open" : ""}">
+                <label class="history-target-analysis-option">
+                  <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::show_anomalies" ${analysis.show_anomalies ? "checked" : ""}>
+                  <span>Show anomalies</span>
+                </label>
+                ${analysis.show_anomalies ? `
+                  <div class="history-target-analysis-group-body">
+                    <label class="history-target-analysis-field">
+                      <span class="history-target-analysis-field-label">Sensitivity</span>
+                      <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::anomaly_sensitivity">
+                        ${renderAnalysisSelectOptions(ANALYSIS_ANOMALY_SENSITIVITY_OPTIONS, analysis.anomaly_sensitivity)}
+                      </select>
+                    </label>
+                    <div class="history-target-analysis-method-list">
+                      ${ANALYSIS_ANOMALY_METHOD_OPTIONS.map((opt) => {
+                        const isChecked = analysis.anomaly_methods.includes(opt.value);
+                        return `
+                        <div class="history-target-analysis-method-item">
+                          <label class="history-target-analysis-option">
+                            <input type="checkbox"
+                              data-series-analysis-option="${esc(row.entity_id)}::anomaly_method_toggle_${esc(opt.value)}"
+                              ${isChecked ? "checked" : ""}>
+                            <span>${esc(opt.label)}</span>
+                            ${opt.help ? `
+                              <span class="analysis-method-help" id="amh-${esc(row.entity_id.replace(/\./g, "-"))}-${esc(opt.value)}" tabindex="0">?</span>
+                              <ha-tooltip for="amh-${esc(row.entity_id.replace(/\./g, "-"))}-${esc(opt.value)}" placement="right" hoist>${esc(opt.help)}</ha-tooltip>
+                            ` : ""}
+                            ${isChecked ? `<span class="analysis-computing-spinner" data-analysis-spinner="${esc(row.entity_id)}"></span>` : ""}
+                          </label>
+                          ${isChecked && opt.value === "rate_of_change" ? `
+                            <div class="history-target-analysis-method-subopts">
+                              <label class="history-target-analysis-field">
+                                <span class="history-target-analysis-field-label">Rate window</span>
+                                <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::anomaly_rate_window">
+                                  ${renderAnalysisSelectOptions(ANALYSIS_ANOMALY_RATE_WINDOW_OPTIONS, analysis.anomaly_rate_window)}
+                                </select>
+                              </label>
+                            </div>
+                          ` : ""}
+                          ${isChecked && opt.value === "rolling_zscore" ? `
+                            <div class="history-target-analysis-method-subopts">
+                              <label class="history-target-analysis-field">
+                                <span class="history-target-analysis-field-label">Rolling window</span>
+                                <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::anomaly_zscore_window">
+                                  ${renderAnalysisSelectOptions(ANALYSIS_ANOMALY_ZSCORE_WINDOW_OPTIONS, analysis.anomaly_zscore_window)}
+                                </select>
+                              </label>
+                            </div>
+                          ` : ""}
+                          ${isChecked && opt.value === "persistence" ? `
+                            <div class="history-target-analysis-method-subopts">
+                              <label class="history-target-analysis-field">
+                                <span class="history-target-analysis-field-label">Min flat duration</span>
+                                <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::anomaly_persistence_window">
+                                  ${renderAnalysisSelectOptions(ANALYSIS_ANOMALY_PERSISTENCE_WINDOW_OPTIONS, analysis.anomaly_persistence_window)}
+                                </select>
+                              </label>
+                            </div>
+                          ` : ""}
+                          ${isChecked && opt.value === "comparison_window" ? `
+                            <div class="history-target-analysis-method-subopts">
+                              <label class="history-target-analysis-field">
+                                <span class="history-target-analysis-field-label">Compare to window</span>
+                                <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::anomaly_comparison_window_id">
+                                  <option value="" ${!analysis.anomaly_comparison_window_id ? "selected" : ""}>— select window —</option>
+                                  ${this._comparisonWindows.map((win) => `<option value="${esc(win.id)}" ${analysis.anomaly_comparison_window_id === win.id ? "selected" : ""}>${esc(win.label || win.id)}</option>`).join("")}
+                                  <option value="__add_new__">+ Add date window</option>
+                                </select>
+                              </label>
+                            </div>
+                          ` : ""}
+                        </div>`;
+                      }).join("")}
+                    </div>
+                    ${analysis.anomaly_methods.length >= 2 ? `
+                      <label class="history-target-analysis-field">
+                        <span class="history-target-analysis-field-label">When methods overlap</span>
+                        <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::anomaly_overlap_mode">
+                          ${renderAnalysisSelectOptions(ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS, analysis.anomaly_overlap_mode)}
+                        </select>
+                      </label>
+                    ` : ""}
+                  </div>
+                ` : ""}
+              </div>
+              <div class="history-target-analysis-group ${analysis.show_delta_analysis && canShowDeltaAnalysis ? "is-open" : ""}">
+                <label class="history-target-analysis-option top">
+                  <input
+                    type="checkbox"
+                    data-series-analysis-option="${esc(row.entity_id)}::show_delta_analysis"
+                    ${analysis.show_delta_analysis && canShowDeltaAnalysis ? "checked" : ""}
+                    ${canShowDeltaAnalysis ? "" : "disabled"}
+                  >
+                  <span>Show delta vs selected date window<br />
+                    ${!canShowDeltaAnalysis ? `
+                      <span class="history-target-analysis-option-help-text">Select a date window tab to enable delta analysis.</span>
+                    ` : ""}
+                  </span>
+                </label>
+                ${analysis.show_delta_analysis && canShowDeltaAnalysis ? `
+                  <div class="history-target-analysis-group-body">
+                    <label class="history-target-analysis-option">
+                      <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::show_delta_tooltip" ${analysis.show_delta_tooltip ? "checked" : ""}>
+                      <span>Show delta in tooltip</span>
+                    </label>
+                    <label class="history-target-analysis-option">
+                      <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::show_delta_lines" ${analysis.show_delta_lines ? "checked" : ""}>
+                      <span>Show delta lines</span>
+                    </label>
+                  </div>
+                ` : ""}
+              </div>
+            </div>
+          </div>
+        ` : ""}
+      </div>
+    `;
+  }
+
+  /** Open (or re-render) the collapsed-sidebar target popup for *entityId*,
+   *  anchored to *anchorEl*.  Wires all the same controls as the full sidebar row. */
+  _showCollapsedTargetPopup(entityId, anchorEl) {
+    const popup = this.shadowRoot?.getElementById("collapsed-target-popup");
+    if (!popup) {
+      return;
+    }
+    const index = this._seriesRows.findIndex((r) => r.entity_id === entityId);
+    if (index < 0) {
+      this._hideCollapsedTargetPopup();
+      return;
+    }
+    const row = this._seriesRows[index];
+
+    // Store state for refresh after re-renders
+    this._collapsedPopupEntityId = entityId;
+    this._collapsedPopupAnchorEl = anchorEl;
+
+    popup.innerHTML = this._buildSingleRowHTML(row, index, { includeDragHandle: false });
+
+    // Hydrate ha-state-icon elements
+    popup.querySelectorAll("[data-series-icon-entity-id]").forEach((iconEl) => {
+      const eid = iconEl.dataset.seriesIconEntityId;
+      if (!eid) {
+        return;
+      }
+      iconEl.stateObj = this._hass?.states?.[eid];
+      iconEl.hass = this._hass;
+    });
+
+    // Wire all interactive controls
+    popup.querySelectorAll("[data-series-color-index]").forEach((input) => {
+      input.addEventListener("change", () => {
+        this._updateSeriesRowColor(Number.parseInt(input.dataset.seriesColorIndex || "", 10), input.value);
+      });
+    });
+    popup.querySelectorAll("[data-series-analysis-toggle-entity-id]").forEach((button) => {
+      button.addEventListener("click", () => {
+        this._toggleSeriesAnalysisExpanded(String(button.dataset.seriesAnalysisToggleEntityId || ""));
+      });
+    });
+    popup.querySelectorAll("[data-series-visible-entity-id]").forEach((input) => {
+      input.addEventListener("change", () => {
+        this._updateSeriesRowVisibilityByEntityId(String(input.dataset.seriesVisibleEntityId || ""), input.checked);
+      });
+    });
+    popup.querySelectorAll("[data-series-analysis-option]").forEach((input) => {
+      input.addEventListener("change", () => {
+        const [eid, key] = String(input.dataset.seriesAnalysisOption || "").split("::");
+        if (!eid || !key) {
+          return;
+        }
+        this._setSeriesAnalysisOption(eid, key, !!input.checked);
+      });
+    });
+    popup.querySelectorAll("[data-series-analysis-select]").forEach((select) => {
+      select.addEventListener("change", () => {
+        const [eid, key] = String(select.dataset.seriesAnalysisSelect || "").split("::");
+        if (!eid || !key) {
+          return;
+        }
+        this._setSeriesAnalysisOption(eid, key, select.value || "");
+      });
+    });
+    popup.querySelectorAll("[data-series-analysis-input]").forEach((input) => {
+      input.addEventListener("change", () => {
+        const [eid, key] = String(input.dataset.seriesAnalysisInput || "").split("::");
+        if (!eid || !key) {
+          return;
+        }
+        this._setSeriesAnalysisOption(eid, key, input.value || "");
+      });
+    });
+    popup.querySelectorAll("[data-series-remove-index]").forEach((button) => {
+      button.addEventListener("click", () => {
+        this._hideCollapsedTargetPopup();
+        this._removeSeriesRow(Number.parseInt(button.dataset.seriesRemoveIndex || "", 10));
+      });
+    });
+    popup.querySelectorAll("[data-series-row-entity-id]").forEach((rowEl) => {
+      rowEl.addEventListener("click", (ev) => {
+        const nameArea = rowEl.querySelector(".history-target-name");
+        if (!nameArea || !nameArea.contains(ev.target)) {
+          return;
+        }
+        if (ev.target.closest("button, input, select, textarea, a, label")) {
+          return;
+        }
+        this._toggleSeriesAnalysisExpanded(String(rowEl.dataset.seriesRowEntityId || ""));
+      });
+    });
+
+    // Position the popup to the right of the anchor button
+    popup.removeAttribute("hidden");
+    const anchorRect = anchorEl.getBoundingClientRect();
+    const popupHeight = popup.offsetHeight;
+    const top = Math.min(anchorRect.top, window.innerHeight - popupHeight - 16);
+    popup.style.top = `${Math.max(8, top)}px`;
+    popup.style.left = `${anchorRect.right + 8}px`;
+
+    // Dismiss on outside click (uses composedPath to handle shadow DOM)
+    if (this._collapsedPopupOutsideClickHandler) {
+      document.removeEventListener("click", this._collapsedPopupOutsideClickHandler, true);
+    }
+    this._collapsedPopupOutsideClickHandler = (ev) => {
+      const path = ev.composedPath();
+      if (!path.includes(popup) && !path.includes(anchorEl)) {
+        this._hideCollapsedTargetPopup();
+      }
+    };
+    document.addEventListener("click", this._collapsedPopupOutsideClickHandler, true);
+
+    // Dismiss on Escape key
+    if (this._collapsedPopupKeyHandler) {
+      document.removeEventListener("keydown", this._collapsedPopupKeyHandler);
+    }
+    this._collapsedPopupKeyHandler = (ev) => {
+      if (ev.key === "Escape") {
+        this._hideCollapsedTargetPopup();
+        anchorEl.focus();
+      }
+    };
+    document.addEventListener("keydown", this._collapsedPopupKeyHandler);
+  }
+
+  /** Close the collapsed-sidebar target popup and clean up all listeners. */
+  _hideCollapsedTargetPopup() {
+    const popup = this.shadowRoot?.getElementById("collapsed-target-popup");
+    if (popup) {
+      popup.setAttribute("hidden", "");
+      popup.innerHTML = "";
+    }
+    if (this._collapsedPopupOutsideClickHandler) {
+      document.removeEventListener("click", this._collapsedPopupOutsideClickHandler, true);
+      this._collapsedPopupOutsideClickHandler = null;
+    }
+    if (this._collapsedPopupKeyHandler) {
+      document.removeEventListener("keydown", this._collapsedPopupKeyHandler);
+      this._collapsedPopupKeyHandler = null;
+    }
+    this._collapsedPopupEntityId = null;
+    this._collapsedPopupAnchorEl = null;
+  }
+
+  /** Re-render the popup in-place after a state change (e.g. analysis toggle).
+   *  Called at the end of _renderTargetRows so the popup stays in sync. */
+  _refreshCollapsedTargetPopup() {
+    if (!this._collapsedPopupEntityId) {
+      return;
+    }
+    const exists = this._seriesRows.some((r) => r.entity_id === this._collapsedPopupEntityId);
+    if (!exists) {
+      this._hideCollapsedTargetPopup();
+      return;
+    }
+    // Find the fresh anchor button in the re-rendered collapsed summary
+    const collapsedSummaryEl = this.shadowRoot?.getElementById("target-collapsed-summary");
+    const newAnchor = collapsedSummaryEl
+      ? Array.from(collapsedSummaryEl.querySelectorAll("[data-series-collapsed-entity-id]"))
+          .find((btn) => btn.dataset.seriesCollapsedEntityId === this._collapsedPopupEntityId) ?? null
+      : null;
+    if (!newAnchor) {
+      this._hideCollapsedTargetPopup();
+      return;
+    }
+    this._showCollapsedTargetPopup(this._collapsedPopupEntityId, newAnchor);
   }
 
   _updateSeriesRowVisibilityByEntityId(entityId, visible) {
@@ -5184,6 +5438,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._updateChartHoverIndicator();
     this._updateChartZoomHighlight();
     this._updateSelectionJumpControls();
+    this._syncLiveEdgeHandle();
     window.requestAnimationFrame(() => this._revealSelectionInTimeline("auto"));
   }
 
@@ -5751,7 +6006,17 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     const valuePx = ((value.getTime() - this._rangeBounds.min) / total) * contentWidth;
     const viewportX = valuePx - this._rangeScrollViewportEl.scrollLeft;
     const clampedX = clampNumber(viewportX, 0, this._rangeScrollViewportEl.clientWidth);
-    tooltip.textContent = formatRangeDateTime(value);
+    if (handle === "end" && this._isOnLiveEdge()) {
+      const dateEl = document.createElement("span");
+      dateEl.textContent = formatRangeDateTime(value);
+      const hintEl = document.createElement("span");
+      hintEl.className = "range-tooltip-live-hint";
+      hintEl.textContent = "Updates with new data";
+      tooltip.textContent = "";
+      tooltip.append(dateEl, hintEl);
+    } else {
+      tooltip.textContent = formatRangeDateTime(value);
+    }
     tooltip.style.left = `${clampedX}px`;
     tooltip.classList.add("visible");
     tooltip.setAttribute("aria-hidden", "false");
@@ -6162,6 +6427,38 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     }, RANGE_AUTO_ZOOM_DEBOUNCE_MS);
   }
 
+  // ---------------------------------------------------------------------------
+  // Live-edge detection and handle indicator
+  // ---------------------------------------------------------------------------
+
+  /** Returns true when the committed end time is at or very near "now",
+   *  meaning new annotations should cause the visible range to advance. */
+  _isOnLiveEdge() {
+    if (!this._endTime) {
+      return false;
+    }
+    // Within 2 minutes of now, or in the future.
+    return this._endTime.getTime() >= Date.now() - 2 * MINUTE_MS;
+  }
+
+  /** Toggle the red breathing indicator on the end handle. */
+  _syncLiveEdgeHandle() {
+    if (!this._rangeEndHandle) {
+      return;
+    }
+    this._rangeEndHandle.classList.toggle("is-live", this._isOnLiveEdge());
+  }
+
+  /** Called whenever a new annotation is recorded (HA event or window event).
+   *  If the current range is on the live edge, advance the end time to now
+   *  so the chart immediately shows the new data point. */
+  _handleEventRecorded() {
+    if (!this._isOnLiveEdge() || !this._startTime) {
+      return;
+    }
+    this._applyCommittedRange(this._startTime, new Date(), { push: false });
+  }
+
   _applyCommittedRange(start, end, { push = false } = {}) {
     if (!start || !end || start >= end) return;
     const nextStart = new Date(start);
@@ -6174,6 +6471,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._startTime = nextStart;
     this._endTime = nextEnd;
     this._hours = Math.max(1, Math.round((nextEnd.getTime() - nextStart.getTime()) / HOUR_MS));
+    this._syncLiveEdgeHandle();
     this._scheduleAutoZoomUpdate();
     this._syncControls();
     this._updateSelectionJumpControls();

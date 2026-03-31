@@ -900,6 +900,89 @@ export class ChartRenderer {
     ctx.restore();
   }
 
+  /**
+   * Animate a "blip" circle at the given canvas coordinates.
+   * The circle expands with a bouncy overshoot, holds briefly, then shrinks to nothing.
+   * Uses a separate overlay canvas so it doesn't interfere with the main chart.
+   */
+  drawBlip(cx, cy, color, options = {}) {
+    const maxRadius = options.maxRadius || 6;
+    const duration = options.duration || 600;
+    const canvas = this.canvas;
+    const parent = canvas.parentElement;
+    if (!parent) return;
+
+    // Create a small overlay canvas positioned exactly over the chart canvas.
+    const overlay = document.createElement("canvas");
+    overlay.width = canvas.width;
+    overlay.height = canvas.height;
+    overlay.style.cssText = `position:absolute;top:0;left:0;width:${canvas.style.width || canvas.offsetWidth + "px"};height:${canvas.style.height || canvas.offsetHeight + "px"};pointer-events:none;z-index:2;`;
+    parent.style.position = parent.style.position || "relative";
+    parent.appendChild(overlay);
+
+    const ctx = overlay.getContext("2d");
+    const dpr = window.devicePixelRatio || 1;
+    const pxCx = cx * dpr;
+    const pxCy = cy * dpr;
+    const pxMaxR = maxRadius * dpr;
+    const start = performance.now();
+
+    const animate = (now) => {
+      const elapsed = now - start;
+      const t = Math.min(elapsed / duration, 1);
+
+      ctx.clearRect(0, 0, overlay.width, overlay.height);
+
+      // Phase 1 (0–0.35): bouncy expand  Phase 2 (0.35–0.6): hold  Phase 3 (0.6–1): shrink out
+      let radius;
+      let alpha;
+      if (t < 0.35) {
+        // Overshoot bounce: ease to 1.3x then settle to 1x
+        const p = t / 0.35;
+        const bounce = p < 0.6
+          ? (p / 0.6) * 1.3
+          : 1.3 - 0.3 * ((p - 0.6) / 0.4);
+        radius = pxMaxR * Math.min(bounce, 1.3);
+        alpha = Math.min(p * 2.5, 0.85);
+      } else if (t < 0.6) {
+        radius = pxMaxR;
+        alpha = 0.85;
+      } else {
+        const p = (t - 0.6) / 0.4;
+        // Ease out cubic for smooth shrink
+        const ease = 1 - Math.pow(1 - p, 3);
+        radius = pxMaxR * (1 - ease);
+        alpha = 0.85 * (1 - ease);
+      }
+
+      if (radius > 0.2 && alpha > 0.01) {
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.beginPath();
+        ctx.arc(pxCx, pxCy, radius, 0, Math.PI * 2);
+        ctx.fillStyle = color;
+        ctx.fill();
+
+        // Outer ring for extra visibility
+        ctx.beginPath();
+        ctx.arc(pxCx, pxCy, radius * 1.6, 0, Math.PI * 2);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1.2 * dpr;
+        ctx.globalAlpha = alpha * 0.4;
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      if (t < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        overlay.remove();
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }
+
   getAnomalyClusterRegions(clusters, t0, t1, vMin, vMax, options = {}) {
     if (!Array.isArray(clusters) || clusters.length === 0) {
       return [];

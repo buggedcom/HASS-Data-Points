@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { loadLegacyScripts, repoPath } from "../../__tests__/load-legacy-script.ts";
+import { loadLegacyScripts, repoPath } from "@/lib/__tests__/load-legacy-script";
 
 const chartState = loadLegacyScripts(
   [repoPath("custom_components", "hass_datapoints", "src", "lib", "chart", "chart-state.js")],
