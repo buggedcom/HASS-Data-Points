@@ -18,6 +18,7 @@ ATTR_ICON = "icon"
 ATTR_COLOR = "color"
 ATTR_DATE = "date"
 ATTR_DEV = "dev"
+ATTR_AUTOMATION_ID = "automation_id"
 
 SERVICE_RECORD = "record"
 
