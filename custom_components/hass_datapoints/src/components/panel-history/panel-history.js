@@ -63,6 +63,8 @@ import {
 
 import "../../molecules/dp-target-row-list/dp-target-row-list";
 import "../../molecules/dp-sidebar-options/dp-sidebar-options";
+import "../../molecules/dp-comparison-tab-rail/dp-comparison-tab-rail";
+import "../../molecules/dp-date-window-dialog/dp-date-window-dialog";
 
 const DATA_GAP_THRESHOLD_OPTIONS = [
   { value: "auto", label: "Auto-detect" },
@@ -2348,9 +2350,11 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._loadingComparisonWindowIds = [];
     this._comparisonTabsRenderKey = "";
     this._comparisonTabsHostEl = null;
+    this._comparisonTabRailComp = null;
     this._pendingAnomalyComparisonWindowEntityId = null;
     this._dateWindowDialogOpen = false;
     this._editingDateWindowId = null;
+    this._dateWindowDialogComp = null;
     this._dragSourceIndex = null;
     this._splitChartView = false;
     this._dateWindowDialogNameEl = null;
@@ -3219,11 +3223,20 @@ export class HassRecordsHistoryPanel extends HTMLElement {
   }
 
   _syncDateWindowDialogInputs() {
+    const startVal = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.start || null);
+    const endVal = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.end || null);
+    // Update the LitElement component when mounted.
+    if (this._dateWindowDialogComp) {
+      this._dateWindowDialogComp.startValue = startVal;
+      this._dateWindowDialogComp.endValue = endVal;
+      return;
+    }
+    // Legacy ha-dialog fallback.
     if (this._dateWindowDialogStartEl) {
-      this._dateWindowDialogStartEl.value = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.start || null);
+      this._dateWindowDialogStartEl.value = startVal;
     }
     if (this._dateWindowDialogEndEl) {
-      this._dateWindowDialogEndEl.value = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.end || null);
+      this._dateWindowDialogEndEl.value = endVal;
     }
   }
 
@@ -3265,7 +3278,8 @@ export class HassRecordsHistoryPanel extends HTMLElement {
   }
 
   _ensureDateWindowDialog() {
-    if (this._dateWindowDialogEl || !this.shadowRoot) return;
+    // The dialog is pre-mounted as a LitElement in _mountControls(); no legacy ha-dialog needed.
+    if (this._dateWindowDialogComp || this._dateWindowDialogEl || !this.shadowRoot) return;
     const dialog = document.createElement("ha-dialog");
     dialog.id = "date-window-dialog";
     dialog.setAttribute("hideActions", "");
@@ -3331,8 +3345,28 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._ensureDateWindowDialog();
     this._dateWindowDialogOpen = true;
     this._editingDateWindowId = targetWindow?.id || null;
-    if (this._dateWindowDialogEl) this._dateWindowDialogEl.open = true;
+    const dialogStart = targetWindow ? parseDateValue(targetWindow.start_time) : this._startTime;
+    const dialogEnd = targetWindow ? parseDateValue(targetWindow.end_time) : this._endTime;
+    this._dateWindowDialogDraftRange = dialogStart && dialogEnd && dialogStart < dialogEnd
+      ? { start: new Date(dialogStart), end: new Date(dialogEnd) }
+      : null;
+
+    // Prefer the new LitElement component if mounted.
+    if (this._dateWindowDialogComp) {
+      this._dateWindowDialogComp.heading = targetWindow ? "Edit date window" : "Add date window";
+      this._dateWindowDialogComp.submitLabel = targetWindow ? "Save date window" : "Create date window";
+      this._dateWindowDialogComp.showDelete = !!targetWindow;
+      this._dateWindowDialogComp.showShortcuts = !targetWindow;
+      this._dateWindowDialogComp.name = targetWindow?.label || "";
+      this._dateWindowDialogComp.startValue = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.start || null);
+      this._dateWindowDialogComp.endValue = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.end || null);
+      this._dateWindowDialogComp.open = true;
+      return;
+    }
+
+    // Legacy ha-dialog fallback (used when _dateWindowDialogComp is not available).
     if (this._dateWindowDialogEl) {
+      this._dateWindowDialogEl.open = true;
       this._dateWindowDialogEl.headerTitle = targetWindow ? "Edit date window" : "Add date window";
     }
     const submitButton = this._dateWindowDialogEl?.querySelector("#date-window-submit");
@@ -3350,11 +3384,6 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     if (this._dateWindowDialogNameEl) {
       this._dateWindowDialogNameEl.value = targetWindow?.label || "";
     }
-    const dialogStart = targetWindow ? parseDateValue(targetWindow.start_time) : this._startTime;
-    const dialogEnd = targetWindow ? parseDateValue(targetWindow.end_time) : this._endTime;
-    this._dateWindowDialogDraftRange = dialogStart && dialogEnd && dialogStart < dialogEnd
-      ? { start: new Date(dialogStart), end: new Date(dialogEnd) }
-      : null;
     this._syncDateWindowDialogInputs();
     window.requestAnimationFrame(() => this._dateWindowDialogNameEl?.focus());
   }
@@ -3364,13 +3393,23 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._editingDateWindowId = null;
     this._dateWindowDialogDraftRange = null;
     this._pendingAnomalyComparisonWindowEntityId = null;
-    if (this._dateWindowDialogEl && !fromClosedEvent) this._dateWindowDialogEl.open = false;
+    if (!fromClosedEvent) {
+      if (this._dateWindowDialogComp) {
+        this._dateWindowDialogComp.open = false;
+      } else if (this._dateWindowDialogEl) {
+        this._dateWindowDialogEl.open = false;
+      }
+    }
   }
 
-  _createDateWindowFromDialog() {
-    const label = String(this._dateWindowDialogNameEl?.value || "").trim();
-    const start = this._dateWindowDialogDraftRange?.start || null;
-    const end = this._dateWindowDialogDraftRange?.end || null;
+  _createDateWindowFromDialog(overrides = {}) {
+    // Accept optional overrides from the LitElement component's dp-window-submit event.
+    const rawName = overrides.name != null ? overrides.name : (this._dateWindowDialogNameEl?.value || "");
+    const label = String(rawName).trim();
+    const parsedStart = overrides.start ? this._parseDateWindowInputValue(overrides.start) : null;
+    const parsedEnd = overrides.end ? this._parseDateWindowInputValue(overrides.end) : null;
+    const start = parsedStart || this._dateWindowDialogDraftRange?.start || null;
+    const end = parsedEnd || this._dateWindowDialogDraftRange?.end || null;
     if (!label || !start || !end || start >= end) return;
     const existingIds = new Set(this._comparisonWindows.map((window) => window.id));
     const nextWindow = {
@@ -4197,6 +4236,30 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       });
       this._sidebarOptionsEl.appendChild(sidebarComp);
       this._sidebarOptionsComp = sidebarComp;
+    }
+
+    // Create the dp-date-window-dialog element once and wire events at creation time.
+    if (this.shadowRoot) {
+      const dialogComp = document.createElement("dp-date-window-dialog");
+      dialogComp.addEventListener("dp-window-close", () => this._closeDateWindowDialog());
+      dialogComp.addEventListener("dp-window-submit", (ev) => {
+        this._createDateWindowFromDialog(ev.detail || {});
+      });
+      dialogComp.addEventListener("dp-window-delete", () => this._deleteEditingDateWindow());
+      dialogComp.addEventListener("dp-window-shortcut", (ev) => {
+        this._applyDateWindowShortcut(ev.detail.direction);
+      });
+      dialogComp.addEventListener("dp-window-date-change", (ev) => {
+        const start = this._parseDateWindowInputValue(ev.detail?.start || "");
+        const end = this._parseDateWindowInputValue(ev.detail?.end || "");
+        if (start && end && start < end) {
+          this._dateWindowDialogDraftRange = { start, end };
+        } else {
+          this._dateWindowDialogDraftRange = null;
+        }
+      });
+      this.shadowRoot.appendChild(dialogComp);
+      this._dateWindowDialogComp = dialogComp;
     }
 
     this._syncControls();
@@ -6409,106 +6472,35 @@ export class HassRecordsHistoryPanel extends HTMLElement {
         editable: true,
       })),
     ];
-    const renderKey = JSON.stringify({
-      tabs: tabs.map((window) => ({
-        id: window.id,
-        label: window.label,
-        detail: window.detail || "",
-        active: !!window.active,
-        loading: this._loadingComparisonWindowIds.includes(window.id),
-        previewing: this._hoveredComparisonWindowId === window.id,
-      })),
-    });
     tabsEl.hidden = false;
-    if (this._comparisonTabsHostEl !== tabsEl) {
+
+    // Mount the dp-comparison-tab-rail once; wire events at creation time.
+    if (!this._comparisonTabRailComp || this._comparisonTabsHostEl !== tabsEl) {
+      tabsEl.innerHTML = "";
+      const rail = document.createElement("dp-comparison-tab-rail");
+      rail.addEventListener("dp-tab-activate", (ev) => this._handleComparisonTabActivate(ev.detail.tabId));
+      rail.addEventListener("dp-tab-hover", (ev) => this._handleComparisonTabHover(ev.detail.tabId));
+      rail.addEventListener("dp-tab-leave", (ev) => this._handleComparisonTabLeave(ev.detail.tabId));
+      rail.addEventListener("dp-tab-edit", (ev) => {
+        const id = ev.detail.tabId;
+        const win = this._comparisonWindows.find((entry) => entry.id === id);
+        if (win) {
+          this._openDateWindowDialog(win);
+        }
+      });
+      rail.addEventListener("dp-tab-delete", (ev) => {
+        this._deleteDateWindow(ev.detail.tabId);
+      });
+      rail.addEventListener("dp-tab-add", () => this._openDateWindowDialog());
+      tabsEl.appendChild(rail);
+      this._comparisonTabRailComp = rail;
       this._comparisonTabsHostEl = tabsEl;
-      this._comparisonTabsRenderKey = "";
     }
-    if (this._comparisonTabsRenderKey !== renderKey) {
-      tabsEl.innerHTML = `
-        <div class="chart-tabs-shell" id="chart-tabs-shell">
-          <div class="chart-tabs-rail" id="chart-tabs-rail">
-            <div class="chart-tabs">
-              ${tabs.map((window) => `
-                <div
-                  class="chart-tab ${window.active ? "active" : ""} ${this._hoveredComparisonWindowId === window.id ? "previewing" : ""} ${this._loadingComparisonWindowIds.includes(window.id) ? "loading" : ""}"
-                  data-comparison-id="${esc(window.id)}"
-                >
-                  <button
-                    type="button"
-                    class="chart-tab-trigger"
-                    data-comparison-trigger="${esc(window.id)}"
-                    ${window.active ? 'aria-current="true"' : ""}
-                  >
-                    <span class="chart-tab-content">
-                      <span class="chart-tab-main">
-                        ${this._loadingComparisonWindowIds.includes(window.id) ? '<span class="chart-tab-spinner" aria-hidden="true"></span>' : ""}
-                        <span class="chart-tab-label">${esc(window.label)}</span>
-                      </span>
-                      <span class="chart-tab-detail-row">
-                        <span class="chart-tab-detail">${esc(window.detail || "")}</span>
-                      </span>
-                    </span>
-                  </button>
-                  ${window.editable ? `
-                    <span class="chart-tab-actions">
-                      <button type="button" class="chart-tab-action edit" data-date-window-edit="${esc(window.id)}" aria-label="Edit ${esc(window.label)}">
-                        <ha-icon icon="mdi:pencil-outline"></ha-icon>
-                      </button>
-                      <button type="button" class="chart-tab-action delete" data-date-window-delete="${esc(window.id)}" aria-label="Delete ${esc(window.label)}">
-                        <ha-icon icon="mdi:close"></ha-icon>
-                      </button>
-                    </span>
-                  ` : ""}
-                </div>
-              `).join("")}
-            </div>
-          </div>
-          <button type="button" class="chart-tabs-add" id="chart-tabs-add">
-            <ha-icon icon="mdi:plus"></ha-icon>
-            <span class="chart-tabs-add-label">Add date window</span>
-          </button>
-        </div>
-      `;
-      tabsEl.querySelector("#chart-tabs-add")?.addEventListener("click", () => this._openDateWindowDialog());
-      tabsEl.querySelectorAll("[data-date-window-edit]").forEach((button) => {
-        button.addEventListener("click", (ev) => {
-          ev.preventDefault();
-          ev.stopPropagation();
-          const id = button.getAttribute("data-date-window-edit");
-          const window = this._comparisonWindows.find((entry) => entry.id === id);
-          if (window) this._openDateWindowDialog(window);
-        });
-      });
-      tabsEl.querySelectorAll("[data-date-window-delete]").forEach((button) => {
-        button.addEventListener("click", (ev) => {
-          ev.preventDefault();
-          ev.stopPropagation();
-          const id = button.getAttribute("data-date-window-delete");
-          if (id) this._deleteDateWindow(id);
-        });
-      });
-      tabsEl.querySelectorAll("[data-comparison-id]").forEach((tab) => {
-        const id = tab.dataset.comparisonId;
-        const trigger = tab.querySelector("[data-comparison-trigger]");
-        if (!id) {
-          return;
-        }
-        if (id !== "current-range") {
-          tab.addEventListener("mouseenter", () => this._handleComparisonTabHover(id));
-          tab.addEventListener("mouseleave", () => this._handleComparisonTabLeave(id));
-          trigger?.addEventListener("focus", () => this._handleComparisonTabHover(id));
-          trigger?.addEventListener("blur", () => this._handleComparisonTabLeave(id));
-        }
-        trigger?.addEventListener("click", () => this._handleComparisonTabActivate(id));
-      });
-      this._comparisonTabsRenderKey = renderKey;
-    }
-    tabsEl.querySelectorAll("[data-comparison-id]").forEach((tab) => {
-      const id = tab.dataset.comparisonId;
-      tab.classList.toggle("previewing", !!id && id === this._hoveredComparisonWindowId);
-    });
-    this._updateComparisonTabsOverflow();
+
+    // Update properties on every render.
+    this._comparisonTabRailComp.tabs = tabs;
+    this._comparisonTabRailComp.loadingIds = [...this._loadingComparisonWindowIds];
+    this._comparisonTabRailComp.hoveredId = this._hoveredComparisonWindowId || "";
   }
 
   _updateComparisonTabsOverflow() {

@@ -5903,16 +5903,16 @@ ${s2.description}`).join("\n\n");
       return this._config?.show_annotation !== false ? 10 : 7;
     }
   }
-  const t$1 = globalThis, e$2 = t$1.ShadowRoot && (void 0 === t$1.ShadyCSS || t$1.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, s$2 = /* @__PURE__ */ Symbol(), o$3 = /* @__PURE__ */ new WeakMap();
+  const t$3 = globalThis, e$4 = t$3.ShadowRoot && (void 0 === t$3.ShadyCSS || t$3.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, s$3 = /* @__PURE__ */ Symbol(), o$3 = /* @__PURE__ */ new WeakMap();
   let n$2 = class n {
     constructor(t2, e2, o2) {
-      if (this._$cssResult$ = true, o2 !== s$2) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
+      if (this._$cssResult$ = true, o2 !== s$3) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
       this.cssText = t2, this.t = e2;
     }
     get styleSheet() {
       let t2 = this.o;
       const s2 = this.t;
-      if (e$2 && void 0 === t2) {
+      if (e$4 && void 0 === t2) {
         const e2 = void 0 !== s2 && 1 === s2.length;
         e2 && (t2 = o$3.get(s2)), void 0 === t2 && ((this.o = t2 = new CSSStyleSheet()).replaceSync(this.cssText), e2 && o$3.set(s2, t2));
       }
@@ -5922,25 +5922,25 @@ ${s2.description}`).join("\n\n");
       return this.cssText;
     }
   };
-  const r$2 = (t2) => new n$2("string" == typeof t2 ? t2 : t2 + "", void 0, s$2), i$3 = (t2, ...e2) => {
+  const r$2 = (t2) => new n$2("string" == typeof t2 ? t2 : t2 + "", void 0, s$3), i$5 = (t2, ...e2) => {
     const o2 = 1 === t2.length ? t2[0] : e2.reduce((e3, s2, o3) => e3 + ((t3) => {
       if (true === t3._$cssResult$) return t3.cssText;
       if ("number" == typeof t3) return t3;
       throw Error("Value passed to 'css' function must be a 'css' function result: " + t3 + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
     })(s2) + t2[o3 + 1], t2[0]);
-    return new n$2(o2, t2, s$2);
+    return new n$2(o2, t2, s$3);
   }, S$1 = (s2, o2) => {
-    if (e$2) s2.adoptedStyleSheets = o2.map((t2) => t2 instanceof CSSStyleSheet ? t2 : t2.styleSheet);
+    if (e$4) s2.adoptedStyleSheets = o2.map((t2) => t2 instanceof CSSStyleSheet ? t2 : t2.styleSheet);
     else for (const e2 of o2) {
-      const o3 = document.createElement("style"), n2 = t$1.litNonce;
+      const o3 = document.createElement("style"), n2 = t$3.litNonce;
       void 0 !== n2 && o3.setAttribute("nonce", n2), o3.textContent = e2.cssText, s2.appendChild(o3);
     }
-  }, c$2 = e$2 ? (t2) => t2 : (t2) => t2 instanceof CSSStyleSheet ? ((t3) => {
+  }, c$3 = e$4 ? (t2) => t2 : (t2) => t2 instanceof CSSStyleSheet ? ((t3) => {
     let e2 = "";
     for (const s2 of t3.cssRules) e2 += s2.cssText;
     return r$2(e2);
   })(t2) : t2;
-  const { is: i$2, defineProperty: e$1, getOwnPropertyDescriptor: h$1, getOwnPropertyNames: r$1, getOwnPropertySymbols: o$2, getPrototypeOf: n$1 } = Object, a$1 = globalThis, c$1 = a$1.trustedTypes, l$1 = c$1 ? c$1.emptyScript : "", p$1 = a$1.reactiveElementPolyfillSupport, d$1 = (t2, s2) => t2, u$1 = { toAttribute(t2, s2) {
+  const { is: i$4, defineProperty: e$3, getOwnPropertyDescriptor: h$2, getOwnPropertyNames: r$1, getOwnPropertySymbols: o$2, getPrototypeOf: n$1 } = Object, a$1 = globalThis, c$2 = a$1.trustedTypes, l$1 = c$2 ? c$2.emptyScript : "", p$2 = a$1.reactiveElementPolyfillSupport, d$1 = (t2, s2) => t2, u$3 = { toAttribute(t2, s2) {
     switch (s2) {
       case Boolean:
         t2 = t2 ? l$1 : null;
@@ -5968,7 +5968,7 @@ ${s2.description}`).join("\n\n");
         }
     }
     return i2;
-  } }, f$1 = (t2, s2) => !i$2(t2, s2), b$1 = { attribute: true, type: String, converter: u$1, reflect: false, useDefault: false, hasChanged: f$1 };
+  } }, f$1 = (t2, s2) => !i$4(t2, s2), b$1 = { attribute: true, type: String, converter: u$3, reflect: false, useDefault: false, hasChanged: f$1 };
   Symbol.metadata ??= /* @__PURE__ */ Symbol("metadata"), a$1.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
   let y$1 = class y extends HTMLElement {
     static addInitializer(t2) {
@@ -5980,11 +5980,11 @@ ${s2.description}`).join("\n\n");
     static createProperty(t2, s2 = b$1) {
       if (s2.state && (s2.attribute = false), this._$Ei(), this.prototype.hasOwnProperty(t2) && ((s2 = Object.create(s2)).wrapped = true), this.elementProperties.set(t2, s2), !s2.noAccessor) {
         const i2 = /* @__PURE__ */ Symbol(), h2 = this.getPropertyDescriptor(t2, i2, s2);
-        void 0 !== h2 && e$1(this.prototype, t2, h2);
+        void 0 !== h2 && e$3(this.prototype, t2, h2);
       }
     }
     static getPropertyDescriptor(t2, s2, i2) {
-      const { get: e2, set: r2 } = h$1(this.prototype, t2) ?? { get() {
+      const { get: e2, set: r2 } = h$2(this.prototype, t2) ?? { get() {
         return this[s2];
       }, set(t3) {
         this[s2] = t3;
@@ -6024,8 +6024,8 @@ ${s2.description}`).join("\n\n");
       const i2 = [];
       if (Array.isArray(s2)) {
         const e2 = new Set(s2.flat(1 / 0).reverse());
-        for (const s3 of e2) i2.unshift(c$2(s3));
-      } else void 0 !== s2 && i2.push(c$2(s2));
+        for (const s3 of e2) i2.unshift(c$3(s3));
+      } else void 0 !== s2 && i2.push(c$3(s2));
       return i2;
     }
     static _$Eu(t2, s2) {
@@ -6067,14 +6067,14 @@ ${s2.description}`).join("\n\n");
     _$ET(t2, s2) {
       const i2 = this.constructor.elementProperties.get(t2), e2 = this.constructor._$Eu(t2, i2);
       if (void 0 !== e2 && true === i2.reflect) {
-        const h2 = (void 0 !== i2.converter?.toAttribute ? i2.converter : u$1).toAttribute(s2, i2.type);
+        const h2 = (void 0 !== i2.converter?.toAttribute ? i2.converter : u$3).toAttribute(s2, i2.type);
         this._$Em = t2, null == h2 ? this.removeAttribute(e2) : this.setAttribute(e2, h2), this._$Em = null;
       }
     }
     _$AK(t2, s2) {
       const i2 = this.constructor, e2 = i2._$Eh.get(t2);
       if (void 0 !== e2 && this._$Em !== e2) {
-        const t3 = i2.getPropertyOptions(e2), h2 = "function" == typeof t3.converter ? { fromAttribute: t3.converter } : void 0 !== t3.converter?.fromAttribute ? t3.converter : u$1;
+        const t3 = i2.getPropertyOptions(e2), h2 = "function" == typeof t3.converter ? { fromAttribute: t3.converter } : void 0 !== t3.converter?.fromAttribute ? t3.converter : u$3;
         this._$Em = e2;
         const r2 = h2.fromAttribute(s2, t3.type);
         this[e2] = r2 ?? this._$Ej?.get(e2) ?? r2, this._$Em = null;
@@ -6151,22 +6151,22 @@ ${s2.description}`).join("\n\n");
     firstUpdated(t2) {
     }
   };
-  y$1.elementStyles = [], y$1.shadowRootOptions = { mode: "open" }, y$1[d$1("elementProperties")] = /* @__PURE__ */ new Map(), y$1[d$1("finalized")] = /* @__PURE__ */ new Map(), p$1?.({ ReactiveElement: y$1 }), (a$1.reactiveElementVersions ??= []).push("2.1.2");
-  const t = globalThis, i$1 = (t2) => t2, s$1 = t.trustedTypes, e = s$1 ? s$1.createPolicy("lit-html", { createHTML: (t2) => t2 }) : void 0, h = "$lit$", o$1 = `lit$${Math.random().toFixed(9).slice(2)}$`, n = "?" + o$1, r = `<${n}>`, l = document, c = () => l.createComment(""), a = (t2) => null === t2 || "object" != typeof t2 && "function" != typeof t2, u = Array.isArray, d = (t2) => u(t2) || "function" == typeof t2?.[Symbol.iterator], f = "[ 	\n\f\r]", v = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, _ = /-->/g, m = />/g, p = RegExp(`>|${f}(?:([^\\s"'>=/]+)(${f}*=${f}*(?:[^ 	
+  y$1.elementStyles = [], y$1.shadowRootOptions = { mode: "open" }, y$1[d$1("elementProperties")] = /* @__PURE__ */ new Map(), y$1[d$1("finalized")] = /* @__PURE__ */ new Map(), p$2?.({ ReactiveElement: y$1 }), (a$1.reactiveElementVersions ??= []).push("2.1.2");
+  const t$2 = globalThis, i$3 = (t2) => t2, s$2 = t$2.trustedTypes, e$2 = s$2 ? s$2.createPolicy("lit-html", { createHTML: (t2) => t2 }) : void 0, h$1 = "$lit$", o$1 = `lit$${Math.random().toFixed(9).slice(2)}$`, n = "?" + o$1, r = `<${n}>`, l = document, c$1 = () => l.createComment(""), a = (t2) => null === t2 || "object" != typeof t2 && "function" != typeof t2, u$2 = Array.isArray, d = (t2) => u$2(t2) || "function" == typeof t2?.[Symbol.iterator], f = "[ 	\n\f\r]", v$1 = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, _ = /-->/g, m$1 = />/g, p$1 = RegExp(`>|${f}(?:([^\\s"'>=/]+)(${f}*=${f}*(?:[^ 	
 \f\r"'\`<>=]|("|')|))|$)`, "g"), g = /'/g, $ = /"/g, y = /^(?:script|style|textarea|title)$/i, x = (t2) => (i2, ...s2) => ({ _$litType$: t2, strings: i2, values: s2 }), b = x(1), E = /* @__PURE__ */ Symbol.for("lit-noChange"), A = /* @__PURE__ */ Symbol.for("lit-nothing"), C = /* @__PURE__ */ new WeakMap(), P = l.createTreeWalker(l, 129);
   function V(t2, i2) {
-    if (!u(t2) || !t2.hasOwnProperty("raw")) throw Error("invalid template strings array");
-    return void 0 !== e ? e.createHTML(i2) : i2;
+    if (!u$2(t2) || !t2.hasOwnProperty("raw")) throw Error("invalid template strings array");
+    return void 0 !== e$2 ? e$2.createHTML(i2) : i2;
   }
   const N = (t2, i2) => {
     const s2 = t2.length - 1, e2 = [];
-    let n2, l2 = 2 === i2 ? "<svg>" : 3 === i2 ? "<math>" : "", c2 = v;
+    let n2, l2 = 2 === i2 ? "<svg>" : 3 === i2 ? "<math>" : "", c2 = v$1;
     for (let i3 = 0; i3 < s2; i3++) {
       const s3 = t2[i3];
       let a2, u2, d2 = -1, f2 = 0;
-      for (; f2 < s3.length && (c2.lastIndex = f2, u2 = c2.exec(s3), null !== u2); ) f2 = c2.lastIndex, c2 === v ? "!--" === u2[1] ? c2 = _ : void 0 !== u2[1] ? c2 = m : void 0 !== u2[2] ? (y.test(u2[2]) && (n2 = RegExp("</" + u2[2], "g")), c2 = p) : void 0 !== u2[3] && (c2 = p) : c2 === p ? ">" === u2[0] ? (c2 = n2 ?? v, d2 = -1) : void 0 === u2[1] ? d2 = -2 : (d2 = c2.lastIndex - u2[2].length, a2 = u2[1], c2 = void 0 === u2[3] ? p : '"' === u2[3] ? $ : g) : c2 === $ || c2 === g ? c2 = p : c2 === _ || c2 === m ? c2 = v : (c2 = p, n2 = void 0);
-      const x2 = c2 === p && t2[i3 + 1].startsWith("/>") ? " " : "";
-      l2 += c2 === v ? s3 + r : d2 >= 0 ? (e2.push(a2), s3.slice(0, d2) + h + s3.slice(d2) + o$1 + x2) : s3 + o$1 + (-2 === d2 ? i3 : x2);
+      for (; f2 < s3.length && (c2.lastIndex = f2, u2 = c2.exec(s3), null !== u2); ) f2 = c2.lastIndex, c2 === v$1 ? "!--" === u2[1] ? c2 = _ : void 0 !== u2[1] ? c2 = m$1 : void 0 !== u2[2] ? (y.test(u2[2]) && (n2 = RegExp("</" + u2[2], "g")), c2 = p$1) : void 0 !== u2[3] && (c2 = p$1) : c2 === p$1 ? ">" === u2[0] ? (c2 = n2 ?? v$1, d2 = -1) : void 0 === u2[1] ? d2 = -2 : (d2 = c2.lastIndex - u2[2].length, a2 = u2[1], c2 = void 0 === u2[3] ? p$1 : '"' === u2[3] ? $ : g) : c2 === $ || c2 === g ? c2 = p$1 : c2 === _ || c2 === m$1 ? c2 = v$1 : (c2 = p$1, n2 = void 0);
+      const x2 = c2 === p$1 && t2[i3 + 1].startsWith("/>") ? " " : "";
+      l2 += c2 === v$1 ? s3 + r : d2 >= 0 ? (e2.push(a2), s3.slice(0, d2) + h$1 + s3.slice(d2) + o$1 + x2) : s3 + o$1 + (-2 === d2 ? i3 : x2);
     }
     return [V(t2, l2 + (t2[s2] || "<?>") + (2 === i2 ? "</svg>" : 3 === i2 ? "</math>" : "")), e2];
   };
@@ -6182,16 +6182,16 @@ ${s2.description}`).join("\n\n");
       }
       for (; null !== (r2 = P.nextNode()) && d2.length < u2; ) {
         if (1 === r2.nodeType) {
-          if (r2.hasAttributes()) for (const t3 of r2.getAttributeNames()) if (t3.endsWith(h)) {
+          if (r2.hasAttributes()) for (const t3 of r2.getAttributeNames()) if (t3.endsWith(h$1)) {
             const i3 = v2[a2++], s2 = r2.getAttribute(t3).split(o$1), e3 = /([.?@])?(.*)/.exec(i3);
             d2.push({ type: 1, index: l2, name: e3[2], strings: s2, ctor: "." === e3[1] ? I : "?" === e3[1] ? L : "@" === e3[1] ? z : H }), r2.removeAttribute(t3);
           } else t3.startsWith(o$1) && (d2.push({ type: 6, index: l2 }), r2.removeAttribute(t3));
           if (y.test(r2.tagName)) {
             const t3 = r2.textContent.split(o$1), i3 = t3.length - 1;
             if (i3 > 0) {
-              r2.textContent = s$1 ? s$1.emptyScript : "";
-              for (let s2 = 0; s2 < i3; s2++) r2.append(t3[s2], c()), P.nextNode(), d2.push({ type: 2, index: ++l2 });
-              r2.append(t3[i3], c());
+              r2.textContent = s$2 ? s$2.emptyScript : "";
+              for (let s2 = 0; s2 < i3; s2++) r2.append(t3[s2], c$1()), P.nextNode(), d2.push({ type: 2, index: ++l2 });
+              r2.append(t3[i3], c$1());
             }
           }
         } else if (8 === r2.nodeType) if (r2.data === n) d2.push({ type: 2, index: l2 });
@@ -6207,11 +6207,11 @@ ${s2.description}`).join("\n\n");
       return s2.innerHTML = t2, s2;
     }
   }
-  function M(t2, i2, s2 = t2, e2) {
+  function M$1(t2, i2, s2 = t2, e2) {
     if (i2 === E) return i2;
     let h2 = void 0 !== e2 ? s2._$Co?.[e2] : s2._$Cl;
     const o2 = a(i2) ? void 0 : i2._$litDirective$;
-    return h2?.constructor !== o2 && (h2?._$AO?.(false), void 0 === o2 ? h2 = void 0 : (h2 = new o2(t2), h2._$AT(t2, s2, e2)), void 0 !== e2 ? (s2._$Co ??= [])[e2] = h2 : s2._$Cl = h2), void 0 !== h2 && (i2 = M(t2, h2._$AS(t2, i2.values), h2, e2)), i2;
+    return h2?.constructor !== o2 && (h2?._$AO?.(false), void 0 === o2 ? h2 = void 0 : (h2 = new o2(t2), h2._$AT(t2, s2, e2)), void 0 !== e2 ? (s2._$Co ??= [])[e2] = h2 : s2._$Cl = h2), void 0 !== h2 && (i2 = M$1(t2, h2._$AS(t2, i2.values), h2, e2)), i2;
   }
   class R {
     constructor(t2, i2) {
@@ -6260,7 +6260,7 @@ ${s2.description}`).join("\n\n");
       return this._$AB;
     }
     _$AI(t2, i2 = this) {
-      t2 = M(this, t2, i2), a(t2) ? t2 === A || null == t2 || "" === t2 ? (this._$AH !== A && this._$AR(), this._$AH = A) : t2 !== this._$AH && t2 !== E && this._(t2) : void 0 !== t2._$litType$ ? this.$(t2) : void 0 !== t2.nodeType ? this.T(t2) : d(t2) ? this.k(t2) : this._(t2);
+      t2 = M$1(this, t2, i2), a(t2) ? t2 === A || null == t2 || "" === t2 ? (this._$AH !== A && this._$AR(), this._$AH = A) : t2 !== this._$AH && t2 !== E && this._(t2) : void 0 !== t2._$litType$ ? this.$(t2) : void 0 !== t2.nodeType ? this.T(t2) : d(t2) ? this.k(t2) : this._(t2);
     }
     O(t2) {
       return this._$AA.parentNode.insertBefore(t2, this._$AB);
@@ -6284,16 +6284,16 @@ ${s2.description}`).join("\n\n");
       return void 0 === i2 && C.set(t2.strings, i2 = new S(t2)), i2;
     }
     k(t2) {
-      u(this._$AH) || (this._$AH = [], this._$AR());
+      u$2(this._$AH) || (this._$AH = [], this._$AR());
       const i2 = this._$AH;
       let s2, e2 = 0;
-      for (const h2 of t2) e2 === i2.length ? i2.push(s2 = new k(this.O(c()), this.O(c()), this, this.options)) : s2 = i2[e2], s2._$AI(h2), e2++;
+      for (const h2 of t2) e2 === i2.length ? i2.push(s2 = new k(this.O(c$1()), this.O(c$1()), this, this.options)) : s2 = i2[e2], s2._$AI(h2), e2++;
       e2 < i2.length && (this._$AR(s2 && s2._$AB.nextSibling, e2), i2.length = e2);
     }
     _$AR(t2 = this._$AA.nextSibling, s2) {
       for (this._$AP?.(false, true, s2); t2 !== this._$AB; ) {
-        const s3 = i$1(t2).nextSibling;
-        i$1(t2).remove(), t2 = s3;
+        const s3 = i$3(t2).nextSibling;
+        i$3(t2).remove(), t2 = s3;
       }
     }
     setConnected(t2) {
@@ -6313,11 +6313,11 @@ ${s2.description}`).join("\n\n");
     _$AI(t2, i2 = this, s2, e2) {
       const h2 = this.strings;
       let o2 = false;
-      if (void 0 === h2) t2 = M(this, t2, i2, 0), o2 = !a(t2) || t2 !== this._$AH && t2 !== E, o2 && (this._$AH = t2);
+      if (void 0 === h2) t2 = M$1(this, t2, i2, 0), o2 = !a(t2) || t2 !== this._$AH && t2 !== E, o2 && (this._$AH = t2);
       else {
         const e3 = t2;
         let n2, r2;
-        for (t2 = h2[0], n2 = 0; n2 < h2.length - 1; n2++) r2 = M(this, e3[s2 + n2], i2, n2), r2 === E && (r2 = this._$AH[n2]), o2 ||= !a(r2) || r2 !== this._$AH[n2], r2 === A ? t2 = A : t2 !== A && (t2 += (r2 ?? "") + h2[n2 + 1]), this._$AH[n2] = r2;
+        for (t2 = h2[0], n2 = 0; n2 < h2.length - 1; n2++) r2 = M$1(this, e3[s2 + n2], i2, n2), r2 === E && (r2 = this._$AH[n2]), o2 ||= !a(r2) || r2 !== this._$AH[n2], r2 === A ? t2 = A : t2 !== A && (t2 += (r2 ?? "") + h2[n2 + 1]), this._$AH[n2] = r2;
       }
       o2 && !e2 && this.j(t2);
     }
@@ -6346,7 +6346,7 @@ ${s2.description}`).join("\n\n");
       super(t2, i2, s2, e2, h2), this.type = 5;
     }
     _$AI(t2, i2 = this) {
-      if ((t2 = M(this, t2, i2, 0) ?? A) === E) return;
+      if ((t2 = M$1(this, t2, i2, 0) ?? A) === E) return;
       const s2 = this._$AH, e2 = t2 === A && s2 !== A || t2.capture !== s2.capture || t2.once !== s2.once || t2.passive !== s2.passive, h2 = t2 !== A && (s2 === A || e2);
       e2 && this.element.removeEventListener(this.name, this, s2), h2 && this.element.addEventListener(this.name, this, t2), this._$AH = t2;
     }
@@ -6362,22 +6362,22 @@ ${s2.description}`).join("\n\n");
       return this._$AM._$AU;
     }
     _$AI(t2) {
-      M(this, t2);
+      M$1(this, t2);
     }
   }
-  const B = t.litHtmlPolyfillSupport;
-  B?.(S, k), (t.litHtmlVersions ??= []).push("3.3.2");
+  const j = { I: k }, B = t$2.litHtmlPolyfillSupport;
+  B?.(S, k), (t$2.litHtmlVersions ??= []).push("3.3.2");
   const D = (t2, i2, s2) => {
     const e2 = s2?.renderBefore ?? i2;
     let h2 = e2._$litPart$;
     if (void 0 === h2) {
       const t3 = s2?.renderBefore ?? null;
-      e2._$litPart$ = h2 = new k(i2.insertBefore(c(), t3), t3, void 0, s2 ?? {});
+      e2._$litPart$ = h2 = new k(i2.insertBefore(c$1(), t3), t3, void 0, s2 ?? {});
     }
     return h2._$AI(t2), h2;
   };
-  const s = globalThis;
-  class i extends y$1 {
+  const s$1 = globalThis;
+  let i$2 = class i extends y$1 {
     constructor() {
       super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
     }
@@ -6398,11 +6398,11 @@ ${s2.description}`).join("\n\n");
     render() {
       return E;
     }
-  }
-  i._$litElement$ = true, i["finalized"] = true, s.litElementHydrateSupport?.({ LitElement: i });
-  const o = s.litElementPolyfillSupport;
-  o?.({ LitElement: i });
-  (s.litElementVersions ??= []).push("4.2.2");
+  };
+  i$2._$litElement$ = true, i$2["finalized"] = true, s$1.litElementHydrateSupport?.({ LitElement: i$2 });
+  const o = s$1.litElementPolyfillSupport;
+  o?.({ LitElement: i$2 });
+  (s$1.litElementVersions ??= []).push("4.2.2");
   class HassRecordsDevToolCard extends HTMLElement {
     constructor() {
       super();
@@ -7037,12 +7037,12 @@ ${s2.description}`).join("\n\n");
       return { title: "Dev Tool" };
     }
   }
-  class DpEditorBase extends i {
+  class DpEditorBase extends i$2 {
     static properties = {
       _config: { type: Object, state: true },
       hass: { type: Object }
     };
-    static styles = i$3`
+    static styles = i$5`
     :host { display: block; }
     .ed {
       display: flex; flex-direction: column;
@@ -7078,11 +7078,11 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-editor-base", DpEditorBase);
-  class DpSectionHeading extends i {
+  class DpSectionHeading extends i$2 {
     static properties = {
       text: { type: String }
     };
-    static styles = i$3`
+    static styles = i$5`
     :host { display: block; }
     .heading {
       font-size: 0.7rem;
@@ -7101,12 +7101,12 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-section-heading", DpSectionHeading);
-  class DpColorSwatch extends i {
+  class DpColorSwatch extends i$2 {
     static properties = {
       color: { type: String },
       label: { type: String }
     };
-    static styles = i$3`
+    static styles = i$5`
     :host {
       display: block;
     }
@@ -7183,7 +7183,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-color-swatch", DpColorSwatch);
-  class DpEditorTextField extends i {
+  class DpEditorTextField extends i$2 {
     static properties = {
       label: { type: String },
       value: { type: String },
@@ -7191,7 +7191,7 @@ ${s2.description}`).join("\n\n");
       placeholder: { type: String },
       suffix: { type: String }
     };
-    static styles = i$3`
+    static styles = i$5`
     :host { display: block; }
     ha-textfield { display: block; width: 100%; }
   `;
@@ -7247,13 +7247,13 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-editor-text-field", DpEditorTextField);
-  class DpEditorSwitch extends i {
+  class DpEditorSwitch extends i$2 {
     static properties = {
       label: { type: String },
       checked: { type: Boolean },
       tooltip: { type: String }
     };
-    static styles = i$3`
+    static styles = i$5`
     :host { display: block; }
     .switch-row { display: flex; align-items: center; gap: 4px; }
     .switch-row ha-formfield { flex: 1; }
@@ -7326,13 +7326,13 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-editor-switch", DpEditorSwitch);
-  class DpEditorEntityPicker extends i {
+  class DpEditorEntityPicker extends i$2 {
     static properties = {
       label: { type: String },
       value: { type: String },
       hass: { type: Object }
     };
-    static styles = i$3`
+    static styles = i$5`
     :host { display: block; }
     ha-selector { display: block; width: 100%; }
   `;
@@ -7379,13 +7379,13 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-editor-entity-picker", DpEditorEntityPicker);
-  class DpEditorIconPicker extends i {
+  class DpEditorIconPicker extends i$2 {
     static properties = {
       label: { type: String },
       value: { type: String },
       hass: { type: Object }
     };
-    static styles = i$3`
+    static styles = i$5`
     :host { display: block; }
     ha-icon-picker { display: block; width: 100%; }
   `;
@@ -7431,13 +7431,13 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-editor-icon-picker", DpEditorIconPicker);
-  class DpEditorSelect extends i {
+  class DpEditorSelect extends i$2 {
     static properties = {
       label: { type: String },
       value: { type: String },
       options: { type: Array }
     };
-    static styles = i$3`
+    static styles = i$5`
     :host { display: block; }
     ha-selector { display: block; width: 100%; }
   `;
@@ -7481,13 +7481,13 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-editor-select", DpEditorSelect);
-  class DpEditorEntityList extends i {
+  class DpEditorEntityList extends i$2 {
     static properties = {
       entities: { type: Array },
       hass: { type: Object },
       buttonLabel: { type: String, attribute: "button-label" }
     };
-    static styles = i$3`
+    static styles = i$5`
     :host { display: block; }
     .list { display: flex; flex-direction: column; gap: 8px; }
     .entity-row { display: flex; gap: 8px; align-items: center; }
@@ -7567,7 +7567,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-editor-entity-list", DpEditorEntityList);
-  const editorStyles = i$3`
+  const editorStyles = i$5`
   .note {
     font-size: 0.78rem;
     color: var(--secondary-text-color);
@@ -13029,7 +13029,7 @@ ${s2.description}`).join("\n\n");
       };
     }
   }
-  class HassRecordsQuickCard extends i {
+  class HassRecordsQuickCard extends i$2 {
     static properties = {
       _config: { type: Object, state: true },
       _hass: { type: Object, state: true },
@@ -13037,7 +13037,7 @@ ${s2.description}`).join("\n\n");
       _feedbackText: { type: String, state: true },
       _feedbackVisible: { type: Boolean, state: true }
     };
-    static styles = i$3`
+    static styles = i$5`
     :host {
       display: block;
       height: 100%;
@@ -13249,14 +13249,14 @@ ${s2.description}`).join("\n\n");
       return this._config?.show_annotation ? 3 : 1;
     }
   }
-  class DpPagination extends i {
+  class DpPagination extends i$2 {
     static properties = {
       page: { type: Number },
       totalPages: { type: Number },
       totalItems: { type: Number },
       label: { type: String }
     };
-    static styles = i$3`
+    static styles = i$5`
     :host {
       display: flex; align-items: center; justify-content: center;
       gap: 8px; padding: 8px; font-size: 0.8rem;
@@ -13329,7 +13329,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-pagination", DpPagination);
-  class HassRecordsSensorCard extends i {
+  class HassRecordsSensorCard extends i$2 {
     static properties = {
       _config: { state: true },
       _hass: { state: true },
@@ -13348,7 +13348,7 @@ ${s2.description}`).join("\n\n");
     _resizeObserver = null;
     _canvasClickHandler = null;
     _previousSeriesEndpoints = /* @__PURE__ */ new Map();
-    static styles = i$3`
+    static styles = i$5`
     :host { display: block; height: 100%; }
     ha-card { padding: 0; overflow: hidden; height: 100%; }
     .card-shell { height: 100%; min-height: 0; display: flex; flex-direction: column; }
@@ -14100,7 +14100,7 @@ ${s2.description}`).join("\n\n");
       };
     }
   }
-  const styles$d = i$3`
+  const styles$g = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -14141,7 +14141,7 @@ ${s2.description}`).join("\n\n");
     box-shadow: inset 0 -3px 0 -1px var(--primary-color, #03a9f4);
   }
 `;
-  const styles$c = i$3`
+  const styles$f = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -14526,7 +14526,7 @@ ${s2.description}`).join("\n\n");
     to { transform: rotate(360deg); }
   }
 `;
-  const sharedStyles = i$3`
+  const sharedStyles = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -14584,8 +14584,8 @@ ${s2.description}`).join("\n\n");
     cursor: pointer;
   }
 `;
-  const styles$b = i$3``;
-  const styles$a = i$3`
+  const styles$e = i$5``;
+  const styles$d = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -14640,14 +14640,14 @@ ${s2.description}`).join("\n\n");
     padding-top: 2px;
   }
 `;
-  class DpAnalysisGroup extends i {
+  class DpAnalysisGroup extends i$2 {
     static properties = {
       label: { type: String },
       checked: { type: Boolean },
       disabled: { type: Boolean },
       alignTop: { type: Boolean, attribute: "align-top" }
     };
-    static styles = styles$a;
+    static styles = styles$d;
     constructor() {
       super();
       this.label = "";
@@ -14706,12 +14706,12 @@ ${s2.description}`).join("\n\n");
     { value: "21d", label: "21 days" },
     { value: "28d", label: "28 days" }
   ];
-  class DpAnalysisTrendGroup extends i {
+  class DpAnalysisTrendGroup extends i$2 {
     static properties = {
       analysis: { type: Object },
       entityId: { type: String, attribute: "entity-id" }
     };
-    static styles = [sharedStyles, styles$b];
+    static styles = [sharedStyles, styles$e];
     constructor() {
       super();
       this.analysis = {};
@@ -14766,19 +14766,19 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-analysis-trend-group", DpAnalysisTrendGroup);
-  const styles$9 = i$3``;
+  const styles$c = i$5``;
   const ANALYSIS_RATE_WINDOW_OPTIONS$1 = [
     { value: "point_to_point", label: "Point to point" },
     { value: "1h", label: "1 hour" },
     { value: "6h", label: "6 hours" },
     { value: "24h", label: "24 hours" }
   ];
-  class DpAnalysisRateGroup extends i {
+  class DpAnalysisRateGroup extends i$2 {
     static properties = {
       analysis: { type: Object },
       entityId: { type: String, attribute: "entity-id" }
     };
-    static styles = [sharedStyles, styles$9];
+    static styles = [sharedStyles, styles$c];
     constructor() {
       super();
       this.analysis = {};
@@ -14820,14 +14820,14 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-analysis-rate-group", DpAnalysisRateGroup);
-  const styles$8 = i$3``;
-  class DpAnalysisThresholdGroup extends i {
+  const styles$b = i$5``;
+  class DpAnalysisThresholdGroup extends i$2 {
     static properties = {
       analysis: { type: Object },
       entityId: { type: String, attribute: "entity-id" },
       unit: { type: String }
     };
-    static styles = [sharedStyles, styles$8];
+    static styles = [sharedStyles, styles$b];
     constructor() {
       super();
       this.analysis = {};
@@ -14894,7 +14894,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-analysis-threshold-group", DpAnalysisThresholdGroup);
-  const styles$7 = i$3`
+  const styles$a = i$5`
   .method-list {
     display: grid;
     gap: var(--dp-spacing-sm, 8px);
@@ -14924,7 +14924,7 @@ ${s2.description}`).join("\n\n");
     vertical-align: middle;
   }
 `;
-  const styles$6 = i$3`
+  const styles$9 = i$5`
   :host {
     display: block;
     --dp-spacing-sm: var(--spacing, 8px);
@@ -14939,8 +14939,8 @@ ${s2.description}`).join("\n\n");
     margin-left: 5px;
   }
 `;
-  class DpAnalysisMethodSubopts extends i {
-    static styles = styles$6;
+  class DpAnalysisMethodSubopts extends i$2 {
+    static styles = styles$9;
     render() {
       return b`<div class="subopts"><slot></slot></div>`;
     }
@@ -14983,13 +14983,13 @@ ${s2.description}`).join("\n\n");
     { value: "highlight", label: "Highlight overlaps" },
     { value: "only", label: "Overlaps only" }
   ];
-  class DpAnalysisAnomalyGroup extends i {
+  class DpAnalysisAnomalyGroup extends i$2 {
     static properties = {
       analysis: { type: Object },
       entityId: { type: String, attribute: "entity-id" },
       comparisonWindows: { type: Array, attribute: "comparison-windows" }
     };
-    static styles = [sharedStyles, styles$7];
+    static styles = [sharedStyles, styles$a];
     constructor() {
       super();
       this.analysis = {};
@@ -15102,7 +15102,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-analysis-anomaly-group", DpAnalysisAnomalyGroup);
-  const styles$5 = i$3`
+  const styles$8 = i$5`
   .help-text {
     display: inline-block;
     color: var(--secondary-text-color);
@@ -15110,13 +15110,13 @@ ${s2.description}`).join("\n\n");
     padding-top: 2px;
   }
 `;
-  class DpAnalysisDeltaGroup extends i {
+  class DpAnalysisDeltaGroup extends i$2 {
     static properties = {
       analysis: { type: Object },
       entityId: { type: String, attribute: "entity-id" },
       canShowDeltaAnalysis: { type: Boolean, attribute: "can-show-delta-analysis" }
     };
-    static styles = [sharedStyles, styles$5];
+    static styles = [sharedStyles, styles$8];
     constructor() {
       super();
       this.analysis = {};
@@ -15190,7 +15190,7 @@ ${s2.description}`).join("\n\n");
   function _hasActiveAnalysis(a2, hasComparisonWindow) {
     return a2.show_trend_lines || a2.show_summary_stats || a2.show_rate_of_change || a2.show_threshold_analysis || a2.show_anomalies || a2.show_delta_analysis && hasComparisonWindow;
   }
-  class DpTargetRow extends i {
+  class DpTargetRow extends i$2 {
     static properties = {
       color: { type: String },
       visible: { type: Boolean },
@@ -15201,7 +15201,7 @@ ${s2.description}`).join("\n\n");
       hass: { type: Object, attribute: false },
       comparisonWindows: { type: Array, attribute: "comparison-windows" }
     };
-    static styles = styles$c;
+    static styles = styles$f;
     constructor() {
       super();
       this.color = "#03a9f4";
@@ -15380,7 +15380,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-target-row", DpTargetRow);
-  class DpTargetRowList extends i {
+  class DpTargetRowList extends i$2 {
     static properties = {
       rows: { type: Array },
       states: { type: Object, attribute: false },
@@ -15390,7 +15390,7 @@ ${s2.description}`).join("\n\n");
     };
     /** Index of the row currently being dragged, or null when not dragging. */
     _dragSourceIndex = null;
-    static styles = styles$d;
+    static styles = styles$g;
     render() {
       if (!this.rows.length) {
         return b`
@@ -15508,7 +15508,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-target-row-list", DpTargetRowList);
-  const styles$4 = i$3`
+  const styles$7 = i$5`
   :host {
     display: block;
     --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
@@ -15519,12 +15519,12 @@ ${s2.description}`).join("\n\n");
     gap: var(--dp-spacing-lg);
   }
 `;
-  const styles$3 = i$3`
+  const styles$6 = i$5`
   :host {
     display: block;
   }
 `;
-  const styles$2 = i$3`
+  const styles$5 = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -15536,12 +15536,12 @@ ${s2.description}`).join("\n\n");
     gap: var(--dp-spacing-sm);
   }
 `;
-  class DpSidebarSectionHeader extends i {
+  class DpSidebarSectionHeader extends i$2 {
     static properties = {
       title: { type: String },
       subtitle: { type: String }
     };
-    static styles = i$3`
+    static styles = i$5`
     :host { display: block; }
     .sidebar-section-header { display: grid; gap: var(--dp-spacing-xs); }
     .sidebar-section-title {
@@ -15569,12 +15569,12 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-sidebar-section-header", DpSidebarSectionHeader);
-  class DpSidebarOptionsSection extends i {
+  class DpSidebarOptionsSection extends i$2 {
     static properties = {
       title: { type: String },
       subtitle: { type: String }
     };
-    static styles = styles$2;
+    static styles = styles$5;
     constructor() {
       super();
       this.title = "";
@@ -15593,13 +15593,13 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-sidebar-options-section", DpSidebarOptionsSection);
-  class DpRadioGroup extends i {
+  class DpRadioGroup extends i$2 {
     static properties = {
       name: { type: String },
       value: { type: String },
       options: { type: Array }
     };
-    static styles = i$3`
+    static styles = i$5`
     :host {
       display: block;
     }
@@ -15669,11 +15669,11 @@ ${s2.description}`).join("\n\n");
     { value: "all", label: "All datapoints" },
     { value: "hidden", label: "Hide datapoints" }
   ];
-  class DpSidebarDatapointsSection extends i {
+  class DpSidebarDatapointsSection extends i$2 {
     static properties = {
       datapointScope: { type: String, attribute: "datapoint-scope" }
     };
-    static styles = styles$3;
+    static styles = styles$6;
     constructor() {
       super();
       this.datapointScope = "linked";
@@ -15700,16 +15700,16 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-sidebar-datapoints-section", DpSidebarDatapointsSection);
-  const styles$1 = i$3`
+  const styles$4 = i$5`
   :host {
     display: block;
   }
 `;
-  class DpCheckboxList extends i {
+  class DpCheckboxList extends i$2 {
     static properties = {
       items: { type: Array }
     };
-    static styles = i$3`
+    static styles = i$5`
     :host {
       display: block;
     }
@@ -15764,12 +15764,12 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-checkbox-list", DpCheckboxList);
-  class DpSidebarDatapointDisplaySection extends i {
+  class DpSidebarDatapointDisplaySection extends i$2 {
     static properties = {
       showIcons: { type: Boolean, attribute: "show-icons" },
       showLines: { type: Boolean, attribute: "show-lines" }
     };
-    static styles = styles$1;
+    static styles = styles$4;
     constructor() {
       super();
       this.showIcons = true;
@@ -15799,7 +15799,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-sidebar-datapoint-display-section", DpSidebarDatapointDisplaySection);
-  const styles = i$3`
+  const styles$3 = i$5`
   :host {
     display: block;
     --dp-spacing-sm: var(--spacing, 8px);
@@ -15852,7 +15852,7 @@ ${s2.description}`).join("\n\n");
     { value: "unique", label: "Unique y-axis per series" },
     { value: "split", label: "Split series into rows" }
   ];
-  class DpSidebarChartDisplaySection extends i {
+  class DpSidebarChartDisplaySection extends i$2 {
     static properties = {
       showTooltips: { type: Boolean, attribute: "show-tooltips" },
       showHoverGuides: { type: Boolean, attribute: "show-hover-guides" },
@@ -15861,7 +15861,7 @@ ${s2.description}`).join("\n\n");
       dataGapThreshold: { type: String, attribute: "data-gap-threshold" },
       yAxisMode: { type: String, attribute: "y-axis-mode" }
     };
-    static styles = styles;
+    static styles = styles$3;
     constructor() {
       super();
       this.showTooltips = true;
@@ -15926,7 +15926,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-sidebar-chart-display-section", DpSidebarChartDisplaySection);
-  class DpSidebarOptions extends i {
+  class DpSidebarOptions extends i$2 {
     static properties = {
       datapointScope: { type: String, attribute: "datapoint-scope" },
       showIcons: { type: Boolean, attribute: "show-icons" },
@@ -15938,7 +15938,7 @@ ${s2.description}`).join("\n\n");
       dataGapThreshold: { type: String, attribute: "data-gap-threshold" },
       yAxisMode: { type: String, attribute: "y-axis-mode" }
     };
-    static styles = styles$4;
+    static styles = styles$7;
     constructor() {
       super();
       this.datapointScope = "linked";
@@ -15974,6 +15974,840 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-sidebar-options", DpSidebarOptions);
+  const t$1 = { ATTRIBUTE: 1, CHILD: 2 }, e$1 = (t2) => (...e2) => ({ _$litDirective$: t2, values: e2 });
+  let i$1 = class i {
+    constructor(t2) {
+    }
+    get _$AU() {
+      return this._$AM._$AU;
+    }
+    _$AT(t2, e2, i2) {
+      this._$Ct = t2, this._$AM = e2, this._$Ci = i2;
+    }
+    _$AS(t2, e2) {
+      return this.update(t2, e2);
+    }
+    update(t2, e2) {
+      return this.render(...e2);
+    }
+  };
+  const e = e$1(class extends i$1 {
+    constructor(t2) {
+      if (super(t2), t2.type !== t$1.ATTRIBUTE || "class" !== t2.name || t2.strings?.length > 2) throw Error("`classMap()` can only be used in the `class` attribute and must be the only part in the attribute.");
+    }
+    render(t2) {
+      return " " + Object.keys(t2).filter((s2) => t2[s2]).join(" ") + " ";
+    }
+    update(s2, [i2]) {
+      if (void 0 === this.st) {
+        this.st = /* @__PURE__ */ new Set(), void 0 !== s2.strings && (this.nt = new Set(s2.strings.join(" ").split(/\s/).filter((t2) => "" !== t2)));
+        for (const t2 in i2) i2[t2] && !this.nt?.has(t2) && this.st.add(t2);
+        return this.render(i2);
+      }
+      const r2 = s2.element.classList;
+      for (const t2 of this.st) t2 in i2 || (r2.remove(t2), this.st.delete(t2));
+      for (const t2 in i2) {
+        const s3 = !!i2[t2];
+        s3 === this.st.has(t2) || this.nt?.has(t2) || (s3 ? (r2.add(t2), this.st.add(t2)) : (r2.remove(t2), this.st.delete(t2)));
+      }
+      return E;
+    }
+  });
+  const { I: t } = j, i = (o2) => o2, s = () => document.createComment(""), v = (o2, n2, e2) => {
+    const l2 = o2._$AA.parentNode, d2 = void 0 === n2 ? o2._$AB : n2._$AA;
+    if (void 0 === e2) {
+      const i2 = l2.insertBefore(s(), d2), n3 = l2.insertBefore(s(), d2);
+      e2 = new t(i2, n3, o2, o2.options);
+    } else {
+      const t2 = e2._$AB.nextSibling, n3 = e2._$AM, c2 = n3 !== o2;
+      if (c2) {
+        let t3;
+        e2._$AQ?.(o2), e2._$AM = o2, void 0 !== e2._$AP && (t3 = o2._$AU) !== n3._$AU && e2._$AP(t3);
+      }
+      if (t2 !== d2 || c2) {
+        let o3 = e2._$AA;
+        for (; o3 !== t2; ) {
+          const t3 = i(o3).nextSibling;
+          i(l2).insertBefore(o3, d2), o3 = t3;
+        }
+      }
+    }
+    return e2;
+  }, u$1 = (o2, t2, i2 = o2) => (o2._$AI(t2, i2), o2), m = {}, p = (o2, t2 = m) => o2._$AH = t2, M = (o2) => o2._$AH, h = (o2) => {
+    o2._$AR(), o2._$AA.remove();
+  };
+  const u = (e2, s2, t2) => {
+    const r2 = /* @__PURE__ */ new Map();
+    for (let l2 = s2; l2 <= t2; l2++) r2.set(e2[l2], l2);
+    return r2;
+  }, c = e$1(class extends i$1 {
+    constructor(e2) {
+      if (super(e2), e2.type !== t$1.CHILD) throw Error("repeat() can only be used in text expressions");
+    }
+    dt(e2, s2, t2) {
+      let r2;
+      void 0 === t2 ? t2 = s2 : void 0 !== s2 && (r2 = s2);
+      const l2 = [], o2 = [];
+      let i2 = 0;
+      for (const s3 of e2) l2[i2] = r2 ? r2(s3, i2) : i2, o2[i2] = t2(s3, i2), i2++;
+      return { values: o2, keys: l2 };
+    }
+    render(e2, s2, t2) {
+      return this.dt(e2, s2, t2).values;
+    }
+    update(s2, [t2, r2, c2]) {
+      const d2 = M(s2), { values: p$12, keys: a2 } = this.dt(t2, r2, c2);
+      if (!Array.isArray(d2)) return this.ut = a2, p$12;
+      const h$12 = this.ut ??= [], v$12 = [];
+      let m2, y2, x2 = 0, j2 = d2.length - 1, k2 = 0, w = p$12.length - 1;
+      for (; x2 <= j2 && k2 <= w; ) if (null === d2[x2]) x2++;
+      else if (null === d2[j2]) j2--;
+      else if (h$12[x2] === a2[k2]) v$12[k2] = u$1(d2[x2], p$12[k2]), x2++, k2++;
+      else if (h$12[j2] === a2[w]) v$12[w] = u$1(d2[j2], p$12[w]), j2--, w--;
+      else if (h$12[x2] === a2[w]) v$12[w] = u$1(d2[x2], p$12[w]), v(s2, v$12[w + 1], d2[x2]), x2++, w--;
+      else if (h$12[j2] === a2[k2]) v$12[k2] = u$1(d2[j2], p$12[k2]), v(s2, d2[x2], d2[j2]), j2--, k2++;
+      else if (void 0 === m2 && (m2 = u(a2, k2, w), y2 = u(h$12, x2, j2)), m2.has(h$12[x2])) if (m2.has(h$12[j2])) {
+        const e2 = y2.get(a2[k2]), t3 = void 0 !== e2 ? d2[e2] : null;
+        if (null === t3) {
+          const e3 = v(s2, d2[x2]);
+          u$1(e3, p$12[k2]), v$12[k2] = e3;
+        } else v$12[k2] = u$1(t3, p$12[k2]), v(s2, d2[x2], t3), d2[e2] = null;
+        k2++;
+      } else h(d2[j2]), j2--;
+      else h(d2[x2]), x2++;
+      for (; k2 <= w; ) {
+        const e2 = v(s2, v$12[w + 1]);
+        u$1(e2, p$12[k2]), v$12[k2++] = e2;
+      }
+      for (; x2 <= j2; ) {
+        const e2 = d2[x2++];
+        null !== e2 && h(e2);
+      }
+      return this.ut = a2, p(s2, v$12), E;
+    }
+  });
+  const styles$2 = i$5`
+  :host {
+    display: block;
+  }
+
+  .chart-tabs-shell {
+    position: relative;
+    min-width: 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 88%, transparent);
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--dp-spacing-sm, 8px));
+  }
+
+  .chart-tabs-rail {
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    padding-right: 10px;
+    flex-grow: 1;
+  }
+
+  .chart-tabs-rail::-webkit-scrollbar {
+    display: none;
+  }
+
+  .chart-tabs {
+    display: flex;
+    align-items: flex-end;
+    width: 100%;
+    min-width: 0;
+    gap: 0;
+    padding: 0 var(--dp-spacing-md);
+    box-sizing: border-box;
+  }
+
+  .chart-tabs-add {
+    margin-right: calc(var(--dp-spacing-sm, 16px));
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--spacing, 8px) * 0.75);
+    padding: calc(var(--dp-spacing-sm, 8px) * 0.625) var(--dp-spacing-sm);
+    height: 26px;
+    border: 0;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 12%, var(--card-background-color, #fff));
+    color: var(--primary-color, #03a9f4);
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    z-index: 2;
+  }
+
+  .chart-tabs-add ha-icon {
+    --mdc-icon-size: 16px;
+  }
+
+  .chart-tabs-add:hover,
+  .chart-tabs-add:focus-visible {
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 18%, var(--card-background-color, #fff));
+    outline: none;
+  }
+
+  .chart-tabs-shell.overflowing .chart-tabs-add {
+    top: var(--dp-spacing-xs);
+    transform: none;
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 999px;
+  }
+
+  .chart-tabs-shell.overflowing .chart-tabs-add-label {
+    display: none;
+  }
+`;
+  const styles$1 = i$5`
+  :host {
+    display: contents;
+  }
+
+  .chart-tab {
+    display: flex;
+    align-items: stretch;
+    min-width: 0;
+    border-bottom: 2px solid transparent;
+    transition: border-color 120ms ease, color 120ms ease, opacity 120ms ease;
+  }
+
+  .chart-tab:hover {
+    border-bottom-color: color-mix(in srgb, var(--primary-color, #03a9f4) 44%, transparent);
+  }
+
+  .chart-tab:hover .chart-tab-trigger {
+    color: var(--primary-text-color);
+  }
+
+  .chart-tab.previewing {
+    border-bottom-color: color-mix(in srgb, var(--primary-color, #03a9f4) 62%, transparent);
+  }
+
+  .chart-tab.previewing .chart-tab-trigger {
+    color: var(--primary-text-color);
+  }
+
+  .chart-tab.active {
+    border-bottom-color: var(--primary-color, #03a9f4);
+  }
+
+  .chart-tab.loading .chart-tab-trigger,
+  .chart-tab.loading .chart-tab-actions {
+    opacity: 0.55;
+  }
+
+  .chart-tab.loading .chart-tab-trigger,
+  .chart-tab.loading .chart-tab-trigger .chart-tab-detail,
+  .chart-tab.loading .chart-tab-action {
+    color: var(--secondary-text-color);
+  }
+
+  .chart-tab.active .chart-tab-trigger {
+    color: var(--primary-text-color);
+    font-weight: 600;
+    cursor: default;
+  }
+
+  .chart-tab-trigger {
+    position: relative;
+    display: inline-flex;
+    align-items: stretch;
+    flex: 1 1 auto;
+    min-width: 0;
+    border: 0;
+    border-radius: 0;
+    padding: var(--dp-spacing-sm) var(--dp-spacing-md);
+    background: transparent;
+    color: var(--secondary-text-color);
+    font: inherit;
+    font-size: 0.86rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: border-color 120ms ease, color 120ms ease, opacity 120ms ease;
+  }
+
+  .chart-tab-trigger:hover,
+  .chart-tab-trigger:focus-visible {
+    color: var(--primary-text-color);
+    outline: none;
+  }
+
+  .chart-tab-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .chart-tab-main {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .chart-tab-label {
+    font-weight: inherit;
+  }
+
+  .chart-tab-spinner {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid color-mix(in srgb, var(--secondary-text-color, #6b7280) 28%, transparent);
+    border-top-color: currentColor;
+    animation: chart-spinner 0.9s linear infinite;
+    flex: 0 0 auto;
+  }
+
+  @keyframes chart-spinner {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .chart-tab-detail {
+    font-size: 0.73rem;
+    line-height: 1.2;
+    color: var(--secondary-text-color);
+    font-weight: 400;
+  }
+
+  .chart-tab-detail-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    line-height: 1;
+  }
+
+  .chart-tab.active .chart-tab-detail,
+  .chart-tab.previewing .chart-tab-detail,
+  .chart-tab:hover .chart-tab-detail,
+  .chart-tab-trigger:hover .chart-tab-detail,
+  .chart-tab-trigger:focus-visible .chart-tab-detail {
+    color: color-mix(in srgb, var(--secondary-text-color, #6b7280) 88%, var(--primary-text-color, #111));
+  }
+
+  .chart-tab-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: -2px;
+    padding-right: var(--dp-spacing-md);
+    padding-bottom: 2px;
+    align-self: center;
+    flex: 0 0 auto;
+  }
+
+  .chart-tab-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--secondary-text-color);
+    cursor: pointer;
+    flex: 0 0 auto;
+  }
+
+  .chart-tab-action ha-icon {
+    --mdc-icon-size: 12px;
+    display: block;
+  }
+
+  .chart-tab-action:hover,
+  .chart-tab-action:focus-visible {
+    background: color-mix(in srgb, var(--primary-text-color, #111) 8%, transparent);
+    color: var(--primary-text-color);
+    outline: none;
+  }
+
+  .chart-tab-action.delete {
+    background: color-mix(in srgb, var(--primary-text-color, #111) 7%, transparent);
+  }
+
+  .chart-tab-action.delete:hover,
+  .chart-tab-action.delete:focus-visible {
+    background: color-mix(in srgb, var(--error-color, #db4437) 14%, transparent);
+    color: var(--error-color, #db4437);
+  }
+`;
+  class DpComparisonTab extends i$2 {
+    static styles = styles$1;
+    static properties = {
+      tabId: { type: String, attribute: "tab-id" },
+      label: { type: String },
+      detail: { type: String },
+      active: { type: Boolean },
+      previewing: { type: Boolean },
+      loading: { type: Boolean },
+      editable: { type: Boolean }
+    };
+    constructor() {
+      super();
+      this.tabId = "";
+      this.label = "";
+      this.detail = "";
+      this.active = false;
+      this.previewing = false;
+      this.loading = false;
+      this.editable = false;
+    }
+    _emit(name) {
+      this.dispatchEvent(
+        new CustomEvent(name, {
+          detail: { tabId: this.tabId },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    _onTriggerClick() {
+      this._emit("dp-tab-activate");
+    }
+    _onMouseEnter() {
+      this._emit("dp-tab-hover");
+    }
+    _onMouseLeave() {
+      this._emit("dp-tab-leave");
+    }
+    _onTriggerFocus() {
+      this._emit("dp-tab-hover");
+    }
+    _onTriggerBlur() {
+      this._emit("dp-tab-leave");
+    }
+    _onEditClick(ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      this._emit("dp-tab-edit");
+    }
+    _onDeleteClick(ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      this._emit("dp-tab-delete");
+    }
+    render() {
+      const tabClasses = e({
+        "chart-tab": true,
+        active: this.active,
+        previewing: this.previewing,
+        loading: this.loading
+      });
+      return b`
+      <div
+        class=${tabClasses}
+        @mouseenter=${this._onMouseEnter}
+        @mouseleave=${this._onMouseLeave}
+      >
+        <button
+          type="button"
+          class="chart-tab-trigger"
+          ?aria-current=${this.active}
+          @click=${this._onTriggerClick}
+          @focus=${this._onTriggerFocus}
+          @blur=${this._onTriggerBlur}
+        >
+          <span class="chart-tab-content">
+            <span class="chart-tab-main">
+              ${this.loading ? b`<span class="chart-tab-spinner" aria-hidden="true"></span>` : null}
+              <span class="chart-tab-label">${this.label}</span>
+            </span>
+            <span class="chart-tab-detail-row">
+              <span class="chart-tab-detail">${this.detail}</span>
+            </span>
+          </span>
+        </button>
+        ${this.editable ? b`
+              <span class="chart-tab-actions">
+                <button
+                  type="button"
+                  class="chart-tab-action edit"
+                  aria-label="Edit ${this.label}"
+                  @click=${this._onEditClick}
+                >
+                  <ha-icon icon="mdi:pencil-outline"></ha-icon>
+                </button>
+                <button
+                  type="button"
+                  class="chart-tab-action delete"
+                  aria-label="Delete ${this.label}"
+                  @click=${this._onDeleteClick}
+                >
+                  <ha-icon icon="mdi:close"></ha-icon>
+                </button>
+              </span>
+            ` : null}
+      </div>
+    `;
+    }
+  }
+  customElements.define("dp-comparison-tab", DpComparisonTab);
+  class DpComparisonTabRail extends i$2 {
+    static styles = styles$2;
+    static properties = {
+      tabs: { type: Array },
+      loadingIds: { type: Array, attribute: false },
+      hoveredId: { type: String, attribute: "hovered-id" },
+      overflowing: { type: Boolean }
+    };
+    _resizeObserver;
+    constructor() {
+      super();
+      this.tabs = [];
+      this.loadingIds = [];
+      this.hoveredId = "";
+      this.overflowing = false;
+    }
+    connectedCallback() {
+      super.connectedCallback();
+      this._resizeObserver = new ResizeObserver(() => this._checkOverflow());
+      this.updateComplete.then(() => {
+        const shell = this.shadowRoot?.querySelector(".chart-tabs-shell");
+        if (shell) {
+          this._resizeObserver.observe(shell);
+        }
+      });
+    }
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      this._resizeObserver?.disconnect();
+    }
+    _checkOverflow() {
+      const shell = this.shadowRoot?.querySelector(".chart-tabs-shell");
+      if (!shell) {
+        return;
+      }
+      const rail = shell.querySelector(".chart-tabs-rail");
+      if (!rail) {
+        return;
+      }
+      this.overflowing = rail.scrollWidth > rail.clientWidth;
+    }
+    _onAddClick() {
+      this.dispatchEvent(
+        new CustomEvent("dp-tab-add", {
+          detail: {},
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    render() {
+      const shellClasses = e({
+        "chart-tabs-shell": true,
+        overflowing: this.overflowing
+      });
+      return b`
+      <div class=${shellClasses}>
+        <div class="chart-tabs-rail">
+          <div class="chart-tabs">
+            ${c(
+        this.tabs,
+        (tab) => tab.id,
+        (tab) => b`
+                <dp-comparison-tab
+                  .tabId=${tab.id}
+                  .label=${tab.label}
+                  .detail=${tab.detail}
+                  .active=${tab.active}
+                  .previewing=${this.hoveredId === tab.id}
+                  .loading=${this.loadingIds.includes(tab.id)}
+                  .editable=${tab.editable}
+                ></dp-comparison-tab>
+              `
+      )}
+          </div>
+        </div>
+        <button
+          type="button"
+          class="chart-tabs-add"
+          @click=${this._onAddClick}
+        >
+          <ha-icon icon="mdi:plus"></ha-icon>
+          <span class="chart-tabs-add-label">Add date window</span>
+        </button>
+      </div>
+    `;
+    }
+  }
+  customElements.define("dp-comparison-tab-rail", DpComparisonTabRail);
+  const styles = i$5`
+  :host {
+    --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
+    --dp-spacing-sm: var(--spacing, 8px);
+    --dp-spacing-md: calc(var(--spacing, 8px) * 1.5);
+    --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
+  }
+
+  .date-window-dialog-content {
+    display: grid;
+    gap: var(--dp-spacing-sm);
+    padding: var(--dp-spacing-sm) 0 0;
+    overflow: visible;
+  }
+
+  .date-window-dialog-body {
+    color: var(--secondary-text-color);
+    line-height: 1.4;
+    margin-bottom: calc(var(--dp-spacing-xs) * -1);
+  }
+
+  .date-window-dialog-field {
+    display: grid;
+    gap: var(--dp-spacing-xs);
+    overflow: visible;
+  }
+
+  .date-window-dialog-field.name-field {
+    max-width: 320px;
+  }
+
+  .date-window-dialog-field label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--primary-text-color);
+  }
+
+  .date-window-dialog-field ha-textfield,
+  .date-window-dialog-field input {
+    width: 100%;
+  }
+
+  .date-window-dialog-dates {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--dp-spacing-sm);
+  }
+
+  .date-window-dialog-input {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 12px;
+    border: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 92%, transparent);
+    border-radius: 12px;
+    background: var(--card-background-color, #fff);
+    color: var(--primary-text-color);
+    font: inherit;
+    box-sizing: border-box;
+  }
+
+  .date-window-dialog-input:focus {
+    outline: 2px solid color-mix(in srgb, var(--primary-color, #03a9f4) 36%, transparent);
+    outline-offset: 1px;
+    border-color: color-mix(in srgb, var(--primary-color, #03a9f4) 55%, transparent);
+  }
+
+  .date-window-dialog-shortcuts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--dp-spacing-sm);
+  }
+
+  .date-window-dialog-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--dp-spacing-sm);
+    padding-top: 0;
+    margin-top: calc(var(--dp-spacing-xs) * -1);
+  }
+
+  .date-window-dialog-actions-right {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--dp-spacing-sm);
+    margin-left: auto;
+  }
+
+  .date-window-dialog-actions ha-button {
+    --mdc-typography-button-font-size: 0.875rem;
+  }
+
+  .date-window-dialog-cancel {
+    --mdc-theme-primary: var(--primary-text-color);
+  }
+
+  .date-window-dialog-submit {
+    --mdc-theme-primary: var(--primary-color, #03a9f4);
+  }
+
+  .date-window-dialog-delete {
+    --mdc-theme-primary: var(--error-color, #db4437);
+  }
+
+  @media (max-width: 720px) {
+    .date-window-dialog-dates {
+      grid-template-columns: 1fr;
+    }
+  }
+`;
+  class DpDateWindowDialog extends i$2 {
+    static styles = styles;
+    static properties = {
+      open: { type: Boolean },
+      heading: { type: String },
+      name: { type: String },
+      startValue: { type: String, attribute: "start-value" },
+      endValue: { type: String, attribute: "end-value" },
+      showDelete: { type: Boolean, attribute: "show-delete" },
+      showShortcuts: { type: Boolean, attribute: "show-shortcuts" },
+      submitLabel: { type: String, attribute: "submit-label" }
+    };
+    constructor() {
+      super();
+      this.open = false;
+      this.heading = "Add date window";
+      this.name = "";
+      this.startValue = "";
+      this.endValue = "";
+      this.showDelete = false;
+      this.showShortcuts = false;
+      this.submitLabel = "Create date window";
+    }
+    _emit(name, detail = {}) {
+      this.dispatchEvent(
+        new CustomEvent(name, {
+          detail,
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    _onDialogClosed() {
+      this._emit("dp-window-close");
+    }
+    _onCancel() {
+      this._emit("dp-window-close");
+    }
+    _onSubmit() {
+      const nameInput = this.shadowRoot?.querySelector("#date-window-name");
+      const startInput = this.shadowRoot?.querySelector("#date-window-start");
+      const endInput = this.shadowRoot?.querySelector("#date-window-end");
+      const nameVal = nameInput?.value ?? this.name;
+      this._emit("dp-window-submit", {
+        name: String(nameVal ?? "").trim(),
+        start: startInput?.value ?? this.startValue,
+        end: endInput?.value ?? this.endValue
+      });
+    }
+    _onDelete() {
+      this._emit("dp-window-delete");
+    }
+    _onPreviousShortcut() {
+      this._emit("dp-window-shortcut", { direction: -1 });
+    }
+    _onNextShortcut() {
+      this._emit("dp-window-shortcut", { direction: 1 });
+    }
+    _onDateChange() {
+      const startInput = this.shadowRoot?.querySelector("#date-window-start");
+      const endInput = this.shadowRoot?.querySelector("#date-window-end");
+      this._emit("dp-window-date-change", {
+        start: startInput?.value ?? "",
+        end: endInput?.value ?? ""
+      });
+    }
+    render() {
+      return b`
+      <ha-dialog
+        ?open=${this.open}
+        hideActions
+        .scrimClickAction=${"close"}
+        .escapeKeyAction=${"close"}
+        .heading=${this.heading}
+        @closed=${this._onDialogClosed}
+      >
+        <div class="date-window-dialog-content">
+          <div class="date-window-dialog-body">
+            A date window saves a named date range as a tab, so you can quickly preview it against
+            the selected range or jump the chart back to it later.
+          </div>
+
+          <div class="date-window-dialog-field name-field">
+            <ha-textfield
+              id="date-window-name"
+              label="Name"
+              placeholder="e.g. Heating season start"
+              .value=${this.name}
+            ></ha-textfield>
+          </div>
+
+          <div class="date-window-dialog-field">
+            <label>Date range</label>
+            <div class="date-window-dialog-dates">
+              <div class="date-window-dialog-field">
+                <label for="date-window-start">Start</label>
+                <input
+                  id="date-window-start"
+                  class="date-window-dialog-input"
+                  type="datetime-local"
+                  step="60"
+                  .value=${this.startValue}
+                  @change=${this._onDateChange}
+                />
+              </div>
+              <div class="date-window-dialog-field">
+                <label for="date-window-end">End</label>
+                <input
+                  id="date-window-end"
+                  class="date-window-dialog-input"
+                  type="datetime-local"
+                  step="60"
+                  .value=${this.endValue}
+                  @change=${this._onDateChange}
+                />
+              </div>
+            </div>
+          </div>
+
+          ${this.showShortcuts ? b`
+                <div class="date-window-dialog-shortcuts">
+                  <ha-button @click=${this._onPreviousShortcut}>Use previous range</ha-button>
+                  <ha-button @click=${this._onNextShortcut}>Use next range</ha-button>
+                </div>
+              ` : A}
+
+          <div class="date-window-dialog-actions">
+            ${this.showDelete ? b`
+                  <ha-button
+                    class="date-window-dialog-delete"
+                    @click=${this._onDelete}
+                  >Delete date window</ha-button>
+                ` : A}
+            <div class="date-window-dialog-actions-right">
+              <ha-button
+                class="date-window-dialog-cancel"
+                @click=${this._onCancel}
+              >Cancel</ha-button>
+              <ha-button
+                raised
+                class="date-window-dialog-submit"
+                @click=${this._onSubmit}
+              >${this.submitLabel}</ha-button>
+            </div>
+          </div>
+        </div>
+      </ha-dialog>
+    `;
+    }
+  }
+  customElements.define("dp-date-window-dialog", DpDateWindowDialog);
   const DATA_GAP_THRESHOLD_OPTIONS = [
     { value: "auto", label: "Auto-detect" },
     { value: "5m", label: "5 minutes" },
@@ -18224,9 +19058,11 @@ ${s2.description}`).join("\n\n");
       this._loadingComparisonWindowIds = [];
       this._comparisonTabsRenderKey = "";
       this._comparisonTabsHostEl = null;
+      this._comparisonTabRailComp = null;
       this._pendingAnomalyComparisonWindowEntityId = null;
       this._dateWindowDialogOpen = false;
       this._editingDateWindowId = null;
+      this._dateWindowDialogComp = null;
       this._dragSourceIndex = null;
       this._splitChartView = false;
       this._dateWindowDialogNameEl = null;
@@ -18987,11 +19823,18 @@ ${s2.description}`).join("\n\n");
       return null;
     }
     _syncDateWindowDialogInputs() {
+      const startVal = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.start || null);
+      const endVal = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.end || null);
+      if (this._dateWindowDialogComp) {
+        this._dateWindowDialogComp.startValue = startVal;
+        this._dateWindowDialogComp.endValue = endVal;
+        return;
+      }
       if (this._dateWindowDialogStartEl) {
-        this._dateWindowDialogStartEl.value = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.start || null);
+        this._dateWindowDialogStartEl.value = startVal;
       }
       if (this._dateWindowDialogEndEl) {
-        this._dateWindowDialogEndEl.value = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.end || null);
+        this._dateWindowDialogEndEl.value = endVal;
       }
     }
     _handleDateWindowDialogInputChange() {
@@ -19030,7 +19873,7 @@ ${s2.description}`).join("\n\n");
       this._syncDateWindowDialogInputs();
     }
     _ensureDateWindowDialog() {
-      if (this._dateWindowDialogEl || !this.shadowRoot) return;
+      if (this._dateWindowDialogComp || this._dateWindowDialogEl || !this.shadowRoot) return;
       const dialog = document.createElement("ha-dialog");
       dialog.id = "date-window-dialog";
       dialog.setAttribute("hideActions", "");
@@ -19095,8 +19938,22 @@ ${s2.description}`).join("\n\n");
       this._ensureDateWindowDialog();
       this._dateWindowDialogOpen = true;
       this._editingDateWindowId = targetWindow?.id || null;
-      if (this._dateWindowDialogEl) this._dateWindowDialogEl.open = true;
+      const dialogStart = targetWindow ? parseDateValue(targetWindow.start_time) : this._startTime;
+      const dialogEnd = targetWindow ? parseDateValue(targetWindow.end_time) : this._endTime;
+      this._dateWindowDialogDraftRange = dialogStart && dialogEnd && dialogStart < dialogEnd ? { start: new Date(dialogStart), end: new Date(dialogEnd) } : null;
+      if (this._dateWindowDialogComp) {
+        this._dateWindowDialogComp.heading = targetWindow ? "Edit date window" : "Add date window";
+        this._dateWindowDialogComp.submitLabel = targetWindow ? "Save date window" : "Create date window";
+        this._dateWindowDialogComp.showDelete = !!targetWindow;
+        this._dateWindowDialogComp.showShortcuts = !targetWindow;
+        this._dateWindowDialogComp.name = targetWindow?.label || "";
+        this._dateWindowDialogComp.startValue = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.start || null);
+        this._dateWindowDialogComp.endValue = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.end || null);
+        this._dateWindowDialogComp.open = true;
+        return;
+      }
       if (this._dateWindowDialogEl) {
+        this._dateWindowDialogEl.open = true;
         this._dateWindowDialogEl.headerTitle = targetWindow ? "Edit date window" : "Add date window";
       }
       const submitButton = this._dateWindowDialogEl?.querySelector("#date-window-submit");
@@ -19114,9 +19971,6 @@ ${s2.description}`).join("\n\n");
       if (this._dateWindowDialogNameEl) {
         this._dateWindowDialogNameEl.value = targetWindow?.label || "";
       }
-      const dialogStart = targetWindow ? parseDateValue(targetWindow.start_time) : this._startTime;
-      const dialogEnd = targetWindow ? parseDateValue(targetWindow.end_time) : this._endTime;
-      this._dateWindowDialogDraftRange = dialogStart && dialogEnd && dialogStart < dialogEnd ? { start: new Date(dialogStart), end: new Date(dialogEnd) } : null;
       this._syncDateWindowDialogInputs();
       window.requestAnimationFrame(() => this._dateWindowDialogNameEl?.focus());
     }
@@ -19125,12 +19979,21 @@ ${s2.description}`).join("\n\n");
       this._editingDateWindowId = null;
       this._dateWindowDialogDraftRange = null;
       this._pendingAnomalyComparisonWindowEntityId = null;
-      if (this._dateWindowDialogEl && !fromClosedEvent) this._dateWindowDialogEl.open = false;
+      if (!fromClosedEvent) {
+        if (this._dateWindowDialogComp) {
+          this._dateWindowDialogComp.open = false;
+        } else if (this._dateWindowDialogEl) {
+          this._dateWindowDialogEl.open = false;
+        }
+      }
     }
-    _createDateWindowFromDialog() {
-      const label = String(this._dateWindowDialogNameEl?.value || "").trim();
-      const start = this._dateWindowDialogDraftRange?.start || null;
-      const end = this._dateWindowDialogDraftRange?.end || null;
+    _createDateWindowFromDialog(overrides = {}) {
+      const rawName = overrides.name != null ? overrides.name : this._dateWindowDialogNameEl?.value || "";
+      const label = String(rawName).trim();
+      const parsedStart = overrides.start ? this._parseDateWindowInputValue(overrides.start) : null;
+      const parsedEnd = overrides.end ? this._parseDateWindowInputValue(overrides.end) : null;
+      const start = parsedStart || this._dateWindowDialogDraftRange?.start || null;
+      const end = parsedEnd || this._dateWindowDialogDraftRange?.end || null;
       if (!label || !start || !end || start >= end) return;
       const existingIds = new Set(this._comparisonWindows.map((window2) => window2.id));
       const nextWindow = {
@@ -19900,6 +20763,28 @@ ${s2.description}`).join("\n\n");
         });
         this._sidebarOptionsEl.appendChild(sidebarComp);
         this._sidebarOptionsComp = sidebarComp;
+      }
+      if (this.shadowRoot) {
+        const dialogComp = document.createElement("dp-date-window-dialog");
+        dialogComp.addEventListener("dp-window-close", () => this._closeDateWindowDialog());
+        dialogComp.addEventListener("dp-window-submit", (ev) => {
+          this._createDateWindowFromDialog(ev.detail || {});
+        });
+        dialogComp.addEventListener("dp-window-delete", () => this._deleteEditingDateWindow());
+        dialogComp.addEventListener("dp-window-shortcut", (ev) => {
+          this._applyDateWindowShortcut(ev.detail.direction);
+        });
+        dialogComp.addEventListener("dp-window-date-change", (ev) => {
+          const start = this._parseDateWindowInputValue(ev.detail?.start || "");
+          const end = this._parseDateWindowInputValue(ev.detail?.end || "");
+          if (start && end && start < end) {
+            this._dateWindowDialogDraftRange = { start, end };
+          } else {
+            this._dateWindowDialogDraftRange = null;
+          }
+        });
+        this.shadowRoot.appendChild(dialogComp);
+        this._dateWindowDialogComp = dialogComp;
       }
       this._syncControls();
     }
@@ -21905,106 +22790,31 @@ ${s2.description}`).join("\n\n");
           editable: true
         }))
       ];
-      const renderKey = JSON.stringify({
-        tabs: tabs.map((window2) => ({
-          id: window2.id,
-          label: window2.label,
-          detail: window2.detail || "",
-          active: !!window2.active,
-          loading: this._loadingComparisonWindowIds.includes(window2.id),
-          previewing: this._hoveredComparisonWindowId === window2.id
-        }))
-      });
       tabsEl.hidden = false;
-      if (this._comparisonTabsHostEl !== tabsEl) {
+      if (!this._comparisonTabRailComp || this._comparisonTabsHostEl !== tabsEl) {
+        tabsEl.innerHTML = "";
+        const rail = document.createElement("dp-comparison-tab-rail");
+        rail.addEventListener("dp-tab-activate", (ev) => this._handleComparisonTabActivate(ev.detail.tabId));
+        rail.addEventListener("dp-tab-hover", (ev) => this._handleComparisonTabHover(ev.detail.tabId));
+        rail.addEventListener("dp-tab-leave", (ev) => this._handleComparisonTabLeave(ev.detail.tabId));
+        rail.addEventListener("dp-tab-edit", (ev) => {
+          const id = ev.detail.tabId;
+          const win = this._comparisonWindows.find((entry) => entry.id === id);
+          if (win) {
+            this._openDateWindowDialog(win);
+          }
+        });
+        rail.addEventListener("dp-tab-delete", (ev) => {
+          this._deleteDateWindow(ev.detail.tabId);
+        });
+        rail.addEventListener("dp-tab-add", () => this._openDateWindowDialog());
+        tabsEl.appendChild(rail);
+        this._comparisonTabRailComp = rail;
         this._comparisonTabsHostEl = tabsEl;
-        this._comparisonTabsRenderKey = "";
       }
-      if (this._comparisonTabsRenderKey !== renderKey) {
-        tabsEl.innerHTML = `
-        <div class="chart-tabs-shell" id="chart-tabs-shell">
-          <div class="chart-tabs-rail" id="chart-tabs-rail">
-            <div class="chart-tabs">
-              ${tabs.map((window2) => `
-                <div
-                  class="chart-tab ${window2.active ? "active" : ""} ${this._hoveredComparisonWindowId === window2.id ? "previewing" : ""} ${this._loadingComparisonWindowIds.includes(window2.id) ? "loading" : ""}"
-                  data-comparison-id="${esc$1(window2.id)}"
-                >
-                  <button
-                    type="button"
-                    class="chart-tab-trigger"
-                    data-comparison-trigger="${esc$1(window2.id)}"
-                    ${window2.active ? 'aria-current="true"' : ""}
-                  >
-                    <span class="chart-tab-content">
-                      <span class="chart-tab-main">
-                        ${this._loadingComparisonWindowIds.includes(window2.id) ? '<span class="chart-tab-spinner" aria-hidden="true"></span>' : ""}
-                        <span class="chart-tab-label">${esc$1(window2.label)}</span>
-                      </span>
-                      <span class="chart-tab-detail-row">
-                        <span class="chart-tab-detail">${esc$1(window2.detail || "")}</span>
-                      </span>
-                    </span>
-                  </button>
-                  ${window2.editable ? `
-                    <span class="chart-tab-actions">
-                      <button type="button" class="chart-tab-action edit" data-date-window-edit="${esc$1(window2.id)}" aria-label="Edit ${esc$1(window2.label)}">
-                        <ha-icon icon="mdi:pencil-outline"></ha-icon>
-                      </button>
-                      <button type="button" class="chart-tab-action delete" data-date-window-delete="${esc$1(window2.id)}" aria-label="Delete ${esc$1(window2.label)}">
-                        <ha-icon icon="mdi:close"></ha-icon>
-                      </button>
-                    </span>
-                  ` : ""}
-                </div>
-              `).join("")}
-            </div>
-          </div>
-          <button type="button" class="chart-tabs-add" id="chart-tabs-add">
-            <ha-icon icon="mdi:plus"></ha-icon>
-            <span class="chart-tabs-add-label">Add date window</span>
-          </button>
-        </div>
-      `;
-        tabsEl.querySelector("#chart-tabs-add")?.addEventListener("click", () => this._openDateWindowDialog());
-        tabsEl.querySelectorAll("[data-date-window-edit]").forEach((button) => {
-          button.addEventListener("click", (ev) => {
-            ev.preventDefault();
-            ev.stopPropagation();
-            const id = button.getAttribute("data-date-window-edit");
-            const window2 = this._comparisonWindows.find((entry) => entry.id === id);
-            if (window2) this._openDateWindowDialog(window2);
-          });
-        });
-        tabsEl.querySelectorAll("[data-date-window-delete]").forEach((button) => {
-          button.addEventListener("click", (ev) => {
-            ev.preventDefault();
-            ev.stopPropagation();
-            const id = button.getAttribute("data-date-window-delete");
-            if (id) this._deleteDateWindow(id);
-          });
-        });
-        tabsEl.querySelectorAll("[data-comparison-id]").forEach((tab) => {
-          const id = tab.dataset.comparisonId;
-          const trigger = tab.querySelector("[data-comparison-trigger]");
-          if (!id) {
-            return;
-          }
-          if (id !== "current-range") {
-            tab.addEventListener("mouseenter", () => this._handleComparisonTabHover(id));
-            tab.addEventListener("mouseleave", () => this._handleComparisonTabLeave(id));
-            trigger?.addEventListener("focus", () => this._handleComparisonTabHover(id));
-            trigger?.addEventListener("blur", () => this._handleComparisonTabLeave(id));
-          }
-          trigger?.addEventListener("click", () => this._handleComparisonTabActivate(id));
-        });
-        this._comparisonTabsRenderKey = renderKey;
-      }
-      tabsEl.querySelectorAll("[data-comparison-id]").forEach((tab) => {
-        const id = tab.dataset.comparisonId;
-        tab.classList.toggle("previewing", !!id && id === this._hoveredComparisonWindowId);
-      });
-      this._updateComparisonTabsOverflow();
+      this._comparisonTabRailComp.tabs = tabs;
+      this._comparisonTabRailComp.loadingIds = [...this._loadingComparisonWindowIds];
+      this._comparisonTabRailComp.hoveredId = this._hoveredComparisonWindowId || "";
     }
     _updateComparisonTabsOverflow() {
       window.requestAnimationFrame(() => {
