@@ -68,6 +68,7 @@ import "@/molecules/dp-comparison-tab-rail/dp-comparison-tab-rail";
 import "@/molecules/dp-date-window-dialog/dp-date-window-dialog";
 import "@/molecules/dp-floating-menu/dp-floating-menu";
 import "@/atoms/interactive/dp-page-menu-item/dp-page-menu-item";
+import "@/molecules/dp-panel-timeline/dp-panel-timeline";
 
 const DATA_GAP_THRESHOLD_OPTIONS = [
   { value: "auto", label: "Auto-detect" },
@@ -2385,53 +2386,15 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._datePickerMenuEl = null;
     this._optionsButtonEl = null;
     this._optionsMenuEl = null;
-    this._rangeScrollViewportEl = null;
-    this._rangeTimelineEl = null;
-    this._rangeJumpLeftEl = null;
-    this._rangeJumpRightEl = null;
-    this._rangeTrackEl = null;
-    this._rangeTickLayerEl = null;
-    this._rangeEventLayerEl = null;
-    this._rangeLabelLayerEl = null;
-    this._rangeContextLayerEl = null;
-    this._rangeChartHoverLineEl = null;
-    this._rangeChartHoverWindowLineEl = null;
-    this._rangeHoverPreviewEl = null;
-    this._rangeZoomHighlightEl = null;
-    this._rangeZoomWindowHighlightEl = null;
-    this._rangeSelectionEl = null;
-    this._rangeStartHandle = null;
-    this._rangeEndHandle = null;
-    this._rangeStartTooltipEl = null;
-    this._rangeEndTooltipEl = null;
-    this._rangeCaptionEl = null;
+    this._panelTimelineEl = null;
     this._rangeBounds = null;
-    this._rangeContentWidth = 0;
-    this._draftStartTime = null;
-    this._draftEndTime = null;
-    this._rangeCommitTimer = null;
     this._autoZoomTimer = null;
-    this._rangeInteractionActive = false;
     this._resolvedAutoZoomLevel = null;
-    this._activeRangeHandle = null;
-    this._hoveredRangeHandle = null;
-    this._focusedRangeHandle = null;
     this._hoveredPeriodRange = null;
     this._chartHoverTimeMs = null;
     this._chartZoomRange = null;
     this._chartZoomCommittedRange = null;
     this._chartZoomStateCommitTimer = null;
-    this._rangePointerId = null;
-    this._timelinePointerId = null;
-    this._timelinePointerStartX = 0;
-    this._timelinePointerStartScrollLeft = 0;
-    this._timelinePointerStartTimestamp = null;
-    this._timelinePointerMode = null;
-    this._timelineDragStartRangeMs = 0;
-    this._timelineDragEndRangeMs = 0;
-    this._timelineDragStartZoomRange = null;
-    this._timelinePointerMoved = false;
-    this._timelineTrackClickPending = false;
     this._zoomLevel = "auto";
     this._dateSnapping = "auto";
     this._recordsSearchQuery = "";
@@ -2443,17 +2406,6 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._pageMenuOpen = false;
     this._exportBusy = false;
     this._contentSplitPointerId = null;
-    this._onRangePointerMove = (ev) => this._handleRangePointerMove(ev);
-    this._onRangePointerUp = (ev) => this._finishRangePointerInteraction(ev);
-    this._onTimelinePointerMove = (ev) => this._handleTimelinePointerMove(ev);
-    this._onTimelinePointerUp = (ev) => this._finishTimelinePointerInteraction(ev);
-    this._onRangeViewportScroll = () => {
-      this._syncVisibleRangeLabels();
-      this._updateRangeTooltip();
-      this._updateSelectionJumpControls();
-    };
-    this._onRangeViewportPointerMove = (ev) => this._handleRangeViewportPointerMove(ev);
-    this._onRangeViewportPointerLeave = () => this._handleRangeViewportPointerLeave();
     this._onChartHover = (ev) => this._handleChartHover(ev);
     this._onChartZoom = (ev) => this._handleChartZoom(ev);
     this._onRecordsSearch = (ev) => this._handleRecordsSearch(ev);
@@ -2597,8 +2549,6 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     window.removeEventListener("pointermove", this._onContentSplitPointerMove);
     window.removeEventListener("pointerup", this._onContentSplitPointerUp);
     window.removeEventListener("pointercancel", this._onContentSplitPointerUp);
-    this._detachRangePointerListeners();
-    this._detachTimelinePointerListeners();
   }
 
   _initFromContext() {
@@ -3632,7 +3582,6 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._timelineEventsKey = "";
     this._saveSessionState();
     this._renderSidebarOptions();
-    this._renderRangeScale();
     this._updateUrl({ push: false });
     void this._ensureTimelineEvents();
     this._renderContent();
@@ -3886,7 +3835,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     if (this._datapointScope === "hidden") {
       this._timelineEvents = [];
       this._timelineEventsKey = "";
-      if (this._rendered) this._renderRangeScale();
+      if (this._rendered && this._panelTimelineEl) this._panelTimelineEl.events = [];
       return;
     }
     const startIso = new Date(this._rangeBounds.min).toISOString();
@@ -3903,7 +3852,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       .then((events) => {
         this._timelineEvents = Array.isArray(events) ? events : [];
         this._timelineEventsKey = key;
-        if (this._rendered) this._renderRangeScale();
+        if (this._rendered && this._panelTimelineEl) this._panelTimelineEl.events = this._timelineEvents;
       })
       .catch((err) => {
         console.warn("[hass-datapoints] failed to load timeline events:", err);
@@ -4046,46 +3995,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     dateControl.className = "range-control";
     dateControl.innerHTML = `
       <div class="range-toolbar">
-        <div class="range-timeline-shell">
-          <ha-icon-button
-            id="range-jump-left"
-            class="range-selection-jump left"
-            label="Scroll to selected range"
-            hidden
-          >
-            <ha-icon icon="mdi:chevron-left"></ha-icon>
-          </ha-icon-button>
-          <ha-icon-button
-            id="range-jump-right"
-            class="range-selection-jump right"
-            label="Scroll to selected range"
-            hidden
-          >
-            <ha-icon icon="mdi:chevron-right"></ha-icon>
-          </ha-icon-button>
-          <div id="range-scroll-viewport" class="range-scroll-viewport">
-            <div id="range-timeline" class="range-timeline">
-              <div id="range-context-layer" class="range-context-layer"></div>
-              <div id="range-tick-layer" class="range-tick-layer"></div>
-              <div id="range-event-layer" class="range-event-layer"></div>
-              <div id="range-chart-hover-line" class="range-chart-hover-line" aria-hidden="true"></div>
-              <div id="range-chart-hover-window-line" class="range-chart-hover-window-line" aria-hidden="true"></div>
-              <div id="range-track" class="range-track">
-                <div id="range-hover-preview" class="range-hover-preview"></div>
-                <div id="range-comparison-preview" class="range-comparison-preview"></div>
-                <div id="range-zoom-highlight" class="range-zoom-highlight"></div>
-                <div id="range-zoom-window-highlight" class="range-zoom-window-highlight"></div>
-                <div id="range-selection" class="range-selection"></div>
-              </div>
-              <div id="range-label-layer" class="range-label-layer"></div>
-              <button id="range-start-handle" class="range-handle" type="button" aria-label="Start date and time"></button>
-              <button id="range-end-handle" class="range-handle" type="button" aria-label="End date and time"></button>
-            </div>
-          </div>
-          <div id="range-tooltip-start" class="range-tooltip start" aria-hidden="true"></div>
-          <div id="range-tooltip-end" class="range-tooltip end" aria-hidden="true"></div>
-          <div id="range-caption" class="range-caption"></div>
-        </div>
+        <dp-panel-timeline id="range-panel-timeline"></dp-panel-timeline>
         <div class="range-picker-wrap">
           <ha-icon-button id="range-picker-button" class="range-picker-button" label="Select date range" aria-haspopup="dialog" aria-expanded="false">
             <ha-icon icon="mdi:calendar-range"></ha-icon>
@@ -4149,50 +4059,18 @@ export class HassRecordsHistoryPanel extends HTMLElement {
         </div>
       </div>
     `;
-    this._rangeScrollViewportEl = dateControl.querySelector("#range-scroll-viewport");
-    this._rangeJumpLeftEl = dateControl.querySelector("#range-jump-left");
-    this._rangeJumpRightEl = dateControl.querySelector("#range-jump-right");
-    this._rangeTimelineEl = dateControl.querySelector("#range-timeline");
-    this._rangeTrackEl = dateControl.querySelector("#range-track");
+    this._panelTimelineEl = dateControl.querySelector("#range-panel-timeline");
     this._dateRangePickerEl = dateControl.querySelector("#range-picker");
     this._datePickerButtonEl = dateControl.querySelector("#range-picker-button");
     this._datePickerMenuEl = dateControl.querySelector("#range-picker-menu");
     this._optionsButtonEl = dateControl.querySelector("#range-options-button");
     this._optionsMenuEl = dateControl.querySelector("#range-options-menu");
-    this._rangeTickLayerEl = dateControl.querySelector("#range-tick-layer");
-    this._rangeEventLayerEl = dateControl.querySelector("#range-event-layer");
-    this._rangeLabelLayerEl = dateControl.querySelector("#range-label-layer");
-    this._rangeContextLayerEl = dateControl.querySelector("#range-context-layer");
-    this._rangeChartHoverLineEl = dateControl.querySelector("#range-chart-hover-line");
-    this._rangeChartHoverWindowLineEl = dateControl.querySelector("#range-chart-hover-window-line");
-    this._rangeHoverPreviewEl = dateControl.querySelector("#range-hover-preview");
-    this._rangeComparisonPreviewEl = dateControl.querySelector("#range-comparison-preview");
-    this._rangeZoomHighlightEl = dateControl.querySelector("#range-zoom-highlight");
-    this._rangeZoomWindowHighlightEl = dateControl.querySelector("#range-zoom-window-highlight");
-    this._rangeStartTooltipEl = dateControl.querySelector("#range-tooltip-start");
-    this._rangeEndTooltipEl = dateControl.querySelector("#range-tooltip-end");
-    this._rangeSelectionEl = dateControl.querySelector("#range-selection");
-    this._rangeStartHandle = dateControl.querySelector("#range-start-handle");
-    this._rangeEndHandle = dateControl.querySelector("#range-end-handle");
-    this._rangeStartHandle?.removeAttribute("title");
-    this._rangeEndHandle?.removeAttribute("title");
-    this._rangeCaptionEl = dateControl.querySelector("#range-caption");
-    this._rangeScrollViewportEl.addEventListener("pointerdown", (ev) => this._handleTimelinePointerDown(ev));
-    this._rangeScrollViewportEl.addEventListener("scroll", this._onRangeViewportScroll, { passive: true });
-    this._rangeScrollViewportEl.addEventListener("pointermove", this._onRangeViewportPointerMove, { passive: true });
-    this._rangeScrollViewportEl.addEventListener("pointerleave", this._onRangeViewportPointerLeave);
-    this._rangeStartHandle.addEventListener("pointerdown", (ev) => this._beginRangePointerInteraction("start", ev));
-    this._rangeEndHandle.addEventListener("pointerdown", (ev) => this._beginRangePointerInteraction("end", ev));
-    this._rangeStartHandle.addEventListener("keydown", (ev) => this._handleRangeHandleKeyDown("start", ev));
-    this._rangeEndHandle.addEventListener("keydown", (ev) => this._handleRangeHandleKeyDown("end", ev));
-    this._rangeStartHandle.addEventListener("pointerenter", () => this._setRangeTooltipHoverHandle("start"));
-    this._rangeEndHandle.addEventListener("pointerenter", () => this._setRangeTooltipHoverHandle("end"));
-    this._rangeStartHandle.addEventListener("pointerleave", () => this._clearRangeTooltipHoverHandle("start"));
-    this._rangeEndHandle.addEventListener("pointerleave", () => this._clearRangeTooltipHoverHandle("end"));
-    this._rangeStartHandle.addEventListener("focus", () => this._setRangeTooltipFocusHandle("start"));
-    this._rangeEndHandle.addEventListener("focus", () => this._setRangeTooltipFocusHandle("end"));
-    this._rangeStartHandle.addEventListener("blur", () => this._clearRangeTooltipFocusHandle("start"));
-    this._rangeEndHandle.addEventListener("blur", () => this._clearRangeTooltipFocusHandle("end"));
+    this._panelTimelineEl.addEventListener("dp-range-commit", (ev) => {
+      this._applyCommittedRange(ev.detail.start, ev.detail.end, { push: ev.detail.push ?? false });
+    });
+    this._panelTimelineEl.addEventListener("dp-range-draft", (ev) => {
+      this._scheduleAutoZoomUpdate(ev.detail.start, ev.detail.end);
+    });
     this._datePickerButtonEl.addEventListener("click", () => this._toggleDatePickerMenu());
     this._datePickerMenuEl?.addEventListener("dp-menu-close", () => this._toggleDatePickerMenu(false));
     this._dateRangePickerEl.addEventListener("change", (ev) => this._handleDatePickerChange(ev));
@@ -4208,8 +4086,6 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._optionsMenuEl.querySelectorAll("[data-option-group]").forEach((button) => {
       button.addEventListener("click", () => this._handleOptionSelect(button));
     });
-    this._rangeJumpLeftEl?.addEventListener("click", () => this._revealSelectionInTimeline("smooth"));
-    this._rangeJumpRightEl?.addEventListener("click", () => this._revealSelectionInTimeline("smooth"));
     dateSlot.appendChild(dateControl);
     this._dateControl = dateControl;
 
@@ -4919,66 +4795,9 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     }
   }
 
-  _syncTimelineWidth() {
-    if (!this._rangeBounds || !this._rangeTimelineEl) return;
-    const { config } = this._rangeBounds;
-    const viewportWidth = Math.max(this._rangeScrollViewportEl?.clientWidth || 0, 320);
-    const unitCount = this._countUnitsInRange(this._rangeBounds.min, this._rangeBounds.max, config.majorUnit);
-    const contentWidth = Math.max(viewportWidth, unitCount * (config.pixelsPerUnit || 60));
-    this._rangeContentWidth = contentWidth;
-    this._rangeTimelineEl.style.width = `${contentWidth}px`;
-  }
 
-  _scrollTimelineToRange(range, behavior = "auto", { center = false } = {}) {
-    if (!this._rangeScrollViewportEl || !this._rangeBounds || !this._rangeContentWidth || !range) return;
-    const viewportWidth = this._rangeScrollViewportEl.clientWidth;
-    if (!viewportWidth || this._rangeContentWidth <= viewportWidth) return;
-    const totalMs = Math.max(1, this._rangeBounds.max - this._rangeBounds.min);
-    const visibleSpanMs = totalMs * Math.min(1, viewportWidth / this._rangeContentWidth);
-    const maxScrollLeft = Math.max(0, this._rangeContentWidth - viewportWidth);
-    const viewportRangeMs = Math.max(0, totalMs - visibleSpanMs);
-    if (viewportRangeMs <= 0) return;
 
-    const targetStart = center
-      ? clampNumber(
-        ((range.start + range.end) / 2) - (visibleSpanMs / 2),
-        this._rangeBounds.min,
-        this._rangeBounds.max - visibleSpanMs,
-      )
-      : clampNumber(range.start, this._rangeBounds.min, this._rangeBounds.max - visibleSpanMs);
-    const ratio = (targetStart - this._rangeBounds.min) / viewportRangeMs;
-    const nextLeft = clampNumber(ratio * maxScrollLeft, 0, maxScrollLeft);
-    this._rangeScrollViewportEl.scrollTo({ left: nextLeft, behavior });
-  }
 
-  _revealSelectionInTimeline(behavior = "auto") {
-    if (!this._rangeScrollViewportEl || !this._rangeBounds || !this._rangeContentWidth || !this._startTime || !this._endTime) return;
-    const focusRange = this._chartZoomCommittedRange || {
-      start: this._startTime.getTime(),
-      end: this._endTime.getTime(),
-    };
-    this._scrollTimelineToRange(focusRange, behavior, { center: true });
-  }
-
-  _updateSelectionJumpControls() {
-    if (!this._rangeScrollViewportEl || !this._rangeBounds || !this._rangeContentWidth || !this._startTime || !this._endTime) {
-      if (this._rangeJumpLeftEl) this._rangeJumpLeftEl.hidden = true;
-      if (this._rangeJumpRightEl) this._rangeJumpRightEl.hidden = true;
-      return;
-    }
-
-    const total = Math.max(1, this._rangeBounds.max - this._rangeBounds.min);
-    const viewportWidth = this._rangeScrollViewportEl.clientWidth;
-    const currentLeft = this._rangeScrollViewportEl.scrollLeft;
-    const currentRight = currentLeft + viewportWidth;
-    const startPx = ((this._startTime.getTime() - this._rangeBounds.min) / total) * this._rangeContentWidth;
-    const endPx = ((this._endTime.getTime() - this._rangeBounds.min) / total) * this._rangeContentWidth;
-    const isLeftHidden = endPx < currentLeft;
-    const isRightHidden = startPx > currentRight;
-
-    if (this._rangeJumpLeftEl) this._rangeJumpLeftEl.hidden = !isLeftHidden;
-    if (this._rangeJumpRightEl) this._rangeJumpRightEl.hidden = !isRightHidden;
-  }
 
   _getVisibleTimelineSpanMs() {
     if (!this._rangeBounds) return RANGE_SLIDER_WINDOW_MS;
@@ -4989,336 +4808,63 @@ export class HassRecordsHistoryPanel extends HTMLElement {
   }
 
   _syncRangeControl() {
-    if (!this._dateControl || !this._rangeTrackEl || !this._rangeStartHandle || !this._rangeEndHandle) return;
+    if (!this._dateControl || !this._panelTimelineEl) return;
     this._rangeBounds = this._deriveRangeBounds();
     void this._ensureTimelineEvents();
-    this._draftStartTime = new Date(this._startTime);
-    this._draftEndTime = new Date(this._endTime);
-
-    this._syncTimelineWidth();
-    this._updateHandleStacking();
-    this._renderRangeScale();
-    this._updateRangePreview();
+    this._panelTimelineEl.startTime = this._startTime ? new Date(this._startTime) : null;
+    this._panelTimelineEl.endTime = this._endTime ? new Date(this._endTime) : null;
+    this._panelTimelineEl.rangeBounds = this._rangeBounds;
+    this._panelTimelineEl.zoomLevel = this._getEffectiveZoomLevel();
+    this._panelTimelineEl.dateSnapping = this._dateSnapping;
+    this._panelTimelineEl.isLiveEdge = this._isOnLiveEdge();
+    this._panelTimelineEl.events = this._timelineEvents || [];
     this._updateComparisonRangePreview();
     this._updateChartHoverIndicator();
     this._updateChartZoomHighlight();
-    this._updateSelectionJumpControls();
-    this._syncLiveEdgeHandle();
-    window.requestAnimationFrame(() => this._revealSelectionInTimeline("auto"));
   }
 
-  _renderScaleMarkers(fragment, unit, className, total, step = 1) {
-    let markerTime = addUnit(startOfUnit(new Date(this._rangeBounds.min), unit), unit, 0);
-    if (markerTime.getTime() < this._rangeBounds.min) {
-      markerTime = addUnit(markerTime, unit, step);
-    }
-    while (markerTime.getTime() < this._rangeBounds.max) {
-      const tick = document.createElement("span");
-      tick.className = `range-tick ${className}`;
-      tick.style.left = `${((markerTime.getTime() - this._rangeBounds.min) / total) * 100}%`;
-      fragment.appendChild(tick);
-      markerTime = addUnit(markerTime, unit, step);
-    }
-  }
 
-  _buildRangePeriodButton(className, leftValue, total, text, unit, startTime) {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = `range-period-button ${className}`;
-    button.style.left = `${((leftValue - this._rangeBounds.min) / total) * 100}%`;
-    button.textContent = text;
-    const selectionLabel = formatPeriodSelectionLabel(startTime, unit);
-    button.title = `Select ${selectionLabel}`;
-    button.setAttribute("aria-label", `Select ${selectionLabel}`);
-    button.addEventListener("click", (ev) => this._handleRangePeriodSelect(unit, startTime, ev));
-    button.addEventListener("pointerenter", () => this._setHoveredPeriodRange(unit, startTime));
-    button.addEventListener("pointerleave", () => this._clearHoveredPeriodRange(unit, startTime));
-    button.addEventListener("focus", () => this._setHoveredPeriodRange(unit, startTime));
-    button.addEventListener("blur", () => this._clearHoveredPeriodRange(unit, startTime));
-    return button;
-  }
 
-  _getRangeUnitAnchorMs(startTime, unit, anchor = "auto") {
-    const unitStart = Math.max(startOfUnit(new Date(startTime), unit).getTime(), this._rangeBounds?.min ?? -Infinity);
-    const unitEnd = Math.min(endOfUnit(new Date(startTime), unit).getTime(), this._rangeBounds?.max ?? Infinity);
-    if (anchor === "auto") {
-      if (unit === "day" || unit === "week") {
-        anchor = "center";
-      } else {
-        anchor = "start";
-      }
-    }
-    if (anchor === "center") {
-      return unitStart + Math.max(0, (unitEnd - unitStart) / 2);
-    }
-    return unitStart;
-  }
 
-  _estimateRangeLabelWidth(text, className, minGap) {
-    const basePadding = className === "range-context-label" ? 20 : 14;
-    const charWidth = className === "range-context-label" ? 8.2 : 7.2;
-    return (String(text).length * charWidth) + basePadding + minGap;
-  }
 
-  _computeRangeLabelStride(unit, formatter, className, minGap) {
-    if (!this._rangeBounds || !this._rangeContentWidth) return 1;
-    const total = Math.max(1, this._rangeBounds.max - this._rangeBounds.min);
-    let current = startOfUnit(new Date(this._rangeBounds.min), unit);
-    let previousMs = null;
-    let minSpacingPx = Infinity;
-    let maxLabelWidthPx = 0;
-    let samples = 0;
-
-    while (current.getTime() < this._rangeBounds.max && samples < 24) {
-      const currentMs = Math.max(current.getTime(), this._rangeBounds.min);
-      const text = formatter(current);
-      maxLabelWidthPx = Math.max(
-        maxLabelWidthPx,
-        this._estimateRangeLabelWidth(text, className, minGap),
-      );
-      if (previousMs != null) {
-        const spacingPx = ((currentMs - previousMs) / total) * this._rangeContentWidth;
-        if (spacingPx > 0) minSpacingPx = Math.min(minSpacingPx, spacingPx);
-      }
-      previousMs = currentMs;
-      current = addUnit(current, unit, 1);
-      samples += 1;
-    }
-
-    if (!Number.isFinite(minSpacingPx) || minSpacingPx <= 0) return 1;
-    return Math.max(1, Math.ceil(maxLabelWidthPx / minSpacingPx));
-  }
 
   _updateRangeLabelVisibility(selector, minGap = RANGE_LABEL_MIN_GAP_PX) {
 
   }
 
-  _syncVisibleRangeLabels() {
-    if (!this._rangeScrollViewportEl) return;
-    this._updateRangeLabelVisibility(".range-scale-label", RANGE_LABEL_MIN_GAP_PX);
-    this._updateRangeLabelVisibility(".range-context-label", RANGE_CONTEXT_LABEL_MIN_GAP_PX);
-  }
 
-  _renderRangeScale() {
-    if (!this._rangeBounds || !this._rangeTickLayerEl || !this._rangeLabelLayerEl || !this._rangeContextLayerEl || !this._rangeEventLayerEl) return;
-    this._rangeTickLayerEl.innerHTML = "";
-    this._rangeEventLayerEl.innerHTML = "";
-    this._rangeLabelLayerEl.innerHTML = "";
-    this._rangeContextLayerEl.innerHTML = "";
-    const total = Math.max(1, this._rangeBounds.max - this._rangeBounds.min);
-    const { config } = this._rangeBounds;
-    const tickFragment = document.createDocumentFragment();
-    const eventFragment = document.createDocumentFragment();
-    const labelFragment = document.createDocumentFragment();
-    const contextFragment = document.createDocumentFragment();
-    const scaleLabelStride = config.labelUnit === "month"
-      ? 1
-      : config.labelUnit === "day"
-        ? 1
-      : this._computeRangeLabelStride(
-        config.labelUnit,
-        (value) => formatScaleLabel(value, config.labelUnit, this._getEffectiveZoomLevel()),
-        "range-scale-label",
-        RANGE_LABEL_MIN_GAP_PX,
-      );
-    const contextLabelStride = config.contextUnit === "month"
-      ? 1
-      : config.contextUnit === "day"
-        ? 1
-      : this._computeRangeLabelStride(
-        config.contextUnit,
-        (value) => formatContextLabel(value, config.contextUnit),
-        "range-context-label",
-        RANGE_CONTEXT_LABEL_MIN_GAP_PX,
-      );
 
-    if (config.detailUnit && config.detailUnit !== config.minorUnit && config.detailUnit !== config.majorUnit) {
-      this._renderScaleMarkers(tickFragment, config.detailUnit, "fine", total, config.detailStep || 1);
-    }
-    if (config.minorUnit !== config.majorUnit) {
-      this._renderScaleMarkers(tickFragment, config.minorUnit, "", total);
-    }
-    this._renderScaleMarkers(tickFragment, config.majorUnit, "major", total);
 
-    let labelRef = startOfUnit(new Date(this._rangeBounds.min), config.labelUnit);
-    let labelIndex = 0;
-    while (labelRef.getTime() < this._rangeBounds.max) {
-      if (labelIndex % scaleLabelStride === 0) {
-        const leftValue = this._getRangeUnitAnchorMs(labelRef, config.labelUnit, "auto");
-        const label = this._buildRangePeriodButton(
-          "range-scale-label",
-          leftValue,
-          total,
-          formatScaleLabel(labelRef, config.labelUnit, this._getEffectiveZoomLevel()),
-          config.labelUnit,
-          labelRef,
-        );
-        labelFragment.appendChild(label);
-      }
-      labelRef = addUnit(labelRef, config.labelUnit, 1);
-      labelIndex += 1;
-    }
-
-    let contextRef = startOfUnit(new Date(this._rangeBounds.min), config.contextUnit);
-    if (contextRef.getTime() < this._rangeBounds.min) {
-      contextRef = addUnit(contextRef, config.contextUnit, 1);
-    }
-    let contextIndex = 0;
-    while (contextRef.getTime() < this._rangeBounds.max) {
-      const left = `${((contextRef.getTime() - this._rangeBounds.min) / total) * 100}%`;
-
-      const divider = document.createElement("span");
-      divider.className = "range-divider";
-      divider.style.left = left;
-      contextFragment.appendChild(divider);
-
-      if (contextIndex % contextLabelStride === 0) {
-        const label = this._buildRangePeriodButton(
-          "range-context-label",
-          contextRef.getTime(),
-          total,
-          formatContextLabel(contextRef, config.contextUnit),
-          config.contextUnit,
-          contextRef,
-        );
-        contextFragment.appendChild(label);
-      }
-
-      contextRef = addUnit(contextRef, config.contextUnit, 1);
-      contextIndex += 1;
-    }
-
-    for (const event of this._timelineEvents || []) {
-      const timestamp = new Date(event.timestamp).getTime();
-      if (!Number.isFinite(timestamp) || timestamp < this._rangeBounds.min || timestamp > this._rangeBounds.max) continue;
-      const dot = document.createElement("span");
-      dot.className = "range-event-dot";
-      dot.style.left = `${((timestamp - this._rangeBounds.min) / total) * 100}%`;
-      dot.style.background = event.color || "#03a9f4";
-      eventFragment.appendChild(dot);
-    }
-
-    this._rangeTickLayerEl.appendChild(tickFragment);
-    this._rangeEventLayerEl.appendChild(eventFragment);
-    this._rangeLabelLayerEl.appendChild(labelFragment);
-    this._rangeContextLayerEl.appendChild(contextFragment);
-    this._updateHoveredPeriodPreview();
-    this._updateComparisonRangePreview();
-    this._syncVisibleRangeLabels();
-  }
-
-  _handleRangePeriodSelect(unit, startTime, ev) {
-    ev.preventDefault();
-    ev.stopPropagation();
-    const periodStart = startOfUnit(new Date(startTime), unit);
-    const periodEnd = endOfUnit(new Date(startTime), unit);
-    if (this._rangeCommitTimer) {
-      window.clearTimeout(this._rangeCommitTimer);
-      this._rangeCommitTimer = null;
-    }
-    this._clearAutoZoomTimer();
-    this._draftStartTime = new Date(periodStart);
-    this._draftEndTime = new Date(periodEnd);
-    this._updateRangePreview();
-    this._applyCommittedRange(periodStart, periodEnd, { push: true });
-  }
-
-  _setHoveredPeriodRange(unit, startTime) {
-    const start = startOfUnit(new Date(startTime), unit);
-    const end = endOfUnit(new Date(startTime), unit);
-    this._hoveredPeriodRange = {
-      unit,
-      start: start.getTime(),
-      end: end.getTime(),
-    };
-    this._updateHoveredPeriodPreview();
-  }
 
   _setHoveredPeriodRangeFromTimestamp(timestamp, unit = this._rangeBounds?.config?.labelUnit) {
     if (timestamp == null || !unit) return;
     this._setHoveredPeriodRange(unit, new Date(timestamp));
   }
 
-  _clearHoveredPeriodRange(unit, startTime) {
-    if (!this._hoveredPeriodRange) return;
-    const start = startOfUnit(new Date(startTime), unit).getTime();
-    const end = endOfUnit(new Date(startTime), unit).getTime();
-    if (this._hoveredPeriodRange.start === start && this._hoveredPeriodRange.end === end) {
-      this._hoveredPeriodRange = null;
-      this._updateHoveredPeriodPreview();
-    }
-  }
 
-  _updateHoveredPeriodPreview() {
-    if (!this._rangeHoverPreviewEl || !this._rangeBounds || !this._hoveredPeriodRange) {
-      if (this._rangeHoverPreviewEl) {
-        this._rangeHoverPreviewEl.classList.remove("visible");
-      }
-      return;
-    }
-    const total = Math.max(1, this._rangeBounds.max - this._rangeBounds.min);
-    const start = clampNumber(this._hoveredPeriodRange.start, this._rangeBounds.min, this._rangeBounds.max);
-    const end = clampNumber(this._hoveredPeriodRange.end, this._rangeBounds.min, this._rangeBounds.max);
-    const startPct = ((start - this._rangeBounds.min) / total) * 100;
-    const endPct = ((end - this._rangeBounds.min) / total) * 100;
-    this._rangeHoverPreviewEl.style.left = `${startPct}%`;
-    this._rangeHoverPreviewEl.style.width = `${Math.max(0, endPct - startPct)}%`;
-    this._rangeHoverPreviewEl.classList.add("visible");
-  }
 
   _updateComparisonRangePreview() {
+    if (!this._panelTimelineEl) return;
     const comparisonWindow = this._getActiveComparisonWindow();
-    if (!this._rangeComparisonPreviewEl || !this._rangeBounds || !comparisonWindow) {
-      if (this._rangeComparisonPreviewEl) {
-        this._rangeComparisonPreviewEl.classList.remove("visible");
-      }
+    if (!this._rangeBounds || !comparisonWindow) {
+      this._panelTimelineEl.comparisonPreview = null;
       this._updateZoomWindowHighlight();
       return;
     }
     const startMs = new Date(comparisonWindow.start_time).getTime();
     const endMs = new Date(comparisonWindow.end_time).getTime();
     if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || startMs >= endMs) {
-      this._rangeComparisonPreviewEl.classList.remove("visible");
+      this._panelTimelineEl.comparisonPreview = null;
       this._updateZoomWindowHighlight();
       return;
     }
-    const total = Math.max(1, this._rangeBounds.max - this._rangeBounds.min);
-    const start = clampNumber(startMs, this._rangeBounds.min, this._rangeBounds.max);
-    const end = clampNumber(endMs, this._rangeBounds.min, this._rangeBounds.max);
-    const startPct = ((start - this._rangeBounds.min) / total) * 100;
-    const endPct = ((end - this._rangeBounds.min) / total) * 100;
-    this._rangeComparisonPreviewEl.style.left = `${startPct}%`;
-    this._rangeComparisonPreviewEl.style.width = `${Math.max(0, endPct - startPct)}%`;
-    this._rangeComparisonPreviewEl.classList.add("visible");
+    this._panelTimelineEl.comparisonPreview = { start: startMs, end: endMs };
     this._updateZoomWindowHighlight();
   }
 
-  _updateHandleStacking(activeHandle = this._activeRangeHandle) {
-    if (!this._rangeStartHandle || !this._rangeEndHandle) return;
-    this._rangeStartHandle.style.zIndex = activeHandle === "start" ? "5" : "3";
-    this._rangeEndHandle.style.zIndex = activeHandle === "end" ? "5" : "4";
-  }
 
-  _getVisibleRangeTooltipHandles() {
-    if (this._timelinePointerMode === "selection" || this._timelinePointerMode === "interval_select") return ["start", "end"];
-    const handle = this._activeRangeHandle || this._focusedRangeHandle || this._hoveredRangeHandle || null;
-    return handle ? [handle] : [];
-  }
 
-  _handleRangeViewportPointerMove(ev) {
-    if (this._timelinePointerId != null || this._rangePointerId != null) return;
-    if (ev.target === this._rangeStartHandle || ev.target === this._rangeEndHandle) return;
-    if (ev.target.closest?.(".range-period-button") || ev.target.closest?.(".range-selection")) return;
-    const timestamp = this._timestampFromClientX(ev.clientX);
-    if (timestamp == null) return;
-    this._setHoveredPeriodRangeFromTimestamp(timestamp);
-  }
 
-  _handleRangeViewportPointerLeave() {
-    if (this._timelinePointerId != null || this._rangePointerId != null) return;
-    this._hoveredPeriodRange = null;
-    this._updateHoveredPeriodPreview();
-  }
 
   _handleChartHover(ev) {
     this._chartHoverTimeMs = ev?.detail?.timeMs ?? null;
@@ -5422,67 +4968,46 @@ export class HassRecordsHistoryPanel extends HTMLElement {
   }
 
   _updateChartHoverIndicator() {
-    if (!this._rangeChartHoverLineEl || !this._rangeBounds || this._chartHoverTimeMs == null) {
-      if (this._rangeChartHoverLineEl) {
-        this._rangeChartHoverLineEl.classList.remove("visible");
-      }
-      if (this._rangeChartHoverWindowLineEl) {
-        this._rangeChartHoverWindowLineEl.classList.remove("visible");
-      }
+    if (!this._panelTimelineEl) return;
+    if (!this._rangeBounds || this._chartHoverTimeMs == null) {
+      this._panelTimelineEl.chartHoverTimeMs = null;
+      this._panelTimelineEl.chartHoverWindowTimeMs = null;
       return;
     }
-    const total = Math.max(1, this._rangeBounds.max - this._rangeBounds.min);
-    const clamped = clampNumber(this._chartHoverTimeMs, this._rangeBounds.min, this._rangeBounds.max);
-    const leftPct = ((clamped - this._rangeBounds.min) / total) * 100;
-    this._rangeChartHoverLineEl.style.left = `${leftPct}%`;
-    this._rangeChartHoverLineEl.classList.add("visible");
-
+    this._panelTimelineEl.chartHoverTimeMs = this._chartHoverTimeMs;
     const activeWindow = this._getActiveComparisonWindow();
-    if (this._rangeChartHoverWindowLineEl && activeWindow && this._startTime) {
+    if (activeWindow && this._startTime) {
       const timeOffsetMs = new Date(activeWindow.start_time).getTime() - this._startTime.getTime();
-      const windowTimeMs = this._chartHoverTimeMs + timeOffsetMs;
-      const clampedWindow = clampNumber(windowTimeMs, this._rangeBounds.min, this._rangeBounds.max);
-      const windowLeftPct = ((clampedWindow - this._rangeBounds.min) / total) * 100;
-      this._rangeChartHoverWindowLineEl.style.left = `${windowLeftPct}%`;
-      this._rangeChartHoverWindowLineEl.classList.add("visible");
-    } else if (this._rangeChartHoverWindowLineEl) {
-      this._rangeChartHoverWindowLineEl.classList.remove("visible");
+      this._panelTimelineEl.chartHoverWindowTimeMs = this._chartHoverTimeMs + timeOffsetMs;
+    } else {
+      this._panelTimelineEl.chartHoverWindowTimeMs = null;
     }
   }
 
   _updateChartZoomHighlight() {
+    if (!this._panelTimelineEl) return;
     const highlightRange = this._chartZoomRange || this._chartZoomCommittedRange;
-    if (!this._rangeZoomHighlightEl || !this._rangeBounds || !highlightRange) {
-      if (this._rangeZoomHighlightEl) {
-        this._rangeZoomHighlightEl.classList.remove("visible");
-      }
+    if (!this._rangeBounds || !highlightRange) {
+      this._panelTimelineEl.zoomRange = null;
       this._updateZoomWindowHighlight();
       return;
     }
-    const total = Math.max(1, this._rangeBounds.max - this._rangeBounds.min);
-    const start = clampNumber(highlightRange.start, this._rangeBounds.min, this._rangeBounds.max);
-    const end = clampNumber(highlightRange.end, this._rangeBounds.min, this._rangeBounds.max);
-    const startPct = ((start - this._rangeBounds.min) / total) * 100;
-    const endPct = ((end - this._rangeBounds.min) / total) * 100;
-    this._rangeZoomHighlightEl.style.left = `${startPct}%`;
-    this._rangeZoomHighlightEl.style.width = `${Math.max(0, endPct - startPct)}%`;
-    this._rangeZoomHighlightEl.classList.add("visible");
+    this._panelTimelineEl.zoomRange = { start: +highlightRange.start, end: +highlightRange.end };
     this._updateZoomWindowHighlight();
   }
 
   _updateZoomWindowHighlight() {
+    if (!this._panelTimelineEl) return;
     const activeWindow = this._getActiveComparisonWindow();
     const zoomRange = this._chartZoomRange || this._chartZoomCommittedRange;
-    if (!this._rangeZoomWindowHighlightEl || !this._rangeBounds || !activeWindow || !zoomRange || !this._startTime) {
-      if (this._rangeZoomWindowHighlightEl) {
-        this._rangeZoomWindowHighlightEl.classList.remove("visible");
-      }
+    if (!this._rangeBounds || !activeWindow || !zoomRange || !this._startTime) {
+      this._panelTimelineEl.zoomWindowRange = null;
       return;
     }
     const windowStartMs = new Date(activeWindow.start_time).getTime();
     const windowEndMs = new Date(activeWindow.end_time).getTime();
     if (!Number.isFinite(windowStartMs) || !Number.isFinite(windowEndMs) || windowStartMs >= windowEndMs) {
-      this._rangeZoomWindowHighlightEl.classList.remove("visible");
+      this._panelTimelineEl.zoomWindowRange = null;
       return;
     }
     // The zoom range is in main-chart time. Shift it into the comparison
@@ -5494,241 +5019,18 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     const intersectStart = Math.max(windowStartMs, zoomStartMs);
     const intersectEnd = Math.min(windowEndMs, zoomEndMs);
     if (intersectStart >= intersectEnd) {
-      this._rangeZoomWindowHighlightEl.classList.remove("visible");
+      this._panelTimelineEl.zoomWindowRange = null;
       return;
     }
-    const total = Math.max(1, this._rangeBounds.max - this._rangeBounds.min);
-    const clampedStart = clampNumber(intersectStart, this._rangeBounds.min, this._rangeBounds.max);
-    const clampedEnd = clampNumber(intersectEnd, this._rangeBounds.min, this._rangeBounds.max);
-    if (clampedEnd <= clampedStart) {
-      this._rangeZoomWindowHighlightEl.classList.remove("visible");
-      return;
-    }
-    const startPct = ((clampedStart - this._rangeBounds.min) / total) * 100;
-    const endPct = ((clampedEnd - this._rangeBounds.min) / total) * 100;
-    this._rangeZoomWindowHighlightEl.style.left = `${startPct}%`;
-    this._rangeZoomWindowHighlightEl.style.width = `${Math.max(0, endPct - startPct)}%`;
-    this._rangeZoomWindowHighlightEl.classList.add("visible");
+    this._panelTimelineEl.zoomWindowRange = { start: intersectStart, end: intersectEnd };
   }
 
-  _setRangeTooltipHoverHandle(handle) {
-    if (handle !== "start" && handle !== "end") return;
-    this._hoveredRangeHandle = handle;
-    this._updateRangeTooltip();
-  }
 
-  _clearRangeTooltipHoverHandle(handle) {
-    if (this._activeRangeHandle === handle) return;
-    if (this._hoveredRangeHandle === handle) {
-      this._hoveredRangeHandle = null;
-    }
-    this._updateRangeTooltip();
-  }
 
-  _setRangeTooltipFocusHandle(handle) {
-    if (handle !== "start" && handle !== "end") return;
-    this._focusedRangeHandle = handle;
-    this._updateRangeTooltip();
-  }
 
-  _clearRangeTooltipFocusHandle(handle) {
-    if (this._activeRangeHandle === handle) return;
-    if (this._focusedRangeHandle === handle) {
-      this._focusedRangeHandle = null;
-    }
-    this._updateRangeTooltip();
-  }
 
-  _updateRangeTooltip() {
-    if (!this._rangeBounds || !this._rangeScrollViewportEl) return;
-    const visibleHandles = new Set(this._getVisibleRangeTooltipHandles());
-    this._updateRangeTooltipForHandle("start", visibleHandles.has("start"));
-    this._updateRangeTooltipForHandle("end", visibleHandles.has("end"));
-  }
 
-  _updateRangeTooltipForHandle(handle, visible) {
-    const tooltip = handle === "start" ? this._rangeStartTooltipEl : this._rangeEndTooltipEl;
-    if (!tooltip) return;
-    if (!visible) {
-      tooltip.classList.remove("visible");
-      tooltip.setAttribute("aria-hidden", "true");
-      return;
-    }
 
-    const value = handle === "start" ? this._draftStartTime : this._draftEndTime;
-    if (!value || !this._rangeBounds || !this._rangeScrollViewportEl) {
-      tooltip.classList.remove("visible");
-      tooltip.setAttribute("aria-hidden", "true");
-      return;
-    }
-
-    const total = Math.max(1, this._rangeBounds.max - this._rangeBounds.min);
-    const contentWidth = Math.max(
-      this._rangeContentWidth || 0,
-      this._rangeScrollViewportEl.clientWidth || 0,
-      1,
-    );
-    const valuePx = ((value.getTime() - this._rangeBounds.min) / total) * contentWidth;
-    const viewportX = valuePx - this._rangeScrollViewportEl.scrollLeft;
-    const clampedX = clampNumber(viewportX, 0, this._rangeScrollViewportEl.clientWidth);
-    if (handle === "end" && this._isOnLiveEdge()) {
-      const dateEl = document.createElement("span");
-      dateEl.textContent = formatRangeDateTime(value);
-      const hintEl = document.createElement("span");
-      hintEl.className = "range-tooltip-live-hint";
-      hintEl.textContent = "Updates with new data";
-      tooltip.textContent = "";
-      tooltip.append(dateEl, hintEl);
-    } else {
-      tooltip.textContent = formatRangeDateTime(value);
-    }
-    tooltip.style.left = `${clampedX}px`;
-    tooltip.classList.add("visible");
-    tooltip.setAttribute("aria-hidden", "false");
-  }
-
-  _handleTimelinePointerDown(ev) {
-    if (ev.button !== 0) return;
-    if (ev.target === this._rangeStartHandle || ev.target === this._rangeEndHandle) return;
-    if (ev.target.closest?.(".range-period-button")) return;
-    if (!this._rangeScrollViewportEl) return;
-    const isSelectionDrag = !!ev.target.closest?.(".range-selection");
-    const trackRect = this._rangeTrackEl?.getBoundingClientRect();
-    const isTrackRegion = !!trackRect && ev.clientY >= (trackRect.top - 6) && ev.clientY <= (trackRect.bottom + 6);
-    const isIntervalSelect = !isSelectionDrag && !isTrackRegion;
-
-    this._detachTimelinePointerListeners();
-    this._rangeInteractionActive = isSelectionDrag || isIntervalSelect;
-    if ((isSelectionDrag || isIntervalSelect) && this._rangeCommitTimer) {
-      window.clearTimeout(this._rangeCommitTimer);
-      this._rangeCommitTimer = null;
-    }
-    this._timelinePointerId = ev.pointerId;
-    this._timelinePointerStartX = ev.clientX;
-    this._timelinePointerStartScrollLeft = this._rangeScrollViewportEl.scrollLeft;
-    this._timelinePointerStartTimestamp = (isSelectionDrag || isIntervalSelect) ? this._timestampFromClientX(ev.clientX) : null;
-    this._timelinePointerMode = isSelectionDrag ? "selection" : isIntervalSelect ? "interval_select" : "pan";
-    this._timelineDragStartRangeMs = this._draftStartTime?.getTime() ?? this._startTime?.getTime() ?? 0;
-    this._timelineDragEndRangeMs = this._draftEndTime?.getTime() ?? this._endTime?.getTime() ?? 0;
-    this._timelineDragStartZoomRange = this._chartZoomCommittedRange
-      ? { ...this._chartZoomCommittedRange }
-      : null;
-    this._timelinePointerMoved = false;
-    this._timelineTrackClickPending = !isSelectionDrag && !isIntervalSelect && !!ev.target.closest?.(".range-track");
-    this._rangeScrollViewportEl.classList.remove("dragging");
-    this._rangeSelectionEl?.classList.toggle("dragging", isSelectionDrag);
-    window.addEventListener("pointermove", this._onTimelinePointerMove);
-    window.addEventListener("pointerup", this._onTimelinePointerUp);
-    window.addEventListener("pointercancel", this._onTimelinePointerUp);
-  }
-
-  _detachTimelinePointerListeners() {
-    window.removeEventListener("pointermove", this._onTimelinePointerMove);
-    window.removeEventListener("pointerup", this._onTimelinePointerUp);
-    window.removeEventListener("pointercancel", this._onTimelinePointerUp);
-    if (this._rangeScrollViewportEl) {
-      this._rangeScrollViewportEl.classList.remove("dragging");
-    }
-    this._rangeSelectionEl?.classList.remove("dragging");
-    this._timelinePointerId = null;
-    this._timelinePointerStartTimestamp = null;
-    this._timelinePointerMode = null;
-    this._timelineDragStartZoomRange = null;
-    this._rangeInteractionActive = false;
-    this._timelinePointerMoved = false;
-    this._timelineTrackClickPending = false;
-  }
-
-  _handleTimelinePointerMove(ev) {
-    if (this._timelinePointerId == null || ev.pointerId !== this._timelinePointerId || !this._rangeScrollViewportEl) return;
-    if (this._timelinePointerMode === "selection") {
-      const timestamp = this._timestampFromClientX(ev.clientX);
-      if (timestamp == null || this._timelinePointerStartTimestamp == null) return;
-      const deltaX = ev.clientX - this._timelinePointerStartX;
-      if (!this._timelinePointerMoved && Math.abs(deltaX) < 4) return;
-      this._timelinePointerMoved = true;
-      this._shiftDraftRangeByDelta(this._getTimelineSelectionDragDeltaMs(timestamp));
-      ev.preventDefault();
-      return;
-    }
-    if (this._timelinePointerMode === "interval_select") {
-      const timestamp = this._timestampFromClientX(ev.clientX);
-      if (timestamp == null || this._timelinePointerStartTimestamp == null) return;
-      const deltaX = ev.clientX - this._timelinePointerStartX;
-      if (!this._timelinePointerMoved && Math.abs(deltaX) < 4) return;
-      this._timelinePointerMoved = true;
-      this._setDraftRangeFromIntervalSelection(this._timelinePointerStartTimestamp, timestamp);
-      ev.preventDefault();
-      return;
-    }
-    const deltaX = ev.clientX - this._timelinePointerStartX;
-    if (!this._timelinePointerMoved && Math.abs(deltaX) < 4) return;
-    this._timelinePointerMoved = true;
-    this._timelineTrackClickPending = false;
-    this._rangeScrollViewportEl.classList.add("dragging");
-    const maxScrollLeft = Math.max(0, this._rangeScrollViewportEl.scrollWidth - this._rangeScrollViewportEl.clientWidth);
-    this._rangeScrollViewportEl.scrollLeft = clampNumber(
-      this._timelinePointerStartScrollLeft - deltaX,
-      0,
-      maxScrollLeft,
-    );
-    ev.preventDefault();
-  }
-
-  _finishTimelinePointerInteraction(ev) {
-    if (this._timelinePointerId == null || ev.pointerId !== this._timelinePointerId) return;
-    const mode = this._timelinePointerMode;
-    const shouldSelectTrack = this._timelineTrackClickPending && !this._timelinePointerMoved;
-    const clientX = ev.clientX;
-    this._detachTimelinePointerListeners();
-    if (mode === "selection") {
-      this._focusedRangeHandle = null;
-      this._hoveredRangeHandle = null;
-      this._updateRangeTooltip();
-      if (this._timelinePointerMoved) {
-        this._chartZoomCommittedRange = this._chartZoomRange
-          ? { ...this._chartZoomRange }
-          : this._chartZoomCommittedRange;
-        this._chartEl?.setExternalZoomRange?.(this._chartZoomCommittedRange);
-        this._commitRangeSelection({ push: true });
-      } else {
-        this._chartZoomRange = this._chartZoomCommittedRange
-          ? { ...this._chartZoomCommittedRange }
-          : null;
-        this._updateChartZoomHighlight();
-      }
-      return;
-    }
-    if (mode === "interval_select") {
-      this._hoveredPeriodRange = null;
-      this._updateHoveredPeriodPreview();
-      this._updateRangeTooltip();
-      if (this._timelinePointerMoved) {
-        this._commitRangeSelection({ push: true });
-      }
-      return;
-    }
-    if (shouldSelectTrack) {
-      this._handleTrackSelectionAtClientX(clientX);
-    }
-  }
-
-  _timestampFromClientX(clientX) {
-    if (!this._rangeBounds || !this._rangeTrackEl) return null;
-    const rect = this._rangeTrackEl.getBoundingClientRect();
-    if (!rect.width) return null;
-    const ratio = clampNumber((clientX - rect.left) / rect.width, 0, 1);
-    return this._rangeBounds.min + ratio * (this._rangeBounds.max - this._rangeBounds.min);
-  }
-
-  _getTimelineSelectionDragDeltaMs(timestamp) {
-    if (timestamp == null || this._timelinePointerStartTimestamp == null) return 0;
-    const snapUnit = this._getEffectiveSnapUnit();
-    if (!snapUnit) return timestamp - this._timelinePointerStartTimestamp;
-    const snappedStart = snapDateToUnit(new Date(this._timelinePointerStartTimestamp), snapUnit).getTime();
-    const snappedCurrent = snapDateToUnit(new Date(timestamp), snapUnit).getTime();
-    return snappedCurrent - snappedStart;
-  }
 
   _setDraftRangeFromTimestamp(handle, timestamp) {
     if (!this._rangeBounds) return;
@@ -5799,27 +5101,6 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._setDraftRangeFromTimestamp(handle, timestamp);
   }
 
-  _beginRangePointerInteraction(handle, ev) {
-    if (!this._rangeTrackEl) return;
-    ev.preventDefault();
-    this._rangeInteractionActive = true;
-    if (this._rangeCommitTimer) {
-      window.clearTimeout(this._rangeCommitTimer);
-      this._rangeCommitTimer = null;
-    }
-    this._activeRangeHandle = handle;
-    this._hoveredRangeHandle = handle;
-    this._rangePointerId = ev.pointerId;
-    this._updateHandleStacking(handle);
-    this._updateRangeTooltip();
-    this._attachRangePointerListeners();
-    const target = handle === "start" ? this._rangeStartHandle : this._rangeEndHandle;
-    target?.focus();
-    const timestamp = this._timestampFromClientX(ev.clientX);
-    if (timestamp != null) {
-      this._setDraftRangeFromTimestamp(handle, timestamp);
-    }
-  }
 
   _maybeAutoScrollTimelineDuringHandleDrag(clientX) {
     if (!this._rangeScrollViewportEl) return;
@@ -5853,92 +5134,11 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     viewport.scrollLeft = clampNumber(viewport.scrollLeft + delta, 0, maxScrollLeft);
   }
 
-  _attachRangePointerListeners() {
-    window.addEventListener("pointermove", this._onRangePointerMove);
-    window.addEventListener("pointerup", this._onRangePointerUp);
-    window.addEventListener("pointercancel", this._onRangePointerUp);
-  }
 
-  _detachRangePointerListeners() {
-    window.removeEventListener("pointermove", this._onRangePointerMove);
-    window.removeEventListener("pointerup", this._onRangePointerUp);
-    window.removeEventListener("pointercancel", this._onRangePointerUp);
-    this._rangePointerId = null;
-    this._activeRangeHandle = null;
-    this._rangeInteractionActive = false;
-    this._updateHandleStacking();
-    this._updateRangeTooltip();
-  }
 
-  _handleRangePointerMove(ev) {
-    if (!this._activeRangeHandle) return;
-    if (this._rangePointerId != null && ev.pointerId !== this._rangePointerId) return;
-    this._maybeAutoScrollTimelineDuringHandleDrag(ev.clientX);
-    const timestamp = this._timestampFromClientX(ev.clientX);
-    if (timestamp == null) return;
-    ev.preventDefault();
-    this._setDraftRangeFromTimestamp(this._activeRangeHandle, timestamp);
-  }
 
-  _finishRangePointerInteraction(ev) {
-    if (!this._activeRangeHandle) return;
-    if (this._rangePointerId != null && ev.pointerId !== this._rangePointerId) return;
-    this._detachRangePointerListeners();
-    this._focusedRangeHandle = null;
-    this._hoveredRangeHandle = null;
-    this._updateRangeTooltip();
-    this._commitRangeSelection({ push: true });
-  }
 
-  _handleRangeHandleKeyDown(handle, ev) {
-    if (!this._rangeBounds) return;
-    const snapUnit = this._getEffectiveSnapUnit();
-    const currentValue = handle === "start"
-      ? this._draftStartTime?.getTime() ?? this._startTime?.getTime()
-      : this._draftEndTime?.getTime() ?? this._endTime?.getTime();
-    if (currentValue == null) return;
 
-    let nextValue = null;
-    if (ev.key === "ArrowLeft" || ev.key === "ArrowDown") nextValue = addUnit(new Date(currentValue), snapUnit, -1).getTime();
-    if (ev.key === "ArrowRight" || ev.key === "ArrowUp") nextValue = addUnit(new Date(currentValue), snapUnit, 1).getTime();
-    if (ev.key === "PageDown") nextValue = addUnit(new Date(currentValue), this._getZoomConfig().majorUnit, -1).getTime();
-    if (ev.key === "PageUp") nextValue = addUnit(new Date(currentValue), this._getZoomConfig().majorUnit, 1).getTime();
-    if (ev.key === "Home") nextValue = this._rangeBounds.min;
-    if (ev.key === "End") nextValue = this._rangeBounds.max;
-    if (nextValue == null) return;
-
-    ev.preventDefault();
-    this._focusedRangeHandle = handle;
-    this._setDraftRangeFromTimestamp(handle, nextValue);
-  }
-
-  _updateRangePreview() {
-    if (!this._rangeBounds || !this._draftStartTime || !this._draftEndTime) return;
-    const total = Math.max(1, this._rangeBounds.max - this._rangeBounds.min);
-    const startPct = ((this._draftStartTime.getTime() - this._rangeBounds.min) / total) * 100;
-    const endPct = ((this._draftEndTime.getTime() - this._rangeBounds.min) / total) * 100;
-    if (this._rangeSelectionEl) {
-      this._rangeSelectionEl.style.left = `${startPct}%`;
-      this._rangeSelectionEl.style.width = `${Math.max(0, endPct - startPct)}%`;
-    }
-    if (this._rangeStartHandle) {
-      this._rangeStartHandle.style.left = `${startPct}%`;
-      this._rangeStartHandle.setAttribute("aria-valuetext", formatRangeDateTime(this._draftStartTime));
-      this._rangeStartHandle.removeAttribute("title");
-    }
-    if (this._rangeEndHandle) {
-      this._rangeEndHandle.style.left = `${endPct}%`;
-      this._rangeEndHandle.setAttribute("aria-valuetext", formatRangeDateTime(this._draftEndTime));
-      this._rangeEndHandle.removeAttribute("title");
-    }
-    if (this._rangeCaptionEl) {
-      this._rangeCaptionEl.textContent = formatRangeSummary(this._draftStartTime, this._draftEndTime);
-    }
-    if (this._dateControl) {
-      this._dateControl.title = formatRangeSummary(this._draftStartTime, this._draftEndTime);
-    }
-    this._updateRangeTooltip();
-  }
 
   _scheduleRangeCommit() {
     if (this._rangeInteractionActive || this._timelinePointerMode === "selection" || this._timelinePointerMode === "interval_select") return;
@@ -5949,11 +5149,10 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     }, 240);
   }
 
-  _scheduleAutoZoomUpdate() {
-    if (this._rangeInteractionActive || this._timelinePointerMode === "selection" || this._timelinePointerMode === "interval_select") return;
+  _scheduleAutoZoomUpdate(draftStart, draftEnd) {
     if (this._zoomLevel !== "auto" || !this._rangeBounds) return;
-    const start = this._draftStartTime || this._startTime;
-    const end = this._draftEndTime || this._endTime;
+    const start = draftStart || this._startTime;
+    const end = draftEnd || this._endTime;
     if (!start || !end || start >= end) return;
 
     const currentLevel = this._getEffectiveZoomLevel();
@@ -5972,8 +5171,8 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._clearAutoZoomTimer();
     this._autoZoomTimer = window.setTimeout(() => {
       this._autoZoomTimer = null;
-      const latestStart = this._draftStartTime || this._startTime;
-      const latestEnd = this._draftEndTime || this._endTime;
+      const latestStart = draftStart || this._startTime;
+      const latestEnd = draftEnd || this._endTime;
       if (!latestStart || !latestEnd || latestStart >= latestEnd || this._zoomLevel !== "auto" || !this._rangeBounds) {
         return;
       }
@@ -6006,12 +5205,10 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     return this._endTime.getTime() >= Date.now() - 2 * MINUTE_MS;
   }
 
-  /** Toggle the red breathing indicator on the end handle. */
+  /** Toggle the live-edge indicator on the end handle. */
   _syncLiveEdgeHandle() {
-    if (!this._rangeEndHandle) {
-      return;
-    }
-    this._rangeEndHandle.classList.toggle("is-live", this._isOnLiveEdge());
+    if (!this._panelTimelineEl) return;
+    this._panelTimelineEl.isLiveEdge = this._isOnLiveEdge();
   }
 
   /** Called whenever a new annotation is recorded (HA event or window event).
@@ -6039,9 +5236,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._syncLiveEdgeHandle();
     this._scheduleAutoZoomUpdate();
     this._syncControls();
-    this._updateSelectionJumpControls();
     this._chartEl?.setExternalZoomRange?.(this._chartZoomCommittedRange);
-    window.requestAnimationFrame(() => this._revealSelectionInTimeline(push ? "smooth" : "auto"));
     if (!didChange) return;
     this._saveSessionState();
     this._updateUrl({ push });
