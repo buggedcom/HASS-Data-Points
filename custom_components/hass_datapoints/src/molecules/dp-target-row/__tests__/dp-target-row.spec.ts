@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "../dp-target-row";
+import {
+  deriveSwatchIconColor,
+  _hasConfiguredAnalysis,
+  _hasActiveAnalysis,
+} from "../dp-target-row";
 import type { NormalizedAnalysis } from "../types";
 
 const BLANK_ANALYSIS: NormalizedAnalysis = {
@@ -65,6 +70,206 @@ function createElement(props: Record<string, unknown> = {}) {
   document.body.appendChild(el);
   return el;
 }
+
+// ---------------------------------------------------------------------------
+// Module-level function unit tests
+// ---------------------------------------------------------------------------
+
+describe("deriveSwatchIconColor", () => {
+  describe("GIVEN an invalid hex string", () => {
+    describe("WHEN called with an empty string", () => {
+      it("THEN returns #ffffff", () => {
+        expect.assertions(1);
+        expect(deriveSwatchIconColor("")).toBe("#ffffff");
+      });
+    });
+
+    describe("WHEN called with a non-hex string", () => {
+      it("THEN returns #ffffff", () => {
+        expect.assertions(1);
+        expect(deriveSwatchIconColor("invalid")).toBe("#ffffff");
+      });
+    });
+
+    describe("WHEN called with a 3-character hex (not 6-character)", () => {
+      it("THEN returns #ffffff", () => {
+        expect.assertions(1);
+        expect(deriveSwatchIconColor("#abc")).toBe("#ffffff");
+      });
+    });
+
+    describe("WHEN called with a hex missing the # prefix", () => {
+      it("THEN returns #ffffff", () => {
+        expect.assertions(1);
+        expect(deriveSwatchIconColor("03a9f4")).toBe("#ffffff");
+      });
+    });
+  });
+
+  describe("GIVEN a very dark color (#000000)", () => {
+    describe("WHEN called", () => {
+      it("THEN returns a light color (all rgb channels > 128)", () => {
+        expect.assertions(1);
+        const result = deriveSwatchIconColor("#000000");
+        const match = result.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+        expect(match && parseInt(match[1]) > 128 && parseInt(match[2]) > 128 && parseInt(match[3]) > 128).toBe(true);
+      });
+    });
+  });
+
+  describe("GIVEN a very light color (#ffffff)", () => {
+    describe("WHEN called", () => {
+      it("THEN returns a dark color (all rgb channels < 128)", () => {
+        expect.assertions(1);
+        const result = deriveSwatchIconColor("#ffffff");
+        const match = result.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
+        expect(match && parseInt(match[1]) < 128 && parseInt(match[2]) < 128 && parseInt(match[3]) < 128).toBe(true);
+      });
+    });
+  });
+
+  describe("GIVEN a valid hex color", () => {
+    describe("WHEN called", () => {
+      it("THEN returns a string in rgb() format", () => {
+        expect.assertions(1);
+        const result = deriveSwatchIconColor("#03a9f4");
+        expect(result).toMatch(/^rgb\(\d+,\s*\d+,\s*\d+\)$/);
+      });
+    });
+  });
+});
+
+describe("_hasConfiguredAnalysis", () => {
+  describe("GIVEN an analysis with all flags off", () => {
+    describe("WHEN called", () => {
+      it("THEN returns false", () => {
+        expect.assertions(1);
+        expect(_hasConfiguredAnalysis(BLANK_ANALYSIS)).toBe(false);
+      });
+    });
+  });
+
+  describe("GIVEN an analysis with show_trend_lines enabled", () => {
+    describe("WHEN called", () => {
+      it("THEN returns true", () => {
+        expect.assertions(1);
+        expect(_hasConfiguredAnalysis({ ...BLANK_ANALYSIS, show_trend_lines: true })).toBe(true);
+      });
+    });
+  });
+
+  describe("GIVEN an analysis with show_summary_stats enabled", () => {
+    describe("WHEN called", () => {
+      it("THEN returns true", () => {
+        expect.assertions(1);
+        expect(_hasConfiguredAnalysis({ ...BLANK_ANALYSIS, show_summary_stats: true })).toBe(true);
+      });
+    });
+  });
+
+  describe("GIVEN an analysis with show_rate_of_change enabled", () => {
+    describe("WHEN called", () => {
+      it("THEN returns true", () => {
+        expect.assertions(1);
+        expect(_hasConfiguredAnalysis({ ...BLANK_ANALYSIS, show_rate_of_change: true })).toBe(true);
+      });
+    });
+  });
+
+  describe("GIVEN an analysis with show_threshold_analysis enabled", () => {
+    describe("WHEN called", () => {
+      it("THEN returns true", () => {
+        expect.assertions(1);
+        expect(_hasConfiguredAnalysis({ ...BLANK_ANALYSIS, show_threshold_analysis: true })).toBe(true);
+      });
+    });
+  });
+
+  describe("GIVEN an analysis with show_anomalies enabled", () => {
+    describe("WHEN called", () => {
+      it("THEN returns true", () => {
+        expect.assertions(1);
+        expect(_hasConfiguredAnalysis({ ...BLANK_ANALYSIS, show_anomalies: true })).toBe(true);
+      });
+    });
+  });
+
+  describe("GIVEN an analysis with show_delta_analysis enabled", () => {
+    describe("WHEN called", () => {
+      it("THEN returns true", () => {
+        expect.assertions(1);
+        expect(_hasConfiguredAnalysis({ ...BLANK_ANALYSIS, show_delta_analysis: true })).toBe(true);
+      });
+    });
+  });
+
+  describe("GIVEN an analysis with hide_source_series enabled", () => {
+    describe("WHEN called", () => {
+      it("THEN returns true", () => {
+        expect.assertions(1);
+        expect(_hasConfiguredAnalysis({ ...BLANK_ANALYSIS, hide_source_series: true })).toBe(true);
+      });
+    });
+  });
+});
+
+describe("_hasActiveAnalysis", () => {
+  describe("GIVEN an analysis with all flags off", () => {
+    describe("WHEN called with hasComparisonWindow=false", () => {
+      it("THEN returns false", () => {
+        expect.assertions(1);
+        expect(_hasActiveAnalysis(BLANK_ANALYSIS, false)).toBe(false);
+      });
+    });
+
+    describe("WHEN called with hasComparisonWindow=true", () => {
+      it("THEN returns false", () => {
+        expect.assertions(1);
+        expect(_hasActiveAnalysis(BLANK_ANALYSIS, true)).toBe(false);
+      });
+    });
+  });
+
+  describe("GIVEN an analysis with show_trend_lines enabled", () => {
+    describe("WHEN called with hasComparisonWindow=false", () => {
+      it("THEN returns true", () => {
+        expect.assertions(1);
+        expect(_hasActiveAnalysis({ ...BLANK_ANALYSIS, show_trend_lines: true }, false)).toBe(true);
+      });
+    });
+  });
+
+  describe("GIVEN an analysis with show_delta_analysis enabled but no comparison window", () => {
+    describe("WHEN called with hasComparisonWindow=false", () => {
+      it("THEN returns false", () => {
+        expect.assertions(1);
+        expect(_hasActiveAnalysis({ ...BLANK_ANALYSIS, show_delta_analysis: true }, false)).toBe(false);
+      });
+    });
+  });
+
+  describe("GIVEN an analysis with show_delta_analysis enabled and a comparison window present", () => {
+    describe("WHEN called with hasComparisonWindow=true", () => {
+      it("THEN returns true", () => {
+        expect.assertions(1);
+        expect(_hasActiveAnalysis({ ...BLANK_ANALYSIS, show_delta_analysis: true }, true)).toBe(true);
+      });
+    });
+  });
+
+  describe("GIVEN an analysis with only hide_source_series enabled", () => {
+    describe("WHEN called with hasComparisonWindow=false", () => {
+      it("THEN returns false (hide_source_series is not an active analysis flag)", () => {
+        expect.assertions(1);
+        expect(_hasActiveAnalysis({ ...BLANK_ANALYSIS, hide_source_series: true }, false)).toBe(false);
+      });
+    });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Component DOM tests
+// ---------------------------------------------------------------------------
 
 describe("dp-target-row", () => {
   let el: ReturnType<typeof createElement>;
@@ -257,17 +462,19 @@ describe("dp-target-row", () => {
       await el.updateComplete;
     });
 
-    describe("WHEN a trend lines checkbox changes", () => {
+    describe("WHEN a dp-group-analysis-change event fires from the trend group", () => {
       it("THEN dispatches dp-row-analysis-change with key show_trend_lines", () => {
         expect.assertions(3);
         const handler = vi.fn();
         el.addEventListener("dp-row-analysis-change", handler);
-        const checkboxes = el.shadowRoot!.querySelectorAll(".history-target-analysis input[type='checkbox']");
-        const trendCheckbox = Array.from(checkboxes).find((cb) => {
-          const label = (cb as HTMLInputElement).closest("label");
-          return label?.textContent?.includes("Show trend lines");
-        }) as HTMLInputElement;
-        trendCheckbox.dispatchEvent(new Event("change"));
+        const trendGroup = el.shadowRoot!.querySelector("dp-analysis-trend-group")!;
+        trendGroup.dispatchEvent(
+          new CustomEvent("dp-group-analysis-change", {
+            detail: { entityId: "sensor.temperature", key: "show_trend_lines", value: true },
+            bubbles: true,
+            composed: true,
+          }),
+        );
         expect(handler).toHaveBeenCalledOnce();
         expect(handler.mock.calls[0][0].detail.key).toBe("show_trend_lines");
         expect(handler.mock.calls[0][0].detail.entityId).toBe("sensor.temperature");

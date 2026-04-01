@@ -7,6 +7,7 @@ import "../custom_components/hass_datapoints/src/test-support/ha-stubs";
  * We inject them here so Storybook previews look correct.
  */
 const HA_DARK_THEME = `
+  --dark-theme: true;
   --primary-text-color: #e1e1e1;
   --secondary-text-color: #9e9e9e;
   --text-primary-color: #fff;
@@ -34,6 +35,7 @@ const HA_DARK_THEME = `
 `;
 
 const HA_LIGHT_THEME = `
+  --light-theme: true;
   --primary-text-color: #212121;
   --secondary-text-color: #727272;
   --text-primary-color: #fff;
@@ -60,27 +62,42 @@ const HA_LIGHT_THEME = `
   font-size: 14px;
 `;
 
-const THEME_MAP: Record<string, string> = {
-  "ha-dark": HA_DARK_THEME,
-  "ha-light": HA_LIGHT_THEME,
+/**
+ * Adds an explicit HA theme toolbar to Storybook.
+ * Using a dedicated global avoids relying on the backgrounds addon value,
+ * which is unreliable across Storybook versions.
+ */
+export const globalTypes = {
+  haTheme: {
+    description: "Home Assistant theme",
+    defaultValue: "dark",
+    toolbar: {
+      title: "HA Theme",
+      icon: "paintbrush",
+      items: [
+        { value: "dark", title: "HA Dark", right: "🌙" },
+        { value: "light", title: "HA Light", right: "☀️" },
+      ],
+      dynamicTitle: true,
+    },
+  },
 };
 
-const haThemeDecorator = (story: () => unknown, context: { globals?: { backgrounds?: { value?: string } } }) => {
-  const bg = context?.globals?.backgrounds?.value || "#1c1c1c";
-  const theme = bg === "#f5f5f5" ? HA_LIGHT_THEME : HA_DARK_THEME;
-  return html`<div style="${theme} padding: 16px;">${story()}</div>`;
+const haThemeDecorator = (story: () => unknown, context: { globals?: { haTheme?: string } }) => {
+  const isLight = context?.globals?.haTheme === "light";
+  const theme = isLight ? HA_LIGHT_THEME : HA_DARK_THEME;
+  const pageBg = isLight ? "#f5f5f5" : "#111111";
+  return html`
+    <div style="min-height: 100vh; background: ${pageBg}; padding: 16px; box-sizing: border-box;">
+      <div style="${theme}">${story()}</div>
+    </div>
+  `;
 };
 
 export const decorators = [haThemeDecorator];
 
 export const parameters = {
-  backgrounds: {
-    default: "ha-dark",
-    values: [
-      { name: "ha-light", value: "#f5f5f5" },
-      { name: "ha-dark", value: "#1c1c1c" },
-    ],
-  },
+  backgrounds: { disable: true },
 
   a11y: {
     // 'todo' - show a11y violations in the test UI only

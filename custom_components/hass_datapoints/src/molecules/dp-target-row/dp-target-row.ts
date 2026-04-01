@@ -1,75 +1,5 @@
 import { LitElement, html, nothing } from "lit";
 import { styles } from "./dp-target-row.styles";
-import type { TemplateResult } from "lit";
-
-// ---------------------------------------------------------------------------
-// Analysis option constants (mirrored from panel-history.js)
-// ---------------------------------------------------------------------------
-
-const ANALYSIS_TREND_METHOD_OPTIONS = [
-  { value: "rolling_average", label: "Rolling average" },
-  { value: "linear_trend", label: "Linear trend" },
-];
-
-const ANALYSIS_TREND_WINDOW_OPTIONS = [
-  { value: "1h", label: "1 hour" },
-  { value: "6h", label: "6 hours" },
-  { value: "24h", label: "24 hours" },
-  { value: "7d", label: "7 days" },
-  { value: "14d", label: "14 days" },
-  { value: "21d", label: "21 days" },
-  { value: "28d", label: "28 days" },
-];
-
-const ANALYSIS_RATE_WINDOW_OPTIONS = [
-  { value: "point_to_point", label: "Point to point" },
-  { value: "1h", label: "1 hour" },
-  { value: "6h", label: "6 hours" },
-  { value: "24h", label: "24 hours" },
-];
-
-const ANALYSIS_ANOMALY_SENSITIVITY_OPTIONS = [
-  { value: "low", label: "Low" },
-  { value: "medium", label: "Medium" },
-  { value: "high", label: "High" },
-];
-
-const ANALYSIS_ANOMALY_METHOD_OPTIONS = [
-  { value: "trend_residual", label: "Trend deviation", help: "Flags points that deviate significantly from a fitted trend line. Good for catching gradual drift or sudden jumps away from a steady baseline." },
-  { value: "rate_of_change", label: "Sudden change", help: "Flags unusually fast rises or drops compared to the typical rate of change. Best for detecting spikes, crashes, or rapid transitions." },
-  { value: "iqr", label: "Statistical outlier (IQR)", help: "Uses the interquartile range to flag values far outside the normal spread of data. Robust against outliers that skew averages." },
-  { value: "rolling_zscore", label: "Rolling Z-score", help: "Compares each value to a rolling mean and standard deviation. Catches unusual readings relative to recent context rather than the whole series." },
-  { value: "persistence", label: "Flat-line / stuck value", help: "Flags when a sensor reports nearly the same value for an unusually long time. Useful for detecting stuck sensors or frozen readings." },
-  { value: "comparison_window", label: "Comparison window deviation", help: "Compares the current period to a reference date window. Highlights differences from an expected historical pattern, such as last week or the same day last year." },
-];
-
-const ANALYSIS_ANOMALY_RATE_WINDOW_OPTIONS = [
-  { value: "1h", label: "1 hour" },
-  { value: "6h", label: "6 hours" },
-  { value: "24h", label: "24 hours" },
-];
-
-const ANALYSIS_ANOMALY_ZSCORE_WINDOW_OPTIONS = [
-  { value: "1h", label: "1 hour" },
-  { value: "6h", label: "6 hours" },
-  { value: "24h", label: "24 hours" },
-  { value: "7d", label: "7 days" },
-];
-
-const ANALYSIS_ANOMALY_PERSISTENCE_WINDOW_OPTIONS = [
-  { value: "30m", label: "30 minutes" },
-  { value: "1h", label: "1 hour" },
-  { value: "3h", label: "3 hours" },
-  { value: "6h", label: "6 hours" },
-  { value: "12h", label: "12 hours" },
-  { value: "24h", label: "24 hours" },
-];
-
-const ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS = [
-  { value: "all", label: "Show all anomalies" },
-  { value: "highlight", label: "Highlight overlaps" },
-  { value: "only", label: "Overlaps only" },
-];
 
 // ---------------------------------------------------------------------------
 // Types (defined in ./types, re-exported here for backwards compatibility)
@@ -78,12 +8,18 @@ const ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS = [
 import type { NormalizedAnalysis, ComparisonWindow, HassEntityState } from "./types";
 export type { NormalizedAnalysis, ComparisonWindow, HassEntityState };
 
-function deriveSwatchIconColor(color: string): string {
+import "../dp-analysis-trend-group/dp-analysis-trend-group";
+import "../dp-analysis-rate-group/dp-analysis-rate-group";
+import "../dp-analysis-threshold-group/dp-analysis-threshold-group";
+import "../dp-analysis-anomaly-group/dp-analysis-anomaly-group";
+import "../dp-analysis-delta-group/dp-analysis-delta-group";
+
+export function deriveSwatchIconColor(color: string): string {
   const hex = String(color || "").trim();
   const normalizedHex = /^#([0-9a-f]{6})$/i.test(hex) ? hex : null;
-  if (!normalizedHex) return "#ffffff";
+  if (!normalizedHex) { return "#ffffff"; }
   const channels = normalizedHex.slice(1).match(/.{2}/g)?.map((p) => parseInt(p, 16));
-  if (!channels || channels.length !== 3) return "#ffffff";
+  if (!channels || channels.length !== 3) { return "#ffffff"; }
   const [r, g, b] = channels;
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
   const mixTarget = luminance > 0.62 ? 0 : 255;
@@ -96,7 +32,7 @@ function deriveSwatchIconColor(color: string): string {
   return `rgb(${mixed[0]}, ${mixed[1]}, ${mixed[2]})`;
 }
 
-function _hasConfiguredAnalysis(a: NormalizedAnalysis): boolean {
+export function _hasConfiguredAnalysis(a: NormalizedAnalysis): boolean {
   return (
     a.show_trend_lines
     || a.show_summary_stats
@@ -108,7 +44,7 @@ function _hasConfiguredAnalysis(a: NormalizedAnalysis): boolean {
   );
 }
 
-function _hasActiveAnalysis(a: NormalizedAnalysis, hasComparisonWindow: boolean): boolean {
+export function _hasActiveAnalysis(a: NormalizedAnalysis, hasComparisonWindow: boolean): boolean {
   return (
     a.show_trend_lines
     || a.show_summary_stats
@@ -131,6 +67,7 @@ export class DpTargetRow extends LitElement {
     index: { type: Number },
     canShowDeltaAnalysis: { type: Boolean, attribute: "can-show-delta-analysis" },
     stateObj: { type: Object, attribute: false },
+    hass: { type: Object, attribute: false },
     comparisonWindows: { type: Array, attribute: "comparison-windows" },
   };
 
@@ -141,6 +78,8 @@ export class DpTargetRow extends LitElement {
   declare canShowDeltaAnalysis: boolean;
   /** HA entity state object. Provides entity_id, display name, unit, and icon for the row. */
   declare stateObj: Record<string, unknown> | null;
+  /** HA hass object. Required by ha-state-icon to resolve entity icons correctly. */
+  declare hass: Record<string, unknown> | null;
   declare comparisonWindows: ComparisonWindow[];
 
   static styles = styles;
@@ -153,6 +92,7 @@ export class DpTargetRow extends LitElement {
     this.index = 0;
     this.canShowDeltaAnalysis = false;
     this.stateObj = null;
+    this.hass = null;
     this.comparisonWindows = [];
   }
 
@@ -201,252 +141,8 @@ export class DpTargetRow extends LitElement {
     this._emit("dp-row-analysis-change", { entityId: this._entityId, key, value: (e.target as HTMLInputElement).checked });
   }
 
-  private _onSelect(key: string, e: Event) {
-    this._emit("dp-row-analysis-change", { entityId: this._entityId, key, value: (e.target as HTMLSelectElement).value });
-  }
-
-  private _onInput(key: string, e: Event) {
-    this._emit("dp-row-analysis-change", { entityId: this._entityId, key, value: (e.target as HTMLInputElement).value });
-  }
-
-  // ── Analysis group renderers ──────────────────────────────────────────────
-
-  private _renderSelect(key: string, options: { value: string; label: string }[], value: string): TemplateResult {
-    return html`
-      <select class="history-target-analysis-select" @change=${(e: Event) => this._onSelect(key, e)}>
-        ${options.map((opt) => html`<option value=${opt.value} ?selected=${opt.value === value}>${opt.label}</option>`)}
-      </select>
-    `;
-  }
-
-  private _renderTrendGroup(a: NormalizedAnalysis): TemplateResult {
-    return html`
-      <div class="history-target-analysis-group ${a.show_trend_lines ? "is-open" : ""}">
-        <label class="history-target-analysis-option">
-          <input type="checkbox" .checked=${a.show_trend_lines} @change=${(e: Event) => this._onCheckbox("show_trend_lines", e)}>
-          <span>Show trend lines</span>
-        </label>
-        ${a.show_trend_lines ? html`
-          <div class="history-target-analysis-group-body">
-            <label class="history-target-analysis-option">
-              <input type="checkbox" .checked=${a.show_trend_crosshairs} @change=${(e: Event) => this._onCheckbox("show_trend_crosshairs", e)}>
-              <span>Show trend crosshairs</span>
-            </label>
-            <label class="history-target-analysis-field">
-              <span class="history-target-analysis-field-label">Trend method</span>
-              ${this._renderSelect("trend_method", ANALYSIS_TREND_METHOD_OPTIONS, a.trend_method)}
-            </label>
-            ${a.trend_method === "rolling_average" ? html`
-              <label class="history-target-analysis-field">
-                <span class="history-target-analysis-field-label">Trend window</span>
-                ${this._renderSelect("trend_window", ANALYSIS_TREND_WINDOW_OPTIONS, a.trend_window)}
-              </label>
-            ` : nothing}
-          </div>
-        ` : nothing}
-      </div>
-    `;
-  }
-
-  private _renderRateGroup(a: NormalizedAnalysis): TemplateResult {
-    return html`
-      <div class="history-target-analysis-group ${a.show_rate_of_change ? "is-open" : ""}">
-        <label class="history-target-analysis-option">
-          <input type="checkbox" .checked=${a.show_rate_of_change} @change=${(e: Event) => this._onCheckbox("show_rate_of_change", e)}>
-          <span>Show rate of change</span>
-        </label>
-        ${a.show_rate_of_change ? html`
-          <div class="history-target-analysis-group-body">
-            <label class="history-target-analysis-field">
-              <span class="history-target-analysis-field-label">Rate window</span>
-              ${this._renderSelect("rate_window", ANALYSIS_RATE_WINDOW_OPTIONS, a.rate_window)}
-            </label>
-          </div>
-        ` : nothing}
-      </div>
-    `;
-  }
-
-  private _renderThresholdGroup(a: NormalizedAnalysis): TemplateResult {
-    return html`
-      <div class="history-target-analysis-group ${a.show_threshold_analysis ? "is-open" : ""}">
-        <label class="history-target-analysis-option">
-          <input type="checkbox" .checked=${a.show_threshold_analysis} @change=${(e: Event) => this._onCheckbox("show_threshold_analysis", e)}>
-          <span>Show threshold analysis</span>
-        </label>
-        ${a.show_threshold_analysis ? html`
-          <div class="history-target-analysis-group-body">
-            <label class="history-target-analysis-option">
-              <input type="checkbox" .checked=${a.show_threshold_shading} @change=${(e: Event) => this._onCheckbox("show_threshold_shading", e)}>
-              <span>Shade threshold area</span>
-            </label>
-            <label class="history-target-analysis-field">
-              <span class="history-target-analysis-field-label">Threshold</span>
-              <div class="history-target-analysis-toggle-group">
-                <input class="history-target-analysis-input" type="number" step="any" inputmode="decimal"
-                  .value=${a.threshold_value} placeholder="Threshold"
-                  @change=${(e: Event) => this._onInput("threshold_value", e)}>
-                ${this._unit ? html`<span>${this._unit}</span>` : nothing}
-              </div>
-            </label>
-            ${a.show_threshold_shading ? html`
-              <label class="history-target-analysis-field">
-                <span class="history-target-analysis-field-label">Shade area</span>
-                <select class="history-target-analysis-select" @change=${(e: Event) => this._onSelect("threshold_direction", e)}>
-                  <option value="above" ?selected=${a.threshold_direction !== "below"}>Shade above</option>
-                  <option value="below" ?selected=${a.threshold_direction === "below"}>Shade below</option>
-                </select>
-              </label>
-            ` : nothing}
-          </div>
-        ` : nothing}
-      </div>
-    `;
-  }
-
-  private _renderAnomalyMethodSubopts(opt: { value: string }, a: NormalizedAnalysis): TemplateResult | typeof nothing {
-    if (opt.value === "rate_of_change") {
-      return html`
-        <div class="history-target-analysis-method-subopts">
-          <label class="history-target-analysis-field">
-            <span class="history-target-analysis-field-label">Rate window</span>
-            ${this._renderSelect("anomaly_rate_window", ANALYSIS_ANOMALY_RATE_WINDOW_OPTIONS, a.anomaly_rate_window)}
-          </label>
-        </div>
-      `;
-    }
-    if (opt.value === "rolling_zscore") {
-      return html`
-        <div class="history-target-analysis-method-subopts">
-          <label class="history-target-analysis-field">
-            <span class="history-target-analysis-field-label">Rolling window</span>
-            ${this._renderSelect("anomaly_zscore_window", ANALYSIS_ANOMALY_ZSCORE_WINDOW_OPTIONS, a.anomaly_zscore_window)}
-          </label>
-        </div>
-      `;
-    }
-    if (opt.value === "persistence") {
-      return html`
-        <div class="history-target-analysis-method-subopts">
-          <label class="history-target-analysis-field">
-            <span class="history-target-analysis-field-label">Min flat duration</span>
-            ${this._renderSelect("anomaly_persistence_window", ANALYSIS_ANOMALY_PERSISTENCE_WINDOW_OPTIONS, a.anomaly_persistence_window)}
-          </label>
-        </div>
-      `;
-    }
-    if (opt.value === "comparison_window") {
-      return html`
-        <div class="history-target-analysis-method-subopts">
-          <label class="history-target-analysis-field">
-            <span class="history-target-analysis-field-label">Compare to window</span>
-            <select class="history-target-analysis-select" @change=${(e: Event) => this._onSelect("anomaly_comparison_window_id", e)}>
-              <option value="" ?selected=${!a.anomaly_comparison_window_id}>— select window —</option>
-              ${this.comparisonWindows.map((win) => html`
-                <option value=${win.id} ?selected=${a.anomaly_comparison_window_id === win.id}>${win.label || win.id}</option>
-              `)}
-            </select>
-          </label>
-        </div>
-      `;
-    }
-    return nothing;
-  }
-
-  private _renderAnomalyGroup(a: NormalizedAnalysis): TemplateResult {
-    return html`
-      <div class="history-target-analysis-group ${a.show_anomalies ? "is-open" : ""}">
-        <label class="history-target-analysis-option">
-          <input type="checkbox" .checked=${a.show_anomalies} @change=${(e: Event) => this._onCheckbox("show_anomalies", e)}>
-          <span>Show anomalies</span>
-        </label>
-        ${a.show_anomalies ? html`
-          <div class="history-target-analysis-group-body">
-            <label class="history-target-analysis-field">
-              <span class="history-target-analysis-field-label">Sensitivity</span>
-              ${this._renderSelect("anomaly_sensitivity", ANALYSIS_ANOMALY_SENSITIVITY_OPTIONS, a.anomaly_sensitivity)}
-            </label>
-            <div class="history-target-analysis-method-list">
-              ${ANALYSIS_ANOMALY_METHOD_OPTIONS.map((opt) => {
-                const isChecked = Array.isArray(a.anomaly_methods) && a.anomaly_methods.includes(opt.value);
-                return html`
-                  <div class="history-target-analysis-method-item">
-                    <label class="history-target-analysis-option">
-                      <input type="checkbox" .checked=${isChecked}
-                        @change=${(e: Event) => this._onCheckbox(`anomaly_method_toggle_${opt.value}`, e)}>
-                      <span>${opt.label}</span>
-                      ${opt.help ? html`
-                        <span class="analysis-method-help" tabindex="0">?</span>
-                      ` : nothing}
-                    </label>
-                    ${isChecked ? this._renderAnomalyMethodSubopts(opt, a) : nothing}
-                  </div>
-                `;
-              })}
-            </div>
-            ${Array.isArray(a.anomaly_methods) && a.anomaly_methods.length >= 2 ? html`
-              <label class="history-target-analysis-field">
-                <span class="history-target-analysis-field-label">When methods overlap</span>
-                ${this._renderSelect("anomaly_overlap_mode", ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS, a.anomaly_overlap_mode)}
-              </label>
-            ` : nothing}
-          </div>
-        ` : nothing}
-      </div>
-    `;
-  }
-
-  private _renderDeltaGroup(a: NormalizedAnalysis): TemplateResult {
-    return html`
-      <div class="history-target-analysis-group ${a.show_delta_analysis && this.canShowDeltaAnalysis ? "is-open" : ""}">
-        <label class="history-target-analysis-option top">
-          <input type="checkbox"
-            .checked=${a.show_delta_analysis && this.canShowDeltaAnalysis}
-            ?disabled=${!this.canShowDeltaAnalysis}
-            @change=${(e: Event) => this._onCheckbox("show_delta_analysis", e)}>
-          <span>
-            Show delta vs selected date window
-            ${!this.canShowDeltaAnalysis ? html`<br /><span class="history-target-analysis-option-help-text">Select a date window tab to enable delta analysis.</span>` : nothing}
-          </span>
-        </label>
-        ${a.show_delta_analysis && this.canShowDeltaAnalysis ? html`
-          <div class="history-target-analysis-group-body">
-            <label class="history-target-analysis-option">
-              <input type="checkbox" .checked=${a.show_delta_tooltip} @change=${(e: Event) => this._onCheckbox("show_delta_tooltip", e)}>
-              <span>Show delta in tooltip</span>
-            </label>
-            <label class="history-target-analysis-option">
-              <input type="checkbox" .checked=${a.show_delta_lines} @change=${(e: Event) => this._onCheckbox("show_delta_lines", e)}>
-              <span>Show delta lines</span>
-            </label>
-          </div>
-        ` : nothing}
-      </div>
-    `;
-  }
-
-  private _renderAnalysisPanel(a: NormalizedAnalysis, hasActive: boolean): TemplateResult {
-    return html`
-      <div class="history-target-analysis" role="cell">
-        <div class="history-target-analysis-grid">
-          <label class="history-target-analysis-option ${!hasActive ? "is-disabled" : ""}">
-            <input type="checkbox" .checked=${a.hide_source_series && hasActive}
-              ?disabled=${!hasActive}
-              @change=${(e: Event) => this._onCheckbox("hide_source_series", e)}>
-            <span>Hide source series</span>
-          </label>
-          ${this._renderTrendGroup(a)}
-          <label class="history-target-analysis-option">
-            <input type="checkbox" .checked=${a.show_summary_stats} @change=${(e: Event) => this._onCheckbox("show_summary_stats", e)}>
-            <span>Show min / max / mean</span>
-          </label>
-          ${this._renderRateGroup(a)}
-          ${this._renderThresholdGroup(a)}
-          ${this._renderAnomalyGroup(a)}
-          ${this._renderDeltaGroup(a)}
-        </div>
-      </div>
-    `;
+  private _onGroupAnalysisChange(e: CustomEvent) {
+    this._emit("dp-row-analysis-change", e.detail as Record<string, unknown>);
   }
 
   render() {
@@ -486,7 +182,7 @@ export class DpTargetRow extends LitElement {
                 @change=${this._onColorChange}
               >
               <span class="history-target-color-icon" aria-hidden="true">
-                <ha-state-icon .stateObj=${this.stateObj ?? null}></ha-state-icon>
+                <ha-state-icon .stateObj=${this.stateObj ?? null} .hass=${this.hass ?? null}></ha-state-icon>
               </span>
             </label>
           </div>
@@ -533,9 +229,50 @@ export class DpTargetRow extends LitElement {
           </button>
         </div>
 
-        ${this._supportsAnalysis && this.analysis?.expanded
-          ? this._renderAnalysisPanel(a, hasActive)
-          : nothing}
+        ${this._supportsAnalysis && this.analysis?.expanded ? html`
+          <div class="history-target-analysis" role="cell">
+            <div class="history-target-analysis-grid">
+              <label class="history-target-analysis-option ${!hasActive ? "is-disabled" : ""}">
+                <input type="checkbox" .checked=${a.hide_source_series && hasActive}
+                  ?disabled=${!hasActive}
+                  @change=${(e: Event) => this._onCheckbox("hide_source_series", e)}>
+                <span>Hide source series</span>
+              </label>
+              <dp-analysis-trend-group
+                .analysis=${a}
+                .entityId=${this._entityId}
+                @dp-group-analysis-change=${this._onGroupAnalysisChange}
+              ></dp-analysis-trend-group>
+              <label class="history-target-analysis-option">
+                <input type="checkbox" .checked=${a.show_summary_stats} @change=${(e: Event) => this._onCheckbox("show_summary_stats", e)}>
+                <span>Show min / max / mean</span>
+              </label>
+              <dp-analysis-rate-group
+                .analysis=${a}
+                .entityId=${this._entityId}
+                @dp-group-analysis-change=${this._onGroupAnalysisChange}
+              ></dp-analysis-rate-group>
+              <dp-analysis-threshold-group
+                .analysis=${a}
+                .entityId=${this._entityId}
+                .unit=${this._unit}
+                @dp-group-analysis-change=${this._onGroupAnalysisChange}
+              ></dp-analysis-threshold-group>
+              <dp-analysis-anomaly-group
+                .analysis=${a}
+                .entityId=${this._entityId}
+                .comparisonWindows=${this.comparisonWindows}
+                @dp-group-analysis-change=${this._onGroupAnalysisChange}
+              ></dp-analysis-anomaly-group>
+              <dp-analysis-delta-group
+                .analysis=${a}
+                .entityId=${this._entityId}
+                .canShowDeltaAnalysis=${this.canShowDeltaAnalysis}
+                @dp-group-analysis-change=${this._onGroupAnalysisChange}
+              ></dp-analysis-delta-group>
+            </div>
+          </div>
+        ` : nothing}
       </div>
     `;
   }

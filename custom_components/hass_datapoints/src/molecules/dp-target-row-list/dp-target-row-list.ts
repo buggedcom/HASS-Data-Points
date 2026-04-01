@@ -33,6 +33,7 @@ export class DpTargetRowList extends LitElement {
   static properties = {
     rows: { type: Array },
     states: { type: Object, attribute: false },
+    hass: { type: Object, attribute: false },
     canShowDeltaAnalysis: { type: Boolean, attribute: "can-show-delta-analysis" },
     comparisonWindows: { type: Array, attribute: false },
   };
@@ -40,6 +41,8 @@ export class DpTargetRowList extends LitElement {
   declare rows: RowConfig[];
   /** HA entity states map (entity_id → state object). Passed directly to each `dp-target-row`. */
   declare states: Record<string, Record<string, unknown>>;
+  /** HA hass object. Required by ha-state-icon inside dp-target-row to resolve entity icons. */
+  declare hass: Record<string, unknown> | null;
   declare canShowDeltaAnalysis: boolean;
   declare comparisonWindows: ComparisonWindow[];
 
@@ -75,6 +78,7 @@ export class DpTargetRowList extends LitElement {
                 .index=${index}
                 .canShowDeltaAnalysis=${this.canShowDeltaAnalysis}
                 .stateObj=${this.states?.[row.entity_id] ?? null}
+                .hass=${this.hass ?? null}
                 .comparisonWindows=${this.comparisonWindows}
                 data-row-index=${index}
                 @dragstart=${(e: DragEvent) => this._onDragStart(e, index)}

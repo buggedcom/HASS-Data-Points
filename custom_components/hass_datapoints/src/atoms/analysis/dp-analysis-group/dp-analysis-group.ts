@@ -1,0 +1,67 @@
+import { LitElement, html, nothing } from "lit";
+import { styles } from "./dp-analysis-group.styles";
+
+export class DpAnalysisGroup extends LitElement {
+  static properties = {
+    label: { type: String },
+    checked: { type: Boolean },
+    disabled: { type: Boolean },
+    alignTop: { type: Boolean, attribute: "align-top" },
+  };
+
+  declare label: string;
+  declare checked: boolean;
+  declare disabled: boolean;
+  declare alignTop: boolean;
+
+  static styles = styles;
+
+  constructor() {
+    super();
+    this.label = "";
+    this.checked = false;
+    this.disabled = false;
+    this.alignTop = false;
+  }
+
+  private _onChange(e: Event) {
+    const checked = (e.target as HTMLInputElement).checked;
+    this.dispatchEvent(
+      new CustomEvent("dp-group-change", {
+        detail: { checked },
+        bubbles: true,
+        composed: true,
+      }),
+    );
+  }
+
+  render() {
+    const groupClass = ["group", this.checked ? "is-open" : ""].filter(Boolean).join(" ");
+    const optionClass = [
+      "option",
+      this.alignTop ? "top" : "",
+      this.disabled ? "is-disabled" : "",
+    ].filter(Boolean).join(" ");
+
+    return html`
+      <div class=${groupClass}>
+        <label class=${optionClass}>
+          <input
+            type="checkbox"
+            .checked=${this.checked}
+            ?disabled=${this.disabled}
+            @change=${this._onChange}
+          >
+          <span><slot name="label">${this.label}</slot><slot name="hint"></slot></span>
+        </label>
+        ${this.checked ? html`
+          <div class="group-body">
+            <slot></slot>
+          </div>
+        ` : nothing}
+      </div>
+    `;
+  }
+}
+
+customElements.define("dp-analysis-group", DpAnalysisGroup);

@@ -208,11 +208,14 @@ export const AnalysisExpanded = {
     expect(sr.querySelector(".history-target-row")?.classList.contains("analysis-open")).toBe(true);
     expect(sr.querySelector(".history-target-analysis-toggle")?.classList.contains("is-open")).toBe(true);
 
-    const checkboxes = Array.from(sr.querySelectorAll(".history-target-analysis input[type='checkbox']")) as HTMLInputElement[];
-    const trendCheckbox = checkboxes.find((cb) => cb.closest("label")?.textContent?.includes("Show trend lines"));
-    expect(trendCheckbox?.checked).toBe(true);
+    // Trend group is now a child component — verify it is present and checked
+    const trendGroup = sr.querySelector("dp-analysis-trend-group") as HTMLElement & { analysis: { show_trend_lines: boolean } };
+    expect(trendGroup).not.toBeNull();
+    expect(trendGroup.analysis.show_trend_lines).toBe(true);
 
-    expect(sr.querySelectorAll(".history-target-analysis-group-body").length).toBeGreaterThan(0);
+    // The group body lives inside dp-analysis-group's shadow DOM — verify via the trend group's group wrapper
+    const trendGroupInner = trendGroup.shadowRoot?.querySelector("dp-analysis-group");
+    expect(trendGroupInner).not.toBeNull();
   },
 };
 
@@ -279,13 +282,14 @@ export const WithThresholdAnalysis = {
     const el = await getEl(canvasElement);
     const sr = el.shadowRoot;
 
-    const thresholdInput = sr.querySelector(".history-target-analysis-input") as HTMLInputElement | null;
-    expect(thresholdInput).not.toBeNull();
-    expect(thresholdInput?.value).toBe("80");
-
-    const selects = Array.from(sr.querySelectorAll(".history-target-analysis-select")) as HTMLSelectElement[];
-    const shadeSelect = selects.find((s) => s.querySelector("option[value='above']"));
-    expect(shadeSelect).not.toBeNull();
+    // Threshold group is now a child component — verify it is present and has the correct analysis values
+    const thresholdGroup = sr.querySelector("dp-analysis-threshold-group") as HTMLElement & {
+      analysis: { show_threshold_analysis: boolean; threshold_value: string; threshold_direction: string };
+    };
+    expect(thresholdGroup).not.toBeNull();
+    expect(thresholdGroup.analysis.show_threshold_analysis).toBe(true);
+    expect(thresholdGroup.analysis.threshold_value).toBe("80");
+    expect(thresholdGroup.analysis.threshold_direction).toBe("above");
   },
 };
 
@@ -325,13 +329,15 @@ export const WithDeltaAnalysis = {
     const el = await getEl(canvasElement);
     const sr = el.shadowRoot;
 
-    const checkboxes = Array.from(sr.querySelectorAll(".history-target-analysis input[type='checkbox']")) as HTMLInputElement[];
-    const deltaCheckbox = checkboxes.find((cb) => cb.closest("label")?.textContent?.includes("Show delta"));
-    expect(deltaCheckbox?.checked).toBe(true);
-
-    const text = sr.textContent || "";
-    expect(text).toContain("Show delta in tooltip");
-    expect(text).toContain("Show delta lines");
+    // Delta group is now a child component — verify it is present and has the correct analysis values
+    const deltaGroup = sr.querySelector("dp-analysis-delta-group") as HTMLElement & {
+      analysis: { show_delta_analysis: boolean; show_delta_tooltip: boolean };
+      canShowDeltaAnalysis: boolean;
+    };
+    expect(deltaGroup).not.toBeNull();
+    expect(deltaGroup.analysis.show_delta_analysis).toBe(true);
+    expect(deltaGroup.analysis.show_delta_tooltip).toBe(true);
+    expect(deltaGroup.canShowDeltaAnalysis).toBe(true);
   },
 };
 
@@ -526,14 +532,15 @@ export const EmitsAnalysisChange = {
     const spy = fn();
     el.addEventListener("dp-row-analysis-change", spy);
 
-    const checkboxes = Array.from(
-      el.shadowRoot.querySelectorAll(".history-target-analysis input[type='checkbox']"),
-    ) as HTMLInputElement[];
-    const trendCheckbox = checkboxes.find(
-      (cb) => cb.closest("label")?.textContent?.includes("Show trend lines"),
-    ) as HTMLInputElement;
-
-    await userEvent.click(trendCheckbox);
+    // Trend group is now a child component — fire dp-group-analysis-change on it to simulate a change
+    const trendGroup = el.shadowRoot.querySelector("dp-analysis-trend-group") as HTMLElement;
+    trendGroup.dispatchEvent(
+      new CustomEvent("dp-group-analysis-change", {
+        detail: { entityId: "sensor.temp", key: "show_trend_lines", value: true },
+        bubbles: true,
+        composed: true,
+      }),
+    );
 
     expect(spy).toHaveBeenCalledOnce();
     const detail = (spy.mock.calls[0][0] as CustomEvent).detail;

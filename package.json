@@ -28,6 +28,7 @@
     "@chromatic-com/storybook": "^5.1.1",
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.39.1",
+    "@mdi/js": "^7.4.47",
     "@storybook/addon-a11y": "^10.3.3",
     "@storybook/addon-vitest": "^10.3.3",
     "@storybook/test": "^8.6.15",

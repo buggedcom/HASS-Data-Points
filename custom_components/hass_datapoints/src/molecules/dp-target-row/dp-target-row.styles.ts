@@ -345,21 +345,6 @@ export const styles = css`
     padding-top: var(--dp-spacing-sm);
   }
 
-  .history-target-analysis-group {
-    display: grid;
-    gap: var(--dp-spacing-sm);
-    border-radius: 6px;
-  }
-
-  .history-target-analysis-group-body {
-    display: grid;
-    gap: var(--dp-spacing-sm);
-    padding: var(--dp-spacing-sm);
-    border-left: 3px solid var(--primary-color);
-    margin-left: 5px;
-    padding-left: var(--dp-spacing-md);
-  }
-
   .history-target-analysis-option {
     display: flex;
     align-items: center;
@@ -367,10 +352,6 @@ export const styles = css`
     color: var(--primary-text-color);
     font-size: 0.84rem;
     cursor: pointer;
-  }
-
-  .history-target-analysis-option.top {
-    align-items: flex-start;
   }
 
   .history-target-analysis-option.is-disabled {
@@ -382,90 +363,6 @@ export const styles = css`
     margin: 0;
     accent-color: var(--primary-color, #03a9f4);
     cursor: pointer;
-  }
-
-  .history-target-analysis-option-help-text {
-    display: inline-block;
-    color: var(--secondary-text-color);
-    opacity: 0.8;
-    padding-top: 2px;
-  }
-
-  .history-target-analysis-row {
-    display: grid;
-    gap: var(--dp-spacing-sm);
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  }
-
-  .history-target-analysis-toggle-group {
-    display: flex;
-    gap: calc(var(--spacing, 8px) * 0.625);
-    align-items: center;
-  }
-
-  .history-target-analysis-field {
-    display: grid;
-    gap: 4px;
-    justify-items: start;
-  }
-
-  .history-target-analysis-field-label {
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.02em;
-    color: var(--secondary-text-color);
-  }
-
-  .history-target-analysis-select,
-  .history-target-analysis-input {
-    width: auto;
-    max-width: 100%;
-    min-width: 0;
-    box-sizing: border-box;
-    padding: calc(var(--spacing, 8px) * 0.75) calc(var(--spacing, 8px) * 0.875);
-    border-radius: 10px;
-    border: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 88%, transparent);
-    background: var(--card-background-color, #fff);
-    color: var(--primary-text-color);
-    font: inherit;
-    font-size: 0.84rem;
-  }
-
-  .history-target-analysis-method-list {
-    display: grid;
-    gap: var(--dp-spacing-sm);
-  }
-
-  .history-target-analysis-method-item {
-    display: grid;
-    gap: var(--dp-spacing-sm);
-  }
-
-  .history-target-analysis-method-subopts {
-    padding-left: calc(var(--spacing, 8px) * 1.5);
-    display: grid;
-    gap: var(--dp-spacing-sm);
-    border-left: 3px solid var(--primary-color);
-    margin-left: 5px;
-  }
-
-  .analysis-method-help {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 10px;
-    height: 10px;
-    flex: 0 0 auto;
-    border-radius: 50%;
-    border: 1px solid var(--secondary-text-color, #888);
-    background: transparent;
-    color: var(--secondary-text-color, #888);
-    font-size: 9px;
-    font-weight: 700;
-    line-height: 1;
-    cursor: default;
-    padding: 0;
-    vertical-align: middle;
   }
 
   .analysis-computing-spinner {

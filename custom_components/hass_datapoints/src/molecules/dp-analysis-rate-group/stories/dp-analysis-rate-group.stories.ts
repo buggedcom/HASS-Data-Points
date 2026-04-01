@@ -1,0 +1,61 @@
+import { html } from "lit";
+import "../dp-analysis-rate-group";
+import type { NormalizedAnalysis } from "../../dp-target-row/types";
+
+export default {
+  title: "Molecules/Analysis/Rate Group",
+  component: "dp-analysis-rate-group",
+  parameters: {
+    actions: {
+      handles: ["dp-group-analysis-change"],
+    },
+  },
+};
+
+function makeAnalysis(overrides: Partial<NormalizedAnalysis> = {}): NormalizedAnalysis {
+  return {
+    expanded: false,
+    show_trend_lines: false,
+    trend_method: "rolling_average",
+    trend_window: "24h",
+    show_trend_crosshairs: false,
+    show_summary_stats: false,
+    show_rate_of_change: false,
+    rate_window: "1h",
+    show_threshold_analysis: false,
+    show_threshold_shading: false,
+    threshold_value: "",
+    threshold_direction: "above",
+    show_anomalies: false,
+    anomaly_methods: [],
+    anomaly_overlap_mode: "all",
+    anomaly_sensitivity: "medium",
+    anomaly_rate_window: "1h",
+    anomaly_zscore_window: "24h",
+    anomaly_persistence_window: "1h",
+    anomaly_comparison_window_id: null,
+    show_delta_analysis: false,
+    show_delta_tooltip: false,
+    show_delta_lines: false,
+    hide_source_series: false,
+    ...overrides,
+  };
+}
+
+export const Default = {
+  render: () => html`
+    <dp-analysis-rate-group
+      .analysis=${makeAnalysis()}
+      .entityId=${"sensor.temperature"}
+    ></dp-analysis-rate-group>
+  `,
+};
+
+export const Checked = {
+  render: () => html`
+    <dp-analysis-rate-group
+      .analysis=${makeAnalysis({ show_rate_of_change: true, rate_window: "6h" })}
+      .entityId=${"sensor.temperature"}
+    ></dp-analysis-rate-group>
+  `,
+};
