@@ -14913,7 +14913,7 @@ ${s2.description}`).join("\n\n");
     { value: "12h", label: "12 hours" },
     { value: "24h", label: "24 hours" }
   ];
-  const ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS$1 = [
+  const ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS = [
     { value: "all", label: "Show all anomalies" },
     { value: "highlight", label: "Highlight overlaps" },
     { value: "only", label: "Overlaps only" }
@@ -15029,7 +15029,7 @@ ${s2.description}`).join("\n\n");
         ${Array.isArray(a2.anomaly_methods) && a2.anomaly_methods.length >= 2 ? b`
           <label class="field">
             <span class="field-label">When methods overlap</span>
-            ${this._renderSelect("anomaly_overlap_mode", ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS$1, a2.anomaly_overlap_mode)}
+            ${this._renderSelect("anomaly_overlap_mode", ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS, a2.anomaly_overlap_mode)}
           </label>
         ` : A}
       </dp-analysis-group>
@@ -15100,7 +15100,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-analysis-delta-group", DpAnalysisDeltaGroup);
-  function deriveSwatchIconColor$1(color) {
+  function deriveSwatchIconColor(color) {
     const hex = String(color || "").trim();
     const normalizedHex = /^#([0-9a-f]{6})$/i.test(hex) ? hex : null;
     if (!normalizedHex) {
@@ -15209,7 +15209,7 @@ ${s2.description}`).join("\n\n");
           <div class="history-target-controls">
             <label
               class="history-target-color-field"
-              style="--row-color:${this.color};--row-icon-color:${deriveSwatchIconColor$1(this.color)}"
+              style="--row-color:${this.color};--row-icon-color:${deriveSwatchIconColor(this.color)}"
             >
               <input
                 type="color"
@@ -16983,21 +16983,8 @@ ${s2.description}`).join("\n\n");
     { value: "12h", label: "12 hours" },
     { value: "24h", label: "24 hours" }
   ];
-  const ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS = [
-    { value: "all", label: "Show all anomalies" },
-    { value: "highlight", label: "Highlight overlaps" },
-    { value: "only", label: "Overlaps only" }
-  ];
-  function renderAnalysisSelectOptions(options, selectedValue) {
-    return options.map((option) => {
-      return `<option value="${esc$1(option.value)}" ${selectedValue === option.value ? "selected" : ""}>${esc$1(option.label)}</option>`;
-    }).join("");
-  }
   function isAnalysisSupportedForRow(row) {
     return typeof row?.entity_id === "string" && !row.entity_id.startsWith("binary_sensor.");
-  }
-  function hasActiveSeriesAnalysis(analysis, hasSelectedComparisonWindow = false) {
-    return analysis.show_trend_lines || analysis.show_summary_stats || analysis.show_rate_of_change || analysis.show_threshold_analysis || analysis.show_anomalies || analysis.show_delta_analysis && hasSelectedComparisonWindow;
   }
   const PANEL_HISTORY_STYLE = `
   :host {
@@ -19082,26 +19069,6 @@ ${s2.description}`).join("\n\n");
     }
   }
 `;
-  function deriveSwatchIconColor(color) {
-    const hex = String(color || "").trim();
-    const normalizedHex = /^#([0-9a-f]{6})$/i.test(hex) ? hex : null;
-    if (!normalizedHex) {
-      return contrastColor$1(color);
-    }
-    const channels = normalizedHex.slice(1).match(/.{2}/g)?.map((part) => Number.parseInt(part, 16));
-    if (!channels || channels.length !== 3 || channels.some((channel) => !Number.isFinite(channel))) {
-      return contrastColor$1(color);
-    }
-    const [red, green, blue] = channels;
-    const luminance = (0.299 * red + 0.587 * green + 0.114 * blue) / 255;
-    const mixTarget = luminance > 0.62 ? 0 : 255;
-    const mixStrength = luminance > 0.62 ? Math.min(0.82, 0.35 + (luminance - 0.62) * 1.6) : Math.min(0.78, 0.4 + (0.62 - luminance) * 0.9);
-    const mixedChannels = [red, green, blue].map((channel) => {
-      const mixed = Math.round(channel * (1 - mixStrength) + mixTarget * mixStrength);
-      return Math.max(0, Math.min(255, mixed));
-    });
-    return `rgb(${mixedChannels[0]}, ${mixedChannels[1]}, ${mixedChannels[2]})`;
-  }
   class HassRecordsHistoryPanel extends HTMLElement {
     constructor() {
       super();
@@ -20992,278 +20959,6 @@ ${s2.description}`).join("\n\n");
       this._saveSessionState();
       this._renderTargetRows();
       this._renderContent();
-    }
-    /** Generate the HTML for a single target row.
-     *  @param {object} row  - series row object
-     *  @param {number} index - position in _seriesRows
-     *  @param {{ includeDragHandle?: boolean }} opts
-     */
-    _buildSingleRowHTML(row, index, { includeDragHandle = true } = {}) {
-      const analysis = normalizeHistorySeriesAnalysis(row.analysis);
-      const supportsAnalysis = isAnalysisSupportedForRow(row);
-      const hasConfiguredAnalysis = historySeriesRowHasConfiguredAnalysis(row);
-      const isExpanded = supportsAnalysis && analysis.expanded === true;
-      const canShowDeltaAnalysis = !!this._selectedComparisonWindowId;
-      const hasActiveAnalysis = hasActiveSeriesAnalysis(analysis, canShowDeltaAnalysis);
-      const rowName = entityName$1(this._hass, row.entity_id) || row.entity_id;
-      const unit = this._hass?.states?.[row.entity_id]?.attributes?.unit_of_measurement || "";
-      return `
-      <div class="history-target-row ${row.visible === false ? "is-hidden" : ""} ${isExpanded ? "analysis-open" : ""}" role="row" data-series-reorder-index="${index}" ${supportsAnalysis ? `data-series-row-entity-id="${esc$1(row.entity_id)}"` : ""}>
-        ${includeDragHandle ? `
-          <button type="button" class="history-target-drag-handle" draggable="true" data-series-drag-index="${index}" aria-label="Drag to reorder ${esc$1(rowName)}" title="Drag to reorder">
-            <ha-icon icon="mdi:drag-vertical"></ha-icon>
-          </button>
-        ` : ""}
-        <div class="history-target-name" role="cell" title="${esc$1(entityName$1(this._hass, row.entity_id) || row.entity_id)}">
-          <div role="cell" class="history-target-controls">
-            <label class="history-target-color-field" style="--row-color:${esc$1(row.color)};--row-icon-color:${deriveSwatchIconColor(row.color)}">
-              <input type="color" class="history-target-color" data-series-color-index="${index}" value="${esc$1(row.color)}" aria-label="Line color for ${esc$1(row.entity_id)}">
-              <span class="history-target-color-icon" aria-hidden="true">
-                <ha-state-icon data-series-icon-entity-id="${esc$1(row.entity_id)}"></ha-state-icon>
-              </span>
-            </label>
-          </div>
-          <div class="history-target-name-text">
-            ${esc$1(entityName$1(this._hass, row.entity_id) || row.entity_id)}
-            <div class="history-target-entity-id">${esc$1(row.entity_id)}</div>
-          </div>
-        </div>
-        <div role="cell" class="history-target-actions">
-          ${supportsAnalysis ? `
-            <button
-              type="button"
-              class="history-target-analysis-toggle ${hasConfiguredAnalysis ? "configured" : ""}"
-              data-series-analysis-toggle-entity-id="${esc$1(row.entity_id)}"
-              aria-label="${isExpanded ? "Collapse" : "Expand"} analysis options for ${esc$1(rowName)}"
-              aria-expanded="${isExpanded ? "true" : "false"}"
-              title="${hasConfiguredAnalysis ? "Analysis configured" : "Configure analysis"}"
-            >
-              <ha-icon icon="${isExpanded ? "mdi:chevron-up" : "mdi:chevron-down"}"></ha-icon>
-            </button>
-          ` : ""}
-          <label class="history-target-visible-toggle" title="${row.visible === false ? "Show" : "Hide"} ${esc$1(entityName$1(this._hass, row.entity_id) || row.entity_id)}">
-            <input
-              type="checkbox"
-              data-series-visible-entity-id="${esc$1(row.entity_id)}"
-              aria-label="Show ${esc$1(entityName$1(this._hass, row.entity_id) || row.entity_id)} on chart"
-              ${row.visible === false ? "" : "checked"}
-            >
-            <span class="history-target-visible-toggle-track"></span>
-          </label>
-          <button type="button" class="history-target-remove" data-series-remove-index="${index}" aria-label="Remove ${esc$1(row.entity_id)}">
-            <ha-icon icon="mdi:close"></ha-icon>
-          </button>
-        </div>
-        ${supportsAnalysis && isExpanded ? `
-          <div class="history-target-analysis" role="cell">
-            <div class="history-target-analysis-grid">
-              <label class="history-target-analysis-option ${!hasActiveAnalysis ? "is-disabled" : ""}">
-                <input type="checkbox" data-series-analysis-option="${esc$1(row.entity_id)}::hide_source_series" ${analysis.hide_source_series && hasActiveAnalysis ? "checked" : ""} ${!hasActiveAnalysis ? "disabled" : ""}>
-                <span>Hide source series</span>
-              </label>
-              <div class="history-target-analysis-group ${analysis.show_trend_lines ? "is-open" : ""}">
-                <label class="history-target-analysis-option">
-                  <input type="checkbox" data-series-analysis-option="${esc$1(row.entity_id)}::show_trend_lines" ${analysis.show_trend_lines ? "checked" : ""}>
-                  <span>Show trend lines</span>
-                </label>
-                ${analysis.show_trend_lines ? `
-                  <div class="history-target-analysis-group-body">
-                    <label class="history-target-analysis-option">
-                      <input type="checkbox" data-series-analysis-option="${esc$1(row.entity_id)}::show_trend_crosshairs" ${analysis.show_trend_crosshairs ? "checked" : ""}>
-                      <span>Show trend crosshairs</span>
-                    </label>
-                    <label class="history-target-analysis-field">
-                      <span class="history-target-analysis-field-label">Trend method</span>
-                      <select class="history-target-analysis-select" data-series-analysis-select="${esc$1(row.entity_id)}::trend_method">
-                        ${renderAnalysisSelectOptions(ANALYSIS_TREND_METHOD_OPTIONS, analysis.trend_method)}
-                      </select>
-                    </label>
-                    ${analysis.trend_method === "rolling_average" ? `
-                      <label class="history-target-analysis-field">
-                        <span class="history-target-analysis-field-label">Trend window</span>
-                        <select class="history-target-analysis-select" data-series-analysis-select="${esc$1(row.entity_id)}::trend_window">
-                          ${renderAnalysisSelectOptions(ANALYSIS_TREND_WINDOW_OPTIONS, analysis.trend_window)}
-                        </select>
-                      </label>
-                    ` : ""}
-                  </div>
-                ` : ""}
-              </div>
-              <label class="history-target-analysis-option">
-                <input type="checkbox" data-series-analysis-option="${esc$1(row.entity_id)}::show_summary_stats" ${analysis.show_summary_stats ? "checked" : ""}>
-                <span>Show min / max / mean</span>
-              </label>
-              <div class="history-target-analysis-group ${analysis.show_rate_of_change ? "is-open" : ""}">
-                <label class="history-target-analysis-option">
-                  <input type="checkbox" data-series-analysis-option="${esc$1(row.entity_id)}::show_rate_of_change" ${analysis.show_rate_of_change ? "checked" : ""}>
-                  <span>Show rate of change</span>
-                </label>
-                ${analysis.show_rate_of_change ? `
-                  <div class="history-target-analysis-group-body">
-                    <label class="history-target-analysis-field">
-                      <span class="history-target-analysis-field-label">Rate window</span>
-                      <select class="history-target-analysis-select" data-series-analysis-select="${esc$1(row.entity_id)}::rate_window">
-                        ${renderAnalysisSelectOptions(ANALYSIS_RATE_WINDOW_OPTIONS, analysis.rate_window)}
-                      </select>
-                    </label>
-                  </div>
-                ` : ""}
-              </div>
-              <div class="history-target-analysis-group ${analysis.show_threshold_analysis ? "is-open" : ""}">
-                <label class="history-target-analysis-option">
-                  <input type="checkbox" data-series-analysis-option="${esc$1(row.entity_id)}::show_threshold_analysis" ${analysis.show_threshold_analysis ? "checked" : ""}>
-                  <span>Show threshold analysis</span>
-                </label>
-                ${analysis.show_threshold_analysis ? `
-                  <div class="history-target-analysis-group-body">
-                    <label class="history-target-analysis-option">
-                      <input type="checkbox" data-series-analysis-option="${esc$1(row.entity_id)}::show_threshold_shading" ${analysis.show_threshold_shading ? "checked" : ""}>
-                      <span>Shade threshold area</span>
-                    </label>
-                    <label class="history-target-analysis-field">
-                      <span class="history-target-analysis-field-label">Threshold</span>
-                      <div class="history-target-analysis-toggle-group">
-                        <input
-                          class="history-target-analysis-input"
-                          type="number"
-                          step="any"
-                          inputmode="decimal"
-                          data-series-analysis-input="${esc$1(row.entity_id)}::threshold_value"
-                          value="${esc$1(analysis.threshold_value)}"
-                          placeholder="Threshold"
-                        >
-                        <span class="sidebar-analysis-threshold-unit">${esc$1(unit)}</span>
-                      </div>
-                    </label>
-                    ${analysis.show_threshold_shading ? `
-                      <label class="history-target-analysis-field">
-                        <span class="history-target-analysis-field-label">Shade area</span>
-                        <select class="history-target-analysis-select" data-series-analysis-select="${esc$1(row.entity_id)}::threshold_direction">
-                          <option value="above" ${analysis.threshold_direction !== "below" ? "selected" : ""}>Shade above</option>
-                          <option value="below" ${analysis.threshold_direction === "below" ? "selected" : ""}>Shade below</option>
-                        </select>
-                      </label>
-                    ` : ""}
-                  </div>
-                ` : ""}
-              </div>
-              <div class="history-target-analysis-group ${analysis.show_anomalies ? "is-open" : ""}">
-                <label class="history-target-analysis-option">
-                  <input type="checkbox" data-series-analysis-option="${esc$1(row.entity_id)}::show_anomalies" ${analysis.show_anomalies ? "checked" : ""}>
-                  <span>Show anomalies</span>
-                </label>
-                ${analysis.show_anomalies ? `
-                  <div class="history-target-analysis-group-body">
-                    <label class="history-target-analysis-field">
-                      <span class="history-target-analysis-field-label">Sensitivity</span>
-                      <select class="history-target-analysis-select" data-series-analysis-select="${esc$1(row.entity_id)}::anomaly_sensitivity">
-                        ${renderAnalysisSelectOptions(ANALYSIS_ANOMALY_SENSITIVITY_OPTIONS, analysis.anomaly_sensitivity)}
-                      </select>
-                    </label>
-                    <div class="history-target-analysis-method-list">
-                      ${ANALYSIS_ANOMALY_METHOD_OPTIONS.map((opt) => {
-        const isChecked = analysis.anomaly_methods.includes(opt.value);
-        return `
-                        <div class="history-target-analysis-method-item">
-                          <label class="history-target-analysis-option">
-                            <input type="checkbox"
-                              data-series-analysis-option="${esc$1(row.entity_id)}::anomaly_method_toggle_${esc$1(opt.value)}"
-                              ${isChecked ? "checked" : ""}>
-                            <span>${esc$1(opt.label)}</span>
-                            ${opt.help ? `
-                              <span class="analysis-method-help" id="amh-${esc$1(row.entity_id.replace(/\./g, "-"))}-${esc$1(opt.value)}" tabindex="0">?</span>
-                              <ha-tooltip for="amh-${esc$1(row.entity_id.replace(/\./g, "-"))}-${esc$1(opt.value)}" placement="right" hoist>${esc$1(opt.help)}</ha-tooltip>
-                            ` : ""}
-                            ${isChecked ? `<span class="analysis-computing-spinner" data-analysis-spinner="${esc$1(row.entity_id)}"></span>` : ""}
-                          </label>
-                          ${isChecked && opt.value === "rate_of_change" ? `
-                            <div class="history-target-analysis-method-subopts">
-                              <label class="history-target-analysis-field">
-                                <span class="history-target-analysis-field-label">Rate window</span>
-                                <select class="history-target-analysis-select" data-series-analysis-select="${esc$1(row.entity_id)}::anomaly_rate_window">
-                                  ${renderAnalysisSelectOptions(ANALYSIS_ANOMALY_RATE_WINDOW_OPTIONS, analysis.anomaly_rate_window)}
-                                </select>
-                              </label>
-                            </div>
-                          ` : ""}
-                          ${isChecked && opt.value === "rolling_zscore" ? `
-                            <div class="history-target-analysis-method-subopts">
-                              <label class="history-target-analysis-field">
-                                <span class="history-target-analysis-field-label">Rolling window</span>
-                                <select class="history-target-analysis-select" data-series-analysis-select="${esc$1(row.entity_id)}::anomaly_zscore_window">
-                                  ${renderAnalysisSelectOptions(ANALYSIS_ANOMALY_ZSCORE_WINDOW_OPTIONS, analysis.anomaly_zscore_window)}
-                                </select>
-                              </label>
-                            </div>
-                          ` : ""}
-                          ${isChecked && opt.value === "persistence" ? `
-                            <div class="history-target-analysis-method-subopts">
-                              <label class="history-target-analysis-field">
-                                <span class="history-target-analysis-field-label">Min flat duration</span>
-                                <select class="history-target-analysis-select" data-series-analysis-select="${esc$1(row.entity_id)}::anomaly_persistence_window">
-                                  ${renderAnalysisSelectOptions(ANALYSIS_ANOMALY_PERSISTENCE_WINDOW_OPTIONS, analysis.anomaly_persistence_window)}
-                                </select>
-                              </label>
-                            </div>
-                          ` : ""}
-                          ${isChecked && opt.value === "comparison_window" ? `
-                            <div class="history-target-analysis-method-subopts">
-                              <label class="history-target-analysis-field">
-                                <span class="history-target-analysis-field-label">Compare to window</span>
-                                <select class="history-target-analysis-select" data-series-analysis-select="${esc$1(row.entity_id)}::anomaly_comparison_window_id">
-                                  <option value="" ${!analysis.anomaly_comparison_window_id ? "selected" : ""}>— select window —</option>
-                                  ${this._comparisonWindows.map((win) => `<option value="${esc$1(win.id)}" ${analysis.anomaly_comparison_window_id === win.id ? "selected" : ""}>${esc$1(win.label || win.id)}</option>`).join("")}
-                                  <option value="__add_new__">+ Add date window</option>
-                                </select>
-                              </label>
-                            </div>
-                          ` : ""}
-                        </div>`;
-      }).join("")}
-                    </div>
-                    ${analysis.anomaly_methods.length >= 2 ? `
-                      <label class="history-target-analysis-field">
-                        <span class="history-target-analysis-field-label">When methods overlap</span>
-                        <select class="history-target-analysis-select" data-series-analysis-select="${esc$1(row.entity_id)}::anomaly_overlap_mode">
-                          ${renderAnalysisSelectOptions(ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS, analysis.anomaly_overlap_mode)}
-                        </select>
-                      </label>
-                    ` : ""}
-                  </div>
-                ` : ""}
-              </div>
-              <div class="history-target-analysis-group ${analysis.show_delta_analysis && canShowDeltaAnalysis ? "is-open" : ""}">
-                <label class="history-target-analysis-option top">
-                  <input
-                    type="checkbox"
-                    data-series-analysis-option="${esc$1(row.entity_id)}::show_delta_analysis"
-                    ${analysis.show_delta_analysis && canShowDeltaAnalysis ? "checked" : ""}
-                    ${canShowDeltaAnalysis ? "" : "disabled"}
-                  >
-                  <span>Show delta vs selected date window<br />
-                    ${!canShowDeltaAnalysis ? `
-                      <span class="history-target-analysis-option-help-text">Select a date window tab to enable delta analysis.</span>
-                    ` : ""}
-                  </span>
-                </label>
-                ${analysis.show_delta_analysis && canShowDeltaAnalysis ? `
-                  <div class="history-target-analysis-group-body">
-                    <label class="history-target-analysis-option">
-                      <input type="checkbox" data-series-analysis-option="${esc$1(row.entity_id)}::show_delta_tooltip" ${analysis.show_delta_tooltip ? "checked" : ""}>
-                      <span>Show delta in tooltip</span>
-                    </label>
-                    <label class="history-target-analysis-option">
-                      <input type="checkbox" data-series-analysis-option="${esc$1(row.entity_id)}::show_delta_lines" ${analysis.show_delta_lines ? "checked" : ""}>
-                      <span>Show delta lines</span>
-                    </label>
-                  </div>
-                ` : ""}
-              </div>
-            </div>
-          </div>
-        ` : ""}
-      </div>
-    `;
     }
     /** Open (or re-render) the collapsed-sidebar target popup for *entityId*,
      *  anchored to *anchorEl*.  Wires all the same controls as the full sidebar row. */
