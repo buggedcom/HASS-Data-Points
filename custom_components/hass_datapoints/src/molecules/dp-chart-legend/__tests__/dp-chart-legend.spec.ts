@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import "../dp-chart-legend";
+import "@/molecules/dp-chart-legend";
 
 function createElement(props: Record<string, unknown> = {}) {
   const el = document.createElement("dp-chart-legend") as HTMLElement & {
