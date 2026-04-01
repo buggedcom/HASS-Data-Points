@@ -14076,7 +14076,7 @@ ${s2.description}`).join("\n\n");
       };
     }
   }
-  const styles$g = i$5`
+  const styles$h = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -14117,7 +14117,7 @@ ${s2.description}`).join("\n\n");
     box-shadow: inset 0 -3px 0 -1px var(--primary-color, #03a9f4);
   }
 `;
-  const styles$f = i$5`
+  const styles$g = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -14560,8 +14560,8 @@ ${s2.description}`).join("\n\n");
     cursor: pointer;
   }
 `;
-  const styles$e = i$5``;
-  const styles$d = i$5`
+  const styles$f = i$5``;
+  const styles$e = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -14623,7 +14623,7 @@ ${s2.description}`).join("\n\n");
       disabled: { type: Boolean },
       alignTop: { type: Boolean, attribute: "align-top" }
     };
-    static styles = styles$d;
+    static styles = styles$e;
     constructor() {
       super();
       this.label = "";
@@ -14687,7 +14687,7 @@ ${s2.description}`).join("\n\n");
       analysis: { type: Object },
       entityId: { type: String, attribute: "entity-id" }
     };
-    static styles = [sharedStyles, styles$e];
+    static styles = [sharedStyles, styles$f];
     constructor() {
       super();
       this.analysis = {};
@@ -14742,7 +14742,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-analysis-trend-group", DpAnalysisTrendGroup);
-  const styles$c = i$5``;
+  const styles$d = i$5``;
   const ANALYSIS_RATE_WINDOW_OPTIONS$1 = [
     { value: "point_to_point", label: "Point to point" },
     { value: "1h", label: "1 hour" },
@@ -14754,7 +14754,7 @@ ${s2.description}`).join("\n\n");
       analysis: { type: Object },
       entityId: { type: String, attribute: "entity-id" }
     };
-    static styles = [sharedStyles, styles$c];
+    static styles = [sharedStyles, styles$d];
     constructor() {
       super();
       this.analysis = {};
@@ -14796,14 +14796,14 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-analysis-rate-group", DpAnalysisRateGroup);
-  const styles$b = i$5``;
+  const styles$c = i$5``;
   class DpAnalysisThresholdGroup extends i$2 {
     static properties = {
       analysis: { type: Object },
       entityId: { type: String, attribute: "entity-id" },
       unit: { type: String }
     };
-    static styles = [sharedStyles, styles$b];
+    static styles = [sharedStyles, styles$c];
     constructor() {
       super();
       this.analysis = {};
@@ -14870,7 +14870,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-analysis-threshold-group", DpAnalysisThresholdGroup);
-  const styles$a = i$5`
+  const styles$b = i$5`
   .method-list {
     display: grid;
     gap: var(--dp-spacing-sm, 8px);
@@ -14900,7 +14900,7 @@ ${s2.description}`).join("\n\n");
     vertical-align: middle;
   }
 `;
-  const styles$9 = i$5`
+  const styles$a = i$5`
   :host {
     display: block;
     --dp-spacing-sm: var(--spacing, 8px);
@@ -14916,7 +14916,7 @@ ${s2.description}`).join("\n\n");
   }
 `;
   class DpAnalysisMethodSubopts extends i$2 {
-    static styles = styles$9;
+    static styles = styles$a;
     render() {
       return b`<div class="subopts"><slot></slot></div>`;
     }
@@ -14965,7 +14965,7 @@ ${s2.description}`).join("\n\n");
       entityId: { type: String, attribute: "entity-id" },
       comparisonWindows: { type: Array, attribute: "comparison-windows" }
     };
-    static styles = [sharedStyles, styles$a];
+    static styles = [sharedStyles, styles$b];
     constructor() {
       super();
       this.analysis = {};
@@ -15078,7 +15078,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-analysis-anomaly-group", DpAnalysisAnomalyGroup);
-  const styles$8 = i$5`
+  const styles$9 = i$5`
   .help-text {
     display: inline-block;
     color: var(--secondary-text-color);
@@ -15092,7 +15092,7 @@ ${s2.description}`).join("\n\n");
       entityId: { type: String, attribute: "entity-id" },
       canShowDeltaAnalysis: { type: Boolean, attribute: "can-show-delta-analysis" }
     };
-    static styles = [sharedStyles, styles$8];
+    static styles = [sharedStyles, styles$9];
     constructor() {
       super();
       this.analysis = {};
@@ -15177,7 +15177,7 @@ ${s2.description}`).join("\n\n");
       hass: { type: Object, attribute: false },
       comparisonWindows: { type: Array, attribute: "comparison-windows" }
     };
-    static styles = styles$f;
+    static styles = styles$g;
     constructor() {
       super();
       this.color = "#03a9f4";
@@ -15366,7 +15366,7 @@ ${s2.description}`).join("\n\n");
     };
     /** Index of the row currently being dragged, or null when not dragging. */
     _dragSourceIndex = null;
-    static styles = styles$g;
+    static styles = styles$h;
     render() {
       if (!this.rows.length) {
         return b`
@@ -15484,7 +15484,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-target-row-list", DpTargetRowList);
-  const styles$7 = i$5`
+  const styles$8 = i$5`
   :host {
     display: block;
     --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
@@ -15495,12 +15495,12 @@ ${s2.description}`).join("\n\n");
     gap: var(--dp-spacing-lg);
   }
 `;
-  const styles$6 = i$5`
+  const styles$7 = i$5`
   :host {
     display: block;
   }
 `;
-  const styles$5 = i$5`
+  const styles$6 = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -15550,7 +15550,7 @@ ${s2.description}`).join("\n\n");
       title: { type: String },
       subtitle: { type: String }
     };
-    static styles = styles$5;
+    static styles = styles$6;
     constructor() {
       super();
       this.title = "";
@@ -15649,7 +15649,7 @@ ${s2.description}`).join("\n\n");
     static properties = {
       datapointScope: { type: String, attribute: "datapoint-scope" }
     };
-    static styles = styles$6;
+    static styles = styles$7;
     constructor() {
       super();
       this.datapointScope = "linked";
@@ -15676,7 +15676,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-sidebar-datapoints-section", DpSidebarDatapointsSection);
-  const styles$4 = i$5`
+  const styles$5 = i$5`
   :host {
     display: block;
   }
@@ -15745,7 +15745,7 @@ ${s2.description}`).join("\n\n");
       showIcons: { type: Boolean, attribute: "show-icons" },
       showLines: { type: Boolean, attribute: "show-lines" }
     };
-    static styles = styles$4;
+    static styles = styles$5;
     constructor() {
       super();
       this.showIcons = true;
@@ -15775,7 +15775,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-sidebar-datapoint-display-section", DpSidebarDatapointDisplaySection);
-  const styles$3 = i$5`
+  const styles$4 = i$5`
   :host {
     display: block;
     --dp-spacing-sm: var(--spacing, 8px);
@@ -15837,7 +15837,7 @@ ${s2.description}`).join("\n\n");
       dataGapThreshold: { type: String, attribute: "data-gap-threshold" },
       yAxisMode: { type: String, attribute: "y-axis-mode" }
     };
-    static styles = styles$3;
+    static styles = styles$4;
     constructor() {
       super();
       this.showTooltips = true;
@@ -15914,7 +15914,7 @@ ${s2.description}`).join("\n\n");
       dataGapThreshold: { type: String, attribute: "data-gap-threshold" },
       yAxisMode: { type: String, attribute: "y-axis-mode" }
     };
-    static styles = styles$7;
+    static styles = styles$8;
     constructor() {
       super();
       this.datapointScope = "linked";
@@ -16062,7 +16062,7 @@ ${s2.description}`).join("\n\n");
       return this.ut = a2, p(s2, v$12), E;
     }
   });
-  const styles$2 = i$5`
+  const styles$3 = i$5`
   :host {
     display: block;
   }
@@ -16144,7 +16144,7 @@ ${s2.description}`).join("\n\n");
     display: none;
   }
 `;
-  const styles$1 = i$5`
+  const styles$2 = i$5`
   :host {
     display: contents;
   }
@@ -16325,7 +16325,7 @@ ${s2.description}`).join("\n\n");
   }
 `;
   class DpComparisonTab extends i$2 {
-    static styles = styles$1;
+    static styles = styles$2;
     static properties = {
       tabId: { type: String, attribute: "tab-id" },
       label: { type: String },
@@ -16436,7 +16436,7 @@ ${s2.description}`).join("\n\n");
   }
   customElements.define("dp-comparison-tab", DpComparisonTab);
   class DpComparisonTabRail extends i$2 {
-    static styles = styles$2;
+    static styles = styles$3;
     static properties = {
       tabs: { type: Array },
       loadingIds: { type: Array, attribute: false },
@@ -16524,7 +16524,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-comparison-tab-rail", DpComparisonTabRail);
-  const styles = i$5`
+  const styles$1 = i$5`
   :host {
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
     --dp-spacing-sm: var(--spacing, 8px);
@@ -16634,7 +16634,7 @@ ${s2.description}`).join("\n\n");
   }
 `;
   class DpDateWindowDialog extends i$2 {
-    static styles = styles;
+    static styles = styles$1;
     static properties = {
       open: { type: Boolean },
       heading: { type: String },
@@ -16784,6 +16784,143 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-date-window-dialog", DpDateWindowDialog);
+  const styles = i$5`
+  :host {
+    display: contents;
+  }
+
+  .floating-menu {
+    position: fixed;
+    top: var(--floating-menu-top, 64px);
+    left: var(--floating-menu-left, 0px);
+    z-index: 9999;
+    min-width: var(--floating-menu-min-width, 220px);
+    width: var(--floating-menu-width, auto);
+    max-height: var(--floating-menu-max-height, none);
+    overflow: var(--floating-menu-overflow, visible);
+    padding: var(--floating-menu-padding, var(--dp-spacing-xs, 4px));
+    border-radius: 14px;
+    background: var(--card-background-color, #fff);
+    box-shadow:
+      0 18px 44px rgba(0, 0, 0, 0.18),
+      0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 88%, transparent);
+  }
+
+  .floating-menu[hidden] {
+    display: none;
+  }
+`;
+  class DpFloatingMenu extends i$2 {
+    static styles = styles;
+    static properties = {
+      open: { type: Boolean, reflect: true }
+    };
+    constructor() {
+      super();
+      this.open = false;
+    }
+    connectedCallback() {
+      super.connectedCallback();
+      this._onPointerDown = this._onPointerDown.bind(this);
+      window.addEventListener("pointerdown", this._onPointerDown, true);
+    }
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      window.removeEventListener("pointerdown", this._onPointerDown, true);
+    }
+    _onPointerDown(e2) {
+      if (!this.open) {
+        return;
+      }
+      const path = e2.composedPath();
+      const clickedInside = path.some((node) => node === this);
+      if (!clickedInside) {
+        this.dispatchEvent(
+          new CustomEvent("dp-menu-close", {
+            detail: {},
+            bubbles: true,
+            composed: true
+          })
+        );
+      }
+    }
+    render() {
+      return b`
+      <div
+        class="floating-menu"
+        role="menu"
+        ?hidden=${!this.open}
+      >
+        <slot></slot>
+      </div>
+    `;
+    }
+  }
+  customElements.define("dp-floating-menu", DpFloatingMenu);
+  class DpPageMenuItem extends i$2 {
+    static properties = {
+      icon: { type: String },
+      label: { type: String },
+      disabled: { type: Boolean }
+    };
+    static styles = i$5`
+    :host { display: block; }
+    button {
+      width: 100%; min-height: 38px;
+      padding: var(--dp-spacing-sm, 8px) var(--dp-spacing-sm, 8px);
+      display: flex; align-items: center; gap: var(--dp-spacing-sm, 8px);
+      border: none; border-radius: 10px; background: transparent;
+      color: var(--primary-text-color); font: inherit; text-align: left; cursor: pointer;
+    }
+    button:hover, button:focus-visible {
+      background: color-mix(in srgb, var(--primary-text-color, #111) 6%, transparent);
+      outline: none;
+    }
+    button[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    button[disabled]:hover {
+      background: transparent;
+    }
+    ha-icon {
+      --mdc-icon-size: 18px;
+      color: var(--secondary-text-color);
+      flex: 0 0 auto;
+    }
+  `;
+    constructor() {
+      super();
+      this.icon = "";
+      this.label = "";
+      this.disabled = false;
+    }
+    _onClick() {
+      if (this.disabled) {
+        return;
+      }
+      this.dispatchEvent(
+        new CustomEvent("dp-menu-action", {
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    render() {
+      return b`
+      <button
+        type="button"
+        ?disabled=${this.disabled}
+        @click=${this._onClick}
+      >
+        <ha-icon icon="${this.icon}"></ha-icon>
+        ${this.label}
+      </button>
+    `;
+    }
+  }
+  customElements.define("dp-page-menu-item", DpPageMenuItem);
   const DATA_GAP_THRESHOLD_OPTIONS = [
     { value: "auto", label: "Auto-detect" },
     { value: "5m", label: "5 minutes" },
@@ -19435,12 +19572,9 @@ ${s2.description}`).join("\n\n");
             >
               <ha-icon icon="mdi:dots-vertical"></ha-icon>
             </ha-icon-button>
-            <div id="page-menu" class="page-menu" hidden>
-              <button type="button" class="page-menu-item" id="page-download-spreadsheet">
-                <ha-icon icon="mdi:file-excel-outline"></ha-icon>
-                <span>Download spreadsheet</span>
-              </button>
-            </div>
+            <dp-floating-menu id="page-menu">
+              <dp-page-menu-item id="page-download-spreadsheet" icon="mdi:file-excel-outline" label="Download spreadsheet"></dp-page-menu-item>
+            </dp-floating-menu>
           </div>
         </div>
         <div class="controls-section">
@@ -19474,7 +19608,8 @@ ${s2.description}`).join("\n\n");
       this._sidebarToggleButtonEl = this.shadowRoot.querySelector("#sidebar-toggle");
       this._sidebarOptionsEl = this.shadowRoot.querySelector("#sidebar-options");
       this._pageMenuButtonEl?.addEventListener("click", () => this._togglePageMenu());
-      this._pageMenuEl?.querySelector("#page-download-spreadsheet")?.addEventListener("click", () => this._downloadSpreadsheet());
+      this._pageMenuEl?.querySelector("#page-download-spreadsheet")?.addEventListener("dp-menu-action", () => this._downloadSpreadsheet());
+      this._pageMenuEl?.addEventListener("dp-menu-close", () => this._togglePageMenu(false));
       this._sidebarToggleButtonEl?.addEventListener("click", () => this._toggleSidebarCollapsed());
       this._pageSidebarEl?.addEventListener("click", this._onCollapsedSidebarClick);
       this._syncPageLayoutHeight();
@@ -20598,15 +20733,15 @@ ${s2.description}`).join("\n\n");
           <ha-icon-button id="range-picker-button" class="range-picker-button" label="Select date range" aria-haspopup="dialog" aria-expanded="false">
             <ha-icon icon="mdi:calendar-range"></ha-icon>
           </ha-icon-button>
-          <div id="range-picker-menu" class="range-picker-menu" hidden>
+          <dp-floating-menu id="range-picker-menu" style="--floating-menu-width: min(340px, calc(100vw - 32px)); --floating-menu-padding: var(--dp-spacing-md, 16px);">
             <ha-date-range-picker id="range-picker" class="range-picker"></ha-date-range-picker>
-          </div>
+          </dp-floating-menu>
         </div>
         <div class="range-options-wrap">
           <ha-icon-button id="range-options-button" class="range-options-button" label="Timeline options" aria-haspopup="menu" aria-expanded="false">
             <ha-icon icon="mdi:dots-vertical"></ha-icon>
           </ha-icon-button>
-          <div id="range-options-menu" class="range-options-menu" hidden>
+          <dp-floating-menu id="range-options-menu" style="--floating-menu-width: 280px; --floating-menu-max-height: min(70vh, 520px); --floating-menu-overflow: auto; --floating-menu-padding: var(--dp-spacing-sm, 8px);">
             <div class="range-options-view" data-options-view="root">
               <div class="range-options-list">
                 <button type="button" class="range-submenu-trigger" data-options-submenu="zoom">
@@ -20653,7 +20788,7 @@ ${s2.description}`).join("\n\n");
                 `).join("")}
               </div>
             </div>
-          </div>
+          </dp-floating-menu>
         </div>
       </div>
     `;
@@ -20702,9 +20837,11 @@ ${s2.description}`).join("\n\n");
       this._rangeStartHandle.addEventListener("blur", () => this._clearRangeTooltipFocusHandle("start"));
       this._rangeEndHandle.addEventListener("blur", () => this._clearRangeTooltipFocusHandle("end"));
       this._datePickerButtonEl.addEventListener("click", () => this._toggleDatePickerMenu());
+      this._datePickerMenuEl?.addEventListener("dp-menu-close", () => this._toggleDatePickerMenu(false));
       this._dateRangePickerEl.addEventListener("change", (ev) => this._handleDatePickerChange(ev));
       this._dateRangePickerEl.addEventListener("value-changed", (ev) => this._handleDatePickerChange(ev));
       this._optionsButtonEl.addEventListener("click", () => this._toggleOptionsMenu());
+      this._optionsMenuEl?.addEventListener("dp-menu-close", () => this._toggleOptionsMenu(false));
       this._optionsMenuEl.querySelectorAll("[data-options-submenu]").forEach((button) => {
         button.addEventListener("click", () => this._setOptionsMenuView(button.dataset.optionsSubmenu || "root"));
       });
@@ -21411,7 +21548,7 @@ ${s2.description}`).join("\n\n");
         this._optionsMenuView = "root";
       }
       if (this._optionsMenuEl) {
-        this._optionsMenuEl.hidden = !force;
+        this._optionsMenuEl.open = force;
         if (force) {
           this._positionFloatingMenu(this._optionsMenuEl, this._optionsButtonEl, 280);
         }
@@ -21428,7 +21565,7 @@ ${s2.description}`).join("\n\n");
       }
       this._datePickerOpen = force;
       if (this._datePickerMenuEl) {
-        this._datePickerMenuEl.hidden = !force;
+        this._datePickerMenuEl.open = force;
         if (force) {
           this._positionFloatingMenu(this._datePickerMenuEl, this._datePickerButtonEl, 320);
         }
@@ -21444,7 +21581,7 @@ ${s2.description}`).join("\n\n");
       }
       this._pageMenuOpen = force;
       if (this._pageMenuEl) {
-        this._pageMenuEl.hidden = !force;
+        this._pageMenuEl.open = force;
         if (force) {
           this._positionPageMenu();
         }
@@ -21453,26 +21590,7 @@ ${s2.description}`).join("\n\n");
         this._pageMenuButtonEl.setAttribute("aria-expanded", String(force));
       }
     }
-    _handleWindowPointerDown(ev) {
-      const path = ev.composedPath ? ev.composedPath() : [];
-      if (this._datePickerOpen) {
-        const insideDatePicker = path.includes(this._datePickerButtonEl) || path.includes(this._datePickerMenuEl);
-        if (!insideDatePicker) {
-          this._toggleDatePickerMenu(false);
-        }
-      }
-      if (this._optionsOpen) {
-        const insideOptions = path.includes(this._optionsButtonEl) || path.includes(this._optionsMenuEl);
-        if (!insideOptions) {
-          this._toggleOptionsMenu(false);
-        }
-      }
-      if (this._pageMenuOpen) {
-        const insidePageMenu = path.includes(this._pageMenuButtonEl) || path.includes(this._pageMenuEl);
-        if (!insidePageMenu) {
-          this._togglePageMenu(false);
-        }
-      }
+    _handleWindowPointerDown(_ev) {
     }
     _syncOptionsMenu() {
       if (!this._optionsMenuEl) return;
@@ -21571,8 +21689,8 @@ ${s2.description}`).join("\n\n");
       }
       const menuWidth = Math.max(220, this._pageMenuEl.offsetWidth || 220);
       const { left, top } = this._computeFloatingMenuPosition(this._pageMenuButtonEl, menuWidth);
-      this._pageMenuEl.style.setProperty("--page-menu-left", `${left}px`);
-      this._pageMenuEl.style.setProperty("--page-menu-top", `${top}px`);
+      this._pageMenuEl.style.setProperty("--floating-menu-left", `${left}px`);
+      this._pageMenuEl.style.setProperty("--floating-menu-top", `${top}px`);
     }
     _getEffectiveZoomLevel() {
       if (this._zoomLevel !== "auto") return this._zoomLevel;

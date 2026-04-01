@@ -65,6 +65,8 @@ import "@/molecules/dp-target-row-list/dp-target-row-list";
 import "@/molecules/dp-sidebar-options/dp-sidebar-options";
 import "@/molecules/dp-comparison-tab-rail/dp-comparison-tab-rail";
 import "@/molecules/dp-date-window-dialog/dp-date-window-dialog";
+import "@/molecules/dp-floating-menu/dp-floating-menu";
+import "@/atoms/interactive/dp-page-menu-item/dp-page-menu-item";
 
 const DATA_GAP_THRESHOLD_OPTIONS = [
   { value: "auto", label: "Auto-detect" },
@@ -2815,12 +2817,9 @@ export class HassRecordsHistoryPanel extends HTMLElement {
             >
               <ha-icon icon="mdi:dots-vertical"></ha-icon>
             </ha-icon-button>
-            <div id="page-menu" class="page-menu" hidden>
-              <button type="button" class="page-menu-item" id="page-download-spreadsheet">
-                <ha-icon icon="mdi:file-excel-outline"></ha-icon>
-                <span>Download spreadsheet</span>
-              </button>
-            </div>
+            <dp-floating-menu id="page-menu">
+              <dp-page-menu-item id="page-download-spreadsheet" icon="mdi:file-excel-outline" label="Download spreadsheet"></dp-page-menu-item>
+            </dp-floating-menu>
           </div>
         </div>
         <div class="controls-section">
@@ -2854,7 +2853,8 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._sidebarToggleButtonEl = this.shadowRoot.querySelector("#sidebar-toggle");
     this._sidebarOptionsEl = this.shadowRoot.querySelector("#sidebar-options");
     this._pageMenuButtonEl?.addEventListener("click", () => this._togglePageMenu());
-    this._pageMenuEl?.querySelector("#page-download-spreadsheet")?.addEventListener("click", () => this._downloadSpreadsheet());
+    this._pageMenuEl?.querySelector("#page-download-spreadsheet")?.addEventListener("dp-menu-action", () => this._downloadSpreadsheet());
+    this._pageMenuEl?.addEventListener("dp-menu-close", () => this._togglePageMenu(false));
     this._sidebarToggleButtonEl?.addEventListener("click", () => this._toggleSidebarCollapsed());
     this._pageSidebarEl?.addEventListener("click", this._onCollapsedSidebarClick);
     this._syncPageLayoutHeight();
@@ -4095,15 +4095,15 @@ export class HassRecordsHistoryPanel extends HTMLElement {
           <ha-icon-button id="range-picker-button" class="range-picker-button" label="Select date range" aria-haspopup="dialog" aria-expanded="false">
             <ha-icon icon="mdi:calendar-range"></ha-icon>
           </ha-icon-button>
-          <div id="range-picker-menu" class="range-picker-menu" hidden>
+          <dp-floating-menu id="range-picker-menu" style="--floating-menu-width: min(340px, calc(100vw - 32px)); --floating-menu-padding: var(--dp-spacing-md, 16px);">
             <ha-date-range-picker id="range-picker" class="range-picker"></ha-date-range-picker>
-          </div>
+          </dp-floating-menu>
         </div>
         <div class="range-options-wrap">
           <ha-icon-button id="range-options-button" class="range-options-button" label="Timeline options" aria-haspopup="menu" aria-expanded="false">
             <ha-icon icon="mdi:dots-vertical"></ha-icon>
           </ha-icon-button>
-          <div id="range-options-menu" class="range-options-menu" hidden>
+          <dp-floating-menu id="range-options-menu" style="--floating-menu-width: 280px; --floating-menu-max-height: min(70vh, 520px); --floating-menu-overflow: auto; --floating-menu-padding: var(--dp-spacing-sm, 8px);">
             <div class="range-options-view" data-options-view="root">
               <div class="range-options-list">
                 <button type="button" class="range-submenu-trigger" data-options-submenu="zoom">
@@ -4150,7 +4150,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
                 `).join("")}
               </div>
             </div>
-          </div>
+          </dp-floating-menu>
         </div>
       </div>
     `;
@@ -4199,9 +4199,11 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._rangeStartHandle.addEventListener("blur", () => this._clearRangeTooltipFocusHandle("start"));
     this._rangeEndHandle.addEventListener("blur", () => this._clearRangeTooltipFocusHandle("end"));
     this._datePickerButtonEl.addEventListener("click", () => this._toggleDatePickerMenu());
+    this._datePickerMenuEl?.addEventListener("dp-menu-close", () => this._toggleDatePickerMenu(false));
     this._dateRangePickerEl.addEventListener("change", (ev) => this._handleDatePickerChange(ev));
     this._dateRangePickerEl.addEventListener("value-changed", (ev) => this._handleDatePickerChange(ev));
     this._optionsButtonEl.addEventListener("click", () => this._toggleOptionsMenu());
+    this._optionsMenuEl?.addEventListener("dp-menu-close", () => this._toggleOptionsMenu(false));
     this._optionsMenuEl.querySelectorAll("[data-options-submenu]").forEach((button) => {
       button.addEventListener("click", () => this._setOptionsMenuView(button.dataset.optionsSubmenu || "root"));
     });
@@ -4955,7 +4957,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       this._optionsMenuView = "root";
     }
     if (this._optionsMenuEl) {
-      this._optionsMenuEl.hidden = !force;
+      this._optionsMenuEl.open = force;
       if (force) {
         this._positionFloatingMenu(this._optionsMenuEl, this._optionsButtonEl, 280);
       }
@@ -4973,7 +4975,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     }
     this._datePickerOpen = force;
     if (this._datePickerMenuEl) {
-      this._datePickerMenuEl.hidden = !force;
+      this._datePickerMenuEl.open = force;
       if (force) {
         this._positionFloatingMenu(this._datePickerMenuEl, this._datePickerButtonEl, 320);
       }
@@ -4990,7 +4992,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     }
     this._pageMenuOpen = force;
     if (this._pageMenuEl) {
-      this._pageMenuEl.hidden = !force;
+      this._pageMenuEl.open = force;
       if (force) {
         this._positionPageMenu();
       }
@@ -5000,26 +5002,9 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     }
   }
 
-  _handleWindowPointerDown(ev) {
-    const path = ev.composedPath ? ev.composedPath() : [];
-    if (this._datePickerOpen) {
-      const insideDatePicker = path.includes(this._datePickerButtonEl) || path.includes(this._datePickerMenuEl);
-      if (!insideDatePicker) {
-        this._toggleDatePickerMenu(false);
-      }
-    }
-    if (this._optionsOpen) {
-      const insideOptions = path.includes(this._optionsButtonEl) || path.includes(this._optionsMenuEl);
-      if (!insideOptions) {
-        this._toggleOptionsMenu(false);
-      }
-    }
-    if (this._pageMenuOpen) {
-      const insidePageMenu = path.includes(this._pageMenuButtonEl) || path.includes(this._pageMenuEl);
-      if (!insidePageMenu) {
-        this._togglePageMenu(false);
-      }
-    }
+  _handleWindowPointerDown(_ev) {
+    // Outside-click dismissal for all floating menus is now handled internally
+    // by dp-floating-menu via dp-menu-close events.
   }
 
   _syncOptionsMenu() {
@@ -5127,8 +5112,8 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     }
     const menuWidth = Math.max(220, this._pageMenuEl.offsetWidth || 220);
     const { left, top } = this._computeFloatingMenuPosition(this._pageMenuButtonEl, menuWidth);
-    this._pageMenuEl.style.setProperty("--page-menu-left", `${left}px`);
-    this._pageMenuEl.style.setProperty("--page-menu-top", `${top}px`);
+    this._pageMenuEl.style.setProperty("--floating-menu-left", `${left}px`);
+    this._pageMenuEl.style.setProperty("--floating-menu-top", `${top}px`);
   }
 
   _getEffectiveZoomLevel() {
