@@ -32,7 +32,7 @@ import {
   ChartRenderer,
 } from "../../lib/shared.js";
 import { HistoryAnnotationDialogController } from "../annotation-dialog/annotation-dialog.js";
-import { ChartCardBase } from "../card-chart-base/card-chart-base.js";
+import { ChartCardBase } from "../card-chart-base/card-chart-base-legacy.js";
 import { computeHistoryAnalysisInWorker } from "../../lib/workers/history-analysis-client.js";
 
 /**
@@ -521,6 +521,12 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     const t0 = start.getTime();
     const t1 = end.getTime();
     const requestId = ++this._loadRequestId;
+    console.log("[hass-datapoints history-card] load triggered", {
+      requestId,
+      entityIds: this._entityIds,
+      start: start.toISOString(),
+      end: end.toISOString(),
+    });
     this._setChartLoading(true);
     this._setChartMessage("");
     this._drawEmptyChartFrame(t0, t1);
@@ -2635,6 +2641,10 @@ export class HassRecordsHistoryCard extends ChartCardBase {
 
   _queueDrawChart(histResult, statsResult, events, t0, t1, options = {}) {
     const drawRequestId = ++this._drawRequestId;
+    console.log("[hass-datapoints history-card] draw queued", {
+      drawRequestId,
+      loading: options.loading ?? false,
+    });
     this._drawChart(histResult, statsResult, events, t0, t1, {
       ...options,
       drawRequestId,
@@ -2856,6 +2866,35 @@ export class HassRecordsHistoryCard extends ChartCardBase {
         });
       }
     });
+
+    for (const seriesItem of series) {
+      if (!seriesItem.pts.length) {
+        continue;
+      }
+      const lastPt = seriesItem.pts[seriesItem.pts.length - 1];
+      const prev = this._previousSeriesEndpoints.get(seriesItem.entityId);
+      if (!prev) {
+        console.log("[hass-datapoints history-card] series initial draw", {
+          entityId: seriesItem.entityId,
+          pointCount: seriesItem.pts.length,
+          lastPt,
+        });
+      } else if (lastPt[0] !== prev.t || lastPt[1] !== prev.v) {
+        console.log("[hass-datapoints history-card] series updated — live update detected", {
+          entityId: seriesItem.entityId,
+          pointCount: seriesItem.pts.length,
+          prev,
+          lastPt,
+        });
+      } else {
+        console.log("[hass-datapoints history-card] series unchanged — no new data", {
+          entityId: seriesItem.entityId,
+          pointCount: seriesItem.pts.length,
+          lastPt,
+        });
+      }
+      this._previousSeriesEndpoints.set(seriesItem.entityId, { t: lastPt[0], v: lastPt[1] });
+    }
 
     if (!series.length && !binaryBackgrounds.length) {
       this._setAdjustAxisButtonVisibility(false);

@@ -1,8 +1,8 @@
 (function() {
   "use strict";
-  const DOMAIN$2 = "hass_datapoints";
+  const DOMAIN$1 = "hass_datapoints";
   const PANEL_URL_PATH = "hass-datapoints-history";
-  const COLORS$2 = [
+  const COLORS = [
     "#3b82f6",
     "#ef4444",
     "#10b981",
@@ -11,7 +11,7 @@
     "#ec4899"
   ];
   const AMBER = "#ff9800";
-  function entityName$2(hass, entityId) {
+  function entityName$1(hass, entityId) {
     if (!hass || !entityId) return entityId || "";
     const state = hass.states[entityId];
     return state && state.attributes && state.attributes.friendly_name || entityId;
@@ -115,7 +115,7 @@
       }
       await Promise.race([
         customElements.whenDefined("partial-panel-resolver"),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout waiting for partial-panel-resolver")), 1e4))
+        new Promise((_2, reject) => setTimeout(() => reject(new Error("Timeout waiting for partial-panel-resolver")), 1e4))
       ]);
       const ppr = document.createElement("partial-panel-resolver");
       if (!ppr) {
@@ -138,11 +138,11 @@
       }
       await Promise.race([
         ppr.routerOptions.routes.tmp.load(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout loading tmp route")), 1e4))
+        new Promise((_2, reject) => setTimeout(() => reject(new Error("Timeout loading tmp route")), 1e4))
       ]);
       await Promise.race([
         customElements.whenDefined("ha-panel-config"),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout waiting for ha-panel-config")), 1e4))
+        new Promise((_2, reject) => setTimeout(() => reject(new Error("Timeout waiting for ha-panel-config")), 1e4))
       ]);
       const cpr = document.createElement("ha-panel-config");
       if (!cpr) {
@@ -153,7 +153,7 @@
       }
       await Promise.race([
         cpr.routerOptions.routes.automation.load(),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout loading automation components")), 1e4))
+        new Promise((_2, reject) => setTimeout(() => reject(new Error("Timeout loading automation components")), 1e4))
       ]);
       const missingComponents = componentsToLoad.filter((component) => !customElements.get(component));
       if (missingComponents.length > 0) {
@@ -249,7 +249,7 @@
       }, timeoutMs))
     ]);
   }
-  function ensureHaComponents$1(tags = []) {
+  function ensureHaComponents(tags = []) {
     const componentTags = [...new Set((tags || []).filter(Boolean))];
     const loaderTags = componentTags.filter((tag) => HA_COMPONENT_LOADER_SUPPORTED_TAGS.has(tag));
     const loadPromise = Promise.resolve().then(() => typeof loadHaComponents === "function" && loaderTags.length ? Promise.resolve(loadHaComponents(loaderTags)).catch((error) => {
@@ -268,8 +268,8 @@
       return results;
     });
   }
-  function confirmDestructiveAction$2(host, options = {}) {
-    return ensureHaComponents$1(["ha-dialog"]).then(() => new Promise((resolve) => {
+  function confirmDestructiveAction$1(host, options = {}) {
+    return ensureHaComponents(["ha-dialog"]).then(() => new Promise((resolve) => {
       const root = host?.shadowRoot || host;
       if (!root || !root.appendChild) {
         resolve(window.confirm(options.message || options.title || "Are you sure?"));
@@ -316,10 +316,10 @@
         }
       </style>
       <div class="confirm-dialog-body">
-        <div class="confirm-dialog-message">${esc$3(options.message || "Are you sure you want to delete this item?")}</div>
+        <div class="confirm-dialog-message">${esc$1(options.message || "Are you sure you want to delete this item?")}</div>
         <div class="confirm-dialog-actions">
-          <button type="button" class="confirm-dialog-button cancel">${esc$3(options.cancelLabel || "Cancel")}</button>
-          <button type="button" class="confirm-dialog-button confirm">${esc$3(options.confirmLabel || "Delete")}</button>
+          <button type="button" class="confirm-dialog-button cancel">${esc$1(options.cancelLabel || "Cancel")}</button>
+          <button type="button" class="confirm-dialog-button confirm">${esc$1(options.confirmLabel || "Delete")}</button>
         </div>
       </div>
     `;
@@ -358,7 +358,7 @@
       minute: "2-digit"
     });
   }
-  function fmtDateTime$2(iso) {
+  function fmtDateTime$1(iso) {
     return new Date(iso).toLocaleString([], {
       month: "short",
       day: "numeric",
@@ -366,10 +366,10 @@
       minute: "2-digit"
     });
   }
-  function fmtRelativeTime$1(iso) {
+  function fmtRelativeTime(iso) {
     const now = Date.now();
-    const t = new Date(iso).getTime();
-    const diff = now - t;
+    const t2 = new Date(iso).getTime();
+    const diff = now - t2;
     const mins = Math.floor(diff / 6e4);
     if (mins < 1) return "Just now";
     if (mins < 60) return `${mins}m ago`;
@@ -377,28 +377,28 @@
     if (hours < 24) return `${hours}h ago`;
     const days = Math.floor(hours / 24);
     if (days < 7) return `${days}d ago`;
-    return fmtDateTime$2(iso);
+    return fmtDateTime$1(iso);
   }
   function hexToRgba(hex, alpha) {
-    const h = hex.replace("#", "");
-    const r = parseInt(h.substring(0, 2), 16);
-    const g = parseInt(h.substring(2, 4), 16);
-    const b = parseInt(h.substring(4, 6), 16);
-    return `rgba(${r},${g},${b},${alpha})`;
+    const h2 = hex.replace("#", "");
+    const r2 = parseInt(h2.substring(0, 2), 16);
+    const g2 = parseInt(h2.substring(2, 4), 16);
+    const b2 = parseInt(h2.substring(4, 6), 16);
+    return `rgba(${r2},${g2},${b2},${alpha})`;
   }
-  function esc$3(str) {
+  function esc$1(str) {
     return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
-  function contrastColor$3(hex) {
+  function contrastColor$1(hex) {
     if (!hex || typeof hex !== "string") return "#fff";
-    const h = hex.replace("#", "");
-    if (h.length !== 6) return "#fff";
-    const r = parseInt(h.substring(0, 2), 16) / 255;
-    const g = parseInt(h.substring(2, 4), 16) / 255;
-    const b = parseInt(h.substring(4, 6), 16) / 255;
-    const lin = (c) => c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-    const L = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
-    return L > 0.179 ? "#000" : "#fff";
+    const h2 = hex.replace("#", "");
+    if (h2.length !== 6) return "#fff";
+    const r2 = parseInt(h2.substring(0, 2), 16) / 255;
+    const g2 = parseInt(h2.substring(2, 4), 16) / 255;
+    const b2 = parseInt(h2.substring(4, 6), 16) / 255;
+    const lin = (c2) => c2 <= 0.04045 ? c2 / 12.92 : ((c2 + 0.055) / 1.055) ** 2.4;
+    const L2 = 0.2126 * lin(r2) + 0.7152 * lin(g2) + 0.0722 * lin(b2);
+    return L2 > 0.179 ? "#000" : "#fff";
   }
   function buildDataPointsHistoryPath$1(target = {}, options = {}) {
     const normalizedTarget = {
@@ -428,7 +428,7 @@
     }
     return `/${PANEL_URL_PATH}?${params.toString()}`;
   }
-  function navigateToDataPointsHistory$2(card, target = {}, options = {}) {
+  function navigateToDataPointsHistory$1(card, target = {}, options = {}) {
     const path = buildDataPointsHistoryPath$1(target, options);
     if (window.history && window.history.pushState) {
       window.history.pushState(null, "", path);
@@ -437,7 +437,7 @@
     }
     window.location.assign(path);
   }
-  let ChartRenderer$1 = class ChartRenderer2 {
+  class ChartRenderer {
     constructor(canvas, cssWidth, cssHeight) {
       this.canvas = canvas;
       this.ctx = canvas.getContext("2d");
@@ -456,17 +456,17 @@
     get ch() {
       return this.cssH - this.pad.top - this.pad.bottom;
     }
-    xOf(t, t0, t1) {
-      return this.pad.left + (t - t0) / (t1 - t0) * this.cw;
+    xOf(t2, t0, t1) {
+      return this.pad.left + (t2 - t0) / (t1 - t0) * this.cw;
     }
-    yOf(v, vMin, vMax) {
-      return this.pad.top + this.ch - (v - vMin) / (vMax - vMin) * this.ch;
+    yOf(v2, vMin, vMax) {
+      return this.pad.top + this.ch - (v2 - vMin) / (vMax - vMin) * this.ch;
     }
     clear() {
       this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
     _normalizeAxes(vMinOrAxes, vMax) {
-      const axisColumnWidth = ChartRenderer2.AXIS_SLOT_WIDTH;
+      const axisColumnWidth = ChartRenderer.AXIS_SLOT_WIDTH;
       const inputAxes = Array.isArray(vMinOrAxes) ? vMinOrAxes : [{ key: "default", min: vMinOrAxes, max: vMax, side: "left", unit: "", color: null }];
       const leftAxes = [];
       const rightAxes = [];
@@ -493,12 +493,12 @@
       this._activeAxes = axes;
       return axes;
     }
-    _formatAxisTick(v, unit = "") {
-      const numeric = Math.abs(v) >= 1e3 ? `${(v / 1e3).toFixed(1).replace(/\.0$/, "")}k` : v.toFixed(v % 1 !== 0 ? 1 : 0);
+    _formatAxisTick(v2, unit = "") {
+      const numeric = Math.abs(v2) >= 1e3 ? `${(v2 / 1e3).toFixed(1).replace(/\.0$/, "")}k` : v2.toFixed(v2 % 1 !== 0 ? 1 : 0);
       return numeric;
     }
     _axisLabelX(axis) {
-      const columnWidth = ChartRenderer2.AXIS_SLOT_WIDTH;
+      const columnWidth = ChartRenderer.AXIS_SLOT_WIDTH;
       const leftAxisX = this.pad.left;
       const rightAxisX = this.pad.left + this.cw;
       if (axis.side === "right") {
@@ -506,8 +506,8 @@
       }
       return leftAxisX - 10 - axis.slot * columnWidth;
     }
-    _formatTimeTick(t, t0, t1, tickSpanMs = null) {
-      const value = new Date(t);
+    _formatTimeTick(t2, t0, t1, tickSpanMs = null) {
+      const value = new Date(t2);
       const spanMs = Math.max(0, t1 - t0);
       const detailSpanMs = Number.isFinite(tickSpanMs) && tickSpanMs > 0 ? tickSpanMs : spanMs;
       const start = new Date(t0);
@@ -710,29 +710,29 @@
       });
       const primaryAxis = axes[0];
       ctx.font = "12px sans-serif";
-      for (const v of primaryAxis.ticks || []) {
-        const y = this.yOf(v, primaryAxis.min, primaryAxis.max);
+      for (const v2 of primaryAxis.ticks || []) {
+        const y2 = this.yOf(v2, primaryAxis.min, primaryAxis.max);
         ctx.strokeStyle = gridColor;
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(pad.left, y);
-        ctx.lineTo(pad.left + this.cw, y);
+        ctx.moveTo(pad.left, y2);
+        ctx.lineTo(pad.left + this.cw, y2);
         ctx.stroke();
         if (!fixedAxisOverlay) {
           ctx.fillStyle = axisLabelColor(primaryAxis);
           ctx.textAlign = "right";
           ctx.textBaseline = "middle";
-          ctx.fillText(this._formatAxisTick(v, primaryAxis.unit), this._axisLabelX(primaryAxis), y);
+          ctx.fillText(this._formatAxisTick(v2, primaryAxis.unit), this._axisLabelX(primaryAxis), y2);
         }
       }
       if (!fixedAxisOverlay) {
         for (const axis of axes.slice(1)) {
-          for (const v of axis.ticks || []) {
-            const y = this.yOf(v, axis.min, axis.max);
+          for (const v2 of axis.ticks || []) {
+            const y2 = this.yOf(v2, axis.min, axis.max);
             ctx.fillStyle = axisLabelColor(axis);
             ctx.textAlign = axis.side === "right" ? "left" : "right";
             ctx.textBaseline = "middle";
-            ctx.fillText(this._formatAxisTick(v, axis.unit), this._axisLabelX(axis), y);
+            ctx.fillText(this._formatAxisTick(v2, axis.unit), this._axisLabelX(axis), y2);
           }
         }
       }
@@ -746,14 +746,14 @@
         }
       }
       const { ticks: timeTicks, stepMs: tickSpanMs } = this._buildTimeTicks(t0, t1);
-      for (const t of timeTicks) {
-        const x = this.xOf(t, t0, t1);
-        const label = this._formatTimeTick(t, t0, t1, tickSpanMs);
+      for (const t2 of timeTicks) {
+        const x2 = this.xOf(t2, t0, t1);
+        const label = this._formatTimeTick(t2, t0, t1, tickSpanMs);
         ctx.strokeStyle = "rgba(128,128,128,0.08)";
         ctx.lineWidth = 1;
         ctx.beginPath();
-        ctx.moveTo(x, pad.top);
-        ctx.lineTo(x, pad.top + this.ch);
+        ctx.moveTo(x2, pad.top);
+        ctx.lineTo(x2, pad.top + this.ch);
         ctx.stroke();
         if (!hideTimeLabels) {
           ctx.fillStyle = labelColor;
@@ -762,7 +762,7 @@
           const labelWidth = ctx.measureText(label).width;
           const labelX = Math.min(
             pad.left + this.cw - labelWidth / 2,
-            Math.max(pad.left + labelWidth / 2, x)
+            Math.max(pad.left + labelWidth / 2, x2)
           );
           ctx.fillText(label, labelX, pad.top + this.ch + 6);
         }
@@ -821,17 +821,17 @@
         ctx.beginPath();
         let first2 = true;
         let lastX = pad.left;
-        for (const [t, v] of points) {
-          const x = this.xOf(t, t0, t1);
-          const y = this.yOf(v, vMin, vMax);
+        for (const [t2, v2] of points) {
+          const x2 = this.xOf(t2, t0, t1);
+          const y2 = this.yOf(v2, vMin, vMax);
           if (first2) {
-            ctx.moveTo(x, pad.top + this.ch);
-            ctx.lineTo(x, y);
+            ctx.moveTo(x2, pad.top + this.ch);
+            ctx.lineTo(x2, y2);
             first2 = false;
           } else {
-            ctx.lineTo(x, y);
+            ctx.lineTo(x2, y2);
           }
-          lastX = x;
+          lastX = x2;
         }
         ctx.lineTo(lastX, pad.top + this.ch);
         ctx.closePath();
@@ -840,13 +840,13 @@
       }
       ctx.beginPath();
       let first = true;
-      for (const [t, v] of points) {
-        const x = this.xOf(t, t0, t1);
-        const y = this.yOf(v, vMin, vMax);
+      for (const [t2, v2] of points) {
+        const x2 = this.xOf(t2, t0, t1);
+        const y2 = this.yOf(v2, vMin, vMax);
         if (first) {
-          ctx.moveTo(x, y);
+          ctx.moveTo(x2, y2);
           first = false;
-        } else ctx.lineTo(x, y);
+        } else ctx.lineTo(x2, y2);
       }
       ctx.strokeStyle = color;
       ctx.lineWidth = lineWidth;
@@ -860,23 +860,23 @@
       const fillAlpha = Number.isFinite(options.fillAlpha) ? options.fillAlpha : 0.78;
       const widthFactor = Number.isFinite(options.widthFactor) ? options.widthFactor : 0.72;
       const baselineY = this.yOf(Math.max(vMin, 0), vMin, vMax);
-      const xs = points.map(([t]) => this.xOf(t, t0, t1));
+      const xs = points.map(([t2]) => this.xOf(t2, t0, t1));
       let minGap = this.cw / Math.max(points.length, 1);
-      for (let i = 1; i < xs.length; i++) {
-        minGap = Math.min(minGap, xs[i] - xs[i - 1]);
+      for (let i2 = 1; i2 < xs.length; i2++) {
+        minGap = Math.min(minGap, xs[i2] - xs[i2 - 1]);
       }
       const barWidth = Math.max(3, Math.min(28, minGap * widthFactor));
       ctx.save();
       ctx.fillStyle = hexToRgba(color, fillAlpha);
       ctx.strokeStyle = color;
       ctx.lineWidth = 1;
-      for (let i = 0; i < points.length; i++) {
-        const [, v] = points[i];
-        const x = xs[i];
-        const y = this.yOf(v, vMin, vMax);
-        const top = Math.min(y, baselineY);
-        const height = Math.max(1, Math.abs(baselineY - y));
-        const left = x - barWidth / 2;
+      for (let i2 = 0; i2 < points.length; i2++) {
+        const [, v2] = points[i2];
+        const x2 = xs[i2];
+        const y2 = this.yOf(v2, vMin, vMax);
+        const top = Math.min(y2, baselineY);
+        const height = Math.max(1, Math.abs(baselineY - y2));
+        const left = x2 - barWidth / 2;
         ctx.fillRect(left, top, barWidth, height);
       }
       ctx.restore();
@@ -902,9 +902,9 @@
       const showLines = options.showLines !== false;
       const showMarkers = options.showMarkers !== false;
       for (const event of events) {
-        const t = new Date(event.timestamp).getTime();
-        if (t < t0 || t > t1) continue;
-        const x = this.xOf(t, t0, t1);
+        const t2 = new Date(event.timestamp).getTime();
+        if (t2 < t0 || t2 > t1) continue;
+        const x2 = this.xOf(t2, t0, t1);
         const color = event.color || "#03a9f4";
         if (showLines) {
           ctx.save();
@@ -913,28 +913,28 @@
           ctx.lineWidth = 1.5;
           ctx.globalAlpha = 0.75;
           ctx.beginPath();
-          ctx.moveTo(x, pad.top + 8);
-          ctx.lineTo(x, pad.top + this.ch);
+          ctx.moveTo(x2, pad.top + 8);
+          ctx.lineTo(x2, pad.top + this.ch);
           ctx.stroke();
           ctx.restore();
         }
         if (showMarkers) {
-          const d = 5;
+          const d2 = 5;
           ctx.save();
           ctx.fillStyle = color;
           ctx.strokeStyle = "rgba(255,255,255,0.8)";
           ctx.lineWidth = 1.5;
           ctx.beginPath();
-          ctx.moveTo(x, pad.top - d);
-          ctx.lineTo(x + d, pad.top);
-          ctx.lineTo(x, pad.top + d);
-          ctx.lineTo(x - d, pad.top);
+          ctx.moveTo(x2, pad.top - d2);
+          ctx.lineTo(x2 + d2, pad.top);
+          ctx.lineTo(x2, pad.top + d2);
+          ctx.lineTo(x2 - d2, pad.top);
           ctx.closePath();
           ctx.fill();
           ctx.stroke();
           ctx.restore();
         }
-        hits.push({ event, x, y: pad.top });
+        hits.push({ event, x: x2, y: pad.top });
       }
       return hits;
     }
@@ -947,12 +947,12 @@
       const firstPts = allSeries.length ? allSeries[0].pts : [];
       const hits = [];
       for (const event of events) {
-        const t = new Date(event.timestamp).getTime();
-        if (t < t0 || t > t1) continue;
-        const x = this.xOf(t, t0, t1);
-        const value = this._interpolateValue(firstPts, t);
+        const t2 = new Date(event.timestamp).getTime();
+        if (t2 < t0 || t2 > t1) continue;
+        const x2 = this.xOf(t2, t0, t1);
+        const value = this._interpolateValue(firstPts, t2);
         if (value === null) continue;
-        const y = this.yOf(value, vMin, vMax);
+        const y2 = this.yOf(value, vMin, vMax);
         const color = event.color || "#03a9f4";
         ctx.save();
         ctx.setLineDash([4, 3]);
@@ -960,20 +960,20 @@
         ctx.lineWidth = 1.5;
         ctx.globalAlpha = 0.75;
         ctx.beginPath();
-        ctx.moveTo(x, pad.top + this.ch);
-        ctx.lineTo(x, y);
+        ctx.moveTo(x2, pad.top + this.ch);
+        ctx.lineTo(x2, y2);
         ctx.stroke();
         ctx.restore();
         ctx.save();
         ctx.beginPath();
-        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.arc(x2, y2, 4, 0, Math.PI * 2);
         ctx.fillStyle = color;
         ctx.fill();
         ctx.strokeStyle = "rgba(255,255,255,0.9)";
         ctx.lineWidth = 1.5;
         ctx.stroke();
         ctx.restore();
-        hits.push({ event, x, y, value });
+        hits.push({ event, x: x2, y: y2, value });
       }
       return hits;
     }
@@ -981,35 +981,35 @@
      * Interpolate the Y pixel position on a data series at a given timestamp.
      * Uses linear interpolation between surrounding data points.
      */
-    _interpolateY(seriesPoints, t, t0, t1, vMin, vMax) {
+    _interpolateY(seriesPoints, t2, t0, t1, vMin, vMax) {
       if (!seriesPoints.length) return null;
-      if (t <= seriesPoints[0][0]) return this.yOf(seriesPoints[0][1], vMin, vMax);
-      if (t >= seriesPoints[seriesPoints.length - 1][0])
+      if (t2 <= seriesPoints[0][0]) return this.yOf(seriesPoints[0][1], vMin, vMax);
+      if (t2 >= seriesPoints[seriesPoints.length - 1][0])
         return this.yOf(seriesPoints[seriesPoints.length - 1][1], vMin, vMax);
-      for (let i = 0; i < seriesPoints.length - 1; i++) {
-        const [t1p, v1p] = seriesPoints[i];
-        const [t2p, v2p] = seriesPoints[i + 1];
-        if (t >= t1p && t <= t2p) {
-          const frac = (t - t1p) / (t2p - t1p);
-          const v = v1p + frac * (v2p - v1p);
-          return this.yOf(v, vMin, vMax);
+      for (let i2 = 0; i2 < seriesPoints.length - 1; i2++) {
+        const [t1p, v1p] = seriesPoints[i2];
+        const [t2p, v2p] = seriesPoints[i2 + 1];
+        if (t2 >= t1p && t2 <= t2p) {
+          const frac = (t2 - t1p) / (t2p - t1p);
+          const v2 = v1p + frac * (v2p - v1p);
+          return this.yOf(v2, vMin, vMax);
         }
       }
       return null;
     }
-    _interpolateValue(seriesPoints, t) {
+    _interpolateValue(seriesPoints, t2) {
       if (!seriesPoints.length) return null;
-      if (t < seriesPoints[0][0]) return null;
-      if (t > seriesPoints[seriesPoints.length - 1][0]) return null;
-      if (t === seriesPoints[0][0]) return seriesPoints[0][1];
-      if (t === seriesPoints[seriesPoints.length - 1][0]) {
+      if (t2 < seriesPoints[0][0]) return null;
+      if (t2 > seriesPoints[seriesPoints.length - 1][0]) return null;
+      if (t2 === seriesPoints[0][0]) return seriesPoints[0][1];
+      if (t2 === seriesPoints[seriesPoints.length - 1][0]) {
         return seriesPoints[seriesPoints.length - 1][1];
       }
-      for (let i = 0; i < seriesPoints.length - 1; i++) {
-        const [t1p, v1p] = seriesPoints[i];
-        const [t2p, v2p] = seriesPoints[i + 1];
-        if (t >= t1p && t <= t2p) {
-          const frac = (t - t1p) / (t2p - t1p);
+      for (let i2 = 0; i2 < seriesPoints.length - 1; i2++) {
+        const [t1p, v1p] = seriesPoints[i2];
+        const [t2p, v2p] = seriesPoints[i2 + 1];
+        if (t2 >= t1p && t2 <= t2p) {
+          const frac = (t2 - t1p) / (t2p - t1p);
           return v1p + frac * (v2p - v1p);
         }
       }
@@ -1032,27 +1032,27 @@
       const firstPts = allSeries.length ? allSeries[0].pts : [];
       const hits = [];
       for (const event of events) {
-        const t = new Date(event.timestamp).getTime();
-        if (t < t0 || t > t1) continue;
-        const x = this.xOf(t, t0, t1);
-        const value = this._interpolateValue(firstPts, t);
+        const t2 = new Date(event.timestamp).getTime();
+        if (t2 < t0 || t2 > t1) continue;
+        const x2 = this.xOf(t2, t0, t1);
+        const value = this._interpolateValue(firstPts, t2);
         if (value === null) continue;
-        const y = this.yOf(value, vMin, vMax);
+        const y2 = this.yOf(value, vMin, vMax);
         const color = event.color || "#03a9f4";
-        const r = 10;
+        const r2 = 10;
         ctx.save();
         ctx.beginPath();
-        ctx.arc(x, y, r + 1.5, 0, Math.PI * 2);
+        ctx.arc(x2, y2, r2 + 1.5, 0, Math.PI * 2);
         ctx.fillStyle = "rgba(255,255,255,0.9)";
         ctx.fill();
         ctx.restore();
         ctx.save();
         ctx.beginPath();
-        ctx.arc(x, y, r, 0, Math.PI * 2);
+        ctx.arc(x2, y2, r2, 0, Math.PI * 2);
         ctx.fillStyle = color;
         ctx.fill();
         ctx.restore();
-        hits.push({ event, x, y, value });
+        hits.push({ event, x: x2, y: y2, value });
       }
       return hits;
     }
@@ -1157,7 +1157,7 @@
     drawGapMarkers(boundaryPoints, color, t0, t1, vMin, vMax) {
       if (!boundaryPoints.length) return;
       const { ctx, pad } = this;
-      const h = 7;
+      const h2 = 7;
       const w = 3;
       const gap = 2;
       ctx.save();
@@ -1167,15 +1167,15 @@
       ctx.strokeStyle = color;
       ctx.lineWidth = 1.5;
       ctx.globalAlpha = 0.55;
-      for (let i = 0; i < boundaryPoints.length; i++) {
-        const [t, v] = boundaryPoints[i];
-        const x = this.xOf(t, t0, t1);
-        const y = this.yOf(v, vMin, vMax);
-        const dir = i % 2 === 0 ? 1 : -1;
-        for (let d = -gap; d <= gap; d += gap * 2) {
+      for (let i2 = 0; i2 < boundaryPoints.length; i2++) {
+        const [t2, v2] = boundaryPoints[i2];
+        const x2 = this.xOf(t2, t0, t1);
+        const y2 = this.yOf(v2, vMin, vMax);
+        const dir = i2 % 2 === 0 ? 1 : -1;
+        for (let d2 = -gap; d2 <= gap; d2 += gap * 2) {
           ctx.beginPath();
-          ctx.moveTo(x + d - w * dir, y - h);
-          ctx.lineTo(x + d + w * dir, y + h);
+          ctx.moveTo(x2 + d2 - w * dir, y2 - h2);
+          ctx.lineTo(x2 + d2 + w * dir, y2 + h2);
           ctx.stroke();
         }
       }
@@ -1231,6 +1231,72 @@
       });
       ctx.restore();
     }
+    /**
+     * Animate a "blip" circle at the given canvas coordinates.
+     * The circle expands with a bouncy overshoot, holds briefly, then shrinks to nothing.
+     * Uses a separate overlay canvas so it doesn't interfere with the main chart.
+     */
+    drawBlip(cx, cy, color, options = {}) {
+      const maxRadius = options.maxRadius || 6;
+      const duration = options.duration || 600;
+      const canvas = this.canvas;
+      const parent = canvas.parentElement;
+      if (!parent) return;
+      const overlay = document.createElement("canvas");
+      overlay.width = canvas.width;
+      overlay.height = canvas.height;
+      overlay.style.cssText = `position:absolute;top:0;left:0;width:${canvas.style.width || canvas.offsetWidth + "px"};height:${canvas.style.height || canvas.offsetHeight + "px"};pointer-events:none;z-index:2;`;
+      parent.style.position = parent.style.position || "relative";
+      parent.appendChild(overlay);
+      const ctx = overlay.getContext("2d");
+      const dpr = window.devicePixelRatio || 1;
+      const pxCx = cx * dpr;
+      const pxCy = cy * dpr;
+      const pxMaxR = maxRadius * dpr;
+      const start = performance.now();
+      const animate = (now) => {
+        const elapsed = now - start;
+        const t2 = Math.min(elapsed / duration, 1);
+        ctx.clearRect(0, 0, overlay.width, overlay.height);
+        let radius;
+        let alpha;
+        if (t2 < 0.35) {
+          const p2 = t2 / 0.35;
+          const bounce = p2 < 0.6 ? p2 / 0.6 * 1.3 : 1.3 - 0.3 * ((p2 - 0.6) / 0.4);
+          radius = pxMaxR * Math.min(bounce, 1.3);
+          alpha = Math.min(p2 * 2.5, 0.85);
+        } else if (t2 < 0.6) {
+          radius = pxMaxR;
+          alpha = 0.85;
+        } else {
+          const p2 = (t2 - 0.6) / 0.4;
+          const ease = 1 - Math.pow(1 - p2, 3);
+          radius = pxMaxR * (1 - ease);
+          alpha = 0.85 * (1 - ease);
+        }
+        if (radius > 0.2 && alpha > 0.01) {
+          ctx.save();
+          ctx.globalAlpha = alpha;
+          ctx.beginPath();
+          ctx.arc(pxCx, pxCy, radius, 0, Math.PI * 2);
+          ctx.fillStyle = color;
+          ctx.fill();
+          ctx.beginPath();
+          ctx.arc(pxCx, pxCy, radius * 1.6, 0, Math.PI * 2);
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 1.2 * dpr;
+          ctx.globalAlpha = alpha * 0.4;
+          ctx.stroke();
+          ctx.restore();
+        }
+        if (t2 < 1) {
+          requestAnimationFrame(animate);
+        } else {
+          overlay.remove();
+        }
+      };
+      requestAnimationFrame(animate);
+    }
     getAnomalyClusterRegions(clusters, t0, t1, vMin, vMax, options = {}) {
       if (!Array.isArray(clusters) || clusters.length === 0) {
         return [];
@@ -1261,7 +1327,7 @@
         }];
       });
     }
-  };
+  }
   const CHART_STYLE = `
   :host {
     display: block;
@@ -2109,7 +2175,7 @@
     return `
     <style>${CHART_STYLE}</style>
     <ha-card>
-      ${title ? `<div class="card-header">${esc$3(title)}</div>` : ""}
+      ${title ? `<div class="card-header">${esc$1(title)}</div>` : ""}
       <div class="chart-top-slot" id="chart-top-slot" hidden></div>
       <div class="chart-wrap">
         <div class="chart-preview-overlay" id="chart-preview-overlay" hidden></div>
@@ -2175,21 +2241,21 @@
     }
     return "rgba(214,218,224,0.92)";
   }
-  function setupCanvas$1(canvas, container, cssHeight, cssWidth = null) {
+  function setupCanvas(canvas, container, cssHeight, cssWidth = null) {
     const dpr = window.devicePixelRatio || 1;
-    const styles = getComputedStyle(container);
-    const paddingX = (Number.parseFloat(styles.paddingLeft || "0") || 0) + (Number.parseFloat(styles.paddingRight || "0") || 0);
-    const paddingY = (Number.parseFloat(styles.paddingTop || "0") || 0) + (Number.parseFloat(styles.paddingBottom || "0") || 0);
+    const styles2 = getComputedStyle(container);
+    const paddingX = (Number.parseFloat(styles2.paddingLeft || "0") || 0) + (Number.parseFloat(styles2.paddingRight || "0") || 0);
+    const paddingY = (Number.parseFloat(styles2.paddingTop || "0") || 0) + (Number.parseFloat(styles2.paddingBottom || "0") || 0);
     const measuredWidth = cssWidth ?? (container.clientWidth || 360);
     const w = Math.max(1, Math.round(measuredWidth - paddingX));
     const requestedHeight = cssHeight ?? container.clientHeight ?? 220;
-    const h = Math.max(120, Math.round(requestedHeight - paddingY));
+    const h2 = Math.max(120, Math.round(requestedHeight - paddingY));
     canvas.width = w * dpr;
-    canvas.height = h * dpr;
+    canvas.height = h2 * dpr;
     canvas.style.width = `${w}px`;
-    canvas.style.height = `${h}px`;
+    canvas.style.height = `${h2}px`;
     canvas.getContext("2d").scale(dpr, dpr);
-    return { w, h };
+    return { w, h: h2 };
   }
   function renderChartAxisOverlays(card, renderer, axes = []) {
     const leftEl = card.shadowRoot?.getElementById("chart-axis-left");
@@ -2204,7 +2270,7 @@
       chartWrap.style.setProperty("--dp-chart-axis-left-width", `${leftWidth}px`);
       chartWrap.style.setProperty("--dp-chart-axis-right-width", `${rightWidth}px`);
     }
-    const axisSlotWidth = ChartRenderer$1.AXIS_SLOT_WIDTH;
+    const axisSlotWidth = ChartRenderer.AXIS_SLOT_WIDTH;
     const axisOffset = (axis) => 10 + axis.slot * axisSlotWidth;
     const unitCounts = axes.reduce((counts, axis) => {
       if (!axis?.unit) {
@@ -2218,14 +2284,14 @@
       if (!duplicateUnit || !axis?.color) {
         return "";
       }
-      return `color:${esc$3(axis.color)};`;
+      return `color:${esc$1(axis.color)};`;
     };
     const buildAxisMarkup = (axis) => {
       const labels = (axis.ticks || []).map((tick) => {
-        const y = renderer.yOf(tick, axis.min, axis.max);
-        return `<div class="chart-axis-label" style="top:${Math.round(y) + 1}px;${axis.side === "left" ? `right:${axisOffset(axis)}px;text-align:right;` : `left:${axisOffset(axis)}px;text-align:left;`}${axisTextStyle(axis)}">${esc$3(renderer._formatAxisTick(tick, axis.unit))}</div>`;
+        const y2 = renderer.yOf(tick, axis.min, axis.max);
+        return `<div class="chart-axis-label" style="top:${Math.round(y2) + 1}px;${axis.side === "left" ? `right:${axisOffset(axis)}px;text-align:right;` : `left:${axisOffset(axis)}px;text-align:left;`}${axisTextStyle(axis)}">${esc$1(renderer._formatAxisTick(tick, axis.unit))}</div>`;
       }).join("");
-      const unit = axis.unit ? `<div class="chart-axis-unit" style="top:${Math.max(0, renderer.pad.top - 18)}px;${axis.side === "left" ? `right:${axisOffset(axis)}px;text-align:right;` : `left:${axisOffset(axis)}px;text-align:left;`}${axisTextStyle(axis)}">${esc$3(axis.unit)}</div>` : "";
+      const unit = axis.unit ? `<div class="chart-axis-unit" style="top:${Math.max(0, renderer.pad.top - 18)}px;${axis.side === "left" ? `right:${axisOffset(axis)}px;text-align:right;` : `left:${axisOffset(axis)}px;text-align:left;`}${axisTextStyle(axis)}">${esc$1(axis.unit)}</div>` : "";
       return `${labels}${unit}`;
     };
     const leftAxes = axes.filter((axis) => axis.side !== "right");
@@ -2271,7 +2337,7 @@
     if (!Number.isFinite(timeMs)) {
       return "";
     }
-    return fmtDateTime$2(new Date(timeMs).toISOString());
+    return fmtDateTime$1(new Date(timeMs).toISOString());
   }
   const ANOMALY_METHOD_LABELS = {
     trend_residual: "Trend deviation",
@@ -2286,7 +2352,7 @@
     const points = region.cluster.points;
     const startPoint = points[0];
     const endPoint = points[points.length - 1];
-    const peakPoint = points.reduce((peak, p) => !peak || Math.abs(p.residual) > Math.abs(peak.residual) ? p : peak, null);
+    const peakPoint = points.reduce((peak, p2) => !peak || Math.abs(p2.residual) > Math.abs(peak.residual) ? p2 : peak, null);
     if (!peakPoint) return null;
     const label = region.label || region.relatedEntityId || "Series";
     const unit = region.unit || "";
@@ -2332,7 +2398,7 @@
       const isMultiMethod = detectedByMethods !== null;
       const title = isMultiMethod ? "⚠️ Multi-method Anomaly" : "⚠️ Anomaly Insight";
       const confirmedNote = isMultiMethod ? `
-Confirmed by ${detectedByMethods.length} methods: ${detectedByMethods.map((m) => ANOMALY_METHOD_LABELS[m] || m).join(", ")}.` : "";
+Confirmed by ${detectedByMethods.length} methods: ${detectedByMethods.map((m2) => ANOMALY_METHOD_LABELS[m2] || m2).join(", ")}.` : "";
       return {
         title,
         description: section.description + confirmedNote,
@@ -2340,9 +2406,9 @@ Confirmed by ${detectedByMethods.length} methods: ${detectedByMethods.map((m) =>
         instruction
       };
     }
-    const description = sections.map((s) => `${s.methodLabel}:
-${s.description}`).join("\n\n");
-    const alert = sections.map((s) => `${s.methodLabel}: ${s.alert}`).join("\n");
+    const description = sections.map((s2) => `${s2.methodLabel}:
+${s2.description}`).join("\n\n");
+    const alert = sections.map((s2) => `${s2.methodLabel}: ${s2.alert}`).join("\n");
     return {
       title: "⚠️ Multi-method Anomaly",
       description,
@@ -2467,18 +2533,18 @@ ${s.description}`).join("\n\n");
     const tooltip = document.createElement("div");
     tooltip.className = "tooltip secondary annotation-tooltip";
     const hasValue = event?.chart_value != null && event.chart_value !== "";
-    const valueMarkup = hasValue ? `<div class="tt-value">${esc$3(formatTooltipValue(event.chart_value, event.chart_unit))}</div>` : "";
+    const valueMarkup = hasValue ? `<div class="tt-value">${esc$1(formatTooltipValue(event.chart_value, event.chart_unit))}</div>` : "";
     const message = event?.message || "Data point";
     const annotation = event?.annotation && event.annotation !== event.message ? event.annotation : "";
     const relatedMarkup = buildTooltipRelatedChips(card?._hass, event);
     tooltip.innerHTML = `
-    <div class="tt-time">${esc$3(fmtDateTime$2(event.timestamp))}</div>
+    <div class="tt-time">${esc$1(fmtDateTime$1(event.timestamp))}</div>
     ${valueMarkup}
     <div class="tt-message-row">
-      <span class="tt-dot" style="background:${esc$3(event?.color || "#03a9f4")}"></span>
-      <span class="tt-message">${esc$3(message)}</span>
+      <span class="tt-dot" style="background:${esc$1(event?.color || "#03a9f4")}"></span>
+      <span class="tt-message">${esc$1(message)}</span>
     </div>
-    <div class="tt-annotation" style="display:${annotation ? "block" : "none"}">${esc$3(annotation)}</div>
+    <div class="tt-annotation" style="display:${annotation ? "block" : "none"}">${esc$1(annotation)}</div>
     <div class="tt-entities" style="display:${relatedMarkup ? "flex" : "none"}">${relatedMarkup}</div>
   `;
     return tooltip;
@@ -2508,7 +2574,7 @@ ${s.description}`).join("\n\n");
     }
     return renderedTooltips;
   }
-  function showTooltip$1(card, canvas, renderer, event, clientX, clientY) {
+  function showTooltip(card, canvas, renderer, event, clientX, clientY) {
     const tooltip = card.shadowRoot.getElementById("tooltip");
     const ttTime = card.shadowRoot.getElementById("tt-time");
     const ttValue = card.shadowRoot.getElementById("tt-value");
@@ -2518,7 +2584,7 @@ ${s.description}`).join("\n\n");
     const ttMsg = card.shadowRoot.getElementById("tt-message");
     const ttAnn = card.shadowRoot.getElementById("tt-annotation");
     const ttEntities = card.shadowRoot.getElementById("tt-entities");
-    ttTime.textContent = fmtDateTime$2(event.timestamp);
+    ttTime.textContent = fmtDateTime$1(event.timestamp);
     const hasValue = event.chart_value != null && event.chart_value !== "";
     ttValue.textContent = hasValue ? formatTooltipValue(event.chart_value, event.chart_unit) : "";
     ttValue.style.display = hasValue ? "block" : "none";
@@ -2543,7 +2609,7 @@ ${s.description}`).join("\n\n");
       bottom: chartBounds.bottom - 8
     } : null);
   }
-  function hideTooltip$1(card) {
+  function hideTooltip(card) {
     const tooltip = card.shadowRoot.getElementById("tooltip");
     const anomalyTooltip = card.shadowRoot.getElementById("anomaly-tooltip");
     if (tooltip) {
@@ -2573,7 +2639,7 @@ ${s.description}`).join("\n\n");
     }
     const rangeStartMs = Number.isFinite(hover.rangeStartMs) ? hover.rangeStartMs : hover.timeMs;
     const rangeEndMs = Number.isFinite(hover.rangeEndMs) ? hover.rangeEndMs : hover.timeMs;
-    ttTime.textContent = rangeStartMs === rangeEndMs ? fmtDateTime$2(new Date(hover.timeMs).toISOString()) : `${fmtDateTime$2(new Date(rangeStartMs).toISOString())} - ${fmtDateTime$2(new Date(rangeEndMs).toISOString())}`;
+    ttTime.textContent = rangeStartMs === rangeEndMs ? fmtDateTime$1(new Date(hover.timeMs).toISOString()) : `${fmtDateTime$1(new Date(rangeStartMs).toISOString())} - ${fmtDateTime$1(new Date(rangeEndMs).toISOString())}`;
     const values = Array.isArray(hover.values) ? hover.values : [];
     const trendValues = Array.isArray(hover.trendValues) ? hover.trendValues : [];
     const rateValues = Array.isArray(hover.rateValues) ? hover.rateValues : [];
@@ -2760,12 +2826,12 @@ ${s.description}`).join("\n\n");
         ttSeries.innerHTML = displayRows.map((entry) => `
         <div class="tt-series-row ${entry.grouped === true && entry.rawVisible === true ? "subordinate" : ""}">
           <div class="tt-series-main">
-            ${entry.grouped === true && entry.rawVisible === true ? "" : `<span class="tt-dot" style="background:${esc$3(entry.color || "#03a9f4")}"></span>`}
-            <span class="tt-series-label">${esc$3(
+            ${entry.grouped === true && entry.rawVisible === true ? "" : `<span class="tt-dot" style="background:${esc$1(entry.color || "#03a9f4")}"></span>`}
+            <span class="tt-series-label">${esc$1(
           entry.comparison === true ? entry.grouped === true ? entry.windowLabel || "Date window" : `${entry.windowLabel || "Date window"}: ${entry.label || ""}` : entry.trend === true ? entry.grouped === true && entry.rawVisible === true ? "Trend" : `Trend: ${entry.baseLabel || entry.label || ""}` : entry.rate === true ? entry.grouped === true && entry.rawVisible === true ? "Rate" : `Rate: ${entry.baseLabel || entry.label || ""}` : entry.delta === true ? entry.grouped === true && entry.rawVisible === true ? "Delta" : `Delta: ${entry.baseLabel || entry.label || ""}` : entry.summary === true ? entry.grouped === true && entry.rawVisible === true ? String(entry.summaryType || "").toUpperCase() : `${String(entry.summaryType || "").toUpperCase()}: ${entry.baseLabel || entry.label || ""}` : entry.threshold === true ? entry.grouped === true && entry.rawVisible === true ? "Threshold" : `Threshold: ${entry.baseLabel || entry.label || ""}` : entry.label || ""
         )}</span>
           </div>
-          <span class="tt-series-value">${esc$3(formatTooltipDisplayValue(entry.value, entry.unit))}</span>
+          <span class="tt-series-value">${esc$1(formatTooltipDisplayValue(entry.value, entry.unit))}</span>
         </div>
       `).join("");
         ttSeries.style.display = displayRows.length ? "grid" : "none";
@@ -2823,7 +2889,7 @@ ${s.description}`).join("\n\n");
     const chips = [
       ...entities.map((id) => ({
         icon: entityIcon$1(hass, id),
-        label: entityName$2(hass, id)
+        label: entityName$1(hass, id)
       })),
       ...devices.map((id) => ({
         icon: deviceIcon$1(hass, id),
@@ -2840,9 +2906,9 @@ ${s.description}`).join("\n\n");
     ].filter((chip) => chip.label);
     if (!chips.length) return "";
     return chips.map((chip) => `
-    <span class="tt-entity-chip" title="${esc$3(chip.label)}">
-      <ha-icon icon="${esc$3(chip.icon)}"></ha-icon>
-      <span>${esc$3(chip.label)}</span>
+    <span class="tt-entity-chip" title="${esc$1(chip.label)}">
+      <ha-icon icon="${esc$1(chip.icon)}"></ha-icon>
+      <span>${esc$1(chip.label)}</span>
     </span>
   `).join("");
   }
@@ -2873,13 +2939,13 @@ ${s.description}`).join("\n\n");
     ${crosshairValues.filter((entry) => entry.hasValue !== false).map((entry) => `
       <span
         class="crosshair-line horizontal series ${hover.emphasizeGuides ? "emphasized" : "subtle"}"
-        style="top:${entry.y}px;color:${esc$3(entry.color || "#03a9f4")};opacity:${Number.isFinite(entry.opacity) ? entry.opacity : 1}"
+        style="top:${entry.y}px;color:${esc$1(entry.color || "#03a9f4")};opacity:${Number.isFinite(entry.opacity) ? entry.opacity : 1}"
       ></span>
     `).join("")}
     ${crosshairValues.filter((entry) => entry.hasValue !== false).map((entry) => `
     <span
       class="crosshair-point"
-      style="left:${entry.x}px;top:${entry.y}px;background:${esc$3(entry.color || "#03a9f4")};opacity:${Number.isFinite(entry.opacity) ? entry.opacity : 1}"
+      style="left:${entry.x}px;top:${entry.y}px;background:${esc$1(entry.color || "#03a9f4")};opacity:${Number.isFinite(entry.opacity) ? entry.opacity : 1}"
     ></span>
     `).join("")}
   `;
@@ -2903,7 +2969,7 @@ ${s.description}`).join("\n\n");
   }
   function hideLineChartHover(card) {
     dispatchLineChartHover(card, null);
-    hideTooltip$1(card);
+    hideTooltip(card);
     const overlay = card.shadowRoot.getElementById("chart-crosshair");
     const points = card.shadowRoot.getElementById("crosshair-points");
     const addButton = card.shadowRoot.getElementById("chart-add-annotation");
@@ -2961,7 +3027,7 @@ ${s.description}`).join("\n\n");
       const localY = clampChartValue(clientY - rect.top, renderer.pad.top, renderer.pad.top + renderer.ch);
       const ratio = renderer.cw ? (localX - renderer.pad.left) / renderer.cw : 0;
       const timeMs = t0 + ratio * (t1 - t0);
-      const x = renderer.xOf(timeMs, t0, t1);
+      const x2 = renderer.xOf(timeMs, t0, t1);
       const values = series.map((seriesItem) => {
         const value = renderer._interpolateValue(seriesItem.pts, timeMs);
         const axis = seriesItem.axis || axes && axes[0] || { min: vMin, max: vMax };
@@ -2986,7 +3052,7 @@ ${s.description}`).join("\n\n");
           color: seriesItem.color,
           opacity: Number.isFinite(seriesItem.hoverOpacity) ? seriesItem.hoverOpacity : 1,
           hasValue: true,
-          x,
+          x: x2,
           y: renderer.yOf(value, axis.min, axis.max),
           axisSide: axis.side === "right" ? "right" : "left",
           axisSlot: Number.isFinite(axis.slot) ? axis.slot : 0
@@ -3016,7 +3082,7 @@ ${s.description}`).join("\n\n");
           color: seriesItem.color,
           opacity: Number.isFinite(seriesItem.hoverOpacity) ? seriesItem.hoverOpacity : 1,
           hasValue: true,
-          x,
+          x: x2,
           y: renderer.yOf(value, axis.min, axis.max),
           axisSide: axis.side === "right" ? "right" : "left",
           axisSlot: Number.isFinite(axis.slot) ? axis.slot : 0
@@ -3053,7 +3119,7 @@ ${s.description}`).join("\n\n");
           color: seriesItem.color,
           opacity: Number.isFinite(seriesItem.hoverOpacity) ? seriesItem.hoverOpacity : 1,
           hasValue: true,
-          x,
+          x: x2,
           y: renderer.yOf(value, axis.min, axis.max),
           axisSide: axis.side === "right" ? "right" : "left",
           axisSlot: Number.isFinite(axis.slot) ? axis.slot : 0,
@@ -3092,7 +3158,7 @@ ${s.description}`).join("\n\n");
           color: seriesItem.color,
           opacity: Number.isFinite(seriesItem.hoverOpacity) ? seriesItem.hoverOpacity : 1,
           hasValue: true,
-          x,
+          x: x2,
           y: renderer.yOf(value, axis.min, axis.max),
           axisSide: axis.side === "right" ? "right" : "left",
           axisSlot: Number.isFinite(axis.slot) ? axis.slot : 0,
@@ -3130,7 +3196,7 @@ ${s.description}`).join("\n\n");
           color: seriesItem.color,
           opacity: Number.isFinite(seriesItem.hoverOpacity) ? seriesItem.hoverOpacity : 1,
           hasValue: true,
-          x,
+          x: x2,
           y: renderer.yOf(value, axis.min, axis.max),
           axisSide: axis.side === "right" ? "right" : "left",
           axisSlot: Number.isFinite(axis.slot) ? axis.slot : 0,
@@ -3296,7 +3362,7 @@ ${s.description}`).join("\n\n");
       });
       const normalizedHoveredEvents = hoveredEvents.map(({ _hoverDistanceMs, ...event }) => event);
       return {
-        x,
+        x: x2,
         y: hoverY,
         timeMs,
         rangeStartMs,
@@ -3333,7 +3399,7 @@ ${s.description}`).join("\n\n");
       if (options.showTooltip !== false || Array.isArray(hover.events) && hover.events.length > 0) {
         showLineChartTooltip(card, hover, clientX, clientY);
       } else {
-        hideTooltip$1(card);
+        hideTooltip(card);
       }
       dispatchLineChartHover(card, hover);
       canvas.style.cursor = anomalyRegionsHit.length > 0 ? "pointer" : "crosshair";
@@ -3563,60 +3629,60 @@ ${s.description}`).join("\n\n");
       resetDragging();
     };
   }
-  function attachTooltipBehaviour$1(card, canvas, renderer, events, t0, t1) {
+  function attachTooltipBehaviour(card, canvas, renderer, events, t0, t1) {
     function findNearest(clientX) {
       const rect = canvas.getBoundingClientRect();
-      const x = clientX - rect.left;
+      const x2 = clientX - rect.left;
       const msPerPx = (t1 - t0) / renderer.cw;
       const threshold = 14 * msPerPx;
-      const tAtX = t0 + (x - renderer.pad.left) / renderer.cw * (t1 - t0);
+      const tAtX = t0 + (x2 - renderer.pad.left) / renderer.cw * (t1 - t0);
       let best = null;
       let bestDist = Infinity;
       for (const ev of events) {
-        const t = new Date(ev.timestamp).getTime();
-        if (t < t0 || t > t1) continue;
-        const d = Math.abs(t - tAtX);
-        if (d < threshold && d < bestDist) {
-          bestDist = d;
+        const t2 = new Date(ev.timestamp).getTime();
+        if (t2 < t0 || t2 > t1) continue;
+        const d2 = Math.abs(t2 - tAtX);
+        if (d2 < threshold && d2 < bestDist) {
+          bestDist = d2;
           best = ev;
         }
       }
       return best;
     }
-    canvas.addEventListener("mousemove", (e) => {
-      const best = findNearest(e.clientX);
+    canvas.addEventListener("mousemove", (e2) => {
+      const best = findNearest(e2.clientX);
       if (best) {
-        showTooltip$1(card, canvas, renderer, best, e.clientX, e.clientY);
+        showTooltip(card, canvas, renderer, best, e2.clientX, e2.clientY);
         canvas.style.cursor = "pointer";
       } else {
-        hideTooltip$1(card);
+        hideTooltip(card);
         canvas.style.cursor = "default";
       }
     });
-    canvas.addEventListener("mouseleave", () => hideTooltip$1(card));
+    canvas.addEventListener("mouseleave", () => hideTooltip(card));
     let touchTimer = null;
-    canvas.addEventListener("touchstart", (e) => {
-      e.preventDefault();
-      const touch = e.touches[0];
+    canvas.addEventListener("touchstart", (e2) => {
+      e2.preventDefault();
+      const touch = e2.touches[0];
       const best = findNearest(touch.clientX);
       if (best) {
-        showTooltip$1(card, canvas, renderer, best, touch.clientX, touch.clientY);
+        showTooltip(card, canvas, renderer, best, touch.clientX, touch.clientY);
         clearTimeout(touchTimer);
-        touchTimer = setTimeout(() => hideTooltip$1(card), 3e3);
+        touchTimer = setTimeout(() => hideTooltip(card), 3e3);
       } else {
-        hideTooltip$1(card);
+        hideTooltip(card);
       }
     }, { passive: false });
-    canvas.addEventListener("touchmove", (e) => {
-      e.preventDefault();
-      const touch = e.touches[0];
+    canvas.addEventListener("touchmove", (e2) => {
+      e2.preventDefault();
+      const touch = e2.touches[0];
       const best = findNearest(touch.clientX);
       if (best) {
-        showTooltip$1(card, canvas, renderer, best, touch.clientX, touch.clientY);
+        showTooltip(card, canvas, renderer, best, touch.clientX, touch.clientY);
         clearTimeout(touchTimer);
-        touchTimer = setTimeout(() => hideTooltip$1(card), 3e3);
+        touchTimer = setTimeout(() => hideTooltip(card), 3e3);
       } else {
-        hideTooltip$1(card);
+        hideTooltip(card);
       }
     }, { passive: false });
   }
@@ -3728,18 +3794,18 @@ ${s.description}`).join("\n\n");
       units: options.units || {}
     }));
   }
-  async function fetchEvents$3(hass, startTime, endTime, entityIds) {
+  async function fetchEvents$1(hass, startTime, endTime, entityIds) {
     try {
       const normalizedEntityIds = normalizeCacheIdList(entityIds);
       const cacheKey = JSON.stringify({
-        type: `${DOMAIN$2}/events`,
+        type: `${DOMAIN$1}/events`,
         start_time: startTime,
         end_time: endTime,
         entity_ids: normalizedEntityIds
       });
       return await withStableRangeCache(cacheKey, endTime, async () => {
         const msg = {
-          type: `${DOMAIN$2}/events`,
+          type: `${DOMAIN$1}/events`,
           start_time: startTime,
           end_time: endTime
         };
@@ -3759,13 +3825,13 @@ ${s.description}`).join("\n\n");
       if (typeof key !== "string") {
         return false;
       }
-      return key.includes(`"type":"${DOMAIN$2}/events"`);
+      return key.includes(`"type":"${DOMAIN$1}/events"`);
     });
   }
-  async function fetchEventBounds$1(hass) {
+  async function fetchEventBounds(hass) {
     try {
       const result = await hass.connection.sendMessagePromise({
-        type: `${DOMAIN$2}/events_bounds`
+        type: `${DOMAIN$1}/events_bounds`
       });
       return {
         start: result?.start_time || null,
@@ -3778,7 +3844,7 @@ ${s.description}`).join("\n\n");
   }
   async function deleteEvent$1(hass, eventId) {
     const result = await hass.connection.sendMessagePromise({
-      type: `${DOMAIN$2}/events/delete`,
+      type: `${DOMAIN$1}/events/delete`,
       event_id: eventId
     });
     invalidateEventsCache();
@@ -3787,7 +3853,7 @@ ${s.description}`).join("\n\n");
   }
   async function updateEvent$1(hass, eventId, fields) {
     const result = await hass.connection.sendMessagePromise({
-      type: `${DOMAIN$2}/events/update`,
+      type: `${DOMAIN$1}/events/update`,
       event_id: eventId,
       ...fields
     });
@@ -3795,7 +3861,7 @@ ${s.description}`).join("\n\n");
     window.dispatchEvent(new CustomEvent("hass-datapoints-event-recorded"));
     return result;
   }
-  async function fetchUserData$1(hass, key, defaultValue = null) {
+  async function fetchUserData(hass, key, defaultValue = null) {
     try {
       const result = await hass.connection.sendMessagePromise({
         type: "frontend/get_user_data",
@@ -3807,7 +3873,7 @@ ${s.description}`).join("\n\n");
       return defaultValue;
     }
   }
-  async function saveUserData$1(hass, key, value) {
+  async function saveUserData(hass, key, value) {
     try {
       await hass.connection.sendMessagePromise({
         type: "frontend/set_user_data",
@@ -3818,7 +3884,7 @@ ${s.description}`).join("\n\n");
       console.warn("[hass-datapoints] saveUserData failed:", err);
     }
   }
-  function parseDateValue$1(value) {
+  function parseDateValue(value) {
     if (!value) {
       return null;
     }
@@ -3829,43 +3895,43 @@ ${s.description}`).join("\n\n");
     return Number.isNaN(parsed.getTime()) ? null : parsed;
   }
   function createChartZoomRange(startValue, endValue) {
-    const start = parseDateValue$1(startValue)?.getTime();
-    const end = parseDateValue$1(endValue)?.getTime();
+    const start = parseDateValue(startValue)?.getTime();
+    const end = parseDateValue(endValue)?.getTime();
     return Number.isFinite(start) && Number.isFinite(end) && start < end ? { start, end } : null;
   }
-  function normalizeEntityIds$1(value) {
+  function normalizeEntityIds(value) {
     if (!value) {
       return [];
     }
     return (Array.isArray(value) ? value : [value]).map((item) => typeof item === "string" ? item.trim() : "").filter(Boolean);
   }
-  function normalizeTargetValue$1(targetValue) {
+  function normalizeTargetValue(targetValue) {
     if (!targetValue) {
       return {};
     }
     if (Array.isArray(targetValue)) {
-      return { entity_id: normalizeEntityIds$1(targetValue) };
+      return { entity_id: normalizeEntityIds(targetValue) };
     }
     if (typeof targetValue === "string") {
       return targetValue ? { entity_id: [targetValue] } : {};
     }
     const normalized = {
       entity_id: [
-        ...normalizeEntityIds$1(targetValue.entity_id),
-        ...normalizeEntityIds$1(targetValue.entity_ids),
-        ...normalizeEntityIds$1(targetValue.entity),
-        ...normalizeEntityIds$1(targetValue.entities)
+        ...normalizeEntityIds(targetValue.entity_id),
+        ...normalizeEntityIds(targetValue.entity_ids),
+        ...normalizeEntityIds(targetValue.entity),
+        ...normalizeEntityIds(targetValue.entities)
       ],
-      device_id: normalizeEntityIds$1(targetValue.device_id),
-      area_id: normalizeEntityIds$1(targetValue.area_id),
-      label_id: normalizeEntityIds$1(targetValue.label_id)
+      device_id: normalizeEntityIds(targetValue.device_id),
+      area_id: normalizeEntityIds(targetValue.area_id),
+      label_id: normalizeEntityIds(targetValue.label_id)
     };
     return Object.fromEntries(
       Object.entries(normalized).filter(([, entries]) => entries.length)
     );
   }
   function normalizeTargetSelection(targetValue) {
-    const normalized = normalizeTargetValue$1(targetValue);
+    const normalized = normalizeTargetValue(targetValue);
     return {
       entity_id: [...new Set(normalized.entity_id || [])],
       device_id: [...new Set(normalized.device_id || [])],
@@ -3886,13 +3952,13 @@ ${s.description}`).join("\n\n");
     }
     return merged;
   }
-  function resolveEntityIdsFromTarget$1(hass, targetValue) {
+  function resolveEntityIdsFromTarget(hass, targetValue) {
     const target = normalizeTargetSelection(targetValue);
-    const resolved = new Set(normalizeEntityIds$1(target.entity_id));
+    const resolved = new Set(normalizeEntityIds(target.entity_id));
     const entityRegistry = hass?.entities || {};
-    const selectedDevices = new Set(normalizeEntityIds$1(target.device_id));
-    const selectedAreas = new Set(normalizeEntityIds$1(target.area_id));
-    const selectedLabels = new Set(normalizeEntityIds$1(target.label_id));
+    const selectedDevices = new Set(normalizeEntityIds(target.device_id));
+    const selectedAreas = new Set(normalizeEntityIds(target.area_id));
+    const selectedLabels = new Set(normalizeEntityIds(target.label_id));
     Object.entries(entityRegistry).forEach(([entityId, entry]) => {
       if (!entry || typeof entry !== "object") {
         return;
@@ -3909,18 +3975,18 @@ ${s.description}`).join("\n\n");
     });
     return [...resolved];
   }
-  function panelConfigTarget$1(panelCfg) {
+  function panelConfigTarget(panelCfg) {
     if (!panelCfg) {
       return {};
     }
     if (panelCfg.target) {
-      return normalizeTargetValue$1(panelCfg.target);
+      return normalizeTargetValue(panelCfg.target);
     }
-    return normalizeTargetValue$1({
+    return normalizeTargetValue({
       entity_id: panelCfg.entities?.length ? panelCfg.entities : panelCfg.entity
     });
   }
-  function normalizeHistorySeriesAnalysis$1(analysis) {
+  function normalizeHistorySeriesAnalysis(analysis) {
     const source = analysis && typeof analysis === "object" ? analysis : {};
     return {
       expanded: source.expanded === true,
@@ -3939,7 +4005,7 @@ ${s.description}`).join("\n\n");
       anomaly_methods: (() => {
         const VALID = ["trend_residual", "rate_of_change", "iqr", "rolling_zscore", "persistence", "comparison_window"];
         if (Array.isArray(source.anomaly_methods)) {
-          return source.anomaly_methods.filter((m) => VALID.includes(m));
+          return source.anomaly_methods.filter((m2) => VALID.includes(m2));
         }
         const legacy = VALID.includes(source.anomaly_method) ? source.anomaly_method : null;
         return legacy ? [legacy] : [];
@@ -3956,11 +4022,11 @@ ${s.description}`).join("\n\n");
       hide_source_series: source.hide_source_series === true
     };
   }
-  function historySeriesRowHasConfiguredAnalysis$1(row) {
-    const analysis = normalizeHistorySeriesAnalysis$1(row?.analysis);
+  function historySeriesRowHasConfiguredAnalysis(row) {
+    const analysis = normalizeHistorySeriesAnalysis(row?.analysis);
     return analysis.show_trend_lines || analysis.show_summary_stats || analysis.show_rate_of_change || analysis.show_threshold_analysis || analysis.show_anomalies || analysis.show_delta_analysis || analysis.hide_source_series;
   }
-  function normalizeHistorySeriesRows$1(rows) {
+  function normalizeHistorySeriesRows(rows) {
     if (!Array.isArray(rows)) return [];
     const seen = /* @__PURE__ */ new Set();
     const normalized = [];
@@ -3970,30 +4036,30 @@ ${s.description}`).join("\n\n");
       seen.add(entityId);
       normalized.push({
         entity_id: entityId,
-        color: typeof row?.color === "string" && /^#[0-9a-f]{6}$/i.test(row.color) ? row.color : COLORS$2[index % COLORS$2.length],
+        color: typeof row?.color === "string" && /^#[0-9a-f]{6}$/i.test(row.color) ? row.color : COLORS[index % COLORS.length],
         visible: row?.visible !== false,
-        analysis: normalizeHistorySeriesAnalysis$1(row?.analysis)
+        analysis: normalizeHistorySeriesAnalysis(row?.analysis)
       });
     });
     return normalized;
   }
-  function buildHistorySeriesRows$1(entityIds, previousRows = []) {
-    const previousMap = new Map(normalizeHistorySeriesRows$1(previousRows).map((row) => [row.entity_id, row]));
-    return normalizeEntityIds$1(entityIds).map((entityId, index) => {
+  function buildHistorySeriesRows(entityIds, previousRows = []) {
+    const previousMap = new Map(normalizeHistorySeriesRows(previousRows).map((row) => [row.entity_id, row]));
+    return normalizeEntityIds(entityIds).map((entityId, index) => {
       const existing = previousMap.get(entityId);
       if (existing) return existing;
       return {
         entity_id: entityId,
-        color: COLORS$2[index % COLORS$2.length],
+        color: COLORS[index % COLORS.length],
         visible: true,
-        analysis: normalizeHistorySeriesAnalysis$1(null)
+        analysis: normalizeHistorySeriesAnalysis(null)
       };
     });
   }
-  function slugifySeriesName$1(value) {
+  function slugifySeriesName(value) {
     return String(value || "").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
   }
-  function parseSeriesColorsParam$1(value) {
+  function parseSeriesColorsParam(value) {
     if (!value || typeof value !== "string") return {};
     return value.split(",").reduce((acc, entry) => {
       const [rawKey, rawColor] = entry.split(":");
@@ -4097,7 +4163,7 @@ ${s.description}`).join("\n\n");
 </workbook>`;
   }
   function createWorkbookRelsXml(sheets) {
-    const relXml = sheets.map((_, index) => {
+    const relXml = sheets.map((_2, index) => {
       return `<Relationship Id="rId${index + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${index + 1}.xml"/>`;
     }).join("");
     return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -4143,7 +4209,7 @@ ${s.description}`).join("\n\n");
 </styleSheet>`;
   }
   function createContentTypesXml(sheets) {
-    const overrides = sheets.map((_, index) => {
+    const overrides = sheets.map((_2, index) => {
       return `<Override PartName="/xl/worksheets/sheet${index + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`;
     }).join("");
     return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -4256,7 +4322,7 @@ ${s.description}`).join("\n\n");
     const entityColumns = entityIds.map((entityId) => {
       const stateObj = hass?.states?.[entityId];
       const unit = stateObj?.attributes?.unit_of_measurement || "";
-      const name = entityName$2(hass, entityId) || entityId;
+      const name = entityName$1(hass, entityId) || entityId;
       return {
         entityId,
         unit,
@@ -4330,7 +4396,7 @@ ${s.description}`).join("\n\n");
     const end = toIsoString(endTime).replace(/[:]/g, "-");
     return `${prefix}-${start}-to-${end}.xlsx`;
   }
-  async function downloadHistorySpreadsheet$1({
+  async function downloadHistorySpreadsheet({
     hass,
     entityIds,
     startTime,
@@ -4354,7 +4420,7 @@ ${s.description}`).join("\n\n");
           no_attributes: true
         }
       ),
-      fetchEvents$3(
+      fetchEvents$1(
         hass,
         startIso,
         endIso,
@@ -4395,8 +4461,8 @@ ${s.description}`).join("\n\n");
     ]);
     downloadWorkbook(buildFilename(filenamePrefix, startTime, endTime), workbookBlob);
   }
-  function makeDateWindowId$1(label, existingIds = /* @__PURE__ */ new Set()) {
-    const base = slugifySeriesName$1(label) || "date-window";
+  function makeDateWindowId(label, existingIds = /* @__PURE__ */ new Set()) {
+    const base = slugifySeriesName(label) || "date-window";
     let candidate = base;
     let suffix = 2;
     while (existingIds.has(candidate)) {
@@ -4405,7 +4471,7 @@ ${s.description}`).join("\n\n");
     }
     return candidate;
   }
-  function normalizeDateWindows$1(windows) {
+  function normalizeDateWindows(windows) {
     if (!Array.isArray(windows)) {
       return [];
     }
@@ -4413,12 +4479,12 @@ ${s.description}`).join("\n\n");
     const normalized = [];
     windows.forEach((window2, index) => {
       const label = String(window2?.label || window2?.name || "").trim();
-      const start = parseDateValue$1(window2?.start_time || window2?.start);
-      const end = parseDateValue$1(window2?.end_time || window2?.end);
+      const start = parseDateValue(window2?.start_time || window2?.start);
+      const end = parseDateValue(window2?.end_time || window2?.end);
       if (!label || !start || !end || start >= end) {
         return;
       }
-      const id = String(window2?.id || "").trim() || makeDateWindowId$1(`${label}-${index + 1}`, seen);
+      const id = String(window2?.id || "").trim() || makeDateWindowId(`${label}-${index + 1}`, seen);
       if (seen.has(id)) {
         return;
       }
@@ -4432,11 +4498,11 @@ ${s.description}`).join("\n\n");
     });
     return normalized;
   }
-  function parseDateWindowsParam$1(value) {
+  function parseDateWindowsParam(value) {
     if (!value || typeof value !== "string") {
       return [];
     }
-    return normalizeDateWindows$1(value.split("|").map((entry) => {
+    return normalizeDateWindows(value.split("|").map((entry) => {
       const [rawId, rawLabel, rawStart, rawEnd] = String(entry).split("~");
       return {
         id: decodeURIComponent(rawId || ""),
@@ -4446,8 +4512,8 @@ ${s.description}`).join("\n\n");
       };
     }));
   }
-  function serializeDateWindowsParam$1(windows) {
-    const normalized = normalizeDateWindows$1(windows);
+  function serializeDateWindowsParam(windows) {
+    const normalized = normalizeDateWindows(windows);
     if (!normalized.length) {
       return "";
     }
@@ -4458,9 +4524,9 @@ ${s.description}`).join("\n\n");
       encodeURIComponent(window2.end_time)
     ].join("~")).join("|");
   }
-  const PANEL_HISTORY_PREFERENCES_KEY$1 = `${DOMAIN$2}:panel_history_preferences`;
-  const PANEL_HISTORY_SESSION_KEY = `${DOMAIN$2}:panel_history_session`;
-  function readHistoryPageSessionState$1() {
+  const PANEL_HISTORY_PREFERENCES_KEY = `${DOMAIN$1}:panel_history_preferences`;
+  const PANEL_HISTORY_SESSION_KEY = `${DOMAIN$1}:panel_history_session`;
+  function readHistoryPageSessionState() {
     try {
       const raw = window.sessionStorage?.getItem(PANEL_HISTORY_SESSION_KEY);
       if (!raw) return null;
@@ -4513,18 +4579,18 @@ ${s.description}`).join("\n\n");
       end_time: source._endTime?.toISOString() || null,
       zoom_start_time: source._chartZoomCommittedRange ? new Date(source._chartZoomCommittedRange.start).toISOString() : null,
       zoom_end_time: source._chartZoomCommittedRange ? new Date(source._chartZoomCommittedRange.end).toISOString() : null,
-      date_windows: normalizeDateWindows$1(source._comparisonWindows),
+      date_windows: normalizeDateWindows(source._comparisonWindows),
       hours: source._hours,
       sidebar_collapsed: source._sidebarCollapsed
     };
   }
-  function writeHistoryPageSessionState$1(source) {
+  function writeHistoryPageSessionState(source) {
     try {
       window.sessionStorage?.setItem(PANEL_HISTORY_SESSION_KEY, JSON.stringify(buildHistoryPageSessionState(source)));
     } catch (_err) {
     }
   }
-  function normalizeHistoryPagePreferences$1(preferences, options = {}) {
+  function normalizeHistoryPagePreferences(preferences, options = {}) {
     const zoomValues = new Set((options.zoomOptions || []).map((option) => option.value));
     const snapValues = new Set((options.snapOptions || []).map((option) => option.value));
     let shouldPersistDefaults = false;
@@ -4552,14 +4618,14 @@ ${s.description}`).join("\n\n");
         }
         return acc;
       }, {}) : {};
-      normalized.comparisonWindows = normalizeDateWindows$1(preferences.date_windows);
+      normalized.comparisonWindows = normalizeDateWindows(preferences.date_windows);
     } else {
       shouldPersistDefaults = true;
     }
     normalized.shouldPersistDefaults = shouldPersistDefaults;
     return normalized;
   }
-  function buildHistoryPagePreferencesPayload$1(source) {
+  function buildHistoryPagePreferencesPayload(source) {
     const preferredSeriesColors = source._seriesRows.reduce((acc, row) => {
       if (row?.entity_id && /^#[0-9a-f]{6}$/i.test(row?.color || "")) {
         acc[row.entity_id] = row.color;
@@ -4570,24 +4636,24 @@ ${s.description}`).join("\n\n");
       zoom_level: source._zoomLevel,
       date_snapping: source._dateSnapping,
       series_colors: preferredSeriesColors,
-      date_windows: normalizeDateWindows$1(source._comparisonWindows)
+      date_windows: normalizeDateWindows(source._comparisonWindows)
     };
   }
-  const SECOND_MS$1 = 1e3;
-  const MINUTE_MS$1 = 60 * SECOND_MS$1;
-  const HOUR_MS$1 = 60 * MINUTE_MS$1;
-  const DAY_MS$1 = 24 * HOUR_MS$1;
-  const WEEK_MS$1 = 7 * DAY_MS$1;
-  const RANGE_SLIDER_MIN_SPAN_MS$1 = 15 * 60 * 1e3;
-  const RANGE_SLIDER_WINDOW_MS$1 = 30 * DAY_MS$1;
-  const RANGE_AUTO_ZOOM_DEBOUNCE_MS$1 = 3e3;
-  const RANGE_AUTO_ZOOM_SELECTION_PADDING_RATIO$1 = 0.6;
-  const RANGE_FUTURE_BUFFER_YEARS$1 = 1;
-  const RANGE_LABEL_MIN_GAP_PX$1 = 10;
-  const RANGE_CONTEXT_LABEL_MIN_GAP_PX$1 = 14;
-  const RANGE_HANDLE_EDGE_SCROLL_THRESHOLD_PX$1 = 48;
-  const RANGE_HANDLE_EDGE_SCROLL_MAX_STEP_PX$1 = 28;
-  const RANGE_ZOOM_OPTIONS$1 = [
+  const SECOND_MS = 1e3;
+  const MINUTE_MS = 60 * SECOND_MS;
+  const HOUR_MS = 60 * MINUTE_MS;
+  const DAY_MS = 24 * HOUR_MS;
+  const WEEK_MS = 7 * DAY_MS;
+  const RANGE_SLIDER_MIN_SPAN_MS = 15 * 60 * 1e3;
+  const RANGE_SLIDER_WINDOW_MS = 30 * DAY_MS;
+  const RANGE_AUTO_ZOOM_DEBOUNCE_MS = 3e3;
+  const RANGE_AUTO_ZOOM_SELECTION_PADDING_RATIO = 0.6;
+  const RANGE_FUTURE_BUFFER_YEARS = 1;
+  const RANGE_LABEL_MIN_GAP_PX = 10;
+  const RANGE_CONTEXT_LABEL_MIN_GAP_PX = 14;
+  const RANGE_HANDLE_EDGE_SCROLL_THRESHOLD_PX = 48;
+  const RANGE_HANDLE_EDGE_SCROLL_MAX_STEP_PX = 28;
+  const RANGE_ZOOM_OPTIONS = [
     { value: "auto", label: "Auto" },
     { value: "quarterly", label: "Quarterly" },
     { value: "month_compressed", label: "Month Compressed" },
@@ -4597,7 +4663,7 @@ ${s.description}`).join("\n\n");
     { value: "week_expanded", label: "Week Expanded" },
     { value: "day", label: "Day" }
   ];
-  const RANGE_SNAP_OPTIONS$1 = [
+  const RANGE_SNAP_OPTIONS = [
     { value: "auto", label: "Auto" },
     { value: "month", label: "Month" },
     { value: "week", label: "Week" },
@@ -4606,9 +4672,9 @@ ${s.description}`).join("\n\n");
     { value: "minute", label: "Minute" },
     { value: "second", label: "Second" }
   ];
-  const RANGE_ZOOM_CONFIGS$1 = {
+  const RANGE_ZOOM_CONFIGS = {
     quarterly: {
-      baselineMs: 730 * DAY_MS$1,
+      baselineMs: 730 * DAY_MS,
       boundsUnit: "month",
       contextUnit: "year",
       detailUnit: "month",
@@ -4618,7 +4684,7 @@ ${s.description}`).join("\n\n");
       pixelsPerUnit: 96
     },
     month_compressed: {
-      baselineMs: 365 * DAY_MS$1,
+      baselineMs: 365 * DAY_MS,
       boundsUnit: "month",
       contextUnit: "year",
       detailUnit: "week",
@@ -4628,7 +4694,7 @@ ${s.description}`).join("\n\n");
       pixelsPerUnit: 76
     },
     month_short: {
-      baselineMs: 180 * DAY_MS$1,
+      baselineMs: 180 * DAY_MS,
       boundsUnit: "week",
       contextUnit: "month",
       detailUnit: "day",
@@ -4638,7 +4704,7 @@ ${s.description}`).join("\n\n");
       pixelsPerUnit: 54
     },
     month_expanded: {
-      baselineMs: 90 * DAY_MS$1,
+      baselineMs: 90 * DAY_MS,
       boundsUnit: "week",
       contextUnit: "month",
       detailUnit: "day",
@@ -4648,7 +4714,7 @@ ${s.description}`).join("\n\n");
       pixelsPerUnit: 72
     },
     week_compressed: {
-      baselineMs: 56 * DAY_MS$1,
+      baselineMs: 56 * DAY_MS,
       boundsUnit: "week",
       contextUnit: "month",
       detailUnit: "day",
@@ -4658,7 +4724,7 @@ ${s.description}`).join("\n\n");
       pixelsPerUnit: 120
     },
     week_expanded: {
-      baselineMs: 28 * DAY_MS$1,
+      baselineMs: 28 * DAY_MS,
       boundsUnit: "day",
       contextUnit: "month",
       detailUnit: "hour",
@@ -4669,7 +4735,7 @@ ${s.description}`).join("\n\n");
       pixelsPerUnit: 30
     },
     day: {
-      baselineMs: 48 * HOUR_MS$1,
+      baselineMs: 48 * HOUR_MS,
       boundsUnit: "hour",
       contextUnit: "day",
       majorUnit: "hour",
@@ -4678,18 +4744,18 @@ ${s.description}`).join("\n\n");
       pixelsPerUnit: 9
     }
   };
-  function extractRangeValue$1(source) {
+  function extractRangeValue(source) {
     if (!source) {
       return { start: null, end: null };
     }
     const detail = source.detail || {};
     const value = detail.value || source.value || source.target?.value || {};
     return {
-      start: parseDateValue$1(detail.startDate || value.startDate || source.startDate || source.target?.startDate),
-      end: parseDateValue$1(detail.endDate || value.endDate || source.endDate || source.target?.endDate)
+      start: parseDateValue(detail.startDate || value.startDate || source.startDate || source.target?.startDate),
+      end: parseDateValue(detail.endDate || value.endDate || source.endDate || source.target?.endDate)
     };
   }
-  function formatRangeDateTime$1(value) {
+  function formatRangeDateTime(value) {
     if (!(value instanceof Date) || Number.isNaN(value.getTime())) {
       return "--";
     }
@@ -4731,7 +4797,7 @@ ${s.description}`).join("\n\n");
     }
     return parts.join(" ");
   }
-  function clampNumber$1(value, min, max) {
+  function clampNumber(value, min, max) {
     return Math.min(max, Math.max(min, value));
   }
   function startOfLocalDay(value) {
@@ -4825,8 +4891,8 @@ ${s.description}`).join("\n\n");
   function formatYearLabel(value) {
     return value.toLocaleString([], { year: "numeric" });
   }
-  function formatRangeSummary$1(start, end) {
-    return `${formatRangeDateTime$1(start)} - ${formatRangeDateTime$1(end)} (${formatRangeDuration(start, end)})`;
+  function formatRangeSummary(start, end) {
+    return `${formatRangeDateTime(start)} - ${formatRangeDateTime(end)} (${formatRangeDuration(start, end)})`;
   }
   function getWeekOfYear(value) {
     const date = new Date(value.getTime());
@@ -4834,7 +4900,7 @@ ${s.description}`).join("\n\n");
     const day = date.getDay() || 7;
     date.setDate(date.getDate() + 4 - day);
     const yearStart = new Date(date.getFullYear(), 0, 1);
-    return Math.ceil(((date.getTime() - yearStart.getTime()) / DAY_MS$1 + 1) / 7);
+    return Math.ceil(((date.getTime() - yearStart.getTime()) / DAY_MS + 1) / 7);
   }
   function getWeekLabel(value) {
     return value.toLocaleString([], { month: "short", day: "numeric" });
@@ -4848,7 +4914,7 @@ ${s.description}`).join("\n\n");
   function formatQuarterLabel(value, zoomLevel = "") {
     return zoomLevel === "quarterly" ? `Q${Math.floor(value.getMonth() / 3) + 1}` : formatMonthLabel(value);
   }
-  function formatScaleLabel$1(value, unit, zoomLevel = "") {
+  function formatScaleLabel(value, unit, zoomLevel = "") {
     switch (unit) {
       case "quarter":
         return formatQuarterLabel(value, zoomLevel);
@@ -4864,7 +4930,7 @@ ${s.description}`).join("\n\n");
         return formatRangeTick(value);
     }
   }
-  function formatContextLabel$1(value, unit) {
+  function formatContextLabel(value, unit) {
     switch (unit) {
       case "year":
         return formatYearLabel(value);
@@ -4876,7 +4942,7 @@ ${s.description}`).join("\n\n");
         return formatRangeTick(value);
     }
   }
-  function formatPeriodSelectionLabel$1(value, unit) {
+  function formatPeriodSelectionLabel(value, unit) {
     switch (unit) {
       case "year":
         return formatYearLabel(value);
@@ -4899,7 +4965,7 @@ ${s.description}`).join("\n\n");
         return formatRangeTick(value);
     }
   }
-  function startOfUnit$1(value, unit) {
+  function startOfUnit(value, unit) {
     switch (unit) {
       case "second":
         return startOfLocalSecond(value);
@@ -4921,7 +4987,7 @@ ${s.description}`).join("\n\n");
         return new Date(value);
     }
   }
-  function endOfUnit$1(value, unit) {
+  function endOfUnit(value, unit) {
     switch (unit) {
       case "second":
         return endOfLocalSecond(value);
@@ -4946,7 +5012,7 @@ ${s.description}`).join("\n\n");
         return new Date(value);
     }
   }
-  function addUnit$1(value, unit, amount = 1) {
+  function addUnit(value, unit, amount = 1) {
     const result = new Date(value);
     switch (unit) {
       case "second":
@@ -4976,57 +5042,57 @@ ${s.description}`).join("\n\n");
     }
     return result;
   }
-  function snapDateToUnit$1(value, unit) {
-    const start = startOfUnit$1(value, unit);
-    const end = endOfUnit$1(value, unit);
+  function snapDateToUnit(value, unit) {
+    const start = startOfUnit(value, unit);
+    const end = endOfUnit(value, unit);
     return value.getTime() - start.getTime() < end.getTime() - value.getTime() ? start : end;
   }
   const shared = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     __proto__: null,
     AMBER,
     CHART_STYLE,
-    COLORS: COLORS$2,
-    ChartRenderer: ChartRenderer$1,
+    COLORS,
+    ChartRenderer,
     DATA_RANGE_CACHE_LIVE_EDGE_MS,
     DATA_RANGE_CACHE_TTL_MS,
-    DAY_MS: DAY_MS$1,
-    DOMAIN: DOMAIN$2,
-    HOUR_MS: HOUR_MS$1,
-    MINUTE_MS: MINUTE_MS$1,
-    PANEL_HISTORY_PREFERENCES_KEY: PANEL_HISTORY_PREFERENCES_KEY$1,
+    DAY_MS,
+    DOMAIN: DOMAIN$1,
+    HOUR_MS,
+    MINUTE_MS,
+    PANEL_HISTORY_PREFERENCES_KEY,
     PANEL_HISTORY_SESSION_KEY,
     PANEL_URL_PATH,
-    RANGE_AUTO_ZOOM_DEBOUNCE_MS: RANGE_AUTO_ZOOM_DEBOUNCE_MS$1,
-    RANGE_AUTO_ZOOM_SELECTION_PADDING_RATIO: RANGE_AUTO_ZOOM_SELECTION_PADDING_RATIO$1,
-    RANGE_CONTEXT_LABEL_MIN_GAP_PX: RANGE_CONTEXT_LABEL_MIN_GAP_PX$1,
-    RANGE_FUTURE_BUFFER_YEARS: RANGE_FUTURE_BUFFER_YEARS$1,
-    RANGE_HANDLE_EDGE_SCROLL_MAX_STEP_PX: RANGE_HANDLE_EDGE_SCROLL_MAX_STEP_PX$1,
-    RANGE_HANDLE_EDGE_SCROLL_THRESHOLD_PX: RANGE_HANDLE_EDGE_SCROLL_THRESHOLD_PX$1,
-    RANGE_LABEL_MIN_GAP_PX: RANGE_LABEL_MIN_GAP_PX$1,
-    RANGE_SLIDER_MIN_SPAN_MS: RANGE_SLIDER_MIN_SPAN_MS$1,
-    RANGE_SLIDER_WINDOW_MS: RANGE_SLIDER_WINDOW_MS$1,
-    RANGE_SNAP_OPTIONS: RANGE_SNAP_OPTIONS$1,
-    RANGE_ZOOM_CONFIGS: RANGE_ZOOM_CONFIGS$1,
-    RANGE_ZOOM_OPTIONS: RANGE_ZOOM_OPTIONS$1,
-    SECOND_MS: SECOND_MS$1,
-    WEEK_MS: WEEK_MS$1,
-    addUnit: addUnit$1,
+    RANGE_AUTO_ZOOM_DEBOUNCE_MS,
+    RANGE_AUTO_ZOOM_SELECTION_PADDING_RATIO,
+    RANGE_CONTEXT_LABEL_MIN_GAP_PX,
+    RANGE_FUTURE_BUFFER_YEARS,
+    RANGE_HANDLE_EDGE_SCROLL_MAX_STEP_PX,
+    RANGE_HANDLE_EDGE_SCROLL_THRESHOLD_PX,
+    RANGE_LABEL_MIN_GAP_PX,
+    RANGE_SLIDER_MIN_SPAN_MS,
+    RANGE_SLIDER_WINDOW_MS,
+    RANGE_SNAP_OPTIONS,
+    RANGE_ZOOM_CONFIGS,
+    RANGE_ZOOM_OPTIONS,
+    SECOND_MS,
+    WEEK_MS,
+    addUnit,
     areaIcon: areaIcon$1,
     areaName: areaName$1,
     attachLineChartHover,
     attachLineChartRangeZoom,
-    attachTooltipBehaviour: attachTooltipBehaviour$1,
+    attachTooltipBehaviour,
     buildChartCardShell,
     buildDataPointsHistoryPath: buildDataPointsHistoryPath$1,
-    buildHistoryPagePreferencesPayload: buildHistoryPagePreferencesPayload$1,
+    buildHistoryPagePreferencesPayload,
     buildHistoryPageSessionState,
-    buildHistorySeriesRows: buildHistorySeriesRows$1,
+    buildHistorySeriesRows,
     buildTooltipRelatedChips,
     clampChartValue,
-    clampNumber: clampNumber$1,
+    clampNumber,
     clearStableRangeCacheMatching,
-    confirmDestructiveAction: confirmDestructiveAction$2,
-    contrastColor: contrastColor$3,
+    confirmDestructiveAction: confirmDestructiveAction$1,
+    contrastColor: contrastColor$1,
     createChartZoomRange,
     createHiddenEventIdSet,
     createHiddenSeriesSet,
@@ -5034,7 +5100,7 @@ ${s.description}`).join("\n\n");
     deviceIcon: deviceIcon$1,
     deviceName: deviceName$1,
     dispatchLineChartHover,
-    downloadHistorySpreadsheet: downloadHistorySpreadsheet$1,
+    downloadHistorySpreadsheet,
     endOfLocalDay,
     endOfLocalHour,
     endOfLocalMinute,
@@ -5042,31 +5108,31 @@ ${s.description}`).join("\n\n");
     endOfLocalQuarter,
     endOfLocalSecond,
     endOfLocalWeek,
-    endOfUnit: endOfUnit$1,
-    ensureHaComponents: ensureHaComponents$1,
+    endOfUnit,
+    ensureHaComponents,
     entityIcon: entityIcon$1,
-    entityName: entityName$2,
-    esc: esc$3,
-    extractRangeValue: extractRangeValue$1,
-    fetchEventBounds: fetchEventBounds$1,
-    fetchEvents: fetchEvents$3,
+    entityName: entityName$1,
+    esc: esc$1,
+    extractRangeValue,
+    fetchEventBounds,
+    fetchEvents: fetchEvents$1,
     fetchHistoryDuringPeriod,
     fetchStatisticsDuringPeriod,
-    fetchUserData: fetchUserData$1,
-    fmtDateTime: fmtDateTime$2,
-    fmtRelativeTime: fmtRelativeTime$1,
+    fetchUserData,
+    fmtDateTime: fmtDateTime$1,
+    fmtRelativeTime,
     fmtTime,
-    formatContextLabel: formatContextLabel$1,
+    formatContextLabel,
     formatDayLabel,
     formatHourLabel,
     formatMonthLabel,
-    formatPeriodSelectionLabel: formatPeriodSelectionLabel$1,
+    formatPeriodSelectionLabel,
     formatQuarterLabel,
-    formatRangeDateTime: formatRangeDateTime$1,
+    formatRangeDateTime,
     formatRangeDuration,
-    formatRangeSummary: formatRangeSummary$1,
+    formatRangeSummary,
     formatRangeTick,
-    formatScaleLabel: formatScaleLabel$1,
+    formatScaleLabel,
     formatTooltipDisplayValue,
     formatTooltipValue,
     formatYearLabel,
@@ -5074,41 +5140,41 @@ ${s.description}`).join("\n\n");
     getWeekOfYear,
     hexToRgba,
     hideLineChartHover,
-    hideTooltip: hideTooltip$1,
-    historySeriesRowHasConfiguredAnalysis: historySeriesRowHasConfiguredAnalysis$1,
+    hideTooltip,
+    historySeriesRowHasConfiguredAnalysis,
     invalidateEventsCache,
     labelIcon: labelIcon$1,
     labelName: labelName$1,
-    makeDateWindowId: makeDateWindowId$1,
+    makeDateWindowId,
     mergeTargetSelections,
-    navigateToDataPointsHistory: navigateToDataPointsHistory$2,
+    navigateToDataPointsHistory: navigateToDataPointsHistory$1,
     normalizeCacheIdList,
-    normalizeDateWindows: normalizeDateWindows$1,
-    normalizeEntityIds: normalizeEntityIds$1,
-    normalizeHistoryPagePreferences: normalizeHistoryPagePreferences$1,
-    normalizeHistorySeriesAnalysis: normalizeHistorySeriesAnalysis$1,
-    normalizeHistorySeriesRows: normalizeHistorySeriesRows$1,
+    normalizeDateWindows,
+    normalizeEntityIds,
+    normalizeHistoryPagePreferences,
+    normalizeHistorySeriesAnalysis,
+    normalizeHistorySeriesRows,
     normalizeTargetSelection,
-    normalizeTargetValue: normalizeTargetValue$1,
-    panelConfigTarget: panelConfigTarget$1,
-    parseDateValue: parseDateValue$1,
-    parseDateWindowsParam: parseDateWindowsParam$1,
-    parseSeriesColorsParam: parseSeriesColorsParam$1,
+    normalizeTargetValue,
+    panelConfigTarget,
+    parseDateValue,
+    parseDateWindowsParam,
+    parseSeriesColorsParam,
     positionTooltip,
-    readHistoryPageSessionState: readHistoryPageSessionState$1,
+    readHistoryPageSessionState,
     renderChartAxisHoverDots,
     renderChartAxisOverlays,
     resolveChartLabelColor,
-    resolveEntityIdsFromTarget: resolveEntityIdsFromTarget$1,
-    saveUserData: saveUserData$1,
-    serializeDateWindowsParam: serializeDateWindowsParam$1,
-    setupCanvas: setupCanvas$1,
+    resolveEntityIdsFromTarget,
+    saveUserData,
+    serializeDateWindowsParam,
+    setupCanvas,
     shouldUseStableRangeCache,
     showLineChartCrosshair,
     showLineChartTooltip,
-    showTooltip: showTooltip$1,
-    slugifySeriesName: slugifySeriesName$1,
-    snapDateToUnit: snapDateToUnit$1,
+    showTooltip,
+    slugifySeriesName,
+    snapDateToUnit,
     startOfLocalDay,
     startOfLocalHour,
     startOfLocalMinute,
@@ -5117,17 +5183,18 @@ ${s.description}`).join("\n\n");
     startOfLocalSecond,
     startOfLocalWeek,
     startOfLocalYear,
-    startOfUnit: startOfUnit$1,
+    startOfUnit,
     updateEvent: updateEvent$1,
     waitForHaComponent,
     withStableRangeCache,
-    writeHistoryPageSessionState: writeHistoryPageSessionState$1
+    writeHistoryPageSessionState
   }, Symbol.toStringTag, { value: "Module" }));
   class HistoryAnnotationDialogController {
     constructor(host) {
       this._host = host;
       this._dialogEl = null;
       this._panelEl = null;
+      this._chipRowEl = null;
       this._linkedTarget = {};
       this._target = {};
     }
@@ -5163,6 +5230,7 @@ ${s.description}`).join("\n\n");
       this._dialogEl?.remove();
       this._dialogEl = null;
       this._panelEl = null;
+      this._chipRowEl = null;
     }
     resetFormState() {
       this._linkedTarget = {};
@@ -5181,64 +5249,33 @@ ${s.description}`).join("\n\n");
       const min = String(value.getMinutes()).padStart(2, "0");
       return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
     }
-    renderTargetChips(target) {
-      const groups = [
+    _buildChips(target) {
+      return [
         ...(target.entity_id || []).map((id) => ({
           type: "entity_id",
-          id,
+          itemId: id,
           icon: entityIcon$1(this._host._hass, id),
-          name: entityName$2(this._host._hass, id)
+          name: entityName$1(this._host._hass, id)
         })),
         ...(target.device_id || []).map((id) => ({
           type: "device_id",
-          id,
+          itemId: id,
           icon: deviceIcon$1(this._host._hass, id),
           name: deviceName$1(this._host._hass, id)
         })),
         ...(target.area_id || []).map((id) => ({
           type: "area_id",
-          id,
+          itemId: id,
           icon: areaIcon$1(this._host._hass, id),
           name: areaName$1(this._host._hass, id)
         })),
         ...(target.label_id || []).map((id) => ({
           type: "label_id",
-          id,
+          itemId: id,
           icon: labelIcon$1(this._host._hass, id),
           name: labelName$1(this._host._hass, id)
         }))
       ];
-      if (!groups.length) {
-        return `
-        <div id="chart-context-linked-targets" class="context-form-field">
-          <label class="context-form-label">Linked targets</label>
-          <div class="context-form-help">No linked targets will be associated with this data point.</div>
-        </div>
-      `;
-      }
-      return `
-      <div id="chart-context-linked-targets" class="context-form-field">
-        <label class="context-form-label">Linked targets</label>
-        <div class="context-form-help">These targets will be associated with the new data point by default. Remove any that should not be linked.</div>
-        <div class="context-chip-row">
-          ${groups.map((chip) => `
-            <span class="context-chip" title="${esc$3(chip.name)}">
-              <ha-icon icon="${esc$3(chip.icon)}"></ha-icon>
-              <span class="context-chip-text">${esc$3(chip.name)}</span>
-              <button
-                type="button"
-                class="context-chip-remove"
-                data-target-type="${esc$3(chip.type)}"
-                data-target-id="${esc$3(chip.id)}"
-                aria-label="Remove ${esc$3(chip.name)}"
-              >
-                <ha-icon icon="mdi:close"></ha-icon>
-              </button>
-            </span>
-          `).join("")}
-        </div>
-      </div>
-    `;
     }
     removeLinkedTarget(type, id) {
       if (!this._linkedTarget || !type || !id) {
@@ -5250,18 +5287,11 @@ ${s.description}`).join("\n\n");
       }
       current[type] = current[type].filter((value) => value !== id);
       this._linkedTarget = current;
-      const container = this._panelEl?.querySelector("#chart-context-linked-targets");
-      if (container) {
-        container.outerHTML = this.renderTargetChips(this._linkedTarget);
-        this.bindTargetChipActions();
+      if (this._chipRowEl) {
+        this._chipRowEl.chips = this._buildChips(this._linkedTarget);
       }
     }
     bindTargetChipActions() {
-      this._panelEl?.querySelectorAll(".context-chip-remove")?.forEach((button) => {
-        button.addEventListener("click", () => {
-          this.removeLinkedTarget(button.dataset.targetType, button.dataset.targetId);
-        });
-      });
     }
     bindFields(hover) {
       if (!this._panelEl) {
@@ -5288,6 +5318,18 @@ ${s.description}`).join("\n\n");
       }
       if (annotationEl) {
         annotationEl.value = prefill.annotation || "";
+      }
+      const chipContainer = this._panelEl.querySelector("#chart-context-linked-targets");
+      if (chipContainer && !this._chipRowEl) {
+        const chipRow = document.createElement("dp-annotation-chip-row");
+        chipRow.addEventListener("dp-target-remove", (ev) => {
+          this.removeLinkedTarget(ev.detail.type, ev.detail.id);
+        });
+        chipContainer.appendChild(chipRow);
+        this._chipRowEl = chipRow;
+      }
+      if (this._chipRowEl) {
+        this._chipRowEl.chips = this._buildChips(this._linkedTarget);
       }
       this.bindTargetChipActions();
       const colorInput = this._panelEl.querySelector("#chart-context-color");
@@ -5363,7 +5405,7 @@ ${s.description}`).join("\n\n");
         feedbackEl.textContent = "";
       }
       try {
-        await this._host._hass.callService(DOMAIN$2, "record", payload);
+        await this._host._hass.callService(DOMAIN$1, "record", payload);
         invalidateEventsCache();
         window.dispatchEvent(new CustomEvent("hass-datapoints-event-recorded"));
         this.close();
@@ -5415,7 +5457,7 @@ ${s.description}`).join("\n\n");
         .context-chip-remove:hover { background: color-mix(in srgb, currentColor 12%, transparent); }
         .context-chip-remove ha-icon { --mdc-icon-size: 12px; pointer-events: none; }
         .context-color-control { display: flex; align-items: center; gap: 10px; }
-        .context-color-preview { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--divider-color, #ccc); background: ${esc$3(defaultColor)}; flex: 0 0 auto; }
+        .context-color-preview { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--divider-color, #ccc); background: ${esc$1(defaultColor)}; flex: 0 0 auto; }
         .context-color-input { width: 56px; height: 36px; padding: 0; border: none; background: transparent; cursor: pointer; }
         .context-date-input { width: 220px; max-width: 100%; }
         .context-icon-input { width: 220px; max-width: 100%; }
@@ -5437,7 +5479,7 @@ ${s.description}`).join("\n\n");
                 <div class="context-form-help">Add any longer context, outcome, or note you want to keep with this data point.</div>
                 <textarea id="chart-context-annotation" class="context-annotation-input" placeholder="Detailed note shown on chart hover..."></textarea>
               </div>
-              ${this.renderTargetChips(this._linkedTarget)}
+              <div id="chart-context-linked-targets"></div>
               <div class="context-form-field">
                 <label class="context-form-label" for="chart-context-target">Additional related items</label>
                 <div class="context-form-help">Optionally add more entities, devices, areas, or labels that should also be linked to this annotation.</div>
@@ -5448,7 +5490,7 @@ ${s.description}`).join("\n\n");
               <div class="context-form-field compact-field">
                 <label class="context-form-label" for="chart-context-date">Date and time</label>
                 <div class="context-form-help">The annotation will be placed at this exact moment on the chart.</div>
-                <ha-textfield id="chart-context-date" class="context-date-input" type="datetime-local" value="${esc$3(this.formatDate(hover.timeMs))}"></ha-textfield>
+                <ha-textfield id="chart-context-date" class="context-date-input" type="datetime-local" value="${esc$1(this.formatDate(hover.timeMs))}"></ha-textfield>
               </div>
               <div class="context-form-field compact-field">
                 <label class="context-form-label" for="chart-context-icon">Icon</label>
@@ -5463,7 +5505,7 @@ ${s.description}`).join("\n\n");
                 </div>
                 <div class="context-color-control">
                   <span id="chart-context-color-preview" class="context-color-preview" aria-hidden="true"></span>
-                  <input id="chart-context-color" class="context-color-input" type="color" value="${esc$3(defaultColor)}" aria-label="Annotation color">
+                  <input id="chart-context-color" class="context-color-input" type="color" value="${esc$1(defaultColor)}" aria-label="Annotation color">
                 </div>
               </div>
             </div>
@@ -5526,19 +5568,19 @@ ${s.description}`).join("\n\n");
       if (targetSel) targetSel.hass = this._hass;
     }
     _nowStr() {
-      const d = /* @__PURE__ */ new Date();
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, "0");
-      const dd = String(d.getDate()).padStart(2, "0");
-      const hh = String(d.getHours()).padStart(2, "0");
-      const min = String(d.getMinutes()).padStart(2, "0");
+      const d2 = /* @__PURE__ */ new Date();
+      const yyyy = d2.getFullYear();
+      const mm = String(d2.getMonth() + 1).padStart(2, "0");
+      const dd = String(d2.getDate()).padStart(2, "0");
+      const hh = String(d2.getHours()).padStart(2, "0");
+      const min = String(d2.getMinutes()).padStart(2, "0");
       return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
     }
     // Resolve config target from `target`, or legacy `entity`/`entities`.
     // Normalises all fields to arrays (HA target selector may store single values as strings).
     _configTarget() {
       const cfg = this._config;
-      const norm = (v) => !v ? [] : Array.isArray(v) ? v : [v];
+      const norm = (v2) => !v2 ? [] : Array.isArray(v2) ? v2 : [v2];
       let raw;
       if (cfg.target) raw = cfg.target;
       else if (cfg.entity) raw = { entity_id: [cfg.entity] };
@@ -5552,13 +5594,13 @@ ${s.description}`).join("\n\n");
       };
     }
     _hasConfigTarget() {
-      const t = this._configTarget();
-      return !!(t.entity_id?.length || t.device_id?.length || t.area_id?.length || t.label_id?.length);
+      const t2 = this._configTarget();
+      return !!(t2.entity_id?.length || t2.device_id?.length || t2.area_id?.length || t2.label_id?.length);
     }
     // Build read-only chips for config-set targets
     _buildConfigChips(wrap) {
       if (!this._hasConfigTarget()) return;
-      const t = this._configTarget();
+      const t2 = this._configTarget();
       const label = document.createElement("div");
       label.className = "chips-label";
       label.textContent = "Data point will be associated with";
@@ -5574,10 +5616,10 @@ ${s.description}`).join("\n\n");
         chip.appendChild(document.createTextNode(name));
         row.appendChild(chip);
       };
-      (t.entity_id || []).forEach((id) => addChip(entityIcon$1(this._hass, id), entityName$2(this._hass, id)));
-      (t.device_id || []).forEach((id) => addChip(deviceIcon$1(this._hass, id), deviceName$1(this._hass, id)));
-      (t.area_id || []).forEach((id) => addChip(areaIcon$1(this._hass, id), areaName$1(this._hass, id)));
-      (t.label_id || []).forEach((id) => addChip(labelIcon$1(this._hass, id), labelName$1(this._hass, id)));
+      (t2.entity_id || []).forEach((id) => addChip(entityIcon$1(this._hass, id), entityName$1(this._hass, id)));
+      (t2.device_id || []).forEach((id) => addChip(deviceIcon$1(this._hass, id), deviceName$1(this._hass, id)));
+      (t2.area_id || []).forEach((id) => addChip(areaIcon$1(this._hass, id), areaName$1(this._hass, id)));
+      (t2.label_id || []).forEach((id) => addChip(labelIcon$1(this._hass, id), labelName$1(this._hass, id)));
       wrap.appendChild(row);
     }
     _render() {
@@ -5673,7 +5715,7 @@ ${s.description}`).join("\n\n");
         .feedback.err { background: rgba(244,67,54,0.12); color: var(--error-color, #f44336); }
       </style>
       <ha-card>
-        ${hasTitle ? `<div class="card-header">${esc$3(cfg.title)}</div>` : ""}
+        ${hasTitle ? `<div class="card-header">${esc$1(cfg.title)}</div>` : ""}
 
         <div class="form-group">
           <ha-textfield id="msg" label="Message *" placeholder="What happened?" style="width:100%"></ha-textfield>
@@ -5706,7 +5748,7 @@ ${s.description}`).join("\n\n");
 
         <div class="form-group" id="target-wrap"></div>
 
-        <ha-button id="btn" raised>${esc$3(cfg.submit_label || "Record Event")}</ha-button>
+        <ha-button id="btn" raised>${esc$1(cfg.submit_label || "Record Event")}</ha-button>
         <div class="feedback" id="feedback"></div>
       </ha-card>`;
       const targetWrap = this.shadowRoot.getElementById("target-wrap");
@@ -5718,8 +5760,8 @@ ${s.description}`).join("\n\n");
         targetSel.hass = this._hass;
         targetSel.value = {};
         this._userTarget = {};
-        targetSel.addEventListener("value-changed", (e) => {
-          this._userTarget = e.detail.value || {};
+        targetSel.addEventListener("value-changed", (e2) => {
+          this._userTarget = e2.detail.value || {};
           targetSel.value = this._userTarget;
         });
         targetWrap.appendChild(targetSel);
@@ -5732,9 +5774,9 @@ ${s.description}`).join("\n\n");
       const annEl = this.shadowRoot.getElementById("ann");
       if (annEl) annEl.value = cfg.default_annotation || "";
       if (annEl) {
-        annEl.addEventListener("keydown", (e) => {
-          if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-            e.preventDefault();
+        annEl.addEventListener("keydown", (e2) => {
+          if (e2.key === "Enter" && (e2.ctrlKey || e2.metaKey)) {
+            e2.preventDefault();
             this._record();
           }
         });
@@ -5757,14 +5799,14 @@ ${s.description}`).join("\n\n");
       }
       this._updateHassOnChildren();
     }
-    _mergeTargets(a, b) {
-      const norm = (v) => !v ? [] : Array.isArray(v) ? v : [v];
-      const merge = (x, y) => [.../* @__PURE__ */ new Set([...norm(x), ...norm(y)])];
+    _mergeTargets(a2, b2) {
+      const norm = (v2) => !v2 ? [] : Array.isArray(v2) ? v2 : [v2];
+      const merge = (x2, y2) => [.../* @__PURE__ */ new Set([...norm(x2), ...norm(y2)])];
       return {
-        entity_id: merge(a.entity_id, b.entity_id),
-        device_id: merge(a.device_id, b.device_id),
-        area_id: merge(a.area_id, b.area_id),
-        label_id: merge(a.label_id, b.label_id)
+        entity_id: merge(a2.entity_id, b2.entity_id),
+        device_id: merge(a2.device_id, b2.device_id),
+        area_id: merge(a2.area_id, b2.area_id),
+        label_id: merge(a2.label_id, b2.label_id)
       };
     }
     async _record() {
@@ -5794,7 +5836,7 @@ ${s.description}`).join("\n\n");
       if (merged.label_id?.length) data.label_ids = merged.label_id;
       const fb = this.shadowRoot.getElementById("feedback");
       try {
-        await this._hass.callService(DOMAIN$2, "record", data);
+        await this._hass.callService(DOMAIN$1, "record", data);
         window.dispatchEvent(new CustomEvent("hass-datapoints-event-recorded"));
         this.dispatchEvent(new CustomEvent("hass-datapoints-action-recorded", {
           bubbles: true,
@@ -5811,11 +5853,11 @@ ${s.description}`).join("\n\n");
         fb.textContent = "Event recorded!";
         fb.style.display = "block";
         setTimeout(() => fb.style.display = "none", 3e3);
-      } catch (e) {
+      } catch (e2) {
         fb.className = "feedback err";
-        fb.textContent = `Error: ${e.message || "unknown error"}`;
+        fb.textContent = `Error: ${e2.message || "unknown error"}`;
         fb.style.display = "block";
-        console.error("[hass-datapoints action-card]", e);
+        console.error("[hass-datapoints action-card]", e2);
       }
       btn.disabled = false;
     }
@@ -5837,120 +5879,506 @@ ${s.description}`).join("\n\n");
       return this._config?.show_annotation !== false ? 10 : 7;
     }
   }
-  class ChartCardBase extends HTMLElement {
-    constructor() {
-      super();
-      this.attachShadow({ mode: "open" });
-      this._rendered = false;
-      this._unsubscribe = null;
-      this._resizeObserver = null;
-      this._lastHistResult = null;
-      this._lastEvents = null;
-      this._lastT0 = null;
-      this._lastT1 = null;
-      this._chartHoverCleanup = null;
-      this._chartZoomCleanup = null;
-      this._loadRaf = null;
-      this._lastDrawArgs = null;
-      this._loadRequestId = 0;
-      this._loadInFlight = false;
-      this._hasStartedInitialLoad = false;
-      this._windowListener = null;
+  const t$3 = globalThis, e$4 = t$3.ShadowRoot && (void 0 === t$3.ShadyCSS || t$3.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, s$3 = /* @__PURE__ */ Symbol(), o$3 = /* @__PURE__ */ new WeakMap();
+  let n$2 = class n {
+    constructor(t2, e2, o2) {
+      if (this._$cssResult$ = true, o2 !== s$3) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
+      this.cssText = t2, this.t = e2;
     }
-    get _entityIds() {
-      return [];
-    }
-    set hass(hass) {
-      this._hass = hass;
-      if (!this._rendered) {
-        this._rendered = true;
-        this.shadowRoot.innerHTML = buildChartCardShell(this._config.title);
-        this._setupAutoRefresh();
-        this._setupResizeObserver();
-        this._scheduleLoad();
-        return;
+    get styleSheet() {
+      let t2 = this.o;
+      const s2 = this.t;
+      if (e$4 && void 0 === t2) {
+        const e2 = void 0 !== s2 && 1 === s2.length;
+        e2 && (t2 = o$3.get(s2)), void 0 === t2 && ((this.o = t2 = new CSSStyleSheet()).replaceSync(this.cssText), e2 && o$3.set(s2, t2));
       }
-      if (this.isConnected && !this._hasStartedInitialLoad) this._scheduleLoad();
+      return t2;
+    }
+    toString() {
+      return this.cssText;
+    }
+  };
+  const r$2 = (t2) => new n$2("string" == typeof t2 ? t2 : t2 + "", void 0, s$3), i$5 = (t2, ...e2) => {
+    const o2 = 1 === t2.length ? t2[0] : e2.reduce((e3, s2, o3) => e3 + ((t3) => {
+      if (true === t3._$cssResult$) return t3.cssText;
+      if ("number" == typeof t3) return t3;
+      throw Error("Value passed to 'css' function must be a 'css' function result: " + t3 + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
+    })(s2) + t2[o3 + 1], t2[0]);
+    return new n$2(o2, t2, s$3);
+  }, S$1 = (s2, o2) => {
+    if (e$4) s2.adoptedStyleSheets = o2.map((t2) => t2 instanceof CSSStyleSheet ? t2 : t2.styleSheet);
+    else for (const e2 of o2) {
+      const o3 = document.createElement("style"), n2 = t$3.litNonce;
+      void 0 !== n2 && o3.setAttribute("nonce", n2), o3.textContent = e2.cssText, s2.appendChild(o3);
+    }
+  }, c$3 = e$4 ? (t2) => t2 : (t2) => t2 instanceof CSSStyleSheet ? ((t3) => {
+    let e2 = "";
+    for (const s2 of t3.cssRules) e2 += s2.cssText;
+    return r$2(e2);
+  })(t2) : t2;
+  const { is: i$4, defineProperty: e$3, getOwnPropertyDescriptor: h$2, getOwnPropertyNames: r$1, getOwnPropertySymbols: o$2, getPrototypeOf: n$1 } = Object, a$1 = globalThis, c$2 = a$1.trustedTypes, l$1 = c$2 ? c$2.emptyScript : "", p$2 = a$1.reactiveElementPolyfillSupport, d$1 = (t2, s2) => t2, u$3 = { toAttribute(t2, s2) {
+    switch (s2) {
+      case Boolean:
+        t2 = t2 ? l$1 : null;
+        break;
+      case Object:
+      case Array:
+        t2 = null == t2 ? t2 : JSON.stringify(t2);
+    }
+    return t2;
+  }, fromAttribute(t2, s2) {
+    let i2 = t2;
+    switch (s2) {
+      case Boolean:
+        i2 = null !== t2;
+        break;
+      case Number:
+        i2 = null === t2 ? null : Number(t2);
+        break;
+      case Object:
+      case Array:
+        try {
+          i2 = JSON.parse(t2);
+        } catch (t3) {
+          i2 = null;
+        }
+    }
+    return i2;
+  } }, f$1 = (t2, s2) => !i$4(t2, s2), b$1 = { attribute: true, type: String, converter: u$3, reflect: false, useDefault: false, hasChanged: f$1 };
+  Symbol.metadata ??= /* @__PURE__ */ Symbol("metadata"), a$1.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
+  let y$1 = class y extends HTMLElement {
+    static addInitializer(t2) {
+      this._$Ei(), (this.l ??= []).push(t2);
+    }
+    static get observedAttributes() {
+      return this.finalize(), this._$Eh && [...this._$Eh.keys()];
+    }
+    static createProperty(t2, s2 = b$1) {
+      if (s2.state && (s2.attribute = false), this._$Ei(), this.prototype.hasOwnProperty(t2) && ((s2 = Object.create(s2)).wrapped = true), this.elementProperties.set(t2, s2), !s2.noAccessor) {
+        const i2 = /* @__PURE__ */ Symbol(), h2 = this.getPropertyDescriptor(t2, i2, s2);
+        void 0 !== h2 && e$3(this.prototype, t2, h2);
+      }
+    }
+    static getPropertyDescriptor(t2, s2, i2) {
+      const { get: e2, set: r2 } = h$2(this.prototype, t2) ?? { get() {
+        return this[s2];
+      }, set(t3) {
+        this[s2] = t3;
+      } };
+      return { get: e2, set(s3) {
+        const h2 = e2?.call(this);
+        r2?.call(this, s3), this.requestUpdate(t2, h2, i2);
+      }, configurable: true, enumerable: true };
+    }
+    static getPropertyOptions(t2) {
+      return this.elementProperties.get(t2) ?? b$1;
+    }
+    static _$Ei() {
+      if (this.hasOwnProperty(d$1("elementProperties"))) return;
+      const t2 = n$1(this);
+      t2.finalize(), void 0 !== t2.l && (this.l = [...t2.l]), this.elementProperties = new Map(t2.elementProperties);
+    }
+    static finalize() {
+      if (this.hasOwnProperty(d$1("finalized"))) return;
+      if (this.finalized = true, this._$Ei(), this.hasOwnProperty(d$1("properties"))) {
+        const t3 = this.properties, s2 = [...r$1(t3), ...o$2(t3)];
+        for (const i2 of s2) this.createProperty(i2, t3[i2]);
+      }
+      const t2 = this[Symbol.metadata];
+      if (null !== t2) {
+        const s2 = litPropertyMetadata.get(t2);
+        if (void 0 !== s2) for (const [t3, i2] of s2) this.elementProperties.set(t3, i2);
+      }
+      this._$Eh = /* @__PURE__ */ new Map();
+      for (const [t3, s2] of this.elementProperties) {
+        const i2 = this._$Eu(t3, s2);
+        void 0 !== i2 && this._$Eh.set(i2, t3);
+      }
+      this.elementStyles = this.finalizeStyles(this.styles);
+    }
+    static finalizeStyles(s2) {
+      const i2 = [];
+      if (Array.isArray(s2)) {
+        const e2 = new Set(s2.flat(1 / 0).reverse());
+        for (const s3 of e2) i2.unshift(c$3(s3));
+      } else void 0 !== s2 && i2.push(c$3(s2));
+      return i2;
+    }
+    static _$Eu(t2, s2) {
+      const i2 = s2.attribute;
+      return false === i2 ? void 0 : "string" == typeof i2 ? i2 : "string" == typeof t2 ? t2.toLowerCase() : void 0;
+    }
+    constructor() {
+      super(), this._$Ep = void 0, this.isUpdatePending = false, this.hasUpdated = false, this._$Em = null, this._$Ev();
+    }
+    _$Ev() {
+      this._$ES = new Promise((t2) => this.enableUpdating = t2), this._$AL = /* @__PURE__ */ new Map(), this._$E_(), this.requestUpdate(), this.constructor.l?.forEach((t2) => t2(this));
+    }
+    addController(t2) {
+      (this._$EO ??= /* @__PURE__ */ new Set()).add(t2), void 0 !== this.renderRoot && this.isConnected && t2.hostConnected?.();
+    }
+    removeController(t2) {
+      this._$EO?.delete(t2);
+    }
+    _$E_() {
+      const t2 = /* @__PURE__ */ new Map(), s2 = this.constructor.elementProperties;
+      for (const i2 of s2.keys()) this.hasOwnProperty(i2) && (t2.set(i2, this[i2]), delete this[i2]);
+      t2.size > 0 && (this._$Ep = t2);
+    }
+    createRenderRoot() {
+      const t2 = this.shadowRoot ?? this.attachShadow(this.constructor.shadowRootOptions);
+      return S$1(t2, this.constructor.elementStyles), t2;
     }
     connectedCallback() {
-      if (this._rendered && this._hass && !this._hasStartedInitialLoad) {
-        this._scheduleLoad();
-      }
+      this.renderRoot ??= this.createRenderRoot(), this.enableUpdating(true), this._$EO?.forEach((t2) => t2.hostConnected?.());
+    }
+    enableUpdating(t2) {
     }
     disconnectedCallback() {
-      if (this._loadRaf) {
-        window.cancelAnimationFrame(this._loadRaf);
-        this._loadRaf = null;
-      }
-      if (this._unsubscribe) {
-        this._unsubscribe();
-        this._unsubscribe = null;
-      }
-      if (this._windowListener) {
-        window.removeEventListener("hass-datapoints-event-recorded", this._windowListener);
-        this._windowListener = null;
-      }
-      if (this._resizeObserver) {
-        this._resizeObserver.disconnect();
-        this._resizeObserver = null;
-      }
-      if (this._chartHoverCleanup) {
-        this._chartHoverCleanup();
-        this._chartHoverCleanup = null;
-      }
-      if (this._chartZoomCleanup) {
-        this._chartZoomCleanup();
-        this._chartZoomCleanup = null;
+      this._$EO?.forEach((t2) => t2.hostDisconnected?.());
+    }
+    attributeChangedCallback(t2, s2, i2) {
+      this._$AK(t2, i2);
+    }
+    _$ET(t2, s2) {
+      const i2 = this.constructor.elementProperties.get(t2), e2 = this.constructor._$Eu(t2, i2);
+      if (void 0 !== e2 && true === i2.reflect) {
+        const h2 = (void 0 !== i2.converter?.toAttribute ? i2.converter : u$3).toAttribute(s2, i2.type);
+        this._$Em = t2, null == h2 ? this.removeAttribute(e2) : this.setAttribute(e2, h2), this._$Em = null;
       }
     }
-    _setupAutoRefresh() {
-      this._hass.connection.subscribeEvents(() => {
-        this._load();
-      }, `${DOMAIN$2}_event_recorded`).then((unsub) => {
-        this._unsubscribe = unsub;
-      }).catch(() => {
-      });
-      this._windowListener = () => {
-        this._scheduleLoad();
-      };
-      window.addEventListener("hass-datapoints-event-recorded", this._windowListener);
+    _$AK(t2, s2) {
+      const i2 = this.constructor, e2 = i2._$Eh.get(t2);
+      if (void 0 !== e2 && this._$Em !== e2) {
+        const t3 = i2.getPropertyOptions(e2), h2 = "function" == typeof t3.converter ? { fromAttribute: t3.converter } : void 0 !== t3.converter?.fromAttribute ? t3.converter : u$3;
+        this._$Em = e2;
+        const r2 = h2.fromAttribute(s2, t3.type);
+        this[e2] = r2 ?? this._$Ej?.get(e2) ?? r2, this._$Em = null;
+      }
     }
-    _setupResizeObserver() {
-      const wrap = this.shadowRoot.querySelector(".chart-wrap");
-      if (!wrap || !window.ResizeObserver) return;
-      this._resizeObserver = new ResizeObserver(() => {
-        if (Array.isArray(this._lastDrawArgs) && this._lastDrawArgs.length) {
-          this._drawChart(...this._lastDrawArgs);
+    requestUpdate(t2, s2, i2, e2 = false, h2) {
+      if (void 0 !== t2) {
+        const r2 = this.constructor;
+        if (false === e2 && (h2 = this[t2]), i2 ??= r2.getPropertyOptions(t2), !((i2.hasChanged ?? f$1)(h2, s2) || i2.useDefault && i2.reflect && h2 === this._$Ej?.get(t2) && !this.hasAttribute(r2._$Eu(t2, i2)))) return;
+        this.C(t2, s2, i2);
+      }
+      false === this.isUpdatePending && (this._$ES = this._$EP());
+    }
+    C(t2, s2, { useDefault: i2, reflect: e2, wrapped: h2 }, r2) {
+      i2 && !(this._$Ej ??= /* @__PURE__ */ new Map()).has(t2) && (this._$Ej.set(t2, r2 ?? s2 ?? this[t2]), true !== h2 || void 0 !== r2) || (this._$AL.has(t2) || (this.hasUpdated || i2 || (s2 = void 0), this._$AL.set(t2, s2)), true === e2 && this._$Em !== t2 && (this._$Eq ??= /* @__PURE__ */ new Set()).add(t2));
+    }
+    async _$EP() {
+      this.isUpdatePending = true;
+      try {
+        await this._$ES;
+      } catch (t3) {
+        Promise.reject(t3);
+      }
+      const t2 = this.scheduleUpdate();
+      return null != t2 && await t2, !this.isUpdatePending;
+    }
+    scheduleUpdate() {
+      return this.performUpdate();
+    }
+    performUpdate() {
+      if (!this.isUpdatePending) return;
+      if (!this.hasUpdated) {
+        if (this.renderRoot ??= this.createRenderRoot(), this._$Ep) {
+          for (const [t4, s3] of this._$Ep) this[t4] = s3;
+          this._$Ep = void 0;
         }
-      });
-      this._resizeObserver.observe(wrap);
+        const t3 = this.constructor.elementProperties;
+        if (t3.size > 0) for (const [s3, i2] of t3) {
+          const { wrapped: t4 } = i2, e2 = this[s3];
+          true !== t4 || this._$AL.has(s3) || void 0 === e2 || this.C(s3, void 0, i2, e2);
+        }
+      }
+      let t2 = false;
+      const s2 = this._$AL;
+      try {
+        t2 = this.shouldUpdate(s2), t2 ? (this.willUpdate(s2), this._$EO?.forEach((t3) => t3.hostUpdate?.()), this.update(s2)) : this._$EM();
+      } catch (s3) {
+        throw t2 = false, this._$EM(), s3;
+      }
+      t2 && this._$AE(s2);
     }
-    _scheduleLoad() {
-      if (!this._hass || this._loadRaf || this._loadInFlight) return;
-      this._loadRaf = window.requestAnimationFrame(() => {
-        this._loadRaf = null;
-        if (!this._hass || !this.isConnected || this._loadInFlight) return;
-        this._hasStartedInitialLoad = true;
-        this._loadInFlight = true;
-        Promise.resolve(this._load()).catch((err) => {
-          console.error("[hass-datapoints chart-base] load failed", err);
-        }).finally(() => {
-          this._loadInFlight = false;
-        });
-      });
+    willUpdate(t2) {
     }
-    _setChartLoading(isLoading) {
-      const loadingEl = this.shadowRoot?.getElementById("loading");
-      if (!loadingEl) return;
-      loadingEl.classList.toggle("active", !!isLoading);
+    _$AE(t2) {
+      this._$EO?.forEach((t3) => t3.hostUpdated?.()), this.hasUpdated || (this.hasUpdated = true, this.firstUpdated(t2)), this.updated(t2);
     }
-    _setChartMessage(message = "") {
-      const messageEl = this.shadowRoot?.getElementById("chart-message");
-      if (!messageEl) return;
-      messageEl.textContent = message || "";
-      messageEl.classList.toggle("visible", !!message);
+    _$EM() {
+      this._$AL = /* @__PURE__ */ new Map(), this.isUpdatePending = false;
+    }
+    get updateComplete() {
+      return this.getUpdateComplete();
+    }
+    getUpdateComplete() {
+      return this._$ES;
+    }
+    shouldUpdate(t2) {
+      return true;
+    }
+    update(t2) {
+      this._$Eq &&= this._$Eq.forEach((t3) => this._$ET(t3, this[t3])), this._$EM();
+    }
+    updated(t2) {
+    }
+    firstUpdated(t2) {
+    }
+  };
+  y$1.elementStyles = [], y$1.shadowRootOptions = { mode: "open" }, y$1[d$1("elementProperties")] = /* @__PURE__ */ new Map(), y$1[d$1("finalized")] = /* @__PURE__ */ new Map(), p$2?.({ ReactiveElement: y$1 }), (a$1.reactiveElementVersions ??= []).push("2.1.2");
+  const t$2 = globalThis, i$3 = (t2) => t2, s$2 = t$2.trustedTypes, e$2 = s$2 ? s$2.createPolicy("lit-html", { createHTML: (t2) => t2 }) : void 0, h$1 = "$lit$", o$1 = `lit$${Math.random().toFixed(9).slice(2)}$`, n = "?" + o$1, r = `<${n}>`, l = document, c$1 = () => l.createComment(""), a = (t2) => null === t2 || "object" != typeof t2 && "function" != typeof t2, u$2 = Array.isArray, d = (t2) => u$2(t2) || "function" == typeof t2?.[Symbol.iterator], f = "[ 	\n\f\r]", v$1 = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, _ = /-->/g, m$1 = />/g, p$1 = RegExp(`>|${f}(?:([^\\s"'>=/]+)(${f}*=${f}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`, "g"), g = /'/g, $ = /"/g, y = /^(?:script|style|textarea|title)$/i, x = (t2) => (i2, ...s2) => ({ _$litType$: t2, strings: i2, values: s2 }), b = x(1), E = /* @__PURE__ */ Symbol.for("lit-noChange"), A = /* @__PURE__ */ Symbol.for("lit-nothing"), C = /* @__PURE__ */ new WeakMap(), P = l.createTreeWalker(l, 129);
+  function V(t2, i2) {
+    if (!u$2(t2) || !t2.hasOwnProperty("raw")) throw Error("invalid template strings array");
+    return void 0 !== e$2 ? e$2.createHTML(i2) : i2;
+  }
+  const N = (t2, i2) => {
+    const s2 = t2.length - 1, e2 = [];
+    let n2, l2 = 2 === i2 ? "<svg>" : 3 === i2 ? "<math>" : "", c2 = v$1;
+    for (let i3 = 0; i3 < s2; i3++) {
+      const s3 = t2[i3];
+      let a2, u2, d2 = -1, f2 = 0;
+      for (; f2 < s3.length && (c2.lastIndex = f2, u2 = c2.exec(s3), null !== u2); ) f2 = c2.lastIndex, c2 === v$1 ? "!--" === u2[1] ? c2 = _ : void 0 !== u2[1] ? c2 = m$1 : void 0 !== u2[2] ? (y.test(u2[2]) && (n2 = RegExp("</" + u2[2], "g")), c2 = p$1) : void 0 !== u2[3] && (c2 = p$1) : c2 === p$1 ? ">" === u2[0] ? (c2 = n2 ?? v$1, d2 = -1) : void 0 === u2[1] ? d2 = -2 : (d2 = c2.lastIndex - u2[2].length, a2 = u2[1], c2 = void 0 === u2[3] ? p$1 : '"' === u2[3] ? $ : g) : c2 === $ || c2 === g ? c2 = p$1 : c2 === _ || c2 === m$1 ? c2 = v$1 : (c2 = p$1, n2 = void 0);
+      const x2 = c2 === p$1 && t2[i3 + 1].startsWith("/>") ? " " : "";
+      l2 += c2 === v$1 ? s3 + r : d2 >= 0 ? (e2.push(a2), s3.slice(0, d2) + h$1 + s3.slice(d2) + o$1 + x2) : s3 + o$1 + (-2 === d2 ? i3 : x2);
+    }
+    return [V(t2, l2 + (t2[s2] || "<?>") + (2 === i2 ? "</svg>" : 3 === i2 ? "</math>" : "")), e2];
+  };
+  class S {
+    constructor({ strings: t2, _$litType$: i2 }, e2) {
+      let r2;
+      this.parts = [];
+      let l2 = 0, a2 = 0;
+      const u2 = t2.length - 1, d2 = this.parts, [f2, v2] = N(t2, i2);
+      if (this.el = S.createElement(f2, e2), P.currentNode = this.el.content, 2 === i2 || 3 === i2) {
+        const t3 = this.el.content.firstChild;
+        t3.replaceWith(...t3.childNodes);
+      }
+      for (; null !== (r2 = P.nextNode()) && d2.length < u2; ) {
+        if (1 === r2.nodeType) {
+          if (r2.hasAttributes()) for (const t3 of r2.getAttributeNames()) if (t3.endsWith(h$1)) {
+            const i3 = v2[a2++], s2 = r2.getAttribute(t3).split(o$1), e3 = /([.?@])?(.*)/.exec(i3);
+            d2.push({ type: 1, index: l2, name: e3[2], strings: s2, ctor: "." === e3[1] ? I : "?" === e3[1] ? L : "@" === e3[1] ? z : H }), r2.removeAttribute(t3);
+          } else t3.startsWith(o$1) && (d2.push({ type: 6, index: l2 }), r2.removeAttribute(t3));
+          if (y.test(r2.tagName)) {
+            const t3 = r2.textContent.split(o$1), i3 = t3.length - 1;
+            if (i3 > 0) {
+              r2.textContent = s$2 ? s$2.emptyScript : "";
+              for (let s2 = 0; s2 < i3; s2++) r2.append(t3[s2], c$1()), P.nextNode(), d2.push({ type: 2, index: ++l2 });
+              r2.append(t3[i3], c$1());
+            }
+          }
+        } else if (8 === r2.nodeType) if (r2.data === n) d2.push({ type: 2, index: l2 });
+        else {
+          let t3 = -1;
+          for (; -1 !== (t3 = r2.data.indexOf(o$1, t3 + 1)); ) d2.push({ type: 7, index: l2 }), t3 += o$1.length - 1;
+        }
+        l2++;
+      }
+    }
+    static createElement(t2, i2) {
+      const s2 = l.createElement("template");
+      return s2.innerHTML = t2, s2;
     }
   }
+  function M$1(t2, i2, s2 = t2, e2) {
+    if (i2 === E) return i2;
+    let h2 = void 0 !== e2 ? s2._$Co?.[e2] : s2._$Cl;
+    const o2 = a(i2) ? void 0 : i2._$litDirective$;
+    return h2?.constructor !== o2 && (h2?._$AO?.(false), void 0 === o2 ? h2 = void 0 : (h2 = new o2(t2), h2._$AT(t2, s2, e2)), void 0 !== e2 ? (s2._$Co ??= [])[e2] = h2 : s2._$Cl = h2), void 0 !== h2 && (i2 = M$1(t2, h2._$AS(t2, i2.values), h2, e2)), i2;
+  }
+  class R {
+    constructor(t2, i2) {
+      this._$AV = [], this._$AN = void 0, this._$AD = t2, this._$AM = i2;
+    }
+    get parentNode() {
+      return this._$AM.parentNode;
+    }
+    get _$AU() {
+      return this._$AM._$AU;
+    }
+    u(t2) {
+      const { el: { content: i2 }, parts: s2 } = this._$AD, e2 = (t2?.creationScope ?? l).importNode(i2, true);
+      P.currentNode = e2;
+      let h2 = P.nextNode(), o2 = 0, n2 = 0, r2 = s2[0];
+      for (; void 0 !== r2; ) {
+        if (o2 === r2.index) {
+          let i3;
+          2 === r2.type ? i3 = new k(h2, h2.nextSibling, this, t2) : 1 === r2.type ? i3 = new r2.ctor(h2, r2.name, r2.strings, this, t2) : 6 === r2.type && (i3 = new Z(h2, this, t2)), this._$AV.push(i3), r2 = s2[++n2];
+        }
+        o2 !== r2?.index && (h2 = P.nextNode(), o2++);
+      }
+      return P.currentNode = l, e2;
+    }
+    p(t2) {
+      let i2 = 0;
+      for (const s2 of this._$AV) void 0 !== s2 && (void 0 !== s2.strings ? (s2._$AI(t2, s2, i2), i2 += s2.strings.length - 2) : s2._$AI(t2[i2])), i2++;
+    }
+  }
+  class k {
+    get _$AU() {
+      return this._$AM?._$AU ?? this._$Cv;
+    }
+    constructor(t2, i2, s2, e2) {
+      this.type = 2, this._$AH = A, this._$AN = void 0, this._$AA = t2, this._$AB = i2, this._$AM = s2, this.options = e2, this._$Cv = e2?.isConnected ?? true;
+    }
+    get parentNode() {
+      let t2 = this._$AA.parentNode;
+      const i2 = this._$AM;
+      return void 0 !== i2 && 11 === t2?.nodeType && (t2 = i2.parentNode), t2;
+    }
+    get startNode() {
+      return this._$AA;
+    }
+    get endNode() {
+      return this._$AB;
+    }
+    _$AI(t2, i2 = this) {
+      t2 = M$1(this, t2, i2), a(t2) ? t2 === A || null == t2 || "" === t2 ? (this._$AH !== A && this._$AR(), this._$AH = A) : t2 !== this._$AH && t2 !== E && this._(t2) : void 0 !== t2._$litType$ ? this.$(t2) : void 0 !== t2.nodeType ? this.T(t2) : d(t2) ? this.k(t2) : this._(t2);
+    }
+    O(t2) {
+      return this._$AA.parentNode.insertBefore(t2, this._$AB);
+    }
+    T(t2) {
+      this._$AH !== t2 && (this._$AR(), this._$AH = this.O(t2));
+    }
+    _(t2) {
+      this._$AH !== A && a(this._$AH) ? this._$AA.nextSibling.data = t2 : this.T(l.createTextNode(t2)), this._$AH = t2;
+    }
+    $(t2) {
+      const { values: i2, _$litType$: s2 } = t2, e2 = "number" == typeof s2 ? this._$AC(t2) : (void 0 === s2.el && (s2.el = S.createElement(V(s2.h, s2.h[0]), this.options)), s2);
+      if (this._$AH?._$AD === e2) this._$AH.p(i2);
+      else {
+        const t3 = new R(e2, this), s3 = t3.u(this.options);
+        t3.p(i2), this.T(s3), this._$AH = t3;
+      }
+    }
+    _$AC(t2) {
+      let i2 = C.get(t2.strings);
+      return void 0 === i2 && C.set(t2.strings, i2 = new S(t2)), i2;
+    }
+    k(t2) {
+      u$2(this._$AH) || (this._$AH = [], this._$AR());
+      const i2 = this._$AH;
+      let s2, e2 = 0;
+      for (const h2 of t2) e2 === i2.length ? i2.push(s2 = new k(this.O(c$1()), this.O(c$1()), this, this.options)) : s2 = i2[e2], s2._$AI(h2), e2++;
+      e2 < i2.length && (this._$AR(s2 && s2._$AB.nextSibling, e2), i2.length = e2);
+    }
+    _$AR(t2 = this._$AA.nextSibling, s2) {
+      for (this._$AP?.(false, true, s2); t2 !== this._$AB; ) {
+        const s3 = i$3(t2).nextSibling;
+        i$3(t2).remove(), t2 = s3;
+      }
+    }
+    setConnected(t2) {
+      void 0 === this._$AM && (this._$Cv = t2, this._$AP?.(t2));
+    }
+  }
+  class H {
+    get tagName() {
+      return this.element.tagName;
+    }
+    get _$AU() {
+      return this._$AM._$AU;
+    }
+    constructor(t2, i2, s2, e2, h2) {
+      this.type = 1, this._$AH = A, this._$AN = void 0, this.element = t2, this.name = i2, this._$AM = e2, this.options = h2, s2.length > 2 || "" !== s2[0] || "" !== s2[1] ? (this._$AH = Array(s2.length - 1).fill(new String()), this.strings = s2) : this._$AH = A;
+    }
+    _$AI(t2, i2 = this, s2, e2) {
+      const h2 = this.strings;
+      let o2 = false;
+      if (void 0 === h2) t2 = M$1(this, t2, i2, 0), o2 = !a(t2) || t2 !== this._$AH && t2 !== E, o2 && (this._$AH = t2);
+      else {
+        const e3 = t2;
+        let n2, r2;
+        for (t2 = h2[0], n2 = 0; n2 < h2.length - 1; n2++) r2 = M$1(this, e3[s2 + n2], i2, n2), r2 === E && (r2 = this._$AH[n2]), o2 ||= !a(r2) || r2 !== this._$AH[n2], r2 === A ? t2 = A : t2 !== A && (t2 += (r2 ?? "") + h2[n2 + 1]), this._$AH[n2] = r2;
+      }
+      o2 && !e2 && this.j(t2);
+    }
+    j(t2) {
+      t2 === A ? this.element.removeAttribute(this.name) : this.element.setAttribute(this.name, t2 ?? "");
+    }
+  }
+  class I extends H {
+    constructor() {
+      super(...arguments), this.type = 3;
+    }
+    j(t2) {
+      this.element[this.name] = t2 === A ? void 0 : t2;
+    }
+  }
+  class L extends H {
+    constructor() {
+      super(...arguments), this.type = 4;
+    }
+    j(t2) {
+      this.element.toggleAttribute(this.name, !!t2 && t2 !== A);
+    }
+  }
+  class z extends H {
+    constructor(t2, i2, s2, e2, h2) {
+      super(t2, i2, s2, e2, h2), this.type = 5;
+    }
+    _$AI(t2, i2 = this) {
+      if ((t2 = M$1(this, t2, i2, 0) ?? A) === E) return;
+      const s2 = this._$AH, e2 = t2 === A && s2 !== A || t2.capture !== s2.capture || t2.once !== s2.once || t2.passive !== s2.passive, h2 = t2 !== A && (s2 === A || e2);
+      e2 && this.element.removeEventListener(this.name, this, s2), h2 && this.element.addEventListener(this.name, this, t2), this._$AH = t2;
+    }
+    handleEvent(t2) {
+      "function" == typeof this._$AH ? this._$AH.call(this.options?.host ?? this.element, t2) : this._$AH.handleEvent(t2);
+    }
+  }
+  class Z {
+    constructor(t2, i2, s2) {
+      this.element = t2, this.type = 6, this._$AN = void 0, this._$AM = i2, this.options = s2;
+    }
+    get _$AU() {
+      return this._$AM._$AU;
+    }
+    _$AI(t2) {
+      M$1(this, t2);
+    }
+  }
+  const j = { I: k }, B = t$2.litHtmlPolyfillSupport;
+  B?.(S, k), (t$2.litHtmlVersions ??= []).push("3.3.2");
+  const D = (t2, i2, s2) => {
+    const e2 = s2?.renderBefore ?? i2;
+    let h2 = e2._$litPart$;
+    if (void 0 === h2) {
+      const t3 = s2?.renderBefore ?? null;
+      e2._$litPart$ = h2 = new k(i2.insertBefore(c$1(), t3), t3, void 0, s2 ?? {});
+    }
+    return h2._$AI(t2), h2;
+  };
+  const s$1 = globalThis;
+  let i$2 = class i extends y$1 {
+    constructor() {
+      super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
+    }
+    createRenderRoot() {
+      const t2 = super.createRenderRoot();
+      return this.renderOptions.renderBefore ??= t2.firstChild, t2;
+    }
+    update(t2) {
+      const r2 = this.render();
+      this.hasUpdated || (this.renderOptions.isConnected = this.isConnected), super.update(t2), this._$Do = D(r2, this.renderRoot, this.renderOptions);
+    }
+    connectedCallback() {
+      super.connectedCallback(), this._$Do?.setConnected(true);
+    }
+    disconnectedCallback() {
+      super.disconnectedCallback(), this._$Do?.setConnected(false);
+    }
+    render() {
+      return E;
+    }
+  };
+  i$2._$litElement$ = true, i$2["finalized"] = true, s$1.litElementHydrateSupport?.({ LitElement: i$2 });
+  const o = s$1.litElementPolyfillSupport;
+  o?.({ LitElement: i$2 });
+  (s$1.litElementVersions ??= []).push("4.2.2");
   class HassRecordsDevToolCard extends HTMLElement {
     constructor() {
       super();
@@ -6128,7 +6556,7 @@ ${s.description}`).join("\n\n");
         .delete-btn { --mdc-theme-primary: var(--error-color, #f44336); }
       </style>
       <ha-card>
-        ${cfg.title ? `<div class="card-header">${esc$3(cfg.title)}</div>` : ""}
+        ${cfg.title ? `<div class="card-header">${esc$1(cfg.title)}</div>` : ""}
 
         <div class="section-title">Analyze HA History</div>
 
@@ -6171,9 +6599,9 @@ ${s.description}`).join("\n\n");
       ep.value = [];
       this._entities = [];
       this._suppressEntityChange = false;
-      ep.addEventListener("value-changed", (e) => {
+      ep.addEventListener("value-changed", (e2) => {
         if (this._suppressEntityChange) return;
-        const val = e.detail.value;
+        const val = e2.detail.value;
         this._entities = Array.isArray(val) ? val : val ? [val] : [];
       });
       this._addWindowRow();
@@ -6222,8 +6650,8 @@ ${s.description}`).join("\n\n");
     }
     _syncRemoveButtons() {
       const rows = this.shadowRoot.querySelectorAll(".window-row");
-      rows.forEach((r) => {
-        r.querySelector(".remove-window-btn").disabled = rows.length <= 1;
+      rows.forEach((r2) => {
+        r2.querySelector(".remove-window-btn").disabled = rows.length <= 1;
       });
     }
     _readWindowConfigs() {
@@ -6270,7 +6698,7 @@ ${s.description}`).join("\n\n");
             startDt: w.startDt,
             hours: w.hours,
             changes,
-            selected: new Set(changes.map((_, i) => i))
+            selected: new Set(changes.map((_2, i2) => i2))
           });
         }));
         this._renderResults();
@@ -6292,16 +6720,16 @@ ${s.description}`).join("\n\n");
         const deviceClass = entityState?.attributes?.device_class || "";
         const friendlyName = entityState?.attributes?.friendly_name || entityId;
         const unit = entityState?.attributes?.unit_of_measurement || "";
-        for (let i = 0; i < states.length; i++) {
-          const s = states[i];
-          const prev = i > 0 ? states[i - 1] : null;
-          const cur = s.s;
+        for (let i2 = 0; i2 < states.length; i2++) {
+          const s2 = states[i2];
+          const prev = i2 > 0 ? states[i2 - 1] : null;
+          const cur = s2.s;
           const prevVal = prev?.s ?? null;
           if (cur === "unavailable" || cur === "unknown") continue;
           if (prev && prevVal === cur) {
             if (domain !== "climate") continue;
           }
-          const tsRaw = s.lc ?? s.lu;
+          const tsRaw = s2.lc ?? s2.lu;
           const timestamp = tsRaw != null ? new Date(tsRaw * 1e3).toISOString() : (/* @__PURE__ */ new Date()).toISOString();
           let message = null;
           let icon = "mdi:bookmark";
@@ -6325,10 +6753,10 @@ ${s.description}`).join("\n\n");
             icon = cur === "open" || cur === "opening" ? "mdi:garage-open" : "mdi:garage";
             color = cur === "open" ? "#4caf50" : "#795548";
           } else if (domain === "climate") {
-            const curTemp = s.a?.temperature;
+            const curTemp = s2.a?.temperature;
             const prevTemp = prev?.a?.temperature;
             if (curTemp != null && curTemp !== prevTemp) {
-              const tu = s.a?.temperature_unit || unit || "°";
+              const tu = s2.a?.temperature_unit || unit || "°";
               message = `${friendlyName}: setpoint → ${curTemp}${tu}`;
               icon = "mdi:thermostat";
               color = "#ff5722";
@@ -6370,7 +6798,7 @@ ${s.description}`).join("\n\n");
           changes.push({ timestamp, message, entity_id: entityId, icon, color });
         }
       }
-      changes.sort((a, b) => a.timestamp < b.timestamp ? -1 : 1);
+      changes.sort((a2, b2) => a2.timestamp < b2.timestamp ? -1 : 1);
       return changes;
     }
     _binaryLabel(deviceClass, state) {
@@ -6409,17 +6837,17 @@ ${s.description}`).join("\n\n");
       const remainingIds = [...this._results.keys()].filter((id) => !windowOrder.includes(id));
       const orderedIds = [...windowOrder, ...remainingIds];
       container.innerHTML = orderedIds.map((wid) => {
-        const r = this._results.get(wid);
-        if (!r) return "";
-        const { label, startDt, hours, changes, selected } = r;
+        const r2 = this._results.get(wid);
+        if (!r2) return "";
+        const { label, startDt, hours, changes, selected } = r2;
         const rangeLabel = startDt ? `from ${new Date(startDt).toLocaleString([], { dateStyle: "short", timeStyle: "short" })} · ${hours}h` : `most recent ${hours}h`;
         return `
         <div class="window-result" data-wid="${wid}">
           <div class="window-result-header">
             <span class="window-result-toggle">▼</span>
             <span class="window-result-title">
-              ${esc$3(label)}
-              <span class="window-result-meta">${esc$3(rangeLabel)} · ${changes.length} change${changes.length !== 1 ? "s" : ""}</span>
+              ${esc$1(label)}
+              <span class="window-result-meta">${esc$1(rangeLabel)} · ${changes.length} change${changes.length !== 1 ? "s" : ""}</span>
             </span>
             <span class="window-result-links">
               <button class="window-link" data-wid="${wid}" data-act="all">All</button>
@@ -6428,12 +6856,12 @@ ${s.description}`).join("\n\n");
           </div>
           <div class="window-result-body">
             <div class="changes-list">
-              ${changes.length === 0 ? `<div class="empty-changes">No state changes detected in this window.</div>` : changes.map((c, i) => `
+              ${changes.length === 0 ? `<div class="empty-changes">No state changes detected in this window.</div>` : changes.map((c2, i2) => `
                   <label class="change-item">
-                    <input type="checkbox" data-wid="${wid}" data-idx="${i}" ${selected.has(i) ? "checked" : ""}>
+                    <input type="checkbox" data-wid="${wid}" data-idx="${i2}" ${selected.has(i2) ? "checked" : ""}>
                     <div class="change-info">
-                      <div class="change-msg">${esc$3(c.message)}</div>
-                      <div class="change-meta">${esc$3(fmtDateTime$2(c.timestamp))} &middot; ${esc$3(c.entity_id)}</div>
+                      <div class="change-msg">${esc$1(c2.message)}</div>
+                      <div class="change-meta">${esc$1(fmtDateTime$1(c2.timestamp))} &middot; ${esc$1(c2.entity_id)}</div>
                     </div>
                   </label>`).join("")}
             </div>
@@ -6442,37 +6870,37 @@ ${s.description}`).join("\n\n");
       `;
       }).join("");
       container.querySelectorAll(".window-result-header").forEach((header) => {
-        header.addEventListener("click", (e) => {
-          if (e.target.closest(".window-result-links")) return;
+        header.addEventListener("click", (e2) => {
+          if (e2.target.closest(".window-result-links")) return;
           header.closest(".window-result").classList.toggle("collapsed");
         });
       });
       container.querySelectorAll("input[type=checkbox]").forEach((cb) => {
-        cb.addEventListener("change", (e) => {
-          const wid = parseInt(e.target.dataset.wid);
-          const idx = parseInt(e.target.dataset.idx);
-          const r = this._results.get(wid);
-          if (!r) return;
-          if (e.target.checked) r.selected.add(idx);
-          else r.selected.delete(idx);
+        cb.addEventListener("change", (e2) => {
+          const wid = parseInt(e2.target.dataset.wid);
+          const idx = parseInt(e2.target.dataset.idx);
+          const r2 = this._results.get(wid);
+          if (!r2) return;
+          if (e2.target.checked) r2.selected.add(idx);
+          else r2.selected.delete(idx);
           this._updateSelectedSummary();
         });
       });
       container.querySelectorAll(".window-link").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const wid = parseInt(e.currentTarget.dataset.wid);
-          const act = e.currentTarget.dataset.act;
-          const r = this._results.get(wid);
-          if (!r) return;
+        btn.addEventListener("click", (e2) => {
+          e2.stopPropagation();
+          const wid = parseInt(e2.currentTarget.dataset.wid);
+          const act = e2.currentTarget.dataset.act;
+          const r2 = this._results.get(wid);
+          if (!r2) return;
           const cbs = container.querySelectorAll(`input[data-wid="${wid}"]`);
           if (act === "all") {
-            r.selected = new Set(r.changes.map((_, i) => i));
+            r2.selected = new Set(r2.changes.map((_2, i2) => i2));
             cbs.forEach((cb) => {
               cb.checked = true;
             });
           } else {
-            r.selected.clear();
+            r2.selected.clear();
             cbs.forEach((cb) => {
               cb.checked = false;
             });
@@ -6485,9 +6913,9 @@ ${s.description}`).join("\n\n");
     _updateSelectedSummary() {
       let sel = 0;
       let total = 0;
-      this._results.forEach((r) => {
-        sel += r.selected.size;
-        total += r.changes.length;
+      this._results.forEach((r2) => {
+        sel += r2.selected.size;
+        total += r2.changes.length;
       });
       const el = this.shadowRoot.getElementById("selected-summary");
       if (el) {
@@ -6498,8 +6926,8 @@ ${s.description}`).join("\n\n");
     // ── Record / Delete ────────────────────────────────────────────────────────
     async _recordSelected() {
       const allItems = [];
-      this._results.forEach((r) => {
-        [...r.selected].sort((a, b) => a - b).forEach((i) => allItems.push(r.changes[i]));
+      this._results.forEach((r2) => {
+        [...r2.selected].sort((a2, b2) => a2 - b2).forEach((i2) => allItems.push(r2.changes[i2]));
       });
       if (!allItems.length) {
         this._showStatus("record-status", "err", "No items selected.");
@@ -6512,7 +6940,7 @@ ${s.description}`).join("\n\n");
       let fail = 0;
       for (const item of allItems) {
         try {
-          await this._hass.callService(DOMAIN$2, "record", {
+          await this._hass.callService(DOMAIN$1, "record", {
             message: item.message,
             entity_ids: [item.entity_id],
             icon: item.icon,
@@ -6540,7 +6968,7 @@ ${s.description}`).join("\n\n");
         this._showStatus("delete-status", "err", "No dev datapoints to delete.");
         return;
       }
-      const confirmed = await confirmDestructiveAction$2(this, {
+      const confirmed = await confirmDestructiveAction$1(this, {
         title: "Delete dev datapoints",
         message: `Delete all ${count} dev data point${count !== 1 ? "s" : ""}?`,
         confirmLabel: "Delete all"
@@ -6549,7 +6977,7 @@ ${s.description}`).join("\n\n");
       const btn = this.shadowRoot.getElementById("delete-dev-btn");
       btn.disabled = true;
       try {
-        const result = await this._hass.connection.sendMessagePromise({ type: `${DOMAIN$2}/events/delete_dev` });
+        const result = await this._hass.connection.sendMessagePromise({ type: `${DOMAIN$1}/events/delete_dev` });
         this._showStatus("delete-status", "ok", `Deleted ${result.deleted} dev data point${result.deleted !== 1 ? "s" : ""}.`);
         await this._refreshDevCount();
         window.dispatchEvent(new CustomEvent("hass-datapoints-event-recorded"));
@@ -6560,12 +6988,12 @@ ${s.description}`).join("\n\n");
     }
     async _refreshDevCount() {
       try {
-        const result = await this._hass.connection.sendMessagePromise({ type: `${DOMAIN$2}/events` });
-        const n = (result.events || []).filter((e) => e.dev).length;
+        const result = await this._hass.connection.sendMessagePromise({ type: `${DOMAIN$1}/events` });
+        const n2 = (result.events || []).filter((e2) => e2.dev).length;
         const el = this.shadowRoot.getElementById("dev-count");
         const pl = this.shadowRoot.getElementById("dev-count-plural");
-        if (el) el.textContent = String(n);
-        if (pl) pl.textContent = n === 1 ? "" : "s";
+        if (el) el.textContent = String(n2);
+        if (pl) pl.textContent = n2 === 1 ? "" : "s";
       } catch {
       }
     }
@@ -6585,98 +7013,34 @@ ${s.description}`).join("\n\n");
       return { title: "Dev Tool" };
     }
   }
-  const EDITOR_CSS = `
-  <style>
+  class DpEditorBase extends i$2 {
+    static properties = {
+      _config: { type: Object, state: true },
+      hass: { type: Object }
+    };
+    static styles = i$5`
     :host { display: block; }
-    .ed { display: flex; flex-direction: column; gap: 16px; padding: 4px 0 8px; }
-    .section {
-      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em;
-      text-transform: uppercase; color: var(--secondary-text-color);
-      margin-bottom: -4px;
+    .ed {
+      display: flex; flex-direction: column;
+      gap: 16px; padding: 4px 0 8px;
     }
-    .note { font-size: 0.78rem; color: var(--secondary-text-color); }
-    .ent-row { display: flex; gap: 8px; align-items: center; }
-    .ent-row > * { flex: 1; min-width: 0; }
-    .swatch-wrap { display: flex; align-items: center; gap: 12px; }
-    .swatch-wrap span { font-size: 0.875rem; color: var(--primary-text-color); }
-    .swatch-btn {
-      width: 38px; height: 38px; border-radius: 50%;
-      border: 2px solid var(--divider-color, #ccc);
-      cursor: pointer; padding: 0; overflow: hidden;
-      position: relative; flex-shrink: 0; background: transparent;
-    }
-    .swatch-btn input[type="color"] {
-      position: absolute; top: -4px; left: -4px;
-      width: calc(100% + 8px); height: calc(100% + 8px);
-      border: none; cursor: pointer; padding: 0; background: none; opacity: 0;
-    }
-    .swatch-inner { display: block; width: 100%; height: 100%; border-radius: 50%; pointer-events: none; }
-    .switch-help-row {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .switch-help-row ha-formfield { flex: 1; }
-    .help-icon {
-      --mdc-icon-size: 16px;
-      color: var(--secondary-text-color);
-      cursor: default;
-      flex-shrink: 0;
-      position: relative;
-    }
-    .help-icon:hover .help-tooltip {
-      display: block;
-    }
-    .help-tooltip {
-      display: none;
-      position: absolute;
-      right: 0;
-      top: calc(100% + 4px);
-      background: var(--card-background-color, #fff);
-      color: var(--primary-text-color);
-      border: 1px solid var(--divider-color, #ccc);
-      border-radius: 6px;
-      padding: 6px 10px;
-      font-size: 0.78rem;
-      white-space: nowrap;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-      z-index: 10;
-      pointer-events: none;
-    }
-  </style>`;
-  class HassRecordsEditorBase extends HTMLElement {
+  `;
     constructor() {
       super();
-      this.attachShadow({ mode: "open" });
       this._config = {};
-      this._hass = null;
+      this.hass = null;
     }
-    // HA calls setConfig first, then sets hass
     setConfig(config) {
       this._config = { ...config };
-      this._needsBuild = true;
-      if (this._hass) {
-        this._needsBuild = false;
-        this._build();
-      }
-    }
-    set hass(h) {
-      this._hass = h;
-      if (this._needsBuild) {
-        this._needsBuild = false;
-        this._build();
-        return;
-      }
-      this.shadowRoot.querySelectorAll("ha-entity-picker, ha-icon-picker, ha-selector").forEach((el) => {
-        el.hass = h;
-      });
     }
     _fire(cfg) {
-      this.dispatchEvent(new CustomEvent("config-changed", {
-        detail: { config: { ...cfg } },
-        bubbles: true,
-        composed: true
-      }));
+      this.dispatchEvent(
+        new CustomEvent("config-changed", {
+          detail: { config: { ...cfg } },
+          bubbles: true,
+          composed: true
+        })
+      );
     }
     _set(key, value) {
       const cfg = { ...this._config };
@@ -6688,464 +7052,1014 @@ ${s.description}`).join("\n\n");
       this._config = cfg;
       this._fire(cfg);
     }
-    // Subclasses override _build() to populate the shadow root
-    _build() {
+  }
+  customElements.define("dp-editor-base", DpEditorBase);
+  class DpSectionHeading extends i$2 {
+    static properties = {
+      text: { type: String }
+    };
+    static styles = i$5`
+    :host { display: block; }
+    .heading {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--secondary-text-color);
     }
-    // ── Factory helpers (all imperative) ──────────────────────────────────────
-    _section(text) {
-      const d = document.createElement("div");
-      d.className = "section";
-      d.textContent = text;
-      return d;
+  `;
+    constructor() {
+      super();
+      this.text = "";
     }
-    _note(text) {
-      const d = document.createElement("div");
-      d.className = "note";
-      d.textContent = text;
-      return d;
+    render() {
+      return b`<div class="heading">${this.text}</div>`;
     }
-    // ha-textfield – fires "input"
-    _textField(label, key, { type, placeholder, suffix, fallback = "" } = {}) {
-      const el = document.createElement("ha-textfield");
-      el.label = label;
-      el.style.display = "block";
-      el.style.width = "100%";
-      if (type) el.type = type;
-      if (placeholder) el.placeholder = placeholder;
-      if (suffix) el.suffix = suffix;
-      el.value = this._config[key] != null ? String(this._config[key]) : fallback;
-      el.addEventListener("input", () => {
-        if (type === "number") {
-          const n = parseFloat(el.value);
-          this._set(key, isNaN(n) ? void 0 : n);
-        } else {
-          this._set(key, el.value || void 0);
+  }
+  customElements.define("dp-section-heading", DpSectionHeading);
+  class DpColorSwatch extends i$2 {
+    static properties = {
+      color: { type: String },
+      label: { type: String }
+    };
+    static styles = i$5`
+    :host {
+      display: block;
+    }
+    .swatch-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .label {
+      font-size: 0.875rem;
+      color: var(--primary-text-color);
+    }
+    .swatch-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 2px solid var(--divider-color, #ccc);
+      cursor: pointer;
+      padding: 0;
+      overflow: hidden;
+      position: relative;
+      flex-shrink: 0;
+      background: transparent;
+    }
+    .swatch-btn input[type="color"] {
+      position: absolute;
+      top: -4px;
+      left: -4px;
+      width: calc(100% + 8px);
+      height: calc(100% + 8px);
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      background: none;
+      opacity: 0;
+    }
+    .swatch-inner {
+      display: block;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      pointer-events: none;
+    }
+  `;
+    constructor() {
+      super();
+      this.color = "#ff9800";
+      this.label = "";
+    }
+    _onInput(e2) {
+      const newColor = e2.target.value;
+      this.dispatchEvent(
+        new CustomEvent("dp-color-change", {
+          detail: { color: newColor },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    render() {
+      return b`
+      <div class="swatch-wrap">
+        ${this.label ? b`<span class="label">${this.label}</span>` : ""}
+        <button class="swatch-btn" type="button">
+          <input
+            type="color"
+            .value=${this.color}
+            @input=${this._onInput}
+          />
+          <span class="swatch-inner" style="background-color: ${this.color}"></span>
+        </button>
+      </div>
+    `;
+    }
+  }
+  customElements.define("dp-color-swatch", DpColorSwatch);
+  class DpEditorTextField extends i$2 {
+    static properties = {
+      label: { type: String },
+      value: { type: String },
+      type: { type: String },
+      placeholder: { type: String },
+      suffix: { type: String }
+    };
+    static styles = i$5`
+    :host { display: block; }
+    ha-textfield { display: block; width: 100%; }
+  `;
+    constructor() {
+      super();
+      this.label = "";
+      this.value = "";
+      this.type = "text";
+      this.placeholder = "";
+      this.suffix = "";
+    }
+    firstUpdated() {
+      const field = this.shadowRoot.querySelector("ha-textfield");
+      if (field) {
+        field.label = this.label;
+        field.value = this.value;
+        if (this.type) {
+          field.type = this.type;
+        }
+        if (this.placeholder) {
+          field.placeholder = this.placeholder;
+        }
+        if (this.suffix) {
+          field.suffix = this.suffix;
+        }
+      }
+    }
+    updated(changedProps) {
+      const field = this.shadowRoot.querySelector("ha-textfield");
+      if (!field) {
+        return;
+      }
+      if (changedProps.has("value")) {
+        field.value = this.value;
+      }
+      if (changedProps.has("label")) {
+        field.label = this.label;
+      }
+    }
+    _onInput(e2) {
+      const rawValue = e2.target.value;
+      const value = this.type === "number" ? parseFloat(rawValue) : rawValue;
+      this.dispatchEvent(
+        new CustomEvent("dp-field-change", {
+          detail: { value: this.type === "number" && isNaN(value) ? void 0 : value },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    render() {
+      return b`<ha-textfield @input=${this._onInput}></ha-textfield>`;
+    }
+  }
+  customElements.define("dp-editor-text-field", DpEditorTextField);
+  class DpEditorSwitch extends i$2 {
+    static properties = {
+      label: { type: String },
+      checked: { type: Boolean },
+      tooltip: { type: String }
+    };
+    static styles = i$5`
+    :host { display: block; }
+    .switch-row { display: flex; align-items: center; gap: 4px; }
+    .switch-row ha-formfield { flex: 1; }
+    .help-icon {
+      color: var(--secondary-text-color); cursor: default;
+      flex-shrink: 0; position: relative; font-size: 0.85rem;
+    }
+    .help-icon:hover .help-tooltip { display: block; }
+    .help-tooltip {
+      display: none; position: absolute; right: 0; top: calc(100% + 4px);
+      background: var(--card-background-color, #fff); color: var(--primary-text-color);
+      border: 1px solid var(--divider-color, #ccc); border-radius: 6px;
+      padding: 6px 10px; font-size: 0.78rem; white-space: nowrap;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); z-index: 10; pointer-events: none;
+    }
+  `;
+    constructor() {
+      super();
+      this.label = "";
+      this.checked = false;
+      this.tooltip = "";
+    }
+    firstUpdated() {
+      const ff = this.shadowRoot.querySelector("ha-formfield");
+      if (ff) {
+        ff.label = this.label;
+      }
+      const sw = this.shadowRoot.querySelector("ha-switch");
+      if (sw) {
+        sw.checked = this.checked;
+      }
+    }
+    updated(changedProps) {
+      if (changedProps.has("checked")) {
+        const sw = this.shadowRoot.querySelector("ha-switch");
+        if (sw) {
+          sw.checked = this.checked;
+        }
+      }
+      if (changedProps.has("label")) {
+        const ff = this.shadowRoot.querySelector("ha-formfield");
+        if (ff) {
+          ff.label = this.label;
+        }
+      }
+    }
+    _onChange(e2) {
+      this.dispatchEvent(
+        new CustomEvent("dp-switch-change", {
+          detail: { checked: e2.target.checked },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    render() {
+      return b`
+      <div class="switch-row">
+        <ha-formfield>
+          <ha-switch @change=${this._onChange}></ha-switch>
+        </ha-formfield>
+        ${this.tooltip ? b`
+              <span class="help-icon">
+                ?
+                <span class="help-tooltip">${this.tooltip}</span>
+              </span>
+            ` : ""}
+      </div>
+    `;
+    }
+  }
+  customElements.define("dp-editor-switch", DpEditorSwitch);
+  class DpEditorEntityPicker extends i$2 {
+    static properties = {
+      label: { type: String },
+      value: { type: String },
+      hass: { type: Object }
+    };
+    static styles = i$5`
+    :host { display: block; }
+    ha-selector { display: block; width: 100%; }
+  `;
+    constructor() {
+      super();
+      this.label = "";
+      this.value = "";
+      this.hass = null;
+    }
+    firstUpdated() {
+      const el = this.shadowRoot.querySelector("ha-selector");
+      if (el) {
+        el.label = this.label;
+        el.selector = { entity: {} };
+        if (this.hass) {
+          el.hass = this.hass;
+        }
+        el.value = this.value;
+      }
+    }
+    updated(changedProps) {
+      const el = this.shadowRoot.querySelector("ha-selector");
+      if (!el) {
+        return;
+      }
+      if (changedProps.has("value")) {
+        el.value = this.value;
+      }
+      if (changedProps.has("hass") && this.hass) {
+        el.hass = this.hass;
+      }
+    }
+    _onValueChanged(e2) {
+      this.dispatchEvent(
+        new CustomEvent("dp-entity-change", {
+          detail: { value: e2.detail.value },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    render() {
+      return b`<ha-selector @value-changed=${this._onValueChanged}></ha-selector>`;
+    }
+  }
+  customElements.define("dp-editor-entity-picker", DpEditorEntityPicker);
+  class DpEditorIconPicker extends i$2 {
+    static properties = {
+      label: { type: String },
+      value: { type: String },
+      hass: { type: Object }
+    };
+    static styles = i$5`
+    :host { display: block; }
+    ha-icon-picker { display: block; width: 100%; }
+  `;
+    constructor() {
+      super();
+      this.label = "";
+      this.value = "mdi:bookmark";
+      this.hass = null;
+    }
+    firstUpdated() {
+      const el = this.shadowRoot.querySelector("ha-icon-picker");
+      if (el) {
+        el.label = this.label;
+        if (this.hass) {
+          el.hass = this.hass;
+        }
+        el.value = this.value;
+      }
+    }
+    updated(changedProps) {
+      const el = this.shadowRoot.querySelector("ha-icon-picker");
+      if (!el) {
+        return;
+      }
+      if (changedProps.has("value")) {
+        el.value = this.value;
+      }
+      if (changedProps.has("hass") && this.hass) {
+        el.hass = this.hass;
+      }
+    }
+    _onValueChanged(e2) {
+      this.dispatchEvent(
+        new CustomEvent("dp-icon-change", {
+          detail: { value: e2.detail.value },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    render() {
+      return b`<ha-icon-picker @value-changed=${this._onValueChanged}></ha-icon-picker>`;
+    }
+  }
+  customElements.define("dp-editor-icon-picker", DpEditorIconPicker);
+  class DpEditorSelect extends i$2 {
+    static properties = {
+      label: { type: String },
+      value: { type: String },
+      options: { type: Array }
+    };
+    static styles = i$5`
+    :host { display: block; }
+    ha-selector { display: block; width: 100%; }
+  `;
+    constructor() {
+      super();
+      this.label = "";
+      this.value = "";
+      this.options = [];
+    }
+    firstUpdated() {
+      const el = this.shadowRoot.querySelector("ha-selector");
+      if (el) {
+        el.label = this.label;
+        el.selector = { select: { options: this.options } };
+        el.value = this.value;
+      }
+    }
+    updated(changedProps) {
+      const el = this.shadowRoot.querySelector("ha-selector");
+      if (!el) {
+        return;
+      }
+      if (changedProps.has("value")) {
+        el.value = this.value;
+      }
+      if (changedProps.has("options")) {
+        el.selector = { select: { options: this.options } };
+      }
+    }
+    _onValueChanged(e2) {
+      this.dispatchEvent(
+        new CustomEvent("dp-select-change", {
+          detail: { value: e2.detail.value },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    render() {
+      return b`<ha-selector @value-changed=${this._onValueChanged}></ha-selector>`;
+    }
+  }
+  customElements.define("dp-editor-select", DpEditorSelect);
+  class DpEditorEntityList extends i$2 {
+    static properties = {
+      entities: { type: Array },
+      hass: { type: Object },
+      buttonLabel: { type: String, attribute: "button-label" }
+    };
+    static styles = i$5`
+    :host { display: block; }
+    .list { display: flex; flex-direction: column; gap: 8px; }
+    .entity-row { display: flex; gap: 8px; align-items: center; }
+    .entity-row ha-selector { flex: 1; min-width: 0; }
+    .remove-btn {
+      background: none; border: none; cursor: pointer; padding: 4px;
+      font-size: 1.1rem; color: var(--secondary-text-color); line-height: 1;
+    }
+    .remove-btn:hover { color: var(--error-color, #f44336); }
+    .add-wrap { margin-top: 4px; }
+  `;
+    constructor() {
+      super();
+      this.entities = [];
+      this.hass = null;
+      this.buttonLabel = "Add entity";
+    }
+    _onRemove(index) {
+      const next = [...this.entities];
+      next.splice(index, 1);
+      this.dispatchEvent(
+        new CustomEvent("dp-entity-list-change", {
+          detail: { entities: next },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    _onAdd() {
+      this.dispatchEvent(
+        new CustomEvent("dp-entity-list-change", {
+          detail: { entities: [...this.entities, ""] },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    _onEntityChange(index, e2) {
+      const next = [...this.entities];
+      next[index] = e2.detail.value;
+      this.dispatchEvent(
+        new CustomEvent("dp-entity-list-change", {
+          detail: { entities: next },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    render() {
+      return b`
+      <div class="list">
+        ${this.entities.map(
+        (entityId, i2) => b`
+            <div class="entity-row">
+              <ha-selector
+                .selector=${{ entity: {} }}
+                .value=${entityId}
+                .hass=${this.hass}
+                @value-changed=${(e2) => this._onEntityChange(i2, e2)}
+              ></ha-selector>
+              <button
+                class="remove-btn"
+                data-action="remove"
+                @click=${() => this._onRemove(i2)}
+                aria-label="Remove entity"
+              ></button>
+            </div>
+          `
+      )}
+      </div>
+      <div class="add-wrap">
+        <ha-button outlined data-action="add" @click=${this._onAdd}>
+          ${this.buttonLabel}
+        </ha-button>
+      </div>
+    `;
+    }
+  }
+  customElements.define("dp-editor-entity-list", DpEditorEntityList);
+  const editorStyles = i$5`
+  .note {
+    font-size: 0.78rem;
+    color: var(--secondary-text-color);
+  }
+`;
+  class HassRecordsActionCardEditor extends DpEditorBase {
+    static styles = [DpEditorBase.styles, editorStyles];
+    _onTargetChanged(e2) {
+      const val = e2.detail.value;
+      const isEmpty = !val || Object.values(val).every((v2) => !v2?.length);
+      this._set("target", isEmpty ? void 0 : val);
+    }
+    firstUpdated() {
+      const tp = this.shadowRoot.querySelector("#target-picker");
+      if (tp && this.hass) {
+        tp.hass = this.hass;
+        tp.value = this._config.target ?? {};
+      }
+    }
+    updated(changedProps) {
+      if (changedProps.has("hass") && this.hass) {
+        this.shadowRoot.querySelectorAll("ha-selector").forEach((el) => {
+          el.hass = this.hass;
+        });
+      }
+    }
+    render() {
+      const c2 = this._config;
+      return b`
+      <div class="ed">
+        <dp-section-heading text="General"></dp-section-heading>
+        <dp-editor-text-field
+          label="Card title (optional)"
+          .value=${c2.title || ""}
+          @dp-field-change=${(e2) => this._set("title", e2.detail.value)}
+        ></dp-editor-text-field>
+
+        <dp-section-heading text="Related items"></dp-section-heading>
+        <div class="note">Pre-fill entities, devices, areas or labels that are always linked to recordings from this card.</div>
+        <ha-selector
+          id="target-picker"
+          .selector=${{ target: {} }}
+          @value-changed=${this._onTargetChanged}
+          style="display:block;width:100%"
+        ></ha-selector>
+        <dp-editor-switch
+          label="Show always included targets on card"
+          .checked=${c2.show_config_targets !== false}
+          @dp-switch-change=${(e2) => this._set("show_config_targets", e2.detail.checked ? void 0 : false)}
+        ></dp-editor-switch>
+        <dp-editor-switch
+          label="Allow user to add more related items"
+          .checked=${c2.show_target_picker !== false}
+          @dp-switch-change=${(e2) => this._set("show_target_picker", e2.detail.checked ? void 0 : false)}
+        ></dp-editor-switch>
+
+        <dp-section-heading text="Datapoint Appearance"></dp-section-heading>
+        <dp-editor-icon-picker
+          label="Default icon"
+          .value=${c2.default_icon || "mdi:bookmark"}
+          .hass=${this.hass}
+          @dp-icon-change=${(e2) => this._set("default_icon", e2.detail.value)}
+        ></dp-editor-icon-picker>
+        <dp-color-swatch
+          label="Default colour"
+          .color=${c2.default_color || "#03a9f4"}
+          @dp-color-change=${(e2) => this._set("default_color", e2.detail.color)}
+        ></dp-color-swatch>
+
+        <dp-section-heading text="Form fields"></dp-section-heading>
+        <dp-editor-switch
+          label="Show date & time field"
+          .checked=${c2.show_date !== false}
+          @dp-switch-change=${(e2) => this._set("show_date", e2.detail.checked ? void 0 : false)}
+        ></dp-editor-switch>
+        <dp-editor-switch
+          label="Show annotation field"
+          .checked=${c2.show_annotation !== false}
+          @dp-switch-change=${(e2) => this._set("show_annotation", e2.detail.checked ? void 0 : false)}
+        ></dp-editor-switch>
+      </div>
+    `;
+    }
+  }
+  class HassRecordsQuickCardEditor extends DpEditorBase {
+    static styles = [DpEditorBase.styles, editorStyles];
+    render() {
+      const c2 = this._config;
+      return b`
+      <div class="ed">
+        <dp-section-heading text="General"></dp-section-heading>
+        <dp-editor-text-field
+          label="Card title (optional)"
+          .value=${c2.title || ""}
+          @dp-field-change=${(e2) => this._set("title", e2.detail.value)}
+        ></dp-editor-text-field>
+        <dp-editor-text-field
+          label="Input placeholder text"
+          .value=${c2.placeholder || ""}
+          @dp-field-change=${(e2) => this._set("placeholder", e2.detail.value)}
+        ></dp-editor-text-field>
+
+        <dp-section-heading text="Icon & colour"></dp-section-heading>
+        <dp-editor-icon-picker
+          label="Icon"
+          .value=${c2.icon || "mdi:bookmark"}
+          .hass=${this.hass}
+          @dp-icon-change=${(e2) => this._set("icon", e2.detail.value)}
+        ></dp-editor-icon-picker>
+        <dp-color-swatch
+          label="Colour"
+          .color=${c2.color || AMBER}
+          @dp-color-change=${(e2) => this._set("color", e2.detail.color)}
+        ></dp-color-swatch>
+
+        <dp-section-heading text="Related items"></dp-section-heading>
+        <div class="note">These items will be linked to every record made with this card.</div>
+        <dp-editor-entity-picker
+          label="Single entity (optional)"
+          .value=${c2.entity || ""}
+          .hass=${this.hass}
+          @dp-entity-change=${(e2) => this._set("entity", e2.detail.value)}
+        ></dp-editor-entity-picker>
+        <dp-section-heading text="Multiple entities"></dp-section-heading>
+        <dp-editor-entity-list
+          .entities=${c2.entities || []}
+          .hass=${this.hass}
+          button-label="Add related items"
+          @dp-entity-list-change=${(e2) => this._set("entities", e2.detail.entities.length ? e2.detail.entities : void 0)}
+        ></dp-editor-entity-list>
+
+        <dp-section-heading text="Form fields"></dp-section-heading>
+        <dp-editor-switch
+          label="Show annotation field"
+          .checked=${!!c2.show_annotation}
+          @dp-switch-change=${(e2) => this._set("show_annotation", e2.detail.checked || void 0)}
+        ></dp-editor-switch>
+      </div>
+    `;
+    }
+  }
+  class HassRecordsHistoryCardEditor extends DpEditorBase {
+    static styles = [DpEditorBase.styles, editorStyles];
+    render() {
+      const c2 = this._config;
+      return b`
+      <div class="ed">
+        <dp-section-heading text="General"></dp-section-heading>
+        <dp-editor-text-field
+          label="Card title (optional)"
+          .value=${c2.title || ""}
+          @dp-field-change=${(e2) => this._set("title", e2.detail.value)}
+        ></dp-editor-text-field>
+        <dp-editor-text-field
+          label="Hours to show"
+          type="number"
+          .value=${String(c2.hours_to_show ?? 24)}
+          @dp-field-change=${(e2) => this._set("hours_to_show", e2.detail.value)}
+        ></dp-editor-text-field>
+
+        <dp-section-heading text="Entity"></dp-section-heading>
+        <dp-editor-entity-picker
+          label="Single entity"
+          .value=${c2.entity || ""}
+          .hass=${this.hass}
+          @dp-entity-change=${(e2) => this._set("entity", e2.detail.value)}
+        ></dp-editor-entity-picker>
+
+        <dp-section-heading text="Multiple entities"></dp-section-heading>
+        <dp-editor-entity-list
+          .entities=${c2.entities || []}
+          .hass=${this.hass}
+          @dp-entity-list-change=${(e2) => this._set("entities", e2.detail.entities.length ? e2.detail.entities : void 0)}
+        ></dp-editor-entity-list>
+
+        <dp-section-heading text="Display"></dp-section-heading>
+        <dp-editor-switch
+          label="Show data gaps"
+          .checked=${c2.show_data_gaps !== false}
+          tooltip="Highlight missing data ranges with dashed lines and boundary markers"
+          @dp-switch-change=${(e2) => this._set("show_data_gaps", e2.detail.checked ? void 0 : false)}
+        ></dp-editor-switch>
+      </div>
+    `;
+    }
+  }
+  class HassRecordsStatisticsCardEditor extends DpEditorBase {
+    static styles = [DpEditorBase.styles, editorStyles];
+    _onStatTypeChange(st, checked) {
+      const cur = [...this._config.stat_types || ["mean"]];
+      if (checked) {
+        if (!cur.includes(st)) cur.push(st);
+      } else {
+        const i2 = cur.indexOf(st);
+        if (i2 !== -1) cur.splice(i2, 1);
+      }
+      this._set("stat_types", cur.length ? cur : ["mean"]);
+    }
+    render() {
+      const c2 = this._config;
+      const statTypes = c2.stat_types || ["mean"];
+      return b`
+      <div class="ed">
+        <dp-section-heading text="General"></dp-section-heading>
+        <dp-editor-text-field
+          label="Card title (optional)"
+          .value=${c2.title || ""}
+          @dp-field-change=${(e2) => this._set("title", e2.detail.value)}
+        ></dp-editor-text-field>
+        <dp-editor-text-field
+          label="Hours to show"
+          type="number"
+          .value=${String(c2.hours_to_show ?? 168)}
+          @dp-field-change=${(e2) => this._set("hours_to_show", e2.detail.value)}
+        ></dp-editor-text-field>
+
+        <dp-section-heading text="Period"></dp-section-heading>
+        <dp-editor-select
+          label="Period"
+          .value=${c2.period || "hour"}
+          .options=${[
+        { value: "5minute", label: "5 minutes" },
+        { value: "hour", label: "Hour" },
+        { value: "day", label: "Day" },
+        { value: "week", label: "Week" },
+        { value: "month", label: "Month" }
+      ]}
+          @dp-select-change=${(e2) => this._set("period", e2.detail.value)}
+        ></dp-editor-select>
+
+        <dp-section-heading text="Stat types"></dp-section-heading>
+        ${["mean", "min", "max", "sum", "state"].map(
+        (st) => b`
+            <dp-editor-switch
+              label=${st}
+              .checked=${statTypes.includes(st)}
+              @dp-switch-change=${(e2) => this._onStatTypeChange(st, e2.detail.checked)}
+            ></dp-editor-switch>
+          `
+      )}
+
+        <dp-section-heading text="Entity / statistic ID"></dp-section-heading>
+        <dp-editor-entity-picker
+          label="Single entity / statistic ID"
+          .value=${c2.entity || ""}
+          .hass=${this.hass}
+          @dp-entity-change=${(e2) => this._set("entity", e2.detail.value)}
+        ></dp-editor-entity-picker>
+
+        <dp-section-heading text="Multiple entities"></dp-section-heading>
+        <dp-editor-entity-list
+          .entities=${c2.entities || []}
+          .hass=${this.hass}
+          @dp-entity-list-change=${(e2) => this._set("entities", e2.detail.entities.length ? e2.detail.entities : void 0)}
+        ></dp-editor-entity-list>
+      </div>
+    `;
+    }
+  }
+  class HassRecordsSensorCardEditor extends DpEditorBase {
+    static styles = [DpEditorBase.styles, editorStyles];
+    render() {
+      const c2 = this._config;
+      const showRecords = !!c2.show_records;
+      return b`
+      <div class="ed">
+        <dp-section-heading text="Entity"></dp-section-heading>
+        <dp-editor-entity-picker
+          label="Sensor entity *"
+          .value=${c2.entity || ""}
+          .hass=${this.hass}
+          @dp-entity-change=${(e2) => this._set("entity", e2.detail.value)}
+        ></dp-editor-entity-picker>
+
+        <dp-section-heading text="Display"></dp-section-heading>
+        <dp-editor-text-field
+          label="Override display name (optional)"
+          .value=${c2.name || ""}
+          @dp-field-change=${(e2) => this._set("name", e2.detail.value)}
+        ></dp-editor-text-field>
+        <dp-editor-text-field
+          label="Hours to show"
+          type="number"
+          .value=${String(c2.hours_to_show ?? 24)}
+          @dp-field-change=${(e2) => this._set("hours_to_show", e2.detail.value)}
+        ></dp-editor-text-field>
+        <dp-color-swatch
+          label="Graph colour"
+          .color=${c2.graph_color || COLORS[0]}
+          @dp-color-change=${(e2) => this._set("graph_color", e2.detail.color)}
+        ></dp-color-swatch>
+        <dp-editor-select
+          label="Annotation style"
+          .value=${c2.annotation_style || ""}
+          .options=${[
+        { value: "circle", label: "Circle on line" },
+        { value: "line", label: "Dotted vertical line" }
+      ]}
+          @dp-select-change=${(e2) => this._set("annotation_style", e2.detail.value)}
+        ></dp-editor-select>
+
+        <dp-section-heading text="Records list"></dp-section-heading>
+        <dp-editor-switch
+          label="Show records list below graph"
+          .checked=${showRecords}
+          @dp-switch-change=${(e2) => this._set("show_records", e2.detail.checked || void 0)}
+        ></dp-editor-switch>
+        <dp-editor-text-field
+          label="Records per page (blank = show all)"
+          type="number"
+          .value=${c2.records_page_size != null ? String(c2.records_page_size) : ""}
+          @dp-field-change=${(e2) => this._set("records_page_size", e2.detail.value)}
+        ></dp-editor-text-field>
+        <dp-editor-text-field
+          label="Max records to show (blank = all)"
+          type="number"
+          .value=${c2.records_limit != null ? String(c2.records_limit) : ""}
+          @dp-field-change=${(e2) => this._set("records_limit", e2.detail.value)}
+        ></dp-editor-text-field>
+        <dp-editor-switch
+          label="Show full message"
+          .checked=${c2.records_show_full_message !== false}
+          tooltip="User will be able to expand the row if hidden"
+          @dp-switch-change=${(e2) => this._set("records_show_full_message", e2.detail.checked ? void 0 : false)}
+        ></dp-editor-switch>
+      </div>
+    `;
+    }
+  }
+  class HassRecordsListCardEditor extends DpEditorBase {
+    static styles = [DpEditorBase.styles, editorStyles];
+    render() {
+      const c2 = this._config;
+      return b`
+      <div class="ed">
+        <dp-section-heading text="General"></dp-section-heading>
+        <dp-editor-text-field
+          label="Card title (optional)"
+          .value=${c2.title || ""}
+          @dp-field-change=${(e2) => this._set("title", e2.detail.value)}
+        ></dp-editor-text-field>
+        <dp-editor-text-field
+          label="Hours to show (blank = all time)"
+          type="number"
+          .value=${c2.hours_to_show != null ? String(c2.hours_to_show) : ""}
+          @dp-field-change=${(e2) => this._set("hours_to_show", e2.detail.value)}
+        ></dp-editor-text-field>
+        <dp-editor-text-field
+          label="Records per page"
+          type="number"
+          .value=${String(c2.page_size ?? 15)}
+          @dp-field-change=${(e2) => this._set("page_size", e2.detail.value)}
+        ></dp-editor-text-field>
+
+        <dp-section-heading text="Filtering"></dp-section-heading>
+        <dp-editor-text-field
+          label="Default message filter (always applied)"
+          .value=${c2.message_filter || ""}
+          @dp-field-change=${(e2) => this._set("message_filter", e2.detail.value)}
+        ></dp-editor-text-field>
+
+        <dp-section-heading text="Visibility"></dp-section-heading>
+        <dp-editor-switch
+          label="Show search bar"
+          .checked=${c2.show_search !== false}
+          @dp-switch-change=${(e2) => this._set("show_search", e2.detail.checked ? void 0 : false)}
+        ></dp-editor-switch>
+        <dp-editor-switch
+          label="Show related entities"
+          .checked=${c2.show_entities !== false}
+          @dp-switch-change=${(e2) => this._set("show_entities", e2.detail.checked ? void 0 : false)}
+        ></dp-editor-switch>
+        <dp-editor-switch
+          label="Show edit & delete actions"
+          .checked=${c2.show_actions !== false}
+          @dp-switch-change=${(e2) => this._set("show_actions", e2.detail.checked ? void 0 : false)}
+        ></dp-editor-switch>
+        <dp-editor-switch
+          label="Show full message"
+          .checked=${c2.show_full_message !== false}
+          tooltip="User will be able to expand the row if hidden"
+          @dp-switch-change=${(e2) => this._set("show_full_message", e2.detail.checked ? void 0 : false)}
+        ></dp-editor-switch>
+
+        <dp-section-heading text="Filter by entity"></dp-section-heading>
+        <dp-editor-entity-picker
+          label="Single entity (optional)"
+          .value=${c2.entity || ""}
+          .hass=${this.hass}
+          @dp-entity-change=${(e2) => this._set("entity", e2.detail.value)}
+        ></dp-editor-entity-picker>
+
+        <dp-section-heading text="Multiple entity filter"></dp-section-heading>
+        <dp-editor-entity-list
+          .entities=${c2.entities || []}
+          .hass=${this.hass}
+          button-label="Add default related items"
+          @dp-entity-list-change=${(e2) => this._set("entities", e2.detail.entities.length ? e2.detail.entities : void 0)}
+        ></dp-editor-entity-list>
+      </div>
+    `;
+    }
+  }
+  class ChartCardBase extends HTMLElement {
+    constructor() {
+      super();
+      this.attachShadow({ mode: "open" });
+      this._rendered = false;
+      this._unsubscribe = null;
+      this._resizeObserver = null;
+      this._lastHistResult = null;
+      this._lastEvents = null;
+      this._lastT0 = null;
+      this._lastT1 = null;
+      this._chartHoverCleanup = null;
+      this._chartZoomCleanup = null;
+      this._loadRaf = null;
+      this._lastDrawArgs = null;
+      this._loadRequestId = 0;
+      this._loadInFlight = false;
+      this._hasStartedInitialLoad = false;
+      this._windowListener = null;
+      this._previousSeriesEndpoints = /* @__PURE__ */ new Map();
+    }
+    get _entityIds() {
+      return [];
+    }
+    set hass(hass) {
+      this._hass = hass;
+      if (!this._rendered) {
+        this._rendered = true;
+        this.shadowRoot.innerHTML = buildChartCardShell(this._config.title);
+        this._setupAutoRefresh();
+        this._setupResizeObserver();
+        this._scheduleLoad();
+        return;
+      }
+      if (this.isConnected && !this._hasStartedInitialLoad) this._scheduleLoad();
+    }
+    connectedCallback() {
+      if (this._rendered && this._hass && !this._hasStartedInitialLoad) {
+        this._scheduleLoad();
+      }
+    }
+    disconnectedCallback() {
+      if (this._loadRaf) {
+        window.cancelAnimationFrame(this._loadRaf);
+        this._loadRaf = null;
+      }
+      if (this._unsubscribe) {
+        this._unsubscribe();
+        this._unsubscribe = null;
+      }
+      if (this._windowListener) {
+        window.removeEventListener("hass-datapoints-event-recorded", this._windowListener);
+        this._windowListener = null;
+      }
+      if (this._resizeObserver) {
+        this._resizeObserver.disconnect();
+        this._resizeObserver = null;
+      }
+      if (this._chartHoverCleanup) {
+        this._chartHoverCleanup();
+        this._chartHoverCleanup = null;
+      }
+      if (this._chartZoomCleanup) {
+        this._chartZoomCleanup();
+        this._chartZoomCleanup = null;
+      }
+    }
+    _setupAutoRefresh() {
+      this._hass.connection.subscribeEvents(() => {
+        this._load();
+      }, `${DOMAIN$1}_event_recorded`).then((unsub) => {
+        this._unsubscribe = unsub;
+      }).catch(() => {
+      });
+      this._windowListener = () => {
+        this._scheduleLoad();
+      };
+      window.addEventListener("hass-datapoints-event-recorded", this._windowListener);
+    }
+    _setupResizeObserver() {
+      const wrap = this.shadowRoot.querySelector(".chart-wrap");
+      if (!wrap || !window.ResizeObserver) return;
+      this._resizeObserver = new ResizeObserver(() => {
+        if (Array.isArray(this._lastDrawArgs) && this._lastDrawArgs.length) {
+          this._drawChart(...this._lastDrawArgs);
         }
       });
-      return el;
+      this._resizeObserver.observe(wrap);
     }
-    // ha-icon-picker
-    _iconPicker(label, key, defaultVal = "mdi:bookmark") {
-      const el = document.createElement("ha-icon-picker");
-      el.label = label;
-      el.style.display = "block";
-      el.style.width = "100%";
-      if (this._hass) el.hass = this._hass;
-      requestAnimationFrame(() => {
-        el.value = this._config[key] ?? defaultVal;
-      });
-      el.addEventListener("value-changed", (e) => this._set(key, e.detail.value || void 0));
-      return el;
-    }
-    // ha-selector (entity)
-    _entityPicker(label, key) {
-      const el = document.createElement("ha-selector");
-      el.label = label;
-      el.selector = { entity: {} };
-      el.style.display = "block";
-      el.style.width = "100%";
-      if (this._hass) el.hass = this._hass;
-      requestAnimationFrame(() => {
-        el.value = this._config[key] ?? "";
-      });
-      el.addEventListener("value-changed", (e) => this._set(key, e.detail.value || void 0));
-      return el;
-    }
-    // ha-switch inside ha-formfield
-    _switch(label, key, { defaultTrue = false } = {}) {
-      const ff = document.createElement("ha-formfield");
-      ff.label = label;
-      const sw = document.createElement("ha-switch");
-      sw.checked = this._config[key] !== void 0 ? !!this._config[key] : defaultTrue;
-      sw.addEventListener("change", () => {
-        this._set(key, defaultTrue ? sw.checked ? void 0 : false : sw.checked || void 0);
-      });
-      ff.appendChild(sw);
-      return { el: ff, sw };
-    }
-    // ha-switch with an adjacent help icon tooltip
-    _switchWithHelp(label, key, tooltip, { defaultTrue = false } = {}) {
-      const { el: ffEl, sw } = this._switch(label, key, { defaultTrue });
-      const row = document.createElement("div");
-      row.className = "switch-help-row";
-      const helpWrap = document.createElement("span");
-      helpWrap.className = "help-icon";
-      const icon = document.createElement("ha-icon");
-      icon.setAttribute("icon", "mdi:help-circle-outline");
-      const tip = document.createElement("span");
-      tip.className = "help-tooltip";
-      tip.textContent = tooltip;
-      helpWrap.appendChild(icon);
-      helpWrap.appendChild(tip);
-      row.appendChild(ffEl);
-      row.appendChild(helpWrap);
-      return { el: row, sw };
-    }
-    // Colour swatch
-    _colorSwatch(label, key, defaultColor = "#03a9f4") {
-      const color = this._config[key] || defaultColor;
-      const wrap = document.createElement("div");
-      wrap.className = "swatch-wrap";
-      const lbl = document.createElement("span");
-      lbl.textContent = label;
-      const btn = document.createElement("button");
-      btn.className = "swatch-btn";
-      btn.title = "Choose colour";
-      btn.style.background = color;
-      const inner = document.createElement("span");
-      inner.className = "swatch-inner";
-      inner.style.background = color;
-      const inp = document.createElement("input");
-      inp.type = "color";
-      inp.value = color;
-      inp.addEventListener("input", () => {
-        btn.style.background = inp.value;
-        inner.style.background = inp.value;
-      });
-      inp.addEventListener("change", () => this._set(key, inp.value));
-      btn.appendChild(inner);
-      btn.appendChild(inp);
-      wrap.appendChild(lbl);
-      wrap.appendChild(btn);
-      return wrap;
-    }
-    // ha-selector (select)
-    _select(label, key, options, fallback = "") {
-      const el = document.createElement("ha-selector");
-      el.label = label;
-      el.style.display = "block";
-      el.style.width = "100%";
-      el.selector = { select: { options: options.map(([value, text]) => ({ value, label: text })) } };
-      el.value = this._config[key] ?? fallback;
-      el.addEventListener("value-changed", (e) => {
-        this._set(key, e.detail.value || void 0);
-      });
-      return el;
-    }
-    // Dynamic entity list with add/remove
-    _entityList(key, buttonLabel = "Add entity") {
-      const outer = document.createElement("div");
-      outer.style.display = "flex";
-      outer.style.flexDirection = "column";
-      outer.style.gap = "8px";
-      const list = document.createElement("div");
-      list.style.display = "flex";
-      list.style.flexDirection = "column";
-      list.style.gap = "8px";
-      const addWrap = document.createElement("div");
-      const addBtn = document.createElement("ha-button");
-      addBtn.setAttribute("outlined", "");
-      const addIco = document.createElement("ha-icon");
-      addIco.setAttribute("icon", "mdi:plus");
-      addIco.setAttribute("slot", "icon");
-      addBtn.appendChild(addIco);
-      addBtn.appendChild(document.createTextNode(buttonLabel));
-      addWrap.appendChild(addBtn);
-      outer.appendChild(list);
-      outer.appendChild(addWrap);
-      const getArr = () => [...this._config[key] || []];
-      const renderRows = () => {
-        list.innerHTML = "";
-        addWrap.style.marginTop = getArr().length ? "4px" : "0";
-        getArr().forEach((eid, idx) => {
-          const row = document.createElement("div");
-          row.className = "ent-row";
-          const picker = document.createElement("ha-selector");
-          picker.selector = { entity: {} };
-          picker.style.flex = "1";
-          picker.style.minWidth = "0";
-          if (this._hass) picker.hass = this._hass;
-          requestAnimationFrame(() => {
-            picker.value = eid || "";
-          });
-          picker.addEventListener("value-changed", (e) => {
-            const arr = getArr();
-            arr[idx] = e.detail.value || "";
-            this._set(key, arr.some(Boolean) ? arr : void 0);
-          });
-          const rm = document.createElement("ha-icon-button");
-          rm.setAttribute("label", "Remove");
-          rm.style.color = "var(--error-color, #f44336)";
-          rm.style.flex = "0 0 auto";
-          rm.style.alignSelf = "center";
-          const rmIco = document.createElement("ha-icon");
-          rmIco.setAttribute("icon", "mdi:close");
-          rm.appendChild(rmIco);
-          rm.addEventListener("click", () => {
-            const arr = getArr();
-            arr.splice(idx, 1);
-            this._set(key, arr.length ? arr : void 0);
-            renderRows();
-          });
-          row.appendChild(picker);
-          row.appendChild(rm);
-          list.appendChild(row);
+    _scheduleLoad() {
+      if (!this._hass || this._loadRaf || this._loadInFlight) return;
+      this._loadRaf = window.requestAnimationFrame(() => {
+        this._loadRaf = null;
+        if (!this._hass || !this.isConnected || this._loadInFlight) return;
+        this._hasStartedInitialLoad = true;
+        this._loadInFlight = true;
+        Promise.resolve(this._load()).catch((err) => {
+          console.error("[hass-datapoints chart-base] load failed", err);
+        }).finally(() => {
+          this._loadInFlight = false;
         });
-      };
-      addBtn.addEventListener("click", () => {
-        const arr = getArr();
-        arr.push("");
-        this._set(key, arr);
-        renderRows();
-      });
-      renderRows();
-      outer._pushHass = (h) => {
-        list.querySelectorAll("ha-selector").forEach((p) => {
-          p.hass = h;
-        });
-      };
-      return outer;
-    }
-  }
-  class HassRecordsActionCardEditor extends HassRecordsEditorBase {
-    _build() {
-      this.shadowRoot.innerHTML = EDITOR_CSS;
-      const ed = document.createElement("div");
-      ed.className = "ed";
-      ed.appendChild(this._section("General"));
-      ed.appendChild(this._textField("Card title (optional)", "title"));
-      ed.appendChild(this._section("Related items"));
-      ed.appendChild(this._note("Pre-fill entities, devices, areas or labels that are always linked to recordings from this card."));
-      const targetPicker = document.createElement("ha-selector");
-      targetPicker.selector = { target: {} };
-      targetPicker.style.display = "block";
-      targetPicker.style.width = "100%";
-      if (this._hass) targetPicker.hass = this._hass;
-      requestAnimationFrame(() => {
-        targetPicker.value = this._config.target ?? {};
-      });
-      targetPicker.addEventListener("value-changed", (e) => {
-        const val = e.detail.value;
-        const isEmpty = !val || Object.values(val).every((v) => !v?.length);
-        this._set("target", isEmpty ? void 0 : val);
-      });
-      ed.appendChild(targetPicker);
-      ed.appendChild(this._switch("Show always included targets on card", "show_config_targets", { defaultTrue: true }).el);
-      ed.appendChild(this._switch("Allow user to add more related items", "show_target_picker", { defaultTrue: true }).el);
-      ed.appendChild(this._section("Datapoint Appearance"));
-      ed.appendChild(this._iconPicker("Default icon", "default_icon", "mdi:bookmark"));
-      ed.appendChild(this._colorSwatch("Default colour", "default_color", "#03a9f4"));
-      ed.appendChild(this._section("Form fields"));
-      ed.appendChild(this._switch("Show date & time field", "show_date", { defaultTrue: true }).el);
-      ed.appendChild(this._switch("Show annotation field", "show_annotation", { defaultTrue: true }).el);
-      this.shadowRoot.appendChild(ed);
-    }
-    set hass(h) {
-      this._hass = h;
-      if (this._needsBuild) {
-        this._needsBuild = false;
-        this._build();
-        return;
-      }
-      this.shadowRoot.querySelectorAll("ha-entity-picker, ha-icon-picker, ha-selector").forEach((el) => {
-        el.hass = h;
       });
     }
-  }
-  class HassRecordsQuickCardEditor extends HassRecordsEditorBase {
-    _build() {
-      this.shadowRoot.innerHTML = EDITOR_CSS;
-      const ed = document.createElement("div");
-      ed.className = "ed";
-      ed.appendChild(this._section("General"));
-      ed.appendChild(this._textField("Card title (optional)", "title"));
-      ed.appendChild(this._textField("Input placeholder text", "placeholder"));
-      ed.appendChild(this._section("Icon & colour"));
-      ed.appendChild(this._iconPicker("Icon", "icon", "mdi:bookmark"));
-      ed.appendChild(this._colorSwatch("Colour", "color", AMBER));
-      ed.appendChild(this._section("Related items"));
-      ed.appendChild(this._note("These items will be linked to every record made with this card."));
-      ed.appendChild(this._entityPicker("Single entity (optional)", "entity"));
-      ed.appendChild(this._section("Multiple entities"));
-      this._entList = this._entityList("entities", "Add related items");
-      ed.appendChild(this._entList);
-      ed.appendChild(this._section("Form fields"));
-      ed.appendChild(this._switch("Show annotation field", "show_annotation").el);
-      this.shadowRoot.appendChild(ed);
+    _setChartLoading(isLoading) {
+      const loadingEl = this.shadowRoot?.getElementById("loading");
+      if (!loadingEl) return;
+      loadingEl.classList.toggle("active", !!isLoading);
     }
-    set hass(h) {
-      this._hass = h;
-      if (this._needsBuild) {
-        this._needsBuild = false;
-        this._build();
-        return;
-      }
-      this.shadowRoot.querySelectorAll("ha-entity-picker, ha-icon-picker, ha-selector").forEach((el) => {
-        el.hass = h;
-      });
-      this._entList?._pushHass(h);
-    }
-  }
-  class HassRecordsHistoryCardEditor extends HassRecordsEditorBase {
-    _build() {
-      this.shadowRoot.innerHTML = EDITOR_CSS;
-      const ed = document.createElement("div");
-      ed.className = "ed";
-      ed.appendChild(this._section("General"));
-      ed.appendChild(this._textField("Card title (optional)", "title"));
-      ed.appendChild(this._textField("Hours to show", "hours_to_show", { type: "number", fallback: "24" }));
-      ed.appendChild(this._section("Entity"));
-      ed.appendChild(this._entityPicker("Single entity", "entity"));
-      ed.appendChild(this._section("Multiple entities"));
-      this._entList = this._entityList("entities");
-      ed.appendChild(this._entList);
-      ed.appendChild(this._section("Display"));
-      ed.appendChild(this._switchWithHelp(
-        "Show data gaps",
-        "show_data_gaps",
-        "Highlight missing data ranges with dashed lines and boundary markers",
-        { defaultTrue: true }
-      ).el);
-      this.shadowRoot.appendChild(ed);
-    }
-    set hass(h) {
-      this._hass = h;
-      if (this._needsBuild) {
-        this._needsBuild = false;
-        this._build();
-        return;
-      }
-      this.shadowRoot.querySelectorAll("ha-entity-picker, ha-icon-picker, ha-selector").forEach((el) => {
-        el.hass = h;
-      });
-      this._entList?._pushHass(h);
-    }
-  }
-  class HassRecordsStatisticsCardEditor extends HassRecordsEditorBase {
-    _build() {
-      this.shadowRoot.innerHTML = EDITOR_CSS;
-      const ed = document.createElement("div");
-      ed.className = "ed";
-      ed.appendChild(this._section("General"));
-      ed.appendChild(this._textField("Card title (optional)", "title"));
-      ed.appendChild(this._textField("Hours to show", "hours_to_show", { type: "number", fallback: "168" }));
-      ed.appendChild(this._section("Period"));
-      ed.appendChild(this._select("Period", "period", [
-        ["5minute", "5 minutes"],
-        ["hour", "Hour"],
-        ["day", "Day"],
-        ["week", "Week"],
-        ["month", "Month"]
-      ], "hour"));
-      ed.appendChild(this._section("Stat types"));
-      ["mean", "min", "max", "sum", "state"].forEach((st) => {
-        const ff = document.createElement("ha-formfield");
-        ff.label = st;
-        const cb = document.createElement("ha-checkbox");
-        cb.checked = (this._config.stat_types || ["mean"]).includes(st);
-        cb.addEventListener("change", () => {
-          const cur = [...this._config.stat_types || ["mean"]];
-          if (cb.checked) {
-            if (!cur.includes(st)) cur.push(st);
-          } else {
-            const i = cur.indexOf(st);
-            if (i !== -1) cur.splice(i, 1);
-          }
-          this._set("stat_types", cur.length ? cur : ["mean"]);
-        });
-        ff.appendChild(cb);
-        ed.appendChild(ff);
-      });
-      ed.appendChild(this._section("Entity / statistic ID"));
-      ed.appendChild(this._entityPicker("Single entity / statistic ID", "entity"));
-      ed.appendChild(this._section("Multiple entities"));
-      this._entList = this._entityList("entities");
-      ed.appendChild(this._entList);
-      this.shadowRoot.appendChild(ed);
-    }
-    set hass(h) {
-      this._hass = h;
-      if (this._needsBuild) {
-        this._needsBuild = false;
-        this._build();
-        return;
-      }
-      this.shadowRoot.querySelectorAll("ha-entity-picker, ha-icon-picker, ha-selector").forEach((el) => {
-        el.hass = h;
-      });
-      this._entList?._pushHass(h);
-    }
-  }
-  class HassRecordsSensorCardEditor extends HassRecordsEditorBase {
-    _build() {
-      this.shadowRoot.innerHTML = EDITOR_CSS;
-      const ed = document.createElement("div");
-      ed.className = "ed";
-      ed.appendChild(this._section("Entity"));
-      ed.appendChild(this._entityPicker("Sensor entity *", "entity"));
-      ed.appendChild(this._section("Display"));
-      ed.appendChild(this._textField("Override display name (optional)", "name"));
-      ed.appendChild(this._textField("Hours to show", "hours_to_show", { type: "number", fallback: "24" }));
-      ed.appendChild(this._colorSwatch("Graph colour", "graph_color", COLORS$2[0]));
-      ed.appendChild(this._select("Annotation style", "annotation_style", [
-        ["circle", "Circle on line"],
-        ["line", "Dotted vertical line"]
-      ]));
-      ed.appendChild(this._section("Records list"));
-      const { el: swEl, sw } = this._switch("Show records list below graph", "show_records");
-      ed.appendChild(swEl);
-      const pageS = this._textField("Records per page (blank = show all)", "records_page_size", { type: "number" });
-      const limit = this._textField("Max records to show (blank = all)", "records_limit", { type: "number" });
-      const showAnn = this._switchWithHelp(
-        "Show full message",
-        "records_show_full_message",
-        "User will be able to expand the row if hidden",
-        { defaultTrue: true }
-      );
-      ed.appendChild(pageS);
-      ed.appendChild(limit);
-      ed.appendChild(showAnn.el);
-      const syncDisabled = () => {
-        const on = !!this._config.show_records;
-        pageS.disabled = !on;
-        limit.disabled = !on;
-        showAnn.el.style.opacity = on ? "1" : "0.5";
-        showAnn.sw.disabled = !on;
-      };
-      sw.addEventListener("change", syncDisabled);
-      syncDisabled();
-      this.shadowRoot.appendChild(ed);
-    }
-  }
-  class HassRecordsListCardEditor extends HassRecordsEditorBase {
-    _build() {
-      this.shadowRoot.innerHTML = EDITOR_CSS;
-      const ed = document.createElement("div");
-      ed.className = "ed";
-      ed.appendChild(this._section("General"));
-      ed.appendChild(this._textField("Card title (optional)", "title"));
-      ed.appendChild(this._textField("Hours to show (blank = all time)", "hours_to_show", { type: "number" }));
-      ed.appendChild(this._textField("Records per page", "page_size", { type: "number", fallback: "15" }));
-      ed.appendChild(this._section("Filtering"));
-      ed.appendChild(this._textField("Default message filter (always applied)", "message_filter"));
-      ed.appendChild(this._section("Visibility"));
-      ed.appendChild(this._switch("Show search bar", "show_search", { defaultTrue: true }).el);
-      ed.appendChild(this._switch("Show related entities", "show_entities", { defaultTrue: true }).el);
-      ed.appendChild(this._switch("Show edit & delete actions", "show_actions", { defaultTrue: true }).el);
-      ed.appendChild(this._switchWithHelp(
-        "Show full message",
-        "show_full_message",
-        "User will be able to expand the row if hidden",
-        { defaultTrue: true }
-      ).el);
-      ed.appendChild(this._section("Filter by entity"));
-      ed.appendChild(this._entityPicker("Single entity (optional)", "entity"));
-      ed.appendChild(this._section("Multiple entity filter"));
-      this._entList = this._entityList("entities", "Add default related items");
-      ed.appendChild(this._entList);
-      this.shadowRoot.appendChild(ed);
-    }
-    set hass(h) {
-      this._hass = h;
-      if (this._needsBuild) {
-        this._needsBuild = false;
-        this._build();
-        return;
-      }
-      this.shadowRoot.querySelectorAll("ha-entity-picker, ha-icon-picker, ha-selector").forEach((el) => {
-        el.hass = h;
-      });
-      this._entList?._pushHass(h);
+    _setChartMessage(message = "") {
+      const messageEl = this.shadowRoot?.getElementById("chart-message");
+      if (!messageEl) return;
+      messageEl.textContent = message || "";
+      messageEl.classList.toggle("visible", !!message);
     }
   }
   const jsContent = '(function() {\n  "use strict";\n  function getTrendWindowMs(value) {\n    const windows = {\n      "1h": 60 * 60 * 1e3,\n      "6h": 6 * 60 * 60 * 1e3,\n      "24h": 24 * 60 * 60 * 1e3,\n      "7d": 7 * 24 * 60 * 60 * 1e3,\n      "14d": 14 * 24 * 60 * 60 * 1e3,\n      "21d": 21 * 24 * 60 * 60 * 1e3,\n      "28d": 28 * 24 * 60 * 60 * 1e3\n    };\n    return windows[value] || windows["24h"];\n  }\n  function buildRollingAverageTrend(points, windowMs) {\n    if (!Array.isArray(points) || points.length < 2 || !Number.isFinite(windowMs) || windowMs <= 0) {\n      return [];\n    }\n    const trendPoints = [];\n    let windowStartIndex = 0;\n    let windowSum = 0;\n    for (let index = 0; index < points.length; index += 1) {\n      const [time, value] = points[index];\n      windowSum += value;\n      while (windowStartIndex < index && time - points[windowStartIndex][0] > windowMs) {\n        windowSum -= points[windowStartIndex][1];\n        windowStartIndex += 1;\n      }\n      const count = index - windowStartIndex + 1;\n      if (count > 0) {\n        trendPoints.push([time, windowSum / count]);\n      }\n    }\n    return trendPoints;\n  }\n  function buildLinearTrend(points) {\n    if (!Array.isArray(points) || points.length < 2) {\n      return [];\n    }\n    const origin = points[0][0];\n    let sumX = 0;\n    let sumY = 0;\n    let sumXX = 0;\n    let sumXY = 0;\n    for (const [time, value] of points) {\n      const x = (time - origin) / (60 * 60 * 1e3);\n      sumX += x;\n      sumY += value;\n      sumXX += x * x;\n      sumXY += x * value;\n    }\n    const count = points.length;\n    const denominator = count * sumXX - sumX * sumX;\n    if (!Number.isFinite(denominator) || Math.abs(denominator) < 1e-9) {\n      return [];\n    }\n    const slope = (count * sumXY - sumX * sumY) / denominator;\n    const intercept = (sumY - slope * sumX) / count;\n    const firstTime = points[0][0];\n    const lastTime = points[points.length - 1][0];\n    const firstX = (firstTime - origin) / (60 * 60 * 1e3);\n    const lastX = (lastTime - origin) / (60 * 60 * 1e3);\n    return [\n      [firstTime, intercept + slope * firstX],\n      [lastTime, intercept + slope * lastX]\n    ];\n  }\n  function buildTrendPoints(points, method, trendWindow) {\n    if (!Array.isArray(points) || points.length < 2) {\n      return [];\n    }\n    if (method === "linear_trend") {\n      return buildLinearTrend(points);\n    }\n    return buildRollingAverageTrend(points, getTrendWindowMs(trendWindow));\n  }\n  function getPersistenceWindowMs(value) {\n    const windows = {\n      "30m": 30 * 60 * 1e3,\n      "1h": 60 * 60 * 1e3,\n      "3h": 3 * 60 * 60 * 1e3,\n      "6h": 6 * 60 * 60 * 1e3,\n      "12h": 12 * 60 * 60 * 1e3,\n      "24h": 24 * 60 * 60 * 1e3\n    };\n    return windows[value] || windows["1h"];\n  }\n  function buildIQRAnomalyClusters(points, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 4) {\n      return [];\n    }\n    const sorted = points.map(([, v]) => v).sort((a, b) => a - b);\n    const n = sorted.length;\n    const q1 = sorted[Math.floor(n * 0.25)];\n    const q2 = sorted[Math.floor(n * 0.5)];\n    const q3 = sorted[Math.floor(n * 0.75)];\n    const iqr = q3 - q1;\n    if (!Number.isFinite(iqr) || iqr <= 1e-6) {\n      return [];\n    }\n    const k = anomalySensitivity === "low" ? 3 : anomalySensitivity === "high" ? 1.5 : 2;\n    const lowerFence = q1 - k * iqr;\n    const upperFence = q3 + k * iqr;\n    const clusters = [];\n    let currentCluster = [];\n    const flushCluster = () => {\n      if (currentCluster.length === 0) return;\n      const maxDeviation = currentCluster.reduce((m, p) => Math.max(m, Math.abs(p.residual)), 0);\n      clusters.push({ points: currentCluster.slice(), maxDeviation, anomalyMethod: "iqr" });\n      currentCluster = [];\n    };\n    for (const [timeMs, value] of points) {\n      if (value < lowerFence || value > upperFence) {\n        currentCluster.push({ timeMs, value, baselineValue: q2, residual: value - q2 });\n      } else {\n        flushCluster();\n      }\n    }\n    flushCluster();\n    return clusters.filter((c) => c.points.length > 0);\n  }\n  function buildRollingZScoreAnomalyClusters(points, windowMs, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 3 || !Number.isFinite(windowMs) || windowMs <= 0) {\n      return [];\n    }\n    const threshold = getAnomalySensitivityThreshold(anomalySensitivity);\n    const residuals = [];\n    let windowStart = 0;\n    let windowSum = 0;\n    let windowSumSq = 0;\n    for (let i = 0; i < points.length; i += 1) {\n      const [timeMs, value] = points[i];\n      windowSum += value;\n      windowSumSq += value * value;\n      while (windowStart < i && timeMs - points[windowStart][0] > windowMs) {\n        const old = points[windowStart][1];\n        windowSum -= old;\n        windowSumSq -= old * old;\n        windowStart += 1;\n      }\n      const count = i - windowStart + 1;\n      if (count < 3) {\n        continue;\n      }\n      const mean = windowSum / count;\n      const variance = Math.max(0, windowSumSq / count - mean * mean);\n      const std = Math.sqrt(variance);\n      if (!Number.isFinite(std) || std <= 1e-6) {\n        continue;\n      }\n      const zscore = (value - mean) / std;\n      if (Math.abs(zscore) >= threshold) {\n        residuals.push({ timeMs, value, baselineValue: mean, residual: value - mean, flagged: true });\n      } else {\n        residuals.push({ timeMs, flagged: false });\n      }\n    }\n    const clusters = [];\n    let currentCluster = [];\n    const flushCluster = () => {\n      if (currentCluster.length === 0) return;\n      const maxDeviation = currentCluster.reduce((m, p) => Math.max(m, Math.abs(p.residual)), 0);\n      clusters.push({ points: currentCluster.slice(), maxDeviation, anomalyMethod: "rolling_zscore" });\n      currentCluster = [];\n    };\n    for (const r of residuals) {\n      if (r.flagged) {\n        currentCluster.push(r);\n      } else {\n        flushCluster();\n      }\n    }\n    flushCluster();\n    return clusters.filter((c) => c.points.length > 0);\n  }\n  function buildPersistenceAnomalyClusters(points, minDurationMs, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 3 || !Number.isFinite(minDurationMs) || minDurationMs <= 0) {\n      return [];\n    }\n    let totalMin = Infinity;\n    let totalMax = -Infinity;\n    for (const [, v] of points) {\n      if (v < totalMin) totalMin = v;\n      if (v > totalMax) totalMax = v;\n    }\n    const totalRange = totalMax - totalMin;\n    if (!Number.isFinite(totalRange) || totalRange <= 1e-6) {\n      return [];\n    }\n    const flatFraction = anomalySensitivity === "low" ? 5e-3 : anomalySensitivity === "high" ? 0.05 : 0.02;\n    const flatThreshold = flatFraction * totalRange;\n    const clusters = [];\n    let runStart = 0;\n    let runMin = points[0][1];\n    let runMax = points[0][1];\n    const flushRun = (runEnd) => {\n      const duration = points[runEnd][0] - points[runStart][0];\n      if (duration >= minDurationMs && runEnd > runStart) {\n        const mid = (runMin + runMax) / 2;\n        const clusterPoints = [];\n        for (let k = runStart; k <= runEnd; k += 1) {\n          clusterPoints.push({ timeMs: points[k][0], value: points[k][1], baselineValue: mid, residual: points[k][1] - mid });\n        }\n        clusters.push({\n          points: clusterPoints,\n          maxDeviation: runMax - runMin,\n          anomalyMethod: "persistence",\n          flatRange: runMax - runMin\n        });\n      }\n    };\n    for (let i = 1; i < points.length; i += 1) {\n      const v = points[i][1];\n      const nextMin = Math.min(runMin, v);\n      const nextMax = Math.max(runMax, v);\n      if (nextMax - nextMin > flatThreshold) {\n        flushRun(i - 1);\n        runStart = i;\n        runMin = v;\n        runMax = v;\n      } else {\n        runMin = nextMin;\n        runMax = nextMax;\n      }\n    }\n    flushRun(points.length - 1);\n    return clusters.filter((c) => c.points.length > 0);\n  }\n  function buildComparisonWindowAnomalyClusters(points, comparisonPoints, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 3 || !Array.isArray(comparisonPoints) || comparisonPoints.length < 3) {\n      return [];\n    }\n    const deltaPoints = [];\n    for (const [timeMs, value] of points) {\n      const compValue = interpolateSeriesValue(comparisonPoints, timeMs);\n      if (!Number.isFinite(compValue)) {\n        continue;\n      }\n      deltaPoints.push({ timeMs, value, compValue, delta: value - compValue });\n    }\n    if (deltaPoints.length < 3) {\n      return [];\n    }\n    let sumDeltas = 0;\n    for (const p of deltaPoints) {\n      sumDeltas += p.delta;\n    }\n    const meanDelta = sumDeltas / deltaPoints.length;\n    let sumSqDev = 0;\n    for (const p of deltaPoints) {\n      const dev = p.delta - meanDelta;\n      sumSqDev += dev * dev;\n    }\n    const rmsDeviation = Math.sqrt(sumSqDev / deltaPoints.length);\n    if (!Number.isFinite(rmsDeviation) || rmsDeviation <= 1e-6) {\n      return [];\n    }\n    const threshold = rmsDeviation * getAnomalySensitivityThreshold(anomalySensitivity);\n    const clusters = [];\n    let currentCluster = [];\n    const flushCluster = () => {\n      if (currentCluster.length === 0) return;\n      const maxDeviation = currentCluster.reduce((m, p) => Math.max(m, Math.abs(p.residual)), 0);\n      clusters.push({ points: currentCluster.slice(), maxDeviation, anomalyMethod: "comparison_window" });\n      currentCluster = [];\n    };\n    for (const { timeMs, value, compValue, delta } of deltaPoints) {\n      const residual = delta - meanDelta;\n      if (Math.abs(residual) >= threshold) {\n        currentCluster.push({ timeMs, value, baselineValue: compValue, residual: value - compValue });\n      } else {\n        flushCluster();\n      }\n    }\n    flushCluster();\n    return clusters.filter((c) => c.points.length > 0);\n  }\n  function buildRateOfChangeAnomalyClusters(points, rateWindow, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 3) {\n      return [];\n    }\n    const ratePoints = buildRateOfChangePoints(points, rateWindow);\n    if (!Array.isArray(ratePoints) || ratePoints.length < 3) {\n      return [];\n    }\n    let sumRates = 0;\n    for (const [, rate] of ratePoints) {\n      sumRates += rate;\n    }\n    const meanRate = sumRates / ratePoints.length;\n    let sumSqDev = 0;\n    for (const [, rate] of ratePoints) {\n      const dev = rate - meanRate;\n      sumSqDev += dev * dev;\n    }\n    const rmsDeviation = Math.sqrt(sumSqDev / ratePoints.length);\n    if (!Number.isFinite(rmsDeviation) || rmsDeviation <= 1e-6) {\n      return [];\n    }\n    const threshold = rmsDeviation * getAnomalySensitivityThreshold(anomalySensitivity);\n    const clusters = [];\n    let currentCluster = [];\n    const flushCluster = () => {\n      if (currentCluster.length === 0) {\n        return;\n      }\n      const maxDeviation = currentCluster.reduce((maxVal, point) => {\n        return Math.max(maxVal, Math.abs(point.residual));\n      }, 0);\n      clusters.push({\n        points: currentCluster.slice(),\n        maxDeviation,\n        anomalyMethod: "rate_of_change"\n      });\n      currentCluster = [];\n    };\n    for (const [timeMs, rate] of ratePoints) {\n      const residual = rate - meanRate;\n      if (Math.abs(residual) >= threshold) {\n        const sourceValue = interpolateSeriesValue(points, timeMs);\n        if (!Number.isFinite(sourceValue)) {\n          flushCluster();\n          continue;\n        }\n        currentCluster.push({\n          timeMs,\n          value: sourceValue,\n          baselineValue: meanRate,\n          residual\n        });\n      } else {\n        flushCluster();\n      }\n    }\n    flushCluster();\n    return clusters.filter((cluster) => cluster.points.length > 0);\n  }\n  const VALID_ANOMALY_METHODS = ["trend_residual", "rate_of_change", "iqr", "rolling_zscore", "persistence", "comparison_window"];\n  function normalizeSeriesAnalysis(analysis) {\n    const source = analysis && typeof analysis === "object" ? analysis : {};\n    const legacyMethod = VALID_ANOMALY_METHODS.includes(source.anomaly_method) ? source.anomaly_method : null;\n    return {\n      show_trend_lines: source.show_trend_lines === true,\n      trend_method: source.trend_method === "linear_trend" ? "linear_trend" : "rolling_average",\n      trend_window: typeof source.trend_window === "string" && source.trend_window ? source.trend_window : "24h",\n      show_summary_stats: source.show_summary_stats === true,\n      show_rate_of_change: source.show_rate_of_change === true,\n      rate_window: typeof source.rate_window === "string" && source.rate_window ? source.rate_window : "1h",\n      show_anomalies: source.show_anomalies === true,\n      anomaly_methods: Array.isArray(source.anomaly_methods) ? source.anomaly_methods.filter((m) => VALID_ANOMALY_METHODS.includes(m)) : legacyMethod ? [legacyMethod] : [],\n      anomaly_overlap_mode: ["all", "highlight", "only"].includes(source.anomaly_overlap_mode) ? source.anomaly_overlap_mode : "all",\n      anomaly_sensitivity: typeof source.anomaly_sensitivity === "string" && source.anomaly_sensitivity ? source.anomaly_sensitivity : "medium",\n      anomaly_rate_window: typeof source.anomaly_rate_window === "string" && source.anomaly_rate_window ? source.anomaly_rate_window : "1h",\n      anomaly_zscore_window: typeof source.anomaly_zscore_window === "string" && source.anomaly_zscore_window ? source.anomaly_zscore_window : "24h",\n      anomaly_persistence_window: typeof source.anomaly_persistence_window === "string" && source.anomaly_persistence_window ? source.anomaly_persistence_window : "1h",\n      anomaly_comparison_window_id: typeof source.anomaly_comparison_window_id === "string" && source.anomaly_comparison_window_id ? source.anomaly_comparison_window_id : null,\n      show_delta_analysis: source.show_delta_analysis === true\n    };\n  }\n  function applyAnomalyOverlapMode(clustersByMethod, overlapMode) {\n    const methodKeys = Object.keys(clustersByMethod);\n    if (methodKeys.length <= 1 || overlapMode === "all") {\n      return methodKeys.flatMap((m) => clustersByMethod[m]);\n    }\n    const flaggedByMethod = {};\n    for (const m of methodKeys) {\n      flaggedByMethod[m] = new Set(clustersByMethod[m].flatMap((c) => c.points.map((p) => p.timeMs)));\n    }\n    const overlapTimes = /* @__PURE__ */ new Set();\n    for (const m of methodKeys) {\n      for (const t of flaggedByMethod[m]) {\n        if (methodKeys.some((other) => other !== m && flaggedByMethod[other].has(t))) {\n          overlapTimes.add(t);\n        }\n      }\n    }\n    if (overlapMode === "only") {\n      const seen = /* @__PURE__ */ new Set();\n      const result2 = [];\n      for (const m of methodKeys) {\n        for (const cluster of clustersByMethod[m]) {\n          const pts = cluster.points.filter((p) => overlapTimes.has(p.timeMs));\n          if (pts.length === 0) continue;\n          const key = pts.map((p) => p.timeMs).join(",");\n          if (seen.has(key)) continue;\n          seen.add(key);\n          const detectedByMethods = methodKeys.filter((other) => pts.some((p) => flaggedByMethod[other].has(p.timeMs)));\n          result2.push({\n            ...cluster,\n            points: pts,\n            maxDeviation: pts.reduce((maxVal, p) => Math.max(maxVal, Math.abs(p.residual || 0)), 0),\n            isOverlap: true,\n            detectedByMethods\n          });\n        }\n      }\n      return result2;\n    }\n    const result = [];\n    for (const m of methodKeys) {\n      for (const cluster of clustersByMethod[m]) {\n        const hasOverlap = cluster.points.some((p) => overlapTimes.has(p.timeMs));\n        const detectedByMethods = hasOverlap ? methodKeys.filter((other) => cluster.points.some((p) => flaggedByMethod[other].has(p.timeMs))) : [m];\n        result.push({ ...cluster, isOverlap: hasOverlap, detectedByMethods });\n      }\n    }\n    return result;\n  }\n  function interpolateSeriesValue(points, timeMs) {\n    if (!Array.isArray(points) || points.length === 0) {\n      return null;\n    }\n    if (timeMs < points[0][0] || timeMs > points[points.length - 1][0]) {\n      return null;\n    }\n    if (timeMs === points[0][0]) {\n      return points[0][1];\n    }\n    if (timeMs === points[points.length - 1][0]) {\n      return points[points.length - 1][1];\n    }\n    for (let index = 0; index < points.length - 1; index += 1) {\n      const [startTime, startValue] = points[index];\n      const [endTime, endValue] = points[index + 1];\n      if (timeMs >= startTime && timeMs <= endTime) {\n        const fraction = (timeMs - startTime) / (endTime - startTime);\n        return startValue + (endValue - startValue) * fraction;\n      }\n    }\n    return null;\n  }\n  function buildRateOfChangePoints(points, rateWindow) {\n    if (!Array.isArray(points) || points.length < 2) {\n      return [];\n    }\n    const ratePoints = [];\n    for (let index = 1; index < points.length; index += 1) {\n      const [timeMs, value] = points[index];\n      let comparisonPoint = null;\n      if (rateWindow === "point_to_point") {\n        comparisonPoint = points[index - 1];\n      } else {\n        const windowMs = getTrendWindowMs(rateWindow);\n        if (!Number.isFinite(windowMs) || windowMs <= 0) {\n          continue;\n        }\n        for (let candidateIndex = index - 1; candidateIndex >= 0; candidateIndex -= 1) {\n          const candidatePoint = points[candidateIndex];\n          if (timeMs - candidatePoint[0] >= windowMs) {\n            comparisonPoint = candidatePoint;\n            break;\n          }\n        }\n        if (!comparisonPoint) {\n          comparisonPoint = points[0];\n        }\n      }\n      if (!Array.isArray(comparisonPoint) || comparisonPoint.length < 2) {\n        continue;\n      }\n      const deltaMs = timeMs - comparisonPoint[0];\n      if (!Number.isFinite(deltaMs) || deltaMs <= 0) {\n        continue;\n      }\n      const deltaHours = deltaMs / (60 * 60 * 1e3);\n      if (!Number.isFinite(deltaHours) || deltaHours <= 0) {\n        continue;\n      }\n      const rateValue = (value - comparisonPoint[1]) / deltaHours;\n      if (!Number.isFinite(rateValue)) {\n        continue;\n      }\n      ratePoints.push([timeMs, rateValue]);\n    }\n    return ratePoints;\n  }\n  function buildDeltaPoints(sourcePoints, comparisonPoints) {\n    if (!Array.isArray(sourcePoints) || sourcePoints.length < 2 || !Array.isArray(comparisonPoints) || comparisonPoints.length < 2) {\n      return [];\n    }\n    const deltaPoints = [];\n    for (const [timeMs, value] of sourcePoints) {\n      const comparisonValue = interpolateSeriesValue(comparisonPoints, timeMs);\n      if (comparisonValue == null) {\n        continue;\n      }\n      deltaPoints.push([timeMs, value - comparisonValue]);\n    }\n    return deltaPoints;\n  }\n  function buildSummaryStats(points) {\n    if (!Array.isArray(points) || points.length === 0) {\n      return null;\n    }\n    let min = Infinity;\n    let max = -Infinity;\n    let sum = 0;\n    let count = 0;\n    for (const point of points) {\n      const value = Number(point?.[1]);\n      if (!Number.isFinite(value)) {\n        continue;\n      }\n      if (value < min) {\n        min = value;\n      }\n      if (value > max) {\n        max = value;\n      }\n      sum += value;\n      count += 1;\n    }\n    if (!Number.isFinite(min) || !Number.isFinite(max) || count === 0) {\n      return null;\n    }\n    return {\n      min,\n      max,\n      mean: sum / count\n    };\n  }\n  function getAnomalySensitivityThreshold(sensitivity) {\n    if (sensitivity === "low") {\n      return 2.8;\n    }\n    if (sensitivity === "high") {\n      return 1.6;\n    }\n    return 2.2;\n  }\n  function buildAnomalyClusters(points, method, trendWindow, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 3) {\n      return [];\n    }\n    const baselinePoints = buildTrendPoints(points, method, trendWindow);\n    if (!Array.isArray(baselinePoints) || baselinePoints.length < 2) {\n      return [];\n    }\n    const residualPoints = [];\n    for (const [timeMs, value] of points) {\n      const baselineValue = interpolateSeriesValue(baselinePoints, timeMs);\n      if (!Number.isFinite(baselineValue)) {\n        continue;\n      }\n      residualPoints.push({\n        timeMs,\n        value,\n        baselineValue,\n        residual: value - baselineValue\n      });\n    }\n    if (residualPoints.length < 3) {\n      return [];\n    }\n    let sumSquares = 0;\n    residualPoints.forEach((point) => {\n      sumSquares += point.residual * point.residual;\n    });\n    const rmsResidual = Math.sqrt(sumSquares / residualPoints.length);\n    if (!Number.isFinite(rmsResidual) || rmsResidual <= 1e-6) {\n      return [];\n    }\n    const threshold = rmsResidual * getAnomalySensitivityThreshold(anomalySensitivity);\n    const clusters = [];\n    let currentCluster = [];\n    const flushCluster = () => {\n      if (currentCluster.length === 0) {\n        return;\n      }\n      const maxDeviation = currentCluster.reduce((maxValue, point) => {\n        return Math.max(maxValue, Math.abs(point.residual));\n      }, 0);\n      clusters.push({\n        points: currentCluster.slice(),\n        maxDeviation,\n        anomalyMethod: "trend_residual"\n      });\n      currentCluster = [];\n    };\n    residualPoints.forEach((point) => {\n      if (Math.abs(point.residual) >= threshold) {\n        currentCluster.push(point);\n      } else {\n        flushCluster();\n      }\n    });\n    flushCluster();\n    return clusters.filter((cluster) => cluster.points.length > 0);\n  }\n  function computeHistoryAnalysis(payload) {\n    const series = (Array.isArray(payload?.series) ? payload.series : []).map((seriesItem) => {\n      return {\n        ...seriesItem,\n        analysis: normalizeSeriesAnalysis(seriesItem?.analysis)\n      };\n    });\n    const comparisonSeries = new Map(\n      (Array.isArray(payload?.comparisonSeries) ? payload.comparisonSeries : []).filter((entry) => entry?.entityId).map((entry) => [entry.entityId, entry])\n    );\n    const allComparisonWindowsData = payload?.allComparisonWindowsData && typeof payload.allComparisonWindowsData === "object" ? payload.allComparisonWindowsData : {};\n    const result = {\n      trendSeries: [],\n      rateSeries: [],\n      deltaSeries: [],\n      summaryStats: [],\n      anomalySeries: []\n    };\n    for (const seriesItem of series) {\n      const points = Array.isArray(seriesItem?.pts) ? seriesItem.pts : [];\n      const analysis = normalizeSeriesAnalysis(seriesItem?.analysis);\n      if (points.length < 2) {\n        continue;\n      }\n      const anomalyMethods = analysis.anomaly_methods;\n      const needsTrend = analysis.show_trend_lines === true || analysis.show_anomalies === true && anomalyMethods.includes("trend_residual");\n      if (needsTrend) {\n        const trendPoints = buildTrendPoints(points, analysis.trend_method, analysis.trend_window);\n        if (analysis.show_trend_lines === true && trendPoints.length >= 2) {\n          result.trendSeries.push({\n            entityId: seriesItem.entityId,\n            pts: trendPoints\n          });\n        }\n      }\n      if (analysis.show_anomalies === true) {\n        const clustersByMethod = {};\n        if (anomalyMethods.includes("trend_residual")) {\n          const clusters = buildAnomalyClusters(points, analysis.trend_method, analysis.trend_window, analysis.anomaly_sensitivity);\n          if (clusters.length > 0) clustersByMethod["trend_residual"] = clusters;\n        }\n        if (anomalyMethods.includes("rate_of_change")) {\n          const clusters = buildRateOfChangeAnomalyClusters(points, analysis.anomaly_rate_window, analysis.anomaly_sensitivity);\n          if (clusters.length > 0) clustersByMethod["rate_of_change"] = clusters;\n        }\n        if (anomalyMethods.includes("iqr")) {\n          const clusters = buildIQRAnomalyClusters(points, analysis.anomaly_sensitivity);\n          if (clusters.length > 0) clustersByMethod["iqr"] = clusters;\n        }\n        if (anomalyMethods.includes("rolling_zscore")) {\n          const windowMs = getTrendWindowMs(analysis.anomaly_zscore_window);\n          const clusters = buildRollingZScoreAnomalyClusters(points, windowMs, analysis.anomaly_sensitivity);\n          if (clusters.length > 0) clustersByMethod["rolling_zscore"] = clusters;\n        }\n        if (anomalyMethods.includes("persistence")) {\n          const minDurationMs = getPersistenceWindowMs(analysis.anomaly_persistence_window);\n          const clusters = buildPersistenceAnomalyClusters(points, minDurationMs, analysis.anomaly_sensitivity);\n          if (clusters.length > 0) clustersByMethod["persistence"] = clusters;\n        }\n        if (anomalyMethods.includes("comparison_window") && analysis.anomaly_comparison_window_id) {\n          const windowData = allComparisonWindowsData[analysis.anomaly_comparison_window_id];\n          const comparisonPts = windowData && typeof windowData === "object" ? windowData[seriesItem.entityId] : null;\n          if (Array.isArray(comparisonPts) && comparisonPts.length >= 3) {\n            const clusters = buildComparisonWindowAnomalyClusters(points, comparisonPts, analysis.anomaly_sensitivity);\n            if (clusters.length > 0) clustersByMethod["comparison_window"] = clusters;\n          }\n        }\n        const anomalyClusters = applyAnomalyOverlapMode(clustersByMethod, analysis.anomaly_overlap_mode);\n        if (anomalyClusters.length > 0) {\n          result.anomalySeries.push({ entityId: seriesItem.entityId, anomalyClusters });\n        }\n      }\n      if (analysis.show_rate_of_change === true) {\n        const ratePoints = buildRateOfChangePoints(points, analysis.rate_window);\n        if (ratePoints.length >= 2) {\n          result.rateSeries.push({\n            entityId: seriesItem.entityId,\n            pts: ratePoints\n          });\n        }\n      }\n      if (analysis.show_summary_stats === true) {\n        const summaryStats = buildSummaryStats(points);\n        if (summaryStats) {\n          result.summaryStats.push({\n            entityId: seriesItem.entityId,\n            ...summaryStats\n          });\n        }\n      }\n      if (analysis.show_delta_analysis === true && payload?.hasSelectedComparisonWindow === true) {\n        const comparisonEntry = comparisonSeries.get(seriesItem.entityId);\n        if (comparisonEntry?.pts?.length >= 2) {\n          const deltaPoints = buildDeltaPoints(points, comparisonEntry.pts);\n          if (deltaPoints.length >= 2) {\n            result.deltaSeries.push({\n              entityId: seriesItem.entityId,\n              pts: deltaPoints\n            });\n          }\n        }\n      }\n    }\n    return result;\n  }\n  self.onmessage = (event) => {\n    const { id, payload } = event.data || {};\n    try {\n      const result = computeHistoryAnalysis(payload);\n      self.postMessage({ id, result });\n    } catch (error) {\n      self.postMessage({\n        id,\n        error: error instanceof Error ? error.message : String(error)\n      });\n    }\n  };\n})();\n';
@@ -7162,7 +8076,7 @@ ${s.description}`).join("\n\n");
         (self.URL || self.webkitURL).revokeObjectURL(objURL);
       });
       return worker;
-    } catch (e) {
+    } catch (e2) {
       return new Worker(
         "data:text/javascript;charset=utf-8," + encodeURIComponent(jsContent),
         {
@@ -7432,8 +8346,8 @@ ${s.description}`).join("\n\n");
         overlayEl.style.left = "";
       }
       overlayEl.innerHTML = `
-      <div class="chart-preview-line"><strong>Date window:</strong> ${esc$3(overlay.window_range_label)}</div>
-      <div class="chart-preview-line"><strong>Actual:</strong> ${esc$3(overlay.actual_range_label)}</div>
+      <div class="chart-preview-line"><strong>Date window:</strong> ${esc$1(overlay.window_range_label)}</div>
+      <div class="chart-preview-line"><strong>Actual:</strong> ${esc$1(overlay.actual_range_label)}</div>
     `;
       overlayEl.hidden = false;
     }
@@ -7444,7 +8358,7 @@ ${s.description}`).join("\n\n");
     }
     get _entityIds() {
       if (this._config.entities) {
-        return this._config.entities.map((e) => typeof e === "string" ? e : e.entity || e.entity_id);
+        return this._config.entities.map((e2) => typeof e2 === "string" ? e2 : e2.entity || e2.entity_id);
       }
       return [this._config.entity];
     }
@@ -7453,12 +8367,12 @@ ${s.description}`).join("\n\n");
       const byEntityId = new Map(
         configured.filter((entry) => entry?.entity_id).map((entry, index) => [entry.entity_id, {
           entity_id: entry.entity_id,
-          color: entry.color || COLORS$2[index % COLORS$2.length]
+          color: entry.color || COLORS[index % COLORS.length]
         }])
       );
       return this._entityIds.map((entityId, index) => byEntityId.get(entityId) || {
         entity_id: entityId,
-        color: COLORS$2[index % COLORS$2.length]
+        color: COLORS[index % COLORS.length]
       });
     }
     get _statisticsEntityIds() {
@@ -7642,6 +8556,12 @@ ${s.description}`).join("\n\n");
       const t0 = start.getTime();
       const t1 = end.getTime();
       const requestId2 = ++this._loadRequestId;
+      console.log("[hass-datapoints history-card] load triggered", {
+        requestId: requestId2,
+        entityIds: this._entityIds,
+        start: start.toISOString(),
+        end: end.toISOString()
+      });
       this._setChartLoading(true);
       this._setChartMessage("");
       this._drawEmptyChartFrame(t0, t1);
@@ -7795,7 +8715,7 @@ ${s.description}`).join("\n\n");
           maybeDraw();
           finalize();
         } else {
-          fetchEvents$3(
+          fetchEvents$1(
             this._hass,
             start.toISOString(),
             end.toISOString(),
@@ -7833,8 +8753,8 @@ ${s.description}`).join("\n\n");
         chartStage.style.width = `${viewportWidth}px`;
         chartStage.style.height = `${availableHeight}px`;
       }
-      const { w, h } = setupCanvas$1(canvas, chartStage || wrap, availableHeight, viewportWidth);
-      const renderer = new ChartRenderer$1(canvas, w, h);
+      const { w, h: h2 } = setupCanvas(canvas, chartStage || wrap, availableHeight, viewportWidth);
+      const renderer = new ChartRenderer(canvas, w, h2);
       renderer.labelColor = resolveChartLabelColor(this);
       renderer.clear();
       renderer.drawGrid(t0, t1, [{ key: "placeholder", min: 0, max: 1, side: "left", unit: "", color: null }], void 0, 5, { fixedAxisOverlay: true });
@@ -7859,10 +8779,10 @@ ${s.description}`).join("\n\n");
       if (canvas) {
         canvas.style.display = "none";
       }
-      const N = visibleSeries.length;
+      const N2 = visibleSeries.length;
       const MIN_ROW_HEIGHT = 140;
-      const rowHeight = Math.max(MIN_ROW_HEIGHT, Math.floor(availableHeight / N));
-      const totalHeight = rowHeight * N;
+      const rowHeight = Math.max(MIN_ROW_HEIGHT, Math.floor(availableHeight / N2));
+      const totalHeight = rowHeight * N2;
       if (chartStage) {
         chartStage.style.width = `${canvasWidth}px`;
         chartStage.style.height = `${totalHeight}px`;
@@ -7881,10 +8801,10 @@ ${s.description}`).join("\n\n");
       const effectiveAnalysisMap = analysisMap || /* @__PURE__ */ new Map();
       const correlatedAnomalySpans = this._config?.show_correlated_anomalies === true ? this._buildCorrelatedAnomalySpans(visibleSeries, anomalyClustersMap, effectiveAnalysisMap) : [];
       const tracks = [];
-      for (let i = 0; i < N; i += 1) {
-        const isLastRow = i === N - 1;
-        const seriesItem = visibleSeries[i];
-        const rowOffset = i * rowHeight;
+      for (let i2 = 0; i2 < N2; i2 += 1) {
+        const isLastRow = i2 === N2 - 1;
+        const seriesItem = visibleSeries[i2];
+        const rowOffset = i2 * rowHeight;
         const rowDiv = document.createElement("div");
         rowDiv.className = "split-series-row";
         rowDiv.style.cssText = `position:absolute;left:0;top:${rowOffset}px;width:${canvasWidth}px;height:${rowHeight}px;pointer-events:none;overflow:hidden;`;
@@ -7892,19 +8812,19 @@ ${s.description}`).join("\n\n");
         rowCanvas.className = "split-series-canvas";
         rowDiv.appendChild(rowCanvas);
         chartStage?.appendChild(rowDiv);
-        const { w, h } = setupCanvas$1(rowCanvas, chartStage || wrap, rowHeight, canvasWidth);
-        const renderer = new ChartRenderer$1(rowCanvas, w, h);
+        const { w, h: h2 } = setupCanvas(rowCanvas, chartStage || wrap, rowHeight, canvasWidth);
+        const renderer = new ChartRenderer(rowCanvas, w, h2);
         renderer.labelColor = resolveChartLabelColor(this);
         renderer.basePad = { top: 24, right: 12, bottom: isLastRow ? 48 : 10, left: 12 };
         renderer.clear();
-        const rowAnalysis = effectiveAnalysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis$1(null);
+        const rowAnalysis = effectiveAnalysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
         const rowTrendPts = rowAnalysis.show_trend_lines === true ? trendPointsMap.get(seriesItem.entityId) || [] : [];
         const rowRatePts = rowAnalysis.show_rate_of_change === true ? ratePointsMap.get(seriesItem.entityId) || [] : [];
         const rowDeltaPts = rowAnalysis.show_delta_analysis === true && hasSelectedComparisonWindow ? deltaPointsMap.get(seriesItem.entityId) || [] : [];
         const rowSummaryStats = rowAnalysis.show_summary_stats === true ? summaryStatsMap.get(seriesItem.entityId) || null : null;
         const rowAnomalyClusters = rowAnalysis.show_anomalies === true ? anomalyClustersMap.get(seriesItem.entityId) || [] : [];
         const rowHideSource = this._seriesShouldHideSource(rowAnalysis, hasSelectedComparisonWindow);
-        const axisValues = seriesItem.pts.map(([, v]) => v);
+        const axisValues = seriesItem.pts.map(([, v2]) => v2);
         const extent = this._getAxisValueExtent(axisValues);
         let axisMin = 0;
         let axisMax = 1;
@@ -7926,7 +8846,7 @@ ${s.description}`).join("\n\n");
         const rowAxes = [axis];
         let rowRateAxisKey = null;
         if (rowRatePts.length >= 2) {
-          const rateVals = rowRatePts.map(([, v]) => v);
+          const rateVals = rowRatePts.map(([, v2]) => v2);
           const rateExt = this._getAxisValueExtent(rateVals);
           if (rateExt) {
             const pad = (rateExt.max - rateExt.min) * 0.1 || 1;
@@ -7944,7 +8864,7 @@ ${s.description}`).join("\n\n");
         }
         let rowDeltaAxisKey = null;
         if (rowDeltaPts.length >= 2) {
-          const deltaVals = rowDeltaPts.map(([, v]) => v);
+          const deltaVals = rowDeltaPts.map(([, v2]) => v2);
           const deltaExt = this._getAxisValueExtent(deltaVals);
           if (deltaExt) {
             const pad = (deltaExt.max - deltaExt.min) * 0.1 || 1;
@@ -7962,8 +8882,8 @@ ${s.description}`).join("\n\n");
         }
         renderer.drawGrid(renderT0, renderT1, rowAxes, void 0, 4, { fixedAxisOverlay: true, hideTimeLabels: !isLastRow });
         const resolvedAxis = renderer._activeAxes?.[0] || axis;
-        const resolvedRateAxis = rowRateAxisKey ? renderer._activeAxes?.find((a) => a.key === rowRateAxisKey) || null : null;
-        const resolvedDeltaAxis = rowDeltaAxisKey ? renderer._activeAxes?.find((a) => a.key === rowDeltaAxisKey) || null : null;
+        const resolvedRateAxis = rowRateAxisKey ? renderer._activeAxes?.find((a2) => a2.key === rowRateAxisKey) || null : null;
+        const resolvedDeltaAxis = rowDeltaAxisKey ? renderer._activeAxes?.find((a2) => a2.key === rowDeltaAxisKey) || null : null;
         seriesItem.axis = resolvedAxis;
         const mainSeriesOpacity = comparisonPreviewActive ? hoveringDifferentComparison ? 0.15 : 0.25 : 1;
         if (!rowHideSource) {
@@ -7984,10 +8904,10 @@ ${s.description}`).join("\n\n");
         for (const win of comparisonResults || []) {
           const stateList = this._buildEntityStateList(seriesItem.entityId, win.histResult, win.statsResult || {});
           const winPts = [];
-          for (const s of stateList) {
-            const v = parseFloat(s.s);
-            if (!isNaN(v)) {
-              winPts.push([Math.round(s.lu * 1e3) - win.time_offset_ms, v]);
+          for (const s2 of stateList) {
+            const v2 = parseFloat(s2.s);
+            if (!isNaN(v2)) {
+              winPts.push([Math.round(s2.lu * 1e3) - win.time_offset_ms, v2]);
             }
           }
           if (!winPts.length) {
@@ -8111,8 +9031,8 @@ ${s.description}`).join("\n\n");
         if (rowAnomalyClusters.length) {
           const filteredClusters = this._filterAnnotatedAnomalyClusters({ entityId: seriesItem.entityId, anomalyClusters: rowAnomalyClusters }, events || []);
           if (filteredClusters.length > 0) {
-            const normalClusters = filteredClusters.filter((c) => !c.isOverlap);
-            const overlapClusters = filteredClusters.filter((c) => c.isOverlap === true);
+            const normalClusters = filteredClusters.filter((c2) => !c2.isOverlap);
+            const overlapClusters = filteredClusters.filter((c2) => c2.isOverlap === true);
             const baseColor = hexToRgba(seriesItem.color, rowHideSource ? 0.96 : 0.86);
             const regionOpts = {
               strokeAlpha: rowHideSource ? 0.98 : 0.9,
@@ -8187,10 +9107,10 @@ ${s.description}`).join("\n\n");
         for (const win of comparisonResults || []) {
           const stateList = this._buildEntityStateList(track.series.entityId, win.histResult, win.statsResult || {});
           const winPts = [];
-          for (const s of stateList) {
-            const v = parseFloat(s.s);
-            if (!isNaN(v)) {
-              winPts.push([Math.round(s.lu * 1e3) - win.time_offset_ms, v]);
+          for (const s2 of stateList) {
+            const v2 = parseFloat(s2.s);
+            if (!isNaN(v2)) {
+              winPts.push([Math.round(s2.lu * 1e3) - win.time_offset_ms, v2]);
             }
           }
           if (!winPts.length) {
@@ -8257,7 +9177,7 @@ ${s.description}`).join("\n\n");
         const localX = clampChartValue(clientX - baseRect.left, primaryRenderer.pad.left, primaryRenderer.pad.left + primaryRenderer.cw);
         const ratio = (localX - primaryRenderer.pad.left) / primaryRenderer.cw;
         const timeMs = t0 + ratio * (t1 - t0);
-        const x = primaryRenderer.xOf(timeMs, t0, t1);
+        const x2 = primaryRenderer.xOf(timeMs, t0, t1);
         const values = tracks.map(({ renderer, series, axis, rowOffset }) => {
           const value = renderer._interpolateValue(series.pts, timeMs);
           if (value == null) {
@@ -8271,7 +9191,7 @@ ${s.description}`).join("\n\n");
             color: series.color,
             opacity: 1,
             hasValue: true,
-            x,
+            x: x2,
             y: rowOffset + renderer.yOf(value, axis.min, axis.max),
             axisSide: "left",
             axisSlot: 0
@@ -8288,7 +9208,7 @@ ${s.description}`).join("\n\n");
             hoveredEvents.push({ ...event, _hoverDistanceMs: distance });
           }
         }
-        hoveredEvents.sort((a, b) => (a._hoverDistanceMs || 0) - (b._hoverDistanceMs || 0));
+        hoveredEvents.sort((a2, b2) => (a2._hoverDistanceMs || 0) - (b2._hoverDistanceMs || 0));
         const comparisonValues = (comparisonHoverSeries || []).map(({ pts, entityId, label, unit, color, hoverOpacity, track: cTrack }) => {
           const value = cTrack.renderer._interpolateValue(pts, timeMs);
           if (value == null) {
@@ -8302,7 +9222,7 @@ ${s.description}`).join("\n\n");
             color,
             opacity: hoverOpacity,
             hasValue: true,
-            x,
+            x: x2,
             y: cTrack.rowOffset + cTrack.renderer.yOf(value, cTrack.axis.min, cTrack.axis.max),
             axisSide: "left",
             axisSlot: 0
@@ -8330,7 +9250,7 @@ ${s.description}`).join("\n\n");
             deltaAxis: trackDeltaAxis,
             anomalyRegions: trackAnomalyRegions
           } = track;
-          const effectiveAnalysis = trackAnalysis || (analysisMap || /* @__PURE__ */ new Map()).get(trackSeries.entityId) || normalizeHistorySeriesAnalysis$1(null);
+          const effectiveAnalysis = trackAnalysis || (analysisMap || /* @__PURE__ */ new Map()).get(trackSeries.entityId) || normalizeHistorySeriesAnalysis(null);
           const trackHideSource = this._seriesShouldHideSource(effectiveAnalysis, hasSelectedComparisonWindow);
           if (effectiveAnalysis.show_trend_lines === true && Array.isArray(trackTrendPts) && trackTrendPts.length >= 2) {
             if (effectiveAnalysis.show_trend_crosshairs === true) showTrendCrosshairs = true;
@@ -8346,7 +9266,7 @@ ${s.description}`).join("\n\n");
               opacity: trendOpts.lineOpacity,
               hasValue: trendVal != null,
               value: trendVal ?? null,
-              ...trendVal != null ? { x, y: trackRowOffset + trackRenderer.yOf(trendVal, trackAxis.min, trackAxis.max) } : {},
+              ...trendVal != null ? { x: x2, y: trackRowOffset + trackRenderer.yOf(trendVal, trackAxis.min, trackAxis.max) } : {},
               axisSide: "left",
               axisSlot: 0,
               trend: true,
@@ -8366,7 +9286,7 @@ ${s.description}`).join("\n\n");
               opacity: trackHideSource ? 0.88 : 0.66,
               hasValue: rateVal != null,
               value: rateVal ?? null,
-              ...rateVal != null ? { x, y: trackRowOffset + trackRenderer.yOf(rateVal, trackRateAxis.min, trackRateAxis.max) } : {},
+              ...rateVal != null ? { x: x2, y: trackRowOffset + trackRenderer.yOf(rateVal, trackRateAxis.min, trackRateAxis.max) } : {},
               axisSide: "right",
               axisSlot: 0,
               rate: true,
@@ -8385,7 +9305,7 @@ ${s.description}`).join("\n\n");
               opacity: 0.82,
               hasValue: deltaVal != null,
               value: deltaVal ?? null,
-              ...deltaVal != null ? { x, y: trackRowOffset + trackRenderer.yOf(deltaVal, trackDeltaAxis.min, trackDeltaAxis.max) } : {},
+              ...deltaVal != null ? { x: x2, y: trackRowOffset + trackRenderer.yOf(deltaVal, trackDeltaAxis.min, trackDeltaAxis.max) } : {},
               axisSide: "right",
               axisSlot: 0,
               delta: true,
@@ -8449,24 +9369,24 @@ ${s.description}`).join("\n\n");
           }
         }
         const hideRawData = tracks.every((track) => {
-          const eff = track.analysis || (analysisMap || /* @__PURE__ */ new Map()).get(track.series.entityId) || normalizeHistorySeriesAnalysis$1(null);
+          const eff = track.analysis || (analysisMap || /* @__PURE__ */ new Map()).get(track.series.entityId) || normalizeHistorySeriesAnalysis(null);
           return this._seriesShouldHideSource(eff, hasSelectedComparisonWindow);
         });
         return {
-          x,
-          y: values.find((v) => v.hasValue)?.y ?? splitSelTop + 12,
+          x: x2,
+          y: values.find((v2) => v2.hasValue)?.y ?? splitSelTop + 12,
           timeMs,
           rangeStartMs: timeMs,
           rangeEndMs: timeMs,
-          values: values.filter((v) => v.hasValue),
+          values: values.filter((v2) => v2.hasValue),
           trendValues,
           rateValues,
           deltaValues,
           summaryValues,
           thresholdValues,
-          comparisonValues: comparisonValues.filter((v) => v.hasValue),
+          comparisonValues: comparisonValues.filter((v2) => v2.hasValue),
           binaryValues: [],
-          primary: values.find((v) => v.hasValue) ?? null,
+          primary: values.find((v2) => v2.hasValue) ?? null,
           event: hoveredEvents.length > 0 ? (({ _hoverDistanceMs: _hd, ...rest }) => rest)(hoveredEvents[0]) : null,
           events: hoveredEvents.map(({ _hoverDistanceMs: _hd, ...rest }) => rest),
           anomalyRegions,
@@ -8492,7 +9412,7 @@ ${s.description}`).join("\n\n");
         if (this._config.show_tooltips !== false) {
           showLineChartTooltip(this, hover, clientX, clientY);
         } else {
-          hideTooltip$1(this);
+          hideTooltip(this);
         }
         dispatchLineChartHover(this, hover);
         overlayEl.style.cursor = "crosshair";
@@ -8692,7 +9612,7 @@ ${s.description}`).join("\n\n");
           lu: Math.round(timeSec * 1e3) / 1e3,
           s: String(state?.s ?? state?.state ?? "")
         };
-      }).filter(Boolean).sort((a, b) => a.lu - b.lu);
+      }).filter(Boolean).sort((a2, b2) => a2.lu - b2.lu);
     }
     _normalizeNumericHistory(stateList) {
       return (Array.isArray(stateList) ? stateList : []).map((state) => {
@@ -8755,7 +9675,7 @@ ${s.description}`).join("\n\n");
           lu: Math.round(timestamp) / 1e3,
           s: String(value)
         };
-      }).filter(Boolean).sort((a, b) => a.lu - b.lu);
+      }).filter(Boolean).sort((a2, b2) => a2.lu - b2.lu);
     }
     _mergeNumericHistoryWithStatistics(rawHistory, statisticsHistory) {
       const raw = Array.isArray(rawHistory) ? rawHistory : [];
@@ -8775,7 +9695,7 @@ ${s.description}`).join("\n\n");
         }),
         ...raw
       ];
-      merged.sort((a, b) => a.lu - b.lu);
+      merged.sort((a2, b2) => a2.lu - b2.lu);
       return merged;
     }
     _buildEntityStateList(entityId, histResult, statsResult = {}) {
@@ -8887,11 +9807,11 @@ ${s.description}`).join("\n\n");
       let sumXX = 0;
       let sumXY = 0;
       for (const [time, value] of points) {
-        const x = (time - origin) / (60 * 60 * 1e3);
-        sumX += x;
+        const x2 = (time - origin) / (60 * 60 * 1e3);
+        sumX += x2;
         sumY += value;
-        sumXX += x * x;
-        sumXY += x * value;
+        sumXX += x2 * x2;
+        sumXY += x2 * value;
       }
       const count = points.length;
       const denominator = count * sumXX - sumX * sumX;
@@ -8928,27 +9848,27 @@ ${s.description}`).join("\n\n");
     _findGaps(pts, fixedThreshold) {
       if (pts.length < 5) return [];
       const intervals = [];
-      for (let i = 1; i < pts.length; i++) {
-        intervals.push(pts[i][0] - pts[i - 1][0]);
+      for (let i2 = 1; i2 < pts.length; i2++) {
+        intervals.push(pts[i2][0] - pts[i2 - 1][0]);
       }
       if (fixedThreshold != null) {
         const gaps2 = [];
-        for (let i = 0; i < intervals.length; i++) {
-          if (intervals[i] > fixedThreshold) {
-            gaps2.push({ startIdx: i, endIdx: i + 1 });
+        for (let i2 = 0; i2 < intervals.length; i2++) {
+          if (intervals[i2] > fixedThreshold) {
+            gaps2.push({ startIdx: i2, endIdx: i2 + 1 });
           }
         }
         return gaps2;
       }
       const windowRadius = Math.max(3, Math.min(12, Math.floor(intervals.length / 6)));
       const gaps = [];
-      for (let i = 0; i < intervals.length; i++) {
-        const lo = Math.max(0, i - windowRadius);
-        const hi = Math.min(intervals.length, i + windowRadius + 1);
-        const neighbours = intervals.slice(lo, hi).sort((a, b) => a - b);
+      for (let i2 = 0; i2 < intervals.length; i2++) {
+        const lo = Math.max(0, i2 - windowRadius);
+        const hi = Math.min(intervals.length, i2 + windowRadius + 1);
+        const neighbours = intervals.slice(lo, hi).sort((a2, b2) => a2 - b2);
         const localMedian = neighbours[Math.floor(neighbours.length / 2)];
-        if (intervals[i] > localMedian * 3 && intervals[i] > 1e4) {
-          gaps.push({ startIdx: i, endIdx: i + 1 });
+        if (intervals[i2] > localMedian * 3 && intervals[i2] > 1e4) {
+          gaps.push({ startIdx: i2, endIdx: i2 + 1 });
         }
       }
       return gaps;
@@ -9191,21 +10111,21 @@ ${s.description}`).join("\n\n");
     }
     _buildIQRAnomalyClusters(points, sensitivity = "medium") {
       if (!Array.isArray(points) || points.length < 4) return [];
-      const sorted = points.map(([, v]) => v).sort((a, b) => a - b);
-      const n = sorted.length;
-      const q1 = sorted[Math.floor(n * 0.25)];
-      const q2 = sorted[Math.floor(n * 0.5)];
-      const q3 = sorted[Math.floor(n * 0.75)];
+      const sorted = points.map(([, v2]) => v2).sort((a2, b2) => a2 - b2);
+      const n2 = sorted.length;
+      const q1 = sorted[Math.floor(n2 * 0.25)];
+      const q2 = sorted[Math.floor(n2 * 0.5)];
+      const q3 = sorted[Math.floor(n2 * 0.75)];
       const iqr = q3 - q1;
       if (!Number.isFinite(iqr) || iqr <= 1e-6) return [];
-      const k = sensitivity === "low" ? 3 : sensitivity === "high" ? 1.5 : 2;
-      const lowerFence = q1 - k * iqr;
-      const upperFence = q3 + k * iqr;
+      const k2 = sensitivity === "low" ? 3 : sensitivity === "high" ? 1.5 : 2;
+      const lowerFence = q1 - k2 * iqr;
+      const upperFence = q3 + k2 * iqr;
       const clusters = [];
       let currentCluster = [];
       const flushCluster = () => {
         if (currentCluster.length === 0) return;
-        const maxDeviation = currentCluster.reduce((m, p) => Math.max(m, Math.abs(p.residual)), 0);
+        const maxDeviation = currentCluster.reduce((m2, p2) => Math.max(m2, Math.abs(p2.residual)), 0);
         clusters.push({ points: currentCluster.slice(), maxDeviation, anomalyMethod: "iqr" });
         currentCluster = [];
       };
@@ -9217,7 +10137,7 @@ ${s.description}`).join("\n\n");
         }
       }
       flushCluster();
-      return clusters.filter((c) => c.points.length > 0);
+      return clusters.filter((c2) => c2.points.length > 0);
     }
     _buildRollingZScoreAnomalyClusters(points, windowValue = "24h", sensitivity = "medium") {
       if (!Array.isArray(points) || points.length < 3) return [];
@@ -9228,17 +10148,17 @@ ${s.description}`).join("\n\n");
       let windowStart = 0;
       let windowSum = 0;
       let windowSumSq = 0;
-      for (let i = 0; i < points.length; i += 1) {
-        const [timeMs, value] = points[i];
+      for (let i2 = 0; i2 < points.length; i2 += 1) {
+        const [timeMs, value] = points[i2];
         windowSum += value;
         windowSumSq += value * value;
-        while (windowStart < i && timeMs - points[windowStart][0] > windowMs) {
+        while (windowStart < i2 && timeMs - points[windowStart][0] > windowMs) {
           const old = points[windowStart][1];
           windowSum -= old;
           windowSumSq -= old * old;
           windowStart += 1;
         }
-        const count = i - windowStart + 1;
+        const count = i2 - windowStart + 1;
         if (count < 3) continue;
         const mean = windowSum / count;
         const variance = Math.max(0, windowSumSq / count - mean * mean);
@@ -9251,16 +10171,16 @@ ${s.description}`).join("\n\n");
       let currentCluster = [];
       const flushCluster = () => {
         if (currentCluster.length === 0) return;
-        const maxDeviation = currentCluster.reduce((m, p) => Math.max(m, Math.abs(p.residual)), 0);
+        const maxDeviation = currentCluster.reduce((m2, p2) => Math.max(m2, Math.abs(p2.residual)), 0);
         clusters.push({ points: currentCluster.slice(), maxDeviation, anomalyMethod: "rolling_zscore" });
         currentCluster = [];
       };
-      for (const r of residuals) {
-        if (r.flagged) currentCluster.push(r);
+      for (const r2 of residuals) {
+        if (r2.flagged) currentCluster.push(r2);
         else flushCluster();
       }
       flushCluster();
-      return clusters.filter((c) => c.points.length > 0);
+      return clusters.filter((c2) => c2.points.length > 0);
     }
     _getPersistenceWindowMs(value) {
       const windows = { "30m": 30 * 60 * 1e3, "1h": 60 * 60 * 1e3, "3h": 3 * 60 * 60 * 1e3, "6h": 6 * 60 * 60 * 1e3, "12h": 12 * 60 * 60 * 1e3, "24h": 24 * 60 * 60 * 1e3 };
@@ -9271,9 +10191,9 @@ ${s.description}`).join("\n\n");
       const minDurationMs = this._getPersistenceWindowMs(windowValue);
       let totalMin = Infinity;
       let totalMax = -Infinity;
-      for (const [, v] of points) {
-        if (v < totalMin) totalMin = v;
-        if (v > totalMax) totalMax = v;
+      for (const [, v2] of points) {
+        if (v2 < totalMin) totalMin = v2;
+        if (v2 > totalMax) totalMax = v2;
       }
       const totalRange = totalMax - totalMin;
       if (!Number.isFinite(totalRange) || totalRange <= 1e-6) return [];
@@ -9288,28 +10208,28 @@ ${s.description}`).join("\n\n");
         if (duration >= minDurationMs && runEnd > runStart) {
           const mid = (runMin + runMax) / 2;
           const clusterPoints = [];
-          for (let k = runStart; k <= runEnd; k += 1) {
-            clusterPoints.push({ timeMs: points[k][0], value: points[k][1], baselineValue: mid, residual: points[k][1] - mid });
+          for (let k2 = runStart; k2 <= runEnd; k2 += 1) {
+            clusterPoints.push({ timeMs: points[k2][0], value: points[k2][1], baselineValue: mid, residual: points[k2][1] - mid });
           }
           clusters.push({ points: clusterPoints, maxDeviation: runMax - runMin, anomalyMethod: "persistence", flatRange: runMax - runMin });
         }
       };
-      for (let i = 1; i < points.length; i += 1) {
-        const v = points[i][1];
-        const nextMin = Math.min(runMin, v);
-        const nextMax = Math.max(runMax, v);
+      for (let i2 = 1; i2 < points.length; i2 += 1) {
+        const v2 = points[i2][1];
+        const nextMin = Math.min(runMin, v2);
+        const nextMax = Math.max(runMax, v2);
         if (nextMax - nextMin > flatThreshold) {
-          flushRun(i - 1);
-          runStart = i;
-          runMin = v;
-          runMax = v;
+          flushRun(i2 - 1);
+          runStart = i2;
+          runMin = v2;
+          runMax = v2;
         } else {
           runMin = nextMin;
           runMax = nextMax;
         }
       }
       flushRun(points.length - 1);
-      return clusters.filter((c) => c.points.length > 0);
+      return clusters.filter((c2) => c2.points.length > 0);
     }
     _buildComparisonWindowAnomalyClusters(points, comparisonPoints, sensitivity = "medium") {
       if (!Array.isArray(points) || points.length < 3 || !Array.isArray(comparisonPoints) || comparisonPoints.length < 3) return [];
@@ -9321,11 +10241,11 @@ ${s.description}`).join("\n\n");
       }
       if (deltaPoints.length < 3) return [];
       let sumDeltas = 0;
-      for (const p of deltaPoints) sumDeltas += p.delta;
+      for (const p2 of deltaPoints) sumDeltas += p2.delta;
       const meanDelta = sumDeltas / deltaPoints.length;
       let sumSqDev = 0;
-      for (const p of deltaPoints) {
-        const dev = p.delta - meanDelta;
+      for (const p2 of deltaPoints) {
+        const dev = p2.delta - meanDelta;
         sumSqDev += dev * dev;
       }
       const rmsDeviation = Math.sqrt(sumSqDev / deltaPoints.length);
@@ -9335,7 +10255,7 @@ ${s.description}`).join("\n\n");
       let currentCluster = [];
       const flushCluster = () => {
         if (currentCluster.length === 0) return;
-        const maxDeviation = currentCluster.reduce((m, p) => Math.max(m, Math.abs(p.residual)), 0);
+        const maxDeviation = currentCluster.reduce((m2, p2) => Math.max(m2, Math.abs(p2.residual)), 0);
         clusters.push({ points: currentCluster.slice(), maxDeviation, anomalyMethod: "comparison_window" });
         currentCluster = [];
       };
@@ -9348,44 +10268,44 @@ ${s.description}`).join("\n\n");
         }
       }
       flushCluster();
-      return clusters.filter((c) => c.points.length > 0);
+      return clusters.filter((c2) => c2.points.length > 0);
     }
     _applyAnomalyOverlapMode(clustersByMethod, overlapMode) {
       const methodKeys = Object.keys(clustersByMethod);
       if (methodKeys.length <= 1 || overlapMode === "all") {
-        return methodKeys.flatMap((m) => clustersByMethod[m]);
+        return methodKeys.flatMap((m2) => clustersByMethod[m2]);
       }
       const flaggedByMethod = {};
-      for (const m of methodKeys) {
-        flaggedByMethod[m] = new Set(clustersByMethod[m].flatMap((c) => c.points.map((p) => p.timeMs)));
+      for (const m2 of methodKeys) {
+        flaggedByMethod[m2] = new Set(clustersByMethod[m2].flatMap((c2) => c2.points.map((p2) => p2.timeMs)));
       }
       const overlapTimes = /* @__PURE__ */ new Set();
-      for (const m of methodKeys) {
-        for (const t of flaggedByMethod[m]) {
-          if (methodKeys.some((other) => other !== m && flaggedByMethod[other].has(t))) overlapTimes.add(t);
+      for (const m2 of methodKeys) {
+        for (const t2 of flaggedByMethod[m2]) {
+          if (methodKeys.some((other) => other !== m2 && flaggedByMethod[other].has(t2))) overlapTimes.add(t2);
         }
       }
       if (overlapMode === "only") {
         const seen = /* @__PURE__ */ new Set();
         const result2 = [];
-        for (const m of methodKeys) {
-          for (const cluster of clustersByMethod[m]) {
-            const pts = cluster.points.filter((p) => overlapTimes.has(p.timeMs));
+        for (const m2 of methodKeys) {
+          for (const cluster of clustersByMethod[m2]) {
+            const pts = cluster.points.filter((p2) => overlapTimes.has(p2.timeMs));
             if (pts.length === 0) continue;
-            const key = pts.map((p) => p.timeMs).join(",");
+            const key = pts.map((p2) => p2.timeMs).join(",");
             if (seen.has(key)) continue;
             seen.add(key);
-            const detectedByMethods = methodKeys.filter((other) => pts.some((p) => flaggedByMethod[other].has(p.timeMs)));
-            result2.push({ ...cluster, points: pts, maxDeviation: pts.reduce((v, p) => Math.max(v, Math.abs(p.residual || 0)), 0), isOverlap: true, detectedByMethods });
+            const detectedByMethods = methodKeys.filter((other) => pts.some((p2) => flaggedByMethod[other].has(p2.timeMs)));
+            result2.push({ ...cluster, points: pts, maxDeviation: pts.reduce((v2, p2) => Math.max(v2, Math.abs(p2.residual || 0)), 0), isOverlap: true, detectedByMethods });
           }
         }
         return result2;
       }
       const result = [];
-      for (const m of methodKeys) {
-        for (const cluster of clustersByMethod[m]) {
-          const hasOverlap = cluster.points.some((p) => overlapTimes.has(p.timeMs));
-          const detectedByMethods = hasOverlap ? methodKeys.filter((other) => cluster.points.some((p) => flaggedByMethod[other].has(p.timeMs))) : [m];
+      for (const m2 of methodKeys) {
+        for (const cluster of clustersByMethod[m2]) {
+          const hasOverlap = cluster.points.some((p2) => overlapTimes.has(p2.timeMs));
+          const detectedByMethods = hasOverlap ? methodKeys.filter((other) => cluster.points.some((p2) => flaggedByMethod[other].has(p2.timeMs))) : [m2];
           result.push({ ...cluster, isOverlap: hasOverlap, detectedByMethods });
         }
       }
@@ -9525,12 +10445,12 @@ ${s.description}`).join("\n\n");
     _getSeriesAnalysisMap() {
       const seriesSettings = Array.isArray(this._config?.series_settings) ? this._config.series_settings : [];
       return new Map(seriesSettings.map((entry) => {
-        return [entry?.entity_id, normalizeHistorySeriesAnalysis$1(entry?.analysis)];
+        return [entry?.entity_id, normalizeHistorySeriesAnalysis(entry?.analysis)];
       }));
     }
     _getSeriesAnalysis(entityId, analysisMap = null) {
       const map = analysisMap || this._getSeriesAnalysisMap();
-      return normalizeHistorySeriesAnalysis$1(map.get(entityId));
+      return normalizeHistorySeriesAnalysis(map.get(entityId));
     }
     _seriesHasActiveAnalysis(analysis, hasSelectedComparisonWindow = false) {
       return analysis.show_trend_lines || analysis.show_summary_stats || analysis.show_rate_of_change || analysis.show_threshold_analysis || analysis.show_anomalies || analysis.show_delta_analysis && hasSelectedComparisonWindow;
@@ -9575,6 +10495,10 @@ ${s.description}`).join("\n\n");
     }
     _queueDrawChart(histResult, statsResult, events, t0, t1, options = {}) {
       const drawRequestId = ++this._drawRequestId;
+      console.log("[hass-datapoints history-card] draw queued", {
+        drawRequestId,
+        loading: options.loading ?? false
+      });
       this._drawChart(histResult, statsResult, events, t0, t1, {
         ...options,
         drawRequestId
@@ -9592,7 +10516,7 @@ ${s.description}`).join("\n\n");
         series: visibleSeries.map((seriesItem) => ({
           entityId: seriesItem.entityId,
           pts: seriesItem.pts,
-          analysis: analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis$1(null)
+          analysis: analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null)
         })),
         comparisonSeries: Array.from(selectedComparisonSeriesMap.values()).map((seriesItem) => ({
           entityId: seriesItem.entityId,
@@ -9618,7 +10542,7 @@ ${s.description}`).join("\n\n");
         });
         return {
           trendSeries: visibleSeries.map((seriesItem) => {
-            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis$1(null);
+            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
             if (analysis.show_trend_lines !== true) {
               return null;
             }
@@ -9628,7 +10552,7 @@ ${s.description}`).join("\n\n");
             };
           }).filter((seriesItem) => Array.isArray(seriesItem.pts) && seriesItem.pts.length >= 2).filter(Boolean),
           rateSeries: visibleSeries.map((seriesItem) => {
-            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis$1(null);
+            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
             if (analysis.show_rate_of_change !== true) {
               return null;
             }
@@ -9638,7 +10562,7 @@ ${s.description}`).join("\n\n");
             };
           }).filter((seriesItem) => Array.isArray(seriesItem.pts) && seriesItem.pts.length >= 2).filter(Boolean),
           deltaSeries: visibleSeries.map((seriesItem) => {
-            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis$1(null);
+            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
             if (!(analysis.show_delta_analysis === true && hasSelectedComparisonWindow === true)) {
               return null;
             }
@@ -9649,7 +10573,7 @@ ${s.description}`).join("\n\n");
             };
           }).filter((seriesItem) => Array.isArray(seriesItem.pts) && seriesItem.pts.length >= 2).filter(Boolean),
           summaryStats: visibleSeries.map((seriesItem) => {
-            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis$1(null);
+            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
             if (analysis.show_summary_stats !== true) {
               return null;
             }
@@ -9659,35 +10583,35 @@ ${s.description}`).join("\n\n");
             };
           }).filter((entry) => entry && Number.isFinite(entry.min) && Number.isFinite(entry.max) && Number.isFinite(entry.mean)),
           anomalySeries: visibleSeries.map((seriesItem) => {
-            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis$1(null);
+            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
             if (analysis.show_anomalies !== true) return null;
             const clustersByMethod = {};
             const methods = analysis.anomaly_methods;
             if (methods.includes("trend_residual")) {
-              const c = this._buildAnomalyClusters(seriesItem.pts, analysis.trend_method, analysis.trend_window, analysis.anomaly_sensitivity);
-              if (c.length > 0) clustersByMethod["trend_residual"] = c;
+              const c2 = this._buildAnomalyClusters(seriesItem.pts, analysis.trend_method, analysis.trend_window, analysis.anomaly_sensitivity);
+              if (c2.length > 0) clustersByMethod["trend_residual"] = c2;
             }
             if (methods.includes("rate_of_change")) {
-              const c = this._buildRateOfChangeAnomalyClusters(seriesItem.pts, analysis.anomaly_rate_window, analysis.anomaly_sensitivity);
-              if (c.length > 0) clustersByMethod["rate_of_change"] = c;
+              const c2 = this._buildRateOfChangeAnomalyClusters(seriesItem.pts, analysis.anomaly_rate_window, analysis.anomaly_sensitivity);
+              if (c2.length > 0) clustersByMethod["rate_of_change"] = c2;
             }
             if (methods.includes("iqr")) {
-              const c = this._buildIQRAnomalyClusters(seriesItem.pts, analysis.anomaly_sensitivity);
-              if (c.length > 0) clustersByMethod["iqr"] = c;
+              const c2 = this._buildIQRAnomalyClusters(seriesItem.pts, analysis.anomaly_sensitivity);
+              if (c2.length > 0) clustersByMethod["iqr"] = c2;
             }
             if (methods.includes("rolling_zscore")) {
-              const c = this._buildRollingZScoreAnomalyClusters(seriesItem.pts, analysis.anomaly_zscore_window, analysis.anomaly_sensitivity);
-              if (c.length > 0) clustersByMethod["rolling_zscore"] = c;
+              const c2 = this._buildRollingZScoreAnomalyClusters(seriesItem.pts, analysis.anomaly_zscore_window, analysis.anomaly_sensitivity);
+              if (c2.length > 0) clustersByMethod["rolling_zscore"] = c2;
             }
             if (methods.includes("persistence")) {
-              const c = this._buildPersistenceAnomalyClusters(seriesItem.pts, analysis.anomaly_persistence_window, analysis.anomaly_sensitivity);
-              if (c.length > 0) clustersByMethod["persistence"] = c;
+              const c2 = this._buildPersistenceAnomalyClusters(seriesItem.pts, analysis.anomaly_persistence_window, analysis.anomaly_sensitivity);
+              if (c2.length > 0) clustersByMethod["persistence"] = c2;
             }
             if (methods.includes("comparison_window") && analysis.anomaly_comparison_window_id) {
               const compPts = allComparisonWindowsData[analysis.anomaly_comparison_window_id]?.[seriesItem.entityId];
               if (Array.isArray(compPts) && compPts.length >= 3) {
-                const c = this._buildComparisonWindowAnomalyClusters(seriesItem.pts, compPts, analysis.anomaly_sensitivity);
-                if (c.length > 0) clustersByMethod["comparison_window"] = c;
+                const c2 = this._buildComparisonWindowAnomalyClusters(seriesItem.pts, compPts, analysis.anomaly_sensitivity);
+                if (c2.length > 0) clustersByMethod["comparison_window"] = c2;
               }
             }
             const anomalyClusters = this._applyAnomalyOverlapMode(clustersByMethod, analysis.anomaly_overlap_mode);
@@ -9697,7 +10621,7 @@ ${s.description}`).join("\n\n");
       }
     }
     async _drawChart(histResult, statsResult, events, t0, t1, options = {}) {
-      hideTooltip$1(this);
+      hideTooltip(this);
       const canvas = this.shadowRoot.getElementById("chart");
       const zoomOutButton = this.shadowRoot.getElementById("chart-zoom-out");
       const wrap = this.shadowRoot.querySelector(".chart-wrap");
@@ -9720,7 +10644,7 @@ ${s.description}`).join("\n\n");
       const delinkYAxis = this._config?.delink_y_axis === true;
       const hoveringDifferentComparison = !!hoveredComparisonWindowId && !!selectedComparisonWindowId && hoveredComparisonWindowId !== selectedComparisonWindowId;
       const hasSelectedComparisonWindow = !!selectedComparisonWindowId;
-      seriesSettings.forEach((seriesSetting, i) => {
+      seriesSettings.forEach((seriesSetting, i2) => {
         const entityId = seriesSetting.entity_id;
         const domain = entityId.split(".")[0];
         if (domain === "binary_sensor") {
@@ -9729,8 +10653,8 @@ ${s.description}`).join("\n\n");
           if (spans.length) {
             binaryBackgrounds.push({
               entityId,
-              label: entityName$2(this._hass, entityId) || entityId,
-              color: seriesSetting.color || COLORS$2[i % COLORS$2.length],
+              label: entityName$1(this._hass, entityId) || entityId,
+              color: seriesSetting.color || COLORS[i2 % COLORS.length],
               onLabel: this._binaryOnLabel(entityId),
               offLabel: this._binaryOffLabel(entityId),
               spans
@@ -9747,32 +10671,60 @@ ${s.description}`).join("\n\n");
           axis = {
             key: axisKey,
             unit,
-            color: seriesSetting.color || COLORS$2[i % COLORS$2.length],
+            color: seriesSetting.color || COLORS[i2 % COLORS.length],
             side: axisMap.size === 0 ? "left" : "right",
             values: []
           };
           axisMap.set(axisKey, axis);
           axes.push(axis);
         }
-        for (const s of stateList) {
-          const v = parseFloat(s.s);
-          if (!isNaN(v)) {
-            pts.push([Math.round(s.lu * 1e3), v]);
-            axis.values.push(v);
+        for (const s2 of stateList) {
+          const v2 = parseFloat(s2.s);
+          if (!isNaN(v2)) {
+            pts.push([Math.round(s2.lu * 1e3), v2]);
+            axis.values.push(v2);
           }
         }
         if (pts.length) {
           series.push({
             entityId,
             legendEntityId: entityId,
-            label: entityName$2(this._hass, entityId) || entityId,
+            label: entityName$1(this._hass, entityId) || entityId,
             unit,
             pts,
-            color: seriesSetting.color || COLORS$2[i % COLORS$2.length],
+            color: seriesSetting.color || COLORS[i2 % COLORS.length],
             axisKey
           });
         }
       });
+      for (const seriesItem of series) {
+        if (!seriesItem.pts.length) {
+          continue;
+        }
+        const lastPt = seriesItem.pts[seriesItem.pts.length - 1];
+        const prev = this._previousSeriesEndpoints.get(seriesItem.entityId);
+        if (!prev) {
+          console.log("[hass-datapoints history-card] series initial draw", {
+            entityId: seriesItem.entityId,
+            pointCount: seriesItem.pts.length,
+            lastPt
+          });
+        } else if (lastPt[0] !== prev.t || lastPt[1] !== prev.v) {
+          console.log("[hass-datapoints history-card] series updated — live update detected", {
+            entityId: seriesItem.entityId,
+            pointCount: seriesItem.pts.length,
+            prev,
+            lastPt
+          });
+        } else {
+          console.log("[hass-datapoints history-card] series unchanged — no new data", {
+            entityId: seriesItem.entityId,
+            pointCount: seriesItem.pts.length,
+            lastPt
+          });
+        }
+        this._previousSeriesEndpoints.set(seriesItem.entityId, { t: lastPt[0], v: lastPt[1] });
+      }
       if (!series.length && !binaryBackgrounds.length) {
         this._setAdjustAxisButtonVisibility(false);
         this._renderComparisonPreviewOverlay();
@@ -9823,16 +10775,16 @@ ${s.description}`).join("\n\n");
           }
           selectedComparisonSeriesMap.set(entityId, {
             entityId,
-            label: entityName$2(this._hass, entityId) || entityId,
+            label: entityName$1(this._hass, entityId) || entityId,
             unit,
-            color: seriesSetting.color || COLORS$2[index % COLORS$2.length],
+            color: seriesSetting.color || COLORS[index % COLORS.length],
             pts: points
           });
         }
       }
       const allComparisonWindowsData = {};
       for (const seriesItem of visibleSeries) {
-        const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis$1(null);
+        const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
         if (analysis.show_anomalies !== true || !analysis.anomaly_methods.includes("comparison_window") || !analysis.anomaly_comparison_window_id) {
           continue;
         }
@@ -9843,12 +10795,12 @@ ${s.description}`).join("\n\n");
         if (!allComparisonWindowsData[windowId][seriesItem.entityId]) {
           const compResult = comparisonResults.find((win) => win.id === windowId);
           if (compResult) {
-            seriesSettings.findIndex((s) => s.entity_id === seriesItem.entityId);
+            seriesSettings.findIndex((s2) => s2.entity_id === seriesItem.entityId);
             const stateList = this._buildEntityStateList(seriesItem.entityId, compResult.histResult, compResult.statsResult || {});
             const pts = [];
-            for (const s of stateList) {
-              const v = parseFloat(s.s);
-              if (!isNaN(v)) pts.push([Math.round(s.lu * 1e3) - compResult.time_offset_ms, v]);
+            for (const s2 of stateList) {
+              const v2 = parseFloat(s2.s);
+              if (!isNaN(v2)) pts.push([Math.round(s2.lu * 1e3) - compResult.time_offset_ms, v2]);
             }
             if (pts.length) {
               allComparisonWindowsData[windowId][seriesItem.entityId] = pts;
@@ -9856,10 +10808,10 @@ ${s.description}`).join("\n\n");
           }
         }
       }
-      const analysisEntityIds = visibleSeries.filter((s) => {
-        const a = analysisMap.get(s.entityId) || {};
-        return a.show_anomalies || a.show_trend_lines || a.show_summary_stats || a.show_rate_of_change;
-      }).map((s) => s.entityId);
+      const analysisEntityIds = visibleSeries.filter((s2) => {
+        const a2 = analysisMap.get(s2.entityId) || {};
+        return a2.show_anomalies || a2.show_trend_lines || a2.show_summary_stats || a2.show_rate_of_change;
+      }).map((s2) => s2.entityId);
       if (analysisEntityIds.length) {
         this.dispatchEvent(new CustomEvent("hass-datapoints-analysis-computing", {
           bubbles: true,
@@ -9947,8 +10899,8 @@ ${s.description}`).join("\n\n");
         chartStage.style.width = `${canvasWidth}px`;
         chartStage.style.height = `${availableHeight}px`;
       }
-      const { w, h } = setupCanvas$1(canvas, chartStage || wrap, availableHeight, canvasWidth);
-      const renderer = new ChartRenderer$1(canvas, w, h);
+      const { w, h: h2 } = setupCanvas(canvas, chartStage || wrap, availableHeight, canvasWidth);
+      const renderer = new ChartRenderer(canvas, w, h2);
       renderer.labelColor = resolveChartLabelColor(this);
       renderer.clear();
       const renderT0 = t0;
@@ -9961,7 +10913,7 @@ ${s.description}`).join("\n\n");
       const hiddenSourceEntityIds = /* @__PURE__ */ new Set();
       const hiddenComparisonEntityIds = /* @__PURE__ */ new Set();
       visibleSeries.forEach((seriesItem) => {
-        const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis$1(null);
+        const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
         if (this._seriesShouldHideSource(analysis, hasSelectedComparisonWindow)) {
           hiddenSourceEntityIds.add(seriesItem.entityId);
         }
@@ -9970,7 +10922,7 @@ ${s.description}`).join("\n\n");
         }
       });
       const anyTrendCrosshairs = visibleSeries.some((seriesItem) => {
-        const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis$1(null);
+        const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
         return analysis.show_trend_lines === true && analysis.show_trend_crosshairs === true;
       });
       this._setChartLoading(!!options.loading);
@@ -10008,7 +10960,7 @@ ${s.description}`).join("\n\n");
       const deltaAxisMap = /* @__PURE__ */ new Map();
       const rateAxisMap = /* @__PURE__ */ new Map();
       visibleSeries.forEach((seriesItem) => {
-        const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis$1(null);
+        const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
         if (analysis.show_delta_analysis === true && hasSelectedComparisonWindow && analysis.show_delta_lines === true) {
           const deltaPoints = deltaPointsMap.get(seriesItem.entityId) || [];
           if (deltaPoints.length) {
@@ -10109,8 +11061,8 @@ ${s.description}`).join("\n\n");
       this._renderComparisonPreviewOverlay(renderer);
       const activeAxes = resolvedAxes.length ? renderer._activeAxes || [] : [];
       const axisLookup = new Map(activeAxes.map((axis) => [axis.key, axis]));
-      series.forEach((s) => {
-        s.axis = axisLookup.get(s.axisKey) || activeAxes[0] || resolvedAxes[0];
+      series.forEach((s2) => {
+        s2.axis = axisLookup.get(s2.axisKey) || activeAxes[0] || resolvedAxes[0];
       });
       renderChartAxisOverlays(this, renderer, activeAxes);
       binaryBackgrounds.forEach((binaryBackground) => {
@@ -10132,7 +11084,7 @@ ${s.description}`).join("\n\n");
         hoverOpacity: mainSeriesHoverOpacity
       }));
       const summaryHoverSeries = visibleSeries.flatMap((seriesItem) => {
-        const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis$1(null);
+        const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
         if (analysis.show_summary_stats !== true) {
           return [];
         }
@@ -10183,7 +11135,7 @@ ${s.description}`).join("\n\n");
         ];
       });
       const thresholdHoverSeries = visibleSeries.flatMap((seriesItem) => {
-        const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis$1(null);
+        const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
         if (analysis.show_threshold_analysis !== true) {
           return [];
         }
@@ -10245,10 +11197,10 @@ ${s.description}`).join("\n\n");
           if (this._hiddenSeries.has(entityId)) continue;
           const stateList = this._buildEntityStateList(entityId, win.histResult, win.statsResult || {});
           const winPts = [];
-          for (const s of stateList) {
-            const v = parseFloat(s.s);
-            if (!isNaN(v)) {
-              winPts.push([Math.round(s.lu * 1e3) - win.time_offset_ms, v]);
+          for (const s2 of stateList) {
+            const v2 = parseFloat(s2.s);
+            if (!isNaN(v2)) {
+              winPts.push([Math.round(s2.lu * 1e3) - win.time_offset_ms, v2]);
             }
           }
           if (!winPts.length) continue;
@@ -10262,14 +11214,14 @@ ${s.description}`).join("\n\n");
               comparisonOutOfBounds = true;
             }
           }
-          const baseColor = seriesSetting.color || COLORS$2[seriesSettings.indexOf(seriesSetting) % COLORS$2.length];
+          const baseColor = seriesSetting.color || COLORS[seriesSettings.indexOf(seriesSetting) % COLORS.length];
           const isHoveredComparison = !!hoveredComparisonWindowId && win.id === hoveredComparisonWindowId;
           const isSelectedComparison = !!selectedComparisonWindowId && win.id === selectedComparisonWindowId;
           const comparisonLineOpacity = isHoveredComparison ? 0.85 : hoveringDifferentComparison && isSelectedComparison ? 0.25 : 0.85;
           comparisonHoverSeries.push({
             entityId: `${win.id}:${entityId}`,
             relatedEntityId: entityId,
-            label: seriesSetting.label || entityName$2(this._hass, entityId) || entityId,
+            label: seriesSetting.label || entityName$1(this._hass, entityId) || entityId,
             windowLabel: win.label || "Date window",
             unit,
             pts: winPts,
@@ -10286,17 +11238,17 @@ ${s.description}`).join("\n\n");
         }
       }
       this._setAdjustAxisButtonVisibility(comparisonPreviewActive && comparisonOutOfBounds && !this._adjustComparisonAxisScale);
-      for (const s of visibleSeries) {
-        if (hiddenSourceEntityIds.has(s.entityId)) {
+      for (const s2 of visibleSeries) {
+        if (hiddenSourceEntityIds.has(s2.entityId)) {
           continue;
         }
-        this._drawSeriesLine(renderer, s.pts, s.color, renderT0, renderT1, s.axis.min, s.axis.max, {
+        this._drawSeriesLine(renderer, s2.pts, s2.color, renderT0, renderT1, s2.axis.min, s2.axis.max, {
           lineOpacity: mainSeriesHoverOpacity,
           lineWidth: this._config?.comparison_hover_active === true ? 1.25 : void 0
         });
       }
       const trendHoverSeries = trendSeries.map((seriesItem) => {
-        const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis$1(null);
+        const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
         const hiddenSource = hiddenSourceEntityIds.has(seriesItem.entityId);
         const trendRenderOptions = this._getTrendRenderOptions(analysis.trend_method, hiddenSource);
         return {
@@ -10328,7 +11280,7 @@ ${s.description}`).join("\n\n");
         rate: true
       }));
       for (const trend of trendSeries) {
-        const analysis = analysisMap.get(trend.entityId) || normalizeHistorySeriesAnalysis$1(null);
+        const analysis = analysisMap.get(trend.entityId) || normalizeHistorySeriesAnalysis(null);
         const trendRenderOptions = this._getTrendRenderOptions(
           analysis.trend_method,
           hiddenSourceEntityIds.has(trend.entityId)
@@ -10366,7 +11318,7 @@ ${s.description}`).join("\n\n");
         );
       }
       for (const seriesItem of visibleSeries) {
-        const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis$1(null);
+        const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
         if (!(analysis.show_delta_analysis === true && hasSelectedComparisonWindow === true)) {
           continue;
         }
@@ -10434,7 +11386,7 @@ ${s.description}`).join("\n\n");
         if (!axis) {
           return;
         }
-        const thresholdAnalysis = analysisMap.get(thresholdSeries.relatedEntityId) || normalizeHistorySeriesAnalysis$1(null);
+        const thresholdAnalysis = analysisMap.get(thresholdSeries.relatedEntityId) || normalizeHistorySeriesAnalysis(null);
         if (thresholdAnalysis.show_threshold_shading === true) {
           const relatedSeries = visibleSeries.find((seriesItem) => seriesItem.entityId === thresholdSeries.relatedEntityId);
           if (relatedSeries?.pts?.length) {
@@ -10477,8 +11429,8 @@ ${s.description}`).join("\n\n");
           if (visibleAnomalyClusters.length === 0) {
             return;
           }
-          const normalClusters = visibleAnomalyClusters.filter((c) => !c.isOverlap);
-          const overlapClusters = visibleAnomalyClusters.filter((c) => c.isOverlap === true);
+          const normalClusters = visibleAnomalyClusters.filter((c2) => !c2.isOverlap);
+          const overlapClusters = visibleAnomalyClusters.filter((c2) => c2.isOverlap === true);
           const baseColor = hexToRgba(seriesItem.color, anyHiddenSourceSeries ? 0.96 : 0.86);
           const regionOptions = {
             strokeAlpha: anyHiddenSourceSeries ? 0.98 : 0.9,
@@ -10509,7 +11461,7 @@ ${s.description}`).join("\n\n");
             renderer.drawAnomalyClusters(normalClusters, baseColor, renderT0, renderT1, axis.min, axis.max, regionOptions);
           }
           if (overlapClusters.length > 0) {
-            const overlapMode = (analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis$1(null)).anomaly_overlap_mode;
+            const overlapMode = (analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null)).anomaly_overlap_mode;
             renderer.drawAnomalyClusters(overlapClusters, baseColor, renderT0, renderT1, axis.min, axis.max, regionOptions);
             if (overlapMode !== "only") {
               renderer.drawAnomalyClusters(overlapClusters, overlapAccentColor, renderT0, renderT1, axis.min, axis.max, overlapOptions);
@@ -10525,7 +11477,7 @@ ${s.description}`).join("\n\n");
             regionOptions
           );
           clusterRegions.forEach((region) => {
-            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis$1(null);
+            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
             anomalyRegions.push({
               ...region,
               relatedEntityId: seriesItem.entityId,
@@ -10655,7 +11607,7 @@ ${s.description}`).join("\n\n");
     _buildCorrelatedAnomalySpans(visibleSeries, anomalyClustersMap, analysisMap) {
       const seriesIntervals = [];
       for (const seriesItem of visibleSeries) {
-        const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis$1(null);
+        const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
         if (analysis.show_anomalies !== true) continue;
         const clusters = anomalyClustersMap.get(seriesItem.entityId) || [];
         if (!clusters.length) continue;
@@ -10663,12 +11615,12 @@ ${s.description}`).join("\n\n");
         let tolerance = 6e4;
         if (Array.isArray(pts) && pts.length >= 2) {
           const intervals = [];
-          for (let i = 1; i < pts.length; i++) {
-            const diff = pts[i][0] - pts[i - 1][0];
+          for (let i2 = 1; i2 < pts.length; i2++) {
+            const diff = pts[i2][0] - pts[i2 - 1][0];
             if (diff > 0) intervals.push(diff);
           }
           if (intervals.length) {
-            intervals.sort((a, b) => a - b);
+            intervals.sort((a2, b2) => a2 - b2);
             const mid = Math.floor(intervals.length / 2);
             tolerance = intervals.length % 2 === 0 ? (intervals[mid - 1] + intervals[mid]) / 2 : intervals[mid];
             tolerance = Math.max(tolerance, 1e3);
@@ -10692,7 +11644,7 @@ ${s.description}`).join("\n\n");
           events.push({ time: end, delta: -1, entityId });
         }
       }
-      events.sort((a, b) => a.time - b.time || a.delta - b.delta);
+      events.sort((a2, b2) => a2.time - b2.time || a2.delta - b2.delta);
       const activeCounts = /* @__PURE__ */ new Map();
       const spans = [];
       let spanStart = null;
@@ -10765,7 +11717,7 @@ ${s.description}`).join("\n\n");
     }
     _buildAnomalyAnnotationPrefill(regions) {
       const regionsArray = Array.isArray(regions) ? regions : regions ? [regions] : [];
-      const validRegions = regionsArray.filter((r) => r?.cluster?.points?.length > 0);
+      const validRegions = regionsArray.filter((r2) => r2?.cluster?.points?.length > 0);
       if (!validRegions.length) return null;
       const primaryRegion = validRegions[0];
       const label = primaryRegion.label || primaryRegion.relatedEntityId || "Series";
@@ -10787,7 +11739,7 @@ ${s.description}`).join("\n\n");
         const points = region.cluster.points;
         const startPoint = points[0];
         const endPoint = points[points.length - 1];
-        const peakPoint = points.reduce((peak, p) => !peak || Math.abs(p.residual) > Math.abs(peak.residual) ? p : peak, null);
+        const peakPoint = points.reduce((peak, p2) => !peak || Math.abs(p2.residual) > Math.abs(peak.residual) ? p2 : peak, null);
         if (!peakPoint) return null;
         const method = region.cluster.anomalyMethod;
         const methodLabel = ANOMALY_METHOD_LABELS2[method] || method || "Anomaly";
@@ -10825,28 +11777,28 @@ ${s.description}`).join("\n\n");
       let message;
       let annotation;
       if (isSingleRegion) {
-        const s = annotationSections[0];
-        const peakPoint = s.peakPoint;
-        message = `${this._formatAnomalyPrefillValue(peakPoint.residual, unit)} ${s.methodLabel.toLowerCase()} anomaly in ${label}`;
-        const lines = [s.description, `Alert: ${s.alertLine}`];
+        const s2 = annotationSections[0];
+        const peakPoint = s2.peakPoint;
+        message = `${this._formatAnomalyPrefillValue(peakPoint.residual, unit)} ${s2.methodLabel.toLowerCase()} anomaly in ${label}`;
+        const lines = [s2.description, `Alert: ${s2.alertLine}`];
         if (detectedByMethods) {
-          lines.push(`Confirmed by ${detectedByMethods.length} methods: ${detectedByMethods.map((m) => ANOMALY_METHOD_LABELS2[m] || m).join(", ")}.`);
+          lines.push(`Confirmed by ${detectedByMethods.length} methods: ${detectedByMethods.map((m2) => ANOMALY_METHOD_LABELS2[m2] || m2).join(", ")}.`);
         }
-        lines.push(`Sensitivity: ${String(primaryRegion.sensitivity || "medium").replace(/^./, (c) => c.toUpperCase())}.`);
+        lines.push(`Sensitivity: ${String(primaryRegion.sensitivity || "medium").replace(/^./, (c2) => c2.toUpperCase())}.`);
         annotation = lines.join("\n");
       } else {
         message = `Multi-method anomaly in ${label}`;
         const lines = [];
-        annotationSections.forEach((s) => {
-          lines.push(`[${s.methodLabel}]`);
-          lines.push(s.description);
-          lines.push(`Alert: ${s.alertLine}`);
+        annotationSections.forEach((s2) => {
+          lines.push(`[${s2.methodLabel}]`);
+          lines.push(s2.description);
+          lines.push(`Alert: ${s2.alertLine}`);
           lines.push("");
         });
-        lines.push(`Sensitivity: ${String(primaryRegion.sensitivity || "medium").replace(/^./, (c) => c.toUpperCase())}.`);
+        lines.push(`Sensitivity: ${String(primaryRegion.sensitivity || "medium").replace(/^./, (c2) => c2.toUpperCase())}.`);
         annotation = lines.join("\n").trim();
       }
-      const allStartPoints = validRegions.map((r) => r.cluster.points[0]?.timeMs).filter(Number.isFinite);
+      const allStartPoints = validRegions.map((r2) => r2.cluster.points[0]?.timeMs).filter(Number.isFinite);
       const timeMs = allStartPoints.length ? Math.min(...allStartPoints) : primaryRegion.cluster.points[0].timeMs;
       return {
         timeMs,
@@ -11039,7 +11991,7 @@ ${s.description}`).join("\n\n");
       if (!event) {
         return;
       }
-      navigateToDataPointsHistory$2(this, {
+      navigateToDataPointsHistory$1(this, {
         entity_id: event.entity_ids || [],
         device_id: event.device_ids || [],
         area_id: event.area_ids || [],
@@ -11068,7 +12020,7 @@ ${s.description}`).join("\n\n");
         const timestamp = new Date(event.timestamp).getTime();
         if (timestamp < t0 || timestamp > t1) continue;
         const eventEntityIds = Array.isArray(event.entity_ids) ? event.entity_ids : [];
-        const x = renderer.xOf(timestamp, t0, t1);
+        const x2 = renderer.xOf(timestamp, t0, t1);
         const findSeriesWithValue = (candidates) => {
           for (const candidate of candidates) {
             if (!candidate?.pts?.length || !candidate.axis) {
@@ -11092,19 +12044,19 @@ ${s.description}`).join("\n\n");
         const hasNumericTarget = !!(targetSeries?.pts?.length && targetSeries.axis);
         const value = hasNumericTarget ? fallbackSeriesHit?.value ?? null : null;
         if (hasNumericTarget && value == null) continue;
-        const y = hasNumericTarget ? renderer.yOf(value, targetSeries.axis.min, targetSeries.axis.max) : renderer.pad.top + 12;
+        const y2 = hasNumericTarget ? renderer.yOf(value, targetSeries.axis.min, targetSeries.axis.max) : renderer.pad.top + 12;
         const color = event.color || targetSeries.color || "#03a9f4";
         const outerRadius = showIcons ? 13 : 6;
         const innerRadius = showIcons ? 11 : 4;
         ctx.save();
         ctx.beginPath();
-        ctx.arc(x, y, outerRadius, 0, Math.PI * 2);
+        ctx.arc(x2, y2, outerRadius, 0, Math.PI * 2);
         ctx.fillStyle = "rgba(255,255,255,0.92)";
         ctx.fill();
         ctx.restore();
         ctx.save();
         ctx.beginPath();
-        ctx.arc(x, y, innerRadius, 0, Math.PI * 2);
+        ctx.arc(x2, y2, innerRadius, 0, Math.PI * 2);
         ctx.fillStyle = color;
         ctx.fill();
         ctx.restore();
@@ -11112,11 +12064,11 @@ ${s.description}`).join("\n\n");
           const iconEl = document.createElement("button");
           iconEl.type = "button";
           iconEl.className = "chart-event-icon";
-          iconEl.style.left = `${x}px`;
-          iconEl.style.top = `${y + yOffset}px`;
+          iconEl.style.left = `${x2}px`;
+          iconEl.style.top = `${y2 + yOffset}px`;
           iconEl.title = event.message || "Open related history";
           iconEl.setAttribute("aria-label", event.message || "Open related history");
-          iconEl.innerHTML = `<ha-icon icon="${esc$3(event.icon || "mdi:bookmark")}" style="color:${contrastColor$3(color)}"></ha-icon>`;
+          iconEl.innerHTML = `<ha-icon icon="${esc$1(event.icon || "mdi:bookmark")}" style="color:${contrastColor$1(color)}"></ha-icon>`;
           iconEl.addEventListener("click", (ev) => {
             ev.preventDefault();
             ev.stopPropagation();
@@ -11127,8 +12079,8 @@ ${s.description}`).join("\n\n");
           const hitEl = document.createElement("button");
           hitEl.type = "button";
           hitEl.className = "chart-event-icon";
-          hitEl.style.left = `${x}px`;
-          hitEl.style.top = `${y + yOffset}px`;
+          hitEl.style.left = `${x2}px`;
+          hitEl.style.top = `${y2 + yOffset}px`;
           hitEl.title = event.message || "Open related history";
           hitEl.setAttribute("aria-label", event.message || "Open related history");
           hitEl.addEventListener("click", (ev) => {
@@ -11143,8 +12095,8 @@ ${s.description}`).join("\n\n");
           entityId: targetSeries?.entityId || null,
           unit: targetSeries?.unit || "",
           value,
-          x,
-          y
+          x: x2,
+          y: y2
         });
       }
       return hits;
@@ -11154,10 +12106,10 @@ ${s.description}`).join("\n\n");
         return [];
       }
       const spans = [];
-      for (let i = 0; i < stateList.length; i++) {
-        const current = stateList[i];
+      for (let i2 = 0; i2 < stateList.length; i2++) {
+        const current = stateList[i2];
         const currentTime = Math.round((current?.lu || 0) * 1e3);
-        const next = stateList[i + 1];
+        const next = stateList[i2 + 1];
         const nextTime = next ? Math.round((next.lu || 0) * 1e3) : t1;
         if (!this._isBinaryOnState(current?.s)) continue;
         spans.push({
@@ -11192,13 +12144,13 @@ ${s.description}`).join("\n\n");
           continue;
         }
         for (const tick of axis.ticks) {
-          const y = rowOffset + renderer.yOf(tick, axis.min, axis.max);
+          const y2 = rowOffset + renderer.yOf(tick, axis.min, axis.max);
           const formatted = renderer._formatAxisTick(tick, axis.unit);
-          labelsHtml += `<div class="chart-axis-label" style="top:${Math.round(y) + 1}px;right:${labelRight}px;text-align:right;">${esc$3(formatted)}</div>`;
+          labelsHtml += `<div class="chart-axis-label" style="top:${Math.round(y2) + 1}px;right:${labelRight}px;text-align:right;">${esc$1(formatted)}</div>`;
         }
         if (axis.unit) {
           const unitY = rowOffset + Math.max(0, renderer.pad.top - 18);
-          labelsHtml += `<div class="chart-axis-unit" style="top:${unitY}px;right:${labelRight}px;text-align:right;">${esc$3(axis.unit)}</div>`;
+          labelsHtml += `<div class="chart-axis-unit" style="top:${unitY}px;right:${labelRight}px;text-align:right;">${esc$1(axis.unit)}</div>`;
         }
       }
       leftEl.innerHTML = `<div class="chart-axis-divider"></div>${labelsHtml}`;
@@ -11212,27 +12164,27 @@ ${s.description}`).join("\n\n");
         return;
       }
       legendEl.innerHTML = series.map(
-        (s) => `
+        (s2) => `
         <button
           type="button"
           class="legend-item legend-toggle"
-          data-entity-id="${esc$3(s.legendEntityId || s.entityId)}"
-          aria-pressed="${this._hiddenSeries.has(s.legendEntityId || s.entityId) ? "false" : "true"}"
-          title="${this._hiddenSeries.has(s.legendEntityId || s.entityId) ? "Show" : "Hide"} ${esc$3(s.label)}"
+          data-entity-id="${esc$1(s2.legendEntityId || s2.entityId)}"
+          aria-pressed="${this._hiddenSeries.has(s2.legendEntityId || s2.entityId) ? "false" : "true"}"
+          title="${this._hiddenSeries.has(s2.legendEntityId || s2.entityId) ? "Show" : "Hide"} ${esc$1(s2.label)}"
         >
-          <div class="legend-line" style="background:${esc$3(s.color)}"></div>
-          ${esc$3(s.label)}${s.unit ? ` (${esc$3(s.unit)})` : ""}
+          <div class="legend-line" style="background:${esc$1(s2.color)}"></div>
+          ${esc$1(s2.label)}${s2.unit ? ` (${esc$1(s2.unit)})` : ""}
         </button>`
       ).join("") + binaryBackgrounds.map((bg) => `
         <button
           type="button"
           class="legend-item legend-toggle"
-          data-entity-id="${esc$3(bg.entityId)}"
+          data-entity-id="${esc$1(bg.entityId)}"
           aria-pressed="${this._hiddenSeries.has(bg.entityId) ? "false" : "true"}"
-          title="${this._hiddenSeries.has(bg.entityId) ? "Show" : "Hide"} ${esc$3(bg.label)} ${esc$3(this._binaryOnLabel(bg.entityId))}"
+          title="${this._hiddenSeries.has(bg.entityId) ? "Show" : "Hide"} ${esc$1(bg.label)} ${esc$1(this._binaryOnLabel(bg.entityId))}"
         >
-          <div class="legend-line" style="background:${esc$3(bg.color)};opacity:0.35"></div>
-          ${esc$3(bg.label)} (${esc$3(this._binaryOnLabel(bg.entityId))})
+          <div class="legend-line" style="background:${esc$1(bg.color)};opacity:0.35"></div>
+          ${esc$1(bg.label)} (${esc$1(this._binaryOnLabel(bg.entityId))})
         </button>`).join("");
       this._updateLegendLayout(legendEl);
       legendEl.querySelectorAll("[data-entity-id]").forEach((button) => {
@@ -11274,20 +12226,20 @@ ${s.description}`).join("\n\n");
     areaIcon,
     areaName,
     buildDataPointsHistoryPath,
-    confirmDestructiveAction: confirmDestructiveAction$1,
-    contrastColor: contrastColor$2,
+    confirmDestructiveAction,
+    contrastColor,
     deleteEvent,
-    DOMAIN: DOMAIN$1,
+    DOMAIN,
     deviceIcon,
     deviceName,
     entityIcon,
-    entityName: entityName$1,
-    esc: esc$2,
-    fetchEvents: fetchEvents$2,
-    fmtDateTime: fmtDateTime$1,
+    entityName,
+    esc,
+    fetchEvents,
+    fmtDateTime,
     labelIcon,
     labelName,
-    navigateToDataPointsHistory: navigateToDataPointsHistory$1,
+    navigateToDataPointsHistory,
     updateEvent
   } = shared;
   class HassRecordsListCard extends HTMLElement {
@@ -11334,7 +12286,7 @@ ${s.description}`).join("\n\n");
     _setupAutoRefresh() {
       this._hass.connection.subscribeEvents(() => {
         this._load();
-      }, `${DOMAIN$1}_event_recorded`).then((unsub) => {
+      }, `${DOMAIN}_event_recorded`).then((unsub) => {
         this._unsubscribe = unsub;
       }).catch(() => {
       });
@@ -11349,7 +12301,7 @@ ${s.description}`).join("\n\n");
     }
     _navigateToEventHistory(ev) {
       const range = this._getNavigationContextForEvent(ev);
-      navigateToDataPointsHistory$1(this, {
+      navigateToDataPointsHistory(this, {
         entity_id: ev?.entity_ids || [],
         device_id: ev?.device_ids || [],
         area_id: ev?.area_ids || [],
@@ -11706,7 +12658,7 @@ ${s.description}`).join("\n\n");
         .empty ha-icon { --mdc-icon-size: 32px; display: block; margin: 0 auto 8px; opacity: 0.5; }
       </style>
       <ha-card>
-        ${cfg.title ? `<div class="card-header">${esc$2(cfg.title)}</div>` : ""}
+        ${cfg.title ? `<div class="card-header">${esc(cfg.title)}</div>` : ""}
         ${showSearch ? `
         <div class="toolbar">
           <label class="toolbar-search-wrap" aria-label="Search datapoints">
@@ -11730,8 +12682,8 @@ ${s.description}`).join("\n\n");
         </div>
       </ha-card>`;
       if (showSearch) {
-        this.shadowRoot.getElementById("search").addEventListener("input", (e) => {
-          this._searchQuery = e.target.value.toLowerCase();
+        this.shadowRoot.getElementById("search").addEventListener("input", (e2) => {
+          this._searchQuery = e2.target.value.toLowerCase();
           this._page = 0;
           this.dispatchEvent(new CustomEvent("hass-datapoints-records-search", {
             bubbles: true,
@@ -11765,8 +12717,8 @@ ${s.description}`).join("\n\n");
         const end = endTime ? new Date(endTime) : /* @__PURE__ */ new Date();
         startTime = new Date(end.getTime() - cfg.hours_to_show * 3600 * 1e3).toISOString();
       }
-      const entityIds = cfg.entity ? [cfg.entity] : cfg.entities ? cfg.entities.map((e) => typeof e === "string" ? e : e.entity) : void 0;
-      this._allEvents = await fetchEvents$2(
+      const entityIds = cfg.entity ? [cfg.entity] : cfg.entities ? cfg.entities.map((e2) => typeof e2 === "string" ? e2 : e2.entity) : void 0;
+      this._allEvents = await fetchEvents(
         this._hass,
         startTime,
         endTime,
@@ -11777,14 +12729,14 @@ ${s.description}`).join("\n\n");
     }
     _filtered() {
       const msgFilter = (this._config.message_filter || "").toLowerCase().trim();
-      return this._allEvents.filter((e) => {
+      return this._allEvents.filter((e2) => {
         const haystack = [
-          e.message.toLowerCase(),
-          (e.annotation || "").toLowerCase(),
-          ...(e.entity_ids || []).map((id) => id.toLowerCase())
+          e2.message.toLowerCase(),
+          (e2.annotation || "").toLowerCase(),
+          ...(e2.entity_ids || []).map((id) => id.toLowerCase())
         ];
-        if (msgFilter && !haystack.some((h) => h.includes(msgFilter))) return false;
-        if (this._searchQuery && !haystack.some((h) => h.includes(this._searchQuery))) return false;
+        if (msgFilter && !haystack.some((h2) => h2.includes(msgFilter))) return false;
+        if (this._searchQuery && !haystack.some((h2) => h2.includes(this._searchQuery))) return false;
         return true;
       });
     }
@@ -11809,37 +12761,37 @@ ${s.description}`).join("\n\n");
         pagEl.style.display = "none";
         return;
       }
-      listEl.innerHTML = slice.map((e) => {
-        const annText = e.annotation && e.annotation !== e.message ? e.annotation : "";
-        const color = e.color || "#03a9f4";
-        const icon = e.icon || "mdi:bookmark";
-        const iconColor = contrastColor$2(color);
-        const entities = e.entity_ids || [];
-        const devices = e.device_ids || [];
-        const areas = e.area_ids || [];
-        const labels = e.label_ids || [];
+      listEl.innerHTML = slice.map((e2) => {
+        const annText = e2.annotation && e2.annotation !== e2.message ? e2.annotation : "";
+        const color = e2.color || "#03a9f4";
+        const icon = e2.icon || "mdi:bookmark";
+        const iconColor = contrastColor(color);
+        const entities = e2.entity_ids || [];
+        const devices = e2.device_ids || [];
+        const areas = e2.area_ids || [];
+        const labels = e2.label_ids || [];
         const hasRelated = entities.length || devices.length || areas.length || labels.length;
         const isExpandable = !showFullMessage && annText;
-        const isHidden = (this._config.hidden_event_ids || []).includes(e.id);
+        const isHidden = (this._config.hidden_event_ids || []).includes(e2.id);
         const visibilityIcon = isHidden ? "mdi:eye" : "mdi:eye-off";
         const visibilityLabel = isHidden ? "Show chart marker" : "Hide chart marker";
-        const historyLinkHref = this._getHistoryLinkForEvent(e);
-        const historyLink = `<a class="ev-history-link" href="${esc$2(historyLinkHref)}" data-event-id="${esc$2(e.id)}" title="Open related data point history" aria-label="Open related data point history"><ha-icon icon="mdi:history"></ha-icon><span class="ev-time-below" title="${esc$2(fmtDateTime$1(e.timestamp))}">${esc$2(fmtDateTime$1(e.timestamp))}</span></a>`;
+        const historyLinkHref = this._getHistoryLinkForEvent(e2);
+        const historyLink = `<a class="ev-history-link" href="${esc(historyLinkHref)}" data-event-id="${esc(e2.id)}" title="Open related data point history" aria-label="Open related data point history"><ha-icon icon="mdi:history"></ha-icon><span class="ev-time-below" title="${esc(fmtDateTime(e2.timestamp))}">${esc(fmtDateTime(e2.timestamp))}</span></a>`;
         const isSimple = !annText && !hasRelated;
         return `
-        <div class="event-item${isExpandable ? " expandable" : ""}${isHidden ? " is-hidden" : ""}${isSimple ? " simple" : ""}" data-id="${esc$2(e.id)}">
-          <div class="ev-icon-wrap" style="background:${esc$2(color)}">
-            <ha-icon class="ev-icon-main" icon="${esc$2(icon)}" style="--mdc-icon-size:18px;color:${esc$2(iconColor)}"></ha-icon>
-            <button class="ev-visibility-btn" type="button" data-event-id="${esc$2(e.id)}" title="${esc$2(visibilityLabel)}" aria-label="${esc$2(visibilityLabel)}">
-              <ha-icon icon="${esc$2(visibilityIcon)}"></ha-icon>
+        <div class="event-item${isExpandable ? " expandable" : ""}${isHidden ? " is-hidden" : ""}${isSimple ? " simple" : ""}" data-id="${esc(e2.id)}">
+          <div class="ev-icon-wrap" style="background:${esc(color)}">
+            <ha-icon class="ev-icon-main" icon="${esc(icon)}" style="--mdc-icon-size:18px;color:${esc(iconColor)}"></ha-icon>
+            <button class="ev-visibility-btn" type="button" data-event-id="${esc(e2.id)}" title="${esc(visibilityLabel)}" aria-label="${esc(visibilityLabel)}">
+              <ha-icon icon="${esc(visibilityIcon)}"></ha-icon>
             </button>
           </div>
           <div class="ev-body">
             <div class="ev-header">
               <div class="ev-header-text">
                 <span class="ev-message">
-                  ${esc$2(e.message)}
-                  ${e.dev ? `<span class="ev-dev-badge">DEV</span>` : ""}
+                  ${esc(e2.message)}
+                  ${e2.dev ? `<span class="ev-dev-badge">DEV</span>` : ""}
                   ${isExpandable ? `<button class="ann-expand-chip" title="Show annotation">···</button>` : ""}
                 </span>
                 <div class="ev-meta">
@@ -11856,40 +12808,40 @@ ${s.description}`).join("\n\n");
                 </ha-icon-button>
               </div>` : ""}
             </div>
-            ${annText ? `<div class="ev-full-message${showFullMessage ? "" : " hidden"}">${esc$2(annText)}</div>` : ""}
+            ${annText ? `<div class="ev-full-message${showFullMessage ? "" : " hidden"}">${esc(annText)}</div>` : ""}
             ${showEntities && hasRelated ? `
               <div class="ev-entities">
                 ${entities.map((eid) => `
-                  <button class="ev-entity-chip" data-entity="${esc$2(eid)}">
-                    <ha-icon icon="${esc$2(entityIcon(this._hass, eid))}"></ha-icon>
-                    ${esc$2(entityName$1(this._hass, eid))}
+                  <button class="ev-entity-chip" data-entity="${esc(eid)}">
+                    <ha-icon icon="${esc(entityIcon(this._hass, eid))}"></ha-icon>
+                    ${esc(entityName(this._hass, eid))}
                   </button>`).join("")}
                 ${devices.map((id) => `
                   <span class="ev-entity-chip">
-                    <ha-icon icon="${esc$2(deviceIcon(this._hass, id))}"></ha-icon>
-                    ${esc$2(deviceName(this._hass, id))}
+                    <ha-icon icon="${esc(deviceIcon(this._hass, id))}"></ha-icon>
+                    ${esc(deviceName(this._hass, id))}
                   </span>`).join("")}
                 ${areas.map((id) => `
                   <span class="ev-entity-chip">
-                    <ha-icon icon="${esc$2(areaIcon(this._hass, id))}"></ha-icon>
-                    ${esc$2(areaName(this._hass, id))}
+                    <ha-icon icon="${esc(areaIcon(this._hass, id))}"></ha-icon>
+                    ${esc(areaName(this._hass, id))}
                   </span>`).join("")}
                 ${labels.map((id) => `
                   <span class="ev-entity-chip">
-                    <ha-icon icon="${esc$2(labelIcon(this._hass, id))}"></ha-icon>
-                    ${esc$2(labelName(this._hass, id))}
+                    <ha-icon icon="${esc(labelIcon(this._hass, id))}"></ha-icon>
+                    ${esc(labelName(this._hass, id))}
                   </span>`).join("")}
               </div>
             ` : ""}
             ${showActions ? `
-            <div class="edit-form" id="edit-${esc$2(e.id)}">
+            <div class="edit-form" id="edit-${esc(e2.id)}">
               <ha-textfield class="edit-msg" label="Message" style="width:100%"></ha-textfield>
               <ha-textarea class="edit-ann" label="Full message / annotation" autogrow style="width:100%"></ha-textarea>
               <div class="edit-row">
                 <ha-icon-picker class="edit-icon-picker" style="flex:1"></ha-icon-picker>
-                <button class="color-swatch-btn" title="Choose colour" style="background:${esc$2(color)}">
-                  <span class="color-swatch-inner" style="background:${esc$2(color)}"></span>
-                  <input type="color" class="edit-color" value="${esc$2(color)}" />
+                <button class="color-swatch-btn" title="Choose colour" style="background:${esc(color)}">
+                  <span class="color-swatch-inner" style="background:${esc(color)}"></span>
+                  <input type="color" class="edit-color" value="${esc(color)}" />
                 </button>
               </div>
               <div class="edit-row">
@@ -11910,30 +12862,30 @@ ${s.description}`).join("\n\n");
       }
       if (!showFullMessage) {
         listEl.querySelectorAll(".event-item.expandable").forEach((item) => {
-          item.addEventListener("click", (e) => {
-            if (e.target.closest(".ev-actions, .ev-entity-chip, .edit-form, ha-icon-button, ha-button")) return;
+          item.addEventListener("click", (e2) => {
+            if (e2.target.closest(".ev-actions, .ev-entity-chip, .edit-form, ha-icon-button, ha-button")) return;
             const ann = item.querySelector(".ev-full-message");
             if (ann) ann.classList.toggle("hidden");
           });
         });
       }
       listEl.querySelectorAll(".ev-history-link").forEach((link) => {
-        link.addEventListener("click", (e) => {
-          if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) {
+        link.addEventListener("click", (e2) => {
+          if (e2.defaultPrevented || e2.button !== 0 || e2.metaKey || e2.ctrlKey || e2.shiftKey || e2.altKey) {
             return;
           }
-          e.preventDefault();
-          e.stopPropagation();
-          const item = e.target.closest(".event-item");
+          e2.preventDefault();
+          e2.stopPropagation();
+          const item = e2.target.closest(".event-item");
           const id = item?.dataset.id;
           const record = this._allEvents.find((ev) => ev.id === id);
           if (record) this._navigateToEventHistory(record);
         });
       });
       listEl.querySelectorAll(".ev-visibility-btn").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-          e.preventDefault();
-          e.stopPropagation();
+        btn.addEventListener("click", (e2) => {
+          e2.preventDefault();
+          e2.stopPropagation();
           this.dispatchEvent(new CustomEvent("hass-datapoints-toggle-event-visibility", {
             bubbles: true,
             composed: true,
@@ -11942,9 +12894,9 @@ ${s.description}`).join("\n\n");
         });
       });
       listEl.querySelectorAll(".ev-entity-chip").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-          e.preventDefault();
-          e.stopPropagation();
+        btn.addEventListener("click", (e2) => {
+          e2.preventDefault();
+          e2.stopPropagation();
           const entityId = btn.dataset.entity;
           if (entityId) {
             const ev = new Event("hass-more-info", { bubbles: true, composed: true });
@@ -11954,13 +12906,13 @@ ${s.description}`).join("\n\n");
         });
       });
       listEl.querySelectorAll(".delete-btn").forEach((btn) => {
-        btn.addEventListener("click", async (e) => {
-          e.stopPropagation();
-          const item = e.target.closest(".event-item");
+        btn.addEventListener("click", async (e2) => {
+          e2.stopPropagation();
+          const item = e2.target.closest(".event-item");
           const id = item?.dataset.id;
           if (!id) return;
           const message = item.querySelector(".ev-message")?.textContent?.trim() || "this record";
-          const confirmed = await confirmDestructiveAction$1(this, {
+          const confirmed = await confirmDestructiveAction(this, {
             title: "Delete record",
             message: `Delete ${message}?`,
             confirmLabel: "Delete record"
@@ -11975,15 +12927,15 @@ ${s.description}`).join("\n\n");
         });
       });
       listEl.querySelectorAll(".edit-btn").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const item = e.target.closest(".event-item");
+        btn.addEventListener("click", (e2) => {
+          e2.stopPropagation();
+          const item = e2.target.closest(".event-item");
           const id = item?.dataset.id;
           if (!id) return;
           const form = this.shadowRoot.getElementById(`edit-${id}`);
           if (!form) return;
           const isOpen = form.classList.contains("open");
-          this.shadowRoot.querySelectorAll(".edit-form.open").forEach((f) => f.classList.remove("open"));
+          this.shadowRoot.querySelectorAll(".edit-form.open").forEach((f2) => f2.classList.remove("open"));
           if (!isOpen) {
             form.classList.add("open");
             const ev = this._allEvents.find((ev2) => ev2.id === id);
@@ -12012,9 +12964,9 @@ ${s.description}`).join("\n\n");
         });
       });
       listEl.querySelectorAll(".edit-save").forEach((btn) => {
-        btn.addEventListener("click", async (e) => {
-          e.stopPropagation();
-          const form = e.target.closest(".edit-form");
+        btn.addEventListener("click", async (e2) => {
+          e2.stopPropagation();
+          const form = e2.target.closest(".edit-form");
           if (!form) return;
           const id = form.id.replace("edit-", "");
           const msg = (form.querySelector(".edit-msg").value || "").trim();
@@ -12033,9 +12985,9 @@ ${s.description}`).join("\n\n");
         });
       });
       listEl.querySelectorAll(".edit-cancel").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          e.target.closest(".edit-form").classList.remove("open");
+        btn.addEventListener("click", (e2) => {
+          e2.stopPropagation();
+          e2.target.closest(".edit-form").classList.remove("open");
         });
       });
     }
@@ -12053,159 +13005,207 @@ ${s.description}`).join("\n\n");
       };
     }
   }
-  class HassRecordsQuickCard extends HTMLElement {
+  class HassRecordsQuickCard extends i$2 {
+    static properties = {
+      _config: { type: Object, state: true },
+      _hass: { type: Object, state: true },
+      _feedbackClass: { type: String, state: true },
+      _feedbackText: { type: String, state: true },
+      _feedbackVisible: { type: Boolean, state: true }
+    };
+    static styles = i$5`
+    :host {
+      display: block;
+      height: 100%;
+    }
+    ha-card {
+      height: 100%;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      overflow: hidden;
+      box-sizing: border-box;
+      position: relative;
+      gap: 8px;
+    }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 1.1em;
+      font-weight: 500;
+      color: var(--primary-text-color);
+    }
+    .input-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .input-row ha-textfield {
+      flex: 1;
+    }
+    .annotation-row {
+      display: grid;
+      gap: 6px;
+    }
+    .annotation-label {
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--secondary-text-color);
+    }
+    .annotation-row textarea {
+      width: 100%;
+      min-height: 92px;
+      resize: vertical;
+      box-sizing: border-box;
+      padding: 10px 12px;
+      border: 1px solid
+        var(
+          --input-outlined-idle-border-color,
+          var(--divider-color, #9e9e9e)
+        );
+      border-radius: 12px;
+      background: var(
+        --card-background-color,
+        var(--primary-background-color, #fff)
+      );
+      color: var(--primary-text-color);
+      font: inherit;
+      line-height: 1.45;
+    }
+    .feedback {
+      position: absolute;
+      bottom: 2px;
+      left: 12px;
+      right: 12px;
+      font-size: 0.78em;
+      padding: 2px 8px;
+      border-radius: 4px;
+      display: none;
+      pointer-events: none;
+    }
+    .feedback.visible {
+      display: block;
+    }
+    .feedback.ok {
+      background: rgba(76, 175, 80, 0.12);
+      color: var(--success-color, #4caf50);
+    }
+    .feedback.err {
+      background: rgba(244, 67, 54, 0.12);
+      color: var(--error-color, #f44336);
+    }
+  `;
     constructor() {
       super();
-      this.attachShadow({ mode: "open" });
-      this._rendered = false;
+      this._config = {};
+      this._hass = null;
+      this._feedbackClass = "";
+      this._feedbackText = "";
+      this._feedbackVisible = false;
     }
     setConfig(config) {
       this._config = config || {};
-      if (this._rendered) this._render();
     }
     set hass(hass) {
       this._hass = hass;
-      if (!this._rendered) this._render();
     }
-    _render() {
-      this._rendered = true;
-      const cfg = this._config;
-      const cfgIcon = cfg.icon || "mdi:bookmark";
-      const cfgColor = cfg.color || AMBER;
-      const hasTitle = !!cfg.title;
-      const showAnnotation = !!cfg.show_annotation;
-      this.shadowRoot.innerHTML = `
-      <style>
-        :host { display: block; height: 100%; }
-        ha-card {
-          height: 100%;
-          padding: 12px;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          overflow: hidden;
-          box-sizing: border-box;
-          position: relative;
-          gap: 8px;
-        }
-        .card-header { display: none; }
-        .input-row {
-          display: flex;
-          gap: 8px;
-          align-items: center;
-        }
-        .input-row ha-textfield { flex: 1; }
-        .annotation-row {
-          display: grid;
-          gap: 6px;
-        }
-        .annotation-label {
-          font-size: 0.82rem;
-          font-weight: 500;
-          color: var(--secondary-text-color);
-        }
-        .annotation-row textarea {
-          width: 100%;
-          min-height: 92px;
-          resize: vertical;
-          box-sizing: border-box;
-          padding: 10px 12px;
-          border: 1px solid var(--input-outlined-idle-border-color, var(--divider-color, #9e9e9e));
-          border-radius: 12px;
-          background: var(--card-background-color, var(--primary-background-color, #fff));
-          color: var(--primary-text-color);
-          font: inherit;
-          line-height: 1.45;
-        }
-        ha-button {
-          --mdc-theme-primary: ${esc$3(cfgColor)};
-        }
-        ha-button ha-icon {
-          --mdc-icon-size: 18px;
-        }
-        .feedback {
-          position: absolute;
-          bottom: 2px;
-          left: 12px;
-          right: 12px;
-          font-size: 0.78em;
-          padding: 2px 8px;
-          border-radius: 4px;
-          display: none;
-          pointer-events: none;
-        }
-        .feedback.ok { background: rgba(76,175,80,0.12); color: var(--success-color, #4caf50); }
-        .feedback.err { background: rgba(244,67,54,0.12); color: var(--error-color, #f44336); }
-      </style>
-      <ha-card>
-        ${hasTitle ? `
-        <div class="card-header">
-          <ha-icon class="header-icon" icon="${esc$3(cfgIcon)}"></ha-icon>
-          ${esc$3(cfg.title)}
-        </div>` : ""}
-        <div class="input-row">
-          <ha-textfield id="msg" placeholder="${esc$3(cfg.placeholder || "Note something…")}" style="flex:1"></ha-textfield>
-          <ha-button id="btn" raised>
-            <ha-icon icon="${esc$3(cfgIcon)}" slot="icon"></ha-icon>
-            Record
-          </ha-button>
-        </div>
-        ${showAnnotation ? `
-        <div class="annotation-row">
-          <label class="annotation-label" for="ann">Annotation</label>
-          <textarea id="ann" placeholder="Detailed note shown on chart hover…"></textarea>
-        </div>
-        ` : ""}
-        <div class="feedback" id="feedback"></div>
-      </ha-card>`;
-      this.shadowRoot.getElementById("btn").addEventListener("click", () => this._record());
-      const msgEl = this.shadowRoot.getElementById("msg");
+    firstUpdated() {
+      const msgEl = this.shadowRoot.querySelector("#msg");
       if (msgEl) {
-        msgEl.addEventListener("keydown", (e) => {
-          if (e.key === "Enter") {
-            e.preventDefault();
+        msgEl.addEventListener("keydown", (e2) => {
+          if (e2.key === "Enter") {
+            e2.preventDefault();
             this._record();
           }
         });
       }
     }
     async _record() {
-      const msgEl = this.shadowRoot.getElementById("msg");
-      const message = (msgEl.value || "").trim();
+      const msgEl = this.shadowRoot.querySelector("#msg");
+      const message = (msgEl?.value || "").trim();
       if (!message) {
-        msgEl.focus();
+        msgEl?.focus();
         return;
       }
-      const btn = this.shadowRoot.getElementById("btn");
-      btn.disabled = true;
+      const btn = this.shadowRoot.querySelector("#btn");
+      if (btn) btn.disabled = true;
       const cfg = this._config;
       const data = {
         message,
         icon: cfg.icon || "mdi:bookmark",
         color: cfg.color || AMBER
       };
-      const annEl = this.shadowRoot.getElementById("ann");
+      const annEl = this.shadowRoot.querySelector("#ann");
       const annotation = (annEl?.value || "").trim();
       if (annotation) data.annotation = annotation;
       const entityIds = cfg.entity ? [cfg.entity] : cfg.entities ? Array.isArray(cfg.entities) ? cfg.entities : [cfg.entities] : [];
       if (entityIds.length) data.entity_ids = entityIds;
-      const fb = this.shadowRoot.getElementById("feedback");
       try {
-        await this._hass.callService(DOMAIN$2, "record", data);
-        window.dispatchEvent(new CustomEvent("hass-datapoints-event-recorded"));
-        msgEl.value = "";
+        await this._hass.callService(DOMAIN$1, "record", data);
+        window.dispatchEvent(
+          new CustomEvent("hass-datapoints-event-recorded")
+        );
+        if (msgEl) msgEl.value = "";
         if (annEl) annEl.value = "";
-        fb.className = "feedback ok";
-        fb.textContent = "Recorded!";
-        fb.style.display = "block";
-        setTimeout(() => fb.style.display = "none", 2500);
-      } catch (e) {
-        fb.className = "feedback err";
-        fb.textContent = `Error: ${e.message || "unknown error"}`;
-        fb.style.display = "block";
-        console.error("[hass-datapoints quick-card]", e);
+        this._feedbackClass = "ok";
+        this._feedbackText = "Recorded!";
+        this._feedbackVisible = true;
+        setTimeout(() => this._feedbackVisible = false, 2500);
+      } catch (e2) {
+        this._feedbackClass = "err";
+        this._feedbackText = `Error: ${e2.message || "unknown error"}`;
+        this._feedbackVisible = true;
+        console.error("[hass-datapoints quick-card]", e2);
       }
-      btn.disabled = false;
+      if (btn) btn.disabled = false;
+    }
+    render() {
+      const cfg = this._config;
+      const cfgIcon = cfg.icon || "mdi:bookmark";
+      const cfgColor = cfg.color || AMBER;
+      const hasTitle = !!cfg.title;
+      const showAnnotation = !!cfg.show_annotation;
+      return b`
+      <ha-card>
+        ${hasTitle ? b`
+              <div class="card-header">
+                <ha-icon .icon=${cfgIcon}></ha-icon>
+                ${cfg.title}
+              </div>
+            ` : ""}
+        <div class="input-row">
+          <ha-textfield
+            id="msg"
+            .placeholder=${cfg.placeholder || "Note something…"}
+          ></ha-textfield>
+          <ha-button
+            id="btn"
+            raised
+            style="--mdc-theme-primary: ${cfgColor}"
+            @click=${() => this._record()}
+          >
+            <ha-icon .icon=${cfgIcon} slot="icon"></ha-icon>
+            Record
+          </ha-button>
+        </div>
+        ${showAnnotation ? b`
+              <div class="annotation-row">
+                <label class="annotation-label" for="ann">Annotation</label>
+                <textarea
+                  id="ann"
+                  placeholder="Detailed note shown on chart hover…"
+                ></textarea>
+              </div>
+            ` : ""}
+        <div
+          class="feedback ${this._feedbackClass} ${this._feedbackVisible ? "visible" : ""}"
+        >
+          ${this._feedbackText}
+        </div>
+      </ha-card>
+    `;
     }
     static getConfigElement() {
       return document.createElement("hass-datapoints-quick-card-editor");
@@ -12225,358 +13225,227 @@ ${s.description}`).join("\n\n");
       return this._config?.show_annotation ? 3 : 1;
     }
   }
-  const {
-    attachTooltipBehaviour,
-    COLORS: COLORS$1,
-    contrastColor: contrastColor$1,
-    DOMAIN,
-    esc: esc$1,
-    fetchEvents: fetchEvents$1,
-    fmtDateTime,
-    fmtRelativeTime,
-    hideTooltip,
-    navigateToDataPointsHistory,
-    setupCanvas,
-    showTooltip,
-    ChartRenderer
-  } = shared;
-  const SENSOR_STYLE = `
-  :host { display: block; height: 100%; }
-  ha-card {
-    padding: 0;
-    overflow: hidden;
-    height: 100%;
-  }
-
-  .card-shell {
-    height: 100%;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .card-body {
-    display: flex;
-    flex-direction: column;
-    flex: 0 0 auto;
-    height: calc(
-      (var(--hr-body-rows, var(--row-size, 1)) * (var(--row-height, 1px) + var(--row-gap, 0px)))
-      - var(--row-gap, 0px)
-    );
-    min-height: 0;
-    position: relative;
-  }
-
-  /* Mirrors the default HA sensor card structure */
-  .header {
-    padding: 8px 16px 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  .name {
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: var(--secondary-text-color);
-    line-height: 40px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    min-width: 0;
-  }
-  .icon {
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--state-icon-color, var(--secondary-text-color));
-  }
-  .icon ha-state-icon {
-    --mdc-icon-size: 24px;
-  }
-
-  .info {
-    display: flex;
-    align-items: baseline;
-    padding: 0px 16px 16px;
-    margin-top: -4px;
-    line-height: var(--ha-line-height-condensed);
-  }
-  .value {
-    font-size: var(--ha-font-size-3xl);
-    font-weight: var(--ha-font-size-3xl);
-    line-height: 0.95;
-    letter-spacing: -0.03em;
-    color: var(--primary-text-color);
-  }
-  .measurement {
-    font-size: 1rem;
-    color: var(--secondary-text-color);
-    font-weight: 400;
-  }
-
-  .footer {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 100%;
-  }
-
-  .chart-wrap {
-    position: relative;
-    height: 100%;
-    padding: 0;
-    box-sizing: border-box;
-    overflow: visible;
-    min-height: 78px;
-  }
-  .chart-viewport {
-    position: relative;
-    height: 100%;
-    overflow: hidden;
-  }
-  canvas { display: block; }
-  .icon-overlay {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-  }
-
-  /* Annotation icon circles – border adapts to colour scheme */
-  .ann-icon {
-    position: absolute;
-    width: 20px; height: 20px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transform: translate(-50%, -50%);
-    pointer-events: auto;
-    cursor: pointer;
-    /* Use the card background so the ring blends with the theme */
-    box-shadow: 0 0 0 2px var(--card-background-color, #fff);
-  }
-  @media (prefers-color-scheme: dark) {
-    .ann-icon {
-      box-shadow: 0 0 0 2px var(--card-background-color, #1c1c1e);
+  class DpPagination extends i$2 {
+    static properties = {
+      page: { type: Number },
+      totalPages: { type: Number },
+      totalItems: { type: Number },
+      label: { type: String }
+    };
+    static styles = i$5`
+    :host {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; padding: 8px; font-size: 0.8rem;
+      color: var(--secondary-text-color);
     }
-  }
-  .ann-icon ha-icon {
-    --mdc-icon-size: 12px;
-    /* icon color set imperatively via contrastColor() */
-  }
-  .loading {
-    text-align: center;
-    padding: 28px 16px 24px;
-    color: var(--secondary-text-color);
-  }
-  .tooltip {
-    position: fixed;
-    background: var(--card-background-color, #fff);
-    border: 1px solid var(--divider-color, #ddd);
-    border-radius: 8px;
-    padding: 8px 12px;
-    font-size: 0.8em;
-    line-height: 1.4;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    pointer-events: none;
-    display: none;
-    max-width: 220px;
-    z-index: 10;
-    color: var(--primary-text-color);
-  }
-  .tt-dot {
-    display: inline-block;
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    margin-right: 4px;
-    flex-shrink: 0;
-  }
-  .tt-time { color: var(--secondary-text-color); margin-bottom: 3px; }
-  .tt-value { color: var(--secondary-text-color); margin-bottom: 4px; }
-  .tt-message { font-weight: 500; }
-  .tt-annotation { color: var(--secondary-text-color); margin-top: 4px; white-space: pre-wrap; }
-  .tt-entities { color: var(--secondary-text-color); margin-top: 6px; white-space: pre-wrap; }
-
-  /* ── Row 4: Annotation list (optional) ── */
-  .ann-section {
-    border-top: 1px solid var(--divider-color, #eee);
-    display: none;
-    flex: 1 1 0;
-    min-height: 0;
-    flex-direction: column;
-    overflow: hidden;
-  }
-  .ann-list {
-    flex: 1 1 0;
-    min-height: 0;
-    overflow-y: auto;
-  }
-  .ann-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 8px 16px;
-    border-bottom: 1px solid var(--divider-color, #eee);
-    cursor: default;
-  }
-  .ann-item:last-child { border-bottom: none; }
-  .ann-item.simple { align-items: center; }
-  .ann-item.expandable { cursor: pointer; }
-
-  /* Coloured icon circle – replaces the plain dot */
-  .ann-icon-wrap {
-    position: relative;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    box-shadow: 0 0 0 2px var(--card-background-color, #fff);
-  }
-  @media (prefers-color-scheme: dark) {
-    .ann-icon-wrap { box-shadow: 0 0 0 2px var(--card-background-color, #1c1c1e); }
-  }
-  .ann-icon-main {
-    transition: opacity 120ms ease;
-  }
-  .ann-visibility-btn {
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    border-radius: 50%;
-    background: color-mix(in srgb, var(--card-background-color, #fff) 84%, transparent);
-    color: var(--primary-text-color);
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 120ms ease;
-    padding: 0;
-    font: inherit;
-  }
-  .ann-visibility-btn ha-icon {
-    --mdc-icon-size: 15px;
-  }
-  .ann-item:hover .ann-visibility-btn,
-  .ann-item.is-hidden .ann-visibility-btn,
-  .ann-visibility-btn:focus-visible {
-    opacity: 1;
-  }
-  .ann-item:hover .ann-icon-main,
-  .ann-item.is-hidden .ann-icon-main {
-    opacity: 0.22;
-  }
-
-  .ann-body { flex: 1; min-width: 0; }
-  .ann-header {
-    display: flex;
-    align-items: baseline;
-    gap: 6px;
-    flex-wrap: nowrap;
-  }
-  .ann-msg {
-    font-size: 0.85em;
-    font-weight: 500;
-    color: var(--primary-text-color);
-    word-break: break-word;
-    flex: 1;
-    min-width: 0;
-  }
-  .ann-dev-badge {
-    display: inline-block;
-    font-size: 0.68em; font-weight: 700; letter-spacing: 0.04em;
-    color: #fff;
-    background: #ff9800;
-    padding: 1px 5px; border-radius: 4px;
-    vertical-align: middle; margin-left: 4px;
-  }
-  .ann-time {
-    font-size: 0.75em;
-    color: var(--secondary-text-color);
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-  .ann-time-wrap {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    flex-shrink: 0;
-  }
-  .ann-history-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    background: none;
-    color: var(--secondary-text-color);
-    padding: 0;
-    cursor: pointer;
-  }
-  .ann-history-btn ha-icon { --mdc-icon-size: 14px; }
-  .ann-note {
-    font-size: 0.78em;
-    color: var(--secondary-text-color);
-    margin-top: 2px;
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-  .ann-note.hidden { display: none; }
-
-  /* "..." expand chip shown when annotation is hidden */
-  .ann-expand-chip {
-    display: inline-flex;
-    align-items: center;
-    margin-top: 4px;
-    padding: 1px 8px;
-    border-radius: 999px;
-    font-size: 0.75em;
-    font-weight: 600;
-    letter-spacing: 0.05em;
-    color: var(--secondary-text-color);
-    background: var(--secondary-background-color, rgba(0,0,0,0.06));
-    border: none;
-    cursor: pointer;
-    font-family: inherit;
-  }
-  .ann-expand-chip:hover { background: var(--divider-color, rgba(0,0,0,0.12)); }
-
-  /* Pagination bar – sits outside the scroll area */
-  .ann-pagination {
-    display: flex;
-    flex: 0 0 auto;
-    justify-content: space-between;
-    align-items: center;
-    padding: 4px 8px;
-    border-top: 1px solid var(--divider-color, #eee);
-    font-size: 0.8em;
-    color: var(--secondary-text-color);
-  }
-  .ann-empty {
-    text-align: center;
-    padding: 16px;
-    color: var(--secondary-text-color);
-    font-size: 0.85em;
-  }
-`;
-  class HassRecordsSensorCard extends HTMLElement {
+    button {
+      background: none; border: 1px solid var(--divider-color, #444);
+      border-radius: 4px; color: var(--primary-text-color);
+      cursor: pointer; padding: 4px 8px; font-family: inherit; font-size: 0.8rem;
+    }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    button:not(:disabled):hover {
+      background: color-mix(in srgb, var(--primary-text-color) 8%, transparent);
+    }
+    .info { min-width: 120px; text-align: center; }
+  `;
     constructor() {
       super();
-      this.attachShadow({ mode: "open" });
-      this._rendered = false;
-      this._unsubscribe = null;
-      this._resizeObserver = null;
-      this._lastHistResult = null;
-      this._lastEvents = null;
-      this._lastT0 = null;
-      this._lastT1 = null;
+      this.page = 0;
+      this.totalPages = 1;
+      this.totalItems = 0;
+      this.label = "records";
+    }
+    _onPrev() {
+      if (this.page > 0) {
+        this.dispatchEvent(
+          new CustomEvent("dp-page-change", {
+            detail: { page: this.page - 1 },
+            bubbles: true,
+            composed: true
+          })
+        );
+      }
+    }
+    _onNext() {
+      if (this.page < this.totalPages - 1) {
+        this.dispatchEvent(
+          new CustomEvent("dp-page-change", {
+            detail: { page: this.page + 1 },
+            bubbles: true,
+            composed: true
+          })
+        );
+      }
+    }
+    render() {
+      return b`
+      <button
+        type="button"
+        data-action="prev"
+        ?disabled=${this.page <= 0}
+        @click=${this._onPrev}
+        aria-label="Previous page"
+      >
+        ‹
+      </button>
+      <span class="info">
+        Page ${this.page + 1} of ${this.totalPages}   ${this.totalItems} ${this.label}
+      </span>
+      <button
+        type="button"
+        data-action="next"
+        ?disabled=${this.page >= this.totalPages - 1}
+        @click=${this._onNext}
+        aria-label="Next page"
+      >
+        ›
+      </button>
+    `;
+    }
+  }
+  customElements.define("dp-pagination", DpPagination);
+  class HassRecordsSensorCard extends i$2 {
+    static properties = {
+      _config: { state: true },
+      _hass: { state: true },
+      _loadMessage: { state: true },
+      _chartReady: { state: true },
+      _annEvents: { state: true },
+      _annPage: { state: true },
+      _hiddenEventIds: { state: true }
+    };
+    _initialized = false;
+    _lastHistResult = null;
+    _lastEvents = [];
+    _lastT0 = null;
+    _lastT1 = null;
+    _unsubscribe = null;
+    _resizeObserver = null;
+    _canvasClickHandler = null;
+    _previousSeriesEndpoints = /* @__PURE__ */ new Map();
+    static styles = i$5`
+    :host { display: block; height: 100%; }
+    ha-card { padding: 0; overflow: hidden; height: 100%; }
+    .card-shell { height: 100%; min-height: 0; display: flex; flex-direction: column; }
+    .card-body {
+      display: flex; flex-direction: column; flex: 0 0 auto;
+      height: calc(
+        (var(--hr-body-rows, var(--row-size, 1)) * (var(--row-height, 1px) + var(--row-gap, 0px)))
+        - var(--row-gap, 0px)
+      );
+      min-height: 0; position: relative;
+    }
+    .header {
+      padding: 8px 16px 0;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .name {
+      font-size: 1.1rem; font-weight: 500; color: var(--secondary-text-color);
+      line-height: 40px; white-space: nowrap; overflow: hidden;
+      text-overflow: ellipsis; min-width: 0;
+    }
+    .icon { flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--state-icon-color, var(--secondary-text-color)); }
+    .icon ha-state-icon { --mdc-icon-size: 24px; }
+    .info {
+      display: flex; align-items: baseline; padding: 0 16px 16px; margin-top: -4px;
+      line-height: var(--ha-line-height-condensed);
+    }
+    .value {
+      font-size: var(--ha-font-size-3xl, 2.5rem);
+      font-weight: var(--ha-font-weight-bold, 700);
+      line-height: 0.95; letter-spacing: -0.03em; color: var(--primary-text-color);
+    }
+    .measurement { font-size: 1rem; color: var(--secondary-text-color); font-weight: 400; }
+    .footer { position: absolute; bottom: 0; left: 0; right: 0; height: 100%; }
+    .chart-wrap { position: relative; height: 100%; padding: 0; box-sizing: border-box; overflow: visible; min-height: 78px; }
+    .chart-viewport { position: relative; height: 100%; overflow: hidden; }
+    canvas { display: block; }
+    .chart-loading { text-align: center; padding: 28px 16px 24px; color: var(--secondary-text-color); }
+    .icon-overlay { position: absolute; inset: 0; pointer-events: none; }
+    .ann-icon {
+      position: absolute; width: 20px; height: 20px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      transform: translate(-50%, -50%); pointer-events: auto; cursor: pointer;
+      box-shadow: 0 0 0 2px var(--card-background-color, #fff);
+    }
+    .ann-icon ha-icon { --mdc-icon-size: 12px; }
+    .tooltip {
+      position: fixed; background: var(--card-background-color, #fff);
+      border: 1px solid var(--divider-color, #ddd); border-radius: 8px;
+      padding: 8px 12px; font-size: 0.8em; line-height: 1.4;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15); pointer-events: none;
+      display: none; max-width: 220px; z-index: 10; color: var(--primary-text-color);
+    }
+    .tt-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; flex-shrink: 0; }
+    .tt-time { color: var(--secondary-text-color); margin-bottom: 3px; }
+    .tt-value { color: var(--secondary-text-color); margin-bottom: 4px; }
+    .tt-message { font-weight: 500; }
+    .tt-annotation { color: var(--secondary-text-color); margin-top: 4px; white-space: pre-wrap; }
+    .tt-entities { color: var(--secondary-text-color); margin-top: 6px; white-space: pre-wrap; }
+    .ann-section {
+      border-top: 1px solid var(--divider-color, #eee);
+      flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; overflow: hidden;
+    }
+    .ann-list { flex: 1 1 0; min-height: 0; overflow-y: auto; }
+    .ann-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 8px 16px; border-bottom: 1px solid var(--divider-color, #eee); cursor: default;
+    }
+    .ann-item:last-child { border-bottom: none; }
+    .ann-item.simple { align-items: center; }
+    .ann-item.is-hidden .ann-icon-main,
+    .ann-item:hover .ann-icon-main { opacity: 0.22; }
+    .ann-icon-wrap {
+      position: relative; width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      box-shadow: 0 0 0 2px var(--card-background-color, #fff);
+    }
+    .ann-icon-main { transition: opacity 120ms ease; }
+    .ann-visibility-btn {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      border: none; border-radius: 50%;
+      background: color-mix(in srgb, var(--card-background-color, #fff) 84%, transparent);
+      color: var(--primary-text-color); cursor: pointer; opacity: 0;
+      transition: opacity 120ms ease; padding: 0; font: inherit;
+    }
+    .ann-item:hover .ann-visibility-btn,
+    .ann-item.is-hidden .ann-visibility-btn { opacity: 1; }
+    .ann-body { flex: 1; min-width: 0; }
+    .ann-header { display: flex; align-items: baseline; gap: 6px; flex-wrap: nowrap; }
+    .ann-msg { font-size: 0.85em; font-weight: 500; color: var(--primary-text-color); word-break: break-word; flex: 1; min-width: 0; }
+    .ann-dev-badge {
+      display: inline-block; font-size: 0.68em; font-weight: 700;
+      color: #fff; background: #ff9800; padding: 1px 5px; border-radius: 4px;
+      vertical-align: middle; margin-left: 4px;
+    }
+    .ann-time-wrap { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; }
+    .ann-time { font-size: 0.75em; color: var(--secondary-text-color); white-space: nowrap; }
+    .ann-history-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      border: none; background: none; color: var(--secondary-text-color); padding: 0; cursor: pointer;
+    }
+    .ann-history-btn ha-icon { --mdc-icon-size: 14px; }
+    .ann-note { font-size: 0.78em; color: var(--secondary-text-color); margin-top: 2px; white-space: pre-wrap; word-break: break-word; }
+    .ann-note.hidden { display: none; }
+    .ann-expand-chip {
+      display: inline-flex; align-items: center; margin-top: 4px; padding: 1px 8px; border-radius: 999px;
+      font-size: 0.75em; font-weight: 600; color: var(--secondary-text-color);
+      background: var(--secondary-background-color, rgba(0,0,0,0.06));
+      border: none; cursor: pointer; font-family: inherit;
+    }
+    .ann-empty { text-align: center; padding: 16px; color: var(--secondary-text-color); font-size: 0.85em; }
+  `;
+    constructor() {
+      super();
+      this._config = {};
+      this._hass = null;
+      this._loadMessage = "Loading…";
+      this._chartReady = false;
+      this._annEvents = [];
       this._annPage = 0;
       this._hiddenEventIds = /* @__PURE__ */ new Set();
-      this._canvasClickHandler = null;
     }
     setConfig(config) {
       if (!config.entity) {
@@ -12588,22 +13457,26 @@ ${s.description}`).join("\n\n");
         show_records: false,
         records_page_size: null,
         records_limit: null,
-        // max number of records to show (null = all)
         ...config
       };
     }
     set hass(hass) {
       this._hass = hass;
-      if (!this._rendered) {
-        this._rendered = true;
-        this._buildShell();
+      if (!this._initialized) {
+        this._initialized = true;
         this._setupAutoRefresh();
-        this._setupResizeObserver();
-        this._load();
       }
-      this._updateState();
+    }
+    firstUpdated() {
+      this._setupResizeObserver();
+      if (this._hass) this._load();
+    }
+    connectedCallback() {
+      super.connectedCallback();
+      if (this._initialized && this._hass) this._load();
     }
     disconnectedCallback() {
+      super.disconnectedCallback();
       if (this._unsubscribe) {
         this._unsubscribe();
         this._unsubscribe = null;
@@ -12612,102 +13485,13 @@ ${s.description}`).join("\n\n");
         this._resizeObserver.disconnect();
         this._resizeObserver = null;
       }
-    }
-    _buildShell() {
-      const cfg = this._config;
-      this.shadowRoot.innerHTML = `
-      <style>${SENSOR_STYLE}</style>
-      <ha-card class=" with-fixed-footer action">
-        <div class="card-shell">
-          <div class="card-body">
-            <div class="header">
-              <div class="name" id="sensor-name">${esc$1(cfg.name || cfg.entity)}</div>
-              <div class="icon">
-                <ha-state-icon id="sensor-state-icon"></ha-state-icon>
-              </div>
-            </div>
-  
-            <div class="info">
-              <span class="value" id="sensor-value">—</span>
-              <span class="measurement" id="sensor-unit"></span>
-            </div>
-  
-            <div class="footer">
-              <div class="chart-wrap">
-                <div class="chart-viewport">
-                  <div class="loading" id="loading">Loading…</div>
-                  <canvas id="chart" style="display:none"></canvas>
-                  <div class="icon-overlay" id="icon-overlay"></div>
-                </div>
-                <div class="tooltip" id="tooltip">
-                  <div class="tt-time" id="tt-time"></div>
-                <div class="tt-value" id="tt-value" style="display:none"></div>
-                <div style="display:flex;align-items:flex-start;gap:4px">
-                  <span class="tt-dot" id="tt-dot"></span>
-                  <span class="tt-message" id="tt-message"></span>
-                </div>
-                <div class="tt-annotation" id="tt-annotation" style="display:none"></div>
-                <div class="tt-entities" id="tt-entities" style="display:none"></div>
-              </div>
-            </div>
-            </div>
-          </div>
-          <div class="ann-section" id="ann-section">
-            <div class="ann-list" id="ann-list"></div>
-            <div class="ann-pagination" id="ann-pagination" style="display:none">
-              <ha-icon-button id="ann-prev" label="Previous page">
-                <ha-icon icon="mdi:chevron-left"></ha-icon>
-              </ha-icon-button>
-              <span id="ann-page-info"></span>
-              <ha-icon-button id="ann-next" label="Next page">
-                <ha-icon icon="mdi:chevron-right"></ha-icon>
-              </ha-icon-button>
-            </div>
-          </div>
-        </div>
-      </ha-card>`;
-      this._applyLayoutSizing();
-      this.shadowRoot.getElementById("ann-prev").addEventListener("click", () => {
-        if (this._annPage > 0) {
-          this._annPage--;
-          this._renderAnnList(this._lastEvents || []);
-          this.shadowRoot.getElementById("ann-list").scrollTop = 0;
-        }
-      });
-      this.shadowRoot.getElementById("ann-next").addEventListener("click", () => {
-        const total = (this._lastEvents || []).length;
-        const pageSize = this._config.records_page_size;
-        const pages = pageSize ? Math.ceil(total / pageSize) : 1;
-        if (this._annPage < pages - 1) {
-          this._annPage++;
-          this._renderAnnList(this._lastEvents || []);
-          this.shadowRoot.getElementById("ann-list").scrollTop = 0;
-        }
-      });
-    }
-    _updateState() {
-      if (!this._hass || !this._config) return;
-      const entityId = this._config.entity;
-      const stateObj = this._hass.states[entityId];
-      const nameEl = this.shadowRoot.getElementById("sensor-name");
-      const valueEl = this.shadowRoot.getElementById("sensor-value");
-      const unitEl = this.shadowRoot.getElementById("sensor-unit");
-      const stateIconEl = this.shadowRoot.getElementById("sensor-state-icon");
-      if (nameEl) {
-        nameEl.textContent = this._config.name || stateObj && stateObj.attributes && stateObj.attributes.friendly_name || entityId;
-      }
-      if (!stateObj) return;
-      if (valueEl) valueEl.textContent = stateObj.state;
-      if (unitEl) unitEl.textContent = stateObj.attributes.unit_of_measurement || "";
-      if (stateIconEl) {
-        stateIconEl.stateObj = stateObj;
-        stateIconEl.hass = this._hass;
+      if (this._canvasClickHandler) {
+        this.shadowRoot?.querySelector("canvas#chart")?.removeEventListener("click", this._canvasClickHandler);
       }
     }
     _setupAutoRefresh() {
-      this._hass.connection.subscribeEvents(() => {
-        this._load();
-      }, `${DOMAIN}_event_recorded`).then((unsub) => {
+      if (!this._hass) return;
+      this._hass.connection.subscribeEvents(() => this._load(), `${DOMAIN$1}_event_recorded`).then((unsub) => {
         this._unsubscribe = unsub;
       }).catch(() => {
       });
@@ -12722,6 +13506,18 @@ ${s.description}`).join("\n\n");
       });
       this._resizeObserver.observe(this);
     }
+    _applyLayoutSizing() {
+      const body = this.shadowRoot?.querySelector(".card-body");
+      if (!body) return;
+      const gridRows = this._gridRows();
+      if (!this._config?.show_records) {
+        body.style.setProperty("--hr-body-rows", String(gridRows));
+        return;
+      }
+      const totalRows = Math.max(3, gridRows);
+      const bodyRows = Math.max(2, this._bodyRows(totalRows));
+      body.style.setProperty("--hr-body-rows", String(bodyRows));
+    }
     _gridRows() {
       const raw = getComputedStyle(this).getPropertyValue("--row-size").trim();
       const rows = Number.parseInt(raw, 10);
@@ -12733,57 +13529,52 @@ ${s.description}`).join("\n\n");
       return Math.min(totalRows - 1, 2 + Math.floor(Math.max(0, totalRows - 3) / 4));
     }
     _visibleEvents(events) {
-      return (events || []).filter((ev) => !this._hiddenEventIds.has(ev.id));
+      return events.filter((ev) => !this._hiddenEventIds.has(ev.id));
     }
     _toggleEventVisibility(eventId) {
-      if (this._hiddenEventIds.has(eventId)) this._hiddenEventIds.delete(eventId);
-      else this._hiddenEventIds.add(eventId);
+      const next = new Set(this._hiddenEventIds);
+      if (next.has(eventId)) next.delete(eventId);
+      else next.add(eventId);
+      this._hiddenEventIds = next;
       if (this._lastHistResult !== null) {
-        this._drawChart(this._lastHistResult, this._lastEvents || [], this._lastT0, this._lastT1);
-      } else {
-        this._renderAnnList(this._lastEvents || []);
+        this._drawChart(this._lastHistResult, this._lastEvents, this._lastT0, this._lastT1);
       }
     }
     _navigateToEventHistory(ev) {
-      navigateToDataPointsHistory(this, {
-        entity_id: [
-          this._config?.entity,
-          ...ev && ev.entity_ids || []
-        ].filter(Boolean),
-        device_id: ev?.device_ids || [],
-        area_id: ev?.area_ids || [],
-        label_id: ev?.label_ids || []
-      }, {
-        start_time: Number.isFinite(this._lastT0) ? new Date(this._lastT0).toISOString() : null,
-        end_time: Number.isFinite(this._lastT1) ? new Date(this._lastT1).toISOString() : null
-      });
+      navigateToDataPointsHistory$1(
+        this,
+        {
+          entity_id: [this._config?.entity, ...ev?.entity_ids || []].filter(Boolean),
+          device_id: ev?.device_ids || [],
+          area_id: ev?.area_ids || [],
+          label_id: ev?.label_ids || []
+        },
+        {
+          start_time: Number.isFinite(this._lastT0) ? new Date(this._lastT0).toISOString() : null,
+          end_time: Number.isFinite(this._lastT1) ? new Date(this._lastT1).toISOString() : null
+        }
+      );
     }
-    _applyLayoutSizing() {
-      const body = this.shadowRoot?.querySelector(".card-body");
-      const list = this.shadowRoot?.querySelector(".ann-list");
-      if (!body) return;
-      if (!this._config?.show_records) {
-        body.style.setProperty("--hr-body-rows", String(this._gridRows()));
-        if (list) list.style.setProperty("--hr-list-rows", "1");
-        return;
+    _getHistoryStatesForEntity(entityId, histResult) {
+      if (!histResult) return [];
+      const r2 = histResult;
+      if (Array.isArray(r2?.[entityId])) return r2[entityId];
+      if (Array.isArray(r2)) {
+        if (Array.isArray(r2[0])) return r2[0] || [];
+        if (r2.every((e2) => e2 && typeof e2 === "object" && !Array.isArray(e2))) {
+          return r2.filter((e2) => e2.entity_id === entityId);
+        }
       }
-      const totalRows = Math.max(3, this._gridRows());
-      const bodyRows = Math.max(2, this._bodyRows(totalRows));
-      const listRows = Math.max(1, totalRows - bodyRows);
-      body.style.setProperty("--hr-body-rows", String(bodyRows));
-      if (list) list.style.setProperty("--hr-list-rows", String(listRows));
-    }
-    _bodyHeightPx() {
-      const styles = getComputedStyle(this);
-      const rowHeight = Number.parseFloat(styles.getPropertyValue("--row-height")) || 0;
-      const rowGap = Number.parseFloat(styles.getPropertyValue("--row-gap")) || 0;
-      const totalRows = Math.max(this._config?.show_records ? 3 : 2, this._gridRows());
-      const bodyRows = this._config?.show_records ? Math.max(2, this._bodyRows(totalRows)) : totalRows;
-      return Math.max(0, bodyRows * (rowHeight + rowGap) - rowGap);
+      if (r2 && typeof r2 === "object") {
+        if (Array.isArray(r2.result?.[entityId])) return r2.result[entityId];
+        if (Array.isArray(r2.result?.[0])) return r2.result[0] || [];
+      }
+      return [];
     }
     async _load() {
+      if (!this._hass) return;
       const now = /* @__PURE__ */ new Date();
-      const start = new Date(now - this._config.hours_to_show * 3600 * 1e3);
+      const start = new Date(now.getTime() - this._config.hours_to_show * 3600 * 1e3);
       const t0 = start.getTime();
       const t1 = now.getTime();
       const entityIds = [this._config.entity];
@@ -12801,262 +13592,280 @@ ${s.description}`).join("\n\n");
           fetchEvents$1(this._hass, start.toISOString(), now.toISOString(), entityIds)
         ]);
         this._annPage = 0;
-        this._drawChart(histResult || {}, events, t0, t1);
+        this._drawChart(histResult || {}, events || [], t0, t1);
       } catch (err) {
-        const loadEl = this.shadowRoot.getElementById("loading");
-        if (loadEl) loadEl.textContent = "Failed to load data.";
+        this._loadMessage = "Failed to load data.";
         console.error("[hass-datapoints sensor-card]", err);
       }
-    }
-    _getHistoryStatesForEntity(entityId, histResult) {
-      if (!histResult) return [];
-      if (Array.isArray(histResult?.[entityId])) return histResult[entityId];
-      if (Array.isArray(histResult)) {
-        if (Array.isArray(histResult[0])) return histResult[0] || [];
-        if (histResult.every((entry) => entry && typeof entry === "object" && !Array.isArray(entry))) {
-          return histResult.filter((entry) => entry.entity_id === entityId);
-        }
-      }
-      if (histResult && typeof histResult === "object") {
-        if (Array.isArray(histResult.result?.[entityId])) return histResult.result[entityId];
-        if (Array.isArray(histResult.result?.[0])) return histResult.result[0] || [];
-      }
-      return [];
     }
     _drawChart(histResult, events, t0, t1) {
       this._lastHistResult = histResult;
       this._lastEvents = events;
       this._lastT0 = t0;
       this._lastT1 = t1;
-      const canvas = this.shadowRoot.getElementById("chart");
-      const wrap = this.shadowRoot.querySelector(".chart-wrap");
-      const header = this.shadowRoot.querySelector(".header");
-      const info = this.shadowRoot.querySelector(".info");
-      const footer = this.shadowRoot.querySelector(".footer");
-      const footerStyles = footer ? getComputedStyle(footer) : null;
-      const reservedHeight = (header?.offsetHeight || 0) + (info?.offsetHeight || 0) + (Number.parseFloat(footerStyles?.marginTop || "0") || 0);
-      const bodyHeight = this._bodyHeightPx();
-      const chartHeight = Math.max(78, Math.round(bodyHeight - reservedHeight), wrap?.clientHeight || 0);
-      const { w, h } = setupCanvas(canvas, wrap, chartHeight);
-      const renderer = new ChartRenderer(canvas, w, h);
-      const topPadPx = Math.max(6, Math.round(h * 0.05));
+      const canvas = this.shadowRoot?.querySelector("canvas#chart");
+      const wrap = this.shadowRoot?.querySelector(".chart-wrap");
+      if (!canvas || !wrap) return;
+      const { w, h: h2 } = setupCanvas(canvas, wrap, 220);
+      const renderer = new ChartRenderer(canvas, w, h2);
+      const topPadPx = Math.max(6, Math.round(h2 * 0.05));
       renderer.pad = { top: topPadPx, right: 0, bottom: 0, left: 0 };
       renderer.clear();
-      const series = [];
-      const allVals = [];
       const entityId = this._config.entity;
-      const lineColor = this._config.graph_color || COLORS$1[0];
+      const lineColor = this._config.graph_color || COLORS[0];
       const unit = this._hass?.states?.[entityId]?.attributes?.unit_of_measurement || "";
       const stateList = this._getHistoryStatesForEntity(entityId, histResult);
       const pts = [];
-      for (const s of stateList) {
-        const v = parseFloat(s.s);
-        if (!isNaN(v)) {
-          pts.push([Math.round(s.lu * 1e3), v]);
-          allVals.push(v);
+      const allVals = [];
+      for (const s2 of stateList) {
+        const v2 = parseFloat(s2.s);
+        if (!isNaN(v2)) {
+          pts.push([Math.round(s2.lu * 1e3), v2]);
+          allVals.push(v2);
         }
       }
-      if (pts.length) {
-        series.push({ entityId, pts, color: lineColor });
-      }
       if (!allVals.length) {
-        const loadEl = this.shadowRoot.getElementById("loading");
-        if (loadEl) loadEl.textContent = "No numeric data in the selected time range.";
+        this._loadMessage = "No numeric data in the selected time range.";
+        this._chartReady = false;
+        this._annEvents = events;
         return;
       }
-      this.shadowRoot.getElementById("loading").style.display = "none";
-      canvas.style.display = "block";
+      this._loadMessage = "";
+      this._chartReady = true;
+      const series = [{ entityId, pts, color: lineColor }];
       const vMin = Math.min(...allVals);
       const vMax = Math.max(...allVals);
       const range = vMax - vMin;
-      const topPad = range * 0.54 || 0.8;
-      const bottomPad = range * 0.03 || 0.2;
-      const chartMin = vMin - bottomPad;
-      const chartMax = vMax + topPad;
-      for (const s of series) {
-        renderer.drawLine(s.pts, s.color, t0, t1, chartMin, chartMax, { fillAlpha: 0.18 });
+      const chartMin = vMin - (range * 0.03 || 0.2);
+      const chartMax = vMax + (range * 0.54 || 0.8);
+      for (const s2 of series) {
+        renderer.drawLine(s2.pts, s2.color, t0, t1, chartMin, chartMax, { fillAlpha: 0.18 });
+        if (s2.pts.length) {
+          const lastPt = s2.pts[s2.pts.length - 1];
+          const prev = this._previousSeriesEndpoints.get(s2.entityId);
+          if (prev && (lastPt[0] !== prev.t || lastPt[1] !== prev.v)) {
+            const cx = renderer.xOf(lastPt[0], t0, t1);
+            const cy = renderer.yOf(lastPt[1], chartMin, chartMax);
+            renderer.drawBlip(cx, cy, s2.color);
+          }
+          this._previousSeriesEndpoints.set(s2.entityId, { t: lastPt[0], v: lastPt[1] });
+        }
       }
       const visibleEvents = this._visibleEvents(events);
       const annotationStyle = this._config.annotation_style === "line" ? "line" : "circle";
       const hits = annotationStyle === "line" ? renderer.drawAnnotationLinesOnLine(visibleEvents, series, t0, t1, chartMin, chartMax) : renderer.drawAnnotationsOnLine(visibleEvents, series, t0, t1, chartMin, chartMax);
-      const hitValues = new Map(hits.map((hit) => [hit.event.id, hit.value]));
+      const hitValues = new Map(hits.map((h22) => [h22.event.id, h22.value]));
       const enrichedEvents = visibleEvents.map((ev) => ({
         ...ev,
         chart_value: hitValues.get(ev.id),
         chart_unit: unit
       }));
-      const overlay = this.shadowRoot.getElementById("icon-overlay");
-      overlay.innerHTML = "";
-      if (annotationStyle === "circle") {
-        for (const hit of hits) {
-          const bgColor = hit.event.color || "#03a9f4";
-          const el = document.createElement("div");
-          el.className = "ann-icon";
-          el.style.left = `${hit.x}px`;
-          el.style.top = `${hit.y}px`;
-          el.style.background = bgColor;
-          el.innerHTML = `<ha-icon icon="${esc$1(hit.event.icon || "mdi:bookmark")}" style="--mdc-icon-size:12px;color:${contrastColor$1(bgColor)}"></ha-icon>`;
-          el.dataset.eventId = hit.event.id;
-          el.addEventListener("click", (ev) => {
-            ev.preventDefault();
-            ev.stopPropagation();
-            this._navigateToEventHistory(hit.event);
-          });
-          overlay.appendChild(el);
+      const overlay = this.shadowRoot?.querySelector(".icon-overlay");
+      if (overlay) {
+        overlay.innerHTML = "";
+        if (annotationStyle === "circle") {
+          for (const hit of hits) {
+            const bgColor = hit.event.color || "#03a9f4";
+            const el = document.createElement("div");
+            el.className = "ann-icon";
+            el.style.left = `${hit.x}px`;
+            el.style.top = `${hit.y}px`;
+            el.style.background = bgColor;
+            el.innerHTML = `<ha-icon icon="${hit.event.icon || "mdi:bookmark"}" style="--mdc-icon-size:12px;color:${contrastColor$1(bgColor)}"></ha-icon>`;
+            el.dataset.eventId = hit.event.id;
+            el.addEventListener("click", (e2) => {
+              e2.preventDefault();
+              e2.stopPropagation();
+              this._navigateToEventHistory(hit.event);
+            });
+            overlay.appendChild(el);
+          }
         }
       }
-      this._attachSensorTooltips(canvas, renderer, enrichedEvents, hits, t0, t1);
-      this._renderAnnList(events);
-    }
-    _renderAnnList(events) {
-      const cfg = this._config;
-      const sectionEl = this.shadowRoot.getElementById("ann-section");
-      const listEl = this.shadowRoot.getElementById("ann-list");
-      const pagEl = this.shadowRoot.getElementById("ann-pagination");
-      if (!sectionEl || !listEl) return;
-      if (!cfg.show_records) {
-        sectionEl.style.display = "none";
-        return;
-      }
-      const sorted = [...events || []].sort(
-        (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
-      );
-      const limited = cfg.records_limit ? sorted.slice(0, cfg.records_limit) : sorted;
-      const total = limited.length;
-      if (!total) {
-        sectionEl.style.display = "flex";
-        listEl.innerHTML = `<div class="ann-empty">No records in this time window.</div>`;
-        pagEl.style.display = "none";
-        return;
-      }
-      sectionEl.style.display = "flex";
-      const pageSize = cfg.records_page_size;
-      const pages = pageSize ? Math.max(1, Math.ceil(total / pageSize)) : 1;
-      this._annPage = Math.min(this._annPage, pages - 1);
-      const slice = pageSize ? limited.slice(this._annPage * pageSize, (this._annPage + 1) * pageSize) : limited;
-      listEl.innerHTML = slice.map((ev) => {
-        const color = ev.color || "#03a9f4";
-        const icon = ev.icon || "mdi:bookmark";
-        const iconColor = contrastColor$1(color);
-        const annText = ev.annotation && ev.annotation !== ev.message ? ev.annotation : "";
-        const showAnn = cfg.records_show_full_message !== false;
-        const isHidden = this._hiddenEventIds.has(ev.id);
-        const visibilityIcon = isHidden ? "mdi:eye" : "mdi:eye-off";
-        const visibilityLabel = isHidden ? "Show chart marker" : "Hide chart marker";
-        const isSimple = !annText;
-        return `
-        <div class="ann-item${!showAnn && annText ? " expandable" : ""}${isHidden ? " is-hidden" : ""}${isSimple ? " simple" : ""}">
-          <div class="ann-icon-wrap" style="background:${esc$1(color)}">
-            <ha-icon class="ann-icon-main" icon="${esc$1(icon)}" style="--mdc-icon-size:18px;color:${esc$1(iconColor)}"></ha-icon>
-            <button class="ann-visibility-btn" type="button" data-event-id="${esc$1(ev.id)}" title="${esc$1(visibilityLabel)}" aria-label="${esc$1(visibilityLabel)}">
-              <ha-icon icon="${esc$1(visibilityIcon)}"></ha-icon>
-            </button>
-          </div>
-          <div class="ann-body">
-            <div class="ann-header">
-              <span class="ann-msg">
-                ${esc$1(ev.message)}
-                ${ev.dev ? `<span class="ann-dev-badge">DEV</span>` : ""}
-                ${annText && !showAnn ? `<button class="ann-expand-chip" title="Show annotation">···</button>` : ""}
-              </span>
-              <span class="ann-time-wrap">
-                <span class="ann-time" title="${esc$1(fmtDateTime(ev.timestamp))}">
-                  ${fmtRelativeTime(ev.timestamp)}
-                </span>
-                <button class="ann-history-btn" type="button" data-event-id="${esc$1(ev.id)}" title="Open related history" aria-label="Open related history">
-                  <ha-icon icon="mdi:history"></ha-icon>
-                </button>
-              </span>
-            </div>
-            ${annText ? `
-              <div class="ann-note${showAnn ? "" : " hidden"}">${esc$1(annText)}</div>
-            ` : ""}
-          </div>
-        </div>`;
-      }).join("");
-      listEl.querySelectorAll(".ann-history-btn").forEach((btn) => {
-        btn.addEventListener("click", (ev) => {
-          ev.preventDefault();
-          ev.stopPropagation();
-          const eventId = btn.dataset.eventId;
-          const record = (events || []).find((item) => item.id === eventId);
-          if (record) this._navigateToEventHistory(record);
-        });
-      });
-      listEl.querySelectorAll(".ann-visibility-btn").forEach((btn) => {
-        btn.addEventListener("click", (ev) => {
-          ev.preventDefault();
-          ev.stopPropagation();
-          this._toggleEventVisibility(btn.dataset.eventId);
-        });
-      });
-      if (cfg.records_show_full_message === false) {
-        listEl.querySelectorAll(".ann-item.expandable").forEach((item) => {
-          const toggle = () => {
-            const note = item.querySelector(".ann-note");
-            const chip = item.querySelector(".ann-expand-chip");
-            if (!note) return;
-            const hidden = note.classList.toggle("hidden");
-            if (chip) chip.textContent = hidden ? "···" : "▲";
-          };
-          item.addEventListener("click", toggle);
-        });
-      }
-      if (pageSize && pages > 1) {
-        pagEl.style.display = "flex";
-        this.shadowRoot.getElementById("ann-page-info").textContent = `Page ${this._annPage + 1} of ${pages}`;
-        this.shadowRoot.getElementById("ann-prev").disabled = this._annPage === 0;
-        this.shadowRoot.getElementById("ann-next").disabled = this._annPage >= pages - 1;
-      } else {
-        pagEl.style.display = "none";
-      }
-    }
-    _attachSensorTooltips(canvas, renderer, events, hits, t0, t1) {
-      const card = this;
-      const overlay = this.shadowRoot.getElementById("icon-overlay");
-      overlay.querySelectorAll(".ann-icon").forEach((el) => {
-        const evId = el.dataset.eventId;
-        const ev = events.find((e) => e.id === evId);
-        if (!ev) return;
-        el.addEventListener("mouseenter", (e) => {
-          showTooltip(card, canvas, renderer, ev, e.clientX, e.clientY);
-        });
-        el.addEventListener("mousemove", (e) => {
-          showTooltip(card, canvas, renderer, ev, e.clientX, e.clientY);
-        });
-        el.addEventListener("mouseleave", () => {
-          hideTooltip(card);
-        });
-        el.addEventListener("touchstart", (e) => {
-          e.preventDefault();
-          const touch = e.touches[0];
-          showTooltip(card, canvas, renderer, ev, touch.clientX, touch.clientY);
-          setTimeout(() => hideTooltip(card), 3e3);
-        }, { passive: false });
-      });
-      attachTooltipBehaviour(card, canvas, renderer, events, t0, t1);
-      if (this._canvasClickHandler) {
-        canvas.removeEventListener("click", this._canvasClickHandler);
-      }
-      this._canvasClickHandler = (e) => {
+      attachTooltipBehaviour(this, canvas, renderer, enrichedEvents, t0, t1);
+      if (this._canvasClickHandler) canvas.removeEventListener("click", this._canvasClickHandler);
+      this._canvasClickHandler = (e2) => {
         const rect = canvas.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+        const x2 = e2.clientX - rect.left;
+        const y2 = e2.clientY - rect.top;
         const best = hits.reduce((closest, hit) => {
-          const dx = hit.x - x;
-          const dy = hit.y - y;
-          const dist = Math.hypot(dx, dy);
+          const dist = Math.hypot(hit.x - x2, hit.y - y2);
           if (dist > 18) return closest;
           if (!closest || dist < closest.dist) return { hit, dist };
           return closest;
         }, null);
         if (best) {
-          e.preventDefault();
-          e.stopPropagation();
+          e2.preventDefault();
+          e2.stopPropagation();
           this._navigateToEventHistory(best.hit.event);
         }
       };
       canvas.addEventListener("click", this._canvasClickHandler);
+      this._annEvents = events;
+    }
+    _renderAnnItem(ev) {
+      const color = ev.color || "#03a9f4";
+      const icon = ev.icon || "mdi:bookmark";
+      const iconColor = contrastColor$1(color);
+      const annText = ev.annotation && ev.annotation !== ev.message ? ev.annotation : "";
+      const showAnn = this._config.records_show_full_message !== false;
+      const isHidden = this._hiddenEventIds.has(ev.id);
+      const visibilityIcon = isHidden ? "mdi:eye" : "mdi:eye-off";
+      const visibilityLabel = isHidden ? "Show chart marker" : "Hide chart marker";
+      const isSimple = !annText;
+      const timestamp = ev.timestamp;
+      return b`
+      <div
+        class="ann-item${!showAnn && annText ? " expandable" : ""}${isHidden ? " is-hidden" : ""}${isSimple ? " simple" : ""}"
+        @click=${!showAnn && annText ? (e2) => {
+        const item = e2.currentTarget;
+        item.querySelector(".ann-note")?.classList.toggle("hidden");
+      } : void 0}
+      >
+        <div class="ann-icon-wrap" style="background:${color}">
+          <ha-icon
+            class="ann-icon-main"
+            .icon=${icon}
+            style="--mdc-icon-size:18px;color:${iconColor}"
+          ></ha-icon>
+          <button
+            class="ann-visibility-btn"
+            type="button"
+            title=${visibilityLabel}
+            aria-label=${visibilityLabel}
+            @click=${(e2) => {
+        e2.preventDefault();
+        e2.stopPropagation();
+        this._toggleEventVisibility(ev.id);
+      }}
+          >
+            <ha-icon .icon=${visibilityIcon}></ha-icon>
+          </button>
+        </div>
+        <div class="ann-body">
+          <div class="ann-header">
+            <span class="ann-msg">
+              ${ev.message}
+              ${ev.dev ? b`<span class="ann-dev-badge">DEV</span>` : ""}
+              ${annText && !showAnn ? b`<button class="ann-expand-chip" title="Show annotation">···</button>` : ""}
+            </span>
+            <span class="ann-time-wrap">
+              <span class="ann-time" title=${fmtDateTime$1(timestamp)}>
+                ${fmtRelativeTime(timestamp)}
+              </span>
+              <button
+                class="ann-history-btn"
+                type="button"
+                title="Open related history"
+                @click=${(e2) => {
+        e2.preventDefault();
+        e2.stopPropagation();
+        this._navigateToEventHistory(ev);
+      }}
+              >
+                <ha-icon icon="mdi:history"></ha-icon>
+              </button>
+            </span>
+          </div>
+          ${annText ? b`<div class="ann-note${showAnn ? "" : " hidden"}">${annText}</div>` : ""}
+        </div>
+      </div>
+    `;
+    }
+    _renderAnnSection() {
+      if (!this._config?.show_records) return "";
+      const cfg = this._config;
+      const sorted = [...this._annEvents].sort(
+        (a2, b2) => new Date(b2.timestamp).getTime() - new Date(a2.timestamp).getTime()
+      );
+      const limited = cfg.records_limit ? sorted.slice(0, cfg.records_limit) : sorted;
+      const total = limited.length;
+      if (!total) {
+        return b`
+        <div class="ann-section">
+          <div class="ann-list">
+            <div class="ann-empty">No records in this time window.</div>
+          </div>
+        </div>
+      `;
+      }
+      const pageSize = cfg.records_page_size;
+      const totalPages = pageSize ? Math.max(1, Math.ceil(total / pageSize)) : 1;
+      const page = Math.min(this._annPage, totalPages - 1);
+      const slice = pageSize ? limited.slice(page * pageSize, (page + 1) * pageSize) : limited;
+      const showPagination = totalPages > 1;
+      return b`
+      <div class="ann-section">
+        <div class="ann-list">
+          ${slice.map((ev) => this._renderAnnItem(ev))}
+        </div>
+        ${showPagination ? b`
+              <dp-pagination
+                .page=${page}
+                .totalPages=${totalPages}
+                .totalItems=${total}
+                label="records"
+                @dp-page-change=${(e2) => {
+        this._annPage = e2.detail.page;
+        this.shadowRoot?.querySelector(".ann-list")?.scrollTo(0, 0);
+      }}
+              ></dp-pagination>
+            ` : ""}
+      </div>
+    `;
+    }
+    render() {
+      const stateObj = this._hass?.states?.[this._config?.entity];
+      const sensorName = this._config?.name || stateObj?.attributes?.friendly_name || this._config?.entity || "—";
+      const sensorValue = stateObj?.state ?? "—";
+      const sensorUnit = stateObj?.attributes?.unit_of_measurement || "";
+      return b`
+      <ha-card>
+        <div class="card-shell">
+          <div class="card-body">
+            <div class="header">
+              <div class="name">${sensorName}</div>
+              <div class="icon">
+                <ha-state-icon
+                  .stateObj=${stateObj}
+                  .hass=${this._hass}
+                ></ha-state-icon>
+              </div>
+            </div>
+            <div class="info">
+              <span class="value">${sensorValue}</span>
+              <span class="measurement">${sensorUnit}</span>
+            </div>
+            <div class="footer">
+              <div class="chart-wrap">
+                <div class="chart-viewport">
+                  ${!this._chartReady ? b`<div class="chart-loading">${this._loadMessage}</div>` : ""}
+                  <canvas
+                    id="chart"
+                    style=${this._chartReady ? "" : "display:none"}
+                  ></canvas>
+                  <div class="icon-overlay"></div>
+                </div>
+                <div class="tooltip" id="tooltip">
+                  <div class="tt-time" id="tt-time"></div>
+                  <div class="tt-value" id="tt-value" style="display:none"></div>
+                  <div style="display:flex;align-items:flex-start;gap:4px">
+                    <span class="tt-dot" id="tt-dot"></span>
+                    <span class="tt-message" id="tt-message"></span>
+                  </div>
+                  <div class="tt-annotation" id="tt-annotation" style="display:none"></div>
+                  <div class="tt-entities" id="tt-entities" style="display:none"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          ${this._renderAnnSection()}
+        </div>
+      </ha-card>
+    `;
+    }
+    updated() {
+      this._applyLayoutSizing();
     }
     static getConfigElement() {
       return document.createElement("hass-datapoints-sensor-card-editor");
@@ -13066,10 +13875,7 @@ ${s.description}`).join("\n\n");
     }
     getGridOptions() {
       const rows = this._config?.show_records ? 3 : 2;
-      return {
-        rows,
-        min_rows: rows
-      };
+      return { rows, min_rows: rows, max_rows: rows };
     }
   }
   class HassRecordsStatisticsCard extends ChartCardBase {
@@ -13156,7 +13962,7 @@ ${s.description}`).join("\n\n");
           maybeDraw();
           finalize();
         });
-        fetchEvents$3(this._hass, start.toISOString(), now.toISOString(), this._statIds).then((events) => {
+        fetchEvents$1(this._hass, start.toISOString(), now.toISOString(), this._statIds).then((events) => {
           partial.events = events || [];
           partial.eventsDone = true;
           maybeDraw();
@@ -13177,8 +13983,8 @@ ${s.description}`).join("\n\n");
       const canvas = this.shadowRoot.getElementById("chart");
       const wrap = this.shadowRoot.querySelector(".chart-wrap");
       if (!canvas || !wrap) return;
-      const { w, h } = setupCanvas$1(canvas, wrap, 220);
-      const renderer = new ChartRenderer$1(canvas, w, h);
+      const { w, h: h2 } = setupCanvas(canvas, wrap, 220);
+      const renderer = new ChartRenderer(canvas, w, h2);
       renderer.labelColor = resolveChartLabelColor(this);
       renderer.clear();
       renderer.drawGrid(t0, t1, [{ key: "placeholder", min: 0, max: 1, side: "left", unit: "", color: null }], void 0, 5, { fixedAxisOverlay: true });
@@ -13195,8 +14001,8 @@ ${s.description}`).join("\n\n");
       this._lastDrawArgs = [statsResult, events, t0, t1, options];
       const canvas = this.shadowRoot.getElementById("chart");
       const wrap = this.shadowRoot.querySelector(".chart-wrap");
-      const { w, h } = setupCanvas$1(canvas, wrap, 220);
-      const renderer = new ChartRenderer$1(canvas, w, h);
+      const { w, h: h2 } = setupCanvas(canvas, wrap, 220);
+      const renderer = new ChartRenderer(canvas, w, h2);
       renderer.labelColor = resolveChartLabelColor(this);
       renderer.clear();
       const series = [];
@@ -13206,19 +14012,19 @@ ${s.description}`).join("\n\n");
         for (const statType of this._config.stat_types) {
           const pts = [];
           for (const entry of entries) {
-            const v = entry[statType];
-            if (v === null || v === void 0) continue;
+            const v2 = entry[statType];
+            if (v2 === null || v2 === void 0) continue;
             const tRaw = entry.start;
-            const t = typeof tRaw === "number" ? tRaw > 1e11 ? tRaw : tRaw * 1e3 : new Date(tRaw).getTime();
-            pts.push([t, v]);
-            allVals.push(v);
+            const t2 = typeof tRaw === "number" ? tRaw > 1e11 ? tRaw : tRaw * 1e3 : new Date(tRaw).getTime();
+            pts.push([t2, v2]);
+            allVals.push(v2);
           }
           if (pts.length) {
             series.push({
               label: `${statId} (${statType})`,
               unit: this._hass?.states?.[statId]?.attributes?.unit_of_measurement || "",
               pts,
-              color: COLORS$2[colorIdx % COLORS$2.length]
+              color: COLORS[colorIdx % COLORS.length]
             });
             colorIdx++;
           }
@@ -13238,16 +14044,16 @@ ${s.description}`).join("\n\n");
       const chartMax = vMax + vPad;
       renderer.drawGrid(t0, t1, chartMin, chartMax, 5, { fixedAxisOverlay: true });
       renderChartAxisOverlays(this, renderer, renderer._activeAxes || []);
-      for (const s of series) {
-        renderer.drawLine(s.pts, s.color, t0, t1, chartMin, chartMax);
+      for (const s2 of series) {
+        renderer.drawLine(s2.pts, s2.color, t0, t1, chartMin, chartMax);
       }
       renderer.drawAnnotations(events, t0, t1);
       const legendEl = this.shadowRoot.getElementById("legend");
       legendEl.innerHTML = series.map(
-        (s) => `
+        (s2) => `
         <div class="legend-item">
-          <div class="legend-line" style="background:${esc$3(s.color)}"></div>
-          ${esc$3(s.label)}
+          <div class="legend-line" style="background:${esc$1(s2.color)}"></div>
+          ${esc$1(s2.label)}
         </div>`
       ).join("") + (events.length ? `<div class="legend-item">
              <svg width="10" height="10" viewBox="-5 -5 10 10" style="flex-shrink:0">
@@ -13270,67 +14076,2851 @@ ${s.description}`).join("\n\n");
       };
     }
   }
-  const {
-    addUnit,
-    COLORS,
-    buildHistoryPagePreferencesPayload,
-    buildHistorySeriesRows,
-    clampNumber,
-    confirmDestructiveAction,
-    contrastColor,
-    DAY_MS,
-    downloadHistorySpreadsheet,
-    ensureHaComponents,
-    endOfUnit,
-    entityName,
-    esc,
-    extractRangeValue,
-    fetchEventBounds,
-    fetchEvents,
-    fetchUserData,
-    formatContextLabel,
-    formatPeriodSelectionLabel,
-    formatRangeDateTime,
-    formatRangeSummary,
-    formatScaleLabel,
-    historySeriesRowHasConfiguredAnalysis,
-    makeDateWindowId,
-    normalizeDateWindows,
-    normalizeEntityIds,
-    normalizeHistoryPagePreferences,
-    normalizeHistorySeriesAnalysis,
-    normalizeHistorySeriesRows,
-    normalizeTargetValue,
-    panelConfigTarget,
-    parseDateValue,
-    parseDateWindowsParam,
-    parseSeriesColorsParam,
-    RANGE_AUTO_ZOOM_DEBOUNCE_MS,
-    RANGE_AUTO_ZOOM_SELECTION_PADDING_RATIO,
-    RANGE_CONTEXT_LABEL_MIN_GAP_PX,
-    RANGE_FUTURE_BUFFER_YEARS,
-    RANGE_HANDLE_EDGE_SCROLL_MAX_STEP_PX,
-    RANGE_HANDLE_EDGE_SCROLL_THRESHOLD_PX,
-    RANGE_LABEL_MIN_GAP_PX,
-    RANGE_SLIDER_MIN_SPAN_MS,
-    RANGE_SLIDER_WINDOW_MS,
-    RANGE_SNAP_OPTIONS,
-    RANGE_ZOOM_CONFIGS,
-    RANGE_ZOOM_OPTIONS,
-    readHistoryPageSessionState,
-    resolveEntityIdsFromTarget,
-    saveUserData,
-    SECOND_MS,
-    serializeDateWindowsParam,
-    snapDateToUnit,
-    startOfUnit,
-    slugifySeriesName,
-    writeHistoryPageSessionState,
-    HOUR_MS,
-    MINUTE_MS,
-    PANEL_HISTORY_PREFERENCES_KEY,
-    WEEK_MS
-  } = shared;
+  const styles$h = i$5`
+  :host {
+    display: block;
+    --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
+    --dp-spacing-sm: var(--spacing, 8px);
+    --dp-spacing-md: calc(var(--spacing, 8px) * 1.5);
+    --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
+    --dp-spacing-xl: calc(var(--spacing, 8px) * 2.5);
+  }
+
+  .history-target-row {
+    display: grid;
+    position: relative;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "handle name actions"
+      ". analysis analysis";
+    gap: var(--dp-spacing-sm);
+    align-items: center;
+    margin: 0;
+    padding: calc(var(--spacing, 8px) * 1.125) calc(var(--spacing, 8px) * 1.25);
+    border-radius: 16px;
+    background: var(--card-background-color, #fff);
+    border: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 88%, transparent);
+    transition: border-color 140ms ease, background-color 140ms ease;
+    padding-bottom: 0;
+    padding-left: 3px;
+  }
+
+  .history-target-row.analysis-open {
+    padding-bottom: calc(var(--spacing, 8px) * 1.125);
+  }
+
+  .history-target-row.is-hidden {
+    opacity: 0.62;
+  }
+
+  .history-target-row:hover {
+    border-color: color-mix(in srgb, var(--primary-color, #03a9f4) 24%, var(--divider-color, rgba(0, 0, 0, 0.12)));
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 2%, var(--card-background-color, #fff));
+  }
+
+  .history-target-row.is-dragging {
+    opacity: 0.35;
+  }
+
+  .history-target-row.is-drag-over-before {
+    box-shadow: inset 0 3px 0 -1px var(--primary-color, #03a9f4);
+  }
+
+  .history-target-row.is-drag-over-after {
+    box-shadow: inset 0 -3px 0 -1px var(--primary-color, #03a9f4);
+  }
+
+  .history-target-drag-handle {
+    grid-area: handle;
+    align-self: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--secondary-text-color);
+    cursor: grab;
+    opacity: 0;
+    transition: opacity 140ms ease, background-color 120ms ease;
+    touch-action: none;
+    margin-right: calc(var(--dp-spacing-xs) * -0.5);
+    margin-left: -8px;
+    position: absolute;
+  }
+
+  .history-target-drag-handle ha-icon {
+    --mdc-icon-size: 16px;
+    display: block;
+    pointer-events: none;
+  }
+
+  .history-target-row:hover .history-target-drag-handle {
+    opacity: 0.45;
+  }
+
+  .history-target-drag-handle:hover,
+  .history-target-drag-handle:focus-visible {
+    opacity: 1;
+    outline: none;
+  }
+
+  .history-target-drag-handle:active {
+    cursor: grabbing;
+  }
+
+  .history-target-name {
+    grid-area: name;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--dp-spacing-sm);
+    align-items: center;
+  }
+
+  .history-target-name-text {
+    min-width: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--primary-text-color);
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .history-target-entity-id {
+    margin-top: 4px;
+    font-size: 0.74rem;
+    font-weight: 400;
+    color: var(--secondary-text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .history-target-color-field {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .history-target-controls {
+    display: contents;
+  }
+
+  .history-target-color-icon {
+    position: absolute;
+    inset: 0;
+    display: inline-grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    color: var(--row-icon-color, var(--text-primary-color, #fff));
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .history-target-color-icon ha-state-icon {
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+  }
+
+  .history-target-color {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-radius: 10px;
+    padding: 0;
+    background: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    opacity: 0;
+    z-index: 2;
+  }
+
+  .history-target-color::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+
+  .history-target-color::-webkit-color-swatch {
+    border: none;
+    border-radius: 10px;
+  }
+
+  .history-target-color::-moz-color-swatch {
+    border: none;
+    border-radius: 10px;
+  }
+
+  .history-target-color-field::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--row-color, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, rgba(0, 0, 0, 0.18) 70%, transparent);
+  }
+
+  .history-target-color:focus-visible + .history-target-color-icon {
+    outline: 2px solid color-mix(in srgb, var(--primary-color, #03a9f4) 55%, transparent);
+    outline-offset: 2px;
+    border-radius: inherit;
+  }
+
+  .history-target-actions {
+    grid-area: actions;
+    justify-self: end;
+    align-self: center;
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--spacing, 8px) * 0.75);
+  }
+
+  .history-target-analysis-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--secondary-text-color);
+    cursor: pointer;
+    transition: background-color 120ms ease, color 120ms ease;
+  }
+
+  .history-target-analysis-toggle ha-icon {
+    --mdc-icon-size: 16px;
+    display: block;
+    transition: transform 120ms ease;
+  }
+
+  .history-target-analysis-toggle.is-open ha-icon {
+    transform: rotate(180deg);
+  }
+
+  .history-target-analysis-toggle:hover,
+  .history-target-analysis-toggle:focus-visible {
+    background: color-mix(in srgb, var(--primary-text-color, #111) 8%, transparent);
+    color: var(--primary-text-color);
+    outline: none;
+  }
+
+  .history-target-visible-toggle {
+    position: relative;
+    display: inline-flex;
+    width: 34px;
+    height: 20px;
+    flex: 0 0 auto;
+    cursor: pointer;
+  }
+
+  .history-target-visible-toggle input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .history-target-visible-toggle-track {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--secondary-text-color, #6b7280) 45%, transparent);
+    transition: background-color 120ms ease;
+  }
+
+  .history-target-visible-toggle-track::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--card-background-color, #fff);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.24);
+    transition: transform 120ms ease;
+  }
+
+  .history-target-visible-toggle input:checked + .history-target-visible-toggle-track {
+    background: var(--primary-color);
+  }
+
+  .history-target-visible-toggle input:checked + .history-target-visible-toggle-track::after {
+    transform: translateX(14px);
+  }
+
+  .history-target-visible-toggle input:focus-visible + .history-target-visible-toggle-track {
+    outline: 2px solid color-mix(in srgb, var(--primary-color) 55%, transparent);
+    outline-offset: 2px;
+  }
+
+  .history-target-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    line-height: 16px;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--primary-text-color, #111) 7%, transparent);
+    color: var(--secondary-text-color);
+    cursor: pointer;
+    flex: 0 0 auto;
+  }
+
+  .history-target-remove ha-icon {
+    --mdc-icon-size: 12px;
+    display: block;
+  }
+
+  .history-target-remove:hover,
+  .history-target-remove:focus-visible {
+    background: color-mix(in srgb, var(--error-color, #db4437) 14%, transparent);
+    color: var(--error-color, #db4437);
+    outline: none;
+  }
+
+  /* ── Analysis panel ─────────────────────────────────────── */
+
+  .history-target-analysis {
+    grid-area: analysis;
+    display: grid;
+    gap: var(--dp-spacing-sm);
+    padding-top: calc(var(--spacing, 8px) * 0.25);
+    border-top: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 78%, transparent);
+  }
+
+  .history-target-analysis-grid {
+    display: grid;
+    gap: var(--dp-spacing-sm);
+    padding-top: var(--dp-spacing-sm);
+  }
+
+  .history-target-analysis-option {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--spacing, 8px) * 0.75);
+    color: var(--primary-text-color);
+    font-size: 0.84rem;
+    cursor: pointer;
+  }
+
+  .history-target-analysis-option.is-disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .history-target-analysis-option input[type="checkbox"] {
+    margin: 0;
+    accent-color: var(--primary-color, #03a9f4);
+    cursor: pointer;
+  }
+
+  .analysis-computing-spinner {
+    display: none;
+    width: 10px;
+    height: 10px;
+    border: 2px solid var(--divider-color, #ccc);
+    border-top-color: var(--primary-color, #03a9f4);
+    border-radius: 50%;
+    animation: analysis-spin 0.7s linear infinite;
+    flex-shrink: 0;
+    margin-left: 2px;
+  }
+
+  .analysis-computing-spinner.active {
+    display: inline-block;
+  }
+
+  @keyframes analysis-spin {
+    to { transform: rotate(360deg); }
+  }
+`;
+  const sharedStyles = i$5`
+  :host {
+    display: block;
+    --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
+    --dp-spacing-sm: var(--spacing, 8px);
+    --dp-spacing-md: calc(var(--spacing, 8px) * 1.5);
+    --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
+  }
+
+  .field {
+    display: grid;
+    gap: 4px;
+    justify-items: start;
+  }
+
+  .field-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--secondary-text-color);
+  }
+
+  .select,
+  .input {
+    width: auto;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: calc(var(--spacing, 8px) * 0.75) calc(var(--spacing, 8px) * 0.875);
+    border-radius: 10px;
+    border: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 88%, transparent);
+    background: var(--card-background-color, #fff);
+    color: var(--primary-text-color);
+    font: inherit;
+    font-size: 0.84rem;
+  }
+
+  .toggle-group {
+    display: flex;
+    gap: calc(var(--spacing, 8px) * 0.625);
+    align-items: center;
+  }
+
+  .option {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--spacing, 8px) * 0.75);
+    color: var(--primary-text-color);
+    font-size: 0.84rem;
+    cursor: pointer;
+  }
+
+  .option input[type="checkbox"] {
+    margin: 0;
+    accent-color: var(--primary-color, #03a9f4);
+    cursor: pointer;
+  }
+`;
+  const styles$g = i$5``;
+  const styles$f = i$5`
+  :host {
+    display: block;
+    --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
+    --dp-spacing-sm: var(--spacing, 8px);
+    --dp-spacing-md: calc(var(--spacing, 8px) * 1.5);
+    --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
+  }
+
+  .group {
+    display: grid;
+    gap: var(--dp-spacing-sm);
+    border-radius: 6px;
+  }
+
+  .group-body {
+    display: grid;
+    gap: var(--dp-spacing-sm);
+    padding: var(--dp-spacing-sm);
+    border-left: 3px solid var(--primary-color);
+    margin-left: 5px;
+    padding-left: var(--dp-spacing-md);
+  }
+
+  .option {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--spacing, 8px) * 0.75);
+    color: var(--primary-text-color);
+    font-size: 0.84rem;
+    cursor: pointer;
+  }
+
+  .option.top {
+    align-items: flex-start;
+  }
+
+  .option.is-disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .option input[type="checkbox"] {
+    margin: 0;
+    accent-color: var(--primary-color, #03a9f4);
+    cursor: pointer;
+  }
+
+  .help-text {
+    display: inline-block;
+    color: var(--secondary-text-color);
+    opacity: 0.8;
+    padding-top: 2px;
+  }
+`;
+  class DpAnalysisGroup extends i$2 {
+    static properties = {
+      label: { type: String },
+      checked: { type: Boolean },
+      disabled: { type: Boolean },
+      alignTop: { type: Boolean, attribute: "align-top" }
+    };
+    static styles = styles$f;
+    constructor() {
+      super();
+      this.label = "";
+      this.checked = false;
+      this.disabled = false;
+      this.alignTop = false;
+    }
+    _onChange(e2) {
+      const checked = e2.target.checked;
+      this.dispatchEvent(
+        new CustomEvent("dp-group-change", {
+          detail: { checked },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    render() {
+      const groupClass = ["group", this.checked ? "is-open" : ""].filter(Boolean).join(" ");
+      const optionClass = [
+        "option",
+        this.alignTop ? "top" : "",
+        this.disabled ? "is-disabled" : ""
+      ].filter(Boolean).join(" ");
+      return b`
+      <div class=${groupClass}>
+        <label class=${optionClass}>
+          <input
+            type="checkbox"
+            .checked=${this.checked}
+            ?disabled=${this.disabled}
+            @change=${this._onChange}
+          >
+          <span><slot name="label">${this.label}</slot><slot name="hint"></slot></span>
+        </label>
+        ${this.checked ? b`
+          <div class="group-body">
+            <slot></slot>
+          </div>
+        ` : A}
+      </div>
+    `;
+    }
+  }
+  customElements.define("dp-analysis-group", DpAnalysisGroup);
+  const ANALYSIS_TREND_METHOD_OPTIONS$1 = [
+    { value: "rolling_average", label: "Rolling average" },
+    { value: "linear_trend", label: "Linear trend" }
+  ];
+  const ANALYSIS_TREND_WINDOW_OPTIONS$1 = [
+    { value: "1h", label: "1 hour" },
+    { value: "6h", label: "6 hours" },
+    { value: "24h", label: "24 hours" },
+    { value: "7d", label: "7 days" },
+    { value: "14d", label: "14 days" },
+    { value: "21d", label: "21 days" },
+    { value: "28d", label: "28 days" }
+  ];
+  class DpAnalysisTrendGroup extends i$2 {
+    static properties = {
+      analysis: { type: Object },
+      entityId: { type: String, attribute: "entity-id" }
+    };
+    static styles = [sharedStyles, styles$g];
+    constructor() {
+      super();
+      this.analysis = {};
+      this.entityId = "";
+    }
+    _emit(key, value) {
+      this.dispatchEvent(
+        new CustomEvent("dp-group-analysis-change", {
+          detail: { entityId: this.entityId, key, value },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    _renderSelect(key, options, value) {
+      return b`
+      <select class="select" @change=${(e2) => this._emit(key, e2.target.value)}>
+        ${options.map((opt) => b`<option value=${opt.value} ?selected=${opt.value === value}>${opt.label}</option>`)}
+      </select>
+    `;
+    }
+    _onGroupChange(e2) {
+      this._emit("show_trend_lines", e2.detail.checked);
+    }
+    _onCheckbox(key, e2) {
+      this._emit(key, e2.target.checked);
+    }
+    render() {
+      const a2 = this.analysis;
+      return b`
+      <dp-analysis-group
+        .label=${"Show trend lines"}
+        .checked=${a2.show_trend_lines}
+        @dp-group-change=${this._onGroupChange}
+      >
+        <label class="option">
+          <input type="checkbox" .checked=${a2.show_trend_crosshairs} @change=${(e2) => this._onCheckbox("show_trend_crosshairs", e2)}>
+          <span>Show trend crosshairs</span>
+        </label>
+        <label class="field">
+          <span class="field-label">Trend method</span>
+          ${this._renderSelect("trend_method", ANALYSIS_TREND_METHOD_OPTIONS$1, a2.trend_method)}
+        </label>
+        ${a2.trend_method === "rolling_average" ? b`
+          <label class="field">
+            <span class="field-label">Trend window</span>
+            ${this._renderSelect("trend_window", ANALYSIS_TREND_WINDOW_OPTIONS$1, a2.trend_window)}
+          </label>
+        ` : A}
+      </dp-analysis-group>
+    `;
+    }
+  }
+  customElements.define("dp-analysis-trend-group", DpAnalysisTrendGroup);
+  const styles$e = i$5``;
+  const ANALYSIS_RATE_WINDOW_OPTIONS$1 = [
+    { value: "point_to_point", label: "Point to point" },
+    { value: "1h", label: "1 hour" },
+    { value: "6h", label: "6 hours" },
+    { value: "24h", label: "24 hours" }
+  ];
+  class DpAnalysisRateGroup extends i$2 {
+    static properties = {
+      analysis: { type: Object },
+      entityId: { type: String, attribute: "entity-id" }
+    };
+    static styles = [sharedStyles, styles$e];
+    constructor() {
+      super();
+      this.analysis = {};
+      this.entityId = "";
+    }
+    _emit(key, value) {
+      this.dispatchEvent(
+        new CustomEvent("dp-group-analysis-change", {
+          detail: { entityId: this.entityId, key, value },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    _renderSelect(key, options, value) {
+      return b`
+      <select class="select" @change=${(e2) => this._emit(key, e2.target.value)}>
+        ${options.map((opt) => b`<option value=${opt.value} ?selected=${opt.value === value}>${opt.label}</option>`)}
+      </select>
+    `;
+    }
+    _onGroupChange(e2) {
+      this._emit("show_rate_of_change", e2.detail.checked);
+    }
+    render() {
+      const a2 = this.analysis;
+      return b`
+      <dp-analysis-group
+        .label=${"Show rate of change"}
+        .checked=${a2.show_rate_of_change}
+        @dp-group-change=${this._onGroupChange}
+      >
+        <label class="field">
+          <span class="field-label">Rate window</span>
+          ${this._renderSelect("rate_window", ANALYSIS_RATE_WINDOW_OPTIONS$1, a2.rate_window)}
+        </label>
+      </dp-analysis-group>
+    `;
+    }
+  }
+  customElements.define("dp-analysis-rate-group", DpAnalysisRateGroup);
+  const styles$d = i$5``;
+  class DpAnalysisThresholdGroup extends i$2 {
+    static properties = {
+      analysis: { type: Object },
+      entityId: { type: String, attribute: "entity-id" },
+      unit: { type: String }
+    };
+    static styles = [sharedStyles, styles$d];
+    constructor() {
+      super();
+      this.analysis = {};
+      this.entityId = "";
+      this.unit = "";
+    }
+    _emit(key, value) {
+      this.dispatchEvent(
+        new CustomEvent("dp-group-analysis-change", {
+          detail: { entityId: this.entityId, key, value },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    _renderSelect(key, options, value) {
+      return b`
+      <select class="select" @change=${(e2) => this._emit(key, e2.target.value)}>
+        ${options.map((opt) => b`<option value=${opt.value} ?selected=${opt.value === value}>${opt.label}</option>`)}
+      </select>
+    `;
+    }
+    _onGroupChange(e2) {
+      this._emit("show_threshold_analysis", e2.detail.checked);
+    }
+    _onCheckbox(key, e2) {
+      this._emit(key, e2.target.checked);
+    }
+    _onInput(key, e2) {
+      this._emit(key, e2.target.value);
+    }
+    render() {
+      const a2 = this.analysis;
+      return b`
+      <dp-analysis-group
+        .label=${"Show threshold analysis"}
+        .checked=${a2.show_threshold_analysis}
+        @dp-group-change=${this._onGroupChange}
+      >
+        <label class="option">
+          <input type="checkbox" .checked=${a2.show_threshold_shading} @change=${(e2) => this._onCheckbox("show_threshold_shading", e2)}>
+          <span>Shade threshold area</span>
+        </label>
+        <label class="field">
+          <span class="field-label">Threshold</span>
+          <div class="toggle-group">
+            <input class="input" type="number" step="any" inputmode="decimal"
+              .value=${a2.threshold_value} placeholder="Threshold"
+              @change=${(e2) => this._onInput("threshold_value", e2)}>
+            ${this.unit ? b`<span>${this.unit}</span>` : A}
+          </div>
+        </label>
+        ${a2.show_threshold_shading ? b`
+          <label class="field">
+            <span class="field-label">Shade area</span>
+            ${this._renderSelect("threshold_direction", [
+        { value: "above", label: "Shade above" },
+        { value: "below", label: "Shade below" }
+      ], a2.threshold_direction)}
+          </label>
+        ` : A}
+      </dp-analysis-group>
+    `;
+    }
+  }
+  customElements.define("dp-analysis-threshold-group", DpAnalysisThresholdGroup);
+  const styles$c = i$5`
+  .method-list {
+    display: grid;
+    gap: var(--dp-spacing-sm, 8px);
+  }
+
+  .method-item {
+    display: grid;
+    gap: var(--dp-spacing-sm, 8px);
+  }
+
+  .method-help {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 10px;
+    height: 10px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    border: 1px solid var(--secondary-text-color, #888);
+    background: transparent;
+    color: var(--secondary-text-color, #888);
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: default;
+    padding: 0;
+    vertical-align: middle;
+  }
+`;
+  const styles$b = i$5`
+  :host {
+    display: block;
+    --dp-spacing-sm: var(--spacing, 8px);
+  }
+
+  .subopts {
+    padding-left: calc(var(--spacing, 8px) * 1.5);
+    display: grid;
+    gap: var(--dp-spacing-sm);
+    justify-items: start;
+    border-left: 3px solid var(--primary-color);
+    margin-left: 5px;
+  }
+`;
+  class DpAnalysisMethodSubopts extends i$2 {
+    static styles = styles$b;
+    render() {
+      return b`<div class="subopts"><slot></slot></div>`;
+    }
+  }
+  customElements.define("dp-analysis-method-subopts", DpAnalysisMethodSubopts);
+  const ANALYSIS_ANOMALY_SENSITIVITY_OPTIONS$1 = [
+    { value: "low", label: "Low" },
+    { value: "medium", label: "Medium" },
+    { value: "high", label: "High" }
+  ];
+  const ANALYSIS_ANOMALY_METHOD_OPTIONS$1 = [
+    { value: "trend_residual", label: "Trend deviation", help: "Flags points that deviate significantly from a fitted trend line. Good for catching gradual drift or sudden jumps away from a steady baseline." },
+    { value: "rate_of_change", label: "Sudden change", help: "Flags unusually fast rises or drops compared to the typical rate of change. Best for detecting spikes, crashes, or rapid transitions." },
+    { value: "iqr", label: "Statistical outlier (IQR)", help: "Uses the interquartile range to flag values far outside the normal spread of data. Robust against outliers that skew averages." },
+    { value: "rolling_zscore", label: "Rolling Z-score", help: "Compares each value to a rolling mean and standard deviation. Catches unusual readings relative to recent context rather than the whole series." },
+    { value: "persistence", label: "Flat-line / stuck value", help: "Flags when a sensor reports nearly the same value for an unusually long time. Useful for detecting stuck sensors or frozen readings." },
+    { value: "comparison_window", label: "Comparison window deviation", help: "Compares the current period to a reference date window. Highlights differences from an expected historical pattern, such as last week or the same day last year." }
+  ];
+  const ANALYSIS_ANOMALY_RATE_WINDOW_OPTIONS$1 = [
+    { value: "1h", label: "1 hour" },
+    { value: "6h", label: "6 hours" },
+    { value: "24h", label: "24 hours" }
+  ];
+  const ANALYSIS_ANOMALY_ZSCORE_WINDOW_OPTIONS$1 = [
+    { value: "1h", label: "1 hour" },
+    { value: "6h", label: "6 hours" },
+    { value: "24h", label: "24 hours" },
+    { value: "7d", label: "7 days" }
+  ];
+  const ANALYSIS_ANOMALY_PERSISTENCE_WINDOW_OPTIONS$1 = [
+    { value: "30m", label: "30 minutes" },
+    { value: "1h", label: "1 hour" },
+    { value: "3h", label: "3 hours" },
+    { value: "6h", label: "6 hours" },
+    { value: "12h", label: "12 hours" },
+    { value: "24h", label: "24 hours" }
+  ];
+  const ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS = [
+    { value: "all", label: "Show all anomalies" },
+    { value: "highlight", label: "Highlight overlaps" },
+    { value: "only", label: "Overlaps only" }
+  ];
+  class DpAnalysisAnomalyGroup extends i$2 {
+    static properties = {
+      analysis: { type: Object },
+      entityId: { type: String, attribute: "entity-id" },
+      comparisonWindows: { type: Array, attribute: "comparison-windows" }
+    };
+    static styles = [sharedStyles, styles$c];
+    constructor() {
+      super();
+      this.analysis = {};
+      this.entityId = "";
+      this.comparisonWindows = [];
+    }
+    _emit(key, value) {
+      this.dispatchEvent(
+        new CustomEvent("dp-group-analysis-change", {
+          detail: { entityId: this.entityId, key, value },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    _renderSelect(key, options, value) {
+      return b`
+      <select class="select" @change=${(e2) => this._emit(key, e2.target.value)}>
+        ${options.map((opt) => b`<option value=${opt.value} ?selected=${opt.value === value}>${opt.label}</option>`)}
+      </select>
+    `;
+    }
+    _onGroupChange(e2) {
+      this._emit("show_anomalies", e2.detail.checked);
+    }
+    _renderMethodSubopts(opt, a2) {
+      if (opt.value === "rate_of_change") {
+        return b`
+        <dp-analysis-method-subopts>
+          <label class="field">
+            <span class="field-label">Rate window</span>
+            ${this._renderSelect("anomaly_rate_window", ANALYSIS_ANOMALY_RATE_WINDOW_OPTIONS$1, a2.anomaly_rate_window)}
+          </label>
+        </dp-analysis-method-subopts>
+      `;
+      }
+      if (opt.value === "rolling_zscore") {
+        return b`
+        <dp-analysis-method-subopts>
+          <label class="field">
+            <span class="field-label">Rolling window</span>
+            ${this._renderSelect("anomaly_zscore_window", ANALYSIS_ANOMALY_ZSCORE_WINDOW_OPTIONS$1, a2.anomaly_zscore_window)}
+          </label>
+        </dp-analysis-method-subopts>
+      `;
+      }
+      if (opt.value === "persistence") {
+        return b`
+        <dp-analysis-method-subopts>
+          <label class="field">
+            <span class="field-label">Min flat duration</span>
+            ${this._renderSelect("anomaly_persistence_window", ANALYSIS_ANOMALY_PERSISTENCE_WINDOW_OPTIONS$1, a2.anomaly_persistence_window)}
+          </label>
+        </dp-analysis-method-subopts>
+      `;
+      }
+      if (opt.value === "comparison_window") {
+        return b`
+        <dp-analysis-method-subopts>
+          <label class="field">
+            <span class="field-label">Compare to window</span>
+            <select class="select" @change=${(e2) => this._emit("anomaly_comparison_window_id", e2.target.value)}>
+              <option value="" ?selected=${!a2.anomaly_comparison_window_id}>— select window —</option>
+              ${this.comparisonWindows.map((win) => b`
+                <option value=${win.id} ?selected=${a2.anomaly_comparison_window_id === win.id}>${win.label || win.id}</option>
+              `)}
+            </select>
+          </label>
+        </dp-analysis-method-subopts>
+      `;
+      }
+      return A;
+    }
+    render() {
+      const a2 = this.analysis;
+      return b`
+      <dp-analysis-group
+        .label=${"Show anomalies"}
+        .checked=${a2.show_anomalies}
+        @dp-group-change=${this._onGroupChange}
+      >
+        <label class="field">
+          <span class="field-label">Sensitivity</span>
+          ${this._renderSelect("anomaly_sensitivity", ANALYSIS_ANOMALY_SENSITIVITY_OPTIONS$1, a2.anomaly_sensitivity)}
+        </label>
+        <div class="method-list">
+          ${ANALYSIS_ANOMALY_METHOD_OPTIONS$1.map((opt) => {
+        const isChecked = Array.isArray(a2.anomaly_methods) && a2.anomaly_methods.includes(opt.value);
+        return b`
+              <div class="method-item">
+                <label class="option">
+                  <input type="checkbox" .checked=${isChecked}
+                    @change=${(e2) => this._emit(`anomaly_method_toggle_${opt.value}`, e2.target.checked)}>
+                  <span>${opt.label}</span>
+                  ${opt.help ? b`<span class="method-help" tabindex="0">?</span>` : A}
+                </label>
+                ${isChecked ? this._renderMethodSubopts(opt, a2) : A}
+              </div>
+            `;
+      })}
+        </div>
+        ${Array.isArray(a2.anomaly_methods) && a2.anomaly_methods.length >= 2 ? b`
+          <label class="field">
+            <span class="field-label">When methods overlap</span>
+            ${this._renderSelect("anomaly_overlap_mode", ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS, a2.anomaly_overlap_mode)}
+          </label>
+        ` : A}
+      </dp-analysis-group>
+    `;
+    }
+  }
+  customElements.define("dp-analysis-anomaly-group", DpAnalysisAnomalyGroup);
+  const styles$a = i$5`
+  .help-text {
+    display: inline-block;
+    color: var(--secondary-text-color);
+    opacity: 0.8;
+    padding-top: 2px;
+  }
+`;
+  class DpAnalysisDeltaGroup extends i$2 {
+    static properties = {
+      analysis: { type: Object },
+      entityId: { type: String, attribute: "entity-id" },
+      canShowDeltaAnalysis: { type: Boolean, attribute: "can-show-delta-analysis" }
+    };
+    static styles = [sharedStyles, styles$a];
+    constructor() {
+      super();
+      this.analysis = {};
+      this.entityId = "";
+      this.canShowDeltaAnalysis = false;
+    }
+    _emit(key, value) {
+      this.dispatchEvent(
+        new CustomEvent("dp-group-analysis-change", {
+          detail: { entityId: this.entityId, key, value },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    _onGroupChange(e2) {
+      this._emit("show_delta_analysis", e2.detail.checked);
+    }
+    _onCheckbox(key, e2) {
+      this._emit(key, e2.target.checked);
+    }
+    render() {
+      const a2 = this.analysis;
+      const isOpen = a2.show_delta_analysis && this.canShowDeltaAnalysis;
+      return b`
+      <dp-analysis-group
+        .label=${"Show delta vs selected date window"}
+        .checked=${isOpen}
+        .disabled=${!this.canShowDeltaAnalysis}
+        .alignTop=${true}
+        @dp-group-change=${this._onGroupChange}
+      >
+        ${!this.canShowDeltaAnalysis ? b`
+          <span slot="hint"><br /><span class="help-text">Select a date window tab to enable delta analysis.</span></span>
+        ` : A}
+        <label class="option">
+          <input type="checkbox" .checked=${a2.show_delta_tooltip} @change=${(e2) => this._onCheckbox("show_delta_tooltip", e2)}>
+          <span>Show delta in tooltip</span>
+        </label>
+        <label class="option">
+          <input type="checkbox" .checked=${a2.show_delta_lines} @change=${(e2) => this._onCheckbox("show_delta_lines", e2)}>
+          <span>Show delta lines</span>
+        </label>
+      </dp-analysis-group>
+    `;
+    }
+  }
+  customElements.define("dp-analysis-delta-group", DpAnalysisDeltaGroup);
+  function deriveSwatchIconColor(color) {
+    const hex = String(color || "").trim();
+    const normalizedHex = /^#([0-9a-f]{6})$/i.test(hex) ? hex : null;
+    if (!normalizedHex) {
+      return "#ffffff";
+    }
+    const channels = normalizedHex.slice(1).match(/.{2}/g)?.map((p2) => parseInt(p2, 16));
+    if (!channels || channels.length !== 3) {
+      return "#ffffff";
+    }
+    const [r2, g2, b2] = channels;
+    const luminance = (0.299 * r2 + 0.587 * g2 + 0.114 * b2) / 255;
+    const mixTarget = luminance > 0.62 ? 0 : 255;
+    const mixStrength = luminance > 0.62 ? Math.min(0.82, 0.35 + (luminance - 0.62) * 1.6) : Math.min(0.78, 0.4 + (0.62 - luminance) * 0.9);
+    const mixed = [r2, g2, b2].map(
+      (c2) => Math.max(0, Math.min(255, Math.round(c2 * (1 - mixStrength) + mixTarget * mixStrength)))
+    );
+    return `rgb(${mixed[0]}, ${mixed[1]}, ${mixed[2]})`;
+  }
+  function _hasConfiguredAnalysis(a2) {
+    return a2.show_trend_lines || a2.show_summary_stats || a2.show_rate_of_change || a2.show_threshold_analysis || a2.show_anomalies || a2.show_delta_analysis || a2.hide_source_series;
+  }
+  function _hasActiveAnalysis(a2, hasComparisonWindow) {
+    return a2.show_trend_lines || a2.show_summary_stats || a2.show_rate_of_change || a2.show_threshold_analysis || a2.show_anomalies || a2.show_delta_analysis && hasComparisonWindow;
+  }
+  class DpTargetRow extends i$2 {
+    static properties = {
+      color: { type: String },
+      visible: { type: Boolean },
+      analysis: { type: Object },
+      index: { type: Number },
+      canShowDeltaAnalysis: { type: Boolean, attribute: "can-show-delta-analysis" },
+      stateObj: { type: Object, attribute: false },
+      hass: { type: Object, attribute: false },
+      comparisonWindows: { type: Array, attribute: "comparison-windows" }
+    };
+    static styles = styles$h;
+    constructor() {
+      super();
+      this.color = "#03a9f4";
+      this.visible = true;
+      this.analysis = {};
+      this.index = 0;
+      this.canShowDeltaAnalysis = false;
+      this.stateObj = null;
+      this.hass = null;
+      this.comparisonWindows = [];
+    }
+    /** Entity ID derived from the HA state object. */
+    get _entityId() {
+      return this.stateObj?.entity_id ?? "";
+    }
+    /** Display name derived from the HA state object, falling back to the entity ID. */
+    get _entityName() {
+      return this.stateObj?.attributes?.friendly_name ?? this._entityId;
+    }
+    /** Unit of measurement derived from the HA state object. */
+    get _unit() {
+      return this.stateObj?.attributes?.unit_of_measurement ?? "";
+    }
+    get _supportsAnalysis() {
+      return typeof this._entityId === "string" && !this._entityId.startsWith("binary_sensor.");
+    }
+    _emit(name, detail) {
+      this.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true }));
+    }
+    _onColorChange(e2) {
+      this._emit("dp-row-color-change", { index: this.index, color: e2.target.value });
+    }
+    _onVisibilityChange(e2) {
+      this._emit("dp-row-visibility-change", { entityId: this._entityId, visible: e2.target.checked });
+    }
+    _onAnalysisToggle() {
+      this._emit("dp-row-toggle-analysis", { entityId: this._entityId });
+    }
+    _onRemove() {
+      this._emit("dp-row-remove", { index: this.index });
+    }
+    _onCheckbox(key, e2) {
+      this._emit("dp-row-analysis-change", { entityId: this._entityId, key, value: e2.target.checked });
+    }
+    _onGroupAnalysisChange(e2) {
+      this._emit("dp-row-analysis-change", e2.detail);
+    }
+    render() {
+      const a2 = this.analysis || {};
+      const hasConfigured = _hasConfiguredAnalysis(a2);
+      const hasActive = _hasActiveAnalysis(a2, this.canShowDeltaAnalysis);
+      const rowClass = [
+        "history-target-row",
+        this.visible === false ? "is-hidden" : "",
+        this.analysis?.expanded ? "analysis-open" : ""
+      ].filter(Boolean).join(" ");
+      return b`
+      <div class=${rowClass} role="row">
+        <button
+          type="button"
+          class="history-target-drag-handle"
+          draggable="true"
+          aria-label="Drag to reorder ${this._entityName}"
+          title="Drag to reorder"
+        >
+          <ha-icon icon="mdi:drag-vertical"></ha-icon>
+        </button>
+
+        <div class="history-target-name" role="cell" title=${this._entityName}>
+          <div class="history-target-controls">
+            <label
+              class="history-target-color-field"
+              style="--row-color:${this.color};--row-icon-color:${deriveSwatchIconColor(this.color)}"
+            >
+              <input
+                type="color"
+                class="history-target-color"
+                .value=${this.color}
+                aria-label="Line color for ${this._entityId}"
+                @change=${this._onColorChange}
+              >
+              <span class="history-target-color-icon" aria-hidden="true">
+                <ha-state-icon .stateObj=${this.stateObj ?? null} .hass=${this.hass ?? null}></ha-state-icon>
+              </span>
+            </label>
+          </div>
+          <div class="history-target-name-text">
+            ${this._entityName}
+            <div class="history-target-entity-id">${this._entityId}</div>
+          </div>
+        </div>
+
+        <div class="history-target-actions" role="cell">
+          ${this._supportsAnalysis ? b`
+            <button
+              type="button"
+              class="history-target-analysis-toggle ${this.analysis?.expanded ? "is-open" : ""} ${hasConfigured ? "configured" : ""}"
+              aria-label="${this.analysis?.expanded ? "Collapse" : "Expand"} analysis options for ${this._entityName}"
+              aria-expanded=${this.analysis?.expanded}
+              title=${hasConfigured ? "Analysis configured" : "Configure analysis"}
+              @click=${this._onAnalysisToggle}
+            >
+              <ha-icon icon="mdi:chevron-down"></ha-icon>
+            </button>
+          ` : A}
+
+          <label
+            class="history-target-visible-toggle"
+            title="${this.visible === false ? "Show" : "Hide"} ${this._entityName}"
+          >
+            <input
+              type="checkbox"
+              aria-label="Show ${this._entityName} on chart"
+              .checked=${this.visible !== false}
+              @change=${this._onVisibilityChange}
+            >
+            <span class="history-target-visible-toggle-track"></span>
+          </label>
+
+          <button
+            type="button"
+            class="history-target-remove"
+            aria-label="Remove ${this._entityId}"
+            @click=${this._onRemove}
+          >
+            <ha-icon icon="mdi:close"></ha-icon>
+          </button>
+        </div>
+
+        ${this._supportsAnalysis && this.analysis?.expanded ? b`
+          <div class="history-target-analysis" role="cell">
+            <div class="history-target-analysis-grid">
+              <label class="history-target-analysis-option ${!hasActive ? "is-disabled" : ""}">
+                <input type="checkbox" .checked=${a2.hide_source_series && hasActive}
+                  ?disabled=${!hasActive}
+                  @change=${(e2) => this._onCheckbox("hide_source_series", e2)}>
+                <span>Hide source series</span>
+              </label>
+              <dp-analysis-trend-group
+                .analysis=${a2}
+                .entityId=${this._entityId}
+                @dp-group-analysis-change=${this._onGroupAnalysisChange}
+              ></dp-analysis-trend-group>
+              <label class="history-target-analysis-option">
+                <input type="checkbox" .checked=${a2.show_summary_stats} @change=${(e2) => this._onCheckbox("show_summary_stats", e2)}>
+                <span>Show min / max / mean</span>
+              </label>
+              <dp-analysis-rate-group
+                .analysis=${a2}
+                .entityId=${this._entityId}
+                @dp-group-analysis-change=${this._onGroupAnalysisChange}
+              ></dp-analysis-rate-group>
+              <dp-analysis-threshold-group
+                .analysis=${a2}
+                .entityId=${this._entityId}
+                .unit=${this._unit}
+                @dp-group-analysis-change=${this._onGroupAnalysisChange}
+              ></dp-analysis-threshold-group>
+              <dp-analysis-anomaly-group
+                .analysis=${a2}
+                .entityId=${this._entityId}
+                .comparisonWindows=${this.comparisonWindows}
+                @dp-group-analysis-change=${this._onGroupAnalysisChange}
+              ></dp-analysis-anomaly-group>
+              <dp-analysis-delta-group
+                .analysis=${a2}
+                .entityId=${this._entityId}
+                .canShowDeltaAnalysis=${this.canShowDeltaAnalysis}
+                @dp-group-analysis-change=${this._onGroupAnalysisChange}
+              ></dp-analysis-delta-group>
+            </div>
+          </div>
+        ` : A}
+      </div>
+    `;
+    }
+  }
+  customElements.define("dp-target-row", DpTargetRow);
+  const styles$9 = i$5`
+  :host {
+    display: block;
+    --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
+    --dp-spacing-sm: var(--spacing, 8px);
+    --dp-spacing-md: calc(var(--spacing, 8px) * 1.5);
+    --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
+    --dp-spacing-xl: calc(var(--spacing, 8px) * 2.5);
+  }
+
+  .history-target-table {
+    display: grid;
+  }
+
+  .history-target-table-body {
+    display: grid;
+    gap: calc(var(--spacing, 8px) * 1.25);
+  }
+
+  .history-target-empty {
+    padding: var(--dp-spacing-md) var(--dp-spacing-sm);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--primary-text-color, #111) 4%, transparent);
+    color: var(--secondary-text-color, #9e9e9e);
+    font-size: 0.84rem;
+  }
+
+  /* Drag states applied to the dp-target-row host element */
+  dp-target-row.is-dragging {
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  dp-target-row.is-drag-over-before {
+    box-shadow: inset 0 3px 0 -1px var(--primary-color, #03a9f4);
+  }
+
+  dp-target-row.is-drag-over-after {
+    box-shadow: inset 0 -3px 0 -1px var(--primary-color, #03a9f4);
+  }
+`;
+  class DpTargetRowList extends i$2 {
+    static properties = {
+      rows: { type: Array },
+      states: { type: Object, attribute: false },
+      hass: { type: Object, attribute: false },
+      canShowDeltaAnalysis: { type: Boolean, attribute: "can-show-delta-analysis" },
+      comparisonWindows: { type: Array, attribute: false }
+    };
+    /** Index of the row currently being dragged, or null when not dragging. */
+    _dragSourceIndex = null;
+    static styles = styles$9;
+    render() {
+      if (!this.rows.length) {
+        return b`
+        <div class="history-target-table">
+          <div class="history-target-empty">No data points added yet.</div>
+        </div>
+      `;
+      }
+      return b`
+      <div class="history-target-table">
+        <div
+          class="history-target-table-body"
+          @dragover=${this._onDragOver}
+          @dragleave=${this._onDragLeave}
+          @drop=${this._onDrop}
+        >
+          ${this.rows.map(
+        (row, index) => b`
+              <dp-target-row
+                draggable="true"
+                .color=${row.color}
+                .visible=${row.visible}
+                .analysis=${row.analysis}
+                .index=${index}
+                .canShowDeltaAnalysis=${this.canShowDeltaAnalysis}
+                .stateObj=${this.states?.[row.entity_id] ?? null}
+                .hass=${this.hass ?? null}
+                .comparisonWindows=${this.comparisonWindows}
+                data-row-index=${index}
+                @dragstart=${(e2) => this._onDragStart(e2, index)}
+                @dragend=${this._onDragEnd}
+              ></dp-target-row>
+            `
+      )}
+        </div>
+      </div>
+    `;
+    }
+    // ---------------------------------------------------------------------------
+    // Drag-to-reorder handlers
+    // ---------------------------------------------------------------------------
+    _onDragStart(e2, index) {
+      this._dragSourceIndex = index;
+      if (e2.dataTransfer) {
+        e2.dataTransfer.effectAllowed = "move";
+        e2.dataTransfer.setData("text/plain", String(index));
+      }
+      const target = e2.currentTarget;
+      setTimeout(() => target.classList.add("is-dragging"), 0);
+    }
+    _onDragEnd = (e2) => {
+      this._dragSourceIndex = null;
+      const target = e2.currentTarget;
+      target.classList.remove("is-dragging");
+      this._clearDropIndicators();
+    };
+    _onDragOver(e2) {
+      if (this._dragSourceIndex === null) return;
+      e2.preventDefault();
+      if (e2.dataTransfer) e2.dataTransfer.dropEffect = "move";
+      const rowEl = this._rowFromEvent(e2);
+      if (!rowEl) return;
+      const rect = rowEl.getBoundingClientRect();
+      const isAbove = e2.clientY < rect.top + rect.height / 2;
+      this._clearDropIndicators();
+      rowEl.classList.add(isAbove ? "is-drag-over-before" : "is-drag-over-after");
+    }
+    _onDragLeave(e2) {
+      const rowEl = this._rowFromEvent(e2);
+      if (rowEl && !rowEl.contains(e2.relatedTarget)) {
+        rowEl.classList.remove("is-drag-over-before", "is-drag-over-after");
+      }
+    }
+    _onDrop(e2) {
+      e2.preventDefault();
+      const fromIndex = this._dragSourceIndex ?? parseInt(e2.dataTransfer?.getData("text/plain") ?? "", 10);
+      const rowEl = this._rowFromEvent(e2);
+      if (!rowEl || !Number.isFinite(fromIndex)) return;
+      const toIndexRaw = parseInt(rowEl.dataset.rowIndex ?? "", 10);
+      if (!Number.isFinite(toIndexRaw)) return;
+      const rect = rowEl.getBoundingClientRect();
+      const isAbove = e2.clientY < rect.top + rect.height / 2;
+      const insertBeforeIndex = isAbove ? toIndexRaw : toIndexRaw + 1;
+      const toIndex = fromIndex < insertBeforeIndex ? insertBeforeIndex - 1 : insertBeforeIndex;
+      rowEl.classList.remove("is-drag-over-before", "is-drag-over-after");
+      if (fromIndex !== toIndex) {
+        const newRows = [...this.rows];
+        const [moved] = newRows.splice(fromIndex, 1);
+        newRows.splice(toIndex, 0, moved);
+        this.dispatchEvent(
+          new CustomEvent("dp-rows-reorder", {
+            detail: { rows: newRows },
+            bubbles: true,
+            composed: true
+          })
+        );
+      }
+    }
+    // ---------------------------------------------------------------------------
+    // Helpers
+    // ---------------------------------------------------------------------------
+    /** Walk the composed event path to find the nearest dp-target-row element. */
+    _rowFromEvent(e2) {
+      for (const node of e2.composedPath()) {
+        if (node instanceof Element && node.tagName?.toLowerCase() === "dp-target-row") {
+          return node;
+        }
+      }
+      return null;
+    }
+    _clearDropIndicators() {
+      this.shadowRoot?.querySelectorAll("dp-target-row").forEach((r2) => {
+        r2.classList.remove("is-drag-over-before", "is-drag-over-after");
+      });
+    }
+  }
+  customElements.define("dp-target-row-list", DpTargetRowList);
+  const styles$8 = i$5`
+  :host {
+    display: block;
+    --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
+  }
+
+  .sidebar-options-card {
+    display: grid;
+    gap: var(--dp-spacing-lg);
+  }
+`;
+  const styles$7 = i$5`
+  :host {
+    display: block;
+  }
+`;
+  const styles$6 = i$5`
+  :host {
+    display: block;
+    --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
+    --dp-spacing-sm: var(--spacing, 8px);
+  }
+
+  .section {
+    display: grid;
+    gap: var(--dp-spacing-sm);
+  }
+`;
+  class DpSidebarSectionHeader extends i$2 {
+    static properties = {
+      title: { type: String },
+      subtitle: { type: String }
+    };
+    static styles = i$5`
+    :host { display: block; }
+    .sidebar-section-header { display: grid; gap: var(--dp-spacing-xs); }
+    .sidebar-section-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--primary-text-color);
+    }
+    .sidebar-section-subtitle {
+      font-size: 0.82rem;
+      color: var(--secondary-text-color);
+    }
+  `;
+    constructor() {
+      super();
+      this.title = "";
+      this.subtitle = "";
+    }
+    render() {
+      return b`
+      <div class="sidebar-section-header">
+        <div class="sidebar-section-title">${this.title}</div>
+        ${this.subtitle ? b`<div class="sidebar-section-subtitle">${this.subtitle}</div>` : A}
+      </div>
+    `;
+    }
+  }
+  customElements.define("dp-sidebar-section-header", DpSidebarSectionHeader);
+  class DpSidebarOptionsSection extends i$2 {
+    static properties = {
+      title: { type: String },
+      subtitle: { type: String }
+    };
+    static styles = styles$6;
+    constructor() {
+      super();
+      this.title = "";
+      this.subtitle = "";
+    }
+    render() {
+      return b`
+      <div class="section">
+        <dp-sidebar-section-header
+          .title=${this.title}
+          .subtitle=${this.subtitle}
+        ></dp-sidebar-section-header>
+        <slot></slot>
+      </div>
+    `;
+    }
+  }
+  customElements.define("dp-sidebar-options-section", DpSidebarOptionsSection);
+  class DpRadioGroup extends i$2 {
+    static properties = {
+      name: { type: String },
+      value: { type: String },
+      options: { type: Array }
+    };
+    static styles = i$5`
+    :host {
+      display: block;
+    }
+    fieldset {
+      border: none;
+      margin: 0;
+      padding: 0;
+    }
+    .radio-group {
+      display: grid;
+      gap: var(--dp-spacing-xs, 4px);
+    }
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: var(--dp-spacing-xs, 4px);
+      font-size: 0.9rem;
+      color: var(--primary-text-color);
+      cursor: pointer;
+    }
+    .radio-option input[type="radio"] {
+      cursor: pointer;
+    }
+  `;
+    constructor() {
+      super();
+      this.name = "";
+      this.value = "";
+      this.options = [];
+    }
+    _onChange(e2) {
+      const input = e2.target;
+      this.dispatchEvent(
+        new CustomEvent("dp-radio-change", {
+          detail: { value: input.value },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    render() {
+      return b`
+      <fieldset role="radiogroup">
+        <div class="radio-group">
+          ${this.options.map(
+        (opt) => b`
+              <label class="radio-option">
+                <input
+                  type="radio"
+                  name=${this.name}
+                  .value=${opt.value}
+                  .checked=${this.value === opt.value}
+                  @change=${this._onChange}
+                />
+                ${opt.label}
+              </label>
+            `
+      )}
+        </div>
+      </fieldset>
+    `;
+    }
+  }
+  customElements.define("dp-radio-group", DpRadioGroup);
+  const DATAPOINT_SCOPE_OPTIONS = [
+    { value: "linked", label: "Linked to selected targets" },
+    { value: "all", label: "All datapoints" },
+    { value: "hidden", label: "Hide datapoints" }
+  ];
+  class DpSidebarDatapointsSection extends i$2 {
+    static properties = {
+      datapointScope: { type: String, attribute: "datapoint-scope" }
+    };
+    static styles = styles$7;
+    constructor() {
+      super();
+      this.datapointScope = "linked";
+    }
+    _onScopeChange(e2) {
+      this.dispatchEvent(
+        new CustomEvent("dp-scope-change", { detail: { value: e2.detail.value }, bubbles: true, composed: true })
+      );
+    }
+    render() {
+      return b`
+      <dp-sidebar-options-section
+        .title=${"Datapoints"}
+        .subtitle=${"Choose which annotation datapoints appear on the chart."}
+      >
+        <dp-radio-group
+          .name=${"datapoint-scope"}
+          .value=${this.datapointScope}
+          .options=${DATAPOINT_SCOPE_OPTIONS}
+          @dp-radio-change=${this._onScopeChange}
+        ></dp-radio-group>
+      </dp-sidebar-options-section>
+    `;
+    }
+  }
+  customElements.define("dp-sidebar-datapoints-section", DpSidebarDatapointsSection);
+  const styles$5 = i$5`
+  :host {
+    display: block;
+  }
+`;
+  class DpCheckboxList extends i$2 {
+    static properties = {
+      items: { type: Array }
+    };
+    static styles = i$5`
+    :host {
+      display: block;
+    }
+    .checkbox-group {
+      display: grid;
+      gap: var(--dp-spacing-xs, 4px);
+    }
+    .checkbox-option {
+      display: flex;
+      align-items: center;
+      gap: var(--dp-spacing-xs, 4px);
+      font-size: 0.9rem;
+      color: var(--primary-text-color);
+      cursor: pointer;
+    }
+    .checkbox-option input[type="checkbox"] {
+      cursor: pointer;
+    }
+  `;
+    constructor() {
+      super();
+      this.items = [];
+    }
+    _onChange(e2) {
+      const input = e2.target;
+      this.dispatchEvent(
+        new CustomEvent("dp-item-change", {
+          detail: { name: input.name, checked: input.checked },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    render() {
+      return b`
+      <div class="checkbox-group">
+        ${this.items.map(
+        (item) => b`
+            <label class="checkbox-option">
+              <input
+                type="checkbox"
+                name=${item.name}
+                .checked=${item.checked}
+                @change=${this._onChange}
+              />
+              ${item.label}
+            </label>
+          `
+      )}
+      </div>
+    `;
+    }
+  }
+  customElements.define("dp-checkbox-list", DpCheckboxList);
+  class DpSidebarDatapointDisplaySection extends i$2 {
+    static properties = {
+      showIcons: { type: Boolean, attribute: "show-icons" },
+      showLines: { type: Boolean, attribute: "show-lines" }
+    };
+    static styles = styles$5;
+    constructor() {
+      super();
+      this.showIcons = true;
+      this.showLines = true;
+    }
+    _onCheckboxChange(e2) {
+      const { name, checked } = e2.detail;
+      this.dispatchEvent(
+        new CustomEvent("dp-display-change", { detail: { kind: name, value: checked }, bubbles: true, composed: true })
+      );
+    }
+    render() {
+      return b`
+      <dp-sidebar-options-section
+        .title=${"Datapoint Display"}
+        .subtitle=${"Control how annotation datapoints are rendered on the chart."}
+      >
+        <dp-checkbox-list
+          .items=${[
+        { name: "icons", label: "Show datapoint icons", checked: this.showIcons },
+        { name: "lines", label: "Show dotted lines", checked: this.showLines }
+      ]}
+          @dp-item-change=${this._onCheckboxChange}
+        ></dp-checkbox-list>
+      </dp-sidebar-options-section>
+    `;
+    }
+  }
+  customElements.define("dp-sidebar-datapoint-display-section", DpSidebarDatapointDisplaySection);
+  const styles$4 = i$5`
+  :host {
+    display: block;
+    --dp-spacing-sm: var(--spacing, 8px);
+  }
+
+  .y-axis-group {
+    margin-top: var(--dp-spacing-sm);
+  }
+
+  .is-subopt {
+    display: flex;
+    align-items: center;
+    gap: var(--dp-spacing-sm);
+    font-size: 0.9rem;
+    color: var(--primary-text-color);
+    padding-left: 22px;
+  }
+
+  .is-disabled {
+    opacity: 0.5;
+  }
+
+  .gap-select {
+    width: auto;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: calc(var(--spacing, 8px) * 0.5) calc(var(--spacing, 8px) * 0.75);
+    border-radius: 8px;
+    border: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 88%, transparent);
+    background: var(--card-background-color, #fff);
+    color: var(--primary-text-color);
+    font: inherit;
+    font-size: 0.84rem;
+  }
+`;
+  const DATA_GAP_THRESHOLD_OPTIONS$1 = [
+    { value: "auto", label: "Auto-detect" },
+    { value: "5m", label: "5 minutes" },
+    { value: "15m", label: "15 minutes" },
+    { value: "1h", label: "1 hour" },
+    { value: "2h", label: "2 hours" },
+    { value: "3h", label: "3 hours" },
+    { value: "6h", label: "6 hours" },
+    { value: "12h", label: "12 hours" },
+    { value: "24h", label: "24 hours" }
+  ];
+  const Y_AXIS_MODE_OPTIONS = [
+    { value: "combined", label: "Combine y-axis by unit" },
+    { value: "unique", label: "Unique y-axis per series" },
+    { value: "split", label: "Split series into rows" }
+  ];
+  class DpSidebarChartDisplaySection extends i$2 {
+    static properties = {
+      showTooltips: { type: Boolean, attribute: "show-tooltips" },
+      showHoverGuides: { type: Boolean, attribute: "show-hover-guides" },
+      showCorrelatedAnomalies: { type: Boolean, attribute: "show-correlated-anomalies" },
+      showDataGaps: { type: Boolean, attribute: "show-data-gaps" },
+      dataGapThreshold: { type: String, attribute: "data-gap-threshold" },
+      yAxisMode: { type: String, attribute: "y-axis-mode" }
+    };
+    static styles = styles$4;
+    constructor() {
+      super();
+      this.showTooltips = true;
+      this.showHoverGuides = false;
+      this.showCorrelatedAnomalies = false;
+      this.showDataGaps = true;
+      this.dataGapThreshold = "2h";
+      this.yAxisMode = "combined";
+    }
+    _emitDisplay(kind, value) {
+      this.dispatchEvent(
+        new CustomEvent("dp-display-change", { detail: { kind, value }, bubbles: true, composed: true })
+      );
+    }
+    _onCheckboxChange(e2) {
+      const { name, checked } = e2.detail;
+      this._emitDisplay(name, checked);
+    }
+    _onGapThresholdChange(e2) {
+      this._emitDisplay("data_gap_threshold", e2.target.value);
+    }
+    _onYAxisModeChange(e2) {
+      this._emitDisplay("y_axis_mode", e2.detail.value);
+    }
+    render() {
+      return b`
+      <dp-sidebar-options-section
+        .title=${"Chart Display"}
+        .subtitle=${"Configure visual and interaction behaviour for the chart."}
+      >
+        <dp-checkbox-list
+          .items=${[
+        { name: "tooltips", label: "Show tooltips", checked: this.showTooltips },
+        { name: "hover_guides", label: "Emphasize hover guides", checked: this.showHoverGuides },
+        { name: "correlated_anomalies", label: "Highlight correlated anomalies", checked: this.showCorrelatedAnomalies },
+        { name: "data_gaps", label: "Show data gaps", checked: this.showDataGaps }
+      ]}
+          @dp-item-change=${this._onCheckboxChange}
+        ></dp-checkbox-list>
+        <div class="is-subopt ${this.showDataGaps ? "" : "is-disabled"}">
+          <select
+            class="gap-select"
+            ?disabled=${!this.showDataGaps}
+            @change=${this._onGapThresholdChange}
+          >
+            ${DATA_GAP_THRESHOLD_OPTIONS$1.map((opt) => b`
+              <option value=${opt.value} ?selected=${opt.value === this.dataGapThreshold}>${opt.label}</option>
+            `)}
+          </select>
+          <span>Gap threshold</span>
+        </div>
+        <div class="y-axis-group">
+          <dp-radio-group
+            .name=${"chart-y-axis-mode"}
+            .value=${this.yAxisMode}
+            .options=${Y_AXIS_MODE_OPTIONS}
+            @dp-radio-change=${this._onYAxisModeChange}
+          ></dp-radio-group>
+        </div>
+      </dp-sidebar-options-section>
+    `;
+    }
+  }
+  customElements.define("dp-sidebar-chart-display-section", DpSidebarChartDisplaySection);
+  class DpSidebarOptions extends i$2 {
+    static properties = {
+      datapointScope: { type: String, attribute: "datapoint-scope" },
+      showIcons: { type: Boolean, attribute: "show-icons" },
+      showLines: { type: Boolean, attribute: "show-lines" },
+      showTooltips: { type: Boolean, attribute: "show-tooltips" },
+      showHoverGuides: { type: Boolean, attribute: "show-hover-guides" },
+      showCorrelatedAnomalies: { type: Boolean, attribute: "show-correlated-anomalies" },
+      showDataGaps: { type: Boolean, attribute: "show-data-gaps" },
+      dataGapThreshold: { type: String, attribute: "data-gap-threshold" },
+      yAxisMode: { type: String, attribute: "y-axis-mode" }
+    };
+    static styles = styles$8;
+    constructor() {
+      super();
+      this.datapointScope = "linked";
+      this.showIcons = true;
+      this.showLines = true;
+      this.showTooltips = true;
+      this.showHoverGuides = false;
+      this.showCorrelatedAnomalies = false;
+      this.showDataGaps = true;
+      this.dataGapThreshold = "2h";
+      this.yAxisMode = "combined";
+    }
+    render() {
+      return b`
+      <div class="sidebar-options-card">
+        <dp-sidebar-datapoints-section
+          .datapointScope=${this.datapointScope}
+        ></dp-sidebar-datapoints-section>
+        <dp-sidebar-datapoint-display-section
+          .showIcons=${this.showIcons}
+          .showLines=${this.showLines}
+        ></dp-sidebar-datapoint-display-section>
+        <dp-sidebar-chart-display-section
+          .showTooltips=${this.showTooltips}
+          .showHoverGuides=${this.showHoverGuides}
+          .showCorrelatedAnomalies=${this.showCorrelatedAnomalies}
+          .showDataGaps=${this.showDataGaps}
+          .dataGapThreshold=${this.dataGapThreshold}
+          .yAxisMode=${this.yAxisMode}
+        ></dp-sidebar-chart-display-section>
+      </div>
+    `;
+    }
+  }
+  customElements.define("dp-sidebar-options", DpSidebarOptions);
+  const t$1 = { ATTRIBUTE: 1, CHILD: 2 }, e$1 = (t2) => (...e2) => ({ _$litDirective$: t2, values: e2 });
+  let i$1 = class i {
+    constructor(t2) {
+    }
+    get _$AU() {
+      return this._$AM._$AU;
+    }
+    _$AT(t2, e2, i2) {
+      this._$Ct = t2, this._$AM = e2, this._$Ci = i2;
+    }
+    _$AS(t2, e2) {
+      return this.update(t2, e2);
+    }
+    update(t2, e2) {
+      return this.render(...e2);
+    }
+  };
+  const e = e$1(class extends i$1 {
+    constructor(t2) {
+      if (super(t2), t2.type !== t$1.ATTRIBUTE || "class" !== t2.name || t2.strings?.length > 2) throw Error("`classMap()` can only be used in the `class` attribute and must be the only part in the attribute.");
+    }
+    render(t2) {
+      return " " + Object.keys(t2).filter((s2) => t2[s2]).join(" ") + " ";
+    }
+    update(s2, [i2]) {
+      if (void 0 === this.st) {
+        this.st = /* @__PURE__ */ new Set(), void 0 !== s2.strings && (this.nt = new Set(s2.strings.join(" ").split(/\s/).filter((t2) => "" !== t2)));
+        for (const t2 in i2) i2[t2] && !this.nt?.has(t2) && this.st.add(t2);
+        return this.render(i2);
+      }
+      const r2 = s2.element.classList;
+      for (const t2 of this.st) t2 in i2 || (r2.remove(t2), this.st.delete(t2));
+      for (const t2 in i2) {
+        const s3 = !!i2[t2];
+        s3 === this.st.has(t2) || this.nt?.has(t2) || (s3 ? (r2.add(t2), this.st.add(t2)) : (r2.remove(t2), this.st.delete(t2)));
+      }
+      return E;
+    }
+  });
+  const { I: t } = j, i = (o2) => o2, s = () => document.createComment(""), v = (o2, n2, e2) => {
+    const l2 = o2._$AA.parentNode, d2 = void 0 === n2 ? o2._$AB : n2._$AA;
+    if (void 0 === e2) {
+      const i2 = l2.insertBefore(s(), d2), n3 = l2.insertBefore(s(), d2);
+      e2 = new t(i2, n3, o2, o2.options);
+    } else {
+      const t2 = e2._$AB.nextSibling, n3 = e2._$AM, c2 = n3 !== o2;
+      if (c2) {
+        let t3;
+        e2._$AQ?.(o2), e2._$AM = o2, void 0 !== e2._$AP && (t3 = o2._$AU) !== n3._$AU && e2._$AP(t3);
+      }
+      if (t2 !== d2 || c2) {
+        let o3 = e2._$AA;
+        for (; o3 !== t2; ) {
+          const t3 = i(o3).nextSibling;
+          i(l2).insertBefore(o3, d2), o3 = t3;
+        }
+      }
+    }
+    return e2;
+  }, u$1 = (o2, t2, i2 = o2) => (o2._$AI(t2, i2), o2), m = {}, p = (o2, t2 = m) => o2._$AH = t2, M = (o2) => o2._$AH, h = (o2) => {
+    o2._$AR(), o2._$AA.remove();
+  };
+  const u = (e2, s2, t2) => {
+    const r2 = /* @__PURE__ */ new Map();
+    for (let l2 = s2; l2 <= t2; l2++) r2.set(e2[l2], l2);
+    return r2;
+  }, c = e$1(class extends i$1 {
+    constructor(e2) {
+      if (super(e2), e2.type !== t$1.CHILD) throw Error("repeat() can only be used in text expressions");
+    }
+    dt(e2, s2, t2) {
+      let r2;
+      void 0 === t2 ? t2 = s2 : void 0 !== s2 && (r2 = s2);
+      const l2 = [], o2 = [];
+      let i2 = 0;
+      for (const s3 of e2) l2[i2] = r2 ? r2(s3, i2) : i2, o2[i2] = t2(s3, i2), i2++;
+      return { values: o2, keys: l2 };
+    }
+    render(e2, s2, t2) {
+      return this.dt(e2, s2, t2).values;
+    }
+    update(s2, [t2, r2, c2]) {
+      const d2 = M(s2), { values: p$12, keys: a2 } = this.dt(t2, r2, c2);
+      if (!Array.isArray(d2)) return this.ut = a2, p$12;
+      const h$12 = this.ut ??= [], v$12 = [];
+      let m2, y2, x2 = 0, j2 = d2.length - 1, k2 = 0, w = p$12.length - 1;
+      for (; x2 <= j2 && k2 <= w; ) if (null === d2[x2]) x2++;
+      else if (null === d2[j2]) j2--;
+      else if (h$12[x2] === a2[k2]) v$12[k2] = u$1(d2[x2], p$12[k2]), x2++, k2++;
+      else if (h$12[j2] === a2[w]) v$12[w] = u$1(d2[j2], p$12[w]), j2--, w--;
+      else if (h$12[x2] === a2[w]) v$12[w] = u$1(d2[x2], p$12[w]), v(s2, v$12[w + 1], d2[x2]), x2++, w--;
+      else if (h$12[j2] === a2[k2]) v$12[k2] = u$1(d2[j2], p$12[k2]), v(s2, d2[x2], d2[j2]), j2--, k2++;
+      else if (void 0 === m2 && (m2 = u(a2, k2, w), y2 = u(h$12, x2, j2)), m2.has(h$12[x2])) if (m2.has(h$12[j2])) {
+        const e2 = y2.get(a2[k2]), t3 = void 0 !== e2 ? d2[e2] : null;
+        if (null === t3) {
+          const e3 = v(s2, d2[x2]);
+          u$1(e3, p$12[k2]), v$12[k2] = e3;
+        } else v$12[k2] = u$1(t3, p$12[k2]), v(s2, d2[x2], t3), d2[e2] = null;
+        k2++;
+      } else h(d2[j2]), j2--;
+      else h(d2[x2]), x2++;
+      for (; k2 <= w; ) {
+        const e2 = v(s2, v$12[w + 1]);
+        u$1(e2, p$12[k2]), v$12[k2++] = e2;
+      }
+      for (; x2 <= j2; ) {
+        const e2 = d2[x2++];
+        null !== e2 && h(e2);
+      }
+      return this.ut = a2, p(s2, v$12), E;
+    }
+  });
+  const styles$3 = i$5`
+  :host {
+    display: block;
+  }
+
+  .chart-tabs-shell {
+    position: relative;
+    min-width: 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 88%, transparent);
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: calc(var(--dp-spacing-sm, 8px));
+  }
+
+  .chart-tabs-rail {
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    padding-right: 10px;
+    flex-grow: 1;
+  }
+
+  .chart-tabs-rail::-webkit-scrollbar {
+    display: none;
+  }
+
+  .chart-tabs {
+    display: flex;
+    align-items: flex-end;
+    width: 100%;
+    min-width: 0;
+    gap: 0;
+    padding: 0 var(--dp-spacing-md);
+    box-sizing: border-box;
+  }
+
+  .chart-tabs-add {
+    margin-right: calc(var(--dp-spacing-sm, 16px));
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--spacing, 8px) * 0.75);
+    padding: calc(var(--dp-spacing-sm, 8px) * 0.625) var(--dp-spacing-sm);
+    height: 26px;
+    border: 0;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 12%, var(--card-background-color, #fff));
+    color: var(--primary-color, #03a9f4);
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    z-index: 2;
+  }
+
+  .chart-tabs-add ha-icon {
+    --mdc-icon-size: 16px;
+  }
+
+  .chart-tabs-add:hover,
+  .chart-tabs-add:focus-visible {
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 18%, var(--card-background-color, #fff));
+    outline: none;
+  }
+
+  .chart-tabs-shell.overflowing .chart-tabs-add {
+    top: var(--dp-spacing-xs);
+    transform: none;
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 999px;
+  }
+
+  .chart-tabs-shell.overflowing .chart-tabs-add-label {
+    display: none;
+  }
+`;
+  const styles$2 = i$5`
+  :host {
+    display: contents;
+  }
+
+  .chart-tab {
+    display: flex;
+    align-items: stretch;
+    min-width: 0;
+    border-bottom: 2px solid transparent;
+    transition: border-color 120ms ease, color 120ms ease, opacity 120ms ease;
+  }
+
+  .chart-tab:hover {
+    border-bottom-color: color-mix(in srgb, var(--primary-color, #03a9f4) 44%, transparent);
+  }
+
+  .chart-tab:hover .chart-tab-trigger {
+    color: var(--primary-text-color);
+  }
+
+  .chart-tab.previewing {
+    border-bottom-color: color-mix(in srgb, var(--primary-color, #03a9f4) 62%, transparent);
+  }
+
+  .chart-tab.previewing .chart-tab-trigger {
+    color: var(--primary-text-color);
+  }
+
+  .chart-tab.active {
+    border-bottom-color: var(--primary-color, #03a9f4);
+  }
+
+  .chart-tab.loading .chart-tab-trigger,
+  .chart-tab.loading .chart-tab-actions {
+    opacity: 0.55;
+  }
+
+  .chart-tab.loading .chart-tab-trigger,
+  .chart-tab.loading .chart-tab-trigger .chart-tab-detail,
+  .chart-tab.loading .chart-tab-action {
+    color: var(--secondary-text-color);
+  }
+
+  .chart-tab.active .chart-tab-trigger {
+    color: var(--primary-text-color);
+    font-weight: 600;
+    cursor: default;
+  }
+
+  .chart-tab-trigger {
+    position: relative;
+    display: inline-flex;
+    align-items: stretch;
+    flex: 1 1 auto;
+    min-width: 0;
+    border: 0;
+    border-radius: 0;
+    padding: var(--dp-spacing-sm) var(--dp-spacing-md);
+    background: transparent;
+    color: var(--secondary-text-color);
+    font: inherit;
+    font-size: 0.86rem;
+    line-height: 1.2;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: border-color 120ms ease, color 120ms ease, opacity 120ms ease;
+  }
+
+  .chart-tab-trigger:hover,
+  .chart-tab-trigger:focus-visible {
+    color: var(--primary-text-color);
+    outline: none;
+  }
+
+  .chart-tab-content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+
+  .chart-tab-main {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .chart-tab-label {
+    font-weight: inherit;
+  }
+
+  .chart-tab-spinner {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    border: 2px solid color-mix(in srgb, var(--secondary-text-color, #6b7280) 28%, transparent);
+    border-top-color: currentColor;
+    animation: chart-spinner 0.9s linear infinite;
+    flex: 0 0 auto;
+  }
+
+  @keyframes chart-spinner {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .chart-tab-detail {
+    font-size: 0.73rem;
+    line-height: 1.2;
+    color: var(--secondary-text-color);
+    font-weight: 400;
+  }
+
+  .chart-tab-detail-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    line-height: 1;
+  }
+
+  .chart-tab.active .chart-tab-detail,
+  .chart-tab.previewing .chart-tab-detail,
+  .chart-tab:hover .chart-tab-detail,
+  .chart-tab-trigger:hover .chart-tab-detail,
+  .chart-tab-trigger:focus-visible .chart-tab-detail {
+    color: color-mix(in srgb, var(--secondary-text-color, #6b7280) 88%, var(--primary-text-color, #111));
+  }
+
+  .chart-tab-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    margin-left: -2px;
+    padding-right: var(--dp-spacing-md);
+    padding-bottom: 2px;
+    align-self: center;
+    flex: 0 0 auto;
+  }
+
+  .chart-tab-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--secondary-text-color);
+    cursor: pointer;
+    flex: 0 0 auto;
+  }
+
+  .chart-tab-action ha-icon {
+    --mdc-icon-size: 12px;
+    display: block;
+  }
+
+  .chart-tab-action:hover,
+  .chart-tab-action:focus-visible {
+    background: color-mix(in srgb, var(--primary-text-color, #111) 8%, transparent);
+    color: var(--primary-text-color);
+    outline: none;
+  }
+
+  .chart-tab-action.delete {
+    background: color-mix(in srgb, var(--primary-text-color, #111) 7%, transparent);
+  }
+
+  .chart-tab-action.delete:hover,
+  .chart-tab-action.delete:focus-visible {
+    background: color-mix(in srgb, var(--error-color, #db4437) 14%, transparent);
+    color: var(--error-color, #db4437);
+  }
+`;
+  class DpComparisonTab extends i$2 {
+    static styles = styles$2;
+    static properties = {
+      tabId: { type: String, attribute: "tab-id" },
+      label: { type: String },
+      detail: { type: String },
+      active: { type: Boolean },
+      previewing: { type: Boolean },
+      loading: { type: Boolean },
+      editable: { type: Boolean }
+    };
+    constructor() {
+      super();
+      this.tabId = "";
+      this.label = "";
+      this.detail = "";
+      this.active = false;
+      this.previewing = false;
+      this.loading = false;
+      this.editable = false;
+    }
+    _emit(name) {
+      this.dispatchEvent(
+        new CustomEvent(name, {
+          detail: { tabId: this.tabId },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    _onTriggerClick() {
+      this._emit("dp-tab-activate");
+    }
+    _onMouseEnter() {
+      this._emit("dp-tab-hover");
+    }
+    _onMouseLeave() {
+      this._emit("dp-tab-leave");
+    }
+    _onTriggerFocus() {
+      this._emit("dp-tab-hover");
+    }
+    _onTriggerBlur() {
+      this._emit("dp-tab-leave");
+    }
+    _onEditClick(ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      this._emit("dp-tab-edit");
+    }
+    _onDeleteClick(ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      this._emit("dp-tab-delete");
+    }
+    render() {
+      const tabClasses = e({
+        "chart-tab": true,
+        active: this.active,
+        previewing: this.previewing,
+        loading: this.loading
+      });
+      return b`
+      <div
+        class=${tabClasses}
+        @mouseenter=${this._onMouseEnter}
+        @mouseleave=${this._onMouseLeave}
+      >
+        <button
+          type="button"
+          class="chart-tab-trigger"
+          ?aria-current=${this.active}
+          @click=${this._onTriggerClick}
+          @focus=${this._onTriggerFocus}
+          @blur=${this._onTriggerBlur}
+        >
+          <span class="chart-tab-content">
+            <span class="chart-tab-main">
+              ${this.loading ? b`<span class="chart-tab-spinner" aria-hidden="true"></span>` : null}
+              <span class="chart-tab-label">${this.label}</span>
+            </span>
+            <span class="chart-tab-detail-row">
+              <span class="chart-tab-detail">${this.detail}</span>
+            </span>
+          </span>
+        </button>
+        ${this.editable ? b`
+              <span class="chart-tab-actions">
+                <button
+                  type="button"
+                  class="chart-tab-action edit"
+                  aria-label="Edit ${this.label}"
+                  @click=${this._onEditClick}
+                >
+                  <ha-icon icon="mdi:pencil-outline"></ha-icon>
+                </button>
+                <button
+                  type="button"
+                  class="chart-tab-action delete"
+                  aria-label="Delete ${this.label}"
+                  @click=${this._onDeleteClick}
+                >
+                  <ha-icon icon="mdi:close"></ha-icon>
+                </button>
+              </span>
+            ` : null}
+      </div>
+    `;
+    }
+  }
+  customElements.define("dp-comparison-tab", DpComparisonTab);
+  class DpComparisonTabRail extends i$2 {
+    static styles = styles$3;
+    static properties = {
+      tabs: { type: Array },
+      loadingIds: { type: Array, attribute: false },
+      hoveredId: { type: String, attribute: "hovered-id" },
+      overflowing: { type: Boolean }
+    };
+    _resizeObserver;
+    constructor() {
+      super();
+      this.tabs = [];
+      this.loadingIds = [];
+      this.hoveredId = "";
+      this.overflowing = false;
+    }
+    connectedCallback() {
+      super.connectedCallback();
+      this._resizeObserver = new ResizeObserver(() => this._checkOverflow());
+      this.updateComplete.then(() => {
+        const shell = this.shadowRoot?.querySelector(".chart-tabs-shell");
+        if (shell) {
+          this._resizeObserver.observe(shell);
+        }
+      });
+    }
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      this._resizeObserver?.disconnect();
+    }
+    _checkOverflow() {
+      const shell = this.shadowRoot?.querySelector(".chart-tabs-shell");
+      if (!shell) {
+        return;
+      }
+      const rail = shell.querySelector(".chart-tabs-rail");
+      if (!rail) {
+        return;
+      }
+      this.overflowing = rail.scrollWidth > rail.clientWidth;
+    }
+    _onAddClick() {
+      this.dispatchEvent(
+        new CustomEvent("dp-tab-add", {
+          detail: {},
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    render() {
+      const shellClasses = e({
+        "chart-tabs-shell": true,
+        overflowing: this.overflowing
+      });
+      return b`
+      <div class=${shellClasses}>
+        <div class="chart-tabs-rail">
+          <div class="chart-tabs">
+            ${c(
+        this.tabs,
+        (tab) => tab.id,
+        (tab) => b`
+                <dp-comparison-tab
+                  .tabId=${tab.id}
+                  .label=${tab.label}
+                  .detail=${tab.detail}
+                  .active=${tab.active}
+                  .previewing=${this.hoveredId === tab.id}
+                  .loading=${this.loadingIds.includes(tab.id)}
+                  .editable=${tab.editable}
+                ></dp-comparison-tab>
+              `
+      )}
+          </div>
+        </div>
+        <button
+          type="button"
+          class="chart-tabs-add"
+          @click=${this._onAddClick}
+        >
+          <ha-icon icon="mdi:plus"></ha-icon>
+          <span class="chart-tabs-add-label">Add date window</span>
+        </button>
+      </div>
+    `;
+    }
+  }
+  customElements.define("dp-comparison-tab-rail", DpComparisonTabRail);
+  const styles$1 = i$5`
+  :host {
+    --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
+    --dp-spacing-sm: var(--spacing, 8px);
+    --dp-spacing-md: calc(var(--spacing, 8px) * 1.5);
+    --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
+  }
+
+  .date-window-dialog-content {
+    display: grid;
+    gap: var(--dp-spacing-sm);
+    padding: var(--dp-spacing-sm) 0 0;
+    overflow: visible;
+  }
+
+  .date-window-dialog-body {
+    color: var(--secondary-text-color);
+    line-height: 1.4;
+    margin-bottom: calc(var(--dp-spacing-xs) * -1);
+  }
+
+  .date-window-dialog-field {
+    display: grid;
+    gap: var(--dp-spacing-xs);
+    overflow: visible;
+  }
+
+  .date-window-dialog-field.name-field {
+    max-width: 320px;
+  }
+
+  .date-window-dialog-field label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--primary-text-color);
+  }
+
+  .date-window-dialog-field ha-textfield,
+  .date-window-dialog-field input {
+    width: 100%;
+  }
+
+  .date-window-dialog-dates {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--dp-spacing-sm);
+  }
+
+  .date-window-dialog-input {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 12px;
+    border: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 92%, transparent);
+    border-radius: 12px;
+    background: var(--card-background-color, #fff);
+    color: var(--primary-text-color);
+    font: inherit;
+    box-sizing: border-box;
+  }
+
+  .date-window-dialog-input:focus {
+    outline: 2px solid color-mix(in srgb, var(--primary-color, #03a9f4) 36%, transparent);
+    outline-offset: 1px;
+    border-color: color-mix(in srgb, var(--primary-color, #03a9f4) 55%, transparent);
+  }
+
+  .date-window-dialog-shortcuts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--dp-spacing-sm);
+  }
+
+  .date-window-dialog-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--dp-spacing-sm);
+    padding-top: 0;
+    margin-top: calc(var(--dp-spacing-xs) * -1);
+  }
+
+  .date-window-dialog-actions-right {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--dp-spacing-sm);
+    margin-left: auto;
+  }
+
+  .date-window-dialog-actions ha-button {
+    --mdc-typography-button-font-size: 0.875rem;
+  }
+
+  .date-window-dialog-cancel {
+    --mdc-theme-primary: var(--primary-text-color);
+  }
+
+  .date-window-dialog-submit {
+    --mdc-theme-primary: var(--primary-color, #03a9f4);
+  }
+
+  .date-window-dialog-delete {
+    --mdc-theme-primary: var(--error-color, #db4437);
+  }
+
+  @media (max-width: 720px) {
+    .date-window-dialog-dates {
+      grid-template-columns: 1fr;
+    }
+  }
+`;
+  class DpDateWindowDialog extends i$2 {
+    static styles = styles$1;
+    static properties = {
+      open: { type: Boolean },
+      heading: { type: String },
+      name: { type: String },
+      startValue: { type: String, attribute: "start-value" },
+      endValue: { type: String, attribute: "end-value" },
+      showDelete: { type: Boolean, attribute: "show-delete" },
+      showShortcuts: { type: Boolean, attribute: "show-shortcuts" },
+      submitLabel: { type: String, attribute: "submit-label" }
+    };
+    constructor() {
+      super();
+      this.open = false;
+      this.heading = "Add date window";
+      this.name = "";
+      this.startValue = "";
+      this.endValue = "";
+      this.showDelete = false;
+      this.showShortcuts = false;
+      this.submitLabel = "Create date window";
+    }
+    _emit(name, detail = {}) {
+      this.dispatchEvent(
+        new CustomEvent(name, {
+          detail,
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    _onDialogClosed() {
+      this._emit("dp-window-close");
+    }
+    _onCancel() {
+      this._emit("dp-window-close");
+    }
+    _onSubmit() {
+      const nameInput = this.shadowRoot?.querySelector("#date-window-name");
+      const startInput = this.shadowRoot?.querySelector("#date-window-start");
+      const endInput = this.shadowRoot?.querySelector("#date-window-end");
+      const nameVal = nameInput?.value ?? this.name;
+      this._emit("dp-window-submit", {
+        name: String(nameVal ?? "").trim(),
+        start: startInput?.value ?? this.startValue,
+        end: endInput?.value ?? this.endValue
+      });
+    }
+    _onDelete() {
+      this._emit("dp-window-delete");
+    }
+    _onPreviousShortcut() {
+      this._emit("dp-window-shortcut", { direction: -1 });
+    }
+    _onNextShortcut() {
+      this._emit("dp-window-shortcut", { direction: 1 });
+    }
+    _onDateChange() {
+      const startInput = this.shadowRoot?.querySelector("#date-window-start");
+      const endInput = this.shadowRoot?.querySelector("#date-window-end");
+      this._emit("dp-window-date-change", {
+        start: startInput?.value ?? "",
+        end: endInput?.value ?? ""
+      });
+    }
+    render() {
+      return b`
+      <ha-dialog
+        ?open=${this.open}
+        hideActions
+        .scrimClickAction=${"close"}
+        .escapeKeyAction=${"close"}
+        .heading=${this.heading}
+        @closed=${this._onDialogClosed}
+      >
+        <div class="date-window-dialog-content">
+          <div class="date-window-dialog-body">
+            A date window saves a named date range as a tab, so you can quickly preview it against
+            the selected range or jump the chart back to it later.
+          </div>
+
+          <div class="date-window-dialog-field name-field">
+            <ha-textfield
+              id="date-window-name"
+              label="Name"
+              placeholder="e.g. Heating season start"
+              .value=${this.name}
+            ></ha-textfield>
+          </div>
+
+          <div class="date-window-dialog-field">
+            <label>Date range</label>
+            <div class="date-window-dialog-dates">
+              <div class="date-window-dialog-field">
+                <label for="date-window-start">Start</label>
+                <input
+                  id="date-window-start"
+                  class="date-window-dialog-input"
+                  type="datetime-local"
+                  step="60"
+                  .value=${this.startValue}
+                  @change=${this._onDateChange}
+                />
+              </div>
+              <div class="date-window-dialog-field">
+                <label for="date-window-end">End</label>
+                <input
+                  id="date-window-end"
+                  class="date-window-dialog-input"
+                  type="datetime-local"
+                  step="60"
+                  .value=${this.endValue}
+                  @change=${this._onDateChange}
+                />
+              </div>
+            </div>
+          </div>
+
+          ${this.showShortcuts ? b`
+                <div class="date-window-dialog-shortcuts">
+                  <ha-button @click=${this._onPreviousShortcut}>Use previous range</ha-button>
+                  <ha-button @click=${this._onNextShortcut}>Use next range</ha-button>
+                </div>
+              ` : A}
+
+          <div class="date-window-dialog-actions">
+            ${this.showDelete ? b`
+                  <ha-button
+                    class="date-window-dialog-delete"
+                    @click=${this._onDelete}
+                  >Delete date window</ha-button>
+                ` : A}
+            <div class="date-window-dialog-actions-right">
+              <ha-button
+                class="date-window-dialog-cancel"
+                @click=${this._onCancel}
+              >Cancel</ha-button>
+              <ha-button
+                raised
+                class="date-window-dialog-submit"
+                @click=${this._onSubmit}
+              >${this.submitLabel}</ha-button>
+            </div>
+          </div>
+        </div>
+      </ha-dialog>
+    `;
+    }
+  }
+  customElements.define("dp-date-window-dialog", DpDateWindowDialog);
+  const styles = i$5`
+  :host {
+    display: contents;
+  }
+
+  .floating-menu {
+    position: fixed;
+    top: var(--floating-menu-top, 64px);
+    left: var(--floating-menu-left, 0px);
+    z-index: 9999;
+    min-width: var(--floating-menu-min-width, 220px);
+    width: var(--floating-menu-width, auto);
+    max-height: var(--floating-menu-max-height, none);
+    overflow: var(--floating-menu-overflow, visible);
+    padding: var(--floating-menu-padding, var(--dp-spacing-xs, 4px));
+    border-radius: 14px;
+    background: var(--card-background-color, #fff);
+    box-shadow:
+      0 18px 44px rgba(0, 0, 0, 0.18),
+      0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 88%, transparent);
+  }
+
+  .floating-menu[hidden] {
+    display: none;
+  }
+`;
+  class DpFloatingMenu extends i$2 {
+    static styles = styles;
+    static properties = {
+      open: { type: Boolean, reflect: true }
+    };
+    constructor() {
+      super();
+      this.open = false;
+    }
+    connectedCallback() {
+      super.connectedCallback();
+      this._onPointerDown = this._onPointerDown.bind(this);
+      window.addEventListener("pointerdown", this._onPointerDown, true);
+    }
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      window.removeEventListener("pointerdown", this._onPointerDown, true);
+    }
+    _onPointerDown(e2) {
+      if (!this.open) {
+        return;
+      }
+      const path = e2.composedPath();
+      const clickedInside = path.some((node) => node === this);
+      if (!clickedInside) {
+        this.dispatchEvent(
+          new CustomEvent("dp-menu-close", {
+            detail: {},
+            bubbles: true,
+            composed: true
+          })
+        );
+      }
+    }
+    render() {
+      return b`
+      <div
+        class="floating-menu"
+        role="menu"
+        ?hidden=${!this.open}
+      >
+        <slot></slot>
+      </div>
+    `;
+    }
+  }
+  customElements.define("dp-floating-menu", DpFloatingMenu);
+  class DpPageMenuItem extends i$2 {
+    static properties = {
+      icon: { type: String },
+      label: { type: String },
+      disabled: { type: Boolean }
+    };
+    static styles = i$5`
+    :host { display: block; }
+    button {
+      width: 100%; min-height: 38px;
+      padding: var(--dp-spacing-sm, 8px) var(--dp-spacing-sm, 8px);
+      display: flex; align-items: center; gap: var(--dp-spacing-sm, 8px);
+      border: none; border-radius: 10px; background: transparent;
+      color: var(--primary-text-color); font: inherit; text-align: left; cursor: pointer;
+    }
+    button:hover, button:focus-visible {
+      background: color-mix(in srgb, var(--primary-text-color, #111) 6%, transparent);
+      outline: none;
+    }
+    button[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    button[disabled]:hover {
+      background: transparent;
+    }
+    ha-icon {
+      --mdc-icon-size: 18px;
+      color: var(--secondary-text-color);
+      flex: 0 0 auto;
+    }
+  `;
+    constructor() {
+      super();
+      this.icon = "";
+      this.label = "";
+      this.disabled = false;
+    }
+    _onClick() {
+      if (this.disabled) {
+        return;
+      }
+      this.dispatchEvent(
+        new CustomEvent("dp-menu-action", {
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    render() {
+      return b`
+      <button
+        type="button"
+        ?disabled=${this.disabled}
+        @click=${this._onClick}
+      >
+        <ha-icon icon="${this.icon}"></ha-icon>
+        ${this.label}
+      </button>
+    `;
+    }
+  }
+  customElements.define("dp-page-menu-item", DpPageMenuItem);
   const DATA_GAP_THRESHOLD_OPTIONS = [
     { value: "auto", label: "Auto-detect" },
     { value: "5m", label: "5 minutes" },
@@ -13393,21 +16983,8 @@ ${s.description}`).join("\n\n");
     { value: "12h", label: "12 hours" },
     { value: "24h", label: "24 hours" }
   ];
-  const ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS = [
-    { value: "all", label: "Show all anomalies" },
-    { value: "highlight", label: "Highlight overlaps" },
-    { value: "only", label: "Overlaps only" }
-  ];
-  function renderAnalysisSelectOptions(options, selectedValue) {
-    return options.map((option) => {
-      return `<option value="${esc(option.value)}" ${selectedValue === option.value ? "selected" : ""}>${esc(option.label)}</option>`;
-    }).join("");
-  }
   function isAnalysisSupportedForRow(row) {
     return typeof row?.entity_id === "string" && !row.entity_id.startsWith("binary_sensor.");
-  }
-  function hasActiveSeriesAnalysis(analysis, hasSelectedComparisonWindow = false) {
-    return analysis.show_trend_lines || analysis.show_summary_stats || analysis.show_rate_of_change || analysis.show_threshold_analysis || analysis.show_anomalies || analysis.show_delta_analysis && hasSelectedComparisonWindow;
   }
   const PANEL_HISTORY_STYLE = `
   :host {
@@ -13599,6 +17176,7 @@ ${s.description}`).join("\n\n");
     grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
     align-items: stretch;
     padding: 0;
+    transition: grid-template-columns 400ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .page-content.sidebar-collapsed {
@@ -13616,6 +17194,7 @@ ${s.description}`).join("\n\n");
     padding: var(--dp-spacing-lg);
     border-right: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 88%, transparent);
     overflow-y: auto;
+    transition: padding 400ms cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .page-sidebar.collapsed {
@@ -13644,6 +17223,15 @@ ${s.description}`).join("\n\n");
   .sidebar-toggle-button:hover,
   .sidebar-toggle-button:focus-visible {
     --icon-primary-color: var(--primary-text-color);
+  }
+
+  .sidebar-toggle-button ha-icon {
+    display: block;
+    transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .page-sidebar.collapsed .sidebar-toggle-button ha-icon {
+    transform: rotate(180deg);
   }
 
   .content {
@@ -13766,6 +17354,39 @@ ${s.description}`).join("\n\n");
     width: 14px;
     height: 14px;
     margin: 0;
+  }
+
+  /* ── Collapsed-sidebar target popup ──────────────────────────────────── */
+
+  .collapsed-target-popup {
+    position: fixed;
+    z-index: 9;
+    width: 300px;
+    max-height: calc(100vh - 32px);
+    overflow-y: auto;
+    background: var(--card-background-color, #fff);
+    border-radius: 16px;
+    border: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 88%, transparent);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  }
+
+  .collapsed-target-popup[hidden] {
+    display: none;
+  }
+
+  /* Row inside popup: remove card styling (popup is the card) and collapse the drag-handle column */
+  .collapsed-target-popup .history-target-row {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    padding-bottom: calc(var(--spacing, 8px) * 1.125);
+    grid-template-columns: 0 minmax(0, 1fr) auto;
+  }
+
+  .collapsed-target-popup .history-target-row:hover {
+    border-color: transparent;
+    background: transparent;
   }
 
   .history-target-empty {
@@ -15069,6 +18690,16 @@ ${s.description}`).join("\n\n");
     outline-offset: 2px;
   }
 
+  @keyframes dp-live-breathe {
+    0%, 100% { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18), 0 0 0 0 rgba(239, 83, 80, 0); }
+    50%       { box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18), 0 0 0 5px rgba(239, 83, 80, 0.2); }
+  }
+
+  .range-handle.is-live {
+    background: #ef5350;
+    animation: dp-live-breathe 3s ease-in-out infinite;
+  }
+
   .range-tooltip {
     position: absolute;
     top: 43px;
@@ -15090,6 +18721,13 @@ ${s.description}`).join("\n\n");
     visibility: hidden;
     transition: opacity 120ms ease, visibility 120ms ease;
     z-index: 8;
+  }
+
+  .range-tooltip-live-hint {
+    display: block;
+    font-size: 0.78rem;
+    opacity: 0.72;
+    margin-top: 4px;
   }
 
   .range-tooltip::after {
@@ -15431,26 +19069,6 @@ ${s.description}`).join("\n\n");
     }
   }
 `;
-  function deriveSwatchIconColor(color) {
-    const hex = String(color || "").trim();
-    const normalizedHex = /^#([0-9a-f]{6})$/i.test(hex) ? hex : null;
-    if (!normalizedHex) {
-      return contrastColor(color);
-    }
-    const channels = normalizedHex.slice(1).match(/.{2}/g)?.map((part) => Number.parseInt(part, 16));
-    if (!channels || channels.length !== 3 || channels.some((channel) => !Number.isFinite(channel))) {
-      return contrastColor(color);
-    }
-    const [red, green, blue] = channels;
-    const luminance = (0.299 * red + 0.587 * green + 0.114 * blue) / 255;
-    const mixTarget = luminance > 0.62 ? 0 : 255;
-    const mixStrength = luminance > 0.62 ? Math.min(0.82, 0.35 + (luminance - 0.62) * 1.6) : Math.min(0.78, 0.4 + (0.62 - luminance) * 0.9);
-    const mixedChannels = [red, green, blue].map((channel) => {
-      const mixed = Math.round(channel * (1 - mixStrength) + mixTarget * mixStrength);
-      return Math.max(0, Math.min(255, mixed));
-    });
-    return `rgb(${mixedChannels[0]}, ${mixedChannels[1]}, ${mixedChannels[2]})`;
-  }
   class HassRecordsHistoryPanel extends HTMLElement {
     constructor() {
       super();
@@ -15469,6 +19087,10 @@ ${s.description}`).join("\n\n");
       this._contentKey = "";
       this._contentSplitRatio = 0.44;
       this._sidebarCollapsed = false;
+      this._collapsedPopupEntityId = null;
+      this._collapsedPopupAnchorEl = null;
+      this._collapsedPopupOutsideClickHandler = null;
+      this._collapsedPopupKeyHandler = null;
       this._datapointScope = "linked";
       this._showChartDatapointIcons = true;
       this._showChartDatapointLines = true;
@@ -15516,9 +19138,11 @@ ${s.description}`).join("\n\n");
       this._loadingComparisonWindowIds = [];
       this._comparisonTabsRenderKey = "";
       this._comparisonTabsHostEl = null;
+      this._comparisonTabRailComp = null;
       this._pendingAnomalyComparisonWindowEntityId = null;
       this._dateWindowDialogOpen = false;
       this._editingDateWindowId = null;
+      this._dateWindowDialogComp = null;
       this._dragSourceIndex = null;
       this._splitChartView = false;
       this._dateWindowDialogNameEl = null;
@@ -15542,8 +19166,10 @@ ${s.description}`).join("\n\n");
       this._contentSplitterEl = null;
       this._targetControl = null;
       this._targetRowsEl = null;
+      this._rowListEl = null;
       this._targetRowsRenderKey = "";
       this._sidebarOptionsEl = null;
+      this._sidebarOptionsComp = null;
       this._dateControl = null;
       this._dateRangePickerEl = null;
       this._datePickerButtonEl = null;
@@ -15646,6 +19272,8 @@ ${s.description}`).join("\n\n");
       this._onContentSplitPointerMove = (ev) => this._handleContentSplitPointerMove(ev);
       this._onContentSplitPointerUp = (ev) => this._finishContentSplitPointer(ev);
       this._onCollapsedSidebarClick = (ev) => this._handleCollapsedSidebarClick(ev);
+      this._onEventRecorded = () => this._handleEventRecorded();
+      this._haEventUnsubscribe = null;
       this._onPopState = () => {
         this._initFromContext();
         if (this._rendered) {
@@ -15663,6 +19291,12 @@ ${s.description}`).join("\n\n");
     }
     set hass(hass) {
       this._hass = hass;
+      if (!this._haEventUnsubscribe && this._hass?.connection) {
+        this._hass.connection.subscribeEvents(() => this._handleEventRecorded(), `${DOMAIN$1}_event_recorded`).then((unsub) => {
+          this._haEventUnsubscribe = unsub;
+        }).catch(() => {
+        });
+      }
       if (!this._rendered) {
         this._rendered = true;
         this._initFromContext();
@@ -15696,6 +19330,7 @@ ${s.description}`).join("\n\n");
       window.addEventListener("location-changed", this._onLocationChanged);
       window.addEventListener("pointerdown", this._onWindowPointerDown, true);
       window.addEventListener("resize", this._onWindowResize);
+      window.addEventListener("hass-datapoints-event-recorded", this._onEventRecorded);
       this.addEventListener("hass-datapoints-chart-hover", this._onChartHover);
       this.addEventListener("hass-datapoints-chart-zoom", this._onChartZoom);
       this.addEventListener("hass-datapoints-records-search", this._onRecordsSearch);
@@ -15724,6 +19359,11 @@ ${s.description}`).join("\n\n");
       window.removeEventListener("location-changed", this._onLocationChanged);
       window.removeEventListener("pointerdown", this._onWindowPointerDown, true);
       window.removeEventListener("resize", this._onWindowResize);
+      window.removeEventListener("hass-datapoints-event-recorded", this._onEventRecorded);
+      if (this._haEventUnsubscribe) {
+        this._haEventUnsubscribe();
+        this._haEventUnsubscribe = null;
+      }
       this.removeEventListener("hass-datapoints-chart-hover", this._onChartHover);
       this.removeEventListener("hass-datapoints-chart-zoom", this._onChartZoom);
       this.removeEventListener("hass-datapoints-records-search", this._onRecordsSearch);
@@ -15899,12 +19539,9 @@ ${s.description}`).join("\n\n");
             >
               <ha-icon icon="mdi:dots-vertical"></ha-icon>
             </ha-icon-button>
-            <div id="page-menu" class="page-menu" hidden>
-              <button type="button" class="page-menu-item" id="page-download-spreadsheet">
-                <ha-icon icon="mdi:file-excel-outline"></ha-icon>
-                <span>Download spreadsheet</span>
-              </button>
-            </div>
+            <dp-floating-menu id="page-menu">
+              <dp-page-menu-item id="page-download-spreadsheet" icon="mdi:file-excel-outline" label="Download spreadsheet"></dp-page-menu-item>
+            </dp-floating-menu>
           </div>
         </div>
         <div class="controls-section">
@@ -15926,6 +19563,7 @@ ${s.description}`).join("\n\n");
           </div>
           <div class="content" id="content"></div>
         </div>
+        <div id="collapsed-target-popup" class="collapsed-target-popup" hidden></div>
       </ha-top-app-bar-fixed>
     `;
       this._topAppBarEl = this.shadowRoot.querySelector("ha-top-app-bar-fixed");
@@ -15937,7 +19575,8 @@ ${s.description}`).join("\n\n");
       this._sidebarToggleButtonEl = this.shadowRoot.querySelector("#sidebar-toggle");
       this._sidebarOptionsEl = this.shadowRoot.querySelector("#sidebar-options");
       this._pageMenuButtonEl?.addEventListener("click", () => this._togglePageMenu());
-      this._pageMenuEl?.querySelector("#page-download-spreadsheet")?.addEventListener("click", () => this._downloadSpreadsheet());
+      this._pageMenuEl?.querySelector("#page-download-spreadsheet")?.addEventListener("dp-menu-action", () => this._downloadSpreadsheet());
+      this._pageMenuEl?.addEventListener("dp-menu-close", () => this._togglePageMenu(false));
       this._sidebarToggleButtonEl?.addEventListener("click", () => this._toggleSidebarCollapsed());
       this._pageSidebarEl?.addEventListener("click", this._onCollapsedSidebarClick);
       this._syncPageLayoutHeight();
@@ -16047,7 +19686,7 @@ ${s.description}`).join("\n\n");
       this._syncSeriesState();
     }
     _seriesColorQueryKey(entityId) {
-      return slugifySeriesName(entityName(this._hass, entityId) || entityId);
+      return slugifySeriesName(entityName$1(this._hass, entityId) || entityId);
     }
     _applyPreferredSeriesColors(rows, urlColorMap = null) {
       const queryColors = urlColorMap && typeof urlColorMap === "object" ? urlColorMap : {};
@@ -16103,130 +19742,23 @@ ${s.description}`).join("\n\n");
       this._syncRangeControl();
     }
     _renderSidebarOptions() {
-      if (!this._sidebarOptionsEl) return;
-      this._sidebarOptionsEl.innerHTML = `
-      <div class="sidebar-options-card">
-        <div class="sidebar-options-section">
-          <div class="sidebar-section-header">
-            <div class="sidebar-section-title">Datapoints</div>
-            <div class="sidebar-section-subtitle">Choose which annotation datapoints appear on the chart.</div>
-          </div>
-          <div class="sidebar-radio-group">
-            <label class="sidebar-radio-option">
-              <input type="radio" name="datapoint-scope" value="linked" ${this._datapointScope === "linked" ? "checked" : ""}>
-              <span>Linked to selected targets</span>
-            </label>
-            <label class="sidebar-radio-option">
-              <input type="radio" name="datapoint-scope" value="all" ${this._datapointScope === "all" ? "checked" : ""}>
-              <span>All datapoints</span>
-            </label>
-            <label class="sidebar-radio-option">
-              <input type="radio" name="datapoint-scope" value="hidden" ${this._datapointScope === "hidden" ? "checked" : ""}>
-              <span>Hide datapoints</span>
-            </label>
-          </div>
-        </div>
-        <div class="sidebar-options-section">
-          <div class="sidebar-section-header">
-            <div class="sidebar-section-title">Datapoint Display</div>
-            <div class="sidebar-section-subtitle">Control how annotation datapoints are rendered on the chart.</div>
-          </div>
-          <div class="sidebar-toggle-group">
-            <label class="sidebar-toggle-option">
-              <input type="checkbox" name="chart-datapoint-icons" ${this._showChartDatapointIcons ? "checked" : ""}>
-              <span>Show datapoint icons</span>
-            </label>
-            <label class="sidebar-toggle-option">
-              <input type="checkbox" name="chart-datapoint-lines" ${this._showChartDatapointLines ? "checked" : ""}>
-              <span>Show dotted lines</span>
-            </label>
-          </div>
-        </div>
-        <div class="sidebar-options-section">
-          <div class="sidebar-section-header">
-            <div class="sidebar-section-title">Chart Display</div>
-            <div class="sidebar-section-subtitle">Configure visual and interaction behaviour for the chart.</div>
-          </div>
-          <div class="sidebar-toggle-group">
-            <label class="sidebar-toggle-option">
-              <input type="checkbox" name="chart-tooltips" ${this._showChartTooltips ? "checked" : ""}>
-              <span>Show tooltips</span>
-            </label>
-            <label class="sidebar-toggle-option">
-              <input type="checkbox" name="chart-emphasized-hover-guides" ${this._showChartEmphasizedHoverGuides ? "checked" : ""}>
-              <span>Emphasize hover guides</span>
-            </label>
-            <label class="sidebar-toggle-option">
-              <input type="checkbox" name="chart-correlated-anomalies" ${this._showCorrelatedAnomalies ? "checked" : ""}>
-              <span>Highlight correlated anomalies</span>
-            </label>
-            <label class="sidebar-toggle-option">
-              <input type="checkbox" name="chart-show-data-gaps" ${this._showDataGaps ? "checked" : ""}>
-              <span>Show data gaps</span>
-            </label>
-            <div class="sidebar-toggle-option" style="padding-left: 22px; opacity: ${this._showDataGaps ? "1" : "0.5"};">
-              <select name="chart-data-gap-threshold" class="history-target-analysis-select" ${this._showDataGaps ? "" : "disabled"}>
-                ${renderAnalysisSelectOptions(DATA_GAP_THRESHOLD_OPTIONS, this._dataGapThreshold)}
-              </select>
-              <span>Gap threshold</span>
-            </div>
-          </div>
-          <div class="sidebar-radio-group" style="margin-top: var(--dp-spacing-sm);">
-            <label class="sidebar-radio-option">
-              <input type="radio" name="chart-y-axis-mode" value="combined" ${!this._delinkChartYAxis && !this._splitChartView ? "checked" : ""}>
-              <span>Combine y-axis by unit</span>
-            </label>
-            <label class="sidebar-radio-option">
-              <input type="radio" name="chart-y-axis-mode" value="unique" ${this._delinkChartYAxis && !this._splitChartView ? "checked" : ""}>
-              <span>Unique y-axis per series</span>
-            </label>
-            <label class="sidebar-radio-option">
-              <input type="radio" name="chart-y-axis-mode" value="split" ${this._splitChartView ? "checked" : ""}>
-              <span>Split series into rows</span>
-            </label>
-          </div>
-        </div>
-      </div>
-    `;
-      this._sidebarOptionsEl.querySelectorAll("input[name='datapoint-scope']").forEach((input) => {
-        input.addEventListener("change", () => {
-          if (!input.checked || input.value === this._datapointScope) return;
-          this._setDatapointScope(input.value);
-        });
-      });
-      this._sidebarOptionsEl.querySelector("input[name='chart-datapoint-icons']")?.addEventListener("change", (ev) => {
-        this._setChartDatapointDisplayOption("icons", !!ev.currentTarget?.checked);
-      });
-      this._sidebarOptionsEl.querySelector("input[name='chart-datapoint-lines']")?.addEventListener("change", (ev) => {
-        this._setChartDatapointDisplayOption("lines", !!ev.currentTarget?.checked);
-      });
-      this._sidebarOptionsEl.querySelector("input[name='chart-tooltips']")?.addEventListener("change", (ev) => {
-        this._setChartDatapointDisplayOption("tooltips", !!ev.currentTarget?.checked);
-      });
-      this._sidebarOptionsEl.querySelector("input[name='chart-emphasized-hover-guides']")?.addEventListener("change", (ev) => {
-        this._setChartDatapointDisplayOption("hover_guides", !!ev.currentTarget?.checked);
-      });
-      this._sidebarOptionsEl.querySelector("input[name='chart-correlated-anomalies']")?.addEventListener("change", (ev) => {
-        this._setChartDatapointDisplayOption("correlated_anomalies", !!ev.currentTarget?.checked);
-      });
-      this._sidebarOptionsEl.querySelector("input[name='chart-show-data-gaps']")?.addEventListener("change", (ev) => {
-        this._setChartDatapointDisplayOption("data_gaps", !!ev.currentTarget?.checked);
-      });
-      this._sidebarOptionsEl.querySelector("select[name='chart-data-gap-threshold']")?.addEventListener("change", (ev) => {
-        this._setChartDatapointDisplayOption("data_gap_threshold", ev.currentTarget?.value || "2h");
-      });
-      this._sidebarOptionsEl.querySelectorAll("input[name='chart-y-axis-mode']").forEach((input) => {
-        input.addEventListener("change", () => {
-          if (!input.checked) {
-            return;
-          }
-          this._setChartYAxisMode(input.value);
-        });
-      });
+      if (!this._sidebarOptionsComp) {
+        return;
+      }
+      const yAxisMode = this._splitChartView ? "split" : this._delinkChartYAxis ? "unique" : "combined";
+      this._sidebarOptionsComp.datapointScope = this._datapointScope;
+      this._sidebarOptionsComp.showIcons = this._showChartDatapointIcons;
+      this._sidebarOptionsComp.showLines = this._showChartDatapointLines;
+      this._sidebarOptionsComp.showTooltips = this._showChartTooltips;
+      this._sidebarOptionsComp.showHoverGuides = this._showChartEmphasizedHoverGuides;
+      this._sidebarOptionsComp.showCorrelatedAnomalies = this._showCorrelatedAnomalies;
+      this._sidebarOptionsComp.showDataGaps = this._showDataGaps;
+      this._sidebarOptionsComp.dataGapThreshold = this._dataGapThreshold;
+      this._sidebarOptionsComp.yAxisMode = yAxisMode;
     }
     _formatComparisonLabel(start, end) {
-      const fmt = (d) => d.toLocaleDateString(void 0, { month: "short", day: "numeric" });
-      const fmtYear = (d) => d.toLocaleDateString(void 0, { month: "short", day: "numeric", year: "numeric" });
+      const fmt = (d2) => d2.toLocaleDateString(void 0, { month: "short", day: "numeric" });
+      const fmtYear = (d2) => d2.toLocaleDateString(void 0, { month: "short", day: "numeric", year: "numeric" });
       const sameYear = start.getFullYear() === end.getFullYear();
       return sameYear ? `${fmt(start)} – ${fmt(end)}` : `${fmtYear(start)} – ${fmtYear(end)}`;
     }
@@ -16369,11 +19901,18 @@ ${s.description}`).join("\n\n");
       return null;
     }
     _syncDateWindowDialogInputs() {
+      const startVal = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.start || null);
+      const endVal = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.end || null);
+      if (this._dateWindowDialogComp) {
+        this._dateWindowDialogComp.startValue = startVal;
+        this._dateWindowDialogComp.endValue = endVal;
+        return;
+      }
       if (this._dateWindowDialogStartEl) {
-        this._dateWindowDialogStartEl.value = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.start || null);
+        this._dateWindowDialogStartEl.value = startVal;
       }
       if (this._dateWindowDialogEndEl) {
-        this._dateWindowDialogEndEl.value = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.end || null);
+        this._dateWindowDialogEndEl.value = endVal;
       }
     }
     _handleDateWindowDialogInputChange() {
@@ -16412,7 +19951,7 @@ ${s.description}`).join("\n\n");
       this._syncDateWindowDialogInputs();
     }
     _ensureDateWindowDialog() {
-      if (this._dateWindowDialogEl || !this.shadowRoot) return;
+      if (this._dateWindowDialogComp || this._dateWindowDialogEl || !this.shadowRoot) return;
       const dialog = document.createElement("ha-dialog");
       dialog.id = "date-window-dialog";
       dialog.setAttribute("hideActions", "");
@@ -16477,8 +20016,22 @@ ${s.description}`).join("\n\n");
       this._ensureDateWindowDialog();
       this._dateWindowDialogOpen = true;
       this._editingDateWindowId = targetWindow?.id || null;
-      if (this._dateWindowDialogEl) this._dateWindowDialogEl.open = true;
+      const dialogStart = targetWindow ? parseDateValue(targetWindow.start_time) : this._startTime;
+      const dialogEnd = targetWindow ? parseDateValue(targetWindow.end_time) : this._endTime;
+      this._dateWindowDialogDraftRange = dialogStart && dialogEnd && dialogStart < dialogEnd ? { start: new Date(dialogStart), end: new Date(dialogEnd) } : null;
+      if (this._dateWindowDialogComp) {
+        this._dateWindowDialogComp.heading = targetWindow ? "Edit date window" : "Add date window";
+        this._dateWindowDialogComp.submitLabel = targetWindow ? "Save date window" : "Create date window";
+        this._dateWindowDialogComp.showDelete = !!targetWindow;
+        this._dateWindowDialogComp.showShortcuts = !targetWindow;
+        this._dateWindowDialogComp.name = targetWindow?.label || "";
+        this._dateWindowDialogComp.startValue = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.start || null);
+        this._dateWindowDialogComp.endValue = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.end || null);
+        this._dateWindowDialogComp.open = true;
+        return;
+      }
       if (this._dateWindowDialogEl) {
+        this._dateWindowDialogEl.open = true;
         this._dateWindowDialogEl.headerTitle = targetWindow ? "Edit date window" : "Add date window";
       }
       const submitButton = this._dateWindowDialogEl?.querySelector("#date-window-submit");
@@ -16496,9 +20049,6 @@ ${s.description}`).join("\n\n");
       if (this._dateWindowDialogNameEl) {
         this._dateWindowDialogNameEl.value = targetWindow?.label || "";
       }
-      const dialogStart = targetWindow ? parseDateValue(targetWindow.start_time) : this._startTime;
-      const dialogEnd = targetWindow ? parseDateValue(targetWindow.end_time) : this._endTime;
-      this._dateWindowDialogDraftRange = dialogStart && dialogEnd && dialogStart < dialogEnd ? { start: new Date(dialogStart), end: new Date(dialogEnd) } : null;
       this._syncDateWindowDialogInputs();
       window.requestAnimationFrame(() => this._dateWindowDialogNameEl?.focus());
     }
@@ -16507,12 +20057,21 @@ ${s.description}`).join("\n\n");
       this._editingDateWindowId = null;
       this._dateWindowDialogDraftRange = null;
       this._pendingAnomalyComparisonWindowEntityId = null;
-      if (this._dateWindowDialogEl && !fromClosedEvent) this._dateWindowDialogEl.open = false;
+      if (!fromClosedEvent) {
+        if (this._dateWindowDialogComp) {
+          this._dateWindowDialogComp.open = false;
+        } else if (this._dateWindowDialogEl) {
+          this._dateWindowDialogEl.open = false;
+        }
+      }
     }
-    _createDateWindowFromDialog() {
-      const label = String(this._dateWindowDialogNameEl?.value || "").trim();
-      const start = this._dateWindowDialogDraftRange?.start || null;
-      const end = this._dateWindowDialogDraftRange?.end || null;
+    _createDateWindowFromDialog(overrides = {}) {
+      const rawName = overrides.name != null ? overrides.name : this._dateWindowDialogNameEl?.value || "";
+      const label = String(rawName).trim();
+      const parsedStart = overrides.start ? this._parseDateWindowInputValue(overrides.start) : null;
+      const parsedEnd = overrides.end ? this._parseDateWindowInputValue(overrides.end) : null;
+      const start = parsedStart || this._dateWindowDialogDraftRange?.start || null;
+      const end = parsedEnd || this._dateWindowDialogDraftRange?.end || null;
       if (!label || !start || !end || start >= end) return;
       const existingIds = new Set(this._comparisonWindows.map((window2) => window2.id));
       const nextWindow = {
@@ -16539,7 +20098,7 @@ ${s.description}`).join("\n\n");
     async _deleteDateWindow(id) {
       if (!id) return;
       const windowToDelete = this._comparisonWindows.find((window2) => window2.id === id);
-      const confirmed = await confirmDestructiveAction(this, {
+      const confirmed = await confirmDestructiveAction$1(this, {
         title: "Delete date window",
         message: `Delete "${windowToDelete?.label || "this date window"}"?`,
         confirmLabel: "Delete date window"
@@ -16648,11 +20207,10 @@ ${s.description}`).join("\n\n");
     _syncSidebarUi() {
       this._pageContentEl?.classList.toggle("sidebar-collapsed", this._sidebarCollapsed);
       this._pageSidebarEl?.classList.toggle("collapsed", this._sidebarCollapsed);
-      const icon = this._sidebarCollapsed ? "mdi:menu" : "mdi:menu-open";
       const label = this._sidebarCollapsed ? "Expand targets sidebar" : "Collapse targets sidebar";
-      const iconEl = this._sidebarToggleButtonEl?.querySelector("ha-icon");
-      if (iconEl) iconEl.icon = icon;
-      if (this._sidebarToggleButtonEl) this._sidebarToggleButtonEl.label = label;
+      if (this._sidebarToggleButtonEl) {
+        this._sidebarToggleButtonEl.label = label;
+      }
     }
     _applyContentSplitLayout() {
       const content = this.shadowRoot?.getElementById("content");
@@ -16697,6 +20255,9 @@ ${s.description}`).join("\n\n");
     }
     _toggleSidebarCollapsed() {
       this._sidebarCollapsed = !this._sidebarCollapsed;
+      if (!this._sidebarCollapsed) {
+        this._hideCollapsedTargetPopup();
+      }
       this._saveSessionState();
       this._syncSidebarUi();
       window.requestAnimationFrame(() => {
@@ -16957,7 +20518,7 @@ ${s.description}`).join("\n\n");
       const endIso = new Date(this._rangeBounds.max).toISOString();
       const key = `${startIso}|${endIso}|${this._datapointScope}|${this._entities.join(",")}`;
       if (this._timelineEventsKey === key || this._timelineEventsPromise) return;
-      this._timelineEventsPromise = fetchEvents(
+      this._timelineEventsPromise = fetchEvents$1(
         this._hass,
         startIso,
         endIso,
@@ -17026,6 +20587,47 @@ ${s.description}`).join("\n\n");
       dateSlot.innerHTML = "";
       this._targetRowsEl = targetSlot.querySelector("#target-rows");
       const pickerSlot = targetSlot.querySelector("#target-picker-slot");
+      const rowListEl = document.createElement("dp-target-row-list");
+      rowListEl.rows = [];
+      rowListEl.states = {};
+      rowListEl.hass = this._hass ?? null;
+      rowListEl.canShowDeltaAnalysis = false;
+      rowListEl.comparisonWindows = [];
+      rowListEl.addEventListener("dp-row-color-change", (ev) => {
+        const { index, color } = ev.detail || {};
+        this._updateSeriesRowColor(index, color);
+      });
+      rowListEl.addEventListener("dp-row-visibility-change", (ev) => {
+        const { entityId, visible } = ev.detail || {};
+        this._updateSeriesRowVisibilityByEntityId(entityId, visible);
+      });
+      rowListEl.addEventListener("dp-row-remove", (ev) => {
+        const { index } = ev.detail || {};
+        this._removeSeriesRow(index);
+      });
+      rowListEl.addEventListener("dp-row-toggle-analysis", (ev) => {
+        const { entityId } = ev.detail || {};
+        this._toggleSeriesAnalysisExpanded(entityId);
+      });
+      rowListEl.addEventListener("dp-row-analysis-change", (ev) => {
+        const { entityId, key, value } = ev.detail || {};
+        this._setSeriesAnalysisOption(entityId, key, value);
+      });
+      rowListEl.addEventListener("dp-rows-reorder", (ev) => {
+        const { rows } = ev.detail || {};
+        if (!Array.isArray(rows)) {
+          return;
+        }
+        this._seriesRows = rows;
+        this._syncSeriesState();
+        this._saveSessionState();
+        this._renderTargetRows();
+        this._syncControls();
+        this._updateUrl({ push: true });
+        this._renderContent();
+      });
+      this._targetRowsEl.appendChild(rowListEl);
+      this._rowListEl = rowListEl;
       const targetControl = document.createElement("ha-target-picker");
       targetControl.style.display = "block";
       targetControl.style.width = "100%";
@@ -17098,15 +20700,15 @@ ${s.description}`).join("\n\n");
           <ha-icon-button id="range-picker-button" class="range-picker-button" label="Select date range" aria-haspopup="dialog" aria-expanded="false">
             <ha-icon icon="mdi:calendar-range"></ha-icon>
           </ha-icon-button>
-          <div id="range-picker-menu" class="range-picker-menu" hidden>
+          <dp-floating-menu id="range-picker-menu" style="--floating-menu-width: min(340px, calc(100vw - 32px)); --floating-menu-padding: var(--dp-spacing-md, 16px);">
             <ha-date-range-picker id="range-picker" class="range-picker"></ha-date-range-picker>
-          </div>
+          </dp-floating-menu>
         </div>
         <div class="range-options-wrap">
           <ha-icon-button id="range-options-button" class="range-options-button" label="Timeline options" aria-haspopup="menu" aria-expanded="false">
             <ha-icon icon="mdi:dots-vertical"></ha-icon>
           </ha-icon-button>
-          <div id="range-options-menu" class="range-options-menu" hidden>
+          <dp-floating-menu id="range-options-menu" style="--floating-menu-width: 280px; --floating-menu-max-height: min(70vh, 520px); --floating-menu-overflow: auto; --floating-menu-padding: var(--dp-spacing-sm, 8px);">
             <div class="range-options-view" data-options-view="root">
               <div class="range-options-list">
                 <button type="button" class="range-submenu-trigger" data-options-submenu="zoom">
@@ -17153,7 +20755,7 @@ ${s.description}`).join("\n\n");
                 `).join("")}
               </div>
             </div>
-          </div>
+          </dp-floating-menu>
         </div>
       </div>
     `;
@@ -17202,9 +20804,11 @@ ${s.description}`).join("\n\n");
       this._rangeStartHandle.addEventListener("blur", () => this._clearRangeTooltipFocusHandle("start"));
       this._rangeEndHandle.addEventListener("blur", () => this._clearRangeTooltipFocusHandle("end"));
       this._datePickerButtonEl.addEventListener("click", () => this._toggleDatePickerMenu());
+      this._datePickerMenuEl?.addEventListener("dp-menu-close", () => this._toggleDatePickerMenu(false));
       this._dateRangePickerEl.addEventListener("change", (ev) => this._handleDatePickerChange(ev));
       this._dateRangePickerEl.addEventListener("value-changed", (ev) => this._handleDatePickerChange(ev));
       this._optionsButtonEl.addEventListener("click", () => this._toggleOptionsMenu());
+      this._optionsMenuEl?.addEventListener("dp-menu-close", () => this._toggleOptionsMenu(false));
       this._optionsMenuEl.querySelectorAll("[data-options-submenu]").forEach((button) => {
         button.addEventListener("click", () => this._setOptionsMenuView(button.dataset.optionsSubmenu || "root"));
       });
@@ -17218,434 +20822,109 @@ ${s.description}`).join("\n\n");
       this._rangeJumpRightEl?.addEventListener("click", () => this._revealSelectionInTimeline("smooth"));
       dateSlot.appendChild(dateControl);
       this._dateControl = dateControl;
+      if (this._sidebarOptionsEl) {
+        const sidebarComp = document.createElement("dp-sidebar-options");
+        sidebarComp.addEventListener("dp-scope-change", (ev) => {
+          const { value } = ev.detail || {};
+          if (value) {
+            this._setDatapointScope(value);
+          }
+        });
+        sidebarComp.addEventListener("dp-display-change", (ev) => {
+          const { kind, value } = ev.detail || {};
+          if (!kind) {
+            return;
+          }
+          if (kind === "y_axis_mode") {
+            this._setChartYAxisMode(value);
+          } else {
+            this._setChartDatapointDisplayOption(kind, value);
+          }
+        });
+        this._sidebarOptionsEl.appendChild(sidebarComp);
+        this._sidebarOptionsComp = sidebarComp;
+      }
+      if (this.shadowRoot) {
+        const dialogComp = document.createElement("dp-date-window-dialog");
+        dialogComp.addEventListener("dp-window-close", () => this._closeDateWindowDialog());
+        dialogComp.addEventListener("dp-window-submit", (ev) => {
+          this._createDateWindowFromDialog(ev.detail || {});
+        });
+        dialogComp.addEventListener("dp-window-delete", () => this._deleteEditingDateWindow());
+        dialogComp.addEventListener("dp-window-shortcut", (ev) => {
+          this._applyDateWindowShortcut(ev.detail.direction);
+        });
+        dialogComp.addEventListener("dp-window-date-change", (ev) => {
+          const start = this._parseDateWindowInputValue(ev.detail?.start || "");
+          const end = this._parseDateWindowInputValue(ev.detail?.end || "");
+          if (start && end && start < end) {
+            this._dateWindowDialogDraftRange = { start, end };
+          } else {
+            this._dateWindowDialogDraftRange = null;
+          }
+        });
+        this.shadowRoot.appendChild(dialogComp);
+        this._dateWindowDialogComp = dialogComp;
+      }
       this._syncControls();
     }
     _renderTargetRows() {
       if (!this._targetRowsEl) return;
-      const renderKey = JSON.stringify(this._seriesRows);
-      if (this._targetRowsRenderKey === renderKey && this._targetRowsEl.childElementCount) return;
-      this._targetRowsRenderKey = renderKey;
       const collapsedSummaryEl = this.shadowRoot?.getElementById("target-collapsed-summary");
-      if (!this._seriesRows.length) {
-        this._targetRowsEl.innerHTML = `<div class="history-target-empty">Add a target to start plotting series.</div>`;
-        if (collapsedSummaryEl) {
-          collapsedSummaryEl.innerHTML = `<div class="history-targets-collapsed-empty" title="No targets selected"></div>`;
-        }
-        return;
+      if (this._rowListEl) {
+        this._rowListEl.rows = this._seriesRows;
+        this._rowListEl.states = this._hass?.states ?? {};
+        this._rowListEl.hass = this._hass ?? null;
+        this._rowListEl.canShowDeltaAnalysis = !!this._selectedComparisonWindowId;
+        this._rowListEl.comparisonWindows = this._comparisonWindows;
       }
-      this._targetRowsEl.innerHTML = `
-      <div class="history-target-table" role="table" aria-label="History chart targets">
-        <div class="history-target-table-body" role="rowgroup">
-          ${this._seriesRows.map((row, index) => {
-        const analysis = normalizeHistorySeriesAnalysis(row.analysis);
-        const supportsAnalysis = isAnalysisSupportedForRow(row);
-        const hasConfiguredAnalysis = historySeriesRowHasConfiguredAnalysis(row);
-        const isExpanded = supportsAnalysis && analysis.expanded === true;
-        const canShowDeltaAnalysis = !!this._selectedComparisonWindowId;
-        const hasActiveAnalysis = hasActiveSeriesAnalysis(analysis, canShowDeltaAnalysis);
-        const rowName = entityName(this._hass, row.entity_id) || row.entity_id;
-        const unit = this._hass?.states?.[row.entity_id]?.attributes?.unit_of_measurement || "";
-        return `
-            <div class="history-target-row ${row.visible === false ? "is-hidden" : ""} ${isExpanded ? "analysis-open" : ""}" role="row" data-series-reorder-index="${index}" ${supportsAnalysis ? `data-series-row-entity-id="${esc(row.entity_id)}"` : ""}>
-              <button type="button" class="history-target-drag-handle" draggable="true" data-series-drag-index="${index}" aria-label="Drag to reorder ${esc(rowName)}" title="Drag to reorder">
-                <ha-icon icon="mdi:drag-vertical"></ha-icon>
-              </button>
-              <div class="history-target-name" role="cell" title="${esc(entityName(this._hass, row.entity_id) || row.entity_id)}">
-                <div role="cell" class="history-target-controls">
-                  <label class="history-target-color-field" style="--row-color:${esc(row.color)};--row-icon-color:${deriveSwatchIconColor(row.color)}">
-                    <input type="color" class="history-target-color" data-series-color-index="${index}" value="${esc(row.color)}" aria-label="Line color for ${esc(row.entity_id)}">
-                    <span class="history-target-color-icon" aria-hidden="true">
-                      <ha-state-icon data-series-icon-entity-id="${esc(row.entity_id)}"></ha-state-icon>
-                    </span>
-                  </label>
-                </div>
-                <div class="history-target-name-text">
-                  ${esc(entityName(this._hass, row.entity_id) || row.entity_id)}
-                  <div class="history-target-entity-id">${esc(row.entity_id)}</div>
-                </div>
-              </div>
-              <div role="cell" class="history-target-actions">
-                ${supportsAnalysis ? `
-                  <button
-                    type="button"
-                    class="history-target-analysis-toggle ${hasConfiguredAnalysis ? "configured" : ""}"
-                    data-series-analysis-toggle-entity-id="${esc(row.entity_id)}"
-                    aria-label="${isExpanded ? "Collapse" : "Expand"} analysis options for ${esc(rowName)}"
-                    aria-expanded="${isExpanded ? "true" : "false"}"
-                    title="${hasConfiguredAnalysis ? "Analysis configured" : "Configure analysis"}"
-                  >
-                    <ha-icon icon="${isExpanded ? "mdi:chevron-up" : "mdi:chevron-down"}"></ha-icon>
-                  </button>
-                ` : ""}
-                <label class="history-target-visible-toggle" title="${row.visible === false ? "Show" : "Hide"} ${esc(entityName(this._hass, row.entity_id) || row.entity_id)}">
-                  <input
-                    type="checkbox"
-                    data-series-visible-entity-id="${esc(row.entity_id)}"
-                    aria-label="Show ${esc(entityName(this._hass, row.entity_id) || row.entity_id)} on chart"
-                    ${row.visible === false ? "" : "checked"}
-                  >
-                  <span class="history-target-visible-toggle-track"></span>
-                </label>
-                <button type="button" class="history-target-remove" data-series-remove-index="${index}" aria-label="Remove ${esc(row.entity_id)}">
-                  <ha-icon icon="mdi:close"></ha-icon>
-                </button>
-              </div>
-              ${supportsAnalysis && isExpanded ? `
-                <div class="history-target-analysis" role="cell">
-                  <div class="history-target-analysis-grid">
-                    <label class="history-target-analysis-option ${!hasActiveAnalysis ? "is-disabled" : ""}">
-                      <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::hide_source_series" ${analysis.hide_source_series && hasActiveAnalysis ? "checked" : ""} ${!hasActiveAnalysis ? "disabled" : ""}>
-                      <span>Hide source series</span>
-                    </label>
-                    <div class="history-target-analysis-group ${analysis.show_trend_lines ? "is-open" : ""}">
-                      <label class="history-target-analysis-option">
-                        <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::show_trend_lines" ${analysis.show_trend_lines ? "checked" : ""}>
-                        <span>Show trend lines</span>
-                      </label>
-                      ${analysis.show_trend_lines ? `
-                        <div class="history-target-analysis-group-body">
-                          <label class="history-target-analysis-option">
-                            <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::show_trend_crosshairs" ${analysis.show_trend_crosshairs ? "checked" : ""}>
-                            <span>Show trend crosshairs</span>
-                          </label>
-                          <label class="history-target-analysis-field">
-                            <span class="history-target-analysis-field-label">Trend method</span>
-                            <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::trend_method">
-                              ${renderAnalysisSelectOptions(ANALYSIS_TREND_METHOD_OPTIONS, analysis.trend_method)}
-                            </select>
-                          </label>
-                          ${analysis.trend_method === "rolling_average" ? `
-                            <label class="history-target-analysis-field">
-                              <span class="history-target-analysis-field-label">Trend window</span>
-                              <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::trend_window">
-                                ${renderAnalysisSelectOptions(ANALYSIS_TREND_WINDOW_OPTIONS, analysis.trend_window)}
-                              </select>
-                            </label>
-                          ` : ""}
-                        </div>
-                      ` : ""}
-                    </div>
-                    <label class="history-target-analysis-option">
-                      <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::show_summary_stats" ${analysis.show_summary_stats ? "checked" : ""}>
-                      <span>Show min / max / mean</span>
-                    </label>
-                    <div class="history-target-analysis-group ${analysis.show_rate_of_change ? "is-open" : ""}">
-                      <label class="history-target-analysis-option">
-                        <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::show_rate_of_change" ${analysis.show_rate_of_change ? "checked" : ""}>
-                        <span>Show rate of change</span>
-                      </label>
-                      ${analysis.show_rate_of_change ? `
-                        <div class="history-target-analysis-group-body">
-                          <label class="history-target-analysis-field">
-                            <span class="history-target-analysis-field-label">Rate window</span>
-                            <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::rate_window">
-                              ${renderAnalysisSelectOptions(ANALYSIS_RATE_WINDOW_OPTIONS, analysis.rate_window)}
-                            </select>
-                          </label>
-                        </div>
-                      ` : ""}
-                    </div>
-                    <div class="history-target-analysis-group ${analysis.show_threshold_analysis ? "is-open" : ""}">
-                      <label class="history-target-analysis-option">
-                        <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::show_threshold_analysis" ${analysis.show_threshold_analysis ? "checked" : ""}>
-                        <span>Show threshold analysis</span>
-                      </label>
-                      ${analysis.show_threshold_analysis ? `
-                        <div class="history-target-analysis-group-body">
-                          <label class="history-target-analysis-option">
-                            <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::show_threshold_shading" ${analysis.show_threshold_shading ? "checked" : ""}>
-                            <span>Shade threshold area</span>
-                          </label>
-                          <label class="history-target-analysis-field">
-                            <span class="history-target-analysis-field-label">Threshold</span>
-                            <div class="history-target-analysis-toggle-group">
-                              <input
-                                class="history-target-analysis-input"
-                                type="number"
-                                step="any"
-                                inputmode="decimal"
-                                data-series-analysis-input="${esc(row.entity_id)}::threshold_value"
-                                value="${esc(analysis.threshold_value)}"
-                                placeholder="Threshold"
-                              >
-                              <span class="sidebar-analysis-threshold-unit">${esc(unit)}</span>
-                            </div>
-                          </label>
-                          ${analysis.show_threshold_shading ? `
-                            <label class="history-target-analysis-field">
-                              <span class="history-target-analysis-field-label">Shade area</span>
-                              <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::threshold_direction">
-                                <option value="above" ${analysis.threshold_direction !== "below" ? "selected" : ""}>Shade above</option>
-                                <option value="below" ${analysis.threshold_direction === "below" ? "selected" : ""}>Shade below</option>
-                              </select>
-                            </label>
-                          ` : ""}
-                        </div>
-                      ` : ""}
-                    </div>
-                    <div class="history-target-analysis-group ${analysis.show_anomalies ? "is-open" : ""}">
-                      <label class="history-target-analysis-option">
-                        <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::show_anomalies" ${analysis.show_anomalies ? "checked" : ""}>
-                        <span>Show anomalies</span>
-                      </label>
-                      ${analysis.show_anomalies ? `
-                        <div class="history-target-analysis-group-body">
-                          <label class="history-target-analysis-field">
-                            <span class="history-target-analysis-field-label">Sensitivity</span>
-                            <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::anomaly_sensitivity">
-                              ${renderAnalysisSelectOptions(ANALYSIS_ANOMALY_SENSITIVITY_OPTIONS, analysis.anomaly_sensitivity)}
-                            </select>
-                          </label>
-                          <div class="history-target-analysis-method-list">
-                            ${ANALYSIS_ANOMALY_METHOD_OPTIONS.map((opt) => {
-          const isChecked = analysis.anomaly_methods.includes(opt.value);
-          return `
-                              <div class="history-target-analysis-method-item">
-                                <label class="history-target-analysis-option">
-                                  <input type="checkbox"
-                                    data-series-analysis-option="${esc(row.entity_id)}::anomaly_method_toggle_${esc(opt.value)}"
-                                    ${isChecked ? "checked" : ""}>
-                                  <span>${esc(opt.label)}</span>
-                                  ${opt.help ? `
-                                    <span class="analysis-method-help" id="amh-${esc(row.entity_id.replace(/\./g, "-"))}-${esc(opt.value)}" tabindex="0">?</span>
-                                    <ha-tooltip for="amh-${esc(row.entity_id.replace(/\./g, "-"))}-${esc(opt.value)}" placement="right" hoist>${esc(opt.help)}</ha-tooltip>
-                                  ` : ""}
-                                  ${isChecked ? `<span class="analysis-computing-spinner" data-analysis-spinner="${esc(row.entity_id)}"></span>` : ""}
-                                </label>
-                                ${isChecked && opt.value === "rate_of_change" ? `
-                                  <div class="history-target-analysis-method-subopts">
-                                    <label class="history-target-analysis-field">
-                                      <span class="history-target-analysis-field-label">Rate window</span>
-                                      <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::anomaly_rate_window">
-                                        ${renderAnalysisSelectOptions(ANALYSIS_ANOMALY_RATE_WINDOW_OPTIONS, analysis.anomaly_rate_window)}
-                                      </select>
-                                    </label>
-                                  </div>
-                                ` : ""}
-                                ${isChecked && opt.value === "rolling_zscore" ? `
-                                  <div class="history-target-analysis-method-subopts">
-                                    <label class="history-target-analysis-field">
-                                      <span class="history-target-analysis-field-label">Rolling window</span>
-                                      <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::anomaly_zscore_window">
-                                        ${renderAnalysisSelectOptions(ANALYSIS_ANOMALY_ZSCORE_WINDOW_OPTIONS, analysis.anomaly_zscore_window)}
-                                      </select>
-                                    </label>
-                                  </div>
-                                ` : ""}
-                                ${isChecked && opt.value === "persistence" ? `
-                                  <div class="history-target-analysis-method-subopts">
-                                    <label class="history-target-analysis-field">
-                                      <span class="history-target-analysis-field-label">Min flat duration</span>
-                                      <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::anomaly_persistence_window">
-                                        ${renderAnalysisSelectOptions(ANALYSIS_ANOMALY_PERSISTENCE_WINDOW_OPTIONS, analysis.anomaly_persistence_window)}
-                                      </select>
-                                    </label>
-                                  </div>
-                                ` : ""}
-                                ${isChecked && opt.value === "comparison_window" ? `
-                                  <div class="history-target-analysis-method-subopts">
-                                    <label class="history-target-analysis-field">
-                                      <span class="history-target-analysis-field-label">Compare to window</span>
-                                      <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::anomaly_comparison_window_id">
-                                        <option value="" ${!analysis.anomaly_comparison_window_id ? "selected" : ""}>— select window —</option>
-                                        ${this._comparisonWindows.map((win) => `<option value="${esc(win.id)}" ${analysis.anomaly_comparison_window_id === win.id ? "selected" : ""}>${esc(win.label || win.id)}</option>`).join("")}
-                                        <option value="__add_new__">+ Add date window</option>
-                                      </select>
-                                    </label>
-                                  </div>
-                                ` : ""}
-                              </div>`;
-        }).join("")}
-                          </div>
-                          ${analysis.anomaly_methods.length >= 2 ? `
-                            <label class="history-target-analysis-field">
-                              <span class="history-target-analysis-field-label">When methods overlap</span>
-                              <select class="history-target-analysis-select" data-series-analysis-select="${esc(row.entity_id)}::anomaly_overlap_mode">
-                                ${renderAnalysisSelectOptions(ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS, analysis.anomaly_overlap_mode)}
-                              </select>
-                            </label>
-                          ` : ""}
-                        </div>
-                      ` : ""}
-                    </div>
-                    <div class="history-target-analysis-group ${analysis.show_delta_analysis && canShowDeltaAnalysis ? "is-open" : ""}">
-                      <label class="history-target-analysis-option top">
-                        <input
-                          type="checkbox"
-                          data-series-analysis-option="${esc(row.entity_id)}::show_delta_analysis"
-                          ${analysis.show_delta_analysis && canShowDeltaAnalysis ? "checked" : ""}
-                          ${canShowDeltaAnalysis ? "" : "disabled"}
-                        >
-                        <span>Show delta vs selected date window<br />
-                            ${!canShowDeltaAnalysis ? `
-                            <span class="history-target-analysis-option-help-text">Select a date window tab to enable delta analysis.</span>
-                 ` : ""}</span>
-                      </label>
-                      ${analysis.show_delta_analysis && canShowDeltaAnalysis ? `
-                        <div class="history-target-analysis-group-body">
-                          <label class="history-target-analysis-option">
-                            <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::show_delta_tooltip" ${analysis.show_delta_tooltip ? "checked" : ""}>
-                            <span>Show delta in tooltip</span>
-                          </label>
-                          <label class="history-target-analysis-option">
-                            <input type="checkbox" data-series-analysis-option="${esc(row.entity_id)}::show_delta_lines" ${analysis.show_delta_lines ? "checked" : ""}>
-                            <span>Show delta lines</span>
-                          </label>
-                        </div>
-                      ` : ""}
-                    </div>
-                  </div>
-                </div>
-              ` : ""}
-            </div>
-          `;
-      }).join("")}
-        </div>
-      </div>
-    `;
       if (collapsedSummaryEl) {
-        collapsedSummaryEl.innerHTML = this._seriesRows.map((row, index) => {
-          const label = entityName(this._hass, row.entity_id) || row.entity_id;
-          const itemId = `collapsed-series-${index}`;
-          return `
-          <button
-            type="button"
-            id="${itemId}"
-            class="history-targets-collapsed-item ${row.visible === false ? "is-hidden" : ""}"
-            data-series-collapsed-entity-id="${esc(row.entity_id)}"
-            style="--row-color:${esc(row.color)}"
-            aria-label="${esc(label)}"
-            aria-pressed="${row.visible === false ? "false" : "true"}"
-          >
-            <ha-state-icon
-              data-series-collapsed-icon-entity-id="${esc(row.entity_id)}"
-              aria-hidden="true"
-            ></ha-state-icon>
-          </button>
-          <ha-tooltip for="${itemId}" placement="right" distance="4">${esc(label)}</ha-tooltip>
-        `;
-        }).join("");
+        if (!this._seriesRows.length) {
+          collapsedSummaryEl.innerHTML = `<div class="history-targets-collapsed-empty" title="No targets selected"></div>`;
+        } else {
+          collapsedSummaryEl.innerHTML = this._seriesRows.map((row, index) => {
+            const label = entityName$1(this._hass, row.entity_id) || row.entity_id;
+            const itemId = `collapsed-series-${index}`;
+            return `
+            <button
+              type="button"
+              id="${itemId}"
+              class="history-targets-collapsed-item ${row.visible === false ? "is-hidden" : ""}"
+              data-series-collapsed-entity-id="${esc$1(row.entity_id)}"
+              style="--row-color:${esc$1(row.color)}"
+              aria-label="${esc$1(label)}"
+              aria-pressed="${row.visible === false ? "false" : "true"}"
+            >
+              <ha-state-icon
+                data-series-collapsed-icon-entity-id="${esc$1(row.entity_id)}"
+                aria-hidden="true"
+              ></ha-state-icon>
+            </button>
+            <ha-tooltip for="${itemId}" placement="right" distance="4">${esc$1(label)}</ha-tooltip>
+          `;
+          }).join("");
+          collapsedSummaryEl.querySelectorAll("[data-series-collapsed-icon-entity-id]").forEach((iconEl) => {
+            const entityId = iconEl.dataset.seriesCollapsedIconEntityId;
+            if (!entityId) {
+              return;
+            }
+            iconEl.stateObj = this._hass?.states?.[entityId];
+            iconEl.hass = this._hass;
+          });
+          collapsedSummaryEl.querySelectorAll("[data-series-collapsed-entity-id]").forEach((button) => {
+            button.addEventListener("click", (ev) => {
+              ev.stopPropagation();
+              const entityId = String(button.dataset.seriesCollapsedEntityId || "");
+              if (this._collapsedPopupEntityId === entityId) {
+                this._hideCollapsedTargetPopup();
+              } else {
+                this._showCollapsedTargetPopup(entityId, button);
+              }
+            });
+          });
+        }
       }
-      this._targetRowsEl.querySelectorAll("[data-series-color-index]").forEach((input) => {
-        input.addEventListener("change", () => this._updateSeriesRowColor(Number.parseInt(input.dataset.seriesColorIndex || "", 10), input.value));
-      });
-      this._targetRowsEl.querySelectorAll("[data-series-analysis-toggle-entity-id]").forEach((button) => {
-        button.addEventListener("click", () => this._toggleSeriesAnalysisExpanded(String(button.dataset.seriesAnalysisToggleEntityId || "")));
-      });
-      this._targetRowsEl.querySelectorAll("[data-series-row-entity-id]").forEach((rowEl) => {
-        rowEl.addEventListener("click", (ev) => {
-          const nameArea = rowEl.querySelector(".history-target-name");
-          if (!nameArea || !nameArea.contains(ev.target)) {
-            return;
-          }
-          if (ev.target.closest("button, input, select, textarea, a, label")) {
-            return;
-          }
-          this._toggleSeriesAnalysisExpanded(String(rowEl.dataset.seriesRowEntityId || ""));
-        });
-      });
-      this._targetRowsEl.querySelectorAll("[data-series-visible-entity-id]").forEach((input) => {
-        input.addEventListener("change", () => this._updateSeriesRowVisibilityByEntityId(String(input.dataset.seriesVisibleEntityId || ""), input.checked));
-      });
-      this._targetRowsEl.querySelectorAll("[data-series-analysis-option]").forEach((input) => {
-        input.addEventListener("change", () => {
-          const [entityId, key] = String(input.dataset.seriesAnalysisOption || "").split("::");
-          if (!entityId || !key) {
-            return;
-          }
-          this._setSeriesAnalysisOption(entityId, key, !!input.checked);
-        });
-      });
-      this._targetRowsEl.querySelectorAll("[data-series-analysis-select]").forEach((select) => {
-        select.addEventListener("change", () => {
-          const [entityId, key] = String(select.dataset.seriesAnalysisSelect || "").split("::");
-          if (!entityId || !key) {
-            return;
-          }
-          this._setSeriesAnalysisOption(entityId, key, select.value || "");
-        });
-      });
-      this._targetRowsEl.querySelectorAll("[data-series-analysis-input]").forEach((input) => {
-        input.addEventListener("change", () => {
-          const [entityId, key] = String(input.dataset.seriesAnalysisInput || "").split("::");
-          if (!entityId || !key) {
-            return;
-          }
-          this._setSeriesAnalysisOption(entityId, key, input.value || "");
-        });
-      });
-      this._targetRowsEl.querySelectorAll("[data-series-remove-index]").forEach((button) => {
-        button.addEventListener("click", () => this._removeSeriesRow(Number.parseInt(button.dataset.seriesRemoveIndex || "", 10)));
-      });
-      this._targetRowsEl.querySelectorAll("[data-series-icon-entity-id]").forEach((iconEl) => {
-        const entityId = iconEl.dataset.seriesIconEntityId;
-        if (!entityId) return;
-        iconEl.stateObj = this._hass?.states?.[entityId];
-        iconEl.hass = this._hass;
-      });
-      collapsedSummaryEl?.querySelectorAll("[data-series-collapsed-icon-entity-id]").forEach((iconEl) => {
-        const entityId = iconEl.dataset.seriesCollapsedIconEntityId;
-        if (!entityId) return;
-        iconEl.stateObj = this._hass?.states?.[entityId];
-        iconEl.hass = this._hass;
-      });
-      collapsedSummaryEl?.querySelectorAll("[data-series-collapsed-entity-id]").forEach((button) => {
-        button.addEventListener("click", () => {
-          const entityId = String(button.dataset.seriesCollapsedEntityId || "");
-          const row = this._seriesRows.find((entry) => entry.entity_id === entityId);
-          this._updateSeriesRowVisibilityByEntityId(entityId, row?.visible === false);
-        });
-      });
-      this._targetRowsEl.querySelectorAll("[data-series-drag-index]").forEach((handle) => {
-        handle.addEventListener("dragstart", (ev) => {
-          const fromIndex = Number.parseInt(handle.dataset.seriesDragIndex || "", 10);
-          this._dragSourceIndex = fromIndex;
-          ev.dataTransfer.effectAllowed = "move";
-          ev.dataTransfer.setData("text/plain", String(fromIndex));
-          const rowEl = handle.closest(".history-target-row");
-          setTimeout(() => rowEl?.classList.add("is-dragging"), 0);
-        });
-        handle.addEventListener("dragend", () => {
-          this._dragSourceIndex = null;
-          this._targetRowsEl.querySelectorAll(".history-target-row").forEach((r) => {
-            r.classList.remove("is-dragging", "is-drag-over-before", "is-drag-over-after");
-          });
-        });
-      });
-      this._targetRowsEl.querySelectorAll("[data-series-reorder-index]").forEach((rowEl) => {
-        rowEl.addEventListener("dragover", (ev) => {
-          if (this._dragSourceIndex === null) {
-            return;
-          }
-          ev.preventDefault();
-          ev.dataTransfer.dropEffect = "move";
-          const rect = rowEl.getBoundingClientRect();
-          const isAbove = ev.clientY < rect.top + rect.height / 2;
-          this._targetRowsEl.querySelectorAll(".history-target-row").forEach((r) => {
-            r.classList.remove("is-drag-over-before", "is-drag-over-after");
-          });
-          rowEl.classList.add(isAbove ? "is-drag-over-before" : "is-drag-over-after");
-        });
-        rowEl.addEventListener("dragleave", (ev) => {
-          if (!rowEl.contains(ev.relatedTarget)) {
-            rowEl.classList.remove("is-drag-over-before", "is-drag-over-after");
-          }
-        });
-        rowEl.addEventListener("drop", (ev) => {
-          ev.preventDefault();
-          const fromIndex = Number.parseInt(ev.dataTransfer.getData("text/plain") || "", 10);
-          const rowIndex = Number.parseInt(rowEl.dataset.seriesReorderIndex || "", 10);
-          if (!Number.isFinite(fromIndex) || !Number.isFinite(rowIndex)) {
-            return;
-          }
-          const rect = rowEl.getBoundingClientRect();
-          const isAbove = ev.clientY < rect.top + rect.height / 2;
-          const insertBeforeIndex = isAbove ? rowIndex : rowIndex + 1;
-          const toIndex = fromIndex < insertBeforeIndex ? insertBeforeIndex - 1 : insertBeforeIndex;
-          rowEl.classList.remove("is-drag-over-before", "is-drag-over-after");
-          this._reorderSeriesRows(fromIndex, toIndex);
-        });
-      });
+      this._refreshCollapsedTargetPopup();
     }
     _addSeriesRows(entityIds) {
       const merged = new Map(this._seriesRows.map((row) => [row.entity_id, row]));
@@ -17680,6 +20959,112 @@ ${s.description}`).join("\n\n");
       this._saveSessionState();
       this._renderTargetRows();
       this._renderContent();
+    }
+    /** Open (or re-render) the collapsed-sidebar target popup for *entityId*,
+     *  anchored to *anchorEl*.  Wires all the same controls as the full sidebar row. */
+    _showCollapsedTargetPopup(entityId, anchorEl) {
+      const popup = this.shadowRoot?.getElementById("collapsed-target-popup");
+      if (!popup) {
+        return;
+      }
+      const index = this._seriesRows.findIndex((r2) => r2.entity_id === entityId);
+      if (index < 0) {
+        this._hideCollapsedTargetPopup();
+        return;
+      }
+      const row = this._seriesRows[index];
+      this._collapsedPopupEntityId = entityId;
+      this._collapsedPopupAnchorEl = anchorEl;
+      popup.innerHTML = "";
+      const targetRow = document.createElement("dp-target-row");
+      targetRow.color = row.color;
+      targetRow.visible = row.visible !== false;
+      targetRow.analysis = row.analysis || {};
+      targetRow.index = index;
+      targetRow.stateObj = this._hass?.states?.[row.entity_id] ?? null;
+      targetRow.hass = this._hass ?? null;
+      targetRow.canShowDeltaAnalysis = !!this._selectedComparisonWindowId;
+      targetRow.comparisonWindows = this._comparisonWindows || [];
+      targetRow.addEventListener("dp-row-color-change", (ev) => {
+        this._updateSeriesRowColor(ev.detail.index, ev.detail.color);
+      });
+      targetRow.addEventListener("dp-row-visibility-change", (ev) => {
+        this._updateSeriesRowVisibilityByEntityId(ev.detail.entityId, ev.detail.visible);
+      });
+      targetRow.addEventListener("dp-row-toggle-analysis", (ev) => {
+        this._toggleSeriesAnalysisExpanded(ev.detail.entityId);
+      });
+      targetRow.addEventListener("dp-row-analysis-change", (ev) => {
+        this._setSeriesAnalysisOption(ev.detail.entityId, ev.detail.key, ev.detail.value);
+      });
+      targetRow.addEventListener("dp-row-remove", (ev) => {
+        this._hideCollapsedTargetPopup();
+        this._removeSeriesRow(ev.detail.index);
+      });
+      popup.appendChild(targetRow);
+      popup.removeAttribute("hidden");
+      const anchorRect = anchorEl.getBoundingClientRect();
+      const popupHeight = popup.offsetHeight;
+      const top = Math.min(anchorRect.top, window.innerHeight - popupHeight - 16);
+      popup.style.top = `${Math.max(8, top)}px`;
+      popup.style.left = `${anchorRect.right + 8}px`;
+      if (this._collapsedPopupOutsideClickHandler) {
+        document.removeEventListener("click", this._collapsedPopupOutsideClickHandler, true);
+      }
+      this._collapsedPopupOutsideClickHandler = (ev) => {
+        const path = ev.composedPath();
+        if (!path.includes(popup) && !path.includes(anchorEl)) {
+          this._hideCollapsedTargetPopup();
+        }
+      };
+      document.addEventListener("click", this._collapsedPopupOutsideClickHandler, true);
+      if (this._collapsedPopupKeyHandler) {
+        document.removeEventListener("keydown", this._collapsedPopupKeyHandler);
+      }
+      this._collapsedPopupKeyHandler = (ev) => {
+        if (ev.key === "Escape") {
+          this._hideCollapsedTargetPopup();
+          anchorEl.focus();
+        }
+      };
+      document.addEventListener("keydown", this._collapsedPopupKeyHandler);
+    }
+    /** Close the collapsed-sidebar target popup and clean up all listeners. */
+    _hideCollapsedTargetPopup() {
+      const popup = this.shadowRoot?.getElementById("collapsed-target-popup");
+      if (popup) {
+        popup.setAttribute("hidden", "");
+        popup.innerHTML = "";
+      }
+      if (this._collapsedPopupOutsideClickHandler) {
+        document.removeEventListener("click", this._collapsedPopupOutsideClickHandler, true);
+        this._collapsedPopupOutsideClickHandler = null;
+      }
+      if (this._collapsedPopupKeyHandler) {
+        document.removeEventListener("keydown", this._collapsedPopupKeyHandler);
+        this._collapsedPopupKeyHandler = null;
+      }
+      this._collapsedPopupEntityId = null;
+      this._collapsedPopupAnchorEl = null;
+    }
+    /** Re-render the popup in-place after a state change (e.g. analysis toggle).
+     *  Called at the end of _renderTargetRows so the popup stays in sync. */
+    _refreshCollapsedTargetPopup() {
+      if (!this._collapsedPopupEntityId) {
+        return;
+      }
+      const exists = this._seriesRows.some((r2) => r2.entity_id === this._collapsedPopupEntityId);
+      if (!exists) {
+        this._hideCollapsedTargetPopup();
+        return;
+      }
+      const collapsedSummaryEl = this.shadowRoot?.getElementById("target-collapsed-summary");
+      const newAnchor = collapsedSummaryEl ? Array.from(collapsedSummaryEl.querySelectorAll("[data-series-collapsed-entity-id]")).find((btn) => btn.dataset.seriesCollapsedEntityId === this._collapsedPopupEntityId) ?? null : null;
+      if (!newAnchor) {
+        this._hideCollapsedTargetPopup();
+        return;
+      }
+      this._showCollapsedTargetPopup(this._collapsedPopupEntityId, newAnchor);
     }
     _updateSeriesRowVisibilityByEntityId(entityId, visible) {
       const normalizedEntityId = String(entityId || "").trim();
@@ -17729,7 +21114,7 @@ ${s.description}`).join("\n\n");
       if (key.startsWith("anomaly_method_toggle_")) {
         const method = key.slice("anomaly_method_toggle_".length);
         const currentMethods = analysis.anomaly_methods;
-        const nextMethods = value === true ? [.../* @__PURE__ */ new Set([...currentMethods, method])] : currentMethods.filter((m) => m !== method);
+        const nextMethods = value === true ? [.../* @__PURE__ */ new Set([...currentMethods, method])] : currentMethods.filter((m2) => m2 !== method);
         key = "anomaly_methods";
         value = nextMethods;
       }
@@ -17768,7 +21153,7 @@ ${s.description}`).join("\n\n");
     }
     _removeSeriesRow(index) {
       if (!Number.isInteger(index) || index < 0 || index >= this._seriesRows.length) return;
-      this._seriesRows = this._seriesRows.filter((_, rowIndex) => rowIndex !== index);
+      this._seriesRows = this._seriesRows.filter((_2, rowIndex) => rowIndex !== index);
       this._syncSeriesState();
       this._saveSessionState();
       this._renderTargetRows();
@@ -17816,7 +21201,7 @@ ${s.description}`).join("\n\n");
         this._optionsMenuView = "root";
       }
       if (this._optionsMenuEl) {
-        this._optionsMenuEl.hidden = !force;
+        this._optionsMenuEl.open = force;
         if (force) {
           this._positionFloatingMenu(this._optionsMenuEl, this._optionsButtonEl, 280);
         }
@@ -17833,7 +21218,7 @@ ${s.description}`).join("\n\n");
       }
       this._datePickerOpen = force;
       if (this._datePickerMenuEl) {
-        this._datePickerMenuEl.hidden = !force;
+        this._datePickerMenuEl.open = force;
         if (force) {
           this._positionFloatingMenu(this._datePickerMenuEl, this._datePickerButtonEl, 320);
         }
@@ -17849,7 +21234,7 @@ ${s.description}`).join("\n\n");
       }
       this._pageMenuOpen = force;
       if (this._pageMenuEl) {
-        this._pageMenuEl.hidden = !force;
+        this._pageMenuEl.open = force;
         if (force) {
           this._positionPageMenu();
         }
@@ -17858,26 +21243,7 @@ ${s.description}`).join("\n\n");
         this._pageMenuButtonEl.setAttribute("aria-expanded", String(force));
       }
     }
-    _handleWindowPointerDown(ev) {
-      const path = ev.composedPath ? ev.composedPath() : [];
-      if (this._datePickerOpen) {
-        const insideDatePicker = path.includes(this._datePickerButtonEl) || path.includes(this._datePickerMenuEl);
-        if (!insideDatePicker) {
-          this._toggleDatePickerMenu(false);
-        }
-      }
-      if (this._optionsOpen) {
-        const insideOptions = path.includes(this._optionsButtonEl) || path.includes(this._optionsMenuEl);
-        if (!insideOptions) {
-          this._toggleOptionsMenu(false);
-        }
-      }
-      if (this._pageMenuOpen) {
-        const insidePageMenu = path.includes(this._pageMenuButtonEl) || path.includes(this._pageMenuEl);
-        if (!insidePageMenu) {
-          this._togglePageMenu(false);
-        }
-      }
+    _handleWindowPointerDown(_ev) {
     }
     _syncOptionsMenu() {
       if (!this._optionsMenuEl) return;
@@ -17976,8 +21342,8 @@ ${s.description}`).join("\n\n");
       }
       const menuWidth = Math.max(220, this._pageMenuEl.offsetWidth || 220);
       const { left, top } = this._computeFloatingMenuPosition(this._pageMenuButtonEl, menuWidth);
-      this._pageMenuEl.style.setProperty("--page-menu-left", `${left}px`);
-      this._pageMenuEl.style.setProperty("--page-menu-top", `${top}px`);
+      this._pageMenuEl.style.setProperty("--floating-menu-left", `${left}px`);
+      this._pageMenuEl.style.setProperty("--floating-menu-top", `${top}px`);
     }
     _getEffectiveZoomLevel() {
       if (this._zoomLevel !== "auto") return this._zoomLevel;
@@ -18166,6 +21532,7 @@ ${s.description}`).join("\n\n");
       this._updateChartHoverIndicator();
       this._updateChartZoomHighlight();
       this._updateSelectionJumpControls();
+      this._syncLiveEdgeHandle();
       window.requestAnimationFrame(() => this._revealSelectionInTimeline("auto"));
     }
     _renderScaleMarkers(fragment, unit, className, total, step = 1) {
@@ -18666,7 +22033,17 @@ ${s.description}`).join("\n\n");
       const valuePx = (value.getTime() - this._rangeBounds.min) / total * contentWidth;
       const viewportX = valuePx - this._rangeScrollViewportEl.scrollLeft;
       const clampedX = clampNumber(viewportX, 0, this._rangeScrollViewportEl.clientWidth);
-      tooltip.textContent = formatRangeDateTime(value);
+      if (handle === "end" && this._isOnLiveEdge()) {
+        const dateEl = document.createElement("span");
+        dateEl.textContent = formatRangeDateTime(value);
+        const hintEl = document.createElement("span");
+        hintEl.className = "range-tooltip-live-hint";
+        hintEl.textContent = "Updates with new data";
+        tooltip.textContent = "";
+        tooltip.append(dateEl, hintEl);
+      } else {
+        tooltip.textContent = formatRangeDateTime(value);
+      }
       tooltip.style.left = `${clampedX}px`;
       tooltip.classList.add("visible");
       tooltip.setAttribute("aria-hidden", "false");
@@ -19035,6 +22412,33 @@ ${s.description}`).join("\n\n");
         this._syncRangeControl();
       }, RANGE_AUTO_ZOOM_DEBOUNCE_MS);
     }
+    // ---------------------------------------------------------------------------
+    // Live-edge detection and handle indicator
+    // ---------------------------------------------------------------------------
+    /** Returns true when the committed end time is at or very near "now",
+     *  meaning new annotations should cause the visible range to advance. */
+    _isOnLiveEdge() {
+      if (!this._endTime) {
+        return false;
+      }
+      return this._endTime.getTime() >= Date.now() - 2 * MINUTE_MS;
+    }
+    /** Toggle the red breathing indicator on the end handle. */
+    _syncLiveEdgeHandle() {
+      if (!this._rangeEndHandle) {
+        return;
+      }
+      this._rangeEndHandle.classList.toggle("is-live", this._isOnLiveEdge());
+    }
+    /** Called whenever a new annotation is recorded (HA event or window event).
+     *  If the current range is on the live edge, advance the end time to now
+     *  so the chart immediately shows the new data point. */
+    _handleEventRecorded() {
+      if (!this._isOnLiveEdge() || !this._startTime) {
+        return;
+      }
+      this._applyCommittedRange(this._startTime, /* @__PURE__ */ new Date(), { push: false });
+    }
     _applyCommittedRange(start, end, { push = false } = {}) {
       if (!start || !end || start >= end) return;
       const nextStart = new Date(start);
@@ -19043,6 +22447,7 @@ ${s.description}`).join("\n\n");
       this._startTime = nextStart;
       this._endTime = nextEnd;
       this._hours = Math.max(1, Math.round((nextEnd.getTime() - nextStart.getTime()) / HOUR_MS));
+      this._syncLiveEdgeHandle();
       this._scheduleAutoZoomUpdate();
       this._syncControls();
       this._updateSelectionJumpControls();
@@ -19132,106 +22537,31 @@ ${s.description}`).join("\n\n");
           editable: true
         }))
       ];
-      const renderKey = JSON.stringify({
-        tabs: tabs.map((window2) => ({
-          id: window2.id,
-          label: window2.label,
-          detail: window2.detail || "",
-          active: !!window2.active,
-          loading: this._loadingComparisonWindowIds.includes(window2.id),
-          previewing: this._hoveredComparisonWindowId === window2.id
-        }))
-      });
       tabsEl.hidden = false;
-      if (this._comparisonTabsHostEl !== tabsEl) {
+      if (!this._comparisonTabRailComp || this._comparisonTabsHostEl !== tabsEl) {
+        tabsEl.innerHTML = "";
+        const rail = document.createElement("dp-comparison-tab-rail");
+        rail.addEventListener("dp-tab-activate", (ev) => this._handleComparisonTabActivate(ev.detail.tabId));
+        rail.addEventListener("dp-tab-hover", (ev) => this._handleComparisonTabHover(ev.detail.tabId));
+        rail.addEventListener("dp-tab-leave", (ev) => this._handleComparisonTabLeave(ev.detail.tabId));
+        rail.addEventListener("dp-tab-edit", (ev) => {
+          const id = ev.detail.tabId;
+          const win = this._comparisonWindows.find((entry) => entry.id === id);
+          if (win) {
+            this._openDateWindowDialog(win);
+          }
+        });
+        rail.addEventListener("dp-tab-delete", (ev) => {
+          this._deleteDateWindow(ev.detail.tabId);
+        });
+        rail.addEventListener("dp-tab-add", () => this._openDateWindowDialog());
+        tabsEl.appendChild(rail);
+        this._comparisonTabRailComp = rail;
         this._comparisonTabsHostEl = tabsEl;
-        this._comparisonTabsRenderKey = "";
       }
-      if (this._comparisonTabsRenderKey !== renderKey) {
-        tabsEl.innerHTML = `
-        <div class="chart-tabs-shell" id="chart-tabs-shell">
-          <div class="chart-tabs-rail" id="chart-tabs-rail">
-            <div class="chart-tabs">
-              ${tabs.map((window2) => `
-                <div
-                  class="chart-tab ${window2.active ? "active" : ""} ${this._hoveredComparisonWindowId === window2.id ? "previewing" : ""} ${this._loadingComparisonWindowIds.includes(window2.id) ? "loading" : ""}"
-                  data-comparison-id="${esc(window2.id)}"
-                >
-                  <button
-                    type="button"
-                    class="chart-tab-trigger"
-                    data-comparison-trigger="${esc(window2.id)}"
-                    ${window2.active ? 'aria-current="true"' : ""}
-                  >
-                    <span class="chart-tab-content">
-                      <span class="chart-tab-main">
-                        ${this._loadingComparisonWindowIds.includes(window2.id) ? '<span class="chart-tab-spinner" aria-hidden="true"></span>' : ""}
-                        <span class="chart-tab-label">${esc(window2.label)}</span>
-                      </span>
-                      <span class="chart-tab-detail-row">
-                        <span class="chart-tab-detail">${esc(window2.detail || "")}</span>
-                      </span>
-                    </span>
-                  </button>
-                  ${window2.editable ? `
-                    <span class="chart-tab-actions">
-                      <button type="button" class="chart-tab-action edit" data-date-window-edit="${esc(window2.id)}" aria-label="Edit ${esc(window2.label)}">
-                        <ha-icon icon="mdi:pencil-outline"></ha-icon>
-                      </button>
-                      <button type="button" class="chart-tab-action delete" data-date-window-delete="${esc(window2.id)}" aria-label="Delete ${esc(window2.label)}">
-                        <ha-icon icon="mdi:close"></ha-icon>
-                      </button>
-                    </span>
-                  ` : ""}
-                </div>
-              `).join("")}
-            </div>
-          </div>
-          <button type="button" class="chart-tabs-add" id="chart-tabs-add">
-            <ha-icon icon="mdi:plus"></ha-icon>
-            <span class="chart-tabs-add-label">Add date window</span>
-          </button>
-        </div>
-      `;
-        tabsEl.querySelector("#chart-tabs-add")?.addEventListener("click", () => this._openDateWindowDialog());
-        tabsEl.querySelectorAll("[data-date-window-edit]").forEach((button) => {
-          button.addEventListener("click", (ev) => {
-            ev.preventDefault();
-            ev.stopPropagation();
-            const id = button.getAttribute("data-date-window-edit");
-            const window2 = this._comparisonWindows.find((entry) => entry.id === id);
-            if (window2) this._openDateWindowDialog(window2);
-          });
-        });
-        tabsEl.querySelectorAll("[data-date-window-delete]").forEach((button) => {
-          button.addEventListener("click", (ev) => {
-            ev.preventDefault();
-            ev.stopPropagation();
-            const id = button.getAttribute("data-date-window-delete");
-            if (id) this._deleteDateWindow(id);
-          });
-        });
-        tabsEl.querySelectorAll("[data-comparison-id]").forEach((tab) => {
-          const id = tab.dataset.comparisonId;
-          const trigger = tab.querySelector("[data-comparison-trigger]");
-          if (!id) {
-            return;
-          }
-          if (id !== "current-range") {
-            tab.addEventListener("mouseenter", () => this._handleComparisonTabHover(id));
-            tab.addEventListener("mouseleave", () => this._handleComparisonTabLeave(id));
-            trigger?.addEventListener("focus", () => this._handleComparisonTabHover(id));
-            trigger?.addEventListener("blur", () => this._handleComparisonTabLeave(id));
-          }
-          trigger?.addEventListener("click", () => this._handleComparisonTabActivate(id));
-        });
-        this._comparisonTabsRenderKey = renderKey;
-      }
-      tabsEl.querySelectorAll("[data-comparison-id]").forEach((tab) => {
-        const id = tab.dataset.comparisonId;
-        tab.classList.toggle("previewing", !!id && id === this._hoveredComparisonWindowId);
-      });
-      this._updateComparisonTabsOverflow();
+      this._comparisonTabRailComp.tabs = tabs;
+      this._comparisonTabRailComp.loadingIds = [...this._loadingComparisonWindowIds];
+      this._comparisonTabRailComp.hoveredId = this._hoveredComparisonWindowId || "";
     }
     _updateComparisonTabsOverflow() {
       window.requestAnimationFrame(() => {
@@ -19456,7 +22786,7 @@ ${s.description}`).join("\n\n");
     customElements.define("hass-datapoints-list-card-editor", HassRecordsListCardEditor);
   }
   window.customCards = window.customCards || [];
-  const registeredTypes = new Set(window.customCards.map((c) => c.type));
+  const registeredTypes = new Set(window.customCards.map((c2) => c2.type));
   const cardsToAdd = [
     {
       type: "hass-datapoints-action-card",

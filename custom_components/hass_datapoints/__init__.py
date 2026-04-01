@@ -15,6 +15,7 @@ from homeassistant.helpers import config_validation as cv
 from .const import (
     ATTR_ANNOTATION,
     ATTR_AREA_IDS,
+    ATTR_AUTOMATION_ID,
     ATTR_COLOR,
     ATTR_DATE,
     ATTR_DEV,
@@ -36,6 +37,30 @@ from .store import HassRecordsStore
 from . import websocket_api as ws_api
 
 type HassRecordsConfigEntry = ConfigEntry[HassRecordsStore]
+
+
+def _find_automation_id(hass: HomeAssistant, context) -> str | None:
+    """Return the entity_id of the automation that triggered *context*, or None.
+
+    When a service is called from an automation action the call's context (or
+    its parent context) is the same context object under which the automation
+    last ran.  We scan all automation states and return the first whose stored
+    context id matches either the call context id or its parent id.
+    """
+    if context is None:
+        return None
+
+    context_ids: set[str] = set()
+    if context.id:
+        context_ids.add(context.id)
+    if context.parent_id:
+        context_ids.add(context.parent_id)
+
+    for state in hass.states.async_all("automation"):
+        if state.context.id in context_ids:
+            return state.entity_id
+
+    return None
 
 
 
@@ -103,6 +128,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: HassRecordsConfigEntry) 
         if isinstance(color, list) and len(color) == 3:
             color = "#{:02x}{:02x}{:02x}".format(*color)
 
+        automation_id = _find_automation_id(hass, call.context)
+
         event_data = await store.async_record(
             message=call.data[ATTR_MESSAGE],
             annotation=call.data.get(ATTR_ANNOTATION),
@@ -114,6 +141,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: HassRecordsConfigEntry) 
             color=color,
             date=call.data.get(ATTR_DATE),
             dev=call.data.get(ATTR_DEV, False),
+            automation_id=automation_id,
         )
         hass.bus.async_fire(EVENT_RECORDED, event_data)
 

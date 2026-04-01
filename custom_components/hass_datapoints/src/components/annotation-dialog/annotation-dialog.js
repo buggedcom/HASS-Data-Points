@@ -23,6 +23,7 @@ export class HistoryAnnotationDialogController {
     this._host = host;
     this._dialogEl = null;
     this._panelEl = null;
+    this._chipRowEl = null;
     this._linkedTarget = {};
     this._target = {};
   }
@@ -61,6 +62,7 @@ export class HistoryAnnotationDialogController {
     this._dialogEl?.remove();
     this._dialogEl = null;
     this._panelEl = null;
+    this._chipRowEl = null;
   }
 
   resetFormState() {
@@ -83,64 +85,33 @@ export class HistoryAnnotationDialogController {
     return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
   }
 
-  renderTargetChips(target) {
-    const groups = [
+  _buildChips(target) {
+    return [
       ...(target.entity_id || []).map((id) => ({
         type: "entity_id",
-        id,
+        itemId: id,
         icon: entityIcon(this._host._hass, id),
         name: entityName(this._host._hass, id),
       })),
       ...(target.device_id || []).map((id) => ({
         type: "device_id",
-        id,
+        itemId: id,
         icon: deviceIcon(this._host._hass, id),
         name: deviceName(this._host._hass, id),
       })),
       ...(target.area_id || []).map((id) => ({
         type: "area_id",
-        id,
+        itemId: id,
         icon: areaIcon(this._host._hass, id),
         name: areaName(this._host._hass, id),
       })),
       ...(target.label_id || []).map((id) => ({
         type: "label_id",
-        id,
+        itemId: id,
         icon: labelIcon(this._host._hass, id),
         name: labelName(this._host._hass, id),
       })),
     ];
-    if (!groups.length) {
-      return `
-        <div id="chart-context-linked-targets" class="context-form-field">
-          <label class="context-form-label">Linked targets</label>
-          <div class="context-form-help">No linked targets will be associated with this data point.</div>
-        </div>
-      `;
-    }
-    return `
-      <div id="chart-context-linked-targets" class="context-form-field">
-        <label class="context-form-label">Linked targets</label>
-        <div class="context-form-help">These targets will be associated with the new data point by default. Remove any that should not be linked.</div>
-        <div class="context-chip-row">
-          ${groups.map((chip) => `
-            <span class="context-chip" title="${esc(chip.name)}">
-              <ha-icon icon="${esc(chip.icon)}"></ha-icon>
-              <span class="context-chip-text">${esc(chip.name)}</span>
-              <button
-                type="button"
-                class="context-chip-remove"
-                data-target-type="${esc(chip.type)}"
-                data-target-id="${esc(chip.id)}"
-                aria-label="Remove ${esc(chip.name)}"
-              >
-                <ha-icon icon="mdi:close"></ha-icon>
-              </button>
-            </span>
-          `).join("")}
-        </div>
-      </div>
-    `;
   }
 
   removeLinkedTarget(type, id) {
@@ -153,21 +124,13 @@ export class HistoryAnnotationDialogController {
     }
     current[type] = current[type].filter((value) => value !== id);
     this._linkedTarget = current;
-    const container = this._panelEl?.querySelector("#chart-context-linked-targets");
-    if (container) {
-      container.outerHTML = this.renderTargetChips(this._linkedTarget);
-      this.bindTargetChipActions();
+    if (this._chipRowEl) {
+      this._chipRowEl.chips = this._buildChips(this._linkedTarget);
     }
   }
 
   bindTargetChipActions() {
-    this._panelEl
-      ?.querySelectorAll(".context-chip-remove")
-      ?.forEach((button) => {
-        button.addEventListener("click", () => {
-          this.removeLinkedTarget(button.dataset.targetType, button.dataset.targetId);
-        });
-      });
+    // No-op: chip remove events are handled via dp-target-remove on _chipRowEl.
   }
 
   bindFields(hover) {
@@ -198,6 +161,21 @@ export class HistoryAnnotationDialogController {
     if (annotationEl) {
       annotationEl.value = prefill.annotation || "";
     }
+
+    // Mount dp-annotation-chip-row into the #chart-context-linked-targets placeholder.
+    const chipContainer = this._panelEl.querySelector("#chart-context-linked-targets");
+    if (chipContainer && !this._chipRowEl) {
+      const chipRow = document.createElement("dp-annotation-chip-row");
+      chipRow.addEventListener("dp-target-remove", (ev) => {
+        this.removeLinkedTarget(ev.detail.type, ev.detail.id);
+      });
+      chipContainer.appendChild(chipRow);
+      this._chipRowEl = chipRow;
+    }
+    if (this._chipRowEl) {
+      this._chipRowEl.chips = this._buildChips(this._linkedTarget);
+    }
+
     this.bindTargetChipActions();
     const colorInput = this._panelEl.querySelector("#chart-context-color");
     const colorPreview = this._panelEl.querySelector("#chart-context-color-preview");
@@ -356,7 +334,7 @@ export class HistoryAnnotationDialogController {
                 <div class="context-form-help">Add any longer context, outcome, or note you want to keep with this data point.</div>
                 <textarea id="chart-context-annotation" class="context-annotation-input" placeholder="Detailed note shown on chart hover..."></textarea>
               </div>
-              ${this.renderTargetChips(this._linkedTarget)}
+              <div id="chart-context-linked-targets"></div>
               <div class="context-form-field">
                 <label class="context-form-label" for="chart-context-target">Additional related items</label>
                 <div class="context-form-help">Optionally add more entities, devices, areas, or labels that should also be linked to this annotation.</div>

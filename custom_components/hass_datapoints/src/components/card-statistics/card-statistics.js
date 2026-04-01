@@ -10,7 +10,7 @@ import {
   setupCanvas,
   ChartRenderer,
 } from "../../lib/shared.js";
-import { ChartCardBase } from "../card-chart-base/card-chart-base.js";
+import { ChartCardBase } from "../card-chart-base/card-chart-base-legacy.js";
 
 /**
  * hass-datapoints-statistics-card – Statistics chart with annotation markers.

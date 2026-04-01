@@ -10,17 +10,21 @@
     "isolatedModules": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "lib": ["DOM", "DOM.Iterable", "ES2022"]
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["custom_components/hass_datapoints/src/*"]
+    }
   },
   "include": [
     "custom_components/hass_datapoints/src/**/*.js",
+    "custom_components/hass_datapoints/src/**/*.ts",
     "eslint.config.mjs",
     "prettier.config.cjs"
   ],
   "exclude": [
     "custom_components/hass_datapoints/hass-datapoints-cards.js",
     "custom_components/hass_datapoints/src/**/__tests__/**",
-    "custom_components/hass_datapoints/src/lib/__tests__/load-legacy-script.ts",
     "node_modules"
   ]
 }

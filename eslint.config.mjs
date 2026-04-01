@@ -32,10 +32,10 @@ export default [
   ...compat.extends("airbnb-base"),
   ...tseslint.configs.recommended.map((config) => ({
     ...config,
-    files: ["custom_components/hass_datapoints/src/**/*.js"],
+    files: ["custom_components/hass_datapoints/src/**/*.{js,ts}"],
   })),
   {
-    files: ["custom_components/hass_datapoints/src/**/*.js"],
+    files: ["custom_components/hass_datapoints/src/**/*.{js,ts}"],
     plugins: {
       lit: litPlugin,
       "lit-a11y": litA11yPlugin,
@@ -72,6 +72,17 @@ export default [
       "wc/guard-super-call": "error",
       "wc/no-constructor-attributes": "error",
       "lit-a11y/anchor-is-valid": "off",
+    },
+  },
+  {
+    files: [
+      "custom_components/hass_datapoints/src/atoms/**/*.{js,ts}",
+      "custom_components/hass_datapoints/src/molecules/**/*.{js,ts}",
+      "custom_components/hass_datapoints/src/controllers/**/*.{js,ts}",
+      "custom_components/hass_datapoints/src/contexts/**/*.{js,ts}",
+    ],
+    languageOptions: {
+      sourceType: "module",
     },
   },
   eslintConfigPrettier,

@@ -36,6 +36,9 @@ class HassRecordsStore:
                 # Migrate: add dev flag
                 if "dev" not in event:
                     event["dev"] = False
+                # Migrate: add automation_id (None for events recorded before this field existed)
+                if "automation_id" not in event:
+                    event["automation_id"] = None
 
     async def async_record(
         self,
@@ -49,6 +52,7 @@ class HassRecordsStore:
         color: str | None = None,
         date: str | None = None,
         dev: bool = False,
+        automation_id: str | None = None,
     ) -> dict[str, Any]:
         """Record a new event and persist it."""
         if date:
@@ -70,6 +74,7 @@ class HassRecordsStore:
             "icon": icon or "mdi:bookmark",
             "color": color or "#03a9f4",
             "dev": dev,
+            "automation_id": automation_id,
         }
 
         self._data["events"].append(event)
