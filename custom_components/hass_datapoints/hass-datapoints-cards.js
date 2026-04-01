@@ -4643,7 +4643,6 @@ ${s2.description}`).join("\n\n");
   const MINUTE_MS = 60 * SECOND_MS;
   const HOUR_MS = 60 * MINUTE_MS;
   const DAY_MS = 24 * HOUR_MS;
-  const WEEK_MS = 7 * DAY_MS;
   const RANGE_SLIDER_MIN_SPAN_MS = 15 * 60 * 1e3;
   const RANGE_SLIDER_WINDOW_MS = 30 * DAY_MS;
   const RANGE_AUTO_ZOOM_DEBOUNCE_MS = 3e3;
@@ -5052,7 +5051,6 @@ ${s2.description}`).join("\n\n");
     RANGE_ZOOM_CONFIGS,
     RANGE_ZOOM_OPTIONS,
     SECOND_MS,
-    WEEK_MS,
     addUnit,
     areaIcon: areaIcon$1,
     areaName: areaName$1,
@@ -21341,10 +21339,6 @@ ${s2.description}`).join("\n\n");
       })).filter((window2) => Number.isFinite(window2.time_offset_ms));
       return preloadWindows;
     }
-    _getHoveredComparisonWindow() {
-      if (!this._hoveredComparisonWindowId) return null;
-      return this._comparisonWindows.find((window2) => window2.id === this._hoveredComparisonWindowId) || null;
-    }
     _getActiveComparisonWindow() {
       if (this._hoveredComparisonWindowId) {
         return this._comparisonWindows.find((window2) => window2.id === this._hoveredComparisonWindowId) || null;
@@ -21858,154 +21852,6 @@ ${s2.description}`).join("\n\n");
       }
       this._saveSessionState();
       this._renderSidebarOptions();
-      this._renderContent();
-    }
-    _setChartAnalysisOption(kind, value) {
-      if (kind === "show_trend_lines") {
-        const normalized = !!value;
-        if (this._showChartTrendLines === normalized) {
-          return;
-        }
-        this._showChartTrendLines = normalized;
-        if (!normalized && this._showChartTrendCrosshairs) {
-          this._showChartTrendCrosshairs = false;
-        }
-      } else if (kind === "show_summary_stats") {
-        const normalized = !!value;
-        if (this._showChartSummaryStats === normalized) {
-          return;
-        }
-        this._showChartSummaryStats = normalized;
-      } else if (kind === "show_rate_of_change") {
-        const normalized = !!value;
-        if (this._showChartRateOfChange === normalized) {
-          return;
-        }
-        this._showChartRateOfChange = normalized;
-      } else if (kind === "show_threshold_analysis") {
-        const normalized = !!value;
-        if (this._showChartThresholdAnalysis === normalized) {
-          return;
-        }
-        this._showChartThresholdAnalysis = normalized;
-        if (!normalized && this._showChartThresholdShading) {
-          this._showChartThresholdShading = false;
-        }
-      } else if (kind === "show_threshold_shading") {
-        const normalized = !!value;
-        if (this._showChartThresholdShading === normalized) {
-          return;
-        }
-        this._showChartThresholdShading = normalized;
-      } else if (kind === "show_anomalies") {
-        const normalized = !!value;
-        if (this._showChartAnomalies === normalized) {
-          return;
-        }
-        this._showChartAnomalies = normalized;
-      } else if (kind === "hide_source_series") {
-        const normalized = !!value;
-        if (this._hideChartSourceSeries === normalized) {
-          return;
-        }
-        this._hideChartSourceSeries = normalized;
-      } else if (kind === "show_trend_crosshairs") {
-        const normalized = !!value;
-        if (this._showChartTrendCrosshairs === normalized) {
-          return;
-        }
-        this._showChartTrendCrosshairs = normalized;
-      } else if (kind === "trend_method") {
-        const normalized = ANALYSIS_TREND_METHOD_OPTIONS.some((option) => option.value === value) ? value : "rolling_average";
-        if (this._chartTrendMethod === normalized) {
-          return;
-        }
-        this._chartTrendMethod = normalized;
-      } else if (kind === "trend_window") {
-        const normalized = ANALYSIS_TREND_WINDOW_OPTIONS.some((option) => option.value === value) ? value : "24h";
-        if (this._chartTrendWindow === normalized) {
-          return;
-        }
-        this._chartTrendWindow = normalized;
-      } else if (kind === "rate_window") {
-        const normalized = ANALYSIS_RATE_WINDOW_OPTIONS.some((option) => option.value === value) ? value : "1h";
-        if (this._chartRateWindow === normalized) {
-          return;
-        }
-        this._chartRateWindow = normalized;
-      } else if (kind === "anomaly_method") {
-        const normalized = ANALYSIS_ANOMALY_METHOD_OPTIONS.some((option) => option.value === value) ? value : "trend_residual";
-        if (this._chartAnomalyMethod === normalized) {
-          return;
-        }
-        this._chartAnomalyMethod = normalized;
-      } else if (kind === "anomaly_sensitivity") {
-        const normalized = ANALYSIS_ANOMALY_SENSITIVITY_OPTIONS.some((option) => option.value === value) ? value : "medium";
-        if (this._chartAnomalySensitivity === normalized) {
-          return;
-        }
-        this._chartAnomalySensitivity = normalized;
-      } else if (kind === "anomaly_rate_window") {
-        const normalized = ANALYSIS_ANOMALY_RATE_WINDOW_OPTIONS.some((option) => option.value === value) ? value : "1h";
-        if (this._chartAnomalyRateWindow === normalized) {
-          return;
-        }
-        this._chartAnomalyRateWindow = normalized;
-      } else if (kind === "show_delta_analysis") {
-        const normalized = !!value;
-        if (this._showChartDeltaAnalysis === normalized) {
-          return;
-        }
-        this._showChartDeltaAnalysis = normalized;
-      } else if (kind === "show_delta_tooltip") {
-        const normalized = !!value;
-        if (this._showChartDeltaTooltip === normalized) {
-          return;
-        }
-        this._showChartDeltaTooltip = normalized;
-      } else if (kind === "show_delta_lines") {
-        const normalized = !!value;
-        if (this._showChartDeltaLines === normalized) {
-          return;
-        }
-        this._showChartDeltaLines = normalized;
-      } else {
-        return;
-      }
-      this._saveSessionState();
-      this._renderSidebarOptions();
-      this._renderContent();
-    }
-    _setChartAnalysisThresholdValue(entityId, value) {
-      if (!entityId) {
-        return;
-      }
-      const normalized = String(value || "").trim();
-      const nextValues = { ...this._chartThresholdValues || {} };
-      if (!normalized) {
-        delete nextValues[entityId];
-      } else {
-        nextValues[entityId] = normalized;
-      }
-      if (JSON.stringify(nextValues) === JSON.stringify(this._chartThresholdValues || {})) {
-        return;
-      }
-      this._chartThresholdValues = nextValues;
-      this._saveSessionState();
-      this._renderContent();
-    }
-    _setChartAnalysisThresholdDirection(entityId, value) {
-      if (!entityId) {
-        return;
-      }
-      const normalized = value === "below" ? "below" : "above";
-      const nextDirections = { ...this._chartThresholdDirections || {} };
-      nextDirections[entityId] = normalized;
-      if (JSON.stringify(nextDirections) === JSON.stringify(this._chartThresholdDirections || {})) {
-        return;
-      }
-      this._chartThresholdDirections = nextDirections;
-      this._saveSessionState();
       this._renderContent();
     }
     async _ensureHistoryBounds() {
@@ -22609,30 +22455,6 @@ ${s2.description}`).join("\n\n");
       this._updateUrl({ push: true });
       this._renderContent();
     }
-    _reorderSeriesRows(fromIndex, toIndex) {
-      if (!Number.isInteger(fromIndex) || !Number.isInteger(toIndex)) {
-        return;
-      }
-      if (fromIndex < 0 || fromIndex >= this._seriesRows.length) {
-        return;
-      }
-      if (toIndex < 0 || toIndex >= this._seriesRows.length) {
-        return;
-      }
-      if (fromIndex === toIndex) {
-        return;
-      }
-      const rows = [...this._seriesRows];
-      const [removed] = rows.splice(fromIndex, 1);
-      rows.splice(toIndex, 0, removed);
-      this._seriesRows = rows;
-      this._syncSeriesState();
-      this._saveSessionState();
-      this._renderTargetRows();
-      this._syncControls();
-      this._updateUrl({ push: true });
-      this._renderContent();
-    }
     _clearAutoZoomTimer() {
       if (this._autoZoomTimer) {
         window.clearTimeout(this._autoZoomTimer);
@@ -22871,45 +22693,6 @@ ${s2.description}`).join("\n\n");
       const max = endOfUnit(new Date(maxReference), config.boundsUnit).getTime();
       return { min, max: Math.max(max, min + SECOND_MS), config };
     }
-    _countUnitsInRange(startMs, endMs, unit) {
-      const totalMs = Math.max(0, endMs - startMs);
-      switch (unit) {
-        case "second":
-          return Math.ceil(totalMs / SECOND_MS);
-        case "minute":
-          return Math.ceil(totalMs / MINUTE_MS);
-        case "hour":
-          return Math.ceil(totalMs / HOUR_MS);
-        case "day":
-          return Math.ceil(totalMs / DAY_MS);
-        case "week":
-          return Math.ceil(totalMs / WEEK_MS);
-        case "month": {
-          const start = new Date(startMs);
-          const end = new Date(endMs);
-          return Math.max(
-            1,
-            (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1
-          );
-        }
-        case "quarter":
-          return Math.max(1, Math.ceil(this._countUnitsInRange(startMs, endMs, "month") / 3));
-        case "year": {
-          const start = new Date(startMs);
-          const end = new Date(endMs);
-          return Math.max(1, end.getFullYear() - start.getFullYear() + 1);
-        }
-        default:
-          return Math.max(1, Math.ceil(totalMs / DAY_MS));
-      }
-    }
-    _getVisibleTimelineSpanMs() {
-      if (!this._rangeBounds) return RANGE_SLIDER_WINDOW_MS;
-      const viewportWidth = Math.max(this._rangeScrollViewportEl?.clientWidth || 0, 1);
-      const contentWidth = Math.max(this._rangeContentWidth || viewportWidth, viewportWidth);
-      const totalMs = Math.max(1, this._rangeBounds.max - this._rangeBounds.min);
-      return totalMs * Math.min(1, viewportWidth / contentWidth);
-    }
     _syncRangeControl() {
       if (!this._dateControl || !this._panelTimelineEl) return;
       this._rangeBounds = this._deriveRangeBounds();
@@ -22924,12 +22707,6 @@ ${s2.description}`).join("\n\n");
       this._updateComparisonRangePreview();
       this._updateChartHoverIndicator();
       this._updateChartZoomHighlight();
-    }
-    _updateRangeLabelVisibility(selector, minGap = RANGE_LABEL_MIN_GAP_PX) {
-    }
-    _setHoveredPeriodRangeFromTimestamp(timestamp, unit = this._rangeBounds?.config?.labelUnit) {
-      if (timestamp == null || !unit) return;
-      this._setHoveredPeriodRange(unit, new Date(timestamp));
     }
     _updateComparisonRangePreview() {
       if (!this._panelTimelineEl) return;
@@ -23112,74 +22889,6 @@ ${s2.description}`).join("\n\n");
       this._updateRangePreview();
       this._scheduleAutoZoomUpdate();
       this._scheduleRangeCommit();
-    }
-    _shiftDraftRangeByDelta(deltaMs) {
-      if (!this._rangeBounds) return;
-      const startMs = this._timelineDragStartRangeMs;
-      const endMs = this._timelineDragEndRangeMs;
-      const minDelta = this._rangeBounds.min - startMs;
-      const maxDelta = this._rangeBounds.max - endMs;
-      const clampedDelta = clampNumber(deltaMs, minDelta, maxDelta);
-      this._draftStartTime = new Date(startMs + clampedDelta);
-      this._draftEndTime = new Date(endMs + clampedDelta);
-      if (this._timelineDragStartZoomRange) {
-        this._chartZoomRange = {
-          start: this._timelineDragStartZoomRange.start + clampedDelta,
-          end: this._timelineDragStartZoomRange.end + clampedDelta
-        };
-        this._updateChartZoomHighlight();
-      }
-      this._updateRangePreview();
-      this._scheduleAutoZoomUpdate();
-      this._scheduleRangeCommit();
-    }
-    _setDraftRangeFromIntervalSelection(startTimestamp, endTimestamp) {
-      if (!this._rangeBounds) return;
-      const unit = this._rangeBounds.config?.labelUnit || this._getEffectiveSnapUnit();
-      const startValue = Math.min(startTimestamp, endTimestamp);
-      const endValue = Math.max(startTimestamp, endTimestamp);
-      const rangeStart = clampNumber(startOfUnit(new Date(startValue), unit).getTime(), this._rangeBounds.min, this._rangeBounds.max);
-      const rangeEnd = clampNumber(endOfUnit(new Date(endValue), unit).getTime(), this._rangeBounds.min, this._rangeBounds.max);
-      if (rangeStart >= rangeEnd) return;
-      this._draftStartTime = new Date(rangeStart);
-      this._draftEndTime = new Date(rangeEnd);
-      this._updateRangePreview();
-    }
-    _handleTrackSelectionAtClientX(clientX) {
-      const timestamp = this._timestampFromClientX(clientX);
-      if (timestamp == null) return;
-      const startMs = this._draftStartTime?.getTime() ?? this._startTime?.getTime() ?? this._rangeBounds?.min;
-      const endMs = this._draftEndTime?.getTime() ?? this._endTime?.getTime() ?? this._rangeBounds?.max;
-      const handle = Math.abs(timestamp - startMs) <= Math.abs(timestamp - endMs) ? "start" : "end";
-      this._setDraftRangeFromTimestamp(handle, timestamp);
-    }
-    _maybeAutoScrollTimelineDuringHandleDrag(clientX) {
-      if (!this._rangeScrollViewportEl) return;
-      const viewport = this._rangeScrollViewportEl;
-      const rect = viewport.getBoundingClientRect();
-      if (!rect.width) return;
-      const maxScrollLeft = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
-      if (maxScrollLeft <= 0) return;
-      let delta = 0;
-      const leftDistance = clientX - rect.left;
-      const rightDistance = rect.right - clientX;
-      if (leftDistance < RANGE_HANDLE_EDGE_SCROLL_THRESHOLD_PX) {
-        const ratio = clampNumber(
-          (RANGE_HANDLE_EDGE_SCROLL_THRESHOLD_PX - leftDistance) / RANGE_HANDLE_EDGE_SCROLL_THRESHOLD_PX,
-          0,
-          1
-        );
-        delta = -Math.max(1, Math.round(ratio * RANGE_HANDLE_EDGE_SCROLL_MAX_STEP_PX));
-      } else if (rightDistance < RANGE_HANDLE_EDGE_SCROLL_THRESHOLD_PX) {
-        const ratio = clampNumber(
-          (RANGE_HANDLE_EDGE_SCROLL_THRESHOLD_PX - rightDistance) / RANGE_HANDLE_EDGE_SCROLL_THRESHOLD_PX,
-          0,
-          1
-        );
-        delta = Math.max(1, Math.round(ratio * RANGE_HANDLE_EDGE_SCROLL_MAX_STEP_PX));
-      }
-      if (!delta) return;
-      viewport.scrollLeft = clampNumber(viewport.scrollLeft + delta, 0, maxScrollLeft);
     }
     _scheduleRangeCommit() {
       if (this._rangeInteractionActive || this._timelinePointerMode === "selection" || this._timelinePointerMode === "interval_select") return;
