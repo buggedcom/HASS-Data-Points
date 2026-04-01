@@ -61,6 +61,7 @@ import {
   WEEK_MS,
 } from "@/lib/shared";
 
+import "@/molecules/dp-target-row/dp-target-row";
 import "@/molecules/dp-target-row-list/dp-target-row-list";
 import "@/molecules/dp-sidebar-options/dp-sidebar-options";
 import "@/molecules/dp-comparison-tab-rail/dp-comparison-tab-rail";
@@ -4660,79 +4661,34 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._collapsedPopupEntityId = entityId;
     this._collapsedPopupAnchorEl = anchorEl;
 
-    popup.innerHTML = this._buildSingleRowHTML(row, index, { includeDragHandle: false });
-
-    // Hydrate ha-state-icon elements
-    popup.querySelectorAll("[data-series-icon-entity-id]").forEach((iconEl) => {
-      const eid = iconEl.dataset.seriesIconEntityId;
-      if (!eid) {
-        return;
-      }
-      iconEl.stateObj = this._hass?.states?.[eid];
-      iconEl.hass = this._hass;
+    // Mount a dp-target-row — replacing the old _buildSingleRowHTML + data-attribute wiring.
+    popup.innerHTML = "";
+    const targetRow = document.createElement("dp-target-row");
+    targetRow.color = row.color;
+    targetRow.visible = row.visible !== false;
+    targetRow.analysis = row.analysis || {};
+    targetRow.index = index;
+    targetRow.stateObj = this._hass?.states?.[row.entity_id] ?? null;
+    targetRow.hass = this._hass ?? null;
+    targetRow.canShowDeltaAnalysis = !!this._selectedComparisonWindowId;
+    targetRow.comparisonWindows = this._comparisonWindows || [];
+    targetRow.addEventListener("dp-row-color-change", (ev) => {
+      this._updateSeriesRowColor(ev.detail.index, ev.detail.color);
     });
-
-    // Wire all interactive controls
-    popup.querySelectorAll("[data-series-color-index]").forEach((input) => {
-      input.addEventListener("change", () => {
-        this._updateSeriesRowColor(Number.parseInt(input.dataset.seriesColorIndex || "", 10), input.value);
-      });
+    targetRow.addEventListener("dp-row-visibility-change", (ev) => {
+      this._updateSeriesRowVisibilityByEntityId(ev.detail.entityId, ev.detail.visible);
     });
-    popup.querySelectorAll("[data-series-analysis-toggle-entity-id]").forEach((button) => {
-      button.addEventListener("click", () => {
-        this._toggleSeriesAnalysisExpanded(String(button.dataset.seriesAnalysisToggleEntityId || ""));
-      });
+    targetRow.addEventListener("dp-row-toggle-analysis", (ev) => {
+      this._toggleSeriesAnalysisExpanded(ev.detail.entityId);
     });
-    popup.querySelectorAll("[data-series-visible-entity-id]").forEach((input) => {
-      input.addEventListener("change", () => {
-        this._updateSeriesRowVisibilityByEntityId(String(input.dataset.seriesVisibleEntityId || ""), input.checked);
-      });
+    targetRow.addEventListener("dp-row-analysis-change", (ev) => {
+      this._setSeriesAnalysisOption(ev.detail.entityId, ev.detail.key, ev.detail.value);
     });
-    popup.querySelectorAll("[data-series-analysis-option]").forEach((input) => {
-      input.addEventListener("change", () => {
-        const [eid, key] = String(input.dataset.seriesAnalysisOption || "").split("::");
-        if (!eid || !key) {
-          return;
-        }
-        this._setSeriesAnalysisOption(eid, key, !!input.checked);
-      });
+    targetRow.addEventListener("dp-row-remove", (ev) => {
+      this._hideCollapsedTargetPopup();
+      this._removeSeriesRow(ev.detail.index);
     });
-    popup.querySelectorAll("[data-series-analysis-select]").forEach((select) => {
-      select.addEventListener("change", () => {
-        const [eid, key] = String(select.dataset.seriesAnalysisSelect || "").split("::");
-        if (!eid || !key) {
-          return;
-        }
-        this._setSeriesAnalysisOption(eid, key, select.value || "");
-      });
-    });
-    popup.querySelectorAll("[data-series-analysis-input]").forEach((input) => {
-      input.addEventListener("change", () => {
-        const [eid, key] = String(input.dataset.seriesAnalysisInput || "").split("::");
-        if (!eid || !key) {
-          return;
-        }
-        this._setSeriesAnalysisOption(eid, key, input.value || "");
-      });
-    });
-    popup.querySelectorAll("[data-series-remove-index]").forEach((button) => {
-      button.addEventListener("click", () => {
-        this._hideCollapsedTargetPopup();
-        this._removeSeriesRow(Number.parseInt(button.dataset.seriesRemoveIndex || "", 10));
-      });
-    });
-    popup.querySelectorAll("[data-series-row-entity-id]").forEach((rowEl) => {
-      rowEl.addEventListener("click", (ev) => {
-        const nameArea = rowEl.querySelector(".history-target-name");
-        if (!nameArea || !nameArea.contains(ev.target)) {
-          return;
-        }
-        if (ev.target.closest("button, input, select, textarea, a, label")) {
-          return;
-        }
-        this._toggleSeriesAnalysisExpanded(String(rowEl.dataset.seriesRowEntityId || ""));
-      });
-    });
+    popup.appendChild(targetRow);
 
     // Position the popup to the right of the anchor button
     popup.removeAttribute("hidden");

@@ -14086,47 +14086,6 @@ ${s2.description}`).join("\n\n");
     --dp-spacing-xl: calc(var(--spacing, 8px) * 2.5);
   }
 
-  .history-target-table {
-    display: grid;
-  }
-
-  .history-target-table-body {
-    display: grid;
-    gap: calc(var(--spacing, 8px) * 1.25);
-  }
-
-  .history-target-empty {
-    padding: var(--dp-spacing-md) var(--dp-spacing-sm);
-    border-radius: 12px;
-    background: color-mix(in srgb, var(--primary-text-color, #111) 4%, transparent);
-    color: var(--secondary-text-color, #9e9e9e);
-    font-size: 0.84rem;
-  }
-
-  /* Drag states applied to the dp-target-row host element */
-  dp-target-row.is-dragging {
-    opacity: 0.35;
-    pointer-events: none;
-  }
-
-  dp-target-row.is-drag-over-before {
-    box-shadow: inset 0 3px 0 -1px var(--primary-color, #03a9f4);
-  }
-
-  dp-target-row.is-drag-over-after {
-    box-shadow: inset 0 -3px 0 -1px var(--primary-color, #03a9f4);
-  }
-`;
-  const styles$g = i$5`
-  :host {
-    display: block;
-    --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
-    --dp-spacing-sm: var(--spacing, 8px);
-    --dp-spacing-md: calc(var(--spacing, 8px) * 1.5);
-    --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
-    --dp-spacing-xl: calc(var(--spacing, 8px) * 2.5);
-  }
-
   .history-target-row {
     display: grid;
     position: relative;
@@ -14560,8 +14519,8 @@ ${s2.description}`).join("\n\n");
     cursor: pointer;
   }
 `;
-  const styles$f = i$5``;
-  const styles$e = i$5`
+  const styles$g = i$5``;
+  const styles$f = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -14623,7 +14582,7 @@ ${s2.description}`).join("\n\n");
       disabled: { type: Boolean },
       alignTop: { type: Boolean, attribute: "align-top" }
     };
-    static styles = styles$e;
+    static styles = styles$f;
     constructor() {
       super();
       this.label = "";
@@ -14687,7 +14646,7 @@ ${s2.description}`).join("\n\n");
       analysis: { type: Object },
       entityId: { type: String, attribute: "entity-id" }
     };
-    static styles = [sharedStyles, styles$f];
+    static styles = [sharedStyles, styles$g];
     constructor() {
       super();
       this.analysis = {};
@@ -14742,7 +14701,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-analysis-trend-group", DpAnalysisTrendGroup);
-  const styles$d = i$5``;
+  const styles$e = i$5``;
   const ANALYSIS_RATE_WINDOW_OPTIONS$1 = [
     { value: "point_to_point", label: "Point to point" },
     { value: "1h", label: "1 hour" },
@@ -14754,7 +14713,7 @@ ${s2.description}`).join("\n\n");
       analysis: { type: Object },
       entityId: { type: String, attribute: "entity-id" }
     };
-    static styles = [sharedStyles, styles$d];
+    static styles = [sharedStyles, styles$e];
     constructor() {
       super();
       this.analysis = {};
@@ -14796,14 +14755,14 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-analysis-rate-group", DpAnalysisRateGroup);
-  const styles$c = i$5``;
+  const styles$d = i$5``;
   class DpAnalysisThresholdGroup extends i$2 {
     static properties = {
       analysis: { type: Object },
       entityId: { type: String, attribute: "entity-id" },
       unit: { type: String }
     };
-    static styles = [sharedStyles, styles$c];
+    static styles = [sharedStyles, styles$d];
     constructor() {
       super();
       this.analysis = {};
@@ -14870,7 +14829,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-analysis-threshold-group", DpAnalysisThresholdGroup);
-  const styles$b = i$5`
+  const styles$c = i$5`
   .method-list {
     display: grid;
     gap: var(--dp-spacing-sm, 8px);
@@ -14900,7 +14859,7 @@ ${s2.description}`).join("\n\n");
     vertical-align: middle;
   }
 `;
-  const styles$a = i$5`
+  const styles$b = i$5`
   :host {
     display: block;
     --dp-spacing-sm: var(--spacing, 8px);
@@ -14916,7 +14875,7 @@ ${s2.description}`).join("\n\n");
   }
 `;
   class DpAnalysisMethodSubopts extends i$2 {
-    static styles = styles$a;
+    static styles = styles$b;
     render() {
       return b`<div class="subopts"><slot></slot></div>`;
     }
@@ -14965,7 +14924,7 @@ ${s2.description}`).join("\n\n");
       entityId: { type: String, attribute: "entity-id" },
       comparisonWindows: { type: Array, attribute: "comparison-windows" }
     };
-    static styles = [sharedStyles, styles$b];
+    static styles = [sharedStyles, styles$c];
     constructor() {
       super();
       this.analysis = {};
@@ -15078,7 +15037,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-analysis-anomaly-group", DpAnalysisAnomalyGroup);
-  const styles$9 = i$5`
+  const styles$a = i$5`
   .help-text {
     display: inline-block;
     color: var(--secondary-text-color);
@@ -15092,7 +15051,7 @@ ${s2.description}`).join("\n\n");
       entityId: { type: String, attribute: "entity-id" },
       canShowDeltaAnalysis: { type: Boolean, attribute: "can-show-delta-analysis" }
     };
-    static styles = [sharedStyles, styles$9];
+    static styles = [sharedStyles, styles$a];
     constructor() {
       super();
       this.analysis = {};
@@ -15177,7 +15136,7 @@ ${s2.description}`).join("\n\n");
       hass: { type: Object, attribute: false },
       comparisonWindows: { type: Array, attribute: "comparison-windows" }
     };
-    static styles = styles$g;
+    static styles = styles$h;
     constructor() {
       super();
       this.color = "#03a9f4";
@@ -15356,6 +15315,47 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-target-row", DpTargetRow);
+  const styles$9 = i$5`
+  :host {
+    display: block;
+    --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
+    --dp-spacing-sm: var(--spacing, 8px);
+    --dp-spacing-md: calc(var(--spacing, 8px) * 1.5);
+    --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
+    --dp-spacing-xl: calc(var(--spacing, 8px) * 2.5);
+  }
+
+  .history-target-table {
+    display: grid;
+  }
+
+  .history-target-table-body {
+    display: grid;
+    gap: calc(var(--spacing, 8px) * 1.25);
+  }
+
+  .history-target-empty {
+    padding: var(--dp-spacing-md) var(--dp-spacing-sm);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--primary-text-color, #111) 4%, transparent);
+    color: var(--secondary-text-color, #9e9e9e);
+    font-size: 0.84rem;
+  }
+
+  /* Drag states applied to the dp-target-row host element */
+  dp-target-row.is-dragging {
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  dp-target-row.is-drag-over-before {
+    box-shadow: inset 0 3px 0 -1px var(--primary-color, #03a9f4);
+  }
+
+  dp-target-row.is-drag-over-after {
+    box-shadow: inset 0 -3px 0 -1px var(--primary-color, #03a9f4);
+  }
+`;
   class DpTargetRowList extends i$2 {
     static properties = {
       rows: { type: Array },
@@ -15366,7 +15366,7 @@ ${s2.description}`).join("\n\n");
     };
     /** Index of the row currently being dragged, or null when not dragging. */
     _dragSourceIndex = null;
-    static styles = styles$h;
+    static styles = styles$9;
     render() {
       if (!this.rows.length) {
         return b`
@@ -21280,75 +21280,33 @@ ${s2.description}`).join("\n\n");
       const row = this._seriesRows[index];
       this._collapsedPopupEntityId = entityId;
       this._collapsedPopupAnchorEl = anchorEl;
-      popup.innerHTML = this._buildSingleRowHTML(row, index, { includeDragHandle: false });
-      popup.querySelectorAll("[data-series-icon-entity-id]").forEach((iconEl) => {
-        const eid = iconEl.dataset.seriesIconEntityId;
-        if (!eid) {
-          return;
-        }
-        iconEl.stateObj = this._hass?.states?.[eid];
-        iconEl.hass = this._hass;
+      popup.innerHTML = "";
+      const targetRow = document.createElement("dp-target-row");
+      targetRow.color = row.color;
+      targetRow.visible = row.visible !== false;
+      targetRow.analysis = row.analysis || {};
+      targetRow.index = index;
+      targetRow.stateObj = this._hass?.states?.[row.entity_id] ?? null;
+      targetRow.hass = this._hass ?? null;
+      targetRow.canShowDeltaAnalysis = !!this._selectedComparisonWindowId;
+      targetRow.comparisonWindows = this._comparisonWindows || [];
+      targetRow.addEventListener("dp-row-color-change", (ev) => {
+        this._updateSeriesRowColor(ev.detail.index, ev.detail.color);
       });
-      popup.querySelectorAll("[data-series-color-index]").forEach((input) => {
-        input.addEventListener("change", () => {
-          this._updateSeriesRowColor(Number.parseInt(input.dataset.seriesColorIndex || "", 10), input.value);
-        });
+      targetRow.addEventListener("dp-row-visibility-change", (ev) => {
+        this._updateSeriesRowVisibilityByEntityId(ev.detail.entityId, ev.detail.visible);
       });
-      popup.querySelectorAll("[data-series-analysis-toggle-entity-id]").forEach((button) => {
-        button.addEventListener("click", () => {
-          this._toggleSeriesAnalysisExpanded(String(button.dataset.seriesAnalysisToggleEntityId || ""));
-        });
+      targetRow.addEventListener("dp-row-toggle-analysis", (ev) => {
+        this._toggleSeriesAnalysisExpanded(ev.detail.entityId);
       });
-      popup.querySelectorAll("[data-series-visible-entity-id]").forEach((input) => {
-        input.addEventListener("change", () => {
-          this._updateSeriesRowVisibilityByEntityId(String(input.dataset.seriesVisibleEntityId || ""), input.checked);
-        });
+      targetRow.addEventListener("dp-row-analysis-change", (ev) => {
+        this._setSeriesAnalysisOption(ev.detail.entityId, ev.detail.key, ev.detail.value);
       });
-      popup.querySelectorAll("[data-series-analysis-option]").forEach((input) => {
-        input.addEventListener("change", () => {
-          const [eid, key] = String(input.dataset.seriesAnalysisOption || "").split("::");
-          if (!eid || !key) {
-            return;
-          }
-          this._setSeriesAnalysisOption(eid, key, !!input.checked);
-        });
+      targetRow.addEventListener("dp-row-remove", (ev) => {
+        this._hideCollapsedTargetPopup();
+        this._removeSeriesRow(ev.detail.index);
       });
-      popup.querySelectorAll("[data-series-analysis-select]").forEach((select) => {
-        select.addEventListener("change", () => {
-          const [eid, key] = String(select.dataset.seriesAnalysisSelect || "").split("::");
-          if (!eid || !key) {
-            return;
-          }
-          this._setSeriesAnalysisOption(eid, key, select.value || "");
-        });
-      });
-      popup.querySelectorAll("[data-series-analysis-input]").forEach((input) => {
-        input.addEventListener("change", () => {
-          const [eid, key] = String(input.dataset.seriesAnalysisInput || "").split("::");
-          if (!eid || !key) {
-            return;
-          }
-          this._setSeriesAnalysisOption(eid, key, input.value || "");
-        });
-      });
-      popup.querySelectorAll("[data-series-remove-index]").forEach((button) => {
-        button.addEventListener("click", () => {
-          this._hideCollapsedTargetPopup();
-          this._removeSeriesRow(Number.parseInt(button.dataset.seriesRemoveIndex || "", 10));
-        });
-      });
-      popup.querySelectorAll("[data-series-row-entity-id]").forEach((rowEl) => {
-        rowEl.addEventListener("click", (ev) => {
-          const nameArea = rowEl.querySelector(".history-target-name");
-          if (!nameArea || !nameArea.contains(ev.target)) {
-            return;
-          }
-          if (ev.target.closest("button, input, select, textarea, a, label")) {
-            return;
-          }
-          this._toggleSeriesAnalysisExpanded(String(rowEl.dataset.seriesRowEntityId || ""));
-        });
-      });
+      popup.appendChild(targetRow);
       popup.removeAttribute("hidden");
       const anchorRect = anchorEl.getBoundingClientRect();
       const popupHeight = popup.offsetHeight;
