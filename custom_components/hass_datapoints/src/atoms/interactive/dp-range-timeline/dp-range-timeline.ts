@@ -70,6 +70,10 @@ export class DpRangeTimeline extends LitElement {
   _rangeContentWidth = 0;
   _rangeCommitTimer: ReturnType<typeof setTimeout> | null = null;
 
+  // Scrollbar visibility state
+  _isProgrammaticScroll = false;
+  _scrollbarHideTimer: ReturnType<typeof setTimeout> | null = null;
+
   // Timeline pan/select state
   _timelinePointerId: number | null = null;
   _timelinePointerStartX = 0;
@@ -146,6 +150,9 @@ export class DpRangeTimeline extends LitElement {
       this._syncVisibleRangeLabels();
       this._updateRangeTooltip();
       this.dispatchEvent(new CustomEvent("dp-range-scroll", { bubbles: true, composed: true }));
+      if (!this._isProgrammaticScroll) {
+        this._showScrollbar();
+      }
     });
 
     if (typeof ResizeObserver !== "undefined") {
@@ -692,11 +699,23 @@ export class DpRangeTimeline extends LitElement {
 
   _revealSelectionInTimeline(behavior: ScrollBehavior = "auto") {
     if (!this.startTime || !this.endTime) return;
+    this._isProgrammaticScroll = true;
     this._scrollTimelineToRange(
       { start: this.startTime.getTime(), end: this.endTime.getTime() },
       behavior,
       { center: true },
     );
+    window.setTimeout(() => { this._isProgrammaticScroll = false; }, 50);
+  }
+
+  _showScrollbar() {
+    if (!this._rangeScrollViewportEl) return;
+    this._rangeScrollViewportEl.classList.add("scrollbar-visible");
+    if (this._scrollbarHideTimer) window.clearTimeout(this._scrollbarHideTimer);
+    this._scrollbarHideTimer = window.setTimeout(() => {
+      this._scrollbarHideTimer = null;
+      this._rangeScrollViewportEl?.classList.remove("scrollbar-visible");
+    }, 1500);
   }
 
   // ---------------------------------------------------------------------------

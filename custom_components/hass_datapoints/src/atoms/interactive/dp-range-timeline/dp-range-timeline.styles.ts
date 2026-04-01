@@ -56,12 +56,26 @@ export const styles = css`
     touch-action: pan-y;
   }
 
+  .range-scroll-viewport {
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 200ms ease;
+  }
+
+  .range-scroll-viewport.scrollbar-visible {
+    scrollbar-color: color-mix(in srgb, var(--primary-text-color, #111) 18%, transparent) transparent;
+  }
+
   .range-scroll-viewport::-webkit-scrollbar {
     height: 8px;
   }
 
   .range-scroll-viewport::-webkit-scrollbar-thumb {
     border-radius: 999px;
+    background: transparent;
+    transition: background 200ms ease;
+  }
+
+  .range-scroll-viewport.scrollbar-visible::-webkit-scrollbar-thumb {
     background: color-mix(in srgb, var(--primary-text-color, #111) 18%, transparent);
   }
 

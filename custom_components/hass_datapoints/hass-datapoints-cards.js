@@ -17081,12 +17081,26 @@ ${s2.description}`).join("\n\n");
     touch-action: pan-y;
   }
 
+  .range-scroll-viewport {
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 200ms ease;
+  }
+
+  .range-scroll-viewport.scrollbar-visible {
+    scrollbar-color: color-mix(in srgb, var(--primary-text-color, #111) 18%, transparent) transparent;
+  }
+
   .range-scroll-viewport::-webkit-scrollbar {
     height: 8px;
   }
 
   .range-scroll-viewport::-webkit-scrollbar-thumb {
     border-radius: 999px;
+    background: transparent;
+    transition: background 200ms ease;
+  }
+
+  .range-scroll-viewport.scrollbar-visible::-webkit-scrollbar-thumb {
     background: color-mix(in srgb, var(--primary-text-color, #111) 18%, transparent);
   }
 
@@ -17407,6 +17421,9 @@ ${s2.description}`).join("\n\n");
     _rangeInteractionActive = false;
     _rangeContentWidth = 0;
     _rangeCommitTimer = null;
+    // Scrollbar visibility state
+    _isProgrammaticScroll = false;
+    _scrollbarHideTimer = null;
     // Timeline pan/select state
     _timelinePointerId = null;
     _timelinePointerStartX = 0;
@@ -17475,6 +17492,9 @@ ${s2.description}`).join("\n\n");
         this._syncVisibleRangeLabels();
         this._updateRangeTooltip();
         this.dispatchEvent(new CustomEvent("dp-range-scroll", { bubbles: true, composed: true }));
+        if (!this._isProgrammaticScroll) {
+          this._showScrollbar();
+        }
       });
       if (typeof ResizeObserver !== "undefined") {
         const ro = new ResizeObserver(() => {
@@ -17952,11 +17972,24 @@ ${s2.description}`).join("\n\n");
     }
     _revealSelectionInTimeline(behavior = "auto") {
       if (!this.startTime || !this.endTime) return;
+      this._isProgrammaticScroll = true;
       this._scrollTimelineToRange(
         { start: this.startTime.getTime(), end: this.endTime.getTime() },
         behavior,
         { center: true }
       );
+      window.setTimeout(() => {
+        this._isProgrammaticScroll = false;
+      }, 50);
+    }
+    _showScrollbar() {
+      if (!this._rangeScrollViewportEl) return;
+      this._rangeScrollViewportEl.classList.add("scrollbar-visible");
+      if (this._scrollbarHideTimer) window.clearTimeout(this._scrollbarHideTimer);
+      this._scrollbarHideTimer = window.setTimeout(() => {
+        this._scrollbarHideTimer = null;
+        this._rangeScrollViewportEl?.classList.remove("scrollbar-visible");
+      }, 1500);
     }
     // ---------------------------------------------------------------------------
     // Coordinate math
@@ -22810,6 +22843,7 @@ ${s2.description}`).join("\n\n");
       const endMs = this._endTime?.getTime() || Date.now();
       const historyStartMs = this._historyStartTime?.getTime();
       const historyEndMs = this._historyEndTime?.getTime();
+      const maxLookAheadMs = addUnit(/* @__PURE__ */ new Date(), "month", 3).getTime();
       if (historyStartMs != null) {
         const min2 = startOfUnit(new Date(historyStartMs), config.boundsUnit).getTime();
         const futureReference = addUnit(
@@ -22817,10 +22851,13 @@ ${s2.description}`).join("\n\n");
           "year",
           RANGE_FUTURE_BUFFER_YEARS
         ).getTime();
-        const maxReference = Math.max(
-          futureReference,
-          endMs,
-          startMs + this._getSnapSpanMs(this._startTime || /* @__PURE__ */ new Date())
+        const maxReference = Math.min(
+          maxLookAheadMs,
+          Math.max(
+            futureReference,
+            endMs,
+            startMs + this._getSnapSpanMs(this._startTime || /* @__PURE__ */ new Date())
+          )
         );
         const max2 = endOfUnit(new Date(maxReference), config.boundsUnit).getTime();
         return { min: min2, max: Math.max(max2, min2 + SECOND_MS), config };
@@ -22829,7 +22866,7 @@ ${s2.description}`).join("\n\n");
       const visibleMs = Math.max(config.baselineMs, selectionMs * 1.6);
       const centerMs = startMs + (endMs - startMs) / 2;
       const rawMin = centerMs - visibleMs / 2;
-      const rawMax = centerMs + visibleMs / 2;
+      const rawMax = Math.min(centerMs + visibleMs / 2, maxLookAheadMs);
       const min = startOfUnit(new Date(rawMin), config.boundsUnit).getTime();
       const max = endOfUnit(new Date(rawMax), config.boundsUnit).getTime();
       return { min, max, config };

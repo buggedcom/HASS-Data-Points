@@ -4735,6 +4735,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     const endMs = this._endTime?.getTime() || Date.now();
     const historyStartMs = this._historyStartTime?.getTime();
     const historyEndMs = this._historyEndTime?.getTime();
+    const maxLookAheadMs = addUnit(new Date(), "month", 3).getTime();
 
     if (historyStartMs != null) {
       const min = startOfUnit(new Date(historyStartMs), config.boundsUnit).getTime();
@@ -4743,10 +4744,13 @@ export class HassRecordsHistoryPanel extends HTMLElement {
         "year",
         RANGE_FUTURE_BUFFER_YEARS,
       ).getTime();
-      const maxReference = Math.max(
-        futureReference,
-        endMs,
-        startMs + this._getSnapSpanMs(this._startTime || new Date()),
+      const maxReference = Math.min(
+        maxLookAheadMs,
+        Math.max(
+          futureReference,
+          endMs,
+          startMs + this._getSnapSpanMs(this._startTime || new Date()),
+        ),
       );
       const max = endOfUnit(new Date(maxReference), config.boundsUnit).getTime();
       return { min, max: Math.max(max, min + SECOND_MS), config };
@@ -4756,7 +4760,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     const visibleMs = Math.max(config.baselineMs, selectionMs * 1.6);
     const centerMs = startMs + ((endMs - startMs) / 2);
     const rawMin = centerMs - (visibleMs / 2);
-    const rawMax = centerMs + (visibleMs / 2);
+    const rawMax = Math.min(centerMs + (visibleMs / 2), maxLookAheadMs);
     const min = startOfUnit(new Date(rawMin), config.boundsUnit).getTime();
     const max = endOfUnit(new Date(rawMax), config.boundsUnit).getTime();
     return { min, max, config };
