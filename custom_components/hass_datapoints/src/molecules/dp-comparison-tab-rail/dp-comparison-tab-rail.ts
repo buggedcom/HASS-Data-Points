@@ -2,7 +2,7 @@ import { LitElement, html } from "lit";
 import { classMap } from "lit/directives/class-map.js";
 import { repeat } from "lit/directives/repeat.js";
 import { styles } from "./dp-comparison-tab-rail.styles";
-import "../dp-comparison-tab/dp-comparison-tab";
+import "@/molecules/dp-comparison-tab/dp-comparison-tab";
 
 export interface TabItem {
   id: string;
