@@ -147,6 +147,11 @@ export class DpPanelTimeline extends LitElement {
   // bubbling up from the inner dp-range-timeline atom)
   // ---------------------------------------------------------------------------
 
+  revealSelection() {
+    const timeline = this.shadowRoot?.querySelector("dp-range-timeline") as HTMLElement & { revealSelection?: () => void };
+    timeline?.revealSelection?.();
+  }
+
   _onPeriodHoverInternal(ev: CustomEvent) {
     const { start, end } = ev.detail as { start: Date; end: Date };
     this.hoveredPeriodRange = { start: start.getTime(), end: end.getTime() };

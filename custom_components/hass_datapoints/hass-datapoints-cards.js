@@ -17501,6 +17501,7 @@ ${s2.description}`).join("\n\n");
           this._syncTimelineWidth();
           this._updateSelectionJumpControls();
           this._syncVisibleRangeLabels();
+          this._revealSelectionInTimeline("auto");
         });
         if (this._rangeScrollViewportEl) ro.observe(this._rangeScrollViewportEl);
       }
@@ -17640,7 +17641,7 @@ ${s2.description}`).join("\n\n");
       this._renderRangeScale();
       this._updateRangePreview();
       this._updateSelectionJumpControls();
-      window.requestAnimationFrame(() => this._revealSelectionInTimeline("auto"));
+      this._revealSelectionInTimeline("auto");
     }
     _syncTimelineWidth() {
       if (!this.rangeBounds || !this._rangeTimelineEl) return;
@@ -17969,6 +17970,9 @@ ${s2.description}`).join("\n\n");
       const ratio = (targetStart - this.rangeBounds.min) / viewportRangeMs;
       const nextLeft = clampNumber(ratio * maxScrollLeft, 0, maxScrollLeft);
       this._rangeScrollViewportEl.scrollTo({ left: nextLeft, behavior });
+    }
+    revealSelection() {
+      this._revealSelectionInTimeline("smooth");
     }
     _revealSelectionInTimeline(behavior = "auto") {
       if (!this.startTime || !this.endTime) return;
@@ -18418,6 +18422,10 @@ ${s2.description}`).join("\n\n");
     // Internal period hover handling (from dp-range-period-hover/leave events
     // bubbling up from the inner dp-range-timeline atom)
     // ---------------------------------------------------------------------------
+    revealSelection() {
+      const timeline = this.shadowRoot?.querySelector("dp-range-timeline");
+      timeline?.revealSelection?.();
+    }
     _onPeriodHoverInternal(ev) {
       const { start, end } = ev.detail;
       this.hoveredPeriodRange = { start: start.getTime(), end: end.getTime() };
@@ -22788,11 +22796,7 @@ ${s2.description}`).join("\n\n");
     _getEffectiveZoomLevel() {
       if (this._zoomLevel !== "auto") return this._zoomLevel;
       if (!this._resolvedAutoZoomLevel) {
-        const historySpanMs = this._historyStartTime && this._historyEndTime ? Math.max(
-          this._historyEndTime.getTime() - this._historyStartTime.getTime(),
-          RANGE_SLIDER_MIN_SPAN_MS
-        ) : null;
-        const referenceSpanMs = historySpanMs ?? Math.max(
+        const referenceSpanMs = Math.max(
           (this._endTime?.getTime() || Date.now()) - (this._startTime?.getTime() || Date.now() - RANGE_SLIDER_WINDOW_MS),
           RANGE_SLIDER_MIN_SPAN_MS
         );
@@ -22844,32 +22848,28 @@ ${s2.description}`).join("\n\n");
       const historyStartMs = this._historyStartTime?.getTime();
       const historyEndMs = this._historyEndTime?.getTime();
       const maxLookAheadMs = addUnit(/* @__PURE__ */ new Date(), "month", 3).getTime();
-      if (historyStartMs != null) {
-        const min2 = startOfUnit(new Date(historyStartMs), config.boundsUnit).getTime();
-        const futureReference = addUnit(
-          new Date(historyEndMs ?? endMs),
-          "year",
-          RANGE_FUTURE_BUFFER_YEARS
-        ).getTime();
-        const maxReference = Math.min(
-          maxLookAheadMs,
-          Math.max(
-            futureReference,
-            endMs,
-            startMs + this._getSnapSpanMs(this._startTime || /* @__PURE__ */ new Date())
-          )
-        );
-        const max2 = endOfUnit(new Date(maxReference), config.boundsUnit).getTime();
-        return { min: min2, max: Math.max(max2, min2 + SECOND_MS), config };
-      }
-      const selectionMs = Math.max(endMs - startMs, this._getSnapSpanMs(this._startTime || /* @__PURE__ */ new Date()));
-      const visibleMs = Math.max(config.baselineMs, selectionMs * 1.6);
-      const centerMs = startMs + (endMs - startMs) / 2;
-      const rawMin = centerMs - visibleMs / 2;
-      const rawMax = Math.min(centerMs + visibleMs / 2, maxLookAheadMs);
-      const min = startOfUnit(new Date(rawMin), config.boundsUnit).getTime();
-      const max = endOfUnit(new Date(rawMax), config.boundsUnit).getTime();
-      return { min, max, config };
+      const anchorMs = historyStartMs ?? startMs;
+      const naturalMin = startOfUnit(new Date(anchorMs), config.boundsUnit).getTime();
+      const paddedMin = startOfUnit(
+        new Date(startMs - config.baselineMs * 0.3),
+        config.boundsUnit
+      ).getTime();
+      const min = Math.min(naturalMin, paddedMin);
+      const futureReference = addUnit(
+        new Date(historyEndMs ?? endMs),
+        "year",
+        RANGE_FUTURE_BUFFER_YEARS
+      ).getTime();
+      const maxReference = Math.min(
+        maxLookAheadMs,
+        Math.max(
+          futureReference,
+          endMs,
+          startMs + this._getSnapSpanMs(this._startTime || /* @__PURE__ */ new Date())
+        )
+      );
+      const max = endOfUnit(new Date(maxReference), config.boundsUnit).getTime();
+      return { min, max: Math.max(max, min + SECOND_MS), config };
     }
     _countUnitsInRange(startMs, endMs, unit) {
       const totalMs = Math.max(0, endMs - startMs);
@@ -22973,6 +22973,9 @@ ${s2.description}`).join("\n\n");
         }
       }
       this._updateChartZoomHighlight();
+      if (!nextRange) {
+        this._panelTimelineEl?.revealSelection?.();
+      }
     }
     _scheduleChartZoomStateCommit() {
       if (this._chartZoomStateCommitTimer) {

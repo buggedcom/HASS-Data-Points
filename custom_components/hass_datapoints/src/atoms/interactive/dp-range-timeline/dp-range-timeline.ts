@@ -160,6 +160,7 @@ export class DpRangeTimeline extends LitElement {
         this._syncTimelineWidth();
         this._updateSelectionJumpControls();
         this._syncVisibleRangeLabels();
+        this._revealSelectionInTimeline("auto");
       });
       if (this._rangeScrollViewportEl) ro.observe(this._rangeScrollViewportEl);
     }
@@ -311,7 +312,7 @@ export class DpRangeTimeline extends LitElement {
     this._renderRangeScale();
     this._updateRangePreview();
     this._updateSelectionJumpControls();
-    window.requestAnimationFrame(() => this._revealSelectionInTimeline("auto"));
+    this._revealSelectionInTimeline("auto");
   }
 
   _syncTimelineWidth() {
@@ -695,6 +696,10 @@ export class DpRangeTimeline extends LitElement {
     const ratio = (targetStart - this.rangeBounds.min) / viewportRangeMs;
     const nextLeft = clampNumber(ratio * maxScrollLeft, 0, maxScrollLeft);
     this._rangeScrollViewportEl.scrollTo({ left: nextLeft, behavior });
+  }
+
+  revealSelection() {
+    this._revealSelectionInTimeline("smooth");
   }
 
   _revealSelectionInTimeline(behavior: ScrollBehavior = "auto") {
