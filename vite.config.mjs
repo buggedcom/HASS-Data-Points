@@ -42,6 +42,7 @@ export default defineConfig({
       {
         extends: true,
         test: {
+          name: "unit",
           environment: "happy-dom",
           include: ["custom_components/hass_datapoints/src/**/*.spec.ts"],
           setupFiles: [

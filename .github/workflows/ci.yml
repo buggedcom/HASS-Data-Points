@@ -30,10 +30,17 @@ jobs:
           python -m py_compile custom_components/hass_datapoints/websocket_api.py
 
       # ── JS build & verify ──────────────────────────────────────
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: "20"
+          cache: "pnpm"
+
+      - name: Install JS dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Build frontend JS
         run: bash scripts/build.sh
@@ -63,6 +70,17 @@ jobs:
 
       - name: Validate hacs.json
         run: python -c "import json; json.load(open('hacs.json'))"
+
+      # ── Unit tests ─────────────────────────────────────────────
+      - name: Run unit tests
+        run: pnpm exec vitest run --project unit
+
+      # ── Storybook interaction tests ────────────────────────────
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install chromium --with-deps
+
+      - name: Run Storybook tests
+        run: pnpm exec vitest run --project storybook
 
   hacs:
     name: HACS Validation
