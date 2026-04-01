@@ -17,11 +17,6 @@ import {
   fetchEventBounds,
   fetchEvents,
   fetchUserData,
-  formatContextLabel,
-  formatPeriodSelectionLabel,
-  formatRangeDateTime,
-  formatRangeSummary,
-  formatScaleLabel,
   historySeriesRowHasConfiguredAnalysis,
   makeDateWindowId,
   normalizeDateWindows,
@@ -36,11 +31,7 @@ import {
   parseSeriesColorsParam,
   RANGE_AUTO_ZOOM_DEBOUNCE_MS,
   RANGE_AUTO_ZOOM_SELECTION_PADDING_RATIO,
-  RANGE_CONTEXT_LABEL_MIN_GAP_PX,
   RANGE_FUTURE_BUFFER_YEARS,
-  RANGE_HANDLE_EDGE_SCROLL_MAX_STEP_PX,
-  RANGE_HANDLE_EDGE_SCROLL_THRESHOLD_PX,
-  RANGE_LABEL_MIN_GAP_PX,
   RANGE_SLIDER_MIN_SPAN_MS,
   RANGE_SLIDER_WINDOW_MS,
   RANGE_SNAP_OPTIONS,
@@ -58,7 +49,6 @@ import {
   HOUR_MS,
   MINUTE_MS,
   PANEL_HISTORY_PREFERENCES_KEY,
-  WEEK_MS,
 } from "@/lib/shared";
 
 import "@/molecules/dp-target-row/dp-target-row";
