@@ -2243,9 +2243,9 @@
   }
   function setupCanvas(canvas, container, cssHeight, cssWidth = null) {
     const dpr = window.devicePixelRatio || 1;
-    const styles = getComputedStyle(container);
-    const paddingX = (Number.parseFloat(styles.paddingLeft || "0") || 0) + (Number.parseFloat(styles.paddingRight || "0") || 0);
-    const paddingY = (Number.parseFloat(styles.paddingTop || "0") || 0) + (Number.parseFloat(styles.paddingBottom || "0") || 0);
+    const styles2 = getComputedStyle(container);
+    const paddingX = (Number.parseFloat(styles2.paddingLeft || "0") || 0) + (Number.parseFloat(styles2.paddingRight || "0") || 0);
+    const paddingY = (Number.parseFloat(styles2.paddingTop || "0") || 0) + (Number.parseFloat(styles2.paddingBottom || "0") || 0);
     const measuredWidth = cssWidth ?? (container.clientWidth || 360);
     const w = Math.max(1, Math.round(measuredWidth - paddingX));
     const requestedHeight = cssHeight ?? container.clientHeight ?? 220;
@@ -14100,6 +14100,1880 @@ ${s2.description}`).join("\n\n");
       };
     }
   }
+  const styles$d = i$3`
+  :host {
+    display: block;
+    --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
+    --dp-spacing-sm: var(--spacing, 8px);
+    --dp-spacing-md: calc(var(--spacing, 8px) * 1.5);
+    --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
+    --dp-spacing-xl: calc(var(--spacing, 8px) * 2.5);
+  }
+
+  .history-target-table {
+    display: grid;
+  }
+
+  .history-target-table-body {
+    display: grid;
+    gap: calc(var(--spacing, 8px) * 1.25);
+  }
+
+  .history-target-empty {
+    padding: var(--dp-spacing-md) var(--dp-spacing-sm);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--primary-text-color, #111) 4%, transparent);
+    color: var(--secondary-text-color, #9e9e9e);
+    font-size: 0.84rem;
+  }
+
+  /* Drag states applied to the dp-target-row host element */
+  dp-target-row.is-dragging {
+    opacity: 0.35;
+    pointer-events: none;
+  }
+
+  dp-target-row.is-drag-over-before {
+    box-shadow: inset 0 3px 0 -1px var(--primary-color, #03a9f4);
+  }
+
+  dp-target-row.is-drag-over-after {
+    box-shadow: inset 0 -3px 0 -1px var(--primary-color, #03a9f4);
+  }
+`;
+  const styles$c = i$3`
+  :host {
+    display: block;
+    --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
+    --dp-spacing-sm: var(--spacing, 8px);
+    --dp-spacing-md: calc(var(--spacing, 8px) * 1.5);
+    --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
+    --dp-spacing-xl: calc(var(--spacing, 8px) * 2.5);
+  }
+
+  .history-target-row {
+    display: grid;
+    position: relative;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      "handle name actions"
+      ". analysis analysis";
+    gap: var(--dp-spacing-sm);
+    align-items: center;
+    margin: 0;
+    padding: calc(var(--spacing, 8px) * 1.125) calc(var(--spacing, 8px) * 1.25);
+    border-radius: 16px;
+    background: var(--card-background-color, #fff);
+    border: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 88%, transparent);
+    transition: border-color 140ms ease, background-color 140ms ease;
+    padding-bottom: 0;
+    padding-left: 3px;
+  }
+
+  .history-target-row.analysis-open {
+    padding-bottom: calc(var(--spacing, 8px) * 1.125);
+  }
+
+  .history-target-row.is-hidden {
+    opacity: 0.62;
+  }
+
+  .history-target-row:hover {
+    border-color: color-mix(in srgb, var(--primary-color, #03a9f4) 24%, var(--divider-color, rgba(0, 0, 0, 0.12)));
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 2%, var(--card-background-color, #fff));
+  }
+
+  .history-target-row.is-dragging {
+    opacity: 0.35;
+  }
+
+  .history-target-row.is-drag-over-before {
+    box-shadow: inset 0 3px 0 -1px var(--primary-color, #03a9f4);
+  }
+
+  .history-target-row.is-drag-over-after {
+    box-shadow: inset 0 -3px 0 -1px var(--primary-color, #03a9f4);
+  }
+
+  .history-target-drag-handle {
+    grid-area: handle;
+    align-self: center;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--secondary-text-color);
+    cursor: grab;
+    opacity: 0;
+    transition: opacity 140ms ease, background-color 120ms ease;
+    touch-action: none;
+    margin-right: calc(var(--dp-spacing-xs) * -0.5);
+    margin-left: -8px;
+    position: absolute;
+  }
+
+  .history-target-drag-handle ha-icon {
+    --mdc-icon-size: 16px;
+    display: block;
+    pointer-events: none;
+  }
+
+  .history-target-row:hover .history-target-drag-handle {
+    opacity: 0.45;
+  }
+
+  .history-target-drag-handle:hover,
+  .history-target-drag-handle:focus-visible {
+    opacity: 1;
+    outline: none;
+  }
+
+  .history-target-drag-handle:active {
+    cursor: grabbing;
+  }
+
+  .history-target-name {
+    grid-area: name;
+    min-width: 0;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--dp-spacing-sm);
+    align-items: center;
+  }
+
+  .history-target-name-text {
+    min-width: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--primary-text-color);
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .history-target-entity-id {
+    margin-top: 4px;
+    font-size: 0.74rem;
+    font-weight: 400;
+    color: var(--secondary-text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .history-target-color-field {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .history-target-controls {
+    display: contents;
+  }
+
+  .history-target-color-icon {
+    position: absolute;
+    inset: 0;
+    display: inline-grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    color: var(--row-icon-color, var(--text-primary-color, #fff));
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .history-target-color-icon ha-state-icon {
+    width: 16px;
+    height: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+  }
+
+  .history-target-color {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-radius: 10px;
+    padding: 0;
+    background: none;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    opacity: 0;
+    z-index: 2;
+  }
+
+  .history-target-color::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+
+  .history-target-color::-webkit-color-swatch {
+    border: none;
+    border-radius: 10px;
+  }
+
+  .history-target-color::-moz-color-swatch {
+    border: none;
+    border-radius: 10px;
+  }
+
+  .history-target-color-field::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: var(--row-color, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, rgba(0, 0, 0, 0.18) 70%, transparent);
+  }
+
+  .history-target-color:focus-visible + .history-target-color-icon {
+    outline: 2px solid color-mix(in srgb, var(--primary-color, #03a9f4) 55%, transparent);
+    outline-offset: 2px;
+    border-radius: inherit;
+  }
+
+  .history-target-actions {
+    grid-area: actions;
+    justify-self: end;
+    align-self: center;
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--spacing, 8px) * 0.75);
+  }
+
+  .history-target-analysis-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--secondary-text-color);
+    cursor: pointer;
+    transition: background-color 120ms ease, color 120ms ease;
+  }
+
+  .history-target-analysis-toggle ha-icon {
+    --mdc-icon-size: 16px;
+    display: block;
+    transition: transform 120ms ease;
+  }
+
+  .history-target-analysis-toggle.is-open ha-icon {
+    transform: rotate(180deg);
+  }
+
+  .history-target-analysis-toggle:hover,
+  .history-target-analysis-toggle:focus-visible {
+    background: color-mix(in srgb, var(--primary-text-color, #111) 8%, transparent);
+    color: var(--primary-text-color);
+    outline: none;
+  }
+
+  .history-target-visible-toggle {
+    position: relative;
+    display: inline-flex;
+    width: 34px;
+    height: 20px;
+    flex: 0 0 auto;
+    cursor: pointer;
+  }
+
+  .history-target-visible-toggle input {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .history-target-visible-toggle-track {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--secondary-text-color, #6b7280) 45%, transparent);
+    transition: background-color 120ms ease;
+  }
+
+  .history-target-visible-toggle-track::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--card-background-color, #fff);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.24);
+    transition: transform 120ms ease;
+  }
+
+  .history-target-visible-toggle input:checked + .history-target-visible-toggle-track {
+    background: var(--primary-color);
+  }
+
+  .history-target-visible-toggle input:checked + .history-target-visible-toggle-track::after {
+    transform: translateX(14px);
+  }
+
+  .history-target-visible-toggle input:focus-visible + .history-target-visible-toggle-track {
+    outline: 2px solid color-mix(in srgb, var(--primary-color) 55%, transparent);
+    outline-offset: 2px;
+  }
+
+  .history-target-remove {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    line-height: 16px;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--primary-text-color, #111) 7%, transparent);
+    color: var(--secondary-text-color);
+    cursor: pointer;
+    flex: 0 0 auto;
+  }
+
+  .history-target-remove ha-icon {
+    --mdc-icon-size: 12px;
+    display: block;
+  }
+
+  .history-target-remove:hover,
+  .history-target-remove:focus-visible {
+    background: color-mix(in srgb, var(--error-color, #db4437) 14%, transparent);
+    color: var(--error-color, #db4437);
+    outline: none;
+  }
+
+  /* ── Analysis panel ─────────────────────────────────────── */
+
+  .history-target-analysis {
+    grid-area: analysis;
+    display: grid;
+    gap: var(--dp-spacing-sm);
+    padding-top: calc(var(--spacing, 8px) * 0.25);
+    border-top: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 78%, transparent);
+  }
+
+  .history-target-analysis-grid {
+    display: grid;
+    gap: var(--dp-spacing-sm);
+    padding-top: var(--dp-spacing-sm);
+  }
+
+  .history-target-analysis-option {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--spacing, 8px) * 0.75);
+    color: var(--primary-text-color);
+    font-size: 0.84rem;
+    cursor: pointer;
+  }
+
+  .history-target-analysis-option.is-disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .history-target-analysis-option input[type="checkbox"] {
+    margin: 0;
+    accent-color: var(--primary-color, #03a9f4);
+    cursor: pointer;
+  }
+
+  .analysis-computing-spinner {
+    display: none;
+    width: 10px;
+    height: 10px;
+    border: 2px solid var(--divider-color, #ccc);
+    border-top-color: var(--primary-color, #03a9f4);
+    border-radius: 50%;
+    animation: analysis-spin 0.7s linear infinite;
+    flex-shrink: 0;
+    margin-left: 2px;
+  }
+
+  .analysis-computing-spinner.active {
+    display: inline-block;
+  }
+
+  @keyframes analysis-spin {
+    to { transform: rotate(360deg); }
+  }
+`;
+  const sharedStyles = i$3`
+  :host {
+    display: block;
+    --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
+    --dp-spacing-sm: var(--spacing, 8px);
+    --dp-spacing-md: calc(var(--spacing, 8px) * 1.5);
+    --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
+  }
+
+  .field {
+    display: grid;
+    gap: 4px;
+    justify-items: start;
+  }
+
+  .field-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--secondary-text-color);
+  }
+
+  .select,
+  .input {
+    width: auto;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: calc(var(--spacing, 8px) * 0.75) calc(var(--spacing, 8px) * 0.875);
+    border-radius: 10px;
+    border: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 88%, transparent);
+    background: var(--card-background-color, #fff);
+    color: var(--primary-text-color);
+    font: inherit;
+    font-size: 0.84rem;
+  }
+
+  .toggle-group {
+    display: flex;
+    gap: calc(var(--spacing, 8px) * 0.625);
+    align-items: center;
+  }
+
+  .option {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--spacing, 8px) * 0.75);
+    color: var(--primary-text-color);
+    font-size: 0.84rem;
+    cursor: pointer;
+  }
+
+  .option input[type="checkbox"] {
+    margin: 0;
+    accent-color: var(--primary-color, #03a9f4);
+    cursor: pointer;
+  }
+`;
+  const styles$b = i$3``;
+  const styles$a = i$3`
+  :host {
+    display: block;
+    --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
+    --dp-spacing-sm: var(--spacing, 8px);
+    --dp-spacing-md: calc(var(--spacing, 8px) * 1.5);
+    --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
+  }
+
+  .group {
+    display: grid;
+    gap: var(--dp-spacing-sm);
+    border-radius: 6px;
+  }
+
+  .group-body {
+    display: grid;
+    gap: var(--dp-spacing-sm);
+    padding: var(--dp-spacing-sm);
+    border-left: 3px solid var(--primary-color);
+    margin-left: 5px;
+    padding-left: var(--dp-spacing-md);
+  }
+
+  .option {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--spacing, 8px) * 0.75);
+    color: var(--primary-text-color);
+    font-size: 0.84rem;
+    cursor: pointer;
+  }
+
+  .option.top {
+    align-items: flex-start;
+  }
+
+  .option.is-disabled {
+    opacity: 0.4;
+    pointer-events: none;
+  }
+
+  .option input[type="checkbox"] {
+    margin: 0;
+    accent-color: var(--primary-color, #03a9f4);
+    cursor: pointer;
+  }
+
+  .help-text {
+    display: inline-block;
+    color: var(--secondary-text-color);
+    opacity: 0.8;
+    padding-top: 2px;
+  }
+`;
+  class DpAnalysisGroup extends i {
+    static properties = {
+      label: { type: String },
+      checked: { type: Boolean },
+      disabled: { type: Boolean },
+      alignTop: { type: Boolean, attribute: "align-top" }
+    };
+    static styles = styles$a;
+    constructor() {
+      super();
+      this.label = "";
+      this.checked = false;
+      this.disabled = false;
+      this.alignTop = false;
+    }
+    _onChange(e2) {
+      const checked = e2.target.checked;
+      this.dispatchEvent(
+        new CustomEvent("dp-group-change", {
+          detail: { checked },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    render() {
+      const groupClass = ["group", this.checked ? "is-open" : ""].filter(Boolean).join(" ");
+      const optionClass = [
+        "option",
+        this.alignTop ? "top" : "",
+        this.disabled ? "is-disabled" : ""
+      ].filter(Boolean).join(" ");
+      return b`
+      <div class=${groupClass}>
+        <label class=${optionClass}>
+          <input
+            type="checkbox"
+            .checked=${this.checked}
+            ?disabled=${this.disabled}
+            @change=${this._onChange}
+          >
+          <span><slot name="label">${this.label}</slot><slot name="hint"></slot></span>
+        </label>
+        ${this.checked ? b`
+          <div class="group-body">
+            <slot></slot>
+          </div>
+        ` : A}
+      </div>
+    `;
+    }
+  }
+  customElements.define("dp-analysis-group", DpAnalysisGroup);
+  const ANALYSIS_TREND_METHOD_OPTIONS$1 = [
+    { value: "rolling_average", label: "Rolling average" },
+    { value: "linear_trend", label: "Linear trend" }
+  ];
+  const ANALYSIS_TREND_WINDOW_OPTIONS$1 = [
+    { value: "1h", label: "1 hour" },
+    { value: "6h", label: "6 hours" },
+    { value: "24h", label: "24 hours" },
+    { value: "7d", label: "7 days" },
+    { value: "14d", label: "14 days" },
+    { value: "21d", label: "21 days" },
+    { value: "28d", label: "28 days" }
+  ];
+  class DpAnalysisTrendGroup extends i {
+    static properties = {
+      analysis: { type: Object },
+      entityId: { type: String, attribute: "entity-id" }
+    };
+    static styles = [sharedStyles, styles$b];
+    constructor() {
+      super();
+      this.analysis = {};
+      this.entityId = "";
+    }
+    _emit(key, value) {
+      this.dispatchEvent(
+        new CustomEvent("dp-group-analysis-change", {
+          detail: { entityId: this.entityId, key, value },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    _renderSelect(key, options, value) {
+      return b`
+      <select class="select" @change=${(e2) => this._emit(key, e2.target.value)}>
+        ${options.map((opt) => b`<option value=${opt.value} ?selected=${opt.value === value}>${opt.label}</option>`)}
+      </select>
+    `;
+    }
+    _onGroupChange(e2) {
+      this._emit("show_trend_lines", e2.detail.checked);
+    }
+    _onCheckbox(key, e2) {
+      this._emit(key, e2.target.checked);
+    }
+    render() {
+      const a2 = this.analysis;
+      return b`
+      <dp-analysis-group
+        .label=${"Show trend lines"}
+        .checked=${a2.show_trend_lines}
+        @dp-group-change=${this._onGroupChange}
+      >
+        <label class="option">
+          <input type="checkbox" .checked=${a2.show_trend_crosshairs} @change=${(e2) => this._onCheckbox("show_trend_crosshairs", e2)}>
+          <span>Show trend crosshairs</span>
+        </label>
+        <label class="field">
+          <span class="field-label">Trend method</span>
+          ${this._renderSelect("trend_method", ANALYSIS_TREND_METHOD_OPTIONS$1, a2.trend_method)}
+        </label>
+        ${a2.trend_method === "rolling_average" ? b`
+          <label class="field">
+            <span class="field-label">Trend window</span>
+            ${this._renderSelect("trend_window", ANALYSIS_TREND_WINDOW_OPTIONS$1, a2.trend_window)}
+          </label>
+        ` : A}
+      </dp-analysis-group>
+    `;
+    }
+  }
+  customElements.define("dp-analysis-trend-group", DpAnalysisTrendGroup);
+  const styles$9 = i$3``;
+  const ANALYSIS_RATE_WINDOW_OPTIONS$1 = [
+    { value: "point_to_point", label: "Point to point" },
+    { value: "1h", label: "1 hour" },
+    { value: "6h", label: "6 hours" },
+    { value: "24h", label: "24 hours" }
+  ];
+  class DpAnalysisRateGroup extends i {
+    static properties = {
+      analysis: { type: Object },
+      entityId: { type: String, attribute: "entity-id" }
+    };
+    static styles = [sharedStyles, styles$9];
+    constructor() {
+      super();
+      this.analysis = {};
+      this.entityId = "";
+    }
+    _emit(key, value) {
+      this.dispatchEvent(
+        new CustomEvent("dp-group-analysis-change", {
+          detail: { entityId: this.entityId, key, value },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    _renderSelect(key, options, value) {
+      return b`
+      <select class="select" @change=${(e2) => this._emit(key, e2.target.value)}>
+        ${options.map((opt) => b`<option value=${opt.value} ?selected=${opt.value === value}>${opt.label}</option>`)}
+      </select>
+    `;
+    }
+    _onGroupChange(e2) {
+      this._emit("show_rate_of_change", e2.detail.checked);
+    }
+    render() {
+      const a2 = this.analysis;
+      return b`
+      <dp-analysis-group
+        .label=${"Show rate of change"}
+        .checked=${a2.show_rate_of_change}
+        @dp-group-change=${this._onGroupChange}
+      >
+        <label class="field">
+          <span class="field-label">Rate window</span>
+          ${this._renderSelect("rate_window", ANALYSIS_RATE_WINDOW_OPTIONS$1, a2.rate_window)}
+        </label>
+      </dp-analysis-group>
+    `;
+    }
+  }
+  customElements.define("dp-analysis-rate-group", DpAnalysisRateGroup);
+  const styles$8 = i$3``;
+  class DpAnalysisThresholdGroup extends i {
+    static properties = {
+      analysis: { type: Object },
+      entityId: { type: String, attribute: "entity-id" },
+      unit: { type: String }
+    };
+    static styles = [sharedStyles, styles$8];
+    constructor() {
+      super();
+      this.analysis = {};
+      this.entityId = "";
+      this.unit = "";
+    }
+    _emit(key, value) {
+      this.dispatchEvent(
+        new CustomEvent("dp-group-analysis-change", {
+          detail: { entityId: this.entityId, key, value },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    _renderSelect(key, options, value) {
+      return b`
+      <select class="select" @change=${(e2) => this._emit(key, e2.target.value)}>
+        ${options.map((opt) => b`<option value=${opt.value} ?selected=${opt.value === value}>${opt.label}</option>`)}
+      </select>
+    `;
+    }
+    _onGroupChange(e2) {
+      this._emit("show_threshold_analysis", e2.detail.checked);
+    }
+    _onCheckbox(key, e2) {
+      this._emit(key, e2.target.checked);
+    }
+    _onInput(key, e2) {
+      this._emit(key, e2.target.value);
+    }
+    render() {
+      const a2 = this.analysis;
+      return b`
+      <dp-analysis-group
+        .label=${"Show threshold analysis"}
+        .checked=${a2.show_threshold_analysis}
+        @dp-group-change=${this._onGroupChange}
+      >
+        <label class="option">
+          <input type="checkbox" .checked=${a2.show_threshold_shading} @change=${(e2) => this._onCheckbox("show_threshold_shading", e2)}>
+          <span>Shade threshold area</span>
+        </label>
+        <label class="field">
+          <span class="field-label">Threshold</span>
+          <div class="toggle-group">
+            <input class="input" type="number" step="any" inputmode="decimal"
+              .value=${a2.threshold_value} placeholder="Threshold"
+              @change=${(e2) => this._onInput("threshold_value", e2)}>
+            ${this.unit ? b`<span>${this.unit}</span>` : A}
+          </div>
+        </label>
+        ${a2.show_threshold_shading ? b`
+          <label class="field">
+            <span class="field-label">Shade area</span>
+            ${this._renderSelect("threshold_direction", [
+        { value: "above", label: "Shade above" },
+        { value: "below", label: "Shade below" }
+      ], a2.threshold_direction)}
+          </label>
+        ` : A}
+      </dp-analysis-group>
+    `;
+    }
+  }
+  customElements.define("dp-analysis-threshold-group", DpAnalysisThresholdGroup);
+  const styles$7 = i$3`
+  .method-list {
+    display: grid;
+    gap: var(--dp-spacing-sm, 8px);
+  }
+
+  .method-item {
+    display: grid;
+    gap: var(--dp-spacing-sm, 8px);
+  }
+
+  .method-help {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 10px;
+    height: 10px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    border: 1px solid var(--secondary-text-color, #888);
+    background: transparent;
+    color: var(--secondary-text-color, #888);
+    font-size: 9px;
+    font-weight: 700;
+    line-height: 1;
+    cursor: default;
+    padding: 0;
+    vertical-align: middle;
+  }
+`;
+  const styles$6 = i$3`
+  :host {
+    display: block;
+    --dp-spacing-sm: var(--spacing, 8px);
+  }
+
+  .subopts {
+    padding-left: calc(var(--spacing, 8px) * 1.5);
+    display: grid;
+    gap: var(--dp-spacing-sm);
+    justify-items: start;
+    border-left: 3px solid var(--primary-color);
+    margin-left: 5px;
+  }
+`;
+  class DpAnalysisMethodSubopts extends i {
+    static styles = styles$6;
+    render() {
+      return b`<div class="subopts"><slot></slot></div>`;
+    }
+  }
+  customElements.define("dp-analysis-method-subopts", DpAnalysisMethodSubopts);
+  const ANALYSIS_ANOMALY_SENSITIVITY_OPTIONS$1 = [
+    { value: "low", label: "Low" },
+    { value: "medium", label: "Medium" },
+    { value: "high", label: "High" }
+  ];
+  const ANALYSIS_ANOMALY_METHOD_OPTIONS$1 = [
+    { value: "trend_residual", label: "Trend deviation", help: "Flags points that deviate significantly from a fitted trend line. Good for catching gradual drift or sudden jumps away from a steady baseline." },
+    { value: "rate_of_change", label: "Sudden change", help: "Flags unusually fast rises or drops compared to the typical rate of change. Best for detecting spikes, crashes, or rapid transitions." },
+    { value: "iqr", label: "Statistical outlier (IQR)", help: "Uses the interquartile range to flag values far outside the normal spread of data. Robust against outliers that skew averages." },
+    { value: "rolling_zscore", label: "Rolling Z-score", help: "Compares each value to a rolling mean and standard deviation. Catches unusual readings relative to recent context rather than the whole series." },
+    { value: "persistence", label: "Flat-line / stuck value", help: "Flags when a sensor reports nearly the same value for an unusually long time. Useful for detecting stuck sensors or frozen readings." },
+    { value: "comparison_window", label: "Comparison window deviation", help: "Compares the current period to a reference date window. Highlights differences from an expected historical pattern, such as last week or the same day last year." }
+  ];
+  const ANALYSIS_ANOMALY_RATE_WINDOW_OPTIONS$1 = [
+    { value: "1h", label: "1 hour" },
+    { value: "6h", label: "6 hours" },
+    { value: "24h", label: "24 hours" }
+  ];
+  const ANALYSIS_ANOMALY_ZSCORE_WINDOW_OPTIONS$1 = [
+    { value: "1h", label: "1 hour" },
+    { value: "6h", label: "6 hours" },
+    { value: "24h", label: "24 hours" },
+    { value: "7d", label: "7 days" }
+  ];
+  const ANALYSIS_ANOMALY_PERSISTENCE_WINDOW_OPTIONS$1 = [
+    { value: "30m", label: "30 minutes" },
+    { value: "1h", label: "1 hour" },
+    { value: "3h", label: "3 hours" },
+    { value: "6h", label: "6 hours" },
+    { value: "12h", label: "12 hours" },
+    { value: "24h", label: "24 hours" }
+  ];
+  const ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS$1 = [
+    { value: "all", label: "Show all anomalies" },
+    { value: "highlight", label: "Highlight overlaps" },
+    { value: "only", label: "Overlaps only" }
+  ];
+  class DpAnalysisAnomalyGroup extends i {
+    static properties = {
+      analysis: { type: Object },
+      entityId: { type: String, attribute: "entity-id" },
+      comparisonWindows: { type: Array, attribute: "comparison-windows" }
+    };
+    static styles = [sharedStyles, styles$7];
+    constructor() {
+      super();
+      this.analysis = {};
+      this.entityId = "";
+      this.comparisonWindows = [];
+    }
+    _emit(key, value) {
+      this.dispatchEvent(
+        new CustomEvent("dp-group-analysis-change", {
+          detail: { entityId: this.entityId, key, value },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    _renderSelect(key, options, value) {
+      return b`
+      <select class="select" @change=${(e2) => this._emit(key, e2.target.value)}>
+        ${options.map((opt) => b`<option value=${opt.value} ?selected=${opt.value === value}>${opt.label}</option>`)}
+      </select>
+    `;
+    }
+    _onGroupChange(e2) {
+      this._emit("show_anomalies", e2.detail.checked);
+    }
+    _renderMethodSubopts(opt, a2) {
+      if (opt.value === "rate_of_change") {
+        return b`
+        <dp-analysis-method-subopts>
+          <label class="field">
+            <span class="field-label">Rate window</span>
+            ${this._renderSelect("anomaly_rate_window", ANALYSIS_ANOMALY_RATE_WINDOW_OPTIONS$1, a2.anomaly_rate_window)}
+          </label>
+        </dp-analysis-method-subopts>
+      `;
+      }
+      if (opt.value === "rolling_zscore") {
+        return b`
+        <dp-analysis-method-subopts>
+          <label class="field">
+            <span class="field-label">Rolling window</span>
+            ${this._renderSelect("anomaly_zscore_window", ANALYSIS_ANOMALY_ZSCORE_WINDOW_OPTIONS$1, a2.anomaly_zscore_window)}
+          </label>
+        </dp-analysis-method-subopts>
+      `;
+      }
+      if (opt.value === "persistence") {
+        return b`
+        <dp-analysis-method-subopts>
+          <label class="field">
+            <span class="field-label">Min flat duration</span>
+            ${this._renderSelect("anomaly_persistence_window", ANALYSIS_ANOMALY_PERSISTENCE_WINDOW_OPTIONS$1, a2.anomaly_persistence_window)}
+          </label>
+        </dp-analysis-method-subopts>
+      `;
+      }
+      if (opt.value === "comparison_window") {
+        return b`
+        <dp-analysis-method-subopts>
+          <label class="field">
+            <span class="field-label">Compare to window</span>
+            <select class="select" @change=${(e2) => this._emit("anomaly_comparison_window_id", e2.target.value)}>
+              <option value="" ?selected=${!a2.anomaly_comparison_window_id}>— select window —</option>
+              ${this.comparisonWindows.map((win) => b`
+                <option value=${win.id} ?selected=${a2.anomaly_comparison_window_id === win.id}>${win.label || win.id}</option>
+              `)}
+            </select>
+          </label>
+        </dp-analysis-method-subopts>
+      `;
+      }
+      return A;
+    }
+    render() {
+      const a2 = this.analysis;
+      return b`
+      <dp-analysis-group
+        .label=${"Show anomalies"}
+        .checked=${a2.show_anomalies}
+        @dp-group-change=${this._onGroupChange}
+      >
+        <label class="field">
+          <span class="field-label">Sensitivity</span>
+          ${this._renderSelect("anomaly_sensitivity", ANALYSIS_ANOMALY_SENSITIVITY_OPTIONS$1, a2.anomaly_sensitivity)}
+        </label>
+        <div class="method-list">
+          ${ANALYSIS_ANOMALY_METHOD_OPTIONS$1.map((opt) => {
+        const isChecked = Array.isArray(a2.anomaly_methods) && a2.anomaly_methods.includes(opt.value);
+        return b`
+              <div class="method-item">
+                <label class="option">
+                  <input type="checkbox" .checked=${isChecked}
+                    @change=${(e2) => this._emit(`anomaly_method_toggle_${opt.value}`, e2.target.checked)}>
+                  <span>${opt.label}</span>
+                  ${opt.help ? b`<span class="method-help" tabindex="0">?</span>` : A}
+                </label>
+                ${isChecked ? this._renderMethodSubopts(opt, a2) : A}
+              </div>
+            `;
+      })}
+        </div>
+        ${Array.isArray(a2.anomaly_methods) && a2.anomaly_methods.length >= 2 ? b`
+          <label class="field">
+            <span class="field-label">When methods overlap</span>
+            ${this._renderSelect("anomaly_overlap_mode", ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS$1, a2.anomaly_overlap_mode)}
+          </label>
+        ` : A}
+      </dp-analysis-group>
+    `;
+    }
+  }
+  customElements.define("dp-analysis-anomaly-group", DpAnalysisAnomalyGroup);
+  const styles$5 = i$3`
+  .help-text {
+    display: inline-block;
+    color: var(--secondary-text-color);
+    opacity: 0.8;
+    padding-top: 2px;
+  }
+`;
+  class DpAnalysisDeltaGroup extends i {
+    static properties = {
+      analysis: { type: Object },
+      entityId: { type: String, attribute: "entity-id" },
+      canShowDeltaAnalysis: { type: Boolean, attribute: "can-show-delta-analysis" }
+    };
+    static styles = [sharedStyles, styles$5];
+    constructor() {
+      super();
+      this.analysis = {};
+      this.entityId = "";
+      this.canShowDeltaAnalysis = false;
+    }
+    _emit(key, value) {
+      this.dispatchEvent(
+        new CustomEvent("dp-group-analysis-change", {
+          detail: { entityId: this.entityId, key, value },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    _onGroupChange(e2) {
+      this._emit("show_delta_analysis", e2.detail.checked);
+    }
+    _onCheckbox(key, e2) {
+      this._emit(key, e2.target.checked);
+    }
+    render() {
+      const a2 = this.analysis;
+      const isOpen = a2.show_delta_analysis && this.canShowDeltaAnalysis;
+      return b`
+      <dp-analysis-group
+        .label=${"Show delta vs selected date window"}
+        .checked=${isOpen}
+        .disabled=${!this.canShowDeltaAnalysis}
+        .alignTop=${true}
+        @dp-group-change=${this._onGroupChange}
+      >
+        ${!this.canShowDeltaAnalysis ? b`
+          <span slot="hint"><br /><span class="help-text">Select a date window tab to enable delta analysis.</span></span>
+        ` : A}
+        <label class="option">
+          <input type="checkbox" .checked=${a2.show_delta_tooltip} @change=${(e2) => this._onCheckbox("show_delta_tooltip", e2)}>
+          <span>Show delta in tooltip</span>
+        </label>
+        <label class="option">
+          <input type="checkbox" .checked=${a2.show_delta_lines} @change=${(e2) => this._onCheckbox("show_delta_lines", e2)}>
+          <span>Show delta lines</span>
+        </label>
+      </dp-analysis-group>
+    `;
+    }
+  }
+  customElements.define("dp-analysis-delta-group", DpAnalysisDeltaGroup);
+  function deriveSwatchIconColor$1(color) {
+    const hex = String(color || "").trim();
+    const normalizedHex = /^#([0-9a-f]{6})$/i.test(hex) ? hex : null;
+    if (!normalizedHex) {
+      return "#ffffff";
+    }
+    const channels = normalizedHex.slice(1).match(/.{2}/g)?.map((p2) => parseInt(p2, 16));
+    if (!channels || channels.length !== 3) {
+      return "#ffffff";
+    }
+    const [r2, g2, b2] = channels;
+    const luminance = (0.299 * r2 + 0.587 * g2 + 0.114 * b2) / 255;
+    const mixTarget = luminance > 0.62 ? 0 : 255;
+    const mixStrength = luminance > 0.62 ? Math.min(0.82, 0.35 + (luminance - 0.62) * 1.6) : Math.min(0.78, 0.4 + (0.62 - luminance) * 0.9);
+    const mixed = [r2, g2, b2].map(
+      (c2) => Math.max(0, Math.min(255, Math.round(c2 * (1 - mixStrength) + mixTarget * mixStrength)))
+    );
+    return `rgb(${mixed[0]}, ${mixed[1]}, ${mixed[2]})`;
+  }
+  function _hasConfiguredAnalysis(a2) {
+    return a2.show_trend_lines || a2.show_summary_stats || a2.show_rate_of_change || a2.show_threshold_analysis || a2.show_anomalies || a2.show_delta_analysis || a2.hide_source_series;
+  }
+  function _hasActiveAnalysis(a2, hasComparisonWindow) {
+    return a2.show_trend_lines || a2.show_summary_stats || a2.show_rate_of_change || a2.show_threshold_analysis || a2.show_anomalies || a2.show_delta_analysis && hasComparisonWindow;
+  }
+  class DpTargetRow extends i {
+    static properties = {
+      color: { type: String },
+      visible: { type: Boolean },
+      analysis: { type: Object },
+      index: { type: Number },
+      canShowDeltaAnalysis: { type: Boolean, attribute: "can-show-delta-analysis" },
+      stateObj: { type: Object, attribute: false },
+      hass: { type: Object, attribute: false },
+      comparisonWindows: { type: Array, attribute: "comparison-windows" }
+    };
+    static styles = styles$c;
+    constructor() {
+      super();
+      this.color = "#03a9f4";
+      this.visible = true;
+      this.analysis = {};
+      this.index = 0;
+      this.canShowDeltaAnalysis = false;
+      this.stateObj = null;
+      this.hass = null;
+      this.comparisonWindows = [];
+    }
+    /** Entity ID derived from the HA state object. */
+    get _entityId() {
+      return this.stateObj?.entity_id ?? "";
+    }
+    /** Display name derived from the HA state object, falling back to the entity ID. */
+    get _entityName() {
+      return this.stateObj?.attributes?.friendly_name ?? this._entityId;
+    }
+    /** Unit of measurement derived from the HA state object. */
+    get _unit() {
+      return this.stateObj?.attributes?.unit_of_measurement ?? "";
+    }
+    get _supportsAnalysis() {
+      return typeof this._entityId === "string" && !this._entityId.startsWith("binary_sensor.");
+    }
+    _emit(name, detail) {
+      this.dispatchEvent(new CustomEvent(name, { detail, bubbles: true, composed: true }));
+    }
+    _onColorChange(e2) {
+      this._emit("dp-row-color-change", { index: this.index, color: e2.target.value });
+    }
+    _onVisibilityChange(e2) {
+      this._emit("dp-row-visibility-change", { entityId: this._entityId, visible: e2.target.checked });
+    }
+    _onAnalysisToggle() {
+      this._emit("dp-row-toggle-analysis", { entityId: this._entityId });
+    }
+    _onRemove() {
+      this._emit("dp-row-remove", { index: this.index });
+    }
+    _onCheckbox(key, e2) {
+      this._emit("dp-row-analysis-change", { entityId: this._entityId, key, value: e2.target.checked });
+    }
+    _onGroupAnalysisChange(e2) {
+      this._emit("dp-row-analysis-change", e2.detail);
+    }
+    render() {
+      const a2 = this.analysis || {};
+      const hasConfigured = _hasConfiguredAnalysis(a2);
+      const hasActive = _hasActiveAnalysis(a2, this.canShowDeltaAnalysis);
+      const rowClass = [
+        "history-target-row",
+        this.visible === false ? "is-hidden" : "",
+        this.analysis?.expanded ? "analysis-open" : ""
+      ].filter(Boolean).join(" ");
+      return b`
+      <div class=${rowClass} role="row">
+        <button
+          type="button"
+          class="history-target-drag-handle"
+          draggable="true"
+          aria-label="Drag to reorder ${this._entityName}"
+          title="Drag to reorder"
+        >
+          <ha-icon icon="mdi:drag-vertical"></ha-icon>
+        </button>
+
+        <div class="history-target-name" role="cell" title=${this._entityName}>
+          <div class="history-target-controls">
+            <label
+              class="history-target-color-field"
+              style="--row-color:${this.color};--row-icon-color:${deriveSwatchIconColor$1(this.color)}"
+            >
+              <input
+                type="color"
+                class="history-target-color"
+                .value=${this.color}
+                aria-label="Line color for ${this._entityId}"
+                @change=${this._onColorChange}
+              >
+              <span class="history-target-color-icon" aria-hidden="true">
+                <ha-state-icon .stateObj=${this.stateObj ?? null} .hass=${this.hass ?? null}></ha-state-icon>
+              </span>
+            </label>
+          </div>
+          <div class="history-target-name-text">
+            ${this._entityName}
+            <div class="history-target-entity-id">${this._entityId}</div>
+          </div>
+        </div>
+
+        <div class="history-target-actions" role="cell">
+          ${this._supportsAnalysis ? b`
+            <button
+              type="button"
+              class="history-target-analysis-toggle ${this.analysis?.expanded ? "is-open" : ""} ${hasConfigured ? "configured" : ""}"
+              aria-label="${this.analysis?.expanded ? "Collapse" : "Expand"} analysis options for ${this._entityName}"
+              aria-expanded=${this.analysis?.expanded}
+              title=${hasConfigured ? "Analysis configured" : "Configure analysis"}
+              @click=${this._onAnalysisToggle}
+            >
+              <ha-icon icon="mdi:chevron-down"></ha-icon>
+            </button>
+          ` : A}
+
+          <label
+            class="history-target-visible-toggle"
+            title="${this.visible === false ? "Show" : "Hide"} ${this._entityName}"
+          >
+            <input
+              type="checkbox"
+              aria-label="Show ${this._entityName} on chart"
+              .checked=${this.visible !== false}
+              @change=${this._onVisibilityChange}
+            >
+            <span class="history-target-visible-toggle-track"></span>
+          </label>
+
+          <button
+            type="button"
+            class="history-target-remove"
+            aria-label="Remove ${this._entityId}"
+            @click=${this._onRemove}
+          >
+            <ha-icon icon="mdi:close"></ha-icon>
+          </button>
+        </div>
+
+        ${this._supportsAnalysis && this.analysis?.expanded ? b`
+          <div class="history-target-analysis" role="cell">
+            <div class="history-target-analysis-grid">
+              <label class="history-target-analysis-option ${!hasActive ? "is-disabled" : ""}">
+                <input type="checkbox" .checked=${a2.hide_source_series && hasActive}
+                  ?disabled=${!hasActive}
+                  @change=${(e2) => this._onCheckbox("hide_source_series", e2)}>
+                <span>Hide source series</span>
+              </label>
+              <dp-analysis-trend-group
+                .analysis=${a2}
+                .entityId=${this._entityId}
+                @dp-group-analysis-change=${this._onGroupAnalysisChange}
+              ></dp-analysis-trend-group>
+              <label class="history-target-analysis-option">
+                <input type="checkbox" .checked=${a2.show_summary_stats} @change=${(e2) => this._onCheckbox("show_summary_stats", e2)}>
+                <span>Show min / max / mean</span>
+              </label>
+              <dp-analysis-rate-group
+                .analysis=${a2}
+                .entityId=${this._entityId}
+                @dp-group-analysis-change=${this._onGroupAnalysisChange}
+              ></dp-analysis-rate-group>
+              <dp-analysis-threshold-group
+                .analysis=${a2}
+                .entityId=${this._entityId}
+                .unit=${this._unit}
+                @dp-group-analysis-change=${this._onGroupAnalysisChange}
+              ></dp-analysis-threshold-group>
+              <dp-analysis-anomaly-group
+                .analysis=${a2}
+                .entityId=${this._entityId}
+                .comparisonWindows=${this.comparisonWindows}
+                @dp-group-analysis-change=${this._onGroupAnalysisChange}
+              ></dp-analysis-anomaly-group>
+              <dp-analysis-delta-group
+                .analysis=${a2}
+                .entityId=${this._entityId}
+                .canShowDeltaAnalysis=${this.canShowDeltaAnalysis}
+                @dp-group-analysis-change=${this._onGroupAnalysisChange}
+              ></dp-analysis-delta-group>
+            </div>
+          </div>
+        ` : A}
+      </div>
+    `;
+    }
+  }
+  customElements.define("dp-target-row", DpTargetRow);
+  class DpTargetRowList extends i {
+    static properties = {
+      rows: { type: Array },
+      states: { type: Object, attribute: false },
+      hass: { type: Object, attribute: false },
+      canShowDeltaAnalysis: { type: Boolean, attribute: "can-show-delta-analysis" },
+      comparisonWindows: { type: Array, attribute: false }
+    };
+    /** Index of the row currently being dragged, or null when not dragging. */
+    _dragSourceIndex = null;
+    static styles = styles$d;
+    render() {
+      if (!this.rows.length) {
+        return b`
+        <div class="history-target-table">
+          <div class="history-target-empty">No data points added yet.</div>
+        </div>
+      `;
+      }
+      return b`
+      <div class="history-target-table">
+        <div
+          class="history-target-table-body"
+          @dragover=${this._onDragOver}
+          @dragleave=${this._onDragLeave}
+          @drop=${this._onDrop}
+        >
+          ${this.rows.map(
+        (row, index) => b`
+              <dp-target-row
+                draggable="true"
+                .color=${row.color}
+                .visible=${row.visible}
+                .analysis=${row.analysis}
+                .index=${index}
+                .canShowDeltaAnalysis=${this.canShowDeltaAnalysis}
+                .stateObj=${this.states?.[row.entity_id] ?? null}
+                .hass=${this.hass ?? null}
+                .comparisonWindows=${this.comparisonWindows}
+                data-row-index=${index}
+                @dragstart=${(e2) => this._onDragStart(e2, index)}
+                @dragend=${this._onDragEnd}
+              ></dp-target-row>
+            `
+      )}
+        </div>
+      </div>
+    `;
+    }
+    // ---------------------------------------------------------------------------
+    // Drag-to-reorder handlers
+    // ---------------------------------------------------------------------------
+    _onDragStart(e2, index) {
+      this._dragSourceIndex = index;
+      if (e2.dataTransfer) {
+        e2.dataTransfer.effectAllowed = "move";
+        e2.dataTransfer.setData("text/plain", String(index));
+      }
+      const target = e2.currentTarget;
+      setTimeout(() => target.classList.add("is-dragging"), 0);
+    }
+    _onDragEnd = (e2) => {
+      this._dragSourceIndex = null;
+      const target = e2.currentTarget;
+      target.classList.remove("is-dragging");
+      this._clearDropIndicators();
+    };
+    _onDragOver(e2) {
+      if (this._dragSourceIndex === null) return;
+      e2.preventDefault();
+      if (e2.dataTransfer) e2.dataTransfer.dropEffect = "move";
+      const rowEl = this._rowFromEvent(e2);
+      if (!rowEl) return;
+      const rect = rowEl.getBoundingClientRect();
+      const isAbove = e2.clientY < rect.top + rect.height / 2;
+      this._clearDropIndicators();
+      rowEl.classList.add(isAbove ? "is-drag-over-before" : "is-drag-over-after");
+    }
+    _onDragLeave(e2) {
+      const rowEl = this._rowFromEvent(e2);
+      if (rowEl && !rowEl.contains(e2.relatedTarget)) {
+        rowEl.classList.remove("is-drag-over-before", "is-drag-over-after");
+      }
+    }
+    _onDrop(e2) {
+      e2.preventDefault();
+      const fromIndex = this._dragSourceIndex ?? parseInt(e2.dataTransfer?.getData("text/plain") ?? "", 10);
+      const rowEl = this._rowFromEvent(e2);
+      if (!rowEl || !Number.isFinite(fromIndex)) return;
+      const toIndexRaw = parseInt(rowEl.dataset.rowIndex ?? "", 10);
+      if (!Number.isFinite(toIndexRaw)) return;
+      const rect = rowEl.getBoundingClientRect();
+      const isAbove = e2.clientY < rect.top + rect.height / 2;
+      const insertBeforeIndex = isAbove ? toIndexRaw : toIndexRaw + 1;
+      const toIndex = fromIndex < insertBeforeIndex ? insertBeforeIndex - 1 : insertBeforeIndex;
+      rowEl.classList.remove("is-drag-over-before", "is-drag-over-after");
+      if (fromIndex !== toIndex) {
+        const newRows = [...this.rows];
+        const [moved] = newRows.splice(fromIndex, 1);
+        newRows.splice(toIndex, 0, moved);
+        this.dispatchEvent(
+          new CustomEvent("dp-rows-reorder", {
+            detail: { rows: newRows },
+            bubbles: true,
+            composed: true
+          })
+        );
+      }
+    }
+    // ---------------------------------------------------------------------------
+    // Helpers
+    // ---------------------------------------------------------------------------
+    /** Walk the composed event path to find the nearest dp-target-row element. */
+    _rowFromEvent(e2) {
+      for (const node of e2.composedPath()) {
+        if (node instanceof Element && node.tagName?.toLowerCase() === "dp-target-row") {
+          return node;
+        }
+      }
+      return null;
+    }
+    _clearDropIndicators() {
+      this.shadowRoot?.querySelectorAll("dp-target-row").forEach((r2) => {
+        r2.classList.remove("is-drag-over-before", "is-drag-over-after");
+      });
+    }
+  }
+  customElements.define("dp-target-row-list", DpTargetRowList);
+  const styles$4 = i$3`
+  :host {
+    display: block;
+    --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
+  }
+
+  .sidebar-options-card {
+    display: grid;
+    gap: var(--dp-spacing-lg);
+  }
+`;
+  const styles$3 = i$3`
+  :host {
+    display: block;
+  }
+`;
+  const styles$2 = i$3`
+  :host {
+    display: block;
+    --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
+    --dp-spacing-sm: var(--spacing, 8px);
+  }
+
+  .section {
+    display: grid;
+    gap: var(--dp-spacing-sm);
+  }
+`;
+  class DpSidebarSectionHeader extends i {
+    static properties = {
+      title: { type: String },
+      subtitle: { type: String }
+    };
+    static styles = i$3`
+    :host { display: block; }
+    .sidebar-section-header { display: grid; gap: var(--dp-spacing-xs); }
+    .sidebar-section-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--primary-text-color);
+    }
+    .sidebar-section-subtitle {
+      font-size: 0.82rem;
+      color: var(--secondary-text-color);
+    }
+  `;
+    constructor() {
+      super();
+      this.title = "";
+      this.subtitle = "";
+    }
+    render() {
+      return b`
+      <div class="sidebar-section-header">
+        <div class="sidebar-section-title">${this.title}</div>
+        ${this.subtitle ? b`<div class="sidebar-section-subtitle">${this.subtitle}</div>` : A}
+      </div>
+    `;
+    }
+  }
+  customElements.define("dp-sidebar-section-header", DpSidebarSectionHeader);
+  class DpSidebarOptionsSection extends i {
+    static properties = {
+      title: { type: String },
+      subtitle: { type: String }
+    };
+    static styles = styles$2;
+    constructor() {
+      super();
+      this.title = "";
+      this.subtitle = "";
+    }
+    render() {
+      return b`
+      <div class="section">
+        <dp-sidebar-section-header
+          .title=${this.title}
+          .subtitle=${this.subtitle}
+        ></dp-sidebar-section-header>
+        <slot></slot>
+      </div>
+    `;
+    }
+  }
+  customElements.define("dp-sidebar-options-section", DpSidebarOptionsSection);
+  class DpRadioGroup extends i {
+    static properties = {
+      name: { type: String },
+      value: { type: String },
+      options: { type: Array }
+    };
+    static styles = i$3`
+    :host {
+      display: block;
+    }
+    fieldset {
+      border: none;
+      margin: 0;
+      padding: 0;
+    }
+    .radio-group {
+      display: grid;
+      gap: var(--dp-spacing-xs, 4px);
+    }
+    .radio-option {
+      display: flex;
+      align-items: center;
+      gap: var(--dp-spacing-xs, 4px);
+      font-size: 0.9rem;
+      color: var(--primary-text-color);
+      cursor: pointer;
+    }
+    .radio-option input[type="radio"] {
+      cursor: pointer;
+    }
+  `;
+    constructor() {
+      super();
+      this.name = "";
+      this.value = "";
+      this.options = [];
+    }
+    _onChange(e2) {
+      const input = e2.target;
+      this.dispatchEvent(
+        new CustomEvent("dp-radio-change", {
+          detail: { value: input.value },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    render() {
+      return b`
+      <fieldset role="radiogroup">
+        <div class="radio-group">
+          ${this.options.map(
+        (opt) => b`
+              <label class="radio-option">
+                <input
+                  type="radio"
+                  name=${this.name}
+                  .value=${opt.value}
+                  .checked=${this.value === opt.value}
+                  @change=${this._onChange}
+                />
+                ${opt.label}
+              </label>
+            `
+      )}
+        </div>
+      </fieldset>
+    `;
+    }
+  }
+  customElements.define("dp-radio-group", DpRadioGroup);
+  const DATAPOINT_SCOPE_OPTIONS = [
+    { value: "linked", label: "Linked to selected targets" },
+    { value: "all", label: "All datapoints" },
+    { value: "hidden", label: "Hide datapoints" }
+  ];
+  class DpSidebarDatapointsSection extends i {
+    static properties = {
+      datapointScope: { type: String, attribute: "datapoint-scope" }
+    };
+    static styles = styles$3;
+    constructor() {
+      super();
+      this.datapointScope = "linked";
+    }
+    _onScopeChange(e2) {
+      this.dispatchEvent(
+        new CustomEvent("dp-scope-change", { detail: { value: e2.detail.value }, bubbles: true, composed: true })
+      );
+    }
+    render() {
+      return b`
+      <dp-sidebar-options-section
+        .title=${"Datapoints"}
+        .subtitle=${"Choose which annotation datapoints appear on the chart."}
+      >
+        <dp-radio-group
+          .name=${"datapoint-scope"}
+          .value=${this.datapointScope}
+          .options=${DATAPOINT_SCOPE_OPTIONS}
+          @dp-radio-change=${this._onScopeChange}
+        ></dp-radio-group>
+      </dp-sidebar-options-section>
+    `;
+    }
+  }
+  customElements.define("dp-sidebar-datapoints-section", DpSidebarDatapointsSection);
+  const styles$1 = i$3`
+  :host {
+    display: block;
+  }
+`;
+  class DpCheckboxList extends i {
+    static properties = {
+      items: { type: Array }
+    };
+    static styles = i$3`
+    :host {
+      display: block;
+    }
+    .checkbox-group {
+      display: grid;
+      gap: var(--dp-spacing-xs, 4px);
+    }
+    .checkbox-option {
+      display: flex;
+      align-items: center;
+      gap: var(--dp-spacing-xs, 4px);
+      font-size: 0.9rem;
+      color: var(--primary-text-color);
+      cursor: pointer;
+    }
+    .checkbox-option input[type="checkbox"] {
+      cursor: pointer;
+    }
+  `;
+    constructor() {
+      super();
+      this.items = [];
+    }
+    _onChange(e2) {
+      const input = e2.target;
+      this.dispatchEvent(
+        new CustomEvent("dp-item-change", {
+          detail: { name: input.name, checked: input.checked },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    render() {
+      return b`
+      <div class="checkbox-group">
+        ${this.items.map(
+        (item) => b`
+            <label class="checkbox-option">
+              <input
+                type="checkbox"
+                name=${item.name}
+                .checked=${item.checked}
+                @change=${this._onChange}
+              />
+              ${item.label}
+            </label>
+          `
+      )}
+      </div>
+    `;
+    }
+  }
+  customElements.define("dp-checkbox-list", DpCheckboxList);
+  class DpSidebarDatapointDisplaySection extends i {
+    static properties = {
+      showIcons: { type: Boolean, attribute: "show-icons" },
+      showLines: { type: Boolean, attribute: "show-lines" }
+    };
+    static styles = styles$1;
+    constructor() {
+      super();
+      this.showIcons = true;
+      this.showLines = true;
+    }
+    _onCheckboxChange(e2) {
+      const { name, checked } = e2.detail;
+      this.dispatchEvent(
+        new CustomEvent("dp-display-change", { detail: { kind: name, value: checked }, bubbles: true, composed: true })
+      );
+    }
+    render() {
+      return b`
+      <dp-sidebar-options-section
+        .title=${"Datapoint Display"}
+        .subtitle=${"Control how annotation datapoints are rendered on the chart."}
+      >
+        <dp-checkbox-list
+          .items=${[
+        { name: "icons", label: "Show datapoint icons", checked: this.showIcons },
+        { name: "lines", label: "Show dotted lines", checked: this.showLines }
+      ]}
+          @dp-item-change=${this._onCheckboxChange}
+        ></dp-checkbox-list>
+      </dp-sidebar-options-section>
+    `;
+    }
+  }
+  customElements.define("dp-sidebar-datapoint-display-section", DpSidebarDatapointDisplaySection);
+  const styles = i$3`
+  :host {
+    display: block;
+    --dp-spacing-sm: var(--spacing, 8px);
+  }
+
+  .y-axis-group {
+    margin-top: var(--dp-spacing-sm);
+  }
+
+  .is-subopt {
+    display: flex;
+    align-items: center;
+    gap: var(--dp-spacing-sm);
+    font-size: 0.9rem;
+    color: var(--primary-text-color);
+    padding-left: 22px;
+  }
+
+  .is-disabled {
+    opacity: 0.5;
+  }
+
+  .gap-select {
+    width: auto;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: calc(var(--spacing, 8px) * 0.5) calc(var(--spacing, 8px) * 0.75);
+    border-radius: 8px;
+    border: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 88%, transparent);
+    background: var(--card-background-color, #fff);
+    color: var(--primary-text-color);
+    font: inherit;
+    font-size: 0.84rem;
+  }
+`;
+  const DATA_GAP_THRESHOLD_OPTIONS$1 = [
+    { value: "auto", label: "Auto-detect" },
+    { value: "5m", label: "5 minutes" },
+    { value: "15m", label: "15 minutes" },
+    { value: "1h", label: "1 hour" },
+    { value: "2h", label: "2 hours" },
+    { value: "3h", label: "3 hours" },
+    { value: "6h", label: "6 hours" },
+    { value: "12h", label: "12 hours" },
+    { value: "24h", label: "24 hours" }
+  ];
+  const Y_AXIS_MODE_OPTIONS = [
+    { value: "combined", label: "Combine y-axis by unit" },
+    { value: "unique", label: "Unique y-axis per series" },
+    { value: "split", label: "Split series into rows" }
+  ];
+  class DpSidebarChartDisplaySection extends i {
+    static properties = {
+      showTooltips: { type: Boolean, attribute: "show-tooltips" },
+      showHoverGuides: { type: Boolean, attribute: "show-hover-guides" },
+      showCorrelatedAnomalies: { type: Boolean, attribute: "show-correlated-anomalies" },
+      showDataGaps: { type: Boolean, attribute: "show-data-gaps" },
+      dataGapThreshold: { type: String, attribute: "data-gap-threshold" },
+      yAxisMode: { type: String, attribute: "y-axis-mode" }
+    };
+    static styles = styles;
+    constructor() {
+      super();
+      this.showTooltips = true;
+      this.showHoverGuides = false;
+      this.showCorrelatedAnomalies = false;
+      this.showDataGaps = true;
+      this.dataGapThreshold = "2h";
+      this.yAxisMode = "combined";
+    }
+    _emitDisplay(kind, value) {
+      this.dispatchEvent(
+        new CustomEvent("dp-display-change", { detail: { kind, value }, bubbles: true, composed: true })
+      );
+    }
+    _onCheckboxChange(e2) {
+      const { name, checked } = e2.detail;
+      this._emitDisplay(name, checked);
+    }
+    _onGapThresholdChange(e2) {
+      this._emitDisplay("data_gap_threshold", e2.target.value);
+    }
+    _onYAxisModeChange(e2) {
+      this._emitDisplay("y_axis_mode", e2.detail.value);
+    }
+    render() {
+      return b`
+      <dp-sidebar-options-section
+        .title=${"Chart Display"}
+        .subtitle=${"Configure visual and interaction behaviour for the chart."}
+      >
+        <dp-checkbox-list
+          .items=${[
+        { name: "tooltips", label: "Show tooltips", checked: this.showTooltips },
+        { name: "hover_guides", label: "Emphasize hover guides", checked: this.showHoverGuides },
+        { name: "correlated_anomalies", label: "Highlight correlated anomalies", checked: this.showCorrelatedAnomalies },
+        { name: "data_gaps", label: "Show data gaps", checked: this.showDataGaps }
+      ]}
+          @dp-item-change=${this._onCheckboxChange}
+        ></dp-checkbox-list>
+        <div class="is-subopt ${this.showDataGaps ? "" : "is-disabled"}">
+          <select
+            class="gap-select"
+            ?disabled=${!this.showDataGaps}
+            @change=${this._onGapThresholdChange}
+          >
+            ${DATA_GAP_THRESHOLD_OPTIONS$1.map((opt) => b`
+              <option value=${opt.value} ?selected=${opt.value === this.dataGapThreshold}>${opt.label}</option>
+            `)}
+          </select>
+          <span>Gap threshold</span>
+        </div>
+        <div class="y-axis-group">
+          <dp-radio-group
+            .name=${"chart-y-axis-mode"}
+            .value=${this.yAxisMode}
+            .options=${Y_AXIS_MODE_OPTIONS}
+            @dp-radio-change=${this._onYAxisModeChange}
+          ></dp-radio-group>
+        </div>
+      </dp-sidebar-options-section>
+    `;
+    }
+  }
+  customElements.define("dp-sidebar-chart-display-section", DpSidebarChartDisplaySection);
+  class DpSidebarOptions extends i {
+    static properties = {
+      datapointScope: { type: String, attribute: "datapoint-scope" },
+      showIcons: { type: Boolean, attribute: "show-icons" },
+      showLines: { type: Boolean, attribute: "show-lines" },
+      showTooltips: { type: Boolean, attribute: "show-tooltips" },
+      showHoverGuides: { type: Boolean, attribute: "show-hover-guides" },
+      showCorrelatedAnomalies: { type: Boolean, attribute: "show-correlated-anomalies" },
+      showDataGaps: { type: Boolean, attribute: "show-data-gaps" },
+      dataGapThreshold: { type: String, attribute: "data-gap-threshold" },
+      yAxisMode: { type: String, attribute: "y-axis-mode" }
+    };
+    static styles = styles$4;
+    constructor() {
+      super();
+      this.datapointScope = "linked";
+      this.showIcons = true;
+      this.showLines = true;
+      this.showTooltips = true;
+      this.showHoverGuides = false;
+      this.showCorrelatedAnomalies = false;
+      this.showDataGaps = true;
+      this.dataGapThreshold = "2h";
+      this.yAxisMode = "combined";
+    }
+    render() {
+      return b`
+      <div class="sidebar-options-card">
+        <dp-sidebar-datapoints-section
+          .datapointScope=${this.datapointScope}
+        ></dp-sidebar-datapoints-section>
+        <dp-sidebar-datapoint-display-section
+          .showIcons=${this.showIcons}
+          .showLines=${this.showLines}
+        ></dp-sidebar-datapoint-display-section>
+        <dp-sidebar-chart-display-section
+          .showTooltips=${this.showTooltips}
+          .showHoverGuides=${this.showHoverGuides}
+          .showCorrelatedAnomalies=${this.showCorrelatedAnomalies}
+          .showDataGaps=${this.showDataGaps}
+          .dataGapThreshold=${this.dataGapThreshold}
+          .yAxisMode=${this.yAxisMode}
+        ></dp-sidebar-chart-display-section>
+      </div>
+    `;
+    }
+  }
+  customElements.define("dp-sidebar-options", DpSidebarOptions);
   const DATA_GAP_THRESHOLD_OPTIONS = [
     { value: "auto", label: "Auto-detect" },
     { value: "5m", label: "5 minutes" },
@@ -16376,8 +18250,10 @@ ${s2.description}`).join("\n\n");
       this._contentSplitterEl = null;
       this._targetControl = null;
       this._targetRowsEl = null;
+      this._rowListEl = null;
       this._targetRowsRenderKey = "";
       this._sidebarOptionsEl = null;
+      this._sidebarOptionsComp = null;
       this._dateControl = null;
       this._dateRangePickerEl = null;
       this._datePickerButtonEl = null;
@@ -16952,126 +18828,19 @@ ${s2.description}`).join("\n\n");
       this._syncRangeControl();
     }
     _renderSidebarOptions() {
-      if (!this._sidebarOptionsEl) return;
-      this._sidebarOptionsEl.innerHTML = `
-      <div class="sidebar-options-card">
-        <div class="sidebar-options-section">
-          <div class="sidebar-section-header">
-            <div class="sidebar-section-title">Datapoints</div>
-            <div class="sidebar-section-subtitle">Choose which annotation datapoints appear on the chart.</div>
-          </div>
-          <div class="sidebar-radio-group">
-            <label class="sidebar-radio-option">
-              <input type="radio" name="datapoint-scope" value="linked" ${this._datapointScope === "linked" ? "checked" : ""}>
-              <span>Linked to selected targets</span>
-            </label>
-            <label class="sidebar-radio-option">
-              <input type="radio" name="datapoint-scope" value="all" ${this._datapointScope === "all" ? "checked" : ""}>
-              <span>All datapoints</span>
-            </label>
-            <label class="sidebar-radio-option">
-              <input type="radio" name="datapoint-scope" value="hidden" ${this._datapointScope === "hidden" ? "checked" : ""}>
-              <span>Hide datapoints</span>
-            </label>
-          </div>
-        </div>
-        <div class="sidebar-options-section">
-          <div class="sidebar-section-header">
-            <div class="sidebar-section-title">Datapoint Display</div>
-            <div class="sidebar-section-subtitle">Control how annotation datapoints are rendered on the chart.</div>
-          </div>
-          <div class="sidebar-toggle-group">
-            <label class="sidebar-toggle-option">
-              <input type="checkbox" name="chart-datapoint-icons" ${this._showChartDatapointIcons ? "checked" : ""}>
-              <span>Show datapoint icons</span>
-            </label>
-            <label class="sidebar-toggle-option">
-              <input type="checkbox" name="chart-datapoint-lines" ${this._showChartDatapointLines ? "checked" : ""}>
-              <span>Show dotted lines</span>
-            </label>
-          </div>
-        </div>
-        <div class="sidebar-options-section">
-          <div class="sidebar-section-header">
-            <div class="sidebar-section-title">Chart Display</div>
-            <div class="sidebar-section-subtitle">Configure visual and interaction behaviour for the chart.</div>
-          </div>
-          <div class="sidebar-toggle-group">
-            <label class="sidebar-toggle-option">
-              <input type="checkbox" name="chart-tooltips" ${this._showChartTooltips ? "checked" : ""}>
-              <span>Show tooltips</span>
-            </label>
-            <label class="sidebar-toggle-option">
-              <input type="checkbox" name="chart-emphasized-hover-guides" ${this._showChartEmphasizedHoverGuides ? "checked" : ""}>
-              <span>Emphasize hover guides</span>
-            </label>
-            <label class="sidebar-toggle-option">
-              <input type="checkbox" name="chart-correlated-anomalies" ${this._showCorrelatedAnomalies ? "checked" : ""}>
-              <span>Highlight correlated anomalies</span>
-            </label>
-            <label class="sidebar-toggle-option">
-              <input type="checkbox" name="chart-show-data-gaps" ${this._showDataGaps ? "checked" : ""}>
-              <span>Show data gaps</span>
-            </label>
-            <div class="sidebar-toggle-option" style="padding-left: 22px; opacity: ${this._showDataGaps ? "1" : "0.5"};">
-              <select name="chart-data-gap-threshold" class="history-target-analysis-select" ${this._showDataGaps ? "" : "disabled"}>
-                ${renderAnalysisSelectOptions(DATA_GAP_THRESHOLD_OPTIONS, this._dataGapThreshold)}
-              </select>
-              <span>Gap threshold</span>
-            </div>
-          </div>
-          <div class="sidebar-radio-group" style="margin-top: var(--dp-spacing-sm);">
-            <label class="sidebar-radio-option">
-              <input type="radio" name="chart-y-axis-mode" value="combined" ${!this._delinkChartYAxis && !this._splitChartView ? "checked" : ""}>
-              <span>Combine y-axis by unit</span>
-            </label>
-            <label class="sidebar-radio-option">
-              <input type="radio" name="chart-y-axis-mode" value="unique" ${this._delinkChartYAxis && !this._splitChartView ? "checked" : ""}>
-              <span>Unique y-axis per series</span>
-            </label>
-            <label class="sidebar-radio-option">
-              <input type="radio" name="chart-y-axis-mode" value="split" ${this._splitChartView ? "checked" : ""}>
-              <span>Split series into rows</span>
-            </label>
-          </div>
-        </div>
-      </div>
-    `;
-      this._sidebarOptionsEl.querySelectorAll("input[name='datapoint-scope']").forEach((input) => {
-        input.addEventListener("change", () => {
-          if (!input.checked || input.value === this._datapointScope) return;
-          this._setDatapointScope(input.value);
-        });
-      });
-      this._sidebarOptionsEl.querySelector("input[name='chart-datapoint-icons']")?.addEventListener("change", (ev) => {
-        this._setChartDatapointDisplayOption("icons", !!ev.currentTarget?.checked);
-      });
-      this._sidebarOptionsEl.querySelector("input[name='chart-datapoint-lines']")?.addEventListener("change", (ev) => {
-        this._setChartDatapointDisplayOption("lines", !!ev.currentTarget?.checked);
-      });
-      this._sidebarOptionsEl.querySelector("input[name='chart-tooltips']")?.addEventListener("change", (ev) => {
-        this._setChartDatapointDisplayOption("tooltips", !!ev.currentTarget?.checked);
-      });
-      this._sidebarOptionsEl.querySelector("input[name='chart-emphasized-hover-guides']")?.addEventListener("change", (ev) => {
-        this._setChartDatapointDisplayOption("hover_guides", !!ev.currentTarget?.checked);
-      });
-      this._sidebarOptionsEl.querySelector("input[name='chart-correlated-anomalies']")?.addEventListener("change", (ev) => {
-        this._setChartDatapointDisplayOption("correlated_anomalies", !!ev.currentTarget?.checked);
-      });
-      this._sidebarOptionsEl.querySelector("input[name='chart-show-data-gaps']")?.addEventListener("change", (ev) => {
-        this._setChartDatapointDisplayOption("data_gaps", !!ev.currentTarget?.checked);
-      });
-      this._sidebarOptionsEl.querySelector("select[name='chart-data-gap-threshold']")?.addEventListener("change", (ev) => {
-        this._setChartDatapointDisplayOption("data_gap_threshold", ev.currentTarget?.value || "2h");
-      });
-      this._sidebarOptionsEl.querySelectorAll("input[name='chart-y-axis-mode']").forEach((input) => {
-        input.addEventListener("change", () => {
-          if (!input.checked) {
-            return;
-          }
-          this._setChartYAxisMode(input.value);
-        });
-      });
+      if (!this._sidebarOptionsComp) {
+        return;
+      }
+      const yAxisMode = this._splitChartView ? "split" : this._delinkChartYAxis ? "unique" : "combined";
+      this._sidebarOptionsComp.datapointScope = this._datapointScope;
+      this._sidebarOptionsComp.showIcons = this._showChartDatapointIcons;
+      this._sidebarOptionsComp.showLines = this._showChartDatapointLines;
+      this._sidebarOptionsComp.showTooltips = this._showChartTooltips;
+      this._sidebarOptionsComp.showHoverGuides = this._showChartEmphasizedHoverGuides;
+      this._sidebarOptionsComp.showCorrelatedAnomalies = this._showCorrelatedAnomalies;
+      this._sidebarOptionsComp.showDataGaps = this._showDataGaps;
+      this._sidebarOptionsComp.dataGapThreshold = this._dataGapThreshold;
+      this._sidebarOptionsComp.yAxisMode = yAxisMode;
     }
     _formatComparisonLabel(start, end) {
       const fmt = (d2) => d2.toLocaleDateString(void 0, { month: "short", day: "numeric" });
@@ -17877,6 +19646,47 @@ ${s2.description}`).join("\n\n");
       dateSlot.innerHTML = "";
       this._targetRowsEl = targetSlot.querySelector("#target-rows");
       const pickerSlot = targetSlot.querySelector("#target-picker-slot");
+      const rowListEl = document.createElement("dp-target-row-list");
+      rowListEl.rows = [];
+      rowListEl.states = {};
+      rowListEl.hass = this._hass ?? null;
+      rowListEl.canShowDeltaAnalysis = false;
+      rowListEl.comparisonWindows = [];
+      rowListEl.addEventListener("dp-row-color-change", (ev) => {
+        const { index, color } = ev.detail || {};
+        this._updateSeriesRowColor(index, color);
+      });
+      rowListEl.addEventListener("dp-row-visibility-change", (ev) => {
+        const { entityId, visible } = ev.detail || {};
+        this._updateSeriesRowVisibilityByEntityId(entityId, visible);
+      });
+      rowListEl.addEventListener("dp-row-remove", (ev) => {
+        const { index } = ev.detail || {};
+        this._removeSeriesRow(index);
+      });
+      rowListEl.addEventListener("dp-row-toggle-analysis", (ev) => {
+        const { entityId } = ev.detail || {};
+        this._toggleSeriesAnalysisExpanded(entityId);
+      });
+      rowListEl.addEventListener("dp-row-analysis-change", (ev) => {
+        const { entityId, key, value } = ev.detail || {};
+        this._setSeriesAnalysisOption(entityId, key, value);
+      });
+      rowListEl.addEventListener("dp-rows-reorder", (ev) => {
+        const { rows } = ev.detail || {};
+        if (!Array.isArray(rows)) {
+          return;
+        }
+        this._seriesRows = rows;
+        this._syncSeriesState();
+        this._saveSessionState();
+        this._renderTargetRows();
+        this._syncControls();
+        this._updateUrl({ push: true });
+        this._renderContent();
+      });
+      this._targetRowsEl.appendChild(rowListEl);
+      this._rowListEl = rowListEl;
       const targetControl = document.createElement("ha-target-picker");
       targetControl.style.display = "block";
       targetControl.style.width = "100%";
@@ -18069,177 +19879,87 @@ ${s2.description}`).join("\n\n");
       this._rangeJumpRightEl?.addEventListener("click", () => this._revealSelectionInTimeline("smooth"));
       dateSlot.appendChild(dateControl);
       this._dateControl = dateControl;
+      if (this._sidebarOptionsEl) {
+        const sidebarComp = document.createElement("dp-sidebar-options");
+        sidebarComp.addEventListener("dp-scope-change", (ev) => {
+          const { value } = ev.detail || {};
+          if (value) {
+            this._setDatapointScope(value);
+          }
+        });
+        sidebarComp.addEventListener("dp-display-change", (ev) => {
+          const { kind, value } = ev.detail || {};
+          if (!kind) {
+            return;
+          }
+          if (kind === "y_axis_mode") {
+            this._setChartYAxisMode(value);
+          } else {
+            this._setChartDatapointDisplayOption(kind, value);
+          }
+        });
+        this._sidebarOptionsEl.appendChild(sidebarComp);
+        this._sidebarOptionsComp = sidebarComp;
+      }
       this._syncControls();
     }
     _renderTargetRows() {
       if (!this._targetRowsEl) return;
-      const renderKey = JSON.stringify(this._seriesRows);
-      if (this._targetRowsRenderKey === renderKey && this._targetRowsEl.childElementCount) return;
-      this._targetRowsRenderKey = renderKey;
       const collapsedSummaryEl = this.shadowRoot?.getElementById("target-collapsed-summary");
-      if (!this._seriesRows.length) {
-        this._targetRowsEl.innerHTML = `<div class="history-target-empty">Add a target to start plotting series.</div>`;
-        if (collapsedSummaryEl) {
-          collapsedSummaryEl.innerHTML = `<div class="history-targets-collapsed-empty" title="No targets selected"></div>`;
-        }
-        this._refreshCollapsedTargetPopup();
-        return;
+      if (this._rowListEl) {
+        this._rowListEl.rows = this._seriesRows;
+        this._rowListEl.states = this._hass?.states ?? {};
+        this._rowListEl.hass = this._hass ?? null;
+        this._rowListEl.canShowDeltaAnalysis = !!this._selectedComparisonWindowId;
+        this._rowListEl.comparisonWindows = this._comparisonWindows;
       }
-      this._targetRowsEl.innerHTML = `
-      <div class="history-target-table" role="table" aria-label="History chart targets">
-        <div class="history-target-table-body" role="rowgroup">
-          ${this._seriesRows.map((row, index) => this._buildSingleRowHTML(row, index, { includeDragHandle: true })).join("")}
-        </div>
-      </div>
-    `;
       if (collapsedSummaryEl) {
-        collapsedSummaryEl.innerHTML = this._seriesRows.map((row, index) => {
-          const label = entityName$1(this._hass, row.entity_id) || row.entity_id;
-          const itemId = `collapsed-series-${index}`;
-          return `
-          <button
-            type="button"
-            id="${itemId}"
-            class="history-targets-collapsed-item ${row.visible === false ? "is-hidden" : ""}"
-            data-series-collapsed-entity-id="${esc$1(row.entity_id)}"
-            style="--row-color:${esc$1(row.color)}"
-            aria-label="${esc$1(label)}"
-            aria-pressed="${row.visible === false ? "false" : "true"}"
-          >
-            <ha-state-icon
-              data-series-collapsed-icon-entity-id="${esc$1(row.entity_id)}"
-              aria-hidden="true"
-            ></ha-state-icon>
-          </button>
-          <ha-tooltip for="${itemId}" placement="right" distance="4">${esc$1(label)}</ha-tooltip>
-        `;
-        }).join("");
+        if (!this._seriesRows.length) {
+          collapsedSummaryEl.innerHTML = `<div class="history-targets-collapsed-empty" title="No targets selected"></div>`;
+        } else {
+          collapsedSummaryEl.innerHTML = this._seriesRows.map((row, index) => {
+            const label = entityName$1(this._hass, row.entity_id) || row.entity_id;
+            const itemId = `collapsed-series-${index}`;
+            return `
+            <button
+              type="button"
+              id="${itemId}"
+              class="history-targets-collapsed-item ${row.visible === false ? "is-hidden" : ""}"
+              data-series-collapsed-entity-id="${esc$1(row.entity_id)}"
+              style="--row-color:${esc$1(row.color)}"
+              aria-label="${esc$1(label)}"
+              aria-pressed="${row.visible === false ? "false" : "true"}"
+            >
+              <ha-state-icon
+                data-series-collapsed-icon-entity-id="${esc$1(row.entity_id)}"
+                aria-hidden="true"
+              ></ha-state-icon>
+            </button>
+            <ha-tooltip for="${itemId}" placement="right" distance="4">${esc$1(label)}</ha-tooltip>
+          `;
+          }).join("");
+          collapsedSummaryEl.querySelectorAll("[data-series-collapsed-icon-entity-id]").forEach((iconEl) => {
+            const entityId = iconEl.dataset.seriesCollapsedIconEntityId;
+            if (!entityId) {
+              return;
+            }
+            iconEl.stateObj = this._hass?.states?.[entityId];
+            iconEl.hass = this._hass;
+          });
+          collapsedSummaryEl.querySelectorAll("[data-series-collapsed-entity-id]").forEach((button) => {
+            button.addEventListener("click", (ev) => {
+              ev.stopPropagation();
+              const entityId = String(button.dataset.seriesCollapsedEntityId || "");
+              if (this._collapsedPopupEntityId === entityId) {
+                this._hideCollapsedTargetPopup();
+              } else {
+                this._showCollapsedTargetPopup(entityId, button);
+              }
+            });
+          });
+        }
       }
-      this._targetRowsEl.querySelectorAll("[data-series-color-index]").forEach((input) => {
-        input.addEventListener("change", () => this._updateSeriesRowColor(Number.parseInt(input.dataset.seriesColorIndex || "", 10), input.value));
-      });
-      this._targetRowsEl.querySelectorAll("[data-series-analysis-toggle-entity-id]").forEach((button) => {
-        button.addEventListener("click", () => this._toggleSeriesAnalysisExpanded(String(button.dataset.seriesAnalysisToggleEntityId || "")));
-      });
-      this._targetRowsEl.querySelectorAll("[data-series-row-entity-id]").forEach((rowEl) => {
-        rowEl.addEventListener("click", (ev) => {
-          const nameArea = rowEl.querySelector(".history-target-name");
-          if (!nameArea || !nameArea.contains(ev.target)) {
-            return;
-          }
-          if (ev.target.closest("button, input, select, textarea, a, label")) {
-            return;
-          }
-          this._toggleSeriesAnalysisExpanded(String(rowEl.dataset.seriesRowEntityId || ""));
-        });
-      });
-      this._targetRowsEl.querySelectorAll("[data-series-visible-entity-id]").forEach((input) => {
-        input.addEventListener("change", () => this._updateSeriesRowVisibilityByEntityId(String(input.dataset.seriesVisibleEntityId || ""), input.checked));
-      });
-      this._targetRowsEl.querySelectorAll("[data-series-analysis-option]").forEach((input) => {
-        input.addEventListener("change", () => {
-          const [entityId, key] = String(input.dataset.seriesAnalysisOption || "").split("::");
-          if (!entityId || !key) {
-            return;
-          }
-          this._setSeriesAnalysisOption(entityId, key, !!input.checked);
-        });
-      });
-      this._targetRowsEl.querySelectorAll("[data-series-analysis-select]").forEach((select) => {
-        select.addEventListener("change", () => {
-          const [entityId, key] = String(select.dataset.seriesAnalysisSelect || "").split("::");
-          if (!entityId || !key) {
-            return;
-          }
-          this._setSeriesAnalysisOption(entityId, key, select.value || "");
-        });
-      });
-      this._targetRowsEl.querySelectorAll("[data-series-analysis-input]").forEach((input) => {
-        input.addEventListener("change", () => {
-          const [entityId, key] = String(input.dataset.seriesAnalysisInput || "").split("::");
-          if (!entityId || !key) {
-            return;
-          }
-          this._setSeriesAnalysisOption(entityId, key, input.value || "");
-        });
-      });
-      this._targetRowsEl.querySelectorAll("[data-series-remove-index]").forEach((button) => {
-        button.addEventListener("click", () => this._removeSeriesRow(Number.parseInt(button.dataset.seriesRemoveIndex || "", 10)));
-      });
-      this._targetRowsEl.querySelectorAll("[data-series-icon-entity-id]").forEach((iconEl) => {
-        const entityId = iconEl.dataset.seriesIconEntityId;
-        if (!entityId) return;
-        iconEl.stateObj = this._hass?.states?.[entityId];
-        iconEl.hass = this._hass;
-      });
-      collapsedSummaryEl?.querySelectorAll("[data-series-collapsed-icon-entity-id]").forEach((iconEl) => {
-        const entityId = iconEl.dataset.seriesCollapsedIconEntityId;
-        if (!entityId) return;
-        iconEl.stateObj = this._hass?.states?.[entityId];
-        iconEl.hass = this._hass;
-      });
-      collapsedSummaryEl?.querySelectorAll("[data-series-collapsed-entity-id]").forEach((button) => {
-        button.addEventListener("click", (ev) => {
-          ev.stopPropagation();
-          const entityId = String(button.dataset.seriesCollapsedEntityId || "");
-          if (this._collapsedPopupEntityId === entityId) {
-            this._hideCollapsedTargetPopup();
-          } else {
-            this._showCollapsedTargetPopup(entityId, button);
-          }
-        });
-      });
       this._refreshCollapsedTargetPopup();
-      this._targetRowsEl.querySelectorAll("[data-series-drag-index]").forEach((handle) => {
-        handle.addEventListener("dragstart", (ev) => {
-          const fromIndex = Number.parseInt(handle.dataset.seriesDragIndex || "", 10);
-          this._dragSourceIndex = fromIndex;
-          ev.dataTransfer.effectAllowed = "move";
-          ev.dataTransfer.setData("text/plain", String(fromIndex));
-          const rowEl = handle.closest(".history-target-row");
-          setTimeout(() => rowEl?.classList.add("is-dragging"), 0);
-        });
-        handle.addEventListener("dragend", () => {
-          this._dragSourceIndex = null;
-          this._targetRowsEl.querySelectorAll(".history-target-row").forEach((r2) => {
-            r2.classList.remove("is-dragging", "is-drag-over-before", "is-drag-over-after");
-          });
-        });
-      });
-      this._targetRowsEl.querySelectorAll("[data-series-reorder-index]").forEach((rowEl) => {
-        rowEl.addEventListener("dragover", (ev) => {
-          if (this._dragSourceIndex === null) {
-            return;
-          }
-          ev.preventDefault();
-          ev.dataTransfer.dropEffect = "move";
-          const rect = rowEl.getBoundingClientRect();
-          const isAbove = ev.clientY < rect.top + rect.height / 2;
-          this._targetRowsEl.querySelectorAll(".history-target-row").forEach((r2) => {
-            r2.classList.remove("is-drag-over-before", "is-drag-over-after");
-          });
-          rowEl.classList.add(isAbove ? "is-drag-over-before" : "is-drag-over-after");
-        });
-        rowEl.addEventListener("dragleave", (ev) => {
-          if (!rowEl.contains(ev.relatedTarget)) {
-            rowEl.classList.remove("is-drag-over-before", "is-drag-over-after");
-          }
-        });
-        rowEl.addEventListener("drop", (ev) => {
-          ev.preventDefault();
-          const fromIndex = Number.parseInt(ev.dataTransfer.getData("text/plain") || "", 10);
-          const rowIndex = Number.parseInt(rowEl.dataset.seriesReorderIndex || "", 10);
-          if (!Number.isFinite(fromIndex) || !Number.isFinite(rowIndex)) {
-            return;
-          }
-          const rect = rowEl.getBoundingClientRect();
-          const isAbove = ev.clientY < rect.top + rect.height / 2;
-          const insertBeforeIndex = isAbove ? rowIndex : rowIndex + 1;
-          const toIndex = fromIndex < insertBeforeIndex ? insertBeforeIndex - 1 : insertBeforeIndex;
-          rowEl.classList.remove("is-drag-over-before", "is-drag-over-after");
-          this._reorderSeriesRows(fromIndex, toIndex);
-        });
-      });
     }
     _addSeriesRows(entityIds) {
       const merged = new Map(this._seriesRows.map((row) => [row.entity_id, row]));

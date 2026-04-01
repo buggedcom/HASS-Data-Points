@@ -8,11 +8,11 @@ import { styles } from "./dp-target-row.styles";
 import type { NormalizedAnalysis, ComparisonWindow, HassEntityState } from "./types";
 export type { NormalizedAnalysis, ComparisonWindow, HassEntityState };
 
-import "../dp-analysis-trend-group/dp-analysis-trend-group";
-import "../dp-analysis-rate-group/dp-analysis-rate-group";
-import "../dp-analysis-threshold-group/dp-analysis-threshold-group";
-import "../dp-analysis-anomaly-group/dp-analysis-anomaly-group";
-import "../dp-analysis-delta-group/dp-analysis-delta-group";
+import "@/molecules/dp-analysis-trend-group/dp-analysis-trend-group";
+import "@/molecules/dp-analysis-rate-group/dp-analysis-rate-group";
+import "@/molecules/dp-analysis-threshold-group/dp-analysis-threshold-group";
+import "@/molecules/dp-analysis-anomaly-group/dp-analysis-anomaly-group";
+import "@/molecules/dp-analysis-delta-group/dp-analysis-delta-group";
 
 export function deriveSwatchIconColor(color: string): string {
   const hex = String(color || "").trim();

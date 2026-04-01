@@ -1,7 +1,7 @@
 import { LitElement, html, nothing } from "lit";
 import { styles } from "./dp-target-row-list.styles";
-import type { NormalizedAnalysis, ComparisonWindow } from "../dp-target-row/dp-target-row";
-import "../dp-target-row/dp-target-row";
+import type { NormalizedAnalysis, ComparisonWindow } from "@/molecules/dp-target-row/dp-target-row";
+import "@/molecules/dp-target-row/dp-target-row";
 
 // ---------------------------------------------------------------------------
 // Types

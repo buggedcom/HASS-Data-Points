@@ -86,6 +86,31 @@
 
 ---
 
+## Atom Component Mapping
+
+When building molecules, **always use the existing atoms** instead of writing raw HTML form elements.
+
+| UI Pattern | Atom tag | Import path (from `src/`) | Props | Event emitted |
+|---|---|---|---|---|
+| Group of radio buttons | `dp-radio-group` | `atoms/form/dp-radio-group/dp-radio-group` | `name: string`, `value: string`, `options: SelectOption[]` | `dp-radio-change → { value: string }` |
+| Group of checkboxes | `dp-checkbox-list` | `atoms/form/dp-checkbox-list/dp-checkbox-list` | `items: CheckboxItem[]` | `dp-item-change → { name: string, checked: boolean }` |
+| Sidebar section with title/subtitle | `dp-sidebar-options-section` | `atoms/display/dp-sidebar-options-section/dp-sidebar-options-section` | `title: string`, `subtitle: string` + default `<slot>` for body | _(none)_ |
+| Section heading only | `dp-sidebar-section-header` | `atoms/display/dp-sidebar-section-header/dp-sidebar-section-header` | `title: string`, `subtitle: string` | _(none)_ |
+
+**Types:**
+- `SelectOption` — `{ label: string; value: string }` from `@/lib/types`
+- `CheckboxItem` — `{ name: string; label: string; checked: boolean }` exported from `dp-checkbox-list.ts`
+
+**Legacy HTML → atom mapping:**
+- `.sidebar-radio-group` / `.sidebar-radio-option` inputs → `dp-radio-group`
+- `.sidebar-toggle-group` / `.sidebar-toggle-option` inputs → `dp-checkbox-list`
+- `.sidebar-options-section` wrapper (title + subtitle + body) → `dp-sidebar-options-section`
+- `.sidebar-section-header` / `.sidebar-section-title` / `.sidebar-section-subtitle` → `dp-sidebar-section-header`
+
+**Rule:** Never write raw `<input type="radio">` or `<input type="checkbox">` lists directly in a molecule when these atoms cover the use case. If a checkbox group has a dependent sub-option (e.g. a select that appears when a checkbox is on), render the `dp-checkbox-list` first and place the sub-option as a sibling element beneath it.
+
+---
+
 ## Key CSS Files to Reference
 
 All CSS lives in `PANEL_HISTORY_STYLE` constant, defined at line 166 of:

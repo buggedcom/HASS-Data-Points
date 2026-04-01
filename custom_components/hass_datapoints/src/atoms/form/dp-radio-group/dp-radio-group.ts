@@ -23,12 +23,12 @@ export class DpRadioGroup extends LitElement {
     }
     .radio-group {
       display: grid;
-      gap: var(--dp-spacing-sm, 8px);
+      gap: var(--dp-spacing-xs, 4px);
     }
     .radio-option {
       display: flex;
       align-items: center;
-      gap: var(--dp-spacing-sm, 8px);
+      gap: var(--dp-spacing-xs, 4px);
       font-size: 0.9rem;
       color: var(--primary-text-color);
       cursor: pointer;

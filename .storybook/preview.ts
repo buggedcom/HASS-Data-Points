@@ -98,7 +98,6 @@ export const decorators = [haThemeDecorator];
 
 export const parameters = {
   backgrounds: { disable: true },
-
   a11y: {
     // 'todo' - show a11y violations in the test UI only
     // 'error' - fail CI on a11y violations
@@ -106,3 +105,7 @@ export const parameters = {
     test: "todo",
   },
 };
+
+export const preview = {
+  tags: ['autodocs'],
+}

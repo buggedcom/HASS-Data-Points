@@ -61,6 +61,9 @@ import {
   WEEK_MS,
 } from "@/lib/shared";
 
+import "../../molecules/dp-target-row-list/dp-target-row-list";
+import "../../molecules/dp-sidebar-options/dp-sidebar-options";
+
 const DATA_GAP_THRESHOLD_OPTIONS = [
   { value: "auto", label: "Auto-detect" },
   { value: "5m", label: "5 minutes" },
@@ -2371,8 +2374,10 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._contentSplitterEl = null;
     this._targetControl = null;
     this._targetRowsEl = null;
+    this._rowListEl = null;
     this._targetRowsRenderKey = "";
     this._sidebarOptionsEl = null;
+    this._sidebarOptionsComp = null;
     this._dateControl = null;
     this._dateRangePickerEl = null;
     this._datePickerButtonEl = null;
@@ -3037,126 +3042,17 @@ export class HassRecordsHistoryPanel extends HTMLElement {
   }
 
   _renderSidebarOptions() {
-    if (!this._sidebarOptionsEl) return;
-    this._sidebarOptionsEl.innerHTML = `
-      <div class="sidebar-options-card">
-        <div class="sidebar-options-section">
-          <div class="sidebar-section-header">
-            <div class="sidebar-section-title">Datapoints</div>
-            <div class="sidebar-section-subtitle">Choose which annotation datapoints appear on the chart.</div>
-          </div>
-          <div class="sidebar-radio-group">
-            <label class="sidebar-radio-option">
-              <input type="radio" name="datapoint-scope" value="linked" ${this._datapointScope === "linked" ? "checked" : ""}>
-              <span>Linked to selected targets</span>
-            </label>
-            <label class="sidebar-radio-option">
-              <input type="radio" name="datapoint-scope" value="all" ${this._datapointScope === "all" ? "checked" : ""}>
-              <span>All datapoints</span>
-            </label>
-            <label class="sidebar-radio-option">
-              <input type="radio" name="datapoint-scope" value="hidden" ${this._datapointScope === "hidden" ? "checked" : ""}>
-              <span>Hide datapoints</span>
-            </label>
-          </div>
-        </div>
-        <div class="sidebar-options-section">
-          <div class="sidebar-section-header">
-            <div class="sidebar-section-title">Datapoint Display</div>
-            <div class="sidebar-section-subtitle">Control how annotation datapoints are rendered on the chart.</div>
-          </div>
-          <div class="sidebar-toggle-group">
-            <label class="sidebar-toggle-option">
-              <input type="checkbox" name="chart-datapoint-icons" ${this._showChartDatapointIcons ? "checked" : ""}>
-              <span>Show datapoint icons</span>
-            </label>
-            <label class="sidebar-toggle-option">
-              <input type="checkbox" name="chart-datapoint-lines" ${this._showChartDatapointLines ? "checked" : ""}>
-              <span>Show dotted lines</span>
-            </label>
-          </div>
-        </div>
-        <div class="sidebar-options-section">
-          <div class="sidebar-section-header">
-            <div class="sidebar-section-title">Chart Display</div>
-            <div class="sidebar-section-subtitle">Configure visual and interaction behaviour for the chart.</div>
-          </div>
-          <div class="sidebar-toggle-group">
-            <label class="sidebar-toggle-option">
-              <input type="checkbox" name="chart-tooltips" ${this._showChartTooltips ? "checked" : ""}>
-              <span>Show tooltips</span>
-            </label>
-            <label class="sidebar-toggle-option">
-              <input type="checkbox" name="chart-emphasized-hover-guides" ${this._showChartEmphasizedHoverGuides ? "checked" : ""}>
-              <span>Emphasize hover guides</span>
-            </label>
-            <label class="sidebar-toggle-option">
-              <input type="checkbox" name="chart-correlated-anomalies" ${this._showCorrelatedAnomalies ? "checked" : ""}>
-              <span>Highlight correlated anomalies</span>
-            </label>
-            <label class="sidebar-toggle-option">
-              <input type="checkbox" name="chart-show-data-gaps" ${this._showDataGaps ? "checked" : ""}>
-              <span>Show data gaps</span>
-            </label>
-            <div class="sidebar-toggle-option" style="padding-left: 22px; opacity: ${this._showDataGaps ? "1" : "0.5"};">
-              <select name="chart-data-gap-threshold" class="history-target-analysis-select" ${this._showDataGaps ? "" : "disabled"}>
-                ${renderAnalysisSelectOptions(DATA_GAP_THRESHOLD_OPTIONS, this._dataGapThreshold)}
-              </select>
-              <span>Gap threshold</span>
-            </div>
-          </div>
-          <div class="sidebar-radio-group" style="margin-top: var(--dp-spacing-sm);">
-            <label class="sidebar-radio-option">
-              <input type="radio" name="chart-y-axis-mode" value="combined" ${!this._delinkChartYAxis && !this._splitChartView ? "checked" : ""}>
-              <span>Combine y-axis by unit</span>
-            </label>
-            <label class="sidebar-radio-option">
-              <input type="radio" name="chart-y-axis-mode" value="unique" ${this._delinkChartYAxis && !this._splitChartView ? "checked" : ""}>
-              <span>Unique y-axis per series</span>
-            </label>
-            <label class="sidebar-radio-option">
-              <input type="radio" name="chart-y-axis-mode" value="split" ${this._splitChartView ? "checked" : ""}>
-              <span>Split series into rows</span>
-            </label>
-          </div>
-        </div>
-      </div>
-    `;
-    this._sidebarOptionsEl.querySelectorAll("input[name='datapoint-scope']").forEach((input) => {
-      input.addEventListener("change", () => {
-        if (!input.checked || input.value === this._datapointScope) return;
-        this._setDatapointScope(input.value);
-      });
-    });
-    this._sidebarOptionsEl.querySelector("input[name='chart-datapoint-icons']")?.addEventListener("change", (ev) => {
-      this._setChartDatapointDisplayOption("icons", !!ev.currentTarget?.checked);
-    });
-    this._sidebarOptionsEl.querySelector("input[name='chart-datapoint-lines']")?.addEventListener("change", (ev) => {
-      this._setChartDatapointDisplayOption("lines", !!ev.currentTarget?.checked);
-    });
-    this._sidebarOptionsEl.querySelector("input[name='chart-tooltips']")?.addEventListener("change", (ev) => {
-      this._setChartDatapointDisplayOption("tooltips", !!ev.currentTarget?.checked);
-    });
-    this._sidebarOptionsEl.querySelector("input[name='chart-emphasized-hover-guides']")?.addEventListener("change", (ev) => {
-      this._setChartDatapointDisplayOption("hover_guides", !!ev.currentTarget?.checked);
-    });
-    this._sidebarOptionsEl.querySelector("input[name='chart-correlated-anomalies']")?.addEventListener("change", (ev) => {
-      this._setChartDatapointDisplayOption("correlated_anomalies", !!ev.currentTarget?.checked);
-    });
-    this._sidebarOptionsEl.querySelector("input[name='chart-show-data-gaps']")?.addEventListener("change", (ev) => {
-      this._setChartDatapointDisplayOption("data_gaps", !!ev.currentTarget?.checked);
-    });
-    this._sidebarOptionsEl.querySelector("select[name='chart-data-gap-threshold']")?.addEventListener("change", (ev) => {
-      this._setChartDatapointDisplayOption("data_gap_threshold", ev.currentTarget?.value || "2h");
-    });
-    this._sidebarOptionsEl.querySelectorAll("input[name='chart-y-axis-mode']").forEach((input) => {
-      input.addEventListener("change", () => {
-        if (!input.checked) {
-          return;
-        }
-        this._setChartYAxisMode(input.value);
-      });
-    });
+    if (!this._sidebarOptionsComp) { return; }
+    const yAxisMode = this._splitChartView ? "split" : this._delinkChartYAxis ? "unique" : "combined";
+    this._sidebarOptionsComp.datapointScope = this._datapointScope;
+    this._sidebarOptionsComp.showIcons = this._showChartDatapointIcons;
+    this._sidebarOptionsComp.showLines = this._showChartDatapointLines;
+    this._sidebarOptionsComp.showTooltips = this._showChartTooltips;
+    this._sidebarOptionsComp.showHoverGuides = this._showChartEmphasizedHoverGuides;
+    this._sidebarOptionsComp.showCorrelatedAnomalies = this._showCorrelatedAnomalies;
+    this._sidebarOptionsComp.showDataGaps = this._showDataGaps;
+    this._sidebarOptionsComp.dataGapThreshold = this._dataGapThreshold;
+    this._sidebarOptionsComp.yAxisMode = yAxisMode;
   }
 
   _formatComparisonLabel(start, end) {
@@ -4046,6 +3942,47 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._targetRowsEl = targetSlot.querySelector("#target-rows");
     const pickerSlot = targetSlot.querySelector("#target-picker-slot");
 
+    // Create the dp-target-row-list element once and wire events at creation time.
+    const rowListEl = document.createElement("dp-target-row-list");
+    rowListEl.rows = [];
+    rowListEl.states = {};
+    rowListEl.hass = this._hass ?? null;
+    rowListEl.canShowDeltaAnalysis = false;
+    rowListEl.comparisonWindows = [];
+    rowListEl.addEventListener("dp-row-color-change", (ev) => {
+      const { index, color } = ev.detail || {};
+      this._updateSeriesRowColor(index, color);
+    });
+    rowListEl.addEventListener("dp-row-visibility-change", (ev) => {
+      const { entityId, visible } = ev.detail || {};
+      this._updateSeriesRowVisibilityByEntityId(entityId, visible);
+    });
+    rowListEl.addEventListener("dp-row-remove", (ev) => {
+      const { index } = ev.detail || {};
+      this._removeSeriesRow(index);
+    });
+    rowListEl.addEventListener("dp-row-toggle-analysis", (ev) => {
+      const { entityId } = ev.detail || {};
+      this._toggleSeriesAnalysisExpanded(entityId);
+    });
+    rowListEl.addEventListener("dp-row-analysis-change", (ev) => {
+      const { entityId, key, value } = ev.detail || {};
+      this._setSeriesAnalysisOption(entityId, key, value);
+    });
+    rowListEl.addEventListener("dp-rows-reorder", (ev) => {
+      const { rows } = ev.detail || {};
+      if (!Array.isArray(rows)) { return; }
+      this._seriesRows = rows;
+      this._syncSeriesState();
+      this._saveSessionState();
+      this._renderTargetRows();
+      this._syncControls();
+      this._updateUrl({ push: true });
+      this._renderContent();
+    });
+    this._targetRowsEl.appendChild(rowListEl);
+    this._rowListEl = rowListEl;
+
     const targetControl = document.createElement("ha-target-picker");
     targetControl.style.display = "block";
     targetControl.style.width = "100%";
@@ -4240,190 +4177,92 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     dateSlot.appendChild(dateControl);
     this._dateControl = dateControl;
 
+    // Create the dp-sidebar-options element once and wire events at creation time.
+    if (this._sidebarOptionsEl) {
+      const sidebarComp = document.createElement("dp-sidebar-options");
+      sidebarComp.addEventListener("dp-scope-change", (ev) => {
+        const { value } = ev.detail || {};
+        if (value) {
+          this._setDatapointScope(value);
+        }
+      });
+      sidebarComp.addEventListener("dp-display-change", (ev) => {
+        const { kind, value } = ev.detail || {};
+        if (!kind) { return; }
+        if (kind === "y_axis_mode") {
+          this._setChartYAxisMode(value);
+        } else {
+          this._setChartDatapointDisplayOption(kind, value);
+        }
+      });
+      this._sidebarOptionsEl.appendChild(sidebarComp);
+      this._sidebarOptionsComp = sidebarComp;
+    }
+
     this._syncControls();
   }
 
   _renderTargetRows() {
     if (!this._targetRowsEl) return;
-    const renderKey = JSON.stringify(this._seriesRows);
-    if (this._targetRowsRenderKey === renderKey && this._targetRowsEl.childElementCount) return;
-    this._targetRowsRenderKey = renderKey;
     const collapsedSummaryEl = this.shadowRoot?.getElementById("target-collapsed-summary");
-    if (!this._seriesRows.length) {
-      this._targetRowsEl.innerHTML = `<div class="history-target-empty">Add a target to start plotting series.</div>`;
-      if (collapsedSummaryEl) {
-        collapsedSummaryEl.innerHTML = `<div class="history-targets-collapsed-empty" title="No targets selected"></div>`;
-      }
-      this._refreshCollapsedTargetPopup();
-      return;
+
+    // Update the dp-target-row-list element properties.
+    if (this._rowListEl) {
+      this._rowListEl.rows = this._seriesRows;
+      this._rowListEl.states = this._hass?.states ?? {};
+      this._rowListEl.hass = this._hass ?? null;
+      this._rowListEl.canShowDeltaAnalysis = !!this._selectedComparisonWindowId;
+      this._rowListEl.comparisonWindows = this._comparisonWindows;
     }
 
-    this._targetRowsEl.innerHTML = `
-      <div class="history-target-table" role="table" aria-label="History chart targets">
-        <div class="history-target-table-body" role="rowgroup">
-          ${this._seriesRows.map((row, index) => this._buildSingleRowHTML(row, index, { includeDragHandle: true })).join("")}
-        </div>
-      </div>
-    `;
-
+    // Render the collapsed sidebar summary (unchanged — not migrated to dp-target-row-list).
     if (collapsedSummaryEl) {
-      collapsedSummaryEl.innerHTML = this._seriesRows.map((row, index) => {
-        const label = entityName(this._hass, row.entity_id) || row.entity_id;
-        const itemId = `collapsed-series-${index}`;
-        return `
-          <button
-            type="button"
-            id="${itemId}"
-            class="history-targets-collapsed-item ${row.visible === false ? "is-hidden" : ""}"
-            data-series-collapsed-entity-id="${esc(row.entity_id)}"
-            style="--row-color:${esc(row.color)}"
-            aria-label="${esc(label)}"
-            aria-pressed="${row.visible === false ? "false" : "true"}"
-          >
-            <ha-state-icon
-              data-series-collapsed-icon-entity-id="${esc(row.entity_id)}"
-              aria-hidden="true"
-            ></ha-state-icon>
-          </button>
-          <ha-tooltip for="${itemId}" placement="right" distance="4">${esc(label)}</ha-tooltip>
-        `;
-      }).join("");
-    }
+      if (!this._seriesRows.length) {
+        collapsedSummaryEl.innerHTML = `<div class="history-targets-collapsed-empty" title="No targets selected"></div>`;
+      } else {
+        collapsedSummaryEl.innerHTML = this._seriesRows.map((row, index) => {
+          const label = entityName(this._hass, row.entity_id) || row.entity_id;
+          const itemId = `collapsed-series-${index}`;
+          return `
+            <button
+              type="button"
+              id="${itemId}"
+              class="history-targets-collapsed-item ${row.visible === false ? "is-hidden" : ""}"
+              data-series-collapsed-entity-id="${esc(row.entity_id)}"
+              style="--row-color:${esc(row.color)}"
+              aria-label="${esc(label)}"
+              aria-pressed="${row.visible === false ? "false" : "true"}"
+            >
+              <ha-state-icon
+                data-series-collapsed-icon-entity-id="${esc(row.entity_id)}"
+                aria-hidden="true"
+              ></ha-state-icon>
+            </button>
+            <ha-tooltip for="${itemId}" placement="right" distance="4">${esc(label)}</ha-tooltip>
+          `;
+        }).join("");
 
-    this._targetRowsEl.querySelectorAll("[data-series-color-index]").forEach((input) => {
-      input.addEventListener("change", () => this._updateSeriesRowColor(Number.parseInt(input.dataset.seriesColorIndex || "", 10), input.value));
-    });
-    this._targetRowsEl.querySelectorAll("[data-series-analysis-toggle-entity-id]").forEach((button) => {
-      button.addEventListener("click", () => this._toggleSeriesAnalysisExpanded(String(button.dataset.seriesAnalysisToggleEntityId || "")));
-    });
-    this._targetRowsEl.querySelectorAll("[data-series-row-entity-id]").forEach((rowEl) => {
-      rowEl.addEventListener("click", (ev) => {
-        // Only toggle when the click originates within the name area
-        const nameArea = rowEl.querySelector(".history-target-name");
-        if (!nameArea || !nameArea.contains(ev.target)) {
-          return;
-        }
-        // Ignore clicks on interactive elements inside the name area
-        if (ev.target.closest("button, input, select, textarea, a, label")) {
-          return;
-        }
-        this._toggleSeriesAnalysisExpanded(String(rowEl.dataset.seriesRowEntityId || ""));
-      });
-    });
-    this._targetRowsEl.querySelectorAll("[data-series-visible-entity-id]").forEach((input) => {
-      input.addEventListener("change", () => this._updateSeriesRowVisibilityByEntityId(String(input.dataset.seriesVisibleEntityId || ""), input.checked));
-    });
-    this._targetRowsEl.querySelectorAll("[data-series-analysis-option]").forEach((input) => {
-      input.addEventListener("change", () => {
-        const [entityId, key] = String(input.dataset.seriesAnalysisOption || "").split("::");
-        if (!entityId || !key) {
-          return;
-        }
-        this._setSeriesAnalysisOption(entityId, key, !!input.checked);
-      });
-    });
-    this._targetRowsEl.querySelectorAll("[data-series-analysis-select]").forEach((select) => {
-      select.addEventListener("change", () => {
-        const [entityId, key] = String(select.dataset.seriesAnalysisSelect || "").split("::");
-        if (!entityId || !key) {
-          return;
-        }
-        this._setSeriesAnalysisOption(entityId, key, select.value || "");
-      });
-    });
-    this._targetRowsEl.querySelectorAll("[data-series-analysis-input]").forEach((input) => {
-      input.addEventListener("change", () => {
-        const [entityId, key] = String(input.dataset.seriesAnalysisInput || "").split("::");
-        if (!entityId || !key) {
-          return;
-        }
-        this._setSeriesAnalysisOption(entityId, key, input.value || "");
-      });
-    });
-    this._targetRowsEl.querySelectorAll("[data-series-remove-index]").forEach((button) => {
-      button.addEventListener("click", () => this._removeSeriesRow(Number.parseInt(button.dataset.seriesRemoveIndex || "", 10)));
-    });
-    this._targetRowsEl.querySelectorAll("[data-series-icon-entity-id]").forEach((iconEl) => {
-      const entityId = iconEl.dataset.seriesIconEntityId;
-      if (!entityId) return;
-      iconEl.stateObj = this._hass?.states?.[entityId];
-      iconEl.hass = this._hass;
-    });
-    collapsedSummaryEl?.querySelectorAll("[data-series-collapsed-icon-entity-id]").forEach((iconEl) => {
-      const entityId = iconEl.dataset.seriesCollapsedIconEntityId;
-      if (!entityId) return;
-      iconEl.stateObj = this._hass?.states?.[entityId];
-      iconEl.hass = this._hass;
-    });
-    collapsedSummaryEl?.querySelectorAll("[data-series-collapsed-entity-id]").forEach((button) => {
-      button.addEventListener("click", (ev) => {
-        ev.stopPropagation();
-        const entityId = String(button.dataset.seriesCollapsedEntityId || "");
-        if (this._collapsedPopupEntityId === entityId) {
-          this._hideCollapsedTargetPopup();
-        } else {
-          this._showCollapsedTargetPopup(entityId, button);
-        }
-      });
-    });
+        collapsedSummaryEl.querySelectorAll("[data-series-collapsed-icon-entity-id]").forEach((iconEl) => {
+          const entityId = iconEl.dataset.seriesCollapsedIconEntityId;
+          if (!entityId) { return; }
+          iconEl.stateObj = this._hass?.states?.[entityId];
+          iconEl.hass = this._hass;
+        });
+        collapsedSummaryEl.querySelectorAll("[data-series-collapsed-entity-id]").forEach((button) => {
+          button.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+            const entityId = String(button.dataset.seriesCollapsedEntityId || "");
+            if (this._collapsedPopupEntityId === entityId) {
+              this._hideCollapsedTargetPopup();
+            } else {
+              this._showCollapsedTargetPopup(entityId, button);
+            }
+          });
+        });
+      }
+    }
 
     this._refreshCollapsedTargetPopup();
-
-    // Drag-to-reorder bindings
-    this._targetRowsEl.querySelectorAll("[data-series-drag-index]").forEach((handle) => {
-      handle.addEventListener("dragstart", (ev) => {
-        const fromIndex = Number.parseInt(handle.dataset.seriesDragIndex || "", 10);
-        this._dragSourceIndex = fromIndex;
-        ev.dataTransfer.effectAllowed = "move";
-        ev.dataTransfer.setData("text/plain", String(fromIndex));
-        const rowEl = handle.closest(".history-target-row");
-        setTimeout(() => rowEl?.classList.add("is-dragging"), 0);
-      });
-
-      handle.addEventListener("dragend", () => {
-        this._dragSourceIndex = null;
-        this._targetRowsEl.querySelectorAll(".history-target-row").forEach((r) => {
-          r.classList.remove("is-dragging", "is-drag-over-before", "is-drag-over-after");
-        });
-      });
-    });
-
-    this._targetRowsEl.querySelectorAll("[data-series-reorder-index]").forEach((rowEl) => {
-      rowEl.addEventListener("dragover", (ev) => {
-        if (this._dragSourceIndex === null) {
-          return;
-        }
-        ev.preventDefault();
-        ev.dataTransfer.dropEffect = "move";
-        const rect = rowEl.getBoundingClientRect();
-        const isAbove = ev.clientY < rect.top + rect.height / 2;
-        this._targetRowsEl.querySelectorAll(".history-target-row").forEach((r) => {
-          r.classList.remove("is-drag-over-before", "is-drag-over-after");
-        });
-        rowEl.classList.add(isAbove ? "is-drag-over-before" : "is-drag-over-after");
-      });
-
-      rowEl.addEventListener("dragleave", (ev) => {
-        if (!rowEl.contains(ev.relatedTarget)) {
-          rowEl.classList.remove("is-drag-over-before", "is-drag-over-after");
-        }
-      });
-
-      rowEl.addEventListener("drop", (ev) => {
-        ev.preventDefault();
-        const fromIndex = Number.parseInt(ev.dataTransfer.getData("text/plain") || "", 10);
-        const rowIndex = Number.parseInt(rowEl.dataset.seriesReorderIndex || "", 10);
-        if (!Number.isFinite(fromIndex) || !Number.isFinite(rowIndex)) {
-          return;
-        }
-        const rect = rowEl.getBoundingClientRect();
-        const isAbove = ev.clientY < rect.top + rect.height / 2;
-        const insertBeforeIndex = isAbove ? rowIndex : rowIndex + 1;
-        const toIndex = fromIndex < insertBeforeIndex ? insertBeforeIndex - 1 : insertBeforeIndex;
-        rowEl.classList.remove("is-drag-over-before", "is-drag-over-after");
-        this._reorderSeriesRows(fromIndex, toIndex);
-      });
-    });
   }
 
   _addSeriesRows(entityIds) {
