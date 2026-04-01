@@ -61,10 +61,10 @@ import {
   WEEK_MS,
 } from "@/lib/shared";
 
-import "../../molecules/dp-target-row-list/dp-target-row-list";
-import "../../molecules/dp-sidebar-options/dp-sidebar-options";
-import "../../molecules/dp-comparison-tab-rail/dp-comparison-tab-rail";
-import "../../molecules/dp-date-window-dialog/dp-date-window-dialog";
+import "@/molecules/dp-target-row-list/dp-target-row-list";
+import "@/molecules/dp-sidebar-options/dp-sidebar-options";
+import "@/molecules/dp-comparison-tab-rail/dp-comparison-tab-rail";
+import "@/molecules/dp-date-window-dialog/dp-date-window-dialog";
 
 const DATA_GAP_THRESHOLD_OPTIONS = [
   { value: "auto", label: "Auto-detect" },

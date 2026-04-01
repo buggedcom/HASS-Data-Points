@@ -5194,6 +5194,7 @@ ${s2.description}`).join("\n\n");
       this._host = host;
       this._dialogEl = null;
       this._panelEl = null;
+      this._chipRowEl = null;
       this._linkedTarget = {};
       this._target = {};
     }
@@ -5229,6 +5230,7 @@ ${s2.description}`).join("\n\n");
       this._dialogEl?.remove();
       this._dialogEl = null;
       this._panelEl = null;
+      this._chipRowEl = null;
     }
     resetFormState() {
       this._linkedTarget = {};
@@ -5247,64 +5249,33 @@ ${s2.description}`).join("\n\n");
       const min = String(value.getMinutes()).padStart(2, "0");
       return `${yyyy}-${mm}-${dd}T${hh}:${min}`;
     }
-    renderTargetChips(target) {
-      const groups = [
+    _buildChips(target) {
+      return [
         ...(target.entity_id || []).map((id) => ({
           type: "entity_id",
-          id,
+          itemId: id,
           icon: entityIcon$1(this._host._hass, id),
           name: entityName$1(this._host._hass, id)
         })),
         ...(target.device_id || []).map((id) => ({
           type: "device_id",
-          id,
+          itemId: id,
           icon: deviceIcon$1(this._host._hass, id),
           name: deviceName$1(this._host._hass, id)
         })),
         ...(target.area_id || []).map((id) => ({
           type: "area_id",
-          id,
+          itemId: id,
           icon: areaIcon$1(this._host._hass, id),
           name: areaName$1(this._host._hass, id)
         })),
         ...(target.label_id || []).map((id) => ({
           type: "label_id",
-          id,
+          itemId: id,
           icon: labelIcon$1(this._host._hass, id),
           name: labelName$1(this._host._hass, id)
         }))
       ];
-      if (!groups.length) {
-        return `
-        <div id="chart-context-linked-targets" class="context-form-field">
-          <label class="context-form-label">Linked targets</label>
-          <div class="context-form-help">No linked targets will be associated with this data point.</div>
-        </div>
-      `;
-      }
-      return `
-      <div id="chart-context-linked-targets" class="context-form-field">
-        <label class="context-form-label">Linked targets</label>
-        <div class="context-form-help">These targets will be associated with the new data point by default. Remove any that should not be linked.</div>
-        <div class="context-chip-row">
-          ${groups.map((chip) => `
-            <span class="context-chip" title="${esc$1(chip.name)}">
-              <ha-icon icon="${esc$1(chip.icon)}"></ha-icon>
-              <span class="context-chip-text">${esc$1(chip.name)}</span>
-              <button
-                type="button"
-                class="context-chip-remove"
-                data-target-type="${esc$1(chip.type)}"
-                data-target-id="${esc$1(chip.id)}"
-                aria-label="Remove ${esc$1(chip.name)}"
-              >
-                <ha-icon icon="mdi:close"></ha-icon>
-              </button>
-            </span>
-          `).join("")}
-        </div>
-      </div>
-    `;
     }
     removeLinkedTarget(type, id) {
       if (!this._linkedTarget || !type || !id) {
@@ -5316,18 +5287,11 @@ ${s2.description}`).join("\n\n");
       }
       current[type] = current[type].filter((value) => value !== id);
       this._linkedTarget = current;
-      const container = this._panelEl?.querySelector("#chart-context-linked-targets");
-      if (container) {
-        container.outerHTML = this.renderTargetChips(this._linkedTarget);
-        this.bindTargetChipActions();
+      if (this._chipRowEl) {
+        this._chipRowEl.chips = this._buildChips(this._linkedTarget);
       }
     }
     bindTargetChipActions() {
-      this._panelEl?.querySelectorAll(".context-chip-remove")?.forEach((button) => {
-        button.addEventListener("click", () => {
-          this.removeLinkedTarget(button.dataset.targetType, button.dataset.targetId);
-        });
-      });
     }
     bindFields(hover) {
       if (!this._panelEl) {
@@ -5354,6 +5318,18 @@ ${s2.description}`).join("\n\n");
       }
       if (annotationEl) {
         annotationEl.value = prefill.annotation || "";
+      }
+      const chipContainer = this._panelEl.querySelector("#chart-context-linked-targets");
+      if (chipContainer && !this._chipRowEl) {
+        const chipRow = document.createElement("dp-annotation-chip-row");
+        chipRow.addEventListener("dp-target-remove", (ev) => {
+          this.removeLinkedTarget(ev.detail.type, ev.detail.id);
+        });
+        chipContainer.appendChild(chipRow);
+        this._chipRowEl = chipRow;
+      }
+      if (this._chipRowEl) {
+        this._chipRowEl.chips = this._buildChips(this._linkedTarget);
       }
       this.bindTargetChipActions();
       const colorInput = this._panelEl.querySelector("#chart-context-color");
@@ -5503,7 +5479,7 @@ ${s2.description}`).join("\n\n");
                 <div class="context-form-help">Add any longer context, outcome, or note you want to keep with this data point.</div>
                 <textarea id="chart-context-annotation" class="context-annotation-input" placeholder="Detailed note shown on chart hover..."></textarea>
               </div>
-              ${this.renderTargetChips(this._linkedTarget)}
+              <div id="chart-context-linked-targets"></div>
               <div class="context-form-field">
                 <label class="context-form-label" for="chart-context-target">Additional related items</label>
                 <div class="context-form-help">Optionally add more entities, devices, areas, or labels that should also be linked to this annotation.</div>

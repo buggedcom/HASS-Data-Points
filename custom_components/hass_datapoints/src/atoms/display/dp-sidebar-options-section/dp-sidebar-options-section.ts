@@ -1,6 +1,6 @@
 import { LitElement, html } from "lit";
 import { styles } from "./dp-sidebar-options-section.styles";
-import "@/atoms/dp-sidebar-section-header/dp-sidebar-section-header";
+import "@/atoms/display/dp-sidebar-section-header/dp-sidebar-section-header";
 
 export class DpSidebarOptionsSection extends LitElement {
   static properties = {

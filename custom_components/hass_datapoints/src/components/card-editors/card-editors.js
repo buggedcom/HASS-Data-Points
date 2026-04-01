@@ -1,14 +1,14 @@
 import { html, css } from "lit";
-import { AMBER, COLORS } from "../../lib/shared.js";
-import { DpEditorBase } from "../../molecules/dp-editor-base/dp-editor-base.js";
-import "../../atoms/display/dp-section-heading/dp-section-heading.js";
-import "../../atoms/display/dp-color-swatch/dp-color-swatch.js";
-import "../../atoms/form/dp-editor-text-field/dp-editor-text-field.js";
-import "../../atoms/form/dp-editor-switch/dp-editor-switch.js";
-import "../../atoms/form/dp-editor-entity-picker/dp-editor-entity-picker.js";
-import "../../atoms/form/dp-editor-icon-picker/dp-editor-icon-picker.js";
-import "../../atoms/form/dp-editor-select/dp-editor-select.js";
-import "../../atoms/form/dp-editor-entity-list/dp-editor-entity-list.js";
+import { AMBER, COLORS } from "@/lib/shared";
+import { DpEditorBase } from "@/molecules/dp-editor-base/dp-editor-base";
+import "@/atoms/display/dp-section-heading/dp-section-heading";
+import "@/atoms/display/dp-color-swatch/dp-color-swatch";
+import "@/atoms/form/dp-editor-text-field/dp-editor-text-field";
+import "@/atoms/form/dp-editor-switch/dp-editor-switch";
+import "@/atoms/form/dp-editor-entity-picker/dp-editor-entity-picker";
+import "@/atoms/form/dp-editor-icon-picker/dp-editor-icon-picker";
+import "@/atoms/form/dp-editor-select/dp-editor-select";
+import "@/atoms/form/dp-editor-entity-list/dp-editor-entity-list";
 
 /**
  * Lovelace card editors for all Hass Records cards.
