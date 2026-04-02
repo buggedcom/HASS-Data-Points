@@ -347,19 +347,23 @@ export const styles = css`
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 2px 8px;
     border: none;
     border-radius: 6px;
     background: color-mix(in srgb, var(--primary-color, #03a9f4) 12%, transparent);
     color: var(--primary-color, #03a9f4);
-    font-size: 0.78rem;
     font: inherit;
+    font-size: 0.78rem;
     cursor: pointer;
     transition: background-color 120ms ease;
   }
 
-  .history-target-analysis-copy-btn:hover,
-  .history-target-analysis-copy-btn:focus-visible {
+  .history-target-analysis-copy-btn:disabled {
+      background: color-mix(in srgb, var(--disabled-color, #bdbdbd) 12%, transparent);
+      color: var(--disabled-color, #bdbdbd);
+  }
+    
+  .history-target-analysis-copy-btn:not(:disabled):hover,
+  .history-target-analysis-copy-btn:not(:disabled):focus-visible {
     background: color-mix(in srgb, var(--primary-color, #03a9f4) 20%, transparent);
   }
 

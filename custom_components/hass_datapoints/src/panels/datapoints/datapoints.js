@@ -2419,7 +2419,9 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._onComparisonLoading = (ev) => this._handleComparisonLoading(ev);
     this._computingEntityIds = new Set();
     this._analysisProgress = 0;
+    this._computingMethods = new Map(); // entityId → Set<methodName> of in-flight anomaly methods
     this._onAnalysisComputing = (ev) => this._handleAnalysisComputing(ev);
+    this._onAnalysisMethodResult = (ev) => this._handleAnalysisMethodResult(ev);
     this._onWindowPointerDown = (ev) => this._handleWindowPointerDown(ev);
     this._onWindowResize = () => {
       if (this._rendered) {
@@ -2511,6 +2513,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this.addEventListener("hass-datapoints-toggle-series-visibility", this._onToggleSeriesVisibility);
     this.addEventListener("hass-datapoints-comparison-loading", this._onComparisonLoading);
     this.addEventListener("hass-datapoints-analysis-computing", this._onAnalysisComputing);
+    this.addEventListener("hass-datapoints-analysis-method-result", this._onAnalysisMethodResult);
     if (this._rendered && !this._shellBuilt) {
       this._buildLoadingShell();
     }
@@ -2545,6 +2548,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this.removeEventListener("hass-datapoints-toggle-series-visibility", this._onToggleSeriesVisibility);
     this.removeEventListener("hass-datapoints-comparison-loading", this._onComparisonLoading);
     this.removeEventListener("hass-datapoints-analysis-computing", this._onAnalysisComputing);
+    this.removeEventListener("hass-datapoints-analysis-method-result", this._onAnalysisMethodResult);
     if (this._rangeCommitTimer) {
       window.clearTimeout(this._rangeCommitTimer);
       this._rangeCommitTimer = null;
@@ -3039,6 +3043,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._sidebarOptionsComp.dataGapThreshold = this._dataGapThreshold;
     this._sidebarOptionsComp.yAxisMode = yAxisMode;
     this._sidebarOptionsComp.anomalyOverlapMode = this._chartAnomalyOverlapMode;
+    this._sidebarOptionsComp.anyAnomaliesEnabled = (this._seriesRows ?? []).some((r) => r.analysis?.show_anomalies === true);
     this._sidebarOptionsComp.targetsOpen = this._sidebarAccordionTargetsOpen;
     this._sidebarOptionsComp.datapointsOpen = this._sidebarAccordionDatapointsOpen;
     this._sidebarOptionsComp.analysisOpen = this._sidebarAccordionAnalysisOpen;
@@ -3494,18 +3499,59 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       for (const id of entityIds) {
         this._computingEntityIds.add(id);
       }
+      // On the initial progress=0 signal, seed _computingMethods from the current row
+      // configs so each entity knows which anomaly method spinners to show.
+      if (progress === 0) {
+        for (const id of entityIds) {
+          const row = this._seriesRows?.find((r) => r.entity_id === id);
+          const methods = row?.analysis?.show_anomalies === true && Array.isArray(row.analysis.anomaly_methods)
+            ? row.analysis.anomaly_methods
+            : [];
+          this._computingMethods.set(id, new Set(methods));
+          console.log(`[datapoints] analysis started for ${id} — methods: [${methods.join(", ")}]`);
+        }
+      } else {
+        console.log(`[datapoints] analysis progress ${progress}%`);
+      }
     } else {
       for (const id of entityIds) {
         this._computingEntityIds.delete(id);
+        this._computingMethods.delete(id);
       }
+      console.log(`[datapoints] analysis complete (${entityIds.join(", ")})`);
     }
     this._analysisProgress = progress;
+    this._pushComputingStateToRowList();
+  }
 
-    // Push the updated computing state directly onto the row-list so Lit
-    // re-renders the spinners without a full _renderTargetRows() call.
+  _handleAnalysisMethodResult(ev) {
+    console.log("[datapoints] _handleAnalysisMethodResult received", ev?.detail);
+    const entityId = ev?.detail?.entityId;
+    const method = ev?.detail?.method;
+    if (!entityId || !method) {
+      console.log("[datapoints] _handleAnalysisMethodResult: missing entityId or method, ignoring");
+      return;
+    }
+    // Replace the Set with a new instance so Lit detects the reference change and re-renders.
+    // Mutating the existing Set in place would leave the same object reference in the Map,
+    // which Lit treats as unchanged and skips the re-render.
+    const current = this._computingMethods.get(entityId);
+    if (current) {
+      const next = new Set(current);
+      next.delete(method);
+      this._computingMethods.set(entityId, next);
+    }
+    const remaining = [...(this._computingMethods.get(entityId) ?? [])];
+    console.log(`[datapoints] method done: ${method} for ${entityId} — remaining: [${remaining.join(", ") || "none"}]`);
+    this._pushComputingStateToRowList();
+  }
+
+  _pushComputingStateToRowList() {
     if (this._rowListEl) {
       this._rowListEl.computingEntityIds = new Set(this._computingEntityIds);
       this._rowListEl.analysisProgress = this._analysisProgress;
+      // Pass a fresh Map so Lit detects the reference change and re-renders.
+      this._rowListEl.computingMethodsByEntity = new Map(this._computingMethods);
     }
   }
 
@@ -4065,46 +4111,64 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     // Render the collapsed sidebar summary (unchanged — not migrated to dp-target-row-list).
     if (collapsedSummaryEl) {
       if (!this._seriesRows.length) {
-        collapsedSummaryEl.innerHTML = `<div class="history-targets-collapsed-empty" title="No targets selected"></div>`;
+        const emptyKey = "__empty__";
+        if (this._collapsedSummaryStructureKey !== emptyKey) {
+          collapsedSummaryEl.innerHTML = `<div class="history-targets-collapsed-empty" title="No targets selected"></div>`;
+          this._collapsedSummaryStructureKey = emptyKey;
+        }
       } else {
-        collapsedSummaryEl.innerHTML = this._seriesRows.map((row, index) => {
+        // Only rebuild the DOM when entity IDs, colors, visibility, or display
+        // names actually change — not on every HA state update.
+        const structureKey = this._seriesRows.map((row) => {
           const label = entityName(this._hass, row.entity_id) || row.entity_id;
-          const itemId = `collapsed-series-${index}`;
-          return `
-            <button
-              type="button"
-              id="${itemId}"
-              class="history-targets-collapsed-item ${row.visible === false ? "is-hidden" : ""}"
-              data-series-collapsed-entity-id="${esc(row.entity_id)}"
-              style="--row-color:${esc(row.color)}"
-              aria-label="${esc(label)}"
-              aria-pressed="${row.visible === false ? "false" : "true"}"
-            >
-              <ha-state-icon
-                data-series-collapsed-icon-entity-id="${esc(row.entity_id)}"
-                aria-hidden="true"
-              ></ha-state-icon>
-            </button>
-            <ha-tooltip for="${itemId}" placement="right" distance="4">${esc(label)}</ha-tooltip>
-          `;
-        }).join("");
+          return `${row.entity_id}|${row.color}|${row.visible === false ? "0" : "1"}|${label}`;
+        }).join("~");
 
+        if (this._collapsedSummaryStructureKey !== structureKey) {
+          collapsedSummaryEl.innerHTML = this._seriesRows.map((row, index) => {
+            const label = entityName(this._hass, row.entity_id) || row.entity_id;
+            const itemId = `collapsed-series-${index}`;
+            return `
+              <button
+                type="button"
+                id="${itemId}"
+                class="history-targets-collapsed-item ${row.visible === false ? "is-hidden" : ""}"
+                data-series-collapsed-entity-id="${esc(row.entity_id)}"
+                style="--row-color:${esc(row.color)}"
+                aria-label="${esc(label)}"
+                aria-pressed="${row.visible === false ? "false" : "true"}"
+              >
+                <ha-state-icon
+                  data-series-collapsed-icon-entity-id="${esc(row.entity_id)}"
+                  aria-hidden="true"
+                ></ha-state-icon>
+              </button>
+              <ha-tooltip for="${itemId}" placement="right" distance="4">${esc(label)}</ha-tooltip>
+            `;
+          }).join("");
+
+          collapsedSummaryEl.querySelectorAll("[data-series-collapsed-entity-id]").forEach((button) => {
+            button.addEventListener("click", (ev) => {
+              ev.stopPropagation();
+              const entityId = String(button.dataset.seriesCollapsedEntityId || "");
+              if (this._collapsedPopupEntityId === entityId) {
+                this._hideCollapsedTargetPopup();
+              } else {
+                this._showCollapsedTargetPopup(entityId, button);
+              }
+            });
+          });
+
+          this._collapsedSummaryStructureKey = structureKey;
+        }
+
+        // Always sync icon state properties — these are lightweight property
+        // assignments and do not cause a DOM rebuild.
         collapsedSummaryEl.querySelectorAll("[data-series-collapsed-icon-entity-id]").forEach((iconEl) => {
           const entityId = iconEl.dataset.seriesCollapsedIconEntityId;
           if (!entityId) { return; }
           iconEl.stateObj = this._hass?.states?.[entityId];
           iconEl.hass = this._hass;
-        });
-        collapsedSummaryEl.querySelectorAll("[data-series-collapsed-entity-id]").forEach((button) => {
-          button.addEventListener("click", (ev) => {
-            ev.stopPropagation();
-            const entityId = String(button.dataset.seriesCollapsedEntityId || "");
-            if (this._collapsedPopupEntityId === entityId) {
-              this._hideCollapsedTargetPopup();
-            } else {
-              this._showCollapsedTargetPopup(entityId, button);
-            }
-          });
         });
       }
     }

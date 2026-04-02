@@ -76,6 +76,37 @@ export class HistoryAnnotationDialogController {
     this._host._creatingContextAnnotation = false;
   }
 
+  _shake() {
+    if (!this._dialogEl) return;
+    const shadowRoot = this._host.shadowRoot;
+    if (!shadowRoot) return;
+    // Inject shake keyframes into the shadow root once.
+    if (!shadowRoot.getElementById("dp-dialog-shake-style")) {
+      const style = document.createElement("style");
+      style.id = "dp-dialog-shake-style";
+      style.textContent = `
+        @keyframes dp-dialog-shake {
+          10%, 90% { transform: translate3d(-2px, 0, 0); }
+          20%, 80% { transform: translate3d(4px, 0, 0); }
+          30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+          40%, 60% { transform: translate3d(6px, 0, 0); }
+        }
+        .dp-shaking {
+          animation: dp-dialog-shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+        }
+      `;
+      shadowRoot.appendChild(style);
+    }
+    this._dialogEl.classList.remove("dp-shaking");
+    void this._dialogEl.offsetWidth; // force reflow to restart animation
+    this._dialogEl.classList.add("dp-shaking");
+    this._dialogEl.addEventListener(
+      "animationend",
+      () => this._dialogEl?.classList.remove("dp-shaking"),
+      { once: true },
+    );
+  }
+
   formatDate(timeMs) {
     const value = new Date(timeMs);
     const yyyy = value.getFullYear();
@@ -219,6 +250,7 @@ export class HistoryAnnotationDialogController {
     const message = (messageEl?.value || "").trim();
     if (!message) {
       messageEl?.focus();
+      this._shake();
       return;
     }
 
@@ -268,6 +300,7 @@ export class HistoryAnnotationDialogController {
         feedbackEl.hidden = false;
         feedbackEl.textContent = err?.message || "Failed to create annotation.";
       }
+      this._shake();
       logger.error("[hass-datapoints history-card]", err);
     } finally {
       if (saveButton) saveButton.disabled = false;

@@ -1022,6 +1022,12 @@ export class HassRecordsHistoryCard extends ChartCardBase {
 
       // Summary stat lines (min / mean / max).
       if (rowSummaryStats) {
+        // Gradient shading between min/max and the mean — drawn first so lines sit on top.
+        if (rowAnalysis.show_summary_stats_shading === true) {
+          const fillAlpha = rowHideSource ? 0.10 : 0.06;
+          renderer.drawGradientBand(rowSummaryStats.min, rowSummaryStats.mean, seriesItem.color, renderT0, renderT1, resolvedAxis.min, resolvedAxis.max, { fillAlpha });
+          renderer.drawGradientBand(rowSummaryStats.max, rowSummaryStats.mean, seriesItem.color, renderT0, renderT1, resolvedAxis.min, resolvedAxis.max, { fillAlpha });
+        }
         const summaryEntries = [
           { type: "min",  value: rowSummaryStats.min,  alpha: rowHideSource ? 0.78 : 0.42, width: 1.1,  dotted: true },
           { type: "mean", value: rowSummaryStats.mean, alpha: rowHideSource ? 0.94 : 0.78, width: 1.8,  dotted: false },
@@ -2747,7 +2753,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     };
   }
 
-  async _computeHistoryAnalysis(visibleSeries, selectedComparisonSeriesMap, analysisMap, hasSelectedComparisonWindow, allComparisonWindowsData = {}, t0 = 0, t1 = 0, onProgress = null) {
+  async _computeHistoryAnalysis(visibleSeries, selectedComparisonSeriesMap, analysisMap, hasSelectedComparisonWindow, allComparisonWindowsData = {}, t0 = 0, t1 = 0, onProgress = null, onAnomalyPartial = null) {
     // Abort any in-flight worker computation from a previous (now stale) draw request.
     // This prevents the chart from hanging while waiting for a worker result that will
     // be discarded anyway once the stale-request check runs.
@@ -2775,7 +2781,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       allComparisonWindowsData,
     );
     try {
-      const result = await computeHistoryAnalysisInWorker(payload, { onProgress });
+      const result = await computeHistoryAnalysisInWorker(payload, { onProgress, onAnomalyPartial });
       this._analysisCache = { key: cacheKey, result };
       return result;
     } catch (error) {
@@ -3078,6 +3084,17 @@ export class HassRecordsHistoryCard extends ChartCardBase {
         }));
       }
       : null;
+    // onAnomalyPartial is called each time an individual anomaly method finishes for an
+    // entity. The panel uses this to remove that method's spinner without waiting for all
+    // methods to complete.
+    const onAnomalyPartial = analysisEntityIds.length
+      ? (entityId, method, clusters) => {
+        console.log(`[card-history] dispatching analysis-method-result: ${method} for ${entityId}`);
+        this.dispatchEvent(new CustomEvent("hass-datapoints-analysis-method-result", {
+          bubbles: true, composed: true, detail: { entityId, method, clusters },
+        }));
+      }
+      : null;
     const analysisResult = await this._computeHistoryAnalysis(
       visibleSeries,
       selectedComparisonSeriesMap,
@@ -3087,6 +3104,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       t0,
       t1,
       onAnalysisProgress,
+      onAnomalyPartial,
     );
     if (analysisEntityIds.length) {
       this.dispatchEvent(new CustomEvent("hass-datapoints-analysis-computing", {

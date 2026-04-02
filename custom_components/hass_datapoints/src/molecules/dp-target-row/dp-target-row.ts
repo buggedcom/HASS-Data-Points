@@ -73,6 +73,9 @@ export class DpTargetRow extends LitElement {
     comparisonWindows: { type: Array, attribute: "comparison-windows" },
     computing: { type: Boolean, attribute: false },
     computingProgress: { type: Number, attribute: false },
+    computingMethods: { type: Object, attribute: false },
+    rowCount: { type: Number, attribute: false },
+    allAnalysisSame: { type: Boolean, attribute: false },
   };
 
   declare color: string;
@@ -99,6 +102,15 @@ export class DpTargetRow extends LitElement {
   /** Analysis computation progress (0–100), shown alongside the spinner. */
   declare computingProgress: number;
 
+  /** Set of anomaly method names still in-flight in the worker for this entity. */
+  declare computingMethods: Set<string>;
+
+  /** Total number of rows in the list — used to hide "Copy to all" when there is only one target. */
+  declare rowCount: number;
+
+  /** True when all rows share identical analysis settings — used to disable the "Copy to all" button. */
+  declare allAnalysisSame: boolean;
+
   static styles = styles;
 
   constructor() {
@@ -113,6 +125,9 @@ export class DpTargetRow extends LitElement {
     this.comparisonWindows = [];
     this.computing = false;
     this.computingProgress = 0;
+    this.computingMethods = new Set();
+    this.rowCount = 1;
+    this.allAnalysisSame = false;
   }
 
   /** Entity ID derived from the HA state object. */
@@ -282,6 +297,7 @@ export class DpTargetRow extends LitElement {
                 .comparisonWindows=${this.comparisonWindows}
                 .computing=${this.computing}
                 .computingProgress=${this.computingProgress}
+                .computingMethods=${this.computingMethods}
                 @dp-group-analysis-change=${this._onGroupAnalysisChange}
               ></dp-analysis-anomaly-group>
               <dp-analysis-delta-group
@@ -297,15 +313,18 @@ export class DpTargetRow extends LitElement {
                     @change=${(e: Event) => this._onCheckbox("hide_source_series", e)}>
                   <span>Hide source series</span>
                 </label>
-                <button
-                  type="button"
-                  class="history-target-analysis-copy-btn"
-                  title="Copy these analysis settings to all targets"
-                  @click=${this._onCopyAnalysisToAll}
-                >
-                  <ha-icon icon="mdi:content-copy"></ha-icon>
-                  Copy to all targets
-                </button>
+                ${this.rowCount > 1 ? html`
+                  <button
+                    type="button"
+                    class="history-target-analysis-copy-btn"
+                    title=${this.allAnalysisSame ? "All targets already have the same settings" : "Copy these analysis settings to all targets"}
+                    ?disabled=${this.allAnalysisSame}
+                    @click=${this._onCopyAnalysisToAll}
+                  >
+                    <ha-icon icon="mdi:content-copy"></ha-icon>
+                    Copy to all targets
+                  </button>
+                ` : nothing}
               </div>
             </div>
           </div>

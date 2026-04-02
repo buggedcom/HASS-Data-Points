@@ -39,6 +39,7 @@ export class DpTargetRowList extends LitElement {
     comparisonWindows: { type: Array, attribute: false },
     computingEntityIds: { type: Object, attribute: false },
     analysisProgress: { type: Number, attribute: false },
+    computingMethodsByEntity: { type: Object, attribute: false },
   };
 
   declare rows: RowConfig[];
@@ -58,6 +59,9 @@ export class DpTargetRowList extends LitElement {
 
   /** Current analysis progress percentage (0–100) shared across all computing rows. */
   declare analysisProgress: number;
+
+  /** Map of entityId → Set of anomaly method names that are still in-flight in the worker. */
+  declare computingMethodsByEntity: Map<string, Set<string>>;
 
   /** Index of the row currently being dragged, or null when not dragging. */
   private _dragSourceIndex: number | null = null;
@@ -125,6 +129,9 @@ export class DpTargetRowList extends LitElement {
       `;
     }
 
+    const firstAnalysis = JSON.stringify(this.rows[0]?.analysis ?? {});
+    const allAnalysisSame = this.rows.every((r) => JSON.stringify(r.analysis ?? {}) === firstAnalysis);
+
     return html`
       <div class="history-target-table">
         <div
@@ -149,6 +156,9 @@ export class DpTargetRowList extends LitElement {
                 .comparisonWindows=${this.comparisonWindows}
                 .computing=${this.computingEntityIds?.has(row.entity_id) ?? false}
                 .computingProgress=${this.analysisProgress ?? 0}
+                .computingMethods=${this.computingMethodsByEntity?.get(row.entity_id) ?? new Set()}
+                .rowCount=${this.rows.length}
+                .allAnalysisSame=${allAnalysisSame}
                 data-row-index=${index}
                 @dragstart=${(e: DragEvent) => this._onDragStart(e, index)}
                 @dragend=${this._onDragEnd}
@@ -178,9 +188,24 @@ export class DpTargetRowList extends LitElement {
     const target = e.currentTarget as HTMLElement;
     // Delay so the drag ghost captures the non-dimmed appearance.
     setTimeout(() => target.classList.add("is-dragging"), 0);
-    // Force the grabbing cursor globally — the drag ghost otherwise interferes
-    // with the OS-level cursor and the CSS cursor style has no effect during a drag.
-    this.ownerDocument.body.style.cursor = "grabbing";
+    // Inject a stylesheet to force the grabbing cursor globally during drag.
+    // Setting body.style.cursor alone is not reliable — browsers control the
+    // drag cursor at the OS level and CSS cursor has no effect without !important.
+    this._ensureDragCursorStyle();
+  }
+
+  private _ensureDragCursorStyle() {
+    const doc = this.ownerDocument;
+    if (!doc.getElementById("dp-drag-cursor-style")) {
+      const style = doc.createElement("style");
+      style.id = "dp-drag-cursor-style";
+      style.textContent = "*, *::before, *::after { cursor: grabbing !important; }";
+      doc.head.appendChild(style);
+    }
+  }
+
+  private _removeDragCursorStyle() {
+    this.ownerDocument.getElementById("dp-drag-cursor-style")?.remove();
   }
 
   private _onDragEnd = (e: DragEvent) => {
@@ -188,7 +213,7 @@ export class DpTargetRowList extends LitElement {
     const target = e.currentTarget as HTMLElement;
     target.classList.remove("is-dragging");
     this._clearDropIndicators();
-    this.ownerDocument.body.style.cursor = "";
+    this._removeDragCursorStyle();
   };
 
   private _onDragOver(e: DragEvent) {

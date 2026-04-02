@@ -17,6 +17,7 @@ export class DpSidebarOptions extends LitElement {
     dataGapThreshold: { type: String, attribute: "data-gap-threshold" },
     yAxisMode: { type: String, attribute: "y-axis-mode" },
     anomalyOverlapMode: { type: String, attribute: "anomaly-overlap-mode" },
+    anyAnomaliesEnabled: { type: Boolean, attribute: false },
     // Accordion open states
     targetsOpen: { type: Boolean, attribute: "targets-open" },
     datapointsOpen: { type: Boolean, attribute: "datapoints-open" },
@@ -44,6 +45,8 @@ export class DpSidebarOptions extends LitElement {
 
   declare anomalyOverlapMode: string;
 
+  declare anyAnomaliesEnabled: boolean;
+
   declare targetsOpen: boolean;
 
   declare datapointsOpen: boolean;
@@ -66,6 +69,7 @@ export class DpSidebarOptions extends LitElement {
     this.dataGapThreshold = "2h";
     this.yAxisMode = "combined";
     this.anomalyOverlapMode = "all";
+    this.anyAnomaliesEnabled = false;
     this.targetsOpen = true;
     this.datapointsOpen = true;
     this.analysisOpen = true;
@@ -125,6 +129,7 @@ export class DpSidebarOptions extends LitElement {
         ></dp-sidebar-datapoint-display-section>
         <dp-sidebar-analysis-section
           .anomalyOverlapMode=${this.anomalyOverlapMode}
+          .anyAnomaliesEnabled=${this.anyAnomaliesEnabled}
           collapsible
           .open=${this.analysisOpen}
           @dp-section-toggle=${this._onAnalysisToggle}

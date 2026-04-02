@@ -642,7 +642,9 @@ function buildAnomalyClusters(points, method, trendWindow, anomalySensitivity) {
   return clusters.filter((cluster) => cluster.points.length > 0);
 }
 
-function computeHistoryAnalysis(payload, postProgress) {
+function computeHistoryAnalysis(payload, callbacks = {}) {
+  const postProgress = callbacks.postProgress ?? null;
+  const postMethodResult = callbacks.postMethodResult ?? null;
   const series = (Array.isArray(payload?.series) ? payload.series : []).map((seriesItem) => ({
       ...seriesItem,
       analysis: normalizeSeriesAnalysis(seriesItem?.analysis),
@@ -662,9 +664,6 @@ function computeHistoryAnalysis(payload, postProgress) {
     summaryStats: [],
     anomalySeries: [],
   };
-
-  const total = series.length;
-  let processed = 0;
 
   for (const seriesItem of series) {
     const points = Array.isArray(seriesItem?.pts) ? seriesItem.pts : [];
@@ -688,36 +687,52 @@ function computeHistoryAnalysis(payload, postProgress) {
 
     if (analysis.show_anomalies === true) {
       const clustersByMethod = {};
+      // Progress is weighted by data-point volume: each method processes `n` points,
+      // so completing one method = n/totalWork of the overall work.
+      const n = points.length;
+      const totalWork = n * anomalyMethods.length;
+      let completedWork = 0;
+
+      const runMethod = (methodKey, clusters) => {
+        completedWork += n;
+        const progress = totalWork > 0 ? Math.round((completedWork / totalWork) * 100) : 100;
+        // eslint-disable-next-line no-console
+        console.log(
+          `[anomaly-worker] ${seriesItem.entityId} | ${methodKey} → ${clusters.length} cluster(s) | progress ${progress}% (${completedWork}/${totalWork} pts)`,
+        );
+        // Post this method's clusters immediately so the UI can update without
+        // waiting for all other methods to finish.
+        postMethodResult?.(seriesItem.entityId, methodKey, clusters);
+        // Post progress as the fraction of data points processed so far.
+        if (postProgress && totalWork > 0) {
+          postProgress(progress);
+        }
+        if (clusters.length > 0) {
+          clustersByMethod[methodKey] = clusters;
+        }
+      };
 
       if (anomalyMethods.includes("trend_residual")) {
-        const clusters = buildAnomalyClusters(points, analysis.trend_method, analysis.trend_window, analysis.anomaly_sensitivity);
-        if (clusters.length > 0) clustersByMethod.trend_residual = clusters;
+        runMethod("trend_residual", buildAnomalyClusters(points, analysis.trend_method, analysis.trend_window, analysis.anomaly_sensitivity));
       }
       if (anomalyMethods.includes("rate_of_change")) {
-        const clusters = buildRateOfChangeAnomalyClusters(points, analysis.anomaly_rate_window, analysis.anomaly_sensitivity);
-        if (clusters.length > 0) clustersByMethod.rate_of_change = clusters;
+        runMethod("rate_of_change", buildRateOfChangeAnomalyClusters(points, analysis.anomaly_rate_window, analysis.anomaly_sensitivity));
       }
       if (anomalyMethods.includes("iqr")) {
-        const clusters = buildIQRAnomalyClusters(points, analysis.anomaly_sensitivity);
-        if (clusters.length > 0) clustersByMethod.iqr = clusters;
+        runMethod("iqr", buildIQRAnomalyClusters(points, analysis.anomaly_sensitivity));
       }
       if (anomalyMethods.includes("rolling_zscore")) {
-        const windowMs = getTrendWindowMs(analysis.anomaly_zscore_window);
-        const clusters = buildRollingZScoreAnomalyClusters(points, windowMs, analysis.anomaly_sensitivity);
-        if (clusters.length > 0) clustersByMethod.rolling_zscore = clusters;
+        runMethod("rolling_zscore", buildRollingZScoreAnomalyClusters(points, getTrendWindowMs(analysis.anomaly_zscore_window), analysis.anomaly_sensitivity));
       }
       if (anomalyMethods.includes("persistence")) {
-        const minDurationMs = getPersistenceWindowMs(analysis.anomaly_persistence_window);
-        const clusters = buildPersistenceAnomalyClusters(points, minDurationMs, analysis.anomaly_sensitivity);
-        if (clusters.length > 0) clustersByMethod.persistence = clusters;
+        runMethod("persistence", buildPersistenceAnomalyClusters(points, getPersistenceWindowMs(analysis.anomaly_persistence_window), analysis.anomaly_sensitivity));
       }
       if (anomalyMethods.includes("comparison_window") && analysis.anomaly_comparison_window_id) {
         const windowData = allComparisonWindowsData[analysis.anomaly_comparison_window_id];
         const comparisonPts = windowData && typeof windowData === "object" ? windowData[seriesItem.entityId] : null;
-        if (Array.isArray(comparisonPts) && comparisonPts.length >= 3) {
-          const clusters = buildComparisonWindowAnomalyClusters(points, comparisonPts, analysis.anomaly_sensitivity);
-          if (clusters.length > 0) clustersByMethod.comparison_window = clusters;
-        }
+        runMethod("comparison_window", Array.isArray(comparisonPts) && comparisonPts.length >= 3
+          ? buildComparisonWindowAnomalyClusters(points, comparisonPts, analysis.anomaly_sensitivity)
+          : []);
       }
 
       const anomalyClusters = applyAnomalyOverlapMode(clustersByMethod, analysis.anomaly_overlap_mode);
@@ -758,11 +773,6 @@ function computeHistoryAnalysis(payload, postProgress) {
         }
       }
     }
-
-    processed += 1;
-    if (postProgress && total > 0) {
-      postProgress(Math.round((processed / total) * 100));
-    }
   }
 
   return result;
@@ -772,9 +782,15 @@ function computeHistoryAnalysis(payload, postProgress) {
 self.onmessage = (event) => {
   const { id, payload } = event.data || {};
   try {
-    const result = computeHistoryAnalysis(payload, (value) => {
-      // eslint-disable-next-line no-restricted-globals
-      self.postMessage({ id, type: "progress", value });
+    const result = computeHistoryAnalysis(payload, {
+      postMethodResult: (entityId, method, clusters) => {
+        // eslint-disable-next-line no-restricted-globals
+        self.postMessage({ id, type: "anomaly-partial", entityId, method, clusters });
+      },
+      postProgress: (value) => {
+        // eslint-disable-next-line no-restricted-globals
+        self.postMessage({ id, type: "progress", value });
+      },
     });
     // eslint-disable-next-line no-restricted-globals
     self.postMessage({ id, result });
