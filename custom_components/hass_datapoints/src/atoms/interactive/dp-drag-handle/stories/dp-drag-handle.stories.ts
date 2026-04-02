@@ -1,5 +1,5 @@
 import { html } from "lit";
-import "./dp-drag-handle";
+import "../dp-drag-handle";
 
 export default {
   title: "Atoms/Interactive/Drag Handle",

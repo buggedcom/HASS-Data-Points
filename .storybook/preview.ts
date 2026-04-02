@@ -75,8 +75,8 @@ export const globalTypes = {
       title: "HA Theme",
       icon: "paintbrush",
       items: [
-        { value: "dark", title: "HA Dark", right: "🌙" },
         { value: "light", title: "HA Light", right: "☀️" },
+        { value: "dark", title: "HA Dark", right: "🌙" },
       ],
       dynamicTitle: true,
     },
@@ -84,7 +84,7 @@ export const globalTypes = {
 };
 
 const haThemeDecorator = (story: () => unknown, context: { globals?: { haTheme?: string } }) => {
-  const isLight = context?.globals?.haTheme === "light";
+  const isLight = (context?.globals?.haTheme ?? "light") === "light";
   const theme = isLight ? HA_LIGHT_THEME : HA_DARK_THEME;
   const pageBg = isLight ? "#f5f5f5" : "#111111";
   return html`

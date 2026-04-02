@@ -1,5 +1,5 @@
 import { html } from "lit";
-import "./dp-form-group";
+import "../dp-form-group";
 
 export default {
   title: "Atoms/Display/Form Group",

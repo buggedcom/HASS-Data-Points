@@ -1,5 +1,5 @@
 import { html } from "lit";
-import "./dp-section-heading";
+import "../dp-section-heading";
 
 export default {
   title: "Atoms/Display/Section Heading",

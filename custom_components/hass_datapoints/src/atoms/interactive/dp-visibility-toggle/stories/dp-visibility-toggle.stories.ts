@@ -1,5 +1,5 @@
 import { html } from "lit";
-import "./dp-visibility-toggle";
+import "../dp-visibility-toggle";
 
 export default {
   title: "Atoms/Interactive/Visibility Toggle",

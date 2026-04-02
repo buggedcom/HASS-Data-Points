@@ -2417,6 +2417,8 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._onToggleEventVisibility = (ev) => this._handleToggleEventVisibility(ev);
     this._onToggleSeriesVisibility = (ev) => this._handleToggleSeriesVisibility(ev);
     this._onComparisonLoading = (ev) => this._handleComparisonLoading(ev);
+    this._computingEntityIds = new Set();
+    this._analysisProgress = 0;
     this._onAnalysisComputing = (ev) => this._handleAnalysisComputing(ev);
     this._onWindowPointerDown = (ev) => this._handleWindowPointerDown(ev);
     this._onWindowResize = () => {
@@ -3486,24 +3488,24 @@ export class HassRecordsHistoryPanel extends HTMLElement {
   _handleAnalysisComputing(ev) {
     const computing = ev?.detail?.computing === true;
     const entityIds = Array.isArray(ev?.detail?.entityIds) ? ev.detail.entityIds : [];
+    const progress = typeof ev?.detail?.progress === "number" ? ev.detail.progress : (computing ? 0 : 100);
+
     if (computing) {
       for (const id of entityIds) {
-        if (this._analysisSpinnerTimers?.[id]) {
-          clearTimeout(this._analysisSpinnerTimers[id]);
-          delete this._analysisSpinnerTimers[id];
-        }
-        const spinners = this.shadowRoot?.querySelectorAll(`.analysis-computing-spinner[data-analysis-spinner="${CSS.escape(id)}"]`) || [];
-        spinners.forEach((el) => el.classList.add("active"));
+        this._computingEntityIds.add(id);
       }
     } else {
       for (const id of entityIds) {
-        if (this._analysisSpinnerTimers?.[id]) {
-          clearTimeout(this._analysisSpinnerTimers[id]);
-          delete this._analysisSpinnerTimers[id];
-        }
-        const spinners = this.shadowRoot?.querySelectorAll(`.analysis-computing-spinner[data-analysis-spinner="${CSS.escape(id)}"]`) || [];
-        spinners.forEach((el) => el.classList.remove("active"));
+        this._computingEntityIds.delete(id);
       }
+    }
+    this._analysisProgress = progress;
+
+    // Push the updated computing state directly onto the row-list so Lit
+    // re-renders the spinners without a full _renderTargetRows() call.
+    if (this._rowListEl) {
+      this._rowListEl.computingEntityIds = new Set(this._computingEntityIds);
+      this._rowListEl.analysisProgress = this._analysisProgress;
     }
   }
 

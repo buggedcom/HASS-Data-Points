@@ -71,6 +71,8 @@ export class DpTargetRow extends LitElement {
     stateObj: { type: Object, attribute: false },
     hass: { type: Object, attribute: false },
     comparisonWindows: { type: Array, attribute: "comparison-windows" },
+    computing: { type: Boolean, attribute: false },
+    computingProgress: { type: Number, attribute: false },
   };
 
   declare color: string;
@@ -91,6 +93,12 @@ export class DpTargetRow extends LitElement {
 
   declare comparisonWindows: ComparisonWindow[];
 
+  /** Whether this entity's analysis is currently being computed in the worker. */
+  declare computing: boolean;
+
+  /** Analysis computation progress (0–100), shown alongside the spinner. */
+  declare computingProgress: number;
+
   static styles = styles;
 
   constructor() {
@@ -103,6 +111,8 @@ export class DpTargetRow extends LitElement {
     this.stateObj = null;
     this.hass = null;
     this.comparisonWindows = [];
+    this.computing = false;
+    this.computingProgress = 0;
   }
 
   /** Entity ID derived from the HA state object. */
@@ -270,6 +280,8 @@ export class DpTargetRow extends LitElement {
                 .analysis=${a}
                 .entityId=${this._entityId}
                 .comparisonWindows=${this.comparisonWindows}
+                .computing=${this.computing}
+                .computingProgress=${this.computingProgress}
                 @dp-group-analysis-change=${this._onGroupAnalysisChange}
               ></dp-analysis-anomaly-group>
               <dp-analysis-delta-group

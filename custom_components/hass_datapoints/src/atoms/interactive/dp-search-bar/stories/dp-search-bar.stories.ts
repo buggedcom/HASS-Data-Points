@@ -1,5 +1,5 @@
 import { html } from "lit";
-import "./dp-search-bar";
+import "../dp-search-bar";
 
 export default {
   title: "Atoms/Interactive/Search Bar",

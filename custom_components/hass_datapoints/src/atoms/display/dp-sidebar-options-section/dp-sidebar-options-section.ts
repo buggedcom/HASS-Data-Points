@@ -10,13 +10,21 @@ export class DpSidebarOptionsSection extends LitElement {
     open: { type: Boolean },
   };
 
-  title: string = "";
+  declare title: string;
 
-  subtitle: string = "";
+  declare subtitle: string;
 
-  collapsible: boolean = false;
+  declare collapsible: boolean;
 
-  open: boolean = true;
+  declare open: boolean;
+
+  constructor() {
+    super();
+    this.title = "";
+    this.subtitle = "";
+    this.collapsible = false;
+    this.open = true;
+  }
 
   static styles = styles;
 

@@ -1,5 +1,5 @@
 import { html } from "lit";
-import "./dp-legend-item";
+import "../dp-legend-item";
 
 export default {
   title: "Atoms/Interactive/Legend Item",

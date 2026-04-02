@@ -1,5 +1,5 @@
 import { html } from "lit";
-import "./dp-annotation-chip";
+import "../dp-annotation-chip";
 
 export default {
   title: "Atoms/Interactive/Annotation Chip",

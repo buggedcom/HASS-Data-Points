@@ -54,6 +54,8 @@ export class DpAnalysisAnomalyGroup extends LitElement {
     analysis: { type: Object },
     entityId: { type: String, attribute: "entity-id" },
     comparisonWindows: { type: Array, attribute: "comparison-windows" },
+    computing: { type: Boolean, attribute: false },
+    computingProgress: { type: Number, attribute: false },
   };
 
   declare analysis: NormalizedAnalysis;
@@ -62,6 +64,12 @@ export class DpAnalysisAnomalyGroup extends LitElement {
 
   declare comparisonWindows: ComparisonWindow[];
 
+  /** Whether analysis is currently being computed in the worker for this entity. */
+  declare computing: boolean;
+
+  /** Analysis computation progress (0–100). */
+  declare computingProgress: number;
+
   static styles = [sharedStyles, styles];
 
   constructor() {
@@ -69,6 +77,8 @@ export class DpAnalysisAnomalyGroup extends LitElement {
     this.analysis = {} as NormalizedAnalysis;
     this.entityId = "";
     this.comparisonWindows = [];
+    this.computing = false;
+    this.computingProgress = 0;
   }
 
   private _emit(key: string, value: unknown) {
@@ -150,6 +160,12 @@ export class DpAnalysisAnomalyGroup extends LitElement {
         .checked=${a.show_anomalies}
         @dp-group-change=${this._onGroupChange}
       >
+        ${this.computing ? html`
+          <span slot="hint" class="analysis-computing-indicator" aria-label="Computing…">
+            <span class="analysis-computing-spinner"></span>
+            <span class="analysis-computing-progress">${this.computingProgress}%</span>
+          </span>
+        ` : nothing}
         <label class="field">
           <span class="field-label">Sensitivity</span>
           ${this._renderSelect("anomaly_sensitivity", ANALYSIS_ANOMALY_SENSITIVITY_OPTIONS, a.anomaly_sensitivity)}

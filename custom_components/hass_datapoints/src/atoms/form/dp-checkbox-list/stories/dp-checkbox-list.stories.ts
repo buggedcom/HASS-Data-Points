@@ -1,5 +1,5 @@
 import { html } from "lit";
-import "./dp-checkbox-list";
+import "../dp-checkbox-list";
 
 export default {
   title: "Atoms/Form/Checkbox List",

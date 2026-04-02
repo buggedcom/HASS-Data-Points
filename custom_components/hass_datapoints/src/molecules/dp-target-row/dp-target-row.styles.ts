@@ -111,6 +111,7 @@ export const styles = css`
     overflow-wrap: anywhere;
   }
 
+
   .history-target-entity-id {
     margin-top: 4px;
     font-size: 0.74rem;
@@ -392,23 +393,4 @@ export const styles = css`
     cursor: pointer;
   }
 
-  .analysis-computing-spinner {
-    display: none;
-    width: 10px;
-    height: 10px;
-    border: 2px solid var(--divider-color, #ccc);
-    border-top-color: var(--primary-color, #03a9f4);
-    border-radius: 50%;
-    animation: analysis-spin 0.7s linear infinite;
-    flex-shrink: 0;
-    margin-left: 2px;
-  }
-
-  .analysis-computing-spinner.active {
-    display: inline-block;
-  }
-
-  @keyframes analysis-spin {
-    to { transform: rotate(360deg); }
-  }
 `;

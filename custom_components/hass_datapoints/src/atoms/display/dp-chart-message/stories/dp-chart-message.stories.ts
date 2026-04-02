@@ -1,5 +1,5 @@
 import { html } from "lit";
-import "./dp-chart-message";
+import "../dp-chart-message";
 
 export default {
   title: "Atoms/Display/Chart Message",

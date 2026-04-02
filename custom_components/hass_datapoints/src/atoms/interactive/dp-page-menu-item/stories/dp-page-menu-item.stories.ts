@@ -1,5 +1,5 @@
 import { html } from "lit";
-import "./dp-page-menu-item";
+import "../dp-page-menu-item";
 
 export default {
   title: "Atoms/Interactive/Page Menu Item",

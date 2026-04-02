@@ -1,5 +1,5 @@
 import { html } from "lit";
-import "./dp-pagination";
+import "../dp-pagination";
 
 export default {
   title: "Atoms/Interactive/Pagination",
