@@ -341,7 +341,6 @@ export const EmitsReorder = {
     const spy = fn();
     el.addEventListener("dp-rows-reorder", spy);
 
-    const tbody = el.shadowRoot.querySelector(".history-target-table-body") as HTMLElement;
     const rows = el.shadowRoot.querySelectorAll("dp-target-row") as NodeListOf<HTMLElement>;
 
     // Trigger dragstart on row 0 → sets internal _dragSourceIndex = 0

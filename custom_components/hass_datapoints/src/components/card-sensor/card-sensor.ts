@@ -355,7 +355,7 @@ export class HassRecordsSensorCard extends LitElement {
       this._drawChart(histResult || {}, events || [], t0, t1);
     } catch (err) {
       this._loadMessage = "Failed to load data.";
-       
+
       logger.error("[hass-datapoints sensor-card]", err);
     }
   }
@@ -385,7 +385,7 @@ export class HassRecordsSensorCard extends LitElement {
     const allVals: number[] = [];
     for (const s of stateList) {
       const v = parseFloat((s as any).s);
-      if (!isNaN(v)) {
+      if (!Number.isNaN(v)) {
         pts.push([Math.round((s as any).lu * 1000), v]);
         allVals.push(v);
       }

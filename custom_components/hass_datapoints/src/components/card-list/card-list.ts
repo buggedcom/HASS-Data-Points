@@ -305,13 +305,16 @@ export class HassRecordsListCard extends LitElement {
       const end = endTime ? new Date(endTime) : new Date();
       startTime = new Date(end.getTime() - (cfg.hours_to_show as number) * 3600 * 1000).toISOString();
     }
-    const entityIds = cfg.entity
-      ? [cfg.entity as string]
-      : cfg.entities
-        ? (cfg.entities as Array<string | { entity: string }>).map((e) =>
-            typeof e === "string" ? e : e.entity,
-          )
-        : undefined;
+    let entityIds: string[] | undefined;
+    if (cfg.entity) {
+      entityIds = [cfg.entity as string];
+    } else if (cfg.entities) {
+      entityIds = (cfg.entities as Array<string | { entity: string }>).map((e) =>
+        typeof e === "string" ? e : e.entity,
+      );
+    } else {
+      entityIds = undefined;
+    }
 
     const events = await fetchEvents(
       this._hass,

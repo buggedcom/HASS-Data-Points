@@ -153,13 +153,14 @@ export class HassRecordsQuickCard extends LitElement {
     const annotation = (annEl?.value || "").trim();
     if (annotation) data.annotation = annotation;
 
-    const entityIds = cfg.entity
-      ? [cfg.entity]
-      : cfg.entities
-        ? Array.isArray(cfg.entities)
-          ? cfg.entities
-          : [cfg.entities]
-        : [];
+    let entityIds;
+    if (cfg.entity) {
+      entityIds = [cfg.entity];
+    } else if (cfg.entities) {
+      entityIds = Array.isArray(cfg.entities) ? cfg.entities : [cfg.entities];
+    } else {
+      entityIds = [];
+    }
     if (entityIds.length) data.entity_ids = entityIds;
 
     try {

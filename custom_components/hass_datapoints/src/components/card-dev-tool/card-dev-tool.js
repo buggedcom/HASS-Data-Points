@@ -238,7 +238,13 @@ export class HassRecordsDevToolCard extends HTMLElement {
     ep.addEventListener("value-changed", (e) => {
       if (this._suppressEntityChange) return;
       const val = e.detail.value;
-      this._entities = Array.isArray(val) ? val : (val ? [val] : []);
+      if (Array.isArray(val)) {
+        this._entities = val;
+      } else if (val) {
+        this._entities = [val];
+      } else {
+        this._entities = [];
+      }
     });
 
     // Seed with one window
@@ -482,7 +488,11 @@ export class HassRecordsDevToolCard extends HTMLElement {
       sound:            ["sound detected", "quiet"],
     };
     const pair = map[deviceClass];
-    return pair ? (on ? pair[0] : pair[1]) : (on ? "on" : "off");
+    if (pair) {
+      return on ? pair[0] : pair[1];
+    } 
+      return on ? "on" : "off";
+    
   }
 
   // ── Results rendering ──────────────────────────────────────────────────────

@@ -138,8 +138,15 @@ export class HassRecordsActionCard extends LitElement {
 
   private _configTarget(): TargetMap {
     const cfg = this._config;
-    const norm = (v: unknown): string[] =>
-      !v ? [] : Array.isArray(v) ? (v as string[]) : [v as string];
+    const norm = (v: unknown): string[] => {
+      if (!v) {
+        return [];
+      } if (Array.isArray(v)) {
+        return v as string[];
+      } 
+        return [v as string];
+      
+    };
     let raw: Record<string, unknown> | undefined;
     if (cfg.target) raw = cfg.target as Record<string, unknown>;
     else if (cfg.entity) raw = { entity_id: [cfg.entity] };
@@ -164,8 +171,15 @@ export class HassRecordsActionCard extends LitElement {
   }
 
   private _mergeTargets(a: TargetMap, b: Partial<TargetMap>): TargetMap {
-    const norm = (v: unknown): string[] =>
-      !v ? [] : Array.isArray(v) ? (v as string[]) : [v as string];
+    const norm = (v: unknown): string[] => {
+      if (!v) {
+        return [];
+      } if (Array.isArray(v)) {
+        return v as string[];
+      } 
+        return [v as string];
+      
+    };
     const merge = (x: unknown, y: unknown) => [...new Set([...norm(x), ...norm(y)])];
     return {
       entity_id: merge(a.entity_id, b.entity_id),

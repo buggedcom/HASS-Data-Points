@@ -101,7 +101,14 @@ function buildIQRAnomalyClusters(points, anomalySensitivity) {
   if (!Number.isFinite(iqr) || iqr <= 0.000001) {
     return [];
   }
-  const k = anomalySensitivity === "low" ? 3.0 : anomalySensitivity === "high" ? 1.5 : 2.0;
+  let k;
+  if (anomalySensitivity === "low") {
+    k = 3.0;
+  } else if (anomalySensitivity === "high") {
+    k = 1.5;
+  } else {
+    k = 2.0;
+  }
   const lowerFence = q1 - k * iqr;
   const upperFence = q3 + k * iqr;
   const clusters = [];
@@ -192,7 +199,14 @@ function buildPersistenceAnomalyClusters(points, minDurationMs, anomalySensitivi
   if (!Number.isFinite(totalRange) || totalRange <= 0.000001) {
     return [];
   }
-  const flatFraction = anomalySensitivity === "low" ? 0.005 : anomalySensitivity === "high" ? 0.05 : 0.02;
+  let flatFraction;
+  if (anomalySensitivity === "low") {
+    flatFraction = 0.005;
+  } else if (anomalySensitivity === "high") {
+    flatFraction = 0.05;
+  } else {
+    flatFraction = 0.02;
+  }
   const flatThreshold = flatFraction * totalRange;
   const clusters = [];
   let runStart = 0;
@@ -352,6 +366,14 @@ const VALID_ANOMALY_METHODS = ["trend_residual", "rate_of_change", "iqr", "rolli
 function normalizeSeriesAnalysis(analysis) {
   const source = analysis && typeof analysis === "object" ? analysis : {};
   const legacyMethod = VALID_ANOMALY_METHODS.includes(source.anomaly_method) ? source.anomaly_method : null;
+  let anomalyMethods;
+  if (Array.isArray(source.anomaly_methods)) {
+    anomalyMethods = source.anomaly_methods.filter((m) => VALID_ANOMALY_METHODS.includes(m));
+  } else if (legacyMethod) {
+    anomalyMethods = [legacyMethod];
+  } else {
+    anomalyMethods = [];
+  }
   return {
     show_trend_lines: source.show_trend_lines === true,
     trend_method: source.trend_method === "linear_trend" ? "linear_trend" : "rolling_average",
@@ -360,9 +382,7 @@ function normalizeSeriesAnalysis(analysis) {
     show_rate_of_change: source.show_rate_of_change === true,
     rate_window: typeof source.rate_window === "string" && source.rate_window ? source.rate_window : "1h",
     show_anomalies: source.show_anomalies === true,
-    anomaly_methods: Array.isArray(source.anomaly_methods)
-      ? source.anomaly_methods.filter((m) => VALID_ANOMALY_METHODS.includes(m))
-      : (legacyMethod ? [legacyMethod] : []),
+    anomaly_methods: anomalyMethods,
     anomaly_overlap_mode: ["all", "highlight", "only"].includes(source.anomaly_overlap_mode) ? source.anomaly_overlap_mode : "all",
     anomaly_sensitivity: typeof source.anomaly_sensitivity === "string" && source.anomaly_sensitivity ? source.anomaly_sensitivity : "medium",
     anomaly_rate_window: typeof source.anomaly_rate_window === "string" && source.anomaly_rate_window ? source.anomaly_rate_window : "1h",

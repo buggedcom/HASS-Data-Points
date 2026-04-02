@@ -63,7 +63,7 @@ export class DpEditorTextField extends LitElement {
     const value = this.type === "number" ? parseFloat(rawValue) : rawValue;
     this.dispatchEvent(
       new CustomEvent("dp-field-change", {
-        detail: { value: this.type === "number" && isNaN(value as number) ? undefined : value },
+        detail: { value: this.type === "number" && Number.isNaN(value as number) ? undefined : value },
         bubbles: true,
         composed: true,
       }),

@@ -901,7 +901,14 @@ export class HassRecordsHistoryCard extends ChartCardBase {
 
       // Dim the main series when a comparison preview is active, matching the
       // behaviour of the regular (non-split) chart.
-      const mainSeriesOpacity = comparisonPreviewActive ? (hoveringDifferentComparison ? 0.15 : 0.25) : 1;
+      let mainSeriesOpacity;
+      if (!comparisonPreviewActive) {
+        mainSeriesOpacity = 1;
+      } else if (hoveringDifferentComparison) {
+        mainSeriesOpacity = 0.15;
+      } else {
+        mainSeriesOpacity = 0.25;
+      }
 
       if (!rowHideSource) {
         this._drawSeriesLine(
@@ -934,9 +941,14 @@ export class HassRecordsHistoryCard extends ChartCardBase {
         }
         const isHovered = !!hoveredComparisonWindowId && win.id === hoveredComparisonWindowId;
         const isSelected = !!selectedComparisonWindowId && win.id === selectedComparisonWindowId;
-        const compLineOpacity = isHovered
-          ? 0.85
-          : (hoveringDifferentComparison && isSelected ? 0.25 : 0.85);
+        let compLineOpacity;
+        if (isHovered) {
+          compLineOpacity = 0.85;
+        } else if (hoveringDifferentComparison && isSelected) {
+          compLineOpacity = 0.25;
+        } else {
+          compLineOpacity = 0.85;
+        }
         renderer.drawLine(winPts, seriesItem.color, renderT0, renderT1, resolvedAxis.min, resolvedAxis.max, {
           lineOpacity: compLineOpacity,
           lineWidth: hoveringDifferentComparison && isSelected ? 1.25 : undefined,
@@ -1144,7 +1156,14 @@ export class HassRecordsHistoryCard extends ChartCardBase {
         }
         const isHovered = !!hoveredComparisonWindowId && win.id === hoveredComparisonWindowId;
         const isSelected = !!selectedComparisonWindowId && win.id === selectedComparisonWindowId;
-        const hoverOpacity = isHovered ? 0.85 : (hoveringDifferentComparison && isSelected ? 0.25 : 0.85);
+        let hoverOpacity;
+        if (isHovered) {
+          hoverOpacity = 0.85;
+        } else if (hoveringDifferentComparison && isSelected) {
+          hoverOpacity = 0.25;
+        } else {
+          hoverOpacity = 0.85;
+        }
         comparisonHoverSeries.push({
           entityId: `${win.id}:${track.series.entityId}`,
           relatedEntityId: track.series.entityId,
@@ -1740,9 +1759,12 @@ export class HassRecordsHistoryCard extends ChartCardBase {
           return null;
         }
         const rawTimestamp = entry?.start;
-        const timestamp = typeof rawTimestamp === "number"
-          ? (rawTimestamp > 1e11 ? rawTimestamp : rawTimestamp * 1000)
-          : new Date(rawTimestamp).getTime();
+        let timestamp;
+        if (typeof rawTimestamp === "number") {
+          timestamp = rawTimestamp > 1e11 ? rawTimestamp : rawTimestamp * 1000;
+        } else {
+          timestamp = new Date(rawTimestamp).getTime();
+        }
         if (!Number.isFinite(timestamp)) {
           return null;
         }
@@ -2236,7 +2258,14 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     const q3 = sorted[Math.floor(n * 0.75)];
     const iqr = q3 - q1;
     if (!Number.isFinite(iqr) || iqr <= 0.000001) return [];
-    const k = sensitivity === "low" ? 3.0 : sensitivity === "high" ? 1.5 : 2.0;
+    let k;
+    if (sensitivity === "low") {
+      k = 3.0;
+    } else if (sensitivity === "high") {
+      k = 1.5;
+    } else {
+      k = 2.0;
+    }
     const lowerFence = q1 - k * iqr;
     const upperFence = q3 + k * iqr;
     const clusters = [];
@@ -2319,7 +2348,14 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     }
     const totalRange = totalMax - totalMin;
     if (!Number.isFinite(totalRange) || totalRange <= 0.000001) return [];
-    const flatFraction = sensitivity === "low" ? 0.005 : sensitivity === "high" ? 0.05 : 0.02;
+    let flatFraction;
+    if (sensitivity === "low") {
+      flatFraction = 0.005;
+    } else if (sensitivity === "high") {
+      flatFraction = 0.05;
+    } else {
+      flatFraction = 0.02;
+    }
     const flatThreshold = flatFraction * totalRange;
     const clusters = [];
     let runStart = 0;
@@ -3028,7 +3064,14 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     }
 
     const viewportHeight = scrollViewport?.clientHeight || 0;
-    const minChartHeight = series.length ? 280 : (binaryBackgrounds.length ? 100 : 280);
+    let minChartHeight;
+    if (series.length) {
+      minChartHeight = 280;
+    } else if (binaryBackgrounds.length) {
+      minChartHeight = 100;
+    } else {
+      minChartHeight = 280;
+    }
     const availableHeight = this._getAvailableChartHeight(minChartHeight);
     const viewportWidth = Math.max(scrollViewport?.clientWidth || wrap?.clientWidth || 360, 360);
     const totalSpanMs = Math.max(1, t1 - t0);
@@ -3282,7 +3325,14 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       }
     }
     let comparisonOutOfBounds = false;
-    const mainSeriesHoverOpacity = comparisonPreviewActive ? (hoveringDifferentComparison ? 0.15 : 0.25) : 1;
+    let mainSeriesHoverOpacity;
+    if (!comparisonPreviewActive) {
+      mainSeriesHoverOpacity = 1;
+    } else if (hoveringDifferentComparison) {
+      mainSeriesHoverOpacity = 0.15;
+    } else {
+      mainSeriesHoverOpacity = 0.25;
+    }
     const anyHiddenSourceSeries = hiddenSourceEntityIds.size > 0;
     const hoverSeries = visibleSeries
       .filter((seriesItem) => !hiddenSourceEntityIds.has(seriesItem.entityId))
@@ -3437,9 +3487,14 @@ export class HassRecordsHistoryCard extends ChartCardBase {
         const baseColor = seriesSetting.color || COLORS[seriesSettings.indexOf(seriesSetting) % COLORS.length];
         const isHoveredComparison = !!hoveredComparisonWindowId && win.id === hoveredComparisonWindowId;
         const isSelectedComparison = !!selectedComparisonWindowId && win.id === selectedComparisonWindowId;
-        const comparisonLineOpacity = isHoveredComparison
-          ? 0.85
-          : (hoveringDifferentComparison && isSelectedComparison ? 0.25 : 0.85);
+        let comparisonLineOpacity;
+        if (isHoveredComparison) {
+          comparisonLineOpacity = 0.85;
+        } else if (hoveringDifferentComparison && isSelectedComparison) {
+          comparisonLineOpacity = 0.25;
+        } else {
+          comparisonLineOpacity = 0.85;
+        }
         comparisonHoverSeries.push({
           entityId: `${win.id}:${entityId}`,
           relatedEntityId: entityId,
@@ -3821,7 +3876,14 @@ export class HassRecordsHistoryCard extends ChartCardBase {
   }
 
   _handleAnomalyAddAnnotation(regions) {
-    const regionsArray = Array.isArray(regions) ? regions : (regions ? [regions] : []);
+    let regionsArray;
+    if (Array.isArray(regions)) {
+      regionsArray = regions;
+    } else if (regions) {
+      regionsArray = [regions];
+    } else {
+      regionsArray = [];
+    }
     if (!regionsArray.length || !this._hass || this._annotationDialog?.isOpen()) {
       return;
     }
@@ -3984,7 +4046,14 @@ export class HassRecordsHistoryCard extends ChartCardBase {
   }
 
   _buildAnomalyAnnotationPrefill(regions) {
-    const regionsArray = Array.isArray(regions) ? regions : (regions ? [regions] : []);
+    let regionsArray;
+    if (Array.isArray(regions)) {
+      regionsArray = regions;
+    } else if (regions) {
+      regionsArray = [regions];
+    } else {
+      regionsArray = [];
+    }
     const validRegions = regionsArray.filter((r) => r?.cluster?.points?.length > 0);
     if (!validRegions.length) return null;
 
@@ -4050,10 +4119,14 @@ export class HassRecordsHistoryCard extends ChartCardBase {
 
     const isSingleRegion = annotationSections.length === 1;
     // Check if the single cluster was confirmed by multiple methods (overlap "only" mode)
-    const detectedByMethods = !isSingleRegion ? null
-      : (Array.isArray(primaryRegion.cluster?.detectedByMethods) && primaryRegion.cluster.detectedByMethods.length > 1
-        ? primaryRegion.cluster.detectedByMethods
-        : null);
+    let detectedByMethods;
+    if (!isSingleRegion) {
+      detectedByMethods = null;
+    } else if (Array.isArray(primaryRegion.cluster?.detectedByMethods) && primaryRegion.cluster.detectedByMethods.length > 1) {
+      detectedByMethods = primaryRegion.cluster.detectedByMethods;
+    } else {
+      detectedByMethods = null;
+    }
 
     let message;
     let annotation;

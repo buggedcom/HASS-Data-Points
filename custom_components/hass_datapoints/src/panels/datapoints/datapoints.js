@@ -2584,15 +2584,19 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     if (Number.isFinite(sessionState?.content_split_ratio)) {
       this._contentSplitRatio = clampNumber(sessionState.content_split_ratio, 0.25, 0.75);
     }
-    this._datapointScope = datapointsScopeFromUrl === "all"
-      ? "all"
-      : datapointsScopeFromUrl === "hidden"
-        ? "hidden"
-        : (!datapointsScopeFromUrl && sessionState?.datapoint_scope === "all")
-          ? "all"
-          : (!datapointsScopeFromUrl && sessionState?.datapoint_scope === "hidden")
-            ? "hidden"
-            : "linked";
+    let resolvedDatapointScope;
+    if (datapointsScopeFromUrl === "all") {
+      resolvedDatapointScope = "all";
+    } else if (datapointsScopeFromUrl === "hidden") {
+      resolvedDatapointScope = "hidden";
+    } else if (!datapointsScopeFromUrl && sessionState?.datapoint_scope === "all") {
+      resolvedDatapointScope = "all";
+    } else if (!datapointsScopeFromUrl && sessionState?.datapoint_scope === "hidden") {
+      resolvedDatapointScope = "hidden";
+    } else {
+      resolvedDatapointScope = "linked";
+    }
+    this._datapointScope = resolvedDatapointScope;
     this._showChartDatapointIcons = sessionState?.show_chart_datapoint_icons !== false;
     this._showChartDatapointLines = sessionState?.show_chart_datapoint_lines !== false;
     this._showChartTooltips = sessionState?.show_chart_tooltips !== false;
@@ -2686,11 +2690,14 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       label_id: labelFromUrl ? labelFromUrl.split(",") : [],
     });
     const panelTarget = panelConfigTarget(panelCfg);
-    const nextTargetSelection = Object.keys(targetFromUrl).length
-      ? targetFromUrl
-      : !hasTargetInUrl && sessionState?.entities?.length
-        ? normalizeTargetValue(sessionState.target_selection_raw || sessionState.target_selection || { entity_id: sessionState.entities })
-        : panelTarget;
+    let nextTargetSelection;
+    if (Object.keys(targetFromUrl).length) {
+      nextTargetSelection = targetFromUrl;
+    } else if (!hasTargetInUrl && sessionState?.entities?.length) {
+      nextTargetSelection = normalizeTargetValue(sessionState.target_selection_raw || sessionState.target_selection || { entity_id: sessionState.entities });
+    } else {
+      nextTargetSelection = panelTarget;
+    }
     this._targetSelection = nextTargetSelection;
     this._targetSelectionRaw = !hasTargetInUrl && sessionState?.target_selection_raw
       ? sessionState.target_selection_raw
@@ -2952,11 +2959,14 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     return normalizeHistorySeriesRows(rows).map((row) => {
       const queryColor = queryColors[this._seriesColorQueryKey(row.entity_id)];
       const preferredColor = this._preferredSeriesColors?.[row.entity_id];
-      const nextColor = /^#[0-9a-f]{6}$/i.test(queryColor || "")
-        ? queryColor
-        : /^#[0-9a-f]{6}$/i.test(preferredColor || "")
-          ? preferredColor
-          : row.color;
+      let nextColor;
+      if (/^#[0-9a-f]{6}$/i.test(queryColor || "")) {
+        nextColor = queryColor;
+      } else if (/^#[0-9a-f]{6}$/i.test(preferredColor || "")) {
+        nextColor = preferredColor;
+      } else {
+        nextColor = row.color;
+      }
       return nextColor === row.color ? row : { ...row, color: nextColor };
     });
   }
@@ -3009,7 +3019,14 @@ export class HassRecordsHistoryPanel extends HTMLElement {
 
   _renderSidebarOptions() {
     if (!this._sidebarOptionsComp) { return; }
-    const yAxisMode = this._splitChartView ? "split" : this._delinkChartYAxis ? "unique" : "combined";
+    let yAxisMode;
+    if (this._splitChartView) {
+      yAxisMode = "split";
+    } else if (this._delinkChartYAxis) {
+      yAxisMode = "unique";
+    } else {
+      yAxisMode = "combined";
+    }
     this._sidebarOptionsComp.datapointScope = this._datapointScope;
     this._sidebarOptionsComp.showIcons = this._showChartDatapointIcons;
     this._sidebarOptionsComp.showLines = this._showChartDatapointLines;
@@ -3601,7 +3618,14 @@ export class HassRecordsHistoryPanel extends HTMLElement {
   }
 
   _setDatapointScope(scope) {
-    const nextScope = scope === "all" ? "all" : scope === "hidden" ? "hidden" : "linked";
+    let nextScope;
+    if (scope === "all") {
+      nextScope = "all";
+    } else if (scope === "hidden") {
+      nextScope = "hidden";
+    } else {
+      nextScope = "linked";
+    }
     if (nextScope === this._datapointScope) return;
     this._datapointScope = nextScope;
     this._timelineEvents = [];

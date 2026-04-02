@@ -172,11 +172,14 @@ export class HassRecordsStatisticsCard extends ChartCardBase {
         for (const entry of entries) {
           const v = entry[statType];
           if (v === null || v === undefined) continue;
-              const tRaw = entry.start;
+          const tRaw = entry.start;
           // HA returns start as Unix seconds (float). Guard against ms values (> 1e11).
-          const t = typeof tRaw === "number"
-            ? (tRaw > 1e11 ? tRaw : tRaw * 1000)
-            : new Date(tRaw).getTime();
+          let t;
+          if (typeof tRaw === "number") {
+            t = tRaw > 1e11 ? tRaw : tRaw * 1000;
+          } else {
+            t = new Date(tRaw).getTime();
+          }
           pts.push([t, v]);
           allVals.push(v);
         }

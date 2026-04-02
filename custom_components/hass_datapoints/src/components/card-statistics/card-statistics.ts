@@ -316,10 +316,12 @@ export class HassRecordsStatisticsCard extends LitElement {
           const v = (entry as any)[statType];
           if (v === null || v === undefined) continue;
           const tRaw = (entry as any).start;
-          const t =
-            typeof tRaw === "number"
-              ? tRaw > 1e11 ? tRaw : tRaw * 1000
-              : new Date(tRaw).getTime();
+          let t: number;
+          if (typeof tRaw === "number") {
+            t = tRaw > 1e11 ? tRaw : tRaw * 1000;
+          } else {
+            t = new Date(tRaw).getTime();
+          }
           pts.push([t, v]);
           allVals.push(v as number);
         }
@@ -365,7 +367,12 @@ export class HassRecordsStatisticsCard extends LitElement {
           const v = (entry as any)[stype];
           if (v === null || v === undefined) continue;
           const tRaw = (entry as any).start;
-          const t = typeof tRaw === "number" ? (tRaw > 1e11 ? tRaw : tRaw * 1000) : new Date(tRaw).getTime();
+          let t: number;
+          if (typeof tRaw === "number") {
+            t = tRaw > 1e11 ? tRaw : tRaw * 1000;
+          } else {
+            t = new Date(tRaw).getTime();
+          }
           pts.push([t, v]);
         }
         return pts;

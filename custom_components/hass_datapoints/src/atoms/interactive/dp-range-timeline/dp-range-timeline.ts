@@ -999,7 +999,13 @@ export class DpRangeTimeline extends LitElement {
     this._timelinePointerStartX = ev.clientX;
     this._timelinePointerStartScrollLeft = this._rangeScrollViewportEl.scrollLeft;
     this._timelinePointerStartTimestamp = (isSelectionDrag || isIntervalSelect) ? this._timestampFromClientX(ev.clientX) : null;
-    this._timelinePointerMode = isSelectionDrag ? "selection" : isIntervalSelect ? "interval_select" : "pan";
+    if (isSelectionDrag) {
+      this._timelinePointerMode = "selection";
+    } else if (isIntervalSelect) {
+      this._timelinePointerMode = "interval_select";
+    } else {
+      this._timelinePointerMode = "pan";
+    }
     this._timelineDragStartRangeMs = this._draftStartTime?.getTime() ?? this.startTime?.getTime() ?? 0;
     this._timelineDragEndRangeMs = this._draftEndTime?.getTime() ?? this.endTime?.getTime() ?? 0;
     this._timelinePointerMoved = false;

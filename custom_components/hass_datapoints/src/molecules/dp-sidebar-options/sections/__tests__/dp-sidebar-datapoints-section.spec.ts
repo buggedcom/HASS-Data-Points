@@ -13,12 +13,6 @@ function createElement(props: Record<string, unknown> = {}) {
 
 type RadioGroupEl = HTMLElement & { name: string; value: string };
 
-function getRadioGroup(el: ReturnType<typeof createElement>): RadioGroupEl {
-  const section = el.shadowRoot!.querySelector("dp-sidebar-options-section")!;
-  return section.shadowRoot!.querySelector("dp-radio-group") as RadioGroupEl
-    ?? el.shadowRoot!.querySelector("dp-radio-group") as RadioGroupEl;
-}
-
 describe("dp-sidebar-datapoints-section", () => {
   let el: ReturnType<typeof createElement>;
 
