@@ -30,7 +30,7 @@
 | `hass-datapoints-action-card` | Full form — message, annotation, icon picker, colour picker, entity selector. |
 | `hass-datapoints-quick-card` | One-field card — type a note and press Record. Icon and colour are configurable. |
 | `hass-datapoints-sensor-card` | Sensor value + line chart with annotation icons placed directly on the data line. |
-| `hass-datapoints-history-card` | History line chart with coloured annotation markers at event timestamps. |
+| `hass-datapoints-history-card` | Multi-series history chart with advanced analysis, annotations, and split-series view. |
 | `hass-datapoints-statistics-card` | Same as history but powered by HA long-term statistics. |
 | `hass-datapoints-list-card` | Activity / logbook-style datagrid — browse, search, edit and delete all recorded events. |
 
@@ -293,7 +293,7 @@ page_size: 20
 
 ### History card
 
-History line chart overlaying coloured annotation markers at event timestamps.
+Multi-series history chart with annotation markers, a full per-series analysis panel, split-series view, and date window comparison tabs.
 
 ```yaml
 type: custom:hass-datapoints-history-card
@@ -312,12 +312,62 @@ entities:
 hours_to_show: 48
 ```
 
+#### Basic configuration
+
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | `title` | string | — | Card heading (hidden if omitted) |
 | `entity` | entity ID | — | Single entity to chart |
 | `entities` | list | — | Multiple entities to chart |
 | `hours_to_show` | number | `24` | Time range in hours |
+
+#### Annotation markers on the chart
+
+Each recorded event is drawn as a **coloured icon circle** on the chart at the event's timestamp. The marker is placed:
+
+- **On the series line** — if the event is linked (`entity_ids`) to a target in the chart, the marker is interpolated to sit directly on that target's data line at the correct Y value.
+- **On the x-axis baseline** — if the event is linked to an entity that is not one of the chart's targets, the marker appears at the bottom of the chart rather than on an unrelated line.
+- **On any available line** (fallback) — if the event has no `entity_ids` (a global event), it is placed on the nearest series with data at that timestamp.
+
+Hovering a marker shows a **tooltip** with the event message, annotation text, icon, colour swatch, and timestamp. Clicking the marker navigates to the event history.
+
+#### Datapoint scope
+
+The sidebar **Datapoints** section controls which annotation markers appear:
+
+| Scope | Behaviour |
+|-------|-----------|
+| `linked` (default) | Only events linked to the currently selected targets are shown. |
+| `all` | All recorded events are shown regardless of their entity associations. |
+| `hidden` | No annotation markers are shown. |
+
+#### Per-series analysis
+
+Each series (target) has an expandable **analysis panel** opened by clicking the chevron button on its row. Analysis settings are per-series and persist in the card config.
+
+| Feature | Description |
+|---------|-------------|
+| **Trend lines** | Overlay a trend line using linear, polynomial, or moving-average regression. |
+| **Summary statistics** | Draw horizontal min, mean, and max lines across the visible time range. Optional gradient shading fills the band between each extreme and the mean. Shading is rendered in both combined and **split-series** view. |
+| **Rate of change** | Overlay the first derivative of the series on a secondary Y axis. |
+| **Threshold analysis** | Draw a horizontal threshold line; optionally shade the area above or below it. |
+| **Anomaly detection** | Highlight statistically unusual clusters using configurable sensitivity. |
+| **Delta / comparison** | Compare the series against a named date window (see below) as a delta or offset line. |
+| **Hide source series** | When analysis overlays are active you can hide the raw data line to reduce clutter. |
+
+The **Copy to all targets** button in each analysis panel copies that series' settings to every other target in one click. The button is hidden when only one target exists, and disabled when all targets already share identical analysis settings.
+
+#### Split-series view
+
+Setting **Y-axis mode** to **Split** (`y_axis_mode: split`) renders each series in its own chart row with an independent Y axis. All analysis overlays — including trend lines, summary stat lines, min/max/mean gradient shading, anomaly clusters, and threshold lines — are drawn per-row in split view.
+
+#### Date window comparison tabs
+
+Named date windows appear as tabs above the chart. Each window saves a start/end range that you can instantly preview or jump to. The dialog for creating and editing date windows **shakes** if you submit it without filling in required fields.
+
+#### Drag-to-reorder targets
+
+Target rows in the sidebar can be dragged to reorder them. During a drag the **cursor changes to a grabbing hand** globally, overriding the browser's default drag cursor so the interaction remains clear even when the drag ghost image overlaps the pointer.
 
 ---
 
@@ -355,9 +405,14 @@ When an event is recorded:
 3. It is written to the HA logbook (with icon, icon colour, message, and entity link).
 4. Chart cards fetch events via WebSocket when they render, placing markers at the correct timestamps.
 
-**History / Statistics cards** draw a dashed vertical line and coloured diamond marker at each event timestamp. Hovering shows a tooltip with the message and annotation.
+**History / Statistics cards** place coloured icon circles on the chart at each event timestamp. The Y position is:
+- Interpolated on the matching series' data line if the event is linked to that target.
+- Placed at the x-axis baseline if the event is linked to a different (non-charted) entity.
+- Interpolated on the nearest available series if the event has no entity associations (global event).
 
-**Sensor card** places coloured icon circles **directly on the sensor data line** at the interpolated Y position — no vertical dotted line. Each circle shows the event's MDI icon. Icon colour automatically contrasts with the circle background using the WCAG relative-luminance formula (so a bright green background gets a black icon, a dark blue gets white).
+Hovering an icon marker shows a **tooltip** with the full event details.
+
+**Sensor card** places coloured icon circles **directly on the sensor data line** at the interpolated Y position — no vertical dotted line. Each circle shows the event's MDI icon.
 
 **Icon contrast** — all icon circles across all cards use the WCAG luminance formula to choose black or white for the icon colour, ensuring readability against any background colour.
 
@@ -401,13 +456,23 @@ pnpm hooks:install          # install the pre-commit hook
 
 ### Building the frontend
 
-Source files live in `custom_components/hass_datapoints/src/`. The build script concatenates them into a single IIFE in `hass-datapoints-cards.js`:
+Source files live in `custom_components/hass_datapoints/src/`. The build script bundles them into a single IIFE in `hass-datapoints-cards.js`:
 
 ```bash
 pnpm build
 ```
 
 A **pre-commit hook** runs automatically — whenever you stage changes to any `src/` file, the hook rebuilds `hass-datapoints-cards.js` and stages it so your commit always includes an up-to-date build.
+
+### Storybook
+
+The component library has a Storybook instance covering every atom and molecule. Stories live in a `stories/` subdirectory colocated with each component.
+
+```bash
+pnpm storybook          # start the dev server on http://localhost:6006
+```
+
+All atoms and molecules have stories covering their main variants and interactive states. The preview runs with the **HA Dark** theme and stub implementations of HA custom elements (`ha-textfield`, `ha-switch`, `ha-selector`, etc.) so components render correctly without a live HA instance.
 
 ### Remote Home Assistant development
 
@@ -450,21 +515,48 @@ Notes:
 
 ```
 src/
-  constants.js        – shared constants (DOMAIN, COLORS, AMBER)
-  helpers.js          – fetchEvents, deleteEvent, updateEvent, fmtTime, contrastColor, …
-  entity-name.js      – entityName() helper
-  chart-renderer.js   – canvas drawing primitives
-  chart-utils.js      – shared chart shell / tooltip helpers
-  card-action.js      – hass-datapoints-action-card
-  card-quick.js       – hass-datapoints-quick-card
-  card-chart-base.js  – ChartCardBase (shared base for history + statistics)
-  card-history.js     – hass-datapoints-history-card
-  card-statistics.js  – hass-datapoints-statistics-card
-  card-sensor.js      – hass-datapoints-sensor-card
-  card-list.js        – hass-datapoints-list-card
-  card-editors.js     – visual editors for all 6 cards
-  register.js         – customElements.define + window.customCards registration
+  atoms/
+    display/          – dp-chart-message, dp-color-swatch, dp-empty-state,
+                        dp-form-group, dp-loading-indicator, dp-section-heading,
+                        dp-sidebar-options-section, dp-sidebar-section-header
+    form/             – dp-analysis-checkbox, dp-checkbox-list, dp-color-picker-field,
+                        dp-date-time-input, dp-editor-entity-list, dp-editor-entity-picker,
+                        dp-editor-icon-picker, dp-editor-select, dp-editor-switch,
+                        dp-editor-text-field, dp-entity-chip, dp-inline-select,
+                        dp-number-input, dp-radio-group
+    interactive/      – dp-annotation-chip, dp-drag-handle, dp-legend-item,
+                        dp-page-menu-item, dp-pagination, dp-range-timeline,
+                        dp-resizable-panes, dp-search-bar, dp-toggle-switch,
+                        dp-visibility-toggle
+  molecules/
+    dp-analysis-*/    – per-feature analysis option groups (trend, summary, rate, …)
+    dp-target-row/    – single series row with analysis panel
+    dp-target-row-list/ – drag-to-reorder list of target rows
+    dp-date-window-dialog/ – named date range dialog
+    dp-sidebar-options/    – collapsible sidebar option groups
+    dp-chart-legend/       – interactive chart legend
+    …
+  components/
+    card-history/     – hass-datapoints-history-card
+    card-statistics/  – hass-datapoints-statistics-card
+    card-sensor/      – hass-datapoints-sensor-card
+    card-action/      – hass-datapoints-action-card
+    card-quick/       – hass-datapoints-quick-card
+    card-list/        – hass-datapoints-list-card
+    annotation-dialog/ – annotation creation dialog controller
+  panels/
+    datapoints/       – sidebar panel (target rows, collapsed summary, comparison windows)
+  lib/
+    chart-renderer.js – canvas drawing primitives (lines, bands, annotations, …)
+    chart-utils.js    – tooltip helpers, annotation tooltip rendering
+    shared.js         – shared helpers (entityName, esc, contrastColor, …)
+    logger.js         – scoped logger
 ```
+
+Each atom and molecule has:
+- A TypeScript (or JS) component file
+- A `stories/` subdirectory with Storybook CSF stories
+- An optional `__tests__/` subdirectory with Vitest unit tests
 
 ### CI
 
