@@ -71,7 +71,7 @@ export class ChartRenderer {
     return axes;
   }
 
-  _formatAxisTick(v, unit = "") {
+  _formatAxisTick(v) {
     const numeric =
       Math.abs(v) >= 1000
         ? `${(v / 1000).toFixed(1).replace(/\.0$/, "")}k`
@@ -468,7 +468,7 @@ export class ChartRenderer {
 
   drawBars(points, color, t0, t1, vMin, vMax, options = {}) {
     if (!points.length) return;
-    const { ctx, pad } = this;
+    const { ctx } = this;
     const fillAlpha = Number.isFinite(options.fillAlpha) ? options.fillAlpha : 0.78;
     const widthFactor = Number.isFinite(options.widthFactor) ? options.widthFactor : 0.72;
     const baselineY = this.yOf(Math.max(vMin, 0), vMin, vMax);

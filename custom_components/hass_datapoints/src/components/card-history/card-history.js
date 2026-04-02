@@ -58,6 +58,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     this._legendWrapRows = false;
     this._adjustComparisonAxisScale = false;
     this._drawRequestId = 0;
+    this._analysisCache = null;
     this._onWindowKeyDown = (ev) => this._handleWindowKeyDown(ev);
     this._onChartScroll = () => this._handleChartScroll();
     this._creatingContextAnnotation = false;
@@ -2691,6 +2692,45 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     });
   }
 
+  /**
+   * Build a lightweight string key that captures all inputs that affect the analysis result.
+   * Used to skip the worker when the data and settings haven't changed (e.g. on zoom/pan).
+   */
+  _buildAnalysisCacheKey(visibleSeries, selectedComparisonSeriesMap, analysisMap, allComparisonWindowsData, t0, t1) {
+    const ANALYSIS_FIELDS = [
+      "show_trend_lines", "trend_method", "trend_window",
+      "show_rate_of_change", "rate_window",
+      "show_delta_analysis",
+      "show_summary_stats",
+      "show_anomalies", "anomaly_methods", "anomaly_sensitivity", "anomaly_overlap_mode",
+      "anomaly_rate_window", "anomaly_zscore_window", "anomaly_persistence_window",
+      "anomaly_comparison_window_id",
+    ];
+    const seriesPart = visibleSeries.map((s) => {
+      const a = analysisMap.get(s.entityId) || {};
+      const first = s.pts[0]?.[0] ?? 0;
+      const last = s.pts[s.pts.length - 1]?.[0] ?? 0;
+      const aKey = ANALYSIS_FIELDS.map((f) => JSON.stringify(a[f])).join(",");
+      return `${s.entityId}:${s.pts.length}:${first}:${last}:${aKey}`;
+    }).join("|");
+
+    const cmpPart = Array.from(selectedComparisonSeriesMap.values()).map((s) => {
+      const first = s.pts[0]?.[0] ?? 0;
+      const last = s.pts[s.pts.length - 1]?.[0] ?? 0;
+      return `${s.entityId}:${s.pts.length}:${first}:${last}`;
+    }).sort().join("|");
+
+    const allCmpPart = Object.entries(allComparisonWindowsData).flatMap(([windowId, entities]) =>
+      Object.entries(entities).map(([entityId, pts]) => {
+        const first = pts[0]?.[0] ?? 0;
+        const last = pts[pts.length - 1]?.[0] ?? 0;
+        return `${windowId}:${entityId}:${pts.length}:${first}:${last}`;
+      })
+    ).sort().join("|");
+
+    return `${t0}:${t1}|${seriesPart}|${cmpPart}|${allCmpPart}`;
+  }
+
   _buildHistoryAnalysisPayload(visibleSeries, selectedComparisonSeriesMap, analysisMap, hasSelectedComparisonWindow, allComparisonWindowsData = {}) {
     return {
       series: visibleSeries.map((seriesItem) => ({
@@ -2707,11 +2747,21 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     };
   }
 
-  async _computeHistoryAnalysis(visibleSeries, selectedComparisonSeriesMap, analysisMap, hasSelectedComparisonWindow, allComparisonWindowsData = {}) {
+  async _computeHistoryAnalysis(visibleSeries, selectedComparisonSeriesMap, analysisMap, hasSelectedComparisonWindow, allComparisonWindowsData = {}, t0 = 0, t1 = 0) {
     // Abort any in-flight worker computation from a previous (now stale) draw request.
     // This prevents the chart from hanging while waiting for a worker result that will
     // be discarded anyway once the stale-request check runs.
     terminateHistoryAnalysisWorker();
+
+    // Return the cached result if the data and analysis settings are identical to the
+    // previous call — this is the common case when zooming or panning (viewport changes
+    // but the underlying series data and settings do not).
+    const cacheKey = this._buildAnalysisCacheKey(
+      visibleSeries, selectedComparisonSeriesMap, analysisMap, allComparisonWindowsData, t0, t1,
+    );
+    if (this._analysisCache?.key === cacheKey) {
+      return this._analysisCache.result;
+    }
 
     const payload = this._buildHistoryAnalysisPayload(
       visibleSeries,
@@ -2721,7 +2771,9 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       allComparisonWindowsData,
     );
     try {
-      return await computeHistoryAnalysisInWorker(payload);
+      const result = await computeHistoryAnalysisInWorker(payload);
+      this._analysisCache = { key: cacheKey, result };
+      return result;
     } catch (error) {
       // If this draw was superseded by a newer one, return a safe empty result quickly.
       // The stale-request check in _drawChart will discard it before any rendering occurs.
@@ -3024,6 +3076,8 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       analysisMap,
       hasSelectedComparisonWindow,
       allComparisonWindowsData,
+      t0,
+      t1,
     );
     if (analysisEntityIds.length) {
       this.dispatchEvent(new CustomEvent("hass-datapoints-analysis-computing", {

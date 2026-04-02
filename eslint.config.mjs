@@ -91,6 +91,7 @@ export default [
       "custom_components/hass_datapoints/src/**/*.{spec,test}.{js,ts}",
       "custom_components/hass_datapoints/src/**/stories/**/*.{js,ts}",
       "custom_components/hass_datapoints/src/**/*.stories.{js,ts}",
+      "custom_components/hass_datapoints/src/test-support/**/*.{js,ts}",
     ],
     rules: {
       "@typescript-eslint/no-explicit-any": "off",

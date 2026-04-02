@@ -15,6 +15,32 @@ import "@/molecules/dp-chart-shell/dp-chart-shell";
 import "@/molecules/dp-chart-legend/dp-chart-legend";
 import { logger } from "@/lib/logger.js";
 
+/** A single entry returned by the HA statistics API. */
+interface StatsEntry {
+  start: number | string;
+  [key: string]: number | string | null | undefined;
+}
+
+/** Minimal entity-like object used by _statIds resolution. */
+interface EntityLike {
+  entity?: string;
+  entity_id?: string;
+  statistics_id?: string;
+}
+
+/** Minimal interface covering the ChartRenderer methods used in this file. */
+interface RendererLike {
+  labelColor: string;
+  _activeAxes?: unknown[];
+  clear(): void;
+  drawGrid(...args: unknown[]): void;
+  drawLine(...args: unknown[]): void;
+  drawBlip(cx: number, cy: number, color: string): void;
+  xOf(t: number, t0: number, t1: number): number;
+  yOf(v: number, min: number, max: number): number;
+  drawAnnotations(events: unknown[], t0: number, t1: number): void;
+}
+
 /**
  * hass-datapoints-statistics-card – Statistics chart with annotation markers.
  * LitElement migration — canvas rendering stays imperative.
@@ -110,6 +136,7 @@ export class HassRecordsStatisticsCard extends LitElement {
   }
 
   connectedCallback() {
+    // eslint-disable-next-line wc/guard-super-call
     super.connectedCallback();
     if (this._hass && !this._hasStartedInitialLoad) {
       this._hasStartedInitialLoad = true;
@@ -118,6 +145,7 @@ export class HassRecordsStatisticsCard extends LitElement {
   }
 
   disconnectedCallback() {
+    // eslint-disable-next-line wc/guard-super-call
     super.disconnectedCallback();
     if (this._unsubscribe) { this._unsubscribe(); this._unsubscribe = null; }
     if (this._windowListener) {
@@ -152,14 +180,15 @@ export class HassRecordsStatisticsCard extends LitElement {
   private get _statIds(): string[] {
     const ids: string[] = [];
     const addId = (value: unknown) => {
+      const obj = value as EntityLike;
       const resolved =
         typeof value === "string"
           ? value
-          : (value as any)?.entity ||
-            (value as any)?.entity_id ||
-            (value as any)?.statistics_id ||
+          : obj?.entity ||
+            obj?.entity_id ||
+            obj?.statistics_id ||
             "";
-      if (resolved) ids.push(resolved as string);
+      if (resolved) { ids.push(resolved as string); }
     };
     addId(this._config.entity);
     ((this._config.entities as unknown[]) || []).forEach(addId);
@@ -268,7 +297,7 @@ export class HassRecordsStatisticsCard extends LitElement {
     const wrap = this.shadowRoot?.querySelector(".chart-wrap");
     if (!canvas || !wrap) return;
     const { w, h } = setupCanvas(canvas, wrap, 220) as { w: number; h: number };
-    const renderer = new (ChartRenderer as any)(canvas, w, h);
+    const renderer = new (ChartRenderer as unknown as new (c: HTMLCanvasElement, w: number, h: number) => RendererLike)(canvas, w, h);
     renderer.labelColor = resolveChartLabelColor(this);
     renderer.clear();
     renderer.drawGrid(
@@ -300,7 +329,7 @@ export class HassRecordsStatisticsCard extends LitElement {
     if (!canvas || !wrap) return;
 
     const { w, h } = setupCanvas(canvas, wrap, 220) as { w: number; h: number };
-    const renderer = new (ChartRenderer as any)(canvas, w, h);
+    const renderer = new (ChartRenderer as unknown as new (c: HTMLCanvasElement, w: number, h: number) => RendererLike)(canvas, w, h);
     renderer.labelColor = resolveChartLabelColor(this);
     renderer.clear();
 
@@ -313,16 +342,17 @@ export class HassRecordsStatisticsCard extends LitElement {
       for (const statType of (this._config.stat_types as string[])) {
         const pts: [number, number][] = [];
         for (const entry of entries) {
-          const v = (entry as any)[statType];
-          if (v === null || v === undefined) continue;
-          const tRaw = (entry as any).start;
+          const typedEntry = entry as StatsEntry;
+          const v = typedEntry[statType];
+          if (v === null || v === undefined) { continue; }
+          const tRaw = typedEntry.start;
           let t: number;
           if (typeof tRaw === "number") {
             t = tRaw > 1e11 ? tRaw : tRaw * 1000;
           } else {
-            t = new Date(tRaw).getTime();
+            t = new Date(tRaw as string).getTime();
           }
-          pts.push([t, v]);
+          pts.push([t, v as number]);
           allVals.push(v as number);
         }
         if (pts.length) {
@@ -364,16 +394,17 @@ export class HassRecordsStatisticsCard extends LitElement {
         const pts: [number, number][] = [];
         const [sid, stype] = s.entityId.split(":");
         for (const entry of statsResult[sid] || []) {
-          const v = (entry as any)[stype];
-          if (v === null || v === undefined) continue;
-          const tRaw = (entry as any).start;
+          const typedEntry = entry as StatsEntry;
+          const v = typedEntry[stype];
+          if (v === null || v === undefined) { continue; }
+          const tRaw = typedEntry.start;
           let t: number;
           if (typeof tRaw === "number") {
             t = tRaw > 1e11 ? tRaw : tRaw * 1000;
           } else {
-            t = new Date(tRaw).getTime();
+            t = new Date(tRaw as string).getTime();
           }
-          pts.push([t, v]);
+          pts.push([t, v as number]);
         }
         return pts;
       })();
@@ -384,9 +415,9 @@ export class HassRecordsStatisticsCard extends LitElement {
         const lastPt = seriesPts[seriesPts.length - 1];
         const prev = this._previousSeriesEndpoints.get(s.entityId);
         if (prev && (lastPt[0] !== prev.t || lastPt[1] !== prev.v)) {
-          const cx = (renderer as any).xOf(lastPt[0], t0, t1);
-          const cy = (renderer as any).yOf(lastPt[1], chartMin, chartMax);
-          (renderer as any).drawBlip(cx, cy, s.color);
+          const cx = renderer.xOf(lastPt[0], t0, t1);
+          const cy = renderer.yOf(lastPt[1], chartMin, chartMax);
+          renderer.drawBlip(cx, cy, s.color);
         }
         this._previousSeriesEndpoints.set(s.entityId, { t: lastPt[0], v: lastPt[1] });
       }

@@ -24,6 +24,33 @@ interface EventRecordFull extends EventRecord {
   chart_unit?: string;
 }
 
+/** Minimal shape of a HA history state entry returned by history/history_during_period. */
+interface HassStateEntry {
+  s: string;
+  lu: number;
+  entity_id?: string;
+}
+
+/** Typed shape of a renderer hit returned by drawAnnotations*. */
+interface ChartHit {
+  x: number;
+  y: number;
+  value: number;
+  event: EventRecordFull;
+}
+
+/** Minimal interface covering the ChartRenderer methods used in this file. */
+interface RendererLike {
+  pad: { top: number; right: number; bottom: number; left: number };
+  clear(): void;
+  drawLine(...args: unknown[]): void;
+  drawAnnotationsOnLine(events: unknown[], series: unknown[], t0: number, t1: number, min: number, max: number): ChartHit[];
+  drawAnnotationLinesOnLine(events: unknown[], series: unknown[], t0: number, t1: number, min: number, max: number): ChartHit[];
+  xOf(t: number, t0: number, t1: number): number;
+  yOf(v: number, min: number, max: number): number;
+  drawBlip(cx: number, cy: number, color: string): void;
+}
+
 /**
  * hass-datapoints-sensor-card – Sensor card with inline annotation icons.
  * Canvas rendering stays imperative; annotation list and state display are reactive.
@@ -224,11 +251,13 @@ export class HassRecordsSensorCard extends LitElement {
   }
 
   connectedCallback() {
+    // eslint-disable-next-line wc/guard-super-call
     super.connectedCallback();
     if (this._initialized && this._hass) this._load();
   }
 
   disconnectedCallback() {
+    // eslint-disable-next-line wc/guard-super-call
     super.disconnectedCallback();
     if (this._unsubscribe) { this._unsubscribe(); this._unsubscribe = null; }
     if (this._resizeObserver) { this._resizeObserver.disconnect(); this._resizeObserver = null; }
@@ -312,19 +341,26 @@ export class HassRecordsSensorCard extends LitElement {
     );
   }
 
-  private _getHistoryStatesForEntity(entityId: string, histResult: unknown): unknown[] {
-    if (!histResult) return [];
-    const r = histResult as any;
-    if (Array.isArray(r?.[entityId])) return r[entityId];
+  private _getHistoryStatesForEntity(entityId: string, histResult: unknown): HassStateEntry[] {
+    if (!histResult) { return []; }
+    const r = histResult as Record<string, unknown>;
+    if (Array.isArray(r[entityId])) { return r[entityId] as HassStateEntry[]; }
     if (Array.isArray(r)) {
-      if (Array.isArray(r[0])) return r[0] || [];
-      if (r.every((e: unknown) => e && typeof e === "object" && !Array.isArray(e))) {
-        return r.filter((e: any) => e.entity_id === entityId);
+      const rArr = r as unknown[];
+      if (Array.isArray(rArr[0])) { return (rArr[0] as HassStateEntry[]) || []; }
+      if (rArr.every((e: unknown) => e && typeof e === "object" && !Array.isArray(e))) {
+        return (rArr as HassStateEntry[]).filter((e) => e.entity_id === entityId);
       }
     }
-    if (r && typeof r === "object") {
-      if (Array.isArray(r.result?.[entityId])) return r.result[entityId];
-      if (Array.isArray(r.result?.[0])) return r.result[0] || [];
+    const rObj = histResult as { result?: Record<string, unknown> | unknown[][] };
+    if (rObj && typeof rObj === "object") {
+      const result = rObj.result;
+      if (Array.isArray((result as Record<string, unknown>)?.[entityId])) {
+        return (result as Record<string, HassStateEntry[]>)[entityId];
+      }
+      if (Array.isArray((result as unknown[])?.[0])) {
+        return ((result as unknown[])[0] as HassStateEntry[]) || [];
+      }
     }
     return [];
   }
@@ -371,7 +407,7 @@ export class HassRecordsSensorCard extends LitElement {
     if (!canvas || !wrap) return;
 
     const { w, h } = setupCanvas(canvas, wrap, 220) as { w: number; h: number };
-    const renderer = new (ChartRenderer as any)(canvas, w, h);
+    const renderer = new (ChartRenderer as unknown as new (c: HTMLCanvasElement, w: number, h: number) => RendererLike)(canvas, w, h);
     const topPadPx = Math.max(6, Math.round(h * 0.05));
     renderer.pad = { top: topPadPx, right: 0, bottom: 0, left: 0 };
     renderer.clear();
@@ -384,9 +420,9 @@ export class HassRecordsSensorCard extends LitElement {
     const pts: [number, number][] = [];
     const allVals: number[] = [];
     for (const s of stateList) {
-      const v = parseFloat((s as any).s);
+      const v = parseFloat(s.s);
       if (!Number.isNaN(v)) {
-        pts.push([Math.round((s as any).lu * 1000), v]);
+        pts.push([Math.round(s.lu * 1000), v]);
         allVals.push(v);
       }
     }
@@ -416,21 +452,21 @@ export class HassRecordsSensorCard extends LitElement {
         const lastPt = s.pts[s.pts.length - 1];
         const prev = this._previousSeriesEndpoints.get(s.entityId);
         if (prev && (lastPt[0] !== prev.t || lastPt[1] !== prev.v)) {
-          const cx = (renderer as any).xOf(lastPt[0], t0, t1);
-          const cy = (renderer as any).yOf(lastPt[1], chartMin, chartMax);
-          (renderer as any).drawBlip(cx, cy, s.color);
+          const cx = renderer.xOf(lastPt[0], t0, t1);
+          const cy = renderer.yOf(lastPt[1], chartMin, chartMax);
+          renderer.drawBlip(cx, cy, s.color);
         }
         this._previousSeriesEndpoints.set(s.entityId, { t: lastPt[0], v: lastPt[1] });
       }
     }
 
-    const visibleEvents = this._visibleEvents(events);
-    const annotationStyle = (this._config.annotation_style as string) === "line" ? "line" : "circle";
-    const hits: unknown[] = annotationStyle === "line"
+
+
+    const hits: ChartHit[] = annotationStyle === "line"
       ? renderer.drawAnnotationLinesOnLine(visibleEvents, series, t0, t1, chartMin, chartMax)
       : renderer.drawAnnotationsOnLine(visibleEvents, series, t0, t1, chartMin, chartMax);
 
-    const hitValues = new Map((hits as any[]).map((h) => [h.event.id, h.value]));
+    const hitValues = new Map(hits.map((hitEntry) => [hitEntry.event.id, hitEntry.value]));
     const enrichedEvents: EventRecordFull[] = visibleEvents.map((ev) => ({
       ...ev,
       chart_value: hitValues.get(ev.id),
@@ -442,7 +478,7 @@ export class HassRecordsSensorCard extends LitElement {
     if (overlay) {
       overlay.innerHTML = "";
       if (annotationStyle === "circle") {
-        for (const hit of hits as any[]) {
+        for (const hit of hits) {
           const bgColor = hit.event.color || "#03a9f4";
           const el = document.createElement("div");
           el.className = "ann-icon";
@@ -468,10 +504,10 @@ export class HassRecordsSensorCard extends LitElement {
       const rect = canvas.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
-      const best = (hits as any[]).reduce((closest: any, hit: any) => {
+      const best = hits.reduce((closest: { hit: ChartHit; dist: number } | null, hit: ChartHit) => {
         const dist = Math.hypot(hit.x - x, hit.y - y);
-        if (dist > 18) return closest;
-        if (!closest || dist < closest.dist) return { hit, dist };
+        if (dist > 18) { return closest; }
+        if (!closest || dist < closest.dist) { return { hit, dist }; }
         return closest;
       }, null);
       if (best) { e.preventDefault(); e.stopPropagation(); this._navigateToEventHistory(best.hit.event); }

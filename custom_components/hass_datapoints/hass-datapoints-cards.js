@@ -491,7 +491,7 @@
       this._activeAxes = axes;
       return axes;
     }
-    _formatAxisTick(v2, unit = "") {
+    _formatAxisTick(v2) {
       const numeric = Math.abs(v2) >= 1e3 ? `${(v2 / 1e3).toFixed(1).replace(/\.0$/, "")}k` : v2.toFixed(v2 % 1 !== 0 ? 1 : 0);
       return numeric;
     }
@@ -854,7 +854,7 @@
     }
     drawBars(points, color, t0, t1, vMin, vMax, options = {}) {
       if (!points.length) return;
-      const { ctx, pad } = this;
+      const { ctx } = this;
       const fillAlpha = Number.isFinite(options.fillAlpha) ? options.fillAlpha : 0.78;
       const widthFactor = Number.isFinite(options.widthFactor) ? options.widthFactor : 0.72;
       const baselineY = this.yOf(Math.max(vMin, 0), vMin, vMax);
@@ -2515,56 +2515,6 @@ ${s2.description}`).join("\n\n");
     tooltip.style.left = `${left}px`;
     tooltip.style.top = `${top}px`;
   }
-  function positionSecondaryTooltip(tooltip, anchorTooltip, bounds = null) {
-    if (!tooltip || !anchorTooltip) {
-      return;
-    }
-    tooltip.style.display = "block";
-    const anchorRect = anchorTooltip.getBoundingClientRect();
-    const tipRect = tooltip.getBoundingClientRect();
-    const gap = 10;
-    const minLeft = Number.isFinite(bounds?.left) ? bounds.left : gap;
-    const maxLeft = Number.isFinite(bounds?.right) ? bounds.right : window.innerWidth - gap;
-    const minTop = Number.isFinite(bounds?.top) ? bounds.top : gap;
-    const maxTop = Number.isFinite(bounds?.bottom) ? bounds.bottom : window.innerHeight - gap;
-    let left = anchorRect.right + gap;
-    if (left + tipRect.width > maxLeft) {
-      left = anchorRect.left - tipRect.width - gap;
-    }
-    let top = anchorRect.top;
-    if (top + tipRect.height > maxTop) {
-      top = Math.max(minTop, maxTop - tipRect.height);
-    }
-    left = Math.min(Math.max(left, minLeft), Math.max(minLeft, maxLeft - tipRect.width));
-    top = Math.min(Math.max(top, minTop), Math.max(minTop, maxTop - tipRect.height));
-    tooltip.style.left = `${left}px`;
-    tooltip.style.top = `${top}px`;
-  }
-  function positionTooltipBelow(tooltip, anchorTooltip, bounds = null) {
-    if (!tooltip || !anchorTooltip) {
-      return;
-    }
-    tooltip.style.display = "block";
-    const anchorRect = anchorTooltip.getBoundingClientRect();
-    const tipRect = tooltip.getBoundingClientRect();
-    const gap = 8;
-    const minLeft = Number.isFinite(bounds?.left) ? bounds.left : gap;
-    const maxLeft = Number.isFinite(bounds?.right) ? bounds.right : window.innerWidth - gap;
-    const minTop = Number.isFinite(bounds?.top) ? bounds.top : gap;
-    const maxTop = Number.isFinite(bounds?.bottom) ? bounds.bottom : window.innerHeight - gap;
-    let left = anchorRect.left;
-    if (left + tipRect.width > maxLeft) {
-      left = Math.max(minLeft, maxLeft - tipRect.width);
-    }
-    let top = anchorRect.bottom + gap;
-    if (top + tipRect.height > maxTop) {
-      top = Math.max(minTop, anchorRect.top - tipRect.height - gap);
-    }
-    left = Math.min(Math.max(left, minLeft), Math.max(minLeft, maxLeft - tipRect.width));
-    top = Math.min(Math.max(top, minTop), Math.max(minTop, maxTop - tipRect.height));
-    tooltip.style.left = `${left}px`;
-    tooltip.style.top = `${top}px`;
-  }
   function getAnnotationTooltipContainer(card) {
     if (!card?.shadowRoot) {
       return null;
@@ -2577,51 +2527,6 @@ ${s2.description}`).join("\n\n");
       return;
     }
     container.innerHTML = "";
-  }
-  function buildAnnotationTooltip(card, event) {
-    const tooltip = document.createElement("div");
-    tooltip.className = "tooltip secondary annotation-tooltip";
-    const hasValue = event?.chart_value != null && event.chart_value !== "";
-    const valueMarkup = hasValue ? `<div class="tt-value">${esc$1(formatTooltipValue(event.chart_value, event.chart_unit))}</div>` : "";
-    const message = event?.message || "Data point";
-    const annotation = event?.annotation && event.annotation !== event.message ? event.annotation : "";
-    const relatedMarkup = buildTooltipRelatedChips(card?._hass, event);
-    tooltip.innerHTML = `
-    <div class="tt-time">${esc$1(fmtDateTime$1(event.timestamp))}</div>
-    ${valueMarkup}
-    <div class="tt-message-row">
-      <span class="tt-dot" style="background:${esc$1(event?.color || "#03a9f4")}"></span>
-      <span class="tt-message">${esc$1(message)}</span>
-    </div>
-    <div class="tt-annotation" style="display:${annotation ? "block" : "none"}">${esc$1(annotation)}</div>
-    <div class="tt-entities" style="display:${relatedMarkup ? "flex" : "none"}">${relatedMarkup}</div>
-  `;
-    return tooltip;
-  }
-  function renderAnnotationTooltips(card, hover, anchorTooltip, bounds = null) {
-    const container = getAnnotationTooltipContainer(card);
-    if (!container) {
-      return [];
-    }
-    clearAnnotationTooltips(card);
-    const annotationEvents = Array.isArray(hover?.events) ? hover.events : [];
-    if (!annotationEvents.length) {
-      return [];
-    }
-    const renderedTooltips = [];
-    let anchorEl = anchorTooltip;
-    for (const event of annotationEvents) {
-      const tooltip = buildAnnotationTooltip(card, event);
-      container.appendChild(tooltip);
-      if (renderedTooltips.length === 0) {
-        positionSecondaryTooltip(tooltip, anchorEl, bounds);
-      } else {
-        positionTooltipBelow(tooltip, anchorEl, bounds);
-      }
-      renderedTooltips.push(tooltip);
-      anchorEl = tooltip;
-    }
-    return renderedTooltips;
   }
   function showTooltip(card, canvas, renderer, event, clientX, clientY) {
     const tooltip = card.shadowRoot.getElementById("tooltip");
@@ -2953,13 +2858,6 @@ ${s2.description}`).join("\n\n");
       top: chartBounds.top + 8,
       bottom: chartBounds.bottom - 8
     } : null);
-    const annotationTooltips = renderAnnotationTooltips(card, hover, tooltip, chartBounds ? {
-      left: chartBounds.left + 8,
-      right: chartBounds.right - 8,
-      top: chartBounds.top + 8,
-      bottom: chartBounds.bottom - 8
-    } : null);
-    annotationTooltips[annotationTooltips.length - 1] || tooltip;
     if (anomalyTooltip && hover.anomalyRegions?.length > 0) {
       positionAnomalyTooltip(anomalyTooltip, clientX, clientY, tooltip, chartBounds ? {
         left: chartBounds.left + 8,
@@ -8261,6 +8159,7 @@ ${s2.description}`).join("\n\n");
       this._legendWrapRows = false;
       this._adjustComparisonAxisScale = false;
       this._drawRequestId = 0;
+      this._analysisCache = null;
       this._onWindowKeyDown = (ev) => this._handleWindowKeyDown(ev);
       this._onChartScroll = () => this._handleChartScroll();
       this._creatingContextAnnotation = false;
@@ -8878,11 +8777,11 @@ ${s2.description}`).join("\n\n");
     }
     _filterEvents(events) {
       const query = String(this._config?.message_filter || "").trim().toLowerCase();
-      const visibleEvents = events.filter((event) => !this._hiddenEventIds.has(event?.id));
+      const visibleEvents2 = events.filter((event) => !this._hiddenEventIds.has(event?.id));
       if (!query) {
-        return visibleEvents;
+        return visibleEvents2;
       }
-      return visibleEvents.filter((event) => {
+      return visibleEvents2.filter((event) => {
         const haystack = [
           event?.message || "",
           event?.annotation || "",
@@ -10665,6 +10564,49 @@ ${s2.description}`).join("\n\n");
         this._setChartMessage("Failed to render chart.");
       });
     }
+    /**
+     * Build a lightweight string key that captures all inputs that affect the analysis result.
+     * Used to skip the worker when the data and settings haven't changed (e.g. on zoom/pan).
+     */
+    _buildAnalysisCacheKey(visibleSeries, selectedComparisonSeriesMap, analysisMap, allComparisonWindowsData, t0, t1) {
+      const ANALYSIS_FIELDS = [
+        "show_trend_lines",
+        "trend_method",
+        "trend_window",
+        "show_rate_of_change",
+        "rate_window",
+        "show_delta_analysis",
+        "show_summary_stats",
+        "show_anomalies",
+        "anomaly_methods",
+        "anomaly_sensitivity",
+        "anomaly_overlap_mode",
+        "anomaly_rate_window",
+        "anomaly_zscore_window",
+        "anomaly_persistence_window",
+        "anomaly_comparison_window_id"
+      ];
+      const seriesPart = visibleSeries.map((s2) => {
+        const a2 = analysisMap.get(s2.entityId) || {};
+        const first = s2.pts[0]?.[0] ?? 0;
+        const last = s2.pts[s2.pts.length - 1]?.[0] ?? 0;
+        const aKey = ANALYSIS_FIELDS.map((f2) => JSON.stringify(a2[f2])).join(",");
+        return `${s2.entityId}:${s2.pts.length}:${first}:${last}:${aKey}`;
+      }).join("|");
+      const cmpPart = Array.from(selectedComparisonSeriesMap.values()).map((s2) => {
+        const first = s2.pts[0]?.[0] ?? 0;
+        const last = s2.pts[s2.pts.length - 1]?.[0] ?? 0;
+        return `${s2.entityId}:${s2.pts.length}:${first}:${last}`;
+      }).sort().join("|");
+      const allCmpPart = Object.entries(allComparisonWindowsData).flatMap(
+        ([windowId, entities]) => Object.entries(entities).map(([entityId, pts]) => {
+          const first = pts[0]?.[0] ?? 0;
+          const last = pts[pts.length - 1]?.[0] ?? 0;
+          return `${windowId}:${entityId}:${pts.length}:${first}:${last}`;
+        })
+      ).sort().join("|");
+      return `${t0}:${t1}|${seriesPart}|${cmpPart}|${allCmpPart}`;
+    }
     _buildHistoryAnalysisPayload(visibleSeries, selectedComparisonSeriesMap, analysisMap, hasSelectedComparisonWindow, allComparisonWindowsData = {}) {
       return {
         series: visibleSeries.map((seriesItem) => ({
@@ -10680,8 +10622,19 @@ ${s2.description}`).join("\n\n");
         allComparisonWindowsData
       };
     }
-    async _computeHistoryAnalysis(visibleSeries, selectedComparisonSeriesMap, analysisMap, hasSelectedComparisonWindow, allComparisonWindowsData = {}) {
+    async _computeHistoryAnalysis(visibleSeries, selectedComparisonSeriesMap, analysisMap, hasSelectedComparisonWindow, allComparisonWindowsData = {}, t0 = 0, t1 = 0) {
       terminateHistoryAnalysisWorker();
+      const cacheKey = this._buildAnalysisCacheKey(
+        visibleSeries,
+        selectedComparisonSeriesMap,
+        analysisMap,
+        allComparisonWindowsData,
+        t0,
+        t1
+      );
+      if (this._analysisCache?.key === cacheKey) {
+        return this._analysisCache.result;
+      }
       const payload = this._buildHistoryAnalysisPayload(
         visibleSeries,
         selectedComparisonSeriesMap,
@@ -10690,7 +10643,9 @@ ${s2.description}`).join("\n\n");
         allComparisonWindowsData
       );
       try {
-        return await computeHistoryAnalysisInWorker(payload);
+        const result = await computeHistoryAnalysisInWorker(payload);
+        this._analysisCache = { key: cacheKey, result };
+        return result;
       } catch (error) {
         if (error?.message?.startsWith("Aborted")) {
           return { trendSeries: [], rateSeries: [], deltaSeries: [], summaryStats: [], anomalySeries: [] };
@@ -10954,7 +10909,9 @@ ${s2.description}`).join("\n\n");
         selectedComparisonSeriesMap,
         analysisMap,
         hasSelectedComparisonWindow,
-        allComparisonWindowsData
+        allComparisonWindowsData,
+        t0,
+        t1
       );
       if (analysisEntityIds.length) {
         this.dispatchEvent(new CustomEvent("hass-datapoints-analysis-computing", {
@@ -11884,11 +11841,11 @@ ${s2.description}`).join("\n\n");
       if (!Array.isArray(seriesItem?.anomalyClusters) || seriesItem.anomalyClusters.length === 0) {
         return [];
       }
-      const visibleEvents = Array.isArray(events) ? events : [];
-      if (visibleEvents.length === 0) {
+      const visibleEvents2 = Array.isArray(events) ? events : [];
+      if (visibleEvents2.length === 0) {
         return seriesItem.anomalyClusters;
       }
-      return seriesItem.anomalyClusters.filter((cluster) => !visibleEvents.some((event) => this._eventMatchesAnomalyCluster(event, seriesItem.entityId, cluster)));
+      return seriesItem.anomalyClusters.filter((cluster) => !visibleEvents2.some((event) => this._eventMatchesAnomalyCluster(event, seriesItem.entityId, cluster)));
     }
     _buildAnomalyAnnotationPrefill(regions) {
       let regionsArray;
@@ -13760,18 +13717,31 @@ ${s2.description}`).join("\n\n");
       );
     }
     _getHistoryStatesForEntity(entityId, histResult) {
-      if (!histResult) return [];
+      if (!histResult) {
+        return [];
+      }
       const r2 = histResult;
-      if (Array.isArray(r2?.[entityId])) return r2[entityId];
+      if (Array.isArray(r2[entityId])) {
+        return r2[entityId];
+      }
       if (Array.isArray(r2)) {
-        if (Array.isArray(r2[0])) return r2[0] || [];
-        if (r2.every((e2) => e2 && typeof e2 === "object" && !Array.isArray(e2))) {
-          return r2.filter((e2) => e2.entity_id === entityId);
+        const rArr = r2;
+        if (Array.isArray(rArr[0])) {
+          return rArr[0] || [];
+        }
+        if (rArr.every((e2) => e2 && typeof e2 === "object" && !Array.isArray(e2))) {
+          return rArr.filter((e2) => e2.entity_id === entityId);
         }
       }
-      if (r2 && typeof r2 === "object") {
-        if (Array.isArray(r2.result?.[entityId])) return r2.result[entityId];
-        if (Array.isArray(r2.result?.[0])) return r2.result[0] || [];
+      const rObj = histResult;
+      if (rObj && typeof rObj === "object") {
+        const result = rObj.result;
+        if (Array.isArray(result?.[entityId])) {
+          return result[entityId];
+        }
+        if (Array.isArray(result?.[0])) {
+          return result[0] || [];
+        }
       }
       return [];
     }
@@ -13855,10 +13825,8 @@ ${s2.description}`).join("\n\n");
           this._previousSeriesEndpoints.set(s2.entityId, { t: lastPt[0], v: lastPt[1] });
         }
       }
-      const visibleEvents = this._visibleEvents(events);
-      const annotationStyle = this._config.annotation_style === "line" ? "line" : "circle";
       const hits = annotationStyle === "line" ? renderer.drawAnnotationLinesOnLine(visibleEvents, series, t0, t1, chartMin, chartMax) : renderer.drawAnnotationsOnLine(visibleEvents, series, t0, t1, chartMin, chartMax);
-      const hitValues = new Map(hits.map((h22) => [h22.event.id, h22.value]));
+      const hitValues = new Map(hits.map((hitEntry) => [hitEntry.event.id, hitEntry.value]));
       const enrichedEvents = visibleEvents.map((ev) => ({
         ...ev,
         chart_value: hitValues.get(ev.id),
@@ -13894,8 +13862,12 @@ ${s2.description}`).join("\n\n");
         const y2 = e2.clientY - rect.top;
         const best = hits.reduce((closest, hit) => {
           const dist = Math.hypot(hit.x - x2, hit.y - y2);
-          if (dist > 18) return closest;
-          if (!closest || dist < closest.dist) return { hit, dist };
+          if (dist > 18) {
+            return closest;
+          }
+          if (!closest || dist < closest.dist) {
+            return { hit, dist };
+          }
           return closest;
         }, null);
         if (best) {

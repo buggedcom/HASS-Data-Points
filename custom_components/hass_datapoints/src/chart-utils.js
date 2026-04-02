@@ -1412,43 +1412,43 @@ function resolveTooltipSeriesLabel(entry) {
   if (entry.comparison === true) {
     if (entry.grouped === true) {
       return entry.windowLabel || "Date window";
-    } 
+    }
       return `${entry.windowLabel || "Date window"}: ${entry.label || ""}`;
-    
+
   } if (entry.trend === true) {
     if (isSubordinate) {
       return "Trend";
-    } 
+    }
       return `Trend: ${entry.baseLabel || entry.label || ""}`;
-    
+
   } if (entry.rate === true) {
     if (isSubordinate) {
       return "Rate";
-    } 
+    }
       return `Rate: ${entry.baseLabel || entry.label || ""}`;
-    
+
   } if (entry.delta === true) {
     if (isSubordinate) {
       return "Delta";
-    } 
+    }
       return `Delta: ${entry.baseLabel || entry.label || ""}`;
-    
+
   } if (entry.summary === true) {
     const summaryLabel = String(entry.summaryType || "").toUpperCase();
     if (isSubordinate) {
       return summaryLabel;
-    } 
+    }
       return `${summaryLabel}: ${entry.baseLabel || entry.label || ""}`;
-    
+
   } if (entry.threshold === true) {
     if (isSubordinate) {
       return "Threshold";
-    } 
+    }
       return `Threshold: ${entry.baseLabel || entry.label || ""}`;
-    
-  } 
+
+  }
     return entry.label || "";
-  
+
 }
 
 export function showLineChartTooltip(card, hover, clientX, clientY) {
@@ -1711,13 +1711,6 @@ export function showLineChartTooltip(card, hover, clientX, clientY) {
     top: chartBounds.top + 8,
     bottom: chartBounds.bottom - 8,
   } : null);
-  const annotationTooltips = renderAnnotationTooltips(card, hover, tooltip, chartBounds ? {
-    left: chartBounds.left + 8,
-    right: chartBounds.right - 8,
-    top: chartBounds.top + 8,
-    bottom: chartBounds.bottom - 8,
-  } : null);
-  const secondaryAnchor = annotationTooltips[annotationTooltips.length - 1] || tooltip;
   if (anomalyTooltip && hover.anomalyRegions?.length > 0) {
     positionAnomalyTooltip(anomalyTooltip, clientX, clientY, tooltip, chartBounds ? {
       left: chartBounds.left + 8,

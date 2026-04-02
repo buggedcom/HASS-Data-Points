@@ -1,6 +1,5 @@
 import { LitElement, html, css, type TemplateResult } from "lit";
 import {
-  buildDataPointsHistoryPath,
   confirmDestructiveAction,
   contrastColor,
   deleteEvent,
@@ -61,6 +60,8 @@ export class HassRecordsListCard extends LitElement {
   declare _editColor: string;
 
   private _pageSize = 15;
+
+  private _configKey = "";
 
   private _unsubscribe: (() => void) | null = null;
 
@@ -252,8 +253,8 @@ export class HassRecordsListCard extends LitElement {
 
   setConfig(config: CardConfig) {
     const nextKey = JSON.stringify(config);
-    if ((this as any)._configKey === nextKey) return;
-    (this as any)._configKey = nextKey;
+    if (this._configKey === nextKey) { return; }
+    this._configKey = nextKey;
     this._config = config || {};
     if (config.page_size) this._pageSize = config.page_size as number;
     if (this._hass) this._load();
@@ -269,12 +270,14 @@ export class HassRecordsListCard extends LitElement {
   }
 
   connectedCallback() {
+    // eslint-disable-next-line wc/guard-super-call
     super.connectedCallback();
     this._windowListener = () => this._load();
     window.addEventListener("hass-datapoints-event-recorded", this._windowListener);
   }
 
   disconnectedCallback() {
+    // eslint-disable-next-line wc/guard-super-call
     super.disconnectedCallback();
     if (this._unsubscribe) {
       this._unsubscribe();
@@ -444,9 +447,9 @@ export class HassRecordsListCard extends LitElement {
   }
 
   private _fireMoreInfo(entityId: string) {
-    const e = new Event("hass-more-info", { bubbles: true, composed: true }) as any;
-    e.detail = { entityId };
-    this.dispatchEvent(e);
+    this.dispatchEvent(
+      new CustomEvent("hass-more-info", { bubbles: true, composed: true, detail: { entityId } }),
+    );
   }
 
   private _renderEventItem(ev: EventRecordFull): TemplateResult {
@@ -467,10 +470,6 @@ export class HassRecordsListCard extends LitElement {
     const isHidden = ((cfg.hidden_event_ids as string[]) || []).includes(ev.id);
     const visibilityIcon = isHidden ? "mdi:eye" : "mdi:eye-off";
     const visibilityLabel = isHidden ? "Show chart marker" : "Hide chart marker";
-    const historyHref = buildDataPointsHistoryPath(
-      { entity_id: ev.entity_ids || [], device_id: ev.device_ids || [], area_id: ev.area_ids || [], label_id: ev.label_ids || [] },
-      { start_time: this._getNavigationContextForEvent(ev)?.start_time, end_time: this._getNavigationContextForEvent(ev)?.end_time, datapoint_scope: cfg.datapoint_scope },
-    ) as string;
     const isEditing = this._editingId === ev.id;
     const isSimple = !annText && !hasRelated;
 
