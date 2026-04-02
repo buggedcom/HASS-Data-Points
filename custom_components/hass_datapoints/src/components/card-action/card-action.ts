@@ -241,7 +241,7 @@ export class HassRecordsActionCard extends LitElement {
       this._feedbackClass = "ok";
       this._feedbackText = "Event recorded!";
       this._feedbackVisible = true;
-      setTimeout(() => (this._feedbackVisible = false), 3000);
+      setTimeout(() => { this._feedbackVisible = false; }, 3000);
     } catch (e: unknown) {
       const err = e as Error;
       this._feedbackClass = "err";

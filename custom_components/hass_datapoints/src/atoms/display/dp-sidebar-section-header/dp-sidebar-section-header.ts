@@ -8,13 +8,13 @@ export class DpSidebarSectionHeader extends LitElement {
     open: { type: Boolean },
   };
 
-  declare title: string;
+  title: string = "";
 
-  declare subtitle: string;
+  subtitle: string = "";
 
-  declare collapsible: boolean;
+  collapsible: boolean = false;
 
-  declare open: boolean;
+  open: boolean = true;
 
   static styles = css`
     :host { display: block; }
@@ -65,14 +65,6 @@ export class DpSidebarSectionHeader extends LitElement {
       transform: rotate(180deg);
     }
   `;
-
-  constructor() {
-    super();
-    this.title = "";
-    this.subtitle = "";
-    this.collapsible = false;
-    this.open = true;
-  }
 
   private _onToggle() {
     this.dispatchEvent(new CustomEvent("dp-section-toggle", { bubbles: true, composed: true }));

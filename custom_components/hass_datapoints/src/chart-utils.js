@@ -1443,12 +1443,12 @@ function resolveTooltipSeriesLabel(entry) {
   } if (entry.threshold === true) {
     if (isSubordinate) {
       return "Threshold";
-    } else {
+    } 
       return `Threshold: ${entry.baseLabel || entry.label || ""}`;
-    }
-  } else {
+    
+  } 
     return entry.label || "";
-  }
+  
 }
 
 export function showLineChartTooltip(card, hover, clientX, clientY) {

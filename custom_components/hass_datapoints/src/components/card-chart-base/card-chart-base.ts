@@ -85,6 +85,7 @@ export abstract class ChartCardBase extends LitElement {
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
   connectedCallback(): void {
+    // eslint-disable-next-line wc/guard-super-call
     super.connectedCallback();
     // Re-added to DOM after removal: kick off a load if we have hass.
     if (this._hass && !this._hasStartedInitialLoad) {
@@ -104,6 +105,7 @@ export abstract class ChartCardBase extends LitElement {
   }
 
   disconnectedCallback(): void {
+    // eslint-disable-next-line wc/guard-super-call
     super.disconnectedCallback();
     this._cleanup();
   }

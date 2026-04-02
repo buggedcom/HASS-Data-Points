@@ -2705,12 +2705,10 @@ ${s2.description}`).join("\n\n");
     if (entry.threshold === true) {
       if (isSubordinate) {
         return "Threshold";
-      } else {
-        return `Threshold: ${entry.baseLabel || entry.label || ""}`;
       }
-    } else {
-      return entry.label || "";
+      return `Threshold: ${entry.baseLabel || entry.label || ""}`;
     }
+    return entry.label || "";
   }
   function showLineChartTooltip(card, hover, clientX, clientY) {
     const tooltip = card.shadowRoot.getElementById("tooltip");
@@ -6878,15 +6876,15 @@ ${s2.description}`).join("\n\n");
           } else if (domain === "sensor") {
             const num = parseFloat(cur);
             const prevNum = prevVal != null ? parseFloat(prevVal) : NaN;
-            if (isNaN(num)) continue;
-            if (!isNaN(prevNum) && Math.abs(num - prevNum) < 0.5) continue;
+            if (Number.isNaN(num)) continue;
+            if (!Number.isNaN(prevNum) && Math.abs(num - prevNum) < 0.5) continue;
             message = `${friendlyName}: ${cur}${unit}`;
             icon = "mdi:gauge";
             color = "#2196f3";
           } else if (domain === "input_number" || domain === "number") {
             const num = parseFloat(cur);
             const prevNum = prevVal != null ? parseFloat(prevVal) : NaN;
-            if (isNaN(num) || !isNaN(prevNum) && num === prevNum) continue;
+            if (Number.isNaN(num) || !Number.isNaN(prevNum) && num === prevNum) continue;
             message = `${friendlyName}: → ${cur}${unit}`;
             icon = "mdi:numeric";
             color = "#9c27b0";
@@ -8224,6 +8222,18 @@ ${s2.description}`).join("\n\n");
       workerInstance = null;
     });
     return workerInstance;
+  }
+  function terminateHistoryAnalysisWorker() {
+    if (pending.size > 0) {
+      pending.forEach(({ reject }) => {
+        reject(new Error("Aborted: superseded by newer analysis"));
+      });
+      pending.clear();
+    }
+    if (workerInstance) {
+      workerInstance.terminate();
+      workerInstance = null;
+    }
   }
   function computeHistoryAnalysisInWorker(payload) {
     const worker = getHistoryAnalysisWorker();
@@ -10671,6 +10681,7 @@ ${s2.description}`).join("\n\n");
       };
     }
     async _computeHistoryAnalysis(visibleSeries, selectedComparisonSeriesMap, analysisMap, hasSelectedComparisonWindow, allComparisonWindowsData = {}) {
+      terminateHistoryAnalysisWorker();
       const payload = this._buildHistoryAnalysisPayload(
         visibleSeries,
         selectedComparisonSeriesMap,
@@ -10681,87 +10692,62 @@ ${s2.description}`).join("\n\n");
       try {
         return await computeHistoryAnalysisInWorker(payload);
       } catch (error) {
+        if (error?.message?.startsWith("Aborted")) {
+          return { trendSeries: [], rateSeries: [], deltaSeries: [], summaryStats: [], anomalySeries: [] };
+        }
         console.warn("[hass-datapoints history-card] analysis worker fallback", {
           message: error?.message || String(error)
         });
-        return {
-          trendSeries: visibleSeries.map((seriesItem) => {
-            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
-            if (analysis.show_trend_lines !== true) {
-              return null;
-            }
-            return {
-              entityId: seriesItem.entityId,
-              pts: this._buildTrendPoints(seriesItem.pts, analysis.trend_method, analysis.trend_window)
-            };
-          }).filter((seriesItem) => Array.isArray(seriesItem.pts) && seriesItem.pts.length >= 2).filter(Boolean),
-          rateSeries: visibleSeries.map((seriesItem) => {
-            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
-            if (analysis.show_rate_of_change !== true) {
-              return null;
-            }
-            return {
-              entityId: seriesItem.entityId,
-              pts: this._buildRateOfChangePoints(seriesItem.pts, analysis.rate_window)
-            };
-          }).filter((seriesItem) => Array.isArray(seriesItem.pts) && seriesItem.pts.length >= 2).filter(Boolean),
-          deltaSeries: visibleSeries.map((seriesItem) => {
-            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
-            if (!(analysis.show_delta_analysis === true && hasSelectedComparisonWindow === true)) {
-              return null;
-            }
-            const comparisonSeries = selectedComparisonSeriesMap.get(seriesItem.entityId);
-            return {
-              entityId: seriesItem.entityId,
-              pts: comparisonSeries ? this._buildDeltaPoints(seriesItem.pts, comparisonSeries.pts) : []
-            };
-          }).filter((seriesItem) => Array.isArray(seriesItem.pts) && seriesItem.pts.length >= 2).filter(Boolean),
-          summaryStats: visibleSeries.map((seriesItem) => {
-            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
-            if (analysis.show_summary_stats !== true) {
-              return null;
-            }
-            return {
-              entityId: seriesItem.entityId,
-              ...this._buildSummaryStats(seriesItem.pts)
-            };
-          }).filter((entry) => entry && Number.isFinite(entry.min) && Number.isFinite(entry.max) && Number.isFinite(entry.mean)),
-          anomalySeries: visibleSeries.map((seriesItem) => {
-            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
-            if (analysis.show_anomalies !== true) return null;
-            const clustersByMethod = {};
-            const methods = analysis.anomaly_methods;
-            if (methods.includes("trend_residual")) {
-              const c2 = this._buildAnomalyClusters(seriesItem.pts, analysis.trend_method, analysis.trend_window, analysis.anomaly_sensitivity);
-              if (c2.length > 0) clustersByMethod.trend_residual = c2;
-            }
-            if (methods.includes("rate_of_change")) {
-              const c2 = this._buildRateOfChangeAnomalyClusters(seriesItem.pts, analysis.anomaly_rate_window, analysis.anomaly_sensitivity);
-              if (c2.length > 0) clustersByMethod.rate_of_change = c2;
-            }
-            if (methods.includes("iqr")) {
-              const c2 = this._buildIQRAnomalyClusters(seriesItem.pts, analysis.anomaly_sensitivity);
-              if (c2.length > 0) clustersByMethod.iqr = c2;
-            }
-            if (methods.includes("rolling_zscore")) {
-              const c2 = this._buildRollingZScoreAnomalyClusters(seriesItem.pts, analysis.anomaly_zscore_window, analysis.anomaly_sensitivity);
-              if (c2.length > 0) clustersByMethod.rolling_zscore = c2;
-            }
-            if (methods.includes("persistence")) {
-              const c2 = this._buildPersistenceAnomalyClusters(seriesItem.pts, analysis.anomaly_persistence_window, analysis.anomaly_sensitivity);
-              if (c2.length > 0) clustersByMethod.persistence = c2;
-            }
-            if (methods.includes("comparison_window") && analysis.anomaly_comparison_window_id) {
-              const compPts = allComparisonWindowsData[analysis.anomaly_comparison_window_id]?.[seriesItem.entityId];
-              if (Array.isArray(compPts) && compPts.length >= 3) {
-                const c2 = this._buildComparisonWindowAnomalyClusters(seriesItem.pts, compPts, analysis.anomaly_sensitivity);
-                if (c2.length > 0) clustersByMethod.comparison_window = c2;
+        try {
+          return {
+            trendSeries: visibleSeries.map((seriesItem) => {
+              const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
+              if (analysis.show_trend_lines !== true) {
+                return null;
               }
-            }
-            const anomalyClusters = this._applyAnomalyOverlapMode(clustersByMethod, analysis.anomaly_overlap_mode);
-            return anomalyClusters.length > 0 ? { entityId: seriesItem.entityId, anomalyClusters } : null;
-          }).filter(Boolean)
-        };
+              return {
+                entityId: seriesItem.entityId,
+                pts: this._buildTrendPoints(seriesItem.pts, analysis.trend_method, analysis.trend_window)
+              };
+            }).filter(Boolean).filter((seriesItem) => Array.isArray(seriesItem.pts) && seriesItem.pts.length >= 2),
+            rateSeries: visibleSeries.map((seriesItem) => {
+              const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
+              if (analysis.show_rate_of_change !== true) {
+                return null;
+              }
+              return {
+                entityId: seriesItem.entityId,
+                pts: this._buildRateOfChangePoints(seriesItem.pts, analysis.rate_window)
+              };
+            }).filter(Boolean).filter((seriesItem) => Array.isArray(seriesItem.pts) && seriesItem.pts.length >= 2),
+            deltaSeries: visibleSeries.map((seriesItem) => {
+              const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
+              if (!(analysis.show_delta_analysis === true && hasSelectedComparisonWindow === true)) {
+                return null;
+              }
+              const comparisonSeries = selectedComparisonSeriesMap.get(seriesItem.entityId);
+              return {
+                entityId: seriesItem.entityId,
+                pts: comparisonSeries ? this._buildDeltaPoints(seriesItem.pts, comparisonSeries.pts) : []
+              };
+            }).filter(Boolean).filter((seriesItem) => Array.isArray(seriesItem.pts) && seriesItem.pts.length >= 2),
+            summaryStats: visibleSeries.map((seriesItem) => {
+              const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
+              if (analysis.show_summary_stats !== true) {
+                return null;
+              }
+              return {
+                entityId: seriesItem.entityId,
+                ...this._buildSummaryStats(seriesItem.pts)
+              };
+            }).filter((entry) => entry && Number.isFinite(entry.min) && Number.isFinite(entry.max) && Number.isFinite(entry.mean)),
+            // Anomaly detection intentionally omitted in the fallback path — see comment above.
+            anomalySeries: []
+          };
+        } catch (fallbackError) {
+          console.error("[hass-datapoints history-card] analysis fallback failed", fallbackError);
+          return { trendSeries: [], rateSeries: [], deltaSeries: [], summaryStats: [], anomalySeries: [] };
+        }
       }
     }
     async _drawChart(histResult, statsResult, events, t0, t1, options = {}) {
@@ -15919,6 +15905,10 @@ ${s2.description}`).join("\n\n");
       collapsible: { type: Boolean },
       open: { type: Boolean }
     };
+    title = "";
+    subtitle = "";
+    collapsible = false;
+    open = true;
     static styles = i$5`
     :host { display: block; }
     .sidebar-section-header { display: grid; gap: var(--dp-spacing-xs); }
@@ -15968,13 +15958,6 @@ ${s2.description}`).join("\n\n");
       transform: rotate(180deg);
     }
   `;
-    constructor() {
-      super();
-      this.title = "";
-      this.subtitle = "";
-      this.collapsible = false;
-      this.open = true;
-    }
     _onToggle() {
       this.dispatchEvent(new CustomEvent("dp-section-toggle", { bubbles: true, composed: true }));
     }
@@ -16008,14 +15991,11 @@ ${s2.description}`).join("\n\n");
       collapsible: { type: Boolean },
       open: { type: Boolean }
     };
+    title = "";
+    subtitle = "";
+    collapsible = false;
+    open = true;
     static styles = styles$b;
-    constructor() {
-      super();
-      this.title = "";
-      this.subtitle = "";
-      this.collapsible = false;
-      this.open = true;
-    }
     _onToggle() {
       this.open = !this.open;
       this.dispatchEvent(

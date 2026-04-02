@@ -291,10 +291,10 @@ export class HassRecordsDevToolCard extends HTMLElement {
   _readWindowConfigs(): WindowConfig[] {
     return [...this.shadowRoot!.querySelectorAll(".window-row")].map((row, idx) => {
       const el = row as HTMLElement;
-      const wid = parseInt(el.dataset.wid ?? "0");
+      const wid = parseInt(el.dataset.wid ?? "0", 10);
       const label = ((row.querySelector(".w-label") as HTMLInputElement).value || "").trim() || `Window ${idx + 1}`;
       const startDt = (row.querySelector(".w-start") as HTMLInputElement).value;
-      const hours = Math.max(1, parseInt((row.querySelector(".w-hours") as HTMLInputElement).value) || 24);
+      const hours = Math.max(1, parseInt((row.querySelector(".w-hours") as HTMLInputElement).value, 10) || 24);
       return { id: wid, label, startDt, hours };
     });
   }
@@ -513,8 +513,8 @@ export class HassRecordsDevToolCard extends HTMLElement {
     resultsList.querySelectorAll("input[type=checkbox]").forEach((cb) => {
       cb.addEventListener("change", (e) => {
         const input = e.target as HTMLInputElement;
-        const wid = parseInt(input.dataset.wid ?? "0");
-        const idx = parseInt(input.dataset.idx ?? "0");
+        const wid = parseInt(input.dataset.wid ?? "0", 10);
+        const idx = parseInt(input.dataset.idx ?? "0", 10);
         const r = this._results.get(wid);
         if (!r) { return; }
         if (input.checked) { r.selected.add(idx); } else { r.selected.delete(idx); }
@@ -525,8 +525,7 @@ export class HassRecordsDevToolCard extends HTMLElement {
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
         const el = e.currentTarget as HTMLButtonElement;
-        const wid = parseInt(el.dataset.wid ?? "0");
-        const act = el.dataset.act;
+        const wid = parseInt(el.dataset.wid ?? "0", 10);
         const r = this._results.get(wid);
         if (!r) { return; }
         const cbs = resultsList.querySelectorAll<HTMLInputElement>(`input[data-wid="${wid}"]`);
@@ -567,21 +566,20 @@ export class HassRecordsDevToolCard extends HTMLElement {
     const btn = this.shadowRoot!.getElementById("record-btn") as HTMLButtonElement;
     btn.disabled = true;
     this._showStatus("record-status", "ok", `Recording ${allItems.length} data point${allItems.length !== 1 ? "s" : ""}\u2026`);
-    let ok = 0;
-    let fail = 0;
-    for (const item of allItems) {
-      try {
-        await this._hass!.callService(DOMAIN as string, "record", {
+    const results = await Promise.allSettled(
+      allItems.map((item) =>
+        this._hass!.callService(DOMAIN as string, "record", {
           message: item.message,
           entity_ids: [item.entity_id],
           icon: item.icon,
           color: item.color,
           date: item.timestamp,
           dev: true,
-        });
-        ok++;
-      } catch { fail++; }
-    }
+        }),
+      ),
+    );
+    const ok = results.filter((r) => r.status === "fulfilled").length;
+    const fail = results.filter((r) => r.status === "rejected").length;
     if (fail) {
       this._showStatus("record-status", "err", `Recorded ${ok}, failed ${fail}.`);
     } else {
@@ -594,7 +592,7 @@ export class HassRecordsDevToolCard extends HTMLElement {
 
   async _deleteAllDev() {
     const devCountEl = this.shadowRoot!.getElementById("dev-count");
-    const count = parseInt(devCountEl?.textContent ?? "0") || 0;
+    const count = parseInt(devCountEl?.textContent ?? "0", 10) || 0;
     if (count === 0) {
       this._showStatus("delete-status", "err", "No dev datapoints to delete.");
       return;

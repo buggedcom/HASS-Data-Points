@@ -433,13 +433,13 @@ export class HassRecordsDevToolCard extends HTMLElement {
           } else { continue; }
         } else if (domain === "sensor") {
           const num = parseFloat(cur); const prevNum = prevVal != null ? parseFloat(prevVal) : NaN;
-          if (isNaN(num)) continue;
-          if (!isNaN(prevNum) && Math.abs(num - prevNum) < 0.5) continue;
+          if (Number.isNaN(num)) continue;
+          if (!Number.isNaN(prevNum) && Math.abs(num - prevNum) < 0.5) continue;
           message = `${friendlyName}: ${cur}${unit}`;
           icon = "mdi:gauge"; color = "#2196f3";
         } else if (domain === "input_number" || domain === "number") {
           const num = parseFloat(cur); const prevNum = prevVal != null ? parseFloat(prevVal) : NaN;
-          if (isNaN(num) || (!isNaN(prevNum) && num === prevNum)) continue;
+          if (Number.isNaN(num) || (!Number.isNaN(prevNum) && num === prevNum)) continue;
           message = `${friendlyName}: \u2192 ${cur}${unit}`;
           icon = "mdi:numeric"; color = "#9c27b0";
         } else if (domain === "input_select" || domain === "select") {
@@ -490,9 +490,9 @@ export class HassRecordsDevToolCard extends HTMLElement {
     const pair = map[deviceClass];
     if (pair) {
       return on ? pair[0] : pair[1];
-    } 
+    }
       return on ? "on" : "off";
-    
+
   }
 
   // ── Results rendering ──────────────────────────────────────────────────────
