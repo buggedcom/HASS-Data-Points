@@ -760,12 +760,15 @@ function computeHistoryAnalysis(payload) {
   return result;
 }
 
+// eslint-disable-next-line no-restricted-globals
 self.onmessage = (event) => {
   const { id, payload } = event.data || {};
   try {
     const result = computeHistoryAnalysis(payload);
+    // eslint-disable-next-line no-restricted-globals
     self.postMessage({ id, result });
   } catch (error) {
+    // eslint-disable-next-line no-restricted-globals
     self.postMessage({
       id,
       error: error instanceof Error ? error.message : String(error),

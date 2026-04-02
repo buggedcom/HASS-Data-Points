@@ -270,7 +270,8 @@
     return ensureHaComponents(["ha-dialog"]).then(() => new Promise((resolve) => {
       const root = host?.shadowRoot || host;
       if (!root || !root.appendChild) {
-        resolve(window.confirm(options.message || options.title || "Are you sure?"));
+        const confirmation = window.confirm(options.message || options.title || "Are you sure?");
+        resolve(confirmation);
         return;
       }
       const dialog = document.createElement("ha-dialog");
@@ -281,46 +282,46 @@
       dialog.headerTitle = options.title || "Confirm delete";
       if (host?._hass) dialog.hass = host._hass;
       dialog.innerHTML = `
-      <style>
-        .confirm-dialog-body {
-          padding: 0 var(--dp-spacing-lg, 24px) var(--dp-spacing-lg, 24px);
-          color: var(--primary-text-color);
-        }
-        .confirm-dialog-message {
-          line-height: 1.5;
-          color: var(--secondary-text-color, var(--primary-text-color));
-        }
-        .confirm-dialog-actions {
-          display: flex;
-          justify-content: flex-end;
-          gap: var(--dp-spacing-sm, 8px);
-          margin-top: var(--dp-spacing-lg, 24px);
-        }
-        .confirm-dialog-button {
-          border: 0;
-          border-radius: 999px;
-          padding: 0 16px;
-          height: 36px;
-          font: inherit;
-          cursor: pointer;
-        }
-        .confirm-dialog-button.cancel {
-          background: transparent;
-          color: var(--primary-text-color);
-        }
-        .confirm-dialog-button.confirm {
-          background: var(--error-color, #db4437);
-          color: white;
-        }
-      </style>
-      <div class="confirm-dialog-body">
-        <div class="confirm-dialog-message">${esc$1(options.message || "Are you sure you want to delete this item?")}</div>
-        <div class="confirm-dialog-actions">
-          <button type="button" class="confirm-dialog-button cancel">${esc$1(options.cancelLabel || "Cancel")}</button>
-          <button type="button" class="confirm-dialog-button confirm">${esc$1(options.confirmLabel || "Delete")}</button>
+        <style>
+          .confirm-dialog-body {
+            padding: 0 var(--dp-spacing-lg, 24px) var(--dp-spacing-lg, 24px);
+            color: var(--primary-text-color);
+          }
+          .confirm-dialog-message {
+            line-height: 1.5;
+            color: var(--secondary-text-color, var(--primary-text-color));
+          }
+          .confirm-dialog-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--dp-spacing-sm, 8px);
+            margin-top: var(--dp-spacing-lg, 24px);
+          }
+          .confirm-dialog-button {
+            border: 0;
+            border-radius: 999px;
+            padding: 0 16px;
+            height: 36px;
+            font: inherit;
+            cursor: pointer;
+          }
+          .confirm-dialog-button.cancel {
+            background: transparent;
+            color: var(--primary-text-color);
+          }
+          .confirm-dialog-button.confirm {
+            background: var(--error-color, #db4437);
+            color: white;
+          }
+        </style>
+        <div class="confirm-dialog-body">
+          <div class="confirm-dialog-message">${esc$1(options.message || "Are you sure you want to delete this item?")}</div>
+          <div class="confirm-dialog-actions">
+            <button type="button" class="confirm-dialog-button cancel">${esc$1(options.cancelLabel || "Cancel")}</button>
+            <button type="button" class="confirm-dialog-button confirm">${esc$1(options.confirmLabel || "Delete")}</button>
+          </div>
         </div>
-      </div>
-    `;
+      `;
       let settled = false;
       const finish = (value) => {
         if (settled) return;
@@ -2516,6 +2517,56 @@ ${s2.description}`).join("\n\n");
     tooltip.style.left = `${left}px`;
     tooltip.style.top = `${top}px`;
   }
+  function positionSecondaryTooltip(tooltip, anchorTooltip, bounds = null) {
+    if (!tooltip || !anchorTooltip) {
+      return;
+    }
+    tooltip.style.display = "block";
+    const anchorRect = anchorTooltip.getBoundingClientRect();
+    const tipRect = tooltip.getBoundingClientRect();
+    const gap = 10;
+    const minLeft = Number.isFinite(bounds?.left) ? bounds.left : gap;
+    const maxLeft = Number.isFinite(bounds?.right) ? bounds.right : window.innerWidth - gap;
+    const minTop = Number.isFinite(bounds?.top) ? bounds.top : gap;
+    const maxTop = Number.isFinite(bounds?.bottom) ? bounds.bottom : window.innerHeight - gap;
+    let left = anchorRect.right + gap;
+    if (left + tipRect.width > maxLeft) {
+      left = anchorRect.left - tipRect.width - gap;
+    }
+    let top = anchorRect.top;
+    if (top + tipRect.height > maxTop) {
+      top = Math.max(minTop, maxTop - tipRect.height);
+    }
+    left = Math.min(Math.max(left, minLeft), Math.max(minLeft, maxLeft - tipRect.width));
+    top = Math.min(Math.max(top, minTop), Math.max(minTop, maxTop - tipRect.height));
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${top}px`;
+  }
+  function positionTooltipBelow(tooltip, anchorTooltip, bounds = null) {
+    if (!tooltip || !anchorTooltip) {
+      return;
+    }
+    tooltip.style.display = "block";
+    const anchorRect = anchorTooltip.getBoundingClientRect();
+    const tipRect = tooltip.getBoundingClientRect();
+    const gap = 8;
+    const minLeft = Number.isFinite(bounds?.left) ? bounds.left : gap;
+    const maxLeft = Number.isFinite(bounds?.right) ? bounds.right : window.innerWidth - gap;
+    const minTop = Number.isFinite(bounds?.top) ? bounds.top : gap;
+    const maxTop = Number.isFinite(bounds?.bottom) ? bounds.bottom : window.innerHeight - gap;
+    let left = anchorRect.left;
+    if (left + tipRect.width > maxLeft) {
+      left = Math.max(minLeft, maxLeft - tipRect.width);
+    }
+    let top = anchorRect.bottom + gap;
+    if (top + tipRect.height > maxTop) {
+      top = Math.max(minTop, anchorRect.top - tipRect.height - gap);
+    }
+    left = Math.min(Math.max(left, minLeft), Math.max(minLeft, maxLeft - tipRect.width));
+    top = Math.min(Math.max(top, minTop), Math.max(minTop, maxTop - tipRect.height));
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${top}px`;
+  }
   function getAnnotationTooltipContainer(card) {
     if (!card?.shadowRoot) {
       return null;
@@ -2528,6 +2579,51 @@ ${s2.description}`).join("\n\n");
       return;
     }
     container.innerHTML = "";
+  }
+  function buildAnnotationTooltip(card, event) {
+    const tooltip = document.createElement("div");
+    tooltip.className = "tooltip secondary annotation-tooltip";
+    const hasValue = event?.chart_value != null && event.chart_value !== "";
+    const valueMarkup = hasValue ? `<div class="tt-value">${esc$1(formatTooltipValue(event.chart_value, event.chart_unit))}</div>` : "";
+    const message = event?.message || "Data point";
+    const annotation = event?.annotation && event.annotation !== event.message ? event.annotation : "";
+    const relatedMarkup = buildTooltipRelatedChips(card?._hass, event);
+    tooltip.innerHTML = `
+    <div class="tt-time">${esc$1(fmtDateTime$1(event.timestamp))}</div>
+    ${valueMarkup}
+    <div class="tt-message-row">
+      <span class="tt-dot" style="background:${esc$1(event?.color || "#03a9f4")}"></span>
+      <span class="tt-message">${esc$1(message)}</span>
+    </div>
+    <div class="tt-annotation" style="display:${annotation ? "block" : "none"}">${esc$1(annotation)}</div>
+    <div class="tt-entities" style="display:${relatedMarkup ? "flex" : "none"}">${relatedMarkup}</div>
+  `;
+    return tooltip;
+  }
+  function renderAnnotationTooltips(card, hover, anchorTooltip, bounds = null) {
+    const container = getAnnotationTooltipContainer(card);
+    if (!container) {
+      return [];
+    }
+    clearAnnotationTooltips(card);
+    const annotationEvents = Array.isArray(hover?.events) ? hover.events : [];
+    if (!annotationEvents.length) {
+      return [];
+    }
+    const renderedTooltips = [];
+    let anchorEl = anchorTooltip;
+    for (const event of annotationEvents) {
+      const tooltip = buildAnnotationTooltip(card, event);
+      container.appendChild(tooltip);
+      if (renderedTooltips.length === 0) {
+        positionSecondaryTooltip(tooltip, anchorEl, bounds);
+      } else {
+        positionTooltipBelow(tooltip, anchorEl, bounds);
+      }
+      renderedTooltips.push(tooltip);
+      anchorEl = tooltip;
+    }
+    return renderedTooltips;
   }
   function showTooltip(card, canvas, renderer, event, clientX, clientY) {
     const tooltip = card.shadowRoot.getElementById("tooltip");
@@ -2866,6 +2962,16 @@ ${s2.description}`).join("\n\n");
         top: chartBounds.top + 8,
         bottom: chartBounds.bottom - 8
       } : null);
+    }
+    if (Array.isArray(hover.events) && hover.events.length > 0) {
+      renderAnnotationTooltips(card, hover, tooltip, chartBounds ? {
+        left: chartBounds.left + 8,
+        right: chartBounds.right - 8,
+        top: chartBounds.top + 8,
+        bottom: chartBounds.bottom - 8
+      } : null);
+    } else {
+      clearAnnotationTooltips(card);
     }
   }
   function buildTooltipRelatedChips(hass, event) {
@@ -13313,7 +13419,9 @@ ${s2.description}`).join("\n\n");
         this._feedbackClass = "ok";
         this._feedbackText = "Recorded!";
         this._feedbackVisible = true;
-        setTimeout(() => this._feedbackVisible = false, 2500);
+        setTimeout(() => {
+          this._feedbackVisible = false;
+        }, 2500);
       } catch (e2) {
         this._feedbackClass = "err";
         this._feedbackText = `Error: ${e2.message || "unknown error"}`;

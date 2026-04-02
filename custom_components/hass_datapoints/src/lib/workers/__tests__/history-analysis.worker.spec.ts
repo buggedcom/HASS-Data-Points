@@ -543,8 +543,10 @@ describe("buildIQRAnomalyClusters", () => {
   describe("GIVEN consecutive outliers above the upper fence", () => {
     describe("WHEN two adjacent points exceed the fence", () => {
       it("THEN they are merged into a single cluster", () => {
-        // [1,2,3,4,100,200] → both 100 and 200 exceed the upper fence
-        const pts = hourly([1, 2, 3, 4, 100, 200]);
+        // 10 normal values + two high outliers at the end
+        // n=12: q1=sorted[3]=4, q3=sorted[9]=10, IQR=6
+        // upper fence = 10+12=22; 100>22 and 200>22 → both outliers, consecutive → 1 cluster
+        const pts = hourly([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 100, 200]);
         expect.assertions(1);
         const clusters = buildIQRAnomalyClusters(pts, "medium");
         expect(clusters).toHaveLength(1);
