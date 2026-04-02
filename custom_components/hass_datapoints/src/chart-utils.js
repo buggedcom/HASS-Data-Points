@@ -387,6 +387,7 @@ export const CHART_STYLE = `
     background: var(--card-background-color, var(--primary-background-color, #fff));
     overflow: hidden;
     z-index: 3;
+    border-bottom-left-radius: 11px;
   }
   .chart-axis-overlay.visible {
     display: block;

@@ -1741,6 +1741,7 @@
     background: var(--card-background-color, var(--primary-background-color, #fff));
     overflow: hidden;
     z-index: 3;
+    border-bottom-left-radius: 11px;
   }
   .chart-axis-overlay.visible {
     display: block;
@@ -15968,7 +15969,8 @@ ${s2.description}`).join("\n\n");
     collapsible = false;
     open = true;
     static styles = styles$b;
-    _onToggle() {
+    _onToggle(e2) {
+      e2.stopPropagation();
       this.open = !this.open;
       this.dispatchEvent(
         new CustomEvent("dp-section-toggle", {
