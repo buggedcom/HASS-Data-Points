@@ -78,7 +78,8 @@ export class DpPagination extends LitElement {
         ‹
       </button>
       <span class="info">
-        Page ${this.page + 1} of ${this.totalPages}   ${this.totalItems} ${this.label}
+        <span>Page ${this.page + 1} of ${this.totalPages} </span>
+        <span> ${this.totalItems} ${this.label}</span>
       </span>
       <button
         type="button"

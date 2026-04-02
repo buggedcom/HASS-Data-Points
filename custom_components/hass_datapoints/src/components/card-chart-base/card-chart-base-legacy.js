@@ -1,4 +1,5 @@
-import { buildChartCardShell, DOMAIN } from "../../lib/shared.js";
+import { buildChartCardShell, DOMAIN } from "@/lib/shared.js";
+import { logger } from "@/lib/logger.js";
 
 /**
  * ChartCardBase – shared base class for history and statistics chart cards.
@@ -97,7 +98,7 @@ export class ChartCardBase extends HTMLElement {
       this._loadInFlight = true;
       Promise.resolve(this._load())
         .catch((err) => {
-          console.error("[hass-datapoints chart-base] load failed", err);
+          logger.error("[hass-datapoints chart-base] load failed", err);
         })
         .finally(() => {
           this._loadInFlight = false;

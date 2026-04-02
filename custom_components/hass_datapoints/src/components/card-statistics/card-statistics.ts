@@ -13,6 +13,7 @@ import {
 import type { CardConfig, HassLike, SeriesItem } from "@/lib/types";
 import "@/molecules/dp-chart-shell/dp-chart-shell";
 import "@/molecules/dp-chart-legend/dp-chart-legend";
+import { logger } from "@/lib/logger.js";
 
 /**
  * hass-datapoints-statistics-card – Statistics chart with annotation markers.
@@ -234,8 +235,8 @@ export class HassRecordsStatisticsCard extends LitElement {
         .catch((err: unknown) => {
           partial.statsDone = true;
           partial.statsFailed = true;
-          // eslint-disable-next-line no-console
-          console.error("[hass-datapoints statistics-card] statistics load failed", err);
+           
+          logger.error("[hass-datapoints statistics-card] statistics load failed", err);
           maybeDraw();
           finalize();
         });
@@ -249,16 +250,16 @@ export class HassRecordsStatisticsCard extends LitElement {
         })
         .catch((err: unknown) => {
           partial.eventsDone = true;
-          // eslint-disable-next-line no-console
-          console.error("[hass-datapoints statistics-card] event load failed", err);
+           
+          logger.error("[hass-datapoints statistics-card] event load failed", err);
           maybeDraw();
           finalize();
         });
     } catch (err) {
       this._chartMessage = "Failed to load statistics.";
       this._loading = false;
-      // eslint-disable-next-line no-console
-      console.error("[hass-datapoints statistics-card]", err);
+       
+      logger.error("[hass-datapoints statistics-card]", err);
     }
   }
 

@@ -335,9 +335,11 @@ export const styles = css`
     border-top: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 78%, transparent);
   }
 
-  .history-target-analysis-copy-row {
+  .history-target-analysis-bottom-row {
     display: flex;
-    justify-content: flex-end;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dp-spacing-sm);
   }
 
   .history-target-analysis-copy-btn {

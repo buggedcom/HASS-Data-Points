@@ -5,7 +5,7 @@ import type { EventRecord } from "@/lib/types";
 
 import { fetchEvents } from "@/lib/shared";
 
-vi.mock("../../../lib/shared.js", async (importOriginal) => {
+vi.mock("../@/lib/shared.js", async (importOriginal) => {
   const mod = await importOriginal() as Record<string, unknown>;
   return {
     ...mod,

@@ -1,6 +1,7 @@
 import { LitElement } from "lit";
 import { DOMAIN } from "@/lib/shared";
 import type { CardConfig, HassLike } from "@/lib/types";
+import { logger } from "@/lib/logger.js";
 
 /**
  * ChartCardBase – shared LitElement base class for history and statistics
@@ -118,7 +119,7 @@ export abstract class ChartCardBase extends LitElement {
       this._loadInFlight = true;
       Promise.resolve(this._load())
         .catch((err: unknown) => {
-          console.error("[hass-datapoints chart-base] load failed", err);
+          logger.error("[hass-datapoints chart-base] load failed", err);
         })
         .finally(() => {
           this._loadInFlight = false;

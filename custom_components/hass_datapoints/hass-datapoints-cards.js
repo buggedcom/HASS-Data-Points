@@ -211,24 +211,24 @@
       const app = document.querySelector("home-assistant");
       const panels = app?.hass?.panels;
       if (!panels?.history) {
-        console.warn("[hass-datapoints ha] history panel not available for preload");
+        logger.warn("[hass-datapoints ha] history panel not available for preload");
         return;
       }
       const resolver = document.createElement("partial-panel-resolver");
       if (typeof resolver._updateRoutes !== "function") {
-        console.warn("[hass-datapoints ha] partial-panel-resolver missing _updateRoutes");
+        logger.warn("[hass-datapoints ha] partial-panel-resolver missing _updateRoutes");
         return;
       }
       resolver.hass = { panels };
       resolver._updateRoutes();
       const load = resolver.routerOptions?.routes?.history?.load;
       if (typeof load !== "function") {
-        console.warn("[hass-datapoints ha] history route loader missing");
+        logger.warn("[hass-datapoints ha] history route loader missing");
         return;
       }
       await load();
     } catch (error) {
-      console.warn("[hass-datapoints ha] history route preload failed", {
+      logger.warn("[hass-datapoints ha] history route preload failed", {
         historyTags,
         message: error?.message || String(error)
       });
@@ -242,7 +242,7 @@
     return Promise.race([
       customElements.whenDefined(tag).then(() => true),
       new Promise((resolve) => window.setTimeout(() => {
-        console.warn("[hass-datapoints ha] component wait timed out", { tag, timeoutMs });
+        logger.warn("[hass-datapoints ha] component wait timed out", { tag, timeoutMs });
         resolve(false);
       }, timeoutMs))
     ]);
@@ -251,7 +251,7 @@
     const componentTags = [...new Set((tags || []).filter(Boolean))];
     const loaderTags = componentTags.filter((tag) => HA_COMPONENT_LOADER_SUPPORTED_TAGS.has(tag));
     const loadPromise = Promise.resolve().then(() => typeof loadHaComponents === "function" && loaderTags.length ? Promise.resolve(loadHaComponents(loaderTags)).catch((error) => {
-      console.warn("[hass-datapoints ha] loader failed", {
+      logger.warn("[hass-datapoints ha] loader failed", {
         loaderTags,
         message: error?.message || String(error)
       });
@@ -3815,7 +3815,7 @@ ${s2.description}`).join("\n\n");
         return result.events || [];
       });
     } catch (err) {
-      console.warn("[hass-datapoints] fetchEvents failed:", err);
+      logger.warn("[hass-datapoints] fetchEvents failed:", err);
       return [];
     }
   }
@@ -3837,7 +3837,7 @@ ${s2.description}`).join("\n\n");
         end: result?.end_time || null
       };
     } catch (err) {
-      console.warn("[hass-datapoints] fetchEventBounds failed:", err);
+      logger.warn("[hass-datapoints] fetchEventBounds failed:", err);
       return { start: null, end: null };
     }
   }
@@ -3869,7 +3869,7 @@ ${s2.description}`).join("\n\n");
       });
       return result?.value ?? defaultValue;
     } catch (err) {
-      console.warn("[hass-datapoints] fetchUserData failed:", err);
+      logger.warn("[hass-datapoints] fetchUserData failed:", err);
       return defaultValue;
     }
   }
@@ -3881,7 +3881,7 @@ ${s2.description}`).join("\n\n");
         value
       });
     } catch (err) {
-      console.warn("[hass-datapoints] saveUserData failed:", err);
+      logger.warn("[hass-datapoints] saveUserData failed:", err);
     }
   }
   function parseDateValue(value) {
@@ -4566,6 +4566,7 @@ ${s2.description}`).join("\n\n");
       show_chart_delta_tooltip: true,
       show_chart_delta_lines: false,
       show_chart_correlated_anomalies: source._showCorrelatedAnomalies,
+      chart_anomaly_overlap_mode: source._chartAnomalyOverlapMode || "all",
       show_data_gaps: source._showDataGaps,
       data_gap_threshold: source._dataGapThreshold,
       content_split_ratio: source._contentSplitRatio,
@@ -4578,6 +4579,7 @@ ${s2.description}`).join("\n\n");
       sidebar_collapsed: source._sidebarCollapsed,
       sidebar_accordion_targets_open: source._sidebarAccordionTargetsOpen !== false,
       sidebar_accordion_datapoints_open: source._sidebarAccordionDatapointsOpen !== false,
+      sidebar_accordion_analysis_open: source._sidebarAccordionAnalysisOpen !== false,
       sidebar_accordion_chart_open: source._sidebarAccordionChartOpen !== false
     };
   }
@@ -5160,6 +5162,26 @@ ${s2.description}`).join("\n\n");
     withStableRangeCache,
     writeHistoryPageSessionState
   }, Symbol.toStringTag, { value: "Module" }));
+  const isDev = () => typeof window !== "undefined" && !!window.__HASS_DATAPOINTS_DEV__;
+  const logger$1 = {
+    log: (...args) => {
+      if (isDev()) {
+        console.log(...args);
+      }
+    },
+    debug: (...args) => {
+      if (isDev()) {
+        console.debug(...args);
+      }
+    },
+    info: (...args) => {
+      if (isDev()) {
+        console.info(...args);
+      }
+    },
+    warn: (...args) => console.warn(...args),
+    error: (...args) => console.error(...args)
+  };
   class HistoryAnnotationDialogController {
     constructor(host) {
       this._host = host;
@@ -5385,7 +5407,7 @@ ${s2.description}`).join("\n\n");
           feedbackEl.hidden = false;
           feedbackEl.textContent = err?.message || "Failed to create annotation.";
         }
-        console.error("[hass-datapoints history-card]", err);
+        logger$1.error("[hass-datapoints history-card]", err);
       } finally {
         if (saveButton) saveButton.disabled = false;
       }
@@ -8015,7 +8037,7 @@ ${s2.description}`).join("\n\n");
         this._hasStartedInitialLoad = true;
         this._loadInFlight = true;
         Promise.resolve(this._load()).catch((err) => {
-          console.error("[hass-datapoints chart-base] load failed", err);
+          logger$1.error("[hass-datapoints chart-base] load failed", err);
         }).finally(() => {
           this._loadInFlight = false;
         });
@@ -8523,7 +8545,7 @@ ${s2.description}`).join("\n\n");
       const t0 = start.getTime();
       const t1 = end.getTime();
       const requestId2 = ++this._loadRequestId;
-      console.log("[hass-datapoints history-card] load triggered", {
+      logger$1.log("[hass-datapoints history-card] load triggered", {
         requestId: requestId2,
         entityIds: this._entityIds,
         start: start.toISOString(),
@@ -10460,7 +10482,7 @@ ${s2.description}`).join("\n\n");
     }
     _queueDrawChart(histResult, statsResult, events, t0, t1, options = {}) {
       const drawRequestId = ++this._drawRequestId;
-      console.log("[hass-datapoints history-card] draw queued", {
+      logger$1.log("[hass-datapoints history-card] draw queued", {
         drawRequestId,
         loading: options.loading ?? false
       });
@@ -10669,20 +10691,20 @@ ${s2.description}`).join("\n\n");
         const lastPt = seriesItem.pts[seriesItem.pts.length - 1];
         const prev = this._previousSeriesEndpoints.get(seriesItem.entityId);
         if (!prev) {
-          console.log("[hass-datapoints history-card] series initial draw", {
+          logger$1.log("[hass-datapoints history-card] series initial draw", {
             entityId: seriesItem.entityId,
             pointCount: seriesItem.pts.length,
             lastPt
           });
         } else if (lastPt[0] !== prev.t || lastPt[1] !== prev.v) {
-          console.log("[hass-datapoints history-card] series updated — live update detected", {
+          logger$1.log("[hass-datapoints history-card] series updated — live update detected", {
             entityId: seriesItem.entityId,
             pointCount: seriesItem.pts.length,
             prev,
             lastPt
           });
         } else {
-          console.log("[hass-datapoints history-card] series unchanged — no new data", {
+          logger$1.log("[hass-datapoints history-card] series unchanged — no new data", {
             entityId: seriesItem.entityId,
             pointCount: seriesItem.pts.length,
             lastPt
@@ -13119,7 +13141,7 @@ ${s2.description}`).join("\n\n");
         this._feedbackClass = "err";
         this._feedbackText = `Error: ${e2.message || "unknown error"}`;
         this._feedbackVisible = true;
-        console.error("[hass-datapoints quick-card]", e2);
+        logger$1.error("[hass-datapoints quick-card]", e2);
       }
       if (btn) btn.disabled = false;
     }
@@ -13252,7 +13274,8 @@ ${s2.description}`).join("\n\n");
         ‹
       </button>
       <span class="info">
-        Page ${this.page + 1} of ${this.totalPages}   ${this.totalItems} ${this.label}
+        <span>Page ${this.page + 1} of ${this.totalPages} </span>
+        <span> ${this.totalItems} ${this.label}</span>
       </span>
       <button
         type="button"
@@ -13557,7 +13580,7 @@ ${s2.description}`).join("\n\n");
         this._drawChart(histResult || {}, events || [], t0, t1);
       } catch (err) {
         this._loadMessage = "Failed to load data.";
-        console.error("[hass-datapoints sensor-card]", err);
+        logger$1.error("[hass-datapoints sensor-card]", err);
       }
     }
     _drawChart(histResult, events, t0, t1) {
@@ -14038,7 +14061,7 @@ ${s2.description}`).join("\n\n");
       };
     }
   }
-  const styles$l = i$5`
+  const styles$m = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -14373,9 +14396,11 @@ ${s2.description}`).join("\n\n");
     border-top: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 78%, transparent);
   }
 
-  .history-target-analysis-copy-row {
+  .history-target-analysis-bottom-row {
     display: flex;
-    justify-content: flex-end;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dp-spacing-sm);
   }
 
   .history-target-analysis-copy-btn {
@@ -14506,8 +14531,8 @@ ${s2.description}`).join("\n\n");
     cursor: pointer;
   }
 `;
-  const styles$k = i$5``;
-  const styles$j = i$5`
+  const styles$l = i$5``;
+  const styles$k = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -14569,7 +14594,7 @@ ${s2.description}`).join("\n\n");
       disabled: { type: Boolean },
       alignTop: { type: Boolean, attribute: "align-top" }
     };
-    static styles = styles$j;
+    static styles = styles$k;
     constructor() {
       super();
       this.label = "";
@@ -14579,6 +14604,7 @@ ${s2.description}`).join("\n\n");
     }
     _onChange(e2) {
       const checked = e2.target.checked;
+      this.checked = checked;
       this.dispatchEvent(
         new CustomEvent("dp-group-change", {
           detail: { checked },
@@ -14633,7 +14659,7 @@ ${s2.description}`).join("\n\n");
       analysis: { type: Object },
       entityId: { type: String, attribute: "entity-id" }
     };
-    static styles = [sharedStyles, styles$k];
+    static styles = [sharedStyles, styles$l];
     constructor() {
       super();
       this.analysis = {};
@@ -14688,7 +14714,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-analysis-trend-group", DpAnalysisTrendGroup);
-  const styles$i = i$5``;
+  const styles$j = i$5``;
   const ANALYSIS_RATE_WINDOW_OPTIONS$1 = [
     { value: "point_to_point", label: "Point to point" },
     { value: "1h", label: "1 hour" },
@@ -14700,7 +14726,7 @@ ${s2.description}`).join("\n\n");
       analysis: { type: Object },
       entityId: { type: String, attribute: "entity-id" }
     };
-    static styles = [sharedStyles, styles$i];
+    static styles = [sharedStyles, styles$j];
     constructor() {
       super();
       this.analysis = {};
@@ -14742,14 +14768,14 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-analysis-rate-group", DpAnalysisRateGroup);
-  const styles$h = i$5``;
+  const styles$i = i$5``;
   class DpAnalysisThresholdGroup extends i$2 {
     static properties = {
       analysis: { type: Object },
       entityId: { type: String, attribute: "entity-id" },
       unit: { type: String }
     };
-    static styles = [sharedStyles, styles$h];
+    static styles = [sharedStyles, styles$i];
     constructor() {
       super();
       this.analysis = {};
@@ -14816,7 +14842,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-analysis-threshold-group", DpAnalysisThresholdGroup);
-  const styles$g = i$5`
+  const styles$h = i$5`
   .method-list {
     display: grid;
     gap: var(--dp-spacing-sm, 8px);
@@ -14846,7 +14872,7 @@ ${s2.description}`).join("\n\n");
     vertical-align: middle;
   }
 `;
-  const styles$f = i$5`
+  const styles$g = i$5`
   :host {
     display: block;
     --dp-spacing-sm: var(--spacing, 8px);
@@ -14862,7 +14888,7 @@ ${s2.description}`).join("\n\n");
   }
 `;
   class DpAnalysisMethodSubopts extends i$2 {
-    static styles = styles$f;
+    static styles = styles$g;
     render() {
       return b`<div class="subopts"><slot></slot></div>`;
     }
@@ -14900,7 +14926,7 @@ ${s2.description}`).join("\n\n");
     { value: "12h", label: "12 hours" },
     { value: "24h", label: "24 hours" }
   ];
-  const ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS = [
+  const ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS$2 = [
     { value: "all", label: "Show all anomalies" },
     { value: "highlight", label: "Highlight overlaps" },
     { value: "only", label: "Overlaps only" }
@@ -14911,7 +14937,7 @@ ${s2.description}`).join("\n\n");
       entityId: { type: String, attribute: "entity-id" },
       comparisonWindows: { type: Array, attribute: "comparison-windows" }
     };
-    static styles = [sharedStyles, styles$g];
+    static styles = [sharedStyles, styles$h];
     constructor() {
       super();
       this.analysis = {};
@@ -15016,7 +15042,7 @@ ${s2.description}`).join("\n\n");
         ${Array.isArray(a2.anomaly_methods) && a2.anomaly_methods.length >= 2 ? b`
           <label class="field">
             <span class="field-label">When methods overlap</span>
-            ${this._renderSelect("anomaly_overlap_mode", ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS, a2.anomaly_overlap_mode)}
+            ${this._renderSelect("anomaly_overlap_mode", ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS$2, a2.anomaly_overlap_mode)}
           </label>
         ` : A}
       </dp-analysis-group>
@@ -15024,7 +15050,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-analysis-anomaly-group", DpAnalysisAnomalyGroup);
-  const styles$e = i$5`
+  const styles$f = i$5`
   .help-text {
     display: inline-block;
     color: var(--secondary-text-color);
@@ -15038,7 +15064,7 @@ ${s2.description}`).join("\n\n");
       entityId: { type: String, attribute: "entity-id" },
       canShowDeltaAnalysis: { type: Boolean, attribute: "can-show-delta-analysis" }
     };
-    static styles = [sharedStyles, styles$e];
+    static styles = [sharedStyles, styles$f];
     constructor() {
       super();
       this.analysis = {};
@@ -15123,7 +15149,7 @@ ${s2.description}`).join("\n\n");
       hass: { type: Object, attribute: false },
       comparisonWindows: { type: Array, attribute: "comparison-windows" }
     };
-    static styles = styles$l;
+    static styles = styles$m;
     constructor() {
       super();
       this.color = "#03a9f4";
@@ -15258,17 +15284,6 @@ ${s2.description}`).join("\n\n");
 
         ${this._supportsAnalysis && this.analysis?.expanded ? b`
           <div class="history-target-analysis" role="cell">
-            <div class="history-target-analysis-copy-row">
-              <button
-                type="button"
-                class="history-target-analysis-copy-btn"
-                title="Copy these analysis settings to all targets"
-                @click=${this._onCopyAnalysisToAll}
-              >
-                <ha-icon icon="mdi:content-copy"></ha-icon>
-                Copy to all targets
-              </button>
-            </div>
             <div class="history-target-analysis-grid">
               <dp-analysis-trend-group
                 .analysis=${a2}
@@ -15302,12 +15317,23 @@ ${s2.description}`).join("\n\n");
                 .canShowDeltaAnalysis=${this.canShowDeltaAnalysis}
                 @dp-group-analysis-change=${this._onGroupAnalysisChange}
               ></dp-analysis-delta-group>
-              <label class="history-target-analysis-option ${!hasActive ? "is-disabled" : ""}">
-                <input type="checkbox" .checked=${a2.hide_source_series && hasActive}
-                  ?disabled=${!hasActive}
-                  @change=${(e2) => this._onCheckbox("hide_source_series", e2)}>
-                <span>Hide source series</span>
-              </label>
+              <div class="history-target-analysis-bottom-row">
+                <label class="history-target-analysis-option ${!hasActive ? "is-disabled" : ""}">
+                  <input type="checkbox" .checked=${a2.hide_source_series && hasActive}
+                    ?disabled=${!hasActive}
+                    @change=${(e2) => this._onCheckbox("hide_source_series", e2)}>
+                  <span>Hide source series</span>
+                </label>
+                <button
+                  type="button"
+                  class="history-target-analysis-copy-btn"
+                  title="Copy these analysis settings to all targets"
+                  @click=${this._onCopyAnalysisToAll}
+                >
+                  <ha-icon icon="mdi:content-copy"></ha-icon>
+                  Copy to all targets
+                </button>
+              </div>
             </div>
           </div>
         ` : A}
@@ -15316,7 +15342,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-target-row", DpTargetRow);
-  const styles$d = i$5`
+  const styles$e = i$5`
     :host {
         display: block;
         --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -15393,7 +15419,7 @@ ${s2.description}`).join("\n\n");
     };
     /** Index of the row currently being dragged, or null when not dragging. */
     _dragSourceIndex = null;
-    static styles = styles$d;
+    static styles = styles$e;
     /**
      * Optimistically toggle the expanded state of a row's analysis panel
      * immediately (before the panel's round-trip mutation arrives). This gives
@@ -15401,11 +15427,17 @@ ${s2.description}`).join("\n\n");
      */
     _onToggleAnalysisFast = (e2) => {
       const entityId = String(e2?.detail?.entityId || "").trim();
-      if (!entityId) return;
+      if (!entityId) {
+        return;
+      }
       const index = this.rows?.findIndex((r2) => r2.entity_id === entityId) ?? -1;
-      if (index === -1) return;
+      if (index === -1) {
+        return;
+      }
       this.rows = this.rows.map((row, i2) => {
-        if (i2 !== index) return row;
+        if (i2 !== index) {
+          return row;
+        }
         return {
           ...row,
           analysis: {
@@ -15414,6 +15446,34 @@ ${s2.description}`).join("\n\n");
           }
         };
       });
+    };
+    /**
+     * Optimistically apply analysis option changes immediately so sub-option
+     * groups (e.g. method-specific windows) appear without waiting for the
+     * panel round-trip. Handles both plain key/value changes and the special
+     * `anomaly_method_toggle_*` keys used by the anomaly group.
+     */
+    _onRowAnalysisChangeFast = (e2) => {
+      const { entityId, key, value } = e2.detail || {};
+      if (!entityId || !key) {
+        return;
+      }
+      const index = this.rows?.findIndex((r2) => r2.entity_id === entityId) ?? -1;
+      if (index === -1) {
+        return;
+      }
+      const row = this.rows[index];
+      const currentAnalysis = row.analysis || {};
+      let nextAnalysis;
+      if (key.startsWith("anomaly_method_toggle_")) {
+        const method = key.slice("anomaly_method_toggle_".length);
+        const currentMethods = Array.isArray(currentAnalysis.anomaly_methods) ? currentAnalysis.anomaly_methods : [];
+        const nextMethods = value === true ? [.../* @__PURE__ */ new Set([...currentMethods, method])] : currentMethods.filter((m2) => m2 !== method);
+        nextAnalysis = { ...currentAnalysis, anomaly_methods: nextMethods };
+      } else {
+        nextAnalysis = { ...currentAnalysis, [key]: value };
+      }
+      this.rows = this.rows.map((r2, i2) => i2 === index ? { ...r2, analysis: nextAnalysis } : r2);
     };
     render() {
       if (!this.rows.length) {
@@ -15431,6 +15491,7 @@ ${s2.description}`).join("\n\n");
           @dragleave=${this._onDragLeave}
           @drop=${this._onDrop}
           @dp-row-toggle-analysis=${this._onToggleAnalysisFast}
+          @dp-row-analysis-change=${this._onRowAnalysisChangeFast}
         >
           ${this.rows.map(
         (row, index) => b`
@@ -15536,7 +15597,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-target-row-list", DpTargetRowList);
-  const styles$c = i$5`
+  const styles$d = i$5`
   :host {
     display: block;
     --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
@@ -15547,12 +15608,12 @@ ${s2.description}`).join("\n\n");
     gap: var(--dp-spacing-lg);
   }
 `;
-  const styles$b = i$5`
+  const styles$c = i$5`
   :host {
     display: block;
   }
 `;
-  const styles$a = i$5`
+  const styles$b = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -15660,7 +15721,7 @@ ${s2.description}`).join("\n\n");
       collapsible: { type: Boolean },
       open: { type: Boolean }
     };
-    static styles = styles$a;
+    static styles = styles$b;
     constructor() {
       super();
       this.title = "";
@@ -15776,7 +15837,7 @@ ${s2.description}`).join("\n\n");
       collapsible: { type: Boolean },
       open: { type: Boolean }
     };
-    static styles = styles$b;
+    static styles = styles$c;
     constructor() {
       super();
       this.datapointScope = "linked";
@@ -15807,7 +15868,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-sidebar-datapoints-section", DpSidebarDatapointsSection);
-  const styles$9 = i$5`
+  const styles$a = i$5`
   :host {
     display: block;
   }
@@ -15878,7 +15939,7 @@ ${s2.description}`).join("\n\n");
       collapsible: { type: Boolean },
       open: { type: Boolean }
     };
-    static styles = styles$9;
+    static styles = styles$a;
     constructor() {
       super();
       this.showIcons = true;
@@ -15912,6 +15973,56 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-sidebar-datapoint-display-section", DpSidebarDatapointDisplaySection);
+  const styles$9 = i$5`
+  :host {
+    display: block;
+  }
+`;
+  const ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS$1 = [
+    { value: "all", label: "Show all anomalies" },
+    { value: "highlight", label: "Highlight overlaps" },
+    { value: "only", label: "Overlaps only" }
+  ];
+  class DpSidebarAnalysisSection extends i$2 {
+    static properties = {
+      anomalyOverlapMode: { type: String, attribute: "anomaly-overlap-mode" },
+      collapsible: { type: Boolean },
+      open: { type: Boolean }
+    };
+    static styles = styles$9;
+    constructor() {
+      super();
+      this.anomalyOverlapMode = "all";
+      this.collapsible = false;
+      this.open = true;
+    }
+    _emitAnalysis(kind, value) {
+      this.dispatchEvent(
+        new CustomEvent("dp-analysis-change", { detail: { kind, value }, bubbles: true, composed: true })
+      );
+    }
+    _onAnomalyOverlapModeChange(e2) {
+      this._emitAnalysis("anomaly_overlap_mode", e2.detail.value);
+    }
+    render() {
+      return b`
+      <dp-sidebar-options-section
+        .title=${"Analysis"}
+        .subtitle=${"Configure how anomalies and overlapping detections are displayed."}
+        .collapsible=${this.collapsible}
+        .open=${this.open}
+      >
+        <dp-radio-group
+          .name=${"chart-anomaly-overlap-mode"}
+          .value=${this.anomalyOverlapMode}
+          .options=${ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS$1}
+          @dp-radio-change=${this._onAnomalyOverlapModeChange}
+        ></dp-radio-group>
+      </dp-sidebar-options-section>
+    `;
+    }
+  }
+  customElements.define("dp-sidebar-analysis-section", DpSidebarAnalysisSection);
   const styles$8 = i$5`
   :host {
     display: block;
@@ -16056,12 +16167,14 @@ ${s2.description}`).join("\n\n");
       showDataGaps: { type: Boolean, attribute: "show-data-gaps" },
       dataGapThreshold: { type: String, attribute: "data-gap-threshold" },
       yAxisMode: { type: String, attribute: "y-axis-mode" },
+      anomalyOverlapMode: { type: String, attribute: "anomaly-overlap-mode" },
       // Accordion open states
       targetsOpen: { type: Boolean, attribute: "targets-open" },
       datapointsOpen: { type: Boolean, attribute: "datapoints-open" },
+      analysisOpen: { type: Boolean, attribute: "analysis-open" },
       chartOpen: { type: Boolean, attribute: "chart-open" }
     };
-    static styles = styles$c;
+    static styles = styles$d;
     constructor() {
       super();
       this.datapointScope = "linked";
@@ -16073,8 +16186,10 @@ ${s2.description}`).join("\n\n");
       this.showDataGaps = true;
       this.dataGapThreshold = "2h";
       this.yAxisMode = "combined";
+      this.anomalyOverlapMode = "all";
       this.targetsOpen = true;
       this.datapointsOpen = true;
+      this.analysisOpen = true;
       this.chartOpen = true;
     }
     _onTargetsToggle(e2) {
@@ -16083,6 +16198,10 @@ ${s2.description}`).join("\n\n");
     }
     _onDatapointsToggle(e2) {
       this.datapointsOpen = e2.detail.open;
+      this._emitAccordionChange();
+    }
+    _onAnalysisToggle(e2) {
+      this.analysisOpen = e2.detail.open;
       this._emitAccordionChange();
     }
     _onChartToggle(e2) {
@@ -16095,6 +16214,7 @@ ${s2.description}`).join("\n\n");
           detail: {
             targetsOpen: this.targetsOpen,
             datapointsOpen: this.datapointsOpen,
+            analysisOpen: this.analysisOpen,
             chartOpen: this.chartOpen
           },
           bubbles: true,
@@ -16118,6 +16238,12 @@ ${s2.description}`).join("\n\n");
           .open=${this.datapointsOpen}
           @dp-section-toggle=${this._onDatapointsToggle}
         ></dp-sidebar-datapoint-display-section>
+        <dp-sidebar-analysis-section
+          .anomalyOverlapMode=${this.anomalyOverlapMode}
+          collapsible
+          .open=${this.analysisOpen}
+          @dp-section-toggle=${this._onAnalysisToggle}
+        ></dp-sidebar-analysis-section>
         <dp-sidebar-chart-display-section
           .showTooltips=${this.showTooltips}
           .showHoverGuides=${this.showHoverGuides}
@@ -19087,6 +19213,11 @@ ${s2.description}`).join("\n\n");
     { value: "12h", label: "12 hours" },
     { value: "24h", label: "24 hours" }
   ];
+  const ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS = [
+    { value: "all", label: "Show all anomalies" },
+    { value: "highlight", label: "Highlight overlaps" },
+    { value: "only", label: "Overlaps only" }
+  ];
   function isAnalysisSupportedForRow(row) {
     return typeof row?.entity_id === "string" && !row.entity_id.startsWith("binary_sensor.");
   }
@@ -21226,6 +21357,7 @@ ${s2.description}`).join("\n\n");
       this._showChartDeltaTooltip = true;
       this._showChartDeltaLines = false;
       this._showCorrelatedAnomalies = false;
+      this._chartAnomalyOverlapMode = "all";
       this._showDataGaps = true;
       this._dataGapThreshold = "2h";
       this._historyStartTime = null;
@@ -21279,6 +21411,7 @@ ${s2.description}`).join("\n\n");
       this._sidebarOptionsComp = null;
       this._sidebarAccordionTargetsOpen = true;
       this._sidebarAccordionDatapointsOpen = true;
+      this._sidebarAccordionAnalysisOpen = true;
       this._sidebarAccordionChartOpen = true;
       this._dateControl = null;
       this._dateRangePickerEl = null;
@@ -21471,6 +21604,7 @@ ${s2.description}`).join("\n\n");
       this._sidebarCollapsed = !!sessionState?.sidebar_collapsed;
       this._sidebarAccordionTargetsOpen = sessionState?.sidebar_accordion_targets_open !== false;
       this._sidebarAccordionDatapointsOpen = sessionState?.sidebar_accordion_datapoints_open !== false;
+      this._sidebarAccordionAnalysisOpen = sessionState?.sidebar_accordion_analysis_open !== false;
       this._sidebarAccordionChartOpen = sessionState?.sidebar_accordion_chart_open !== false;
       if (Number.isFinite(sessionState?.content_split_ratio)) {
         this._contentSplitRatio = clampNumber(sessionState.content_split_ratio, 0.25, 0.75);
@@ -21528,6 +21662,7 @@ ${s2.description}`).join("\n\n");
       this._showChartDeltaTooltip = sessionState?.show_chart_delta_tooltip !== false;
       this._showChartDeltaLines = sessionState?.show_chart_delta_lines === true;
       this._showCorrelatedAnomalies = sessionState?.show_chart_correlated_anomalies === true;
+      this._chartAnomalyOverlapMode = ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS.some((o2) => o2.value === sessionState?.chart_anomaly_overlap_mode) ? sessionState.chart_anomaly_overlap_mode : "all";
       this._showDataGaps = sessionState?.show_data_gaps !== false;
       this._dataGapThreshold = DATA_GAP_THRESHOLD_OPTIONS.some((option) => option.value === sessionState?.data_gap_threshold) ? sessionState.data_gap_threshold : "2h";
       this._comparisonWindows = dateWindowsFromUrl.length ? dateWindowsFromUrl : normalizeDateWindows(sessionState?.date_windows);
@@ -21691,7 +21826,7 @@ ${s2.description}`).join("\n\n");
           });
         });
       }).catch((error) => {
-        console.warn("[hass-datapoints panel] ensure UI components ready failed", {
+        logger$1.warn("[hass-datapoints panel] ensure UI components ready failed", {
           message: error?.message || String(error)
         });
       });
@@ -21825,8 +21960,10 @@ ${s2.description}`).join("\n\n");
       this._sidebarOptionsComp.showDataGaps = this._showDataGaps;
       this._sidebarOptionsComp.dataGapThreshold = this._dataGapThreshold;
       this._sidebarOptionsComp.yAxisMode = yAxisMode;
+      this._sidebarOptionsComp.anomalyOverlapMode = this._chartAnomalyOverlapMode;
       this._sidebarOptionsComp.targetsOpen = this._sidebarAccordionTargetsOpen;
       this._sidebarOptionsComp.datapointsOpen = this._sidebarAccordionDatapointsOpen;
+      this._sidebarOptionsComp.analysisOpen = this._sidebarAccordionAnalysisOpen;
       this._sidebarOptionsComp.chartOpen = this._sidebarAccordionChartOpen;
     }
     _formatComparisonLabel(start, end) {
@@ -22427,7 +22564,7 @@ ${s2.description}`).join("\n\n");
           this._syncControls();
         }
       }).catch((err) => {
-        console.warn("[hass-datapoints] failed to load event bounds:", err);
+        logger$1.warn("[hass-datapoints] failed to load event bounds:", err);
         this._historyBoundsLoaded = true;
       }).finally(() => {
         this._historyBoundsPromise = null;
@@ -22455,7 +22592,7 @@ ${s2.description}`).join("\n\n");
         this._timelineEventsKey = key;
         if (this._rendered && this._panelTimelineEl) this._panelTimelineEl.events = this._timelineEvents;
       }).catch((err) => {
-        console.warn("[hass-datapoints] failed to load timeline events:", err);
+        logger$1.warn("[hass-datapoints] failed to load timeline events:", err);
       }).finally(() => {
         this._timelineEventsPromise = null;
       });
@@ -22482,7 +22619,7 @@ ${s2.description}`).join("\n\n");
           this._renderContent();
         }
       }).catch((err) => {
-        console.warn("[hass-datapoints] failed to load panel preferences:", err);
+        logger$1.warn("[hass-datapoints] failed to load panel preferences:", err);
         this._preferencesLoaded = true;
       }).finally(() => {
         this._preferencesPromise = null;
@@ -22699,10 +22836,23 @@ ${s2.description}`).join("\n\n");
             this._setChartDatapointDisplayOption(kind, value);
           }
         });
+        sidebarComp.addEventListener("dp-analysis-change", (ev) => {
+          const { kind, value } = ev.detail || {};
+          if (kind === "anomaly_overlap_mode" && ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS.some((o2) => o2.value === value)) {
+            if (this._chartAnomalyOverlapMode === value) {
+              return;
+            }
+            this._chartAnomalyOverlapMode = value;
+            this._saveSessionState();
+            this._renderSidebarOptions();
+            this._renderContent();
+          }
+        });
         sidebarComp.addEventListener("dp-accordion-change", (ev) => {
-          const { targetsOpen, datapointsOpen, chartOpen } = ev.detail || {};
+          const { targetsOpen, datapointsOpen, analysisOpen, chartOpen } = ev.detail || {};
           if (typeof targetsOpen === "boolean") this._sidebarAccordionTargetsOpen = targetsOpen;
           if (typeof datapointsOpen === "boolean") this._sidebarAccordionDatapointsOpen = datapointsOpen;
+          if (typeof analysisOpen === "boolean") this._sidebarAccordionAnalysisOpen = analysisOpen;
           if (typeof chartOpen === "boolean") this._sidebarAccordionChartOpen = chartOpen;
           this._saveSessionState();
         });
@@ -23188,7 +23338,7 @@ ${s2.description}`).join("\n\n");
           datapointScope: this._datapointScope
         });
       } catch (error) {
-        console.error("[hass-datapoints panel] spreadsheet export:failed", error);
+        logger$1.error("[hass-datapoints panel] spreadsheet export:failed", error);
       } finally {
         this._exportBusy = false;
       }
@@ -23222,7 +23372,7 @@ ${s2.description}`).join("\n\n");
         this._hasSavedPage = true;
         this._syncSavedPageMenuItems();
       } catch (err) {
-        console.error("[hass-datapoints panel] save page state failed:", err);
+        logger$1.error("[hass-datapoints panel] save page state failed:", err);
       } finally {
         this._savePageBusy = false;
       }
@@ -23244,7 +23394,7 @@ ${s2.description}`).join("\n\n");
         window.history.replaceState(null, "", baseUrl);
         window.location.reload();
       } catch (err) {
-        console.error("[hass-datapoints panel] restore page state failed:", err);
+        logger$1.error("[hass-datapoints panel] restore page state failed:", err);
       }
     }
     async _clearSavedPageState() {
@@ -23255,7 +23405,7 @@ ${s2.description}`).join("\n\n");
         this._hasSavedPage = false;
         this._syncSavedPageMenuItems();
       } catch (err) {
-        console.error("[hass-datapoints panel] clear saved page state failed:", err);
+        logger$1.error("[hass-datapoints panel] clear saved page state failed:", err);
       }
     }
     _computeFloatingMenuPosition(anchorEl, menuWidth) {
@@ -23821,6 +23971,7 @@ ${s2.description}`).join("\n\n");
           show_tooltips: this._showChartTooltips,
           emphasize_hover_guides: this._showChartEmphasizedHoverGuides,
           show_correlated_anomalies: this._showCorrelatedAnomalies,
+          anomaly_overlap_mode: this._chartAnomalyOverlapMode,
           delink_y_axis: this._delinkChartYAxis,
           split_view: this._splitChartView,
           show_data_gaps: this._showDataGaps,
@@ -24054,9 +24205,11 @@ ${s2.description}`).join("\n\n");
       window.customCards.push(card);
     }
   });
-  console.info(
+  console.groupCollapsed(
     "%c hass-datapoints %c v0.3.0 loaded ",
     "color:#fff;background:#03a9f4;font-weight:bold;padding:2px 6px;border-radius:3px 0 0 3px",
     "color:#03a9f4;background:#fff;font-weight:bold;padding:2px 6px;border:1px solid #03a9f4;border-radius:0 3px 3px 0"
   );
+  console.log("Enable debug logging by setting %cwindow.__HASS_DATAPOINTS_DEV__ = true", "color:#333;background:#eee;border:1px solid #777;padding:2px 6px;border-radius:5px; font-family: Courier");
+  console.groupEnd();
 })();

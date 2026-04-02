@@ -63,11 +63,11 @@ export class DpTargetRowList extends LitElement {
    */
   private _onToggleAnalysisFast = (e: CustomEvent) => {
     const entityId = String(e?.detail?.entityId || "").trim();
-    if (!entityId) return;
+    if (!entityId) { return; }
     const index = this.rows?.findIndex((r) => r.entity_id === entityId) ?? -1;
-    if (index === -1) return;
+    if (index === -1) { return; }
     this.rows = this.rows.map((row, i) => {
-      if (i !== index) return row;
+      if (i !== index) { return row; }
       return {
         ...row,
         analysis: {
@@ -76,6 +76,36 @@ export class DpTargetRowList extends LitElement {
         },
       };
     });
+  };
+
+  /**
+   * Optimistically apply analysis option changes immediately so sub-option
+   * groups (e.g. method-specific windows) appear without waiting for the
+   * panel round-trip. Handles both plain key/value changes and the special
+   * `anomaly_method_toggle_*` keys used by the anomaly group.
+   */
+  private _onRowAnalysisChangeFast = (e: CustomEvent) => {
+    const { entityId, key, value } = (e.detail || {}) as { entityId?: string; key?: string; value?: unknown };
+    if (!entityId || !key) { return; }
+    const index = this.rows?.findIndex((r) => r.entity_id === entityId) ?? -1;
+    if (index === -1) { return; }
+
+    const row = this.rows[index];
+    const currentAnalysis = row.analysis || ({} as NormalizedAnalysis);
+    let nextAnalysis: NormalizedAnalysis;
+
+    if (key.startsWith("anomaly_method_toggle_")) {
+      const method = key.slice("anomaly_method_toggle_".length);
+      const currentMethods = Array.isArray(currentAnalysis.anomaly_methods) ? currentAnalysis.anomaly_methods : [];
+      const nextMethods = value === true
+        ? [...new Set([...currentMethods, method])]
+        : currentMethods.filter((m: string) => m !== method);
+      nextAnalysis = { ...currentAnalysis, anomaly_methods: nextMethods };
+    } else {
+      nextAnalysis = { ...currentAnalysis, [key]: value };
+    }
+
+    this.rows = this.rows.map((r, i) => (i === index ? { ...r, analysis: nextAnalysis } : r));
   };
 
   render() {
@@ -95,6 +125,7 @@ export class DpTargetRowList extends LitElement {
           @dragleave=${this._onDragLeave}
           @drop=${this._onDrop}
           @dp-row-toggle-analysis=${this._onToggleAnalysisFast}
+          @dp-row-analysis-change=${this._onRowAnalysisChangeFast}
         >
           ${this.rows.map(
             (row, index) => html`

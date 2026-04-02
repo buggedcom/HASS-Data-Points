@@ -1,5 +1,6 @@
 import { confirmDestructiveAction, DOMAIN, esc, fmtDateTime } from "@/lib/shared";
 import type { HassLike } from "@/lib/types";
+import { logger } from "@/lib/logger.js";
 
 interface ChangeItem {
   timestamp: string;
@@ -330,7 +331,7 @@ export class HassRecordsDevToolCard extends HTMLElement {
       this._hideStatus("analyze-status");
     } catch (err) {
       this._showStatus("analyze-status", "err", `Error: ${(err as Error).message || "Failed to fetch history"}`);
-      console.error("[hass-datapoints dev-tool]", err);
+      logger.error("[hass-datapoints dev-tool]", err);
     }
     btn.disabled = false;
   }

@@ -2,6 +2,7 @@ import { LitElement, html } from "lit";
 import { styles } from "./dp-sidebar-options.styles";
 import "./sections/dp-sidebar-datapoints-section";
 import "./sections/dp-sidebar-datapoint-display-section";
+import "./sections/dp-sidebar-analysis-section";
 import "./sections/dp-sidebar-chart-display-section";
 
 export class DpSidebarOptions extends LitElement {
@@ -15,9 +16,11 @@ export class DpSidebarOptions extends LitElement {
     showDataGaps: { type: Boolean, attribute: "show-data-gaps" },
     dataGapThreshold: { type: String, attribute: "data-gap-threshold" },
     yAxisMode: { type: String, attribute: "y-axis-mode" },
+    anomalyOverlapMode: { type: String, attribute: "anomaly-overlap-mode" },
     // Accordion open states
     targetsOpen: { type: Boolean, attribute: "targets-open" },
     datapointsOpen: { type: Boolean, attribute: "datapoints-open" },
+    analysisOpen: { type: Boolean, attribute: "analysis-open" },
     chartOpen: { type: Boolean, attribute: "chart-open" },
   };
 
@@ -39,9 +42,13 @@ export class DpSidebarOptions extends LitElement {
 
   declare yAxisMode: string;
 
+  declare anomalyOverlapMode: string;
+
   declare targetsOpen: boolean;
 
   declare datapointsOpen: boolean;
+
+  declare analysisOpen: boolean;
 
   declare chartOpen: boolean;
 
@@ -58,8 +65,10 @@ export class DpSidebarOptions extends LitElement {
     this.showDataGaps = true;
     this.dataGapThreshold = "2h";
     this.yAxisMode = "combined";
+    this.anomalyOverlapMode = "all";
     this.targetsOpen = true;
     this.datapointsOpen = true;
+    this.analysisOpen = true;
     this.chartOpen = true;
   }
 
@@ -70,6 +79,11 @@ export class DpSidebarOptions extends LitElement {
 
   private _onDatapointsToggle(e: CustomEvent) {
     this.datapointsOpen = e.detail.open;
+    this._emitAccordionChange();
+  }
+
+  private _onAnalysisToggle(e: CustomEvent) {
+    this.analysisOpen = e.detail.open;
     this._emitAccordionChange();
   }
 
@@ -84,6 +98,7 @@ export class DpSidebarOptions extends LitElement {
         detail: {
           targetsOpen: this.targetsOpen,
           datapointsOpen: this.datapointsOpen,
+          analysisOpen: this.analysisOpen,
           chartOpen: this.chartOpen,
         },
         bubbles: true,
@@ -108,6 +123,12 @@ export class DpSidebarOptions extends LitElement {
           .open=${this.datapointsOpen}
           @dp-section-toggle=${this._onDatapointsToggle}
         ></dp-sidebar-datapoint-display-section>
+        <dp-sidebar-analysis-section
+          .anomalyOverlapMode=${this.anomalyOverlapMode}
+          collapsible
+          .open=${this.analysisOpen}
+          @dp-section-toggle=${this._onAnalysisToggle}
+        ></dp-sidebar-analysis-section>
         <dp-sidebar-chart-display-section
           .showTooltips=${this.showTooltips}
           .showHoverGuides=${this.showHoverGuides}

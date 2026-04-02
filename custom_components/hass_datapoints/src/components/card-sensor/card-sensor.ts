@@ -13,6 +13,7 @@ import {
 } from "@/lib/shared";
 import type { CardConfig, EventRecord, HassLike } from "@/lib/types";
 import "@/atoms/interactive/dp-pagination/dp-pagination";
+import { logger } from "@/lib/logger.js";
 
 interface EventRecordFull extends EventRecord {
   entity_ids?: string[];
@@ -354,8 +355,8 @@ export class HassRecordsSensorCard extends LitElement {
       this._drawChart(histResult || {}, events || [], t0, t1);
     } catch (err) {
       this._loadMessage = "Failed to load data.";
-      // eslint-disable-next-line no-console
-      console.error("[hass-datapoints sensor-card]", err);
+       
+      logger.error("[hass-datapoints sensor-card]", err);
     }
   }
 

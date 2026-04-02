@@ -243,17 +243,6 @@ export class DpTargetRow extends LitElement {
 
         ${this._supportsAnalysis && this.analysis?.expanded ? html`
           <div class="history-target-analysis" role="cell">
-            <div class="history-target-analysis-copy-row">
-              <button
-                type="button"
-                class="history-target-analysis-copy-btn"
-                title="Copy these analysis settings to all targets"
-                @click=${this._onCopyAnalysisToAll}
-              >
-                <ha-icon icon="mdi:content-copy"></ha-icon>
-                Copy to all targets
-              </button>
-            </div>
             <div class="history-target-analysis-grid">
               <dp-analysis-trend-group
                 .analysis=${a}
@@ -287,12 +276,23 @@ export class DpTargetRow extends LitElement {
                 .canShowDeltaAnalysis=${this.canShowDeltaAnalysis}
                 @dp-group-analysis-change=${this._onGroupAnalysisChange}
               ></dp-analysis-delta-group>
-              <label class="history-target-analysis-option ${!hasActive ? "is-disabled" : ""}">
-                <input type="checkbox" .checked=${a.hide_source_series && hasActive}
-                  ?disabled=${!hasActive}
-                  @change=${(e: Event) => this._onCheckbox("hide_source_series", e)}>
-                <span>Hide source series</span>
-              </label>
+              <div class="history-target-analysis-bottom-row">
+                <label class="history-target-analysis-option ${!hasActive ? "is-disabled" : ""}">
+                  <input type="checkbox" .checked=${a.hide_source_series && hasActive}
+                    ?disabled=${!hasActive}
+                    @change=${(e: Event) => this._onCheckbox("hide_source_series", e)}>
+                  <span>Hide source series</span>
+                </label>
+                <button
+                  type="button"
+                  class="history-target-analysis-copy-btn"
+                  title="Copy these analysis settings to all targets"
+                  @click=${this._onCopyAnalysisToAll}
+                >
+                  <ha-icon icon="mdi:content-copy"></ha-icon>
+                  Copy to all targets
+                </button>
+              </div>
             </div>
           </div>
         ` : nothing}

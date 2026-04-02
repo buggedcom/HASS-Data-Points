@@ -7,7 +7,7 @@
 import { html } from "lit";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("../../../lib/shared.js", () => ({
+vi.mock("@/lib/shared.js", () => ({
   DOMAIN: "hass_datapoints",
 }));
 

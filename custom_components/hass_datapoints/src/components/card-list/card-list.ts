@@ -21,6 +21,7 @@ import {
 import type { CardConfig, EventRecord, HassLike } from "@/lib/types";
 import "@/atoms/interactive/dp-search-bar/dp-search-bar";
 import "@/atoms/interactive/dp-pagination/dp-pagination";
+import { logger } from "@/lib/logger.js";
 
 // The API returns arrays; EventRecord in types.ts uses singular fields.
 // This extended type covers both.
@@ -407,8 +408,8 @@ export class HassRecordsListCard extends LitElement {
       this._closeEdit();
       await this._load();
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error("[hass-datapoints list-card] update failed", err);
+       
+      logger.error("[hass-datapoints list-card] update failed", err);
     }
   }
 
@@ -424,8 +425,8 @@ export class HassRecordsListCard extends LitElement {
       await deleteEvent(this._hass, ev.id);
       await this._load();
     } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error("[hass-datapoints list-card] delete failed", err);
+       
+      logger.error("[hass-datapoints list-card] delete failed", err);
     }
   }
 

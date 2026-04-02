@@ -1,5 +1,6 @@
 import { LitElement, html, css } from "lit";
-import { AMBER, DOMAIN } from "../../lib/shared.js";
+import { AMBER, DOMAIN } from "@/lib/shared.js";
+import { logger } from "@/lib/logger.js";
 
 /**
  * hass-datapoints-quick-card – Simple one-field quick record card.
@@ -176,8 +177,8 @@ export class HassRecordsQuickCard extends LitElement {
       this._feedbackClass = "err";
       this._feedbackText = `Error: ${e.message || "unknown error"}`;
       this._feedbackVisible = true;
-      // eslint-disable-next-line no-console
-      console.error("[hass-datapoints quick-card]", e);
+
+      logger.error("[hass-datapoints quick-card]", e);
     }
     if (btn) btn.disabled = false;
   }

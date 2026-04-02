@@ -1,3 +1,4 @@
+
 /**
  * Preferences data access layer.
  */
@@ -13,7 +14,7 @@ export async function fetchUserData(hass, key, defaultValue = null) {
     });
     return result?.value ?? defaultValue;
   } catch (err) {
-    console.warn("[hass-datapoints] fetchUserData failed:", err);
+    logger.warn("[hass-datapoints] fetchUserData failed:", err);
     return defaultValue;
   }
 }
@@ -26,6 +27,6 @@ export async function saveUserData(hass, key, value) {
       value,
     });
   } catch (err) {
-    console.warn("[hass-datapoints] saveUserData failed:", err);
+    logger.warn("[hass-datapoints] saveUserData failed:", err);
   }
 }

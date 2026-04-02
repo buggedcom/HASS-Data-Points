@@ -3,6 +3,7 @@ import { DOMAIN } from "@/lib/shared";
 import type { ChipItem, HassLike, CardConfig } from "@/lib/types";
 import "@/molecules/dp-chip-group/dp-chip-group";
 import "@/atoms/display/dp-color-swatch/dp-color-swatch";
+import { logger } from "@/lib/logger.js";
 
 type TargetMap = {
   entity_id: string[];
@@ -232,8 +233,8 @@ export class HassRecordsActionCard extends LitElement {
       this._feedbackClass = "err";
       this._feedbackText = `Error: ${err.message || "unknown error"}`;
       this._feedbackVisible = true;
-      // eslint-disable-next-line no-console
-      console.error("[hass-datapoints action-card]", e);
+       
+      logger.error("[hass-datapoints action-card]", e);
     }
 
     if (btn) btn.disabled = false;

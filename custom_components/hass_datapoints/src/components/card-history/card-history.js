@@ -30,6 +30,7 @@ import {
 import { HistoryAnnotationDialogController } from "../annotation-dialog/annotation-dialog.js";
 import { ChartCardBase } from "../card-chart-base/card-chart-base-legacy.js";
 import { computeHistoryAnalysisInWorker } from "../../lib/workers/history-analysis-client.js";
+import { logger } from "../../lib/logger.js";
 
 /**
  * hass-datapoints-history-card – History line chart with annotation markers.
@@ -516,7 +517,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     const t0 = start.getTime();
     const t1 = end.getTime();
     const requestId = ++this._loadRequestId;
-    console.log("[hass-datapoints history-card] load triggered", {
+    logger.log("[hass-datapoints history-card] load triggered", {
       requestId,
       entityIds: this._entityIds,
       start: start.toISOString(),
@@ -2637,7 +2638,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
 
   _queueDrawChart(histResult, statsResult, events, t0, t1, options = {}) {
     const drawRequestId = ++this._drawRequestId;
-    console.log("[hass-datapoints history-card] draw queued", {
+    logger.log("[hass-datapoints history-card] draw queued", {
       drawRequestId,
       loading: options.loading ?? false,
     });
@@ -2870,20 +2871,20 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       const lastPt = seriesItem.pts[seriesItem.pts.length - 1];
       const prev = this._previousSeriesEndpoints.get(seriesItem.entityId);
       if (!prev) {
-        console.log("[hass-datapoints history-card] series initial draw", {
+        logger.log("[hass-datapoints history-card] series initial draw", {
           entityId: seriesItem.entityId,
           pointCount: seriesItem.pts.length,
           lastPt,
         });
       } else if (lastPt[0] !== prev.t || lastPt[1] !== prev.v) {
-        console.log("[hass-datapoints history-card] series updated — live update detected", {
+        logger.log("[hass-datapoints history-card] series updated — live update detected", {
           entityId: seriesItem.entityId,
           pointCount: seriesItem.pts.length,
           prev,
           lastPt,
         });
       } else {
-        console.log("[hass-datapoints history-card] series unchanged — no new data", {
+        logger.log("[hass-datapoints history-card] series unchanged — no new data", {
           entityId: seriesItem.entityId,
           pointCount: seriesItem.pts.length,
           lastPt,

@@ -51,6 +51,7 @@ import {
   PANEL_HISTORY_PREFERENCES_KEY,
   PANEL_HISTORY_SAVED_PAGE_KEY,
 } from "@/lib/shared";
+import { logger } from "@/lib/logger.js";
 
 import "@/molecules/dp-target-row/dp-target-row";
 import "@/molecules/dp-target-row-list/dp-target-row-list";
@@ -2325,6 +2326,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._showChartDeltaTooltip = true;
     this._showChartDeltaLines = false;
     this._showCorrelatedAnomalies = false;
+    this._chartAnomalyOverlapMode = "all";
     this._showDataGaps = true;
     this._dataGapThreshold = "2h";
     this._historyStartTime = null;
@@ -2378,6 +2380,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._sidebarOptionsComp = null;
     this._sidebarAccordionTargetsOpen = true;
     this._sidebarAccordionDatapointsOpen = true;
+    this._sidebarAccordionAnalysisOpen = true;
     this._sidebarAccordionChartOpen = true;
     this._dateControl = null;
     this._dateRangePickerEl = null;
@@ -2576,6 +2579,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._sidebarCollapsed = !!sessionState?.sidebar_collapsed;
     this._sidebarAccordionTargetsOpen = sessionState?.sidebar_accordion_targets_open !== false;
     this._sidebarAccordionDatapointsOpen = sessionState?.sidebar_accordion_datapoints_open !== false;
+    this._sidebarAccordionAnalysisOpen = sessionState?.sidebar_accordion_analysis_open !== false;
     this._sidebarAccordionChartOpen = sessionState?.sidebar_accordion_chart_open !== false;
     if (Number.isFinite(sessionState?.content_split_ratio)) {
       this._contentSplitRatio = clampNumber(sessionState.content_split_ratio, 0.25, 0.75);
@@ -2665,6 +2669,9 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._showChartDeltaTooltip = sessionState?.show_chart_delta_tooltip !== false;
     this._showChartDeltaLines = sessionState?.show_chart_delta_lines === true;
     this._showCorrelatedAnomalies = sessionState?.show_chart_correlated_anomalies === true;
+    this._chartAnomalyOverlapMode = ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS.some((o) => o.value === sessionState?.chart_anomaly_overlap_mode)
+      ? sessionState.chart_anomaly_overlap_mode
+      : "all";
     this._showDataGaps = sessionState?.show_data_gaps !== false;
     this._dataGapThreshold = DATA_GAP_THRESHOLD_OPTIONS.some((option) => option.value === sessionState?.data_gap_threshold)
       ? sessionState.data_gap_threshold
@@ -2859,7 +2866,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
         });
       })
       .catch((error) => {
-        console.warn("[hass-datapoints panel] ensure UI components ready failed", {
+        logger.warn("[hass-datapoints panel] ensure UI components ready failed", {
           message: error?.message || String(error),
         });
       });
@@ -3012,8 +3019,10 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._sidebarOptionsComp.showDataGaps = this._showDataGaps;
     this._sidebarOptionsComp.dataGapThreshold = this._dataGapThreshold;
     this._sidebarOptionsComp.yAxisMode = yAxisMode;
+    this._sidebarOptionsComp.anomalyOverlapMode = this._chartAnomalyOverlapMode;
     this._sidebarOptionsComp.targetsOpen = this._sidebarAccordionTargetsOpen;
     this._sidebarOptionsComp.datapointsOpen = this._sidebarAccordionDatapointsOpen;
+    this._sidebarOptionsComp.analysisOpen = this._sidebarAccordionAnalysisOpen;
     this._sidebarOptionsComp.chartOpen = this._sidebarAccordionChartOpen;
   }
 
@@ -3676,7 +3685,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
         }
       })
       .catch((err) => {
-        console.warn("[hass-datapoints] failed to load event bounds:", err);
+        logger.warn("[hass-datapoints] failed to load event bounds:", err);
         this._historyBoundsLoaded = true;
       })
       .finally(() => {
@@ -3709,7 +3718,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
         if (this._rendered && this._panelTimelineEl) this._panelTimelineEl.events = this._timelineEvents;
       })
       .catch((err) => {
-        console.warn("[hass-datapoints] failed to load timeline events:", err);
+        logger.warn("[hass-datapoints] failed to load timeline events:", err);
       })
       .finally(() => {
         this._timelineEventsPromise = null;
@@ -3742,7 +3751,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
         }
       })
       .catch((err) => {
-        console.warn("[hass-datapoints] failed to load panel preferences:", err);
+        logger.warn("[hass-datapoints] failed to load panel preferences:", err);
         this._preferencesLoaded = true;
       })
       .finally(() => {
@@ -3965,10 +3974,21 @@ export class HassRecordsHistoryPanel extends HTMLElement {
           this._setChartDatapointDisplayOption(kind, value);
         }
       });
+      sidebarComp.addEventListener("dp-analysis-change", (ev) => {
+        const { kind, value } = ev.detail || {};
+        if (kind === "anomaly_overlap_mode" && ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS.some((o) => o.value === value)) {
+          if (this._chartAnomalyOverlapMode === value) { return; }
+          this._chartAnomalyOverlapMode = value;
+          this._saveSessionState();
+          this._renderSidebarOptions();
+          this._renderContent();
+        }
+      });
       sidebarComp.addEventListener("dp-accordion-change", (ev) => {
-        const { targetsOpen, datapointsOpen, chartOpen } = ev.detail || {};
+        const { targetsOpen, datapointsOpen, analysisOpen, chartOpen } = ev.detail || {};
         if (typeof targetsOpen === "boolean") this._sidebarAccordionTargetsOpen = targetsOpen;
         if (typeof datapointsOpen === "boolean") this._sidebarAccordionDatapointsOpen = datapointsOpen;
+        if (typeof analysisOpen === "boolean") this._sidebarAccordionAnalysisOpen = analysisOpen;
         if (typeof chartOpen === "boolean") this._sidebarAccordionChartOpen = chartOpen;
         this._saveSessionState();
       });
@@ -4508,7 +4528,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
         datapointScope: this._datapointScope,
       });
     } catch (error) {
-      console.error("[hass-datapoints panel] spreadsheet export:failed", error);
+      logger.error("[hass-datapoints panel] spreadsheet export:failed", error);
     } finally {
       this._exportBusy = false;
     }
@@ -4547,7 +4567,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       this._hasSavedPage = true;
       this._syncSavedPageMenuItems();
     } catch (err) {
-      console.error("[hass-datapoints panel] save page state failed:", err);
+      logger.error("[hass-datapoints panel] save page state failed:", err);
     } finally {
       this._savePageBusy = false;
     }
@@ -4574,7 +4594,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       window.history.replaceState(null, "", baseUrl);
       window.location.reload();
     } catch (err) {
-      console.error("[hass-datapoints panel] restore page state failed:", err);
+      logger.error("[hass-datapoints panel] restore page state failed:", err);
     }
   }
 
@@ -4586,7 +4606,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       this._hasSavedPage = false;
       this._syncSavedPageMenuItems();
     } catch (err) {
-      console.error("[hass-datapoints panel] clear saved page state failed:", err);
+      logger.error("[hass-datapoints panel] clear saved page state failed:", err);
     }
   }
 
@@ -5232,6 +5252,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
         show_tooltips: this._showChartTooltips,
         emphasize_hover_guides: this._showChartEmphasizedHoverGuides,
         show_correlated_anomalies: this._showCorrelatedAnomalies,
+        anomaly_overlap_mode: this._chartAnomalyOverlapMode,
         delink_y_axis: this._delinkChartYAxis,
         split_view: this._splitChartView,
         show_data_gaps: this._showDataGaps,
