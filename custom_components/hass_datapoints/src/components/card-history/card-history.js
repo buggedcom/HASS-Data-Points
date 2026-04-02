@@ -29,7 +29,7 @@ import {
 } from "../../lib/shared.js";
 import { HistoryAnnotationDialogController } from "../annotation-dialog/annotation-dialog.js";
 import { ChartCardBase } from "../card-chart-base/card-chart-base-legacy.js";
-import { computeHistoryAnalysisInWorker } from "../../lib/workers/history-analysis-client.js";
+import { computeHistoryAnalysisInWorker, terminateHistoryAnalysisWorker } from "../../lib/workers/history-analysis-client.js";
 import { logger } from "../../lib/logger.js";
 
 /**
@@ -2708,6 +2708,11 @@ export class HassRecordsHistoryCard extends ChartCardBase {
   }
 
   async _computeHistoryAnalysis(visibleSeries, selectedComparisonSeriesMap, analysisMap, hasSelectedComparisonWindow, allComparisonWindowsData = {}) {
+    // Abort any in-flight worker computation from a previous (now stale) draw request.
+    // This prevents the chart from hanging while waiting for a worker result that will
+    // be discarded anyway once the stale-request check runs.
+    terminateHistoryAnalysisWorker();
+
     const payload = this._buildHistoryAnalysisPayload(
       visibleSeries,
       selectedComparisonSeriesMap,
@@ -2718,100 +2723,81 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     try {
       return await computeHistoryAnalysisInWorker(payload);
     } catch (error) {
+      // If this draw was superseded by a newer one, return a safe empty result quickly.
+      // The stale-request check in _drawChart will discard it before any rendering occurs.
+      if (error?.message?.startsWith("Aborted")) {
+        return { trendSeries: [], rateSeries: [], deltaSeries: [], summaryStats: [], anomalySeries: [] };
+      }
+
       console.warn("[hass-datapoints history-card] analysis worker fallback", {
         message: error?.message || String(error),
       });
-      return {
-        trendSeries: visibleSeries
-          .map((seriesItem) => {
-            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
-            if (analysis.show_trend_lines !== true) {
-              return null;
-            }
-            return {
-              entityId: seriesItem.entityId,
-              pts: this._buildTrendPoints(seriesItem.pts, analysis.trend_method, analysis.trend_window),
-            };
-          })
-            .filter((seriesItem) => Array.isArray(seriesItem.pts) && seriesItem.pts.length >= 2)
-          .filter(Boolean),
-        rateSeries: visibleSeries
-          .map((seriesItem) => {
-            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
-            if (analysis.show_rate_of_change !== true) {
-              return null;
-            }
-            return {
-              entityId: seriesItem.entityId,
-              pts: this._buildRateOfChangePoints(seriesItem.pts, analysis.rate_window),
-            };
-          })
-            .filter((seriesItem) => Array.isArray(seriesItem.pts) && seriesItem.pts.length >= 2)
-          .filter(Boolean),
-        deltaSeries: visibleSeries
-          .map((seriesItem) => {
-            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
-            if (!(analysis.show_delta_analysis === true && hasSelectedComparisonWindow === true)) {
-              return null;
-            }
-            const comparisonSeries = selectedComparisonSeriesMap.get(seriesItem.entityId);
-            return {
-              entityId: seriesItem.entityId,
-              pts: comparisonSeries ? this._buildDeltaPoints(seriesItem.pts, comparisonSeries.pts) : [],
-            };
-          })
-            .filter((seriesItem) => Array.isArray(seriesItem.pts) && seriesItem.pts.length >= 2)
-          .filter(Boolean),
-        summaryStats: visibleSeries
-          .map((seriesItem) => {
-            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
-            if (analysis.show_summary_stats !== true) {
-              return null;
-            }
-            return {
-              entityId: seriesItem.entityId,
-              ...this._buildSummaryStats(seriesItem.pts),
-            };
-          })
-          .filter((entry) => entry && Number.isFinite(entry.min) && Number.isFinite(entry.max) && Number.isFinite(entry.mean)),
-        anomalySeries: visibleSeries
-          .map((seriesItem) => {
-            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
-            if (analysis.show_anomalies !== true) return null;
-            const clustersByMethod = {};
-            const methods = analysis.anomaly_methods;
-            if (methods.includes("trend_residual")) {
-              const c = this._buildAnomalyClusters(seriesItem.pts, analysis.trend_method, analysis.trend_window, analysis.anomaly_sensitivity);
-              if (c.length > 0) clustersByMethod.trend_residual = c;
-            }
-            if (methods.includes("rate_of_change")) {
-              const c = this._buildRateOfChangeAnomalyClusters(seriesItem.pts, analysis.anomaly_rate_window, analysis.anomaly_sensitivity);
-              if (c.length > 0) clustersByMethod.rate_of_change = c;
-            }
-            if (methods.includes("iqr")) {
-              const c = this._buildIQRAnomalyClusters(seriesItem.pts, analysis.anomaly_sensitivity);
-              if (c.length > 0) clustersByMethod.iqr = c;
-            }
-            if (methods.includes("rolling_zscore")) {
-              const c = this._buildRollingZScoreAnomalyClusters(seriesItem.pts, analysis.anomaly_zscore_window, analysis.anomaly_sensitivity);
-              if (c.length > 0) clustersByMethod.rolling_zscore = c;
-            }
-            if (methods.includes("persistence")) {
-              const c = this._buildPersistenceAnomalyClusters(seriesItem.pts, analysis.anomaly_persistence_window, analysis.anomaly_sensitivity);
-              if (c.length > 0) clustersByMethod.persistence = c;
-            }
-            if (methods.includes("comparison_window") && analysis.anomaly_comparison_window_id) {
-              const compPts = allComparisonWindowsData[analysis.anomaly_comparison_window_id]?.[seriesItem.entityId];
-              if (Array.isArray(compPts) && compPts.length >= 3) {
-                const c = this._buildComparisonWindowAnomalyClusters(seriesItem.pts, compPts, analysis.anomaly_sensitivity);
-                if (c.length > 0) clustersByMethod.comparison_window = c;
+
+      // Main-thread fallback — runs when the worker crashes or fails to start.
+      // Anomaly detection is deliberately skipped here: those algorithms (especially IQR
+      // sort) are too expensive to run synchronously on the main thread for large datasets,
+      // and the user will get the full result on the next successful worker invocation.
+      try {
+        return {
+          trendSeries: visibleSeries
+            .map((seriesItem) => {
+              const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
+              if (analysis.show_trend_lines !== true) {
+                return null;
               }
-            }
-            const anomalyClusters = this._applyAnomalyOverlapMode(clustersByMethod, analysis.anomaly_overlap_mode);
-            return anomalyClusters.length > 0 ? { entityId: seriesItem.entityId, anomalyClusters } : null;
-          })
-          .filter(Boolean),
-      };
+              return {
+                entityId: seriesItem.entityId,
+                pts: this._buildTrendPoints(seriesItem.pts, analysis.trend_method, analysis.trend_window),
+              };
+            })
+            .filter(Boolean)
+            .filter((seriesItem) => Array.isArray(seriesItem.pts) && seriesItem.pts.length >= 2),
+          rateSeries: visibleSeries
+            .map((seriesItem) => {
+              const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
+              if (analysis.show_rate_of_change !== true) {
+                return null;
+              }
+              return {
+                entityId: seriesItem.entityId,
+                pts: this._buildRateOfChangePoints(seriesItem.pts, analysis.rate_window),
+              };
+            })
+            .filter(Boolean)
+            .filter((seriesItem) => Array.isArray(seriesItem.pts) && seriesItem.pts.length >= 2),
+          deltaSeries: visibleSeries
+            .map((seriesItem) => {
+              const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
+              if (!(analysis.show_delta_analysis === true && hasSelectedComparisonWindow === true)) {
+                return null;
+              }
+              const comparisonSeries = selectedComparisonSeriesMap.get(seriesItem.entityId);
+              return {
+                entityId: seriesItem.entityId,
+                pts: comparisonSeries ? this._buildDeltaPoints(seriesItem.pts, comparisonSeries.pts) : [],
+              };
+            })
+            .filter(Boolean)
+            .filter((seriesItem) => Array.isArray(seriesItem.pts) && seriesItem.pts.length >= 2),
+          summaryStats: visibleSeries
+            .map((seriesItem) => {
+              const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
+              if (analysis.show_summary_stats !== true) {
+                return null;
+              }
+              return {
+                entityId: seriesItem.entityId,
+                ...this._buildSummaryStats(seriesItem.pts),
+              };
+            })
+            .filter((entry) => entry && Number.isFinite(entry.min) && Number.isFinite(entry.max) && Number.isFinite(entry.mean)),
+          // Anomaly detection intentionally omitted in the fallback path — see comment above.
+          anomalySeries: [],
+        };
+      } catch (fallbackError) {
+        console.error("[hass-datapoints history-card] analysis fallback failed", fallbackError);
+        return { trendSeries: [], rateSeries: [], deltaSeries: [], summaryStats: [], anomalySeries: [] };
+      }
     }
   }
 

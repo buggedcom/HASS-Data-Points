@@ -68,7 +68,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     // Stub: full loading handled by the JS implementation.
   }
 
-  protected _drawChart(..._args: unknown[]): void {
+  protected _drawChart(): void {
     // Stub: full drawing handled by the JS implementation.
   }
 
