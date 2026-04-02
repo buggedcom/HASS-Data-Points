@@ -155,7 +155,7 @@ export class DpDateWindowDialog extends LitElement {
   private _parseValueToDate(value: string): Date | null {
     if (!value) return null;
     const d = new Date(value);
-    return isNaN(d.getTime()) ? null : d;
+    return Number.isNaN(d.getTime()) ? null : d;
   }
 
   render() {

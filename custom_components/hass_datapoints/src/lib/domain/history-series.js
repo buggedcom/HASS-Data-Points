@@ -14,6 +14,7 @@ export function normalizeHistorySeriesAnalysis(analysis) {
     trend_window: typeof source.trend_window === "string" && source.trend_window ? source.trend_window : "24h",
     show_trend_crosshairs: source.show_trend_crosshairs === true,
     show_summary_stats: source.show_summary_stats === true,
+    show_summary_stats_shading: source.show_summary_stats_shading === true,
     show_rate_of_change: source.show_rate_of_change === true,
     rate_window: typeof source.rate_window === "string" && source.rate_window ? source.rate_window : "1h",
     show_threshold_analysis: source.show_threshold_analysis === true,

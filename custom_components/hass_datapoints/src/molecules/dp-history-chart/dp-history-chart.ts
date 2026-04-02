@@ -32,13 +32,6 @@ export class DpHistoryChart extends HTMLElement {
 
   // ── Construction ───────────────────────────────────────────────────────────
 
-  constructor() {
-    super();
-    // Children cannot be added in the constructor (HTML spec). The inner card
-    // is created in connectedCallback(), which is called synchronously by the
-    // browser when this element is appended to the DOM.
-  }
-
   connectedCallback() {
     if (!this._chartEl) {
       const card = document.createElement("hass-datapoints-history-card") as typeof this._chartEl;

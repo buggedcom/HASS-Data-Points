@@ -99,7 +99,7 @@ export function ensureHaComponents(tags = []) {
         ready: !!results[index],
         defined: !!customElements.get(tag),
       }));
-      return results;
+      return summary;
     });
 }
 

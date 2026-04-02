@@ -9,6 +9,7 @@ export interface NormalizedAnalysis {
   trend_window: string;
   show_trend_crosshairs: boolean;
   show_summary_stats: boolean;
+  show_summary_stats_shading: boolean;
   show_rate_of_change: boolean;
   rate_window: string;
   show_threshold_analysis: boolean;

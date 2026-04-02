@@ -14,7 +14,7 @@ export function readHistoryPageSessionState() {
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     return parsed && typeof parsed === "object" ? parsed : null;
-  } catch (_err) {
+  } catch {
     return null;
   }
 }
@@ -80,7 +80,7 @@ export function buildHistoryPageSessionState(source) {
 export function writeHistoryPageSessionState(source) {
   try {
     window.sessionStorage?.setItem(PANEL_HISTORY_SESSION_KEY, JSON.stringify(buildHistoryPageSessionState(source)));
-  } catch (_err) {
+  } catch {
     // Ignore session storage failures.
   }
 }

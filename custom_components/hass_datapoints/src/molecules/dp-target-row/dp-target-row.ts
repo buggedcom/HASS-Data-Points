@@ -8,6 +8,7 @@ import { styles } from "./dp-target-row.styles";
 import type { NormalizedAnalysis, ComparisonWindow, HassEntityState } from "./types";
 
 import "@/molecules/dp-analysis-trend-group/dp-analysis-trend-group";
+import "@/molecules/dp-analysis-summary-group/dp-analysis-summary-group";
 import "@/molecules/dp-analysis-rate-group/dp-analysis-rate-group";
 import "@/molecules/dp-analysis-threshold-group/dp-analysis-threshold-group";
 import "@/molecules/dp-analysis-anomaly-group/dp-analysis-anomaly-group";
@@ -249,10 +250,11 @@ export class DpTargetRow extends LitElement {
                 .entityId=${this._entityId}
                 @dp-group-analysis-change=${this._onGroupAnalysisChange}
               ></dp-analysis-trend-group>
-              <label class="history-target-analysis-option">
-                <input type="checkbox" .checked=${a.show_summary_stats} @change=${(e: Event) => this._onCheckbox("show_summary_stats", e)}>
-                <span>Show min / max / mean</span>
-              </label>
+              <dp-analysis-summary-group
+                .analysis=${a}
+                .entityId=${this._entityId}
+                @dp-group-analysis-change=${this._onGroupAnalysisChange}
+              ></dp-analysis-summary-group>
               <dp-analysis-rate-group
                 .analysis=${a}
                 .entityId=${this._entityId}

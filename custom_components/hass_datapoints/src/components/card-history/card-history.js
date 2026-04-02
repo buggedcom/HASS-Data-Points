@@ -1355,9 +1355,9 @@ export class HassRecordsHistoryCard extends ChartCardBase {
         // Summary stat values (constant horizontal lines).
         if (effectiveAnalysis.show_summary_stats === true && trackSummaryStats) {
           const summaryEntries = [
-            { type: "min",  value: trackSummaryStats.min,  alphaV: trackHideSource ? 0.78 : 0.42, opac: trackHideSource ? 0.82 : 0.34 },
+            { type: "min",  value: trackSummaryStats.min,  alphaV: trackHideSource ? 0.94 : 0.78, opac: trackHideSource ? 0.94 : 0.72 },
             { type: "mean", value: trackSummaryStats.mean, alphaV: trackHideSource ? 0.94 : 0.78, opac: trackHideSource ? 0.94 : 0.72 },
-            { type: "max",  value: trackSummaryStats.max,  alphaV: trackHideSource ? 0.78 : 0.42, opac: trackHideSource ? 0.82 : 0.34 },
+            { type: "max",  value: trackSummaryStats.max,  alphaV: trackHideSource ? 0.94 : 0.78, opac: trackHideSource ? 0.94 : 0.72 },
           ];
           for (const entry of summaryEntries) {
             if (!Number.isFinite(entry.value)) continue;
@@ -3307,9 +3307,10 @@ export class HassRecordsHistoryCard extends ChartCardBase {
             baseLabel: seriesItem.label,
             unit: seriesItem.unit || "",
             value: stats.min,
-            color: hexToRgba(seriesItem.color, anyHiddenSourceSeries ? 0.78 : 0.42),
+            color: hexToRgba(seriesItem.color, anyHiddenSourceSeries ? 0.94 : 0.78),
+            baseColor: seriesItem.color,
             axis: seriesItem.axis,
-            hoverOpacity: anyHiddenSourceSeries ? 0.82 : 0.34,
+            hoverOpacity: anyHiddenSourceSeries ? 0.94 : 0.72,
             summaryType: "min",
             summary: true,
           },
@@ -3321,6 +3322,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
             unit: seriesItem.unit || "",
             value: stats.mean,
             color: hexToRgba(seriesItem.color, anyHiddenSourceSeries ? 0.94 : 0.78),
+            baseColor: seriesItem.color,
             axis: seriesItem.axis,
             hoverOpacity: anyHiddenSourceSeries ? 0.94 : 0.72,
             summaryType: "mean",
@@ -3333,9 +3335,10 @@ export class HassRecordsHistoryCard extends ChartCardBase {
             baseLabel: seriesItem.label,
             unit: seriesItem.unit || "",
             value: stats.max,
-            color: hexToRgba(seriesItem.color, anyHiddenSourceSeries ? 0.78 : 0.42),
+            color: hexToRgba(seriesItem.color, anyHiddenSourceSeries ? 0.94 : 0.78),
+            baseColor: seriesItem.color,
             axis: seriesItem.axis,
-            hoverOpacity: anyHiddenSourceSeries ? 0.82 : 0.34,
+            hoverOpacity: anyHiddenSourceSeries ? 0.94 : 0.72,
             summaryType: "max",
             summary: true,
           },
@@ -3585,6 +3588,20 @@ export class HassRecordsHistoryCard extends ChartCardBase {
           );
         }
     }
+    // Draw gradient shading between min/max lines and the mean (inside only),
+    // gated on the per-series show_summary_stats_shading flag. Drawn before the
+    // lines so the lines sit on top of the fill.
+    visibleSeries.forEach((seriesItem) => {
+      const shadingAnalysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
+      if (shadingAnalysis.show_summary_stats !== true || shadingAnalysis.show_summary_stats_shading !== true) { return; }
+      const stats = summaryStatsMap.get(seriesItem.entityId);
+      const axis = seriesItem.axis;
+      if (!stats || !axis) { return; }
+      if (!Number.isFinite(stats.min) || !Number.isFinite(stats.max) || !Number.isFinite(stats.mean)) { return; }
+      const fillAlpha = anyHiddenSourceSeries ? 0.10 : 0.06;
+      renderer.drawGradientBand(stats.min, stats.mean, seriesItem.color, renderT0, renderT1, axis.min, axis.max, { fillAlpha });
+      renderer.drawGradientBand(stats.max, stats.mean, seriesItem.color, renderT0, renderT1, axis.min, axis.max, { fillAlpha });
+    });
     summaryHoverSeries.forEach((summarySeries) => {
       const axis = summarySeries.axis;
       if (!axis) {
@@ -3599,9 +3616,9 @@ export class HassRecordsHistoryCard extends ChartCardBase {
         axis.max,
         {
           lineOpacity: summarySeries.hoverOpacity,
-          lineWidth: summarySeries.summaryType === "mean" ? 1.8 : 1.1,
+          lineWidth: 1.8,
           dashed: false,
-          dotted: summarySeries.summaryType !== "mean",
+          dotted: false,
         },
       );
     });

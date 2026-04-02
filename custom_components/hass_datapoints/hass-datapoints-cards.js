@@ -258,12 +258,12 @@
       return void 0;
     }) : void 0).then(() => preloadHistoryRouteComponents(componentTags));
     return loadPromise.then(() => Promise.all(componentTags.map((tag) => waitForHaComponent(tag)))).then((results) => {
-      componentTags.map((tag, index) => ({
+      const summary = componentTags.map((tag, index) => ({
         tag,
         ready: !!results[index],
         defined: !!customElements.get(tag)
       }));
-      return results;
+      return summary;
     });
   }
   function confirmDestructiveAction$1(host, options = {}) {
@@ -1053,6 +1053,49 @@
         hits.push({ event, x: x2, y: y2, value });
       }
       return hits;
+    }
+    /**
+     * Draw a gradient-filled band between two data values, fading from the edge
+     * value toward the midpoint value. Used for min/max shading that fades toward
+     * the mean line.
+     *
+     * @param {number} valueEdge  Data value at the opaque edge (the min or max line)
+     * @param {number} valueMid   Data value at the transparent end (the mean line)
+     * @param {string} color      Hex color string (e.g. "#03a9f4")
+     * @param {number} t0         Render start time ms
+     * @param {number} t1         Render end time ms
+     * @param {number} vMin       Y-axis minimum data value
+     * @param {number} vMax       Y-axis maximum data value
+     * @param {object} options    { fillAlpha }
+     */
+    drawGradientBand(valueEdge, valueMid, color, t0, t1, vMin, vMax, options = {}) {
+      const fillAlpha = Number.isFinite(options.fillAlpha) ? options.fillAlpha : 0.08;
+      if (fillAlpha <= 0) {
+        return;
+      }
+      const hexMatch = String(color || "").match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+      if (!hexMatch) {
+        return;
+      }
+      const r2 = parseInt(hexMatch[1], 16);
+      const g2 = parseInt(hexMatch[2], 16);
+      const b2 = parseInt(hexMatch[3], 16);
+      const yEdge = this.yOf(valueEdge, vMin, vMax);
+      const yMid = this.yOf(valueMid, vMin, vMax);
+      if (Math.abs(yMid - yEdge) < 1) {
+        return;
+      }
+      const { ctx, pad } = this;
+      const grad = ctx.createLinearGradient(0, yEdge, 0, yMid);
+      grad.addColorStop(0, `rgba(${r2}, ${g2}, ${b2}, ${fillAlpha})`);
+      grad.addColorStop(1, `rgba(${r2}, ${g2}, ${b2}, 0)`);
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(pad.left, pad.top, this.cw, this.ch);
+      ctx.clip();
+      ctx.fillStyle = grad;
+      ctx.fillRect(pad.left, Math.min(yEdge, yMid), this.cw, Math.abs(yMid - yEdge));
+      ctx.restore();
     }
     drawThresholdArea(points, thresholdValue, color, t0, t1, vMin, vMax, options = {}) {
       if (!Array.isArray(points) || points.length < 2) {
@@ -3995,6 +4038,7 @@ ${s2.description}`).join("\n\n");
       trend_window: typeof source.trend_window === "string" && source.trend_window ? source.trend_window : "24h",
       show_trend_crosshairs: source.show_trend_crosshairs === true,
       show_summary_stats: source.show_summary_stats === true,
+      show_summary_stats_shading: source.show_summary_stats_shading === true,
       show_rate_of_change: source.show_rate_of_change === true,
       rate_window: typeof source.rate_window === "string" && source.rate_window ? source.rate_window : "1h",
       show_threshold_analysis: source.show_threshold_analysis === true,
@@ -4526,7 +4570,7 @@ ${s2.description}`).join("\n\n");
       if (!raw) return null;
       const parsed = JSON.parse(raw);
       return parsed && typeof parsed === "object" ? parsed : null;
-    } catch (_err) {
+    } catch {
       return null;
     }
   }
@@ -4586,7 +4630,7 @@ ${s2.description}`).join("\n\n");
   function writeHistoryPageSessionState(source) {
     try {
       window.sessionStorage?.setItem(PANEL_HISTORY_SESSION_KEY, JSON.stringify(buildHistoryPageSessionState$1(source)));
-    } catch (_err) {
+    } catch {
     }
   }
   function normalizeHistoryPagePreferences(preferences, options = {}) {
@@ -9307,9 +9351,9 @@ ${s2.description}`).join("\n\n");
           }
           if (effectiveAnalysis.show_summary_stats === true && trackSummaryStats) {
             const summaryEntries = [
-              { type: "min", value: trackSummaryStats.min, alphaV: trackHideSource ? 0.78 : 0.42, opac: trackHideSource ? 0.82 : 0.34 },
+              { type: "min", value: trackSummaryStats.min, alphaV: trackHideSource ? 0.94 : 0.78, opac: trackHideSource ? 0.94 : 0.72 },
               { type: "mean", value: trackSummaryStats.mean, alphaV: trackHideSource ? 0.94 : 0.78, opac: trackHideSource ? 0.94 : 0.72 },
-              { type: "max", value: trackSummaryStats.max, alphaV: trackHideSource ? 0.78 : 0.42, opac: trackHideSource ? 0.82 : 0.34 }
+              { type: "max", value: trackSummaryStats.max, alphaV: trackHideSource ? 0.94 : 0.78, opac: trackHideSource ? 0.94 : 0.72 }
             ];
             for (const entry of summaryEntries) {
               if (!Number.isFinite(entry.value)) continue;
@@ -11090,9 +11134,10 @@ ${s2.description}`).join("\n\n");
             baseLabel: seriesItem.label,
             unit: seriesItem.unit || "",
             value: stats.min,
-            color: hexToRgba(seriesItem.color, anyHiddenSourceSeries ? 0.78 : 0.42),
+            color: hexToRgba(seriesItem.color, anyHiddenSourceSeries ? 0.94 : 0.78),
+            baseColor: seriesItem.color,
             axis: seriesItem.axis,
-            hoverOpacity: anyHiddenSourceSeries ? 0.82 : 0.34,
+            hoverOpacity: anyHiddenSourceSeries ? 0.94 : 0.72,
             summaryType: "min",
             summary: true
           },
@@ -11104,6 +11149,7 @@ ${s2.description}`).join("\n\n");
             unit: seriesItem.unit || "",
             value: stats.mean,
             color: hexToRgba(seriesItem.color, anyHiddenSourceSeries ? 0.94 : 0.78),
+            baseColor: seriesItem.color,
             axis: seriesItem.axis,
             hoverOpacity: anyHiddenSourceSeries ? 0.94 : 0.72,
             summaryType: "mean",
@@ -11116,9 +11162,10 @@ ${s2.description}`).join("\n\n");
             baseLabel: seriesItem.label,
             unit: seriesItem.unit || "",
             value: stats.max,
-            color: hexToRgba(seriesItem.color, anyHiddenSourceSeries ? 0.78 : 0.42),
+            color: hexToRgba(seriesItem.color, anyHiddenSourceSeries ? 0.94 : 0.78),
+            baseColor: seriesItem.color,
             axis: seriesItem.axis,
-            hoverOpacity: anyHiddenSourceSeries ? 0.82 : 0.34,
+            hoverOpacity: anyHiddenSourceSeries ? 0.94 : 0.72,
             summaryType: "max",
             summary: true
           }
@@ -11351,6 +11398,23 @@ ${s2.description}`).join("\n\n");
           );
         }
       }
+      visibleSeries.forEach((seriesItem) => {
+        const shadingAnalysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
+        if (shadingAnalysis.show_summary_stats !== true || shadingAnalysis.show_summary_stats_shading !== true) {
+          return;
+        }
+        const stats = summaryStatsMap.get(seriesItem.entityId);
+        const axis = seriesItem.axis;
+        if (!stats || !axis) {
+          return;
+        }
+        if (!Number.isFinite(stats.min) || !Number.isFinite(stats.max) || !Number.isFinite(stats.mean)) {
+          return;
+        }
+        const fillAlpha = anyHiddenSourceSeries ? 0.1 : 0.06;
+        renderer.drawGradientBand(stats.min, stats.mean, seriesItem.color, renderT0, renderT1, axis.min, axis.max, { fillAlpha });
+        renderer.drawGradientBand(stats.max, stats.mean, seriesItem.color, renderT0, renderT1, axis.min, axis.max, { fillAlpha });
+      });
       summaryHoverSeries.forEach((summarySeries) => {
         const axis = summarySeries.axis;
         if (!axis) {
@@ -11365,9 +11429,9 @@ ${s2.description}`).join("\n\n");
           axis.max,
           {
             lineOpacity: summarySeries.hoverOpacity,
-            lineWidth: summarySeries.summaryType === "mean" ? 1.8 : 1.1,
+            lineWidth: 1.8,
             dashed: false,
-            dotted: summarySeries.summaryType !== "mean"
+            dotted: false
           }
         );
       });
@@ -14061,7 +14125,7 @@ ${s2.description}`).join("\n\n");
       };
     }
   }
-  const styles$m = i$5`
+  const styles$n = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -14531,8 +14595,8 @@ ${s2.description}`).join("\n\n");
     cursor: pointer;
   }
 `;
-  const styles$l = i$5``;
-  const styles$k = i$5`
+  const styles$m = i$5``;
+  const styles$l = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -14594,7 +14658,7 @@ ${s2.description}`).join("\n\n");
       disabled: { type: Boolean },
       alignTop: { type: Boolean, attribute: "align-top" }
     };
-    static styles = styles$k;
+    static styles = styles$l;
     constructor() {
       super();
       this.label = "";
@@ -14659,7 +14723,7 @@ ${s2.description}`).join("\n\n");
       analysis: { type: Object },
       entityId: { type: String, attribute: "entity-id" }
     };
-    static styles = [sharedStyles, styles$l];
+    static styles = [sharedStyles, styles$m];
     constructor() {
       super();
       this.analysis = {};
@@ -14714,6 +14778,54 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-analysis-trend-group", DpAnalysisTrendGroup);
+  const styles$k = i$5``;
+  class DpAnalysisSummaryGroup extends i$2 {
+    static properties = {
+      analysis: { type: Object },
+      entityId: { type: String, attribute: "entity-id" }
+    };
+    static styles = [sharedStyles, styles$k];
+    constructor() {
+      super();
+      this.analysis = {};
+      this.entityId = "";
+    }
+    _emit(key, value) {
+      this.dispatchEvent(
+        new CustomEvent("dp-group-analysis-change", {
+          detail: { entityId: this.entityId, key, value },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    _onGroupChange(e2) {
+      this._emit("show_summary_stats", e2.detail.checked);
+    }
+    _onCheckbox(key, e2) {
+      this._emit(key, e2.target.checked);
+    }
+    render() {
+      const a2 = this.analysis;
+      return b`
+      <dp-analysis-group
+        .label=${"Show min / max / mean"}
+        .checked=${a2.show_summary_stats}
+        @dp-group-change=${this._onGroupChange}
+      >
+        <label class="option">
+          <input
+            type="checkbox"
+            .checked=${a2.show_summary_stats_shading}
+            @change=${(e2) => this._onCheckbox("show_summary_stats_shading", e2)}
+          >
+          <span>Show range shading</span>
+        </label>
+      </dp-analysis-group>
+    `;
+    }
+  }
+  customElements.define("dp-analysis-summary-group", DpAnalysisSummaryGroup);
   const styles$j = i$5``;
   const ANALYSIS_RATE_WINDOW_OPTIONS$1 = [
     { value: "point_to_point", label: "Point to point" },
@@ -15149,7 +15261,7 @@ ${s2.description}`).join("\n\n");
       hass: { type: Object, attribute: false },
       comparisonWindows: { type: Array, attribute: "comparison-windows" }
     };
-    static styles = styles$m;
+    static styles = styles$n;
     constructor() {
       super();
       this.color = "#03a9f4";
@@ -15290,10 +15402,11 @@ ${s2.description}`).join("\n\n");
                 .entityId=${this._entityId}
                 @dp-group-analysis-change=${this._onGroupAnalysisChange}
               ></dp-analysis-trend-group>
-              <label class="history-target-analysis-option">
-                <input type="checkbox" .checked=${a2.show_summary_stats} @change=${(e2) => this._onCheckbox("show_summary_stats", e2)}>
-                <span>Show min / max / mean</span>
-              </label>
+              <dp-analysis-summary-group
+                .analysis=${a2}
+                .entityId=${this._entityId}
+                @dp-group-analysis-change=${this._onGroupAnalysisChange}
+              ></dp-analysis-summary-group>
               <dp-analysis-rate-group
                 .analysis=${a2}
                 .entityId=${this._entityId}
@@ -18343,7 +18456,7 @@ ${s2.description}`).join("\n\n");
     _parseValueToDate(value) {
       if (!value) return null;
       const d2 = new Date(value);
-      return isNaN(d2.getTime()) ? null : d2;
+      return Number.isNaN(d2.getTime()) ? null : d2;
     }
     render() {
       return b`
@@ -19098,9 +19211,6 @@ ${s2.description}`).join("\n\n");
     _hass = null;
     _chartEl = null;
     // ── Construction ───────────────────────────────────────────────────────────
-    constructor() {
-      super();
-    }
     connectedCallback() {
       if (!this._chartEl) {
         const card = document.createElement("hass-datapoints-history-card");
