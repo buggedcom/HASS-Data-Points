@@ -1,9 +1,12 @@
 import { LitElement, html, css } from "lit";
+
 export class DpChartMessage extends LitElement {
   static properties = {
     message: { type: String },
   };
+
   declare message: string;
+
   static styles = css`
     :host {
       display: block;
@@ -24,10 +27,12 @@ export class DpChartMessage extends LitElement {
       display: flex;
     }
   `;
+
   constructor() {
     super();
     this.message = "";
   }
+
   render() {
     return html`
       <div class="message ${this.message ? "visible" : ""}">${this.message}</div>

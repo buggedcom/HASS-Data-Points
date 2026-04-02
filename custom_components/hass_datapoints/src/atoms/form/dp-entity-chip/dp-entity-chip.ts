@@ -1,5 +1,6 @@
 import { LitElement, html, css } from "lit";
 import type { ChipItemType, HassLike } from "@/lib/types";
+
 export class DpEntityChip extends LitElement {
   static properties = {
     type: { type: String },
@@ -7,10 +8,15 @@ export class DpEntityChip extends LitElement {
     hass: { type: Object },
     removable: { type: Boolean },
   };
+
   declare type: ChipItemType;
+
   declare itemId: string;
+
   declare hass: HassLike | null;
+
   declare removable: boolean;
+
   static styles = css`
     :host { display: inline-flex; }
     .chip {
@@ -25,6 +31,7 @@ export class DpEntityChip extends LitElement {
     }
     .remove:hover { color: var(--error-color, #f44336); }
   `;
+
   constructor() {
     super();
     this.type = "entity";
@@ -32,6 +39,7 @@ export class DpEntityChip extends LitElement {
     this.hass = null;
     this.removable = false;
   }
+
   _getName(): string {
     if (!this.hass || !this.itemId) {
       return this.itemId || "";
@@ -53,6 +61,7 @@ export class DpEntityChip extends LitElement {
         return this.itemId;
     }
   }
+
   _onRemove() {
     this.dispatchEvent(
       new CustomEvent("dp-chip-remove", {
@@ -62,6 +71,7 @@ export class DpEntityChip extends LitElement {
       }),
     );
   }
+
   render() {
     return html`
       <span class="chip">

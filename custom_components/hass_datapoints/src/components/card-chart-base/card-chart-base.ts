@@ -21,7 +21,9 @@ export abstract class ChartCardBase extends LitElement {
   // ── Protected state accessible to subclasses ─────────────────────────────
 
   protected _hass: HassLike | undefined;
+
   protected _config: CardConfig = {};
+
   protected _loadRequestId = 0;
 
   /** Subclasses store their last draw call arguments here so the
@@ -35,11 +37,17 @@ export abstract class ChartCardBase extends LitElement {
   // ── Private lifecycle state ───────────────────────────────────────────────
 
   private _unsubscribe: (() => void) | null = null;
+
   private _resizeObserver: ResizeObserver | null = null;
+
   private _loadRaf: number | null = null;
+
   private _loadInFlight = false;
+
   private _hasStartedInitialLoad = false;
+
   private _windowListener: (() => void) | null = null;
+
   /** True once _setupAutoRefresh and _setupResizeObserver have been called. */
   private _initialized = false;
 

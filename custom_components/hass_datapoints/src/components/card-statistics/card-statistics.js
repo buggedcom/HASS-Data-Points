@@ -1,6 +1,5 @@
 import {
   attachLineChartHover,
-  attachLineChartRangeZoom,
   COLORS,
   esc,
   fetchEvents,

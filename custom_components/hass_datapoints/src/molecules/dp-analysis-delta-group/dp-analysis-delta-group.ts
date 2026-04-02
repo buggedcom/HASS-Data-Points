@@ -12,7 +12,9 @@ export class DpAnalysisDeltaGroup extends LitElement {
   };
 
   declare analysis: NormalizedAnalysis;
+
   declare entityId: string;
+
   declare canShowDeltaAnalysis: boolean;
 
   static styles = [sharedStyles, styles];

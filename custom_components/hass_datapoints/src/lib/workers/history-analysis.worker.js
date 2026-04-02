@@ -315,9 +315,7 @@ function buildRateOfChangeAnomalyClusters(points, rateWindow, anomalySensitivity
     if (currentCluster.length === 0) {
       return;
     }
-    const maxDeviation = currentCluster.reduce((maxVal, point) => {
-      return Math.max(maxVal, Math.abs(point.residual));
-    }, 0);
+    const maxDeviation = currentCluster.reduce((maxVal, point) => Math.max(maxVal, Math.abs(point.residual)), 0);
     clusters.push({
       points: currentCluster.slice(),
       maxDeviation,
@@ -603,9 +601,7 @@ function buildAnomalyClusters(points, method, trendWindow, anomalySensitivity) {
     if (currentCluster.length === 0) {
       return;
     }
-    const maxDeviation = currentCluster.reduce((maxValue, point) => {
-      return Math.max(maxValue, Math.abs(point.residual));
-    }, 0);
+    const maxDeviation = currentCluster.reduce((maxValue, point) => Math.max(maxValue, Math.abs(point.residual)), 0);
     clusters.push({
       points: currentCluster.slice(),
       maxDeviation,
@@ -627,12 +623,10 @@ function buildAnomalyClusters(points, method, trendWindow, anomalySensitivity) {
 }
 
 function computeHistoryAnalysis(payload) {
-  const series = (Array.isArray(payload?.series) ? payload.series : []).map((seriesItem) => {
-    return {
+  const series = (Array.isArray(payload?.series) ? payload.series : []).map((seriesItem) => ({
       ...seriesItem,
       analysis: normalizeSeriesAnalysis(seriesItem?.analysis),
-    };
-  });
+    }));
   const comparisonSeries = new Map(
     (Array.isArray(payload?.comparisonSeries) ? payload.comparisonSeries : [])
       .filter((entry) => entry?.entityId)
@@ -674,32 +668,32 @@ function computeHistoryAnalysis(payload) {
 
       if (anomalyMethods.includes("trend_residual")) {
         const clusters = buildAnomalyClusters(points, analysis.trend_method, analysis.trend_window, analysis.anomaly_sensitivity);
-        if (clusters.length > 0) clustersByMethod["trend_residual"] = clusters;
+        if (clusters.length > 0) clustersByMethod.trend_residual = clusters;
       }
       if (anomalyMethods.includes("rate_of_change")) {
         const clusters = buildRateOfChangeAnomalyClusters(points, analysis.anomaly_rate_window, analysis.anomaly_sensitivity);
-        if (clusters.length > 0) clustersByMethod["rate_of_change"] = clusters;
+        if (clusters.length > 0) clustersByMethod.rate_of_change = clusters;
       }
       if (anomalyMethods.includes("iqr")) {
         const clusters = buildIQRAnomalyClusters(points, analysis.anomaly_sensitivity);
-        if (clusters.length > 0) clustersByMethod["iqr"] = clusters;
+        if (clusters.length > 0) clustersByMethod.iqr = clusters;
       }
       if (anomalyMethods.includes("rolling_zscore")) {
         const windowMs = getTrendWindowMs(analysis.anomaly_zscore_window);
         const clusters = buildRollingZScoreAnomalyClusters(points, windowMs, analysis.anomaly_sensitivity);
-        if (clusters.length > 0) clustersByMethod["rolling_zscore"] = clusters;
+        if (clusters.length > 0) clustersByMethod.rolling_zscore = clusters;
       }
       if (anomalyMethods.includes("persistence")) {
         const minDurationMs = getPersistenceWindowMs(analysis.anomaly_persistence_window);
         const clusters = buildPersistenceAnomalyClusters(points, minDurationMs, analysis.anomaly_sensitivity);
-        if (clusters.length > 0) clustersByMethod["persistence"] = clusters;
+        if (clusters.length > 0) clustersByMethod.persistence = clusters;
       }
       if (anomalyMethods.includes("comparison_window") && analysis.anomaly_comparison_window_id) {
         const windowData = allComparisonWindowsData[analysis.anomaly_comparison_window_id];
         const comparisonPts = windowData && typeof windowData === "object" ? windowData[seriesItem.entityId] : null;
         if (Array.isArray(comparisonPts) && comparisonPts.length >= 3) {
           const clusters = buildComparisonWindowAnomalyClusters(points, comparisonPts, analysis.anomaly_sensitivity);
-          if (clusters.length > 0) clustersByMethod["comparison_window"] = clusters;
+          if (clusters.length > 0) clustersByMethod.comparison_window = clusters;
         }
       }
 

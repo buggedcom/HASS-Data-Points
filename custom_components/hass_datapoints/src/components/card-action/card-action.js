@@ -9,7 +9,6 @@ import {
   esc,
   labelIcon,
   labelName,
-  mergeTargetSelections,
 } from "../../lib/shared.js";
 
 /**

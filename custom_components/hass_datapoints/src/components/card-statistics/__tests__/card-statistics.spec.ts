@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createMockHass } from "@/test-support/mock-hass";
 import { HassRecordsStatisticsCard } from "../card-statistics.ts";
 
+import { fetchStatisticsDuringPeriod, fetchEvents } from "@/lib/shared";
+
 vi.mock("@/lib/shared.js", async (importOriginal) => {
   const mod = await importOriginal() as Record<string, unknown>;
   return {
@@ -24,8 +26,6 @@ vi.mock("@/lib/shared.js", async (importOriginal) => {
     })),
   };
 });
-
-import { fetchStatisticsDuringPeriod, fetchEvents } from "@/lib/shared";
 
 if (!customElements.get("hass-datapoints-statistics-card")) {
   customElements.define("hass-datapoints-statistics-card", HassRecordsStatisticsCard);

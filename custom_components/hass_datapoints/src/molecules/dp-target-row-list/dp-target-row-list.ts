@@ -1,4 +1,4 @@
-import { LitElement, html, nothing } from "lit";
+import { LitElement, html } from "lit";
 import { styles } from "./dp-target-row-list.styles";
 import type { NormalizedAnalysis, ComparisonWindow } from "@/molecules/dp-target-row/dp-target-row";
 import "@/molecules/dp-target-row/dp-target-row";
@@ -40,11 +40,15 @@ export class DpTargetRowList extends LitElement {
   };
 
   declare rows: RowConfig[];
+
   /** HA entity states map (entity_id → state object). Passed directly to each `dp-target-row`. */
   declare states: Record<string, Record<string, unknown>>;
+
   /** HA hass object. Required by ha-state-icon inside dp-target-row to resolve entity icons. */
   declare hass: Record<string, unknown> | null;
+
   declare canShowDeltaAnalysis: boolean;
+
   declare comparisonWindows: ComparisonWindow[];
 
   /** Index of the row currently being dragged, or null when not dragging. */

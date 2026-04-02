@@ -1,14 +1,19 @@
 import { LitElement, html, css } from "lit";
 import type { HassLike } from "@/lib/types";
+
 export class DpEditorEntityList extends LitElement {
   static properties = {
     entities: { type: Array },
     hass: { type: Object },
     buttonLabel: { type: String, attribute: "button-label" },
   };
+
   declare entities: string[];
+
   declare hass: HassLike | null;
+
   declare buttonLabel: string;
+
   static styles = css`
     :host { display: block; }
     .list { display: flex; flex-direction: column; gap: 8px; }
@@ -21,12 +26,14 @@ export class DpEditorEntityList extends LitElement {
     .remove-btn:hover { color: var(--error-color, #f44336); }
     .add-wrap { margin-top: 4px; }
   `;
+
   constructor() {
     super();
     this.entities = [];
     this.hass = null;
     this.buttonLabel = "Add entity";
   }
+
   _onRemove(index: number) {
     const next = [...this.entities];
     next.splice(index, 1);
@@ -38,6 +45,7 @@ export class DpEditorEntityList extends LitElement {
       }),
     );
   }
+
   _onAdd() {
     this.dispatchEvent(
       new CustomEvent("dp-entity-list-change", {
@@ -47,6 +55,7 @@ export class DpEditorEntityList extends LitElement {
       }),
     );
   }
+
   _onEntityChange(index: number, e: CustomEvent<{ value: string }>) {
     const next = [...this.entities];
     next[index] = e.detail.value;
@@ -58,6 +67,7 @@ export class DpEditorEntityList extends LitElement {
       }),
     );
   }
+
   render() {
     return html`
       <div class="list">

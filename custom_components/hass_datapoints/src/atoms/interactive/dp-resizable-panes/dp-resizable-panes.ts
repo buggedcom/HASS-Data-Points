@@ -43,6 +43,7 @@ export class DpResizablePanes extends LitElement {
   // ── Internal drag state ────────────────────────────────────────────────────
 
   private _pointerId: number | null = null;
+
   private _splitterEl: HTMLButtonElement | null = null;
 
   constructor() {

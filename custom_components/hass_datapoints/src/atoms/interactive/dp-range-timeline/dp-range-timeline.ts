@@ -9,14 +9,12 @@ import {
   RANGE_HANDLE_EDGE_SCROLL_THRESHOLD_PX,
   RANGE_HANDLE_EDGE_SCROLL_MAX_STEP_PX,
   SECOND_MS,
-  MINUTE_MS,
   addUnit,
   startOfUnit,
   endOfUnit,
   clampNumber,
   snapDateToUnit,
   formatRangeDateTime,
-  formatRangeSummary,
   formatScaleLabel,
   formatContextLabel,
   formatPeriodSelectionLabel,
@@ -49,62 +47,102 @@ export class DpRangeTimeline extends LitElement {
     dateSnapping: { type: String },
     isLiveEdge: { type: Boolean },
   };
+
   declare startTime: Date | null;
+
   declare endTime: Date | null;
+
   declare rangeBounds: RangeBounds | null;
+
   declare zoomLevel: string;
+
   declare dateSnapping: string;
+
   declare isLiveEdge: boolean;
 
   static styles = styles;
 
   // --- Internal drag state ---
   _draftStartTime: Date | null = null;
+
   _draftEndTime: Date | null = null;
+
   _activeRangeHandle: "start" | "end" | null = null;
+
   _hoveredRangeHandle: "start" | "end" | null = null;
+
   _focusedRangeHandle: "start" | "end" | null = null;
+
   _hoveredPeriodRange: { unit: string; start: number; end: number } | null = null;
+
   _rangePointerId: number | null = null;
+
   _rangeInteractionActive = false;
+
   _rangeContentWidth = 0;
+
   _rangeCommitTimer: ReturnType<typeof setTimeout> | null = null;
 
   // Scrollbar visibility state
   _isProgrammaticScroll = false;
+
   _scrollbarHideTimer: ReturnType<typeof setTimeout> | null = null;
 
   // Timeline pan/select state
   _timelinePointerId: number | null = null;
+
   _timelinePointerStartX = 0;
+
   _timelinePointerStartScrollLeft = 0;
+
   _timelinePointerStartTimestamp: number | null = null;
+
   _timelinePointerMode: "pan" | "selection" | "interval_select" | null = null;
+
   _timelineDragStartRangeMs = 0;
+
   _timelineDragEndRangeMs = 0;
+
   _timelineDragStartZoomRange: { start: number; end: number } | null = null;
+
   _timelinePointerMoved = false;
+
   _timelineTrackClickPending = false;
 
   // Cached DOM refs (set in firstUpdated)
   _rangeScrollViewportEl: HTMLElement | null = null;
+
   _rangeTimelineEl: HTMLElement | null = null;
+
   _rangeTrackEl: HTMLElement | null = null;
+
   _rangeTickLayerEl: HTMLElement | null = null;
+
   _rangeLabelLayerEl: HTMLElement | null = null;
+
   _rangeContextLayerEl: HTMLElement | null = null;
+
   _rangeSelectionEl: HTMLElement | null = null;
+
   _rangeStartHandleEl: HTMLElement | null = null;
+
   _rangeEndHandleEl: HTMLElement | null = null;
+
   _rangeStartTooltipEl: HTMLElement | null = null;
+
   _rangeEndTooltipEl: HTMLElement | null = null;
+
   _rangeJumpLeftEl: HTMLElement | null = null;
+
   _rangeJumpRightEl: HTMLElement | null = null;
 
   // Bound handlers
   _onRangePointerMove: (ev: PointerEvent) => void;
+
   _onRangePointerUp: (ev: PointerEvent) => void;
+
   _onTimelinePointerMove: (ev: PointerEvent) => void;
+
   _onTimelinePointerUp: (ev: PointerEvent) => void;
 
   constructor() {

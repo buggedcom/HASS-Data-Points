@@ -1,13 +1,18 @@
 import { LitElement, html, css } from "lit";
+
 export class DpPageMenuItem extends LitElement {
   static properties = {
     icon: { type: String },
     label: { type: String },
     disabled: { type: Boolean },
   };
+
   declare icon: string;
+
   declare label: string;
+
   declare disabled: boolean;
+
   static styles = css`
     :host { display: block; }
     button {
@@ -34,12 +39,14 @@ export class DpPageMenuItem extends LitElement {
       flex: 0 0 auto;
     }
   `;
+
   constructor() {
     super();
     this.icon = "";
     this.label = "";
     this.disabled = false;
   }
+
   _onClick() {
     if (this.disabled) {
       return;
@@ -51,6 +58,7 @@ export class DpPageMenuItem extends LitElement {
       }),
     );
   }
+
   render() {
     return html`
       <button

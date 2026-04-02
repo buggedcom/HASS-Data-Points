@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { createMockHass } from "@/test-support/mock-hass";
 import { HassRecordsActionCard } from "../card-action.ts";
 

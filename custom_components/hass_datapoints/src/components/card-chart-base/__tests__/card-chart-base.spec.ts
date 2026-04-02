@@ -17,6 +17,7 @@ const { ChartCardBase } = await import("../card-chart-base.ts");
 
 class TestChartCard extends ChartCardBase {
   loadSpy = vi.fn().mockResolvedValue(undefined);
+
   drawSpy = vi.fn();
 
   async _load(): Promise<void> {

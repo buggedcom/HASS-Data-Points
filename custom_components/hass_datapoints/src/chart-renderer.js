@@ -916,7 +916,7 @@ export class ChartRenderer {
     const overlay = document.createElement("canvas");
     overlay.width = canvas.width;
     overlay.height = canvas.height;
-    overlay.style.cssText = `position:absolute;top:0;left:0;width:${canvas.style.width || canvas.offsetWidth + "px"};height:${canvas.style.height || canvas.offsetHeight + "px"};pointer-events:none;z-index:2;`;
+    overlay.style.cssText = `position:absolute;top:0;left:0;width:${canvas.style.width || `${canvas.offsetWidth  }px`};height:${canvas.style.height || `${canvas.offsetHeight  }px`};pointer-events:none;z-index:2;`;
     parent.style.position = parent.style.position || "relative";
     parent.appendChild(overlay);
 
@@ -950,7 +950,7 @@ export class ChartRenderer {
       } else {
         const p = (t - 0.6) / 0.4;
         // Ease out cubic for smooth shrink
-        const ease = 1 - Math.pow(1 - p, 3);
+        const ease = 1 - (1 - p)**3;
         radius = pxMaxR * (1 - ease);
         alpha = 0.85 * (1 - ease);
       }

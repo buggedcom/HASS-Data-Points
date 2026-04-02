@@ -1,11 +1,15 @@
 import { LitElement, html, css } from "lit";
+
 export class DpSearchBar extends LitElement {
   static properties = {
     query: { type: String },
     placeholder: { type: String },
   };
+
   declare query: string;
+
   declare placeholder: string;
+
   static styles = css`
     :host { display: block; }
     .search-wrap { display: flex; align-items: center; gap: 8px; padding: 4px 12px; }
@@ -18,11 +22,13 @@ export class DpSearchBar extends LitElement {
     input:focus { border-color: var(--primary-color, #03a9f4); }
     input::placeholder { color: var(--secondary-text-color); opacity: 0.6; }
   `;
+
   constructor() {
     super();
     this.query = "";
     this.placeholder = "Search...";
   }
+
   _onInput(e: Event) {
     this.dispatchEvent(
       new CustomEvent("dp-search", {
@@ -32,6 +38,7 @@ export class DpSearchBar extends LitElement {
       }),
     );
   }
+
   render() {
     return html`
       <div class="search-wrap">

@@ -9,7 +9,9 @@ export class DpInlineSelect extends LitElement {
   };
 
   declare value: string;
+
   declare options: SelectOption[];
+
   declare disabled: boolean;
 
   static styles = css`

@@ -19,8 +19,11 @@ export class DpHistoryChart extends HTMLElement {
   // ── Internal state ─────────────────────────────────────────────────────────
 
   private _configKey = "";
+
   private _config: Record<string, unknown> | null = null;
+
   private _hass: unknown = null;
+
   private _chartEl: (HTMLElement & {
     setConfig(cfg: Record<string, unknown>): void;
     setExternalZoomRange?(range: { start: number; end: number } | null): void;

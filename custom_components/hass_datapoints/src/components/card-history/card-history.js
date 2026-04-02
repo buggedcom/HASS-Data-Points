@@ -1,7 +1,6 @@
 import {
   attachLineChartHover,
   attachLineChartRangeZoom,
-  buildDataPointsHistoryPath,
   clampChartValue,
   COLORS,
   contrastColor,
@@ -19,11 +18,8 @@ import {
   hideTooltip,
   mergeTargetSelections,
   navigateToDataPointsHistory,
-  normalizeCacheIdList,
   normalizeHistorySeriesAnalysis,
   normalizeTargetSelection,
-  parseDateValue,
-  renderChartAxisHoverDots,
   renderChartAxisOverlays,
   resolveChartLabelColor,
   setupCanvas,
@@ -400,9 +396,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       const winEnd = new Date(end.getTime() + win.time_offset_ms);
       const result = await this._loadComparisonWindowData(win, winStart, winEnd);
       return { id: result.id, histResult: result.histResult, statsResult: result.statsResult };
-    })).then((results) => {
-      return results;
-    }).catch((error) => {
+    })).then((results) => results).catch((error) => {
       console.warn("[hass-datapoints history-card] comparison preload:failed", {
         message: error?.message || String(error),
       });
@@ -468,9 +462,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       composed: true,
       detail: { ids: windowsToFetch.map(({ win }) => win.id).filter(Boolean), loading: true },
     }));
-    return Promise.all(windowsToFetch.map(async ({ win, winStart, winEnd }) => {
-      return this._loadComparisonWindowData(win, winStart, winEnd);
-    })).then((results) => {
+    return Promise.all(windowsToFetch.map(async ({ win, winStart, winEnd }) => this._loadComparisonWindowData(win, winStart, winEnd))).then((results) => {
       if (comparisonRequestId !== this._comparisonRequestId) {
         return this._lastComparisonResults || [];
       }
@@ -2148,9 +2140,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       if (currentCluster.length === 0) {
         return;
       }
-      const maxDeviation = currentCluster.reduce((maxValue, point) => {
-        return Math.max(maxValue, Math.abs(point.residual));
-      }, 0);
+      const maxDeviation = currentCluster.reduce((maxValue, point) => Math.max(maxValue, Math.abs(point.residual)), 0);
       clusters.push({
         points: currentCluster.slice(),
         maxDeviation,
@@ -2204,9 +2194,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       if (currentCluster.length === 0) {
         return;
       }
-      const maxDeviation = currentCluster.reduce((maxVal, point) => {
-        return Math.max(maxVal, Math.abs(point.residual));
-      }, 0);
+      const maxDeviation = currentCluster.reduce((maxVal, point) => Math.max(maxVal, Math.abs(point.residual)), 0);
       clusters.push({
         points: currentCluster.slice(),
         maxDeviation,
@@ -2587,9 +2575,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
 
   _getSeriesAnalysisMap() {
     const seriesSettings = Array.isArray(this._config?.series_settings) ? this._config.series_settings : [];
-    return new Map(seriesSettings.map((entry) => {
-      return [entry?.entity_id, normalizeHistorySeriesAnalysis(entry?.analysis)];
-    }));
+    return new Map(seriesSettings.map((entry) => [entry?.entity_id, normalizeHistorySeriesAnalysis(entry?.analysis)]));
   }
 
   _getSeriesAnalysis(entityId, analysisMap = null) {
@@ -2759,29 +2745,29 @@ export class HassRecordsHistoryCard extends ChartCardBase {
             const methods = analysis.anomaly_methods;
             if (methods.includes("trend_residual")) {
               const c = this._buildAnomalyClusters(seriesItem.pts, analysis.trend_method, analysis.trend_window, analysis.anomaly_sensitivity);
-              if (c.length > 0) clustersByMethod["trend_residual"] = c;
+              if (c.length > 0) clustersByMethod.trend_residual = c;
             }
             if (methods.includes("rate_of_change")) {
               const c = this._buildRateOfChangeAnomalyClusters(seriesItem.pts, analysis.anomaly_rate_window, analysis.anomaly_sensitivity);
-              if (c.length > 0) clustersByMethod["rate_of_change"] = c;
+              if (c.length > 0) clustersByMethod.rate_of_change = c;
             }
             if (methods.includes("iqr")) {
               const c = this._buildIQRAnomalyClusters(seriesItem.pts, analysis.anomaly_sensitivity);
-              if (c.length > 0) clustersByMethod["iqr"] = c;
+              if (c.length > 0) clustersByMethod.iqr = c;
             }
             if (methods.includes("rolling_zscore")) {
               const c = this._buildRollingZScoreAnomalyClusters(seriesItem.pts, analysis.anomaly_zscore_window, analysis.anomaly_sensitivity);
-              if (c.length > 0) clustersByMethod["rolling_zscore"] = c;
+              if (c.length > 0) clustersByMethod.rolling_zscore = c;
             }
             if (methods.includes("persistence")) {
               const c = this._buildPersistenceAnomalyClusters(seriesItem.pts, analysis.anomaly_persistence_window, analysis.anomaly_sensitivity);
-              if (c.length > 0) clustersByMethod["persistence"] = c;
+              if (c.length > 0) clustersByMethod.persistence = c;
             }
             if (methods.includes("comparison_window") && analysis.anomaly_comparison_window_id) {
               const compPts = allComparisonWindowsData[analysis.anomaly_comparison_window_id]?.[seriesItem.entityId];
               if (Array.isArray(compPts) && compPts.length >= 3) {
                 const c = this._buildComparisonWindowAnomalyClusters(seriesItem.pts, compPts, analysis.anomaly_sensitivity);
-                if (c.length > 0) clustersByMethod["comparison_window"] = c;
+                if (c.length > 0) clustersByMethod.comparison_window = c;
               }
             }
             const anomalyClusters = this._applyAnomalyOverlapMode(clustersByMethod, analysis.anomaly_overlap_mode);
@@ -3730,9 +3716,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     } else {
       this._lastAnomalyRegions = [];
     }
-    const effectiveComparisonHoverSeries = comparisonHoverSeries.filter((entry) => {
-      return !hiddenComparisonEntityIds.has(entry.relatedEntityId || entry.entityId);
-    });
+    const effectiveComparisonHoverSeries = comparisonHoverSeries.filter((entry) => !hiddenComparisonEntityIds.has(entry.relatedEntityId || entry.entityId));
     renderer.drawAnnotations(events, renderT0, renderT1, {
       showLines: this._config.show_event_lines !== false,
       showMarkers: this._config.show_event_lines !== false,
@@ -3978,11 +3962,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     if (visibleEvents.length === 0) {
       return seriesItem.anomalyClusters;
     }
-    return seriesItem.anomalyClusters.filter((cluster) => {
-      return !visibleEvents.some((event) => {
-        return this._eventMatchesAnomalyCluster(event, seriesItem.entityId, cluster);
-      });
-    });
+    return seriesItem.anomalyClusters.filter((cluster) => !visibleEvents.some((event) => this._eventMatchesAnomalyCluster(event, seriesItem.entityId, cluster)));
   }
 
   _buildAnomalyAnnotationPrefill(regions) {

@@ -3,6 +3,8 @@ import { createMockHass } from "@/test-support/mock-hass";
 import { HassRecordsSensorCard } from "../card-sensor.ts";
 import type { EventRecord } from "@/lib/types";
 
+import { fetchEvents } from "@/lib/shared";
+
 vi.mock("@/lib/shared.js", async (importOriginal) => {
   const mod = await importOriginal() as Record<string, unknown>;
   const mockRenderer = {
@@ -35,8 +37,6 @@ vi.mock("@/lib/shared.js", async (importOriginal) => {
     ChartRenderer: vi.fn().mockImplementation(() => mockRenderer),
   };
 });
-
-import { fetchEvents } from "@/lib/shared";
 
 if (!customElements.get("hass-datapoints-sensor-card")) {
   customElements.define("hass-datapoints-sensor-card", HassRecordsSensorCard);

@@ -30,10 +30,15 @@ export class HassRecordsActionCard extends LitElement {
   };
 
   declare _config: CardConfig;
+
   declare _hass: HassLike | null;
+
   declare _color: string;
+
   declare _feedbackClass: string;
+
   declare _feedbackText: string;
+
   declare _feedbackVisible: boolean;
 
   private _userTarget: Partial<TargetMap> = {};

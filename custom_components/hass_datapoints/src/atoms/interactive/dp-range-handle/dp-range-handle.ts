@@ -21,8 +21,11 @@ export class DpRangeHandle extends LitElement {
     label: { type: String },
     live: { type: Boolean },
   };
+
   declare position: number;
+
   declare label: string;
+
   declare live: boolean;
 
   static styles = styles;

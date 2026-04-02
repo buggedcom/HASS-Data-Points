@@ -10,9 +10,13 @@ export class DpAnalysisCheckbox extends LitElement {
   };
 
   declare checked: boolean;
+
   declare label: string;
+
   declare disabled: boolean;
+
   declare helpText: string;
+
   declare helpId: string;
 
   static styles = css`

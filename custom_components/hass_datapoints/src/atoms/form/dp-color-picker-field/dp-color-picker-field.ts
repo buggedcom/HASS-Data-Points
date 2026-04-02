@@ -7,6 +7,7 @@ export class DpColorPickerField extends LitElement {
   };
 
   declare color: string;
+
   declare entityId: string | undefined;
 
   static styles = css`

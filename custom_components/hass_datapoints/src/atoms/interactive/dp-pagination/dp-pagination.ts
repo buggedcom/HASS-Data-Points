@@ -1,4 +1,5 @@
 import { LitElement, html, css } from "lit";
+
 export class DpPagination extends LitElement {
   static properties = {
     page: { type: Number },
@@ -6,10 +7,15 @@ export class DpPagination extends LitElement {
     totalItems: { type: Number },
     label: { type: String },
   };
+
   declare page: number;
+
   declare totalPages: number;
+
   declare totalItems: number;
+
   declare label: string;
+
   static styles = css`
     :host {
       display: flex; align-items: center; justify-content: center;
@@ -27,6 +33,7 @@ export class DpPagination extends LitElement {
     }
     .info { min-width: 120px; text-align: center; }
   `;
+
   constructor() {
     super();
     this.page = 0;
@@ -34,6 +41,7 @@ export class DpPagination extends LitElement {
     this.totalItems = 0;
     this.label = "records";
   }
+
   _onPrev() {
     if (this.page > 0) {
       this.dispatchEvent(
@@ -45,6 +53,7 @@ export class DpPagination extends LitElement {
       );
     }
   }
+
   _onNext() {
     if (this.page < this.totalPages - 1) {
       this.dispatchEvent(
@@ -56,6 +65,7 @@ export class DpPagination extends LitElement {
       );
     }
   }
+
   render() {
     return html`
       <button

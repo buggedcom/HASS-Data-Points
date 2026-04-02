@@ -1,4 +1,5 @@
 import { LitElement, html, css, nothing } from "lit";
+
 export class DpSidebarSectionHeader extends LitElement {
   static properties = {
     title: { type: String },
@@ -6,10 +7,15 @@ export class DpSidebarSectionHeader extends LitElement {
     collapsible: { type: Boolean },
     open: { type: Boolean },
   };
+
   declare title: string;
+
   declare subtitle: string;
+
   declare collapsible: boolean;
+
   declare open: boolean;
+
   static styles = css`
     :host { display: block; }
     .sidebar-section-header { display: grid; gap: var(--dp-spacing-xs); }
@@ -59,6 +65,7 @@ export class DpSidebarSectionHeader extends LitElement {
       transform: rotate(180deg);
     }
   `;
+
   constructor() {
     super();
     this.title = "";
@@ -66,9 +73,11 @@ export class DpSidebarSectionHeader extends LitElement {
     this.collapsible = false;
     this.open = true;
   }
+
   private _onToggle() {
     this.dispatchEvent(new CustomEvent("dp-section-toggle", { bubbles: true, composed: true }));
   }
+
   render() {
     return html`
       <div class="sidebar-section-header ${this.collapsible ? "is-collapsible" : ""}">

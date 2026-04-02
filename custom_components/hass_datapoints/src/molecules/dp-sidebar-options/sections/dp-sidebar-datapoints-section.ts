@@ -17,7 +17,9 @@ export class DpSidebarDatapointsSection extends LitElement {
   };
 
   declare datapointScope: string;
+
   declare collapsible: boolean;
+
   declare open: boolean;
 
   static styles = styles;

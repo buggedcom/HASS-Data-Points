@@ -1,11 +1,15 @@
 import { LitElement, html, css, nothing } from "lit";
+
 export class DpFormGroup extends LitElement {
   static properties = {
     label: { type: String },
     description: { type: String },
   };
+
   declare label: string;
+
   declare description: string;
+
   static styles = css`
     :host { display: block; min-width: 0; }
     .form-group { display: grid; gap: 6px; min-width: 0; }
@@ -20,11 +24,13 @@ export class DpFormGroup extends LitElement {
       line-height: 1.45;
     }
   `;
+
   constructor() {
     super();
     this.label = "";
     this.description = "";
   }
+
   render() {
     return html`
       <div class="form-group">

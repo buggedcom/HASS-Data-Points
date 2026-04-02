@@ -12,8 +12,11 @@ export class DpSidebarDatapointDisplaySection extends LitElement {
   };
 
   declare showIcons: boolean;
+
   declare showLines: boolean;
+
   declare collapsible: boolean;
+
   declare open: boolean;
 
   static styles = styles;

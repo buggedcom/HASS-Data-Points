@@ -29,19 +29,31 @@ export class HassRecordsStatisticsCard extends LitElement {
   };
 
   declare _config: CardConfig;
+
   declare _hass: HassLike | null;
+
   declare _loading: boolean;
+
   declare _chartMessage: string;
+
   declare _series: SeriesItem[];
+
   declare _eventCount: number;
 
   private _loadRequestId = 0;
+
   private _lastDrawArgs: unknown[] | null = null;
+
   private _chartHoverCleanup: (() => void) | null = null;
+
   private _unsubscribe: (() => void) | null = null;
+
   private _windowListener: (() => void) | null = null;
+
   private _resizeObserver: ResizeObserver | null = null;
+
   private _hasStartedInitialLoad = false;
+
   private _previousSeriesEndpoints: Map<string, { t: number; v: number }> = new Map();
 
   static styles = css`

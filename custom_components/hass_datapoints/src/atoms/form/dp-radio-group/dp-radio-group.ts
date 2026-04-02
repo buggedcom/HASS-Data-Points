@@ -9,7 +9,9 @@ export class DpRadioGroup extends LitElement {
   };
 
   declare name: string;
+
   declare value: string;
+
   declare options: SelectOption[];
 
   static styles = css`

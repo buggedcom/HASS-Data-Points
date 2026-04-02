@@ -1,11 +1,15 @@
 import { LitElement, html, css } from "lit";
+
 export class DpColorSwatch extends LitElement {
   static properties = {
     color: { type: String },
     label: { type: String },
   };
+
   declare color: string;
+
   declare label: string;
+
   static styles = css`
     :host {
       display: block;
@@ -51,11 +55,13 @@ export class DpColorSwatch extends LitElement {
       pointer-events: none;
     }
   `;
+
   constructor() {
     super();
     this.color = "#ff9800";
     this.label = "";
   }
+
   _onInput(e: Event) {
     const newColor = (e.target as HTMLInputElement).value;
     this.dispatchEvent(
@@ -66,6 +72,7 @@ export class DpColorSwatch extends LitElement {
       }),
     );
   }
+
   render() {
     return html`
       <div class="swatch-wrap">

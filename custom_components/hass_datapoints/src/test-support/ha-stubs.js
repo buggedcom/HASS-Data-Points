@@ -21,10 +21,10 @@ function mdiKey(iconStr) {
     return null;
   }
   const name = iconStr.slice(4); // strip "mdi:"
-  return "mdi" + name
+  return `mdi${  name
     .split("-")
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join("");
+    .join("")}`;
 }
 
 /**
@@ -112,6 +112,7 @@ customElements.define("ha-svg-icon", class extends HaIconStub {
   _resolveIcon() {
     return this.getAttribute("icon") || "";
   }
+
   _render() {
     const path = this.path || null;
     const fallback = `<circle cx="12" cy="12" r="8" opacity="0.35" />`;

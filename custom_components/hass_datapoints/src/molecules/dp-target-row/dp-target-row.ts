@@ -6,13 +6,14 @@ import { styles } from "./dp-target-row.styles";
 // ---------------------------------------------------------------------------
 
 import type { NormalizedAnalysis, ComparisonWindow, HassEntityState } from "./types";
-export type { NormalizedAnalysis, ComparisonWindow, HassEntityState };
 
 import "@/molecules/dp-analysis-trend-group/dp-analysis-trend-group";
 import "@/molecules/dp-analysis-rate-group/dp-analysis-rate-group";
 import "@/molecules/dp-analysis-threshold-group/dp-analysis-threshold-group";
 import "@/molecules/dp-analysis-anomaly-group/dp-analysis-anomaly-group";
 import "@/molecules/dp-analysis-delta-group/dp-analysis-delta-group";
+
+export type { NormalizedAnalysis, ComparisonWindow, HassEntityState };
 
 export function deriveSwatchIconColor(color: string): string {
   const hex = String(color || "").trim();
@@ -72,14 +73,21 @@ export class DpTargetRow extends LitElement {
   };
 
   declare color: string;
+
   declare visible: boolean;
+
   declare analysis: NormalizedAnalysis;
+
   declare index: number;
+
   declare canShowDeltaAnalysis: boolean;
+
   /** HA entity state object. Provides entity_id, display name, unit, and icon for the row. */
   declare stateObj: Record<string, unknown> | null;
+
   /** HA hass object. Required by ha-state-icon to resolve entity icons correctly. */
   declare hass: Record<string, unknown> | null;
+
   declare comparisonWindows: ComparisonWindow[];
 
   static styles = styles;

@@ -2845,9 +2845,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       "ha-date-range-picker",
     ];
     this._uiReadyPromise = ensureHaComponents(componentTags)
-      .then((results) => {
-        return results;
-      })
+      .then((results) => results)
       .then(() => {
         if (!this.isConnected || !this._rendered) return;
         window.requestAnimationFrame(() => {
@@ -3484,7 +3482,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
   }
 
   _clearDeltaAnalysisSelectionState() {
-    return;
+    
   }
 
   _handleComparisonTabActivate(id) {

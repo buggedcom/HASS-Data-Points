@@ -1,14 +1,19 @@
 import { LitElement, html, css } from "lit";
 import type { EventRecord, HassLike } from "@/lib/types";
+
 export class DpEventListItem extends LitElement {
   static properties = {
     event: { type: Object },
     hass: { type: Object },
     editable: { type: Boolean },
   };
+
   declare event: EventRecord | null;
+
   declare hass: HassLike | null;
+
   declare editable: boolean;
+
   static styles = css`
     :host { display: block; }
     .item {
@@ -35,12 +40,14 @@ export class DpEventListItem extends LitElement {
     }
     .action-btn.delete:hover { color: var(--error-color, #f44336); }
   `;
+
   constructor() {
     super();
     this.event = null;
     this.hass = null;
     this.editable = false;
   }
+
   _formatTime(isoStr: string | null | undefined): string {
     if (!isoStr) { return ""; }
     try {
@@ -50,6 +57,7 @@ export class DpEventListItem extends LitElement {
       return isoStr;
     }
   }
+
   _onDelete() {
     this.dispatchEvent(
       new CustomEvent("dp-event-delete", {
@@ -59,6 +67,7 @@ export class DpEventListItem extends LitElement {
       }),
     );
   }
+
   _onEdit() {
     this.dispatchEvent(
       new CustomEvent("dp-event-edit", {
@@ -68,6 +77,7 @@ export class DpEventListItem extends LitElement {
       }),
     );
   }
+
   render() {
     if (!this.event) { return html``; }
     const ev = this.event;

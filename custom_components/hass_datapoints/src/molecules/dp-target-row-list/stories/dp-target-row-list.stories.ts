@@ -1,5 +1,5 @@
 import { html } from "lit";
-import { expect, fn, userEvent, within } from "@storybook/test";
+import { expect, fn, userEvent } from "@storybook/test";
 import "../dp-target-row-list";
 import type { RowConfig } from "../dp-target-row-list";
 import type { NormalizedAnalysis } from "../../dp-target-row/types";

@@ -8,7 +8,6 @@ import {
   fmtDateTime,
   fmtRelativeTime,
   navigateToDataPointsHistory,
-  renderChartAxisOverlays,
   setupCanvas,
   ChartRenderer,
 } from "@/lib/shared";
@@ -40,21 +39,35 @@ export class HassRecordsSensorCard extends LitElement {
   };
 
   declare _config: CardConfig;
+
   declare _hass: HassLike | null;
+
   declare _loadMessage: string;
+
   declare _chartReady: boolean;
+
   declare _annEvents: EventRecordFull[];
+
   declare _annPage: number;
+
   declare _hiddenEventIds: Set<string>;
 
   private _initialized = false;
+
   private _lastHistResult: unknown = null;
+
   private _lastEvents: EventRecordFull[] = [];
+
   private _lastT0: number | null = null;
+
   private _lastT1: number | null = null;
+
   private _unsubscribe: (() => void) | null = null;
+
   private _resizeObserver: ResizeObserver | null = null;
+
   private _canvasClickHandler: ((e: MouseEvent) => void) | null = null;
+
   private _previousSeriesEndpoints: Map<string, { t: number; v: number }> = new Map();
 
   static styles = css`

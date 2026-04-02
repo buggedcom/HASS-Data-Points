@@ -22,16 +22,27 @@ export class DpSidebarOptions extends LitElement {
   };
 
   declare datapointScope: string;
+
   declare showIcons: boolean;
+
   declare showLines: boolean;
+
   declare showTooltips: boolean;
+
   declare showHoverGuides: boolean;
+
   declare showCorrelatedAnomalies: boolean;
+
   declare showDataGaps: boolean;
+
   declare dataGapThreshold: string;
+
   declare yAxisMode: string;
+
   declare targetsOpen: boolean;
+
   declare datapointsOpen: boolean;
+
   declare chartOpen: boolean;
 
   static styles = styles;

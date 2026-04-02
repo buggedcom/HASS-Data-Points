@@ -10,8 +10,11 @@ export class DpAnalysisGroup extends LitElement {
   };
 
   declare label: string;
+
   declare checked: boolean;
+
   declare disabled: boolean;
+
   declare alignTop: boolean;
 
   static styles = styles;

@@ -35,12 +35,19 @@ export class DpSidebarChartDisplaySection extends LitElement {
   };
 
   declare showTooltips: boolean;
+
   declare showHoverGuides: boolean;
+
   declare showCorrelatedAnomalies: boolean;
+
   declare showDataGaps: boolean;
+
   declare dataGapThreshold: string;
+
   declare yAxisMode: string;
+
   declare collapsible: boolean;
+
   declare open: boolean;
 
   static styles = styles;

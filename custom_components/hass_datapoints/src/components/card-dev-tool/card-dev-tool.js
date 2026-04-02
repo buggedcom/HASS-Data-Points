@@ -1,4 +1,4 @@
-import { confirmDestructiveAction, deleteEvent, DOMAIN, esc, fetchHistoryDuringPeriod, fmtDateTime } from "../../lib/shared.js";
+import { confirmDestructiveAction, DOMAIN, esc, fmtDateTime } from "../../lib/shared.js";
 
 /**
  * hass-datapoints-dev-tool-card – Generate demo data points from HA history.

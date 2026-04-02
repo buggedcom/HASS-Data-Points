@@ -1,5 +1,5 @@
 import { html } from "lit";
-import { expect, fn, userEvent, within } from "@storybook/test";
+import { expect, fn } from "@storybook/test";
 import "../dp-annotation-chip-row";
 import type { ChipItem } from "../dp-annotation-chip-row";
 

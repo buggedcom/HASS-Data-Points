@@ -11,8 +11,11 @@ export class DpSidebarOptionsSection extends LitElement {
   };
 
   declare title: string;
+
   declare subtitle: string;
+
   declare collapsible: boolean;
+
   declare open: boolean;
 
   static styles = styles;

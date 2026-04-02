@@ -70,9 +70,7 @@ export function waitForHaComponent(tag, timeoutMs = HA_COMPONENT_LOAD_TIMEOUT_MS
     return Promise.resolve(true);
   }
   return Promise.race([
-    customElements.whenDefined(tag).then(() => {
-      return true;
-    }),
+    customElements.whenDefined(tag).then(() => true),
     new Promise((resolve) => window.setTimeout(() => {
       console.warn("[hass-datapoints ha] component wait timed out", { tag, timeoutMs });
       resolve(false);

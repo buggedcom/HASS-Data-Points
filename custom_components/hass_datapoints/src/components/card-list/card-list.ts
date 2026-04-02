@@ -46,16 +46,25 @@ export class HassRecordsListCard extends LitElement {
   };
 
   declare _config: CardConfig;
+
   declare _hass: HassLike | null;
+
   declare _allEvents: EventRecordFull[];
+
   declare _searchQuery: string;
+
   declare _page: number;
+
   declare _editingId: string | null;
+
   declare _editColor: string;
 
   private _pageSize = 15;
+
   private _unsubscribe: (() => void) | null = null;
+
   private _windowListener: (() => void) | null = null;
+
   private _initialized = false;
 
   static styles = css`

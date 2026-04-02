@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import "../dp-target-row";
 import {
   deriveSwatchIconColor,
   _hasConfiguredAnalysis,
