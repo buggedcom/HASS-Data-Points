@@ -20,7 +20,8 @@ export class DpSidebarOptionsSection extends LitElement {
 
   static styles = styles;
 
-  private _onToggle() {
+  private _onToggle(e: Event) {
+    e.stopPropagation();
     this.open = !this.open;
     this.dispatchEvent(
       new CustomEvent("dp-section-toggle", {
