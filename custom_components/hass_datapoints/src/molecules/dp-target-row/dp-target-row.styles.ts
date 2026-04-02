@@ -339,6 +339,35 @@ export const styles = css`
     border-top: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 78%, transparent);
   }
 
+  .history-target-analysis-copy-row {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .history-target-analysis-copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border: none;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 12%, transparent);
+    color: var(--primary-color, #03a9f4);
+    font-size: 0.78rem;
+    font: inherit;
+    cursor: pointer;
+    transition: background-color 120ms ease;
+  }
+
+  .history-target-analysis-copy-btn:hover,
+  .history-target-analysis-copy-btn:focus-visible {
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 20%, transparent);
+  }
+
+  .history-target-analysis-copy-btn ha-icon {
+    --mdc-icon-size: 14px;
+  }
+
   .history-target-analysis-grid {
     display: grid;
     gap: var(--dp-spacing-sm);

@@ -39,7 +39,10 @@ import { computeHistoryAnalysisInWorker } from "../../lib/workers/history-analys
  * hass-datapoints-history-card – History line chart with annotation markers.
  */
 
-const HISTORY_CHART_MAX_CANVAS_WIDTH_PX = 65536;
+// Safari caps canvas pixel dimensions at 16,383px. With dpr=2 that means a max
+// CSS width of ~8,191px. We cap the CSS canvas width here so setupCanvas never
+// receives a value that would cause the browser to silently blank the canvas.
+const HISTORY_CHART_MAX_CANVAS_WIDTH_PX = Math.floor(16383 / (window.devicePixelRatio || 1));
 const HISTORY_CHART_MAX_ZOOM_MULTIPLIER = 365;
 const HISTORY_LEGEND_WRAP_ENABLE_HEIGHT_PX = 500;
 const HISTORY_LEGEND_WRAP_DISABLE_HEIGHT_PX = 440;
@@ -775,6 +778,13 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     if (chartStage) {
       chartStage.style.width = `${canvasWidth}px`;
       chartStage.style.height = `${totalHeight}px`;
+    }
+
+    // Enable vertical scrolling in the viewport when the split rows don't all
+    // fit within the available height (e.g. many series with a small panel).
+    const splitScrollViewport = this.shadowRoot?.getElementById("chart-scroll-viewport");
+    if (splitScrollViewport) {
+      splitScrollViewport.style.overflowY = totalHeight > availableHeight ? "auto" : "hidden";
     }
 
     this._setChartLoading(!!options.loading);
@@ -3083,6 +3093,10 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     if (chartStage) {
       chartStage.style.width = `${canvasWidth}px`;
       chartStage.style.height = `${availableHeight}px`;
+    }
+    // Restore default vertical overflow in non-split mode (split mode may have set it to auto).
+    if (scrollViewport) {
+      scrollViewport.style.overflowY = "";
     }
     const { w, h } = setupCanvas(canvas, chartStage || wrap, availableHeight, canvasWidth);
     const renderer = new ChartRenderer(canvas, w, h);

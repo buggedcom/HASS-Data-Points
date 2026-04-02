@@ -49,6 +49,7 @@ import {
   HOUR_MS,
   MINUTE_MS,
   PANEL_HISTORY_PREFERENCES_KEY,
+  PANEL_HISTORY_SAVED_PAGE_KEY,
 } from "@/lib/shared";
 
 import "@/molecules/dp-target-row/dp-target-row";
@@ -59,6 +60,8 @@ import "@/molecules/dp-date-window-dialog/dp-date-window-dialog";
 import "@/molecules/dp-floating-menu/dp-floating-menu";
 import "@/atoms/interactive/dp-page-menu-item/dp-page-menu-item";
 import "@/molecules/dp-panel-timeline/dp-panel-timeline";
+import "@/atoms/interactive/dp-resizable-panes/dp-resizable-panes";
+import "@/molecules/dp-history-chart/dp-history-chart";
 
 const DATA_GAP_THRESHOLD_OPTIONS = [
   { value: "auto", label: "Auto-detect" },
@@ -405,27 +408,29 @@ const PANEL_HISTORY_STYLE = `
   }
 
   .content {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(280px, var(--content-top-size, 44%)) 24px minmax(240px, 1fr);
+    display: flex;
+    flex-direction: column;
     min-width: 0;
     min-height: 0;
     height: 100%;
     align-self: stretch;
     box-sizing: border-box;
     overflow: hidden;
-    gap: var(--dp-spacing-sm);
     padding: var(--dp-spacing-lg);
   }
 
-  .content.datapoints-hidden {
-    grid-template-rows: minmax(280px, 1fr) 0 0;
-    gap: 0;
+  .content > dp-resizable-panes {
+    flex: 1 1 0;
+    min-height: 0;
   }
 
-  .content.datapoints-hidden .content-splitter,
-  .content.datapoints-hidden .list-host {
-    display: none;
+  /* Legacy: when dp-resizable-panes is not used (e.g. empty state) */
+  .content > ha-card.empty {
+    flex: 0 0 auto;
+  }
+
+  .content.datapoints-hidden dp-resizable-panes {
+    --dp-panes-second-hidden: 1;
   }
 
   .control-target {
@@ -2353,6 +2358,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._uiReadyPromise = null;
     this._uiReadyApplied = false;
     this._chartEl = null;
+    this._historyChartMol = null;
     this._listEl = null;
     this._chartConfigKey = "";
     this._listConfigKey = "";
@@ -2370,6 +2376,9 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._targetRowsRenderKey = "";
     this._sidebarOptionsEl = null;
     this._sidebarOptionsComp = null;
+    this._sidebarAccordionTargetsOpen = true;
+    this._sidebarAccordionDatapointsOpen = true;
+    this._sidebarAccordionChartOpen = true;
     this._dateControl = null;
     this._dateRangePickerEl = null;
     this._datePickerButtonEl = null;
@@ -2391,6 +2400,9 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._hiddenEventIds = [];
     this._optionsMenuView = "root";
     this._restoredFromSession = false;
+    this._savedPageLoaded = false;
+    this._hasSavedPage = false;
+    this._savePageBusy = false;
     this._datePickerOpen = false;
     this._optionsOpen = false;
     this._pageMenuOpen = false;
@@ -2463,6 +2475,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     if (!this._shellBuilt) return;
     this._ensureHistoryBounds();
     this._ensureUserPreferences();
+    this._loadSavedPageIndicator();
     this._syncHassBindings();
     this._renderContent();
   }
@@ -2561,6 +2574,9 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     const sessionState = this._readSessionState();
     this._restoredFromSession = !hasTargetInUrl && !hasRangeInUrl && !!sessionState;
     this._sidebarCollapsed = !!sessionState?.sidebar_collapsed;
+    this._sidebarAccordionTargetsOpen = sessionState?.sidebar_accordion_targets_open !== false;
+    this._sidebarAccordionDatapointsOpen = sessionState?.sidebar_accordion_datapoints_open !== false;
+    this._sidebarAccordionChartOpen = sessionState?.sidebar_accordion_chart_open !== false;
     if (Number.isFinite(sessionState?.content_split_ratio)) {
       this._contentSplitRatio = clampNumber(sessionState.content_split_ratio, 0.25, 0.75);
     }
@@ -2754,6 +2770,9 @@ export class HassRecordsHistoryPanel extends HTMLElement {
             </ha-icon-button>
             <dp-floating-menu id="page-menu">
               <dp-page-menu-item id="page-download-spreadsheet" icon="mdi:file-excel-outline" label="Download spreadsheet"></dp-page-menu-item>
+              <dp-page-menu-item id="page-save-page" icon="mdi:content-save-outline" label="Save page state"></dp-page-menu-item>
+              <dp-page-menu-item id="page-restore-page" icon="mdi:restore" label="Restore saved page" hidden></dp-page-menu-item>
+              <dp-page-menu-item id="page-clear-saved-page" icon="mdi:delete-outline" label="Clear saved page" hidden></dp-page-menu-item>
             </dp-floating-menu>
           </div>
         </div>
@@ -2789,6 +2808,9 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._sidebarOptionsEl = this.shadowRoot.querySelector("#sidebar-options");
     this._pageMenuButtonEl?.addEventListener("click", () => this._togglePageMenu());
     this._pageMenuEl?.querySelector("#page-download-spreadsheet")?.addEventListener("dp-menu-action", () => this._downloadSpreadsheet());
+    this._pageMenuEl?.querySelector("#page-save-page")?.addEventListener("dp-menu-action", () => this._savePageState());
+    this._pageMenuEl?.querySelector("#page-restore-page")?.addEventListener("dp-menu-action", () => this._restorePageState());
+    this._pageMenuEl?.querySelector("#page-clear-saved-page")?.addEventListener("dp-menu-action", () => this._clearSavedPageState());
     this._pageMenuEl?.addEventListener("dp-menu-close", () => this._togglePageMenu(false));
     this._sidebarToggleButtonEl?.addEventListener("click", () => this._toggleSidebarCollapsed());
     this._pageSidebarEl?.addEventListener("click", this._onCollapsedSidebarClick);
@@ -2992,6 +3014,9 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._sidebarOptionsComp.showDataGaps = this._showDataGaps;
     this._sidebarOptionsComp.dataGapThreshold = this._dataGapThreshold;
     this._sidebarOptionsComp.yAxisMode = yAxisMode;
+    this._sidebarOptionsComp.targetsOpen = this._sidebarAccordionTargetsOpen;
+    this._sidebarOptionsComp.datapointsOpen = this._sidebarAccordionDatapointsOpen;
+    this._sidebarOptionsComp.chartOpen = this._sidebarAccordionChartOpen;
   }
 
   _formatComparisonLabel(start, end) {
@@ -3290,6 +3315,9 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       this._dateWindowDialogComp.name = targetWindow?.label || "";
       this._dateWindowDialogComp.startValue = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.start || null);
       this._dateWindowDialogComp.endValue = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.end || null);
+      this._dateWindowDialogComp.rangeBounds = this._rangeBounds ?? null;
+      this._dateWindowDialogComp.zoomLevel = this._zoomLevel ?? "auto";
+      this._dateWindowDialogComp.dateSnapping = this._dateSnapping ?? "hour";
       this._dateWindowDialogComp.open = true;
       return;
     }
@@ -3497,7 +3525,13 @@ export class HassRecordsHistoryPanel extends HTMLElement {
   _applyContentSplitLayout() {
     const content = this.shadowRoot?.getElementById("content");
     if (!content) return;
-    content.style.setProperty("--content-top-size", `${Math.round(this._contentSplitRatio * 1000) / 10}%`);
+    // Drive the dp-resizable-panes atom when present; fall back to CSS variable.
+    const resizablePanes = content.querySelector("#content-resizable-panes");
+    if (resizablePanes) {
+      resizablePanes.ratio = this._contentSplitRatio;
+    } else {
+      content.style.setProperty("--content-top-size", `${Math.round(this._contentSplitRatio * 1000) / 10}%`);
+    }
     this._updateComparisonTabsOverflow();
   }
 
@@ -3774,6 +3808,10 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       const { entityId, key, value } = ev.detail || {};
       this._setSeriesAnalysisOption(entityId, key, value);
     });
+    rowListEl.addEventListener("dp-row-copy-analysis-to-all", (ev) => {
+      const { entityId, analysis } = ev.detail || {};
+      this._copyAnalysisToAll(entityId, analysis);
+    });
     rowListEl.addEventListener("dp-rows-reorder", (ev) => {
       const { rows } = ev.detail || {};
       if (!Array.isArray(rows)) { return; }
@@ -3928,6 +3966,13 @@ export class HassRecordsHistoryPanel extends HTMLElement {
         } else {
           this._setChartDatapointDisplayOption(kind, value);
         }
+      });
+      sidebarComp.addEventListener("dp-accordion-change", (ev) => {
+        const { targetsOpen, datapointsOpen, chartOpen } = ev.detail || {};
+        if (typeof targetsOpen === "boolean") this._sidebarAccordionTargetsOpen = targetsOpen;
+        if (typeof datapointsOpen === "boolean") this._sidebarAccordionDatapointsOpen = datapointsOpen;
+        if (typeof chartOpen === "boolean") this._sidebarAccordionChartOpen = chartOpen;
+        this._saveSessionState();
       });
       this._sidebarOptionsEl.appendChild(sidebarComp);
       this._sidebarOptionsComp = sidebarComp;
@@ -4102,6 +4147,10 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     });
     targetRow.addEventListener("dp-row-analysis-change", (ev) => {
       this._setSeriesAnalysisOption(ev.detail.entityId, ev.detail.key, ev.detail.value);
+    });
+    targetRow.addEventListener("dp-row-copy-analysis-to-all", (ev) => {
+      const { entityId, analysis } = ev.detail || {};
+      this._copyAnalysisToAll(entityId, analysis);
     });
     targetRow.addEventListener("dp-row-remove", (ev) => {
       this._hideCollapsedTargetPopup();
@@ -4279,6 +4328,38 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._renderContent();
   }
 
+  _copyAnalysisToAll(sourceEntityId, sourceAnalysis) {
+    const normalizedEntityId = String(sourceEntityId || "").trim();
+    if (!normalizedEntityId || !sourceAnalysis) {
+      return;
+    }
+    let changed = false;
+    this._seriesRows = this._seriesRows.map((row) => {
+      if (row.entity_id === normalizedEntityId) {
+        return row;
+      }
+      const currentAnalysis = normalizeHistorySeriesAnalysis(row.analysis);
+      const nextAnalysis = normalizeHistorySeriesAnalysis({
+        ...sourceAnalysis,
+        // Preserve per-row state that shouldn't be overwritten
+        expanded: currentAnalysis.expanded,
+        // Don't copy anomaly_comparison_window_id — it's entity-specific
+        anomaly_comparison_window_id: currentAnalysis.anomaly_comparison_window_id,
+      });
+      if (JSON.stringify(nextAnalysis) === JSON.stringify(currentAnalysis)) {
+        return row;
+      }
+      changed = true;
+      return { ...row, analysis: nextAnalysis };
+    });
+    if (!changed) {
+      return;
+    }
+    this._saveSessionState();
+    this._renderTargetRows();
+    this._renderContent();
+  }
+
   _removeSeriesRow(index) {
     if (!Number.isInteger(index) || index < 0 || index >= this._seriesRows.length) return;
     this._seriesRows = this._seriesRows.filter((_, rowIndex) => rowIndex !== index);
@@ -4432,6 +4513,82 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       console.error("[hass-datapoints panel] spreadsheet export:failed", error);
     } finally {
       this._exportBusy = false;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Saved page state (persistent via HA frontend user data)
+  // ---------------------------------------------------------------------------
+
+  async _loadSavedPageIndicator() {
+    if (!this._hass || this._savedPageLoaded) return;
+    this._savedPageLoaded = true;
+    try {
+      const saved = await fetchUserData(this._hass, PANEL_HISTORY_SAVED_PAGE_KEY, null);
+      this._hasSavedPage = !!saved;
+      this._syncSavedPageMenuItems();
+    } catch (_err) {
+      // Non-critical — ignore failures.
+    }
+  }
+
+  _syncSavedPageMenuItems() {
+    const restoreEl = this._pageMenuEl?.querySelector("#page-restore-page");
+    const clearEl = this._pageMenuEl?.querySelector("#page-clear-saved-page");
+    if (restoreEl) restoreEl.hidden = !this._hasSavedPage;
+    if (clearEl) clearEl.hidden = !this._hasSavedPage;
+  }
+
+  async _savePageState() {
+    if (this._savePageBusy || !this._hass) return;
+    this._savePageBusy = true;
+    this._togglePageMenu(false);
+    try {
+      const state = buildHistoryPageSessionState(this);
+      await saveUserData(this._hass, PANEL_HISTORY_SAVED_PAGE_KEY, state);
+      this._hasSavedPage = true;
+      this._syncSavedPageMenuItems();
+    } catch (err) {
+      console.error("[hass-datapoints panel] save page state failed:", err);
+    } finally {
+      this._savePageBusy = false;
+    }
+  }
+
+  async _restorePageState() {
+    if (!this._hass) return;
+    this._togglePageMenu(false);
+    try {
+      const saved = await fetchUserData(this._hass, PANEL_HISTORY_SAVED_PAGE_KEY, null);
+      if (!saved || typeof saved !== "object") return;
+      // Write the saved state into sessionStorage so the startup flow picks it
+      // up as if it were a regular session, then navigate to reset the URL params.
+      try {
+        window.sessionStorage.setItem(
+          `${DOMAIN}:panel_history_session`,
+          JSON.stringify(saved),
+        );
+      } catch (_storageErr) {
+        // sessionStorage may be unavailable — ignore.
+      }
+      // Navigate to the panel without query params to trigger a clean restore.
+      const baseUrl = window.location.pathname;
+      window.history.replaceState(null, "", baseUrl);
+      window.location.reload();
+    } catch (err) {
+      console.error("[hass-datapoints panel] restore page state failed:", err);
+    }
+  }
+
+  async _clearSavedPageState() {
+    if (!this._hass) return;
+    this._togglePageMenu(false);
+    try {
+      await saveUserData(this._hass, PANEL_HISTORY_SAVED_PAGE_KEY, null);
+      this._hasSavedPage = false;
+      this._syncSavedPageMenuItems();
+    } catch (err) {
+      console.error("[hass-datapoints panel] clear saved page state failed:", err);
     }
   }
 
@@ -5024,6 +5181,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       `;
       this._contentKey = "";
       this._chartEl = null;
+      this._historyChartMol = null;
       this._listEl = null;
       this._chartConfigKey = "";
       this._listConfigKey = "";
@@ -5050,17 +5208,21 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       this._chartZoomRange = null;
       this._chartZoomCommittedRange = null;
       this._updateChartZoomHighlight();
+      // Reset the records search filter so the new list card and chart start
+      // in sync — the list card always renders with an empty search field when
+      // newly created, so we must clear our cached query to match.
+      this._recordsSearchQuery = "";
       content.innerHTML = `
-        <div id="chart-host" class="chart-host">
-          <div id="chart-card-host" class="chart-card-host"></div>
-        </div>
-        <button
-          id="content-splitter"
-          class="content-splitter"
-          type="button"
-          aria-label="Resize chart and records panes"
-        ></button>
-        <div id="list-host" class="list-host"></div>
+        <dp-resizable-panes
+          id="content-resizable-panes"
+          direction="vertical"
+          style="height:100%;min-height:0;"
+        >
+          <div slot="first" id="chart-host" class="chart-host">
+            <div id="chart-card-host" class="chart-card-host"></div>
+          </div>
+          <div slot="second" id="list-host" class="list-host"></div>
+        </dp-resizable-panes>
       `;
 
       const chartConfig = {
@@ -5094,10 +5256,14 @@ export class HassRecordsHistoryPanel extends HTMLElement {
         selected_comparison_window_id: this._selectedComparisonWindowId,
         hovered_comparison_window_id: this._hoveredComparisonWindowId,
       };
-      const chart = document.createElement("hass-datapoints-history-card");
-      chart.setConfig(chartConfig);
-
-      content.querySelector("#chart-card-host").appendChild(chart);
+      // Mount via dp-history-chart molecule which handles config diffing and hass updates.
+      const historyChartMol = document.createElement("dp-history-chart");
+      historyChartMol.style.cssText = "display:flex;flex-direction:column;flex:1 1 auto;min-width:0;min-height:0;width:100%;height:100%;";
+      content.querySelector("#chart-card-host").appendChild(historyChartMol);
+      // dp-history-chart creates the inner card synchronously in its constructor.
+      const chart = historyChartMol.chartEl;
+      historyChartMol.config = chartConfig;
+      this._historyChartMol = historyChartMol;
       if (showRecordsPanel) {
         const listConfig = {
           entities: this._entities,
@@ -5124,15 +5290,33 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       } else {
         this._listEl = null;
       }
-      this._contentSplitterEl = content.querySelector("#content-splitter");
-      this._contentSplitterEl?.addEventListener("pointerdown", (ev) => this._beginContentSplitPointer(ev));
+      // Wire the dp-resizable-panes atom for the content split ratio.
+      const resizablePanes = content.querySelector("#content-resizable-panes");
+      this._contentSplitterEl = resizablePanes; // kept for legacy _applyContentSplitLayout reference
+      if (resizablePanes) {
+        resizablePanes.ratio = this._contentSplitRatio;
+        resizablePanes.min = 0.2;
+        resizablePanes.max = 0.8;
+        resizablePanes.addEventListener("dp-panes-resize", (ev) => {
+          this._contentSplitRatio = ev.detail.ratio;
+          if (ev.detail.committed) {
+            this._saveSessionState();
+            window.requestAnimationFrame(() => this._syncRangeControl());
+          }
+        });
+      }
       this._chartEl = chart;
+      this._historyChartMol = historyChartMol;
       this._contentKey = contentKey;
       this._chartConfigKey = "";
       this._listConfigKey = "";
     }
 
     content.classList.toggle("datapoints-hidden", !showRecordsPanel);
+    const resizablePanesEl = content.querySelector("#content-resizable-panes");
+    if (resizablePanesEl) {
+      resizablePanesEl.secondHidden = !showRecordsPanel;
+    }
     this._applyContentSplitLayout();
     this._renderComparisonTabs();
     const chartConfig = {
@@ -5166,10 +5350,15 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       selected_comparison_window_id: this._selectedComparisonWindowId,
       hovered_comparison_window_id: this._hoveredComparisonWindowId,
     };
-    const nextChartConfigKey = JSON.stringify(chartConfig);
-    if (this._chartEl && this._chartConfigKey !== nextChartConfigKey) {
-      this._chartEl.setConfig(chartConfig);
-      this._chartConfigKey = nextChartConfigKey;
+    // Delegate config updates to the dp-history-chart molecule (handles diffing internally).
+    if (this._historyChartMol) {
+      this._historyChartMol.config = chartConfig;
+    } else if (this._chartEl) {
+      const nextChartConfigKey = JSON.stringify(chartConfig);
+      if (this._chartConfigKey !== nextChartConfigKey) {
+        this._chartEl.setConfig(chartConfig);
+        this._chartConfigKey = nextChartConfigKey;
+      }
     }
     if (showRecordsPanel) {
       const listConfig = {
@@ -5199,7 +5388,15 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     } else {
       this._listConfigKey = "";
     }
-    if (this._chartEl) this._chartEl.hass = this._hass;
-    this._chartEl?.setExternalZoomRange?.(this._chartZoomCommittedRange);
+    if (this._historyChartMol) {
+      this._historyChartMol.hass = this._hass;
+    } else if (this._chartEl) {
+      this._chartEl.hass = this._hass;
+    }
+    if (this._historyChartMol) {
+      this._historyChartMol.setExternalZoomRange?.(this._chartZoomCommittedRange);
+    } else {
+      this._chartEl?.setExternalZoomRange?.(this._chartZoomCommittedRange);
+    }
   }
 }

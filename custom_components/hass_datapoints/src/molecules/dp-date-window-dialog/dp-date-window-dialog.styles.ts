@@ -66,6 +66,17 @@ export const styles = css`
     border-color: color-mix(in srgb, var(--primary-color, #03a9f4) 55%, transparent);
   }
 
+  .date-window-dialog-timeline {
+    border-radius: 8px;
+    overflow: hidden;
+    margin: calc(var(--dp-spacing-xs) * -1) 0;
+  }
+
+  .date-window-dialog-timeline dp-range-timeline {
+    display: block;
+    height: 64px;
+  }
+
   .date-window-dialog-shortcuts {
     display: flex;
     flex-wrap: wrap;

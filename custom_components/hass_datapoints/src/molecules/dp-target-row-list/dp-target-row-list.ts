@@ -28,6 +28,7 @@ export interface RowConfig {
  * @fires dp-row-toggle-analysis - Bubbled from child `dp-target-row`. `{ entityId }`
  * @fires dp-row-remove - Bubbled from child `dp-target-row`. `{ index }`
  * @fires dp-row-analysis-change - Bubbled from child `dp-target-row`. `{ entityId, key, value }`
+ * @fires dp-row-copy-analysis-to-all - Bubbled from child `dp-target-row`. `{ entityId, analysis }`
  */
 export class DpTargetRowList extends LitElement {
   static properties = {
@@ -51,6 +52,28 @@ export class DpTargetRowList extends LitElement {
 
   static styles = styles;
 
+  /**
+   * Optimistically toggle the expanded state of a row's analysis panel
+   * immediately (before the panel's round-trip mutation arrives). This gives
+   * instant visual feedback with no perceived delay.
+   */
+  private _onToggleAnalysisFast = (e: CustomEvent) => {
+    const entityId = String(e?.detail?.entityId || "").trim();
+    if (!entityId) return;
+    const index = this.rows?.findIndex((r) => r.entity_id === entityId) ?? -1;
+    if (index === -1) return;
+    this.rows = this.rows.map((row, i) => {
+      if (i !== index) return row;
+      return {
+        ...row,
+        analysis: {
+          ...row.analysis,
+          expanded: !row.analysis?.expanded,
+        },
+      };
+    });
+  };
+
   render() {
     if (!this.rows.length) {
       return html`
@@ -67,6 +90,7 @@ export class DpTargetRowList extends LitElement {
           @dragover=${this._onDragOver}
           @dragleave=${this._onDragLeave}
           @drop=${this._onDrop}
+          @dp-row-toggle-analysis=${this._onToggleAnalysisFast}
         >
           ${this.rows.map(
             (row, index) => html`

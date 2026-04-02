@@ -938,6 +938,10 @@ export function resolveChartLabelColor(el) {
 
 export function setupCanvas(canvas, container, cssHeight, cssWidth = null) {
   const dpr = window.devicePixelRatio || 1;
+  // Safari caps canvas pixel dimensions at 16,383. Chrome/Firefox at ~32,767.
+  // Use the Safari limit (16,383) so the canvas is never silently blanked by
+  // the browser resetting it to 300×150 when dimensions are exceeded.
+  const maxCssDim = Math.floor(16383 / dpr);
   const styles = getComputedStyle(container);
   const paddingX =
     (Number.parseFloat(styles.paddingLeft || "0") || 0)
@@ -946,13 +950,13 @@ export function setupCanvas(canvas, container, cssHeight, cssWidth = null) {
     (Number.parseFloat(styles.paddingTop || "0") || 0)
     + (Number.parseFloat(styles.paddingBottom || "0") || 0);
   const measuredWidth = cssWidth ?? (container.clientWidth || 360);
-  const w = Math.max(1, Math.round(measuredWidth - paddingX));
+  const w = Math.min(maxCssDim, Math.max(1, Math.round(measuredWidth - paddingX)));
   const requestedHeight = cssHeight ?? container.clientHeight ?? 220;
-  const h = Math.max(120, Math.round(requestedHeight - paddingY));
+  const h = Math.min(maxCssDim, Math.max(120, Math.round(requestedHeight - paddingY)));
   canvas.width = w * dpr;
   canvas.height = h * dpr;
   canvas.style.width = `${w}px`;
-  canvas.style.height = `${h  }px`;
+  canvas.style.height = `${h}px`;
   canvas.getContext("2d").scale(dpr, dpr);
   return { w, h };
 }

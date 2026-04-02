@@ -2243,13 +2243,14 @@
   }
   function setupCanvas(canvas, container, cssHeight, cssWidth = null) {
     const dpr = window.devicePixelRatio || 1;
+    const maxCssDim = Math.floor(16383 / dpr);
     const styles2 = getComputedStyle(container);
     const paddingX = (Number.parseFloat(styles2.paddingLeft || "0") || 0) + (Number.parseFloat(styles2.paddingRight || "0") || 0);
     const paddingY = (Number.parseFloat(styles2.paddingTop || "0") || 0) + (Number.parseFloat(styles2.paddingBottom || "0") || 0);
     const measuredWidth = cssWidth ?? (container.clientWidth || 360);
-    const w = Math.max(1, Math.round(measuredWidth - paddingX));
+    const w = Math.min(maxCssDim, Math.max(1, Math.round(measuredWidth - paddingX)));
     const requestedHeight = cssHeight ?? container.clientHeight ?? 220;
-    const h2 = Math.max(120, Math.round(requestedHeight - paddingY));
+    const h2 = Math.min(maxCssDim, Math.max(120, Math.round(requestedHeight - paddingY)));
     canvas.width = w * dpr;
     canvas.height = h2 * dpr;
     canvas.style.width = `${w}px`;
@@ -3861,6 +3862,7 @@ ${s2.description}`).join("\n\n");
     window.dispatchEvent(new CustomEvent("hass-datapoints-event-recorded"));
     return result;
   }
+  const PANEL_HISTORY_SAVED_PAGE_KEY = "hass_datapoints:saved_page_v1";
   async function fetchUserData(hass, key, defaultValue = null) {
     try {
       const result = await hass.connection.sendMessagePromise({
@@ -4536,7 +4538,7 @@ ${s2.description}`).join("\n\n");
       return null;
     }
   }
-  function buildHistoryPageSessionState(source) {
+  function buildHistoryPageSessionState$1(source) {
     return {
       entities: source._entities,
       series_rows: source._seriesRows,
@@ -4581,12 +4583,15 @@ ${s2.description}`).join("\n\n");
       zoom_end_time: source._chartZoomCommittedRange ? new Date(source._chartZoomCommittedRange.end).toISOString() : null,
       date_windows: normalizeDateWindows(source._comparisonWindows),
       hours: source._hours,
-      sidebar_collapsed: source._sidebarCollapsed
+      sidebar_collapsed: source._sidebarCollapsed,
+      sidebar_accordion_targets_open: source._sidebarAccordionTargetsOpen !== false,
+      sidebar_accordion_datapoints_open: source._sidebarAccordionDatapointsOpen !== false,
+      sidebar_accordion_chart_open: source._sidebarAccordionChartOpen !== false
     };
   }
   function writeHistoryPageSessionState(source) {
     try {
-      window.sessionStorage?.setItem(PANEL_HISTORY_SESSION_KEY, JSON.stringify(buildHistoryPageSessionState(source)));
+      window.sessionStorage?.setItem(PANEL_HISTORY_SESSION_KEY, JSON.stringify(buildHistoryPageSessionState$1(source)));
     } catch (_err) {
     }
   }
@@ -5036,6 +5041,7 @@ ${s2.description}`).join("\n\n");
     HOUR_MS,
     MINUTE_MS,
     PANEL_HISTORY_PREFERENCES_KEY,
+    PANEL_HISTORY_SAVED_PAGE_KEY,
     PANEL_HISTORY_SESSION_KEY,
     PANEL_URL_PATH,
     RANGE_AUTO_ZOOM_DEBOUNCE_MS,
@@ -5060,7 +5066,7 @@ ${s2.description}`).join("\n\n");
     buildChartCardShell,
     buildDataPointsHistoryPath: buildDataPointsHistoryPath$1,
     buildHistoryPagePreferencesPayload,
-    buildHistoryPageSessionState,
+    buildHistoryPageSessionState: buildHistoryPageSessionState$1,
     buildHistorySeriesRows,
     buildTooltipRelatedChips,
     clampChartValue,
@@ -8096,7 +8102,7 @@ ${s2.description}`).join("\n\n");
       worker.postMessage({ id, payload });
     });
   }
-  const HISTORY_CHART_MAX_CANVAS_WIDTH_PX = 65536;
+  const HISTORY_CHART_MAX_CANVAS_WIDTH_PX = Math.floor(16383 / (window.devicePixelRatio || 1));
   const HISTORY_CHART_MAX_ZOOM_MULTIPLIER = 365;
   const HISTORY_LEGEND_WRAP_ENABLE_HEIGHT_PX = 500;
   const HISTORY_LEGEND_WRAP_DISABLE_HEIGHT_PX = 440;
@@ -8759,6 +8765,10 @@ ${s2.description}`).join("\n\n");
       if (chartStage) {
         chartStage.style.width = `${canvasWidth}px`;
         chartStage.style.height = `${totalHeight}px`;
+      }
+      const splitScrollViewport = this.shadowRoot?.getElementById("chart-scroll-viewport");
+      if (splitScrollViewport) {
+        splitScrollViewport.style.overflowY = totalHeight > availableHeight ? "auto" : "hidden";
       }
       this._setChartLoading(!!options.loading);
       this._setChartMessage("");
@@ -10871,6 +10881,9 @@ ${s2.description}`).join("\n\n");
       if (chartStage) {
         chartStage.style.width = `${canvasWidth}px`;
         chartStage.style.height = `${availableHeight}px`;
+      }
+      if (scrollViewport) {
+        scrollViewport.style.overflowY = "";
       }
       const { w, h: h2 } = setupCanvas(canvas, chartStage || wrap, availableHeight, canvasWidth);
       const renderer = new ChartRenderer(canvas, w, h2);
@@ -14049,7 +14062,7 @@ ${s2.description}`).join("\n\n");
       };
     }
   }
-  const styles$k = i$5`
+  const styles$l = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -14388,6 +14401,35 @@ ${s2.description}`).join("\n\n");
     border-top: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 78%, transparent);
   }
 
+  .history-target-analysis-copy-row {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .history-target-analysis-copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border: none;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 12%, transparent);
+    color: var(--primary-color, #03a9f4);
+    font-size: 0.78rem;
+    font: inherit;
+    cursor: pointer;
+    transition: background-color 120ms ease;
+  }
+
+  .history-target-analysis-copy-btn:hover,
+  .history-target-analysis-copy-btn:focus-visible {
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 20%, transparent);
+  }
+
+  .history-target-analysis-copy-btn ha-icon {
+    --mdc-icon-size: 14px;
+  }
+
   .history-target-analysis-grid {
     display: grid;
     gap: var(--dp-spacing-sm);
@@ -14492,8 +14534,8 @@ ${s2.description}`).join("\n\n");
     cursor: pointer;
   }
 `;
-  const styles$j = i$5``;
-  const styles$i = i$5`
+  const styles$k = i$5``;
+  const styles$j = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -14555,7 +14597,7 @@ ${s2.description}`).join("\n\n");
       disabled: { type: Boolean },
       alignTop: { type: Boolean, attribute: "align-top" }
     };
-    static styles = styles$i;
+    static styles = styles$j;
     constructor() {
       super();
       this.label = "";
@@ -14619,7 +14661,7 @@ ${s2.description}`).join("\n\n");
       analysis: { type: Object },
       entityId: { type: String, attribute: "entity-id" }
     };
-    static styles = [sharedStyles, styles$j];
+    static styles = [sharedStyles, styles$k];
     constructor() {
       super();
       this.analysis = {};
@@ -14674,7 +14716,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-analysis-trend-group", DpAnalysisTrendGroup);
-  const styles$h = i$5``;
+  const styles$i = i$5``;
   const ANALYSIS_RATE_WINDOW_OPTIONS$1 = [
     { value: "point_to_point", label: "Point to point" },
     { value: "1h", label: "1 hour" },
@@ -14686,7 +14728,7 @@ ${s2.description}`).join("\n\n");
       analysis: { type: Object },
       entityId: { type: String, attribute: "entity-id" }
     };
-    static styles = [sharedStyles, styles$h];
+    static styles = [sharedStyles, styles$i];
     constructor() {
       super();
       this.analysis = {};
@@ -14728,14 +14770,14 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-analysis-rate-group", DpAnalysisRateGroup);
-  const styles$g = i$5``;
+  const styles$h = i$5``;
   class DpAnalysisThresholdGroup extends i$2 {
     static properties = {
       analysis: { type: Object },
       entityId: { type: String, attribute: "entity-id" },
       unit: { type: String }
     };
-    static styles = [sharedStyles, styles$g];
+    static styles = [sharedStyles, styles$h];
     constructor() {
       super();
       this.analysis = {};
@@ -14802,7 +14844,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-analysis-threshold-group", DpAnalysisThresholdGroup);
-  const styles$f = i$5`
+  const styles$g = i$5`
   .method-list {
     display: grid;
     gap: var(--dp-spacing-sm, 8px);
@@ -14832,7 +14874,7 @@ ${s2.description}`).join("\n\n");
     vertical-align: middle;
   }
 `;
-  const styles$e = i$5`
+  const styles$f = i$5`
   :host {
     display: block;
     --dp-spacing-sm: var(--spacing, 8px);
@@ -14848,7 +14890,7 @@ ${s2.description}`).join("\n\n");
   }
 `;
   class DpAnalysisMethodSubopts extends i$2 {
-    static styles = styles$e;
+    static styles = styles$f;
     render() {
       return b`<div class="subopts"><slot></slot></div>`;
     }
@@ -14897,7 +14939,7 @@ ${s2.description}`).join("\n\n");
       entityId: { type: String, attribute: "entity-id" },
       comparisonWindows: { type: Array, attribute: "comparison-windows" }
     };
-    static styles = [sharedStyles, styles$f];
+    static styles = [sharedStyles, styles$g];
     constructor() {
       super();
       this.analysis = {};
@@ -15010,7 +15052,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-analysis-anomaly-group", DpAnalysisAnomalyGroup);
-  const styles$d = i$5`
+  const styles$e = i$5`
   .help-text {
     display: inline-block;
     color: var(--secondary-text-color);
@@ -15024,7 +15066,7 @@ ${s2.description}`).join("\n\n");
       entityId: { type: String, attribute: "entity-id" },
       canShowDeltaAnalysis: { type: Boolean, attribute: "can-show-delta-analysis" }
     };
-    static styles = [sharedStyles, styles$d];
+    static styles = [sharedStyles, styles$e];
     constructor() {
       super();
       this.analysis = {};
@@ -15109,7 +15151,7 @@ ${s2.description}`).join("\n\n");
       hass: { type: Object, attribute: false },
       comparisonWindows: { type: Array, attribute: "comparison-windows" }
     };
-    static styles = styles$k;
+    static styles = styles$l;
     constructor() {
       super();
       this.color = "#03a9f4";
@@ -15153,6 +15195,9 @@ ${s2.description}`).join("\n\n");
     }
     _onCheckbox(key, e2) {
       this._emit("dp-row-analysis-change", { entityId: this._entityId, key, value: e2.target.checked });
+    }
+    _onCopyAnalysisToAll() {
+      this._emit("dp-row-copy-analysis-to-all", { entityId: this._entityId, analysis: this.analysis });
     }
     _onGroupAnalysisChange(e2) {
       this._emit("dp-row-analysis-change", e2.detail);
@@ -15241,13 +15286,18 @@ ${s2.description}`).join("\n\n");
 
         ${this._supportsAnalysis && this.analysis?.expanded ? b`
           <div class="history-target-analysis" role="cell">
+            <div class="history-target-analysis-copy-row">
+              <button
+                type="button"
+                class="history-target-analysis-copy-btn"
+                title="Copy these analysis settings to all targets"
+                @click=${this._onCopyAnalysisToAll}
+              >
+                <ha-icon icon="mdi:content-copy"></ha-icon>
+                Copy to all targets
+              </button>
+            </div>
             <div class="history-target-analysis-grid">
-              <label class="history-target-analysis-option ${!hasActive ? "is-disabled" : ""}">
-                <input type="checkbox" .checked=${a2.hide_source_series && hasActive}
-                  ?disabled=${!hasActive}
-                  @change=${(e2) => this._onCheckbox("hide_source_series", e2)}>
-                <span>Hide source series</span>
-              </label>
               <dp-analysis-trend-group
                 .analysis=${a2}
                 .entityId=${this._entityId}
@@ -15280,6 +15330,12 @@ ${s2.description}`).join("\n\n");
                 .canShowDeltaAnalysis=${this.canShowDeltaAnalysis}
                 @dp-group-analysis-change=${this._onGroupAnalysisChange}
               ></dp-analysis-delta-group>
+              <label class="history-target-analysis-option ${!hasActive ? "is-disabled" : ""}">
+                <input type="checkbox" .checked=${a2.hide_source_series && hasActive}
+                  ?disabled=${!hasActive}
+                  @change=${(e2) => this._onCheckbox("hide_source_series", e2)}>
+                <span>Hide source series</span>
+              </label>
             </div>
           </div>
         ` : A}
@@ -15288,7 +15344,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-target-row", DpTargetRow);
-  const styles$c = i$5`
+  const styles$d = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -15321,12 +15377,31 @@ ${s2.description}`).join("\n\n");
     pointer-events: none;
   }
 
-  dp-target-row.is-drag-over-before {
-    box-shadow: inset 0 3px 0 -1px var(--primary-color, #03a9f4);
+  dp-target-row.is-drag-over-before,
+  dp-target-row.is-drag-over-after {
+    position: relative;
+    overflow: visible;
   }
 
-  dp-target-row.is-drag-over-after {
-    box-shadow: inset 0 -3px 0 -1px var(--primary-color, #03a9f4);
+  dp-target-row.is-drag-over-before::before,
+  dp-target-row.is-drag-over-after::after {
+    content: '';
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--primary-color, #03a9f4);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  dp-target-row.is-drag-over-before::before {
+    top: -2px;
+  }
+
+  dp-target-row.is-drag-over-after::after {
+    bottom: -2px;
   }
 `;
   class DpTargetRowList extends i$2 {
@@ -15339,7 +15414,28 @@ ${s2.description}`).join("\n\n");
     };
     /** Index of the row currently being dragged, or null when not dragging. */
     _dragSourceIndex = null;
-    static styles = styles$c;
+    static styles = styles$d;
+    /**
+     * Optimistically toggle the expanded state of a row's analysis panel
+     * immediately (before the panel's round-trip mutation arrives). This gives
+     * instant visual feedback with no perceived delay.
+     */
+    _onToggleAnalysisFast = (e2) => {
+      const entityId = String(e2?.detail?.entityId || "").trim();
+      if (!entityId) return;
+      const index = this.rows?.findIndex((r2) => r2.entity_id === entityId) ?? -1;
+      if (index === -1) return;
+      this.rows = this.rows.map((row, i2) => {
+        if (i2 !== index) return row;
+        return {
+          ...row,
+          analysis: {
+            ...row.analysis,
+            expanded: !row.analysis?.expanded
+          }
+        };
+      });
+    };
     render() {
       if (!this.rows.length) {
         return b`
@@ -15355,6 +15451,7 @@ ${s2.description}`).join("\n\n");
           @dragover=${this._onDragOver}
           @dragleave=${this._onDragLeave}
           @drop=${this._onDrop}
+          @dp-row-toggle-analysis=${this._onToggleAnalysisFast}
         >
           ${this.rows.map(
         (row, index) => b`
@@ -15457,7 +15554,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-target-row-list", DpTargetRowList);
-  const styles$b = i$5`
+  const styles$c = i$5`
   :host {
     display: block;
     --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
@@ -15468,12 +15565,12 @@ ${s2.description}`).join("\n\n");
     gap: var(--dp-spacing-lg);
   }
 `;
-  const styles$a = i$5`
+  const styles$b = i$5`
   :host {
     display: block;
   }
 `;
-  const styles$9 = i$5`
+  const styles$a = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -15488,11 +15585,23 @@ ${s2.description}`).join("\n\n");
   class DpSidebarSectionHeader extends i$2 {
     static properties = {
       title: { type: String },
-      subtitle: { type: String }
+      subtitle: { type: String },
+      collapsible: { type: Boolean },
+      open: { type: Boolean }
     };
     static styles = i$5`
     :host { display: block; }
     .sidebar-section-header { display: grid; gap: var(--dp-spacing-xs); }
+    .sidebar-section-header.is-collapsible {
+      cursor: pointer;
+      user-select: none;
+    }
+    .sidebar-section-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+    }
     .sidebar-section-title {
       font-size: 0.95rem;
       font-weight: 600;
@@ -15502,16 +15611,60 @@ ${s2.description}`).join("\n\n");
       font-size: 0.82rem;
       color: var(--secondary-text-color);
     }
+    .sidebar-section-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border: none;
+      background: transparent;
+      color: var(--secondary-text-color);
+      cursor: pointer;
+      border-radius: 4px;
+      flex-shrink: 0;
+      transition: background-color 120ms ease;
+    }
+    .sidebar-section-toggle:hover,
+    .sidebar-section-toggle:focus-visible {
+      background: color-mix(in srgb, var(--primary-text-color, #111) 8%, transparent);
+    }
+    .sidebar-section-toggle ha-icon {
+      --mdc-icon-size: 18px;
+      display: block;
+      transition: transform 140ms ease;
+    }
+    .sidebar-section-toggle.is-open ha-icon {
+      transform: rotate(180deg);
+    }
   `;
     constructor() {
       super();
       this.title = "";
       this.subtitle = "";
+      this.collapsible = false;
+      this.open = true;
+    }
+    _onToggle() {
+      this.dispatchEvent(new CustomEvent("dp-section-toggle", { bubbles: true, composed: true }));
     }
     render() {
       return b`
-      <div class="sidebar-section-header">
-        <div class="sidebar-section-title">${this.title}</div>
+      <div class="sidebar-section-header ${this.collapsible ? "is-collapsible" : ""}">
+        <div class="sidebar-section-header-row">
+          <div class="sidebar-section-title">${this.title}</div>
+          ${this.collapsible ? b`
+            <button
+              type="button"
+              class="sidebar-section-toggle ${this.open ? "is-open" : ""}"
+              aria-label="${this.open ? "Collapse" : "Expand"} ${this.title}"
+              aria-expanded=${this.open}
+              @click=${this._onToggle}
+            >
+              <ha-icon icon="mdi:chevron-down"></ha-icon>
+            </button>
+          ` : A}
+        </div>
         ${this.subtitle ? b`<div class="sidebar-section-subtitle">${this.subtitle}</div>` : A}
       </div>
     `;
@@ -15521,13 +15674,27 @@ ${s2.description}`).join("\n\n");
   class DpSidebarOptionsSection extends i$2 {
     static properties = {
       title: { type: String },
-      subtitle: { type: String }
+      subtitle: { type: String },
+      collapsible: { type: Boolean },
+      open: { type: Boolean }
     };
-    static styles = styles$9;
+    static styles = styles$a;
     constructor() {
       super();
       this.title = "";
       this.subtitle = "";
+      this.collapsible = false;
+      this.open = true;
+    }
+    _onToggle() {
+      this.open = !this.open;
+      this.dispatchEvent(
+        new CustomEvent("dp-section-toggle", {
+          detail: { open: this.open },
+          bubbles: true,
+          composed: true
+        })
+      );
     }
     render() {
       return b`
@@ -15535,8 +15702,11 @@ ${s2.description}`).join("\n\n");
         <dp-sidebar-section-header
           .title=${this.title}
           .subtitle=${this.subtitle}
+          .collapsible=${this.collapsible}
+          .open=${this.open}
+          @dp-section-toggle=${this._onToggle}
         ></dp-sidebar-section-header>
-        <slot></slot>
+        ${this.collapsible && !this.open ? A : b`<slot></slot>`}
       </div>
     `;
     }
@@ -15620,12 +15790,16 @@ ${s2.description}`).join("\n\n");
   ];
   class DpSidebarDatapointsSection extends i$2 {
     static properties = {
-      datapointScope: { type: String, attribute: "datapoint-scope" }
+      datapointScope: { type: String, attribute: "datapoint-scope" },
+      collapsible: { type: Boolean },
+      open: { type: Boolean }
     };
-    static styles = styles$a;
+    static styles = styles$b;
     constructor() {
       super();
       this.datapointScope = "linked";
+      this.collapsible = false;
+      this.open = true;
     }
     _onScopeChange(e2) {
       this.dispatchEvent(
@@ -15637,6 +15811,8 @@ ${s2.description}`).join("\n\n");
       <dp-sidebar-options-section
         .title=${"Datapoints"}
         .subtitle=${"Choose which annotation datapoints appear on the chart."}
+        .collapsible=${this.collapsible}
+        .open=${this.open}
       >
         <dp-radio-group
           .name=${"datapoint-scope"}
@@ -15649,7 +15825,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-sidebar-datapoints-section", DpSidebarDatapointsSection);
-  const styles$8 = i$5`
+  const styles$9 = i$5`
   :host {
     display: block;
   }
@@ -15716,13 +15892,17 @@ ${s2.description}`).join("\n\n");
   class DpSidebarDatapointDisplaySection extends i$2 {
     static properties = {
       showIcons: { type: Boolean, attribute: "show-icons" },
-      showLines: { type: Boolean, attribute: "show-lines" }
+      showLines: { type: Boolean, attribute: "show-lines" },
+      collapsible: { type: Boolean },
+      open: { type: Boolean }
     };
-    static styles = styles$8;
+    static styles = styles$9;
     constructor() {
       super();
       this.showIcons = true;
       this.showLines = true;
+      this.collapsible = false;
+      this.open = true;
     }
     _onCheckboxChange(e2) {
       const { name, checked } = e2.detail;
@@ -15735,6 +15915,8 @@ ${s2.description}`).join("\n\n");
       <dp-sidebar-options-section
         .title=${"Datapoint Display"}
         .subtitle=${"Control how annotation datapoints are rendered on the chart."}
+        .collapsible=${this.collapsible}
+        .open=${this.open}
       >
         <dp-checkbox-list
           .items=${[
@@ -15748,7 +15930,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-sidebar-datapoint-display-section", DpSidebarDatapointDisplaySection);
-  const styles$7 = i$5`
+  const styles$8 = i$5`
   :host {
     display: block;
     --dp-spacing-sm: var(--spacing, 8px);
@@ -15808,9 +15990,11 @@ ${s2.description}`).join("\n\n");
       showCorrelatedAnomalies: { type: Boolean, attribute: "show-correlated-anomalies" },
       showDataGaps: { type: Boolean, attribute: "show-data-gaps" },
       dataGapThreshold: { type: String, attribute: "data-gap-threshold" },
-      yAxisMode: { type: String, attribute: "y-axis-mode" }
+      yAxisMode: { type: String, attribute: "y-axis-mode" },
+      collapsible: { type: Boolean },
+      open: { type: Boolean }
     };
-    static styles = styles$7;
+    static styles = styles$8;
     constructor() {
       super();
       this.showTooltips = true;
@@ -15819,6 +16003,8 @@ ${s2.description}`).join("\n\n");
       this.showDataGaps = true;
       this.dataGapThreshold = "2h";
       this.yAxisMode = "combined";
+      this.collapsible = false;
+      this.open = true;
     }
     _emitDisplay(kind, value) {
       this.dispatchEvent(
@@ -15840,6 +16026,8 @@ ${s2.description}`).join("\n\n");
       <dp-sidebar-options-section
         .title=${"Chart Display"}
         .subtitle=${"Configure visual and interaction behaviour for the chart."}
+        .collapsible=${this.collapsible}
+        .open=${this.open}
       >
         <dp-checkbox-list
           .items=${[
@@ -15885,9 +16073,13 @@ ${s2.description}`).join("\n\n");
       showCorrelatedAnomalies: { type: Boolean, attribute: "show-correlated-anomalies" },
       showDataGaps: { type: Boolean, attribute: "show-data-gaps" },
       dataGapThreshold: { type: String, attribute: "data-gap-threshold" },
-      yAxisMode: { type: String, attribute: "y-axis-mode" }
+      yAxisMode: { type: String, attribute: "y-axis-mode" },
+      // Accordion open states
+      targetsOpen: { type: Boolean, attribute: "targets-open" },
+      datapointsOpen: { type: Boolean, attribute: "datapoints-open" },
+      chartOpen: { type: Boolean, attribute: "chart-open" }
     };
-    static styles = styles$b;
+    static styles = styles$c;
     constructor() {
       super();
       this.datapointScope = "linked";
@@ -15899,16 +16091,50 @@ ${s2.description}`).join("\n\n");
       this.showDataGaps = true;
       this.dataGapThreshold = "2h";
       this.yAxisMode = "combined";
+      this.targetsOpen = true;
+      this.datapointsOpen = true;
+      this.chartOpen = true;
+    }
+    _onTargetsToggle(e2) {
+      this.targetsOpen = e2.detail.open;
+      this._emitAccordionChange();
+    }
+    _onDatapointsToggle(e2) {
+      this.datapointsOpen = e2.detail.open;
+      this._emitAccordionChange();
+    }
+    _onChartToggle(e2) {
+      this.chartOpen = e2.detail.open;
+      this._emitAccordionChange();
+    }
+    _emitAccordionChange() {
+      this.dispatchEvent(
+        new CustomEvent("dp-accordion-change", {
+          detail: {
+            targetsOpen: this.targetsOpen,
+            datapointsOpen: this.datapointsOpen,
+            chartOpen: this.chartOpen
+          },
+          bubbles: true,
+          composed: true
+        })
+      );
     }
     render() {
       return b`
       <div class="sidebar-options-card">
         <dp-sidebar-datapoints-section
           .datapointScope=${this.datapointScope}
+          collapsible
+          .open=${this.targetsOpen}
+          @dp-section-toggle=${this._onTargetsToggle}
         ></dp-sidebar-datapoints-section>
         <dp-sidebar-datapoint-display-section
           .showIcons=${this.showIcons}
           .showLines=${this.showLines}
+          collapsible
+          .open=${this.datapointsOpen}
+          @dp-section-toggle=${this._onDatapointsToggle}
         ></dp-sidebar-datapoint-display-section>
         <dp-sidebar-chart-display-section
           .showTooltips=${this.showTooltips}
@@ -15917,6 +16143,9 @@ ${s2.description}`).join("\n\n");
           .showDataGaps=${this.showDataGaps}
           .dataGapThreshold=${this.dataGapThreshold}
           .yAxisMode=${this.yAxisMode}
+          collapsible
+          .open=${this.chartOpen}
+          @dp-section-toggle=${this._onChartToggle}
         ></dp-sidebar-chart-display-section>
       </div>
     `;
@@ -16035,7 +16264,7 @@ ${s2.description}`).join("\n\n");
       return this.ut = a2, p(s2, v$12), E;
     }
   });
-  const styles$6 = i$5`
+  const styles$7 = i$5`
   :host {
     display: block;
   }
@@ -16117,7 +16346,7 @@ ${s2.description}`).join("\n\n");
     display: none;
   }
 `;
-  const styles$5 = i$5`
+  const styles$6 = i$5`
   :host {
     display: contents;
   }
@@ -16298,7 +16527,7 @@ ${s2.description}`).join("\n\n");
   }
 `;
   class DpComparisonTab extends i$2 {
-    static styles = styles$5;
+    static styles = styles$6;
     static properties = {
       tabId: { type: String, attribute: "tab-id" },
       label: { type: String },
@@ -16409,7 +16638,7 @@ ${s2.description}`).join("\n\n");
   }
   customElements.define("dp-comparison-tab", DpComparisonTab);
   class DpComparisonTabRail extends i$2 {
-    static styles = styles$6;
+    static styles = styles$7;
     static properties = {
       tabs: { type: Array },
       loadingIds: { type: Array, attribute: false },
@@ -16497,7 +16726,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-comparison-tab-rail", DpComparisonTabRail);
-  const styles$4 = i$5`
+  const styles$5 = i$5`
   :host {
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
     --dp-spacing-sm: var(--spacing, 8px);
@@ -16563,6 +16792,17 @@ ${s2.description}`).join("\n\n");
     border-color: color-mix(in srgb, var(--primary-color, #03a9f4) 55%, transparent);
   }
 
+  .date-window-dialog-timeline {
+    border-radius: 8px;
+    overflow: hidden;
+    margin: calc(var(--dp-spacing-xs) * -1) 0;
+  }
+
+  .date-window-dialog-timeline dp-range-timeline {
+    display: block;
+    height: 64px;
+  }
+
   .date-window-dialog-shortcuts {
     display: flex;
     flex-wrap: wrap;
@@ -16606,424 +16846,7 @@ ${s2.description}`).join("\n\n");
     }
   }
 `;
-  class DpDateWindowDialog extends i$2 {
-    static styles = styles$4;
-    static properties = {
-      open: { type: Boolean },
-      heading: { type: String },
-      name: { type: String },
-      startValue: { type: String, attribute: "start-value" },
-      endValue: { type: String, attribute: "end-value" },
-      showDelete: { type: Boolean, attribute: "show-delete" },
-      showShortcuts: { type: Boolean, attribute: "show-shortcuts" },
-      submitLabel: { type: String, attribute: "submit-label" }
-    };
-    constructor() {
-      super();
-      this.open = false;
-      this.heading = "Add date window";
-      this.name = "";
-      this.startValue = "";
-      this.endValue = "";
-      this.showDelete = false;
-      this.showShortcuts = false;
-      this.submitLabel = "Create date window";
-    }
-    _emit(name, detail = {}) {
-      this.dispatchEvent(
-        new CustomEvent(name, {
-          detail,
-          bubbles: true,
-          composed: true
-        })
-      );
-    }
-    _onDialogClosed() {
-      this._emit("dp-window-close");
-    }
-    _onCancel() {
-      this._emit("dp-window-close");
-    }
-    _onSubmit() {
-      const nameInput = this.shadowRoot?.querySelector("#date-window-name");
-      const startInput = this.shadowRoot?.querySelector("#date-window-start");
-      const endInput = this.shadowRoot?.querySelector("#date-window-end");
-      const nameVal = nameInput?.value ?? this.name;
-      this._emit("dp-window-submit", {
-        name: String(nameVal ?? "").trim(),
-        start: startInput?.value ?? this.startValue,
-        end: endInput?.value ?? this.endValue
-      });
-    }
-    _onDelete() {
-      this._emit("dp-window-delete");
-    }
-    _onPreviousShortcut() {
-      this._emit("dp-window-shortcut", { direction: -1 });
-    }
-    _onNextShortcut() {
-      this._emit("dp-window-shortcut", { direction: 1 });
-    }
-    _onDateChange() {
-      const startInput = this.shadowRoot?.querySelector("#date-window-start");
-      const endInput = this.shadowRoot?.querySelector("#date-window-end");
-      this._emit("dp-window-date-change", {
-        start: startInput?.value ?? "",
-        end: endInput?.value ?? ""
-      });
-    }
-    render() {
-      return b`
-      <ha-dialog
-        ?open=${this.open}
-        hideActions
-        .scrimClickAction=${"close"}
-        .escapeKeyAction=${"close"}
-        .heading=${this.heading}
-        @closed=${this._onDialogClosed}
-      >
-        <div class="date-window-dialog-content">
-          <div class="date-window-dialog-body">
-            A date window saves a named date range as a tab, so you can quickly preview it against
-            the selected range or jump the chart back to it later.
-          </div>
-
-          <div class="date-window-dialog-field name-field">
-            <ha-textfield
-              id="date-window-name"
-              label="Name"
-              placeholder="e.g. Heating season start"
-              .value=${this.name}
-            ></ha-textfield>
-          </div>
-
-          <div class="date-window-dialog-field">
-            <label>Date range</label>
-            <div class="date-window-dialog-dates">
-              <div class="date-window-dialog-field">
-                <label for="date-window-start">Start</label>
-                <input
-                  id="date-window-start"
-                  class="date-window-dialog-input"
-                  type="datetime-local"
-                  step="60"
-                  .value=${this.startValue}
-                  @change=${this._onDateChange}
-                />
-              </div>
-              <div class="date-window-dialog-field">
-                <label for="date-window-end">End</label>
-                <input
-                  id="date-window-end"
-                  class="date-window-dialog-input"
-                  type="datetime-local"
-                  step="60"
-                  .value=${this.endValue}
-                  @change=${this._onDateChange}
-                />
-              </div>
-            </div>
-          </div>
-
-          ${this.showShortcuts ? b`
-                <div class="date-window-dialog-shortcuts">
-                  <ha-button @click=${this._onPreviousShortcut}>Use previous range</ha-button>
-                  <ha-button @click=${this._onNextShortcut}>Use next range</ha-button>
-                </div>
-              ` : A}
-
-          <div class="date-window-dialog-actions">
-            ${this.showDelete ? b`
-                  <ha-button
-                    class="date-window-dialog-delete"
-                    @click=${this._onDelete}
-                  >Delete date window</ha-button>
-                ` : A}
-            <div class="date-window-dialog-actions-right">
-              <ha-button
-                class="date-window-dialog-cancel"
-                @click=${this._onCancel}
-              >Cancel</ha-button>
-              <ha-button
-                raised
-                class="date-window-dialog-submit"
-                @click=${this._onSubmit}
-              >${this.submitLabel}</ha-button>
-            </div>
-          </div>
-        </div>
-      </ha-dialog>
-    `;
-    }
-  }
-  customElements.define("dp-date-window-dialog", DpDateWindowDialog);
-  const styles$3 = i$5`
-  :host {
-    display: contents;
-  }
-
-  .floating-menu {
-    position: fixed;
-    top: var(--floating-menu-top, 64px);
-    left: var(--floating-menu-left, 0px);
-    z-index: 9999;
-    min-width: var(--floating-menu-min-width, 220px);
-    width: var(--floating-menu-width, auto);
-    max-height: var(--floating-menu-max-height, none);
-    overflow: var(--floating-menu-overflow, visible);
-    padding: var(--floating-menu-padding, var(--dp-spacing-xs, 4px));
-    border-radius: 14px;
-    background: var(--card-background-color, #fff);
-    box-shadow:
-      0 18px 44px rgba(0, 0, 0, 0.18),
-      0 2px 8px rgba(0, 0, 0, 0.1);
-    border: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 88%, transparent);
-  }
-
-  .floating-menu[hidden] {
-    display: none;
-  }
-`;
-  class DpFloatingMenu extends i$2 {
-    static styles = styles$3;
-    static properties = {
-      open: { type: Boolean, reflect: true }
-    };
-    constructor() {
-      super();
-      this.open = false;
-    }
-    connectedCallback() {
-      super.connectedCallback();
-      this._onPointerDown = this._onPointerDown.bind(this);
-      window.addEventListener("pointerdown", this._onPointerDown, true);
-    }
-    disconnectedCallback() {
-      super.disconnectedCallback();
-      window.removeEventListener("pointerdown", this._onPointerDown, true);
-    }
-    _onPointerDown(e2) {
-      if (!this.open) {
-        return;
-      }
-      const path = e2.composedPath();
-      const clickedInside = path.some((node) => node === this);
-      if (!clickedInside) {
-        this.dispatchEvent(
-          new CustomEvent("dp-menu-close", {
-            detail: {},
-            bubbles: true,
-            composed: true
-          })
-        );
-      }
-    }
-    render() {
-      return b`
-      <div
-        class="floating-menu"
-        role="menu"
-        ?hidden=${!this.open}
-      >
-        <slot></slot>
-      </div>
-    `;
-    }
-  }
-  customElements.define("dp-floating-menu", DpFloatingMenu);
-  class DpPageMenuItem extends i$2 {
-    static properties = {
-      icon: { type: String },
-      label: { type: String },
-      disabled: { type: Boolean }
-    };
-    static styles = i$5`
-    :host { display: block; }
-    button {
-      width: 100%; min-height: 38px;
-      padding: var(--dp-spacing-sm, 8px) var(--dp-spacing-sm, 8px);
-      display: flex; align-items: center; gap: var(--dp-spacing-sm, 8px);
-      border: none; border-radius: 10px; background: transparent;
-      color: var(--primary-text-color); font: inherit; text-align: left; cursor: pointer;
-    }
-    button:hover, button:focus-visible {
-      background: color-mix(in srgb, var(--primary-text-color, #111) 6%, transparent);
-      outline: none;
-    }
-    button[disabled] {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    button[disabled]:hover {
-      background: transparent;
-    }
-    ha-icon {
-      --mdc-icon-size: 18px;
-      color: var(--secondary-text-color);
-      flex: 0 0 auto;
-    }
-  `;
-    constructor() {
-      super();
-      this.icon = "";
-      this.label = "";
-      this.disabled = false;
-    }
-    _onClick() {
-      if (this.disabled) {
-        return;
-      }
-      this.dispatchEvent(
-        new CustomEvent("dp-menu-action", {
-          bubbles: true,
-          composed: true
-        })
-      );
-    }
-    render() {
-      return b`
-      <button
-        type="button"
-        ?disabled=${this.disabled}
-        @click=${this._onClick}
-      >
-        <ha-icon icon="${this.icon}"></ha-icon>
-        ${this.label}
-      </button>
-    `;
-    }
-  }
-  customElements.define("dp-page-menu-item", DpPageMenuItem);
-  const styles$2 = i$5`
-  :host {
-    display: contents;
-  }
-
-  /* ---- track overlays (positioned inside dp-range-timeline's .range-track) ---- */
-
-  .range-hover-preview {
-    position: absolute;
-    top: 14px;
-    height: 14px;
-    border-radius: 4px;
-    background: color-mix(in srgb, var(--primary-color, #03a9f4) 26%, transparent);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 120ms ease;
-  }
-
-  .range-hover-preview.visible {
-    opacity: 1;
-  }
-
-  .range-comparison-preview {
-    position: absolute;
-    top: -4px;
-    height: 12px;
-    z-index: 2;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--primary-color, #03a9f4) 18%, transparent);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color, #03a9f4) 58%, transparent);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 120ms ease;
-  }
-
-  .range-comparison-preview.visible {
-    opacity: 1;
-  }
-
-  .range-zoom-highlight {
-    position: absolute;
-    top: -6px;
-    height: 16px;
-    z-index: 2;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--primary-color, #03a9f4) 14%, transparent);
-    box-shadow:
-      inset 0 0 0 2px var(--primary-color, #03a9f4),
-      0 0 0 1px color-mix(in srgb, var(--card-background-color, #fff) 72%, transparent);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 120ms ease;
-  }
-
-  .range-zoom-highlight.visible {
-    opacity: 1;
-  }
-
-  .range-zoom-window-highlight {
-    position: absolute;
-    top: -4px;
-    height: 12px;
-    z-index: 4;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--primary-color, #03a9f4) 52%, transparent);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color, #03a9f4) 85%, transparent);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 120ms ease;
-  }
-
-  .range-zoom-window-highlight.visible {
-    opacity: 1;
-  }
-
-  /* ---- timeline overlays (positioned inside dp-range-timeline's .range-timeline) ---- */
-
-  .range-event-layer {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-  }
-
-  .range-event-dot {
-    position: absolute;
-    bottom: 18px;
-    width: 6px;
-    height: 6px;
-    border-radius: 999px;
-    transform: translateX(-50%);
-    pointer-events: none;
-  }
-
-  .range-chart-hover-line {
-    position: absolute;
-    top: 2px;
-    bottom: 0;
-    width: 2px;
-    transform: translateX(-50%);
-    background: var(--primary-color, #03a9f4);
-    border-radius: 999px;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 120ms ease;
-    z-index: 2;
-  }
-
-  .range-chart-hover-line.visible {
-    opacity: 1;
-  }
-
-  .range-chart-hover-window-line {
-    position: absolute;
-    top: 2px;
-    bottom: 0;
-    width: 2px;
-    transform: translateX(-50%);
-    background: var(--primary-color, #03a9f4);
-    border-radius: 999px;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 120ms ease;
-    z-index: 2;
-  }
-
-  .range-chart-hover-window-line.visible {
-    opacity: 0.45;
-  }
-`;
-  const styles$1 = i$5`
+  const styles$4 = i$5`
   :host {
     display: block;
     position: relative;
@@ -17291,7 +17114,7 @@ ${s2.description}`).join("\n\n");
     z-index: 9;
   }
 `;
-  const styles = i$5`
+  const styles$3 = i$5`
   :host {
     position: absolute;
     top: 26px;
@@ -17335,7 +17158,7 @@ ${s2.description}`).join("\n\n");
       label: { type: String },
       live: { type: Boolean }
     };
-    static styles = styles;
+    static styles = styles$3;
     constructor() {
       super();
       this.position = 0;
@@ -17407,7 +17230,7 @@ ${s2.description}`).join("\n\n");
       dateSnapping: { type: String },
       isLiveEdge: { type: Boolean }
     };
-    static styles = styles$1;
+    static styles = styles$4;
     // --- Internal drag state ---
     _draftStartTime = null;
     _draftEndTime = null;
@@ -18320,6 +18143,464 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-range-timeline", DpRangeTimeline);
+  class DpDateWindowDialog extends i$2 {
+    static styles = styles$5;
+    static properties = {
+      open: { type: Boolean },
+      heading: { type: String },
+      name: { type: String },
+      startValue: { type: String, attribute: "start-value" },
+      endValue: { type: String, attribute: "end-value" },
+      showDelete: { type: Boolean, attribute: "show-delete" },
+      showShortcuts: { type: Boolean, attribute: "show-shortcuts" },
+      submitLabel: { type: String, attribute: "submit-label" },
+      rangeBounds: { type: Object },
+      zoomLevel: { type: String, attribute: "zoom-level" },
+      dateSnapping: { type: String, attribute: "date-snapping" }
+    };
+    constructor() {
+      super();
+      this.open = false;
+      this.heading = "Add date window";
+      this.name = "";
+      this.startValue = "";
+      this.endValue = "";
+      this.showDelete = false;
+      this.showShortcuts = false;
+      this.submitLabel = "Create date window";
+      this.rangeBounds = null;
+      this.zoomLevel = "auto";
+      this.dateSnapping = "hour";
+    }
+    _emit(name, detail = {}) {
+      this.dispatchEvent(
+        new CustomEvent(name, {
+          detail,
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    _onDialogClosed() {
+      this._emit("dp-window-close");
+    }
+    _onCancel() {
+      this._emit("dp-window-close");
+    }
+    _onSubmit() {
+      const nameInput = this.shadowRoot?.querySelector("#date-window-name");
+      const startInput = this.shadowRoot?.querySelector("#date-window-start");
+      const endInput = this.shadowRoot?.querySelector("#date-window-end");
+      const nameVal = nameInput?.value ?? this.name;
+      this._emit("dp-window-submit", {
+        name: String(nameVal ?? "").trim(),
+        start: startInput?.value ?? this.startValue,
+        end: endInput?.value ?? this.endValue
+      });
+    }
+    _onDelete() {
+      this._emit("dp-window-delete");
+    }
+    _onPreviousShortcut() {
+      this._emit("dp-window-shortcut", { direction: -1 });
+    }
+    _onNextShortcut() {
+      this._emit("dp-window-shortcut", { direction: 1 });
+    }
+    _onDateChange() {
+      const startInput = this.shadowRoot?.querySelector("#date-window-start");
+      const endInput = this.shadowRoot?.querySelector("#date-window-end");
+      this._emit("dp-window-date-change", {
+        start: startInput?.value ?? "",
+        end: endInput?.value ?? ""
+      });
+    }
+    _onRangeCommit(ev) {
+      const { start, end } = ev.detail ?? {};
+      if (!start || !end) return;
+      const fmt = (ms) => {
+        const d2 = new Date(ms);
+        const pad = (n2) => String(n2).padStart(2, "0");
+        return `${d2.getFullYear()}-${pad(d2.getMonth() + 1)}-${pad(d2.getDate())}T${pad(d2.getHours())}:${pad(d2.getMinutes())}`;
+      };
+      const startStr = fmt(start);
+      const endStr = fmt(end);
+      const startInput = this.shadowRoot?.querySelector("#date-window-start");
+      const endInput = this.shadowRoot?.querySelector("#date-window-end");
+      if (startInput) startInput.value = startStr;
+      if (endInput) endInput.value = endStr;
+      this._emit("dp-window-date-change", { start: startStr, end: endStr });
+    }
+    /** Parse the startValue / endValue strings to Date objects for the timeline. */
+    _parseValueToDate(value) {
+      if (!value) return null;
+      const d2 = new Date(value);
+      return isNaN(d2.getTime()) ? null : d2;
+    }
+    render() {
+      return b`
+      <ha-dialog
+        ?open=${this.open}
+        hideActions
+        .scrimClickAction=${"close"}
+        .escapeKeyAction=${"close"}
+        @closed=${this._onDialogClosed}
+      >
+        <span slot="heading">${this.heading}</span>
+        <div class="date-window-dialog-content">
+          <div class="date-window-dialog-body">
+            A date window saves a named date range as a tab, so you can quickly preview it against
+            the selected range or jump the chart back to it later.
+          </div>
+
+          <div class="date-window-dialog-field name-field">
+            <ha-textfield
+              id="date-window-name"
+              label="Name"
+              placeholder="e.g. Heating season start"
+              .value=${this.name}
+            ></ha-textfield>
+          </div>
+
+          <div class="date-window-dialog-field">
+            <label>Date range</label>
+            <div class="date-window-dialog-dates">
+              <div class="date-window-dialog-field">
+                <label for="date-window-start">Start</label>
+                <input
+                  id="date-window-start"
+                  class="date-window-dialog-input"
+                  type="datetime-local"
+                  step="60"
+                  .value=${this.startValue}
+                  @change=${this._onDateChange}
+                />
+              </div>
+              <div class="date-window-dialog-field">
+                <label for="date-window-end">End</label>
+                <input
+                  id="date-window-end"
+                  class="date-window-dialog-input"
+                  type="datetime-local"
+                  step="60"
+                  .value=${this.endValue}
+                  @change=${this._onDateChange}
+                />
+              </div>
+            </div>
+          </div>
+
+          ${this.rangeBounds ? b`
+                <div class="date-window-dialog-timeline">
+                  <dp-range-timeline
+                    .startTime=${this._parseValueToDate(this.startValue)}
+                    .endTime=${this._parseValueToDate(this.endValue)}
+                    .rangeBounds=${this.rangeBounds}
+                    .zoomLevel=${this.zoomLevel}
+                    .dateSnapping=${this.dateSnapping}
+                    @dp-range-commit=${this._onRangeCommit}
+                  ></dp-range-timeline>
+                </div>
+              ` : A}
+
+          ${this.showShortcuts ? b`
+                <div class="date-window-dialog-shortcuts">
+                  <ha-button @click=${this._onPreviousShortcut}>Use previous range</ha-button>
+                  <ha-button @click=${this._onNextShortcut}>Use next range</ha-button>
+                </div>
+              ` : A}
+
+          <div class="date-window-dialog-actions">
+            ${this.showDelete ? b`
+                  <ha-button
+                    class="date-window-dialog-delete"
+                    @click=${this._onDelete}
+                  >Delete date window</ha-button>
+                ` : A}
+            <div class="date-window-dialog-actions-right">
+              <ha-button
+                class="date-window-dialog-cancel"
+                @click=${this._onCancel}
+              >Cancel</ha-button>
+              <ha-button
+                raised
+                class="date-window-dialog-submit"
+                @click=${this._onSubmit}
+              >${this.submitLabel}</ha-button>
+            </div>
+          </div>
+        </div>
+      </ha-dialog>
+    `;
+    }
+  }
+  customElements.define("dp-date-window-dialog", DpDateWindowDialog);
+  const styles$2 = i$5`
+  :host {
+    display: contents;
+  }
+
+  .floating-menu {
+    position: fixed;
+    top: var(--floating-menu-top, 64px);
+    left: var(--floating-menu-left, 0px);
+    z-index: 9999;
+    min-width: var(--floating-menu-min-width, 220px);
+    width: var(--floating-menu-width, auto);
+    max-height: var(--floating-menu-max-height, none);
+    overflow: var(--floating-menu-overflow, visible);
+    padding: var(--floating-menu-padding, var(--dp-spacing-xs, 4px));
+    border-radius: 14px;
+    background: var(--card-background-color, #fff);
+    box-shadow:
+      0 18px 44px rgba(0, 0, 0, 0.18),
+      0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 88%, transparent);
+  }
+
+  .floating-menu[hidden] {
+    display: none;
+  }
+`;
+  class DpFloatingMenu extends i$2 {
+    static styles = styles$2;
+    static properties = {
+      open: { type: Boolean, reflect: true }
+    };
+    constructor() {
+      super();
+      this.open = false;
+    }
+    connectedCallback() {
+      super.connectedCallback();
+      this._onPointerDown = this._onPointerDown.bind(this);
+      window.addEventListener("pointerdown", this._onPointerDown, true);
+    }
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      window.removeEventListener("pointerdown", this._onPointerDown, true);
+    }
+    _onPointerDown(e2) {
+      if (!this.open) {
+        return;
+      }
+      const path = e2.composedPath();
+      const clickedInside = path.some((node) => node === this);
+      if (!clickedInside) {
+        this.dispatchEvent(
+          new CustomEvent("dp-menu-close", {
+            detail: {},
+            bubbles: true,
+            composed: true
+          })
+        );
+      }
+    }
+    render() {
+      return b`
+      <div
+        class="floating-menu"
+        role="menu"
+        ?hidden=${!this.open}
+      >
+        <slot></slot>
+      </div>
+    `;
+    }
+  }
+  customElements.define("dp-floating-menu", DpFloatingMenu);
+  class DpPageMenuItem extends i$2 {
+    static properties = {
+      icon: { type: String },
+      label: { type: String },
+      disabled: { type: Boolean }
+    };
+    static styles = i$5`
+    :host { display: block; }
+    button {
+      width: 100%; min-height: 38px;
+      padding: var(--dp-spacing-sm, 8px) var(--dp-spacing-sm, 8px);
+      display: flex; align-items: center; gap: var(--dp-spacing-sm, 8px);
+      border: none; border-radius: 10px; background: transparent;
+      color: var(--primary-text-color); font: inherit; text-align: left; cursor: pointer;
+    }
+    button:hover, button:focus-visible {
+      background: color-mix(in srgb, var(--primary-text-color, #111) 6%, transparent);
+      outline: none;
+    }
+    button[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    button[disabled]:hover {
+      background: transparent;
+    }
+    ha-icon {
+      --mdc-icon-size: 18px;
+      color: var(--secondary-text-color);
+      flex: 0 0 auto;
+    }
+  `;
+    constructor() {
+      super();
+      this.icon = "";
+      this.label = "";
+      this.disabled = false;
+    }
+    _onClick() {
+      if (this.disabled) {
+        return;
+      }
+      this.dispatchEvent(
+        new CustomEvent("dp-menu-action", {
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    render() {
+      return b`
+      <button
+        type="button"
+        ?disabled=${this.disabled}
+        @click=${this._onClick}
+      >
+        <ha-icon icon="${this.icon}"></ha-icon>
+        ${this.label}
+      </button>
+    `;
+    }
+  }
+  customElements.define("dp-page-menu-item", DpPageMenuItem);
+  const styles$1 = i$5`
+  :host {
+    display: contents;
+  }
+
+  /* ---- track overlays (positioned inside dp-range-timeline's .range-track) ---- */
+
+  .range-hover-preview {
+    position: absolute;
+    top: 14px;
+    height: 14px;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 26%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease;
+  }
+
+  .range-hover-preview.visible {
+    opacity: 1;
+  }
+
+  .range-comparison-preview {
+    position: absolute;
+    top: -4px;
+    height: 12px;
+    z-index: 2;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 18%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color, #03a9f4) 58%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease;
+  }
+
+  .range-comparison-preview.visible {
+    opacity: 1;
+  }
+
+  .range-zoom-highlight {
+    position: absolute;
+    top: -6px;
+    height: 16px;
+    z-index: 2;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 14%, transparent);
+    box-shadow:
+      inset 0 0 0 2px var(--primary-color, #03a9f4),
+      0 0 0 1px color-mix(in srgb, var(--card-background-color, #fff) 72%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease;
+  }
+
+  .range-zoom-highlight.visible {
+    opacity: 1;
+  }
+
+  .range-zoom-window-highlight {
+    position: absolute;
+    top: -4px;
+    height: 12px;
+    z-index: 4;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 52%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color, #03a9f4) 85%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease;
+  }
+
+  .range-zoom-window-highlight.visible {
+    opacity: 1;
+  }
+
+  /* ---- timeline overlays (positioned inside dp-range-timeline's .range-timeline) ---- */
+
+  .range-event-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .range-event-dot {
+    position: absolute;
+    bottom: 18px;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .range-chart-hover-line {
+    position: absolute;
+    top: 2px;
+    bottom: 0;
+    width: 2px;
+    transform: translateX(-50%);
+    background: var(--primary-color, #03a9f4);
+    border-radius: 999px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease;
+    z-index: 2;
+  }
+
+  .range-chart-hover-line.visible {
+    opacity: 1;
+  }
+
+  .range-chart-hover-window-line {
+    position: absolute;
+    top: 2px;
+    bottom: 0;
+    width: 2px;
+    transform: translateX(-50%);
+    background: var(--primary-color, #03a9f4);
+    border-radius: 999px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease;
+    z-index: 2;
+  }
+
+  .range-chart-hover-window-line.visible {
+    opacity: 0.45;
+  }
+`;
   class DpPanelTimeline extends i$2 {
     static properties = {
       // Core props — forwarded to dp-range-timeline
@@ -18338,7 +18619,7 @@ ${s2.description}`).join("\n\n");
       chartHoverWindowTimeMs: { type: Number },
       events: { type: Array }
     };
-    static styles = styles$2;
+    static styles = styles$1;
     // Cached overlay DOM refs (set in firstUpdated)
     _rangeHoverPreviewEl = null;
     _rangeComparisonPreviewEl = null;
@@ -18492,6 +18773,276 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-panel-timeline", DpPanelTimeline);
+  const styles = i$5`
+  :host {
+    display: grid;
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* ── Vertical (top / bottom) layout ─────────────────────────────────────── */
+
+  :host([direction="vertical"]),
+  :host(:not([direction])) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows:
+      minmax(var(--dp-panes-min-first, 0px), var(--dp-panes-top-size, 50%))
+      var(--dp-panes-splitter-size, 24px)
+      minmax(var(--dp-panes-min-second, 0px), 1fr);
+  }
+
+  /* When second pane is hidden, first pane fills all space */
+  :host([second-hidden]) {
+    grid-template-rows: minmax(0, 1fr) !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  /* ── Horizontal (left / right) layout ───────────────────────────────────── */
+
+  :host([direction="horizontal"]) {
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-columns:
+      minmax(var(--dp-panes-min-first, 0px), var(--dp-panes-top-size, 50%))
+      var(--dp-panes-splitter-size, 24px)
+      minmax(var(--dp-panes-min-second, 0px), 1fr);
+  }
+
+  /* ── Slots ───────────────────────────────────────────────────────────────── */
+
+  .pane-first {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .pane-second {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* Slotted content must fill the pane — the pane's grid height is definite
+     so height:100% resolves correctly for slotted elements. */
+  ::slotted(*) {
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+  }
+
+  /* ── Splitter handle ─────────────────────────────────────────────────────── */
+
+  .pane-splitter {
+    position: relative;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    touch-action: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  :host([direction="vertical"]) .pane-splitter,
+  :host(:not([direction])) .pane-splitter {
+    cursor: row-resize;
+    width: 100%;
+  }
+
+  :host([direction="horizontal"]) .pane-splitter {
+    cursor: col-resize;
+    height: 100%;
+  }
+
+  /* Drag indicator pill */
+  .pane-splitter::after {
+    content: "";
+    position: absolute;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--primary-text-color, #111) 18%, transparent);
+    transition: background 120ms ease;
+  }
+
+  :host([direction="vertical"]) .pane-splitter::after,
+  :host(:not([direction])) .pane-splitter::after {
+    width: 60px;
+    height: 6px;
+  }
+
+  :host([direction="horizontal"]) .pane-splitter::after {
+    width: 6px;
+    height: 60px;
+  }
+
+  .pane-splitter:hover::after,
+  .pane-splitter:focus-visible::after,
+  .pane-splitter.dragging::after {
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 62%, transparent);
+  }
+
+  .pane-splitter:focus-visible {
+    outline: none;
+  }
+`;
+  class DpResizablePanes extends i$2 {
+    static styles = styles;
+    static properties = {
+      direction: { type: String, reflect: true },
+      ratio: { type: Number },
+      min: { type: Number },
+      max: { type: Number },
+      secondHidden: { type: Boolean, attribute: "second-hidden", reflect: true }
+    };
+    // ── Internal drag state ────────────────────────────────────────────────────
+    _pointerId = null;
+    _splitterEl = null;
+    constructor() {
+      super();
+      this.direction = "vertical";
+      this.ratio = 0.5;
+      this.min = 0.25;
+      this.max = 0.75;
+      this.secondHidden = false;
+    }
+    // ── Lifecycle ──────────────────────────────────────────────────────────────
+    firstUpdated() {
+      this._splitterEl = this.shadowRoot?.querySelector(".pane-splitter") ?? null;
+      this._applyRatio();
+    }
+    updated(changed) {
+      if (changed.has("ratio") || changed.has("direction") || changed.has("secondHidden")) {
+        this._applyRatio();
+      }
+    }
+    // ── Layout ─────────────────────────────────────────────────────────────────
+    _applyRatio() {
+      this.style.setProperty("--dp-panes-top-size", `${Math.round(this.ratio * 1e3) / 10}%`);
+    }
+    // ── Pointer handling ───────────────────────────────────────────────────────
+    _onPointerDown = (ev) => {
+      if (ev.button !== 0) return;
+      ev.preventDefault();
+      this._pointerId = ev.pointerId;
+      this._splitterEl?.classList.add("dragging");
+      window.addEventListener("pointermove", this._onPointerMove);
+      window.addEventListener("pointerup", this._onPointerUp);
+      window.addEventListener("pointercancel", this._onPointerUp);
+    };
+    _onPointerMove = (ev) => {
+      if (this._pointerId == null || ev.pointerId !== this._pointerId) return;
+      ev.preventDefault();
+      const rect = this.getBoundingClientRect();
+      const totalSize = this.direction === "horizontal" ? rect.width : rect.height;
+      if (!totalSize) return;
+      const pointerOffset = this.direction === "horizontal" ? ev.clientX - rect.left : ev.clientY - rect.top;
+      const clamped = Math.min(Math.max(this.min, pointerOffset / totalSize), this.max);
+      this.ratio = clamped;
+      this._applyRatio();
+      this.dispatchEvent(new CustomEvent("dp-panes-resize", {
+        detail: { ratio: clamped },
+        bubbles: true,
+        composed: true
+      }));
+    };
+    _onPointerUp = (ev) => {
+      if (this._pointerId == null || ev.pointerId !== this._pointerId) return;
+      this._pointerId = null;
+      this._splitterEl?.classList.remove("dragging");
+      window.removeEventListener("pointermove", this._onPointerMove);
+      window.removeEventListener("pointerup", this._onPointerUp);
+      window.removeEventListener("pointercancel", this._onPointerUp);
+      this.dispatchEvent(new CustomEvent("dp-panes-resize", {
+        detail: { ratio: this.ratio, committed: true },
+        bubbles: true,
+        composed: true
+      }));
+    };
+    // ── Render ─────────────────────────────────────────────────────────────────
+    render() {
+      return b`
+      <div class="pane-first"><slot name="first"></slot></div>
+      ${!this.secondHidden ? b`
+        <button
+          class="pane-splitter"
+          type="button"
+          aria-label="Resize panes"
+          @pointerdown=${this._onPointerDown}
+        ></button>
+        <div class="pane-second"><slot name="second"></slot></div>
+      ` : null}
+    `;
+    }
+  }
+  customElements.define("dp-resizable-panes", DpResizablePanes);
+  class DpHistoryChart extends HTMLElement {
+    // ── Internal state ─────────────────────────────────────────────────────────
+    _configKey = "";
+    _config = null;
+    _hass = null;
+    _chartEl = null;
+    // ── Construction ───────────────────────────────────────────────────────────
+    constructor() {
+      super();
+    }
+    connectedCallback() {
+      if (!this._chartEl) {
+        const card = document.createElement("hass-datapoints-history-card");
+        card.style.cssText = "flex:1 1 auto;min-width:0;min-height:0;width:100%;height:100%;";
+        this.appendChild(card);
+        this._chartEl = card;
+        this._applyConfig();
+        if (this._hass !== null && this._chartEl) {
+          this._chartEl.hass = this._hass;
+        }
+      }
+    }
+    // ── Public API ─────────────────────────────────────────────────────────────
+    /** Direct reference to the inner `hass-datapoints-history-card` element. */
+    get chartEl() {
+      return this._chartEl;
+    }
+    get config() {
+      return this._config;
+    }
+    set config(value) {
+      this._config = value;
+      this._applyConfig();
+    }
+    get hass() {
+      return this._hass;
+    }
+    set hass(value) {
+      this._hass = value;
+      if (this._chartEl) {
+        this._chartEl.hass = value;
+      }
+    }
+    /**
+     * Passes an external committed zoom range to the inner card.
+     */
+    setExternalZoomRange(range) {
+      this._chartEl?.setExternalZoomRange?.(range);
+    }
+    // ── Internal helpers ───────────────────────────────────────────────────────
+    _applyConfig() {
+      if (!this._chartEl || !this._config) return;
+      const nextKey = JSON.stringify(this._config);
+      if (nextKey !== this._configKey) {
+        this._chartEl.setConfig(this._config);
+        this._configKey = nextKey;
+      }
+    }
+  }
+  customElements.define("dp-history-chart", DpHistoryChart);
   const DATA_GAP_THRESHOLD_OPTIONS = [
     { value: "auto", label: "Auto-detect" },
     { value: "5m", label: "5 minutes" },
@@ -18806,27 +19357,29 @@ ${s2.description}`).join("\n\n");
   }
 
   .content {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(280px, var(--content-top-size, 44%)) 24px minmax(240px, 1fr);
+    display: flex;
+    flex-direction: column;
     min-width: 0;
     min-height: 0;
     height: 100%;
     align-self: stretch;
     box-sizing: border-box;
     overflow: hidden;
-    gap: var(--dp-spacing-sm);
     padding: var(--dp-spacing-lg);
   }
 
-  .content.datapoints-hidden {
-    grid-template-rows: minmax(280px, 1fr) 0 0;
-    gap: 0;
+  .content > dp-resizable-panes {
+    flex: 1 1 0;
+    min-height: 0;
   }
 
-  .content.datapoints-hidden .content-splitter,
-  .content.datapoints-hidden .list-host {
-    display: none;
+  /* Legacy: when dp-resizable-panes is not used (e.g. empty state) */
+  .content > ha-card.empty {
+    flex: 0 0 auto;
+  }
+
+  .content.datapoints-hidden dp-resizable-panes {
+    --dp-panes-second-hidden: 1;
   }
 
   .control-target {
@@ -20724,6 +21277,7 @@ ${s2.description}`).join("\n\n");
       this._uiReadyPromise = null;
       this._uiReadyApplied = false;
       this._chartEl = null;
+      this._historyChartMol = null;
       this._listEl = null;
       this._chartConfigKey = "";
       this._listConfigKey = "";
@@ -20741,6 +21295,9 @@ ${s2.description}`).join("\n\n");
       this._targetRowsRenderKey = "";
       this._sidebarOptionsEl = null;
       this._sidebarOptionsComp = null;
+      this._sidebarAccordionTargetsOpen = true;
+      this._sidebarAccordionDatapointsOpen = true;
+      this._sidebarAccordionChartOpen = true;
       this._dateControl = null;
       this._dateRangePickerEl = null;
       this._datePickerButtonEl = null;
@@ -20762,6 +21319,9 @@ ${s2.description}`).join("\n\n");
       this._hiddenEventIds = [];
       this._optionsMenuView = "root";
       this._restoredFromSession = false;
+      this._savedPageLoaded = false;
+      this._hasSavedPage = false;
+      this._savePageBusy = false;
       this._datePickerOpen = false;
       this._optionsOpen = false;
       this._pageMenuOpen = false;
@@ -20833,6 +21393,7 @@ ${s2.description}`).join("\n\n");
       if (!this._shellBuilt) return;
       this._ensureHistoryBounds();
       this._ensureUserPreferences();
+      this._loadSavedPageIndicator();
       this._syncHassBindings();
       this._renderContent();
     }
@@ -20926,6 +21487,9 @@ ${s2.description}`).join("\n\n");
       const sessionState = this._readSessionState();
       this._restoredFromSession = !hasTargetInUrl && !hasRangeInUrl && !!sessionState;
       this._sidebarCollapsed = !!sessionState?.sidebar_collapsed;
+      this._sidebarAccordionTargetsOpen = sessionState?.sidebar_accordion_targets_open !== false;
+      this._sidebarAccordionDatapointsOpen = sessionState?.sidebar_accordion_datapoints_open !== false;
+      this._sidebarAccordionChartOpen = sessionState?.sidebar_accordion_chart_open !== false;
       if (Number.isFinite(sessionState?.content_split_ratio)) {
         this._contentSplitRatio = clampNumber(sessionState.content_split_ratio, 0.25, 0.75);
       }
@@ -21061,6 +21625,9 @@ ${s2.description}`).join("\n\n");
             </ha-icon-button>
             <dp-floating-menu id="page-menu">
               <dp-page-menu-item id="page-download-spreadsheet" icon="mdi:file-excel-outline" label="Download spreadsheet"></dp-page-menu-item>
+              <dp-page-menu-item id="page-save-page" icon="mdi:content-save-outline" label="Save page state"></dp-page-menu-item>
+              <dp-page-menu-item id="page-restore-page" icon="mdi:restore" label="Restore saved page" hidden></dp-page-menu-item>
+              <dp-page-menu-item id="page-clear-saved-page" icon="mdi:delete-outline" label="Clear saved page" hidden></dp-page-menu-item>
             </dp-floating-menu>
           </div>
         </div>
@@ -21096,6 +21663,9 @@ ${s2.description}`).join("\n\n");
       this._sidebarOptionsEl = this.shadowRoot.querySelector("#sidebar-options");
       this._pageMenuButtonEl?.addEventListener("click", () => this._togglePageMenu());
       this._pageMenuEl?.querySelector("#page-download-spreadsheet")?.addEventListener("dp-menu-action", () => this._downloadSpreadsheet());
+      this._pageMenuEl?.querySelector("#page-save-page")?.addEventListener("dp-menu-action", () => this._savePageState());
+      this._pageMenuEl?.querySelector("#page-restore-page")?.addEventListener("dp-menu-action", () => this._restorePageState());
+      this._pageMenuEl?.querySelector("#page-clear-saved-page")?.addEventListener("dp-menu-action", () => this._clearSavedPageState());
       this._pageMenuEl?.addEventListener("dp-menu-close", () => this._togglePageMenu(false));
       this._sidebarToggleButtonEl?.addEventListener("click", () => this._toggleSidebarCollapsed());
       this._pageSidebarEl?.addEventListener("click", this._onCollapsedSidebarClick);
@@ -21275,6 +21845,9 @@ ${s2.description}`).join("\n\n");
       this._sidebarOptionsComp.showDataGaps = this._showDataGaps;
       this._sidebarOptionsComp.dataGapThreshold = this._dataGapThreshold;
       this._sidebarOptionsComp.yAxisMode = yAxisMode;
+      this._sidebarOptionsComp.targetsOpen = this._sidebarAccordionTargetsOpen;
+      this._sidebarOptionsComp.datapointsOpen = this._sidebarAccordionDatapointsOpen;
+      this._sidebarOptionsComp.chartOpen = this._sidebarAccordionChartOpen;
     }
     _formatComparisonLabel(start, end) {
       const fmt = (d2) => d2.toLocaleDateString(void 0, { month: "short", day: "numeric" });
@@ -21543,6 +22116,9 @@ ${s2.description}`).join("\n\n");
         this._dateWindowDialogComp.name = targetWindow?.label || "";
         this._dateWindowDialogComp.startValue = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.start || null);
         this._dateWindowDialogComp.endValue = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.end || null);
+        this._dateWindowDialogComp.rangeBounds = this._rangeBounds ?? null;
+        this._dateWindowDialogComp.zoomLevel = this._zoomLevel ?? "auto";
+        this._dateWindowDialogComp.dateSnapping = this._dateSnapping ?? "hour";
         this._dateWindowDialogComp.open = true;
         return;
       }
@@ -21731,7 +22307,12 @@ ${s2.description}`).join("\n\n");
     _applyContentSplitLayout() {
       const content = this.shadowRoot?.getElementById("content");
       if (!content) return;
-      content.style.setProperty("--content-top-size", `${Math.round(this._contentSplitRatio * 1e3) / 10}%`);
+      const resizablePanes = content.querySelector("#content-resizable-panes");
+      if (resizablePanes) {
+        resizablePanes.ratio = this._contentSplitRatio;
+      } else {
+        content.style.setProperty("--content-top-size", `${Math.round(this._contentSplitRatio * 1e3) / 10}%`);
+      }
       this._updateComparisonTabsOverflow();
     }
     _beginContentSplitPointer(ev) {
@@ -21980,6 +22561,10 @@ ${s2.description}`).join("\n\n");
         const { entityId, key, value } = ev.detail || {};
         this._setSeriesAnalysisOption(entityId, key, value);
       });
+      rowListEl.addEventListener("dp-row-copy-analysis-to-all", (ev) => {
+        const { entityId, analysis } = ev.detail || {};
+        this._copyAnalysisToAll(entityId, analysis);
+      });
       rowListEl.addEventListener("dp-rows-reorder", (ev) => {
         const { rows } = ev.detail || {};
         if (!Array.isArray(rows)) {
@@ -22134,6 +22719,13 @@ ${s2.description}`).join("\n\n");
           } else {
             this._setChartDatapointDisplayOption(kind, value);
           }
+        });
+        sidebarComp.addEventListener("dp-accordion-change", (ev) => {
+          const { targetsOpen, datapointsOpen, chartOpen } = ev.detail || {};
+          if (typeof targetsOpen === "boolean") this._sidebarAccordionTargetsOpen = targetsOpen;
+          if (typeof datapointsOpen === "boolean") this._sidebarAccordionDatapointsOpen = datapointsOpen;
+          if (typeof chartOpen === "boolean") this._sidebarAccordionChartOpen = chartOpen;
+          this._saveSessionState();
         });
         this._sidebarOptionsEl.appendChild(sidebarComp);
         this._sidebarOptionsComp = sidebarComp;
@@ -22291,6 +22883,10 @@ ${s2.description}`).join("\n\n");
       targetRow.addEventListener("dp-row-analysis-change", (ev) => {
         this._setSeriesAnalysisOption(ev.detail.entityId, ev.detail.key, ev.detail.value);
       });
+      targetRow.addEventListener("dp-row-copy-analysis-to-all", (ev) => {
+        const { entityId: entityId2, analysis } = ev.detail || {};
+        this._copyAnalysisToAll(entityId2, analysis);
+      });
       targetRow.addEventListener("dp-row-remove", (ev) => {
         this._hideCollapsedTargetPopup();
         this._removeSeriesRow(ev.detail.index);
@@ -22445,6 +23041,37 @@ ${s2.description}`).join("\n\n");
       this._renderTargetRows();
       this._renderContent();
     }
+    _copyAnalysisToAll(sourceEntityId, sourceAnalysis) {
+      const normalizedEntityId = String(sourceEntityId || "").trim();
+      if (!normalizedEntityId || !sourceAnalysis) {
+        return;
+      }
+      let changed = false;
+      this._seriesRows = this._seriesRows.map((row) => {
+        if (row.entity_id === normalizedEntityId) {
+          return row;
+        }
+        const currentAnalysis = normalizeHistorySeriesAnalysis(row.analysis);
+        const nextAnalysis = normalizeHistorySeriesAnalysis({
+          ...sourceAnalysis,
+          // Preserve per-row state that shouldn't be overwritten
+          expanded: currentAnalysis.expanded,
+          // Don't copy anomaly_comparison_window_id — it's entity-specific
+          anomaly_comparison_window_id: currentAnalysis.anomaly_comparison_window_id
+        });
+        if (JSON.stringify(nextAnalysis) === JSON.stringify(currentAnalysis)) {
+          return row;
+        }
+        changed = true;
+        return { ...row, analysis: nextAnalysis };
+      });
+      if (!changed) {
+        return;
+      }
+      this._saveSessionState();
+      this._renderTargetRows();
+      this._renderContent();
+    }
     _removeSeriesRow(index) {
       if (!Number.isInteger(index) || index < 0 || index >= this._seriesRows.length) return;
       this._seriesRows = this._seriesRows.filter((_2, rowIndex) => rowIndex !== index);
@@ -22585,6 +23212,71 @@ ${s2.description}`).join("\n\n");
         console.error("[hass-datapoints panel] spreadsheet export:failed", error);
       } finally {
         this._exportBusy = false;
+      }
+    }
+    // ---------------------------------------------------------------------------
+    // Saved page state (persistent via HA frontend user data)
+    // ---------------------------------------------------------------------------
+    async _loadSavedPageIndicator() {
+      if (!this._hass || this._savedPageLoaded) return;
+      this._savedPageLoaded = true;
+      try {
+        const saved = await fetchUserData(this._hass, PANEL_HISTORY_SAVED_PAGE_KEY, null);
+        this._hasSavedPage = !!saved;
+        this._syncSavedPageMenuItems();
+      } catch (_err) {
+      }
+    }
+    _syncSavedPageMenuItems() {
+      const restoreEl = this._pageMenuEl?.querySelector("#page-restore-page");
+      const clearEl = this._pageMenuEl?.querySelector("#page-clear-saved-page");
+      if (restoreEl) restoreEl.hidden = !this._hasSavedPage;
+      if (clearEl) clearEl.hidden = !this._hasSavedPage;
+    }
+    async _savePageState() {
+      if (this._savePageBusy || !this._hass) return;
+      this._savePageBusy = true;
+      this._togglePageMenu(false);
+      try {
+        const state = buildHistoryPageSessionState(this);
+        await saveUserData(this._hass, PANEL_HISTORY_SAVED_PAGE_KEY, state);
+        this._hasSavedPage = true;
+        this._syncSavedPageMenuItems();
+      } catch (err) {
+        console.error("[hass-datapoints panel] save page state failed:", err);
+      } finally {
+        this._savePageBusy = false;
+      }
+    }
+    async _restorePageState() {
+      if (!this._hass) return;
+      this._togglePageMenu(false);
+      try {
+        const saved = await fetchUserData(this._hass, PANEL_HISTORY_SAVED_PAGE_KEY, null);
+        if (!saved || typeof saved !== "object") return;
+        try {
+          window.sessionStorage.setItem(
+            `${DOMAIN$1}:panel_history_session`,
+            JSON.stringify(saved)
+          );
+        } catch (_storageErr) {
+        }
+        const baseUrl = window.location.pathname;
+        window.history.replaceState(null, "", baseUrl);
+        window.location.reload();
+      } catch (err) {
+        console.error("[hass-datapoints panel] restore page state failed:", err);
+      }
+    }
+    async _clearSavedPageState() {
+      if (!this._hass) return;
+      this._togglePageMenu(false);
+      try {
+        await saveUserData(this._hass, PANEL_HISTORY_SAVED_PAGE_KEY, null);
+        this._hasSavedPage = false;
+        this._syncSavedPageMenuItems();
+      } catch (err) {
+        console.error("[hass-datapoints panel] clear saved page state failed:", err);
       }
     }
     _computeFloatingMenuPosition(anchorEl, menuWidth) {
@@ -23105,6 +23797,7 @@ ${s2.description}`).join("\n\n");
       `;
         this._contentKey = "";
         this._chartEl = null;
+        this._historyChartMol = null;
         this._listEl = null;
         this._chartConfigKey = "";
         this._listConfigKey = "";
@@ -23127,17 +23820,18 @@ ${s2.description}`).join("\n\n");
         this._chartZoomRange = null;
         this._chartZoomCommittedRange = null;
         this._updateChartZoomHighlight();
+        this._recordsSearchQuery = "";
         content.innerHTML = `
-        <div id="chart-host" class="chart-host">
-          <div id="chart-card-host" class="chart-card-host"></div>
-        </div>
-        <button
-          id="content-splitter"
-          class="content-splitter"
-          type="button"
-          aria-label="Resize chart and records panes"
-        ></button>
-        <div id="list-host" class="list-host"></div>
+        <dp-resizable-panes
+          id="content-resizable-panes"
+          direction="vertical"
+          style="height:100%;min-height:0;"
+        >
+          <div slot="first" id="chart-host" class="chart-host">
+            <div id="chart-card-host" class="chart-card-host"></div>
+          </div>
+          <div slot="second" id="list-host" class="list-host"></div>
+        </dp-resizable-panes>
       `;
         const chartConfig2 = {
           entities: this._entities,
@@ -23166,9 +23860,12 @@ ${s2.description}`).join("\n\n");
           selected_comparison_window_id: this._selectedComparisonWindowId,
           hovered_comparison_window_id: this._hoveredComparisonWindowId
         };
-        const chart = document.createElement("hass-datapoints-history-card");
-        chart.setConfig(chartConfig2);
-        content.querySelector("#chart-card-host").appendChild(chart);
+        const historyChartMol = document.createElement("dp-history-chart");
+        historyChartMol.style.cssText = "display:flex;flex-direction:column;flex:1 1 auto;min-width:0;min-height:0;width:100%;height:100%;";
+        content.querySelector("#chart-card-host").appendChild(historyChartMol);
+        const chart = historyChartMol.chartEl;
+        historyChartMol.config = chartConfig2;
+        this._historyChartMol = historyChartMol;
         if (showRecordsPanel) {
           const listConfig = {
             entities: this._entities,
@@ -23191,14 +23888,31 @@ ${s2.description}`).join("\n\n");
         } else {
           this._listEl = null;
         }
-        this._contentSplitterEl = content.querySelector("#content-splitter");
-        this._contentSplitterEl?.addEventListener("pointerdown", (ev) => this._beginContentSplitPointer(ev));
+        const resizablePanes = content.querySelector("#content-resizable-panes");
+        this._contentSplitterEl = resizablePanes;
+        if (resizablePanes) {
+          resizablePanes.ratio = this._contentSplitRatio;
+          resizablePanes.min = 0.2;
+          resizablePanes.max = 0.8;
+          resizablePanes.addEventListener("dp-panes-resize", (ev) => {
+            this._contentSplitRatio = ev.detail.ratio;
+            if (ev.detail.committed) {
+              this._saveSessionState();
+              window.requestAnimationFrame(() => this._syncRangeControl());
+            }
+          });
+        }
         this._chartEl = chart;
+        this._historyChartMol = historyChartMol;
         this._contentKey = contentKey;
         this._chartConfigKey = "";
         this._listConfigKey = "";
       }
       content.classList.toggle("datapoints-hidden", !showRecordsPanel);
+      const resizablePanesEl = content.querySelector("#content-resizable-panes");
+      if (resizablePanesEl) {
+        resizablePanesEl.secondHidden = !showRecordsPanel;
+      }
       this._applyContentSplitLayout();
       this._renderComparisonTabs();
       const chartConfig = {
@@ -23228,10 +23942,14 @@ ${s2.description}`).join("\n\n");
         selected_comparison_window_id: this._selectedComparisonWindowId,
         hovered_comparison_window_id: this._hoveredComparisonWindowId
       };
-      const nextChartConfigKey = JSON.stringify(chartConfig);
-      if (this._chartEl && this._chartConfigKey !== nextChartConfigKey) {
-        this._chartEl.setConfig(chartConfig);
-        this._chartConfigKey = nextChartConfigKey;
+      if (this._historyChartMol) {
+        this._historyChartMol.config = chartConfig;
+      } else if (this._chartEl) {
+        const nextChartConfigKey = JSON.stringify(chartConfig);
+        if (this._chartConfigKey !== nextChartConfigKey) {
+          this._chartEl.setConfig(chartConfig);
+          this._chartConfigKey = nextChartConfigKey;
+        }
       }
       if (showRecordsPanel) {
         const listConfig = {
@@ -23257,8 +23975,16 @@ ${s2.description}`).join("\n\n");
       } else {
         this._listConfigKey = "";
       }
-      if (this._chartEl) this._chartEl.hass = this._hass;
-      this._chartEl?.setExternalZoomRange?.(this._chartZoomCommittedRange);
+      if (this._historyChartMol) {
+        this._historyChartMol.hass = this._hass;
+      } else if (this._chartEl) {
+        this._chartEl.hass = this._hass;
+      }
+      if (this._historyChartMol) {
+        this._historyChartMol.setExternalZoomRange?.(this._chartZoomCommittedRange);
+      } else {
+        this._chartEl?.setExternalZoomRange?.(this._chartZoomCommittedRange);
+      }
     }
   }
   if (!customElements.get("hass-datapoints-action-card")) {

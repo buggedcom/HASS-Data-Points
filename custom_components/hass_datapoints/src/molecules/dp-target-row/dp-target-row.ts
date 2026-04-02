@@ -141,6 +141,10 @@ export class DpTargetRow extends LitElement {
     this._emit("dp-row-analysis-change", { entityId: this._entityId, key, value: (e.target as HTMLInputElement).checked });
   }
 
+  private _onCopyAnalysisToAll() {
+    this._emit("dp-row-copy-analysis-to-all", { entityId: this._entityId, analysis: this.analysis });
+  }
+
   private _onGroupAnalysisChange(e: CustomEvent) {
     this._emit("dp-row-analysis-change", e.detail as Record<string, unknown>);
   }
@@ -231,13 +235,18 @@ export class DpTargetRow extends LitElement {
 
         ${this._supportsAnalysis && this.analysis?.expanded ? html`
           <div class="history-target-analysis" role="cell">
+            <div class="history-target-analysis-copy-row">
+              <button
+                type="button"
+                class="history-target-analysis-copy-btn"
+                title="Copy these analysis settings to all targets"
+                @click=${this._onCopyAnalysisToAll}
+              >
+                <ha-icon icon="mdi:content-copy"></ha-icon>
+                Copy to all targets
+              </button>
+            </div>
             <div class="history-target-analysis-grid">
-              <label class="history-target-analysis-option ${!hasActive ? "is-disabled" : ""}">
-                <input type="checkbox" .checked=${a.hide_source_series && hasActive}
-                  ?disabled=${!hasActive}
-                  @change=${(e: Event) => this._onCheckbox("hide_source_series", e)}>
-                <span>Hide source series</span>
-              </label>
               <dp-analysis-trend-group
                 .analysis=${a}
                 .entityId=${this._entityId}
@@ -270,6 +279,12 @@ export class DpTargetRow extends LitElement {
                 .canShowDeltaAnalysis=${this.canShowDeltaAnalysis}
                 @dp-group-analysis-change=${this._onGroupAnalysisChange}
               ></dp-analysis-delta-group>
+              <label class="history-target-analysis-option ${!hasActive ? "is-disabled" : ""}">
+                <input type="checkbox" .checked=${a.hide_source_series && hasActive}
+                  ?disabled=${!hasActive}
+                  @change=${(e: Event) => this._onCheckbox("hide_source_series", e)}>
+                <span>Hide source series</span>
+              </label>
             </div>
           </div>
         ` : nothing}

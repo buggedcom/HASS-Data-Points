@@ -30,6 +30,8 @@ export class DpSidebarChartDisplaySection extends LitElement {
     showDataGaps: { type: Boolean, attribute: "show-data-gaps" },
     dataGapThreshold: { type: String, attribute: "data-gap-threshold" },
     yAxisMode: { type: String, attribute: "y-axis-mode" },
+    collapsible: { type: Boolean },
+    open: { type: Boolean },
   };
 
   declare showTooltips: boolean;
@@ -38,6 +40,8 @@ export class DpSidebarChartDisplaySection extends LitElement {
   declare showDataGaps: boolean;
   declare dataGapThreshold: string;
   declare yAxisMode: string;
+  declare collapsible: boolean;
+  declare open: boolean;
 
   static styles = styles;
 
@@ -49,6 +53,8 @@ export class DpSidebarChartDisplaySection extends LitElement {
     this.showDataGaps = true;
     this.dataGapThreshold = "2h";
     this.yAxisMode = "combined";
+    this.collapsible = false;
+    this.open = true;
   }
 
   private _emitDisplay(kind: string, value: boolean | string) {
@@ -75,6 +81,8 @@ export class DpSidebarChartDisplaySection extends LitElement {
       <dp-sidebar-options-section
         .title=${"Chart Display"}
         .subtitle=${"Configure visual and interaction behaviour for the chart."}
+        .collapsible=${this.collapsible}
+        .open=${this.open}
       >
         <dp-checkbox-list
           .items=${[

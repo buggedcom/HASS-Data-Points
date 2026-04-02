@@ -33,11 +33,30 @@ export const styles = css`
     pointer-events: none;
   }
 
-  dp-target-row.is-drag-over-before {
-    box-shadow: inset 0 3px 0 -1px var(--primary-color, #03a9f4);
+  dp-target-row.is-drag-over-before,
+  dp-target-row.is-drag-over-after {
+    position: relative;
+    overflow: visible;
   }
 
-  dp-target-row.is-drag-over-after {
-    box-shadow: inset 0 -3px 0 -1px var(--primary-color, #03a9f4);
+  dp-target-row.is-drag-over-before::before,
+  dp-target-row.is-drag-over-after::after {
+    content: '';
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--primary-color, #03a9f4);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  dp-target-row.is-drag-over-before::before {
+    top: -2px;
+  }
+
+  dp-target-row.is-drag-over-after::after {
+    bottom: -2px;
   }
 `;

@@ -15,6 +15,10 @@ export class DpSidebarOptions extends LitElement {
     showDataGaps: { type: Boolean, attribute: "show-data-gaps" },
     dataGapThreshold: { type: String, attribute: "data-gap-threshold" },
     yAxisMode: { type: String, attribute: "y-axis-mode" },
+    // Accordion open states
+    targetsOpen: { type: Boolean, attribute: "targets-open" },
+    datapointsOpen: { type: Boolean, attribute: "datapoints-open" },
+    chartOpen: { type: Boolean, attribute: "chart-open" },
   };
 
   declare datapointScope: string;
@@ -26,6 +30,9 @@ export class DpSidebarOptions extends LitElement {
   declare showDataGaps: boolean;
   declare dataGapThreshold: string;
   declare yAxisMode: string;
+  declare targetsOpen: boolean;
+  declare datapointsOpen: boolean;
+  declare chartOpen: boolean;
 
   static styles = styles;
 
@@ -40,6 +47,38 @@ export class DpSidebarOptions extends LitElement {
     this.showDataGaps = true;
     this.dataGapThreshold = "2h";
     this.yAxisMode = "combined";
+    this.targetsOpen = true;
+    this.datapointsOpen = true;
+    this.chartOpen = true;
+  }
+
+  private _onTargetsToggle(e: CustomEvent) {
+    this.targetsOpen = e.detail.open;
+    this._emitAccordionChange();
+  }
+
+  private _onDatapointsToggle(e: CustomEvent) {
+    this.datapointsOpen = e.detail.open;
+    this._emitAccordionChange();
+  }
+
+  private _onChartToggle(e: CustomEvent) {
+    this.chartOpen = e.detail.open;
+    this._emitAccordionChange();
+  }
+
+  private _emitAccordionChange() {
+    this.dispatchEvent(
+      new CustomEvent("dp-accordion-change", {
+        detail: {
+          targetsOpen: this.targetsOpen,
+          datapointsOpen: this.datapointsOpen,
+          chartOpen: this.chartOpen,
+        },
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   render() {
@@ -47,10 +86,16 @@ export class DpSidebarOptions extends LitElement {
       <div class="sidebar-options-card">
         <dp-sidebar-datapoints-section
           .datapointScope=${this.datapointScope}
+          collapsible
+          .open=${this.targetsOpen}
+          @dp-section-toggle=${this._onTargetsToggle}
         ></dp-sidebar-datapoints-section>
         <dp-sidebar-datapoint-display-section
           .showIcons=${this.showIcons}
           .showLines=${this.showLines}
+          collapsible
+          .open=${this.datapointsOpen}
+          @dp-section-toggle=${this._onDatapointsToggle}
         ></dp-sidebar-datapoint-display-section>
         <dp-sidebar-chart-display-section
           .showTooltips=${this.showTooltips}
@@ -59,6 +104,9 @@ export class DpSidebarOptions extends LitElement {
           .showDataGaps=${this.showDataGaps}
           .dataGapThreshold=${this.dataGapThreshold}
           .yAxisMode=${this.yAxisMode}
+          collapsible
+          .open=${this.chartOpen}
+          @dp-section-toggle=${this._onChartToggle}
         ></dp-sidebar-chart-display-section>
       </div>
     `;

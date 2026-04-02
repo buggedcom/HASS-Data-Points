@@ -7,10 +7,14 @@ export class DpSidebarDatapointDisplaySection extends LitElement {
   static properties = {
     showIcons: { type: Boolean, attribute: "show-icons" },
     showLines: { type: Boolean, attribute: "show-lines" },
+    collapsible: { type: Boolean },
+    open: { type: Boolean },
   };
 
   declare showIcons: boolean;
   declare showLines: boolean;
+  declare collapsible: boolean;
+  declare open: boolean;
 
   static styles = styles;
 
@@ -18,6 +22,8 @@ export class DpSidebarDatapointDisplaySection extends LitElement {
     super();
     this.showIcons = true;
     this.showLines = true;
+    this.collapsible = false;
+    this.open = true;
   }
 
   private _onCheckboxChange(e: CustomEvent) {
@@ -32,6 +38,8 @@ export class DpSidebarDatapointDisplaySection extends LitElement {
       <dp-sidebar-options-section
         .title=${"Datapoint Display"}
         .subtitle=${"Control how annotation datapoints are rendered on the chart."}
+        .collapsible=${this.collapsible}
+        .open=${this.open}
       >
         <dp-checkbox-list
           .items=${[

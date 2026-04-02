@@ -69,6 +69,9 @@ export function buildHistoryPageSessionState(source) {
     date_windows: normalizeDateWindows(source._comparisonWindows),
     hours: source._hours,
     sidebar_collapsed: source._sidebarCollapsed,
+    sidebar_accordion_targets_open: source._sidebarAccordionTargetsOpen !== false,
+    sidebar_accordion_datapoints_open: source._sidebarAccordionDatapointsOpen !== false,
+    sidebar_accordion_chart_open: source._sidebarAccordionChartOpen !== false,
   };
 }
 
