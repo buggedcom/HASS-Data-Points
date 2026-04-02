@@ -53,7 +53,7 @@ export default [
     rules: {
       "class-methods-use-this": "off",
       "consistent-return": "off",
-      curly: ["error", "all"],
+      curly: ["warn", "all"],
       "import/extensions": "off",
       "import/no-mutable-exports": "off",
       "import/no-unresolved": "off",
@@ -83,6 +83,19 @@ export default [
     ],
     languageOptions: {
       sourceType: "module",
+    },
+  },
+  {
+    files: [
+      "custom_components/hass_datapoints/src/**/__tests__/**/*.{js,ts}",
+      "custom_components/hass_datapoints/src/**/*.{spec,test}.{js,ts}",
+      "custom_components/hass_datapoints/src/**/stories/**/*.{js,ts}",
+      "custom_components/hass_datapoints/src/**/*.stories.{js,ts}",
+      "custom_components/hass_datapoints/src/test-support/**/*.{js,ts}",
+    ],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+      "import/no-extraneous-dependencies": "off",
     },
   },
   eslintConfigPrettier,

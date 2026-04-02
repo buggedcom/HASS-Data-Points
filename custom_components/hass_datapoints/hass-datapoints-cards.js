@@ -211,24 +211,24 @@
       const app = document.querySelector("home-assistant");
       const panels = app?.hass?.panels;
       if (!panels?.history) {
-        console.warn("[hass-datapoints ha] history panel not available for preload");
+        logger.warn("[hass-datapoints ha] history panel not available for preload");
         return;
       }
       const resolver = document.createElement("partial-panel-resolver");
       if (typeof resolver._updateRoutes !== "function") {
-        console.warn("[hass-datapoints ha] partial-panel-resolver missing _updateRoutes");
+        logger.warn("[hass-datapoints ha] partial-panel-resolver missing _updateRoutes");
         return;
       }
       resolver.hass = { panels };
       resolver._updateRoutes();
       const load = resolver.routerOptions?.routes?.history?.load;
       if (typeof load !== "function") {
-        console.warn("[hass-datapoints ha] history route loader missing");
+        logger.warn("[hass-datapoints ha] history route loader missing");
         return;
       }
       await load();
     } catch (error) {
-      console.warn("[hass-datapoints ha] history route preload failed", {
+      logger.warn("[hass-datapoints ha] history route preload failed", {
         historyTags,
         message: error?.message || String(error)
       });
@@ -240,11 +240,9 @@
       return Promise.resolve(true);
     }
     return Promise.race([
-      customElements.whenDefined(tag).then(() => {
-        return true;
-      }),
+      customElements.whenDefined(tag).then(() => true),
       new Promise((resolve) => window.setTimeout(() => {
-        console.warn("[hass-datapoints ha] component wait timed out", { tag, timeoutMs });
+        logger.warn("[hass-datapoints ha] component wait timed out", { tag, timeoutMs });
         resolve(false);
       }, timeoutMs))
     ]);
@@ -253,26 +251,27 @@
     const componentTags = [...new Set((tags || []).filter(Boolean))];
     const loaderTags = componentTags.filter((tag) => HA_COMPONENT_LOADER_SUPPORTED_TAGS.has(tag));
     const loadPromise = Promise.resolve().then(() => typeof loadHaComponents === "function" && loaderTags.length ? Promise.resolve(loadHaComponents(loaderTags)).catch((error) => {
-      console.warn("[hass-datapoints ha] loader failed", {
+      logger.warn("[hass-datapoints ha] loader failed", {
         loaderTags,
         message: error?.message || String(error)
       });
       return void 0;
     }) : void 0).then(() => preloadHistoryRouteComponents(componentTags));
     return loadPromise.then(() => Promise.all(componentTags.map((tag) => waitForHaComponent(tag)))).then((results) => {
-      componentTags.map((tag, index) => ({
+      const summary = componentTags.map((tag, index) => ({
         tag,
         ready: !!results[index],
         defined: !!customElements.get(tag)
       }));
-      return results;
+      return summary;
     });
   }
   function confirmDestructiveAction$1(host, options = {}) {
     return ensureHaComponents(["ha-dialog"]).then(() => new Promise((resolve) => {
       const root = host?.shadowRoot || host;
       if (!root || !root.appendChild) {
-        resolve(window.confirm(options.message || options.title || "Are you sure?"));
+        const confirmation = window.confirm(options.message || options.title || "Are you sure?");
+        resolve(confirmation);
         return;
       }
       const dialog = document.createElement("ha-dialog");
@@ -283,46 +282,46 @@
       dialog.headerTitle = options.title || "Confirm delete";
       if (host?._hass) dialog.hass = host._hass;
       dialog.innerHTML = `
-      <style>
-        .confirm-dialog-body {
-          padding: 0 var(--dp-spacing-lg, 24px) var(--dp-spacing-lg, 24px);
-          color: var(--primary-text-color);
-        }
-        .confirm-dialog-message {
-          line-height: 1.5;
-          color: var(--secondary-text-color, var(--primary-text-color));
-        }
-        .confirm-dialog-actions {
-          display: flex;
-          justify-content: flex-end;
-          gap: var(--dp-spacing-sm, 8px);
-          margin-top: var(--dp-spacing-lg, 24px);
-        }
-        .confirm-dialog-button {
-          border: 0;
-          border-radius: 999px;
-          padding: 0 16px;
-          height: 36px;
-          font: inherit;
-          cursor: pointer;
-        }
-        .confirm-dialog-button.cancel {
-          background: transparent;
-          color: var(--primary-text-color);
-        }
-        .confirm-dialog-button.confirm {
-          background: var(--error-color, #db4437);
-          color: white;
-        }
-      </style>
-      <div class="confirm-dialog-body">
-        <div class="confirm-dialog-message">${esc$1(options.message || "Are you sure you want to delete this item?")}</div>
-        <div class="confirm-dialog-actions">
-          <button type="button" class="confirm-dialog-button cancel">${esc$1(options.cancelLabel || "Cancel")}</button>
-          <button type="button" class="confirm-dialog-button confirm">${esc$1(options.confirmLabel || "Delete")}</button>
+        <style>
+          .confirm-dialog-body {
+            padding: 0 var(--dp-spacing-lg, 24px) var(--dp-spacing-lg, 24px);
+            color: var(--primary-text-color);
+          }
+          .confirm-dialog-message {
+            line-height: 1.5;
+            color: var(--secondary-text-color, var(--primary-text-color));
+          }
+          .confirm-dialog-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--dp-spacing-sm, 8px);
+            margin-top: var(--dp-spacing-lg, 24px);
+          }
+          .confirm-dialog-button {
+            border: 0;
+            border-radius: 999px;
+            padding: 0 16px;
+            height: 36px;
+            font: inherit;
+            cursor: pointer;
+          }
+          .confirm-dialog-button.cancel {
+            background: transparent;
+            color: var(--primary-text-color);
+          }
+          .confirm-dialog-button.confirm {
+            background: var(--error-color, #db4437);
+            color: white;
+          }
+        </style>
+        <div class="confirm-dialog-body">
+          <div class="confirm-dialog-message">${esc$1(options.message || "Are you sure you want to delete this item?")}</div>
+          <div class="confirm-dialog-actions">
+            <button type="button" class="confirm-dialog-button cancel">${esc$1(options.cancelLabel || "Cancel")}</button>
+            <button type="button" class="confirm-dialog-button confirm">${esc$1(options.confirmLabel || "Delete")}</button>
+          </div>
         </div>
-      </div>
-    `;
+      `;
       let settled = false;
       const finish = (value) => {
         if (settled) return;
@@ -493,7 +492,7 @@
       this._activeAxes = axes;
       return axes;
     }
-    _formatAxisTick(v2, unit = "") {
+    _formatAxisTick(v2) {
       const numeric = Math.abs(v2) >= 1e3 ? `${(v2 / 1e3).toFixed(1).replace(/\.0$/, "")}k` : v2.toFixed(v2 % 1 !== 0 ? 1 : 0);
       return numeric;
     }
@@ -856,7 +855,7 @@
     }
     drawBars(points, color, t0, t1, vMin, vMax, options = {}) {
       if (!points.length) return;
-      const { ctx, pad } = this;
+      const { ctx } = this;
       const fillAlpha = Number.isFinite(options.fillAlpha) ? options.fillAlpha : 0.78;
       const widthFactor = Number.isFinite(options.widthFactor) ? options.widthFactor : 0.72;
       const baselineY = this.yOf(Math.max(vMin, 0), vMin, vMax);
@@ -1056,6 +1055,49 @@
       }
       return hits;
     }
+    /**
+     * Draw a gradient-filled band between two data values, fading from the edge
+     * value toward the midpoint value. Used for min/max shading that fades toward
+     * the mean line.
+     *
+     * @param {number} valueEdge  Data value at the opaque edge (the min or max line)
+     * @param {number} valueMid   Data value at the transparent end (the mean line)
+     * @param {string} color      Hex color string (e.g. "#03a9f4")
+     * @param {number} t0         Render start time ms
+     * @param {number} t1         Render end time ms
+     * @param {number} vMin       Y-axis minimum data value
+     * @param {number} vMax       Y-axis maximum data value
+     * @param {object} options    { fillAlpha }
+     */
+    drawGradientBand(valueEdge, valueMid, color, t0, t1, vMin, vMax, options = {}) {
+      const fillAlpha = Number.isFinite(options.fillAlpha) ? options.fillAlpha : 0.08;
+      if (fillAlpha <= 0) {
+        return;
+      }
+      const hexMatch = String(color || "").match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+      if (!hexMatch) {
+        return;
+      }
+      const r2 = parseInt(hexMatch[1], 16);
+      const g2 = parseInt(hexMatch[2], 16);
+      const b2 = parseInt(hexMatch[3], 16);
+      const yEdge = this.yOf(valueEdge, vMin, vMax);
+      const yMid = this.yOf(valueMid, vMin, vMax);
+      if (Math.abs(yMid - yEdge) < 1) {
+        return;
+      }
+      const { ctx, pad } = this;
+      const grad = ctx.createLinearGradient(0, yEdge, 0, yMid);
+      grad.addColorStop(0, `rgba(${r2}, ${g2}, ${b2}, ${fillAlpha})`);
+      grad.addColorStop(1, `rgba(${r2}, ${g2}, ${b2}, 0)`);
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(pad.left, pad.top, this.cw, this.ch);
+      ctx.clip();
+      ctx.fillStyle = grad;
+      ctx.fillRect(pad.left, Math.min(yEdge, yMid), this.cw, Math.abs(yMid - yEdge));
+      ctx.restore();
+    }
     drawThresholdArea(points, thresholdValue, color, t0, t1, vMin, vMax, options = {}) {
       if (!Array.isArray(points) || points.length < 2) {
         return;
@@ -1245,7 +1287,7 @@
       const overlay = document.createElement("canvas");
       overlay.width = canvas.width;
       overlay.height = canvas.height;
-      overlay.style.cssText = `position:absolute;top:0;left:0;width:${canvas.style.width || canvas.offsetWidth + "px"};height:${canvas.style.height || canvas.offsetHeight + "px"};pointer-events:none;z-index:2;`;
+      overlay.style.cssText = `position:absolute;top:0;left:0;width:${canvas.style.width || `${canvas.offsetWidth}px`};height:${canvas.style.height || `${canvas.offsetHeight}px`};pointer-events:none;z-index:2;`;
       parent.style.position = parent.style.position || "relative";
       parent.appendChild(overlay);
       const ctx = overlay.getContext("2d");
@@ -1270,7 +1312,7 @@
           alpha = 0.85;
         } else {
           const p2 = (t2 - 0.6) / 0.4;
-          const ease = 1 - Math.pow(1 - p2, 3);
+          const ease = 1 - (1 - p2) ** 3;
           radius = pxMaxR * (1 - ease);
           alpha = 0.85 * (1 - ease);
         }
@@ -1700,6 +1742,7 @@
     background: var(--card-background-color, var(--primary-background-color, #fff));
     overflow: hidden;
     z-index: 3;
+    border-bottom-left-radius: 11px;
   }
   .chart-axis-overlay.visible {
     display: block;
@@ -2243,13 +2286,14 @@
   }
   function setupCanvas(canvas, container, cssHeight, cssWidth = null) {
     const dpr = window.devicePixelRatio || 1;
+    const maxCssDim = Math.floor(16383 / dpr);
     const styles2 = getComputedStyle(container);
     const paddingX = (Number.parseFloat(styles2.paddingLeft || "0") || 0) + (Number.parseFloat(styles2.paddingRight || "0") || 0);
     const paddingY = (Number.parseFloat(styles2.paddingTop || "0") || 0) + (Number.parseFloat(styles2.paddingBottom || "0") || 0);
     const measuredWidth = cssWidth ?? (container.clientWidth || 360);
-    const w = Math.max(1, Math.round(measuredWidth - paddingX));
+    const w = Math.min(maxCssDim, Math.max(1, Math.round(measuredWidth - paddingX)));
     const requestedHeight = cssHeight ?? container.clientHeight ?? 220;
-    const h2 = Math.max(120, Math.round(requestedHeight - paddingY));
+    const h2 = Math.min(maxCssDim, Math.max(120, Math.round(requestedHeight - paddingY)));
     canvas.width = w * dpr;
     canvas.height = h2 * dpr;
     canvas.style.width = `${w}px`;
@@ -2386,7 +2430,14 @@
     return { methodLabel, description, alert };
   }
   function buildAnomalyTooltipContent(regions) {
-    const regionsArray = Array.isArray(regions) ? regions : regions ? [regions] : [];
+    let regionsArray;
+    if (Array.isArray(regions)) {
+      regionsArray = regions;
+    } else if (regions) {
+      regionsArray = [regions];
+    } else {
+      regionsArray = [];
+    }
     if (regionsArray.length === 0) return null;
     const sections = regionsArray.map(buildAnomalyMethodSection).filter(Boolean);
     if (sections.length === 0) return null;
@@ -2620,6 +2671,47 @@ ${s2.description}`).join("\n\n");
     }
     clearAnnotationTooltips(card);
   }
+  function resolveTooltipSeriesLabel(entry) {
+    const isSubordinate = entry.grouped === true && entry.rawVisible === true;
+    if (entry.comparison === true) {
+      if (entry.grouped === true) {
+        return entry.windowLabel || "Date window";
+      }
+      return `${entry.windowLabel || "Date window"}: ${entry.label || ""}`;
+    }
+    if (entry.trend === true) {
+      if (isSubordinate) {
+        return "Trend";
+      }
+      return `Trend: ${entry.baseLabel || entry.label || ""}`;
+    }
+    if (entry.rate === true) {
+      if (isSubordinate) {
+        return "Rate";
+      }
+      return `Rate: ${entry.baseLabel || entry.label || ""}`;
+    }
+    if (entry.delta === true) {
+      if (isSubordinate) {
+        return "Delta";
+      }
+      return `Delta: ${entry.baseLabel || entry.label || ""}`;
+    }
+    if (entry.summary === true) {
+      const summaryLabel = String(entry.summaryType || "").toUpperCase();
+      if (isSubordinate) {
+        return summaryLabel;
+      }
+      return `${summaryLabel}: ${entry.baseLabel || entry.label || ""}`;
+    }
+    if (entry.threshold === true) {
+      if (isSubordinate) {
+        return "Threshold";
+      }
+      return `Threshold: ${entry.baseLabel || entry.label || ""}`;
+    }
+    return entry.label || "";
+  }
   function showLineChartTooltip(card, hover, clientX, clientY) {
     const tooltip = card.shadowRoot.getElementById("tooltip");
     const ttTime = card.shadowRoot.getElementById("tt-time");
@@ -2827,9 +2919,7 @@ ${s2.description}`).join("\n\n");
         <div class="tt-series-row ${entry.grouped === true && entry.rawVisible === true ? "subordinate" : ""}">
           <div class="tt-series-main">
             ${entry.grouped === true && entry.rawVisible === true ? "" : `<span class="tt-dot" style="background:${esc$1(entry.color || "#03a9f4")}"></span>`}
-            <span class="tt-series-label">${esc$1(
-          entry.comparison === true ? entry.grouped === true ? entry.windowLabel || "Date window" : `${entry.windowLabel || "Date window"}: ${entry.label || ""}` : entry.trend === true ? entry.grouped === true && entry.rawVisible === true ? "Trend" : `Trend: ${entry.baseLabel || entry.label || ""}` : entry.rate === true ? entry.grouped === true && entry.rawVisible === true ? "Rate" : `Rate: ${entry.baseLabel || entry.label || ""}` : entry.delta === true ? entry.grouped === true && entry.rawVisible === true ? "Delta" : `Delta: ${entry.baseLabel || entry.label || ""}` : entry.summary === true ? entry.grouped === true && entry.rawVisible === true ? String(entry.summaryType || "").toUpperCase() : `${String(entry.summaryType || "").toUpperCase()}: ${entry.baseLabel || entry.label || ""}` : entry.threshold === true ? entry.grouped === true && entry.rawVisible === true ? "Threshold" : `Threshold: ${entry.baseLabel || entry.label || ""}` : entry.label || ""
-        )}</span>
+            <span class="tt-series-label">${esc$1(resolveTooltipSeriesLabel(entry))}</span>
           </div>
           <span class="tt-series-value">${esc$1(formatTooltipDisplayValue(entry.value, entry.unit))}</span>
         </div>
@@ -2865,13 +2955,6 @@ ${s2.description}`).join("\n\n");
       top: chartBounds.top + 8,
       bottom: chartBounds.bottom - 8
     } : null);
-    const annotationTooltips = renderAnnotationTooltips(card, hover, tooltip, chartBounds ? {
-      left: chartBounds.left + 8,
-      right: chartBounds.right - 8,
-      top: chartBounds.top + 8,
-      bottom: chartBounds.bottom - 8
-    } : null);
-    annotationTooltips[annotationTooltips.length - 1] || tooltip;
     if (anomalyTooltip && hover.anomalyRegions?.length > 0) {
       positionAnomalyTooltip(anomalyTooltip, clientX, clientY, tooltip, chartBounds ? {
         left: chartBounds.left + 8,
@@ -2879,6 +2962,16 @@ ${s2.description}`).join("\n\n");
         top: chartBounds.top + 8,
         bottom: chartBounds.bottom - 8
       } : null);
+    }
+    if (Array.isArray(hover.events) && hover.events.length > 0) {
+      renderAnnotationTooltips(card, hover, tooltip, chartBounds ? {
+        left: chartBounds.left + 8,
+        right: chartBounds.right - 8,
+        top: chartBounds.top + 8,
+        bottom: chartBounds.bottom - 8
+      } : null);
+    } else {
+      clearAnnotationTooltips(card);
     }
   }
   function buildTooltipRelatedChips(hass, event) {
@@ -3816,7 +3909,7 @@ ${s2.description}`).join("\n\n");
         return result.events || [];
       });
     } catch (err) {
-      console.warn("[hass-datapoints] fetchEvents failed:", err);
+      logger.warn("[hass-datapoints] fetchEvents failed:", err);
       return [];
     }
   }
@@ -3838,7 +3931,7 @@ ${s2.description}`).join("\n\n");
         end: result?.end_time || null
       };
     } catch (err) {
-      console.warn("[hass-datapoints] fetchEventBounds failed:", err);
+      logger.warn("[hass-datapoints] fetchEventBounds failed:", err);
       return { start: null, end: null };
     }
   }
@@ -3861,6 +3954,7 @@ ${s2.description}`).join("\n\n");
     window.dispatchEvent(new CustomEvent("hass-datapoints-event-recorded"));
     return result;
   }
+  const PANEL_HISTORY_SAVED_PAGE_KEY = "hass_datapoints:saved_page_v1";
   async function fetchUserData(hass, key, defaultValue = null) {
     try {
       const result = await hass.connection.sendMessagePromise({
@@ -3869,7 +3963,7 @@ ${s2.description}`).join("\n\n");
       });
       return result?.value ?? defaultValue;
     } catch (err) {
-      console.warn("[hass-datapoints] fetchUserData failed:", err);
+      logger.warn("[hass-datapoints] fetchUserData failed:", err);
       return defaultValue;
     }
   }
@@ -3881,7 +3975,7 @@ ${s2.description}`).join("\n\n");
         value
       });
     } catch (err) {
-      console.warn("[hass-datapoints] saveUserData failed:", err);
+      logger.warn("[hass-datapoints] saveUserData failed:", err);
     }
   }
   function parseDateValue(value) {
@@ -3995,6 +4089,7 @@ ${s2.description}`).join("\n\n");
       trend_window: typeof source.trend_window === "string" && source.trend_window ? source.trend_window : "24h",
       show_trend_crosshairs: source.show_trend_crosshairs === true,
       show_summary_stats: source.show_summary_stats === true,
+      show_summary_stats_shading: source.show_summary_stats_shading === true,
       show_rate_of_change: source.show_rate_of_change === true,
       rate_window: typeof source.rate_window === "string" && source.rate_window ? source.rate_window : "1h",
       show_threshold_analysis: source.show_threshold_analysis === true,
@@ -4154,18 +4249,14 @@ ${s2.description}`).join("\n\n");
 </worksheet>`;
   }
   function createWorkbookXml(sheets) {
-    const sheetXml = sheets.map((sheet, index) => {
-      return `<sheet name="${escapeXml(sanitizeWorksheetName(sheet.name))}" sheetId="${index + 1}" r:id="rId${index + 1}"/>`;
-    }).join("");
+    const sheetXml = sheets.map((sheet, index) => `<sheet name="${escapeXml(sanitizeWorksheetName(sheet.name))}" sheetId="${index + 1}" r:id="rId${index + 1}"/>`).join("");
     return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
   <sheets>${sheetXml}</sheets>
 </workbook>`;
   }
   function createWorkbookRelsXml(sheets) {
-    const relXml = sheets.map((_2, index) => {
-      return `<Relationship Id="rId${index + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${index + 1}.xml"/>`;
-    }).join("");
+    const relXml = sheets.map((_2, index) => `<Relationship Id="rId${index + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${index + 1}.xml"/>`).join("");
     return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
   ${relXml}
@@ -4209,9 +4300,7 @@ ${s2.description}`).join("\n\n");
 </styleSheet>`;
   }
   function createContentTypesXml(sheets) {
-    const overrides = sheets.map((_2, index) => {
-      return `<Override PartName="/xl/worksheets/sheet${index + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`;
-    }).join("");
+    const overrides = sheets.map((_2, index) => `<Override PartName="/xl/worksheets/sheet${index + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("");
     return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
   <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
@@ -4532,11 +4621,11 @@ ${s2.description}`).join("\n\n");
       if (!raw) return null;
       const parsed = JSON.parse(raw);
       return parsed && typeof parsed === "object" ? parsed : null;
-    } catch (_err) {
+    } catch {
       return null;
     }
   }
-  function buildHistoryPageSessionState(source) {
+  function buildHistoryPageSessionState$1(source) {
     return {
       entities: source._entities,
       series_rows: source._seriesRows,
@@ -4572,6 +4661,7 @@ ${s2.description}`).join("\n\n");
       show_chart_delta_tooltip: true,
       show_chart_delta_lines: false,
       show_chart_correlated_anomalies: source._showCorrelatedAnomalies,
+      chart_anomaly_overlap_mode: source._chartAnomalyOverlapMode || "all",
       show_data_gaps: source._showDataGaps,
       data_gap_threshold: source._dataGapThreshold,
       content_split_ratio: source._contentSplitRatio,
@@ -4581,13 +4671,17 @@ ${s2.description}`).join("\n\n");
       zoom_end_time: source._chartZoomCommittedRange ? new Date(source._chartZoomCommittedRange.end).toISOString() : null,
       date_windows: normalizeDateWindows(source._comparisonWindows),
       hours: source._hours,
-      sidebar_collapsed: source._sidebarCollapsed
+      sidebar_collapsed: source._sidebarCollapsed,
+      sidebar_accordion_targets_open: source._sidebarAccordionTargetsOpen !== false,
+      sidebar_accordion_datapoints_open: source._sidebarAccordionDatapointsOpen !== false,
+      sidebar_accordion_analysis_open: source._sidebarAccordionAnalysisOpen !== false,
+      sidebar_accordion_chart_open: source._sidebarAccordionChartOpen !== false
     };
   }
   function writeHistoryPageSessionState(source) {
     try {
-      window.sessionStorage?.setItem(PANEL_HISTORY_SESSION_KEY, JSON.stringify(buildHistoryPageSessionState(source)));
-    } catch (_err) {
+      window.sessionStorage?.setItem(PANEL_HISTORY_SESSION_KEY, JSON.stringify(buildHistoryPageSessionState$1(source)));
+    } catch {
     }
   }
   function normalizeHistoryPagePreferences(preferences, options = {}) {
@@ -5036,6 +5130,7 @@ ${s2.description}`).join("\n\n");
     HOUR_MS,
     MINUTE_MS,
     PANEL_HISTORY_PREFERENCES_KEY,
+    PANEL_HISTORY_SAVED_PAGE_KEY,
     PANEL_HISTORY_SESSION_KEY,
     PANEL_URL_PATH,
     RANGE_AUTO_ZOOM_DEBOUNCE_MS,
@@ -5060,7 +5155,7 @@ ${s2.description}`).join("\n\n");
     buildChartCardShell,
     buildDataPointsHistoryPath: buildDataPointsHistoryPath$1,
     buildHistoryPagePreferencesPayload,
-    buildHistoryPageSessionState,
+    buildHistoryPageSessionState: buildHistoryPageSessionState$1,
     buildHistorySeriesRows,
     buildTooltipRelatedChips,
     clampChartValue,
@@ -5162,6 +5257,26 @@ ${s2.description}`).join("\n\n");
     withStableRangeCache,
     writeHistoryPageSessionState
   }, Symbol.toStringTag, { value: "Module" }));
+  const isDev = () => typeof window !== "undefined" && !!window.__HASS_DATAPOINTS_DEV__;
+  const logger$1 = {
+    log: (...args) => {
+      if (isDev()) {
+        console.log(...args);
+      }
+    },
+    debug: (...args) => {
+      if (isDev()) {
+        console.debug(...args);
+      }
+    },
+    info: (...args) => {
+      if (isDev()) {
+        console.info(...args);
+      }
+    },
+    warn: (...args) => console.warn(...args),
+    error: (...args) => console.error(...args)
+  };
   class HistoryAnnotationDialogController {
     constructor(host) {
       this._host = host;
@@ -5387,7 +5502,7 @@ ${s2.description}`).join("\n\n");
           feedbackEl.hidden = false;
           feedbackEl.textContent = err?.message || "Failed to create annotation.";
         }
-        console.error("[hass-datapoints history-card]", err);
+        logger$1.error("[hass-datapoints history-card]", err);
       } finally {
         if (saveButton) saveButton.disabled = false;
       }
@@ -5553,7 +5668,15 @@ ${s2.description}`).join("\n\n");
     // Normalises all fields to arrays (HA target selector may store single values as strings).
     _configTarget() {
       const cfg = this._config;
-      const norm = (v2) => !v2 ? [] : Array.isArray(v2) ? v2 : [v2];
+      const norm = (v2) => {
+        if (!v2) {
+          return [];
+        }
+        if (Array.isArray(v2)) {
+          return v2;
+        }
+        return [v2];
+      };
       let raw;
       if (cfg.target) raw = cfg.target;
       else if (cfg.entity) raw = { entity_id: [cfg.entity] };
@@ -5773,7 +5896,15 @@ ${s2.description}`).join("\n\n");
       this._updateHassOnChildren();
     }
     _mergeTargets(a2, b2) {
-      const norm = (v2) => !v2 ? [] : Array.isArray(v2) ? v2 : [v2];
+      const norm = (v2) => {
+        if (!v2) {
+          return [];
+        }
+        if (Array.isArray(v2)) {
+          return v2;
+        }
+        return [v2];
+      };
       const merge = (x2, y2) => [.../* @__PURE__ */ new Set([...norm(x2), ...norm(y2)])];
       return {
         entity_id: merge(a2.entity_id, b2.entity_id),
@@ -6575,7 +6706,13 @@ ${s2.description}`).join("\n\n");
       ep.addEventListener("value-changed", (e2) => {
         if (this._suppressEntityChange) return;
         const val = e2.detail.value;
-        this._entities = Array.isArray(val) ? val : val ? [val] : [];
+        if (Array.isArray(val)) {
+          this._entities = val;
+        } else if (val) {
+          this._entities = [val];
+        } else {
+          this._entities = [];
+        }
       });
       this._addWindowRow();
       this.shadowRoot.getElementById("add-window-btn").addEventListener("click", () => this._addWindowRow());
@@ -6744,15 +6881,15 @@ ${s2.description}`).join("\n\n");
           } else if (domain === "sensor") {
             const num = parseFloat(cur);
             const prevNum = prevVal != null ? parseFloat(prevVal) : NaN;
-            if (isNaN(num)) continue;
-            if (!isNaN(prevNum) && Math.abs(num - prevNum) < 0.5) continue;
+            if (Number.isNaN(num)) continue;
+            if (!Number.isNaN(prevNum) && Math.abs(num - prevNum) < 0.5) continue;
             message = `${friendlyName}: ${cur}${unit}`;
             icon = "mdi:gauge";
             color = "#2196f3";
           } else if (domain === "input_number" || domain === "number") {
             const num = parseFloat(cur);
             const prevNum = prevVal != null ? parseFloat(prevVal) : NaN;
-            if (isNaN(num) || !isNaN(prevNum) && num === prevNum) continue;
+            if (Number.isNaN(num) || !Number.isNaN(prevNum) && num === prevNum) continue;
             message = `${friendlyName}: → ${cur}${unit}`;
             icon = "mdi:numeric";
             color = "#9c27b0";
@@ -6801,7 +6938,10 @@ ${s2.description}`).join("\n\n");
         sound: ["sound detected", "quiet"]
       };
       const pair = map[deviceClass];
-      return pair ? on ? pair[0] : pair[1] : on ? "on" : "off";
+      if (pair) {
+        return on ? pair[0] : pair[1];
+      }
+      return on ? "on" : "off";
     }
     // ── Results rendering ──────────────────────────────────────────────────────
     _renderResults() {
@@ -7185,7 +7325,7 @@ ${s2.description}`).join("\n\n");
       const value = this.type === "number" ? parseFloat(rawValue) : rawValue;
       this.dispatchEvent(
         new CustomEvent("dp-field-change", {
-          detail: { value: this.type === "number" && isNaN(value) ? void 0 : value },
+          detail: { value: this.type === "number" && Number.isNaN(value) ? void 0 : value },
           bubbles: true,
           composed: true
         })
@@ -8017,7 +8157,7 @@ ${s2.description}`).join("\n\n");
         this._hasStartedInitialLoad = true;
         this._loadInFlight = true;
         Promise.resolve(this._load()).catch((err) => {
-          console.error("[hass-datapoints chart-base] load failed", err);
+          logger$1.error("[hass-datapoints chart-base] load failed", err);
         }).finally(() => {
           this._loadInFlight = false;
         });
@@ -8035,7 +8175,7 @@ ${s2.description}`).join("\n\n");
       messageEl.classList.toggle("visible", !!message);
     }
   }
-  const jsContent = '(function() {\n  "use strict";\n  function getTrendWindowMs(value) {\n    const windows = {\n      "1h": 60 * 60 * 1e3,\n      "6h": 6 * 60 * 60 * 1e3,\n      "24h": 24 * 60 * 60 * 1e3,\n      "7d": 7 * 24 * 60 * 60 * 1e3,\n      "14d": 14 * 24 * 60 * 60 * 1e3,\n      "21d": 21 * 24 * 60 * 60 * 1e3,\n      "28d": 28 * 24 * 60 * 60 * 1e3\n    };\n    return windows[value] || windows["24h"];\n  }\n  function buildRollingAverageTrend(points, windowMs) {\n    if (!Array.isArray(points) || points.length < 2 || !Number.isFinite(windowMs) || windowMs <= 0) {\n      return [];\n    }\n    const trendPoints = [];\n    let windowStartIndex = 0;\n    let windowSum = 0;\n    for (let index = 0; index < points.length; index += 1) {\n      const [time, value] = points[index];\n      windowSum += value;\n      while (windowStartIndex < index && time - points[windowStartIndex][0] > windowMs) {\n        windowSum -= points[windowStartIndex][1];\n        windowStartIndex += 1;\n      }\n      const count = index - windowStartIndex + 1;\n      if (count > 0) {\n        trendPoints.push([time, windowSum / count]);\n      }\n    }\n    return trendPoints;\n  }\n  function buildLinearTrend(points) {\n    if (!Array.isArray(points) || points.length < 2) {\n      return [];\n    }\n    const origin = points[0][0];\n    let sumX = 0;\n    let sumY = 0;\n    let sumXX = 0;\n    let sumXY = 0;\n    for (const [time, value] of points) {\n      const x = (time - origin) / (60 * 60 * 1e3);\n      sumX += x;\n      sumY += value;\n      sumXX += x * x;\n      sumXY += x * value;\n    }\n    const count = points.length;\n    const denominator = count * sumXX - sumX * sumX;\n    if (!Number.isFinite(denominator) || Math.abs(denominator) < 1e-9) {\n      return [];\n    }\n    const slope = (count * sumXY - sumX * sumY) / denominator;\n    const intercept = (sumY - slope * sumX) / count;\n    const firstTime = points[0][0];\n    const lastTime = points[points.length - 1][0];\n    const firstX = (firstTime - origin) / (60 * 60 * 1e3);\n    const lastX = (lastTime - origin) / (60 * 60 * 1e3);\n    return [\n      [firstTime, intercept + slope * firstX],\n      [lastTime, intercept + slope * lastX]\n    ];\n  }\n  function buildTrendPoints(points, method, trendWindow) {\n    if (!Array.isArray(points) || points.length < 2) {\n      return [];\n    }\n    if (method === "linear_trend") {\n      return buildLinearTrend(points);\n    }\n    return buildRollingAverageTrend(points, getTrendWindowMs(trendWindow));\n  }\n  function getPersistenceWindowMs(value) {\n    const windows = {\n      "30m": 30 * 60 * 1e3,\n      "1h": 60 * 60 * 1e3,\n      "3h": 3 * 60 * 60 * 1e3,\n      "6h": 6 * 60 * 60 * 1e3,\n      "12h": 12 * 60 * 60 * 1e3,\n      "24h": 24 * 60 * 60 * 1e3\n    };\n    return windows[value] || windows["1h"];\n  }\n  function buildIQRAnomalyClusters(points, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 4) {\n      return [];\n    }\n    const sorted = points.map(([, v]) => v).sort((a, b) => a - b);\n    const n = sorted.length;\n    const q1 = sorted[Math.floor(n * 0.25)];\n    const q2 = sorted[Math.floor(n * 0.5)];\n    const q3 = sorted[Math.floor(n * 0.75)];\n    const iqr = q3 - q1;\n    if (!Number.isFinite(iqr) || iqr <= 1e-6) {\n      return [];\n    }\n    const k = anomalySensitivity === "low" ? 3 : anomalySensitivity === "high" ? 1.5 : 2;\n    const lowerFence = q1 - k * iqr;\n    const upperFence = q3 + k * iqr;\n    const clusters = [];\n    let currentCluster = [];\n    const flushCluster = () => {\n      if (currentCluster.length === 0) return;\n      const maxDeviation = currentCluster.reduce((m, p) => Math.max(m, Math.abs(p.residual)), 0);\n      clusters.push({ points: currentCluster.slice(), maxDeviation, anomalyMethod: "iqr" });\n      currentCluster = [];\n    };\n    for (const [timeMs, value] of points) {\n      if (value < lowerFence || value > upperFence) {\n        currentCluster.push({ timeMs, value, baselineValue: q2, residual: value - q2 });\n      } else {\n        flushCluster();\n      }\n    }\n    flushCluster();\n    return clusters.filter((c) => c.points.length > 0);\n  }\n  function buildRollingZScoreAnomalyClusters(points, windowMs, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 3 || !Number.isFinite(windowMs) || windowMs <= 0) {\n      return [];\n    }\n    const threshold = getAnomalySensitivityThreshold(anomalySensitivity);\n    const residuals = [];\n    let windowStart = 0;\n    let windowSum = 0;\n    let windowSumSq = 0;\n    for (let i = 0; i < points.length; i += 1) {\n      const [timeMs, value] = points[i];\n      windowSum += value;\n      windowSumSq += value * value;\n      while (windowStart < i && timeMs - points[windowStart][0] > windowMs) {\n        const old = points[windowStart][1];\n        windowSum -= old;\n        windowSumSq -= old * old;\n        windowStart += 1;\n      }\n      const count = i - windowStart + 1;\n      if (count < 3) {\n        continue;\n      }\n      const mean = windowSum / count;\n      const variance = Math.max(0, windowSumSq / count - mean * mean);\n      const std = Math.sqrt(variance);\n      if (!Number.isFinite(std) || std <= 1e-6) {\n        continue;\n      }\n      const zscore = (value - mean) / std;\n      if (Math.abs(zscore) >= threshold) {\n        residuals.push({ timeMs, value, baselineValue: mean, residual: value - mean, flagged: true });\n      } else {\n        residuals.push({ timeMs, flagged: false });\n      }\n    }\n    const clusters = [];\n    let currentCluster = [];\n    const flushCluster = () => {\n      if (currentCluster.length === 0) return;\n      const maxDeviation = currentCluster.reduce((m, p) => Math.max(m, Math.abs(p.residual)), 0);\n      clusters.push({ points: currentCluster.slice(), maxDeviation, anomalyMethod: "rolling_zscore" });\n      currentCluster = [];\n    };\n    for (const r of residuals) {\n      if (r.flagged) {\n        currentCluster.push(r);\n      } else {\n        flushCluster();\n      }\n    }\n    flushCluster();\n    return clusters.filter((c) => c.points.length > 0);\n  }\n  function buildPersistenceAnomalyClusters(points, minDurationMs, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 3 || !Number.isFinite(minDurationMs) || minDurationMs <= 0) {\n      return [];\n    }\n    let totalMin = Infinity;\n    let totalMax = -Infinity;\n    for (const [, v] of points) {\n      if (v < totalMin) totalMin = v;\n      if (v > totalMax) totalMax = v;\n    }\n    const totalRange = totalMax - totalMin;\n    if (!Number.isFinite(totalRange) || totalRange <= 1e-6) {\n      return [];\n    }\n    const flatFraction = anomalySensitivity === "low" ? 5e-3 : anomalySensitivity === "high" ? 0.05 : 0.02;\n    const flatThreshold = flatFraction * totalRange;\n    const clusters = [];\n    let runStart = 0;\n    let runMin = points[0][1];\n    let runMax = points[0][1];\n    const flushRun = (runEnd) => {\n      const duration = points[runEnd][0] - points[runStart][0];\n      if (duration >= minDurationMs && runEnd > runStart) {\n        const mid = (runMin + runMax) / 2;\n        const clusterPoints = [];\n        for (let k = runStart; k <= runEnd; k += 1) {\n          clusterPoints.push({ timeMs: points[k][0], value: points[k][1], baselineValue: mid, residual: points[k][1] - mid });\n        }\n        clusters.push({\n          points: clusterPoints,\n          maxDeviation: runMax - runMin,\n          anomalyMethod: "persistence",\n          flatRange: runMax - runMin\n        });\n      }\n    };\n    for (let i = 1; i < points.length; i += 1) {\n      const v = points[i][1];\n      const nextMin = Math.min(runMin, v);\n      const nextMax = Math.max(runMax, v);\n      if (nextMax - nextMin > flatThreshold) {\n        flushRun(i - 1);\n        runStart = i;\n        runMin = v;\n        runMax = v;\n      } else {\n        runMin = nextMin;\n        runMax = nextMax;\n      }\n    }\n    flushRun(points.length - 1);\n    return clusters.filter((c) => c.points.length > 0);\n  }\n  function buildComparisonWindowAnomalyClusters(points, comparisonPoints, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 3 || !Array.isArray(comparisonPoints) || comparisonPoints.length < 3) {\n      return [];\n    }\n    const deltaPoints = [];\n    for (const [timeMs, value] of points) {\n      const compValue = interpolateSeriesValue(comparisonPoints, timeMs);\n      if (!Number.isFinite(compValue)) {\n        continue;\n      }\n      deltaPoints.push({ timeMs, value, compValue, delta: value - compValue });\n    }\n    if (deltaPoints.length < 3) {\n      return [];\n    }\n    let sumDeltas = 0;\n    for (const p of deltaPoints) {\n      sumDeltas += p.delta;\n    }\n    const meanDelta = sumDeltas / deltaPoints.length;\n    let sumSqDev = 0;\n    for (const p of deltaPoints) {\n      const dev = p.delta - meanDelta;\n      sumSqDev += dev * dev;\n    }\n    const rmsDeviation = Math.sqrt(sumSqDev / deltaPoints.length);\n    if (!Number.isFinite(rmsDeviation) || rmsDeviation <= 1e-6) {\n      return [];\n    }\n    const threshold = rmsDeviation * getAnomalySensitivityThreshold(anomalySensitivity);\n    const clusters = [];\n    let currentCluster = [];\n    const flushCluster = () => {\n      if (currentCluster.length === 0) return;\n      const maxDeviation = currentCluster.reduce((m, p) => Math.max(m, Math.abs(p.residual)), 0);\n      clusters.push({ points: currentCluster.slice(), maxDeviation, anomalyMethod: "comparison_window" });\n      currentCluster = [];\n    };\n    for (const { timeMs, value, compValue, delta } of deltaPoints) {\n      const residual = delta - meanDelta;\n      if (Math.abs(residual) >= threshold) {\n        currentCluster.push({ timeMs, value, baselineValue: compValue, residual: value - compValue });\n      } else {\n        flushCluster();\n      }\n    }\n    flushCluster();\n    return clusters.filter((c) => c.points.length > 0);\n  }\n  function buildRateOfChangeAnomalyClusters(points, rateWindow, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 3) {\n      return [];\n    }\n    const ratePoints = buildRateOfChangePoints(points, rateWindow);\n    if (!Array.isArray(ratePoints) || ratePoints.length < 3) {\n      return [];\n    }\n    let sumRates = 0;\n    for (const [, rate] of ratePoints) {\n      sumRates += rate;\n    }\n    const meanRate = sumRates / ratePoints.length;\n    let sumSqDev = 0;\n    for (const [, rate] of ratePoints) {\n      const dev = rate - meanRate;\n      sumSqDev += dev * dev;\n    }\n    const rmsDeviation = Math.sqrt(sumSqDev / ratePoints.length);\n    if (!Number.isFinite(rmsDeviation) || rmsDeviation <= 1e-6) {\n      return [];\n    }\n    const threshold = rmsDeviation * getAnomalySensitivityThreshold(anomalySensitivity);\n    const clusters = [];\n    let currentCluster = [];\n    const flushCluster = () => {\n      if (currentCluster.length === 0) {\n        return;\n      }\n      const maxDeviation = currentCluster.reduce((maxVal, point) => {\n        return Math.max(maxVal, Math.abs(point.residual));\n      }, 0);\n      clusters.push({\n        points: currentCluster.slice(),\n        maxDeviation,\n        anomalyMethod: "rate_of_change"\n      });\n      currentCluster = [];\n    };\n    for (const [timeMs, rate] of ratePoints) {\n      const residual = rate - meanRate;\n      if (Math.abs(residual) >= threshold) {\n        const sourceValue = interpolateSeriesValue(points, timeMs);\n        if (!Number.isFinite(sourceValue)) {\n          flushCluster();\n          continue;\n        }\n        currentCluster.push({\n          timeMs,\n          value: sourceValue,\n          baselineValue: meanRate,\n          residual\n        });\n      } else {\n        flushCluster();\n      }\n    }\n    flushCluster();\n    return clusters.filter((cluster) => cluster.points.length > 0);\n  }\n  const VALID_ANOMALY_METHODS = ["trend_residual", "rate_of_change", "iqr", "rolling_zscore", "persistence", "comparison_window"];\n  function normalizeSeriesAnalysis(analysis) {\n    const source = analysis && typeof analysis === "object" ? analysis : {};\n    const legacyMethod = VALID_ANOMALY_METHODS.includes(source.anomaly_method) ? source.anomaly_method : null;\n    return {\n      show_trend_lines: source.show_trend_lines === true,\n      trend_method: source.trend_method === "linear_trend" ? "linear_trend" : "rolling_average",\n      trend_window: typeof source.trend_window === "string" && source.trend_window ? source.trend_window : "24h",\n      show_summary_stats: source.show_summary_stats === true,\n      show_rate_of_change: source.show_rate_of_change === true,\n      rate_window: typeof source.rate_window === "string" && source.rate_window ? source.rate_window : "1h",\n      show_anomalies: source.show_anomalies === true,\n      anomaly_methods: Array.isArray(source.anomaly_methods) ? source.anomaly_methods.filter((m) => VALID_ANOMALY_METHODS.includes(m)) : legacyMethod ? [legacyMethod] : [],\n      anomaly_overlap_mode: ["all", "highlight", "only"].includes(source.anomaly_overlap_mode) ? source.anomaly_overlap_mode : "all",\n      anomaly_sensitivity: typeof source.anomaly_sensitivity === "string" && source.anomaly_sensitivity ? source.anomaly_sensitivity : "medium",\n      anomaly_rate_window: typeof source.anomaly_rate_window === "string" && source.anomaly_rate_window ? source.anomaly_rate_window : "1h",\n      anomaly_zscore_window: typeof source.anomaly_zscore_window === "string" && source.anomaly_zscore_window ? source.anomaly_zscore_window : "24h",\n      anomaly_persistence_window: typeof source.anomaly_persistence_window === "string" && source.anomaly_persistence_window ? source.anomaly_persistence_window : "1h",\n      anomaly_comparison_window_id: typeof source.anomaly_comparison_window_id === "string" && source.anomaly_comparison_window_id ? source.anomaly_comparison_window_id : null,\n      show_delta_analysis: source.show_delta_analysis === true\n    };\n  }\n  function applyAnomalyOverlapMode(clustersByMethod, overlapMode) {\n    const methodKeys = Object.keys(clustersByMethod);\n    if (methodKeys.length <= 1 || overlapMode === "all") {\n      return methodKeys.flatMap((m) => clustersByMethod[m]);\n    }\n    const flaggedByMethod = {};\n    for (const m of methodKeys) {\n      flaggedByMethod[m] = new Set(clustersByMethod[m].flatMap((c) => c.points.map((p) => p.timeMs)));\n    }\n    const overlapTimes = /* @__PURE__ */ new Set();\n    for (const m of methodKeys) {\n      for (const t of flaggedByMethod[m]) {\n        if (methodKeys.some((other) => other !== m && flaggedByMethod[other].has(t))) {\n          overlapTimes.add(t);\n        }\n      }\n    }\n    if (overlapMode === "only") {\n      const seen = /* @__PURE__ */ new Set();\n      const result2 = [];\n      for (const m of methodKeys) {\n        for (const cluster of clustersByMethod[m]) {\n          const pts = cluster.points.filter((p) => overlapTimes.has(p.timeMs));\n          if (pts.length === 0) continue;\n          const key = pts.map((p) => p.timeMs).join(",");\n          if (seen.has(key)) continue;\n          seen.add(key);\n          const detectedByMethods = methodKeys.filter((other) => pts.some((p) => flaggedByMethod[other].has(p.timeMs)));\n          result2.push({\n            ...cluster,\n            points: pts,\n            maxDeviation: pts.reduce((maxVal, p) => Math.max(maxVal, Math.abs(p.residual || 0)), 0),\n            isOverlap: true,\n            detectedByMethods\n          });\n        }\n      }\n      return result2;\n    }\n    const result = [];\n    for (const m of methodKeys) {\n      for (const cluster of clustersByMethod[m]) {\n        const hasOverlap = cluster.points.some((p) => overlapTimes.has(p.timeMs));\n        const detectedByMethods = hasOverlap ? methodKeys.filter((other) => cluster.points.some((p) => flaggedByMethod[other].has(p.timeMs))) : [m];\n        result.push({ ...cluster, isOverlap: hasOverlap, detectedByMethods });\n      }\n    }\n    return result;\n  }\n  function interpolateSeriesValue(points, timeMs) {\n    if (!Array.isArray(points) || points.length === 0) {\n      return null;\n    }\n    if (timeMs < points[0][0] || timeMs > points[points.length - 1][0]) {\n      return null;\n    }\n    if (timeMs === points[0][0]) {\n      return points[0][1];\n    }\n    if (timeMs === points[points.length - 1][0]) {\n      return points[points.length - 1][1];\n    }\n    for (let index = 0; index < points.length - 1; index += 1) {\n      const [startTime, startValue] = points[index];\n      const [endTime, endValue] = points[index + 1];\n      if (timeMs >= startTime && timeMs <= endTime) {\n        const fraction = (timeMs - startTime) / (endTime - startTime);\n        return startValue + (endValue - startValue) * fraction;\n      }\n    }\n    return null;\n  }\n  function buildRateOfChangePoints(points, rateWindow) {\n    if (!Array.isArray(points) || points.length < 2) {\n      return [];\n    }\n    const ratePoints = [];\n    for (let index = 1; index < points.length; index += 1) {\n      const [timeMs, value] = points[index];\n      let comparisonPoint = null;\n      if (rateWindow === "point_to_point") {\n        comparisonPoint = points[index - 1];\n      } else {\n        const windowMs = getTrendWindowMs(rateWindow);\n        if (!Number.isFinite(windowMs) || windowMs <= 0) {\n          continue;\n        }\n        for (let candidateIndex = index - 1; candidateIndex >= 0; candidateIndex -= 1) {\n          const candidatePoint = points[candidateIndex];\n          if (timeMs - candidatePoint[0] >= windowMs) {\n            comparisonPoint = candidatePoint;\n            break;\n          }\n        }\n        if (!comparisonPoint) {\n          comparisonPoint = points[0];\n        }\n      }\n      if (!Array.isArray(comparisonPoint) || comparisonPoint.length < 2) {\n        continue;\n      }\n      const deltaMs = timeMs - comparisonPoint[0];\n      if (!Number.isFinite(deltaMs) || deltaMs <= 0) {\n        continue;\n      }\n      const deltaHours = deltaMs / (60 * 60 * 1e3);\n      if (!Number.isFinite(deltaHours) || deltaHours <= 0) {\n        continue;\n      }\n      const rateValue = (value - comparisonPoint[1]) / deltaHours;\n      if (!Number.isFinite(rateValue)) {\n        continue;\n      }\n      ratePoints.push([timeMs, rateValue]);\n    }\n    return ratePoints;\n  }\n  function buildDeltaPoints(sourcePoints, comparisonPoints) {\n    if (!Array.isArray(sourcePoints) || sourcePoints.length < 2 || !Array.isArray(comparisonPoints) || comparisonPoints.length < 2) {\n      return [];\n    }\n    const deltaPoints = [];\n    for (const [timeMs, value] of sourcePoints) {\n      const comparisonValue = interpolateSeriesValue(comparisonPoints, timeMs);\n      if (comparisonValue == null) {\n        continue;\n      }\n      deltaPoints.push([timeMs, value - comparisonValue]);\n    }\n    return deltaPoints;\n  }\n  function buildSummaryStats(points) {\n    if (!Array.isArray(points) || points.length === 0) {\n      return null;\n    }\n    let min = Infinity;\n    let max = -Infinity;\n    let sum = 0;\n    let count = 0;\n    for (const point of points) {\n      const value = Number(point?.[1]);\n      if (!Number.isFinite(value)) {\n        continue;\n      }\n      if (value < min) {\n        min = value;\n      }\n      if (value > max) {\n        max = value;\n      }\n      sum += value;\n      count += 1;\n    }\n    if (!Number.isFinite(min) || !Number.isFinite(max) || count === 0) {\n      return null;\n    }\n    return {\n      min,\n      max,\n      mean: sum / count\n    };\n  }\n  function getAnomalySensitivityThreshold(sensitivity) {\n    if (sensitivity === "low") {\n      return 2.8;\n    }\n    if (sensitivity === "high") {\n      return 1.6;\n    }\n    return 2.2;\n  }\n  function buildAnomalyClusters(points, method, trendWindow, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 3) {\n      return [];\n    }\n    const baselinePoints = buildTrendPoints(points, method, trendWindow);\n    if (!Array.isArray(baselinePoints) || baselinePoints.length < 2) {\n      return [];\n    }\n    const residualPoints = [];\n    for (const [timeMs, value] of points) {\n      const baselineValue = interpolateSeriesValue(baselinePoints, timeMs);\n      if (!Number.isFinite(baselineValue)) {\n        continue;\n      }\n      residualPoints.push({\n        timeMs,\n        value,\n        baselineValue,\n        residual: value - baselineValue\n      });\n    }\n    if (residualPoints.length < 3) {\n      return [];\n    }\n    let sumSquares = 0;\n    residualPoints.forEach((point) => {\n      sumSquares += point.residual * point.residual;\n    });\n    const rmsResidual = Math.sqrt(sumSquares / residualPoints.length);\n    if (!Number.isFinite(rmsResidual) || rmsResidual <= 1e-6) {\n      return [];\n    }\n    const threshold = rmsResidual * getAnomalySensitivityThreshold(anomalySensitivity);\n    const clusters = [];\n    let currentCluster = [];\n    const flushCluster = () => {\n      if (currentCluster.length === 0) {\n        return;\n      }\n      const maxDeviation = currentCluster.reduce((maxValue, point) => {\n        return Math.max(maxValue, Math.abs(point.residual));\n      }, 0);\n      clusters.push({\n        points: currentCluster.slice(),\n        maxDeviation,\n        anomalyMethod: "trend_residual"\n      });\n      currentCluster = [];\n    };\n    residualPoints.forEach((point) => {\n      if (Math.abs(point.residual) >= threshold) {\n        currentCluster.push(point);\n      } else {\n        flushCluster();\n      }\n    });\n    flushCluster();\n    return clusters.filter((cluster) => cluster.points.length > 0);\n  }\n  function computeHistoryAnalysis(payload) {\n    const series = (Array.isArray(payload?.series) ? payload.series : []).map((seriesItem) => {\n      return {\n        ...seriesItem,\n        analysis: normalizeSeriesAnalysis(seriesItem?.analysis)\n      };\n    });\n    const comparisonSeries = new Map(\n      (Array.isArray(payload?.comparisonSeries) ? payload.comparisonSeries : []).filter((entry) => entry?.entityId).map((entry) => [entry.entityId, entry])\n    );\n    const allComparisonWindowsData = payload?.allComparisonWindowsData && typeof payload.allComparisonWindowsData === "object" ? payload.allComparisonWindowsData : {};\n    const result = {\n      trendSeries: [],\n      rateSeries: [],\n      deltaSeries: [],\n      summaryStats: [],\n      anomalySeries: []\n    };\n    for (const seriesItem of series) {\n      const points = Array.isArray(seriesItem?.pts) ? seriesItem.pts : [];\n      const analysis = normalizeSeriesAnalysis(seriesItem?.analysis);\n      if (points.length < 2) {\n        continue;\n      }\n      const anomalyMethods = analysis.anomaly_methods;\n      const needsTrend = analysis.show_trend_lines === true || analysis.show_anomalies === true && anomalyMethods.includes("trend_residual");\n      if (needsTrend) {\n        const trendPoints = buildTrendPoints(points, analysis.trend_method, analysis.trend_window);\n        if (analysis.show_trend_lines === true && trendPoints.length >= 2) {\n          result.trendSeries.push({\n            entityId: seriesItem.entityId,\n            pts: trendPoints\n          });\n        }\n      }\n      if (analysis.show_anomalies === true) {\n        const clustersByMethod = {};\n        if (anomalyMethods.includes("trend_residual")) {\n          const clusters = buildAnomalyClusters(points, analysis.trend_method, analysis.trend_window, analysis.anomaly_sensitivity);\n          if (clusters.length > 0) clustersByMethod["trend_residual"] = clusters;\n        }\n        if (anomalyMethods.includes("rate_of_change")) {\n          const clusters = buildRateOfChangeAnomalyClusters(points, analysis.anomaly_rate_window, analysis.anomaly_sensitivity);\n          if (clusters.length > 0) clustersByMethod["rate_of_change"] = clusters;\n        }\n        if (anomalyMethods.includes("iqr")) {\n          const clusters = buildIQRAnomalyClusters(points, analysis.anomaly_sensitivity);\n          if (clusters.length > 0) clustersByMethod["iqr"] = clusters;\n        }\n        if (anomalyMethods.includes("rolling_zscore")) {\n          const windowMs = getTrendWindowMs(analysis.anomaly_zscore_window);\n          const clusters = buildRollingZScoreAnomalyClusters(points, windowMs, analysis.anomaly_sensitivity);\n          if (clusters.length > 0) clustersByMethod["rolling_zscore"] = clusters;\n        }\n        if (anomalyMethods.includes("persistence")) {\n          const minDurationMs = getPersistenceWindowMs(analysis.anomaly_persistence_window);\n          const clusters = buildPersistenceAnomalyClusters(points, minDurationMs, analysis.anomaly_sensitivity);\n          if (clusters.length > 0) clustersByMethod["persistence"] = clusters;\n        }\n        if (anomalyMethods.includes("comparison_window") && analysis.anomaly_comparison_window_id) {\n          const windowData = allComparisonWindowsData[analysis.anomaly_comparison_window_id];\n          const comparisonPts = windowData && typeof windowData === "object" ? windowData[seriesItem.entityId] : null;\n          if (Array.isArray(comparisonPts) && comparisonPts.length >= 3) {\n            const clusters = buildComparisonWindowAnomalyClusters(points, comparisonPts, analysis.anomaly_sensitivity);\n            if (clusters.length > 0) clustersByMethod["comparison_window"] = clusters;\n          }\n        }\n        const anomalyClusters = applyAnomalyOverlapMode(clustersByMethod, analysis.anomaly_overlap_mode);\n        if (anomalyClusters.length > 0) {\n          result.anomalySeries.push({ entityId: seriesItem.entityId, anomalyClusters });\n        }\n      }\n      if (analysis.show_rate_of_change === true) {\n        const ratePoints = buildRateOfChangePoints(points, analysis.rate_window);\n        if (ratePoints.length >= 2) {\n          result.rateSeries.push({\n            entityId: seriesItem.entityId,\n            pts: ratePoints\n          });\n        }\n      }\n      if (analysis.show_summary_stats === true) {\n        const summaryStats = buildSummaryStats(points);\n        if (summaryStats) {\n          result.summaryStats.push({\n            entityId: seriesItem.entityId,\n            ...summaryStats\n          });\n        }\n      }\n      if (analysis.show_delta_analysis === true && payload?.hasSelectedComparisonWindow === true) {\n        const comparisonEntry = comparisonSeries.get(seriesItem.entityId);\n        if (comparisonEntry?.pts?.length >= 2) {\n          const deltaPoints = buildDeltaPoints(points, comparisonEntry.pts);\n          if (deltaPoints.length >= 2) {\n            result.deltaSeries.push({\n              entityId: seriesItem.entityId,\n              pts: deltaPoints\n            });\n          }\n        }\n      }\n    }\n    return result;\n  }\n  self.onmessage = (event) => {\n    const { id, payload } = event.data || {};\n    try {\n      const result = computeHistoryAnalysis(payload);\n      self.postMessage({ id, result });\n    } catch (error) {\n      self.postMessage({\n        id,\n        error: error instanceof Error ? error.message : String(error)\n      });\n    }\n  };\n})();\n';
+  const jsContent = '(function() {\n  "use strict";\n  function getTrendWindowMs(value) {\n    const windows = {\n      "1h": 60 * 60 * 1e3,\n      "6h": 6 * 60 * 60 * 1e3,\n      "24h": 24 * 60 * 60 * 1e3,\n      "7d": 7 * 24 * 60 * 60 * 1e3,\n      "14d": 14 * 24 * 60 * 60 * 1e3,\n      "21d": 21 * 24 * 60 * 60 * 1e3,\n      "28d": 28 * 24 * 60 * 60 * 1e3\n    };\n    return windows[value] || windows["24h"];\n  }\n  function buildRollingAverageTrend(points, windowMs) {\n    if (!Array.isArray(points) || points.length < 2 || !Number.isFinite(windowMs) || windowMs <= 0) {\n      return [];\n    }\n    const trendPoints = [];\n    let windowStartIndex = 0;\n    let windowSum = 0;\n    for (let index = 0; index < points.length; index += 1) {\n      const [time, value] = points[index];\n      windowSum += value;\n      while (windowStartIndex < index && time - points[windowStartIndex][0] > windowMs) {\n        windowSum -= points[windowStartIndex][1];\n        windowStartIndex += 1;\n      }\n      const count = index - windowStartIndex + 1;\n      if (count > 0) {\n        trendPoints.push([time, windowSum / count]);\n      }\n    }\n    return trendPoints;\n  }\n  function buildLinearTrend(points) {\n    if (!Array.isArray(points) || points.length < 2) {\n      return [];\n    }\n    const origin = points[0][0];\n    let sumX = 0;\n    let sumY = 0;\n    let sumXX = 0;\n    let sumXY = 0;\n    for (const [time, value] of points) {\n      const x = (time - origin) / (60 * 60 * 1e3);\n      sumX += x;\n      sumY += value;\n      sumXX += x * x;\n      sumXY += x * value;\n    }\n    const count = points.length;\n    const denominator = count * sumXX - sumX * sumX;\n    if (!Number.isFinite(denominator) || Math.abs(denominator) < 1e-9) {\n      return [];\n    }\n    const slope = (count * sumXY - sumX * sumY) / denominator;\n    const intercept = (sumY - slope * sumX) / count;\n    const firstTime = points[0][0];\n    const lastTime = points[points.length - 1][0];\n    const firstX = (firstTime - origin) / (60 * 60 * 1e3);\n    const lastX = (lastTime - origin) / (60 * 60 * 1e3);\n    return [\n      [firstTime, intercept + slope * firstX],\n      [lastTime, intercept + slope * lastX]\n    ];\n  }\n  function buildTrendPoints(points, method, trendWindow) {\n    if (!Array.isArray(points) || points.length < 2) {\n      return [];\n    }\n    if (method === "linear_trend") {\n      return buildLinearTrend(points);\n    }\n    return buildRollingAverageTrend(points, getTrendWindowMs(trendWindow));\n  }\n  function getPersistenceWindowMs(value) {\n    const windows = {\n      "30m": 30 * 60 * 1e3,\n      "1h": 60 * 60 * 1e3,\n      "3h": 3 * 60 * 60 * 1e3,\n      "6h": 6 * 60 * 60 * 1e3,\n      "12h": 12 * 60 * 60 * 1e3,\n      "24h": 24 * 60 * 60 * 1e3\n    };\n    return windows[value] || windows["1h"];\n  }\n  function buildIQRAnomalyClusters(points, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 4) {\n      return [];\n    }\n    const sorted = points.map(([, v]) => v).sort((a, b) => a - b);\n    const n = sorted.length;\n    const q1 = sorted[Math.floor(n * 0.25)];\n    const q2 = sorted[Math.floor(n * 0.5)];\n    const q3 = sorted[Math.floor(n * 0.75)];\n    const iqr = q3 - q1;\n    if (!Number.isFinite(iqr) || iqr <= 1e-6) {\n      return [];\n    }\n    let k;\n    if (anomalySensitivity === "low") {\n      k = 3;\n    } else if (anomalySensitivity === "high") {\n      k = 1.5;\n    } else {\n      k = 2;\n    }\n    const lowerFence = q1 - k * iqr;\n    const upperFence = q3 + k * iqr;\n    const clusters = [];\n    let currentCluster = [];\n    const flushCluster = () => {\n      if (currentCluster.length === 0) return;\n      const maxDeviation = currentCluster.reduce((m, p) => Math.max(m, Math.abs(p.residual)), 0);\n      clusters.push({ points: currentCluster.slice(), maxDeviation, anomalyMethod: "iqr" });\n      currentCluster = [];\n    };\n    for (const [timeMs, value] of points) {\n      if (value < lowerFence || value > upperFence) {\n        currentCluster.push({ timeMs, value, baselineValue: q2, residual: value - q2 });\n      } else {\n        flushCluster();\n      }\n    }\n    flushCluster();\n    return clusters.filter((c) => c.points.length > 0);\n  }\n  function buildRollingZScoreAnomalyClusters(points, windowMs, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 3 || !Number.isFinite(windowMs) || windowMs <= 0) {\n      return [];\n    }\n    const threshold = getAnomalySensitivityThreshold(anomalySensitivity);\n    const residuals = [];\n    let windowStart = 0;\n    let windowSum = 0;\n    let windowSumSq = 0;\n    for (let i = 0; i < points.length; i += 1) {\n      const [timeMs, value] = points[i];\n      windowSum += value;\n      windowSumSq += value * value;\n      while (windowStart < i && timeMs - points[windowStart][0] > windowMs) {\n        const old = points[windowStart][1];\n        windowSum -= old;\n        windowSumSq -= old * old;\n        windowStart += 1;\n      }\n      const count = i - windowStart + 1;\n      if (count < 3) {\n        continue;\n      }\n      const mean = windowSum / count;\n      const variance = Math.max(0, windowSumSq / count - mean * mean);\n      const std = Math.sqrt(variance);\n      if (!Number.isFinite(std) || std <= 1e-6) {\n        continue;\n      }\n      const zscore = (value - mean) / std;\n      if (Math.abs(zscore) >= threshold) {\n        residuals.push({ timeMs, value, baselineValue: mean, residual: value - mean, flagged: true });\n      } else {\n        residuals.push({ timeMs, flagged: false });\n      }\n    }\n    const clusters = [];\n    let currentCluster = [];\n    const flushCluster = () => {\n      if (currentCluster.length === 0) return;\n      const maxDeviation = currentCluster.reduce((m, p) => Math.max(m, Math.abs(p.residual)), 0);\n      clusters.push({ points: currentCluster.slice(), maxDeviation, anomalyMethod: "rolling_zscore" });\n      currentCluster = [];\n    };\n    for (const r of residuals) {\n      if (r.flagged) {\n        currentCluster.push(r);\n      } else {\n        flushCluster();\n      }\n    }\n    flushCluster();\n    return clusters.filter((c) => c.points.length > 0);\n  }\n  function buildPersistenceAnomalyClusters(points, minDurationMs, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 3 || !Number.isFinite(minDurationMs) || minDurationMs <= 0) {\n      return [];\n    }\n    let totalMin = Infinity;\n    let totalMax = -Infinity;\n    for (const [, v] of points) {\n      if (v < totalMin) totalMin = v;\n      if (v > totalMax) totalMax = v;\n    }\n    const totalRange = totalMax - totalMin;\n    if (!Number.isFinite(totalRange) || totalRange <= 1e-6) {\n      return [];\n    }\n    let flatFraction;\n    if (anomalySensitivity === "low") {\n      flatFraction = 5e-3;\n    } else if (anomalySensitivity === "high") {\n      flatFraction = 0.05;\n    } else {\n      flatFraction = 0.02;\n    }\n    const flatThreshold = flatFraction * totalRange;\n    const clusters = [];\n    let runStart = 0;\n    let runMin = points[0][1];\n    let runMax = points[0][1];\n    const flushRun = (runEnd) => {\n      const duration = points[runEnd][0] - points[runStart][0];\n      if (duration >= minDurationMs && runEnd > runStart) {\n        const mid = (runMin + runMax) / 2;\n        const clusterPoints = [];\n        for (let k = runStart; k <= runEnd; k += 1) {\n          clusterPoints.push({ timeMs: points[k][0], value: points[k][1], baselineValue: mid, residual: points[k][1] - mid });\n        }\n        clusters.push({\n          points: clusterPoints,\n          maxDeviation: runMax - runMin,\n          anomalyMethod: "persistence",\n          flatRange: runMax - runMin\n        });\n      }\n    };\n    for (let i = 1; i < points.length; i += 1) {\n      const v = points[i][1];\n      const nextMin = Math.min(runMin, v);\n      const nextMax = Math.max(runMax, v);\n      if (nextMax - nextMin > flatThreshold) {\n        flushRun(i - 1);\n        runStart = i;\n        runMin = v;\n        runMax = v;\n      } else {\n        runMin = nextMin;\n        runMax = nextMax;\n      }\n    }\n    flushRun(points.length - 1);\n    return clusters.filter((c) => c.points.length > 0);\n  }\n  function buildComparisonWindowAnomalyClusters(points, comparisonPoints, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 3 || !Array.isArray(comparisonPoints) || comparisonPoints.length < 3) {\n      return [];\n    }\n    const deltaPoints = [];\n    for (const [timeMs, value] of points) {\n      const compValue = interpolateSeriesValue(comparisonPoints, timeMs);\n      if (!Number.isFinite(compValue)) {\n        continue;\n      }\n      deltaPoints.push({ timeMs, value, compValue, delta: value - compValue });\n    }\n    if (deltaPoints.length < 3) {\n      return [];\n    }\n    let sumDeltas = 0;\n    for (const p of deltaPoints) {\n      sumDeltas += p.delta;\n    }\n    const meanDelta = sumDeltas / deltaPoints.length;\n    let sumSqDev = 0;\n    for (const p of deltaPoints) {\n      const dev = p.delta - meanDelta;\n      sumSqDev += dev * dev;\n    }\n    const rmsDeviation = Math.sqrt(sumSqDev / deltaPoints.length);\n    if (!Number.isFinite(rmsDeviation) || rmsDeviation <= 1e-6) {\n      return [];\n    }\n    const threshold = rmsDeviation * getAnomalySensitivityThreshold(anomalySensitivity);\n    const clusters = [];\n    let currentCluster = [];\n    const flushCluster = () => {\n      if (currentCluster.length === 0) return;\n      const maxDeviation = currentCluster.reduce((m, p) => Math.max(m, Math.abs(p.residual)), 0);\n      clusters.push({ points: currentCluster.slice(), maxDeviation, anomalyMethod: "comparison_window" });\n      currentCluster = [];\n    };\n    for (const { timeMs, value, compValue, delta } of deltaPoints) {\n      const residual = delta - meanDelta;\n      if (Math.abs(residual) >= threshold) {\n        currentCluster.push({ timeMs, value, baselineValue: compValue, residual: value - compValue });\n      } else {\n        flushCluster();\n      }\n    }\n    flushCluster();\n    return clusters.filter((c) => c.points.length > 0);\n  }\n  function buildRateOfChangeAnomalyClusters(points, rateWindow, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 3) {\n      return [];\n    }\n    const ratePoints = buildRateOfChangePoints(points, rateWindow);\n    if (!Array.isArray(ratePoints) || ratePoints.length < 3) {\n      return [];\n    }\n    let sumRates = 0;\n    for (const [, rate] of ratePoints) {\n      sumRates += rate;\n    }\n    const meanRate = sumRates / ratePoints.length;\n    let sumSqDev = 0;\n    for (const [, rate] of ratePoints) {\n      const dev = rate - meanRate;\n      sumSqDev += dev * dev;\n    }\n    const rmsDeviation = Math.sqrt(sumSqDev / ratePoints.length);\n    if (!Number.isFinite(rmsDeviation) || rmsDeviation <= 1e-6) {\n      return [];\n    }\n    const threshold = rmsDeviation * getAnomalySensitivityThreshold(anomalySensitivity);\n    const clusters = [];\n    let currentCluster = [];\n    const flushCluster = () => {\n      if (currentCluster.length === 0) {\n        return;\n      }\n      const maxDeviation = currentCluster.reduce((maxVal, point) => Math.max(maxVal, Math.abs(point.residual)), 0);\n      clusters.push({\n        points: currentCluster.slice(),\n        maxDeviation,\n        anomalyMethod: "rate_of_change"\n      });\n      currentCluster = [];\n    };\n    for (const [timeMs, rate] of ratePoints) {\n      const residual = rate - meanRate;\n      if (Math.abs(residual) >= threshold) {\n        const sourceValue = interpolateSeriesValue(points, timeMs);\n        if (!Number.isFinite(sourceValue)) {\n          flushCluster();\n          continue;\n        }\n        currentCluster.push({\n          timeMs,\n          value: sourceValue,\n          baselineValue: meanRate,\n          residual\n        });\n      } else {\n        flushCluster();\n      }\n    }\n    flushCluster();\n    return clusters.filter((cluster) => cluster.points.length > 0);\n  }\n  const VALID_ANOMALY_METHODS = ["trend_residual", "rate_of_change", "iqr", "rolling_zscore", "persistence", "comparison_window"];\n  function normalizeSeriesAnalysis(analysis) {\n    const source = analysis && typeof analysis === "object" ? analysis : {};\n    const legacyMethod = VALID_ANOMALY_METHODS.includes(source.anomaly_method) ? source.anomaly_method : null;\n    let anomalyMethods;\n    if (Array.isArray(source.anomaly_methods)) {\n      anomalyMethods = source.anomaly_methods.filter((m) => VALID_ANOMALY_METHODS.includes(m));\n    } else if (legacyMethod) {\n      anomalyMethods = [legacyMethod];\n    } else {\n      anomalyMethods = [];\n    }\n    return {\n      show_trend_lines: source.show_trend_lines === true,\n      trend_method: source.trend_method === "linear_trend" ? "linear_trend" : "rolling_average",\n      trend_window: typeof source.trend_window === "string" && source.trend_window ? source.trend_window : "24h",\n      show_summary_stats: source.show_summary_stats === true,\n      show_rate_of_change: source.show_rate_of_change === true,\n      rate_window: typeof source.rate_window === "string" && source.rate_window ? source.rate_window : "1h",\n      show_anomalies: source.show_anomalies === true,\n      anomaly_methods: anomalyMethods,\n      anomaly_overlap_mode: ["all", "highlight", "only"].includes(source.anomaly_overlap_mode) ? source.anomaly_overlap_mode : "all",\n      anomaly_sensitivity: typeof source.anomaly_sensitivity === "string" && source.anomaly_sensitivity ? source.anomaly_sensitivity : "medium",\n      anomaly_rate_window: typeof source.anomaly_rate_window === "string" && source.anomaly_rate_window ? source.anomaly_rate_window : "1h",\n      anomaly_zscore_window: typeof source.anomaly_zscore_window === "string" && source.anomaly_zscore_window ? source.anomaly_zscore_window : "24h",\n      anomaly_persistence_window: typeof source.anomaly_persistence_window === "string" && source.anomaly_persistence_window ? source.anomaly_persistence_window : "1h",\n      anomaly_comparison_window_id: typeof source.anomaly_comparison_window_id === "string" && source.anomaly_comparison_window_id ? source.anomaly_comparison_window_id : null,\n      show_delta_analysis: source.show_delta_analysis === true\n    };\n  }\n  function applyAnomalyOverlapMode(clustersByMethod, overlapMode) {\n    const methodKeys = Object.keys(clustersByMethod);\n    if (methodKeys.length <= 1 || overlapMode === "all") {\n      return methodKeys.flatMap((m) => clustersByMethod[m]);\n    }\n    const flaggedByMethod = {};\n    for (const m of methodKeys) {\n      flaggedByMethod[m] = new Set(clustersByMethod[m].flatMap((c) => c.points.map((p) => p.timeMs)));\n    }\n    const overlapTimes = /* @__PURE__ */ new Set();\n    for (const m of methodKeys) {\n      for (const t of flaggedByMethod[m]) {\n        if (methodKeys.some((other) => other !== m && flaggedByMethod[other].has(t))) {\n          overlapTimes.add(t);\n        }\n      }\n    }\n    if (overlapMode === "only") {\n      const seen = /* @__PURE__ */ new Set();\n      const result2 = [];\n      for (const m of methodKeys) {\n        for (const cluster of clustersByMethod[m]) {\n          const pts = cluster.points.filter((p) => overlapTimes.has(p.timeMs));\n          if (pts.length === 0) continue;\n          const key = pts.map((p) => p.timeMs).join(",");\n          if (seen.has(key)) continue;\n          seen.add(key);\n          const detectedByMethods = methodKeys.filter((other) => pts.some((p) => flaggedByMethod[other].has(p.timeMs)));\n          result2.push({\n            ...cluster,\n            points: pts,\n            maxDeviation: pts.reduce((maxVal, p) => Math.max(maxVal, Math.abs(p.residual || 0)), 0),\n            isOverlap: true,\n            detectedByMethods\n          });\n        }\n      }\n      return result2;\n    }\n    const result = [];\n    for (const m of methodKeys) {\n      for (const cluster of clustersByMethod[m]) {\n        const hasOverlap = cluster.points.some((p) => overlapTimes.has(p.timeMs));\n        const detectedByMethods = hasOverlap ? methodKeys.filter((other) => cluster.points.some((p) => flaggedByMethod[other].has(p.timeMs))) : [m];\n        result.push({ ...cluster, isOverlap: hasOverlap, detectedByMethods });\n      }\n    }\n    return result;\n  }\n  function interpolateSeriesValue(points, timeMs) {\n    if (!Array.isArray(points) || points.length === 0) {\n      return null;\n    }\n    if (timeMs < points[0][0] || timeMs > points[points.length - 1][0]) {\n      return null;\n    }\n    if (timeMs === points[0][0]) {\n      return points[0][1];\n    }\n    if (timeMs === points[points.length - 1][0]) {\n      return points[points.length - 1][1];\n    }\n    for (let index = 0; index < points.length - 1; index += 1) {\n      const [startTime, startValue] = points[index];\n      const [endTime, endValue] = points[index + 1];\n      if (timeMs >= startTime && timeMs <= endTime) {\n        const fraction = (timeMs - startTime) / (endTime - startTime);\n        return startValue + (endValue - startValue) * fraction;\n      }\n    }\n    return null;\n  }\n  function buildRateOfChangePoints(points, rateWindow) {\n    if (!Array.isArray(points) || points.length < 2) {\n      return [];\n    }\n    const ratePoints = [];\n    for (let index = 1; index < points.length; index += 1) {\n      const [timeMs, value] = points[index];\n      let comparisonPoint = null;\n      if (rateWindow === "point_to_point") {\n        comparisonPoint = points[index - 1];\n      } else {\n        const windowMs = getTrendWindowMs(rateWindow);\n        if (!Number.isFinite(windowMs) || windowMs <= 0) {\n          continue;\n        }\n        for (let candidateIndex = index - 1; candidateIndex >= 0; candidateIndex -= 1) {\n          const candidatePoint = points[candidateIndex];\n          if (timeMs - candidatePoint[0] >= windowMs) {\n            comparisonPoint = candidatePoint;\n            break;\n          }\n        }\n        if (!comparisonPoint) {\n          comparisonPoint = points[0];\n        }\n      }\n      if (!Array.isArray(comparisonPoint) || comparisonPoint.length < 2) {\n        continue;\n      }\n      const deltaMs = timeMs - comparisonPoint[0];\n      if (!Number.isFinite(deltaMs) || deltaMs <= 0) {\n        continue;\n      }\n      const deltaHours = deltaMs / (60 * 60 * 1e3);\n      if (!Number.isFinite(deltaHours) || deltaHours <= 0) {\n        continue;\n      }\n      const rateValue = (value - comparisonPoint[1]) / deltaHours;\n      if (!Number.isFinite(rateValue)) {\n        continue;\n      }\n      ratePoints.push([timeMs, rateValue]);\n    }\n    return ratePoints;\n  }\n  function buildDeltaPoints(sourcePoints, comparisonPoints) {\n    if (!Array.isArray(sourcePoints) || sourcePoints.length < 2 || !Array.isArray(comparisonPoints) || comparisonPoints.length < 2) {\n      return [];\n    }\n    const deltaPoints = [];\n    for (const [timeMs, value] of sourcePoints) {\n      const comparisonValue = interpolateSeriesValue(comparisonPoints, timeMs);\n      if (comparisonValue == null) {\n        continue;\n      }\n      deltaPoints.push([timeMs, value - comparisonValue]);\n    }\n    return deltaPoints;\n  }\n  function buildSummaryStats(points) {\n    if (!Array.isArray(points) || points.length === 0) {\n      return null;\n    }\n    let min = Infinity;\n    let max = -Infinity;\n    let sum = 0;\n    let count = 0;\n    for (const point of points) {\n      const value = Number(point?.[1]);\n      if (!Number.isFinite(value)) {\n        continue;\n      }\n      if (value < min) {\n        min = value;\n      }\n      if (value > max) {\n        max = value;\n      }\n      sum += value;\n      count += 1;\n    }\n    if (!Number.isFinite(min) || !Number.isFinite(max) || count === 0) {\n      return null;\n    }\n    return {\n      min,\n      max,\n      mean: sum / count\n    };\n  }\n  function getAnomalySensitivityThreshold(sensitivity) {\n    if (sensitivity === "low") {\n      return 2.8;\n    }\n    if (sensitivity === "high") {\n      return 1.6;\n    }\n    return 2.2;\n  }\n  function buildAnomalyClusters(points, method, trendWindow, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 3) {\n      return [];\n    }\n    const baselinePoints = buildTrendPoints(points, method, trendWindow);\n    if (!Array.isArray(baselinePoints) || baselinePoints.length < 2) {\n      return [];\n    }\n    const residualPoints = [];\n    for (const [timeMs, value] of points) {\n      const baselineValue = interpolateSeriesValue(baselinePoints, timeMs);\n      if (!Number.isFinite(baselineValue)) {\n        continue;\n      }\n      residualPoints.push({\n        timeMs,\n        value,\n        baselineValue,\n        residual: value - baselineValue\n      });\n    }\n    if (residualPoints.length < 3) {\n      return [];\n    }\n    let sumSquares = 0;\n    residualPoints.forEach((point) => {\n      sumSquares += point.residual * point.residual;\n    });\n    const rmsResidual = Math.sqrt(sumSquares / residualPoints.length);\n    if (!Number.isFinite(rmsResidual) || rmsResidual <= 1e-6) {\n      return [];\n    }\n    const threshold = rmsResidual * getAnomalySensitivityThreshold(anomalySensitivity);\n    const clusters = [];\n    let currentCluster = [];\n    const flushCluster = () => {\n      if (currentCluster.length === 0) {\n        return;\n      }\n      const maxDeviation = currentCluster.reduce((maxValue, point) => Math.max(maxValue, Math.abs(point.residual)), 0);\n      clusters.push({\n        points: currentCluster.slice(),\n        maxDeviation,\n        anomalyMethod: "trend_residual"\n      });\n      currentCluster = [];\n    };\n    residualPoints.forEach((point) => {\n      if (Math.abs(point.residual) >= threshold) {\n        currentCluster.push(point);\n      } else {\n        flushCluster();\n      }\n    });\n    flushCluster();\n    return clusters.filter((cluster) => cluster.points.length > 0);\n  }\n  function computeHistoryAnalysis(payload) {\n    const series = (Array.isArray(payload?.series) ? payload.series : []).map((seriesItem) => ({\n      ...seriesItem,\n      analysis: normalizeSeriesAnalysis(seriesItem?.analysis)\n    }));\n    const comparisonSeries = new Map(\n      (Array.isArray(payload?.comparisonSeries) ? payload.comparisonSeries : []).filter((entry) => entry?.entityId).map((entry) => [entry.entityId, entry])\n    );\n    const allComparisonWindowsData = payload?.allComparisonWindowsData && typeof payload.allComparisonWindowsData === "object" ? payload.allComparisonWindowsData : {};\n    const result = {\n      trendSeries: [],\n      rateSeries: [],\n      deltaSeries: [],\n      summaryStats: [],\n      anomalySeries: []\n    };\n    for (const seriesItem of series) {\n      const points = Array.isArray(seriesItem?.pts) ? seriesItem.pts : [];\n      const analysis = normalizeSeriesAnalysis(seriesItem?.analysis);\n      if (points.length < 2) {\n        continue;\n      }\n      const anomalyMethods = analysis.anomaly_methods;\n      const needsTrend = analysis.show_trend_lines === true || analysis.show_anomalies === true && anomalyMethods.includes("trend_residual");\n      if (needsTrend) {\n        const trendPoints = buildTrendPoints(points, analysis.trend_method, analysis.trend_window);\n        if (analysis.show_trend_lines === true && trendPoints.length >= 2) {\n          result.trendSeries.push({\n            entityId: seriesItem.entityId,\n            pts: trendPoints\n          });\n        }\n      }\n      if (analysis.show_anomalies === true) {\n        const clustersByMethod = {};\n        if (anomalyMethods.includes("trend_residual")) {\n          const clusters = buildAnomalyClusters(points, analysis.trend_method, analysis.trend_window, analysis.anomaly_sensitivity);\n          if (clusters.length > 0) clustersByMethod.trend_residual = clusters;\n        }\n        if (anomalyMethods.includes("rate_of_change")) {\n          const clusters = buildRateOfChangeAnomalyClusters(points, analysis.anomaly_rate_window, analysis.anomaly_sensitivity);\n          if (clusters.length > 0) clustersByMethod.rate_of_change = clusters;\n        }\n        if (anomalyMethods.includes("iqr")) {\n          const clusters = buildIQRAnomalyClusters(points, analysis.anomaly_sensitivity);\n          if (clusters.length > 0) clustersByMethod.iqr = clusters;\n        }\n        if (anomalyMethods.includes("rolling_zscore")) {\n          const windowMs = getTrendWindowMs(analysis.anomaly_zscore_window);\n          const clusters = buildRollingZScoreAnomalyClusters(points, windowMs, analysis.anomaly_sensitivity);\n          if (clusters.length > 0) clustersByMethod.rolling_zscore = clusters;\n        }\n        if (anomalyMethods.includes("persistence")) {\n          const minDurationMs = getPersistenceWindowMs(analysis.anomaly_persistence_window);\n          const clusters = buildPersistenceAnomalyClusters(points, minDurationMs, analysis.anomaly_sensitivity);\n          if (clusters.length > 0) clustersByMethod.persistence = clusters;\n        }\n        if (anomalyMethods.includes("comparison_window") && analysis.anomaly_comparison_window_id) {\n          const windowData = allComparisonWindowsData[analysis.anomaly_comparison_window_id];\n          const comparisonPts = windowData && typeof windowData === "object" ? windowData[seriesItem.entityId] : null;\n          if (Array.isArray(comparisonPts) && comparisonPts.length >= 3) {\n            const clusters = buildComparisonWindowAnomalyClusters(points, comparisonPts, analysis.anomaly_sensitivity);\n            if (clusters.length > 0) clustersByMethod.comparison_window = clusters;\n          }\n        }\n        const anomalyClusters = applyAnomalyOverlapMode(clustersByMethod, analysis.anomaly_overlap_mode);\n        if (anomalyClusters.length > 0) {\n          result.anomalySeries.push({ entityId: seriesItem.entityId, anomalyClusters });\n        }\n      }\n      if (analysis.show_rate_of_change === true) {\n        const ratePoints = buildRateOfChangePoints(points, analysis.rate_window);\n        if (ratePoints.length >= 2) {\n          result.rateSeries.push({\n            entityId: seriesItem.entityId,\n            pts: ratePoints\n          });\n        }\n      }\n      if (analysis.show_summary_stats === true) {\n        const summaryStats = buildSummaryStats(points);\n        if (summaryStats) {\n          result.summaryStats.push({\n            entityId: seriesItem.entityId,\n            ...summaryStats\n          });\n        }\n      }\n      if (analysis.show_delta_analysis === true && payload?.hasSelectedComparisonWindow === true) {\n        const comparisonEntry = comparisonSeries.get(seriesItem.entityId);\n        if (comparisonEntry?.pts?.length >= 2) {\n          const deltaPoints = buildDeltaPoints(points, comparisonEntry.pts);\n          if (deltaPoints.length >= 2) {\n            result.deltaSeries.push({\n              entityId: seriesItem.entityId,\n              pts: deltaPoints\n            });\n          }\n        }\n      }\n    }\n    return result;\n  }\n  self.onmessage = (event) => {\n    const { id, payload } = event.data || {};\n    try {\n      const result = computeHistoryAnalysis(payload);\n      self.postMessage({ id, result });\n    } catch (error) {\n      self.postMessage({\n        id,\n        error: error instanceof Error ? error.message : String(error)\n      });\n    }\n  };\n})();\n';
   const blob = typeof self !== "undefined" && self.Blob && new Blob(["(self.URL || self.webkitURL).revokeObjectURL(self.location.href);", jsContent], { type: "text/javascript;charset=utf-8" });
   function WorkerWrapper(options) {
     let objURL;
@@ -8088,6 +8228,18 @@ ${s2.description}`).join("\n\n");
     });
     return workerInstance;
   }
+  function terminateHistoryAnalysisWorker() {
+    if (pending.size > 0) {
+      pending.forEach(({ reject }) => {
+        reject(new Error("Aborted: superseded by newer analysis"));
+      });
+      pending.clear();
+    }
+    if (workerInstance) {
+      workerInstance.terminate();
+      workerInstance = null;
+    }
+  }
   function computeHistoryAnalysisInWorker(payload) {
     const worker = getHistoryAnalysisWorker();
     return new Promise((resolve, reject) => {
@@ -8096,7 +8248,7 @@ ${s2.description}`).join("\n\n");
       worker.postMessage({ id, payload });
     });
   }
-  const HISTORY_CHART_MAX_CANVAS_WIDTH_PX = 65536;
+  const HISTORY_CHART_MAX_CANVAS_WIDTH_PX = Math.floor(16383 / (window.devicePixelRatio || 1));
   const HISTORY_CHART_MAX_ZOOM_MULTIPLIER = 365;
   const HISTORY_LEGEND_WRAP_ENABLE_HEIGHT_PX = 500;
   const HISTORY_LEGEND_WRAP_DISABLE_HEIGHT_PX = 440;
@@ -8114,6 +8266,7 @@ ${s2.description}`).join("\n\n");
       this._legendWrapRows = false;
       this._adjustComparisonAxisScale = false;
       this._drawRequestId = 0;
+      this._analysisCache = null;
       this._onWindowKeyDown = (ev) => this._handleWindowKeyDown(ev);
       this._onChartScroll = () => this._handleChartScroll();
       this._creatingContextAnnotation = false;
@@ -8410,9 +8563,7 @@ ${s2.description}`).join("\n\n");
         const winEnd = new Date(end.getTime() + win.time_offset_ms);
         const result = await this._loadComparisonWindowData(win, winStart, winEnd);
         return { id: result.id, histResult: result.histResult, statsResult: result.statsResult };
-      })).then((results) => {
-        return results;
-      }).catch((error) => {
+      })).then((results) => results).catch((error) => {
         console.warn("[hass-datapoints history-card] comparison preload:failed", {
           message: error?.message || String(error)
         });
@@ -8474,9 +8625,7 @@ ${s2.description}`).join("\n\n");
         composed: true,
         detail: { ids: windowsToFetch.map(({ win }) => win.id).filter(Boolean), loading: true }
       }));
-      return Promise.all(windowsToFetch.map(async ({ win, winStart, winEnd }) => {
-        return this._loadComparisonWindowData(win, winStart, winEnd);
-      })).then((results) => {
+      return Promise.all(windowsToFetch.map(async ({ win, winStart, winEnd }) => this._loadComparisonWindowData(win, winStart, winEnd))).then((results) => {
         if (comparisonRequestId !== this._comparisonRequestId) {
           return this._lastComparisonResults || [];
         }
@@ -8529,7 +8678,7 @@ ${s2.description}`).join("\n\n");
       const t0 = start.getTime();
       const t1 = end.getTime();
       const requestId2 = ++this._loadRequestId;
-      console.log("[hass-datapoints history-card] load triggered", {
+      logger$1.log("[hass-datapoints history-card] load triggered", {
         requestId: requestId2,
         entityIds: this._entityIds,
         start: start.toISOString(),
@@ -8735,11 +8884,11 @@ ${s2.description}`).join("\n\n");
     }
     _filterEvents(events) {
       const query = String(this._config?.message_filter || "").trim().toLowerCase();
-      const visibleEvents = events.filter((event) => !this._hiddenEventIds.has(event?.id));
+      const visibleEvents2 = events.filter((event) => !this._hiddenEventIds.has(event?.id));
       if (!query) {
-        return visibleEvents;
+        return visibleEvents2;
       }
-      return visibleEvents.filter((event) => {
+      return visibleEvents2.filter((event) => {
         const haystack = [
           event?.message || "",
           event?.annotation || "",
@@ -8759,6 +8908,10 @@ ${s2.description}`).join("\n\n");
       if (chartStage) {
         chartStage.style.width = `${canvasWidth}px`;
         chartStage.style.height = `${totalHeight}px`;
+      }
+      const splitScrollViewport = this.shadowRoot?.getElementById("chart-scroll-viewport");
+      if (splitScrollViewport) {
+        splitScrollViewport.style.overflowY = totalHeight > availableHeight ? "auto" : "hidden";
       }
       this._setChartLoading(!!options.loading);
       this._setChartMessage("");
@@ -8858,7 +9011,14 @@ ${s2.description}`).join("\n\n");
         const resolvedRateAxis = rowRateAxisKey ? renderer._activeAxes?.find((a2) => a2.key === rowRateAxisKey) || null : null;
         const resolvedDeltaAxis = rowDeltaAxisKey ? renderer._activeAxes?.find((a2) => a2.key === rowDeltaAxisKey) || null : null;
         seriesItem.axis = resolvedAxis;
-        const mainSeriesOpacity = comparisonPreviewActive ? hoveringDifferentComparison ? 0.15 : 0.25 : 1;
+        let mainSeriesOpacity;
+        if (!comparisonPreviewActive) {
+          mainSeriesOpacity = 1;
+        } else if (hoveringDifferentComparison) {
+          mainSeriesOpacity = 0.15;
+        } else {
+          mainSeriesOpacity = 0.25;
+        }
         if (!rowHideSource) {
           this._drawSeriesLine(
             renderer,
@@ -8888,7 +9048,14 @@ ${s2.description}`).join("\n\n");
           }
           const isHovered = !!hoveredComparisonWindowId && win.id === hoveredComparisonWindowId;
           const isSelected = !!selectedComparisonWindowId && win.id === selectedComparisonWindowId;
-          const compLineOpacity = isHovered ? 0.85 : hoveringDifferentComparison && isSelected ? 0.25 : 0.85;
+          let compLineOpacity;
+          if (isHovered) {
+            compLineOpacity = 0.85;
+          } else if (hoveringDifferentComparison && isSelected) {
+            compLineOpacity = 0.25;
+          } else {
+            compLineOpacity = 0.85;
+          }
           renderer.drawLine(winPts, seriesItem.color, renderT0, renderT1, resolvedAxis.min, resolvedAxis.max, {
             lineOpacity: compLineOpacity,
             lineWidth: hoveringDifferentComparison && isSelected ? 1.25 : void 0
@@ -9091,7 +9258,14 @@ ${s2.description}`).join("\n\n");
           }
           const isHovered = !!hoveredComparisonWindowId && win.id === hoveredComparisonWindowId;
           const isSelected = !!selectedComparisonWindowId && win.id === selectedComparisonWindowId;
-          const hoverOpacity = isHovered ? 0.85 : hoveringDifferentComparison && isSelected ? 0.25 : 0.85;
+          let hoverOpacity;
+          if (isHovered) {
+            hoverOpacity = 0.85;
+          } else if (hoveringDifferentComparison && isSelected) {
+            hoverOpacity = 0.25;
+          } else {
+            hoverOpacity = 0.85;
+          }
           comparisonHoverSeries.push({
             entityId: `${win.id}:${track.series.entityId}`,
             relatedEntityId: track.series.entityId,
@@ -9287,9 +9461,9 @@ ${s2.description}`).join("\n\n");
           }
           if (effectiveAnalysis.show_summary_stats === true && trackSummaryStats) {
             const summaryEntries = [
-              { type: "min", value: trackSummaryStats.min, alphaV: trackHideSource ? 0.78 : 0.42, opac: trackHideSource ? 0.82 : 0.34 },
+              { type: "min", value: trackSummaryStats.min, alphaV: trackHideSource ? 0.94 : 0.78, opac: trackHideSource ? 0.94 : 0.72 },
               { type: "mean", value: trackSummaryStats.mean, alphaV: trackHideSource ? 0.94 : 0.78, opac: trackHideSource ? 0.94 : 0.72 },
-              { type: "max", value: trackSummaryStats.max, alphaV: trackHideSource ? 0.78 : 0.42, opac: trackHideSource ? 0.82 : 0.34 }
+              { type: "max", value: trackSummaryStats.max, alphaV: trackHideSource ? 0.94 : 0.78, opac: trackHideSource ? 0.94 : 0.72 }
             ];
             for (const entry of summaryEntries) {
               if (!Number.isFinite(entry.value)) continue;
@@ -9640,7 +9814,12 @@ ${s2.description}`).join("\n\n");
           return null;
         }
         const rawTimestamp = entry?.start;
-        const timestamp = typeof rawTimestamp === "number" ? rawTimestamp > 1e11 ? rawTimestamp : rawTimestamp * 1e3 : new Date(rawTimestamp).getTime();
+        let timestamp;
+        if (typeof rawTimestamp === "number") {
+          timestamp = rawTimestamp > 1e11 ? rawTimestamp : rawTimestamp * 1e3;
+        } else {
+          timestamp = new Date(rawTimestamp).getTime();
+        }
         if (!Number.isFinite(timestamp)) {
           return null;
         }
@@ -10002,9 +10181,7 @@ ${s2.description}`).join("\n\n");
         if (currentCluster.length === 0) {
           return;
         }
-        const maxDeviation = currentCluster.reduce((maxValue, point) => {
-          return Math.max(maxValue, Math.abs(point.residual));
-        }, 0);
+        const maxDeviation = currentCluster.reduce((maxValue, point) => Math.max(maxValue, Math.abs(point.residual)), 0);
         clusters.push({
           points: currentCluster.slice(),
           maxDeviation,
@@ -10051,9 +10228,7 @@ ${s2.description}`).join("\n\n");
         if (currentCluster.length === 0) {
           return;
         }
-        const maxDeviation = currentCluster.reduce((maxVal, point) => {
-          return Math.max(maxVal, Math.abs(point.residual));
-        }, 0);
+        const maxDeviation = currentCluster.reduce((maxVal, point) => Math.max(maxVal, Math.abs(point.residual)), 0);
         clusters.push({
           points: currentCluster.slice(),
           maxDeviation,
@@ -10091,7 +10266,14 @@ ${s2.description}`).join("\n\n");
       const q3 = sorted[Math.floor(n2 * 0.75)];
       const iqr = q3 - q1;
       if (!Number.isFinite(iqr) || iqr <= 1e-6) return [];
-      const k2 = sensitivity === "low" ? 3 : sensitivity === "high" ? 1.5 : 2;
+      let k2;
+      if (sensitivity === "low") {
+        k2 = 3;
+      } else if (sensitivity === "high") {
+        k2 = 1.5;
+      } else {
+        k2 = 2;
+      }
       const lowerFence = q1 - k2 * iqr;
       const upperFence = q3 + k2 * iqr;
       const clusters = [];
@@ -10170,7 +10352,14 @@ ${s2.description}`).join("\n\n");
       }
       const totalRange = totalMax - totalMin;
       if (!Number.isFinite(totalRange) || totalRange <= 1e-6) return [];
-      const flatFraction = sensitivity === "low" ? 5e-3 : sensitivity === "high" ? 0.05 : 0.02;
+      let flatFraction;
+      if (sensitivity === "low") {
+        flatFraction = 5e-3;
+      } else if (sensitivity === "high") {
+        flatFraction = 0.05;
+      } else {
+        flatFraction = 0.02;
+      }
       const flatThreshold = flatFraction * totalRange;
       const clusters = [];
       let runStart = 0;
@@ -10417,9 +10606,7 @@ ${s2.description}`).join("\n\n");
     }
     _getSeriesAnalysisMap() {
       const seriesSettings = Array.isArray(this._config?.series_settings) ? this._config.series_settings : [];
-      return new Map(seriesSettings.map((entry) => {
-        return [entry?.entity_id, normalizeHistorySeriesAnalysis(entry?.analysis)];
-      }));
+      return new Map(seriesSettings.map((entry) => [entry?.entity_id, normalizeHistorySeriesAnalysis(entry?.analysis)]));
     }
     _getSeriesAnalysis(entityId, analysisMap = null) {
       const map = analysisMap || this._getSeriesAnalysisMap();
@@ -10468,7 +10655,7 @@ ${s2.description}`).join("\n\n");
     }
     _queueDrawChart(histResult, statsResult, events, t0, t1, options = {}) {
       const drawRequestId = ++this._drawRequestId;
-      console.log("[hass-datapoints history-card] draw queued", {
+      logger$1.log("[hass-datapoints history-card] draw queued", {
         drawRequestId,
         loading: options.loading ?? false
       });
@@ -10483,6 +10670,49 @@ ${s2.description}`).join("\n\n");
         this._setChartLoading(false);
         this._setChartMessage("Failed to render chart.");
       });
+    }
+    /**
+     * Build a lightweight string key that captures all inputs that affect the analysis result.
+     * Used to skip the worker when the data and settings haven't changed (e.g. on zoom/pan).
+     */
+    _buildAnalysisCacheKey(visibleSeries, selectedComparisonSeriesMap, analysisMap, allComparisonWindowsData, t0, t1) {
+      const ANALYSIS_FIELDS = [
+        "show_trend_lines",
+        "trend_method",
+        "trend_window",
+        "show_rate_of_change",
+        "rate_window",
+        "show_delta_analysis",
+        "show_summary_stats",
+        "show_anomalies",
+        "anomaly_methods",
+        "anomaly_sensitivity",
+        "anomaly_overlap_mode",
+        "anomaly_rate_window",
+        "anomaly_zscore_window",
+        "anomaly_persistence_window",
+        "anomaly_comparison_window_id"
+      ];
+      const seriesPart = visibleSeries.map((s2) => {
+        const a2 = analysisMap.get(s2.entityId) || {};
+        const first = s2.pts[0]?.[0] ?? 0;
+        const last = s2.pts[s2.pts.length - 1]?.[0] ?? 0;
+        const aKey = ANALYSIS_FIELDS.map((f2) => JSON.stringify(a2[f2])).join(",");
+        return `${s2.entityId}:${s2.pts.length}:${first}:${last}:${aKey}`;
+      }).join("|");
+      const cmpPart = Array.from(selectedComparisonSeriesMap.values()).map((s2) => {
+        const first = s2.pts[0]?.[0] ?? 0;
+        const last = s2.pts[s2.pts.length - 1]?.[0] ?? 0;
+        return `${s2.entityId}:${s2.pts.length}:${first}:${last}`;
+      }).sort().join("|");
+      const allCmpPart = Object.entries(allComparisonWindowsData).flatMap(
+        ([windowId, entities]) => Object.entries(entities).map(([entityId, pts]) => {
+          const first = pts[0]?.[0] ?? 0;
+          const last = pts[pts.length - 1]?.[0] ?? 0;
+          return `${windowId}:${entityId}:${pts.length}:${first}:${last}`;
+        })
+      ).sort().join("|");
+      return `${t0}:${t1}|${seriesPart}|${cmpPart}|${allCmpPart}`;
     }
     _buildHistoryAnalysisPayload(visibleSeries, selectedComparisonSeriesMap, analysisMap, hasSelectedComparisonWindow, allComparisonWindowsData = {}) {
       return {
@@ -10499,7 +10729,19 @@ ${s2.description}`).join("\n\n");
         allComparisonWindowsData
       };
     }
-    async _computeHistoryAnalysis(visibleSeries, selectedComparisonSeriesMap, analysisMap, hasSelectedComparisonWindow, allComparisonWindowsData = {}) {
+    async _computeHistoryAnalysis(visibleSeries, selectedComparisonSeriesMap, analysisMap, hasSelectedComparisonWindow, allComparisonWindowsData = {}, t0 = 0, t1 = 0) {
+      terminateHistoryAnalysisWorker();
+      const cacheKey = this._buildAnalysisCacheKey(
+        visibleSeries,
+        selectedComparisonSeriesMap,
+        analysisMap,
+        allComparisonWindowsData,
+        t0,
+        t1
+      );
+      if (this._analysisCache?.key === cacheKey) {
+        return this._analysisCache.result;
+      }
       const payload = this._buildHistoryAnalysisPayload(
         visibleSeries,
         selectedComparisonSeriesMap,
@@ -10508,89 +10750,66 @@ ${s2.description}`).join("\n\n");
         allComparisonWindowsData
       );
       try {
-        return await computeHistoryAnalysisInWorker(payload);
+        const result = await computeHistoryAnalysisInWorker(payload);
+        this._analysisCache = { key: cacheKey, result };
+        return result;
       } catch (error) {
+        if (error?.message?.startsWith("Aborted")) {
+          return { trendSeries: [], rateSeries: [], deltaSeries: [], summaryStats: [], anomalySeries: [] };
+        }
         console.warn("[hass-datapoints history-card] analysis worker fallback", {
           message: error?.message || String(error)
         });
-        return {
-          trendSeries: visibleSeries.map((seriesItem) => {
-            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
-            if (analysis.show_trend_lines !== true) {
-              return null;
-            }
-            return {
-              entityId: seriesItem.entityId,
-              pts: this._buildTrendPoints(seriesItem.pts, analysis.trend_method, analysis.trend_window)
-            };
-          }).filter((seriesItem) => Array.isArray(seriesItem.pts) && seriesItem.pts.length >= 2).filter(Boolean),
-          rateSeries: visibleSeries.map((seriesItem) => {
-            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
-            if (analysis.show_rate_of_change !== true) {
-              return null;
-            }
-            return {
-              entityId: seriesItem.entityId,
-              pts: this._buildRateOfChangePoints(seriesItem.pts, analysis.rate_window)
-            };
-          }).filter((seriesItem) => Array.isArray(seriesItem.pts) && seriesItem.pts.length >= 2).filter(Boolean),
-          deltaSeries: visibleSeries.map((seriesItem) => {
-            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
-            if (!(analysis.show_delta_analysis === true && hasSelectedComparisonWindow === true)) {
-              return null;
-            }
-            const comparisonSeries = selectedComparisonSeriesMap.get(seriesItem.entityId);
-            return {
-              entityId: seriesItem.entityId,
-              pts: comparisonSeries ? this._buildDeltaPoints(seriesItem.pts, comparisonSeries.pts) : []
-            };
-          }).filter((seriesItem) => Array.isArray(seriesItem.pts) && seriesItem.pts.length >= 2).filter(Boolean),
-          summaryStats: visibleSeries.map((seriesItem) => {
-            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
-            if (analysis.show_summary_stats !== true) {
-              return null;
-            }
-            return {
-              entityId: seriesItem.entityId,
-              ...this._buildSummaryStats(seriesItem.pts)
-            };
-          }).filter((entry) => entry && Number.isFinite(entry.min) && Number.isFinite(entry.max) && Number.isFinite(entry.mean)),
-          anomalySeries: visibleSeries.map((seriesItem) => {
-            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
-            if (analysis.show_anomalies !== true) return null;
-            const clustersByMethod = {};
-            const methods = analysis.anomaly_methods;
-            if (methods.includes("trend_residual")) {
-              const c2 = this._buildAnomalyClusters(seriesItem.pts, analysis.trend_method, analysis.trend_window, analysis.anomaly_sensitivity);
-              if (c2.length > 0) clustersByMethod["trend_residual"] = c2;
-            }
-            if (methods.includes("rate_of_change")) {
-              const c2 = this._buildRateOfChangeAnomalyClusters(seriesItem.pts, analysis.anomaly_rate_window, analysis.anomaly_sensitivity);
-              if (c2.length > 0) clustersByMethod["rate_of_change"] = c2;
-            }
-            if (methods.includes("iqr")) {
-              const c2 = this._buildIQRAnomalyClusters(seriesItem.pts, analysis.anomaly_sensitivity);
-              if (c2.length > 0) clustersByMethod["iqr"] = c2;
-            }
-            if (methods.includes("rolling_zscore")) {
-              const c2 = this._buildRollingZScoreAnomalyClusters(seriesItem.pts, analysis.anomaly_zscore_window, analysis.anomaly_sensitivity);
-              if (c2.length > 0) clustersByMethod["rolling_zscore"] = c2;
-            }
-            if (methods.includes("persistence")) {
-              const c2 = this._buildPersistenceAnomalyClusters(seriesItem.pts, analysis.anomaly_persistence_window, analysis.anomaly_sensitivity);
-              if (c2.length > 0) clustersByMethod["persistence"] = c2;
-            }
-            if (methods.includes("comparison_window") && analysis.anomaly_comparison_window_id) {
-              const compPts = allComparisonWindowsData[analysis.anomaly_comparison_window_id]?.[seriesItem.entityId];
-              if (Array.isArray(compPts) && compPts.length >= 3) {
-                const c2 = this._buildComparisonWindowAnomalyClusters(seriesItem.pts, compPts, analysis.anomaly_sensitivity);
-                if (c2.length > 0) clustersByMethod["comparison_window"] = c2;
+        try {
+          return {
+            trendSeries: visibleSeries.map((seriesItem) => {
+              const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
+              if (analysis.show_trend_lines !== true) {
+                return null;
               }
-            }
-            const anomalyClusters = this._applyAnomalyOverlapMode(clustersByMethod, analysis.anomaly_overlap_mode);
-            return anomalyClusters.length > 0 ? { entityId: seriesItem.entityId, anomalyClusters } : null;
-          }).filter(Boolean)
-        };
+              return {
+                entityId: seriesItem.entityId,
+                pts: this._buildTrendPoints(seriesItem.pts, analysis.trend_method, analysis.trend_window)
+              };
+            }).filter(Boolean).filter((seriesItem) => Array.isArray(seriesItem.pts) && seriesItem.pts.length >= 2),
+            rateSeries: visibleSeries.map((seriesItem) => {
+              const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
+              if (analysis.show_rate_of_change !== true) {
+                return null;
+              }
+              return {
+                entityId: seriesItem.entityId,
+                pts: this._buildRateOfChangePoints(seriesItem.pts, analysis.rate_window)
+              };
+            }).filter(Boolean).filter((seriesItem) => Array.isArray(seriesItem.pts) && seriesItem.pts.length >= 2),
+            deltaSeries: visibleSeries.map((seriesItem) => {
+              const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
+              if (!(analysis.show_delta_analysis === true && hasSelectedComparisonWindow === true)) {
+                return null;
+              }
+              const comparisonSeries = selectedComparisonSeriesMap.get(seriesItem.entityId);
+              return {
+                entityId: seriesItem.entityId,
+                pts: comparisonSeries ? this._buildDeltaPoints(seriesItem.pts, comparisonSeries.pts) : []
+              };
+            }).filter(Boolean).filter((seriesItem) => Array.isArray(seriesItem.pts) && seriesItem.pts.length >= 2),
+            summaryStats: visibleSeries.map((seriesItem) => {
+              const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
+              if (analysis.show_summary_stats !== true) {
+                return null;
+              }
+              return {
+                entityId: seriesItem.entityId,
+                ...this._buildSummaryStats(seriesItem.pts)
+              };
+            }).filter((entry) => entry && Number.isFinite(entry.min) && Number.isFinite(entry.max) && Number.isFinite(entry.mean)),
+            // Anomaly detection intentionally omitted in the fallback path — see comment above.
+            anomalySeries: []
+          };
+        } catch (fallbackError) {
+          console.error("[hass-datapoints history-card] analysis fallback failed", fallbackError);
+          return { trendSeries: [], rateSeries: [], deltaSeries: [], summaryStats: [], anomalySeries: [] };
+        }
       }
     }
     async _drawChart(histResult, statsResult, events, t0, t1, options = {}) {
@@ -10677,20 +10896,20 @@ ${s2.description}`).join("\n\n");
         const lastPt = seriesItem.pts[seriesItem.pts.length - 1];
         const prev = this._previousSeriesEndpoints.get(seriesItem.entityId);
         if (!prev) {
-          console.log("[hass-datapoints history-card] series initial draw", {
+          logger$1.log("[hass-datapoints history-card] series initial draw", {
             entityId: seriesItem.entityId,
             pointCount: seriesItem.pts.length,
             lastPt
           });
         } else if (lastPt[0] !== prev.t || lastPt[1] !== prev.v) {
-          console.log("[hass-datapoints history-card] series updated — live update detected", {
+          logger$1.log("[hass-datapoints history-card] series updated — live update detected", {
             entityId: seriesItem.entityId,
             pointCount: seriesItem.pts.length,
             prev,
             lastPt
           });
         } else {
-          console.log("[hass-datapoints history-card] series unchanged — no new data", {
+          logger$1.log("[hass-datapoints history-card] series unchanged — no new data", {
             entityId: seriesItem.entityId,
             pointCount: seriesItem.pts.length,
             lastPt
@@ -10797,7 +11016,9 @@ ${s2.description}`).join("\n\n");
         selectedComparisonSeriesMap,
         analysisMap,
         hasSelectedComparisonWindow,
-        allComparisonWindowsData
+        allComparisonWindowsData,
+        t0,
+        t1
       );
       if (analysisEntityIds.length) {
         this.dispatchEvent(new CustomEvent("hass-datapoints-analysis-computing", {
@@ -10823,7 +11044,14 @@ ${s2.description}`).join("\n\n");
         axisRightEl.style.display = "";
       }
       scrollViewport?.clientHeight || 0;
-      const minChartHeight = series.length ? 280 : binaryBackgrounds.length ? 100 : 280;
+      let minChartHeight;
+      if (series.length) {
+        minChartHeight = 280;
+      } else if (binaryBackgrounds.length) {
+        minChartHeight = 100;
+      } else {
+        minChartHeight = 280;
+      }
       const availableHeight = this._getAvailableChartHeight(minChartHeight);
       const viewportWidth = Math.max(scrollViewport?.clientWidth || wrap?.clientWidth || 360, 360);
       const totalSpanMs = Math.max(1, t1 - t0);
@@ -10871,6 +11099,9 @@ ${s2.description}`).join("\n\n");
       if (chartStage) {
         chartStage.style.width = `${canvasWidth}px`;
         chartStage.style.height = `${availableHeight}px`;
+      }
+      if (scrollViewport) {
+        scrollViewport.style.overflowY = "";
       }
       const { w, h: h2 } = setupCanvas(canvas, chartStage || wrap, availableHeight, canvasWidth);
       const renderer = new ChartRenderer(canvas, w, h2);
@@ -11050,7 +11281,14 @@ ${s2.description}`).join("\n\n");
         }
       }
       let comparisonOutOfBounds = false;
-      const mainSeriesHoverOpacity = comparisonPreviewActive ? hoveringDifferentComparison ? 0.15 : 0.25 : 1;
+      let mainSeriesHoverOpacity;
+      if (!comparisonPreviewActive) {
+        mainSeriesHoverOpacity = 1;
+      } else if (hoveringDifferentComparison) {
+        mainSeriesHoverOpacity = 0.15;
+      } else {
+        mainSeriesHoverOpacity = 0.25;
+      }
       const anyHiddenSourceSeries = hiddenSourceEntityIds.size > 0;
       const hoverSeries = visibleSeries.filter((seriesItem) => !hiddenSourceEntityIds.has(seriesItem.entityId)).map((seriesItem) => ({
         ...seriesItem,
@@ -11073,9 +11311,10 @@ ${s2.description}`).join("\n\n");
             baseLabel: seriesItem.label,
             unit: seriesItem.unit || "",
             value: stats.min,
-            color: hexToRgba(seriesItem.color, anyHiddenSourceSeries ? 0.78 : 0.42),
+            color: hexToRgba(seriesItem.color, anyHiddenSourceSeries ? 0.94 : 0.78),
+            baseColor: seriesItem.color,
             axis: seriesItem.axis,
-            hoverOpacity: anyHiddenSourceSeries ? 0.82 : 0.34,
+            hoverOpacity: anyHiddenSourceSeries ? 0.94 : 0.72,
             summaryType: "min",
             summary: true
           },
@@ -11087,6 +11326,7 @@ ${s2.description}`).join("\n\n");
             unit: seriesItem.unit || "",
             value: stats.mean,
             color: hexToRgba(seriesItem.color, anyHiddenSourceSeries ? 0.94 : 0.78),
+            baseColor: seriesItem.color,
             axis: seriesItem.axis,
             hoverOpacity: anyHiddenSourceSeries ? 0.94 : 0.72,
             summaryType: "mean",
@@ -11099,9 +11339,10 @@ ${s2.description}`).join("\n\n");
             baseLabel: seriesItem.label,
             unit: seriesItem.unit || "",
             value: stats.max,
-            color: hexToRgba(seriesItem.color, anyHiddenSourceSeries ? 0.78 : 0.42),
+            color: hexToRgba(seriesItem.color, anyHiddenSourceSeries ? 0.94 : 0.78),
+            baseColor: seriesItem.color,
             axis: seriesItem.axis,
-            hoverOpacity: anyHiddenSourceSeries ? 0.82 : 0.34,
+            hoverOpacity: anyHiddenSourceSeries ? 0.94 : 0.72,
             summaryType: "max",
             summary: true
           }
@@ -11190,7 +11431,14 @@ ${s2.description}`).join("\n\n");
           const baseColor = seriesSetting.color || COLORS[seriesSettings.indexOf(seriesSetting) % COLORS.length];
           const isHoveredComparison = !!hoveredComparisonWindowId && win.id === hoveredComparisonWindowId;
           const isSelectedComparison = !!selectedComparisonWindowId && win.id === selectedComparisonWindowId;
-          const comparisonLineOpacity = isHoveredComparison ? 0.85 : hoveringDifferentComparison && isSelectedComparison ? 0.25 : 0.85;
+          let comparisonLineOpacity;
+          if (isHoveredComparison) {
+            comparisonLineOpacity = 0.85;
+          } else if (hoveringDifferentComparison && isSelectedComparison) {
+            comparisonLineOpacity = 0.25;
+          } else {
+            comparisonLineOpacity = 0.85;
+          }
           comparisonHoverSeries.push({
             entityId: `${win.id}:${entityId}`,
             relatedEntityId: entityId,
@@ -11334,6 +11582,23 @@ ${s2.description}`).join("\n\n");
           );
         }
       }
+      visibleSeries.forEach((seriesItem) => {
+        const shadingAnalysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
+        if (shadingAnalysis.show_summary_stats !== true || shadingAnalysis.show_summary_stats_shading !== true) {
+          return;
+        }
+        const stats = summaryStatsMap.get(seriesItem.entityId);
+        const axis = seriesItem.axis;
+        if (!stats || !axis) {
+          return;
+        }
+        if (!Number.isFinite(stats.min) || !Number.isFinite(stats.max) || !Number.isFinite(stats.mean)) {
+          return;
+        }
+        const fillAlpha = anyHiddenSourceSeries ? 0.1 : 0.06;
+        renderer.drawGradientBand(stats.min, stats.mean, seriesItem.color, renderT0, renderT1, axis.min, axis.max, { fillAlpha });
+        renderer.drawGradientBand(stats.max, stats.mean, seriesItem.color, renderT0, renderT1, axis.min, axis.max, { fillAlpha });
+      });
       summaryHoverSeries.forEach((summarySeries) => {
         const axis = summarySeries.axis;
         if (!axis) {
@@ -11348,9 +11613,9 @@ ${s2.description}`).join("\n\n");
           axis.max,
           {
             lineOpacity: summarySeries.hoverOpacity,
-            lineWidth: summarySeries.summaryType === "mean" ? 1.8 : 1.1,
+            lineWidth: 1.8,
             dashed: false,
-            dotted: summarySeries.summaryType !== "mean"
+            dotted: false
           }
         );
       });
@@ -11465,9 +11730,7 @@ ${s2.description}`).join("\n\n");
       } else {
         this._lastAnomalyRegions = [];
       }
-      const effectiveComparisonHoverSeries = comparisonHoverSeries.filter((entry) => {
-        return !hiddenComparisonEntityIds.has(entry.relatedEntityId || entry.entityId);
-      });
+      const effectiveComparisonHoverSeries = comparisonHoverSeries.filter((entry) => !hiddenComparisonEntityIds.has(entry.relatedEntityId || entry.entityId));
       renderer.drawAnnotations(events, renderT0, renderT1, {
         showLines: this._config.show_event_lines !== false,
         showMarkers: this._config.show_event_lines !== false
@@ -11545,7 +11808,14 @@ ${s2.description}`).join("\n\n");
       this._openContextAnnotationDialog(hover);
     }
     _handleAnomalyAddAnnotation(regions) {
-      const regionsArray = Array.isArray(regions) ? regions : regions ? [regions] : [];
+      let regionsArray;
+      if (Array.isArray(regions)) {
+        regionsArray = regions;
+      } else if (regions) {
+        regionsArray = [regions];
+      } else {
+        regionsArray = [];
+      }
       if (!regionsArray.length || !this._hass || this._annotationDialog?.isOpen()) {
         return;
       }
@@ -11678,18 +11948,21 @@ ${s2.description}`).join("\n\n");
       if (!Array.isArray(seriesItem?.anomalyClusters) || seriesItem.anomalyClusters.length === 0) {
         return [];
       }
-      const visibleEvents = Array.isArray(events) ? events : [];
-      if (visibleEvents.length === 0) {
+      const visibleEvents2 = Array.isArray(events) ? events : [];
+      if (visibleEvents2.length === 0) {
         return seriesItem.anomalyClusters;
       }
-      return seriesItem.anomalyClusters.filter((cluster) => {
-        return !visibleEvents.some((event) => {
-          return this._eventMatchesAnomalyCluster(event, seriesItem.entityId, cluster);
-        });
-      });
+      return seriesItem.anomalyClusters.filter((cluster) => !visibleEvents2.some((event) => this._eventMatchesAnomalyCluster(event, seriesItem.entityId, cluster)));
     }
     _buildAnomalyAnnotationPrefill(regions) {
-      const regionsArray = Array.isArray(regions) ? regions : regions ? [regions] : [];
+      let regionsArray;
+      if (Array.isArray(regions)) {
+        regionsArray = regions;
+      } else if (regions) {
+        regionsArray = [regions];
+      } else {
+        regionsArray = [];
+      }
       const validRegions = regionsArray.filter((r2) => r2?.cluster?.points?.length > 0);
       if (!validRegions.length) return null;
       const primaryRegion = validRegions[0];
@@ -11746,7 +12019,14 @@ ${s2.description}`).join("\n\n");
       }).filter(Boolean);
       if (!annotationSections.length) return null;
       const isSingleRegion = annotationSections.length === 1;
-      const detectedByMethods = !isSingleRegion ? null : Array.isArray(primaryRegion.cluster?.detectedByMethods) && primaryRegion.cluster.detectedByMethods.length > 1 ? primaryRegion.cluster.detectedByMethods : null;
+      let detectedByMethods;
+      if (!isSingleRegion) {
+        detectedByMethods = null;
+      } else if (Array.isArray(primaryRegion.cluster?.detectedByMethods) && primaryRegion.cluster.detectedByMethods.length > 1) {
+        detectedByMethods = primaryRegion.cluster.detectedByMethods;
+      } else {
+        detectedByMethods = null;
+      }
       let message;
       let annotation;
       if (isSingleRegion) {
@@ -12690,7 +12970,14 @@ ${s2.description}`).join("\n\n");
         const end = endTime ? new Date(endTime) : /* @__PURE__ */ new Date();
         startTime = new Date(end.getTime() - cfg.hours_to_show * 3600 * 1e3).toISOString();
       }
-      const entityIds = cfg.entity ? [cfg.entity] : cfg.entities ? cfg.entities.map((e2) => typeof e2 === "string" ? e2 : e2.entity) : void 0;
+      let entityIds;
+      if (cfg.entity) {
+        entityIds = [cfg.entity];
+      } else if (cfg.entities) {
+        entityIds = cfg.entities.map((e2) => typeof e2 === "string" ? e2 : e2.entity);
+      } else {
+        entityIds = void 0;
+      }
       this._allEvents = await fetchEvents(
         this._hass,
         startTime,
@@ -13113,7 +13400,14 @@ ${s2.description}`).join("\n\n");
       const annEl = this.shadowRoot.querySelector("#ann");
       const annotation = (annEl?.value || "").trim();
       if (annotation) data.annotation = annotation;
-      const entityIds = cfg.entity ? [cfg.entity] : cfg.entities ? Array.isArray(cfg.entities) ? cfg.entities : [cfg.entities] : [];
+      let entityIds;
+      if (cfg.entity) {
+        entityIds = [cfg.entity];
+      } else if (cfg.entities) {
+        entityIds = Array.isArray(cfg.entities) ? cfg.entities : [cfg.entities];
+      } else {
+        entityIds = [];
+      }
       if (entityIds.length) data.entity_ids = entityIds;
       try {
         await this._hass.callService(DOMAIN$1, "record", data);
@@ -13125,12 +13419,14 @@ ${s2.description}`).join("\n\n");
         this._feedbackClass = "ok";
         this._feedbackText = "Recorded!";
         this._feedbackVisible = true;
-        setTimeout(() => this._feedbackVisible = false, 2500);
+        setTimeout(() => {
+          this._feedbackVisible = false;
+        }, 2500);
       } catch (e2) {
         this._feedbackClass = "err";
         this._feedbackText = `Error: ${e2.message || "unknown error"}`;
         this._feedbackVisible = true;
-        console.error("[hass-datapoints quick-card]", e2);
+        logger$1.error("[hass-datapoints quick-card]", e2);
       }
       if (btn) btn.disabled = false;
     }
@@ -13263,7 +13559,8 @@ ${s2.description}`).join("\n\n");
         ‹
       </button>
       <span class="info">
-        Page ${this.page + 1} of ${this.totalPages}   ${this.totalItems} ${this.label}
+        <span>Page ${this.page + 1} of ${this.totalPages} </span>
+        <span> ${this.totalItems} ${this.label}</span>
       </span>
       <button
         type="button"
@@ -13529,18 +13826,31 @@ ${s2.description}`).join("\n\n");
       );
     }
     _getHistoryStatesForEntity(entityId, histResult) {
-      if (!histResult) return [];
+      if (!histResult) {
+        return [];
+      }
       const r2 = histResult;
-      if (Array.isArray(r2?.[entityId])) return r2[entityId];
+      if (Array.isArray(r2[entityId])) {
+        return r2[entityId];
+      }
       if (Array.isArray(r2)) {
-        if (Array.isArray(r2[0])) return r2[0] || [];
-        if (r2.every((e2) => e2 && typeof e2 === "object" && !Array.isArray(e2))) {
-          return r2.filter((e2) => e2.entity_id === entityId);
+        const rArr = r2;
+        if (Array.isArray(rArr[0])) {
+          return rArr[0] || [];
+        }
+        if (rArr.every((e2) => e2 && typeof e2 === "object" && !Array.isArray(e2))) {
+          return rArr.filter((e2) => e2.entity_id === entityId);
         }
       }
-      if (r2 && typeof r2 === "object") {
-        if (Array.isArray(r2.result?.[entityId])) return r2.result[entityId];
-        if (Array.isArray(r2.result?.[0])) return r2.result[0] || [];
+      const rObj = histResult;
+      if (rObj && typeof rObj === "object") {
+        const result = rObj.result;
+        if (Array.isArray(result?.[entityId])) {
+          return result[entityId];
+        }
+        if (Array.isArray(result?.[0])) {
+          return result[0] || [];
+        }
       }
       return [];
     }
@@ -13568,7 +13878,7 @@ ${s2.description}`).join("\n\n");
         this._drawChart(histResult || {}, events || [], t0, t1);
       } catch (err) {
         this._loadMessage = "Failed to load data.";
-        console.error("[hass-datapoints sensor-card]", err);
+        logger$1.error("[hass-datapoints sensor-card]", err);
       }
     }
     _drawChart(histResult, events, t0, t1) {
@@ -13592,7 +13902,7 @@ ${s2.description}`).join("\n\n");
       const allVals = [];
       for (const s2 of stateList) {
         const v2 = parseFloat(s2.s);
-        if (!isNaN(v2)) {
+        if (!Number.isNaN(v2)) {
           pts.push([Math.round(s2.lu * 1e3), v2]);
           allVals.push(v2);
         }
@@ -13624,10 +13934,8 @@ ${s2.description}`).join("\n\n");
           this._previousSeriesEndpoints.set(s2.entityId, { t: lastPt[0], v: lastPt[1] });
         }
       }
-      const visibleEvents = this._visibleEvents(events);
-      const annotationStyle = this._config.annotation_style === "line" ? "line" : "circle";
       const hits = annotationStyle === "line" ? renderer.drawAnnotationLinesOnLine(visibleEvents, series, t0, t1, chartMin, chartMax) : renderer.drawAnnotationsOnLine(visibleEvents, series, t0, t1, chartMin, chartMax);
-      const hitValues = new Map(hits.map((h22) => [h22.event.id, h22.value]));
+      const hitValues = new Map(hits.map((hitEntry) => [hitEntry.event.id, hitEntry.value]));
       const enrichedEvents = visibleEvents.map((ev) => ({
         ...ev,
         chart_value: hitValues.get(ev.id),
@@ -13663,8 +13971,12 @@ ${s2.description}`).join("\n\n");
         const y2 = e2.clientY - rect.top;
         const best = hits.reduce((closest, hit) => {
           const dist = Math.hypot(hit.x - x2, hit.y - y2);
-          if (dist > 18) return closest;
-          if (!closest || dist < closest.dist) return { hit, dist };
+          if (dist > 18) {
+            return closest;
+          }
+          if (!closest || dist < closest.dist) {
+            return { hit, dist };
+          }
           return closest;
         }, null);
         if (best) {
@@ -13988,7 +14300,12 @@ ${s2.description}`).join("\n\n");
             const v2 = entry[statType];
             if (v2 === null || v2 === void 0) continue;
             const tRaw = entry.start;
-            const t2 = typeof tRaw === "number" ? tRaw > 1e11 ? tRaw : tRaw * 1e3 : new Date(tRaw).getTime();
+            let t2;
+            if (typeof tRaw === "number") {
+              t2 = tRaw > 1e11 ? tRaw : tRaw * 1e3;
+            } else {
+              t2 = new Date(tRaw).getTime();
+            }
             pts.push([t2, v2]);
             allVals.push(v2);
           }
@@ -14049,7 +14366,7 @@ ${s2.description}`).join("\n\n");
       };
     }
   }
-  const styles$k = i$5`
+  const styles$n = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -14116,7 +14433,6 @@ ${s2.description}`).join("\n\n");
     border-radius: 6px;
     background: transparent;
     color: var(--secondary-text-color);
-    cursor: grab;
     opacity: 0;
     transition: opacity 140ms ease, background-color 120ms ease;
     touch-action: none;
@@ -14141,9 +14457,6 @@ ${s2.description}`).join("\n\n");
     outline: none;
   }
 
-  .history-target-drag-handle:active {
-    cursor: grabbing;
-  }
 
   .history-target-name {
     grid-area: name;
@@ -14388,6 +14701,37 @@ ${s2.description}`).join("\n\n");
     border-top: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 78%, transparent);
   }
 
+  .history-target-analysis-bottom-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dp-spacing-sm);
+  }
+
+  .history-target-analysis-copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border: none;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 12%, transparent);
+    color: var(--primary-color, #03a9f4);
+    font-size: 0.78rem;
+    font: inherit;
+    cursor: pointer;
+    transition: background-color 120ms ease;
+  }
+
+  .history-target-analysis-copy-btn:hover,
+  .history-target-analysis-copy-btn:focus-visible {
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 20%, transparent);
+  }
+
+  .history-target-analysis-copy-btn ha-icon {
+    --mdc-icon-size: 14px;
+  }
+
   .history-target-analysis-grid {
     display: grid;
     gap: var(--dp-spacing-sm);
@@ -14492,8 +14836,8 @@ ${s2.description}`).join("\n\n");
     cursor: pointer;
   }
 `;
-  const styles$j = i$5``;
-  const styles$i = i$5`
+  const styles$m = i$5``;
+  const styles$l = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -14555,7 +14899,7 @@ ${s2.description}`).join("\n\n");
       disabled: { type: Boolean },
       alignTop: { type: Boolean, attribute: "align-top" }
     };
-    static styles = styles$i;
+    static styles = styles$l;
     constructor() {
       super();
       this.label = "";
@@ -14565,6 +14909,7 @@ ${s2.description}`).join("\n\n");
     }
     _onChange(e2) {
       const checked = e2.target.checked;
+      this.checked = checked;
       this.dispatchEvent(
         new CustomEvent("dp-group-change", {
           detail: { checked },
@@ -14619,7 +14964,7 @@ ${s2.description}`).join("\n\n");
       analysis: { type: Object },
       entityId: { type: String, attribute: "entity-id" }
     };
-    static styles = [sharedStyles, styles$j];
+    static styles = [sharedStyles, styles$m];
     constructor() {
       super();
       this.analysis = {};
@@ -14674,7 +15019,55 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-analysis-trend-group", DpAnalysisTrendGroup);
-  const styles$h = i$5``;
+  const styles$k = i$5``;
+  class DpAnalysisSummaryGroup extends i$2 {
+    static properties = {
+      analysis: { type: Object },
+      entityId: { type: String, attribute: "entity-id" }
+    };
+    static styles = [sharedStyles, styles$k];
+    constructor() {
+      super();
+      this.analysis = {};
+      this.entityId = "";
+    }
+    _emit(key, value) {
+      this.dispatchEvent(
+        new CustomEvent("dp-group-analysis-change", {
+          detail: { entityId: this.entityId, key, value },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    _onGroupChange(e2) {
+      this._emit("show_summary_stats", e2.detail.checked);
+    }
+    _onCheckbox(key, e2) {
+      this._emit(key, e2.target.checked);
+    }
+    render() {
+      const a2 = this.analysis;
+      return b`
+      <dp-analysis-group
+        .label=${"Show min / max / mean"}
+        .checked=${a2.show_summary_stats}
+        @dp-group-change=${this._onGroupChange}
+      >
+        <label class="option">
+          <input
+            type="checkbox"
+            .checked=${a2.show_summary_stats_shading}
+            @change=${(e2) => this._onCheckbox("show_summary_stats_shading", e2)}
+          >
+          <span>Show range shading</span>
+        </label>
+      </dp-analysis-group>
+    `;
+    }
+  }
+  customElements.define("dp-analysis-summary-group", DpAnalysisSummaryGroup);
+  const styles$j = i$5``;
   const ANALYSIS_RATE_WINDOW_OPTIONS$1 = [
     { value: "point_to_point", label: "Point to point" },
     { value: "1h", label: "1 hour" },
@@ -14686,7 +15079,7 @@ ${s2.description}`).join("\n\n");
       analysis: { type: Object },
       entityId: { type: String, attribute: "entity-id" }
     };
-    static styles = [sharedStyles, styles$h];
+    static styles = [sharedStyles, styles$j];
     constructor() {
       super();
       this.analysis = {};
@@ -14728,14 +15121,14 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-analysis-rate-group", DpAnalysisRateGroup);
-  const styles$g = i$5``;
+  const styles$i = i$5``;
   class DpAnalysisThresholdGroup extends i$2 {
     static properties = {
       analysis: { type: Object },
       entityId: { type: String, attribute: "entity-id" },
       unit: { type: String }
     };
-    static styles = [sharedStyles, styles$g];
+    static styles = [sharedStyles, styles$i];
     constructor() {
       super();
       this.analysis = {};
@@ -14802,7 +15195,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-analysis-threshold-group", DpAnalysisThresholdGroup);
-  const styles$f = i$5`
+  const styles$h = i$5`
   .method-list {
     display: grid;
     gap: var(--dp-spacing-sm, 8px);
@@ -14832,7 +15225,7 @@ ${s2.description}`).join("\n\n");
     vertical-align: middle;
   }
 `;
-  const styles$e = i$5`
+  const styles$g = i$5`
   :host {
     display: block;
     --dp-spacing-sm: var(--spacing, 8px);
@@ -14848,7 +15241,7 @@ ${s2.description}`).join("\n\n");
   }
 `;
   class DpAnalysisMethodSubopts extends i$2 {
-    static styles = styles$e;
+    static styles = styles$g;
     render() {
       return b`<div class="subopts"><slot></slot></div>`;
     }
@@ -14886,7 +15279,7 @@ ${s2.description}`).join("\n\n");
     { value: "12h", label: "12 hours" },
     { value: "24h", label: "24 hours" }
   ];
-  const ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS = [
+  const ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS$2 = [
     { value: "all", label: "Show all anomalies" },
     { value: "highlight", label: "Highlight overlaps" },
     { value: "only", label: "Overlaps only" }
@@ -14897,7 +15290,7 @@ ${s2.description}`).join("\n\n");
       entityId: { type: String, attribute: "entity-id" },
       comparisonWindows: { type: Array, attribute: "comparison-windows" }
     };
-    static styles = [sharedStyles, styles$f];
+    static styles = [sharedStyles, styles$h];
     constructor() {
       super();
       this.analysis = {};
@@ -15002,7 +15395,7 @@ ${s2.description}`).join("\n\n");
         ${Array.isArray(a2.anomaly_methods) && a2.anomaly_methods.length >= 2 ? b`
           <label class="field">
             <span class="field-label">When methods overlap</span>
-            ${this._renderSelect("anomaly_overlap_mode", ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS, a2.anomaly_overlap_mode)}
+            ${this._renderSelect("anomaly_overlap_mode", ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS$2, a2.anomaly_overlap_mode)}
           </label>
         ` : A}
       </dp-analysis-group>
@@ -15010,7 +15403,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-analysis-anomaly-group", DpAnalysisAnomalyGroup);
-  const styles$d = i$5`
+  const styles$f = i$5`
   .help-text {
     display: inline-block;
     color: var(--secondary-text-color);
@@ -15024,7 +15417,7 @@ ${s2.description}`).join("\n\n");
       entityId: { type: String, attribute: "entity-id" },
       canShowDeltaAnalysis: { type: Boolean, attribute: "can-show-delta-analysis" }
     };
-    static styles = [sharedStyles, styles$d];
+    static styles = [sharedStyles, styles$f];
     constructor() {
       super();
       this.analysis = {};
@@ -15109,7 +15502,7 @@ ${s2.description}`).join("\n\n");
       hass: { type: Object, attribute: false },
       comparisonWindows: { type: Array, attribute: "comparison-windows" }
     };
-    static styles = styles$k;
+    static styles = styles$n;
     constructor() {
       super();
       this.color = "#03a9f4";
@@ -15153,6 +15546,9 @@ ${s2.description}`).join("\n\n");
     }
     _onCheckbox(key, e2) {
       this._emit("dp-row-analysis-change", { entityId: this._entityId, key, value: e2.target.checked });
+    }
+    _onCopyAnalysisToAll() {
+      this._emit("dp-row-copy-analysis-to-all", { entityId: this._entityId, analysis: this.analysis });
     }
     _onGroupAnalysisChange(e2) {
       this._emit("dp-row-analysis-change", e2.detail);
@@ -15242,21 +15638,16 @@ ${s2.description}`).join("\n\n");
         ${this._supportsAnalysis && this.analysis?.expanded ? b`
           <div class="history-target-analysis" role="cell">
             <div class="history-target-analysis-grid">
-              <label class="history-target-analysis-option ${!hasActive ? "is-disabled" : ""}">
-                <input type="checkbox" .checked=${a2.hide_source_series && hasActive}
-                  ?disabled=${!hasActive}
-                  @change=${(e2) => this._onCheckbox("hide_source_series", e2)}>
-                <span>Hide source series</span>
-              </label>
               <dp-analysis-trend-group
                 .analysis=${a2}
                 .entityId=${this._entityId}
                 @dp-group-analysis-change=${this._onGroupAnalysisChange}
               ></dp-analysis-trend-group>
-              <label class="history-target-analysis-option">
-                <input type="checkbox" .checked=${a2.show_summary_stats} @change=${(e2) => this._onCheckbox("show_summary_stats", e2)}>
-                <span>Show min / max / mean</span>
-              </label>
+              <dp-analysis-summary-group
+                .analysis=${a2}
+                .entityId=${this._entityId}
+                @dp-group-analysis-change=${this._onGroupAnalysisChange}
+              ></dp-analysis-summary-group>
               <dp-analysis-rate-group
                 .analysis=${a2}
                 .entityId=${this._entityId}
@@ -15280,6 +15671,23 @@ ${s2.description}`).join("\n\n");
                 .canShowDeltaAnalysis=${this.canShowDeltaAnalysis}
                 @dp-group-analysis-change=${this._onGroupAnalysisChange}
               ></dp-analysis-delta-group>
+              <div class="history-target-analysis-bottom-row">
+                <label class="history-target-analysis-option ${!hasActive ? "is-disabled" : ""}">
+                  <input type="checkbox" .checked=${a2.hide_source_series && hasActive}
+                    ?disabled=${!hasActive}
+                    @change=${(e2) => this._onCheckbox("hide_source_series", e2)}>
+                  <span>Hide source series</span>
+                </label>
+                <button
+                  type="button"
+                  class="history-target-analysis-copy-btn"
+                  title="Copy these analysis settings to all targets"
+                  @click=${this._onCopyAnalysisToAll}
+                >
+                  <ha-icon icon="mdi:content-copy"></ha-icon>
+                  Copy to all targets
+                </button>
+              </div>
             </div>
           </div>
         ` : A}
@@ -15288,46 +15696,72 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-target-row", DpTargetRow);
-  const styles$c = i$5`
-  :host {
-    display: block;
-    --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
-    --dp-spacing-sm: var(--spacing, 8px);
-    --dp-spacing-md: calc(var(--spacing, 8px) * 1.5);
-    --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
-    --dp-spacing-xl: calc(var(--spacing, 8px) * 2.5);
-  }
+  const styles$e = i$5`
+    :host {
+        display: block;
+        --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
+        --dp-spacing-sm: var(--spacing, 8px);
+        --dp-spacing-md: calc(var(--spacing, 8px) * 1.5);
+        --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
+        --dp-spacing-xl: calc(var(--spacing, 8px) * 2.5);
+    }
 
-  .history-target-table {
-    display: grid;
-  }
+    .history-target-table {
+        display: grid;
+    }
 
-  .history-target-table-body {
-    display: grid;
-    gap: calc(var(--spacing, 8px) * 1.25);
-  }
+    .history-target-table-body {
+        display: grid;
+        gap: calc(var(--spacing, 8px) * 1.25);
+    }
 
-  .history-target-empty {
-    padding: var(--dp-spacing-md) var(--dp-spacing-sm);
-    border-radius: 12px;
-    background: color-mix(in srgb, var(--primary-text-color, #111) 4%, transparent);
-    color: var(--secondary-text-color, #9e9e9e);
-    font-size: 0.84rem;
-  }
+    .history-target-empty {
+        padding: var(--dp-spacing-md) var(--dp-spacing-sm);
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--primary-text-color, #111) 4%, transparent);
+        color: var(--secondary-text-color, #9e9e9e);
+        font-size: 0.84rem;
+    }
 
-  /* Drag states applied to the dp-target-row host element */
-  dp-target-row.is-dragging {
-    opacity: 0.35;
-    pointer-events: none;
-  }
+    /* Cursor — dragging is a list concern; cursor inherits into the row's shadow DOM */
+    dp-target-row {
+        cursor: grab;
+    }
 
-  dp-target-row.is-drag-over-before {
-    box-shadow: inset 0 3px 0 -1px var(--primary-color, #03a9f4);
-  }
+    dp-target-row.is-dragging {
+        cursor: grabbing;
+    }
 
-  dp-target-row.is-drag-over-after {
-    box-shadow: inset 0 -3px 0 -1px var(--primary-color, #03a9f4);
-  }
+    /* Drag states applied to the dp-target-row host element */
+
+    dp-target-row {
+        border-radius: 16px;
+        border-top: 1px solid transparent;
+        border-bottom: 1px solid transparent;
+    }
+
+    dp-target-row.is-dragging {
+        opacity: 0.35;
+        pointer-events: none;
+    }
+
+    dp-target-row.is-drag-over-before,
+    dp-target-row.is-drag-over-after {
+        position: relative;
+        overflow: visible;
+    }
+
+    dp-target-row.is-drag-over-before {
+        border-top: 1px solid var(--primary-color, #03a9f4);
+    }
+
+    dp-target-row.is-drag-over-after {
+        border-bottom: 1px solid var(--primary-color, #03a9f4);
+    }
+
+    dp-target-row .history-target-row {
+        cursor: grab;
+    }
 `;
   class DpTargetRowList extends i$2 {
     static properties = {
@@ -15339,7 +15773,62 @@ ${s2.description}`).join("\n\n");
     };
     /** Index of the row currently being dragged, or null when not dragging. */
     _dragSourceIndex = null;
-    static styles = styles$c;
+    static styles = styles$e;
+    /**
+     * Optimistically toggle the expanded state of a row's analysis panel
+     * immediately (before the panel's round-trip mutation arrives). This gives
+     * instant visual feedback with no perceived delay.
+     */
+    _onToggleAnalysisFast = (e2) => {
+      const entityId = String(e2?.detail?.entityId || "").trim();
+      if (!entityId) {
+        return;
+      }
+      const index = this.rows?.findIndex((r2) => r2.entity_id === entityId) ?? -1;
+      if (index === -1) {
+        return;
+      }
+      this.rows = this.rows.map((row, i2) => {
+        if (i2 !== index) {
+          return row;
+        }
+        return {
+          ...row,
+          analysis: {
+            ...row.analysis,
+            expanded: !row.analysis?.expanded
+          }
+        };
+      });
+    };
+    /**
+     * Optimistically apply analysis option changes immediately so sub-option
+     * groups (e.g. method-specific windows) appear without waiting for the
+     * panel round-trip. Handles both plain key/value changes and the special
+     * `anomaly_method_toggle_*` keys used by the anomaly group.
+     */
+    _onRowAnalysisChangeFast = (e2) => {
+      const { entityId, key, value } = e2.detail || {};
+      if (!entityId || !key) {
+        return;
+      }
+      const index = this.rows?.findIndex((r2) => r2.entity_id === entityId) ?? -1;
+      if (index === -1) {
+        return;
+      }
+      const row = this.rows[index];
+      const currentAnalysis = row.analysis || {};
+      let nextAnalysis;
+      if (key.startsWith("anomaly_method_toggle_")) {
+        const method = key.slice("anomaly_method_toggle_".length);
+        const currentMethods = Array.isArray(currentAnalysis.anomaly_methods) ? currentAnalysis.anomaly_methods : [];
+        const nextMethods = value === true ? [.../* @__PURE__ */ new Set([...currentMethods, method])] : currentMethods.filter((m2) => m2 !== method);
+        nextAnalysis = { ...currentAnalysis, anomaly_methods: nextMethods };
+      } else {
+        nextAnalysis = { ...currentAnalysis, [key]: value };
+      }
+      this.rows = this.rows.map((r2, i2) => i2 === index ? { ...r2, analysis: nextAnalysis } : r2);
+    };
     render() {
       if (!this.rows.length) {
         return b`
@@ -15355,6 +15844,8 @@ ${s2.description}`).join("\n\n");
           @dragover=${this._onDragOver}
           @dragleave=${this._onDragLeave}
           @drop=${this._onDrop}
+          @dp-row-toggle-analysis=${this._onToggleAnalysisFast}
+          @dp-row-analysis-change=${this._onRowAnalysisChangeFast}
         >
           ${this.rows.map(
         (row, index) => b`
@@ -15386,6 +15877,9 @@ ${s2.description}`).join("\n\n");
       if (e2.dataTransfer) {
         e2.dataTransfer.effectAllowed = "move";
         e2.dataTransfer.setData("text/plain", String(index));
+        const rowEl = e2.currentTarget;
+        const rect = rowEl.getBoundingClientRect();
+        e2.dataTransfer.setDragImage(rowEl, e2.clientX - rect.left, e2.clientY - rect.top);
       }
       const target = e2.currentTarget;
       setTimeout(() => target.classList.add("is-dragging"), 0);
@@ -15457,7 +15951,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-target-row-list", DpTargetRowList);
-  const styles$b = i$5`
+  const styles$d = i$5`
   :host {
     display: block;
     --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
@@ -15468,12 +15962,12 @@ ${s2.description}`).join("\n\n");
     gap: var(--dp-spacing-lg);
   }
 `;
-  const styles$a = i$5`
+  const styles$c = i$5`
   :host {
     display: block;
   }
 `;
-  const styles$9 = i$5`
+  const styles$b = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -15488,11 +15982,27 @@ ${s2.description}`).join("\n\n");
   class DpSidebarSectionHeader extends i$2 {
     static properties = {
       title: { type: String },
-      subtitle: { type: String }
+      subtitle: { type: String },
+      collapsible: { type: Boolean },
+      open: { type: Boolean }
     };
+    title = "";
+    subtitle = "";
+    collapsible = false;
+    open = true;
     static styles = i$5`
     :host { display: block; }
     .sidebar-section-header { display: grid; gap: var(--dp-spacing-xs); }
+    .sidebar-section-header.is-collapsible {
+      cursor: pointer;
+      user-select: none;
+    }
+    .sidebar-section-header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 4px;
+    }
     .sidebar-section-title {
       font-size: 0.95rem;
       font-weight: 600;
@@ -15502,16 +16012,53 @@ ${s2.description}`).join("\n\n");
       font-size: 0.82rem;
       color: var(--secondary-text-color);
     }
+    .sidebar-section-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border: none;
+      background: transparent;
+      color: var(--secondary-text-color);
+      cursor: pointer;
+      border-radius: 4px;
+      flex-shrink: 0;
+      transition: background-color 120ms ease;
+    }
+    .sidebar-section-toggle:hover,
+    .sidebar-section-toggle:focus-visible {
+      background: color-mix(in srgb, var(--primary-text-color, #111) 8%, transparent);
+    }
+    .sidebar-section-toggle ha-icon {
+      --mdc-icon-size: 18px;
+      display: block;
+      transition: transform 140ms ease;
+    }
+    .sidebar-section-toggle.is-open ha-icon {
+      transform: rotate(180deg);
+    }
   `;
-    constructor() {
-      super();
-      this.title = "";
-      this.subtitle = "";
+    _onToggle() {
+      this.dispatchEvent(new CustomEvent("dp-section-toggle", { bubbles: true, composed: true }));
     }
     render() {
       return b`
-      <div class="sidebar-section-header">
-        <div class="sidebar-section-title">${this.title}</div>
+      <div class="sidebar-section-header ${this.collapsible ? "is-collapsible" : ""}">
+        <div class="sidebar-section-header-row">
+          <div class="sidebar-section-title">${this.title}</div>
+          ${this.collapsible ? b`
+            <button
+              type="button"
+              class="sidebar-section-toggle ${this.open ? "is-open" : ""}"
+              aria-label="${this.open ? "Collapse" : "Expand"} ${this.title}"
+              aria-expanded=${this.open}
+              @click=${this._onToggle}
+            >
+              <ha-icon icon="mdi:chevron-down"></ha-icon>
+            </button>
+          ` : A}
+        </div>
         ${this.subtitle ? b`<div class="sidebar-section-subtitle">${this.subtitle}</div>` : A}
       </div>
     `;
@@ -15521,13 +16068,25 @@ ${s2.description}`).join("\n\n");
   class DpSidebarOptionsSection extends i$2 {
     static properties = {
       title: { type: String },
-      subtitle: { type: String }
+      subtitle: { type: String },
+      collapsible: { type: Boolean },
+      open: { type: Boolean }
     };
-    static styles = styles$9;
-    constructor() {
-      super();
-      this.title = "";
-      this.subtitle = "";
+    title = "";
+    subtitle = "";
+    collapsible = false;
+    open = true;
+    static styles = styles$b;
+    _onToggle(e2) {
+      e2.stopPropagation();
+      this.open = !this.open;
+      this.dispatchEvent(
+        new CustomEvent("dp-section-toggle", {
+          detail: { open: this.open },
+          bubbles: true,
+          composed: true
+        })
+      );
     }
     render() {
       return b`
@@ -15535,8 +16094,11 @@ ${s2.description}`).join("\n\n");
         <dp-sidebar-section-header
           .title=${this.title}
           .subtitle=${this.subtitle}
+          .collapsible=${this.collapsible}
+          .open=${this.open}
+          @dp-section-toggle=${this._onToggle}
         ></dp-sidebar-section-header>
-        <slot></slot>
+        ${this.collapsible && !this.open ? A : b`<slot></slot>`}
       </div>
     `;
     }
@@ -15620,12 +16182,16 @@ ${s2.description}`).join("\n\n");
   ];
   class DpSidebarDatapointsSection extends i$2 {
     static properties = {
-      datapointScope: { type: String, attribute: "datapoint-scope" }
+      datapointScope: { type: String, attribute: "datapoint-scope" },
+      collapsible: { type: Boolean },
+      open: { type: Boolean }
     };
-    static styles = styles$a;
+    static styles = styles$c;
     constructor() {
       super();
       this.datapointScope = "linked";
+      this.collapsible = false;
+      this.open = true;
     }
     _onScopeChange(e2) {
       this.dispatchEvent(
@@ -15637,6 +16203,8 @@ ${s2.description}`).join("\n\n");
       <dp-sidebar-options-section
         .title=${"Datapoints"}
         .subtitle=${"Choose which annotation datapoints appear on the chart."}
+        .collapsible=${this.collapsible}
+        .open=${this.open}
       >
         <dp-radio-group
           .name=${"datapoint-scope"}
@@ -15649,7 +16217,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-sidebar-datapoints-section", DpSidebarDatapointsSection);
-  const styles$8 = i$5`
+  const styles$a = i$5`
   :host {
     display: block;
   }
@@ -15716,13 +16284,17 @@ ${s2.description}`).join("\n\n");
   class DpSidebarDatapointDisplaySection extends i$2 {
     static properties = {
       showIcons: { type: Boolean, attribute: "show-icons" },
-      showLines: { type: Boolean, attribute: "show-lines" }
+      showLines: { type: Boolean, attribute: "show-lines" },
+      collapsible: { type: Boolean },
+      open: { type: Boolean }
     };
-    static styles = styles$8;
+    static styles = styles$a;
     constructor() {
       super();
       this.showIcons = true;
       this.showLines = true;
+      this.collapsible = false;
+      this.open = true;
     }
     _onCheckboxChange(e2) {
       const { name, checked } = e2.detail;
@@ -15735,6 +16307,8 @@ ${s2.description}`).join("\n\n");
       <dp-sidebar-options-section
         .title=${"Datapoint Display"}
         .subtitle=${"Control how annotation datapoints are rendered on the chart."}
+        .collapsible=${this.collapsible}
+        .open=${this.open}
       >
         <dp-checkbox-list
           .items=${[
@@ -15748,7 +16322,57 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-sidebar-datapoint-display-section", DpSidebarDatapointDisplaySection);
-  const styles$7 = i$5`
+  const styles$9 = i$5`
+  :host {
+    display: block;
+  }
+`;
+  const ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS$1 = [
+    { value: "all", label: "Show all anomalies" },
+    { value: "highlight", label: "Highlight overlaps" },
+    { value: "only", label: "Overlaps only" }
+  ];
+  class DpSidebarAnalysisSection extends i$2 {
+    static properties = {
+      anomalyOverlapMode: { type: String, attribute: "anomaly-overlap-mode" },
+      collapsible: { type: Boolean },
+      open: { type: Boolean }
+    };
+    static styles = styles$9;
+    constructor() {
+      super();
+      this.anomalyOverlapMode = "all";
+      this.collapsible = false;
+      this.open = true;
+    }
+    _emitAnalysis(kind, value) {
+      this.dispatchEvent(
+        new CustomEvent("dp-analysis-change", { detail: { kind, value }, bubbles: true, composed: true })
+      );
+    }
+    _onAnomalyOverlapModeChange(e2) {
+      this._emitAnalysis("anomaly_overlap_mode", e2.detail.value);
+    }
+    render() {
+      return b`
+      <dp-sidebar-options-section
+        .title=${"Analysis"}
+        .subtitle=${"Configure how anomalies and overlapping detections are displayed."}
+        .collapsible=${this.collapsible}
+        .open=${this.open}
+      >
+        <dp-radio-group
+          .name=${"chart-anomaly-overlap-mode"}
+          .value=${this.anomalyOverlapMode}
+          .options=${ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS$1}
+          @dp-radio-change=${this._onAnomalyOverlapModeChange}
+        ></dp-radio-group>
+      </dp-sidebar-options-section>
+    `;
+    }
+  }
+  customElements.define("dp-sidebar-analysis-section", DpSidebarAnalysisSection);
+  const styles$8 = i$5`
   :host {
     display: block;
     --dp-spacing-sm: var(--spacing, 8px);
@@ -15808,9 +16432,11 @@ ${s2.description}`).join("\n\n");
       showCorrelatedAnomalies: { type: Boolean, attribute: "show-correlated-anomalies" },
       showDataGaps: { type: Boolean, attribute: "show-data-gaps" },
       dataGapThreshold: { type: String, attribute: "data-gap-threshold" },
-      yAxisMode: { type: String, attribute: "y-axis-mode" }
+      yAxisMode: { type: String, attribute: "y-axis-mode" },
+      collapsible: { type: Boolean },
+      open: { type: Boolean }
     };
-    static styles = styles$7;
+    static styles = styles$8;
     constructor() {
       super();
       this.showTooltips = true;
@@ -15819,6 +16445,8 @@ ${s2.description}`).join("\n\n");
       this.showDataGaps = true;
       this.dataGapThreshold = "2h";
       this.yAxisMode = "combined";
+      this.collapsible = false;
+      this.open = true;
     }
     _emitDisplay(kind, value) {
       this.dispatchEvent(
@@ -15840,6 +16468,8 @@ ${s2.description}`).join("\n\n");
       <dp-sidebar-options-section
         .title=${"Chart Display"}
         .subtitle=${"Configure visual and interaction behaviour for the chart."}
+        .collapsible=${this.collapsible}
+        .open=${this.open}
       >
         <dp-checkbox-list
           .items=${[
@@ -15885,9 +16515,15 @@ ${s2.description}`).join("\n\n");
       showCorrelatedAnomalies: { type: Boolean, attribute: "show-correlated-anomalies" },
       showDataGaps: { type: Boolean, attribute: "show-data-gaps" },
       dataGapThreshold: { type: String, attribute: "data-gap-threshold" },
-      yAxisMode: { type: String, attribute: "y-axis-mode" }
+      yAxisMode: { type: String, attribute: "y-axis-mode" },
+      anomalyOverlapMode: { type: String, attribute: "anomaly-overlap-mode" },
+      // Accordion open states
+      targetsOpen: { type: Boolean, attribute: "targets-open" },
+      datapointsOpen: { type: Boolean, attribute: "datapoints-open" },
+      analysisOpen: { type: Boolean, attribute: "analysis-open" },
+      chartOpen: { type: Boolean, attribute: "chart-open" }
     };
-    static styles = styles$b;
+    static styles = styles$d;
     constructor() {
       super();
       this.datapointScope = "linked";
@@ -15899,17 +16535,64 @@ ${s2.description}`).join("\n\n");
       this.showDataGaps = true;
       this.dataGapThreshold = "2h";
       this.yAxisMode = "combined";
+      this.anomalyOverlapMode = "all";
+      this.targetsOpen = true;
+      this.datapointsOpen = true;
+      this.analysisOpen = true;
+      this.chartOpen = true;
+    }
+    _onTargetsToggle(e2) {
+      this.targetsOpen = e2.detail.open;
+      this._emitAccordionChange();
+    }
+    _onDatapointsToggle(e2) {
+      this.datapointsOpen = e2.detail.open;
+      this._emitAccordionChange();
+    }
+    _onAnalysisToggle(e2) {
+      this.analysisOpen = e2.detail.open;
+      this._emitAccordionChange();
+    }
+    _onChartToggle(e2) {
+      this.chartOpen = e2.detail.open;
+      this._emitAccordionChange();
+    }
+    _emitAccordionChange() {
+      this.dispatchEvent(
+        new CustomEvent("dp-accordion-change", {
+          detail: {
+            targetsOpen: this.targetsOpen,
+            datapointsOpen: this.datapointsOpen,
+            analysisOpen: this.analysisOpen,
+            chartOpen: this.chartOpen
+          },
+          bubbles: true,
+          composed: true
+        })
+      );
     }
     render() {
       return b`
       <div class="sidebar-options-card">
         <dp-sidebar-datapoints-section
           .datapointScope=${this.datapointScope}
+          collapsible
+          .open=${this.targetsOpen}
+          @dp-section-toggle=${this._onTargetsToggle}
         ></dp-sidebar-datapoints-section>
         <dp-sidebar-datapoint-display-section
           .showIcons=${this.showIcons}
           .showLines=${this.showLines}
+          collapsible
+          .open=${this.datapointsOpen}
+          @dp-section-toggle=${this._onDatapointsToggle}
         ></dp-sidebar-datapoint-display-section>
+        <dp-sidebar-analysis-section
+          .anomalyOverlapMode=${this.anomalyOverlapMode}
+          collapsible
+          .open=${this.analysisOpen}
+          @dp-section-toggle=${this._onAnalysisToggle}
+        ></dp-sidebar-analysis-section>
         <dp-sidebar-chart-display-section
           .showTooltips=${this.showTooltips}
           .showHoverGuides=${this.showHoverGuides}
@@ -15917,6 +16600,9 @@ ${s2.description}`).join("\n\n");
           .showDataGaps=${this.showDataGaps}
           .dataGapThreshold=${this.dataGapThreshold}
           .yAxisMode=${this.yAxisMode}
+          collapsible
+          .open=${this.chartOpen}
+          @dp-section-toggle=${this._onChartToggle}
         ></dp-sidebar-chart-display-section>
       </div>
     `;
@@ -16035,7 +16721,7 @@ ${s2.description}`).join("\n\n");
       return this.ut = a2, p(s2, v$12), E;
     }
   });
-  const styles$6 = i$5`
+  const styles$7 = i$5`
   :host {
     display: block;
   }
@@ -16117,7 +16803,7 @@ ${s2.description}`).join("\n\n");
     display: none;
   }
 `;
-  const styles$5 = i$5`
+  const styles$6 = i$5`
   :host {
     display: contents;
   }
@@ -16298,7 +16984,7 @@ ${s2.description}`).join("\n\n");
   }
 `;
   class DpComparisonTab extends i$2 {
-    static styles = styles$5;
+    static styles = styles$6;
     static properties = {
       tabId: { type: String, attribute: "tab-id" },
       label: { type: String },
@@ -16409,7 +17095,7 @@ ${s2.description}`).join("\n\n");
   }
   customElements.define("dp-comparison-tab", DpComparisonTab);
   class DpComparisonTabRail extends i$2 {
-    static styles = styles$6;
+    static styles = styles$7;
     static properties = {
       tabs: { type: Array },
       loadingIds: { type: Array, attribute: false },
@@ -16497,7 +17183,7 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-comparison-tab-rail", DpComparisonTabRail);
-  const styles$4 = i$5`
+  const styles$5 = i$5`
   :host {
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
     --dp-spacing-sm: var(--spacing, 8px);
@@ -16563,6 +17249,17 @@ ${s2.description}`).join("\n\n");
     border-color: color-mix(in srgb, var(--primary-color, #03a9f4) 55%, transparent);
   }
 
+  .date-window-dialog-timeline {
+    border-radius: 8px;
+    overflow: hidden;
+    margin: calc(var(--dp-spacing-xs) * -1) 0;
+  }
+
+  .date-window-dialog-timeline dp-range-timeline {
+    display: block;
+    height: 64px;
+  }
+
   .date-window-dialog-shortcuts {
     display: flex;
     flex-wrap: wrap;
@@ -16606,424 +17303,7 @@ ${s2.description}`).join("\n\n");
     }
   }
 `;
-  class DpDateWindowDialog extends i$2 {
-    static styles = styles$4;
-    static properties = {
-      open: { type: Boolean },
-      heading: { type: String },
-      name: { type: String },
-      startValue: { type: String, attribute: "start-value" },
-      endValue: { type: String, attribute: "end-value" },
-      showDelete: { type: Boolean, attribute: "show-delete" },
-      showShortcuts: { type: Boolean, attribute: "show-shortcuts" },
-      submitLabel: { type: String, attribute: "submit-label" }
-    };
-    constructor() {
-      super();
-      this.open = false;
-      this.heading = "Add date window";
-      this.name = "";
-      this.startValue = "";
-      this.endValue = "";
-      this.showDelete = false;
-      this.showShortcuts = false;
-      this.submitLabel = "Create date window";
-    }
-    _emit(name, detail = {}) {
-      this.dispatchEvent(
-        new CustomEvent(name, {
-          detail,
-          bubbles: true,
-          composed: true
-        })
-      );
-    }
-    _onDialogClosed() {
-      this._emit("dp-window-close");
-    }
-    _onCancel() {
-      this._emit("dp-window-close");
-    }
-    _onSubmit() {
-      const nameInput = this.shadowRoot?.querySelector("#date-window-name");
-      const startInput = this.shadowRoot?.querySelector("#date-window-start");
-      const endInput = this.shadowRoot?.querySelector("#date-window-end");
-      const nameVal = nameInput?.value ?? this.name;
-      this._emit("dp-window-submit", {
-        name: String(nameVal ?? "").trim(),
-        start: startInput?.value ?? this.startValue,
-        end: endInput?.value ?? this.endValue
-      });
-    }
-    _onDelete() {
-      this._emit("dp-window-delete");
-    }
-    _onPreviousShortcut() {
-      this._emit("dp-window-shortcut", { direction: -1 });
-    }
-    _onNextShortcut() {
-      this._emit("dp-window-shortcut", { direction: 1 });
-    }
-    _onDateChange() {
-      const startInput = this.shadowRoot?.querySelector("#date-window-start");
-      const endInput = this.shadowRoot?.querySelector("#date-window-end");
-      this._emit("dp-window-date-change", {
-        start: startInput?.value ?? "",
-        end: endInput?.value ?? ""
-      });
-    }
-    render() {
-      return b`
-      <ha-dialog
-        ?open=${this.open}
-        hideActions
-        .scrimClickAction=${"close"}
-        .escapeKeyAction=${"close"}
-        .heading=${this.heading}
-        @closed=${this._onDialogClosed}
-      >
-        <div class="date-window-dialog-content">
-          <div class="date-window-dialog-body">
-            A date window saves a named date range as a tab, so you can quickly preview it against
-            the selected range or jump the chart back to it later.
-          </div>
-
-          <div class="date-window-dialog-field name-field">
-            <ha-textfield
-              id="date-window-name"
-              label="Name"
-              placeholder="e.g. Heating season start"
-              .value=${this.name}
-            ></ha-textfield>
-          </div>
-
-          <div class="date-window-dialog-field">
-            <label>Date range</label>
-            <div class="date-window-dialog-dates">
-              <div class="date-window-dialog-field">
-                <label for="date-window-start">Start</label>
-                <input
-                  id="date-window-start"
-                  class="date-window-dialog-input"
-                  type="datetime-local"
-                  step="60"
-                  .value=${this.startValue}
-                  @change=${this._onDateChange}
-                />
-              </div>
-              <div class="date-window-dialog-field">
-                <label for="date-window-end">End</label>
-                <input
-                  id="date-window-end"
-                  class="date-window-dialog-input"
-                  type="datetime-local"
-                  step="60"
-                  .value=${this.endValue}
-                  @change=${this._onDateChange}
-                />
-              </div>
-            </div>
-          </div>
-
-          ${this.showShortcuts ? b`
-                <div class="date-window-dialog-shortcuts">
-                  <ha-button @click=${this._onPreviousShortcut}>Use previous range</ha-button>
-                  <ha-button @click=${this._onNextShortcut}>Use next range</ha-button>
-                </div>
-              ` : A}
-
-          <div class="date-window-dialog-actions">
-            ${this.showDelete ? b`
-                  <ha-button
-                    class="date-window-dialog-delete"
-                    @click=${this._onDelete}
-                  >Delete date window</ha-button>
-                ` : A}
-            <div class="date-window-dialog-actions-right">
-              <ha-button
-                class="date-window-dialog-cancel"
-                @click=${this._onCancel}
-              >Cancel</ha-button>
-              <ha-button
-                raised
-                class="date-window-dialog-submit"
-                @click=${this._onSubmit}
-              >${this.submitLabel}</ha-button>
-            </div>
-          </div>
-        </div>
-      </ha-dialog>
-    `;
-    }
-  }
-  customElements.define("dp-date-window-dialog", DpDateWindowDialog);
-  const styles$3 = i$5`
-  :host {
-    display: contents;
-  }
-
-  .floating-menu {
-    position: fixed;
-    top: var(--floating-menu-top, 64px);
-    left: var(--floating-menu-left, 0px);
-    z-index: 9999;
-    min-width: var(--floating-menu-min-width, 220px);
-    width: var(--floating-menu-width, auto);
-    max-height: var(--floating-menu-max-height, none);
-    overflow: var(--floating-menu-overflow, visible);
-    padding: var(--floating-menu-padding, var(--dp-spacing-xs, 4px));
-    border-radius: 14px;
-    background: var(--card-background-color, #fff);
-    box-shadow:
-      0 18px 44px rgba(0, 0, 0, 0.18),
-      0 2px 8px rgba(0, 0, 0, 0.1);
-    border: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 88%, transparent);
-  }
-
-  .floating-menu[hidden] {
-    display: none;
-  }
-`;
-  class DpFloatingMenu extends i$2 {
-    static styles = styles$3;
-    static properties = {
-      open: { type: Boolean, reflect: true }
-    };
-    constructor() {
-      super();
-      this.open = false;
-    }
-    connectedCallback() {
-      super.connectedCallback();
-      this._onPointerDown = this._onPointerDown.bind(this);
-      window.addEventListener("pointerdown", this._onPointerDown, true);
-    }
-    disconnectedCallback() {
-      super.disconnectedCallback();
-      window.removeEventListener("pointerdown", this._onPointerDown, true);
-    }
-    _onPointerDown(e2) {
-      if (!this.open) {
-        return;
-      }
-      const path = e2.composedPath();
-      const clickedInside = path.some((node) => node === this);
-      if (!clickedInside) {
-        this.dispatchEvent(
-          new CustomEvent("dp-menu-close", {
-            detail: {},
-            bubbles: true,
-            composed: true
-          })
-        );
-      }
-    }
-    render() {
-      return b`
-      <div
-        class="floating-menu"
-        role="menu"
-        ?hidden=${!this.open}
-      >
-        <slot></slot>
-      </div>
-    `;
-    }
-  }
-  customElements.define("dp-floating-menu", DpFloatingMenu);
-  class DpPageMenuItem extends i$2 {
-    static properties = {
-      icon: { type: String },
-      label: { type: String },
-      disabled: { type: Boolean }
-    };
-    static styles = i$5`
-    :host { display: block; }
-    button {
-      width: 100%; min-height: 38px;
-      padding: var(--dp-spacing-sm, 8px) var(--dp-spacing-sm, 8px);
-      display: flex; align-items: center; gap: var(--dp-spacing-sm, 8px);
-      border: none; border-radius: 10px; background: transparent;
-      color: var(--primary-text-color); font: inherit; text-align: left; cursor: pointer;
-    }
-    button:hover, button:focus-visible {
-      background: color-mix(in srgb, var(--primary-text-color, #111) 6%, transparent);
-      outline: none;
-    }
-    button[disabled] {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-    button[disabled]:hover {
-      background: transparent;
-    }
-    ha-icon {
-      --mdc-icon-size: 18px;
-      color: var(--secondary-text-color);
-      flex: 0 0 auto;
-    }
-  `;
-    constructor() {
-      super();
-      this.icon = "";
-      this.label = "";
-      this.disabled = false;
-    }
-    _onClick() {
-      if (this.disabled) {
-        return;
-      }
-      this.dispatchEvent(
-        new CustomEvent("dp-menu-action", {
-          bubbles: true,
-          composed: true
-        })
-      );
-    }
-    render() {
-      return b`
-      <button
-        type="button"
-        ?disabled=${this.disabled}
-        @click=${this._onClick}
-      >
-        <ha-icon icon="${this.icon}"></ha-icon>
-        ${this.label}
-      </button>
-    `;
-    }
-  }
-  customElements.define("dp-page-menu-item", DpPageMenuItem);
-  const styles$2 = i$5`
-  :host {
-    display: contents;
-  }
-
-  /* ---- track overlays (positioned inside dp-range-timeline's .range-track) ---- */
-
-  .range-hover-preview {
-    position: absolute;
-    top: 14px;
-    height: 14px;
-    border-radius: 4px;
-    background: color-mix(in srgb, var(--primary-color, #03a9f4) 26%, transparent);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 120ms ease;
-  }
-
-  .range-hover-preview.visible {
-    opacity: 1;
-  }
-
-  .range-comparison-preview {
-    position: absolute;
-    top: -4px;
-    height: 12px;
-    z-index: 2;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--primary-color, #03a9f4) 18%, transparent);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color, #03a9f4) 58%, transparent);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 120ms ease;
-  }
-
-  .range-comparison-preview.visible {
-    opacity: 1;
-  }
-
-  .range-zoom-highlight {
-    position: absolute;
-    top: -6px;
-    height: 16px;
-    z-index: 2;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--primary-color, #03a9f4) 14%, transparent);
-    box-shadow:
-      inset 0 0 0 2px var(--primary-color, #03a9f4),
-      0 0 0 1px color-mix(in srgb, var(--card-background-color, #fff) 72%, transparent);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 120ms ease;
-  }
-
-  .range-zoom-highlight.visible {
-    opacity: 1;
-  }
-
-  .range-zoom-window-highlight {
-    position: absolute;
-    top: -4px;
-    height: 12px;
-    z-index: 4;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--primary-color, #03a9f4) 52%, transparent);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color, #03a9f4) 85%, transparent);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 120ms ease;
-  }
-
-  .range-zoom-window-highlight.visible {
-    opacity: 1;
-  }
-
-  /* ---- timeline overlays (positioned inside dp-range-timeline's .range-timeline) ---- */
-
-  .range-event-layer {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-  }
-
-  .range-event-dot {
-    position: absolute;
-    bottom: 18px;
-    width: 6px;
-    height: 6px;
-    border-radius: 999px;
-    transform: translateX(-50%);
-    pointer-events: none;
-  }
-
-  .range-chart-hover-line {
-    position: absolute;
-    top: 2px;
-    bottom: 0;
-    width: 2px;
-    transform: translateX(-50%);
-    background: var(--primary-color, #03a9f4);
-    border-radius: 999px;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 120ms ease;
-    z-index: 2;
-  }
-
-  .range-chart-hover-line.visible {
-    opacity: 1;
-  }
-
-  .range-chart-hover-window-line {
-    position: absolute;
-    top: 2px;
-    bottom: 0;
-    width: 2px;
-    transform: translateX(-50%);
-    background: var(--primary-color, #03a9f4);
-    border-radius: 999px;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 120ms ease;
-    z-index: 2;
-  }
-
-  .range-chart-hover-window-line.visible {
-    opacity: 0.45;
-  }
-`;
-  const styles$1 = i$5`
+  const styles$4 = i$5`
   :host {
     display: block;
     position: relative;
@@ -17291,7 +17571,7 @@ ${s2.description}`).join("\n\n");
     z-index: 9;
   }
 `;
-  const styles = i$5`
+  const styles$3 = i$5`
   :host {
     position: absolute;
     top: 26px;
@@ -17335,7 +17615,7 @@ ${s2.description}`).join("\n\n");
       label: { type: String },
       live: { type: Boolean }
     };
-    static styles = styles;
+    static styles = styles$3;
     constructor() {
       super();
       this.position = 0;
@@ -17407,7 +17687,7 @@ ${s2.description}`).join("\n\n");
       dateSnapping: { type: String },
       isLiveEdge: { type: Boolean }
     };
-    static styles = styles$1;
+    static styles = styles$4;
     // --- Internal drag state ---
     _draftStartTime = null;
     _draftEndTime = null;
@@ -18204,7 +18484,13 @@ ${s2.description}`).join("\n\n");
       this._timelinePointerStartX = ev.clientX;
       this._timelinePointerStartScrollLeft = this._rangeScrollViewportEl.scrollLeft;
       this._timelinePointerStartTimestamp = isSelectionDrag || isIntervalSelect ? this._timestampFromClientX(ev.clientX) : null;
-      this._timelinePointerMode = isSelectionDrag ? "selection" : isIntervalSelect ? "interval_select" : "pan";
+      if (isSelectionDrag) {
+        this._timelinePointerMode = "selection";
+      } else if (isIntervalSelect) {
+        this._timelinePointerMode = "interval_select";
+      } else {
+        this._timelinePointerMode = "pan";
+      }
       this._timelineDragStartRangeMs = this._draftStartTime?.getTime() ?? this.startTime?.getTime() ?? 0;
       this._timelineDragEndRangeMs = this._draftEndTime?.getTime() ?? this.endTime?.getTime() ?? 0;
       this._timelinePointerMoved = false;
@@ -18320,6 +18606,464 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-range-timeline", DpRangeTimeline);
+  class DpDateWindowDialog extends i$2 {
+    static styles = styles$5;
+    static properties = {
+      open: { type: Boolean },
+      heading: { type: String },
+      name: { type: String },
+      startValue: { type: String, attribute: "start-value" },
+      endValue: { type: String, attribute: "end-value" },
+      showDelete: { type: Boolean, attribute: "show-delete" },
+      showShortcuts: { type: Boolean, attribute: "show-shortcuts" },
+      submitLabel: { type: String, attribute: "submit-label" },
+      rangeBounds: { type: Object },
+      zoomLevel: { type: String, attribute: "zoom-level" },
+      dateSnapping: { type: String, attribute: "date-snapping" }
+    };
+    constructor() {
+      super();
+      this.open = false;
+      this.heading = "Add date window";
+      this.name = "";
+      this.startValue = "";
+      this.endValue = "";
+      this.showDelete = false;
+      this.showShortcuts = false;
+      this.submitLabel = "Create date window";
+      this.rangeBounds = null;
+      this.zoomLevel = "auto";
+      this.dateSnapping = "hour";
+    }
+    _emit(name, detail = {}) {
+      this.dispatchEvent(
+        new CustomEvent(name, {
+          detail,
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    _onDialogClosed() {
+      this._emit("dp-window-close");
+    }
+    _onCancel() {
+      this._emit("dp-window-close");
+    }
+    _onSubmit() {
+      const nameInput = this.shadowRoot?.querySelector("#date-window-name");
+      const startInput = this.shadowRoot?.querySelector("#date-window-start");
+      const endInput = this.shadowRoot?.querySelector("#date-window-end");
+      const nameVal = nameInput?.value ?? this.name;
+      this._emit("dp-window-submit", {
+        name: String(nameVal ?? "").trim(),
+        start: startInput?.value ?? this.startValue,
+        end: endInput?.value ?? this.endValue
+      });
+    }
+    _onDelete() {
+      this._emit("dp-window-delete");
+    }
+    _onPreviousShortcut() {
+      this._emit("dp-window-shortcut", { direction: -1 });
+    }
+    _onNextShortcut() {
+      this._emit("dp-window-shortcut", { direction: 1 });
+    }
+    _onDateChange() {
+      const startInput = this.shadowRoot?.querySelector("#date-window-start");
+      const endInput = this.shadowRoot?.querySelector("#date-window-end");
+      this._emit("dp-window-date-change", {
+        start: startInput?.value ?? "",
+        end: endInput?.value ?? ""
+      });
+    }
+    _onRangeCommit(ev) {
+      const { start, end } = ev.detail ?? {};
+      if (!start || !end) return;
+      const fmt = (ms) => {
+        const d2 = new Date(ms);
+        const pad = (n2) => String(n2).padStart(2, "0");
+        return `${d2.getFullYear()}-${pad(d2.getMonth() + 1)}-${pad(d2.getDate())}T${pad(d2.getHours())}:${pad(d2.getMinutes())}`;
+      };
+      const startStr = fmt(start);
+      const endStr = fmt(end);
+      const startInput = this.shadowRoot?.querySelector("#date-window-start");
+      const endInput = this.shadowRoot?.querySelector("#date-window-end");
+      if (startInput) startInput.value = startStr;
+      if (endInput) endInput.value = endStr;
+      this._emit("dp-window-date-change", { start: startStr, end: endStr });
+    }
+    /** Parse the startValue / endValue strings to Date objects for the timeline. */
+    _parseValueToDate(value) {
+      if (!value) return null;
+      const d2 = new Date(value);
+      return Number.isNaN(d2.getTime()) ? null : d2;
+    }
+    render() {
+      return b`
+      <ha-dialog
+        ?open=${this.open}
+        hideActions
+        .scrimClickAction=${"close"}
+        .escapeKeyAction=${"close"}
+        @closed=${this._onDialogClosed}
+      >
+        <span slot="heading">${this.heading}</span>
+        <div class="date-window-dialog-content">
+          <div class="date-window-dialog-body">
+            A date window saves a named date range as a tab, so you can quickly preview it against
+            the selected range or jump the chart back to it later.
+          </div>
+
+          <div class="date-window-dialog-field name-field">
+            <ha-textfield
+              id="date-window-name"
+              label="Name"
+              placeholder="e.g. Heating season start"
+              .value=${this.name}
+            ></ha-textfield>
+          </div>
+
+          <div class="date-window-dialog-field">
+            <label>Date range</label>
+            <div class="date-window-dialog-dates">
+              <div class="date-window-dialog-field">
+                <label for="date-window-start">Start</label>
+                <input
+                  id="date-window-start"
+                  class="date-window-dialog-input"
+                  type="datetime-local"
+                  step="60"
+                  .value=${this.startValue}
+                  @change=${this._onDateChange}
+                />
+              </div>
+              <div class="date-window-dialog-field">
+                <label for="date-window-end">End</label>
+                <input
+                  id="date-window-end"
+                  class="date-window-dialog-input"
+                  type="datetime-local"
+                  step="60"
+                  .value=${this.endValue}
+                  @change=${this._onDateChange}
+                />
+              </div>
+            </div>
+          </div>
+
+          ${this.rangeBounds ? b`
+                <div class="date-window-dialog-timeline">
+                  <dp-range-timeline
+                    .startTime=${this._parseValueToDate(this.startValue)}
+                    .endTime=${this._parseValueToDate(this.endValue)}
+                    .rangeBounds=${this.rangeBounds}
+                    .zoomLevel=${this.zoomLevel}
+                    .dateSnapping=${this.dateSnapping}
+                    @dp-range-commit=${this._onRangeCommit}
+                  ></dp-range-timeline>
+                </div>
+              ` : A}
+
+          ${this.showShortcuts ? b`
+                <div class="date-window-dialog-shortcuts">
+                  <ha-button @click=${this._onPreviousShortcut}>Use previous range</ha-button>
+                  <ha-button @click=${this._onNextShortcut}>Use next range</ha-button>
+                </div>
+              ` : A}
+
+          <div class="date-window-dialog-actions">
+            ${this.showDelete ? b`
+                  <ha-button
+                    class="date-window-dialog-delete"
+                    @click=${this._onDelete}
+                  >Delete date window</ha-button>
+                ` : A}
+            <div class="date-window-dialog-actions-right">
+              <ha-button
+                class="date-window-dialog-cancel"
+                @click=${this._onCancel}
+              >Cancel</ha-button>
+              <ha-button
+                raised
+                class="date-window-dialog-submit"
+                @click=${this._onSubmit}
+              >${this.submitLabel}</ha-button>
+            </div>
+          </div>
+        </div>
+      </ha-dialog>
+    `;
+    }
+  }
+  customElements.define("dp-date-window-dialog", DpDateWindowDialog);
+  const styles$2 = i$5`
+  :host {
+    display: contents;
+  }
+
+  .floating-menu {
+    position: fixed;
+    top: var(--floating-menu-top, 64px);
+    left: var(--floating-menu-left, 0px);
+    z-index: 9999;
+    min-width: var(--floating-menu-min-width, 220px);
+    width: var(--floating-menu-width, auto);
+    max-height: var(--floating-menu-max-height, none);
+    overflow: var(--floating-menu-overflow, visible);
+    padding: var(--floating-menu-padding, var(--dp-spacing-xs, 4px));
+    border-radius: 14px;
+    background: var(--card-background-color, #fff);
+    box-shadow:
+      0 18px 44px rgba(0, 0, 0, 0.18),
+      0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 88%, transparent);
+  }
+
+  .floating-menu[hidden] {
+    display: none;
+  }
+`;
+  class DpFloatingMenu extends i$2 {
+    static styles = styles$2;
+    static properties = {
+      open: { type: Boolean, reflect: true }
+    };
+    constructor() {
+      super();
+      this.open = false;
+    }
+    connectedCallback() {
+      super.connectedCallback();
+      this._onPointerDown = this._onPointerDown.bind(this);
+      window.addEventListener("pointerdown", this._onPointerDown, true);
+    }
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      window.removeEventListener("pointerdown", this._onPointerDown, true);
+    }
+    _onPointerDown(e2) {
+      if (!this.open) {
+        return;
+      }
+      const path = e2.composedPath();
+      const clickedInside = path.some((node) => node === this);
+      if (!clickedInside) {
+        this.dispatchEvent(
+          new CustomEvent("dp-menu-close", {
+            detail: {},
+            bubbles: true,
+            composed: true
+          })
+        );
+      }
+    }
+    render() {
+      return b`
+      <div
+        class="floating-menu"
+        role="menu"
+        ?hidden=${!this.open}
+      >
+        <slot></slot>
+      </div>
+    `;
+    }
+  }
+  customElements.define("dp-floating-menu", DpFloatingMenu);
+  class DpPageMenuItem extends i$2 {
+    static properties = {
+      icon: { type: String },
+      label: { type: String },
+      disabled: { type: Boolean }
+    };
+    static styles = i$5`
+    :host { display: block; }
+    button {
+      width: 100%; min-height: 38px;
+      padding: var(--dp-spacing-sm, 8px) var(--dp-spacing-sm, 8px);
+      display: flex; align-items: center; gap: var(--dp-spacing-sm, 8px);
+      border: none; border-radius: 10px; background: transparent;
+      color: var(--primary-text-color); font: inherit; text-align: left; cursor: pointer;
+    }
+    button:hover, button:focus-visible {
+      background: color-mix(in srgb, var(--primary-text-color, #111) 6%, transparent);
+      outline: none;
+    }
+    button[disabled] {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    button[disabled]:hover {
+      background: transparent;
+    }
+    ha-icon {
+      --mdc-icon-size: 18px;
+      color: var(--secondary-text-color);
+      flex: 0 0 auto;
+    }
+  `;
+    constructor() {
+      super();
+      this.icon = "";
+      this.label = "";
+      this.disabled = false;
+    }
+    _onClick() {
+      if (this.disabled) {
+        return;
+      }
+      this.dispatchEvent(
+        new CustomEvent("dp-menu-action", {
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+    render() {
+      return b`
+      <button
+        type="button"
+        ?disabled=${this.disabled}
+        @click=${this._onClick}
+      >
+        <ha-icon icon="${this.icon}"></ha-icon>
+        ${this.label}
+      </button>
+    `;
+    }
+  }
+  customElements.define("dp-page-menu-item", DpPageMenuItem);
+  const styles$1 = i$5`
+  :host {
+    display: contents;
+  }
+
+  /* ---- track overlays (positioned inside dp-range-timeline's .range-track) ---- */
+
+  .range-hover-preview {
+    position: absolute;
+    top: 14px;
+    height: 14px;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 26%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease;
+  }
+
+  .range-hover-preview.visible {
+    opacity: 1;
+  }
+
+  .range-comparison-preview {
+    position: absolute;
+    top: -4px;
+    height: 12px;
+    z-index: 2;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 18%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color, #03a9f4) 58%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease;
+  }
+
+  .range-comparison-preview.visible {
+    opacity: 1;
+  }
+
+  .range-zoom-highlight {
+    position: absolute;
+    top: -6px;
+    height: 16px;
+    z-index: 2;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 14%, transparent);
+    box-shadow:
+      inset 0 0 0 2px var(--primary-color, #03a9f4),
+      0 0 0 1px color-mix(in srgb, var(--card-background-color, #fff) 72%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease;
+  }
+
+  .range-zoom-highlight.visible {
+    opacity: 1;
+  }
+
+  .range-zoom-window-highlight {
+    position: absolute;
+    top: -4px;
+    height: 12px;
+    z-index: 4;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 52%, transparent);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--primary-color, #03a9f4) 85%, transparent);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease;
+  }
+
+  .range-zoom-window-highlight.visible {
+    opacity: 1;
+  }
+
+  /* ---- timeline overlays (positioned inside dp-range-timeline's .range-timeline) ---- */
+
+  .range-event-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .range-event-dot {
+    position: absolute;
+    bottom: 18px;
+    width: 6px;
+    height: 6px;
+    border-radius: 999px;
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .range-chart-hover-line {
+    position: absolute;
+    top: 2px;
+    bottom: 0;
+    width: 2px;
+    transform: translateX(-50%);
+    background: var(--primary-color, #03a9f4);
+    border-radius: 999px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease;
+    z-index: 2;
+  }
+
+  .range-chart-hover-line.visible {
+    opacity: 1;
+  }
+
+  .range-chart-hover-window-line {
+    position: absolute;
+    top: 2px;
+    bottom: 0;
+    width: 2px;
+    transform: translateX(-50%);
+    background: var(--primary-color, #03a9f4);
+    border-radius: 999px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 120ms ease;
+    z-index: 2;
+  }
+
+  .range-chart-hover-window-line.visible {
+    opacity: 0.45;
+  }
+`;
   class DpPanelTimeline extends i$2 {
     static properties = {
       // Core props — forwarded to dp-range-timeline
@@ -18338,7 +19082,7 @@ ${s2.description}`).join("\n\n");
       chartHoverWindowTimeMs: { type: Number },
       events: { type: Array }
     };
-    static styles = styles$2;
+    static styles = styles$1;
     // Cached overlay DOM refs (set in firstUpdated)
     _rangeHoverPreviewEl = null;
     _rangeComparisonPreviewEl = null;
@@ -18492,6 +19236,273 @@ ${s2.description}`).join("\n\n");
     }
   }
   customElements.define("dp-panel-timeline", DpPanelTimeline);
+  const styles = i$5`
+  :host {
+    display: grid;
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* ── Vertical (top / bottom) layout ─────────────────────────────────────── */
+
+  :host([direction="vertical"]),
+  :host(:not([direction])) {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows:
+      minmax(var(--dp-panes-min-first, 0px), var(--dp-panes-top-size, 50%))
+      var(--dp-panes-splitter-size, 24px)
+      minmax(var(--dp-panes-min-second, 0px), 1fr);
+  }
+
+  /* When second pane is hidden, first pane fills all space */
+  :host([second-hidden]) {
+    grid-template-rows: minmax(0, 1fr) !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  /* ── Horizontal (left / right) layout ───────────────────────────────────── */
+
+  :host([direction="horizontal"]) {
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-columns:
+      minmax(var(--dp-panes-min-first, 0px), var(--dp-panes-top-size, 50%))
+      var(--dp-panes-splitter-size, 24px)
+      minmax(var(--dp-panes-min-second, 0px), 1fr);
+  }
+
+  /* ── Slots ───────────────────────────────────────────────────────────────── */
+
+  .pane-first {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .pane-second {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* Slotted content must fill the pane — the pane's grid height is definite
+     so height:100% resolves correctly for slotted elements. */
+  ::slotted(*) {
+    flex: 1 1 auto;
+    min-height: 0;
+    min-width: 0;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+  }
+
+  /* ── Splitter handle ─────────────────────────────────────────────────────── */
+
+  .pane-splitter {
+    position: relative;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    touch-action: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  :host([direction="vertical"]) .pane-splitter,
+  :host(:not([direction])) .pane-splitter {
+    cursor: row-resize;
+    width: 100%;
+  }
+
+  :host([direction="horizontal"]) .pane-splitter {
+    cursor: col-resize;
+    height: 100%;
+  }
+
+  /* Drag indicator pill */
+  .pane-splitter::after {
+    content: "";
+    position: absolute;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--primary-text-color, #111) 18%, transparent);
+    transition: background 120ms ease;
+  }
+
+  :host([direction="vertical"]) .pane-splitter::after,
+  :host(:not([direction])) .pane-splitter::after {
+    width: 60px;
+    height: 6px;
+  }
+
+  :host([direction="horizontal"]) .pane-splitter::after {
+    width: 6px;
+    height: 60px;
+  }
+
+  .pane-splitter:hover::after,
+  .pane-splitter:focus-visible::after,
+  .pane-splitter.dragging::after {
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 62%, transparent);
+  }
+
+  .pane-splitter:focus-visible {
+    outline: none;
+  }
+`;
+  class DpResizablePanes extends i$2 {
+    static styles = styles;
+    static properties = {
+      direction: { type: String, reflect: true },
+      ratio: { type: Number },
+      min: { type: Number },
+      max: { type: Number },
+      secondHidden: { type: Boolean, attribute: "second-hidden", reflect: true }
+    };
+    // ── Internal drag state ────────────────────────────────────────────────────
+    _pointerId = null;
+    _splitterEl = null;
+    constructor() {
+      super();
+      this.direction = "vertical";
+      this.ratio = 0.5;
+      this.min = 0.25;
+      this.max = 0.75;
+      this.secondHidden = false;
+    }
+    // ── Lifecycle ──────────────────────────────────────────────────────────────
+    firstUpdated() {
+      this._splitterEl = this.shadowRoot?.querySelector(".pane-splitter") ?? null;
+      this._applyRatio();
+    }
+    updated(changed) {
+      if (changed.has("ratio") || changed.has("direction") || changed.has("secondHidden")) {
+        this._applyRatio();
+      }
+    }
+    // ── Layout ─────────────────────────────────────────────────────────────────
+    _applyRatio() {
+      this.style.setProperty("--dp-panes-top-size", `${Math.round(this.ratio * 1e3) / 10}%`);
+    }
+    // ── Pointer handling ───────────────────────────────────────────────────────
+    _onPointerDown = (ev) => {
+      if (ev.button !== 0) return;
+      ev.preventDefault();
+      this._pointerId = ev.pointerId;
+      this._splitterEl?.classList.add("dragging");
+      window.addEventListener("pointermove", this._onPointerMove);
+      window.addEventListener("pointerup", this._onPointerUp);
+      window.addEventListener("pointercancel", this._onPointerUp);
+    };
+    _onPointerMove = (ev) => {
+      if (this._pointerId == null || ev.pointerId !== this._pointerId) return;
+      ev.preventDefault();
+      const rect = this.getBoundingClientRect();
+      const totalSize = this.direction === "horizontal" ? rect.width : rect.height;
+      if (!totalSize) return;
+      const pointerOffset = this.direction === "horizontal" ? ev.clientX - rect.left : ev.clientY - rect.top;
+      const clamped = Math.min(Math.max(this.min, pointerOffset / totalSize), this.max);
+      this.ratio = clamped;
+      this._applyRatio();
+      this.dispatchEvent(new CustomEvent("dp-panes-resize", {
+        detail: { ratio: clamped },
+        bubbles: true,
+        composed: true
+      }));
+    };
+    _onPointerUp = (ev) => {
+      if (this._pointerId == null || ev.pointerId !== this._pointerId) return;
+      this._pointerId = null;
+      this._splitterEl?.classList.remove("dragging");
+      window.removeEventListener("pointermove", this._onPointerMove);
+      window.removeEventListener("pointerup", this._onPointerUp);
+      window.removeEventListener("pointercancel", this._onPointerUp);
+      this.dispatchEvent(new CustomEvent("dp-panes-resize", {
+        detail: { ratio: this.ratio, committed: true },
+        bubbles: true,
+        composed: true
+      }));
+    };
+    // ── Render ─────────────────────────────────────────────────────────────────
+    render() {
+      return b`
+      <div class="pane-first"><slot name="first"></slot></div>
+      ${!this.secondHidden ? b`
+        <button
+          class="pane-splitter"
+          type="button"
+          aria-label="Resize panes"
+          @pointerdown=${this._onPointerDown}
+        ></button>
+        <div class="pane-second"><slot name="second"></slot></div>
+      ` : null}
+    `;
+    }
+  }
+  customElements.define("dp-resizable-panes", DpResizablePanes);
+  class DpHistoryChart extends HTMLElement {
+    // ── Internal state ─────────────────────────────────────────────────────────
+    _configKey = "";
+    _config = null;
+    _hass = null;
+    _chartEl = null;
+    // ── Construction ───────────────────────────────────────────────────────────
+    connectedCallback() {
+      if (!this._chartEl) {
+        const card = document.createElement("hass-datapoints-history-card");
+        card.style.cssText = "flex:1 1 auto;min-width:0;min-height:0;width:100%;height:100%;";
+        this.appendChild(card);
+        this._chartEl = card;
+        this._applyConfig();
+        if (this._hass !== null && this._chartEl) {
+          this._chartEl.hass = this._hass;
+        }
+      }
+    }
+    // ── Public API ─────────────────────────────────────────────────────────────
+    /** Direct reference to the inner `hass-datapoints-history-card` element. */
+    get chartEl() {
+      return this._chartEl;
+    }
+    get config() {
+      return this._config;
+    }
+    set config(value) {
+      this._config = value;
+      this._applyConfig();
+    }
+    get hass() {
+      return this._hass;
+    }
+    set hass(value) {
+      this._hass = value;
+      if (this._chartEl) {
+        this._chartEl.hass = value;
+      }
+    }
+    /**
+     * Passes an external committed zoom range to the inner card.
+     */
+    setExternalZoomRange(range) {
+      this._chartEl?.setExternalZoomRange?.(range);
+    }
+    // ── Internal helpers ───────────────────────────────────────────────────────
+    _applyConfig() {
+      if (!this._chartEl || !this._config) return;
+      const nextKey = JSON.stringify(this._config);
+      if (nextKey !== this._configKey) {
+        this._chartEl.setConfig(this._config);
+        this._configKey = nextKey;
+      }
+    }
+  }
+  customElements.define("dp-history-chart", DpHistoryChart);
   const DATA_GAP_THRESHOLD_OPTIONS = [
     { value: "auto", label: "Auto-detect" },
     { value: "5m", label: "5 minutes" },
@@ -18553,6 +19564,11 @@ ${s2.description}`).join("\n\n");
     { value: "6h", label: "6 hours" },
     { value: "12h", label: "12 hours" },
     { value: "24h", label: "24 hours" }
+  ];
+  const ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS = [
+    { value: "all", label: "Show all anomalies" },
+    { value: "highlight", label: "Highlight overlaps" },
+    { value: "only", label: "Overlaps only" }
   ];
   function isAnalysisSupportedForRow(row) {
     return typeof row?.entity_id === "string" && !row.entity_id.startsWith("binary_sensor.");
@@ -18806,27 +19822,29 @@ ${s2.description}`).join("\n\n");
   }
 
   .content {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(280px, var(--content-top-size, 44%)) 24px minmax(240px, 1fr);
+    display: flex;
+    flex-direction: column;
     min-width: 0;
     min-height: 0;
     height: 100%;
     align-self: stretch;
     box-sizing: border-box;
     overflow: hidden;
-    gap: var(--dp-spacing-sm);
     padding: var(--dp-spacing-lg);
   }
 
-  .content.datapoints-hidden {
-    grid-template-rows: minmax(280px, 1fr) 0 0;
-    gap: 0;
+  .content > dp-resizable-panes {
+    flex: 1 1 0;
+    min-height: 0;
   }
 
-  .content.datapoints-hidden .content-splitter,
-  .content.datapoints-hidden .list-host {
-    display: none;
+  /* Legacy: when dp-resizable-panes is not used (e.g. empty state) */
+  .content > ha-card.empty {
+    flex: 0 0 auto;
+  }
+
+  .content.datapoints-hidden dp-resizable-panes {
+    --dp-panes-second-hidden: 1;
   }
 
   .control-target {
@@ -20691,6 +21709,7 @@ ${s2.description}`).join("\n\n");
       this._showChartDeltaTooltip = true;
       this._showChartDeltaLines = false;
       this._showCorrelatedAnomalies = false;
+      this._chartAnomalyOverlapMode = "all";
       this._showDataGaps = true;
       this._dataGapThreshold = "2h";
       this._historyStartTime = null;
@@ -20724,6 +21743,7 @@ ${s2.description}`).join("\n\n");
       this._uiReadyPromise = null;
       this._uiReadyApplied = false;
       this._chartEl = null;
+      this._historyChartMol = null;
       this._listEl = null;
       this._chartConfigKey = "";
       this._listConfigKey = "";
@@ -20741,6 +21761,10 @@ ${s2.description}`).join("\n\n");
       this._targetRowsRenderKey = "";
       this._sidebarOptionsEl = null;
       this._sidebarOptionsComp = null;
+      this._sidebarAccordionTargetsOpen = true;
+      this._sidebarAccordionDatapointsOpen = true;
+      this._sidebarAccordionAnalysisOpen = true;
+      this._sidebarAccordionChartOpen = true;
       this._dateControl = null;
       this._dateRangePickerEl = null;
       this._datePickerButtonEl = null;
@@ -20762,6 +21786,9 @@ ${s2.description}`).join("\n\n");
       this._hiddenEventIds = [];
       this._optionsMenuView = "root";
       this._restoredFromSession = false;
+      this._savedPageLoaded = false;
+      this._hasSavedPage = false;
+      this._savePageBusy = false;
       this._datePickerOpen = false;
       this._optionsOpen = false;
       this._pageMenuOpen = false;
@@ -20833,6 +21860,7 @@ ${s2.description}`).join("\n\n");
       if (!this._shellBuilt) return;
       this._ensureHistoryBounds();
       this._ensureUserPreferences();
+      this._loadSavedPageIndicator();
       this._syncHassBindings();
       this._renderContent();
     }
@@ -20926,10 +21954,26 @@ ${s2.description}`).join("\n\n");
       const sessionState = this._readSessionState();
       this._restoredFromSession = !hasTargetInUrl && !hasRangeInUrl && !!sessionState;
       this._sidebarCollapsed = !!sessionState?.sidebar_collapsed;
+      this._sidebarAccordionTargetsOpen = sessionState?.sidebar_accordion_targets_open !== false;
+      this._sidebarAccordionDatapointsOpen = sessionState?.sidebar_accordion_datapoints_open !== false;
+      this._sidebarAccordionAnalysisOpen = sessionState?.sidebar_accordion_analysis_open !== false;
+      this._sidebarAccordionChartOpen = sessionState?.sidebar_accordion_chart_open !== false;
       if (Number.isFinite(sessionState?.content_split_ratio)) {
         this._contentSplitRatio = clampNumber(sessionState.content_split_ratio, 0.25, 0.75);
       }
-      this._datapointScope = datapointsScopeFromUrl === "all" ? "all" : datapointsScopeFromUrl === "hidden" ? "hidden" : !datapointsScopeFromUrl && sessionState?.datapoint_scope === "all" ? "all" : !datapointsScopeFromUrl && sessionState?.datapoint_scope === "hidden" ? "hidden" : "linked";
+      let resolvedDatapointScope;
+      if (datapointsScopeFromUrl === "all") {
+        resolvedDatapointScope = "all";
+      } else if (datapointsScopeFromUrl === "hidden") {
+        resolvedDatapointScope = "hidden";
+      } else if (!datapointsScopeFromUrl && sessionState?.datapoint_scope === "all") {
+        resolvedDatapointScope = "all";
+      } else if (!datapointsScopeFromUrl && sessionState?.datapoint_scope === "hidden") {
+        resolvedDatapointScope = "hidden";
+      } else {
+        resolvedDatapointScope = "linked";
+      }
+      this._datapointScope = resolvedDatapointScope;
       this._showChartDatapointIcons = sessionState?.show_chart_datapoint_icons !== false;
       this._showChartDatapointLines = sessionState?.show_chart_datapoint_lines !== false;
       this._showChartTooltips = sessionState?.show_chart_tooltips !== false;
@@ -20982,6 +22026,7 @@ ${s2.description}`).join("\n\n");
       this._showChartDeltaTooltip = sessionState?.show_chart_delta_tooltip !== false;
       this._showChartDeltaLines = sessionState?.show_chart_delta_lines === true;
       this._showCorrelatedAnomalies = sessionState?.show_chart_correlated_anomalies === true;
+      this._chartAnomalyOverlapMode = ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS.some((o2) => o2.value === sessionState?.chart_anomaly_overlap_mode) ? sessionState.chart_anomaly_overlap_mode : "all";
       this._showDataGaps = sessionState?.show_data_gaps !== false;
       this._dataGapThreshold = DATA_GAP_THRESHOLD_OPTIONS.some((option) => option.value === sessionState?.data_gap_threshold) ? sessionState.data_gap_threshold : "2h";
       this._comparisonWindows = dateWindowsFromUrl.length ? dateWindowsFromUrl : normalizeDateWindows(sessionState?.date_windows);
@@ -20992,7 +22037,14 @@ ${s2.description}`).join("\n\n");
         label_id: labelFromUrl ? labelFromUrl.split(",") : []
       });
       const panelTarget = panelConfigTarget(panelCfg);
-      const nextTargetSelection = Object.keys(targetFromUrl).length ? targetFromUrl : !hasTargetInUrl && sessionState?.entities?.length ? normalizeTargetValue(sessionState.target_selection_raw || sessionState.target_selection || { entity_id: sessionState.entities }) : panelTarget;
+      let nextTargetSelection;
+      if (Object.keys(targetFromUrl).length) {
+        nextTargetSelection = targetFromUrl;
+      } else if (!hasTargetInUrl && sessionState?.entities?.length) {
+        nextTargetSelection = normalizeTargetValue(sessionState.target_selection_raw || sessionState.target_selection || { entity_id: sessionState.entities });
+      } else {
+        nextTargetSelection = panelTarget;
+      }
       this._targetSelection = nextTargetSelection;
       this._targetSelectionRaw = !hasTargetInUrl && sessionState?.target_selection_raw ? sessionState.target_selection_raw : nextTargetSelection;
       this._seriesRows = !hasTargetInUrl && Array.isArray(sessionState?.series_rows) ? normalizeHistorySeriesRows(sessionState.series_rows) : buildHistorySeriesRows(resolveEntityIdsFromTarget(this._hass, this._targetSelection));
@@ -21061,6 +22113,9 @@ ${s2.description}`).join("\n\n");
             </ha-icon-button>
             <dp-floating-menu id="page-menu">
               <dp-page-menu-item id="page-download-spreadsheet" icon="mdi:file-excel-outline" label="Download spreadsheet"></dp-page-menu-item>
+              <dp-page-menu-item id="page-save-page" icon="mdi:content-save-outline" label="Save page state"></dp-page-menu-item>
+              <dp-page-menu-item id="page-restore-page" icon="mdi:restore" label="Restore saved page" hidden></dp-page-menu-item>
+              <dp-page-menu-item id="page-clear-saved-page" icon="mdi:delete-outline" label="Clear saved page" hidden></dp-page-menu-item>
             </dp-floating-menu>
           </div>
         </div>
@@ -21096,6 +22151,9 @@ ${s2.description}`).join("\n\n");
       this._sidebarOptionsEl = this.shadowRoot.querySelector("#sidebar-options");
       this._pageMenuButtonEl?.addEventListener("click", () => this._togglePageMenu());
       this._pageMenuEl?.querySelector("#page-download-spreadsheet")?.addEventListener("dp-menu-action", () => this._downloadSpreadsheet());
+      this._pageMenuEl?.querySelector("#page-save-page")?.addEventListener("dp-menu-action", () => this._savePageState());
+      this._pageMenuEl?.querySelector("#page-restore-page")?.addEventListener("dp-menu-action", () => this._restorePageState());
+      this._pageMenuEl?.querySelector("#page-clear-saved-page")?.addEventListener("dp-menu-action", () => this._clearSavedPageState());
       this._pageMenuEl?.addEventListener("dp-menu-close", () => this._togglePageMenu(false));
       this._sidebarToggleButtonEl?.addEventListener("click", () => this._toggleSidebarCollapsed());
       this._pageSidebarEl?.addEventListener("click", this._onCollapsedSidebarClick);
@@ -21127,9 +22185,7 @@ ${s2.description}`).join("\n\n");
         "ha-target-picker",
         "ha-date-range-picker"
       ];
-      this._uiReadyPromise = ensureHaComponents(componentTags).then((results) => {
-        return results;
-      }).then(() => {
+      this._uiReadyPromise = ensureHaComponents(componentTags).then((results) => results).then(() => {
         if (!this.isConnected || !this._rendered) return;
         window.requestAnimationFrame(() => {
           window.requestAnimationFrame(() => {
@@ -21141,7 +22197,7 @@ ${s2.description}`).join("\n\n");
           });
         });
       }).catch((error) => {
-        console.warn("[hass-datapoints panel] ensure UI components ready failed", {
+        logger$1.warn("[hass-datapoints panel] ensure UI components ready failed", {
           message: error?.message || String(error)
         });
       });
@@ -21213,7 +22269,14 @@ ${s2.description}`).join("\n\n");
       return normalizeHistorySeriesRows(rows).map((row) => {
         const queryColor = queryColors[this._seriesColorQueryKey(row.entity_id)];
         const preferredColor = this._preferredSeriesColors?.[row.entity_id];
-        const nextColor = /^#[0-9a-f]{6}$/i.test(queryColor || "") ? queryColor : /^#[0-9a-f]{6}$/i.test(preferredColor || "") ? preferredColor : row.color;
+        let nextColor;
+        if (/^#[0-9a-f]{6}$/i.test(queryColor || "")) {
+          nextColor = queryColor;
+        } else if (/^#[0-9a-f]{6}$/i.test(preferredColor || "")) {
+          nextColor = preferredColor;
+        } else {
+          nextColor = row.color;
+        }
         return nextColor === row.color ? row : { ...row, color: nextColor };
       });
     }
@@ -21265,7 +22328,14 @@ ${s2.description}`).join("\n\n");
       if (!this._sidebarOptionsComp) {
         return;
       }
-      const yAxisMode = this._splitChartView ? "split" : this._delinkChartYAxis ? "unique" : "combined";
+      let yAxisMode;
+      if (this._splitChartView) {
+        yAxisMode = "split";
+      } else if (this._delinkChartYAxis) {
+        yAxisMode = "unique";
+      } else {
+        yAxisMode = "combined";
+      }
       this._sidebarOptionsComp.datapointScope = this._datapointScope;
       this._sidebarOptionsComp.showIcons = this._showChartDatapointIcons;
       this._sidebarOptionsComp.showLines = this._showChartDatapointLines;
@@ -21275,6 +22345,11 @@ ${s2.description}`).join("\n\n");
       this._sidebarOptionsComp.showDataGaps = this._showDataGaps;
       this._sidebarOptionsComp.dataGapThreshold = this._dataGapThreshold;
       this._sidebarOptionsComp.yAxisMode = yAxisMode;
+      this._sidebarOptionsComp.anomalyOverlapMode = this._chartAnomalyOverlapMode;
+      this._sidebarOptionsComp.targetsOpen = this._sidebarAccordionTargetsOpen;
+      this._sidebarOptionsComp.datapointsOpen = this._sidebarAccordionDatapointsOpen;
+      this._sidebarOptionsComp.analysisOpen = this._sidebarAccordionAnalysisOpen;
+      this._sidebarOptionsComp.chartOpen = this._sidebarAccordionChartOpen;
     }
     _formatComparisonLabel(start, end) {
       const fmt = (d2) => d2.toLocaleDateString(void 0, { month: "short", day: "numeric" });
@@ -21543,6 +22618,9 @@ ${s2.description}`).join("\n\n");
         this._dateWindowDialogComp.name = targetWindow?.label || "";
         this._dateWindowDialogComp.startValue = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.start || null);
         this._dateWindowDialogComp.endValue = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.end || null);
+        this._dateWindowDialogComp.rangeBounds = this._rangeBounds ?? null;
+        this._dateWindowDialogComp.zoomLevel = this._zoomLevel ?? "auto";
+        this._dateWindowDialogComp.dateSnapping = this._dateSnapping ?? "hour";
         this._dateWindowDialogComp.open = true;
         return;
       }
@@ -21693,7 +22771,6 @@ ${s2.description}`).join("\n\n");
       }
     }
     _clearDeltaAnalysisSelectionState() {
-      return;
     }
     _handleComparisonTabActivate(id) {
       if (!id || id === "current-range") {
@@ -21731,7 +22808,12 @@ ${s2.description}`).join("\n\n");
     _applyContentSplitLayout() {
       const content = this.shadowRoot?.getElementById("content");
       if (!content) return;
-      content.style.setProperty("--content-top-size", `${Math.round(this._contentSplitRatio * 1e3) / 10}%`);
+      const resizablePanes = content.querySelector("#content-resizable-panes");
+      if (resizablePanes) {
+        resizablePanes.ratio = this._contentSplitRatio;
+      } else {
+        content.style.setProperty("--content-top-size", `${Math.round(this._contentSplitRatio * 1e3) / 10}%`);
+      }
       this._updateComparisonTabsOverflow();
     }
     _beginContentSplitPointer(ev) {
@@ -21788,7 +22870,14 @@ ${s2.description}`).join("\n\n");
       this._toggleSidebarCollapsed();
     }
     _setDatapointScope(scope) {
-      const nextScope = scope === "all" ? "all" : scope === "hidden" ? "hidden" : "linked";
+      let nextScope;
+      if (scope === "all") {
+        nextScope = "all";
+      } else if (scope === "hidden") {
+        nextScope = "hidden";
+      } else {
+        nextScope = "linked";
+      }
       if (nextScope === this._datapointScope) return;
       this._datapointScope = nextScope;
       this._timelineEvents = [];
@@ -21867,7 +22956,7 @@ ${s2.description}`).join("\n\n");
           this._syncControls();
         }
       }).catch((err) => {
-        console.warn("[hass-datapoints] failed to load event bounds:", err);
+        logger$1.warn("[hass-datapoints] failed to load event bounds:", err);
         this._historyBoundsLoaded = true;
       }).finally(() => {
         this._historyBoundsPromise = null;
@@ -21895,7 +22984,7 @@ ${s2.description}`).join("\n\n");
         this._timelineEventsKey = key;
         if (this._rendered && this._panelTimelineEl) this._panelTimelineEl.events = this._timelineEvents;
       }).catch((err) => {
-        console.warn("[hass-datapoints] failed to load timeline events:", err);
+        logger$1.warn("[hass-datapoints] failed to load timeline events:", err);
       }).finally(() => {
         this._timelineEventsPromise = null;
       });
@@ -21922,7 +23011,7 @@ ${s2.description}`).join("\n\n");
           this._renderContent();
         }
       }).catch((err) => {
-        console.warn("[hass-datapoints] failed to load panel preferences:", err);
+        logger$1.warn("[hass-datapoints] failed to load panel preferences:", err);
         this._preferencesLoaded = true;
       }).finally(() => {
         this._preferencesPromise = null;
@@ -21979,6 +23068,10 @@ ${s2.description}`).join("\n\n");
       rowListEl.addEventListener("dp-row-analysis-change", (ev) => {
         const { entityId, key, value } = ev.detail || {};
         this._setSeriesAnalysisOption(entityId, key, value);
+      });
+      rowListEl.addEventListener("dp-row-copy-analysis-to-all", (ev) => {
+        const { entityId, analysis } = ev.detail || {};
+        this._copyAnalysisToAll(entityId, analysis);
       });
       rowListEl.addEventListener("dp-rows-reorder", (ev) => {
         const { rows } = ev.detail || {};
@@ -22134,6 +23227,26 @@ ${s2.description}`).join("\n\n");
           } else {
             this._setChartDatapointDisplayOption(kind, value);
           }
+        });
+        sidebarComp.addEventListener("dp-analysis-change", (ev) => {
+          const { kind, value } = ev.detail || {};
+          if (kind === "anomaly_overlap_mode" && ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS.some((o2) => o2.value === value)) {
+            if (this._chartAnomalyOverlapMode === value) {
+              return;
+            }
+            this._chartAnomalyOverlapMode = value;
+            this._saveSessionState();
+            this._renderSidebarOptions();
+            this._renderContent();
+          }
+        });
+        sidebarComp.addEventListener("dp-accordion-change", (ev) => {
+          const { targetsOpen, datapointsOpen, analysisOpen, chartOpen } = ev.detail || {};
+          if (typeof targetsOpen === "boolean") this._sidebarAccordionTargetsOpen = targetsOpen;
+          if (typeof datapointsOpen === "boolean") this._sidebarAccordionDatapointsOpen = datapointsOpen;
+          if (typeof analysisOpen === "boolean") this._sidebarAccordionAnalysisOpen = analysisOpen;
+          if (typeof chartOpen === "boolean") this._sidebarAccordionChartOpen = chartOpen;
+          this._saveSessionState();
         });
         this._sidebarOptionsEl.appendChild(sidebarComp);
         this._sidebarOptionsComp = sidebarComp;
@@ -22291,6 +23404,10 @@ ${s2.description}`).join("\n\n");
       targetRow.addEventListener("dp-row-analysis-change", (ev) => {
         this._setSeriesAnalysisOption(ev.detail.entityId, ev.detail.key, ev.detail.value);
       });
+      targetRow.addEventListener("dp-row-copy-analysis-to-all", (ev) => {
+        const { entityId: entityId2, analysis } = ev.detail || {};
+        this._copyAnalysisToAll(entityId2, analysis);
+      });
       targetRow.addEventListener("dp-row-remove", (ev) => {
         this._hideCollapsedTargetPopup();
         this._removeSeriesRow(ev.detail.index);
@@ -22445,6 +23562,37 @@ ${s2.description}`).join("\n\n");
       this._renderTargetRows();
       this._renderContent();
     }
+    _copyAnalysisToAll(sourceEntityId, sourceAnalysis) {
+      const normalizedEntityId = String(sourceEntityId || "").trim();
+      if (!normalizedEntityId || !sourceAnalysis) {
+        return;
+      }
+      let changed = false;
+      this._seriesRows = this._seriesRows.map((row) => {
+        if (row.entity_id === normalizedEntityId) {
+          return row;
+        }
+        const currentAnalysis = normalizeHistorySeriesAnalysis(row.analysis);
+        const nextAnalysis = normalizeHistorySeriesAnalysis({
+          ...sourceAnalysis,
+          // Preserve per-row state that shouldn't be overwritten
+          expanded: currentAnalysis.expanded,
+          // Don't copy anomaly_comparison_window_id — it's entity-specific
+          anomaly_comparison_window_id: currentAnalysis.anomaly_comparison_window_id
+        });
+        if (JSON.stringify(nextAnalysis) === JSON.stringify(currentAnalysis)) {
+          return row;
+        }
+        changed = true;
+        return { ...row, analysis: nextAnalysis };
+      });
+      if (!changed) {
+        return;
+      }
+      this._saveSessionState();
+      this._renderTargetRows();
+      this._renderContent();
+    }
     _removeSeriesRow(index) {
       if (!Number.isInteger(index) || index < 0 || index >= this._seriesRows.length) return;
       this._seriesRows = this._seriesRows.filter((_2, rowIndex) => rowIndex !== index);
@@ -22582,9 +23730,74 @@ ${s2.description}`).join("\n\n");
           datapointScope: this._datapointScope
         });
       } catch (error) {
-        console.error("[hass-datapoints panel] spreadsheet export:failed", error);
+        logger$1.error("[hass-datapoints panel] spreadsheet export:failed", error);
       } finally {
         this._exportBusy = false;
+      }
+    }
+    // ---------------------------------------------------------------------------
+    // Saved page state (persistent via HA frontend user data)
+    // ---------------------------------------------------------------------------
+    async _loadSavedPageIndicator() {
+      if (!this._hass || this._savedPageLoaded) return;
+      this._savedPageLoaded = true;
+      try {
+        const saved = await fetchUserData(this._hass, PANEL_HISTORY_SAVED_PAGE_KEY, null);
+        this._hasSavedPage = !!saved;
+        this._syncSavedPageMenuItems();
+      } catch (_err) {
+      }
+    }
+    _syncSavedPageMenuItems() {
+      const restoreEl = this._pageMenuEl?.querySelector("#page-restore-page");
+      const clearEl = this._pageMenuEl?.querySelector("#page-clear-saved-page");
+      if (restoreEl) restoreEl.hidden = !this._hasSavedPage;
+      if (clearEl) clearEl.hidden = !this._hasSavedPage;
+    }
+    async _savePageState() {
+      if (this._savePageBusy || !this._hass) return;
+      this._savePageBusy = true;
+      this._togglePageMenu(false);
+      try {
+        const state = buildHistoryPageSessionState(this);
+        await saveUserData(this._hass, PANEL_HISTORY_SAVED_PAGE_KEY, state);
+        this._hasSavedPage = true;
+        this._syncSavedPageMenuItems();
+      } catch (err) {
+        logger$1.error("[hass-datapoints panel] save page state failed:", err);
+      } finally {
+        this._savePageBusy = false;
+      }
+    }
+    async _restorePageState() {
+      if (!this._hass) return;
+      this._togglePageMenu(false);
+      try {
+        const saved = await fetchUserData(this._hass, PANEL_HISTORY_SAVED_PAGE_KEY, null);
+        if (!saved || typeof saved !== "object") return;
+        try {
+          window.sessionStorage.setItem(
+            `${DOMAIN$1}:panel_history_session`,
+            JSON.stringify(saved)
+          );
+        } catch (_storageErr) {
+        }
+        const baseUrl = window.location.pathname;
+        window.history.replaceState(null, "", baseUrl);
+        window.location.reload();
+      } catch (err) {
+        logger$1.error("[hass-datapoints panel] restore page state failed:", err);
+      }
+    }
+    async _clearSavedPageState() {
+      if (!this._hass) return;
+      this._togglePageMenu(false);
+      try {
+        await saveUserData(this._hass, PANEL_HISTORY_SAVED_PAGE_KEY, null);
+        this._hasSavedPage = false;
+        this._syncSavedPageMenuItems();
+      } catch (err) {
+        logger$1.error("[hass-datapoints panel] clear saved page state failed:", err);
       }
     }
     _computeFloatingMenuPosition(anchorEl, menuWidth) {
@@ -23105,6 +24318,7 @@ ${s2.description}`).join("\n\n");
       `;
         this._contentKey = "";
         this._chartEl = null;
+        this._historyChartMol = null;
         this._listEl = null;
         this._chartConfigKey = "";
         this._listConfigKey = "";
@@ -23127,17 +24341,18 @@ ${s2.description}`).join("\n\n");
         this._chartZoomRange = null;
         this._chartZoomCommittedRange = null;
         this._updateChartZoomHighlight();
+        this._recordsSearchQuery = "";
         content.innerHTML = `
-        <div id="chart-host" class="chart-host">
-          <div id="chart-card-host" class="chart-card-host"></div>
-        </div>
-        <button
-          id="content-splitter"
-          class="content-splitter"
-          type="button"
-          aria-label="Resize chart and records panes"
-        ></button>
-        <div id="list-host" class="list-host"></div>
+        <dp-resizable-panes
+          id="content-resizable-panes"
+          direction="vertical"
+          style="height:100%;min-height:0;"
+        >
+          <div slot="first" id="chart-host" class="chart-host">
+            <div id="chart-card-host" class="chart-card-host"></div>
+          </div>
+          <div slot="second" id="list-host" class="list-host"></div>
+        </dp-resizable-panes>
       `;
         const chartConfig2 = {
           entities: this._entities,
@@ -23148,6 +24363,7 @@ ${s2.description}`).join("\n\n");
           show_tooltips: this._showChartTooltips,
           emphasize_hover_guides: this._showChartEmphasizedHoverGuides,
           show_correlated_anomalies: this._showCorrelatedAnomalies,
+          anomaly_overlap_mode: this._chartAnomalyOverlapMode,
           delink_y_axis: this._delinkChartYAxis,
           split_view: this._splitChartView,
           show_data_gaps: this._showDataGaps,
@@ -23169,6 +24385,8 @@ ${s2.description}`).join("\n\n");
         const chart = document.createElement("hass-datapoints-history-card");
         chart.setConfig(chartConfig2);
         content.querySelector("#chart-card-host").appendChild(chart);
+        const historyChartMol = { _configKey: JSON.stringify(chartConfig2), chartEl: chart };
+        this._historyChartMol = historyChartMol;
         if (showRecordsPanel) {
           const listConfig = {
             entities: this._entities,
@@ -23191,14 +24409,31 @@ ${s2.description}`).join("\n\n");
         } else {
           this._listEl = null;
         }
-        this._contentSplitterEl = content.querySelector("#content-splitter");
-        this._contentSplitterEl?.addEventListener("pointerdown", (ev) => this._beginContentSplitPointer(ev));
+        const resizablePanes = content.querySelector("#content-resizable-panes");
+        this._contentSplitterEl = resizablePanes;
+        if (resizablePanes) {
+          resizablePanes.ratio = this._contentSplitRatio;
+          resizablePanes.min = 0.2;
+          resizablePanes.max = 0.8;
+          resizablePanes.addEventListener("dp-panes-resize", (ev) => {
+            this._contentSplitRatio = ev.detail.ratio;
+            if (ev.detail.committed) {
+              this._saveSessionState();
+              window.requestAnimationFrame(() => this._syncRangeControl());
+            }
+          });
+        }
         this._chartEl = chart;
+        this._historyChartMol = historyChartMol;
         this._contentKey = contentKey;
         this._chartConfigKey = "";
         this._listConfigKey = "";
       }
       content.classList.toggle("datapoints-hidden", !showRecordsPanel);
+      const resizablePanesEl = content.querySelector("#content-resizable-panes");
+      if (resizablePanesEl) {
+        resizablePanesEl.secondHidden = !showRecordsPanel;
+      }
       this._applyContentSplitLayout();
       this._renderComparisonTabs();
       const chartConfig = {
@@ -23228,10 +24463,18 @@ ${s2.description}`).join("\n\n");
         selected_comparison_window_id: this._selectedComparisonWindowId,
         hovered_comparison_window_id: this._hoveredComparisonWindowId
       };
-      const nextChartConfigKey = JSON.stringify(chartConfig);
-      if (this._chartEl && this._chartConfigKey !== nextChartConfigKey) {
-        this._chartEl.setConfig(chartConfig);
-        this._chartConfigKey = nextChartConfigKey;
+      if (this._chartEl) {
+        const nextChartConfigKey = JSON.stringify(chartConfig);
+        const molKey = this._historyChartMol?._configKey;
+        const prevKey = molKey !== void 0 ? molKey : this._chartConfigKey;
+        if (prevKey !== nextChartConfigKey) {
+          this._chartEl.setConfig(chartConfig);
+          if (this._historyChartMol) {
+            this._historyChartMol._configKey = nextChartConfigKey;
+          } else {
+            this._chartConfigKey = nextChartConfigKey;
+          }
+        }
       }
       if (showRecordsPanel) {
         const listConfig = {
@@ -23354,9 +24597,11 @@ ${s2.description}`).join("\n\n");
       window.customCards.push(card);
     }
   });
-  console.info(
+  console.groupCollapsed(
     "%c hass-datapoints %c v0.3.0 loaded ",
     "color:#fff;background:#03a9f4;font-weight:bold;padding:2px 6px;border-radius:3px 0 0 3px",
     "color:#03a9f4;background:#fff;font-weight:bold;padding:2px 6px;border:1px solid #03a9f4;border-radius:0 3px 3px 0"
   );
+  console.log("Enable debug logging by setting %cwindow.__HASS_DATAPOINTS_DEV__ = true", "color:#333;background:#eee;border:1px solid #777;padding:2px 6px;border-radius:5px; font-family: Courier");
+  console.groupEnd();
 })();

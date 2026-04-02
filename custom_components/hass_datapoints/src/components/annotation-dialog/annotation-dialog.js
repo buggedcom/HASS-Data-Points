@@ -12,7 +12,8 @@ import {
   labelName,
   mergeTargetSelections,
   normalizeTargetSelection,
-} from "../../lib/shared.js";
+} from "@/lib/shared.js";
+import { logger } from "@/lib/logger.js";
 
 /**
  * Dedicated annotation dialog controller for the history chart card.
@@ -267,7 +268,7 @@ export class HistoryAnnotationDialogController {
         feedbackEl.hidden = false;
         feedbackEl.textContent = err?.message || "Failed to create annotation.";
       }
-      console.error("[hass-datapoints history-card]", err);
+      logger.error("[hass-datapoints history-card]", err);
     } finally {
       if (saveButton) saveButton.disabled = false;
     }

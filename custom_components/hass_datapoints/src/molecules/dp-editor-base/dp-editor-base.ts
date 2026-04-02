@@ -11,8 +11,11 @@ export class DpEditorBase extends LitElement {
     _config: { type: Object, state: true },
     hass: { type: Object },
   };
+
   declare _config: CardConfig;
+
   declare hass: HassLike | null;
+
   static styles = css`
     :host { display: block; }
     .ed {
@@ -20,14 +23,17 @@ export class DpEditorBase extends LitElement {
       gap: 16px; padding: 4px 0 8px;
     }
   `;
+
   constructor() {
     super();
     this._config = {};
     this.hass = null;
   }
+
   setConfig(config: CardConfig) {
     this._config = { ...config };
   }
+
   _fire(cfg: CardConfig) {
     this.dispatchEvent(
       new CustomEvent("config-changed", {
@@ -37,6 +43,7 @@ export class DpEditorBase extends LitElement {
       }),
     );
   }
+
   _set(key: string, value: unknown) {
     const cfg = { ...this._config };
     if (value === "" || value === null || value === undefined) {

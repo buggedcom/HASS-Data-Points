@@ -1,5 +1,7 @@
 import { LitElement, html, nothing } from "lit";
 import { styles } from "./dp-date-window-dialog.styles";
+import type { RangeBounds } from "@/atoms/interactive/dp-range-timeline/types";
+import "@/atoms/interactive/dp-range-timeline/dp-range-timeline";
 
 /**
  * `dp-date-window-dialog` renders the Add / Edit date window dialog.
@@ -26,6 +28,9 @@ export class DpDateWindowDialog extends LitElement {
     showDelete: { type: Boolean, attribute: "show-delete" },
     showShortcuts: { type: Boolean, attribute: "show-shortcuts" },
     submitLabel: { type: String, attribute: "submit-label" },
+    rangeBounds: { type: Object },
+    zoomLevel: { type: String, attribute: "zoom-level" },
+    dateSnapping: { type: String, attribute: "date-snapping" },
   };
 
   /** Whether the dialog is open. */
@@ -52,6 +57,15 @@ export class DpDateWindowDialog extends LitElement {
   /** Label for the submit button (e.g. "Create date window" or "Save date window"). */
   declare submitLabel: string;
 
+  /** Optional range bounds from the parent panel — used to set the timeline slider context. */
+  declare rangeBounds: RangeBounds | null;
+
+  /** Effective zoom level for the timeline slider (already resolved from "auto"). */
+  declare zoomLevel: string;
+
+  /** Date snapping mode passed to the timeline slider. */
+  declare dateSnapping: string;
+
   constructor() {
     super();
     this.open = false;
@@ -62,6 +76,9 @@ export class DpDateWindowDialog extends LitElement {
     this.showDelete = false;
     this.showShortcuts = false;
     this.submitLabel = "Create date window";
+    this.rangeBounds = null;
+    this.zoomLevel = "auto";
+    this.dateSnapping = "hour";
   }
 
   private _emit(name: string, detail: Record<string, unknown> = {}) {
@@ -115,6 +132,32 @@ export class DpDateWindowDialog extends LitElement {
     });
   }
 
+  private _onRangeCommit(ev: CustomEvent<{ start: number; end: number }>) {
+    const { start, end } = ev.detail ?? {};
+    if (!start || !end) return;
+    // Format as datetime-local value (YYYY-MM-DDTHH:MM) for the inputs
+    const fmt = (ms: number) => {
+      const d = new Date(ms);
+      const pad = (n: number) => String(n).padStart(2, "0");
+      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    };
+    const startStr = fmt(start);
+    const endStr = fmt(end);
+    // Update the datetime-local inputs directly so they reflect the slider commit
+    const startInput = this.shadowRoot?.querySelector<HTMLInputElement>("#date-window-start");
+    const endInput = this.shadowRoot?.querySelector<HTMLInputElement>("#date-window-end");
+    if (startInput) startInput.value = startStr;
+    if (endInput) endInput.value = endStr;
+    this._emit("dp-window-date-change", { start: startStr, end: endStr });
+  }
+
+  /** Parse the startValue / endValue strings to Date objects for the timeline. */
+  private _parseValueToDate(value: string): Date | null {
+    if (!value) return null;
+    const d = new Date(value);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+
   render() {
     return html`
       <ha-dialog
@@ -122,9 +165,9 @@ export class DpDateWindowDialog extends LitElement {
         hideActions
         .scrimClickAction=${"close"}
         .escapeKeyAction=${"close"}
-        .heading=${this.heading}
         @closed=${this._onDialogClosed}
       >
+        <span slot="heading">${this.heading}</span>
         <div class="date-window-dialog-content">
           <div class="date-window-dialog-body">
             A date window saves a named date range as a tab, so you can quickly preview it against
@@ -167,6 +210,21 @@ export class DpDateWindowDialog extends LitElement {
               </div>
             </div>
           </div>
+
+          ${this.rangeBounds
+            ? html`
+                <div class="date-window-dialog-timeline">
+                  <dp-range-timeline
+                    .startTime=${this._parseValueToDate(this.startValue)}
+                    .endTime=${this._parseValueToDate(this.endValue)}
+                    .rangeBounds=${this.rangeBounds}
+                    .zoomLevel=${this.zoomLevel}
+                    .dateSnapping=${this.dateSnapping}
+                    @dp-range-commit=${this._onRangeCommit}
+                  ></dp-range-timeline>
+                </div>
+              `
+            : nothing}
 
           ${this.showShortcuts
             ? html`

@@ -1,6 +1,10 @@
+
 /**
  * Preferences data access layer.
  */
+
+/** HA user-data key for the saved history page. Stored via frontend/set_user_data. */
+export const PANEL_HISTORY_SAVED_PAGE_KEY = "hass_datapoints:saved_page_v1";
 
 export async function fetchUserData(hass, key, defaultValue = null) {
   try {
@@ -10,7 +14,7 @@ export async function fetchUserData(hass, key, defaultValue = null) {
     });
     return result?.value ?? defaultValue;
   } catch (err) {
-    console.warn("[hass-datapoints] fetchUserData failed:", err);
+    logger.warn("[hass-datapoints] fetchUserData failed:", err);
     return defaultValue;
   }
 }
@@ -23,6 +27,6 @@ export async function saveUserData(hass, key, value) {
       value,
     });
   } catch (err) {
-    console.warn("[hass-datapoints] saveUserData failed:", err);
+    logger.warn("[hass-datapoints] saveUserData failed:", err);
   }
 }

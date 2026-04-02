@@ -67,7 +67,6 @@ export const styles = css`
     border-radius: 6px;
     background: transparent;
     color: var(--secondary-text-color);
-    cursor: grab;
     opacity: 0;
     transition: opacity 140ms ease, background-color 120ms ease;
     touch-action: none;
@@ -92,9 +91,6 @@ export const styles = css`
     outline: none;
   }
 
-  .history-target-drag-handle:active {
-    cursor: grabbing;
-  }
 
   .history-target-name {
     grid-area: name;
@@ -337,6 +333,37 @@ export const styles = css`
     gap: var(--dp-spacing-sm);
     padding-top: calc(var(--spacing, 8px) * 0.25);
     border-top: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 78%, transparent);
+  }
+
+  .history-target-analysis-bottom-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dp-spacing-sm);
+  }
+
+  .history-target-analysis-copy-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border: none;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 12%, transparent);
+    color: var(--primary-color, #03a9f4);
+    font-size: 0.78rem;
+    font: inherit;
+    cursor: pointer;
+    transition: background-color 120ms ease;
+  }
+
+  .history-target-analysis-copy-btn:hover,
+  .history-target-analysis-copy-btn:focus-visible {
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 20%, transparent);
+  }
+
+  .history-target-analysis-copy-btn ha-icon {
+    --mdc-icon-size: 14px;
   }
 
   .history-target-analysis-grid {

@@ -1,11 +1,15 @@
 import { LitElement, html, css } from "lit";
+
 export class DpDateTimeInput extends LitElement {
   static properties = {
     value: { type: String },
     label: { type: String },
   };
+
   declare value: string;
+
   declare label: string;
+
   static styles = css`
     :host { display: block; }
     label {
@@ -20,11 +24,13 @@ export class DpDateTimeInput extends LitElement {
     }
     input:focus { border-color: var(--primary-color, #03a9f4); outline: none; }
   `;
+
   constructor() {
     super();
     this.value = "";
     this.label = "";
   }
+
   _onChange(e: Event) {
     this.dispatchEvent(
       new CustomEvent("dp-datetime-change", {
@@ -34,6 +40,7 @@ export class DpDateTimeInput extends LitElement {
       }),
     );
   }
+
   render() {
     return html`
       ${this.label ? html`<label>${this.label}</label>` : ""}

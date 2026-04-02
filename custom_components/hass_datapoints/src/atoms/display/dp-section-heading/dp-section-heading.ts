@@ -1,9 +1,12 @@
 import { LitElement, html, css } from "lit";
+
 export class DpSectionHeading extends LitElement {
   static properties = {
     text: { type: String },
   };
+
   declare text: string;
+
   static styles = css`
     :host { display: block; }
     .heading {
@@ -14,10 +17,12 @@ export class DpSectionHeading extends LitElement {
       color: var(--secondary-text-color);
     }
   `;
+
   constructor() {
     super();
     this.text = "";
   }
+
   render() {
     return html`<div class="heading">${this.text}</div>`;
   }

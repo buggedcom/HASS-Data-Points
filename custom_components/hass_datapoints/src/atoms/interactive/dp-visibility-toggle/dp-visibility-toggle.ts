@@ -1,13 +1,18 @@
 import { LitElement, html, css } from "lit";
+
 export class DpVisibilityToggle extends LitElement {
   static properties = {
     pressed: { type: Boolean },
     label: { type: String },
     icon: { type: String },
   };
+
   declare pressed: boolean;
+
   declare label: string;
+
   declare icon: string;
+
   static styles = css`
     :host { display: inline-block; }
     button {
@@ -21,12 +26,14 @@ export class DpVisibilityToggle extends LitElement {
     }
     button[aria-pressed="false"] { opacity: 0.5; }
   `;
+
   constructor() {
     super();
     this.pressed = true;
     this.label = "";
     this.icon = "mdi:eye";
   }
+
   _onClick() {
     this.dispatchEvent(
       new CustomEvent("dp-visibility-change", {
@@ -36,6 +43,7 @@ export class DpVisibilityToggle extends LitElement {
       }),
     );
   }
+
   render() {
     return html`
       <button

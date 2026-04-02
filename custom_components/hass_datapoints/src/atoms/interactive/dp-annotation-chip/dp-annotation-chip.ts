@@ -1,4 +1,5 @@
 import { LitElement, html, css } from "lit";
+
 export class DpAnnotationChip extends LitElement {
   static properties = {
     type: { type: String },
@@ -6,10 +7,15 @@ export class DpAnnotationChip extends LitElement {
     icon: { type: String },
     name: { type: String },
   };
+
   declare type: string;
+
   declare itemId: string;
+
   declare icon: string;
+
   declare name: string;
+
   static styles = css`
     :host { display: inline-flex; }
     .context-chip {
@@ -37,6 +43,7 @@ export class DpAnnotationChip extends LitElement {
       pointer-events: none;
     }
   `;
+
   constructor() {
     super();
     this.type = "";
@@ -44,6 +51,7 @@ export class DpAnnotationChip extends LitElement {
     this.icon = "";
     this.name = "";
   }
+
   _onRemove() {
     this.dispatchEvent(
       new CustomEvent("dp-chip-remove", {
@@ -53,6 +61,7 @@ export class DpAnnotationChip extends LitElement {
       }),
     );
   }
+
   render() {
     return html`
       <span class="context-chip">

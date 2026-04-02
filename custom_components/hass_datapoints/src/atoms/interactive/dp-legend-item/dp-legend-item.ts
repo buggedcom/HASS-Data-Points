@@ -1,4 +1,5 @@
 import { LitElement, html, css } from "lit";
+
 export class DpLegendItem extends LitElement {
   static properties = {
     label: { type: String },
@@ -7,11 +8,17 @@ export class DpLegendItem extends LitElement {
     pressed: { type: Boolean },
     opacity: { type: Number },
   };
+
   declare label: string;
+
   declare color: string;
+
   declare unit: string;
+
   declare pressed: boolean;
+
   declare opacity: number;
+
   static styles = css`
     :host { display: inline-block; }
     button {
@@ -29,6 +36,7 @@ export class DpLegendItem extends LitElement {
       height: 3px; border-radius: 2px; flex-shrink: 0;
     }
   `;
+
   constructor() {
     super();
     this.label = "";
@@ -37,6 +45,7 @@ export class DpLegendItem extends LitElement {
     this.pressed = true;
     this.opacity = 1;
   }
+
   _onClick() {
     this.dispatchEvent(
       new CustomEvent("dp-legend-toggle", {
@@ -46,6 +55,7 @@ export class DpLegendItem extends LitElement {
       }),
     );
   }
+
   render() {
     const displayText = this.unit ? `${this.label} (${this.unit})` : this.label;
     return html`

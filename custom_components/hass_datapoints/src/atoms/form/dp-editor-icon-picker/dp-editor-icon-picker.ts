@@ -1,5 +1,6 @@
 import { LitElement, html, css, PropertyValues } from "lit";
 import type { HassLike } from "@/lib/types";
+
 type HaIconPicker = HTMLElement & {
   label?: string;
   hass?: HassLike;
@@ -11,19 +12,25 @@ export class DpEditorIconPicker extends LitElement {
     value: { type: String },
     hass: { type: Object },
   };
+
   declare label: string;
+
   declare value: string;
+
   declare hass: HassLike | null;
+
   static styles = css`
     :host { display: block; }
     ha-icon-picker { display: block; width: 100%; }
   `;
+
   constructor() {
     super();
     this.label = "";
     this.value = "mdi:bookmark";
     this.hass = null;
   }
+
   firstUpdated() {
     const el = this.shadowRoot!.querySelector("ha-icon-picker") as HaIconPicker | null;
     if (el) {
@@ -32,12 +39,14 @@ export class DpEditorIconPicker extends LitElement {
       el.value = this.value;
     }
   }
+
   updated(changedProps: PropertyValues) {
     const el = this.shadowRoot!.querySelector("ha-icon-picker") as HaIconPicker | null;
     if (!el) { return; }
     if (changedProps.has("value")) { el.value = this.value; }
     if (changedProps.has("hass") && this.hass) { el.hass = this.hass; }
   }
+
   _onValueChanged(e: CustomEvent<{ value: string }>) {
     this.dispatchEvent(
       new CustomEvent("dp-icon-change", {
@@ -47,6 +56,7 @@ export class DpEditorIconPicker extends LitElement {
       }),
     );
   }
+
   render() {
     return html`<ha-icon-picker @value-changed=${this._onValueChanged}></ha-icon-picker>`;
   }

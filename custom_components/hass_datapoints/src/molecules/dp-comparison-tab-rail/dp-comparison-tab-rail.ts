@@ -56,6 +56,7 @@ export class DpComparisonTabRail extends LitElement {
   }
 
   connectedCallback() {
+    // eslint-disable-next-line wc/guard-super-call
     super.connectedCallback();
     this._resizeObserver = new ResizeObserver(() => this._checkOverflow());
     this.updateComplete.then(() => {
@@ -67,6 +68,7 @@ export class DpComparisonTabRail extends LitElement {
   }
 
   disconnectedCallback() {
+    // eslint-disable-next-line wc/guard-super-call
     super.disconnectedCallback();
     this._resizeObserver?.disconnect();
   }

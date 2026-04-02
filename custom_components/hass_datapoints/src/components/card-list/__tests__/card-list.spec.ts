@@ -3,7 +3,9 @@ import { createMockHass } from "@/test-support/mock-hass";
 import { HassRecordsListCard } from "../card-list.ts";
 import type { EventRecord } from "@/lib/types";
 
-vi.mock("../../../lib/shared.js", async (importOriginal) => {
+import { fetchEvents } from "@/lib/shared";
+
+vi.mock("../@/lib/shared.js", async (importOriginal) => {
   const mod = await importOriginal() as Record<string, unknown>;
   return {
     ...mod,
@@ -15,8 +17,6 @@ vi.mock("../../../lib/shared.js", async (importOriginal) => {
     buildDataPointsHistoryPath: vi.fn().mockReturnValue("/history"),
   };
 });
-
-import { fetchEvents } from "@/lib/shared";
 
 if (!customElements.get("hass-datapoints-list-card")) {
   customElements.define("hass-datapoints-list-card", HassRecordsListCard);

@@ -1,15 +1,20 @@
 import { LitElement, html, css } from "lit";
 import "@/atoms/display/dp-loading-indicator/dp-loading-indicator";
 import "@/atoms/display/dp-chart-message/dp-chart-message";
+
 export class DpChartShell extends LitElement {
   static properties = {
     cardTitle: { type: String, attribute: "card-title" },
     loading: { type: Boolean },
     message: { type: String },
   };
+
   declare cardTitle: string;
+
   declare loading: boolean;
+
   declare message: string;
+
   static styles = css`
     :host { display: block; height: 100%; min-height: 0; }
     ha-card {
@@ -29,12 +34,14 @@ export class DpChartShell extends LitElement {
     dp-chart-message { position: absolute; inset: 0; z-index: 2; }
     ::slotted(*) { width: 100%; height: 100%; }
   `;
+
   constructor() {
     super();
     this.cardTitle = "";
     this.loading = false;
     this.message = "";
   }
+
   render() {
     return html`
       <ha-card>

@@ -3,6 +3,7 @@ import { DOMAIN } from "@/lib/shared";
 import type { ChipItem, HassLike, CardConfig } from "@/lib/types";
 import "@/molecules/dp-chip-group/dp-chip-group";
 import "@/atoms/display/dp-color-swatch/dp-color-swatch";
+import { logger } from "@/lib/logger.js";
 
 type TargetMap = {
   entity_id: string[];
@@ -30,10 +31,15 @@ export class HassRecordsActionCard extends LitElement {
   };
 
   declare _config: CardConfig;
+
   declare _hass: HassLike | null;
+
   declare _color: string;
+
   declare _feedbackClass: string;
+
   declare _feedbackText: string;
+
   declare _feedbackVisible: boolean;
 
   private _userTarget: Partial<TargetMap> = {};
@@ -132,8 +138,15 @@ export class HassRecordsActionCard extends LitElement {
 
   private _configTarget(): TargetMap {
     const cfg = this._config;
-    const norm = (v: unknown): string[] =>
-      !v ? [] : Array.isArray(v) ? (v as string[]) : [v as string];
+    const norm = (v: unknown): string[] => {
+      if (!v) {
+        return [];
+      } if (Array.isArray(v)) {
+        return v as string[];
+      } 
+        return [v as string];
+      
+    };
     let raw: Record<string, unknown> | undefined;
     if (cfg.target) raw = cfg.target as Record<string, unknown>;
     else if (cfg.entity) raw = { entity_id: [cfg.entity] };
@@ -158,8 +171,15 @@ export class HassRecordsActionCard extends LitElement {
   }
 
   private _mergeTargets(a: TargetMap, b: Partial<TargetMap>): TargetMap {
-    const norm = (v: unknown): string[] =>
-      !v ? [] : Array.isArray(v) ? (v as string[]) : [v as string];
+    const norm = (v: unknown): string[] => {
+      if (!v) {
+        return [];
+      } if (Array.isArray(v)) {
+        return v as string[];
+      } 
+        return [v as string];
+      
+    };
     const merge = (x: unknown, y: unknown) => [...new Set([...norm(x), ...norm(y)])];
     return {
       entity_id: merge(a.entity_id, b.entity_id),
@@ -221,14 +241,14 @@ export class HassRecordsActionCard extends LitElement {
       this._feedbackClass = "ok";
       this._feedbackText = "Event recorded!";
       this._feedbackVisible = true;
-      setTimeout(() => (this._feedbackVisible = false), 3000);
+      setTimeout(() => { this._feedbackVisible = false; }, 3000);
     } catch (e: unknown) {
       const err = e as Error;
       this._feedbackClass = "err";
       this._feedbackText = `Error: ${err.message || "unknown error"}`;
       this._feedbackVisible = true;
-      // eslint-disable-next-line no-console
-      console.error("[hass-datapoints action-card]", e);
+       
+      logger.error("[hass-datapoints action-card]", e);
     }
 
     if (btn) btn.disabled = false;

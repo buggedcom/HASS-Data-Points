@@ -41,28 +41,46 @@ export class DpPanelTimeline extends LitElement {
   };
 
   declare startTime: Date | null;
+
   declare endTime: Date | null;
+
   declare rangeBounds: RangeBounds | null;
+
   declare zoomLevel: string;
+
   declare dateSnapping: string;
+
   declare isLiveEdge: boolean;
+
   declare hoveredPeriodRange: { start: number; end: number } | null;
+
   declare comparisonPreview: { start: number; end: number } | null;
+
   declare zoomRange: { start: number; end: number } | null;
+
   declare zoomWindowRange: { start: number; end: number } | null;
+
   declare chartHoverTimeMs: number | null;
+
   declare chartHoverWindowTimeMs: number | null;
+
   declare events: EventMarker[];
 
   static styles = styles;
 
   // Cached overlay DOM refs (set in firstUpdated)
   _rangeHoverPreviewEl: HTMLElement | null = null;
+
   _rangeComparisonPreviewEl: HTMLElement | null = null;
+
   _rangeZoomHighlightEl: HTMLElement | null = null;
+
   _rangeZoomWindowHighlightEl: HTMLElement | null = null;
+
   _rangeChartHoverLineEl: HTMLElement | null = null;
+
   _rangeChartHoverWindowLineEl: HTMLElement | null = null;
+
   _rangeEventLayerEl: HTMLElement | null = null;
 
   constructor() {

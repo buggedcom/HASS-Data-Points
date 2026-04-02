@@ -10,9 +10,13 @@ import type { CardConfig } from "@/lib/types";
 
 export class HassRecordsHistoryCard extends ChartCardBase {
   private _hiddenSeries: Set<string> = new Set();
+
   private _hiddenEventIds: Set<string> = new Set();
+
   private _zoomRange: unknown = null;
+
   private _configKey: string | undefined;
+
   private _annotationDialog: { teardown(): void; open(...args: unknown[]): void };
 
   constructor() {
@@ -64,7 +68,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     // Stub: full loading handled by the JS implementation.
   }
 
-  protected _drawChart(..._args: unknown[]): void {
+  protected _drawChart(): void {
     // Stub: full drawing handled by the JS implementation.
   }
 

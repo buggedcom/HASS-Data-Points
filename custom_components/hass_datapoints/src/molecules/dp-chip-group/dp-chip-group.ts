@@ -1,6 +1,7 @@
 import { LitElement, html, css } from "lit";
 import type { ChipItem, HassLike } from "@/lib/types";
 import "@/atoms/form/dp-entity-chip/dp-entity-chip";
+
 export class DpChipGroup extends LitElement {
   static properties = {
     items: { type: Array },
@@ -8,15 +9,21 @@ export class DpChipGroup extends LitElement {
     removable: { type: Boolean },
     label: { type: String },
   };
+
   declare items: ChipItem[];
+
   declare hass: HassLike | null;
+
   declare removable: boolean;
+
   declare label: string;
+
   static styles = css`
     :host { display: block; }
     .chips { display: flex; flex-wrap: wrap; gap: 4px; }
     .label { font-size: 0.78rem; color: var(--secondary-text-color); margin-bottom: 4px; }
   `;
+
   constructor() {
     super();
     this.items = [];
@@ -24,6 +31,7 @@ export class DpChipGroup extends LitElement {
     this.removable = false;
     this.label = "";
   }
+
   _onRemove(e: CustomEvent<{ type: string; itemId: string }>) {
     const { type, itemId } = e.detail;
     const next = this.items.filter(
@@ -37,6 +45,7 @@ export class DpChipGroup extends LitElement {
       }),
     );
   }
+
   render() {
     return html`
       ${this.label ? html`<div class="label">${this.label}</div>` : ""}

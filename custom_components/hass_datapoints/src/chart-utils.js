@@ -387,6 +387,7 @@ export const CHART_STYLE = `
     background: var(--card-background-color, var(--primary-background-color, #fff));
     overflow: hidden;
     z-index: 3;
+    border-bottom-left-radius: 11px;
   }
   .chart-axis-overlay.visible {
     display: block;
@@ -938,6 +939,10 @@ export function resolveChartLabelColor(el) {
 
 export function setupCanvas(canvas, container, cssHeight, cssWidth = null) {
   const dpr = window.devicePixelRatio || 1;
+  // Safari caps canvas pixel dimensions at 16,383. Chrome/Firefox at ~32,767.
+  // Use the Safari limit (16,383) so the canvas is never silently blanked by
+  // the browser resetting it to 300×150 when dimensions are exceeded.
+  const maxCssDim = Math.floor(16383 / dpr);
   const styles = getComputedStyle(container);
   const paddingX =
     (Number.parseFloat(styles.paddingLeft || "0") || 0)
@@ -946,13 +951,13 @@ export function setupCanvas(canvas, container, cssHeight, cssWidth = null) {
     (Number.parseFloat(styles.paddingTop || "0") || 0)
     + (Number.parseFloat(styles.paddingBottom || "0") || 0);
   const measuredWidth = cssWidth ?? (container.clientWidth || 360);
-  const w = Math.max(1, Math.round(measuredWidth - paddingX));
+  const w = Math.min(maxCssDim, Math.max(1, Math.round(measuredWidth - paddingX)));
   const requestedHeight = cssHeight ?? container.clientHeight ?? 220;
-  const h = Math.max(120, Math.round(requestedHeight - paddingY));
+  const h = Math.min(maxCssDim, Math.max(120, Math.round(requestedHeight - paddingY)));
   canvas.width = w * dpr;
   canvas.height = h * dpr;
   canvas.style.width = `${w}px`;
-  canvas.style.height = `${h  }px`;
+  canvas.style.height = `${h}px`;
   canvas.getContext("2d").scale(dpr, dpr);
   return { w, h };
 }
@@ -1114,7 +1119,14 @@ function buildAnomalyMethodSection(region) {
 }
 
 function buildAnomalyTooltipContent(regions) {
-  const regionsArray = Array.isArray(regions) ? regions : (regions ? [regions] : []);
+  let regionsArray;
+  if (Array.isArray(regions)) {
+    regionsArray = regions;
+  } else if (regions) {
+    regionsArray = [regions];
+  } else {
+    regionsArray = [];
+  }
   if (regionsArray.length === 0) return null;
 
   const sections = regionsArray.map(buildAnomalyMethodSection).filter(Boolean);
@@ -1396,6 +1408,50 @@ export function hideTooltip(card) {
   clearAnnotationTooltips(card);
 }
 
+function resolveTooltipSeriesLabel(entry) {
+  const isSubordinate = entry.grouped === true && entry.rawVisible === true;
+  if (entry.comparison === true) {
+    if (entry.grouped === true) {
+      return entry.windowLabel || "Date window";
+    }
+      return `${entry.windowLabel || "Date window"}: ${entry.label || ""}`;
+
+  } if (entry.trend === true) {
+    if (isSubordinate) {
+      return "Trend";
+    }
+      return `Trend: ${entry.baseLabel || entry.label || ""}`;
+
+  } if (entry.rate === true) {
+    if (isSubordinate) {
+      return "Rate";
+    }
+      return `Rate: ${entry.baseLabel || entry.label || ""}`;
+
+  } if (entry.delta === true) {
+    if (isSubordinate) {
+      return "Delta";
+    }
+      return `Delta: ${entry.baseLabel || entry.label || ""}`;
+
+  } if (entry.summary === true) {
+    const summaryLabel = String(entry.summaryType || "").toUpperCase();
+    if (isSubordinate) {
+      return summaryLabel;
+    }
+      return `${summaryLabel}: ${entry.baseLabel || entry.label || ""}`;
+
+  } if (entry.threshold === true) {
+    if (isSubordinate) {
+      return "Threshold";
+    }
+      return `Threshold: ${entry.baseLabel || entry.label || ""}`;
+
+  }
+    return entry.label || "";
+
+}
+
 export function showLineChartTooltip(card, hover, clientX, clientY) {
   const tooltip = card.shadowRoot.getElementById("tooltip");
   const ttTime = card.shadowRoot.getElementById("tt-time");
@@ -1617,33 +1673,7 @@ export function showLineChartTooltip(card, hover, clientX, clientY) {
             ${entry.grouped === true && entry.rawVisible === true
               ? ""
               : `<span class="tt-dot" style="background:${esc(entry.color || "#03a9f4")}"></span>`}
-            <span class="tt-series-label">${esc(
-              entry.comparison === true
-                ? (entry.grouped === true
-                  ? (entry.windowLabel || "Date window")
-                  : `${entry.windowLabel || "Date window"}: ${entry.label || ""}`)
-                : entry.trend === true
-                  ? (entry.grouped === true && entry.rawVisible === true
-                    ? "Trend"
-                    : `Trend: ${entry.baseLabel || entry.label || ""}`)
-                : entry.rate === true
-                  ? (entry.grouped === true && entry.rawVisible === true
-                    ? "Rate"
-                    : `Rate: ${entry.baseLabel || entry.label || ""}`)
-                : entry.delta === true
-                  ? (entry.grouped === true && entry.rawVisible === true
-                    ? "Delta"
-                    : `Delta: ${entry.baseLabel || entry.label || ""}`)
-                : entry.summary === true
-                    ? (entry.grouped === true && entry.rawVisible === true
-                      ? String(entry.summaryType || "").toUpperCase()
-                      : `${String(entry.summaryType || "").toUpperCase()}: ${entry.baseLabel || entry.label || ""}`)
-                : entry.threshold === true
-                  ? (entry.grouped === true && entry.rawVisible === true
-                    ? "Threshold"
-                    : `Threshold: ${entry.baseLabel || entry.label || ""}`)
-                : (entry.label || ""),
-            )}</span>
+            <span class="tt-series-label">${esc(resolveTooltipSeriesLabel(entry))}</span>
           </div>
           <span class="tt-series-value">${esc(formatTooltipDisplayValue(entry.value, entry.unit))}</span>
         </div>
@@ -1682,13 +1712,6 @@ export function showLineChartTooltip(card, hover, clientX, clientY) {
     top: chartBounds.top + 8,
     bottom: chartBounds.bottom - 8,
   } : null);
-  const annotationTooltips = renderAnnotationTooltips(card, hover, tooltip, chartBounds ? {
-    left: chartBounds.left + 8,
-    right: chartBounds.right - 8,
-    top: chartBounds.top + 8,
-    bottom: chartBounds.bottom - 8,
-  } : null);
-  const secondaryAnchor = annotationTooltips[annotationTooltips.length - 1] || tooltip;
   if (anomalyTooltip && hover.anomalyRegions?.length > 0) {
     positionAnomalyTooltip(anomalyTooltip, clientX, clientY, tooltip, chartBounds ? {
       left: chartBounds.left + 8,

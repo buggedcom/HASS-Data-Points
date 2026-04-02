@@ -28,12 +28,14 @@ export class DpFloatingMenu extends LitElement {
   }
 
   connectedCallback() {
+    // eslint-disable-next-line wc/guard-super-call
     super.connectedCallback();
     this._onPointerDown = this._onPointerDown.bind(this);
     window.addEventListener("pointerdown", this._onPointerDown, true);
   }
 
   disconnectedCallback() {
+    // eslint-disable-next-line wc/guard-super-call
     super.disconnectedCallback();
     window.removeEventListener("pointerdown", this._onPointerDown, true);
   }

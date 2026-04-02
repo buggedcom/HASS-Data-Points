@@ -1,13 +1,18 @@
 import { LitElement, html, css } from "lit";
+
 export class DpToggleSwitch extends LitElement {
   static properties = {
     checked: { type: Boolean },
     label: { type: String },
     entityId: { type: String, attribute: "entity-id" },
   };
+
   declare checked: boolean;
+
   declare label: string;
+
   declare entityId: string | undefined;
+
   static styles = css`
     :host { display: inline-flex; }
     label {
@@ -44,12 +49,14 @@ export class DpToggleSwitch extends LitElement {
       white-space: nowrap;
     }
   `;
+
   constructor() {
     super();
     this.checked = false;
     this.label = "";
     this.entityId = undefined;
   }
+
   _onChange() {
     this.dispatchEvent(
       new CustomEvent("dp-toggle-change", {
@@ -59,6 +66,7 @@ export class DpToggleSwitch extends LitElement {
       }),
     );
   }
+
   render() {
     return html`
       <label>

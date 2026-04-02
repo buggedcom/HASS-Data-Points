@@ -14,7 +14,7 @@ export function readHistoryPageSessionState() {
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     return parsed && typeof parsed === "object" ? parsed : null;
-  } catch (_err) {
+  } catch {
     return null;
   }
 }
@@ -55,6 +55,7 @@ export function buildHistoryPageSessionState(source) {
     show_chart_delta_tooltip: true,
     show_chart_delta_lines: false,
     show_chart_correlated_anomalies: source._showCorrelatedAnomalies,
+    chart_anomaly_overlap_mode: source._chartAnomalyOverlapMode || "all",
     show_data_gaps: source._showDataGaps,
     data_gap_threshold: source._dataGapThreshold,
     content_split_ratio: source._contentSplitRatio,
@@ -69,13 +70,17 @@ export function buildHistoryPageSessionState(source) {
     date_windows: normalizeDateWindows(source._comparisonWindows),
     hours: source._hours,
     sidebar_collapsed: source._sidebarCollapsed,
+    sidebar_accordion_targets_open: source._sidebarAccordionTargetsOpen !== false,
+    sidebar_accordion_datapoints_open: source._sidebarAccordionDatapointsOpen !== false,
+    sidebar_accordion_analysis_open: source._sidebarAccordionAnalysisOpen !== false,
+    sidebar_accordion_chart_open: source._sidebarAccordionChartOpen !== false,
   };
 }
 
 export function writeHistoryPageSessionState(source) {
   try {
     window.sessionStorage?.setItem(PANEL_HISTORY_SESSION_KEY, JSON.stringify(buildHistoryPageSessionState(source)));
-  } catch (_err) {
+  } catch {
     // Ignore session storage failures.
   }
 }

@@ -1,7 +1,7 @@
 import { LitElement, html, nothing } from "lit";
+import type { TemplateResult } from "lit";
 import { sharedStyles } from "../dp-analysis-group-shared/analysis-group-shared.styles";
 import { styles } from "./dp-analysis-anomaly-group.styles";
-import type { TemplateResult } from "lit";
 import type { NormalizedAnalysis, ComparisonWindow } from "../dp-target-row/types";
 import "@/atoms/analysis/dp-analysis-group/dp-analysis-group";
 import "@/atoms/analysis/dp-analysis-method-subopts/dp-analysis-method-subopts";
@@ -57,7 +57,9 @@ export class DpAnalysisAnomalyGroup extends LitElement {
   };
 
   declare analysis: NormalizedAnalysis;
+
   declare entityId: string;
+
   declare comparisonWindows: ComparisonWindow[];
 
   static styles = [sharedStyles, styles];

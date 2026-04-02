@@ -1,4 +1,5 @@
 import { LitElement, html, css, PropertyValues } from "lit";
+
 type HaFormField = HTMLElement & { label?: string };
 type HaSwitch = HTMLElement & { checked?: boolean };
 export class DpEditorSwitch extends LitElement {
@@ -7,9 +8,13 @@ export class DpEditorSwitch extends LitElement {
     checked: { type: Boolean },
     tooltip: { type: String },
   };
+
   declare label: string;
+
   declare checked: boolean;
+
   declare tooltip: string;
+
   static styles = css`
     :host { display: block; }
     .switch-row { display: flex; align-items: center; gap: 4px; }
@@ -27,18 +32,21 @@ export class DpEditorSwitch extends LitElement {
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); z-index: 10; pointer-events: none;
     }
   `;
+
   constructor() {
     super();
     this.label = "";
     this.checked = false;
     this.tooltip = "";
   }
+
   firstUpdated() {
     const ff = this.shadowRoot!.querySelector("ha-formfield") as HaFormField | null;
     if (ff) { ff.label = this.label; }
     const sw = this.shadowRoot!.querySelector("ha-switch") as HaSwitch | null;
     if (sw) { sw.checked = this.checked; }
   }
+
   updated(changedProps: PropertyValues) {
     if (changedProps.has("checked")) {
       const sw = this.shadowRoot!.querySelector("ha-switch") as HaSwitch | null;
@@ -49,6 +57,7 @@ export class DpEditorSwitch extends LitElement {
       if (ff) { ff.label = this.label; }
     }
   }
+
   _onChange(e: Event) {
     this.dispatchEvent(
       new CustomEvent("dp-switch-change", {
@@ -58,6 +67,7 @@ export class DpEditorSwitch extends LitElement {
       }),
     );
   }
+
   render() {
     return html`
       <div class="switch-row">

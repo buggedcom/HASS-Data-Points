@@ -7,7 +7,7 @@
 import { html } from "lit";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("../../../lib/shared.js", () => ({
+vi.mock("@/lib/shared.js", () => ({
   DOMAIN: "hass_datapoints",
 }));
 
@@ -17,6 +17,7 @@ const { ChartCardBase } = await import("../card-chart-base.ts");
 
 class TestChartCard extends ChartCardBase {
   loadSpy = vi.fn().mockResolvedValue(undefined);
+
   drawSpy = vi.fn();
 
   async _load(): Promise<void> {

@@ -17,7 +17,7 @@ const mockRenderer = {
   pad: { left: 0, right: 0, top: 0, bottom: 0 },
 };
 
-vi.mock("../../../lib/shared.js", () => ({
+vi.mock("@/lib/shared.js", () => ({
   DOMAIN: "hass_datapoints",
   COLORS: ["#03a9f4", "#e91e63", "#4caf50"],
   attachLineChartHover: vi.fn(() => vi.fn()),

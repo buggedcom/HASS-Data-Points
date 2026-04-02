@@ -9,8 +9,11 @@ export class DpNumberInput extends LitElement {
   };
 
   declare value: string;
+
   declare placeholder: string;
+
   declare suffix: string;
+
   declare step: string;
 
   static styles = css`

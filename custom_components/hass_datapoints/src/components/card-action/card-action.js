@@ -9,7 +9,6 @@ import {
   esc,
   labelIcon,
   labelName,
-  mergeTargetSelections,
 } from "../../lib/shared.js";
 
 /**
@@ -67,7 +66,15 @@ export class HassRecordsActionCard extends HTMLElement {
   // Normalises all fields to arrays (HA target selector may store single values as strings).
   _configTarget() {
     const cfg = this._config;
-    const norm = (v) => !v ? [] : Array.isArray(v) ? v : [v];
+    const norm = (v) => {
+      if (!v) {
+        return [];
+      } if (Array.isArray(v)) {
+        return v;
+      } 
+        return [v];
+      
+    };
     let raw;
     if (cfg.target) raw = cfg.target;
     else if (cfg.entity) raw = { entity_id: [cfg.entity] };
@@ -306,7 +313,15 @@ export class HassRecordsActionCard extends HTMLElement {
   }
 
   _mergeTargets(a, b) {
-    const norm = (v) => !v ? [] : Array.isArray(v) ? v : [v];
+    const norm = (v) => {
+      if (!v) {
+        return [];
+      } if (Array.isArray(v)) {
+        return v;
+      } 
+        return [v];
+      
+    };
     const merge = (x, y) => [...new Set([...norm(x), ...norm(y)])];
     return {
       entity_id: merge(a.entity_id, b.entity_id),

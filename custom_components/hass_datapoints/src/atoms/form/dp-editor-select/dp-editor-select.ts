@@ -1,5 +1,6 @@
 import { LitElement, html, css, PropertyValues } from "lit";
 import type { SelectOption } from "@/lib/types";
+
 type HaSelector = HTMLElement & {
   label?: string;
   selector?: unknown;
@@ -11,19 +12,25 @@ export class DpEditorSelect extends LitElement {
     value: { type: String },
     options: { type: Array },
   };
+
   declare label: string;
+
   declare value: string;
+
   declare options: SelectOption[];
+
   static styles = css`
     :host { display: block; }
     ha-selector { display: block; width: 100%; }
   `;
+
   constructor() {
     super();
     this.label = "";
     this.value = "";
     this.options = [];
   }
+
   firstUpdated() {
     const el = this.shadowRoot!.querySelector("ha-selector") as HaSelector | null;
     if (el) {
@@ -32,6 +39,7 @@ export class DpEditorSelect extends LitElement {
       el.value = this.value;
     }
   }
+
   updated(changedProps: PropertyValues) {
     const el = this.shadowRoot!.querySelector("ha-selector") as HaSelector | null;
     if (!el) { return; }
@@ -40,6 +48,7 @@ export class DpEditorSelect extends LitElement {
       el.selector = { select: { options: this.options } };
     }
   }
+
   _onValueChanged(e: CustomEvent<{ value: string }>) {
     this.dispatchEvent(
       new CustomEvent("dp-select-change", {
@@ -49,6 +58,7 @@ export class DpEditorSelect extends LitElement {
       }),
     );
   }
+
   render() {
     return html`<ha-selector @value-changed=${this._onValueChanged}></ha-selector>`;
   }

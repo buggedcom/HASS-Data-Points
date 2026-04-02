@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createMockHass } from "@/test-support/mock-hass";
 import { HassRecordsDevToolCard } from "../card-dev-tool.ts";
 
-vi.mock("../../../lib/shared.js", async (importOriginal) => {
+vi.mock("@/lib/shared.js", async (importOriginal) => {
   const mod = await importOriginal() as Record<string, unknown>;
   return {
     ...mod,

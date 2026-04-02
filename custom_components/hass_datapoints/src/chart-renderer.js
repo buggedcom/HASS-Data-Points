@@ -71,7 +71,7 @@ export class ChartRenderer {
     return axes;
   }
 
-  _formatAxisTick(v, unit = "") {
+  _formatAxisTick(v) {
     const numeric =
       Math.abs(v) >= 1000
         ? `${(v / 1000).toFixed(1).replace(/\.0$/, "")}k`
@@ -468,7 +468,7 @@ export class ChartRenderer {
 
   drawBars(points, color, t0, t1, vMin, vMax, options = {}) {
     if (!points.length) return;
-    const { ctx, pad } = this;
+    const { ctx } = this;
     const fillAlpha = Number.isFinite(options.fillAlpha) ? options.fillAlpha : 0.78;
     const widthFactor = Number.isFinite(options.widthFactor) ? options.widthFactor : 0.72;
     const baselineY = this.yOf(Math.max(vMin, 0), vMin, vMax);
@@ -700,6 +700,44 @@ export class ChartRenderer {
     return hits;
   }
 
+  /**
+   * Draw a gradient-filled band between two data values, fading from the edge
+   * value toward the midpoint value. Used for min/max shading that fades toward
+   * the mean line.
+   *
+   * @param {number} valueEdge  Data value at the opaque edge (the min or max line)
+   * @param {number} valueMid   Data value at the transparent end (the mean line)
+   * @param {string} color      Hex color string (e.g. "#03a9f4")
+   * @param {number} t0         Render start time ms
+   * @param {number} t1         Render end time ms
+   * @param {number} vMin       Y-axis minimum data value
+   * @param {number} vMax       Y-axis maximum data value
+   * @param {object} options    { fillAlpha }
+   */
+  drawGradientBand(valueEdge, valueMid, color, t0, t1, vMin, vMax, options = {}) {
+    const fillAlpha = Number.isFinite(options.fillAlpha) ? options.fillAlpha : 0.08;
+    if (fillAlpha <= 0) { return; }
+    const hexMatch = String(color || "").match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i);
+    if (!hexMatch) { return; }
+    const r = parseInt(hexMatch[1], 16);
+    const g = parseInt(hexMatch[2], 16);
+    const b = parseInt(hexMatch[3], 16);
+    const yEdge = this.yOf(valueEdge, vMin, vMax);
+    const yMid = this.yOf(valueMid, vMin, vMax);
+    if (Math.abs(yMid - yEdge) < 1) { return; }
+    const { ctx, pad } = this;
+    const grad = ctx.createLinearGradient(0, yEdge, 0, yMid);
+    grad.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${fillAlpha})`);
+    grad.addColorStop(1, `rgba(${r}, ${g}, ${b}, 0)`);
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(pad.left, pad.top, this.cw, this.ch);
+    ctx.clip();
+    ctx.fillStyle = grad;
+    ctx.fillRect(pad.left, Math.min(yEdge, yMid), this.cw, Math.abs(yMid - yEdge));
+    ctx.restore();
+  }
+
   drawThresholdArea(points, thresholdValue, color, t0, t1, vMin, vMax, options = {}) {
     if (!Array.isArray(points) || points.length < 2) {
       return;
@@ -916,7 +954,7 @@ export class ChartRenderer {
     const overlay = document.createElement("canvas");
     overlay.width = canvas.width;
     overlay.height = canvas.height;
-    overlay.style.cssText = `position:absolute;top:0;left:0;width:${canvas.style.width || canvas.offsetWidth + "px"};height:${canvas.style.height || canvas.offsetHeight + "px"};pointer-events:none;z-index:2;`;
+    overlay.style.cssText = `position:absolute;top:0;left:0;width:${canvas.style.width || `${canvas.offsetWidth  }px`};height:${canvas.style.height || `${canvas.offsetHeight  }px`};pointer-events:none;z-index:2;`;
     parent.style.position = parent.style.position || "relative";
     parent.appendChild(overlay);
 
@@ -950,7 +988,7 @@ export class ChartRenderer {
       } else {
         const p = (t - 0.6) / 0.4;
         // Ease out cubic for smooth shrink
-        const ease = 1 - Math.pow(1 - p, 3);
+        const ease = 1 - (1 - p)**3;
         radius = pxMaxR * (1 - ease);
         alpha = 0.85 * (1 - ease);
       }

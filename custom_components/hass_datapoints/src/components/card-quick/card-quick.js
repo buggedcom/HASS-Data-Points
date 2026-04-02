@@ -1,5 +1,6 @@
 import { LitElement, html, css } from "lit";
-import { AMBER, DOMAIN } from "../../lib/shared.js";
+import { AMBER, DOMAIN } from "@/lib/shared.js";
+import { logger } from "@/lib/logger.js";
 
 /**
  * hass-datapoints-quick-card – Simple one-field quick record card.
@@ -152,13 +153,14 @@ export class HassRecordsQuickCard extends LitElement {
     const annotation = (annEl?.value || "").trim();
     if (annotation) data.annotation = annotation;
 
-    const entityIds = cfg.entity
-      ? [cfg.entity]
-      : cfg.entities
-        ? Array.isArray(cfg.entities)
-          ? cfg.entities
-          : [cfg.entities]
-        : [];
+    let entityIds;
+    if (cfg.entity) {
+      entityIds = [cfg.entity];
+    } else if (cfg.entities) {
+      entityIds = Array.isArray(cfg.entities) ? cfg.entities : [cfg.entities];
+    } else {
+      entityIds = [];
+    }
     if (entityIds.length) data.entity_ids = entityIds;
 
     try {
@@ -176,8 +178,8 @@ export class HassRecordsQuickCard extends LitElement {
       this._feedbackClass = "err";
       this._feedbackText = `Error: ${e.message || "unknown error"}`;
       this._feedbackVisible = true;
-      // eslint-disable-next-line no-console
-      console.error("[hass-datapoints quick-card]", e);
+
+      logger.error("[hass-datapoints quick-card]", e);
     }
     if (btn) btn.disabled = false;
   }

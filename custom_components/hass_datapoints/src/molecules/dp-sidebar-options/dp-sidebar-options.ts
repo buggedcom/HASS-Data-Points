@@ -2,6 +2,7 @@ import { LitElement, html } from "lit";
 import { styles } from "./dp-sidebar-options.styles";
 import "./sections/dp-sidebar-datapoints-section";
 import "./sections/dp-sidebar-datapoint-display-section";
+import "./sections/dp-sidebar-analysis-section";
 import "./sections/dp-sidebar-chart-display-section";
 
 export class DpSidebarOptions extends LitElement {
@@ -15,17 +16,41 @@ export class DpSidebarOptions extends LitElement {
     showDataGaps: { type: Boolean, attribute: "show-data-gaps" },
     dataGapThreshold: { type: String, attribute: "data-gap-threshold" },
     yAxisMode: { type: String, attribute: "y-axis-mode" },
+    anomalyOverlapMode: { type: String, attribute: "anomaly-overlap-mode" },
+    // Accordion open states
+    targetsOpen: { type: Boolean, attribute: "targets-open" },
+    datapointsOpen: { type: Boolean, attribute: "datapoints-open" },
+    analysisOpen: { type: Boolean, attribute: "analysis-open" },
+    chartOpen: { type: Boolean, attribute: "chart-open" },
   };
 
   declare datapointScope: string;
+
   declare showIcons: boolean;
+
   declare showLines: boolean;
+
   declare showTooltips: boolean;
+
   declare showHoverGuides: boolean;
+
   declare showCorrelatedAnomalies: boolean;
+
   declare showDataGaps: boolean;
+
   declare dataGapThreshold: string;
+
   declare yAxisMode: string;
+
+  declare anomalyOverlapMode: string;
+
+  declare targetsOpen: boolean;
+
+  declare datapointsOpen: boolean;
+
+  declare analysisOpen: boolean;
+
+  declare chartOpen: boolean;
 
   static styles = styles;
 
@@ -40,6 +65,46 @@ export class DpSidebarOptions extends LitElement {
     this.showDataGaps = true;
     this.dataGapThreshold = "2h";
     this.yAxisMode = "combined";
+    this.anomalyOverlapMode = "all";
+    this.targetsOpen = true;
+    this.datapointsOpen = true;
+    this.analysisOpen = true;
+    this.chartOpen = true;
+  }
+
+  private _onTargetsToggle(e: CustomEvent) {
+    this.targetsOpen = e.detail.open;
+    this._emitAccordionChange();
+  }
+
+  private _onDatapointsToggle(e: CustomEvent) {
+    this.datapointsOpen = e.detail.open;
+    this._emitAccordionChange();
+  }
+
+  private _onAnalysisToggle(e: CustomEvent) {
+    this.analysisOpen = e.detail.open;
+    this._emitAccordionChange();
+  }
+
+  private _onChartToggle(e: CustomEvent) {
+    this.chartOpen = e.detail.open;
+    this._emitAccordionChange();
+  }
+
+  private _emitAccordionChange() {
+    this.dispatchEvent(
+      new CustomEvent("dp-accordion-change", {
+        detail: {
+          targetsOpen: this.targetsOpen,
+          datapointsOpen: this.datapointsOpen,
+          analysisOpen: this.analysisOpen,
+          chartOpen: this.chartOpen,
+        },
+        bubbles: true,
+        composed: true,
+      }),
+    );
   }
 
   render() {
@@ -47,11 +112,23 @@ export class DpSidebarOptions extends LitElement {
       <div class="sidebar-options-card">
         <dp-sidebar-datapoints-section
           .datapointScope=${this.datapointScope}
+          collapsible
+          .open=${this.targetsOpen}
+          @dp-section-toggle=${this._onTargetsToggle}
         ></dp-sidebar-datapoints-section>
         <dp-sidebar-datapoint-display-section
           .showIcons=${this.showIcons}
           .showLines=${this.showLines}
+          collapsible
+          .open=${this.datapointsOpen}
+          @dp-section-toggle=${this._onDatapointsToggle}
         ></dp-sidebar-datapoint-display-section>
+        <dp-sidebar-analysis-section
+          .anomalyOverlapMode=${this.anomalyOverlapMode}
+          collapsible
+          .open=${this.analysisOpen}
+          @dp-section-toggle=${this._onAnalysisToggle}
+        ></dp-sidebar-analysis-section>
         <dp-sidebar-chart-display-section
           .showTooltips=${this.showTooltips}
           .showHoverGuides=${this.showHoverGuides}
@@ -59,6 +136,9 @@ export class DpSidebarOptions extends LitElement {
           .showDataGaps=${this.showDataGaps}
           .dataGapThreshold=${this.dataGapThreshold}
           .yAxisMode=${this.yAxisMode}
+          collapsible
+          .open=${this.chartOpen}
+          @dp-section-toggle=${this._onChartToggle}
         ></dp-sidebar-chart-display-section>
       </div>
     `;

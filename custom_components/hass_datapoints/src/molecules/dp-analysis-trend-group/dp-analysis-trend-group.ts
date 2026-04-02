@@ -1,7 +1,7 @@
 import { LitElement, html, nothing } from "lit";
+import type { TemplateResult } from "lit";
 import { sharedStyles } from "../dp-analysis-group-shared/analysis-group-shared.styles";
 import { styles } from "./dp-analysis-trend-group.styles";
-import type { TemplateResult } from "lit";
 import type { NormalizedAnalysis } from "../dp-target-row/types";
 import "@/atoms/analysis/dp-analysis-group/dp-analysis-group";
 
@@ -27,6 +27,7 @@ export class DpAnalysisTrendGroup extends LitElement {
   };
 
   declare analysis: NormalizedAnalysis;
+
   declare entityId: string;
 
   static styles = [sharedStyles, styles];

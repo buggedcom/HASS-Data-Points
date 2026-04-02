@@ -26,8 +26,8 @@ It supplements that plan and does **not** amend it.
 
 | Component | Props | Extracted from |
 |-----------|-------|----------------|
-| `<dp-form-group>` | `label?: string`, `description?: string` + default slot | `<div class="context-form-field">` in `annotation-dialog.js`; `<label class="history-target-analysis-field">` in `panel-history.js`; editor `<div class="ed">` sub-sections |
-| `<dp-sidebar-section-header>` | `title: string`, `subtitle?: string` | `.sidebar-section-header` + `.sidebar-section-title` + `.sidebar-section-subtitle` repeated throughout `panel-history.js` |
+| `<dp-form-group>` | `label?: string`, `description?: string` + default slot | `<div class="context-form-field">` in `annotation-dialog.js`; `<label class="history-target-analysis-field">` in `datapoints.js`; editor `<div class="ed">` sub-sections |
+| `<dp-sidebar-section-header>` | `title: string`, `subtitle?: string` | `.sidebar-section-header` + `.sidebar-section-title` + `.sidebar-section-subtitle` repeated throughout `datapoints.js` |
 | `<dp-empty-state>` | `message: string` | `.history-target-empty` in `_renderTargetRows()`; the `<ha-card class="empty">` block in `_renderContent()` |
 
 ```
@@ -58,7 +58,7 @@ src/atoms/display/dp-empty-state/
 |-----------|-------|--------|----------------|
 | `<dp-toggle-switch>` | `checked: boolean`, `label: string`, `entityId?: string` | `dp-toggle-change` | `.history-target-visible-toggle` (checkbox + CSS track) in `_renderTargetRows()`; collapsed summary item toggles |
 | `<dp-drag-handle>` | `label?: string` | `dp-drag-start`, `dp-drag-end` | `.history-target-drag-handle` button with `mdi:drag-vertical` in `_renderTargetRows()` |
-| `<dp-page-menu-item>` | `icon: string`, `label: string`, `disabled?: boolean` | `dp-menu-action` | `.page-menu-item` in the page header action menu in `panel-history.js` |
+| `<dp-page-menu-item>` | `icon: string`, `label: string`, `disabled?: boolean` | `dp-menu-action` | `.page-menu-item` in the page header action menu in `datapoints.js` |
 
 ```
 src/atoms/interactive/dp-toggle-switch/
@@ -86,8 +86,8 @@ src/atoms/interactive/dp-page-menu-item/
 
 | Component | Props | Events | Extracted from |
 |-----------|-------|--------|----------------|
-| `<dp-inline-select>` | `value: string`, `options: Array<{value, label}>`, `disabled?: boolean` | `dp-select-change` | `<select class="history-target-analysis-select">` + the `renderAnalysisSelectOptions()` helper function in `panel-history.js`. **`renderAnalysisSelectOptions` must be deleted once this exists.** |
-| `<dp-number-input>` | `value: string`, `placeholder?: string`, `suffix?: string`, `step?: string` | `dp-number-change` | `<input class="history-target-analysis-input" type="number">` in threshold analysis rows of `panel-history.js` |
+| `<dp-inline-select>` | `value: string`, `options: Array<{value, label}>`, `disabled?: boolean` | `dp-select-change` | `<select class="history-target-analysis-select">` + the `renderAnalysisSelectOptions()` helper function in `datapoints.js`. **`renderAnalysisSelectOptions` must be deleted once this exists.** |
+| `<dp-number-input>` | `value: string`, `placeholder?: string`, `suffix?: string`, `step?: string` | `dp-number-change` | `<input class="history-target-analysis-input" type="number">` in threshold analysis rows of `datapoints.js` |
 | `<dp-analysis-checkbox>` | `checked: boolean`, `label: string`, `disabled?: boolean`, `helpText?: string`, `helpId?: string` | `dp-check-change` | `<label class="history-target-analysis-option">` rows (with optional `ha-tooltip` for help) throughout `_renderTargetRows()` |
 | `<dp-radio-group>` | `name: string`, `value: string`, `options: Array<{value, label}>` | `dp-radio-change` | `.sidebar-radio-group` + `.sidebar-radio-option` pattern in `_renderSidebarOptions()` |
 | `<dp-checkbox-list>` | `items: Array<{name, label, checked}>` | `dp-item-change` (detail: `{name, checked}`) | `.sidebar-toggle-group` + `.sidebar-toggle-option` pattern in `_renderSidebarOptions()` |
@@ -137,7 +137,7 @@ src/atoms/form/dp-color-picker-field/
 
 ### `<dp-analysis-group>` — Collapsible analysis section
 
-**Extracted from:** the repeated pattern inside `_renderTargetRows()` in `panel-history.js`
+**Extracted from:** the repeated pattern inside `_renderTargetRows()` in `datapoints.js`
 where each analysis feature (trend lines, rate of change, threshold, anomalies, delta)
 renders as a collapsible group: a primary checkbox that acts as the toggle, and a
 `<div class="history-target-analysis-group-body">` that appears when checked.
@@ -199,7 +199,7 @@ src/molecules/dp-target-row/
 
 ### `<dp-target-row-list>` — List of target rows
 
-**Extracted from:** `_renderTargetRows()` in `panel-history.js`.
+**Extracted from:** `_renderTargetRows()` in `datapoints.js`.
 Composes `<dp-target-row>` items with drag-to-reorder logic and an
 empty state via `<dp-empty-state>`.
 
@@ -219,7 +219,7 @@ src/molecules/dp-target-row-list/
 
 ### `<dp-sidebar-options>` — Chart display options sidebar card
 
-**Extracted from:** `_renderSidebarOptions()` in `panel-history.js`.
+**Extracted from:** `_renderSidebarOptions()` in `datapoints.js`.
 Composes three `<dp-sidebar-section-header>` + `<dp-radio-group>` / `<dp-checkbox-list>` blocks.
 
 | Props | Events |
@@ -276,7 +276,7 @@ src/molecules/dp-comparison-tab-rail/
 ### `<dp-date-window-dialog>` — Create / edit date window dialog
 
 **Extracted from:** `_ensureDateWindowDialog()` + the open/close/submit logic
-in `panel-history.js`. The `innerHTML` block for the dialog content becomes
+in `datapoints.js`. The `innerHTML` block for the dialog content becomes
 the `render()` method of a LitElement.
 
 | Props | Events |
@@ -395,12 +395,12 @@ Extract in dependency order (atoms before molecules that compose them):
 
 | Function | Location | Replaced by |
 |----------|----------|-------------|
-| `renderAnalysisSelectOptions()` | `panel-history.js` | `<dp-inline-select>` |
+| `renderAnalysisSelectOptions()` | `datapoints.js` | `<dp-inline-select>` |
 | `renderTargetChips()` | `annotation-dialog.js` | `<dp-annotation-chip-row>` |
-| `_renderSidebarOptions()` | `panel-history.js` | `<dp-sidebar-options>` |
-| `_renderTargetRows()` | `panel-history.js` | `<dp-target-row-list>` |
-| `_renderComparisonTabs()` | `panel-history.js` | `<dp-comparison-tab-rail>` |
-| `_ensureDateWindowDialog()` body | `panel-history.js` | `<dp-date-window-dialog>` |
+| `_renderSidebarOptions()` | `datapoints.js` | `<dp-sidebar-options>` |
+| `_renderTargetRows()` | `datapoints.js` | `<dp-target-row-list>` |
+| `_renderComparisonTabs()` | `datapoints.js` | `<dp-comparison-tab-rail>` |
+| `_ensureDateWindowDialog()` body | `datapoints.js` | `<dp-date-window-dialog>` |
 
 ---
 

@@ -1,9 +1,12 @@
 import { LitElement, html, css } from "lit";
+
 export class DpLoadingIndicator extends LitElement {
   static properties = {
     active: { type: Boolean, reflect: true },
   };
+
   declare active: boolean;
+
   static styles = css`
     :host { display: block; pointer-events: none; }
     .wrapper {
@@ -23,10 +26,12 @@ export class DpLoadingIndicator extends LitElement {
     }
     @keyframes spin { to { transform: rotate(360deg); } }
   `;
+
   constructor() {
     super();
     this.active = false;
   }
+
   render() {
     return html`
       <div class="wrapper ${this.active ? "active" : ""}">

@@ -1,4 +1,4 @@
-import { confirmDestructiveAction, deleteEvent, DOMAIN, esc, fetchHistoryDuringPeriod, fmtDateTime } from "../../lib/shared.js";
+import { confirmDestructiveAction, DOMAIN, esc, fmtDateTime } from "../../lib/shared.js";
 
 /**
  * hass-datapoints-dev-tool-card – Generate demo data points from HA history.
@@ -238,7 +238,13 @@ export class HassRecordsDevToolCard extends HTMLElement {
     ep.addEventListener("value-changed", (e) => {
       if (this._suppressEntityChange) return;
       const val = e.detail.value;
-      this._entities = Array.isArray(val) ? val : (val ? [val] : []);
+      if (Array.isArray(val)) {
+        this._entities = val;
+      } else if (val) {
+        this._entities = [val];
+      } else {
+        this._entities = [];
+      }
     });
 
     // Seed with one window
@@ -427,13 +433,13 @@ export class HassRecordsDevToolCard extends HTMLElement {
           } else { continue; }
         } else if (domain === "sensor") {
           const num = parseFloat(cur); const prevNum = prevVal != null ? parseFloat(prevVal) : NaN;
-          if (isNaN(num)) continue;
-          if (!isNaN(prevNum) && Math.abs(num - prevNum) < 0.5) continue;
+          if (Number.isNaN(num)) continue;
+          if (!Number.isNaN(prevNum) && Math.abs(num - prevNum) < 0.5) continue;
           message = `${friendlyName}: ${cur}${unit}`;
           icon = "mdi:gauge"; color = "#2196f3";
         } else if (domain === "input_number" || domain === "number") {
           const num = parseFloat(cur); const prevNum = prevVal != null ? parseFloat(prevVal) : NaN;
-          if (isNaN(num) || (!isNaN(prevNum) && num === prevNum)) continue;
+          if (Number.isNaN(num) || (!Number.isNaN(prevNum) && num === prevNum)) continue;
           message = `${friendlyName}: \u2192 ${cur}${unit}`;
           icon = "mdi:numeric"; color = "#9c27b0";
         } else if (domain === "input_select" || domain === "select") {
@@ -482,7 +488,11 @@ export class HassRecordsDevToolCard extends HTMLElement {
       sound:            ["sound detected", "quiet"],
     };
     const pair = map[deviceClass];
-    return pair ? (on ? pair[0] : pair[1]) : (on ? "on" : "off");
+    if (pair) {
+      return on ? pair[0] : pair[1];
+    }
+      return on ? "on" : "off";
+
   }
 
   // ── Results rendering ──────────────────────────────────────────────────────

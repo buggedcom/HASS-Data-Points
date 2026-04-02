@@ -1,9 +1,12 @@
 import { LitElement, html, css } from "lit";
+
 export class DpDragHandle extends LitElement {
   static properties = {
     label: { type: String },
   };
+
   declare label: string | undefined;
+
   static styles = css`
     :host { display: inline-flex; }
     button {
@@ -23,10 +26,12 @@ export class DpDragHandle extends LitElement {
       --mdc-icon-size: 18px;
     }
   `;
+
   constructor() {
     super();
     this.label = undefined;
   }
+
   _onDragStart() {
     this.dispatchEvent(
       new CustomEvent("dp-drag-start", {
@@ -35,6 +40,7 @@ export class DpDragHandle extends LitElement {
       }),
     );
   }
+
   _onDragEnd() {
     this.dispatchEvent(
       new CustomEvent("dp-drag-end", {
@@ -43,6 +49,7 @@ export class DpDragHandle extends LitElement {
       }),
     );
   }
+
   render() {
     return html`
       <button

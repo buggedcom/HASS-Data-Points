@@ -1,7 +1,6 @@
 import {
   attachLineChartHover,
   attachLineChartRangeZoom,
-  buildDataPointsHistoryPath,
   clampChartValue,
   COLORS,
   contrastColor,
@@ -19,11 +18,8 @@ import {
   hideTooltip,
   mergeTargetSelections,
   navigateToDataPointsHistory,
-  normalizeCacheIdList,
   normalizeHistorySeriesAnalysis,
   normalizeTargetSelection,
-  parseDateValue,
-  renderChartAxisHoverDots,
   renderChartAxisOverlays,
   resolveChartLabelColor,
   setupCanvas,
@@ -33,13 +29,17 @@ import {
 } from "../../lib/shared.js";
 import { HistoryAnnotationDialogController } from "../annotation-dialog/annotation-dialog.js";
 import { ChartCardBase } from "../card-chart-base/card-chart-base-legacy.js";
-import { computeHistoryAnalysisInWorker } from "../../lib/workers/history-analysis-client.js";
+import { computeHistoryAnalysisInWorker, terminateHistoryAnalysisWorker } from "../../lib/workers/history-analysis-client.js";
+import { logger } from "../../lib/logger.js";
 
 /**
  * hass-datapoints-history-card – History line chart with annotation markers.
  */
 
-const HISTORY_CHART_MAX_CANVAS_WIDTH_PX = 65536;
+// Safari caps canvas pixel dimensions at 16,383px. With dpr=2 that means a max
+// CSS width of ~8,191px. We cap the CSS canvas width here so setupCanvas never
+// receives a value that would cause the browser to silently blank the canvas.
+const HISTORY_CHART_MAX_CANVAS_WIDTH_PX = Math.floor(16383 / (window.devicePixelRatio || 1));
 const HISTORY_CHART_MAX_ZOOM_MULTIPLIER = 365;
 const HISTORY_LEGEND_WRAP_ENABLE_HEIGHT_PX = 500;
 const HISTORY_LEGEND_WRAP_DISABLE_HEIGHT_PX = 440;
@@ -58,6 +58,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     this._legendWrapRows = false;
     this._adjustComparisonAxisScale = false;
     this._drawRequestId = 0;
+    this._analysisCache = null;
     this._onWindowKeyDown = (ev) => this._handleWindowKeyDown(ev);
     this._onChartScroll = () => this._handleChartScroll();
     this._creatingContextAnnotation = false;
@@ -397,9 +398,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       const winEnd = new Date(end.getTime() + win.time_offset_ms);
       const result = await this._loadComparisonWindowData(win, winStart, winEnd);
       return { id: result.id, histResult: result.histResult, statsResult: result.statsResult };
-    })).then((results) => {
-      return results;
-    }).catch((error) => {
+    })).then((results) => results).catch((error) => {
       console.warn("[hass-datapoints history-card] comparison preload:failed", {
         message: error?.message || String(error),
       });
@@ -465,9 +464,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       composed: true,
       detail: { ids: windowsToFetch.map(({ win }) => win.id).filter(Boolean), loading: true },
     }));
-    return Promise.all(windowsToFetch.map(async ({ win, winStart, winEnd }) => {
-      return this._loadComparisonWindowData(win, winStart, winEnd);
-    })).then((results) => {
+    return Promise.all(windowsToFetch.map(async ({ win, winStart, winEnd }) => this._loadComparisonWindowData(win, winStart, winEnd))).then((results) => {
       if (comparisonRequestId !== this._comparisonRequestId) {
         return this._lastComparisonResults || [];
       }
@@ -521,7 +518,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     const t0 = start.getTime();
     const t1 = end.getTime();
     const requestId = ++this._loadRequestId;
-    console.log("[hass-datapoints history-card] load triggered", {
+    logger.log("[hass-datapoints history-card] load triggered", {
       requestId,
       entityIds: this._entityIds,
       start: start.toISOString(),
@@ -777,6 +774,13 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       chartStage.style.height = `${totalHeight}px`;
     }
 
+    // Enable vertical scrolling in the viewport when the split rows don't all
+    // fit within the available height (e.g. many series with a small panel).
+    const splitScrollViewport = this.shadowRoot?.getElementById("chart-scroll-viewport");
+    if (splitScrollViewport) {
+      splitScrollViewport.style.overflowY = totalHeight > availableHeight ? "auto" : "hidden";
+    }
+
     this._setChartLoading(!!options.loading);
     this._setChartMessage("");
 
@@ -898,7 +902,14 @@ export class HassRecordsHistoryCard extends ChartCardBase {
 
       // Dim the main series when a comparison preview is active, matching the
       // behaviour of the regular (non-split) chart.
-      const mainSeriesOpacity = comparisonPreviewActive ? (hoveringDifferentComparison ? 0.15 : 0.25) : 1;
+      let mainSeriesOpacity;
+      if (!comparisonPreviewActive) {
+        mainSeriesOpacity = 1;
+      } else if (hoveringDifferentComparison) {
+        mainSeriesOpacity = 0.15;
+      } else {
+        mainSeriesOpacity = 0.25;
+      }
 
       if (!rowHideSource) {
         this._drawSeriesLine(
@@ -931,9 +942,14 @@ export class HassRecordsHistoryCard extends ChartCardBase {
         }
         const isHovered = !!hoveredComparisonWindowId && win.id === hoveredComparisonWindowId;
         const isSelected = !!selectedComparisonWindowId && win.id === selectedComparisonWindowId;
-        const compLineOpacity = isHovered
-          ? 0.85
-          : (hoveringDifferentComparison && isSelected ? 0.25 : 0.85);
+        let compLineOpacity;
+        if (isHovered) {
+          compLineOpacity = 0.85;
+        } else if (hoveringDifferentComparison && isSelected) {
+          compLineOpacity = 0.25;
+        } else {
+          compLineOpacity = 0.85;
+        }
         renderer.drawLine(winPts, seriesItem.color, renderT0, renderT1, resolvedAxis.min, resolvedAxis.max, {
           lineOpacity: compLineOpacity,
           lineWidth: hoveringDifferentComparison && isSelected ? 1.25 : undefined,
@@ -1141,7 +1157,14 @@ export class HassRecordsHistoryCard extends ChartCardBase {
         }
         const isHovered = !!hoveredComparisonWindowId && win.id === hoveredComparisonWindowId;
         const isSelected = !!selectedComparisonWindowId && win.id === selectedComparisonWindowId;
-        const hoverOpacity = isHovered ? 0.85 : (hoveringDifferentComparison && isSelected ? 0.25 : 0.85);
+        let hoverOpacity;
+        if (isHovered) {
+          hoverOpacity = 0.85;
+        } else if (hoveringDifferentComparison && isSelected) {
+          hoverOpacity = 0.25;
+        } else {
+          hoverOpacity = 0.85;
+        }
         comparisonHoverSeries.push({
           entityId: `${win.id}:${track.series.entityId}`,
           relatedEntityId: track.series.entityId,
@@ -1352,9 +1375,9 @@ export class HassRecordsHistoryCard extends ChartCardBase {
         // Summary stat values (constant horizontal lines).
         if (effectiveAnalysis.show_summary_stats === true && trackSummaryStats) {
           const summaryEntries = [
-            { type: "min",  value: trackSummaryStats.min,  alphaV: trackHideSource ? 0.78 : 0.42, opac: trackHideSource ? 0.82 : 0.34 },
+            { type: "min",  value: trackSummaryStats.min,  alphaV: trackHideSource ? 0.94 : 0.78, opac: trackHideSource ? 0.94 : 0.72 },
             { type: "mean", value: trackSummaryStats.mean, alphaV: trackHideSource ? 0.94 : 0.78, opac: trackHideSource ? 0.94 : 0.72 },
-            { type: "max",  value: trackSummaryStats.max,  alphaV: trackHideSource ? 0.78 : 0.42, opac: trackHideSource ? 0.82 : 0.34 },
+            { type: "max",  value: trackSummaryStats.max,  alphaV: trackHideSource ? 0.94 : 0.78, opac: trackHideSource ? 0.94 : 0.72 },
           ];
           for (const entry of summaryEntries) {
             if (!Number.isFinite(entry.value)) continue;
@@ -1737,9 +1760,12 @@ export class HassRecordsHistoryCard extends ChartCardBase {
           return null;
         }
         const rawTimestamp = entry?.start;
-        const timestamp = typeof rawTimestamp === "number"
-          ? (rawTimestamp > 1e11 ? rawTimestamp : rawTimestamp * 1000)
-          : new Date(rawTimestamp).getTime();
+        let timestamp;
+        if (typeof rawTimestamp === "number") {
+          timestamp = rawTimestamp > 1e11 ? rawTimestamp : rawTimestamp * 1000;
+        } else {
+          timestamp = new Date(rawTimestamp).getTime();
+        }
         if (!Number.isFinite(timestamp)) {
           return null;
         }
@@ -2138,9 +2164,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       if (currentCluster.length === 0) {
         return;
       }
-      const maxDeviation = currentCluster.reduce((maxValue, point) => {
-        return Math.max(maxValue, Math.abs(point.residual));
-      }, 0);
+      const maxDeviation = currentCluster.reduce((maxValue, point) => Math.max(maxValue, Math.abs(point.residual)), 0);
       clusters.push({
         points: currentCluster.slice(),
         maxDeviation,
@@ -2194,9 +2218,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       if (currentCluster.length === 0) {
         return;
       }
-      const maxDeviation = currentCluster.reduce((maxVal, point) => {
-        return Math.max(maxVal, Math.abs(point.residual));
-      }, 0);
+      const maxDeviation = currentCluster.reduce((maxVal, point) => Math.max(maxVal, Math.abs(point.residual)), 0);
       clusters.push({
         points: currentCluster.slice(),
         maxDeviation,
@@ -2237,7 +2259,14 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     const q3 = sorted[Math.floor(n * 0.75)];
     const iqr = q3 - q1;
     if (!Number.isFinite(iqr) || iqr <= 0.000001) return [];
-    const k = sensitivity === "low" ? 3.0 : sensitivity === "high" ? 1.5 : 2.0;
+    let k;
+    if (sensitivity === "low") {
+      k = 3.0;
+    } else if (sensitivity === "high") {
+      k = 1.5;
+    } else {
+      k = 2.0;
+    }
     const lowerFence = q1 - k * iqr;
     const upperFence = q3 + k * iqr;
     const clusters = [];
@@ -2320,7 +2349,14 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     }
     const totalRange = totalMax - totalMin;
     if (!Number.isFinite(totalRange) || totalRange <= 0.000001) return [];
-    const flatFraction = sensitivity === "low" ? 0.005 : sensitivity === "high" ? 0.05 : 0.02;
+    let flatFraction;
+    if (sensitivity === "low") {
+      flatFraction = 0.005;
+    } else if (sensitivity === "high") {
+      flatFraction = 0.05;
+    } else {
+      flatFraction = 0.02;
+    }
     const flatThreshold = flatFraction * totalRange;
     const clusters = [];
     let runStart = 0;
@@ -2577,9 +2613,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
 
   _getSeriesAnalysisMap() {
     const seriesSettings = Array.isArray(this._config?.series_settings) ? this._config.series_settings : [];
-    return new Map(seriesSettings.map((entry) => {
-      return [entry?.entity_id, normalizeHistorySeriesAnalysis(entry?.analysis)];
-    }));
+    return new Map(seriesSettings.map((entry) => [entry?.entity_id, normalizeHistorySeriesAnalysis(entry?.analysis)]));
   }
 
   _getSeriesAnalysis(entityId, analysisMap = null) {
@@ -2641,7 +2675,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
 
   _queueDrawChart(histResult, statsResult, events, t0, t1, options = {}) {
     const drawRequestId = ++this._drawRequestId;
-    console.log("[hass-datapoints history-card] draw queued", {
+    logger.log("[hass-datapoints history-card] draw queued", {
       drawRequestId,
       loading: options.loading ?? false,
     });
@@ -2656,6 +2690,45 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       this._setChartLoading(false);
       this._setChartMessage("Failed to render chart.");
     });
+  }
+
+  /**
+   * Build a lightweight string key that captures all inputs that affect the analysis result.
+   * Used to skip the worker when the data and settings haven't changed (e.g. on zoom/pan).
+   */
+  _buildAnalysisCacheKey(visibleSeries, selectedComparisonSeriesMap, analysisMap, allComparisonWindowsData, t0, t1) {
+    const ANALYSIS_FIELDS = [
+      "show_trend_lines", "trend_method", "trend_window",
+      "show_rate_of_change", "rate_window",
+      "show_delta_analysis",
+      "show_summary_stats",
+      "show_anomalies", "anomaly_methods", "anomaly_sensitivity", "anomaly_overlap_mode",
+      "anomaly_rate_window", "anomaly_zscore_window", "anomaly_persistence_window",
+      "anomaly_comparison_window_id",
+    ];
+    const seriesPart = visibleSeries.map((s) => {
+      const a = analysisMap.get(s.entityId) || {};
+      const first = s.pts[0]?.[0] ?? 0;
+      const last = s.pts[s.pts.length - 1]?.[0] ?? 0;
+      const aKey = ANALYSIS_FIELDS.map((f) => JSON.stringify(a[f])).join(",");
+      return `${s.entityId}:${s.pts.length}:${first}:${last}:${aKey}`;
+    }).join("|");
+
+    const cmpPart = Array.from(selectedComparisonSeriesMap.values()).map((s) => {
+      const first = s.pts[0]?.[0] ?? 0;
+      const last = s.pts[s.pts.length - 1]?.[0] ?? 0;
+      return `${s.entityId}:${s.pts.length}:${first}:${last}`;
+    }).sort().join("|");
+
+    const allCmpPart = Object.entries(allComparisonWindowsData).flatMap(([windowId, entities]) =>
+      Object.entries(entities).map(([entityId, pts]) => {
+        const first = pts[0]?.[0] ?? 0;
+        const last = pts[pts.length - 1]?.[0] ?? 0;
+        return `${windowId}:${entityId}:${pts.length}:${first}:${last}`;
+      })
+    ).sort().join("|");
+
+    return `${t0}:${t1}|${seriesPart}|${cmpPart}|${allCmpPart}`;
   }
 
   _buildHistoryAnalysisPayload(visibleSeries, selectedComparisonSeriesMap, analysisMap, hasSelectedComparisonWindow, allComparisonWindowsData = {}) {
@@ -2674,7 +2747,22 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     };
   }
 
-  async _computeHistoryAnalysis(visibleSeries, selectedComparisonSeriesMap, analysisMap, hasSelectedComparisonWindow, allComparisonWindowsData = {}) {
+  async _computeHistoryAnalysis(visibleSeries, selectedComparisonSeriesMap, analysisMap, hasSelectedComparisonWindow, allComparisonWindowsData = {}, t0 = 0, t1 = 0) {
+    // Abort any in-flight worker computation from a previous (now stale) draw request.
+    // This prevents the chart from hanging while waiting for a worker result that will
+    // be discarded anyway once the stale-request check runs.
+    terminateHistoryAnalysisWorker();
+
+    // Return the cached result if the data and analysis settings are identical to the
+    // previous call — this is the common case when zooming or panning (viewport changes
+    // but the underlying series data and settings do not).
+    const cacheKey = this._buildAnalysisCacheKey(
+      visibleSeries, selectedComparisonSeriesMap, analysisMap, allComparisonWindowsData, t0, t1,
+    );
+    if (this._analysisCache?.key === cacheKey) {
+      return this._analysisCache.result;
+    }
+
     const payload = this._buildHistoryAnalysisPayload(
       visibleSeries,
       selectedComparisonSeriesMap,
@@ -2683,102 +2771,85 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       allComparisonWindowsData,
     );
     try {
-      return await computeHistoryAnalysisInWorker(payload);
+      const result = await computeHistoryAnalysisInWorker(payload);
+      this._analysisCache = { key: cacheKey, result };
+      return result;
     } catch (error) {
+      // If this draw was superseded by a newer one, return a safe empty result quickly.
+      // The stale-request check in _drawChart will discard it before any rendering occurs.
+      if (error?.message?.startsWith("Aborted")) {
+        return { trendSeries: [], rateSeries: [], deltaSeries: [], summaryStats: [], anomalySeries: [] };
+      }
+
       console.warn("[hass-datapoints history-card] analysis worker fallback", {
         message: error?.message || String(error),
       });
-      return {
-        trendSeries: visibleSeries
-          .map((seriesItem) => {
-            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
-            if (analysis.show_trend_lines !== true) {
-              return null;
-            }
-            return {
-              entityId: seriesItem.entityId,
-              pts: this._buildTrendPoints(seriesItem.pts, analysis.trend_method, analysis.trend_window),
-            };
-          })
-            .filter((seriesItem) => Array.isArray(seriesItem.pts) && seriesItem.pts.length >= 2)
-          .filter(Boolean),
-        rateSeries: visibleSeries
-          .map((seriesItem) => {
-            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
-            if (analysis.show_rate_of_change !== true) {
-              return null;
-            }
-            return {
-              entityId: seriesItem.entityId,
-              pts: this._buildRateOfChangePoints(seriesItem.pts, analysis.rate_window),
-            };
-          })
-            .filter((seriesItem) => Array.isArray(seriesItem.pts) && seriesItem.pts.length >= 2)
-          .filter(Boolean),
-        deltaSeries: visibleSeries
-          .map((seriesItem) => {
-            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
-            if (!(analysis.show_delta_analysis === true && hasSelectedComparisonWindow === true)) {
-              return null;
-            }
-            const comparisonSeries = selectedComparisonSeriesMap.get(seriesItem.entityId);
-            return {
-              entityId: seriesItem.entityId,
-              pts: comparisonSeries ? this._buildDeltaPoints(seriesItem.pts, comparisonSeries.pts) : [],
-            };
-          })
-            .filter((seriesItem) => Array.isArray(seriesItem.pts) && seriesItem.pts.length >= 2)
-          .filter(Boolean),
-        summaryStats: visibleSeries
-          .map((seriesItem) => {
-            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
-            if (analysis.show_summary_stats !== true) {
-              return null;
-            }
-            return {
-              entityId: seriesItem.entityId,
-              ...this._buildSummaryStats(seriesItem.pts),
-            };
-          })
-          .filter((entry) => entry && Number.isFinite(entry.min) && Number.isFinite(entry.max) && Number.isFinite(entry.mean)),
-        anomalySeries: visibleSeries
-          .map((seriesItem) => {
-            const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
-            if (analysis.show_anomalies !== true) return null;
-            const clustersByMethod = {};
-            const methods = analysis.anomaly_methods;
-            if (methods.includes("trend_residual")) {
-              const c = this._buildAnomalyClusters(seriesItem.pts, analysis.trend_method, analysis.trend_window, analysis.anomaly_sensitivity);
-              if (c.length > 0) clustersByMethod["trend_residual"] = c;
-            }
-            if (methods.includes("rate_of_change")) {
-              const c = this._buildRateOfChangeAnomalyClusters(seriesItem.pts, analysis.anomaly_rate_window, analysis.anomaly_sensitivity);
-              if (c.length > 0) clustersByMethod["rate_of_change"] = c;
-            }
-            if (methods.includes("iqr")) {
-              const c = this._buildIQRAnomalyClusters(seriesItem.pts, analysis.anomaly_sensitivity);
-              if (c.length > 0) clustersByMethod["iqr"] = c;
-            }
-            if (methods.includes("rolling_zscore")) {
-              const c = this._buildRollingZScoreAnomalyClusters(seriesItem.pts, analysis.anomaly_zscore_window, analysis.anomaly_sensitivity);
-              if (c.length > 0) clustersByMethod["rolling_zscore"] = c;
-            }
-            if (methods.includes("persistence")) {
-              const c = this._buildPersistenceAnomalyClusters(seriesItem.pts, analysis.anomaly_persistence_window, analysis.anomaly_sensitivity);
-              if (c.length > 0) clustersByMethod["persistence"] = c;
-            }
-            if (methods.includes("comparison_window") && analysis.anomaly_comparison_window_id) {
-              const compPts = allComparisonWindowsData[analysis.anomaly_comparison_window_id]?.[seriesItem.entityId];
-              if (Array.isArray(compPts) && compPts.length >= 3) {
-                const c = this._buildComparisonWindowAnomalyClusters(seriesItem.pts, compPts, analysis.anomaly_sensitivity);
-                if (c.length > 0) clustersByMethod["comparison_window"] = c;
+
+      // Main-thread fallback — runs when the worker crashes or fails to start.
+      // Anomaly detection is deliberately skipped here: those algorithms (especially IQR
+      // sort) are too expensive to run synchronously on the main thread for large datasets,
+      // and the user will get the full result on the next successful worker invocation.
+      try {
+        return {
+          trendSeries: visibleSeries
+            .map((seriesItem) => {
+              const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
+              if (analysis.show_trend_lines !== true) {
+                return null;
               }
-            }
-            const anomalyClusters = this._applyAnomalyOverlapMode(clustersByMethod, analysis.anomaly_overlap_mode);
-            return anomalyClusters.length > 0 ? { entityId: seriesItem.entityId, anomalyClusters } : null;
-          })
-          .filter(Boolean),
-      };
+              return {
+                entityId: seriesItem.entityId,
+                pts: this._buildTrendPoints(seriesItem.pts, analysis.trend_method, analysis.trend_window),
+              };
+            })
+            .filter(Boolean)
+            .filter((seriesItem) => Array.isArray(seriesItem.pts) && seriesItem.pts.length >= 2),
+          rateSeries: visibleSeries
+            .map((seriesItem) => {
+              const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
+              if (analysis.show_rate_of_change !== true) {
+                return null;
+              }
+              return {
+                entityId: seriesItem.entityId,
+                pts: this._buildRateOfChangePoints(seriesItem.pts, analysis.rate_window),
+              };
+            })
+            .filter(Boolean)
+            .filter((seriesItem) => Array.isArray(seriesItem.pts) && seriesItem.pts.length >= 2),
+          deltaSeries: visibleSeries
+            .map((seriesItem) => {
+              const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
+              if (!(analysis.show_delta_analysis === true && hasSelectedComparisonWindow === true)) {
+                return null;
+              }
+              const comparisonSeries = selectedComparisonSeriesMap.get(seriesItem.entityId);
+              return {
+                entityId: seriesItem.entityId,
+                pts: comparisonSeries ? this._buildDeltaPoints(seriesItem.pts, comparisonSeries.pts) : [],
+              };
+            })
+            .filter(Boolean)
+            .filter((seriesItem) => Array.isArray(seriesItem.pts) && seriesItem.pts.length >= 2),
+          summaryStats: visibleSeries
+            .map((seriesItem) => {
+              const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
+              if (analysis.show_summary_stats !== true) {
+                return null;
+              }
+              return {
+                entityId: seriesItem.entityId,
+                ...this._buildSummaryStats(seriesItem.pts),
+              };
+            })
+            .filter((entry) => entry && Number.isFinite(entry.min) && Number.isFinite(entry.max) && Number.isFinite(entry.mean)),
+          // Anomaly detection intentionally omitted in the fallback path — see comment above.
+          anomalySeries: [],
+        };
+      } catch (fallbackError) {
+        console.error("[hass-datapoints history-card] analysis fallback failed", fallbackError);
+        return { trendSeries: [], rateSeries: [], deltaSeries: [], summaryStats: [], anomalySeries: [] };
+      }
     }
   }
 
@@ -2874,20 +2945,20 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       const lastPt = seriesItem.pts[seriesItem.pts.length - 1];
       const prev = this._previousSeriesEndpoints.get(seriesItem.entityId);
       if (!prev) {
-        console.log("[hass-datapoints history-card] series initial draw", {
+        logger.log("[hass-datapoints history-card] series initial draw", {
           entityId: seriesItem.entityId,
           pointCount: seriesItem.pts.length,
           lastPt,
         });
       } else if (lastPt[0] !== prev.t || lastPt[1] !== prev.v) {
-        console.log("[hass-datapoints history-card] series updated — live update detected", {
+        logger.log("[hass-datapoints history-card] series updated — live update detected", {
           entityId: seriesItem.entityId,
           pointCount: seriesItem.pts.length,
           prev,
           lastPt,
         });
       } else {
-        console.log("[hass-datapoints history-card] series unchanged — no new data", {
+        logger.log("[hass-datapoints history-card] series unchanged — no new data", {
           entityId: seriesItem.entityId,
           pointCount: seriesItem.pts.length,
           lastPt,
@@ -3005,6 +3076,8 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       analysisMap,
       hasSelectedComparisonWindow,
       allComparisonWindowsData,
+      t0,
+      t1,
     );
     if (analysisEntityIds.length) {
       this.dispatchEvent(new CustomEvent("hass-datapoints-analysis-computing", {
@@ -3031,7 +3104,14 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     }
 
     const viewportHeight = scrollViewport?.clientHeight || 0;
-    const minChartHeight = series.length ? 280 : (binaryBackgrounds.length ? 100 : 280);
+    let minChartHeight;
+    if (series.length) {
+      minChartHeight = 280;
+    } else if (binaryBackgrounds.length) {
+      minChartHeight = 100;
+    } else {
+      minChartHeight = 280;
+    }
     const availableHeight = this._getAvailableChartHeight(minChartHeight);
     const viewportWidth = Math.max(scrollViewport?.clientWidth || wrap?.clientWidth || 360, 360);
     const totalSpanMs = Math.max(1, t1 - t0);
@@ -3083,6 +3163,10 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     if (chartStage) {
       chartStage.style.width = `${canvasWidth}px`;
       chartStage.style.height = `${availableHeight}px`;
+    }
+    // Restore default vertical overflow in non-split mode (split mode may have set it to auto).
+    if (scrollViewport) {
+      scrollViewport.style.overflowY = "";
     }
     const { w, h } = setupCanvas(canvas, chartStage || wrap, availableHeight, canvasWidth);
     const renderer = new ChartRenderer(canvas, w, h);
@@ -3281,7 +3365,14 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       }
     }
     let comparisonOutOfBounds = false;
-    const mainSeriesHoverOpacity = comparisonPreviewActive ? (hoveringDifferentComparison ? 0.15 : 0.25) : 1;
+    let mainSeriesHoverOpacity;
+    if (!comparisonPreviewActive) {
+      mainSeriesHoverOpacity = 1;
+    } else if (hoveringDifferentComparison) {
+      mainSeriesHoverOpacity = 0.15;
+    } else {
+      mainSeriesHoverOpacity = 0.25;
+    }
     const anyHiddenSourceSeries = hiddenSourceEntityIds.size > 0;
     const hoverSeries = visibleSeries
       .filter((seriesItem) => !hiddenSourceEntityIds.has(seriesItem.entityId))
@@ -3306,9 +3397,10 @@ export class HassRecordsHistoryCard extends ChartCardBase {
             baseLabel: seriesItem.label,
             unit: seriesItem.unit || "",
             value: stats.min,
-            color: hexToRgba(seriesItem.color, anyHiddenSourceSeries ? 0.78 : 0.42),
+            color: hexToRgba(seriesItem.color, anyHiddenSourceSeries ? 0.94 : 0.78),
+            baseColor: seriesItem.color,
             axis: seriesItem.axis,
-            hoverOpacity: anyHiddenSourceSeries ? 0.82 : 0.34,
+            hoverOpacity: anyHiddenSourceSeries ? 0.94 : 0.72,
             summaryType: "min",
             summary: true,
           },
@@ -3320,6 +3412,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
             unit: seriesItem.unit || "",
             value: stats.mean,
             color: hexToRgba(seriesItem.color, anyHiddenSourceSeries ? 0.94 : 0.78),
+            baseColor: seriesItem.color,
             axis: seriesItem.axis,
             hoverOpacity: anyHiddenSourceSeries ? 0.94 : 0.72,
             summaryType: "mean",
@@ -3332,9 +3425,10 @@ export class HassRecordsHistoryCard extends ChartCardBase {
             baseLabel: seriesItem.label,
             unit: seriesItem.unit || "",
             value: stats.max,
-            color: hexToRgba(seriesItem.color, anyHiddenSourceSeries ? 0.78 : 0.42),
+            color: hexToRgba(seriesItem.color, anyHiddenSourceSeries ? 0.94 : 0.78),
+            baseColor: seriesItem.color,
             axis: seriesItem.axis,
-            hoverOpacity: anyHiddenSourceSeries ? 0.82 : 0.34,
+            hoverOpacity: anyHiddenSourceSeries ? 0.94 : 0.72,
             summaryType: "max",
             summary: true,
           },
@@ -3433,9 +3527,14 @@ export class HassRecordsHistoryCard extends ChartCardBase {
         const baseColor = seriesSetting.color || COLORS[seriesSettings.indexOf(seriesSetting) % COLORS.length];
         const isHoveredComparison = !!hoveredComparisonWindowId && win.id === hoveredComparisonWindowId;
         const isSelectedComparison = !!selectedComparisonWindowId && win.id === selectedComparisonWindowId;
-        const comparisonLineOpacity = isHoveredComparison
-          ? 0.85
-          : (hoveringDifferentComparison && isSelectedComparison ? 0.25 : 0.85);
+        let comparisonLineOpacity;
+        if (isHoveredComparison) {
+          comparisonLineOpacity = 0.85;
+        } else if (hoveringDifferentComparison && isSelectedComparison) {
+          comparisonLineOpacity = 0.25;
+        } else {
+          comparisonLineOpacity = 0.85;
+        }
         comparisonHoverSeries.push({
           entityId: `${win.id}:${entityId}`,
           relatedEntityId: entityId,
@@ -3584,6 +3683,20 @@ export class HassRecordsHistoryCard extends ChartCardBase {
           );
         }
     }
+    // Draw gradient shading between min/max lines and the mean (inside only),
+    // gated on the per-series show_summary_stats_shading flag. Drawn before the
+    // lines so the lines sit on top of the fill.
+    visibleSeries.forEach((seriesItem) => {
+      const shadingAnalysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
+      if (shadingAnalysis.show_summary_stats !== true || shadingAnalysis.show_summary_stats_shading !== true) { return; }
+      const stats = summaryStatsMap.get(seriesItem.entityId);
+      const axis = seriesItem.axis;
+      if (!stats || !axis) { return; }
+      if (!Number.isFinite(stats.min) || !Number.isFinite(stats.max) || !Number.isFinite(stats.mean)) { return; }
+      const fillAlpha = anyHiddenSourceSeries ? 0.10 : 0.06;
+      renderer.drawGradientBand(stats.min, stats.mean, seriesItem.color, renderT0, renderT1, axis.min, axis.max, { fillAlpha });
+      renderer.drawGradientBand(stats.max, stats.mean, seriesItem.color, renderT0, renderT1, axis.min, axis.max, { fillAlpha });
+    });
     summaryHoverSeries.forEach((summarySeries) => {
       const axis = summarySeries.axis;
       if (!axis) {
@@ -3598,9 +3711,9 @@ export class HassRecordsHistoryCard extends ChartCardBase {
         axis.max,
         {
           lineOpacity: summarySeries.hoverOpacity,
-          lineWidth: summarySeries.summaryType === "mean" ? 1.8 : 1.1,
+          lineWidth: 1.8,
           dashed: false,
-          dotted: summarySeries.summaryType !== "mean",
+          dotted: false,
         },
       );
     });
@@ -3716,9 +3829,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     } else {
       this._lastAnomalyRegions = [];
     }
-    const effectiveComparisonHoverSeries = comparisonHoverSeries.filter((entry) => {
-      return !hiddenComparisonEntityIds.has(entry.relatedEntityId || entry.entityId);
-    });
+    const effectiveComparisonHoverSeries = comparisonHoverSeries.filter((entry) => !hiddenComparisonEntityIds.has(entry.relatedEntityId || entry.entityId));
     renderer.drawAnnotations(events, renderT0, renderT1, {
       showLines: this._config.show_event_lines !== false,
       showMarkers: this._config.show_event_lines !== false,
@@ -3805,7 +3916,14 @@ export class HassRecordsHistoryCard extends ChartCardBase {
   }
 
   _handleAnomalyAddAnnotation(regions) {
-    const regionsArray = Array.isArray(regions) ? regions : (regions ? [regions] : []);
+    let regionsArray;
+    if (Array.isArray(regions)) {
+      regionsArray = regions;
+    } else if (regions) {
+      regionsArray = [regions];
+    } else {
+      regionsArray = [];
+    }
     if (!regionsArray.length || !this._hass || this._annotationDialog?.isOpen()) {
       return;
     }
@@ -3964,15 +4082,18 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     if (visibleEvents.length === 0) {
       return seriesItem.anomalyClusters;
     }
-    return seriesItem.anomalyClusters.filter((cluster) => {
-      return !visibleEvents.some((event) => {
-        return this._eventMatchesAnomalyCluster(event, seriesItem.entityId, cluster);
-      });
-    });
+    return seriesItem.anomalyClusters.filter((cluster) => !visibleEvents.some((event) => this._eventMatchesAnomalyCluster(event, seriesItem.entityId, cluster)));
   }
 
   _buildAnomalyAnnotationPrefill(regions) {
-    const regionsArray = Array.isArray(regions) ? regions : (regions ? [regions] : []);
+    let regionsArray;
+    if (Array.isArray(regions)) {
+      regionsArray = regions;
+    } else if (regions) {
+      regionsArray = [regions];
+    } else {
+      regionsArray = [];
+    }
     const validRegions = regionsArray.filter((r) => r?.cluster?.points?.length > 0);
     if (!validRegions.length) return null;
 
@@ -4038,10 +4159,14 @@ export class HassRecordsHistoryCard extends ChartCardBase {
 
     const isSingleRegion = annotationSections.length === 1;
     // Check if the single cluster was confirmed by multiple methods (overlap "only" mode)
-    const detectedByMethods = !isSingleRegion ? null
-      : (Array.isArray(primaryRegion.cluster?.detectedByMethods) && primaryRegion.cluster.detectedByMethods.length > 1
-        ? primaryRegion.cluster.detectedByMethods
-        : null);
+    let detectedByMethods;
+    if (!isSingleRegion) {
+      detectedByMethods = null;
+    } else if (Array.isArray(primaryRegion.cluster?.detectedByMethods) && primaryRegion.cluster.detectedByMethods.length > 1) {
+      detectedByMethods = primaryRegion.cluster.detectedByMethods;
+    } else {
+      detectedByMethods = null;
+    }
 
     let message;
     let annotation;

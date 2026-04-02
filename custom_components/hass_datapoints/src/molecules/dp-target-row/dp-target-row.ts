@@ -6,13 +6,15 @@ import { styles } from "./dp-target-row.styles";
 // ---------------------------------------------------------------------------
 
 import type { NormalizedAnalysis, ComparisonWindow, HassEntityState } from "./types";
-export type { NormalizedAnalysis, ComparisonWindow, HassEntityState };
 
 import "@/molecules/dp-analysis-trend-group/dp-analysis-trend-group";
+import "@/molecules/dp-analysis-summary-group/dp-analysis-summary-group";
 import "@/molecules/dp-analysis-rate-group/dp-analysis-rate-group";
 import "@/molecules/dp-analysis-threshold-group/dp-analysis-threshold-group";
 import "@/molecules/dp-analysis-anomaly-group/dp-analysis-anomaly-group";
 import "@/molecules/dp-analysis-delta-group/dp-analysis-delta-group";
+
+export type { NormalizedAnalysis, ComparisonWindow, HassEntityState };
 
 export function deriveSwatchIconColor(color: string): string {
   const hex = String(color || "").trim();
@@ -72,14 +74,21 @@ export class DpTargetRow extends LitElement {
   };
 
   declare color: string;
+
   declare visible: boolean;
+
   declare analysis: NormalizedAnalysis;
+
   declare index: number;
+
   declare canShowDeltaAnalysis: boolean;
+
   /** HA entity state object. Provides entity_id, display name, unit, and icon for the row. */
   declare stateObj: Record<string, unknown> | null;
+
   /** HA hass object. Required by ha-state-icon to resolve entity icons correctly. */
   declare hass: Record<string, unknown> | null;
+
   declare comparisonWindows: ComparisonWindow[];
 
   static styles = styles;
@@ -139,6 +148,10 @@ export class DpTargetRow extends LitElement {
 
   private _onCheckbox(key: string, e: Event) {
     this._emit("dp-row-analysis-change", { entityId: this._entityId, key, value: (e.target as HTMLInputElement).checked });
+  }
+
+  private _onCopyAnalysisToAll() {
+    this._emit("dp-row-copy-analysis-to-all", { entityId: this._entityId, analysis: this.analysis });
   }
 
   private _onGroupAnalysisChange(e: CustomEvent) {
@@ -232,21 +245,16 @@ export class DpTargetRow extends LitElement {
         ${this._supportsAnalysis && this.analysis?.expanded ? html`
           <div class="history-target-analysis" role="cell">
             <div class="history-target-analysis-grid">
-              <label class="history-target-analysis-option ${!hasActive ? "is-disabled" : ""}">
-                <input type="checkbox" .checked=${a.hide_source_series && hasActive}
-                  ?disabled=${!hasActive}
-                  @change=${(e: Event) => this._onCheckbox("hide_source_series", e)}>
-                <span>Hide source series</span>
-              </label>
               <dp-analysis-trend-group
                 .analysis=${a}
                 .entityId=${this._entityId}
                 @dp-group-analysis-change=${this._onGroupAnalysisChange}
               ></dp-analysis-trend-group>
-              <label class="history-target-analysis-option">
-                <input type="checkbox" .checked=${a.show_summary_stats} @change=${(e: Event) => this._onCheckbox("show_summary_stats", e)}>
-                <span>Show min / max / mean</span>
-              </label>
+              <dp-analysis-summary-group
+                .analysis=${a}
+                .entityId=${this._entityId}
+                @dp-group-analysis-change=${this._onGroupAnalysisChange}
+              ></dp-analysis-summary-group>
               <dp-analysis-rate-group
                 .analysis=${a}
                 .entityId=${this._entityId}
@@ -270,6 +278,23 @@ export class DpTargetRow extends LitElement {
                 .canShowDeltaAnalysis=${this.canShowDeltaAnalysis}
                 @dp-group-analysis-change=${this._onGroupAnalysisChange}
               ></dp-analysis-delta-group>
+              <div class="history-target-analysis-bottom-row">
+                <label class="history-target-analysis-option ${!hasActive ? "is-disabled" : ""}">
+                  <input type="checkbox" .checked=${a.hide_source_series && hasActive}
+                    ?disabled=${!hasActive}
+                    @change=${(e: Event) => this._onCheckbox("hide_source_series", e)}>
+                  <span>Hide source series</span>
+                </label>
+                <button
+                  type="button"
+                  class="history-target-analysis-copy-btn"
+                  title="Copy these analysis settings to all targets"
+                  @click=${this._onCopyAnalysisToAll}
+                >
+                  <ha-icon icon="mdi:content-copy"></ha-icon>
+                  Copy to all targets
+                </button>
+              </div>
             </div>
           </div>
         ` : nothing}

@@ -1,4 +1,4 @@
-import { LitElement, html, nothing } from "lit";
+import { LitElement, html } from "lit";
 import { styles } from "./dp-target-row-list.styles";
 import type { NormalizedAnalysis, ComparisonWindow } from "@/molecules/dp-target-row/dp-target-row";
 import "@/molecules/dp-target-row/dp-target-row";
@@ -28,6 +28,7 @@ export interface RowConfig {
  * @fires dp-row-toggle-analysis - Bubbled from child `dp-target-row`. `{ entityId }`
  * @fires dp-row-remove - Bubbled from child `dp-target-row`. `{ index }`
  * @fires dp-row-analysis-change - Bubbled from child `dp-target-row`. `{ entityId, key, value }`
+ * @fires dp-row-copy-analysis-to-all - Bubbled from child `dp-target-row`. `{ entityId, analysis }`
  */
 export class DpTargetRowList extends LitElement {
   static properties = {
@@ -39,17 +40,73 @@ export class DpTargetRowList extends LitElement {
   };
 
   declare rows: RowConfig[];
+
   /** HA entity states map (entity_id → state object). Passed directly to each `dp-target-row`. */
   declare states: Record<string, Record<string, unknown>>;
+
   /** HA hass object. Required by ha-state-icon inside dp-target-row to resolve entity icons. */
   declare hass: Record<string, unknown> | null;
+
   declare canShowDeltaAnalysis: boolean;
+
   declare comparisonWindows: ComparisonWindow[];
 
   /** Index of the row currently being dragged, or null when not dragging. */
   private _dragSourceIndex: number | null = null;
 
   static styles = styles;
+
+  /**
+   * Optimistically toggle the expanded state of a row's analysis panel
+   * immediately (before the panel's round-trip mutation arrives). This gives
+   * instant visual feedback with no perceived delay.
+   */
+  private _onToggleAnalysisFast = (e: CustomEvent) => {
+    const entityId = String(e?.detail?.entityId || "").trim();
+    if (!entityId) { return; }
+    const index = this.rows?.findIndex((r) => r.entity_id === entityId) ?? -1;
+    if (index === -1) { return; }
+    this.rows = this.rows.map((row, i) => {
+      if (i !== index) { return row; }
+      return {
+        ...row,
+        analysis: {
+          ...row.analysis,
+          expanded: !row.analysis?.expanded,
+        },
+      };
+    });
+  };
+
+  /**
+   * Optimistically apply analysis option changes immediately so sub-option
+   * groups (e.g. method-specific windows) appear without waiting for the
+   * panel round-trip. Handles both plain key/value changes and the special
+   * `anomaly_method_toggle_*` keys used by the anomaly group.
+   */
+  private _onRowAnalysisChangeFast = (e: CustomEvent) => {
+    const { entityId, key, value } = (e.detail || {}) as { entityId?: string; key?: string; value?: unknown };
+    if (!entityId || !key) { return; }
+    const index = this.rows?.findIndex((r) => r.entity_id === entityId) ?? -1;
+    if (index === -1) { return; }
+
+    const row = this.rows[index];
+    const currentAnalysis = row.analysis || ({} as NormalizedAnalysis);
+    let nextAnalysis: NormalizedAnalysis;
+
+    if (key.startsWith("anomaly_method_toggle_")) {
+      const method = key.slice("anomaly_method_toggle_".length);
+      const currentMethods = Array.isArray(currentAnalysis.anomaly_methods) ? currentAnalysis.anomaly_methods : [];
+      const nextMethods = value === true
+        ? [...new Set([...currentMethods, method])]
+        : currentMethods.filter((m: string) => m !== method);
+      nextAnalysis = { ...currentAnalysis, anomaly_methods: nextMethods };
+    } else {
+      nextAnalysis = { ...currentAnalysis, [key]: value };
+    }
+
+    this.rows = this.rows.map((r, i) => (i === index ? { ...r, analysis: nextAnalysis } : r));
+  };
 
   render() {
     if (!this.rows.length) {
@@ -67,6 +124,8 @@ export class DpTargetRowList extends LitElement {
           @dragover=${this._onDragOver}
           @dragleave=${this._onDragLeave}
           @drop=${this._onDrop}
+          @dp-row-toggle-analysis=${this._onToggleAnalysisFast}
+          @dp-row-analysis-change=${this._onRowAnalysisChangeFast}
         >
           ${this.rows.map(
             (row, index) => html`
@@ -100,6 +159,11 @@ export class DpTargetRowList extends LitElement {
     if (e.dataTransfer) {
       e.dataTransfer.effectAllowed = "move";
       e.dataTransfer.setData("text/plain", String(index));
+      // Always use the full row as the drag ghost, regardless of which child
+      // element (e.g. the drag handle) initiated the drag.
+      const rowEl = e.currentTarget as HTMLElement;
+      const rect = rowEl.getBoundingClientRect();
+      e.dataTransfer.setDragImage(rowEl, e.clientX - rect.left, e.clientY - rect.top);
     }
     const target = e.currentTarget as HTMLElement;
     // Delay so the drag ghost captures the non-dimmed appearance.

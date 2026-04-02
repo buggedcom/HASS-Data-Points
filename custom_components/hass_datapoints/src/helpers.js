@@ -1,5 +1,4 @@
 import { loadHaComponents } from "@kipk/load-ha-components";
-
 import { PANEL_URL_PATH } from "./constants.js";
 
 /**
@@ -40,24 +39,24 @@ async function preloadHistoryRouteComponents(tags = []) {
     const app = document.querySelector("home-assistant");
     const panels = app?.hass?.panels;
     if (!panels?.history) {
-      console.warn("[hass-datapoints ha] history panel not available for preload");
+      logger.warn("[hass-datapoints ha] history panel not available for preload");
       return;
     }
     const resolver = document.createElement("partial-panel-resolver");
     if (typeof resolver._updateRoutes !== "function") {
-      console.warn("[hass-datapoints ha] partial-panel-resolver missing _updateRoutes");
+      logger.warn("[hass-datapoints ha] partial-panel-resolver missing _updateRoutes");
       return;
     }
     resolver.hass = { panels };
     resolver._updateRoutes();
     const load = resolver.routerOptions?.routes?.history?.load;
     if (typeof load !== "function") {
-      console.warn("[hass-datapoints ha] history route loader missing");
+      logger.warn("[hass-datapoints ha] history route loader missing");
       return;
     }
     await load();
   } catch (error) {
-    console.warn("[hass-datapoints ha] history route preload failed", {
+    logger.warn("[hass-datapoints ha] history route preload failed", {
       historyTags,
       message: error?.message || String(error),
     });
@@ -70,11 +69,9 @@ export function waitForHaComponent(tag, timeoutMs = HA_COMPONENT_LOAD_TIMEOUT_MS
     return Promise.resolve(true);
   }
   return Promise.race([
-    customElements.whenDefined(tag).then(() => {
-      return true;
-    }),
+    customElements.whenDefined(tag).then(() => true),
     new Promise((resolve) => window.setTimeout(() => {
-      console.warn("[hass-datapoints ha] component wait timed out", { tag, timeoutMs });
+      logger.warn("[hass-datapoints ha] component wait timed out", { tag, timeoutMs });
       resolve(false);
     }, timeoutMs)),
   ]);
@@ -87,7 +84,7 @@ export function ensureHaComponents(tags = []) {
     .then(() => (typeof loadHaComponents === "function" && loaderTags.length
       ? Promise.resolve(loadHaComponents(loaderTags))
         .catch((error) => {
-          console.warn("[hass-datapoints ha] loader failed", {
+          logger.warn("[hass-datapoints ha] loader failed", {
             loaderTags,
             message: error?.message || String(error),
           });
@@ -102,7 +99,7 @@ export function ensureHaComponents(tags = []) {
         ready: !!results[index],
         defined: !!customElements.get(tag),
       }));
-      return results;
+      return summary;
     });
 }
 

@@ -1,6 +1,7 @@
 import { LitElement } from "lit";
 import { DOMAIN } from "@/lib/shared";
 import type { CardConfig, HassLike } from "@/lib/types";
+import { logger } from "@/lib/logger.js";
 
 /**
  * ChartCardBase – shared LitElement base class for history and statistics
@@ -21,7 +22,9 @@ export abstract class ChartCardBase extends LitElement {
   // ── Protected state accessible to subclasses ─────────────────────────────
 
   protected _hass: HassLike | undefined;
+
   protected _config: CardConfig = {};
+
   protected _loadRequestId = 0;
 
   /** Subclasses store their last draw call arguments here so the
@@ -35,11 +38,17 @@ export abstract class ChartCardBase extends LitElement {
   // ── Private lifecycle state ───────────────────────────────────────────────
 
   private _unsubscribe: (() => void) | null = null;
+
   private _resizeObserver: ResizeObserver | null = null;
+
   private _loadRaf: number | null = null;
+
   private _loadInFlight = false;
+
   private _hasStartedInitialLoad = false;
+
   private _windowListener: (() => void) | null = null;
+
   /** True once _setupAutoRefresh and _setupResizeObserver have been called. */
   private _initialized = false;
 
@@ -76,6 +85,7 @@ export abstract class ChartCardBase extends LitElement {
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
   connectedCallback(): void {
+    // eslint-disable-next-line wc/guard-super-call
     super.connectedCallback();
     // Re-added to DOM after removal: kick off a load if we have hass.
     if (this._hass && !this._hasStartedInitialLoad) {
@@ -95,6 +105,7 @@ export abstract class ChartCardBase extends LitElement {
   }
 
   disconnectedCallback(): void {
+    // eslint-disable-next-line wc/guard-super-call
     super.disconnectedCallback();
     this._cleanup();
   }
@@ -110,7 +121,7 @@ export abstract class ChartCardBase extends LitElement {
       this._loadInFlight = true;
       Promise.resolve(this._load())
         .catch((err: unknown) => {
-          console.error("[hass-datapoints chart-base] load failed", err);
+          logger.error("[hass-datapoints chart-base] load failed", err);
         })
         .finally(() => {
           this._loadInFlight = false;

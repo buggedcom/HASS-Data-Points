@@ -114,6 +114,6 @@ When building molecules, **always use the existing atoms** instead of writing ra
 ## Key CSS Files to Reference
 
 All CSS lives in `PANEL_HISTORY_STYLE` constant, defined at line 166 of:
-`custom_components/hass_datapoints/src/components/panel-history/panel-history.js`
+`custom_components/hass_datapoints/src/panels/datapoints/datapoints.js`
 
 Each component must extract and replicate the exact CSS selectors from this constant that correspond to the HTML it renders.

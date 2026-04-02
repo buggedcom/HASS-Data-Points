@@ -1,15 +1,20 @@
 import { LitElement, html, css } from "lit";
 import type { SeriesItem } from "@/lib/types";
 import "@/atoms/interactive/dp-legend-item/dp-legend-item";
+
 export class DpChartLegend extends LitElement {
   static properties = {
     series: { type: Array },
     hiddenSeries: { type: Object },
     wrapRows: { type: Boolean, attribute: "wrap-rows" },
   };
+
   declare series: SeriesItem[];
+
   declare hiddenSeries: Set<string>;
+
   declare wrapRows: boolean;
+
   static styles = css`
     :host { display: block; }
     .legend {
@@ -19,12 +24,14 @@ export class DpChartLegend extends LitElement {
       overflow-y: auto; max-height: calc((30px * 3) + 16px);
     }
   `;
+
   constructor() {
     super();
     this.series = [];
     this.hiddenSeries = new Set();
     this.wrapRows = false;
   }
+
   _onToggle(entityId: string, e: CustomEvent<{ pressed: boolean }>) {
     this.dispatchEvent(
       new CustomEvent("dp-series-toggle", {
@@ -34,6 +41,7 @@ export class DpChartLegend extends LitElement {
       }),
     );
   }
+
   render() {
     return html`
       <div class="legend ${this.wrapRows ? "wrap-rows" : ""}">

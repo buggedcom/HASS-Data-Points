@@ -15,4 +15,4 @@ export { HassRecordsListCard } from "./card-list/card-list";
 export { HassRecordsQuickCard } from "./card-quick/card-quick";
 export { HassRecordsSensorCard } from "./card-sensor/card-sensor";
 export { HassRecordsStatisticsCard } from "./card-statistics/card-statistics";
-export { HassRecordsHistoryPanel } from "./panel-history/panel-history";
+export { HassRecordsHistoryPanel } from "../panels/datapoints/datapoints";

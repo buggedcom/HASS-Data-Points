@@ -1,5 +1,7 @@
-import { confirmDestructiveAction, deleteEvent, DOMAIN, esc, fmtDateTime } from "@/lib/shared";
+import { confirmDestructiveAction, DOMAIN, esc, fmtDateTime } from "@/lib/shared";
 import type { HassLike } from "@/lib/types";
+import { logger } from "@/lib/logger.js";
+
 interface ChangeItem {
   timestamp: string;
   message: string;
@@ -29,19 +31,28 @@ interface WindowConfig {
  */
 export class HassRecordsDevToolCard extends HTMLElement {
   _config: Record<string, unknown> = {};
+
   _hass: HassLike | null = null;
+
   _rendered = false;
+
   _entities: string[] = [];
+
   _suppressEntityChange = false;
+
   _nextWindowId = 1;
+
   _results: Map<number, WindowResult> = new Map();
+
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
   }
+
   setConfig(config: Record<string, unknown>) {
     this._config = config || {};
   }
+
   set hass(hass: HassLike) {
     this._hass = hass;
     if (!this._rendered) {
@@ -50,15 +61,17 @@ export class HassRecordsDevToolCard extends HTMLElement {
     }
     this._updateHassOnChildren();
   }
+
   _updateHassOnChildren() {
     if (!this.shadowRoot || !this._hass) { return; }
     const ep = this.shadowRoot.getElementById("entity-picker") as (HTMLElement & Record<string, unknown>) | null;
     if (!ep) { return; }
     this._suppressEntityChange = true;
-    ep["hass"] = this._hass;
-    ep["value"] = this._entities;
+    ep.hass = this._hass;
+    ep.value = this._entities;
     setTimeout(() => { this._suppressEntityChange = false; }, 100);
   }
+
   _render() {
     this._rendered = true;
     const cfg = this._config;
@@ -208,14 +221,20 @@ export class HassRecordsDevToolCard extends HTMLElement {
     // Entity picker
     const ep = this.shadowRoot!.getElementById("entity-picker") as (HTMLElement & Record<string, unknown>) | null;
     if (ep) {
-      ep["selector"] = { entity: { multiple: true } };
-      ep["value"] = [];
+      ep.selector = { entity: { multiple: true } };
+      ep.value = [];
       this._entities = [];
       this._suppressEntityChange = false;
       ep.addEventListener("value-changed", (e: Event) => {
         if (this._suppressEntityChange) { return; }
         const val = (e as CustomEvent<{ value: unknown }>).detail.value;
-        this._entities = Array.isArray(val) ? (val as string[]) : (val ? [val as string] : []);
+        if (Array.isArray(val)) {
+          this._entities = val as string[];
+        } else if (val) {
+          this._entities = [val as string];
+        } else {
+          this._entities = [];
+        }
       });
     }
     this._addWindowRow();
@@ -223,13 +242,14 @@ export class HassRecordsDevToolCard extends HTMLElement {
     this.shadowRoot!.getElementById("analyze-btn")!.addEventListener("click", () => this._analyzeHistory());
     this.shadowRoot!.getElementById("delete-dev-btn")!.addEventListener("click", () => this._deleteAllDev());
   }
+
   _addWindowRow() {
     const id = this._nextWindowId++;
     const container = this.shadowRoot!.getElementById("windows-list")!;
     const totalRows = container.querySelectorAll(".window-row").length;
     const row = document.createElement("div");
     row.className = "window-row";
-    row.dataset["wid"] = String(id);
+    row.dataset.wid = String(id);
     row.innerHTML = `
       <div class="window-fields">
         <div class="w-label-wrap">
@@ -260,22 +280,25 @@ export class HassRecordsDevToolCard extends HTMLElement {
     container.appendChild(row);
     this._syncRemoveButtons();
   }
+
   _syncRemoveButtons() {
     const rows = this.shadowRoot!.querySelectorAll(".window-row");
     rows.forEach((r) => {
       (r.querySelector(".remove-window-btn") as HTMLButtonElement).disabled = rows.length <= 1;
     });
   }
+
   _readWindowConfigs(): WindowConfig[] {
     return [...this.shadowRoot!.querySelectorAll(".window-row")].map((row, idx) => {
       const el = row as HTMLElement;
-      const wid = parseInt(el.dataset["wid"] ?? "0");
+      const wid = parseInt(el.dataset.wid ?? "0", 10);
       const label = ((row.querySelector(".w-label") as HTMLInputElement).value || "").trim() || `Window ${idx + 1}`;
       const startDt = (row.querySelector(".w-start") as HTMLInputElement).value;
-      const hours = Math.max(1, parseInt((row.querySelector(".w-hours") as HTMLInputElement).value) || 24);
+      const hours = Math.max(1, parseInt((row.querySelector(".w-hours") as HTMLInputElement).value, 10) || 24);
       return { id: wid, label, startDt, hours };
     });
   }
+
   async _analyzeHistory() {
     if (!this._entities.length) {
       this._showStatus("analyze-status", "err", "Please select at least one entity.");
@@ -314,10 +337,11 @@ export class HassRecordsDevToolCard extends HTMLElement {
       this._hideStatus("analyze-status");
     } catch (err) {
       this._showStatus("analyze-status", "err", `Error: ${(err as Error).message || "Failed to fetch history"}`);
-      console.error("[hass-datapoints dev-tool]", err);
+      logger.error("[hass-datapoints dev-tool]", err);
     }
     btn.disabled = false;
   }
+
   _detectChanges(histResult: Record<string, unknown>): ChangeItem[] {
     const changes: ChangeItem[] = [];
     for (const [entityId, statesRaw] of Object.entries(histResult)) {
@@ -331,13 +355,13 @@ export class HassRecordsDevToolCard extends HTMLElement {
       for (let i = 0; i < states.length; i++) {
         const s = states[i];
         const prev = i > 0 ? states[i - 1] : null;
-        const cur = s["s"] as string;
-        const prevVal = (prev?.["s"] as string | undefined) ?? null;
+        const cur = s.s as string;
+        const prevVal = (prev?.s as string | undefined) ?? null;
         if (cur === "unavailable" || cur === "unknown") { continue; }
         if (prev && prevVal === cur) {
           if (domain !== "climate") { continue; }
         }
-        const tsRaw = (s["lc"] ?? s["lu"]) as number | undefined;
+        const tsRaw = (s.lc ?? s.lu) as number | undefined;
         const timestamp = tsRaw != null ? new Date(tsRaw * 1000).toISOString() : new Date().toISOString();
         let message: string | null = null;
         let icon = "mdi:bookmark";
@@ -361,12 +385,12 @@ export class HassRecordsDevToolCard extends HTMLElement {
           icon = cur === "open" || cur === "opening" ? "mdi:garage-open" : "mdi:garage";
           color = cur === "open" ? "#4caf50" : "#795548";
         } else if (domain === "climate") {
-          const sAttrs = s["a"] as Record<string, unknown> | undefined;
-          const prevAttrs = prev?.["a"] as Record<string, unknown> | undefined;
-          const curTemp = sAttrs?.["temperature"];
-          const prevTemp = prevAttrs?.["temperature"];
+          const sAttrs = s.a as Record<string, unknown> | undefined;
+          const prevAttrs = prev?.a as Record<string, unknown> | undefined;
+          const curTemp = sAttrs?.temperature;
+          const prevTemp = prevAttrs?.temperature;
           if (curTemp != null && curTemp !== prevTemp) {
-            const tu = (sAttrs?.["temperature_unit"] as string | undefined) || unit || "\u00b0";
+            const tu = (sAttrs?.temperature_unit as string | undefined) || unit || "\u00b0";
             message = `${friendlyName}: setpoint \u2192 ${curTemp}${tu}`;
             icon = "mdi:thermostat"; color = "#ff5722";
           } else if (!prev || prevVal !== cur) {
@@ -377,14 +401,14 @@ export class HassRecordsDevToolCard extends HTMLElement {
         } else if (domain === "sensor") {
           const num = parseFloat(cur);
           const prevNum = prevVal != null ? parseFloat(prevVal) : NaN;
-          if (isNaN(num)) { continue; }
-          if (!isNaN(prevNum) && Math.abs(num - prevNum) < 0.5) { continue; }
+          if (Number.isNaN(num)) { continue; }
+          if (!Number.isNaN(prevNum) && Math.abs(num - prevNum) < 0.5) { continue; }
           message = `${friendlyName}: ${cur}${unit}`;
           icon = "mdi:gauge"; color = "#2196f3";
         } else if (domain === "input_number" || domain === "number") {
           const num = parseFloat(cur);
           const prevNum = prevVal != null ? parseFloat(prevVal) : NaN;
-          if (isNaN(num) || (!isNaN(prevNum) && num === prevNum)) { continue; }
+          if (Number.isNaN(num) || (!Number.isNaN(prevNum) && num === prevNum)) { continue; }
           message = `${friendlyName}: \u2192 ${cur}${unit}`;
           icon = "mdi:numeric"; color = "#9c27b0";
         } else if (domain === "input_select" || domain === "select") {
@@ -403,6 +427,7 @@ export class HassRecordsDevToolCard extends HTMLElement {
     changes.sort((a, b) => (a.timestamp < b.timestamp ? -1 : 1));
     return changes;
   }
+
   _binaryLabel(deviceClass: string, state: string): string {
     const on = state === "on";
     const map: Record<string, [string, string]> = {
@@ -419,8 +444,13 @@ export class HassRecordsDevToolCard extends HTMLElement {
       light: ["light detected", "dark"], sound: ["sound detected", "quiet"],
     };
     const pair = map[deviceClass];
-    return pair ? (on ? pair[0] : pair[1]) : (on ? "on" : "off");
+    if (pair) {
+      return on ? pair[0] : pair[1];
+    }
+      return on ? "on" : "off";
+
   }
+
   _renderResults() {
     const container = this.shadowRoot!.getElementById("results-container")!;
     const windowOrder = this._readWindowConfigs().map((w) => w.id).filter((id) => this._results.has(id));
@@ -483,8 +513,8 @@ export class HassRecordsDevToolCard extends HTMLElement {
     resultsList.querySelectorAll("input[type=checkbox]").forEach((cb) => {
       cb.addEventListener("change", (e) => {
         const input = e.target as HTMLInputElement;
-        const wid = parseInt(input.dataset["wid"] ?? "0");
-        const idx = parseInt(input.dataset["idx"] ?? "0");
+        const wid = parseInt(input.dataset.wid ?? "0", 10);
+        const idx = parseInt(input.dataset.idx ?? "0", 10);
         const r = this._results.get(wid);
         if (!r) { return; }
         if (input.checked) { r.selected.add(idx); } else { r.selected.delete(idx); }
@@ -495,8 +525,7 @@ export class HassRecordsDevToolCard extends HTMLElement {
       btn.addEventListener("click", (e) => {
         e.stopPropagation();
         const el = e.currentTarget as HTMLButtonElement;
-        const wid = parseInt(el.dataset["wid"] ?? "0");
-        const act = el.dataset["act"];
+        const wid = parseInt(el.dataset.wid ?? "0", 10);
         const r = this._results.get(wid);
         if (!r) { return; }
         const cbs = resultsList.querySelectorAll<HTMLInputElement>(`input[data-wid="${wid}"]`);
@@ -513,6 +542,7 @@ export class HassRecordsDevToolCard extends HTMLElement {
     container.querySelector("#record-btn")!.addEventListener("click", () => this._recordSelected());
     this._updateSelectedSummary();
   }
+
   _updateSelectedSummary() {
     let sel = 0;
     let total = 0;
@@ -523,6 +553,7 @@ export class HassRecordsDevToolCard extends HTMLElement {
       el.innerHTML = `<strong>${sel}</strong> of ${total} selected across ${wn} window${wn !== 1 ? "s" : ""}`;
     }
   }
+
   async _recordSelected() {
     const allItems: ChangeItem[] = [];
     this._results.forEach((r) => {
@@ -535,21 +566,20 @@ export class HassRecordsDevToolCard extends HTMLElement {
     const btn = this.shadowRoot!.getElementById("record-btn") as HTMLButtonElement;
     btn.disabled = true;
     this._showStatus("record-status", "ok", `Recording ${allItems.length} data point${allItems.length !== 1 ? "s" : ""}\u2026`);
-    let ok = 0;
-    let fail = 0;
-    for (const item of allItems) {
-      try {
-        await this._hass!.callService(DOMAIN as string, "record", {
+    const results = await Promise.allSettled(
+      allItems.map((item) =>
+        this._hass!.callService(DOMAIN as string, "record", {
           message: item.message,
           entity_ids: [item.entity_id],
           icon: item.icon,
           color: item.color,
           date: item.timestamp,
           dev: true,
-        });
-        ok++;
-      } catch { fail++; }
-    }
+        }),
+      ),
+    );
+    const ok = results.filter((r) => r.status === "fulfilled").length;
+    const fail = results.filter((r) => r.status === "rejected").length;
     if (fail) {
       this._showStatus("record-status", "err", `Recorded ${ok}, failed ${fail}.`);
     } else {
@@ -559,9 +589,10 @@ export class HassRecordsDevToolCard extends HTMLElement {
     await this._refreshDevCount();
     window.dispatchEvent(new CustomEvent("hass-datapoints-event-recorded"));
   }
+
   async _deleteAllDev() {
     const devCountEl = this.shadowRoot!.getElementById("dev-count");
-    const count = parseInt(devCountEl?.textContent ?? "0") || 0;
+    const count = parseInt(devCountEl?.textContent ?? "0", 10) || 0;
     if (count === 0) {
       this._showStatus("delete-status", "err", "No dev datapoints to delete.");
       return;
@@ -576,7 +607,7 @@ export class HassRecordsDevToolCard extends HTMLElement {
     btn.disabled = true;
     try {
       const result = await this._hass!.connection.sendMessagePromise({ type: `${DOMAIN}/events/delete_dev` }) as Record<string, unknown>;
-      const deleted = result["deleted"] as number;
+      const deleted = result.deleted as number;
       this._showStatus("delete-status", "ok", `Deleted ${deleted} dev data point${deleted !== 1 ? "s" : ""}.`);
       await this._refreshDevCount();
       window.dispatchEvent(new CustomEvent("hass-datapoints-event-recorded"));
@@ -585,17 +616,19 @@ export class HassRecordsDevToolCard extends HTMLElement {
     }
     btn.disabled = false;
   }
+
   async _refreshDevCount() {
     try {
       const result = await this._hass!.connection.sendMessagePromise({ type: `${DOMAIN}/events` }) as Record<string, unknown>;
-      const events = (result["events"] as Array<Record<string, unknown>>) || [];
-      const n = events.filter((e) => e["dev"]).length;
+      const events = (result.events as Array<Record<string, unknown>>) || [];
+      const n = events.filter((e) => e.dev).length;
       const el = this.shadowRoot!.getElementById("dev-count");
       const pl = this.shadowRoot!.getElementById("dev-count-plural");
       if (el) { el.textContent = String(n); }
       if (pl) { pl.textContent = n === 1 ? "" : "s"; }
     } catch { /* ignore */ }
   }
+
   _showStatus(id: string, cls: "ok" | "err", msg: string) {
     const el = this.shadowRoot!.getElementById(id);
     if (!el) { return; }
@@ -603,10 +636,12 @@ export class HassRecordsDevToolCard extends HTMLElement {
     el.textContent = msg;
     el.style.display = "block";
   }
+
   _hideStatus(id: string) {
     const el = this.shadowRoot!.getElementById(id);
     if (el) { el.style.display = "none"; }
   }
+
   static getStubConfig() {
     return { title: "Dev Tool" };
   }

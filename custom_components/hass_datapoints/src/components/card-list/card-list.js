@@ -505,11 +505,14 @@ export class HassRecordsListCard extends HTMLElement {
       const end = endTime ? new Date(endTime) : new Date();
       startTime = new Date(end.getTime() - cfg.hours_to_show * 3600 * 1000).toISOString();
     }
-    const entityIds = cfg.entity
-      ? [cfg.entity]
-      : cfg.entities
-        ? cfg.entities.map((e) => (typeof e === "string" ? e : e.entity))
-        : undefined;
+    let entityIds;
+    if (cfg.entity) {
+      entityIds = [cfg.entity];
+    } else if (cfg.entities) {
+      entityIds = cfg.entities.map((e) => (typeof e === "string" ? e : e.entity));
+    } else {
+      entityIds = undefined;
+    }
 
     this._allEvents = await fetchEvents(
       this._hass,

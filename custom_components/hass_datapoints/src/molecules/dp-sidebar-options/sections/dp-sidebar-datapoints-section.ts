@@ -12,15 +12,23 @@ export const DATAPOINT_SCOPE_OPTIONS = [
 export class DpSidebarDatapointsSection extends LitElement {
   static properties = {
     datapointScope: { type: String, attribute: "datapoint-scope" },
+    collapsible: { type: Boolean },
+    open: { type: Boolean },
   };
 
   declare datapointScope: string;
+
+  declare collapsible: boolean;
+
+  declare open: boolean;
 
   static styles = styles;
 
   constructor() {
     super();
     this.datapointScope = "linked";
+    this.collapsible = false;
+    this.open = true;
   }
 
   private _onScopeChange(e: CustomEvent) {
@@ -34,6 +42,8 @@ export class DpSidebarDatapointsSection extends LitElement {
       <dp-sidebar-options-section
         .title=${"Datapoints"}
         .subtitle=${"Choose which annotation datapoints appear on the chart."}
+        .collapsible=${this.collapsible}
+        .open=${this.open}
       >
         <dp-radio-group
           .name=${"datapoint-scope"}

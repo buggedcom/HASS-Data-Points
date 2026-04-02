@@ -27,7 +27,7 @@ export async function fetchEvents(hass, startTime, endTime, entityIds) {
       return result.events || [];
     });
   } catch (err) {
-    console.warn("[hass-datapoints] fetchEvents failed:", err);
+    logger.warn("[hass-datapoints] fetchEvents failed:", err);
     return [];
   }
 }
@@ -51,7 +51,7 @@ export async function fetchEventBounds(hass) {
       end: result?.end_time || null,
     };
   } catch (err) {
-    console.warn("[hass-datapoints] fetchEventBounds failed:", err);
+    logger.warn("[hass-datapoints] fetchEventBounds failed:", err);
     return { start: null, end: null };
   }
 }

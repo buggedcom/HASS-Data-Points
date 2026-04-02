@@ -10,8 +10,11 @@ export class DpAnalysisGroup extends LitElement {
   };
 
   declare label: string;
+
   declare checked: boolean;
+
   declare disabled: boolean;
+
   declare alignTop: boolean;
 
   static styles = styles;
@@ -26,6 +29,9 @@ export class DpAnalysisGroup extends LitElement {
 
   private _onChange(e: Event) {
     const checked = (e.target as HTMLInputElement).checked;
+    // Optimistically update local state so sub-options show/hide immediately,
+    // before the parent propagates the new value back down via the property.
+    this.checked = checked;
     this.dispatchEvent(
       new CustomEvent("dp-group-change", {
         detail: { checked },
