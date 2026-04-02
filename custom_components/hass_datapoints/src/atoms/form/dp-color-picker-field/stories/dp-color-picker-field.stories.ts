@@ -1,5 +1,5 @@
 import { html } from "lit";
-import "./dp-color-picker-field";
+import "../dp-color-picker-field";
 
 export default {
   title: "Atoms/Form/Color Picker Field",

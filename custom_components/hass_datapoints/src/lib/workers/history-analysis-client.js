@@ -10,10 +10,14 @@ function getHistoryAnalysisWorker() {
   }
   workerInstance = new HistoryAnalysisWorker();
   workerInstance.addEventListener("message", (event) => {
-    const { id, result, error } = event.data || {};
+    const { id, type, value, result, error } = event.data || {};
     const handlers = pending.get(id);
     if (!handlers) {
       return;
+    }
+    if (type === "progress") {
+      handlers.onProgress?.(value);
+      return; // progress message — keep the request in the pending map
     }
     pending.delete(id);
     if (error) {
@@ -50,11 +54,11 @@ export function terminateHistoryAnalysisWorker() {
   }
 }
 
-export function computeHistoryAnalysisInWorker(payload) {
+export function computeHistoryAnalysisInWorker(payload, options = {}) {
   const worker = getHistoryAnalysisWorker();
   return new Promise((resolve, reject) => {
     const id = ++requestId;
-    pending.set(id, { resolve, reject });
+    pending.set(id, { resolve, reject, onProgress: options.onProgress ?? null });
     worker.postMessage({ id, payload });
   });
 }

@@ -1,5 +1,5 @@
 import { html } from "lit";
-import "./dp-radio-group";
+import "../dp-radio-group";
 
 export default {
   title: "Atoms/Form/Radio Group",

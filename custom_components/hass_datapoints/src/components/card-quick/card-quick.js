@@ -173,7 +173,9 @@ export class HassRecordsQuickCard extends LitElement {
       this._feedbackClass = "ok";
       this._feedbackText = "Recorded!";
       this._feedbackVisible = true;
-      setTimeout(() => (this._feedbackVisible = false), 2500);
+      setTimeout(() => {
+        this._feedbackVisible = false
+      }, 2500);
     } catch (e) {
       this._feedbackClass = "err";
       this._feedbackText = `Error: ${e.message || "unknown error"}`;

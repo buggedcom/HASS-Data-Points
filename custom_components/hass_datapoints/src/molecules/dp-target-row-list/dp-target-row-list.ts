@@ -37,6 +37,8 @@ export class DpTargetRowList extends LitElement {
     hass: { type: Object, attribute: false },
     canShowDeltaAnalysis: { type: Boolean, attribute: "can-show-delta-analysis" },
     comparisonWindows: { type: Array, attribute: false },
+    computingEntityIds: { type: Object, attribute: false },
+    analysisProgress: { type: Number, attribute: false },
   };
 
   declare rows: RowConfig[];
@@ -50,6 +52,12 @@ export class DpTargetRowList extends LitElement {
   declare canShowDeltaAnalysis: boolean;
 
   declare comparisonWindows: ComparisonWindow[];
+
+  /** Set of entity IDs currently being analysed in the worker. */
+  declare computingEntityIds: Set<string>;
+
+  /** Current analysis progress percentage (0–100) shared across all computing rows. */
+  declare analysisProgress: number;
 
   /** Index of the row currently being dragged, or null when not dragging. */
   private _dragSourceIndex: number | null = null;
@@ -139,6 +147,8 @@ export class DpTargetRowList extends LitElement {
                 .stateObj=${this.states?.[row.entity_id] ?? null}
                 .hass=${this.hass ?? null}
                 .comparisonWindows=${this.comparisonWindows}
+                .computing=${this.computingEntityIds?.has(row.entity_id) ?? false}
+                .computingProgress=${this.analysisProgress ?? 0}
                 data-row-index=${index}
                 @dragstart=${(e: DragEvent) => this._onDragStart(e, index)}
                 @dragend=${this._onDragEnd}
@@ -168,6 +178,9 @@ export class DpTargetRowList extends LitElement {
     const target = e.currentTarget as HTMLElement;
     // Delay so the drag ghost captures the non-dimmed appearance.
     setTimeout(() => target.classList.add("is-dragging"), 0);
+    // Force the grabbing cursor globally — the drag ghost otherwise interferes
+    // with the OS-level cursor and the CSS cursor style has no effect during a drag.
+    this.ownerDocument.body.style.cursor = "grabbing";
   }
 
   private _onDragEnd = (e: DragEvent) => {
@@ -175,6 +188,7 @@ export class DpTargetRowList extends LitElement {
     const target = e.currentTarget as HTMLElement;
     target.classList.remove("is-dragging");
     this._clearDropIndicators();
+    this.ownerDocument.body.style.cursor = "";
   };
 
   private _onDragOver(e: DragEvent) {

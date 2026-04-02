@@ -1,5 +1,5 @@
 import { html } from "lit";
-import "./dp-empty-state";
+import "../dp-empty-state";
 
 export default {
   title: "Atoms/Display/Empty State",

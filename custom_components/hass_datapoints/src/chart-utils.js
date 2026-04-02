@@ -1720,6 +1720,16 @@ export function showLineChartTooltip(card, hover, clientX, clientY) {
       bottom: chartBounds.bottom - 8,
     } : null);
   }
+  if (Array.isArray(hover.events) && hover.events.length > 0) {
+    renderAnnotationTooltips(card, hover, tooltip, chartBounds ? {
+      left: chartBounds.left + 8,
+      right: chartBounds.right - 8,
+      top: chartBounds.top + 8,
+      bottom: chartBounds.bottom - 8,
+    } : null);
+  } else {
+    clearAnnotationTooltips(card);
+  }
 }
 
 export function buildTooltipRelatedChips(hass, event) {

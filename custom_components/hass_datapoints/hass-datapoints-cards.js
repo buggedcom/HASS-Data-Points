@@ -8175,7 +8175,7 @@ ${s2.description}`).join("\n\n");
       messageEl.classList.toggle("visible", !!message);
     }
   }
-  const jsContent = '(function() {\n  "use strict";\n  function getTrendWindowMs(value) {\n    const windows = {\n      "1h": 60 * 60 * 1e3,\n      "6h": 6 * 60 * 60 * 1e3,\n      "24h": 24 * 60 * 60 * 1e3,\n      "7d": 7 * 24 * 60 * 60 * 1e3,\n      "14d": 14 * 24 * 60 * 60 * 1e3,\n      "21d": 21 * 24 * 60 * 60 * 1e3,\n      "28d": 28 * 24 * 60 * 60 * 1e3\n    };\n    return windows[value] || windows["24h"];\n  }\n  function buildRollingAverageTrend(points, windowMs) {\n    if (!Array.isArray(points) || points.length < 2 || !Number.isFinite(windowMs) || windowMs <= 0) {\n      return [];\n    }\n    const trendPoints = [];\n    let windowStartIndex = 0;\n    let windowSum = 0;\n    for (let index = 0; index < points.length; index += 1) {\n      const [time, value] = points[index];\n      windowSum += value;\n      while (windowStartIndex < index && time - points[windowStartIndex][0] > windowMs) {\n        windowSum -= points[windowStartIndex][1];\n        windowStartIndex += 1;\n      }\n      const count = index - windowStartIndex + 1;\n      if (count > 0) {\n        trendPoints.push([time, windowSum / count]);\n      }\n    }\n    return trendPoints;\n  }\n  function buildLinearTrend(points) {\n    if (!Array.isArray(points) || points.length < 2) {\n      return [];\n    }\n    const origin = points[0][0];\n    let sumX = 0;\n    let sumY = 0;\n    let sumXX = 0;\n    let sumXY = 0;\n    for (const [time, value] of points) {\n      const x = (time - origin) / (60 * 60 * 1e3);\n      sumX += x;\n      sumY += value;\n      sumXX += x * x;\n      sumXY += x * value;\n    }\n    const count = points.length;\n    const denominator = count * sumXX - sumX * sumX;\n    if (!Number.isFinite(denominator) || Math.abs(denominator) < 1e-9) {\n      return [];\n    }\n    const slope = (count * sumXY - sumX * sumY) / denominator;\n    const intercept = (sumY - slope * sumX) / count;\n    const firstTime = points[0][0];\n    const lastTime = points[points.length - 1][0];\n    const firstX = (firstTime - origin) / (60 * 60 * 1e3);\n    const lastX = (lastTime - origin) / (60 * 60 * 1e3);\n    return [\n      [firstTime, intercept + slope * firstX],\n      [lastTime, intercept + slope * lastX]\n    ];\n  }\n  function buildTrendPoints(points, method, trendWindow) {\n    if (!Array.isArray(points) || points.length < 2) {\n      return [];\n    }\n    if (method === "linear_trend") {\n      return buildLinearTrend(points);\n    }\n    return buildRollingAverageTrend(points, getTrendWindowMs(trendWindow));\n  }\n  function getPersistenceWindowMs(value) {\n    const windows = {\n      "30m": 30 * 60 * 1e3,\n      "1h": 60 * 60 * 1e3,\n      "3h": 3 * 60 * 60 * 1e3,\n      "6h": 6 * 60 * 60 * 1e3,\n      "12h": 12 * 60 * 60 * 1e3,\n      "24h": 24 * 60 * 60 * 1e3\n    };\n    return windows[value] || windows["1h"];\n  }\n  function buildIQRAnomalyClusters(points, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 4) {\n      return [];\n    }\n    const sorted = points.map(([, v]) => v).sort((a, b) => a - b);\n    const n = sorted.length;\n    const q1 = sorted[Math.floor(n * 0.25)];\n    const q2 = sorted[Math.floor(n * 0.5)];\n    const q3 = sorted[Math.floor(n * 0.75)];\n    const iqr = q3 - q1;\n    if (!Number.isFinite(iqr) || iqr <= 1e-6) {\n      return [];\n    }\n    let k;\n    if (anomalySensitivity === "low") {\n      k = 3;\n    } else if (anomalySensitivity === "high") {\n      k = 1.5;\n    } else {\n      k = 2;\n    }\n    const lowerFence = q1 - k * iqr;\n    const upperFence = q3 + k * iqr;\n    const clusters = [];\n    let currentCluster = [];\n    const flushCluster = () => {\n      if (currentCluster.length === 0) return;\n      const maxDeviation = currentCluster.reduce((m, p) => Math.max(m, Math.abs(p.residual)), 0);\n      clusters.push({ points: currentCluster.slice(), maxDeviation, anomalyMethod: "iqr" });\n      currentCluster = [];\n    };\n    for (const [timeMs, value] of points) {\n      if (value < lowerFence || value > upperFence) {\n        currentCluster.push({ timeMs, value, baselineValue: q2, residual: value - q2 });\n      } else {\n        flushCluster();\n      }\n    }\n    flushCluster();\n    return clusters.filter((c) => c.points.length > 0);\n  }\n  function buildRollingZScoreAnomalyClusters(points, windowMs, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 3 || !Number.isFinite(windowMs) || windowMs <= 0) {\n      return [];\n    }\n    const threshold = getAnomalySensitivityThreshold(anomalySensitivity);\n    const residuals = [];\n    let windowStart = 0;\n    let windowSum = 0;\n    let windowSumSq = 0;\n    for (let i = 0; i < points.length; i += 1) {\n      const [timeMs, value] = points[i];\n      windowSum += value;\n      windowSumSq += value * value;\n      while (windowStart < i && timeMs - points[windowStart][0] > windowMs) {\n        const old = points[windowStart][1];\n        windowSum -= old;\n        windowSumSq -= old * old;\n        windowStart += 1;\n      }\n      const count = i - windowStart + 1;\n      if (count < 3) {\n        continue;\n      }\n      const mean = windowSum / count;\n      const variance = Math.max(0, windowSumSq / count - mean * mean);\n      const std = Math.sqrt(variance);\n      if (!Number.isFinite(std) || std <= 1e-6) {\n        continue;\n      }\n      const zscore = (value - mean) / std;\n      if (Math.abs(zscore) >= threshold) {\n        residuals.push({ timeMs, value, baselineValue: mean, residual: value - mean, flagged: true });\n      } else {\n        residuals.push({ timeMs, flagged: false });\n      }\n    }\n    const clusters = [];\n    let currentCluster = [];\n    const flushCluster = () => {\n      if (currentCluster.length === 0) return;\n      const maxDeviation = currentCluster.reduce((m, p) => Math.max(m, Math.abs(p.residual)), 0);\n      clusters.push({ points: currentCluster.slice(), maxDeviation, anomalyMethod: "rolling_zscore" });\n      currentCluster = [];\n    };\n    for (const r of residuals) {\n      if (r.flagged) {\n        currentCluster.push(r);\n      } else {\n        flushCluster();\n      }\n    }\n    flushCluster();\n    return clusters.filter((c) => c.points.length > 0);\n  }\n  function buildPersistenceAnomalyClusters(points, minDurationMs, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 3 || !Number.isFinite(minDurationMs) || minDurationMs <= 0) {\n      return [];\n    }\n    let totalMin = Infinity;\n    let totalMax = -Infinity;\n    for (const [, v] of points) {\n      if (v < totalMin) totalMin = v;\n      if (v > totalMax) totalMax = v;\n    }\n    const totalRange = totalMax - totalMin;\n    if (!Number.isFinite(totalRange) || totalRange <= 1e-6) {\n      return [];\n    }\n    let flatFraction;\n    if (anomalySensitivity === "low") {\n      flatFraction = 5e-3;\n    } else if (anomalySensitivity === "high") {\n      flatFraction = 0.05;\n    } else {\n      flatFraction = 0.02;\n    }\n    const flatThreshold = flatFraction * totalRange;\n    const clusters = [];\n    let runStart = 0;\n    let runMin = points[0][1];\n    let runMax = points[0][1];\n    const flushRun = (runEnd) => {\n      const duration = points[runEnd][0] - points[runStart][0];\n      if (duration >= minDurationMs && runEnd > runStart) {\n        const mid = (runMin + runMax) / 2;\n        const clusterPoints = [];\n        for (let k = runStart; k <= runEnd; k += 1) {\n          clusterPoints.push({ timeMs: points[k][0], value: points[k][1], baselineValue: mid, residual: points[k][1] - mid });\n        }\n        clusters.push({\n          points: clusterPoints,\n          maxDeviation: runMax - runMin,\n          anomalyMethod: "persistence",\n          flatRange: runMax - runMin\n        });\n      }\n    };\n    for (let i = 1; i < points.length; i += 1) {\n      const v = points[i][1];\n      const nextMin = Math.min(runMin, v);\n      const nextMax = Math.max(runMax, v);\n      if (nextMax - nextMin > flatThreshold) {\n        flushRun(i - 1);\n        runStart = i;\n        runMin = v;\n        runMax = v;\n      } else {\n        runMin = nextMin;\n        runMax = nextMax;\n      }\n    }\n    flushRun(points.length - 1);\n    return clusters.filter((c) => c.points.length > 0);\n  }\n  function buildComparisonWindowAnomalyClusters(points, comparisonPoints, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 3 || !Array.isArray(comparisonPoints) || comparisonPoints.length < 3) {\n      return [];\n    }\n    const deltaPoints = [];\n    for (const [timeMs, value] of points) {\n      const compValue = interpolateSeriesValue(comparisonPoints, timeMs);\n      if (!Number.isFinite(compValue)) {\n        continue;\n      }\n      deltaPoints.push({ timeMs, value, compValue, delta: value - compValue });\n    }\n    if (deltaPoints.length < 3) {\n      return [];\n    }\n    let sumDeltas = 0;\n    for (const p of deltaPoints) {\n      sumDeltas += p.delta;\n    }\n    const meanDelta = sumDeltas / deltaPoints.length;\n    let sumSqDev = 0;\n    for (const p of deltaPoints) {\n      const dev = p.delta - meanDelta;\n      sumSqDev += dev * dev;\n    }\n    const rmsDeviation = Math.sqrt(sumSqDev / deltaPoints.length);\n    if (!Number.isFinite(rmsDeviation) || rmsDeviation <= 1e-6) {\n      return [];\n    }\n    const threshold = rmsDeviation * getAnomalySensitivityThreshold(anomalySensitivity);\n    const clusters = [];\n    let currentCluster = [];\n    const flushCluster = () => {\n      if (currentCluster.length === 0) return;\n      const maxDeviation = currentCluster.reduce((m, p) => Math.max(m, Math.abs(p.residual)), 0);\n      clusters.push({ points: currentCluster.slice(), maxDeviation, anomalyMethod: "comparison_window" });\n      currentCluster = [];\n    };\n    for (const { timeMs, value, compValue, delta } of deltaPoints) {\n      const residual = delta - meanDelta;\n      if (Math.abs(residual) >= threshold) {\n        currentCluster.push({ timeMs, value, baselineValue: compValue, residual: value - compValue });\n      } else {\n        flushCluster();\n      }\n    }\n    flushCluster();\n    return clusters.filter((c) => c.points.length > 0);\n  }\n  function buildRateOfChangeAnomalyClusters(points, rateWindow, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 3) {\n      return [];\n    }\n    const ratePoints = buildRateOfChangePoints(points, rateWindow);\n    if (!Array.isArray(ratePoints) || ratePoints.length < 3) {\n      return [];\n    }\n    let sumRates = 0;\n    for (const [, rate] of ratePoints) {\n      sumRates += rate;\n    }\n    const meanRate = sumRates / ratePoints.length;\n    let sumSqDev = 0;\n    for (const [, rate] of ratePoints) {\n      const dev = rate - meanRate;\n      sumSqDev += dev * dev;\n    }\n    const rmsDeviation = Math.sqrt(sumSqDev / ratePoints.length);\n    if (!Number.isFinite(rmsDeviation) || rmsDeviation <= 1e-6) {\n      return [];\n    }\n    const threshold = rmsDeviation * getAnomalySensitivityThreshold(anomalySensitivity);\n    const clusters = [];\n    let currentCluster = [];\n    const flushCluster = () => {\n      if (currentCluster.length === 0) {\n        return;\n      }\n      const maxDeviation = currentCluster.reduce((maxVal, point) => Math.max(maxVal, Math.abs(point.residual)), 0);\n      clusters.push({\n        points: currentCluster.slice(),\n        maxDeviation,\n        anomalyMethod: "rate_of_change"\n      });\n      currentCluster = [];\n    };\n    for (const [timeMs, rate] of ratePoints) {\n      const residual = rate - meanRate;\n      if (Math.abs(residual) >= threshold) {\n        const sourceValue = interpolateSeriesValue(points, timeMs);\n        if (!Number.isFinite(sourceValue)) {\n          flushCluster();\n          continue;\n        }\n        currentCluster.push({\n          timeMs,\n          value: sourceValue,\n          baselineValue: meanRate,\n          residual\n        });\n      } else {\n        flushCluster();\n      }\n    }\n    flushCluster();\n    return clusters.filter((cluster) => cluster.points.length > 0);\n  }\n  const VALID_ANOMALY_METHODS = ["trend_residual", "rate_of_change", "iqr", "rolling_zscore", "persistence", "comparison_window"];\n  function normalizeSeriesAnalysis(analysis) {\n    const source = analysis && typeof analysis === "object" ? analysis : {};\n    const legacyMethod = VALID_ANOMALY_METHODS.includes(source.anomaly_method) ? source.anomaly_method : null;\n    let anomalyMethods;\n    if (Array.isArray(source.anomaly_methods)) {\n      anomalyMethods = source.anomaly_methods.filter((m) => VALID_ANOMALY_METHODS.includes(m));\n    } else if (legacyMethod) {\n      anomalyMethods = [legacyMethod];\n    } else {\n      anomalyMethods = [];\n    }\n    return {\n      show_trend_lines: source.show_trend_lines === true,\n      trend_method: source.trend_method === "linear_trend" ? "linear_trend" : "rolling_average",\n      trend_window: typeof source.trend_window === "string" && source.trend_window ? source.trend_window : "24h",\n      show_summary_stats: source.show_summary_stats === true,\n      show_rate_of_change: source.show_rate_of_change === true,\n      rate_window: typeof source.rate_window === "string" && source.rate_window ? source.rate_window : "1h",\n      show_anomalies: source.show_anomalies === true,\n      anomaly_methods: anomalyMethods,\n      anomaly_overlap_mode: ["all", "highlight", "only"].includes(source.anomaly_overlap_mode) ? source.anomaly_overlap_mode : "all",\n      anomaly_sensitivity: typeof source.anomaly_sensitivity === "string" && source.anomaly_sensitivity ? source.anomaly_sensitivity : "medium",\n      anomaly_rate_window: typeof source.anomaly_rate_window === "string" && source.anomaly_rate_window ? source.anomaly_rate_window : "1h",\n      anomaly_zscore_window: typeof source.anomaly_zscore_window === "string" && source.anomaly_zscore_window ? source.anomaly_zscore_window : "24h",\n      anomaly_persistence_window: typeof source.anomaly_persistence_window === "string" && source.anomaly_persistence_window ? source.anomaly_persistence_window : "1h",\n      anomaly_comparison_window_id: typeof source.anomaly_comparison_window_id === "string" && source.anomaly_comparison_window_id ? source.anomaly_comparison_window_id : null,\n      show_delta_analysis: source.show_delta_analysis === true\n    };\n  }\n  function applyAnomalyOverlapMode(clustersByMethod, overlapMode) {\n    const methodKeys = Object.keys(clustersByMethod);\n    if (methodKeys.length <= 1 || overlapMode === "all") {\n      return methodKeys.flatMap((m) => clustersByMethod[m]);\n    }\n    const flaggedByMethod = {};\n    for (const m of methodKeys) {\n      flaggedByMethod[m] = new Set(clustersByMethod[m].flatMap((c) => c.points.map((p) => p.timeMs)));\n    }\n    const overlapTimes = /* @__PURE__ */ new Set();\n    for (const m of methodKeys) {\n      for (const t of flaggedByMethod[m]) {\n        if (methodKeys.some((other) => other !== m && flaggedByMethod[other].has(t))) {\n          overlapTimes.add(t);\n        }\n      }\n    }\n    if (overlapMode === "only") {\n      const seen = /* @__PURE__ */ new Set();\n      const result2 = [];\n      for (const m of methodKeys) {\n        for (const cluster of clustersByMethod[m]) {\n          const pts = cluster.points.filter((p) => overlapTimes.has(p.timeMs));\n          if (pts.length === 0) continue;\n          const key = pts.map((p) => p.timeMs).join(",");\n          if (seen.has(key)) continue;\n          seen.add(key);\n          const detectedByMethods = methodKeys.filter((other) => pts.some((p) => flaggedByMethod[other].has(p.timeMs)));\n          result2.push({\n            ...cluster,\n            points: pts,\n            maxDeviation: pts.reduce((maxVal, p) => Math.max(maxVal, Math.abs(p.residual || 0)), 0),\n            isOverlap: true,\n            detectedByMethods\n          });\n        }\n      }\n      return result2;\n    }\n    const result = [];\n    for (const m of methodKeys) {\n      for (const cluster of clustersByMethod[m]) {\n        const hasOverlap = cluster.points.some((p) => overlapTimes.has(p.timeMs));\n        const detectedByMethods = hasOverlap ? methodKeys.filter((other) => cluster.points.some((p) => flaggedByMethod[other].has(p.timeMs))) : [m];\n        result.push({ ...cluster, isOverlap: hasOverlap, detectedByMethods });\n      }\n    }\n    return result;\n  }\n  function interpolateSeriesValue(points, timeMs) {\n    if (!Array.isArray(points) || points.length === 0) {\n      return null;\n    }\n    if (timeMs < points[0][0] || timeMs > points[points.length - 1][0]) {\n      return null;\n    }\n    if (timeMs === points[0][0]) {\n      return points[0][1];\n    }\n    if (timeMs === points[points.length - 1][0]) {\n      return points[points.length - 1][1];\n    }\n    for (let index = 0; index < points.length - 1; index += 1) {\n      const [startTime, startValue] = points[index];\n      const [endTime, endValue] = points[index + 1];\n      if (timeMs >= startTime && timeMs <= endTime) {\n        const fraction = (timeMs - startTime) / (endTime - startTime);\n        return startValue + (endValue - startValue) * fraction;\n      }\n    }\n    return null;\n  }\n  function buildRateOfChangePoints(points, rateWindow) {\n    if (!Array.isArray(points) || points.length < 2) {\n      return [];\n    }\n    const ratePoints = [];\n    for (let index = 1; index < points.length; index += 1) {\n      const [timeMs, value] = points[index];\n      let comparisonPoint = null;\n      if (rateWindow === "point_to_point") {\n        comparisonPoint = points[index - 1];\n      } else {\n        const windowMs = getTrendWindowMs(rateWindow);\n        if (!Number.isFinite(windowMs) || windowMs <= 0) {\n          continue;\n        }\n        for (let candidateIndex = index - 1; candidateIndex >= 0; candidateIndex -= 1) {\n          const candidatePoint = points[candidateIndex];\n          if (timeMs - candidatePoint[0] >= windowMs) {\n            comparisonPoint = candidatePoint;\n            break;\n          }\n        }\n        if (!comparisonPoint) {\n          comparisonPoint = points[0];\n        }\n      }\n      if (!Array.isArray(comparisonPoint) || comparisonPoint.length < 2) {\n        continue;\n      }\n      const deltaMs = timeMs - comparisonPoint[0];\n      if (!Number.isFinite(deltaMs) || deltaMs <= 0) {\n        continue;\n      }\n      const deltaHours = deltaMs / (60 * 60 * 1e3);\n      if (!Number.isFinite(deltaHours) || deltaHours <= 0) {\n        continue;\n      }\n      const rateValue = (value - comparisonPoint[1]) / deltaHours;\n      if (!Number.isFinite(rateValue)) {\n        continue;\n      }\n      ratePoints.push([timeMs, rateValue]);\n    }\n    return ratePoints;\n  }\n  function buildDeltaPoints(sourcePoints, comparisonPoints) {\n    if (!Array.isArray(sourcePoints) || sourcePoints.length < 2 || !Array.isArray(comparisonPoints) || comparisonPoints.length < 2) {\n      return [];\n    }\n    const deltaPoints = [];\n    for (const [timeMs, value] of sourcePoints) {\n      const comparisonValue = interpolateSeriesValue(comparisonPoints, timeMs);\n      if (comparisonValue == null) {\n        continue;\n      }\n      deltaPoints.push([timeMs, value - comparisonValue]);\n    }\n    return deltaPoints;\n  }\n  function buildSummaryStats(points) {\n    if (!Array.isArray(points) || points.length === 0) {\n      return null;\n    }\n    let min = Infinity;\n    let max = -Infinity;\n    let sum = 0;\n    let count = 0;\n    for (const point of points) {\n      const value = Number(point?.[1]);\n      if (!Number.isFinite(value)) {\n        continue;\n      }\n      if (value < min) {\n        min = value;\n      }\n      if (value > max) {\n        max = value;\n      }\n      sum += value;\n      count += 1;\n    }\n    if (!Number.isFinite(min) || !Number.isFinite(max) || count === 0) {\n      return null;\n    }\n    return {\n      min,\n      max,\n      mean: sum / count\n    };\n  }\n  function getAnomalySensitivityThreshold(sensitivity) {\n    if (sensitivity === "low") {\n      return 2.8;\n    }\n    if (sensitivity === "high") {\n      return 1.6;\n    }\n    return 2.2;\n  }\n  function buildAnomalyClusters(points, method, trendWindow, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 3) {\n      return [];\n    }\n    const baselinePoints = buildTrendPoints(points, method, trendWindow);\n    if (!Array.isArray(baselinePoints) || baselinePoints.length < 2) {\n      return [];\n    }\n    const residualPoints = [];\n    for (const [timeMs, value] of points) {\n      const baselineValue = interpolateSeriesValue(baselinePoints, timeMs);\n      if (!Number.isFinite(baselineValue)) {\n        continue;\n      }\n      residualPoints.push({\n        timeMs,\n        value,\n        baselineValue,\n        residual: value - baselineValue\n      });\n    }\n    if (residualPoints.length < 3) {\n      return [];\n    }\n    let sumSquares = 0;\n    residualPoints.forEach((point) => {\n      sumSquares += point.residual * point.residual;\n    });\n    const rmsResidual = Math.sqrt(sumSquares / residualPoints.length);\n    if (!Number.isFinite(rmsResidual) || rmsResidual <= 1e-6) {\n      return [];\n    }\n    const threshold = rmsResidual * getAnomalySensitivityThreshold(anomalySensitivity);\n    const clusters = [];\n    let currentCluster = [];\n    const flushCluster = () => {\n      if (currentCluster.length === 0) {\n        return;\n      }\n      const maxDeviation = currentCluster.reduce((maxValue, point) => Math.max(maxValue, Math.abs(point.residual)), 0);\n      clusters.push({\n        points: currentCluster.slice(),\n        maxDeviation,\n        anomalyMethod: "trend_residual"\n      });\n      currentCluster = [];\n    };\n    residualPoints.forEach((point) => {\n      if (Math.abs(point.residual) >= threshold) {\n        currentCluster.push(point);\n      } else {\n        flushCluster();\n      }\n    });\n    flushCluster();\n    return clusters.filter((cluster) => cluster.points.length > 0);\n  }\n  function computeHistoryAnalysis(payload) {\n    const series = (Array.isArray(payload?.series) ? payload.series : []).map((seriesItem) => ({\n      ...seriesItem,\n      analysis: normalizeSeriesAnalysis(seriesItem?.analysis)\n    }));\n    const comparisonSeries = new Map(\n      (Array.isArray(payload?.comparisonSeries) ? payload.comparisonSeries : []).filter((entry) => entry?.entityId).map((entry) => [entry.entityId, entry])\n    );\n    const allComparisonWindowsData = payload?.allComparisonWindowsData && typeof payload.allComparisonWindowsData === "object" ? payload.allComparisonWindowsData : {};\n    const result = {\n      trendSeries: [],\n      rateSeries: [],\n      deltaSeries: [],\n      summaryStats: [],\n      anomalySeries: []\n    };\n    for (const seriesItem of series) {\n      const points = Array.isArray(seriesItem?.pts) ? seriesItem.pts : [];\n      const analysis = normalizeSeriesAnalysis(seriesItem?.analysis);\n      if (points.length < 2) {\n        continue;\n      }\n      const anomalyMethods = analysis.anomaly_methods;\n      const needsTrend = analysis.show_trend_lines === true || analysis.show_anomalies === true && anomalyMethods.includes("trend_residual");\n      if (needsTrend) {\n        const trendPoints = buildTrendPoints(points, analysis.trend_method, analysis.trend_window);\n        if (analysis.show_trend_lines === true && trendPoints.length >= 2) {\n          result.trendSeries.push({\n            entityId: seriesItem.entityId,\n            pts: trendPoints\n          });\n        }\n      }\n      if (analysis.show_anomalies === true) {\n        const clustersByMethod = {};\n        if (anomalyMethods.includes("trend_residual")) {\n          const clusters = buildAnomalyClusters(points, analysis.trend_method, analysis.trend_window, analysis.anomaly_sensitivity);\n          if (clusters.length > 0) clustersByMethod.trend_residual = clusters;\n        }\n        if (anomalyMethods.includes("rate_of_change")) {\n          const clusters = buildRateOfChangeAnomalyClusters(points, analysis.anomaly_rate_window, analysis.anomaly_sensitivity);\n          if (clusters.length > 0) clustersByMethod.rate_of_change = clusters;\n        }\n        if (anomalyMethods.includes("iqr")) {\n          const clusters = buildIQRAnomalyClusters(points, analysis.anomaly_sensitivity);\n          if (clusters.length > 0) clustersByMethod.iqr = clusters;\n        }\n        if (anomalyMethods.includes("rolling_zscore")) {\n          const windowMs = getTrendWindowMs(analysis.anomaly_zscore_window);\n          const clusters = buildRollingZScoreAnomalyClusters(points, windowMs, analysis.anomaly_sensitivity);\n          if (clusters.length > 0) clustersByMethod.rolling_zscore = clusters;\n        }\n        if (anomalyMethods.includes("persistence")) {\n          const minDurationMs = getPersistenceWindowMs(analysis.anomaly_persistence_window);\n          const clusters = buildPersistenceAnomalyClusters(points, minDurationMs, analysis.anomaly_sensitivity);\n          if (clusters.length > 0) clustersByMethod.persistence = clusters;\n        }\n        if (anomalyMethods.includes("comparison_window") && analysis.anomaly_comparison_window_id) {\n          const windowData = allComparisonWindowsData[analysis.anomaly_comparison_window_id];\n          const comparisonPts = windowData && typeof windowData === "object" ? windowData[seriesItem.entityId] : null;\n          if (Array.isArray(comparisonPts) && comparisonPts.length >= 3) {\n            const clusters = buildComparisonWindowAnomalyClusters(points, comparisonPts, analysis.anomaly_sensitivity);\n            if (clusters.length > 0) clustersByMethod.comparison_window = clusters;\n          }\n        }\n        const anomalyClusters = applyAnomalyOverlapMode(clustersByMethod, analysis.anomaly_overlap_mode);\n        if (anomalyClusters.length > 0) {\n          result.anomalySeries.push({ entityId: seriesItem.entityId, anomalyClusters });\n        }\n      }\n      if (analysis.show_rate_of_change === true) {\n        const ratePoints = buildRateOfChangePoints(points, analysis.rate_window);\n        if (ratePoints.length >= 2) {\n          result.rateSeries.push({\n            entityId: seriesItem.entityId,\n            pts: ratePoints\n          });\n        }\n      }\n      if (analysis.show_summary_stats === true) {\n        const summaryStats = buildSummaryStats(points);\n        if (summaryStats) {\n          result.summaryStats.push({\n            entityId: seriesItem.entityId,\n            ...summaryStats\n          });\n        }\n      }\n      if (analysis.show_delta_analysis === true && payload?.hasSelectedComparisonWindow === true) {\n        const comparisonEntry = comparisonSeries.get(seriesItem.entityId);\n        if (comparisonEntry?.pts?.length >= 2) {\n          const deltaPoints = buildDeltaPoints(points, comparisonEntry.pts);\n          if (deltaPoints.length >= 2) {\n            result.deltaSeries.push({\n              entityId: seriesItem.entityId,\n              pts: deltaPoints\n            });\n          }\n        }\n      }\n    }\n    return result;\n  }\n  self.onmessage = (event) => {\n    const { id, payload } = event.data || {};\n    try {\n      const result = computeHistoryAnalysis(payload);\n      self.postMessage({ id, result });\n    } catch (error) {\n      self.postMessage({\n        id,\n        error: error instanceof Error ? error.message : String(error)\n      });\n    }\n  };\n})();\n';
+  const jsContent = '(function() {\n  "use strict";\n  function getTrendWindowMs(value) {\n    const windows = {\n      "1h": 60 * 60 * 1e3,\n      "6h": 6 * 60 * 60 * 1e3,\n      "24h": 24 * 60 * 60 * 1e3,\n      "7d": 7 * 24 * 60 * 60 * 1e3,\n      "14d": 14 * 24 * 60 * 60 * 1e3,\n      "21d": 21 * 24 * 60 * 60 * 1e3,\n      "28d": 28 * 24 * 60 * 60 * 1e3\n    };\n    return windows[value] || windows["24h"];\n  }\n  function buildRollingAverageTrend(points, windowMs) {\n    if (!Array.isArray(points) || points.length < 2 || !Number.isFinite(windowMs) || windowMs <= 0) {\n      return [];\n    }\n    const trendPoints = [];\n    let windowStartIndex = 0;\n    let windowSum = 0;\n    for (let index = 0; index < points.length; index += 1) {\n      const [time, value] = points[index];\n      windowSum += value;\n      while (windowStartIndex < index && time - points[windowStartIndex][0] > windowMs) {\n        windowSum -= points[windowStartIndex][1];\n        windowStartIndex += 1;\n      }\n      const count = index - windowStartIndex + 1;\n      if (count > 0) {\n        trendPoints.push([time, windowSum / count]);\n      }\n    }\n    return trendPoints;\n  }\n  function buildLinearTrend(points) {\n    if (!Array.isArray(points) || points.length < 2) {\n      return [];\n    }\n    const origin = points[0][0];\n    let sumX = 0;\n    let sumY = 0;\n    let sumXX = 0;\n    let sumXY = 0;\n    for (const [time, value] of points) {\n      const x = (time - origin) / (60 * 60 * 1e3);\n      sumX += x;\n      sumY += value;\n      sumXX += x * x;\n      sumXY += x * value;\n    }\n    const count = points.length;\n    const denominator = count * sumXX - sumX * sumX;\n    if (!Number.isFinite(denominator) || Math.abs(denominator) < 1e-9) {\n      return [];\n    }\n    const slope = (count * sumXY - sumX * sumY) / denominator;\n    const intercept = (sumY - slope * sumX) / count;\n    const firstTime = points[0][0];\n    const lastTime = points[points.length - 1][0];\n    const firstX = (firstTime - origin) / (60 * 60 * 1e3);\n    const lastX = (lastTime - origin) / (60 * 60 * 1e3);\n    return [\n      [firstTime, intercept + slope * firstX],\n      [lastTime, intercept + slope * lastX]\n    ];\n  }\n  function buildTrendPoints(points, method, trendWindow) {\n    if (!Array.isArray(points) || points.length < 2) {\n      return [];\n    }\n    if (method === "linear_trend") {\n      return buildLinearTrend(points);\n    }\n    return buildRollingAverageTrend(points, getTrendWindowMs(trendWindow));\n  }\n  function getPersistenceWindowMs(value) {\n    const windows = {\n      "30m": 30 * 60 * 1e3,\n      "1h": 60 * 60 * 1e3,\n      "3h": 3 * 60 * 60 * 1e3,\n      "6h": 6 * 60 * 60 * 1e3,\n      "12h": 12 * 60 * 60 * 1e3,\n      "24h": 24 * 60 * 60 * 1e3\n    };\n    return windows[value] || windows["1h"];\n  }\n  function buildIQRAnomalyClusters(points, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 4) {\n      return [];\n    }\n    const sorted = points.map(([, v]) => v).sort((a, b) => a - b);\n    const n = sorted.length;\n    const q1 = sorted[Math.floor(n * 0.25)];\n    const q2 = sorted[Math.floor(n * 0.5)];\n    const q3 = sorted[Math.floor(n * 0.75)];\n    const iqr = q3 - q1;\n    if (!Number.isFinite(iqr) || iqr <= 1e-6) {\n      return [];\n    }\n    let k;\n    if (anomalySensitivity === "low") {\n      k = 3;\n    } else if (anomalySensitivity === "high") {\n      k = 1.5;\n    } else {\n      k = 2;\n    }\n    const lowerFence = q1 - k * iqr;\n    const upperFence = q3 + k * iqr;\n    const clusters = [];\n    let currentCluster = [];\n    const flushCluster = () => {\n      if (currentCluster.length === 0) return;\n      const maxDeviation = currentCluster.reduce((m, p) => Math.max(m, Math.abs(p.residual)), 0);\n      clusters.push({ points: currentCluster.slice(), maxDeviation, anomalyMethod: "iqr" });\n      currentCluster = [];\n    };\n    for (const [timeMs, value] of points) {\n      if (value < lowerFence || value > upperFence) {\n        currentCluster.push({ timeMs, value, baselineValue: q2, residual: value - q2 });\n      } else {\n        flushCluster();\n      }\n    }\n    flushCluster();\n    return clusters.filter((c) => c.points.length > 0);\n  }\n  function buildRollingZScoreAnomalyClusters(points, windowMs, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 3 || !Number.isFinite(windowMs) || windowMs <= 0) {\n      return [];\n    }\n    const threshold = getAnomalySensitivityThreshold(anomalySensitivity);\n    const residuals = [];\n    let windowStart = 0;\n    let windowSum = 0;\n    let windowSumSq = 0;\n    for (let i = 0; i < points.length; i += 1) {\n      const [timeMs, value] = points[i];\n      windowSum += value;\n      windowSumSq += value * value;\n      while (windowStart < i && timeMs - points[windowStart][0] > windowMs) {\n        const old = points[windowStart][1];\n        windowSum -= old;\n        windowSumSq -= old * old;\n        windowStart += 1;\n      }\n      const count = i - windowStart + 1;\n      if (count < 3) {\n        continue;\n      }\n      const mean = windowSum / count;\n      const variance = Math.max(0, windowSumSq / count - mean * mean);\n      const std = Math.sqrt(variance);\n      if (!Number.isFinite(std) || std <= 1e-6) {\n        continue;\n      }\n      const zscore = (value - mean) / std;\n      if (Math.abs(zscore) >= threshold) {\n        residuals.push({ timeMs, value, baselineValue: mean, residual: value - mean, flagged: true });\n      } else {\n        residuals.push({ timeMs, flagged: false });\n      }\n    }\n    const clusters = [];\n    let currentCluster = [];\n    const flushCluster = () => {\n      if (currentCluster.length === 0) return;\n      const maxDeviation = currentCluster.reduce((m, p) => Math.max(m, Math.abs(p.residual)), 0);\n      clusters.push({ points: currentCluster.slice(), maxDeviation, anomalyMethod: "rolling_zscore" });\n      currentCluster = [];\n    };\n    for (const r of residuals) {\n      if (r.flagged) {\n        currentCluster.push(r);\n      } else {\n        flushCluster();\n      }\n    }\n    flushCluster();\n    return clusters.filter((c) => c.points.length > 0);\n  }\n  function buildPersistenceAnomalyClusters(points, minDurationMs, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 3 || !Number.isFinite(minDurationMs) || minDurationMs <= 0) {\n      return [];\n    }\n    let totalMin = Infinity;\n    let totalMax = -Infinity;\n    for (const [, v] of points) {\n      if (v < totalMin) totalMin = v;\n      if (v > totalMax) totalMax = v;\n    }\n    const totalRange = totalMax - totalMin;\n    if (!Number.isFinite(totalRange) || totalRange <= 1e-6) {\n      return [];\n    }\n    let flatFraction;\n    if (anomalySensitivity === "low") {\n      flatFraction = 5e-3;\n    } else if (anomalySensitivity === "high") {\n      flatFraction = 0.05;\n    } else {\n      flatFraction = 0.02;\n    }\n    const flatThreshold = flatFraction * totalRange;\n    const clusters = [];\n    let runStart = 0;\n    let runMin = points[0][1];\n    let runMax = points[0][1];\n    const flushRun = (runEnd) => {\n      const duration = points[runEnd][0] - points[runStart][0];\n      if (duration >= minDurationMs && runEnd > runStart) {\n        const mid = (runMin + runMax) / 2;\n        const clusterPoints = [];\n        for (let k = runStart; k <= runEnd; k += 1) {\n          clusterPoints.push({ timeMs: points[k][0], value: points[k][1], baselineValue: mid, residual: points[k][1] - mid });\n        }\n        clusters.push({\n          points: clusterPoints,\n          maxDeviation: runMax - runMin,\n          anomalyMethod: "persistence",\n          flatRange: runMax - runMin\n        });\n      }\n    };\n    for (let i = 1; i < points.length; i += 1) {\n      const v = points[i][1];\n      const nextMin = Math.min(runMin, v);\n      const nextMax = Math.max(runMax, v);\n      if (nextMax - nextMin > flatThreshold) {\n        flushRun(i - 1);\n        runStart = i;\n        runMin = v;\n        runMax = v;\n      } else {\n        runMin = nextMin;\n        runMax = nextMax;\n      }\n    }\n    flushRun(points.length - 1);\n    return clusters.filter((c) => c.points.length > 0);\n  }\n  function buildComparisonWindowAnomalyClusters(points, comparisonPoints, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 3 || !Array.isArray(comparisonPoints) || comparisonPoints.length < 3) {\n      return [];\n    }\n    const deltaPoints = [];\n    for (const [timeMs, value] of points) {\n      const compValue = interpolateSeriesValue(comparisonPoints, timeMs);\n      if (!Number.isFinite(compValue)) {\n        continue;\n      }\n      deltaPoints.push({ timeMs, value, compValue, delta: value - compValue });\n    }\n    if (deltaPoints.length < 3) {\n      return [];\n    }\n    let sumDeltas = 0;\n    for (const p of deltaPoints) {\n      sumDeltas += p.delta;\n    }\n    const meanDelta = sumDeltas / deltaPoints.length;\n    let sumSqDev = 0;\n    for (const p of deltaPoints) {\n      const dev = p.delta - meanDelta;\n      sumSqDev += dev * dev;\n    }\n    const rmsDeviation = Math.sqrt(sumSqDev / deltaPoints.length);\n    if (!Number.isFinite(rmsDeviation) || rmsDeviation <= 1e-6) {\n      return [];\n    }\n    const threshold = rmsDeviation * getAnomalySensitivityThreshold(anomalySensitivity);\n    const clusters = [];\n    let currentCluster = [];\n    const flushCluster = () => {\n      if (currentCluster.length === 0) return;\n      const maxDeviation = currentCluster.reduce((m, p) => Math.max(m, Math.abs(p.residual)), 0);\n      clusters.push({ points: currentCluster.slice(), maxDeviation, anomalyMethod: "comparison_window" });\n      currentCluster = [];\n    };\n    for (const { timeMs, value, compValue, delta } of deltaPoints) {\n      const residual = delta - meanDelta;\n      if (Math.abs(residual) >= threshold) {\n        currentCluster.push({ timeMs, value, baselineValue: compValue, residual: value - compValue });\n      } else {\n        flushCluster();\n      }\n    }\n    flushCluster();\n    return clusters.filter((c) => c.points.length > 0);\n  }\n  function buildRateOfChangeAnomalyClusters(points, rateWindow, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 3) {\n      return [];\n    }\n    const ratePoints = buildRateOfChangePoints(points, rateWindow);\n    if (!Array.isArray(ratePoints) || ratePoints.length < 3) {\n      return [];\n    }\n    let sumRates = 0;\n    for (const [, rate] of ratePoints) {\n      sumRates += rate;\n    }\n    const meanRate = sumRates / ratePoints.length;\n    let sumSqDev = 0;\n    for (const [, rate] of ratePoints) {\n      const dev = rate - meanRate;\n      sumSqDev += dev * dev;\n    }\n    const rmsDeviation = Math.sqrt(sumSqDev / ratePoints.length);\n    if (!Number.isFinite(rmsDeviation) || rmsDeviation <= 1e-6) {\n      return [];\n    }\n    const threshold = rmsDeviation * getAnomalySensitivityThreshold(anomalySensitivity);\n    const clusters = [];\n    let currentCluster = [];\n    const flushCluster = () => {\n      if (currentCluster.length === 0) {\n        return;\n      }\n      const maxDeviation = currentCluster.reduce((maxVal, point) => Math.max(maxVal, Math.abs(point.residual)), 0);\n      clusters.push({\n        points: currentCluster.slice(),\n        maxDeviation,\n        anomalyMethod: "rate_of_change"\n      });\n      currentCluster = [];\n    };\n    for (const [timeMs, rate] of ratePoints) {\n      const residual = rate - meanRate;\n      if (Math.abs(residual) >= threshold) {\n        const sourceValue = interpolateSeriesValue(points, timeMs);\n        if (!Number.isFinite(sourceValue)) {\n          flushCluster();\n          continue;\n        }\n        currentCluster.push({\n          timeMs,\n          value: sourceValue,\n          baselineValue: meanRate,\n          residual\n        });\n      } else {\n        flushCluster();\n      }\n    }\n    flushCluster();\n    return clusters.filter((cluster) => cluster.points.length > 0);\n  }\n  const VALID_ANOMALY_METHODS = ["trend_residual", "rate_of_change", "iqr", "rolling_zscore", "persistence", "comparison_window"];\n  function normalizeSeriesAnalysis(analysis) {\n    const source = analysis && typeof analysis === "object" ? analysis : {};\n    const legacyMethod = VALID_ANOMALY_METHODS.includes(source.anomaly_method) ? source.anomaly_method : null;\n    let anomalyMethods;\n    if (Array.isArray(source.anomaly_methods)) {\n      anomalyMethods = source.anomaly_methods.filter((m) => VALID_ANOMALY_METHODS.includes(m));\n    } else if (legacyMethod) {\n      anomalyMethods = [legacyMethod];\n    } else {\n      anomalyMethods = [];\n    }\n    return {\n      show_trend_lines: source.show_trend_lines === true,\n      trend_method: source.trend_method === "linear_trend" ? "linear_trend" : "rolling_average",\n      trend_window: typeof source.trend_window === "string" && source.trend_window ? source.trend_window : "24h",\n      show_summary_stats: source.show_summary_stats === true,\n      show_rate_of_change: source.show_rate_of_change === true,\n      rate_window: typeof source.rate_window === "string" && source.rate_window ? source.rate_window : "1h",\n      show_anomalies: source.show_anomalies === true,\n      anomaly_methods: anomalyMethods,\n      anomaly_overlap_mode: ["all", "highlight", "only"].includes(source.anomaly_overlap_mode) ? source.anomaly_overlap_mode : "all",\n      anomaly_sensitivity: typeof source.anomaly_sensitivity === "string" && source.anomaly_sensitivity ? source.anomaly_sensitivity : "medium",\n      anomaly_rate_window: typeof source.anomaly_rate_window === "string" && source.anomaly_rate_window ? source.anomaly_rate_window : "1h",\n      anomaly_zscore_window: typeof source.anomaly_zscore_window === "string" && source.anomaly_zscore_window ? source.anomaly_zscore_window : "24h",\n      anomaly_persistence_window: typeof source.anomaly_persistence_window === "string" && source.anomaly_persistence_window ? source.anomaly_persistence_window : "1h",\n      anomaly_comparison_window_id: typeof source.anomaly_comparison_window_id === "string" && source.anomaly_comparison_window_id ? source.anomaly_comparison_window_id : null,\n      show_delta_analysis: source.show_delta_analysis === true\n    };\n  }\n  function applyAnomalyOverlapMode(clustersByMethod, overlapMode) {\n    const methodKeys = Object.keys(clustersByMethod);\n    if (methodKeys.length <= 1 || overlapMode === "all") {\n      return methodKeys.flatMap((m) => clustersByMethod[m]);\n    }\n    const flaggedByMethod = {};\n    for (const m of methodKeys) {\n      flaggedByMethod[m] = new Set(clustersByMethod[m].flatMap((c) => c.points.map((p) => p.timeMs)));\n    }\n    const overlapTimes = /* @__PURE__ */ new Set();\n    for (const m of methodKeys) {\n      for (const t of flaggedByMethod[m]) {\n        if (methodKeys.some((other) => other !== m && flaggedByMethod[other].has(t))) {\n          overlapTimes.add(t);\n        }\n      }\n    }\n    if (overlapMode === "only") {\n      const seen = /* @__PURE__ */ new Set();\n      const result2 = [];\n      for (const m of methodKeys) {\n        for (const cluster of clustersByMethod[m]) {\n          const pts = cluster.points.filter((p) => overlapTimes.has(p.timeMs));\n          if (pts.length === 0) continue;\n          const key = pts.map((p) => p.timeMs).join(",");\n          if (seen.has(key)) continue;\n          seen.add(key);\n          const detectedByMethods = methodKeys.filter((other) => pts.some((p) => flaggedByMethod[other].has(p.timeMs)));\n          result2.push({\n            ...cluster,\n            points: pts,\n            maxDeviation: pts.reduce((maxVal, p) => Math.max(maxVal, Math.abs(p.residual || 0)), 0),\n            isOverlap: true,\n            detectedByMethods\n          });\n        }\n      }\n      return result2;\n    }\n    const result = [];\n    for (const m of methodKeys) {\n      for (const cluster of clustersByMethod[m]) {\n        const hasOverlap = cluster.points.some((p) => overlapTimes.has(p.timeMs));\n        const detectedByMethods = hasOverlap ? methodKeys.filter((other) => cluster.points.some((p) => flaggedByMethod[other].has(p.timeMs))) : [m];\n        result.push({ ...cluster, isOverlap: hasOverlap, detectedByMethods });\n      }\n    }\n    return result;\n  }\n  function interpolateSeriesValue(points, timeMs) {\n    if (!Array.isArray(points) || points.length === 0) {\n      return null;\n    }\n    if (timeMs < points[0][0] || timeMs > points[points.length - 1][0]) {\n      return null;\n    }\n    if (timeMs === points[0][0]) {\n      return points[0][1];\n    }\n    if (timeMs === points[points.length - 1][0]) {\n      return points[points.length - 1][1];\n    }\n    for (let index = 0; index < points.length - 1; index += 1) {\n      const [startTime, startValue] = points[index];\n      const [endTime, endValue] = points[index + 1];\n      if (timeMs >= startTime && timeMs <= endTime) {\n        const fraction = (timeMs - startTime) / (endTime - startTime);\n        return startValue + (endValue - startValue) * fraction;\n      }\n    }\n    return null;\n  }\n  function buildRateOfChangePoints(points, rateWindow) {\n    if (!Array.isArray(points) || points.length < 2) {\n      return [];\n    }\n    const ratePoints = [];\n    for (let index = 1; index < points.length; index += 1) {\n      const [timeMs, value] = points[index];\n      let comparisonPoint = null;\n      if (rateWindow === "point_to_point") {\n        comparisonPoint = points[index - 1];\n      } else {\n        const windowMs = getTrendWindowMs(rateWindow);\n        if (!Number.isFinite(windowMs) || windowMs <= 0) {\n          continue;\n        }\n        for (let candidateIndex = index - 1; candidateIndex >= 0; candidateIndex -= 1) {\n          const candidatePoint = points[candidateIndex];\n          if (timeMs - candidatePoint[0] >= windowMs) {\n            comparisonPoint = candidatePoint;\n            break;\n          }\n        }\n        if (!comparisonPoint) {\n          comparisonPoint = points[0];\n        }\n      }\n      if (!Array.isArray(comparisonPoint) || comparisonPoint.length < 2) {\n        continue;\n      }\n      const deltaMs = timeMs - comparisonPoint[0];\n      if (!Number.isFinite(deltaMs) || deltaMs <= 0) {\n        continue;\n      }\n      const deltaHours = deltaMs / (60 * 60 * 1e3);\n      if (!Number.isFinite(deltaHours) || deltaHours <= 0) {\n        continue;\n      }\n      const rateValue = (value - comparisonPoint[1]) / deltaHours;\n      if (!Number.isFinite(rateValue)) {\n        continue;\n      }\n      ratePoints.push([timeMs, rateValue]);\n    }\n    return ratePoints;\n  }\n  function buildDeltaPoints(sourcePoints, comparisonPoints) {\n    if (!Array.isArray(sourcePoints) || sourcePoints.length < 2 || !Array.isArray(comparisonPoints) || comparisonPoints.length < 2) {\n      return [];\n    }\n    const deltaPoints = [];\n    for (const [timeMs, value] of sourcePoints) {\n      const comparisonValue = interpolateSeriesValue(comparisonPoints, timeMs);\n      if (comparisonValue == null) {\n        continue;\n      }\n      deltaPoints.push([timeMs, value - comparisonValue]);\n    }\n    return deltaPoints;\n  }\n  function buildSummaryStats(points) {\n    if (!Array.isArray(points) || points.length === 0) {\n      return null;\n    }\n    let min = Infinity;\n    let max = -Infinity;\n    let sum = 0;\n    let count = 0;\n    for (const point of points) {\n      const value = Number(point?.[1]);\n      if (!Number.isFinite(value)) {\n        continue;\n      }\n      if (value < min) {\n        min = value;\n      }\n      if (value > max) {\n        max = value;\n      }\n      sum += value;\n      count += 1;\n    }\n    if (!Number.isFinite(min) || !Number.isFinite(max) || count === 0) {\n      return null;\n    }\n    return {\n      min,\n      max,\n      mean: sum / count\n    };\n  }\n  function getAnomalySensitivityThreshold(sensitivity) {\n    if (sensitivity === "low") {\n      return 2.8;\n    }\n    if (sensitivity === "high") {\n      return 1.6;\n    }\n    return 2.2;\n  }\n  function buildAnomalyClusters(points, method, trendWindow, anomalySensitivity) {\n    if (!Array.isArray(points) || points.length < 3) {\n      return [];\n    }\n    const baselinePoints = buildTrendPoints(points, method, trendWindow);\n    if (!Array.isArray(baselinePoints) || baselinePoints.length < 2) {\n      return [];\n    }\n    const residualPoints = [];\n    for (const [timeMs, value] of points) {\n      const baselineValue = interpolateSeriesValue(baselinePoints, timeMs);\n      if (!Number.isFinite(baselineValue)) {\n        continue;\n      }\n      residualPoints.push({\n        timeMs,\n        value,\n        baselineValue,\n        residual: value - baselineValue\n      });\n    }\n    if (residualPoints.length < 3) {\n      return [];\n    }\n    let sumSquares = 0;\n    residualPoints.forEach((point) => {\n      sumSquares += point.residual * point.residual;\n    });\n    const rmsResidual = Math.sqrt(sumSquares / residualPoints.length);\n    if (!Number.isFinite(rmsResidual) || rmsResidual <= 1e-6) {\n      return [];\n    }\n    const threshold = rmsResidual * getAnomalySensitivityThreshold(anomalySensitivity);\n    const clusters = [];\n    let currentCluster = [];\n    const flushCluster = () => {\n      if (currentCluster.length === 0) {\n        return;\n      }\n      const maxDeviation = currentCluster.reduce((maxValue, point) => Math.max(maxValue, Math.abs(point.residual)), 0);\n      clusters.push({\n        points: currentCluster.slice(),\n        maxDeviation,\n        anomalyMethod: "trend_residual"\n      });\n      currentCluster = [];\n    };\n    residualPoints.forEach((point) => {\n      if (Math.abs(point.residual) >= threshold) {\n        currentCluster.push(point);\n      } else {\n        flushCluster();\n      }\n    });\n    flushCluster();\n    return clusters.filter((cluster) => cluster.points.length > 0);\n  }\n  function computeHistoryAnalysis(payload, postProgress) {\n    const series = (Array.isArray(payload?.series) ? payload.series : []).map((seriesItem) => ({\n      ...seriesItem,\n      analysis: normalizeSeriesAnalysis(seriesItem?.analysis)\n    }));\n    const comparisonSeries = new Map(\n      (Array.isArray(payload?.comparisonSeries) ? payload.comparisonSeries : []).filter((entry) => entry?.entityId).map((entry) => [entry.entityId, entry])\n    );\n    const allComparisonWindowsData = payload?.allComparisonWindowsData && typeof payload.allComparisonWindowsData === "object" ? payload.allComparisonWindowsData : {};\n    const result = {\n      trendSeries: [],\n      rateSeries: [],\n      deltaSeries: [],\n      summaryStats: [],\n      anomalySeries: []\n    };\n    const total = series.length;\n    let processed = 0;\n    for (const seriesItem of series) {\n      const points = Array.isArray(seriesItem?.pts) ? seriesItem.pts : [];\n      const analysis = normalizeSeriesAnalysis(seriesItem?.analysis);\n      if (points.length < 2) {\n        continue;\n      }\n      const anomalyMethods = analysis.anomaly_methods;\n      const needsTrend = analysis.show_trend_lines === true || analysis.show_anomalies === true && anomalyMethods.includes("trend_residual");\n      if (needsTrend) {\n        const trendPoints = buildTrendPoints(points, analysis.trend_method, analysis.trend_window);\n        if (analysis.show_trend_lines === true && trendPoints.length >= 2) {\n          result.trendSeries.push({\n            entityId: seriesItem.entityId,\n            pts: trendPoints\n          });\n        }\n      }\n      if (analysis.show_anomalies === true) {\n        const clustersByMethod = {};\n        if (anomalyMethods.includes("trend_residual")) {\n          const clusters = buildAnomalyClusters(points, analysis.trend_method, analysis.trend_window, analysis.anomaly_sensitivity);\n          if (clusters.length > 0) clustersByMethod.trend_residual = clusters;\n        }\n        if (anomalyMethods.includes("rate_of_change")) {\n          const clusters = buildRateOfChangeAnomalyClusters(points, analysis.anomaly_rate_window, analysis.anomaly_sensitivity);\n          if (clusters.length > 0) clustersByMethod.rate_of_change = clusters;\n        }\n        if (anomalyMethods.includes("iqr")) {\n          const clusters = buildIQRAnomalyClusters(points, analysis.anomaly_sensitivity);\n          if (clusters.length > 0) clustersByMethod.iqr = clusters;\n        }\n        if (anomalyMethods.includes("rolling_zscore")) {\n          const windowMs = getTrendWindowMs(analysis.anomaly_zscore_window);\n          const clusters = buildRollingZScoreAnomalyClusters(points, windowMs, analysis.anomaly_sensitivity);\n          if (clusters.length > 0) clustersByMethod.rolling_zscore = clusters;\n        }\n        if (anomalyMethods.includes("persistence")) {\n          const minDurationMs = getPersistenceWindowMs(analysis.anomaly_persistence_window);\n          const clusters = buildPersistenceAnomalyClusters(points, minDurationMs, analysis.anomaly_sensitivity);\n          if (clusters.length > 0) clustersByMethod.persistence = clusters;\n        }\n        if (anomalyMethods.includes("comparison_window") && analysis.anomaly_comparison_window_id) {\n          const windowData = allComparisonWindowsData[analysis.anomaly_comparison_window_id];\n          const comparisonPts = windowData && typeof windowData === "object" ? windowData[seriesItem.entityId] : null;\n          if (Array.isArray(comparisonPts) && comparisonPts.length >= 3) {\n            const clusters = buildComparisonWindowAnomalyClusters(points, comparisonPts, analysis.anomaly_sensitivity);\n            if (clusters.length > 0) clustersByMethod.comparison_window = clusters;\n          }\n        }\n        const anomalyClusters = applyAnomalyOverlapMode(clustersByMethod, analysis.anomaly_overlap_mode);\n        if (anomalyClusters.length > 0) {\n          result.anomalySeries.push({ entityId: seriesItem.entityId, anomalyClusters });\n        }\n      }\n      if (analysis.show_rate_of_change === true) {\n        const ratePoints = buildRateOfChangePoints(points, analysis.rate_window);\n        if (ratePoints.length >= 2) {\n          result.rateSeries.push({\n            entityId: seriesItem.entityId,\n            pts: ratePoints\n          });\n        }\n      }\n      if (analysis.show_summary_stats === true) {\n        const summaryStats = buildSummaryStats(points);\n        if (summaryStats) {\n          result.summaryStats.push({\n            entityId: seriesItem.entityId,\n            ...summaryStats\n          });\n        }\n      }\n      if (analysis.show_delta_analysis === true && payload?.hasSelectedComparisonWindow === true) {\n        const comparisonEntry = comparisonSeries.get(seriesItem.entityId);\n        if (comparisonEntry?.pts?.length >= 2) {\n          const deltaPoints = buildDeltaPoints(points, comparisonEntry.pts);\n          if (deltaPoints.length >= 2) {\n            result.deltaSeries.push({\n              entityId: seriesItem.entityId,\n              pts: deltaPoints\n            });\n          }\n        }\n      }\n      processed += 1;\n      if (postProgress && total > 0) {\n        postProgress(Math.round(processed / total * 100));\n      }\n    }\n    return result;\n  }\n  self.onmessage = (event) => {\n    const { id, payload } = event.data || {};\n    try {\n      const result = computeHistoryAnalysis(payload, (value) => {\n        self.postMessage({ id, type: "progress", value });\n      });\n      self.postMessage({ id, result });\n    } catch (error) {\n      self.postMessage({\n        id,\n        error: error instanceof Error ? error.message : String(error)\n      });\n    }\n  };\n})();\n';
   const blob = typeof self !== "undefined" && self.Blob && new Blob(["(self.URL || self.webkitURL).revokeObjectURL(self.location.href);", jsContent], { type: "text/javascript;charset=utf-8" });
   function WorkerWrapper(options) {
     let objURL;
@@ -8207,9 +8207,13 @@ ${s2.description}`).join("\n\n");
     }
     workerInstance = new WorkerWrapper();
     workerInstance.addEventListener("message", (event) => {
-      const { id, result, error } = event.data || {};
+      const { id, type, value, result, error } = event.data || {};
       const handlers = pending.get(id);
       if (!handlers) {
+        return;
+      }
+      if (type === "progress") {
+        handlers.onProgress?.(value);
         return;
       }
       pending.delete(id);
@@ -8240,11 +8244,11 @@ ${s2.description}`).join("\n\n");
       workerInstance = null;
     }
   }
-  function computeHistoryAnalysisInWorker(payload) {
+  function computeHistoryAnalysisInWorker(payload, options = {}) {
     const worker = getHistoryAnalysisWorker();
     return new Promise((resolve, reject) => {
       const id = ++requestId;
-      pending.set(id, { resolve, reject });
+      pending.set(id, { resolve, reject, onProgress: options.onProgress ?? null });
       worker.postMessage({ id, payload });
     });
   }
@@ -10729,7 +10733,7 @@ ${s2.description}`).join("\n\n");
         allComparisonWindowsData
       };
     }
-    async _computeHistoryAnalysis(visibleSeries, selectedComparisonSeriesMap, analysisMap, hasSelectedComparisonWindow, allComparisonWindowsData = {}, t0 = 0, t1 = 0) {
+    async _computeHistoryAnalysis(visibleSeries, selectedComparisonSeriesMap, analysisMap, hasSelectedComparisonWindow, allComparisonWindowsData = {}, t0 = 0, t1 = 0, onProgress = null) {
       terminateHistoryAnalysisWorker();
       const cacheKey = this._buildAnalysisCacheKey(
         visibleSeries,
@@ -10742,6 +10746,7 @@ ${s2.description}`).join("\n\n");
       if (this._analysisCache?.key === cacheKey) {
         return this._analysisCache.result;
       }
+      onProgress?.(0);
       const payload = this._buildHistoryAnalysisPayload(
         visibleSeries,
         selectedComparisonSeriesMap,
@@ -10750,7 +10755,7 @@ ${s2.description}`).join("\n\n");
         allComparisonWindowsData
       );
       try {
-        const result = await computeHistoryAnalysisInWorker(payload);
+        const result = await computeHistoryAnalysisInWorker(payload, { onProgress });
         this._analysisCache = { key: cacheKey, result };
         return result;
       } catch (error) {
@@ -11004,13 +11009,13 @@ ${s2.description}`).join("\n\n");
         const a2 = analysisMap.get(s2.entityId) || {};
         return a2.show_anomalies || a2.show_trend_lines || a2.show_summary_stats || a2.show_rate_of_change;
       }).map((s2) => s2.entityId);
-      if (analysisEntityIds.length) {
+      const onAnalysisProgress = analysisEntityIds.length ? (progress) => {
         this.dispatchEvent(new CustomEvent("hass-datapoints-analysis-computing", {
           bubbles: true,
           composed: true,
-          detail: { computing: true, entityIds: analysisEntityIds }
+          detail: { computing: true, entityIds: analysisEntityIds, progress }
         }));
-      }
+      } : null;
       const analysisResult = await this._computeHistoryAnalysis(
         visibleSeries,
         selectedComparisonSeriesMap,
@@ -11018,13 +11023,14 @@ ${s2.description}`).join("\n\n");
         hasSelectedComparisonWindow,
         allComparisonWindowsData,
         t0,
-        t1
+        t1,
+        onAnalysisProgress
       );
       if (analysisEntityIds.length) {
         this.dispatchEvent(new CustomEvent("hass-datapoints-analysis-computing", {
           bubbles: true,
           composed: true,
-          detail: { computing: false, entityIds: analysisEntityIds }
+          detail: { computing: false, entityIds: analysisEntityIds, progress: 100 }
         }));
       }
       if (options.drawRequestId && options.drawRequestId !== this._drawRequestId) {
@@ -12292,13 +12298,14 @@ ${s2.description}`).join("\n\n");
         };
         const matchingSeriesCandidates = eventEntityIds.map((entityId) => series.find((entry) => entry.entityId === entityId)).filter(Boolean);
         const matchingSeriesHit = findSeriesWithValue(matchingSeriesCandidates);
-        const fallbackSeriesHit = matchingSeriesHit || findSeriesWithValue([...series].reverse());
+        const linkedToOtherTarget = eventEntityIds.length > 0 && matchingSeriesCandidates.length === 0;
+        const fallbackSeriesHit = matchingSeriesHit || (linkedToOtherTarget ? null : findSeriesWithValue([...series].reverse()));
         const targetSeries = fallbackSeriesHit?.series || null;
         const hasNumericTarget = !!(targetSeries?.pts?.length && targetSeries.axis);
         const value = hasNumericTarget ? fallbackSeriesHit?.value ?? null : null;
         if (hasNumericTarget && value == null) continue;
-        const y2 = hasNumericTarget ? renderer.yOf(value, targetSeries.axis.min, targetSeries.axis.max) : renderer.pad.top + 12;
-        const color = event.color || targetSeries.color || "#03a9f4";
+        const y2 = hasNumericTarget ? renderer.yOf(value, targetSeries.axis.min, targetSeries.axis.max) : linkedToOtherTarget ? renderer.pad.top + renderer.ch : renderer.pad.top + 12;
+        const color = event.color || targetSeries?.color || "#03a9f4";
         const outerRadius = showIcons ? 13 : 6;
         const innerRadius = showIcons ? 11 : 4;
         ctx.save();
@@ -14477,6 +14484,7 @@ ${s2.description}`).join("\n\n");
     overflow-wrap: anywhere;
   }
 
+
   .history-target-entity-id {
     margin-top: 4px;
     font-size: 0.74rem;
@@ -14758,25 +14766,6 @@ ${s2.description}`).join("\n\n");
     cursor: pointer;
   }
 
-  .analysis-computing-spinner {
-    display: none;
-    width: 10px;
-    height: 10px;
-    border: 2px solid var(--divider-color, #ccc);
-    border-top-color: var(--primary-color, #03a9f4);
-    border-radius: 50%;
-    animation: analysis-spin 0.7s linear infinite;
-    flex-shrink: 0;
-    margin-left: 2px;
-  }
-
-  .analysis-computing-spinner.active {
-    display: inline-block;
-  }
-
-  @keyframes analysis-spin {
-    to { transform: rotate(360deg); }
-  }
 `;
   const sharedStyles = i$5`
   :host {
@@ -15196,6 +15185,37 @@ ${s2.description}`).join("\n\n");
   }
   customElements.define("dp-analysis-threshold-group", DpAnalysisThresholdGroup);
   const styles$h = i$5`
+  .analysis-computing-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 4px;
+    vertical-align: middle;
+  }
+
+  .analysis-computing-spinner {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border: 2px solid var(--divider-color, #ccc);
+    border-top-color: var(--primary-color, #03a9f4);
+    border-radius: 50%;
+    animation: analysis-spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+
+  .analysis-computing-progress {
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--primary-color, #03a9f4);
+    line-height: 1;
+    min-width: 2.8ch;
+  }
+
+  @keyframes analysis-spin {
+    to { transform: rotate(360deg); }
+  }
+
   .method-list {
     display: grid;
     gap: var(--dp-spacing-sm, 8px);
@@ -15288,7 +15308,9 @@ ${s2.description}`).join("\n\n");
     static properties = {
       analysis: { type: Object },
       entityId: { type: String, attribute: "entity-id" },
-      comparisonWindows: { type: Array, attribute: "comparison-windows" }
+      comparisonWindows: { type: Array, attribute: "comparison-windows" },
+      computing: { type: Boolean, attribute: false },
+      computingProgress: { type: Number, attribute: false }
     };
     static styles = [sharedStyles, styles$h];
     constructor() {
@@ -15296,6 +15318,8 @@ ${s2.description}`).join("\n\n");
       this.analysis = {};
       this.entityId = "";
       this.comparisonWindows = [];
+      this.computing = false;
+      this.computingProgress = 0;
     }
     _emit(key, value) {
       this.dispatchEvent(
@@ -15372,6 +15396,12 @@ ${s2.description}`).join("\n\n");
         .checked=${a2.show_anomalies}
         @dp-group-change=${this._onGroupChange}
       >
+        ${this.computing ? b`
+          <span slot="hint" class="analysis-computing-indicator" aria-label="Computing…">
+            <span class="analysis-computing-spinner"></span>
+            <span class="analysis-computing-progress">${this.computingProgress}%</span>
+          </span>
+        ` : A}
         <label class="field">
           <span class="field-label">Sensitivity</span>
           ${this._renderSelect("anomaly_sensitivity", ANALYSIS_ANOMALY_SENSITIVITY_OPTIONS$1, a2.anomaly_sensitivity)}
@@ -15500,7 +15530,9 @@ ${s2.description}`).join("\n\n");
       canShowDeltaAnalysis: { type: Boolean, attribute: "can-show-delta-analysis" },
       stateObj: { type: Object, attribute: false },
       hass: { type: Object, attribute: false },
-      comparisonWindows: { type: Array, attribute: "comparison-windows" }
+      comparisonWindows: { type: Array, attribute: "comparison-windows" },
+      computing: { type: Boolean, attribute: false },
+      computingProgress: { type: Number, attribute: false }
     };
     static styles = styles$n;
     constructor() {
@@ -15513,6 +15545,8 @@ ${s2.description}`).join("\n\n");
       this.stateObj = null;
       this.hass = null;
       this.comparisonWindows = [];
+      this.computing = false;
+      this.computingProgress = 0;
     }
     /** Entity ID derived from the HA state object. */
     get _entityId() {
@@ -15663,6 +15697,8 @@ ${s2.description}`).join("\n\n");
                 .analysis=${a2}
                 .entityId=${this._entityId}
                 .comparisonWindows=${this.comparisonWindows}
+                .computing=${this.computing}
+                .computingProgress=${this.computingProgress}
                 @dp-group-analysis-change=${this._onGroupAnalysisChange}
               ></dp-analysis-anomaly-group>
               <dp-analysis-delta-group
@@ -15769,7 +15805,9 @@ ${s2.description}`).join("\n\n");
       states: { type: Object, attribute: false },
       hass: { type: Object, attribute: false },
       canShowDeltaAnalysis: { type: Boolean, attribute: "can-show-delta-analysis" },
-      comparisonWindows: { type: Array, attribute: false }
+      comparisonWindows: { type: Array, attribute: false },
+      computingEntityIds: { type: Object, attribute: false },
+      analysisProgress: { type: Number, attribute: false }
     };
     /** Index of the row currently being dragged, or null when not dragging. */
     _dragSourceIndex = null;
@@ -15859,6 +15897,8 @@ ${s2.description}`).join("\n\n");
                 .stateObj=${this.states?.[row.entity_id] ?? null}
                 .hass=${this.hass ?? null}
                 .comparisonWindows=${this.comparisonWindows}
+                .computing=${this.computingEntityIds?.has(row.entity_id) ?? false}
+                .computingProgress=${this.analysisProgress ?? 0}
                 data-row-index=${index}
                 @dragstart=${(e2) => this._onDragStart(e2, index)}
                 @dragend=${this._onDragEnd}
@@ -15883,12 +15923,14 @@ ${s2.description}`).join("\n\n");
       }
       const target = e2.currentTarget;
       setTimeout(() => target.classList.add("is-dragging"), 0);
+      this.ownerDocument.body.style.cursor = "grabbing";
     }
     _onDragEnd = (e2) => {
       this._dragSourceIndex = null;
       const target = e2.currentTarget;
       target.classList.remove("is-dragging");
       this._clearDropIndicators();
+      this.ownerDocument.body.style.cursor = "";
     };
     _onDragOver(e2) {
       if (this._dragSourceIndex === null) return;
@@ -15986,10 +16028,13 @@ ${s2.description}`).join("\n\n");
       collapsible: { type: Boolean },
       open: { type: Boolean }
     };
-    title = "";
-    subtitle = "";
-    collapsible = false;
-    open = true;
+    constructor() {
+      super();
+      this.title = "";
+      this.subtitle = "";
+      this.collapsible = false;
+      this.open = true;
+    }
     static styles = i$5`
     :host { display: block; }
     .sidebar-section-header { display: grid; gap: var(--dp-spacing-xs); }
@@ -16072,10 +16117,13 @@ ${s2.description}`).join("\n\n");
       collapsible: { type: Boolean },
       open: { type: Boolean }
     };
-    title = "";
-    subtitle = "";
-    collapsible = false;
-    open = true;
+    constructor() {
+      super();
+      this.title = "";
+      this.subtitle = "";
+      this.collapsible = false;
+      this.open = true;
+    }
     static styles = styles$b;
     _onToggle(e2) {
       e2.stopPropagation();
@@ -21800,6 +21848,8 @@ ${s2.description}`).join("\n\n");
       this._onToggleEventVisibility = (ev) => this._handleToggleEventVisibility(ev);
       this._onToggleSeriesVisibility = (ev) => this._handleToggleSeriesVisibility(ev);
       this._onComparisonLoading = (ev) => this._handleComparisonLoading(ev);
+      this._computingEntityIds = /* @__PURE__ */ new Set();
+      this._analysisProgress = 0;
       this._onAnalysisComputing = (ev) => this._handleAnalysisComputing(ev);
       this._onWindowPointerDown = (ev) => this._handleWindowPointerDown(ev);
       this._onWindowResize = () => {
@@ -22750,24 +22800,20 @@ ${s2.description}`).join("\n\n");
     _handleAnalysisComputing(ev) {
       const computing = ev?.detail?.computing === true;
       const entityIds = Array.isArray(ev?.detail?.entityIds) ? ev.detail.entityIds : [];
+      const progress = typeof ev?.detail?.progress === "number" ? ev.detail.progress : computing ? 0 : 100;
       if (computing) {
         for (const id of entityIds) {
-          if (this._analysisSpinnerTimers?.[id]) {
-            clearTimeout(this._analysisSpinnerTimers[id]);
-            delete this._analysisSpinnerTimers[id];
-          }
-          const spinners = this.shadowRoot?.querySelectorAll(`.analysis-computing-spinner[data-analysis-spinner="${CSS.escape(id)}"]`) || [];
-          spinners.forEach((el) => el.classList.add("active"));
+          this._computingEntityIds.add(id);
         }
       } else {
         for (const id of entityIds) {
-          if (this._analysisSpinnerTimers?.[id]) {
-            clearTimeout(this._analysisSpinnerTimers[id]);
-            delete this._analysisSpinnerTimers[id];
-          }
-          const spinners = this.shadowRoot?.querySelectorAll(`.analysis-computing-spinner[data-analysis-spinner="${CSS.escape(id)}"]`) || [];
-          spinners.forEach((el) => el.classList.remove("active"));
+          this._computingEntityIds.delete(id);
         }
+      }
+      this._analysisProgress = progress;
+      if (this._rowListEl) {
+        this._rowListEl.computingEntityIds = new Set(this._computingEntityIds);
+        this._rowListEl.analysisProgress = this._analysisProgress;
       }
     }
     _clearDeltaAnalysisSelectionState() {

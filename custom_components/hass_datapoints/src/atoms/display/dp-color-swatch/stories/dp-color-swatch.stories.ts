@@ -1,5 +1,5 @@
 import { html } from "lit";
-import "./dp-color-swatch";
+import "../dp-color-swatch";
 
 export default {
   title: "Atoms/Display/Color Swatch",

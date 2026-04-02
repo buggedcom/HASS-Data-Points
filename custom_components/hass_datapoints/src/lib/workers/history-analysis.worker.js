@@ -642,7 +642,7 @@ function buildAnomalyClusters(points, method, trendWindow, anomalySensitivity) {
   return clusters.filter((cluster) => cluster.points.length > 0);
 }
 
-function computeHistoryAnalysis(payload) {
+function computeHistoryAnalysis(payload, postProgress) {
   const series = (Array.isArray(payload?.series) ? payload.series : []).map((seriesItem) => ({
       ...seriesItem,
       analysis: normalizeSeriesAnalysis(seriesItem?.analysis),
@@ -662,6 +662,9 @@ function computeHistoryAnalysis(payload) {
     summaryStats: [],
     anomalySeries: [],
   };
+
+  const total = series.length;
+  let processed = 0;
 
   for (const seriesItem of series) {
     const points = Array.isArray(seriesItem?.pts) ? seriesItem.pts : [];
@@ -755,6 +758,11 @@ function computeHistoryAnalysis(payload) {
         }
       }
     }
+
+    processed += 1;
+    if (postProgress && total > 0) {
+      postProgress(Math.round((processed / total) * 100));
+    }
   }
 
   return result;
@@ -764,7 +772,10 @@ function computeHistoryAnalysis(payload) {
 self.onmessage = (event) => {
   const { id, payload } = event.data || {};
   try {
-    const result = computeHistoryAnalysis(payload);
+    const result = computeHistoryAnalysis(payload, (value) => {
+      // eslint-disable-next-line no-restricted-globals
+      self.postMessage({ id, type: "progress", value });
+    });
     // eslint-disable-next-line no-restricted-globals
     self.postMessage({ id, result });
   } catch (error) {

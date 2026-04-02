@@ -1,5 +1,5 @@
 import { html } from "lit";
-import "./dp-inline-select";
+import "../dp-inline-select";
 
 export default {
   title: "Atoms/Form/Inline Select",

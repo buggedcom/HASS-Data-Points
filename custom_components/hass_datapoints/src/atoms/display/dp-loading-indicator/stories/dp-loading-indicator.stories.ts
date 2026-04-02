@@ -1,5 +1,5 @@
 import { html } from "lit";
-import "./dp-loading-indicator";
+import "../dp-loading-indicator";
 
 export default {
   title: "Atoms/Display/Loading Indicator",

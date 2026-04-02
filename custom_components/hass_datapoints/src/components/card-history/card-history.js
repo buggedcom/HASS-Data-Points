@@ -2747,7 +2747,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     };
   }
 
-  async _computeHistoryAnalysis(visibleSeries, selectedComparisonSeriesMap, analysisMap, hasSelectedComparisonWindow, allComparisonWindowsData = {}, t0 = 0, t1 = 0) {
+  async _computeHistoryAnalysis(visibleSeries, selectedComparisonSeriesMap, analysisMap, hasSelectedComparisonWindow, allComparisonWindowsData = {}, t0 = 0, t1 = 0, onProgress = null) {
     // Abort any in-flight worker computation from a previous (now stale) draw request.
     // This prevents the chart from hanging while waiting for a worker result that will
     // be discarded anyway once the stale-request check runs.
@@ -2760,8 +2760,12 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       visibleSeries, selectedComparisonSeriesMap, analysisMap, allComparisonWindowsData, t0, t1,
     );
     if (this._analysisCache?.key === cacheKey) {
+      // Cache hit — no worker computation needed, skip the progress indicator entirely.
       return this._analysisCache.result;
     }
+
+    // Not a cache hit — signal that computation is starting (0 %).
+    onProgress?.(0);
 
     const payload = this._buildHistoryAnalysisPayload(
       visibleSeries,
@@ -2771,7 +2775,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       allComparisonWindowsData,
     );
     try {
-      const result = await computeHistoryAnalysisInWorker(payload);
+      const result = await computeHistoryAnalysisInWorker(payload, { onProgress });
       this._analysisCache = { key: cacheKey, result };
       return result;
     } catch (error) {
@@ -3065,11 +3069,15 @@ export class HassRecordsHistoryCard extends ChartCardBase {
         return a.show_anomalies || a.show_trend_lines || a.show_summary_stats || a.show_rate_of_change;
       })
       .map((s) => s.entityId);
-    if (analysisEntityIds.length) {
-      this.dispatchEvent(new CustomEvent("hass-datapoints-analysis-computing", {
-        bubbles: true, composed: true, detail: { computing: true, entityIds: analysisEntityIds },
-      }));
-    }
+    // onAnalysisProgress is called by _computeHistoryAnalysis only when a real worker
+    // computation is needed (not on cache hits). Each call receives the current 0–100 value.
+    const onAnalysisProgress = analysisEntityIds.length
+      ? (progress) => {
+        this.dispatchEvent(new CustomEvent("hass-datapoints-analysis-computing", {
+          bubbles: true, composed: true, detail: { computing: true, entityIds: analysisEntityIds, progress },
+        }));
+      }
+      : null;
     const analysisResult = await this._computeHistoryAnalysis(
       visibleSeries,
       selectedComparisonSeriesMap,
@@ -3078,10 +3086,11 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       allComparisonWindowsData,
       t0,
       t1,
+      onAnalysisProgress,
     );
     if (analysisEntityIds.length) {
       this.dispatchEvent(new CustomEvent("hass-datapoints-analysis-computing", {
-        bubbles: true, composed: true, detail: { computing: false, entityIds: analysisEntityIds },
+        bubbles: true, composed: true, detail: { computing: false, entityIds: analysisEntityIds, progress: 100 },
       }));
     }
     if (options.drawRequestId && options.drawRequestId !== this._drawRequestId) {
@@ -4483,15 +4492,21 @@ export class HassRecordsHistoryCard extends ChartCardBase {
         .map((entityId) => series.find((entry) => entry.entityId === entityId))
         .filter(Boolean);
       const matchingSeriesHit = findSeriesWithValue(matchingSeriesCandidates);
-      const fallbackSeriesHit = matchingSeriesHit || findSeriesWithValue([...series].reverse());
+      // If the event is linked to specific entities but none match this chart's
+      // series, it belongs to a different target — don't fall back to an
+      // unrelated line; render it on the x-axis instead.
+      const linkedToOtherTarget = eventEntityIds.length > 0 && matchingSeriesCandidates.length === 0;
+      const fallbackSeriesHit = matchingSeriesHit || (linkedToOtherTarget ? null : findSeriesWithValue([...series].reverse()));
       const targetSeries = fallbackSeriesHit?.series || null;
       const hasNumericTarget = !!(targetSeries?.pts?.length && targetSeries.axis);
       const value = hasNumericTarget ? fallbackSeriesHit?.value ?? null : null;
       if (hasNumericTarget && value == null) continue;
       const y = hasNumericTarget
         ? renderer.yOf(value, targetSeries.axis.min, targetSeries.axis.max)
-        : renderer.pad.top + 12;
-      const color = event.color || targetSeries.color || "#03a9f4";
+        : linkedToOtherTarget
+          ? renderer.pad.top + renderer.ch  // x-axis baseline for unrelated events
+          : renderer.pad.top + 12;
+      const color = event.color || targetSeries?.color || "#03a9f4";
       const outerRadius = showIcons ? 13 : 6;
       const innerRadius = showIcons ? 11 : 4;
 

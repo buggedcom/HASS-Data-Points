@@ -1,5 +1,5 @@
 import { html } from "lit";
-import "./dp-number-input";
+import "../dp-number-input";
 
 export default {
   title: "Atoms/Form/Number Input",

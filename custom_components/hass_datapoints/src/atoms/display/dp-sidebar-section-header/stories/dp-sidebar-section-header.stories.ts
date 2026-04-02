@@ -1,5 +1,5 @@
 import { html } from "lit";
-import "./dp-sidebar-section-header";
+import "../dp-sidebar-section-header";
 
 export default {
   title: "Atoms/Display/Sidebar Section Header",

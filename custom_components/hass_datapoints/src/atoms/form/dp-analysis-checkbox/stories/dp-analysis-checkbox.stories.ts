@@ -1,5 +1,5 @@
 import { html } from "lit";
-import "./dp-analysis-checkbox";
+import "../dp-analysis-checkbox";
 
 export default {
   title: "Atoms/Form/Analysis Checkbox",

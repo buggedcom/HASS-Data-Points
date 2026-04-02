@@ -105,92 +105,95 @@ export function ensureHaComponents(tags = []) {
 
 export function confirmDestructiveAction(host, options = {}) {
   return ensureHaComponents(["ha-dialog"]).then(() => new Promise((resolve) => {
-    const root = host?.shadowRoot || host;
-    if (!root || !root.appendChild) {
-      resolve(window.confirm(options.message || options.title || "Are you sure?"));
-      return;
-    }
-
-    const dialog = document.createElement("ha-dialog");
-    dialog.setAttribute("hideActions", "");
-    dialog.scrimClickAction = true;
-    dialog.escapeKeyAction = true;
-    dialog.open = false;
-    dialog.headerTitle = options.title || "Confirm delete";
-    if (host?._hass) dialog.hass = host._hass;
-    dialog.innerHTML = `
-      <style>
-        .confirm-dialog-body {
-          padding: 0 var(--dp-spacing-lg, 24px) var(--dp-spacing-lg, 24px);
-          color: var(--primary-text-color);
-        }
-        .confirm-dialog-message {
-          line-height: 1.5;
-          color: var(--secondary-text-color, var(--primary-text-color));
-        }
-        .confirm-dialog-actions {
-          display: flex;
-          justify-content: flex-end;
-          gap: var(--dp-spacing-sm, 8px);
-          margin-top: var(--dp-spacing-lg, 24px);
-        }
-        .confirm-dialog-button {
-          border: 0;
-          border-radius: 999px;
-          padding: 0 16px;
-          height: 36px;
-          font: inherit;
-          cursor: pointer;
-        }
-        .confirm-dialog-button.cancel {
-          background: transparent;
-          color: var(--primary-text-color);
-        }
-        .confirm-dialog-button.confirm {
-          background: var(--error-color, #db4437);
-          color: white;
-        }
-      </style>
-      <div class="confirm-dialog-body">
-        <div class="confirm-dialog-message">${esc(options.message || "Are you sure you want to delete this item?")}</div>
-        <div class="confirm-dialog-actions">
-          <button type="button" class="confirm-dialog-button cancel">${esc(options.cancelLabel || "Cancel")}</button>
-          <button type="button" class="confirm-dialog-button confirm">${esc(options.confirmLabel || "Delete")}</button>
-        </div>
-      </div>
-    `;
-
-    let settled = false;
-    const finish = (value) => {
-      if (settled) return;
-      settled = true;
-      dialog.open = false;
-      resolve(value);
-    };
-
-    const cancelButton = dialog.querySelector(".confirm-dialog-button.cancel");
-    const confirmButton = dialog.querySelector(".confirm-dialog-button.confirm");
-
-    cancelButton?.addEventListener("click", () => finish(false));
-    confirmButton?.addEventListener("click", () => finish(true));
-    dialog.addEventListener("keydown", (event) => {
-      if (event.key !== "Enter" || event.shiftKey || event.altKey || event.ctrlKey || event.metaKey) {
+      const root = host?.shadowRoot || host;
+      if(!root || !root.appendChild) {
+        // this is a fallback if something goes wrong with the custom element loader
+        // eslint-disable-next-line no-alert
+        const confirmation = window.confirm(options.message || options.title || "Are you sure?");
+        resolve(confirmation);
         return;
       }
-      event.preventDefault();
-      finish(true);
-    });
-    dialog.addEventListener("closed", () => {
-      dialog.remove();
-      if (!settled) resolve(false);
-    }, { once: true });
 
-    root.appendChild(dialog);
-    dialog.open = true;
-    window.requestAnimationFrame(() => {
-      confirmButton?.focus();
-    });
-  }));
+      const dialog = document.createElement("ha-dialog");
+      dialog.setAttribute("hideActions", "");
+      dialog.scrimClickAction = true;
+      dialog.escapeKeyAction = true;
+      dialog.open = false;
+      dialog.headerTitle = options.title || "Confirm delete";
+      if(host?._hass) dialog.hass = host._hass;
+      dialog.innerHTML = `
+        <style>
+          .confirm-dialog-body {
+            padding: 0 var(--dp-spacing-lg, 24px) var(--dp-spacing-lg, 24px);
+            color: var(--primary-text-color);
+          }
+          .confirm-dialog-message {
+            line-height: 1.5;
+            color: var(--secondary-text-color, var(--primary-text-color));
+          }
+          .confirm-dialog-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: var(--dp-spacing-sm, 8px);
+            margin-top: var(--dp-spacing-lg, 24px);
+          }
+          .confirm-dialog-button {
+            border: 0;
+            border-radius: 999px;
+            padding: 0 16px;
+            height: 36px;
+            font: inherit;
+            cursor: pointer;
+          }
+          .confirm-dialog-button.cancel {
+            background: transparent;
+            color: var(--primary-text-color);
+          }
+          .confirm-dialog-button.confirm {
+            background: var(--error-color, #db4437);
+            color: white;
+          }
+        </style>
+        <div class="confirm-dialog-body">
+          <div class="confirm-dialog-message">${ esc(options.message || "Are you sure you want to delete this item?") }</div>
+          <div class="confirm-dialog-actions">
+            <button type="button" class="confirm-dialog-button cancel">${ esc(options.cancelLabel || "Cancel") }</button>
+            <button type="button" class="confirm-dialog-button confirm">${ esc(options.confirmLabel || "Delete") }</button>
+          </div>
+        </div>
+      `;
+
+      let settled = false;
+      const finish = (value) => {
+        if(settled) return;
+        settled = true;
+        dialog.open = false;
+        resolve(value);
+      };
+
+      const cancelButton = dialog.querySelector(".confirm-dialog-button.cancel");
+      const confirmButton = dialog.querySelector(".confirm-dialog-button.confirm");
+
+      cancelButton?.addEventListener("click", () => finish(false));
+      confirmButton?.addEventListener("click", () => finish(true));
+      dialog.addEventListener("keydown", (event) => {
+        if(event.key !== "Enter" || event.shiftKey || event.altKey || event.ctrlKey || event.metaKey) {
+          return;
+        }
+        event.preventDefault();
+        finish(true);
+      });
+      dialog.addEventListener("closed", () => {
+        dialog.remove();
+        if(!settled) resolve(false);
+      }, {once : true});
+
+      root.appendChild(dialog);
+      dialog.open = true;
+      window.requestAnimationFrame(() => {
+        confirmButton?.focus();
+      });
+    }));
 }
 
 export function fmtTime(iso) {

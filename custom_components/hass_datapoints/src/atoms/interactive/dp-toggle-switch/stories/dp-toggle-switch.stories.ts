@@ -1,5 +1,5 @@
 import { html } from "lit";
-import "./dp-toggle-switch";
+import "../dp-toggle-switch";
 
 export default {
   title: "Atoms/Interactive/Toggle Switch",

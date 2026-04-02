@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 /**
  * Stub HA custom elements for Storybook.
  *
