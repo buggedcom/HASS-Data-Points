@@ -67,7 +67,6 @@ export const styles = css`
     border-radius: 6px;
     background: transparent;
     color: var(--secondary-text-color);
-    cursor: grab;
     opacity: 0;
     transition: opacity 140ms ease, background-color 120ms ease;
     touch-action: none;
@@ -92,9 +91,6 @@ export const styles = css`
     outline: none;
   }
 
-  .history-target-drag-handle:active {
-    cursor: grabbing;
-  }
 
   .history-target-name {
     grid-area: name;

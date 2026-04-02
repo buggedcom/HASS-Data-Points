@@ -124,6 +124,11 @@ export class DpTargetRowList extends LitElement {
     if (e.dataTransfer) {
       e.dataTransfer.effectAllowed = "move";
       e.dataTransfer.setData("text/plain", String(index));
+      // Always use the full row as the drag ghost, regardless of which child
+      // element (e.g. the drag handle) initiated the drag.
+      const rowEl = e.currentTarget as HTMLElement;
+      const rect = rowEl.getBoundingClientRect();
+      e.dataTransfer.setDragImage(rowEl, e.clientX - rect.left, e.clientY - rect.top);
     }
     const target = e.currentTarget as HTMLElement;
     // Delay so the drag ghost captures the non-dimmed appearance.

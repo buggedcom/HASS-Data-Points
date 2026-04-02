@@ -14129,7 +14129,6 @@ ${s2.description}`).join("\n\n");
     border-radius: 6px;
     background: transparent;
     color: var(--secondary-text-color);
-    cursor: grab;
     opacity: 0;
     transition: opacity 140ms ease, background-color 120ms ease;
     touch-action: none;
@@ -14154,9 +14153,6 @@ ${s2.description}`).join("\n\n");
     outline: none;
   }
 
-  .history-target-drag-handle:active {
-    cursor: grabbing;
-  }
 
   .history-target-name {
     grid-area: name;
@@ -15345,64 +15341,71 @@ ${s2.description}`).join("\n\n");
   }
   customElements.define("dp-target-row", DpTargetRow);
   const styles$d = i$5`
-  :host {
-    display: block;
-    --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
-    --dp-spacing-sm: var(--spacing, 8px);
-    --dp-spacing-md: calc(var(--spacing, 8px) * 1.5);
-    --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
-    --dp-spacing-xl: calc(var(--spacing, 8px) * 2.5);
-  }
+    :host {
+        display: block;
+        --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
+        --dp-spacing-sm: var(--spacing, 8px);
+        --dp-spacing-md: calc(var(--spacing, 8px) * 1.5);
+        --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
+        --dp-spacing-xl: calc(var(--spacing, 8px) * 2.5);
+    }
 
-  .history-target-table {
-    display: grid;
-  }
+    .history-target-table {
+        display: grid;
+    }
 
-  .history-target-table-body {
-    display: grid;
-    gap: calc(var(--spacing, 8px) * 1.25);
-  }
+    .history-target-table-body {
+        display: grid;
+        gap: calc(var(--spacing, 8px) * 1.25);
+    }
 
-  .history-target-empty {
-    padding: var(--dp-spacing-md) var(--dp-spacing-sm);
-    border-radius: 12px;
-    background: color-mix(in srgb, var(--primary-text-color, #111) 4%, transparent);
-    color: var(--secondary-text-color, #9e9e9e);
-    font-size: 0.84rem;
-  }
+    .history-target-empty {
+        padding: var(--dp-spacing-md) var(--dp-spacing-sm);
+        border-radius: 12px;
+        background: color-mix(in srgb, var(--primary-text-color, #111) 4%, transparent);
+        color: var(--secondary-text-color, #9e9e9e);
+        font-size: 0.84rem;
+    }
 
-  /* Drag states applied to the dp-target-row host element */
-  dp-target-row.is-dragging {
-    opacity: 0.35;
-    pointer-events: none;
-  }
+    /* Cursor — dragging is a list concern; cursor inherits into the row's shadow DOM */
+    dp-target-row {
+        cursor: grab;
+    }
 
-  dp-target-row.is-drag-over-before,
-  dp-target-row.is-drag-over-after {
-    position: relative;
-    overflow: visible;
-  }
+    dp-target-row.is-dragging {
+        cursor: grabbing;
+    }
 
-  dp-target-row.is-drag-over-before::before,
-  dp-target-row.is-drag-over-after::after {
-    content: '';
-    position: absolute;
-    left: 8px;
-    right: 8px;
-    height: 2px;
-    border-radius: 2px;
-    background: var(--primary-color, #03a9f4);
-    pointer-events: none;
-    z-index: 1;
-  }
+    /* Drag states applied to the dp-target-row host element */
 
-  dp-target-row.is-drag-over-before::before {
-    top: -2px;
-  }
+    dp-target-row {
+        border-radius: 16px;
+        border-top: 1px solid transparent;
+        border-bottom: 1px solid transparent;
+    }
 
-  dp-target-row.is-drag-over-after::after {
-    bottom: -2px;
-  }
+    dp-target-row.is-dragging {
+        opacity: 0.35;
+        pointer-events: none;
+    }
+
+    dp-target-row.is-drag-over-before,
+    dp-target-row.is-drag-over-after {
+        position: relative;
+        overflow: visible;
+    }
+
+    dp-target-row.is-drag-over-before {
+        border-top: 1px solid var(--primary-color, #03a9f4);
+    }
+
+    dp-target-row.is-drag-over-after {
+        border-bottom: 1px solid var(--primary-color, #03a9f4);
+    }
+
+    dp-target-row .history-target-row {
+        cursor: grab;
+    }
 `;
   class DpTargetRowList extends i$2 {
     static properties = {
@@ -15483,6 +15486,9 @@ ${s2.description}`).join("\n\n");
       if (e2.dataTransfer) {
         e2.dataTransfer.effectAllowed = "move";
         e2.dataTransfer.setData("text/plain", String(index));
+        const rowEl = e2.currentTarget;
+        const rect = rowEl.getBoundingClientRect();
+        e2.dataTransfer.setDragImage(rowEl, e2.clientX - rect.left, e2.clientY - rect.top);
       }
       const target = e2.currentTarget;
       setTimeout(() => target.classList.add("is-dragging"), 0);
@@ -23860,11 +23866,10 @@ ${s2.description}`).join("\n\n");
           selected_comparison_window_id: this._selectedComparisonWindowId,
           hovered_comparison_window_id: this._hoveredComparisonWindowId
         };
-        const historyChartMol = document.createElement("dp-history-chart");
-        historyChartMol.style.cssText = "display:flex;flex-direction:column;flex:1 1 auto;min-width:0;min-height:0;width:100%;height:100%;";
-        content.querySelector("#chart-card-host").appendChild(historyChartMol);
-        const chart = historyChartMol.chartEl;
-        historyChartMol.config = chartConfig2;
+        const chart = document.createElement("hass-datapoints-history-card");
+        chart.setConfig(chartConfig2);
+        content.querySelector("#chart-card-host").appendChild(chart);
+        const historyChartMol = { _configKey: JSON.stringify(chartConfig2), chartEl: chart };
         this._historyChartMol = historyChartMol;
         if (showRecordsPanel) {
           const listConfig = {
@@ -23942,13 +23947,17 @@ ${s2.description}`).join("\n\n");
         selected_comparison_window_id: this._selectedComparisonWindowId,
         hovered_comparison_window_id: this._hoveredComparisonWindowId
       };
-      if (this._historyChartMol) {
-        this._historyChartMol.config = chartConfig;
-      } else if (this._chartEl) {
+      if (this._chartEl) {
         const nextChartConfigKey = JSON.stringify(chartConfig);
-        if (this._chartConfigKey !== nextChartConfigKey) {
+        const molKey = this._historyChartMol?._configKey;
+        const prevKey = molKey !== void 0 ? molKey : this._chartConfigKey;
+        if (prevKey !== nextChartConfigKey) {
           this._chartEl.setConfig(chartConfig);
-          this._chartConfigKey = nextChartConfigKey;
+          if (this._historyChartMol) {
+            this._historyChartMol._configKey = nextChartConfigKey;
+          } else {
+            this._chartConfigKey = nextChartConfigKey;
+          }
         }
       }
       if (showRecordsPanel) {
@@ -23975,16 +23984,8 @@ ${s2.description}`).join("\n\n");
       } else {
         this._listConfigKey = "";
       }
-      if (this._historyChartMol) {
-        this._historyChartMol.hass = this._hass;
-      } else if (this._chartEl) {
-        this._chartEl.hass = this._hass;
-      }
-      if (this._historyChartMol) {
-        this._historyChartMol.setExternalZoomRange?.(this._chartZoomCommittedRange);
-      } else {
-        this._chartEl?.setExternalZoomRange?.(this._chartZoomCommittedRange);
-      }
+      if (this._chartEl) this._chartEl.hass = this._hass;
+      this._chartEl?.setExternalZoomRange?.(this._chartZoomCommittedRange);
     }
   }
   if (!customElements.get("hass-datapoints-action-card")) {

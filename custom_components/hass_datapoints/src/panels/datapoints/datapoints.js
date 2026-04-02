@@ -5256,13 +5256,13 @@ export class HassRecordsHistoryPanel extends HTMLElement {
         selected_comparison_window_id: this._selectedComparisonWindowId,
         hovered_comparison_window_id: this._hoveredComparisonWindowId,
       };
-      // Mount via dp-history-chart molecule which handles config diffing and hass updates.
-      const historyChartMol = document.createElement("dp-history-chart");
-      historyChartMol.style.cssText = "display:flex;flex-direction:column;flex:1 1 auto;min-width:0;min-height:0;width:100%;height:100%;";
-      content.querySelector("#chart-card-host").appendChild(historyChartMol);
-      // dp-history-chart creates the inner card synchronously in its constructor.
-      const chart = historyChartMol.chartEl;
-      historyChartMol.config = chartConfig;
+      // Create the chart card directly to avoid any extra DOM wrapping that could
+      // disrupt HA's tooltip element hierarchy (getElementById lookups).
+      const chart = document.createElement("hass-datapoints-history-card");
+      chart.setConfig(chartConfig);
+      content.querySelector("#chart-card-host").appendChild(chart);
+      // Use dp-history-chart as a pure JS config-diffing controller — not a DOM wrapper.
+      const historyChartMol = { _configKey: JSON.stringify(chartConfig), chartEl: chart };
       this._historyChartMol = historyChartMol;
       if (showRecordsPanel) {
         const listConfig = {
@@ -5350,14 +5350,18 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       selected_comparison_window_id: this._selectedComparisonWindowId,
       hovered_comparison_window_id: this._hoveredComparisonWindowId,
     };
-    // Delegate config updates to the dp-history-chart molecule (handles diffing internally).
-    if (this._historyChartMol) {
-      this._historyChartMol.config = chartConfig;
-    } else if (this._chartEl) {
+    // Use the config-diffing controller to avoid unnecessary setConfig calls.
+    if (this._chartEl) {
       const nextChartConfigKey = JSON.stringify(chartConfig);
-      if (this._chartConfigKey !== nextChartConfigKey) {
+      const molKey = this._historyChartMol?._configKey;
+      const prevKey = molKey !== undefined ? molKey : this._chartConfigKey;
+      if (prevKey !== nextChartConfigKey) {
         this._chartEl.setConfig(chartConfig);
-        this._chartConfigKey = nextChartConfigKey;
+        if (this._historyChartMol) {
+          this._historyChartMol._configKey = nextChartConfigKey;
+        } else {
+          this._chartConfigKey = nextChartConfigKey;
+        }
       }
     }
     if (showRecordsPanel) {
@@ -5388,15 +5392,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     } else {
       this._listConfigKey = "";
     }
-    if (this._historyChartMol) {
-      this._historyChartMol.hass = this._hass;
-    } else if (this._chartEl) {
-      this._chartEl.hass = this._hass;
-    }
-    if (this._historyChartMol) {
-      this._historyChartMol.setExternalZoomRange?.(this._chartZoomCommittedRange);
-    } else {
-      this._chartEl?.setExternalZoomRange?.(this._chartZoomCommittedRange);
-    }
+    if (this._chartEl) this._chartEl.hass = this._hass;
+    this._chartEl?.setExternalZoomRange?.(this._chartZoomCommittedRange);
   }
 }
