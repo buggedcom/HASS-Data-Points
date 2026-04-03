@@ -56,6 +56,7 @@ export class DpAnalysisAnomalyGroup extends LitElement {
     comparisonWindows: { type: Array, attribute: "comparison-windows" },
     computing: { type: Boolean, attribute: false },
     computingProgress: { type: Number, attribute: false },
+    computingMethods: { type: Object, attribute: false },
   };
 
   declare analysis: NormalizedAnalysis;
@@ -67,8 +68,11 @@ export class DpAnalysisAnomalyGroup extends LitElement {
   /** Whether analysis is currently being computed in the worker for this entity. */
   declare computing: boolean;
 
-  /** Analysis computation progress (0–100). */
+  /** Overall analysis computation progress (0–100) shown in the group header. */
   declare computingProgress: number;
+
+  /** Set of anomaly method names still in-flight in the worker. Each method shows its own spinner. */
+  declare computingMethods: Set<string>;
 
   static styles = [sharedStyles, styles];
 
@@ -79,6 +83,7 @@ export class DpAnalysisAnomalyGroup extends LitElement {
     this.comparisonWindows = [];
     this.computing = false;
     this.computingProgress = 0;
+    this.computingMethods = new Set();
   }
 
   private _emit(key: string, value: unknown) {
@@ -160,12 +165,6 @@ export class DpAnalysisAnomalyGroup extends LitElement {
         .checked=${a.show_anomalies}
         @dp-group-change=${this._onGroupChange}
       >
-        ${this.computing ? html`
-          <span slot="hint" class="analysis-computing-indicator" aria-label="Computing…">
-            <span class="analysis-computing-spinner"></span>
-            <span class="analysis-computing-progress">${this.computingProgress}%</span>
-          </span>
-        ` : nothing}
         <label class="field">
           <span class="field-label">Sensitivity</span>
           ${this._renderSelect("anomaly_sensitivity", ANALYSIS_ANOMALY_SENSITIVITY_OPTIONS, a.anomaly_sensitivity)}
@@ -173,6 +172,7 @@ export class DpAnalysisAnomalyGroup extends LitElement {
         <div class="method-list">
           ${ANALYSIS_ANOMALY_METHOD_OPTIONS.map((opt) => {
             const isChecked = Array.isArray(a.anomaly_methods) && a.anomaly_methods.includes(opt.value);
+            const isComputing = isChecked && (this.computingMethods?.has(opt.value) ?? false);
             return html`
               <div class="method-item">
                 <label class="option">
@@ -180,6 +180,12 @@ export class DpAnalysisAnomalyGroup extends LitElement {
                     @change=${(e: Event) => this._emit(`anomaly_method_toggle_${opt.value}`, (e.target as HTMLInputElement).checked)}>
                   <span>${opt.label}</span>
                   ${opt.help ? html`<span class="method-help" tabindex="0">?</span>` : nothing}
+                  ${isComputing ? html`
+                    <span class="method-computing-indicator" aria-label="Computing…">
+                      <span class="method-computing-spinner"></span>
+                      <span class="method-computing-progress">${this.computingProgress}%</span>
+                    </span>
+                  ` : nothing}
                 </label>
                 ${isChecked ? this._renderMethodSubopts(opt, a) : nothing}
               </div>

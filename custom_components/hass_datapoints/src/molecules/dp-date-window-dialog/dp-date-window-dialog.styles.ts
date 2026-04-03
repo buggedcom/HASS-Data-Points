@@ -114,6 +114,17 @@ export const styles = css`
     --mdc-theme-primary: var(--error-color, #db4437);
   }
 
+  @keyframes dp-dialog-shake {
+    10%, 90% { transform: translate3d(-2px, 0, 0); }
+    20%, 80% { transform: translate3d(4px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+    40%, 60% { transform: translate3d(6px, 0, 0); }
+  }
+
+  ha-dialog.dp-shaking {
+    animation: dp-dialog-shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+  }
+
   @media (max-width: 720px) {
     .date-window-dialog-dates {
       grid-template-columns: 1fr;

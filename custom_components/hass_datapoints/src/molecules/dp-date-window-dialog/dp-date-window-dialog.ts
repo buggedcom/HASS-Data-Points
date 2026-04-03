@@ -81,6 +81,16 @@ export class DpDateWindowDialog extends LitElement {
     this.dateSnapping = "hour";
   }
 
+  /** Shake the dialog — call this when the parent detects a validation error. */
+  shake() {
+    const dialog = this.shadowRoot?.querySelector("ha-dialog") as HTMLElement | null;
+    if (!dialog) return;
+    dialog.classList.remove("dp-shaking");
+    void dialog.offsetWidth; // force reflow to restart animation
+    dialog.classList.add("dp-shaking");
+    dialog.addEventListener("animationend", () => dialog.classList.remove("dp-shaking"), { once: true });
+  }
+
   private _emit(name: string, detail: Record<string, unknown> = {}) {
     this.dispatchEvent(
       new CustomEvent(name, {

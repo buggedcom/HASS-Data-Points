@@ -1,4 +1,4 @@
-import { LitElement, html } from "lit";
+import { LitElement, html, nothing } from "lit";
 import { styles } from "./dp-sidebar-analysis-section.styles";
 import "@/atoms/display/dp-sidebar-options-section/dp-sidebar-options-section";
 import "@/atoms/form/dp-radio-group/dp-radio-group";
@@ -12,11 +12,15 @@ export const ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS = [
 export class DpSidebarAnalysisSection extends LitElement {
   static properties = {
     anomalyOverlapMode: { type: String, attribute: "anomaly-overlap-mode" },
+    anyAnomaliesEnabled: { type: Boolean, attribute: false },
     collapsible: { type: Boolean },
     open: { type: Boolean },
   };
 
   declare anomalyOverlapMode: string;
+
+  /** True when at least one target has "Show anomalies" enabled. */
+  declare anyAnomaliesEnabled: boolean;
 
   declare collapsible: boolean;
 
@@ -27,6 +31,7 @@ export class DpSidebarAnalysisSection extends LitElement {
   constructor() {
     super();
     this.anomalyOverlapMode = "all";
+    this.anyAnomaliesEnabled = false;
     this.collapsible = false;
     this.open = true;
   }
@@ -49,12 +54,18 @@ export class DpSidebarAnalysisSection extends LitElement {
         .collapsible=${this.collapsible}
         .open=${this.open}
       >
-        <dp-radio-group
-          .name=${"chart-anomaly-overlap-mode"}
-          .value=${this.anomalyOverlapMode}
-          .options=${ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS}
-          @dp-radio-change=${this._onAnomalyOverlapModeChange}
-        ></dp-radio-group>
+        ${this.anyAnomaliesEnabled ? html`
+          <dp-radio-group
+            .name=${"chart-anomaly-overlap-mode"}
+            .value=${this.anomalyOverlapMode}
+            .options=${ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS}
+            @dp-radio-change=${this._onAnomalyOverlapModeChange}
+          ></dp-radio-group>
+        ` : html`
+          <p class="no-anomalies-notice">
+            Enable anomaly detection on a target first — open a target's settings and check <strong>Show anomalies</strong>.
+          </p>
+        `}
       </dp-sidebar-options-section>
     `;
   }

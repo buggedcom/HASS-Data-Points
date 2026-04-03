@@ -1,31 +1,31 @@
 import { css } from "lit";
 
 export const styles = css`
-  .analysis-computing-indicator {
+  .method-computing-indicator {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    margin-left: 4px;
+    margin-left: 6px;
     vertical-align: middle;
+    flex-shrink: 0;
   }
 
-  .analysis-computing-spinner {
+  .method-computing-spinner {
     display: inline-block;
-    width: 10px;
-    height: 10px;
-    border: 2px solid var(--divider-color, #ccc);
+    width: 8px;
+    height: 8px;
+    border: 1.5px solid var(--divider-color, #ccc);
     border-top-color: var(--primary-color, #03a9f4);
     border-radius: 50%;
     animation: analysis-spin 0.7s linear infinite;
     flex-shrink: 0;
   }
 
-  .analysis-computing-progress {
+  .method-computing-progress {
     font-size: 0.72rem;
     font-weight: 500;
     color: var(--primary-color, #03a9f4);
     line-height: 1;
-    min-width: 2.8ch;
   }
 
   @keyframes analysis-spin {
