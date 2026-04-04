@@ -1,119 +1,529 @@
 # AGENTS.md
 
-## Repository Conventions
+## Purpose
+
+This repository contains the frontend and integration code for `hass_datapoints`, a Home Assistant custom integration focused on:
+
+- interactive history charting
+- annotation / datapoint creation and browsing
+- target-row driven chart configuration
+- comparison date windows
+- reusable UI primitives for Home Assistant-flavoured Lit components
+
+This file is the working project guide for contributors and coding agents. Use it as the source of truth for architecture, directory structure, component boundaries, testing, stories, and library placement.
+
+---
+
+## Core Tooling
 
 - Use `pnpm` for Node-based workflows.
+- Use Vitest for unit/spec coverage.
+- Use Storybook for component stories and interaction coverage.
+- Prefer `rg` for search and `rg --files` for file discovery.
+
+### Main verification commands
+
+1. `pnpm build`
+2. `pnpm test`
+3. `pnpm vitest run <focused spec files>`
+4. `pnpm build-storybook`
+
+When making scoped changes, run focused Vitest first, then `pnpm build`, then broader verification as needed.
+
+---
+
+## Repository Conventions
+
 - Prefer placing utility scripts, pure helpers, and simple shared functions under `custom_components/hass_datapoints/src/lib/`.
 - Never use shortcut `if` / `else` clauses or single-line conditional bodies.
 - Always include explicit opening and closing braces for every conditional block, including `if`, `else if`, and `else`.
+- Avoid duplicating types across component, story, and test files.
+- Prefer direct file imports over barrel imports unless a compatibility barrel already exists for a deliberate boundary.
+- Runtime imports generally use `@/…` aliases. Styles imports stay relative.
 
-## Test Generation Requirements
+---
 
-- Use Vitest for frontend and library tests.
-- Name test files with the `.spec.ts` extension.
-- Prefer testing pure functions and library functions in `src/lib/`.
-- Colocate tests with the code they exercise. Keep specs inside a `__tests__` directory within the tested area.
-- Structure test context with `describe` blocks using GIVEN / WHEN / AND phrasing.
-- Keep `it(...)` titles focused on the THEN outcome only.
-- Every test must include explicit `expect(...)` usage.
-- Use `expect.assertions(<count>)` at the start of each test with the exact assertion count for that case.
-- When adding or updating tests, follow the existing repository style before introducing new patterns.
+## Architecture Overview
 
-## New Components Checklist
+The UI layer is intentionally split by responsibility:
 
-1. `pnpm build` — no errors
-2. `pnpm test` — all tests pass (unit spec tests + Storybook interaction tests via Playwright)
-3. Open Storybook — stories render correctly with HA theme; all play functions pass in the Interactions panel
-4. After integration steps: manual verification in HA
+- `src/atoms`
+  Smallest reusable UI primitives.
+  Examples: inputs, toggles, handles, simple display widgets.
+
+- `src/molecules`
+  Composed reusable units built from atoms.
+  Examples: target rows, chart shell, comparison tabs, sidebar sections.
+
+- `src/cards`
+  Self-contained Lovelace / records-style feature cards that are not chart implementations.
+  Examples: action, dev-tool, list, quick.
+
+- `src/charts`
+  Larger chart-oriented feature surfaces and chart cards.
+  Includes the history chart/card stack plus sensor/statistics chart surfaces.
+
+- `src/panels`
+  Full page/panel composition.
+  The primary page is `panels/datapoints/datapoints.js`.
+
+- `src/components`
+  Integration-specific larger shared pieces that do not fit cleanly as atoms/molecules/cards.
+  Current example: annotation dialog controller surface.
+
+- `src/lib`
+  Pure helpers, domain transforms, HA API utilities, state/session helpers, chart helpers, workers, i18n runtime, and general reusable logic.
+
+### Layering guidance
+
+- Atoms should not own page-level state.
+- Molecules should compose atoms and emit clean events rather than reaching deep into child DOM.
+- Cards should orchestrate feature-specific UI and behavior, but should still extract repeated subparts into atoms/molecules where reuse emerges.
+- Panels own app/session state, URL state, and composition.
+- `src/lib` should hold logic that can be tested without full DOM rendering whenever possible.
+
+---
+
+## Component vs Atom vs Molecule vs Card vs Page
+
+### Atoms
+
+Use an atom when:
+
+- the UI is a single primitive or close to it
+- the component is intended to be reused in many places
+- the API can stay narrow and prop-driven
+- the component should not know panel/page business rules
+
+Examples:
+
+- `atoms/form/radio-group`
+- `atoms/interactive/range-handle`
+- `atoms/display/feedback-banner`
+
+### Molecules
+
+Use a molecule when:
+
+- you are composing two or more atoms into a reusable unit
+- the unit has small internal interaction logic
+- the unit still represents a reusable pattern rather than a page-specific feature shell
+
+Examples:
+
+- `molecules/target-row`
+- `molecules/comparison-tab-rail`
+- `molecules/sidebar-options`
+- `molecules/panel-timeline`
+
+### Cards
+
+Use a card when:
+
+- the unit is a user-facing feature surface with meaningful orchestration
+- it owns feature-specific UI, config, or behavior
+- it is not just a generic composition primitive
+
+Examples:
+
+- `cards/action`
+- `cards/dev-tool`
+- `cards/list`
+- `cards/quick`
+- `cards/history/history.ts`
+- `cards/statistics/statistics.ts`
+- `cards/sensor/sensor.ts`
+
+### Pages / Panels
+
+Use a panel/page component when:
+
+- the surface owns routing, URL/session state, layout, and feature composition
+- it coordinates chart, sidebar, toolbar, list, dialogs, and persistent state
+
+Primary example:
+
+- `panels/datapoints/datapoints.js`
+
+---
+
+## Directory Structure Conventions
+
+### General component directory structure
+
+Preferred structure for reusable UI:
+
+```text
+src/<layer>/<component-name>/
+├── <component-name>.ts
+├── <component-name>.styles.ts
+├── types.ts                     # optional but preferred when types are shared
+├── __tests__/
+│   └── <component-name>.spec.ts
+└── stories/
+    └── <component-name>.stories.ts
+```
+
+### Subcomponents
+
+If a component becomes large, split it into nested subcomponent directories rather than keeping multiple unrelated concerns in one file.
+
+Examples already following this pattern:
+
+- `src/cards/action/action-targets/`
+- `src/cards/dev-tool/dev-tool-results/`
+- `src/cards/dev-tool/dev-tool-windows/`
+- `src/cards/list/list-edit-form/`
+- `src/cards/list/list-event-item/`
+- `src/cards/quick/quick-annotation/`
+- `src/cards/sensor/sensor-chart/`
+- `src/cards/sensor/sensor-header/`
+- `src/cards/sensor/sensor-record-item/`
+- `src/cards/sensor/sensor-records/`
+- `src/cards/history/history-chart/`
+
+### Panel component structure
+
+Panel-specific components live under:
+
+```text
+src/panels/datapoints/components/
+```
+
+Current notable panel components:
+
+- `panel-shell`
+- `history-targets`
+- `range-toolbar`
+
+### History card support structure
+
+The history card area has dedicated internal helper directories:
+
+```text
+src/cards/history/
+├── analysis/    # frontend analysis helpers still required by the chart
+├── data/        # history/statistics normalization and extent logic
+├── history-chart/
+├── __tests__/
+└── stories/
+```
+
+### Library structure
+
+`src/lib` is organized by domain rather than by consumer:
+
+- `lib/chart`
+  Shared chart interaction/render helpers
+- `lib/data`
+  HA API fetchers and data access helpers
+- `lib/domain`
+  domain-level transforms and state logic
+- `lib/ha`
+  Home Assistant-specific helpers
+- `lib/history-page`
+  session/page state helpers for the datapoints history surface
+- `lib/i18n`
+  frontend localization runtime and locale wiring
+- `lib/timeline`
+  timeline-specific calculations/helpers
+- `lib/util`
+  small reusable utilities
+- `lib/workers`
+  worker entry points and worker client helpers
+
+If code can be pure and shared, prefer placing it in `src/lib` instead of embedding it in components.
+
+---
+
+## Naming Conventions
+
+### Current component naming
+
+This repo has moved away from `Dp`/`dp-` and `card-` export prefixes in most active code.
+
+- Prefer export names like `PanelShell`, `RangeToolbar`, `HistoryChart`, `SensorChart`.
+- Custom element tags must still contain a hyphen.
+- Do not assume old `dp-` naming is still correct when adding new files.
+
+### Compatibility / exceptions
+
+- Some older integration-facing tags still keep `hass-datapoints-*` names intentionally.
+- Be careful around chart/history internals and existing Home Assistant registration names.
+- Do not rename stable public integration tags casually.
 
 ---
 
 ## Code Style Rules
 
-- **Curly braces are mandatory** for all `if`, `else`, `for`, `while`, and similar block statements — even single-line bodies. Never omit braces. Example:
-  ```ts
-  // ✅ correct
-  if (condition) {
-    doSomething();
-  }
+- **Curly braces are mandatory** for all `if`, `else`, `for`, `while`, and similar block statements.
+- **No type duplication between stories and components.**
+  Shared types should live in `types.ts` where practical.
+- **Externalize CSS into a separate styles file.**
+  Never keep inline `static styles = css\`...\`` in component logic files.
+- **Derive props from `stateObj` where possible.**
+  If HA state already contains the data, do not add redundant public props.
 
-  // ❌ wrong
-  if (condition) doSomething();
-  ```
+### Lit property guidance
 
-- **No type duplication between stories and components.** Shared types must live in a single source of truth:
-    - Prefer a `types.ts` file co-located with the component (e.g. `src/molecules/dp-target-row/types.ts`).
-    - The component file imports from `./types` and re-exports any types that consumers need.
-    - Stories and test files import types from `"../types"` (or `"../../dp-target-row/types"` for sibling molecules) — never redeclare them locally.
-    - The `HassEntityState` interface lives in `src/molecules/dp-target-row/types.ts` and should be reused wherever an HA state object is typed.
+For Lit components extending `LitElement`:
 
-- **Externalise CSS into a separate styles file.** Never write `static styles = css\`...\`` inline in the component file. Instead:
-    - Create a co-located `dp-component-name.styles.ts` file that exports a named `styles` constant.
-    - Import and assign it in the component: `static styles = styles;`
-    - Example file structure:
-      ```
-      src/molecules/dp-component-name/
-      ├── dp-component-name.ts          # component logic + template only
-      ├── dp-component-name.styles.ts   # static styles = css`...`
-      ├── types.ts                      # shared interfaces
-      ├── stories/
-      │   └── dp-component-name.stories.ts
-      └── __tests__/
-          └── dp-component-name.spec.ts
-      ```
-    - Example styles file:
-      ```ts
-      import { css } from "lit";
-  
-      export const styles = css`
-        :host { display: block; }
-        /* ... */
-      `;
-      ```
-    - Example component import:
-      ```ts
-      import { styles } from "./dp-component-name.styles";
-      // ...
-      static styles = styles;
-      ```
+- Use explicit reactive defaults.
+- Keep one consistent reactive property pattern within a class.
+- Use decorators where the repo supports them for that area.
+- Avoid constructor-based default assignment for reactive fields unless there is a specific Lit/runtime reason.
+- Internal reactive state should stay internal and not be exposed as public API accidentally.
 
-- **Derive props from `stateObj` where possible.** If a value is already present on the HA entity state object (`stateObj`), do not add a separate prop for it. Use a private getter to derive it:
-    - `entity_id` → `private get _entityId()` from `stateObj.entity_id`
-    - `friendly_name` → `private get _entityName()` from `stateObj.attributes.friendly_name`
-    - `unit_of_measurement` → `private get _unit()` from `stateObj.attributes.unit_of_measurement`
-    - `icon` → passed directly to `ha-state-icon` via `.stateObj`; no separate icon prop needed
-    - Analysis expansion state (`expanded`) lives in `analysis.expanded` — no separate `analysisExpanded` prop
+### Event boundaries
+
+- Prefer component events and clean public props over parent components reaching into child shadow DOM.
+- Avoid deep selector-based control when a component event or public method can express the contract.
+- If a parent must coordinate behavior, use a narrow public method rather than arbitrary DOM traversal.
 
 ---
 
-## Atom Component Mapping
+## CSS / Styling Rules
 
-When building molecules, **always use the existing atoms** instead of writing raw HTML form elements.
+- Every component should have a dedicated `*.styles.ts` file when it owns styles.
+- Style imports should be relative imports.
+- Follow the established sibling pattern:
 
-| UI Pattern | Atom tag | Import path (from `src/`) | Props | Event emitted |
-|---|---|---|---|---|
-| Group of radio buttons | `dp-radio-group` | `atoms/form/dp-radio-group/dp-radio-group` | `name: string`, `value: string`, `options: SelectOption[]` | `dp-radio-change → { value: string }` |
-| Group of checkboxes | `dp-checkbox-list` | `atoms/form/dp-checkbox-list/dp-checkbox-list` | `items: CheckboxItem[]` | `dp-item-change → { name: string, checked: boolean }` |
-| Sidebar section with title/subtitle | `dp-sidebar-options-section` | `atoms/display/dp-sidebar-options-section/dp-sidebar-options-section` | `title: string`, `subtitle: string` + default `<slot>` for body | _(none)_ |
-| Section heading only | `dp-sidebar-section-header` | `atoms/display/dp-sidebar-section-header/dp-sidebar-section-header` | `title: string`, `subtitle: string` | _(none)_ |
+```ts
+import { styles } from "./component-name.styles";
+```
 
-**Types:**
-- `SelectOption` — `{ label: string; value: string }` from `@/lib/types`
-- `CheckboxItem` — `{ name: string; label: string; checked: boolean }` exported from `dp-checkbox-list.ts`
+- Reuse the existing visual language where appropriate.
+- For panel-related UI, refer back to the historical panel CSS source when reproducing selectors and spacing:
+  `custom_components/hass_datapoints/src/panels/datapoints/datapoints.js`
 
-**Legacy HTML → atom mapping:**
+### Important note
+
+The old `PANEL_HISTORY_STYLE` block still matters as a source of truth for many selectors and layout rules. When extracting panel-related components, mirror the matching selectors carefully rather than inventing new structure arbitrarily.
+
+---
+
+## i18n Guidance
+
+Current frontend i18n uses `@lit/localize` for the active migration path.
+
+- Source strings live inline in component code.
+- Keep English source strings clear and searchable.
+- Do not mix in ad hoc translation systems for new work without a strong reason.
+- If a reusable atom/molecule should stay generic, pass already-resolved strings from the owner where that pattern is already established.
+
+Keep Home Assistant backend translation files separate from frontend component localization concerns.
+
+---
+
+## Test Requirements
+
+- Use Vitest for frontend and library tests.
+- Name test files with the `.spec.ts` extension.
+- Colocate tests with the code they exercise.
+- Keep specs inside a `__tests__` directory within the tested area.
+- Structure test context with `describe` blocks using GIVEN / WHEN / AND phrasing.
+- Keep `it(...)` titles focused on the THEN outcome only.
+- Every test must include explicit `expect(...)` usage.
+- Use `expect.assertions(<count>)` at the start of each test with the exact assertion count for that case.
+- Prefer per-file specs over broad barrel-style tests.
+
+### Testing priorities
+
+1. Pure helpers in `src/lib`
+2. Component event contracts and rendering behavior
+3. Regressions around panel/chart coordination
+4. Storybook `play` coverage for important interaction flows
+
+### Practical testing guidance
+
+- When you split a file, split its tests too.
+- When moving logic from a barrel file into dedicated modules, create per-module specs.
+- When fixing a regression, add a focused regression test in the nearest relevant area.
+- If a component has subcomponents, prefer separate subcomponent specs instead of only parent-level coverage.
+
+---
+
+## Storybook Requirements
+
+- Components should have existing story coverage where practical.
+- Do not create grouped “bucket” story files for unrelated components.
+- Put stories on the component they belong to.
+- Prefer interaction coverage in existing component story files rather than separate grouped interaction stories.
+- Keep stories colocated in `stories/`.
+
+### Story expectations
+
+- Stories should render in Home Assistant theme context.
+- Important interactive components should have `play` coverage.
+- Stories should exercise real component states, not just static snapshots.
+
+---
+
+## New Component Checklist
+
+1. Create the component in the correct layer: atom, molecule, card, chart, or panel component.
+2. Add a co-located `*.styles.ts` file.
+3. Add `types.ts` if types are shared by stories/tests/related subcomponents.
+4. Add a co-located spec in `__tests__/`.
+5. Add or update a component story in `stories/`.
+6. Run focused Vitest.
+7. Run `pnpm build`.
+8. If the component is user-facing and interactive, run Storybook verification too.
+9. For panel/history changes, verify manually in HA.
+
+---
+
+## Atoms in Molecules Rule
+
+When building molecules, always use the existing atoms instead of raw HTML when an atom already covers the pattern.
+
+| UI Pattern                          | Atom tag                     | Import path (from `src/`)                                             | Props                                                           | Event emitted                                         |
+| ----------------------------------- | ---------------------------- | --------------------------------------------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------- |
+| Group of radio buttons              | `dp-radio-group`             | `atoms/form/dp-radio-group/dp-radio-group`                            | `name: string`, `value: string`, `options: SelectOption[]`      | `dp-radio-change → { value: string }`                 |
+| Group of checkboxes                 | `dp-checkbox-list`           | `atoms/form/dp-checkbox-list/dp-checkbox-list`                        | `items: CheckboxItem[]`                                         | `dp-item-change → { name: string, checked: boolean }` |
+| Sidebar section with title/subtitle | `dp-sidebar-options-section` | `atoms/display/dp-sidebar-options-section/dp-sidebar-options-section` | `title: string`, `subtitle: string` + default `<slot>` for body | _(none)_                                              |
+| Section heading only                | `dp-sidebar-section-header`  | `atoms/display/dp-sidebar-section-header/dp-sidebar-section-header`   | `title: string`, `subtitle: string`                             | _(none)_                                              |
+
+### Types
+
+- `SelectOption`
+  `{ label: string; value: string }` from `@/lib/types`
+- `CheckboxItem`
+  exported from the checkbox list component
+
+### Legacy HTML to atom mapping
+
 - `.sidebar-radio-group` / `.sidebar-radio-option` inputs → `dp-radio-group`
 - `.sidebar-toggle-group` / `.sidebar-toggle-option` inputs → `dp-checkbox-list`
-- `.sidebar-options-section` wrapper (title + subtitle + body) → `dp-sidebar-options-section`
-- `.sidebar-section-header` / `.sidebar-section-title` / `.sidebar-section-subtitle` → `dp-sidebar-section-header`
+- `.sidebar-options-section` wrapper → `dp-sidebar-options-section`
+- `.sidebar-section-header` / related title/subtitle markup → `dp-sidebar-section-header`
 
-**Rule:** Never write raw `<input type="radio">` or `<input type="checkbox">` lists directly in a molecule when these atoms cover the use case. If a checkbox group has a dependent sub-option (e.g. a select that appears when a checkbox is on), render the `dp-checkbox-list` first and place the sub-option as a sibling element beneath it.
+### Rule
+
+Never write raw `<input type="radio">` or `<input type="checkbox">` lists directly in a molecule when an existing atom already covers the use case.
 
 ---
 
-## Key CSS Files to Reference
+## Current Project Structure Snapshot
 
-All CSS lives in `PANEL_HISTORY_STYLE` constant, defined at line 166 of:
-`custom_components/hass_datapoints/src/panels/datapoints/datapoints.js`
+High-level current structure under `custom_components/hass_datapoints/src/`:
 
-Each component must extract and replicate the exact CSS selectors from this constant that correspond to the HTML it renders.
+```text
+src/
+├── atoms/
+├── cards/
+├── charts/
+├── components/
+├── contexts/
+├── docs/
+├── lib/
+├── molecules/
+├── panels/
+└── test-support/
+```
+
+Notable active areas:
+
+- `atoms/analysis`
+- `atoms/display`
+- `atoms/form`
+- `atoms/interactive`
+- `cards/action`
+- `cards/dev-tool`
+- `cards/history`
+- `cards/list`
+- `cards/quick`
+- `cards/sensor`
+- `cards/statistics`
+- `charts/base`
+- `charts/utils`
+- `panels/datapoints`
+
+---
+
+## Tests and Stories Coverage Notes
+
+The repo already has broad colocated coverage.
+
+Patterns currently in use:
+
+- most reusable atoms have both `__tests__` and `stories`
+- most active molecules have both `__tests__` and `stories`
+- cards generally have parent specs/stories plus nested subcomponent specs/stories where split out
+- chart helper modules under `cards/history/analysis` and `cards/history/data` use per-file specs
+- `src/lib` has broad per-file or per-area test coverage under nested `__tests__`
+
+When adding to an area that already has colocated tests/stories, follow the existing local structure first.
+
+---
+
+## Library Guidance
+
+Prefer `src/lib` for:
+
+- pure formatting and color utilities
+- HA navigation and naming helpers
+- chart interaction helpers
+- domain transforms
+- session state serialization
+- URL/query parsing
+- worker client orchestration
+
+Avoid placing domain logic inside components when it can be extracted and tested in `src/lib`.
+
+### History chart specifics
+
+Frontend history-chart code still owns:
+
+- rendering
+- zoom / hover interaction
+- normalization and extent calculations still needed client-side
+- frontend-only analysis helpers that are still used
+
+Do not assume backend support means all frontend chart logic can be removed. Check actual call sites before deleting frontend helpers.
+
+---
+
+## Practical Refactor Rules
+
+- Split large files by responsibility, not arbitrarily.
+- If a component contains repeated sub-UI with its own behavior, extract a subcomponent directory.
+- If duplicate UI appears across cards, prefer a shared atom or molecule.
+- If code is no longer needed because backend or shared logic replaced it, remove it and remove its tests too.
+- Keep compatibility barrels only when they serve a deliberate migration boundary.
+
+---
+
+## Verification Checklist For Component / Chart / Panel Work
+
+### For component work
+
+1. Focused Vitest for touched areas
+2. Storybook story exists or is updated
+3. `pnpm build`
+
+### For chart work
+
+1. Focused chart/history specs
+2. `pnpm build`
+3. Manual HA verification for hover, zoom, legend, comparison tabs, and overlays when relevant
+
+### For panel work
+
+1. Focused panel specs
+2. `pnpm build`
+3. Manual HA verification for sidebar behavior, tabs, range toolbar, split panes, and chart/list coordination
+
+---
+
+## Final Rule Of Thumb
+
+When in doubt:
+
+- put pure logic in `src/lib`
+- keep atoms small and prop-driven
+- keep molecules event-driven
+- keep cards feature-focused
+- keep pages/panels as composition/state owners
+- colocate tests and stories with the thing they exercise
+- prefer smaller, verified refactors over giant rewrites

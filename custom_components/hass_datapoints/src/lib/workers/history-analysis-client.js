@@ -1,4 +1,4 @@
-import HistoryAnalysisWorker from "./history-analysis.worker.js?worker&inline";
+import HistoryAnalysisWorker from "@/lib/workers/history-analysis.worker.js?worker&inline";
 
 let workerInstance = null;
 let requestId = 0;
@@ -10,20 +10,10 @@ function getHistoryAnalysisWorker() {
   }
   workerInstance = new HistoryAnalysisWorker();
   workerInstance.addEventListener("message", (event) => {
-    const { id, type, value, result, error, entityId, method, clusters } = event.data || {};
+    const { id, result, error } = event.data || {};
     const handlers = pending.get(id);
     if (!handlers) {
       return;
-    }
-    if (type === "progress") {
-      console.log(`[analysis-client] progress ${value}%`);
-      handlers.onProgress?.(value);
-      return; // intermediate message — keep the request in the pending map
-    }
-    if (type === "anomaly-partial") {
-      console.log(`[analysis-client] anomaly-partial: ${method} for ${entityId} → ${clusters?.length ?? 0} cluster(s)`);
-      handlers.onAnomalyPartial?.(entityId, method, clusters);
-      return; // intermediate message — keep the request in the pending map
     }
     pending.delete(id);
     if (error) {
@@ -60,16 +50,11 @@ export function terminateHistoryAnalysisWorker() {
   }
 }
 
-export function computeHistoryAnalysisInWorker(payload, options = {}) {
+export function computeHistoryAnalysisInWorker(payload) {
   const worker = getHistoryAnalysisWorker();
   return new Promise((resolve, reject) => {
     const id = ++requestId;
-    pending.set(id, {
-      resolve,
-      reject,
-      onProgress: options.onProgress ?? null,
-      onAnomalyPartial: options.onAnomalyPartial ?? null,
-    });
+    pending.set(id, { resolve, reject });
     worker.postMessage({ id, payload });
   });
 }

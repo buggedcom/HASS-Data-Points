@@ -1,15 +1,43 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import {
+  normalizeEntityIds,
+  normalizeTargetValue,
+  normalizeTargetSelection,
+  mergeTargetSelections,
+  resolveEntityIdsFromTarget,
+  panelConfigTarget,
+} from "@/lib/domain/target-selection.js";
+import {
+  normalizeHistorySeriesAnalysis,
+  normalizeHistorySeriesRows,
+  buildHistorySeriesRows,
+  slugifySeriesName,
+  parseSeriesColorsParam,
+} from "@/lib/domain/history-series.js";
+import {
+  parseDateValue,
+  createChartZoomRange,
+} from "@/lib/domain/chart-zoom.js";
 
-import { loadLegacyScripts, repoPath } from "@/lib/__tests__/load-legacy-script";
+// Override COLORS so assertions use predictable values independent of constants.js
+vi.mock("@/constants.js", async (importOriginal) => {
+  const real = (await importOriginal()) as Record<string, unknown>;
+  return { ...real, COLORS: ["#111111", "#222222", "#333333"] };
+});
 
 const DEFAULT_ANALYSIS = {
   expanded: false,
+  sample_interval: "1m",
+  sample_aggregate: "mean",
+  anomaly_use_sampled_data: true,
   show_trend_lines: false,
   trend_method: "rolling_average",
   trend_window: "24h",
-  show_trend_crosshairs: false,
+  show_trend_crosshairs: true,
   show_summary_stats: false,
+  show_summary_stats_shading: false,
   show_rate_of_change: false,
+  show_rate_crosshairs: true,
   rate_window: "1h",
   show_threshold_analysis: false,
   show_threshold_shading: false,
@@ -29,46 +57,14 @@ const DEFAULT_ANALYSIS = {
   hide_source_series: false,
 };
 
-const targetSelection = loadLegacyScripts(
-  [repoPath("custom_components", "hass_datapoints", "src", "lib", "domain", "target-selection.js")],
-  [
-    "normalizeEntityIds",
-    "normalizeTargetValue",
-    "normalizeTargetSelection",
-    "mergeTargetSelections",
-    "resolveEntityIdsFromTarget",
-    "panelConfigTarget",
-  ],
-);
-
-const historySeries = loadLegacyScripts(
-  [
-    repoPath("custom_components", "hass_datapoints", "src", "lib", "domain", "target-selection.js"),
-    repoPath("custom_components", "hass_datapoints", "src", "lib", "domain", "history-series.js"),
-  ],
-  [
-    "normalizeHistorySeriesAnalysis",
-    "normalizeHistorySeriesRows",
-    "buildHistorySeriesRows",
-    "slugifySeriesName",
-    "parseSeriesColorsParam",
-  ],
-  {
-    COLORS: ["#111111", "#222222", "#333333"],
-  },
-);
-
-const chartZoom = loadLegacyScripts(
-  [repoPath("custom_components", "hass_datapoints", "src", "lib", "domain", "chart-zoom.js")],
-  ["parseDateValue", "createChartZoomRange"],
-);
-
 describe("domain libs", () => {
   describe("GIVEN mixed entity values", () => {
     describe("WHEN normalizeEntityIds is called", () => {
       it("THEN it returns trimmed string ids only", () => {
         expect.assertions(1);
-        expect(targetSelection.normalizeEntityIds([" sensor.a ", null, ""])).toEqual(["sensor.a"]);
+        expect(normalizeEntityIds([" sensor.a ", null, ""])).toEqual([
+          "sensor.a",
+        ]);
       });
     });
   });
@@ -77,14 +73,18 @@ describe("domain libs", () => {
     describe("WHEN normalizeTargetValue is called", () => {
       it("THEN it maps them into target arrays", () => {
         expect.assertions(2);
-        expect(targetSelection.normalizeTargetValue("sensor.a")).toEqual({ entity_id: ["sensor.a"] });
-        expect(targetSelection.normalizeTargetValue({
+        expect(normalizeTargetValue("sensor.a")).toEqual({
           entity_id: ["sensor.a"],
-          entities: ["sensor.b"],
-          device_id: "device.one",
-          area_id: ["kitchen"],
-          label_id: "heating",
-        })).toEqual({
+        });
+        expect(
+          normalizeTargetValue({
+            entity_id: ["sensor.a"],
+            entities: ["sensor.b"],
+            device_id: "device.one",
+            area_id: ["kitchen"],
+            label_id: "heating",
+          })
+        ).toEqual({
           entity_id: ["sensor.a", "sensor.b"],
           device_id: ["device.one"],
           area_id: ["kitchen"],
@@ -98,20 +98,24 @@ describe("domain libs", () => {
     describe("WHEN normalizeTargetSelection and mergeTargetSelections are called", () => {
       it("THEN they deduplicate each target bucket", () => {
         expect.assertions(2);
-        expect(targetSelection.normalizeTargetSelection({
-          entity_id: ["sensor.a", "sensor.a"],
-          area_id: ["kitchen", "kitchen"],
-        })).toEqual({
+        expect(
+          normalizeTargetSelection({
+            entity_id: ["sensor.a", "sensor.a"],
+            area_id: ["kitchen", "kitchen"],
+          })
+        ).toEqual({
           entity_id: ["sensor.a"],
           device_id: [],
           area_id: ["kitchen"],
           label_id: [],
         });
 
-        expect(targetSelection.mergeTargetSelections(
-          { entity_id: ["sensor.a"], device_id: ["device.one"] },
-          { entity_id: ["sensor.b"], device_id: ["device.one"] },
-        )).toEqual({
+        expect(
+          mergeTargetSelections(
+            { entity_id: ["sensor.a"], device_id: ["device.one"] },
+            { entity_id: ["sensor.b"], device_id: ["device.one"] }
+          )
+        ).toEqual({
           entity_id: ["sensor.a", "sensor.b"],
           device_id: ["device.one"],
           area_id: [],
@@ -127,17 +131,27 @@ describe("domain libs", () => {
         expect.assertions(1);
         const hass = {
           entities: {
-            "sensor.alpha": { device_id: "device.one", area_id: "kitchen", labels: ["heating"] },
-            "sensor.beta": { device_id: "device.two", area_id: "office", label_ids: ["power"] },
+            "sensor.alpha": {
+              device_id: "device.one",
+              area_id: "kitchen",
+              labels: ["heating"],
+            },
+            "sensor.beta": {
+              device_id: "device.two",
+              area_id: "office",
+              label_ids: ["power"],
+            },
           },
         };
 
-        expect(targetSelection.resolveEntityIdsFromTarget(hass, {
-          entity_id: ["sensor.direct"],
-          device_id: ["device.one"],
-          area_id: ["office"],
-          label_id: ["power"],
-        })).toEqual(["sensor.direct", "sensor.alpha", "sensor.beta"]);
+        expect(
+          resolveEntityIdsFromTarget(hass, {
+            entity_id: ["sensor.direct"],
+            device_id: ["device.one"],
+            area_id: ["office"],
+            label_id: ["power"],
+          })
+        ).toEqual(["sensor.direct", "sensor.alpha", "sensor.beta"]);
       });
     });
   });
@@ -146,10 +160,14 @@ describe("domain libs", () => {
     describe("WHEN panelConfigTarget is called", () => {
       it("THEN it prefers target and falls back to entities", () => {
         expect.assertions(2);
-        expect(targetSelection.panelConfigTarget({ target: { entity_id: ["sensor.a"] } })).toEqual({
+        expect(
+          panelConfigTarget({ target: { entity_id: ["sensor.a"] } })
+        ).toEqual({
           entity_id: ["sensor.a"],
         });
-        expect(targetSelection.panelConfigTarget({ entities: ["sensor.b"] })).toEqual({ entity_id: ["sensor.b"] });
+        expect(panelConfigTarget({ entities: ["sensor.b"] })).toEqual({
+          entity_id: ["sensor.b"],
+        });
       });
     });
   });
@@ -158,13 +176,25 @@ describe("domain libs", () => {
     describe("WHEN normalizeHistorySeriesRows is called", () => {
       it("THEN it removes duplicates and fills fallback colors", () => {
         expect.assertions(1);
-        expect(historySeries.normalizeHistorySeriesRows([
-          { entity_id: "sensor.a", color: "#abcdef", visible: false },
-          { entity_id: "sensor.a", color: "#123456" },
-          { entity_id: "sensor.b", color: "bad" },
-        ])).toEqual([
-          { entity_id: "sensor.a", color: "#abcdef", visible: false, analysis: DEFAULT_ANALYSIS },
-          { entity_id: "sensor.b", color: "#333333", visible: true, analysis: DEFAULT_ANALYSIS },
+        expect(
+          normalizeHistorySeriesRows([
+            { entity_id: "sensor.a", color: "#abcdef", visible: false },
+            { entity_id: "sensor.a", color: "#123456" },
+            { entity_id: "sensor.b", color: "bad" },
+          ])
+        ).toEqual([
+          {
+            entity_id: "sensor.a",
+            color: "#abcdef",
+            visible: false,
+            analysis: DEFAULT_ANALYSIS,
+          },
+          {
+            entity_id: "sensor.b",
+            color: "#333333",
+            visible: true,
+            analysis: DEFAULT_ANALYSIS,
+          },
         ]);
       });
     });
@@ -174,14 +204,16 @@ describe("domain libs", () => {
     describe("WHEN normalizeHistorySeriesAnalysis is called", () => {
       it("THEN it preserves the configured method and anomaly windows", () => {
         expect.assertions(1);
-        expect(historySeries.normalizeHistorySeriesAnalysis({
-          show_anomalies: true,
-          anomaly_method: "comparison_window",
-          anomaly_rate_window: "6h",
-          anomaly_zscore_window: "7d",
-          anomaly_persistence_window: "12h",
-          anomaly_comparison_window_id: "baseline",
-        })).toEqual({
+        expect(
+          normalizeHistorySeriesAnalysis({
+            show_anomalies: true,
+            anomaly_method: "comparison_window",
+            anomaly_rate_window: "6h",
+            anomaly_zscore_window: "7d",
+            anomaly_persistence_window: "12h",
+            anomaly_comparison_window_id: "baseline",
+          })
+        ).toEqual({
           ...DEFAULT_ANALYSIS,
           show_anomalies: true,
           anomaly_methods: ["comparison_window"],
@@ -198,12 +230,24 @@ describe("domain libs", () => {
     describe("WHEN buildHistorySeriesRows is called", () => {
       it("THEN it preserves existing rows and adds defaults", () => {
         expect.assertions(1);
-        expect(historySeries.buildHistorySeriesRows(
-          ["sensor.a", "sensor.b"],
-          [{ entity_id: "sensor.b", color: "#ff0000", visible: false }],
-        )).toEqual([
-          { entity_id: "sensor.a", color: "#111111", visible: true, analysis: DEFAULT_ANALYSIS },
-          { entity_id: "sensor.b", color: "#ff0000", visible: false, analysis: DEFAULT_ANALYSIS },
+        expect(
+          buildHistorySeriesRows(
+            ["sensor.a", "sensor.b"],
+            [{ entity_id: "sensor.b", color: "#ff0000", visible: false }]
+          )
+        ).toEqual([
+          {
+            entity_id: "sensor.a",
+            color: "#111111",
+            visible: true,
+            analysis: DEFAULT_ANALYSIS,
+          },
+          {
+            entity_id: "sensor.b",
+            color: "#ff0000",
+            visible: false,
+            analysis: DEFAULT_ANALYSIS,
+          },
         ]);
       });
     });
@@ -213,8 +257,12 @@ describe("domain libs", () => {
     describe("WHEN slugifySeriesName and parseSeriesColorsParam are called", () => {
       it("THEN they normalize them for URLs", () => {
         expect.assertions(2);
-        expect(historySeries.slugifySeriesName(" Living Room Temp ")).toBe("living-room-temp");
-        expect(historySeries.parseSeriesColorsParam("living-room-temp:#aabbcc,boiler:#112233")).toEqual({
+        expect(slugifySeriesName(" Living Room Temp ")).toBe(
+          "living-room-temp"
+        );
+        expect(
+          parseSeriesColorsParam("living-room-temp:#aabbcc,boiler:#112233")
+        ).toEqual({
           "living-room-temp": "#aabbcc",
           boiler: "#112233",
         });
@@ -226,13 +274,19 @@ describe("domain libs", () => {
     describe("WHEN parseDateValue and createChartZoomRange are called", () => {
       it("THEN they return valid parsed ranges only", () => {
         expect.assertions(4);
-        expect(chartZoom.parseDateValue("2026-03-01T00:00:00Z")?.toISOString()).toBe("2026-03-01T00:00:00.000Z");
-        expect(chartZoom.parseDateValue("nope")).toBeNull();
-        expect(chartZoom.createChartZoomRange("2026-03-01T00:00:00Z", "2026-03-02T00:00:00Z")).toEqual({
+        expect(parseDateValue("2026-03-01T00:00:00Z")?.toISOString()).toBe(
+          "2026-03-01T00:00:00.000Z"
+        );
+        expect(parseDateValue("nope")).toBeNull();
+        expect(
+          createChartZoomRange("2026-03-01T00:00:00Z", "2026-03-02T00:00:00Z")
+        ).toEqual({
           start: new Date("2026-03-01T00:00:00Z").getTime(),
           end: new Date("2026-03-02T00:00:00Z").getTime(),
         });
-        expect(chartZoom.createChartZoomRange("2026-03-02T00:00:00Z", "2026-03-01T00:00:00Z")).toBeNull();
+        expect(
+          createChartZoomRange("2026-03-02T00:00:00Z", "2026-03-01T00:00:00Z")
+        ).toBeNull();
       });
     });
   });

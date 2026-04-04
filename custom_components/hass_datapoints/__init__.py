@@ -34,6 +34,7 @@ from .const import (
     SERVICE_RECORD,
 )
 from .store import HassRecordsStore
+from .anomaly_cache import AnomalyCache
 from . import websocket_api as ws_api
 
 type HassRecordsConfigEntry = ConfigEntry[HassRecordsStore]
@@ -121,6 +122,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: HassRecordsConfigEntry) 
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN]["store"] = store
 
+    # Initialise anomaly result cache (SQLite, run in executor).
+    db_path = hass.config.path(".storage", "hass_datapoints_cache.db")
+    cache = AnomalyCache(db_path)
+    await hass.async_add_executor_job(cache.purge_old)
+    hass.data[DOMAIN]["anomaly_cache"] = cache
+
     # Register the record service
     async def handle_record(call: ServiceCall) -> None:
         color = call.data.get(ATTR_COLOR)
@@ -159,4 +166,5 @@ async def async_unload_entry(hass: HomeAssistant, entry: HassRecordsConfigEntry)
     """Unload a config entry."""
     hass.services.async_remove(DOMAIN, SERVICE_RECORD)
     hass.data[DOMAIN].pop("store", None)
+    hass.data[DOMAIN].pop("anomaly_cache", None)
     return True

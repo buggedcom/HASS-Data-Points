@@ -11,19 +11,26 @@
  */
 
 const isDev = (): boolean =>
-    typeof window !== "undefined" &&
-    !!(window as Window & { __HASS_DATAPOINTS_DEV__?: boolean }).__HASS_DATAPOINTS_DEV__;
+  typeof window !== "undefined" &&
+  !!(window as Window & { __HASS_DATAPOINTS_DEV__?: boolean })
+    .__HASS_DATAPOINTS_DEV__;
 
 export const logger = {
-    log: (...args: unknown[]) => {
-        if (isDev()) { console.log(...args); }
-    },
-    debug: (...args: unknown[]) => {
-        if (isDev()) { console.debug(...args); }
-    },
-    info: (...args: unknown[]) => {
-        if (isDev()) { console.info(...args); }
-    },
-    warn: (...args: unknown[]) => console.warn(...args),
-    error: (...args: unknown[]) => console.error(...args),
+  log: (...args: unknown[]) => {
+    if (isDev()) {
+      console.log(...args);
+    }
+  },
+  debug: (...args: unknown[]) => {
+    if (isDev()) {
+      console.debug(...args);
+    }
+  },
+  info: (...args: unknown[]) => {
+    if (isDev()) {
+      console.info(...args);
+    }
+  },
+  warn: (...args: unknown[]) => console.warn(...args),
+  error: (...args: unknown[]) => console.error(...args),
 };

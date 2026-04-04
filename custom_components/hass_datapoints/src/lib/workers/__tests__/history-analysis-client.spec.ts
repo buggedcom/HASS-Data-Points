@@ -1,18 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-
-import { loadLegacyScripts, repoPath } from "@/lib/__tests__/load-legacy-script";
+import {
+  computeHistoryAnalysisInWorker,
+  terminateHistoryAnalysisWorker,
+} from "@/lib/workers/history-analysis-client.js";
 
 // ── Mock HistoryAnalysisWorker ────────────────────────────────────────────────
 //
-// Injected into the VM context in place of the real Vite `?worker&inline`
-// import. Each `new HistoryAnalysisWorker()` call produces a fresh mock
-// instance that exposes an `.emit(type, event)` helper so tests can simulate
-// worker responses without running real analysis code.
+// Mocks the Vite worker import so no real Web Worker is created during tests.
+// Each `new HistoryAnalysisWorker()` produces a fresh mock instance that
+// exposes an `.emit(type, event)` helper so tests can simulate worker responses.
 
 interface MockWorkerInstance {
   postMessage: ReturnType<typeof vi.fn>;
   terminate: ReturnType<typeof vi.fn>;
-  addEventListener(type: string, handler: Function): void;
+  addEventListener(type: string, handler: (event: unknown) => void): void;
   /** Test helper — fires registered listeners for the given event type. */
   emit(type: string, event: unknown): void;
 }
@@ -20,11 +21,11 @@ interface MockWorkerInstance {
 let currentMockWorker: MockWorkerInstance | null = null;
 
 function MockHistoryAnalysisWorker(this: unknown): MockWorkerInstance {
-  const listeners: Record<string, Function[]> = {};
+  const listeners: Record<string, Array<(event: unknown) => void>> = {};
   const instance: MockWorkerInstance = {
     postMessage: vi.fn(),
     terminate: vi.fn(),
-    addEventListener(type: string, handler: Function) {
+    addEventListener(type: string, handler: (event: unknown) => void) {
       (listeners[type] ??= []).push(handler);
     },
     emit(type: string, event: unknown) {
@@ -35,13 +36,9 @@ function MockHistoryAnalysisWorker(this: unknown): MockWorkerInstance {
   return instance;
 }
 
-// ── Load module under test ────────────────────────────────────────────────────
-
-const { computeHistoryAnalysisInWorker, terminateHistoryAnalysisWorker } = loadLegacyScripts(
-  [repoPath("custom_components", "hass_datapoints", "src", "lib", "workers", "history-analysis-client.js")],
-  ["computeHistoryAnalysisInWorker", "terminateHistoryAnalysisWorker"],
-  { HistoryAnalysisWorker: MockHistoryAnalysisWorker },
-);
+vi.mock("@/lib/workers/history-analysis.worker.js?worker&inline", () => ({
+  default: MockHistoryAnalysisWorker,
+}));
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -63,7 +60,6 @@ function respondError(id: number, errorMessage: string): void {
 // ── Test lifecycle ────────────────────────────────────────────────────────────
 
 beforeEach(() => {
-  // Reset module-level state (workerInstance + pending map) before every test
   terminateHistoryAnalysisWorker();
   currentMockWorker = null;
 });
@@ -77,7 +73,10 @@ describe("computeHistoryAnalysisInWorker", () => {
     describe("WHEN the worker responds with a result", () => {
       it("THEN the promise resolves with that result", async () => {
         expect.assertions(1);
-        const expected = { trendSeries: [], anomalySeries: [{ entityId: "sensor.a" }] };
+        const expected = {
+          trendSeries: [],
+          anomalySeries: [{ entityId: "sensor.a" }],
+        };
         const promise = computeHistoryAnalysisInWorker({ series: [] });
         respondOk(sentId(), expected);
         await expect(promise).resolves.toEqual(expected);
@@ -223,7 +222,9 @@ describe("terminateHistoryAnalysisWorker", () => {
         expect.assertions(1);
         const promise = computeHistoryAnalysisInWorker({});
         terminateHistoryAnalysisWorker();
-        await expect(promise).rejects.toThrow("Aborted: superseded by newer analysis");
+        await expect(promise).rejects.toThrow(
+          "Aborted: superseded by newer analysis"
+        );
       });
 
       it("THEN worker.terminate() is called exactly once", async () => {

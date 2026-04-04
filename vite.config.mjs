@@ -11,6 +11,9 @@ const dirname =
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
+  esbuild: {
+    target: "es2021",
+  },
   resolve: {
     alias: {
       "@": path.resolve(dirname, "custom_components/hass_datapoints/src"),
@@ -35,7 +38,7 @@ export default defineConfig({
       },
     },
     sourcemap: false,
-    target: "es2022",
+    target: "es2021",
   },
   test: {
     projects: [
@@ -64,6 +67,10 @@ export default defineConfig({
           browser: {
             enabled: true,
             headless: true,
+            api: {
+              host: "127.0.0.1",
+              port: 63315,
+            },
             provider: "playwright",
             instances: [
               {

@@ -1,48 +1,62 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  beforeAll,
+  afterAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from "vitest";
 
-import { loadLegacyScripts, repoPath } from "@/lib/__tests__/load-legacy-script";
+import { fetchHistoryDuringPeriod } from "@/lib/data/history-api.js";
+import { fetchStatisticsDuringPeriod } from "@/lib/data/statistics-api.js";
+import {
+  fetchEvents,
+  fetchEventBounds,
+  deleteEvent,
+  updateEvent,
+} from "@/lib/data/events-api.js";
+import { fetchUserData, saveUserData } from "@/lib/data/preferences-api.js";
+
+// events-api and preferences-api use `logger` as an implicit global in catch blocks.
+let warnSpy: ReturnType<typeof vi.fn>;
+beforeAll(() => {
+  warnSpy = vi.fn();
+  vi.stubGlobal("logger", { warn: warnSpy });
+});
+afterAll(() => {
+  vi.unstubAllGlobals();
+});
+beforeEach(() => {
+  warnSpy?.mockClear();
+});
 
 function createHass(sendMessagePromise = vi.fn(), callService = vi.fn()) {
   return {
-    connection: {
-      sendMessagePromise,
-    },
+    connection: { sendMessagePromise },
     callService,
   };
 }
 
 describe("data api libs", () => {
-  let withStableRangeCache;
-  let normalizeCacheIdList;
-  let clearStableRangeCacheMatching;
-
-  beforeEach(() => {
-    const cacheLib = loadLegacyScripts(
-      [repoPath("custom_components", "hass_datapoints", "src", "lib", "data", "cache.js")],
-      ["withStableRangeCache", "normalizeCacheIdList", "clearStableRangeCacheMatching"],
-    );
-    withStableRangeCache = cacheLib.withStableRangeCache;
-    normalizeCacheIdList = cacheLib.normalizeCacheIdList;
-    clearStableRangeCacheMatching = cacheLib.clearStableRangeCacheMatching;
-  });
-
   describe("GIVEN history request inputs", () => {
     describe("WHEN fetchHistoryDuringPeriod is called", () => {
       it("THEN it shapes a normalized websocket request", async () => {
         expect.assertions(2);
         const sendMessagePromise = vi.fn(async (payload) => payload);
         const hass = createHass(sendMessagePromise);
-        const historyApi = loadLegacyScripts(
-          [repoPath("custom_components", "hass_datapoints", "src", "lib", "data", "history-api.js")],
-          ["fetchHistoryDuringPeriod"],
-          { withStableRangeCache, normalizeCacheIdList },
-        );
 
-        const result = await historyApi.fetchHistoryDuringPeriod(hass, "start", "end", ["sensor.b", "sensor.a"], {
-          include_start_time_state: false,
-          significant_changes_only: true,
-          no_attributes: false,
-        });
+        const result = await fetchHistoryDuringPeriod(
+          hass,
+          "start",
+          "end",
+          ["sensor.b", "sensor.a"],
+          {
+            include_start_time_state: false,
+            significant_changes_only: true,
+            no_attributes: false,
+          }
+        );
 
         expect(sendMessagePromise).toHaveBeenCalledWith({
           type: "history/history_during_period",
@@ -64,16 +78,17 @@ describe("data api libs", () => {
         expect.assertions(2);
         const sendMessagePromise = vi.fn(async (payload) => payload);
         const hass = createHass(sendMessagePromise);
-        const statisticsApi = loadLegacyScripts(
-          [repoPath("custom_components", "hass_datapoints", "src", "lib", "data", "statistics-api.js")],
-          ["fetchStatisticsDuringPeriod"],
-          { withStableRangeCache, normalizeCacheIdList },
-        );
 
-        const result = await statisticsApi.fetchStatisticsDuringPeriod(hass, "start", "end", ["b", "a", "a"], {
-          types: ["sum", "mean", "mean"],
-          units: { a: "%" },
-        });
+        const result = await fetchStatisticsDuringPeriod(
+          hass,
+          "start",
+          "end",
+          ["b", "a", "a"],
+          {
+            types: ["sum", "mean", "mean"],
+            units: { a: "%" },
+          }
+        );
 
         expect(sendMessagePromise).toHaveBeenCalledWith({
           type: "recorder/statistics_during_period",
@@ -93,20 +108,15 @@ describe("data api libs", () => {
     describe("WHEN fetchEvents is called", () => {
       it("THEN it returns the events payload", async () => {
         expect.assertions(2);
-        const sendMessagePromise = vi.fn(async () => ({ events: [{ id: "evt-1" }] }));
+        const sendMessagePromise = vi.fn(async () => ({
+          events: [{ id: "evt-1" }],
+        }));
         const hass = createHass(sendMessagePromise);
-        const eventsApi = loadLegacyScripts(
-          [repoPath("custom_components", "hass_datapoints", "src", "lib", "data", "events-api.js")],
-          ["fetchEvents", "fetchEventBounds", "deleteEvent", "updateEvent"],
-          {
-            withStableRangeCache,
-            normalizeCacheIdList,
-            DOMAIN: "hass_datapoints",
-            console: { warn: vi.fn() },
-          },
-        );
 
-        const result = await eventsApi.fetchEvents(hass, "start", "end", ["sensor.b", "sensor.a"]);
+        const result = await fetchEvents(hass, "start", "end", [
+          "sensor.b",
+          "sensor.a",
+        ]);
 
         expect(sendMessagePromise).toHaveBeenCalledWith({
           type: "hass_datapoints/events",
@@ -123,26 +133,15 @@ describe("data api libs", () => {
     describe("WHEN fetchEvents is called", () => {
       it("THEN it returns an empty array", async () => {
         expect.assertions(2);
-        const warn = vi.fn();
         const sendMessagePromise = vi.fn(async () => {
           throw new Error("boom");
         });
         const hass = createHass(sendMessagePromise);
-        const eventsApi = loadLegacyScripts(
-          [repoPath("custom_components", "hass_datapoints", "src", "lib", "data", "events-api.js")],
-          ["fetchEvents"],
-          {
-            withStableRangeCache,
-            normalizeCacheIdList,
-            DOMAIN: "hass_datapoints",
-            console: { warn },
-          },
-        );
 
-        const result = await eventsApi.fetchEvents(hass, "start", "end", []);
+        const result = await fetchEvents(hass, "start", "end", []);
 
         expect(result).toEqual([]);
-        expect(warn).toHaveBeenCalled();
+        expect(warnSpy).toHaveBeenCalled();
       });
     });
   });
@@ -153,30 +152,21 @@ describe("data api libs", () => {
         expect.assertions(3);
         const sendMessagePromise = vi.fn(async (payload) => {
           if (payload.type === "hass_datapoints/events_bounds") {
-            return { start_time: "2026-01-01T00:00:00Z", end_time: "2026-02-01T00:00:00Z" };
+            return {
+              start_time: "2026-01-01T00:00:00Z",
+              end_time: "2026-02-01T00:00:00Z",
+            };
           }
           return payload;
         });
         const hass = createHass(sendMessagePromise);
-        const eventsApi = loadLegacyScripts(
-          [repoPath("custom_components", "hass_datapoints", "src", "lib", "data", "events-api.js")],
-          ["fetchEventBounds", "deleteEvent", "updateEvent"],
-          {
-            withStableRangeCache,
-            normalizeCacheIdList,
-            clearStableRangeCacheMatching,
-            DOMAIN: "hass_datapoints",
-            console: { warn: vi.fn() },
-            window: { dispatchEvent: vi.fn() },
-          },
-        );
 
-        await expect(eventsApi.fetchEventBounds(hass)).resolves.toEqual({
+        await expect(fetchEventBounds(hass)).resolves.toEqual({
           start: "2026-01-01T00:00:00Z",
           end: "2026-02-01T00:00:00Z",
         });
-        await eventsApi.deleteEvent(hass, "evt-1");
-        await eventsApi.updateEvent(hass, "evt-1", { message: "Updated" });
+        await deleteEvent(hass, "evt-1");
+        await updateEvent(hass, "evt-1", { message: "Updated" });
 
         expect(sendMessagePromise).toHaveBeenNthCalledWith(2, {
           type: "hass_datapoints/events/delete",
@@ -195,7 +185,6 @@ describe("data api libs", () => {
     describe("WHEN the preferences helpers are called", () => {
       it("THEN they read, write, and fall back correctly", async () => {
         expect.assertions(5);
-        const warn = vi.fn();
         const sendMessagePromise = vi.fn(async (payload) => {
           if (payload.type === "frontend/get_user_data") {
             return { value: { theme: "dark" } };
@@ -203,14 +192,11 @@ describe("data api libs", () => {
           return {};
         });
         const hass = createHass(sendMessagePromise);
-        const preferencesApi = loadLegacyScripts(
-          [repoPath("custom_components", "hass_datapoints", "src", "lib", "data", "preferences-api.js")],
-          ["fetchUserData", "saveUserData"],
-          { console: { warn } },
-        );
 
-        await expect(preferencesApi.fetchUserData(hass, "key", null)).resolves.toEqual({ theme: "dark" });
-        await preferencesApi.saveUserData(hass, "key", { theme: "light" });
+        await expect(fetchUserData(hass, "key", null)).resolves.toEqual({
+          theme: "dark",
+        });
+        await saveUserData(hass, "key", { theme: "light" });
 
         expect(sendMessagePromise).toHaveBeenNthCalledWith(1, {
           type: "frontend/get_user_data",
@@ -225,8 +211,10 @@ describe("data api libs", () => {
         sendMessagePromise.mockImplementationOnce(async () => {
           throw new Error("nope");
         });
-        await expect(preferencesApi.fetchUserData(hass, "missing", "fallback")).resolves.toBe("fallback");
-        expect(warn).toHaveBeenCalled();
+        await expect(fetchUserData(hass, "missing", "fallback")).resolves.toBe(
+          "fallback"
+        );
+        expect(warnSpy).toHaveBeenCalled();
       });
     });
   });

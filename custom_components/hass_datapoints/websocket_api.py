@@ -1,7 +1,11 @@
 """WebSocket API for Hass Records frontend cards."""
 from __future__ import annotations
 
+import logging
+import time
 from datetime import datetime, timezone
+
+_LOGGER = logging.getLogger(__name__)
 
 import voluptuous as vol
 from sqlalchemy import inspect as sqlalchemy_inspect, text
@@ -12,6 +16,27 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.recorder import session_scope
 
 from .const import DOMAIN
+from .history_utils import fetch_entity_pts, fetch_entity_statistics_pts, downsample_pts, parse_interval_seconds
+from .anomaly_detection import run_anomaly_detection
+from .anomaly_cache import AnomalyCache, make_cache_key
+
+_LIVE_EDGE_SECONDS = 3600  # ranges ending within the last hour are not cached
+
+_VALID_INTERVALS = ["raw", "5s", "10s", "15s", "30s", "1m", "2m", "5m", "10m", "15m", "30m", "1h", "2h", "3h", "4h", "6h", "12h", "24h"]
+_VALID_AGGREGATES = ["mean", "min", "max", "median", "first", "last"]
+_VALID_ANOMALY_METHODS = ["trend_residual", "rate_of_change", "iqr", "rolling_zscore", "persistence", "comparison_window"]
+
+# Maximum date-range span accepted by ws_get_history.  Requests beyond this
+# limit return an empty pts list so the frontend gracefully falls back to the
+# long-term statistics it already fetched via HA's native API.  Prevents OOM
+# when a very high-frequency entity is queried over a multi-month window.
+_MAX_HISTORY_RANGE_DAYS = 90
+
+# Maximum number of data points fed into anomaly detection.  The algorithms
+# are O(n) to O(n log n) but still take several seconds for very large inputs;
+# capping prevents executor-thread-pool exhaustion when the user repeatedly
+# changes date ranges without waiting for prior requests to complete.
+_ANOMALY_MAX_PTS = 50_000
 
 
 @callback
@@ -22,6 +47,9 @@ def async_register_commands(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, ws_update_event)
     websocket_api.async_register_command(hass, ws_delete_event)
     websocket_api.async_register_command(hass, ws_delete_dev_events)
+    websocket_api.async_register_command(hass, ws_get_history)
+    websocket_api.async_register_command(hass, ws_get_anomalies)
+    websocket_api.async_register_command(hass, ws_clear_cache)
 
 
 @websocket_api.websocket_command(
@@ -61,15 +89,19 @@ async def ws_get_event_bounds(
     msg: dict,
 ) -> None:
     """Return the earliest and latest recorded event timestamps."""
-    store = hass.data[DOMAIN]["store"]
-    start_time, end_time, source = await hass.async_add_executor_job(_get_global_history_bounds, hass)
-    if start_time is None and end_time is None:
-        start_time, end_time = store.get_event_bounds()
-        source = "datapoints_store_fallback"
-    connection.send_result(
-        msg["id"],
-        {"start_time": start_time, "end_time": end_time, "source": source},
-    )
+    try:
+        store = hass.data[DOMAIN]["store"]
+        start_time, end_time, source = await hass.async_add_executor_job(_get_global_history_bounds, hass)
+        if start_time is None and end_time is None:
+            start_time, end_time = store.get_event_bounds()
+            source = "datapoints_store_fallback"
+        connection.send_result(
+            msg["id"],
+            {"start_time": start_time, "end_time": end_time, "source": source},
+        )
+    except Exception as err:  # noqa: BLE001
+        _LOGGER.error("hass_datapoints/events_bounds failed: %s", err)
+        connection.send_error(msg["id"], "bounds_error", "Failed to fetch event bounds")
 
 
 def _get_global_history_bounds(hass: HomeAssistant) -> tuple[str | None, str | None, str]:
@@ -254,3 +286,252 @@ async def ws_delete_dev_events(
     store = hass.data[DOMAIN]["store"]
     deleted = await store.async_delete_dev_events()
     connection.send_result(msg["id"], {"deleted": deleted})
+
+
+# ---------------------------------------------------------------------------
+# New: hass_datapoints/history — downsampled history
+# ---------------------------------------------------------------------------
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/history",
+        vol.Required("entity_id"): str,
+        vol.Required("start_time"): str,
+        vol.Required("end_time"): str,
+        vol.Required("interval"): vol.In(_VALID_INTERVALS),
+        vol.Required("aggregate"): vol.In(_VALID_AGGREGATES),
+    }
+)
+@websocket_api.async_response
+async def ws_get_history(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict,
+) -> None:
+    """Return (optionally downsampled) entity history as [[timeMs, value], ...]."""
+    entity_id: str = msg["entity_id"]
+    start_time: str = msg["start_time"]
+    end_time: str = msg["end_time"]
+    interval: str = msg["interval"]
+    aggregate: str = msg["aggregate"]
+
+    try:
+        # Guard against excessively large date ranges that would load millions of
+        # raw recorder states and exhaust available memory.  For spans beyond the
+        # limit we return an empty list; the frontend already has HA's long-term
+        # statistics for the older portion of the range and will display those.
+        try:
+            start_dt = datetime.fromisoformat(start_time)
+            end_dt = datetime.fromisoformat(end_time)
+            range_days = (end_dt - start_dt).total_seconds() / 86400
+        except ValueError:
+            range_days = 0
+
+        if range_days > _MAX_HISTORY_RANGE_DAYS:
+            _LOGGER.info(
+                "hass_datapoints/history: skipping raw fetch for %s — "
+                "range %.1f days exceeds %d-day limit; frontend will use long-term statistics",
+                entity_id, range_days, _MAX_HISTORY_RANGE_DAYS,
+            )
+            connection.send_result(msg["id"], {"entity_id": entity_id, "pts": []})
+            return
+
+        raw_pts: list = await get_instance(hass).async_add_executor_job(
+            fetch_entity_pts, hass, entity_id, start_time, end_time
+        )
+
+        if interval == "raw":
+            pts = raw_pts
+        else:
+            interval_secs = parse_interval_seconds(interval)
+            pts = downsample_pts(raw_pts, interval_secs, aggregate)
+
+        connection.send_result(msg["id"], {"entity_id": entity_id, "pts": pts})
+
+    except Exception as err:  # noqa: BLE001
+        _LOGGER.error("hass_datapoints/history failed for %s: %s", entity_id, err)
+        connection.send_error(msg["id"], "fetch_error", "Failed to fetch history data")
+
+
+# ---------------------------------------------------------------------------
+# New: hass_datapoints/anomalies — backend anomaly detection
+# ---------------------------------------------------------------------------
+
+def _run_detection(pts: list, config: dict, comparison_pts: list | None = None) -> list:
+    """Blocking helper: run anomaly detection on pre-fetched pts."""
+    clusters = run_anomaly_detection(pts, config, comparison_pts)
+    _LOGGER.info(
+        "hass_datapoints: anomaly detection → %d clusters from %d pts (methods=%s)",
+        len(clusters), len(pts), config.get("anomaly_methods"),
+    )
+    return clusters
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/anomalies",
+        vol.Required("entity_id"): str,
+        vol.Required("start_time"): str,
+        vol.Required("end_time"): str,
+        vol.Required("anomaly_methods"): [str],
+        vol.Optional("anomaly_sensitivity", default="medium"): str,
+        vol.Optional("anomaly_overlap_mode", default="all"): str,
+        vol.Optional("anomaly_rate_window", default="1h"): str,
+        vol.Optional("anomaly_zscore_window", default="24h"): str,
+        vol.Optional("anomaly_persistence_window", default="1h"): str,
+        vol.Optional("trend_method", default="rolling_average"): str,
+        vol.Optional("trend_window", default="24h"): str,
+        vol.Optional("sample_interval"): vol.In(_VALID_INTERVALS),
+        vol.Optional("sample_aggregate", default="mean"): vol.In(_VALID_AGGREGATES),
+        vol.Optional("comparison_entity_id"): str,
+        vol.Optional("comparison_start_time"): str,
+        vol.Optional("comparison_end_time"): str,
+        vol.Optional("comparison_time_offset_ms", default=0): int,
+    }
+)
+@websocket_api.async_response
+async def ws_get_anomalies(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict,
+) -> None:
+    """Run backend anomaly detection for a single entity and return clusters."""
+    entity_id: str = msg["entity_id"]
+    start_time: str = msg["start_time"]
+    end_time: str = msg["end_time"]
+
+    try:
+        config = {
+            "anomaly_methods": msg["anomaly_methods"],
+            "anomaly_sensitivity": msg["anomaly_sensitivity"],
+            "anomaly_overlap_mode": msg["anomaly_overlap_mode"],
+            "anomaly_rate_window": msg["anomaly_rate_window"],
+            "anomaly_zscore_window": msg["anomaly_zscore_window"],
+            "anomaly_persistence_window": msg["anomaly_persistence_window"],
+            "trend_method": msg["trend_method"],
+            "trend_window": msg["trend_window"],
+            "sample_interval": msg.get("sample_interval"),
+            "sample_aggregate": msg.get("sample_aggregate", "mean"),
+            "comparison_entity_id": msg.get("comparison_entity_id"),
+            "comparison_start_time": msg.get("comparison_start_time"),
+            "comparison_end_time": msg.get("comparison_end_time"),
+            "comparison_time_offset_ms": msg.get("comparison_time_offset_ms", 0),
+        }
+
+        # Determine if this is a live (open) range — skip cache for live data.
+        try:
+            end_ts = datetime.fromisoformat(end_time).timestamp()
+        except ValueError:
+            end_ts = 0.0
+        is_live = (time.time() - end_ts) < _LIVE_EDGE_SECONDS
+
+        cache: AnomalyCache | None = hass.data.get(DOMAIN, {}).get("anomaly_cache")
+        cache_key = make_cache_key(entity_id, start_time, end_time, config) if cache else None
+
+        if cache and cache_key and not is_live:
+            cached = await hass.async_add_executor_job(cache.get, cache_key)
+            if cached is not None:
+                connection.send_result(
+                    msg["id"],
+                    {"entity_id": entity_id, "anomaly_clusters": cached, "cached": True},
+                )
+                return
+
+        recorder = get_instance(hass)
+        pts: list = await recorder.async_add_executor_job(
+            fetch_entity_pts, hass, entity_id, start_time, end_time
+        )
+
+        # Merge long-term statistics for the portion of the range that predates
+        # the recorder window (HA default: ~10 days).  This mirrors the frontend
+        # merge in card-history.js so anomaly detection sees the full date range,
+        # not just the recent recorder data.
+        stats_pts: list = await recorder.async_add_executor_job(
+            fetch_entity_statistics_pts, hass, entity_id, start_time, end_time
+        )
+        if stats_pts:
+            if pts:
+                first_recorder_ms = pts[0][0]
+                stats_pts = [p for p in stats_pts if p[0] < first_recorder_ms]
+            if stats_pts:
+                pts = sorted(stats_pts + pts, key=lambda p: p[0])
+
+        sample_interval: str | None = msg.get("sample_interval")
+        if sample_interval and sample_interval != "raw":
+            sample_aggregate: str = msg.get("sample_aggregate", "mean")
+            interval_secs = parse_interval_seconds(sample_interval)
+            pts = downsample_pts(pts, interval_secs, sample_aggregate)
+
+        if len(pts) < 3:
+            _LOGGER.info("hass_datapoints: anomaly detection skipped for %s — only %d pts", entity_id, len(pts))
+            connection.send_result(msg["id"], {"entity_id": entity_id, "anomaly_clusters": [], "cached": False})
+            return
+
+        # Guard against very large point counts that would cause the detection
+        # worker to occupy an executor thread for an excessive amount of time,
+        # potentially exhausting the thread pool and making HA unresponsive.
+        # We keep the most-recent points because they are most relevant to
+        # anomaly detection; users with long ranges should enable sample_interval.
+        if len(pts) > _ANOMALY_MAX_PTS:
+            _LOGGER.warning(
+                "hass_datapoints: capping %d pts to %d before anomaly detection for %s "
+                "— consider enabling sample_interval for large date ranges",
+                len(pts), _ANOMALY_MAX_PTS, entity_id,
+            )
+            pts = pts[-_ANOMALY_MAX_PTS:]
+
+        comparison_pts: list | None = None
+        comparison_entity_id = config.get("comparison_entity_id")
+        comparison_start_time = config.get("comparison_start_time")
+        comparison_end_time = config.get("comparison_end_time")
+        if comparison_entity_id and comparison_start_time and comparison_end_time:
+            comparison_pts = await recorder.async_add_executor_job(
+                fetch_entity_pts, hass, comparison_entity_id, comparison_start_time, comparison_end_time
+            )
+
+        clusters: list = await hass.async_add_executor_job(_run_detection, pts, config, comparison_pts)
+
+        if cache and cache_key and not is_live and clusters:
+            await hass.async_add_executor_job(
+                cache.set, cache_key, entity_id, end_ts, clusters
+            )
+
+        connection.send_result(
+            msg["id"],
+            {"entity_id": entity_id, "anomaly_clusters": clusters, "cached": False},
+        )
+
+    except Exception as err:  # noqa: BLE001
+        _LOGGER.error("hass_datapoints/anomalies failed for %s: %s", entity_id, err)
+        connection.send_error(msg["id"], "detection_error", "Failed to run anomaly detection")
+
+
+# ---------------------------------------------------------------------------
+# New: hass_datapoints/cache/clear — cache management
+# ---------------------------------------------------------------------------
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/cache/clear",
+        vol.Optional("entity_id"): str,
+    }
+)
+@websocket_api.async_response
+async def ws_clear_cache(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict,
+) -> None:
+    """Clear anomaly cache entries (all, or for a specific entity)."""
+    cache: AnomalyCache | None = hass.data.get(DOMAIN, {}).get("anomaly_cache")
+    if cache is None:
+        connection.send_result(msg["id"], {"cleared": 0})
+        return
+
+    entity_id: str | None = msg.get("entity_id")
+    if entity_id:
+        cleared = await hass.async_add_executor_job(cache.clear_entity, entity_id)
+    else:
+        cleared = await hass.async_add_executor_job(cache.clear_all)
+
+    connection.send_result(msg["id"], {"cleared": cleared})

@@ -1,6 +1,6 @@
-import { entityName } from "../entity-name.js";
-import { fetchEvents } from "./data/events-api.js";
-import { fetchHistoryDuringPeriod } from "./data/history-api.js";
+import { entityName } from "@/lib/ha/entity-name.js";
+import { fetchEvents } from "@/lib/data/events-api.js";
+import { fetchHistoryDuringPeriod } from "@/lib/data/history-api.js";
 
 function escapeXml(value) {
   return String(value ?? "")
@@ -66,7 +66,11 @@ function getHistoryStatesForEntity(entityId, histResult, entityIds) {
     if (entityIndex >= 0 && Array.isArray(histResult[entityIndex])) {
       return histResult[entityIndex];
     }
-    if (histResult.every((entry) => entry && typeof entry === "object" && !Array.isArray(entry))) {
+    if (
+      histResult.every(
+        (entry) => entry && typeof entry === "object" && !Array.isArray(entry)
+      )
+    ) {
       return histResult.filter((entry) => entry.entity_id === entityId);
     }
   }
@@ -85,14 +89,18 @@ function getHistoryStatesForEntity(entityId, histResult, entityIds) {
 }
 
 function createWorksheetXml(rows) {
-  const rowXml = rows.map((row, rowIndex) => {
-    const cellXml = row.map((cell, cellIndex) => {
-      const cellRef = `${columnNumberToName(cellIndex)}${rowIndex + 1}`;
-      const styleAttribute = rowIndex === 0 ? ' s="1"' : "";
-      return `<c r="${cellRef}" t="inlineStr"${styleAttribute}><is><t>${escapeXml(cell)}</t></is></c>`;
-    }).join("");
-    return `<row r="${rowIndex + 1}">${cellXml}</row>`;
-  }).join("");
+  const rowXml = rows
+    .map((row, rowIndex) => {
+      const cellXml = row
+        .map((cell, cellIndex) => {
+          const cellRef = `${columnNumberToName(cellIndex)}${rowIndex + 1}`;
+          const styleAttribute = rowIndex === 0 ? ' s="1"' : "";
+          return `<c r="${cellRef}" t="inlineStr"${styleAttribute}><is><t>${escapeXml(cell)}</t></is></c>`;
+        })
+        .join("");
+      return `<row r="${rowIndex + 1}">${cellXml}</row>`;
+    })
+    .join("");
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
   <sheetData>${rowXml}</sheetData>
@@ -100,7 +108,12 @@ function createWorksheetXml(rows) {
 }
 
 function createWorkbookXml(sheets) {
-  const sheetXml = sheets.map((sheet, index) => `<sheet name="${escapeXml(sanitizeWorksheetName(sheet.name))}" sheetId="${index + 1}" r:id="rId${index + 1}"/>`).join("");
+  const sheetXml = sheets
+    .map(
+      (sheet, index) =>
+        `<sheet name="${escapeXml(sanitizeWorksheetName(sheet.name))}" sheetId="${index + 1}" r:id="rId${index + 1}"/>`
+    )
+    .join("");
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
   <sheets>${sheetXml}</sheets>
@@ -108,7 +121,12 @@ function createWorkbookXml(sheets) {
 }
 
 function createWorkbookRelsXml(sheets) {
-  const relXml = sheets.map((_, index) => `<Relationship Id="rId${index + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${index + 1}.xml"/>`).join("");
+  const relXml = sheets
+    .map(
+      (_, index) =>
+        `<Relationship Id="rId${index + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${index + 1}.xml"/>`
+    )
+    .join("");
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
   ${relXml}
@@ -155,7 +173,12 @@ function createStylesXml() {
 }
 
 function createContentTypesXml(sheets) {
-  const overrides = sheets.map((_, index) => `<Override PartName="/xl/worksheets/sheet${index + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("");
+  const overrides = sheets
+    .map(
+      (_, index) =>
+        `<Override PartName="/xl/worksheets/sheet${index + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`
+    )
+    .join("");
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
   <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
@@ -166,6 +189,7 @@ function createContentTypesXml(sheets) {
 </Types>`;
 }
 
+/* eslint-disable no-bitwise */
 function createCrc32Table() {
   const table = new Uint32Array(256);
   for (let index = 0; index < 256; index += 1) {
@@ -191,6 +215,7 @@ function crc32(bytes) {
   }
   return (crc ^ 0xffffffff) >>> 0;
 }
+/* eslint-enable no-bitwise */
 
 function createZip(entries) {
   const encoder = new TextEncoder();
@@ -243,7 +268,10 @@ function createZip(entries) {
     offset += localHeader.length + dataBytes.length;
   }
 
-  const centralDirectorySize = centralParts.reduce((sum, part) => sum + part.length, 0);
+  const centralDirectorySize = centralParts.reduce(
+    (sum, part) => sum + part.length,
+    0
+  );
   const endRecord = new Uint8Array(22);
   const endView = new DataView(endRecord.buffer);
   endView.setUint32(0, 0x06054b50, true);
@@ -284,25 +312,31 @@ function createCombinedRows(hass, entityIds, histResult, events) {
       header: `${name} (${entityId})`,
     };
   });
-  const rows = [[
-    "Timestamp",
-    ...entityColumns.map((column) => column.header),
-    "Datapoint Message",
-    "Datapoint Annotation",
-    "Datapoint Icon",
-    "Datapoint Color",
-    "Datapoint Entity IDs",
-    "Datapoint Device IDs",
-    "Datapoint Area IDs",
-    "Datapoint Label IDs",
-  ]];
+  const rows = [
+    [
+      "Timestamp",
+      ...entityColumns.map((column) => column.header),
+      "Datapoint Message",
+      "Datapoint Annotation",
+      "Datapoint Icon",
+      "Datapoint Color",
+      "Datapoint Entity IDs",
+      "Datapoint Device IDs",
+      "Datapoint Area IDs",
+      "Datapoint Label IDs",
+    ],
+  ];
   const timestampMap = new Map();
 
   for (const column of entityColumns) {
-    const states = getHistoryStatesForEntity(column.entityId, histResult, entityIds);
+    const states = getHistoryStatesForEntity(
+      column.entityId,
+      histResult,
+      entityIds
+    );
     for (const state of states) {
       const timestamp = normalizeHistoryTimestamp(
-        state?.lu ?? state?.lc ?? state?.last_changed ?? state?.last_updated,
+        state?.lu ?? state?.lc ?? state?.last_changed ?? state?.last_updated
       );
       if (!Number.isFinite(timestamp)) {
         continue;
@@ -326,27 +360,63 @@ function createCombinedRows(hass, entityIds, histResult, events) {
     if (!timestampMap.has(timestamp)) {
       timestampMap.set(timestamp, new Map());
     }
-    timestampMap.get(timestamp).set("__datapoints__", [
-      ...(timestampMap.get(timestamp).get("__datapoints__") || []),
-      event,
-    ]);
+    timestampMap
+      .get(timestamp)
+      .set("__datapoints__", [
+        ...(timestampMap.get(timestamp).get("__datapoints__") || []),
+        event,
+      ]);
   }
 
-  const sortedTimestamps = [...timestampMap.keys()].sort((left, right) => left - right);
+  const sortedTimestamps = [...timestampMap.keys()].sort(
+    (left, right) => left - right
+  );
   for (const timestamp of sortedTimestamps) {
     const rowValues = timestampMap.get(timestamp);
     const datapointEvents = rowValues?.get("__datapoints__") || [];
     rows.push([
       toIsoString(timestamp),
       ...entityColumns.map((column) => rowValues?.get(column.entityId) || ""),
-      datapointEvents.map((event) => event?.message || "").filter(Boolean).join("\n"),
-      datapointEvents.map((event) => event?.annotation || "").filter(Boolean).join("\n"),
-      datapointEvents.map((event) => event?.icon || "").filter(Boolean).join("\n"),
-      datapointEvents.map((event) => event?.color || "").filter(Boolean).join("\n"),
-      datapointEvents.map((event) => Array.isArray(event?.entity_ids) ? event.entity_ids.join(", ") : "").filter(Boolean).join("\n"),
-      datapointEvents.map((event) => Array.isArray(event?.device_ids) ? event.device_ids.join(", ") : "").filter(Boolean).join("\n"),
-      datapointEvents.map((event) => Array.isArray(event?.area_ids) ? event.area_ids.join(", ") : "").filter(Boolean).join("\n"),
-      datapointEvents.map((event) => Array.isArray(event?.label_ids) ? event.label_ids.join(", ") : "").filter(Boolean).join("\n"),
+      datapointEvents
+        .map((event) => event?.message || "")
+        .filter(Boolean)
+        .join("\n"),
+      datapointEvents
+        .map((event) => event?.annotation || "")
+        .filter(Boolean)
+        .join("\n"),
+      datapointEvents
+        .map((event) => event?.icon || "")
+        .filter(Boolean)
+        .join("\n"),
+      datapointEvents
+        .map((event) => event?.color || "")
+        .filter(Boolean)
+        .join("\n"),
+      datapointEvents
+        .map((event) =>
+          Array.isArray(event?.entity_ids) ? event.entity_ids.join(", ") : ""
+        )
+        .filter(Boolean)
+        .join("\n"),
+      datapointEvents
+        .map((event) =>
+          Array.isArray(event?.device_ids) ? event.device_ids.join(", ") : ""
+        )
+        .filter(Boolean)
+        .join("\n"),
+      datapointEvents
+        .map((event) =>
+          Array.isArray(event?.area_ids) ? event.area_ids.join(", ") : ""
+        )
+        .filter(Boolean)
+        .join("\n"),
+      datapointEvents
+        .map((event) =>
+          Array.isArray(event?.label_ids) ? event.label_ids.join(", ") : ""
+        )
+        .filter(Boolean)
+        .join("\n"),
     ]);
   }
 
@@ -369,27 +439,19 @@ export async function downloadHistorySpreadsheet({
 }) {
   const startIso = toIsoString(startTime);
   const endIso = toIsoString(endTime);
-  const normalizedEntityIds = Array.isArray(entityIds) ? entityIds.filter(Boolean) : [];
-  const eventEntityFilter = datapointScope === "all" ? undefined : normalizedEntityIds;
+  const normalizedEntityIds = Array.isArray(entityIds)
+    ? entityIds.filter(Boolean)
+    : [];
+  const eventEntityFilter =
+    datapointScope === "all" ? undefined : normalizedEntityIds;
 
   const [histResult, events] = await Promise.all([
-    fetchHistoryDuringPeriod(
-      hass,
-      startIso,
-      endIso,
-      normalizedEntityIds,
-      {
-        include_start_time_state: true,
-        significant_changes_only: false,
-        no_attributes: true,
-      },
-    ),
-    fetchEvents(
-      hass,
-      startIso,
-      endIso,
-      eventEntityFilter,
-    ),
+    fetchHistoryDuringPeriod(hass, startIso, endIso, normalizedEntityIds, {
+      include_start_time_state: true,
+      significant_changes_only: false,
+      no_attributes: true,
+    }),
+    fetchEvents(hass, startIso, endIso, eventEntityFilter),
   ]);
 
   const sheets = [
@@ -425,5 +487,8 @@ export async function downloadHistorySpreadsheet({
     })),
   ]);
 
-  downloadWorkbook(buildFilename(filenamePrefix, startTime, endTime), workbookBlob);
+  downloadWorkbook(
+    buildFilename(filenamePrefix, startTime, endTime),
+    workbookBlob
+  );
 }

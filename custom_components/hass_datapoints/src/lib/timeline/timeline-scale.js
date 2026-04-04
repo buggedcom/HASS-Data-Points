@@ -1,4 +1,4 @@
-import { parseDateValue } from "../domain/chart-zoom.js";
+import { parseDateValue } from "@/lib/domain/chart-zoom.js";
 
 /**
  * Timeline subsystem helpers: range math, labels, snapping, and scale config.
@@ -120,8 +120,18 @@ export function extractRangeValue(source) {
   const detail = source.detail || {};
   const value = detail.value || source.value || source.target?.value || {};
   return {
-    start: parseDateValue(detail.startDate || value.startDate || source.startDate || source.target?.startDate),
-    end: parseDateValue(detail.endDate || value.endDate || source.endDate || source.target?.endDate),
+    start: parseDateValue(
+      detail.startDate ||
+        value.startDate ||
+        source.startDate ||
+        source.target?.startDate
+    ),
+    end: parseDateValue(
+      detail.endDate ||
+        value.endDate ||
+        source.endDate ||
+        source.target?.endDate
+    ),
   };
 }
 
@@ -153,7 +163,10 @@ export function formatRangeDuration(start, end) {
   if (!(start instanceof Date) || !(end instanceof Date)) {
     return "--";
   }
-  const totalMinutes = Math.max(0, Math.round((end.getTime() - start.getTime()) / 60000));
+  const totalMinutes = Math.max(
+    0,
+    Math.round((end.getTime() - start.getTime()) / 60000)
+  );
   const days = Math.floor(totalMinutes / 1440);
   const hours = Math.floor((totalMinutes % 1440) / 60);
   const minutes = totalMinutes % 60;
@@ -186,7 +199,7 @@ function startOfLocalHour(value) {
     value.getHours(),
     0,
     0,
-    0,
+    0
   );
 }
 
@@ -198,7 +211,7 @@ function startOfLocalMinute(value) {
     value.getHours(),
     value.getMinutes(),
     0,
-    0,
+    0
   );
 }
 
@@ -210,7 +223,7 @@ function startOfLocalSecond(value) {
     value.getHours(),
     value.getMinutes(),
     value.getSeconds(),
-    0,
+    0
   );
 }
 
@@ -292,7 +305,7 @@ function getWeekOfYear(value) {
   const day = date.getDay() || 7;
   date.setDate(date.getDate() + 4 - day);
   const yearStart = new Date(date.getFullYear(), 0, 1);
-  return Math.ceil((((date.getTime() - yearStart.getTime()) / DAY_MS) + 1) / 7);
+  return Math.ceil(((date.getTime() - yearStart.getTime()) / DAY_MS + 1) / 7);
 }
 
 function getWeekLabel(value) {
@@ -315,15 +328,20 @@ function formatQuarterLabel(value, zoomLevel = "") {
 
 function formatScaleLabel(value, unit, zoomLevel = "") {
   switch (unit) {
-    case "quarter": return formatQuarterLabel(value, zoomLevel);
-    case "month": return formatMonthLabel(value);
+    case "quarter":
+      return formatQuarterLabel(value, zoomLevel);
+    case "month":
+      return formatMonthLabel(value);
     case "week":
       return zoomLevel === "month_short"
         ? `Wk ${getWeekOfYear(value)}`
         : getWeekLabel(value);
-    case "day": return formatDayLabel(value);
-    case "hour": return formatHourLabel(value);
-    default: return formatRangeTick(value);
+    case "day":
+      return formatDayLabel(value);
+    case "hour":
+      return formatHourLabel(value);
+    default:
+      return formatRangeTick(value);
   }
 }
 
@@ -351,7 +369,11 @@ function formatPeriodSelectionLabel(value, unit) {
     case "week":
       return `Week of ${value.toLocaleString([], { month: "short", day: "numeric", year: "numeric" })}`;
     case "day":
-      return value.toLocaleString([], { month: "short", day: "numeric", year: "numeric" });
+      return value.toLocaleString([], {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
     case "hour":
       return value.toLocaleString([], {
         month: "short",
@@ -366,48 +388,82 @@ function formatPeriodSelectionLabel(value, unit) {
 
 function startOfUnit(value, unit) {
   switch (unit) {
-    case "second": return startOfLocalSecond(value);
-    case "minute": return startOfLocalMinute(value);
-    case "hour": return startOfLocalHour(value);
-    case "day": return startOfLocalDay(value);
-    case "week": return startOfLocalWeek(value);
-    case "month": return startOfLocalMonth(value);
-    case "quarter": return startOfLocalQuarter(value);
-    case "year": return startOfLocalYear(value);
-    default: return new Date(value);
+    case "second":
+      return startOfLocalSecond(value);
+    case "minute":
+      return startOfLocalMinute(value);
+    case "hour":
+      return startOfLocalHour(value);
+    case "day":
+      return startOfLocalDay(value);
+    case "week":
+      return startOfLocalWeek(value);
+    case "month":
+      return startOfLocalMonth(value);
+    case "quarter":
+      return startOfLocalQuarter(value);
+    case "year":
+      return startOfLocalYear(value);
+    default:
+      return new Date(value);
   }
 }
 
 function endOfUnit(value, unit) {
   switch (unit) {
-    case "second": return endOfLocalSecond(value);
-    case "minute": return endOfLocalMinute(value);
-    case "hour": return endOfLocalHour(value);
-    case "day": return endOfLocalDay(value);
-    case "week": return endOfLocalWeek(value);
-    case "month": return endOfLocalMonth(value);
-    case "quarter": return endOfLocalQuarter(value);
+    case "second":
+      return endOfLocalSecond(value);
+    case "minute":
+      return endOfLocalMinute(value);
+    case "hour":
+      return endOfLocalHour(value);
+    case "day":
+      return endOfLocalDay(value);
+    case "week":
+      return endOfLocalWeek(value);
+    case "month":
+      return endOfLocalMonth(value);
+    case "quarter":
+      return endOfLocalQuarter(value);
     case "year": {
       const result = startOfLocalYear(value);
       result.setFullYear(result.getFullYear() + 1);
       return result;
     }
-    default: return new Date(value);
+    default:
+      return new Date(value);
   }
 }
 
 function addUnit(value, unit, amount = 1) {
   const result = new Date(value);
   switch (unit) {
-    case "second": result.setSeconds(result.getSeconds() + amount); break;
-    case "minute": result.setMinutes(result.getMinutes() + amount); break;
-    case "hour": result.setHours(result.getHours() + amount); break;
-    case "day": result.setDate(result.getDate() + amount); break;
-    case "week": result.setDate(result.getDate() + amount * 7); break;
-    case "month": result.setMonth(result.getMonth() + amount); break;
-    case "quarter": result.setMonth(result.getMonth() + amount * 3); break;
-    case "year": result.setFullYear(result.getFullYear() + amount); break;
-    default: break;
+    case "second":
+      result.setSeconds(result.getSeconds() + amount);
+      break;
+    case "minute":
+      result.setMinutes(result.getMinutes() + amount);
+      break;
+    case "hour":
+      result.setHours(result.getHours() + amount);
+      break;
+    case "day":
+      result.setDate(result.getDate() + amount);
+      break;
+    case "week":
+      result.setDate(result.getDate() + amount * 7);
+      break;
+    case "month":
+      result.setMonth(result.getMonth() + amount);
+      break;
+    case "quarter":
+      result.setMonth(result.getMonth() + amount * 3);
+      break;
+    case "year":
+      result.setFullYear(result.getFullYear() + amount);
+      break;
+    default:
+      break;
   }
   return result;
 }
@@ -415,7 +471,9 @@ function addUnit(value, unit, amount = 1) {
 function snapDateToUnit(value, unit) {
   const start = startOfUnit(value, unit);
   const end = endOfUnit(value, unit);
-  return (value.getTime() - start.getTime()) < (end.getTime() - value.getTime()) ? start : end;
+  return value.getTime() - start.getTime() < end.getTime() - value.getTime()
+    ? start
+    : end;
 }
 
 export {

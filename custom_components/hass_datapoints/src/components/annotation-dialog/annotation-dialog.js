@@ -1,19 +1,22 @@
+import { DOMAIN } from "@/constants.js";
 import {
   areaIcon,
   areaName,
   deviceIcon,
   deviceName,
-  DOMAIN,
   entityIcon,
   entityName,
-  esc,
-  invalidateEventsCache,
   labelIcon,
   labelName,
+} from "@/lib/ha/entity-name.js";
+import { esc } from "@/lib/util/format.js";
+import { invalidateEventsCache } from "@/lib/data/events-api.js";
+import {
   mergeTargetSelections,
   normalizeTargetSelection,
-} from "@/lib/shared.js";
+} from "@/lib/domain/target-selection.js";
 import { logger } from "@/lib/logger.js";
+import "@/molecules/annotation-chip-row/annotation-chip-row";
 
 /**
  * Dedicated annotation dialog controller for the history chart card.
@@ -43,7 +46,10 @@ export class HistoryAnnotationDialogController {
     dialog.escapeKeyAction = true;
     dialog.open = false;
     dialog.headerTitle = "Create data point";
-    dialog.style.setProperty("--dialog-content-padding", "0 var(--dp-spacing-lg, 24px) var(--dp-spacing-lg, 24px)");
+    dialog.style.setProperty(
+      "--dialog-content-padding",
+      "0 var(--dp-spacing-lg, 24px) var(--dp-spacing-lg, 24px)"
+    );
     dialog.style.setProperty("--mdc-dialog-min-width", "min(920px, 96vw)");
     dialog.style.setProperty("--mdc-dialog-max-width", "96vw");
     if (this._host._hass) {
@@ -98,12 +104,13 @@ export class HistoryAnnotationDialogController {
       shadowRoot.appendChild(style);
     }
     this._dialogEl.classList.remove("dp-shaking");
+    // eslint-disable-next-line no-void
     void this._dialogEl.offsetWidth; // force reflow to restart animation
     this._dialogEl.classList.add("dp-shaking");
     this._dialogEl.addEventListener(
       "animationend",
       () => this._dialogEl?.classList.remove("dp-shaking"),
-      { once: true },
+      { once: true }
     );
   }
 
@@ -119,12 +126,17 @@ export class HistoryAnnotationDialogController {
 
   _buildChips(target) {
     return [
-      ...(target.entity_id || []).map((id) => ({
-        type: "entity_id",
-        itemId: id,
-        icon: entityIcon(this._host._hass, id),
-        name: entityName(this._host._hass, id),
-      })),
+      ...(target.entity_id || []).map((id) => {
+        const name = entityName(this._host._hass, id);
+        return {
+          type: "entity_id",
+          itemId: id,
+          icon: entityIcon(this._host._hass, id),
+          name,
+          secondaryText: name !== id ? id : "",
+          stateObj: this._host?._hass?.states?.[id] ?? null,
+        };
+      }),
       ...(target.device_id || []).map((id) => ({
         type: "device_id",
         itemId: id,
@@ -157,6 +169,7 @@ export class HistoryAnnotationDialogController {
     current[type] = current[type].filter((value) => value !== id);
     this._linkedTarget = current;
     if (this._chipRowEl) {
+      this._chipRowEl.hass = this._host._hass ?? null;
       this._chipRowEl.chips = this._buildChips(this._linkedTarget);
     }
   }
@@ -165,15 +178,50 @@ export class HistoryAnnotationDialogController {
     // No-op: chip remove events are handled via dp-target-remove on _chipRowEl.
   }
 
+  _getDefaultLinkedTarget() {
+    const config = this._host?._config || {};
+    const hiddenSeries =
+      this._host?._hiddenSeries instanceof Set
+        ? this._host._hiddenSeries
+        : new Set();
+    const seriesSettings = Array.isArray(config.series_settings)
+      ? config.series_settings
+      : [];
+
+    const visibleEntityIds = seriesSettings
+      .map(
+        (entry) => entry?.entity_id || entry?.entity || entry?.entityId || null
+      )
+      .filter(
+        (entityId) =>
+          typeof entityId === "string" &&
+          entityId.length > 0 &&
+          !hiddenSeries.has(entityId)
+      );
+
+    if (visibleEntityIds.length > 0) {
+      return normalizeTargetSelection({
+        entity_id: [...new Set(visibleEntityIds)],
+      });
+    }
+
+    return normalizeTargetSelection({
+      entity_id: (this._host?._entityIds || []).filter(Boolean),
+    });
+  }
+
   bindFields(hover) {
     if (!this._panelEl) {
       return;
     }
-    const prefill = hover?.annotationPrefill && typeof hover.annotationPrefill === "object"
-      ? hover.annotationPrefill
-      : {};
+    const prefill =
+      hover?.annotationPrefill && typeof hover.annotationPrefill === "object"
+        ? hover.annotationPrefill
+        : {};
     const messageEl = this._panelEl.querySelector("#chart-context-message");
-    const annotationEl = this._panelEl.querySelector("#chart-context-annotation");
+    const annotationEl = this._panelEl.querySelector(
+      "#chart-context-annotation"
+    );
     const iconPicker = this._panelEl.querySelector("#chart-context-icon");
     if (iconPicker) {
       iconPicker.hass = this._host._hass;
@@ -194,10 +242,13 @@ export class HistoryAnnotationDialogController {
       annotationEl.value = prefill.annotation || "";
     }
 
-    // Mount dp-annotation-chip-row into the #chart-context-linked-targets placeholder.
-    const chipContainer = this._panelEl.querySelector("#chart-context-linked-targets");
+    // Mount annotation-chip-row into the #chart-context-linked-targets placeholder.
+    const chipContainer = this._panelEl.querySelector(
+      "#chart-context-linked-targets"
+    );
     if (chipContainer && !this._chipRowEl) {
-      const chipRow = document.createElement("dp-annotation-chip-row");
+      const chipRow = document.createElement("annotation-chip-row");
+      chipRow.hass = this._host._hass ?? null;
       chipRow.addEventListener("dp-target-remove", (ev) => {
         this.removeLinkedTarget(ev.detail.type, ev.detail.id);
       });
@@ -210,7 +261,9 @@ export class HistoryAnnotationDialogController {
 
     this.bindTargetChipActions();
     const colorInput = this._panelEl.querySelector("#chart-context-color");
-    const colorPreview = this._panelEl.querySelector("#chart-context-color-preview");
+    const colorPreview = this._panelEl.querySelector(
+      "#chart-context-color-preview"
+    );
     const syncColor = () => {
       if (colorPreview && colorInput) {
         colorPreview.style.background = colorInput.value;
@@ -221,9 +274,11 @@ export class HistoryAnnotationDialogController {
       colorInput.addEventListener("input", syncColor);
       colorInput.addEventListener("change", syncColor);
     }
-    this._dialogEl?.querySelector("#chart-context-cancel")
+    this._dialogEl
+      ?.querySelector("#chart-context-cancel")
       ?.addEventListener("click", () => this.close());
-    this._dialogEl?.querySelector("#chart-context-save")
+    this._dialogEl
+      ?.querySelector("#chart-context-save")
       ?.addEventListener("click", () => this.submit());
     [messageEl, annotationEl].forEach((field) => {
       field?.addEventListener("keydown", (ev) => {
@@ -240,7 +295,9 @@ export class HistoryAnnotationDialogController {
       return;
     }
     const messageEl = this._panelEl.querySelector("#chart-context-message");
-    const annotationEl = this._panelEl.querySelector("#chart-context-annotation");
+    const annotationEl = this._panelEl.querySelector(
+      "#chart-context-annotation"
+    );
     const dateEl = this._panelEl.querySelector("#chart-context-date");
     const iconPicker = this._panelEl.querySelector("#chart-context-icon");
     const colorInput = this._panelEl.querySelector("#chart-context-color");
@@ -254,7 +311,10 @@ export class HistoryAnnotationDialogController {
       return;
     }
 
-    const mergedTarget = mergeTargetSelections(this._linkedTarget, this._target || {});
+    const mergedTarget = mergeTargetSelections(
+      this._linkedTarget,
+      this._target || {}
+    );
     const payload = { message };
     const annotation = (annotationEl?.value || "").trim();
     if (annotation) {
@@ -318,9 +378,13 @@ export class HistoryAnnotationDialogController {
     if (prefillLinkedTarget && typeof prefillLinkedTarget === "object") {
       this._linkedTarget = normalizeTargetSelection(prefillLinkedTarget);
     } else {
-      this._linkedTarget = normalizeTargetSelection({ entity_id: this._host._entityIds.filter(Boolean) });
+      this._linkedTarget = this._getDefaultLinkedTarget();
     }
-    const defaultColor = hover?.annotationPrefill?.color || hover?.primary?.color || hover?.event?.color || "#03a9f4";
+    const defaultColor =
+      hover?.annotationPrefill?.color ||
+      hover?.primary?.color ||
+      hover?.event?.color ||
+      "#03a9f4";
 
     this._panelEl.innerHTML = `
       <style>

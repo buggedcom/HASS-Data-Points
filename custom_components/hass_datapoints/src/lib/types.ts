@@ -37,7 +37,10 @@ export interface HassArea {
 }
 
 export interface HassConnection {
-  subscribeEvents(callback: (...args: unknown[]) => void, eventType: string): Promise<() => void>;
+  subscribeEvents(
+    callback: (...args: unknown[]) => void,
+    eventType: string
+  ): Promise<() => void>;
   sendMessagePromise(message: Record<string, unknown>): Promise<unknown>;
 }
 
@@ -47,7 +50,11 @@ export interface HassLike {
   devices: Record<string, HassDevice>;
   areas: Record<string, HassArea>;
   connection: HassConnection;
-  callService(domain: string, service: string, data?: Record<string, unknown>): Promise<void>;
+  callService(
+    domain: string,
+    service: string,
+    data?: Record<string, unknown>
+  ): Promise<void>;
 }
 
 export interface SelectOption {
@@ -85,3 +92,17 @@ export interface EventRecord {
 
 export type CardConfig = Record<string, unknown>;
 
+export interface EventRecordFull extends EventRecord {
+  entity_ids?: string[];
+  device_ids?: string[];
+  area_ids?: string[];
+  label_ids?: string[];
+  chart_value?: number;
+  chart_unit?: string;
+}
+
+export interface HassStateEntry {
+  s: string;
+  lu: number;
+  entity_id?: string;
+}

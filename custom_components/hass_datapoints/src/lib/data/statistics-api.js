@@ -1,10 +1,19 @@
-import { normalizeCacheIdList, withStableRangeCache } from "./cache.js";
+import {
+  normalizeCacheIdList,
+  withStableRangeCache,
+} from "@/lib/data/cache.js";
 
 /**
  * Statistics data access layer.
  */
 
-export async function fetchStatisticsDuringPeriod(hass, startTime, endTime, statisticIds, options = {}) {
+export async function fetchStatisticsDuringPeriod(
+  hass,
+  startTime,
+  endTime,
+  statisticIds,
+  options = {}
+) {
   const normalizedStatisticIds = normalizeCacheIdList(statisticIds);
   const normalizedTypes = normalizeCacheIdList(options.types);
   const cacheKey = JSON.stringify({
@@ -15,13 +24,15 @@ export async function fetchStatisticsDuringPeriod(hass, startTime, endTime, stat
     period: options.period || "hour",
     types: normalizedTypes,
   });
-  return withStableRangeCache(cacheKey, endTime, () => hass.connection.sendMessagePromise({
-    type: "recorder/statistics_during_period",
-    start_time: startTime,
-    end_time: endTime,
-    statistic_ids: normalizedStatisticIds,
-    period: options.period || "hour",
-    types: normalizedTypes,
-    units: options.units || {},
-  }));
+  return withStableRangeCache(cacheKey, endTime, () =>
+    hass.connection.sendMessagePromise({
+      type: "recorder/statistics_during_period",
+      start_time: startTime,
+      end_time: endTime,
+      statistic_ids: normalizedStatisticIds,
+      period: options.period || "hour",
+      types: normalizedTypes,
+      units: options.units || {},
+    })
+  );
 }

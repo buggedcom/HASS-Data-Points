@@ -7,3 +7,4 @@ Thumbs.db
 node_modules/
 .env.dev
 /build-storybook.log
+dev/

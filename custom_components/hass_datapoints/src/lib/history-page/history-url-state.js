@@ -1,5 +1,5 @@
-import { slugifySeriesName } from "../domain/history-series.js";
-import { parseDateValue } from "../domain/chart-zoom.js";
+import { slugifySeriesName } from "@/lib/domain/history-series.js";
+import { parseDateValue } from "@/lib/domain/chart-zoom.js";
 
 /**
  * URL/session-friendly helpers for saved comparison date windows.
@@ -29,7 +29,9 @@ export function normalizeDateWindows(windows) {
     if (!label || !start || !end || start >= end) {
       return;
     }
-    const id = String(window?.id || "").trim() || makeDateWindowId(`${label}-${index + 1}`, seen);
+    const id =
+      String(window?.id || "").trim() ||
+      makeDateWindowId(`${label}-${index + 1}`, seen);
     if (seen.has(id)) {
       return;
     }
@@ -48,15 +50,17 @@ export function parseDateWindowsParam(value) {
   if (!value || typeof value !== "string") {
     return [];
   }
-  return normalizeDateWindows(value.split("|").map((entry) => {
-    const [rawId, rawLabel, rawStart, rawEnd] = String(entry).split("~");
-    return {
-      id: decodeURIComponent(rawId || ""),
-      label: decodeURIComponent(rawLabel || ""),
-      start_time: decodeURIComponent(rawStart || ""),
-      end_time: decodeURIComponent(rawEnd || ""),
-    };
-  }));
+  return normalizeDateWindows(
+    value.split("|").map((entry) => {
+      const [rawId, rawLabel, rawStart, rawEnd] = String(entry).split("~");
+      return {
+        id: decodeURIComponent(rawId || ""),
+        label: decodeURIComponent(rawLabel || ""),
+        start_time: decodeURIComponent(rawStart || ""),
+        end_time: decodeURIComponent(rawEnd || ""),
+      };
+    })
+  );
 }
 
 export function serializeDateWindowsParam(windows) {
@@ -64,10 +68,14 @@ export function serializeDateWindowsParam(windows) {
   if (!normalized.length) {
     return "";
   }
-  return normalized.map((window) => [
-    encodeURIComponent(window.id),
-    encodeURIComponent(window.label),
-    encodeURIComponent(window.start_time),
-    encodeURIComponent(window.end_time),
-  ].join("~")).join("|");
+  return normalized
+    .map((window) =>
+      [
+        encodeURIComponent(window.id),
+        encodeURIComponent(window.label),
+        encodeURIComponent(window.start_time),
+        encodeURIComponent(window.end_time),
+      ].join("~")
+    )
+    .join("|");
 }

@@ -1,5 +1,5 @@
-import { DOMAIN } from "../../constants.js";
-import { normalizeDateWindows } from "./history-url-state.js";
+import { DOMAIN } from "@/constants.js";
+import { normalizeDateWindows } from "@/lib/history-page/history-url-state.js";
 
 /**
  * Session and preference ownership helpers for the history page.
@@ -30,6 +30,7 @@ export function buildHistoryPageSessionState(source) {
     show_chart_datapoint_lines: source._showChartDatapointLines,
     show_chart_tooltips: source._showChartTooltips,
     show_chart_emphasized_hover_guides: source._showChartEmphasizedHoverGuides,
+    chart_hover_snap_mode: source._chartHoverSnapMode,
     delink_chart_y_axis: source._delinkChartYAxis,
     split_chart_view: source._splitChartView,
     show_chart_trend_lines: false,
@@ -70,24 +71,34 @@ export function buildHistoryPageSessionState(source) {
     date_windows: normalizeDateWindows(source._comparisonWindows),
     hours: source._hours,
     sidebar_collapsed: source._sidebarCollapsed,
-    sidebar_accordion_targets_open: source._sidebarAccordionTargetsOpen !== false,
-    sidebar_accordion_datapoints_open: source._sidebarAccordionDatapointsOpen !== false,
-    sidebar_accordion_analysis_open: source._sidebarAccordionAnalysisOpen !== false,
+    sidebar_accordion_targets_open:
+      source._sidebarAccordionTargetsOpen !== false,
+    sidebar_accordion_datapoints_open:
+      source._sidebarAccordionDatapointsOpen !== false,
+    sidebar_accordion_analysis_open:
+      source._sidebarAccordionAnalysisOpen !== false,
     sidebar_accordion_chart_open: source._sidebarAccordionChartOpen !== false,
   };
 }
 
 export function writeHistoryPageSessionState(source) {
   try {
-    window.sessionStorage?.setItem(PANEL_HISTORY_SESSION_KEY, JSON.stringify(buildHistoryPageSessionState(source)));
+    window.sessionStorage?.setItem(
+      PANEL_HISTORY_SESSION_KEY,
+      JSON.stringify(buildHistoryPageSessionState(source))
+    );
   } catch {
     // Ignore session storage failures.
   }
 }
 
 export function normalizeHistoryPagePreferences(preferences, options = {}) {
-  const zoomValues = new Set((options.zoomOptions || []).map((option) => option.value));
-  const snapValues = new Set((options.snapOptions || []).map((option) => option.value));
+  const zoomValues = new Set(
+    (options.zoomOptions || []).map((option) => option.value)
+  );
+  const snapValues = new Set(
+    (options.snapOptions || []).map((option) => option.value)
+  );
   let shouldPersistDefaults = false;
 
   const normalized = {
@@ -111,16 +122,25 @@ export function normalizeHistoryPagePreferences(preferences, options = {}) {
       shouldPersistDefaults = true;
     }
 
-    normalized.preferredSeriesColors = preferences.series_colors && typeof preferences.series_colors === "object"
-      ? Object.entries(preferences.series_colors).reduce((acc, [entityId, color]) => {
-        if (typeof entityId === "string" && /^#[0-9a-f]{6}$/i.test(color || "")) {
-          acc[entityId] = color;
-        }
-        return acc;
-      }, {})
-      : {};
+    normalized.preferredSeriesColors =
+      preferences.series_colors && typeof preferences.series_colors === "object"
+        ? Object.entries(preferences.series_colors).reduce(
+            (acc, [entityId, color]) => {
+              if (
+                typeof entityId === "string" &&
+                /^#[0-9a-f]{6}$/i.test(color || "")
+              ) {
+                acc[entityId] = color;
+              }
+              return acc;
+            },
+            {}
+          )
+        : {};
 
-    normalized.comparisonWindows = normalizeDateWindows(preferences.date_windows);
+    normalized.comparisonWindows = normalizeDateWindows(
+      preferences.date_windows
+    );
   } else {
     shouldPersistDefaults = true;
   }
@@ -130,12 +150,15 @@ export function normalizeHistoryPagePreferences(preferences, options = {}) {
 }
 
 export function buildHistoryPagePreferencesPayload(source) {
-  const preferredSeriesColors = source._seriesRows.reduce((acc, row) => {
-    if (row?.entity_id && /^#[0-9a-f]{6}$/i.test(row?.color || "")) {
-      acc[row.entity_id] = row.color;
-    }
-    return acc;
-  }, { ...source._preferredSeriesColors });
+  const preferredSeriesColors = source._seriesRows.reduce(
+    (acc, row) => {
+      if (row?.entity_id && /^#[0-9a-f]{6}$/i.test(row?.color || "")) {
+        acc[row.entity_id] = row.color;
+      }
+      return acc;
+    },
+    { ...source._preferredSeriesColors }
+  );
 
   return {
     zoom_level: source._zoomLevel,

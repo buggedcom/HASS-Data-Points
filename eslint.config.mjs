@@ -53,7 +53,7 @@ export default [
     rules: {
       "class-methods-use-this": "off",
       "consistent-return": "off",
-      curly: ["warn", "all"],
+      curly: ["error", "all"],
       "import/extensions": "off",
       "import/no-mutable-exports": "off",
       "import/no-unresolved": "off",

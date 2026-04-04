@@ -1,30 +1,26 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-
-import { loadLegacyScripts, repoPath } from "@/lib/__tests__/load-legacy-script";
-
-let cacheLib;
+import {
+  normalizeCacheIdList,
+  shouldUseStableRangeCache,
+  getCachedRangePromise,
+  setCachedRangePromise,
+  withStableRangeCache,
+} from "@/lib/data/cache.js";
 
 describe("cache lib", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-03-30T12:00:00Z"));
-    cacheLib = loadLegacyScripts(
-      [repoPath("custom_components", "hass_datapoints", "src", "lib", "data", "cache.js")],
-      [
-        "normalizeCacheIdList",
-        "shouldUseStableRangeCache",
-        "getCachedRangePromise",
-        "setCachedRangePromise",
-        "withStableRangeCache",
-      ],
-    );
   });
 
   describe("GIVEN duplicate cache ids", () => {
     describe("WHEN normalizeCacheIdList is called", () => {
       it("THEN it returns a sorted unique list", () => {
         expect.assertions(1);
-        expect(cacheLib.normalizeCacheIdList(["b", "a", "b", "", null])).toEqual(["a", "b"]);
+        expect(normalizeCacheIdList(["b", "a", "b", "", null])).toEqual([
+          "a",
+          "b",
+        ]);
       });
     });
   });
@@ -33,7 +29,7 @@ describe("cache lib", () => {
     describe("WHEN shouldUseStableRangeCache is called", () => {
       it("THEN it returns true", () => {
         expect.assertions(1);
-        expect(cacheLib.shouldUseStableRangeCache("2026-03-30T11:00:00Z")).toBe(true);
+        expect(shouldUseStableRangeCache("2026-03-30T11:00:00Z")).toBe(true);
       });
     });
   });
@@ -42,8 +38,8 @@ describe("cache lib", () => {
     describe("WHEN shouldUseStableRangeCache is called", () => {
       it("THEN it returns false", () => {
         expect.assertions(2);
-        expect(cacheLib.shouldUseStableRangeCache("invalid")).toBe(false);
-        expect(cacheLib.shouldUseStableRangeCache("2026-03-30T11:58:00Z")).toBe(false);
+        expect(shouldUseStableRangeCache("invalid")).toBe(false);
+        expect(shouldUseStableRangeCache("2026-03-30T11:58:00Z")).toBe(false);
       });
     });
   });
@@ -53,9 +49,11 @@ describe("cache lib", () => {
       it("THEN it returns that promise", async () => {
         expect.assertions(1);
         const promise = Promise.resolve("value");
-        cacheLib.setCachedRangePromise("key-1", promise);
+        setCachedRangePromise("cache-spec-key-1", promise);
 
-        await expect(cacheLib.getCachedRangePromise("key-1")).resolves.toBe("value");
+        await expect(getCachedRangePromise("cache-spec-key-1")).resolves.toBe(
+          "value"
+        );
       });
     });
   });
@@ -64,10 +62,10 @@ describe("cache lib", () => {
     describe("WHEN getCachedRangePromise is called", () => {
       it("THEN it returns null", () => {
         expect.assertions(1);
-        cacheLib.setCachedRangePromise("key-2", Promise.resolve("value"));
+        setCachedRangePromise("cache-spec-key-2", Promise.resolve("value"));
         vi.advanceTimersByTime(10 * 60 * 1000 + 1);
 
-        expect(cacheLib.getCachedRangePromise("key-2")).toBeNull();
+        expect(getCachedRangePromise("cache-spec-key-2")).toBeNull();
       });
     });
   });
@@ -78,8 +76,16 @@ describe("cache lib", () => {
         expect.assertions(3);
         const loader = vi.fn(async () => "cached");
 
-        const first = await cacheLib.withStableRangeCache("stable-key", "2026-03-30T11:00:00Z", loader);
-        const second = await cacheLib.withStableRangeCache("stable-key", "2026-03-30T11:00:00Z", loader);
+        const first = await withStableRangeCache(
+          "cache-spec-stable-key",
+          "2026-03-30T11:00:00Z",
+          loader
+        );
+        const second = await withStableRangeCache(
+          "cache-spec-stable-key",
+          "2026-03-30T11:00:00Z",
+          loader
+        );
 
         expect(first).toBe("cached");
         expect(second).toBe("cached");
@@ -94,8 +100,16 @@ describe("cache lib", () => {
         expect.assertions(1);
         const loader = vi.fn(async () => "live");
 
-        await cacheLib.withStableRangeCache("live-key", "2026-03-30T11:59:00Z", loader);
-        await cacheLib.withStableRangeCache("live-key", "2026-03-30T11:59:00Z", loader);
+        await withStableRangeCache(
+          "cache-spec-live-key",
+          "2026-03-30T11:59:00Z",
+          loader
+        );
+        await withStableRangeCache(
+          "cache-spec-live-key",
+          "2026-03-30T11:59:00Z",
+          loader
+        );
 
         expect(loader).toHaveBeenCalledTimes(2);
       });

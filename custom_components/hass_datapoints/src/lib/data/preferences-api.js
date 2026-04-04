@@ -1,4 +1,3 @@
-
 /**
  * Preferences data access layer.
  */

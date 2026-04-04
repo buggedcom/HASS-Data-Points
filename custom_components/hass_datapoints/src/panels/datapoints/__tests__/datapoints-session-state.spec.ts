@@ -26,7 +26,10 @@ describe("readHistoryPageSessionState", () => {
     it("THEN returns the parsed object", () => {
       expect.assertions(1);
       const data = { entities: ["sensor.temp"], hours: 48 };
-      window.sessionStorage.setItem(PANEL_HISTORY_SESSION_KEY, JSON.stringify(data));
+      window.sessionStorage.setItem(
+        PANEL_HISTORY_SESSION_KEY,
+        JSON.stringify(data)
+      );
       const result = readHistoryPageSessionState();
       expect(result).toEqual(data);
     });
@@ -43,7 +46,10 @@ describe("readHistoryPageSessionState", () => {
   describe("WHEN sessionStorage contains a non-object value", () => {
     it("THEN returns null", () => {
       expect.assertions(1);
-      window.sessionStorage.setItem(PANEL_HISTORY_SESSION_KEY, JSON.stringify(42));
+      window.sessionStorage.setItem(
+        PANEL_HISTORY_SESSION_KEY,
+        JSON.stringify(42)
+      );
       expect(readHistoryPageSessionState()).toBeNull();
     });
   });
@@ -188,7 +194,7 @@ describe("normalizeHistoryPagePreferences", () => {
       expect.assertions(2);
       const result = normalizeHistoryPagePreferences(
         { zoom_level: "1h", date_snapping: "hour" },
-        OPTIONS,
+        OPTIONS
       );
       expect(result.zoomLevel).toBe("1h");
       expect(result.shouldPersistDefaults).toBe(false);
@@ -200,7 +206,7 @@ describe("normalizeHistoryPagePreferences", () => {
       expect.assertions(2);
       const result = normalizeHistoryPagePreferences(
         { zoom_level: "invalid-value", date_snapping: "hour" },
-        OPTIONS,
+        OPTIONS
       );
       expect(result.zoomLevel).toBe("auto");
       expect(result.shouldPersistDefaults).toBe(true);
@@ -219,7 +225,7 @@ describe("normalizeHistoryPagePreferences", () => {
             "sensor.hum": "not-a-color",
           },
         },
-        OPTIONS,
+        OPTIONS
       );
       expect(result.preferredSeriesColors["sensor.temp"]).toBe("#ff0000");
       expect(result.preferredSeriesColors["sensor.hum"]).toBeUndefined();

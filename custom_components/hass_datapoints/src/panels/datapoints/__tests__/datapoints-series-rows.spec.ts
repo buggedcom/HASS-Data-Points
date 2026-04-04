@@ -33,7 +33,9 @@ describe("normalizeHistorySeriesAnalysis", () => {
   describe("WHEN called with hide_source_series: true", () => {
     it("THEN preserves the value", () => {
       expect.assertions(1);
-      const result = normalizeHistorySeriesAnalysis({ hide_source_series: true });
+      const result = normalizeHistorySeriesAnalysis({
+        hide_source_series: true,
+      });
       expect(result.hide_source_series).toBe(true);
     });
   });
@@ -79,7 +81,9 @@ describe("historySeriesRowHasConfiguredAnalysis", () => {
     it("THEN returns true", () => {
       expect.assertions(1);
       const row = baseRow();
-      row.analysis = normalizeHistorySeriesAnalysis({ hide_source_series: true });
+      row.analysis = normalizeHistorySeriesAnalysis({
+        hide_source_series: true,
+      });
       expect(historySeriesRowHasConfiguredAnalysis(row)).toBe(true);
     });
   });
@@ -108,7 +112,12 @@ describe("normalizeHistorySeriesRows", () => {
     it("THEN normalizes each row's analysis", () => {
       expect.assertions(2);
       const rows = [
-        { entity_id: "sensor.temp", color: "#ff0000", visible: true, analysis: null },
+        {
+          entity_id: "sensor.temp",
+          color: "#ff0000",
+          visible: true,
+          analysis: null,
+        },
       ];
       const result = normalizeHistorySeriesRows(rows);
       expect(result).toHaveLength(1);
@@ -150,7 +159,14 @@ describe("buildHistorySeriesRows", () => {
   describe("WHEN previousRows has existing colors", () => {
     it("THEN preserves the color for existing entities", () => {
       expect.assertions(1);
-      const previous = [{ entity_id: "sensor.temp", color: "#abcdef", visible: true, analysis: null }];
+      const previous = [
+        {
+          entity_id: "sensor.temp",
+          color: "#abcdef",
+          visible: true,
+          analysis: null,
+        },
+      ];
       const rows = buildHistorySeriesRows(["sensor.temp"], previous);
       expect(rows[0].color).toBe("#abcdef");
     });

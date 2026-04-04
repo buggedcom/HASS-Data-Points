@@ -7,7 +7,7 @@ export function normalizeEntityIds(value) {
     return [];
   }
   return (Array.isArray(value) ? value : [value])
-    .map((item) => typeof item === "string" ? item.trim() : "")
+    .map((item) => (typeof item === "string" ? item.trim() : ""))
     .filter(Boolean);
 }
 
@@ -33,7 +33,7 @@ export function normalizeTargetValue(targetValue) {
     label_id: normalizeEntityIds(targetValue.label_id),
   };
   return Object.fromEntries(
-    Object.entries(normalized).filter(([, entries]) => entries.length),
+    Object.entries(normalized).filter(([, entries]) => entries.length)
   );
 }
 
@@ -80,9 +80,9 @@ export function resolveEntityIdsFromTarget(hass, targetValue) {
       ...(Array.isArray(entry.label_ids) ? entry.label_ids : []),
     ];
     if (
-      (deviceId && selectedDevices.has(deviceId))
-      || (areaId && selectedAreas.has(areaId))
-      || labels.some((labelId) => selectedLabels.has(labelId))
+      (deviceId && selectedDevices.has(deviceId)) ||
+      (areaId && selectedAreas.has(areaId)) ||
+      labels.some((labelId) => selectedLabels.has(labelId))
     ) {
       resolved.add(entityId);
     }

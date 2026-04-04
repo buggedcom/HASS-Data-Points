@@ -1,4 +1,5 @@
 import { html } from "lit";
+import "../custom_components/hass_datapoints/src/test-support/suppress-lit-dev-mode";
 import "../custom_components/hass_datapoints/src/test-support/ha-stubs";
 
 /**
@@ -70,7 +71,7 @@ const HA_LIGHT_THEME = `
 export const globalTypes = {
   haTheme: {
     description: "Home Assistant theme",
-    defaultValue: "dark",
+    defaultValue: "light",
     toolbar: {
       title: "HA Theme",
       icon: "paintbrush",
@@ -83,12 +84,17 @@ export const globalTypes = {
   },
 };
 
-const haThemeDecorator = (story: () => unknown, context: { globals?: { haTheme?: string } }) => {
+const haThemeDecorator = (
+  story: () => unknown,
+  context: { globals?: { haTheme?: string } }
+) => {
   const isLight = (context?.globals?.haTheme ?? "light") === "light";
   const theme = isLight ? HA_LIGHT_THEME : HA_DARK_THEME;
   const pageBg = isLight ? "#f5f5f5" : "#111111";
   return html`
-    <div style="min-height: 100vh; background: ${pageBg}; padding: 16px; box-sizing: border-box;">
+    <div
+      style="min-height: 100vh; background: ${pageBg}; padding: 16px; box-sizing: border-box;"
+    >
       <div style="${theme}">${story()}</div>
     </div>
   `;
@@ -107,5 +113,5 @@ export const parameters = {
 };
 
 export const preview = {
-  tags: ['autodocs'],
-}
+  tags: ["autodocs"],
+};

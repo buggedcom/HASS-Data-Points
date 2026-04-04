@@ -14,8 +14,9 @@
     "dev:sync": "bash scripts/dev-sync.sh",
     "dev:watch": "bash scripts/dev-watch.sh",
     "hooks:install": "bash scripts/install-hooks.sh",
-    "lint:eslint": "eslint \"custom_components/hass_datapoints/src/**/*.{js,ts}\" --cache --cache-strategy=content --cache-location=node_modules/.cache/eslint/.eslintcache --max-warnings=0",
-    "format:eslint": "eslint \"custom_components/hass_datapoints/src/**/*.{js,ts}\" --cache --cache-strategy=content --cache-location=node_modules/.cache/eslint/.eslintcache --fix",
+    "lint:eslint:cmd": "eslint \"custom_components/hass_datapoints/src/**/*.{js,ts}\" --cache --cache-strategy=content --cache-location=node_modules/.cache/eslint/.eslintcache",
+    "lint:eslint": "pnpm lint:eslint:cmd --max-warnings=0",
+    "format:eslint": "pnpm lint:eslint:cmd --fix",
     "lint:prettier": "prettier . --cache --check",
     "format:prettier": "prettier . --cache --write",
     "lint:types": "tsc --noEmit",
@@ -31,6 +32,7 @@
     "@mdi/js": "^7.4.47",
     "@storybook/addon-a11y": "^10.3.3",
     "@storybook/addon-docs": "^10.3.3",
+    "@storybook/addon-mcp": "^0.5.0",
     "@storybook/addon-vitest": "^10.3.3",
     "@storybook/test": "^8.6.15",
     "@storybook/web-components-vite": "^10.3.3",
@@ -58,6 +60,7 @@
   "dependencies": {
     "@kipk/load-ha-components": "^1.0.3",
     "@lit/context": "^1.1.6",
+    "@lit/localize": "^0.12.2",
     "lit": "^3.3.2"
   }
 }

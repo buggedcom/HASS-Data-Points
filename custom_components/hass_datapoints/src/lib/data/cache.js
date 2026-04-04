@@ -7,7 +7,9 @@ export const DATA_RANGE_CACHE_LIVE_EDGE_MS = 5 * 60 * 1000;
 const _dataRangeCache = new Map();
 
 export function normalizeCacheIdList(values) {
-  return [...new Set((Array.isArray(values) ? values : []).filter(Boolean))].sort();
+  return [
+    ...new Set((Array.isArray(values) ? values : []).filter(Boolean)),
+  ].sort();
 }
 
 export function shouldUseStableRangeCache(endTime) {
@@ -15,10 +17,10 @@ export function shouldUseStableRangeCache(endTime) {
   if (!Number.isFinite(endMs)) {
     return false;
   }
-  return endMs < (Date.now() - DATA_RANGE_CACHE_LIVE_EDGE_MS);
+  return endMs < Date.now() - DATA_RANGE_CACHE_LIVE_EDGE_MS;
 }
 
-function getCachedRangePromise(key) {
+export function getCachedRangePromise(key) {
   const entry = _dataRangeCache.get(key);
   if (!entry) {
     return null;
@@ -30,7 +32,7 @@ function getCachedRangePromise(key) {
   return entry.promise;
 }
 
-function setCachedRangePromise(key, promise) {
+export function setCachedRangePromise(key, promise) {
   _dataRangeCache.set(key, {
     promise,
     expiresAt: Date.now() + DATA_RANGE_CACHE_TTL_MS,

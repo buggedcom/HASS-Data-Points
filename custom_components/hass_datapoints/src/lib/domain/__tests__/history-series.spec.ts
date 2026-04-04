@@ -1,0 +1,131 @@
+import { describe, expect, it, vi } from "vitest";
+
+import {
+  buildHistorySeriesRows,
+  historySeriesRowHasConfiguredAnalysis,
+  normalizeHistorySeriesAnalysis,
+  normalizeHistorySeriesRows,
+  parseSeriesColorsParam,
+  slugifySeriesName,
+} from "@/lib/domain/history-series.js";
+
+vi.mock("@/constants.js", async (importOriginal) => {
+  const real = (await importOriginal()) as Record<string, unknown>;
+  return { ...real, COLORS: ["#111111", "#222222", "#333333"] };
+});
+
+describe("history-series.js", () => {
+  describe("GIVEN partial or legacy analysis config", () => {
+    describe("WHEN normalizeHistorySeriesAnalysis is called", () => {
+      it("THEN it applies the stable defaults and migrations", () => {
+        expect.assertions(3);
+
+        const normalized = normalizeHistorySeriesAnalysis({
+          show_anomalies: true,
+          anomaly_method: "iqr",
+          sample_interval: "raw",
+          sample_aggregate: "median",
+        });
+
+        expect(normalized.show_anomalies).toBe(true);
+        expect(normalized.anomaly_methods).toEqual(["iqr"]);
+        expect(normalized.sample_aggregate).toBe("median");
+      });
+    });
+  });
+
+  describe("GIVEN a row analysis payload", () => {
+    describe("WHEN historySeriesRowHasConfiguredAnalysis is called", () => {
+      it("THEN it reports whether any analysis is enabled", () => {
+        expect.assertions(2);
+
+        expect(
+          historySeriesRowHasConfiguredAnalysis({
+            analysis: { show_trend_lines: true },
+          })
+        ).toBe(true);
+        expect(historySeriesRowHasConfiguredAnalysis({ analysis: {} })).toBe(
+          false
+        );
+      });
+    });
+  });
+
+  describe("GIVEN mixed history rows", () => {
+    describe("WHEN normalizeHistorySeriesRows is called", () => {
+      it("THEN it removes duplicates and fills defaults", () => {
+        expect.assertions(1);
+
+        expect(
+          normalizeHistorySeriesRows([
+            { entity_id: "sensor.a", color: "#abcdef", visible: false },
+            { entity_id: "sensor.a", color: "#111111", visible: true },
+            { entity_id: "sensor.b", color: "bad" },
+          ])
+        ).toEqual([
+          expect.objectContaining({
+            entity_id: "sensor.a",
+            color: "#abcdef",
+            visible: false,
+          }),
+          expect.objectContaining({
+            entity_id: "sensor.b",
+            color: "#333333",
+            visible: true,
+          }),
+        ]);
+      });
+    });
+  });
+
+  describe("GIVEN entity ids and previous rows", () => {
+    describe("WHEN buildHistorySeriesRows is called", () => {
+      it("THEN it preserves rows and inherits unanimous sampling config", () => {
+        expect.assertions(2);
+
+        const rows = buildHistorySeriesRows(
+          ["sensor.a", "sensor.b", "sensor.c"],
+          [
+            {
+              entity_id: "sensor.a",
+              color: "#999999",
+              analysis: { sample_interval: "5m", sample_aggregate: "max" },
+            },
+            {
+              entity_id: "sensor.b",
+              color: "#888888",
+              analysis: { sample_interval: "5m", sample_aggregate: "max" },
+            },
+          ]
+        );
+
+        expect(rows[0]).toEqual(
+          expect.objectContaining({ entity_id: "sensor.a", color: "#999999" })
+        );
+        expect(rows[2].analysis).toEqual(
+          expect.objectContaining({
+            sample_interval: "5m",
+            sample_aggregate: "max",
+          })
+        );
+      });
+    });
+  });
+
+  describe("GIVEN free text and query color params", () => {
+    describe("WHEN the URL helpers are called", () => {
+      it("THEN they normalize the values", () => {
+        expect.assertions(2);
+
+        expect(slugifySeriesName(" Adults Bedroom Temp ")).toBe(
+          "adults-bedroom-temp"
+        );
+        expect(
+          parseSeriesColorsParam("temperature:#83c705,broken:red")
+        ).toEqual({
+          temperature: "#83c705",
+        });
+      });
+    });
+  });
+});

@@ -22,7 +22,7 @@ function mdiKey(iconStr) {
     return null;
   }
   const name = iconStr.slice(4); // strip "mdi:"
-  return `mdi${  name
+  return `mdi${name
     .split("-")
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join("")}`;
@@ -44,6 +44,7 @@ class HaIconStub extends HTMLElement {
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    this._icon = null;
   }
 
   connectedCallback() {
@@ -58,8 +59,18 @@ class HaIconStub extends HTMLElement {
     this._render();
   }
 
+  /** Property setter — Lit uses `.icon=${value}` bindings, not attribute bindings. */
+  set icon(value) {
+    this._icon = value;
+    this._render();
+  }
+
+  get icon() {
+    return this._icon ?? this.getAttribute("icon") ?? "";
+  }
+
   _resolveIcon() {
-    return this.getAttribute("icon") || "";
+    return this._icon ?? this.getAttribute("icon") ?? "";
   }
 
   _render() {
@@ -83,9 +94,10 @@ class HaIconStub extends HTMLElement {
         }
       </style>
       <svg viewBox="0 0 24 24" aria-hidden="true">
-        ${path
-          ? `<path d="${path}" />`
-          : `<circle cx="12" cy="12" r="8" opacity="0.35" /><circle cx="12" cy="12" r="3" opacity="0.6" />`
+        ${
+          path
+            ? `<path d="${path}" />`
+            : `<circle cx="12" cy="12" r="8" opacity="0.35" /><circle cx="12" cy="12" r="3" opacity="0.6" />`
         }
       </svg>
     `;
@@ -97,27 +109,47 @@ customElements.define("ha-icon", class extends HaIconStub {});
 customElements.define(
   "ha-state-icon",
   class extends HaIconStub {
-    _resolveIcon() {
-      // Prefer attributes.icon from stateObj if set, otherwise fall back to
-      // any icon attribute set directly on the element.
-      const stateObj = this.stateObj;
-      if (stateObj?.attributes?.icon) {
-        return stateObj.attributes.icon;
-      }
-      return this.getAttribute("icon") || "";
+    constructor() {
+      super();
+      this._stateObj = null;
     }
-  },
+
+    /** Property setter — Lit passes stateObj as a property, not an attribute. */
+    set stateObj(value) {
+      this._stateObj = value;
+      this._render();
+    }
+
+    get stateObj() {
+      return this._stateObj;
+    }
+
+    /** hass is also set as a property; re-render in case stateObj icon depends on it. */
+    set hass(value) {
+      this._hass = value;
+      this._render();
+    }
+
+    _resolveIcon() {
+      if (this._stateObj?.attributes?.icon) {
+        return this._stateObj.attributes.icon;
+      }
+      return this._icon ?? this.getAttribute("icon") ?? "";
+    }
+  }
 );
 
-customElements.define("ha-svg-icon", class extends HaIconStub {
-  _resolveIcon() {
-    return this.getAttribute("icon") || "";
-  }
+customElements.define(
+  "ha-svg-icon",
+  class extends HaIconStub {
+    _resolveIcon() {
+      return this.getAttribute("icon") || "";
+    }
 
-  _render() {
-    const path = this.path || null;
-    const fallback = `<circle cx="12" cy="12" r="8" opacity="0.35" />`;
-    this.shadowRoot.innerHTML = `
+    _render() {
+      const path = this.path || null;
+      const fallback = `<circle cx="12" cy="12" r="8" opacity="0.35" />`;
+      this.shadowRoot.innerHTML = `
       <style>
         :host {
           display: inline-flex;
@@ -133,8 +165,9 @@ customElements.define("ha-svg-icon", class extends HaIconStub {
         ${path ? `<path d="${path}" />` : fallback}
       </svg>
     `;
+    }
   }
-});
+);
 
 // ---------------------------------------------------------------------------
 // Button elements — ha-icon-button
@@ -166,7 +199,7 @@ customElements.define(
         <slot></slot>
       `;
     }
-  },
+  }
 );
 
 // ---------------------------------------------------------------------------
@@ -255,8 +288,10 @@ class HaFieldStub extends HTMLElement {
   }
 
   _render() {
-    const label = this.getAttribute("label") || this.getAttribute("placeholder") || "";
-    const value = this.getAttribute("value") || (this.value ? String(this.value) : "");
+    const label =
+      this.getAttribute("label") || this.getAttribute("placeholder") || "";
+    const value =
+      this.getAttribute("value") || (this.value ? String(this.value) : "");
     const hasValue = Boolean(value);
     this.shadowRoot.innerHTML = `
       <style>${HA_FIELD_STYLES}</style>
@@ -346,7 +381,7 @@ if (!customElements.get("ha-switch")) {
           </div>
         `;
       }
-    },
+    }
   );
 }
 
@@ -378,7 +413,7 @@ for (const tag of SLOT_ELEMENTS) {
           this.attachShadow({ mode: "open" });
           this.shadowRoot.innerHTML = `<slot></slot>`;
         }
-      },
+      }
     );
   }
 }
