@@ -29,6 +29,12 @@ jobs:
           python -m py_compile custom_components/hass_datapoints/store.py
           python -m py_compile custom_components/hass_datapoints/websocket_api.py
 
+      - name: Install Python test dependencies
+        run: pip install pytest pytest-asyncio --quiet
+
+      - name: Run Python tests
+        run: pytest tests/ -v
+
       # ── JS build & verify ──────────────────────────────────────
       - name: Set up pnpm
         uses: pnpm/action-setup@v4

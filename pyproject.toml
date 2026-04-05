@@ -1,0 +1,7 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+python_classes = ["Test", "Describe"]
+
+[tool.coverage.run]
+source = ["custom_components/hass_datapoints"]
