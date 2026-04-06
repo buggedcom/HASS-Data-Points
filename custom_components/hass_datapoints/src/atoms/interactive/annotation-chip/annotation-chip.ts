@@ -18,9 +18,9 @@ export class AnnotationChip extends LitElement {
   accessor secondaryText: string = "";
 
   @property({ type: Object, attribute: false })
-  accessor stateObj: HassState | null = null;
+  accessor stateObj: Nullable<HassState> = null;
 
-  @property({ type: Object, attribute: false }) accessor hass: HassLike | null =
+  @property({ type: Object, attribute: false }) accessor hass: Nullable<HassLike> =
     null;
 
   static styles = styles;

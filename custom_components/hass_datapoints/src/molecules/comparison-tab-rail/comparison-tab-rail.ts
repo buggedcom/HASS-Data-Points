@@ -3,6 +3,7 @@ import { property } from "lit/decorators.js";
 
 import { classMap } from "lit/directives/class-map.js";
 import { repeat } from "lit/directives/repeat.js";
+import { localized, msg } from "@/lib/i18n/localize";
 import { styles } from "./comparison-tab-rail.styles";
 import "@/molecules/comparison-tab/comparison-tab";
 
@@ -25,6 +26,7 @@ export interface TabItem {
  * @fires dp-tab-delete - `{ tabId: string }` re-dispatched from child tabs
  * @fires dp-tab-add - `{}` fired when the "Add date window" button is clicked
  */
+@localized()
 export class ComparisonTabRail extends LitElement {
   static styles = styles;
 
@@ -51,7 +53,7 @@ export class ComparisonTabRail extends LitElement {
     this.updateComplete.then(() => {
       const shell = this.shadowRoot?.querySelector(
         ".chart-tabs-shell"
-      ) as HTMLElement | null;
+      ) as Nullable<HTMLElement>;
       if (shell) {
         this._resizeObserver!.observe(shell);
       }
@@ -67,11 +69,11 @@ export class ComparisonTabRail extends LitElement {
   private _checkOverflow() {
     const shell = this.shadowRoot?.querySelector(
       ".chart-tabs-shell"
-    ) as HTMLElement | null;
+    ) as Nullable<HTMLElement>;
     if (!shell) {
       return;
     }
-    const rail = shell.querySelector(".chart-tabs-rail") as HTMLElement | null;
+    const rail = shell.querySelector(".chart-tabs-rail") as Nullable<HTMLElement>;
     if (!rail) {
       return;
     }
@@ -117,7 +119,7 @@ export class ComparisonTabRail extends LitElement {
         </div>
         <button type="button" class="chart-tabs-add" @click=${this._onAddClick}>
           <ha-icon icon="mdi:plus"></ha-icon>
-          <span class="chart-tabs-add-label">Add date window</span>
+          <span class="chart-tabs-add-label">${msg("Add date window")}</span>
         </button>
       </div>
     `;

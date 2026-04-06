@@ -8,7 +8,7 @@ const defaultOptions: SelectOption[] = [
   { value: "week", label: "Week" },
 ];
 
-function createElement(props: Record<string, unknown> = {}) {
+function createElement(props: RecordWithUnknownValues = {}) {
   const el = document.createElement("radio-group") as HTMLElement & {
     name: string;
     value: string;

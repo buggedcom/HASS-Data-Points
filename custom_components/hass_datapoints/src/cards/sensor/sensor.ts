@@ -1,11 +1,11 @@
-import { LitElement, html } from "lit";
+import { html, LitElement } from "lit";
 
 import { styles } from "./sensor.styles";
-import { DOMAIN } from "@/constants.js";
-import { navigateToDataPointsHistory } from "@/lib/ha/navigation.js";
-import { fetchEvents } from "@/lib/data/events-api.js";
+import { DOMAIN } from "@/constants";
+import { navigateToDataPointsHistory } from "@/lib/ha/navigation";
+import { fetchEvents } from "@/lib/data/events-api";
 import type { CardConfig, EventRecordFull, HassLike } from "@/lib/types";
-import { logger } from "@/lib/logger.js";
+import { logger } from "@/lib/logger";
 import type { SensorChart } from "./sensor-chart/sensor-chart";
 import "@/atoms/interactive/pagination/pagination";
 import "./sensor-header/sensor-header";
@@ -26,7 +26,7 @@ export class HassRecordsSensorCard extends LitElement {
 
   declare _config: CardConfig;
 
-  declare _hass: HassLike | null;
+  declare _hass: Nullable<HassLike>;
 
   declare _annEvents: EventRecordFull[];
 
@@ -38,13 +38,13 @@ export class HassRecordsSensorCard extends LitElement {
 
   private _lastEvents: EventRecordFull[] = [];
 
-  private _lastT0: number | null = null;
+  private _lastT0: Nullable<number> = null;
 
-  private _lastT1: number | null = null;
+  private _lastT1: Nullable<number> = null;
 
-  private _unsubscribe: (() => void) | null = null;
+  private _unsubscribe: NullableCleanup = null;
 
-  private _resizeObserver: ResizeObserver | null = null;
+  private _resizeObserver: Nullable<ResizeObserver> = null;
 
   static styles = styles;
 
@@ -78,7 +78,7 @@ export class HassRecordsSensorCard extends LitElement {
     }
   }
 
-  get hass(): HassLike | null {
+  get hass(): Nullable<HassLike> {
     return this._hass;
   }
 
@@ -292,10 +292,9 @@ export class HassRecordsSensorCard extends LitElement {
                 <sensor-records
                   .events=${this._annEvents}
                   .hiddenEventIds=${this._hiddenEventIds}
-                  .pageSize=${(this._config.records_page_size as
-                    | number
-                    | null) ?? null}
-                  .limit=${(this._config.records_limit as number | null) ??
+                  .pageSize=${(this._config
+                    .records_page_size as Nullable<number>) ?? null}
+                  .limit=${(this._config.records_limit as Nullable<number>) ??
                   null}
                   .showFullMessage=${this._config.records_show_full_message !==
                   false}

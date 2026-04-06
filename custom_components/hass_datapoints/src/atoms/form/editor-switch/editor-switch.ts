@@ -17,11 +17,11 @@ export class EditorSwitch extends LitElement {
   firstUpdated() {
     const ff = this.shadowRoot!.querySelector(
       "ha-formfield"
-    ) as HaFormField | null;
+    ) as Nullable<HaFormField>;
     if (ff) {
       ff.label = this.label;
     }
-    const sw = this.shadowRoot!.querySelector("ha-switch") as HaSwitch | null;
+    const sw = this.shadowRoot!.querySelector("ha-switch") as Nullable<HaSwitch>;
     if (sw) {
       sw.checked = this.checked;
     }
@@ -29,7 +29,7 @@ export class EditorSwitch extends LitElement {
 
   updated(changedProps: PropertyValues) {
     if (changedProps.has("checked")) {
-      const sw = this.shadowRoot!.querySelector("ha-switch") as HaSwitch | null;
+      const sw = this.shadowRoot!.querySelector("ha-switch") as Nullable<HaSwitch>;
       if (sw) {
         sw.checked = this.checked;
       }
@@ -37,7 +37,7 @@ export class EditorSwitch extends LitElement {
     if (changedProps.has("label")) {
       const ff = this.shadowRoot!.querySelector(
         "ha-formfield"
-      ) as HaFormField | null;
+      ) as Nullable<HaFormField>;
       if (ff) {
         ff.label = this.label;
       }

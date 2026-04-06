@@ -33,7 +33,9 @@ const BLANK_ANALYSIS: NormalizedAnalysis = {
   trend_window: "24h",
   show_trend_crosshairs: false,
   show_summary_stats: false,
+  show_summary_stats_shading: false,
   show_rate_of_change: false,
+  show_rate_crosshairs: false,
   rate_window: "1h",
   show_threshold_analysis: false,
   show_threshold_shading: false,
@@ -51,6 +53,9 @@ const BLANK_ANALYSIS: NormalizedAnalysis = {
   show_delta_tooltip: true,
   show_delta_lines: false,
   hide_source_series: false,
+  sample_interval: "raw",
+  sample_aggregate: "mean",
+  anomaly_use_sampled_data: false,
 };
 
 const MOCK_STATE_OBJ: HassEntityState = {
@@ -79,7 +84,7 @@ const EXPANDED_ANALYSIS: NormalizedAnalysis = {
   anomaly_methods: ["trend_residual", "rolling_zscore"],
   anomaly_sensitivity: "medium",
   anomaly_zscore_window: "24h",
-  anomaly_overlap_mode: "highlight",
+  anomaly_overlap_mode: "only",
 };
 
 // ---------------------------------------------------------------------------
@@ -163,7 +168,7 @@ export default {
   },
 
   // Shared render — receives live args so Controls updates re-render the component
-  render: (args: Record<string, unknown>) => html`
+  render: (args: RecordWithUnknownValues) => html`
     <div style="max-width: 600px;">
       <target-row
         .color=${args.color}
@@ -265,7 +270,7 @@ export const Hidden = {
       last_changed: "",
       last_updated: "",
       context: null,
-    } as HassEntityState,
+    } as unknown as HassEntityState,
   },
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const el = await getEl(canvasElement);
@@ -299,7 +304,7 @@ export const WithThresholdAnalysis = {
       last_changed: "",
       last_updated: "",
       context: null,
-    } as HassEntityState,
+    } as unknown as HassEntityState,
     analysis: {
       ...BLANK_ANALYSIS,
       expanded: true,
@@ -349,7 +354,7 @@ export const WithDeltaAnalysis = {
       last_changed: "",
       last_updated: "",
       context: null,
-    } as HassEntityState,
+    } as unknown as HassEntityState,
     comparisonWindows: [
       { id: "win-1", label: "Last week" },
       { id: "win-2", label: "Same day last year" },
@@ -397,7 +402,7 @@ export const BinarySensor = {
       last_changed: "",
       last_updated: "",
       context: null,
-    } as HassEntityState,
+    } as unknown as HassEntityState,
   },
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const el = await getEl(canvasElement);
@@ -507,7 +512,7 @@ export const EmitsRemove = {
       last_changed: "",
       last_updated: "",
       context: null,
-    } as HassEntityState,
+    } as unknown as HassEntityState,
   },
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const el = await getEl(canvasElement);
@@ -533,7 +538,7 @@ export const EmitsToggleAnalysis = {
       last_changed: "",
       last_updated: "",
       context: null,
-    } as HassEntityState,
+    } as unknown as HassEntityState,
   },
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const el = await getEl(canvasElement);
@@ -563,7 +568,7 @@ export const EmitsVisibilityChange = {
       last_changed: "",
       last_updated: "",
       context: null,
-    } as HassEntityState,
+    } as unknown as HassEntityState,
   },
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const el = await getEl(canvasElement);
@@ -593,7 +598,7 @@ export const EmitsAnalysisChange = {
       last_changed: "",
       last_updated: "",
       context: null,
-    } as HassEntityState,
+    } as unknown as HassEntityState,
     analysis: { ...BLANK_ANALYSIS, expanded: true },
   },
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {

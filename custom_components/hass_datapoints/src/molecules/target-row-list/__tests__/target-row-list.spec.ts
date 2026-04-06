@@ -51,7 +51,7 @@ const SAMPLE_ROWS: RowConfig[] = [
   },
 ];
 
-const SAMPLE_STATES: Record<string, Record<string, unknown>> = {
+const SAMPLE_STATES: Record<string, RecordWithUnknownValues> = {
   "sensor.temperature": {
     entity_id: "sensor.temperature",
     state: "21.5",
@@ -93,14 +93,14 @@ const SAMPLE_STATES: Record<string, Record<string, unknown>> = {
 function createElement(
   props: Partial<{
     rows: RowConfig[];
-    states: Record<string, Record<string, unknown>>;
+    states: Record<string, RecordWithUnknownValues>;
     canShowDeltaAnalysis: boolean;
     comparisonWindows: Array<{ id: string; label?: string }>;
   }> = {}
 ) {
   const el = document.createElement("target-row-list") as HTMLElement & {
     rows: RowConfig[];
-    states: Record<string, Record<string, unknown>>;
+    states: Record<string, RecordWithUnknownValues>;
     canShowDeltaAnalysis: boolean;
     comparisonWindows: Array<{ id: string; label?: string }>;
     updateComplete: Promise<boolean>;
@@ -145,12 +145,12 @@ describe("target-row-list", () => {
         const firstRow = el.shadowRoot!.querySelector(
           "target-row"
         ) as HTMLElement & {
-          stateObj: Record<string, unknown> | null;
+          stateObj: Nullable<RecordWithUnknownValues>;
           updateComplete: Promise<boolean>;
         };
         await firstRow.updateComplete;
         expect(
-          (firstRow.stateObj?.attributes as Record<string, unknown>)
+          (firstRow.stateObj?.attributes as RecordWithUnknownValues)
             ?.friendly_name
         ).toBe("Temperature");
       });

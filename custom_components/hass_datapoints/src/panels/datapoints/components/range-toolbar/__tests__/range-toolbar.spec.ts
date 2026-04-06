@@ -3,20 +3,20 @@ import "../range-toolbar";
 import { setFrontendLocale } from "@/lib/i18n/localize";
 
 type DpRangeToolbar = HTMLElement & {
-  hass: unknown | null;
-  startTime: Date | null;
-  endTime: Date | null;
-  rangeBounds: unknown | null;
+  hass: Nullable<unknown>;
+  startTime: Nullable<Date>;
+  endTime: Nullable<Date>;
+  rangeBounds: Nullable<unknown>;
   zoomLevel: string;
   dateSnapping: string;
   sidebarCollapsed: boolean;
   isLiveEdge: boolean;
   timelineEvents: unknown[];
-  comparisonPreview: { start: number; end: number } | null;
-  zoomRange: { start: number; end: number } | null;
-  zoomWindowRange: { start: number; end: number } | null;
-  chartHoverTimeMs: number | null;
-  chartHoverWindowTimeMs: number | null;
+  comparisonPreview: Nullable<{ start: number; end: number }>;
+  zoomRange: Nullable<{ start: number; end: number }>;
+  zoomWindowRange: Nullable<{ start: number; end: number }>;
+  chartHoverTimeMs: Nullable<number>;
+  chartHoverWindowTimeMs: Nullable<number>;
   updateComplete: Promise<boolean>;
   closeMenus(): void;
   syncOptionsLabels(): void;
@@ -339,11 +339,11 @@ describe("range-toolbar", () => {
         ) as HTMLElement & {
           isLiveEdge: boolean;
           events: unknown[];
-          comparisonPreview: { start: number; end: number } | null;
-          zoomRange: { start: number; end: number } | null;
-          zoomWindowRange: { start: number; end: number } | null;
-          chartHoverTimeMs: number | null;
-          chartHoverWindowTimeMs: number | null;
+          comparisonPreview: Nullable<{ start: number; end: number }>;
+          zoomRange: Nullable<{ start: number; end: number }>;
+          zoomWindowRange: Nullable<{ start: number; end: number }>;
+          chartHoverTimeMs: Nullable<number>;
+          chartHoverWindowTimeMs: Nullable<number>;
           updateComplete: Promise<boolean>;
         };
         await timeline.updateComplete;
@@ -377,9 +377,9 @@ describe("range-toolbar", () => {
           "#range-picker"
         ) as HTMLElement & {
           hass: unknown;
-          startDate: Date | null;
-          endDate: Date | null;
-          value: { startDate: Date | null; endDate: Date | null };
+          startDate: Nullable<Date>;
+          endDate: Nullable<Date>;
+          value: { startDate: Nullable<Date>; endDate: Nullable<Date> };
         };
         expect(picker.hass).toEqual({ states: {} });
         expect(picker.startDate?.toISOString()).toBe(

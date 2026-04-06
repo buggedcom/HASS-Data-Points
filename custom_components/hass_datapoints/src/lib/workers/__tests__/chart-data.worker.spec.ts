@@ -4,10 +4,10 @@ type WorkerOnMessage = (event: { data: unknown }) => void;
 
 interface MockWorkerGlobal {
   postMessage: ReturnType<typeof vi.fn>;
-  onmessage: WorkerOnMessage | null;
+  onmessage: Nullable<WorkerOnMessage>;
 }
 
-describe("chart-data.worker.js", () => {
+describe("chart-data.worker", () => {
   beforeEach(() => {
     vi.resetModules();
     vi.stubGlobal("self", {
@@ -26,7 +26,7 @@ describe("chart-data.worker.js", () => {
         expect.assertions(1);
         const workerSelf = globalThis.self as unknown as MockWorkerGlobal;
 
-        await import("@/lib/workers/chart-data.worker.js");
+        await import("@/lib/workers/chart-data.worker");
 
         workerSelf.onmessage?.({
           data: {
@@ -61,7 +61,7 @@ describe("chart-data.worker.js", () => {
         expect.assertions(1);
         const workerSelf = globalThis.self as unknown as MockWorkerGlobal;
 
-        await import("@/lib/workers/chart-data.worker.js");
+        await import("@/lib/workers/chart-data.worker");
 
         workerSelf.onmessage?.({
           data: {

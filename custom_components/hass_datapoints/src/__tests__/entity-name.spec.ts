@@ -8,9 +8,9 @@ import {
   areaIcon,
   labelName,
   labelIcon,
-} from "@/lib/ha/entity-name.js";
+} from "@/lib/ha/entity-name";
 
-function makeHass(overrides: Record<string, unknown> = {}) {
+function makeHass(overrides: RecordWithUnknownValues = {}) {
   return {
     states: {},
     entities: {},

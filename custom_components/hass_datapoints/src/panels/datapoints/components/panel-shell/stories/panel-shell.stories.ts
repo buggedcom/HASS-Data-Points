@@ -56,7 +56,7 @@ export default {
       return {};
     },
   ],
-  render: (args: Record<string, unknown>) => html`
+  render: (args: RecordWithUnknownValues) => html`
     <panel-shell
       .sidebarCollapsed=${args.sidebarCollapsed}
       .hasSavedState=${args.hasSavedState}

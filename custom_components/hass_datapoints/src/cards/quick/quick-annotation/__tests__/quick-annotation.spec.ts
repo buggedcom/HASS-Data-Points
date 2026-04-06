@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "../quick-annotation";
 
-function createElement(props: Record<string, unknown> = {}) {
+function createElement(props: RecordWithUnknownValues = {}) {
   const el = document.createElement("quick-annotation") as HTMLElement & {
     value: string;
     updateComplete: Promise<void>;

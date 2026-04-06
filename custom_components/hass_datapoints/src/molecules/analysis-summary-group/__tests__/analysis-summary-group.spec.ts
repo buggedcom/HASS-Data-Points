@@ -99,7 +99,7 @@ describe("analysis-summary-group", () => {
         expect.assertions(2);
         const shadingCheckbox = el.shadowRoot!.querySelector(
           "label.option input[type='checkbox']"
-        ) as HTMLInputElement | null;
+        ) as Nullable<HTMLInputElement>;
         expect(shadingCheckbox).not.toBeNull();
         expect(shadingCheckbox!.checked).toBe(false);
       });
@@ -122,7 +122,7 @@ describe("analysis-summary-group", () => {
         expect.assertions(1);
         const shadingCheckbox = el.shadowRoot!.querySelector(
           "label.option input[type='checkbox']"
-        ) as HTMLInputElement | null;
+        ) as Nullable<HTMLInputElement>;
         expect(shadingCheckbox!.checked).toBe(true);
       });
     });

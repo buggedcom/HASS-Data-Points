@@ -5,7 +5,7 @@ import {
   getCachedRangePromise,
   setCachedRangePromise,
   withStableRangeCache,
-} from "@/lib/data/cache.js";
+} from "@/lib/data/cache";
 
 describe("cache lib", () => {
   beforeEach(() => {

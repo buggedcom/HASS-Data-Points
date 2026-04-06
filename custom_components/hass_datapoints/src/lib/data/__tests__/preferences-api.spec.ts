@@ -12,7 +12,7 @@ import {
   PANEL_HISTORY_SAVED_PAGE_KEY,
   fetchUserData,
   saveUserData,
-} from "@/lib/data/preferences-api.js";
+} from "@/lib/data/preferences-api";
 
 let warnSpy: ReturnType<typeof vi.fn>;
 
@@ -29,7 +29,7 @@ afterAll(() => {
   vi.unstubAllGlobals();
 });
 
-describe("preferences-api.js", () => {
+describe("preferences-api", () => {
   describe("GIVEN the history page saved user-data key", () => {
     describe("WHEN it is read", () => {
       it("THEN it keeps the expected stable key", () => {

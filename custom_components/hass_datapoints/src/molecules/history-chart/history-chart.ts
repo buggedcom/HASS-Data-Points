@@ -22,19 +22,19 @@ export class HistoryChart extends HTMLElement {
 
   private _configKey = "";
 
-  private _config: CardConfig | null = null;
+  private _config: Nullable<CardConfig> = null;
 
-  private _hass: HassLike | null = null;
+  private _hass: Nullable<HassLike> = null;
 
-  private _chartEl:
-    | (HTMLElement & {
-        setConfig(cfg: CardConfig): void;
-        setExternalZoomRange?(
-          range: { start: number; end: number } | null
-        ): void;
-        hass: HassLike | null;
-      })
-    | null = null;
+  private _chartEl: Nullable<
+    HTMLElement & {
+      setConfig(cfg: CardConfig): void;
+      setExternalZoomRange?(
+        range: Nullable<{ start: number; end: number }>
+      ): void;
+      hass: Nullable<HassLike>;
+    }
+  > = null;
 
   // ── Construction ───────────────────────────────────────────────────────────
 
@@ -42,11 +42,17 @@ export class HistoryChart extends HTMLElement {
     if (!this._chartEl) {
       const card = document.createElement(
         "hass-datapoints-history-card"
-      ) as typeof this._chartEl;
+      ) as unknown as HTMLElement & {
+        setConfig(cfg: CardConfig): void;
+        setExternalZoomRange?(
+          range: Nullable<{ start: number; end: number }>
+        ): void;
+        hass: Nullable<HassLike>;
+      };
       // Make the inner card fill the molecule's flex space.
       (card as HTMLElement).style.cssText =
         "flex:1 1 auto;min-width:0;min-height:0;width:100%;height:100%;";
-      this.appendChild(card!);
+      this.appendChild(card);
       this._chartEl = card;
       // Apply any config/hass that was set before connection.
       this._applyConfig();
@@ -63,20 +69,20 @@ export class HistoryChart extends HTMLElement {
     return this._chartEl;
   }
 
-  get config(): CardConfig | null {
+  get config(): Nullable<CardConfig> {
     return this._config;
   }
 
-  set config(value: CardConfig | null) {
+  set config(value: Nullable<CardConfig>) {
     this._config = value;
     this._applyConfig();
   }
 
-  get hass(): HassLike | null {
+  get hass(): Nullable<HassLike> {
     return this._hass;
   }
 
-  set hass(value: HassLike | null) {
+  set hass(value: Nullable<HassLike>) {
     this._hass = value;
     if (this._chartEl) {
       this._chartEl.hass = value;
@@ -86,7 +92,7 @@ export class HistoryChart extends HTMLElement {
   /**
    * Passes an external committed zoom range to the inner card.
    */
-  setExternalZoomRange(range: { start: number; end: number } | null) {
+  setExternalZoomRange(range: Nullable<{ start: number; end: number }>) {
     this._chartEl?.setExternalZoomRange?.(range);
   }
 

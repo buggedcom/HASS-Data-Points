@@ -1,9 +1,10 @@
 import { html, LitElement, nothing } from "lit";
 import { property, state } from "lit/decorators.js";
+import { localized, msg } from "@/lib/i18n/localize";
 
 import { styles } from "./history-targets.styles";
-import { entityName } from "@/lib/ha/entity-name.js";
-import { esc } from "@/lib/util/format.js";
+import { entityName } from "@/lib/ha/entity-name";
+import { esc } from "@/lib/util/format";
 import type { HassLike, HassState } from "@/lib/types";
 import "@/molecules/target-row-list/target-row-list";
 
@@ -29,6 +30,7 @@ import "@/molecules/target-row-list/target-row-list";
  * @fires dp-targets-prefs-click     — `{}` when the collapsed preferences button is clicked
  * @fires dp-collapsed-entity-click  — `{ entityId: string, buttonEl: HTMLElement }` when a collapsed summary icon is clicked
  */
+@localized()
 export class HistoryTargets extends LitElement {
   static styles = styles;
 
@@ -44,7 +46,7 @@ export class HistoryTargets extends LitElement {
   @property({ type: Object }) accessor states: Record<string, HassState> = {};
 
   /** HA connection object — passed to sub-elements. */
-  @property({ type: Object }) accessor hass: HassLike | null = null;
+  @property({ type: Object }) accessor hass: Nullable<HassLike> = null;
 
   /** Available comparison windows for delta analysis. */
   @property({ type: Array }) accessor comparisonWindows: unknown[] = [];
@@ -61,25 +63,25 @@ export class HistoryTargets extends LitElement {
 
   // ── Private helpers ────────────────────────────────────────────────────────
 
-  private _emit(name: string, detail: Record<string, unknown> = {}): void {
+  private _emit(name: string, detail: RecordWithUnknownValues = {}): void {
     this.dispatchEvent(
       new CustomEvent(name, { detail, bubbles: true, composed: true })
     );
   }
 
   /** Returns the `target-row-list` element for direct property access by the parent. */
-  getRowListEl(): (HTMLElement & Record<string, unknown>) | null {
+  getRowListEl(): Nullable<HTMLElement & RecordWithUnknownValues> {
     return (
-      this.shadowRoot?.querySelector<HTMLElement & Record<string, unknown>>(
+      this.shadowRoot?.querySelector<HTMLElement & RecordWithUnknownValues>(
         "target-row-list"
       ) ?? null
     );
   }
 
   /** Returns the `ha-target-picker` element for direct property access by the parent. */
-  getTargetPickerEl(): (HTMLElement & Record<string, unknown>) | null {
+  getTargetPickerEl(): Nullable<HTMLElement & RecordWithUnknownValues> {
     return (
-      this.shadowRoot?.querySelector<HTMLElement & Record<string, unknown>>(
+      this.shadowRoot?.querySelector<HTMLElement & RecordWithUnknownValues>(
         "ha-target-picker"
       ) ?? null
     );
@@ -94,7 +96,9 @@ export class HistoryTargets extends LitElement {
 
   private _onAddTargetClick(ev: Event): void {
     ev.stopPropagation();
-    this._emit("dp-targets-add-click");
+    this._emit("dp-targets-add-click", {
+      buttonEl: ev.currentTarget,
+    });
   }
 
   private _onCollapsedEntityClick(ev: Event, entityId: string): void {
@@ -128,7 +132,7 @@ export class HistoryTargets extends LitElement {
             this._onCollapsedEntityClick(ev, row.entity_id)}
         >
           <ha-state-icon
-            .stateObj=${(this.hass as Record<string, unknown> | null)?.states?.[
+            .stateObj=${(this.hass?.states as RecordWithUnknownValues | undefined)?.[
               row.entity_id
             ]}
             .hass=${this.hass}
@@ -143,9 +147,9 @@ export class HistoryTargets extends LitElement {
     return html`
       <div class="history-targets${this.sidebarCollapsed && " collapsed"}">
         <div class="sidebar-section-header history-targets-header">
-          <div class="sidebar-section-title">Targets</div>
+          <div class="sidebar-section-title">${msg("Targets")}</div>
           <div class="sidebar-section-subtitle">
-            Each row controls one chart series.
+            ${msg("Each row controls one chart series.")}
           </div>
         </div>
 
@@ -170,8 +174,8 @@ export class HistoryTargets extends LitElement {
         <div class="history-targets-collapsed-add-container">
           <button
             class="history-targets-collapsed-add"
-            aria-label="Add target"
-            title="Add target"
+            aria-label=${msg("Add target")}
+            title=${msg("Add target")}
             @click=${this._onAddTargetClick}
           >
             <ha-icon icon="mdi:plus"></ha-icon>
@@ -181,8 +185,8 @@ export class HistoryTargets extends LitElement {
         <div class="history-targets-collapsed-preferences-container">
           <button
             class="history-targets-collapsed-preferences"
-            aria-label="Chart preferences"
-            title="Chart preferences"
+            aria-label=${msg("Chart preferences")}
+            title=${msg("Chart preferences")}
             @click=${this._onPrefsClick}
           >
             <ha-icon icon="mdi:tune-variant"></ha-icon>

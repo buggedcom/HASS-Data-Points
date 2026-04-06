@@ -239,6 +239,25 @@ export const styles = css`
     min-width: 0;
   }
 
+  @media (max-width: 900px) {
+    .range-toolbar {
+      flex-wrap: nowrap;
+    }
+
+    .range-toolbar > * + * {
+      margin-left: 0;
+      padding-left: 0;
+    }
+
+    .range-toolbar > * + *::before {
+      display: none;
+    }
+
+    .range-sidebar-toggle {
+      display: none;
+    }
+  }
+
   @media (max-width: 720px) {
     .range-toolbar > * + * {
       margin-left: 2px;
@@ -248,6 +267,12 @@ export const styles = css`
     .range-toolbar > * + *::before {
       top: 8px;
       bottom: 8px;
+    }
+
+    .range-toolbar .range-sidebar-toggle,
+    .range-toolbar .range-picker-button,
+    .range-toolbar .range-options-button {
+      align-self: flex-end;
     }
 
     .range-picker-button,
@@ -266,25 +291,6 @@ export const styles = css`
 
     .range-sidebar-toggle {
       display: inline-flex;
-    }
-  }
-
-  @media (max-width: 900px) {
-    .range-toolbar {
-      flex-wrap: nowrap;
-    }
-
-    .range-toolbar > * + * {
-      margin-left: 0;
-      padding-left: 0;
-    }
-
-    .range-toolbar > * + *::before {
-      display: none;
-    }
-
-    .range-sidebar-toggle {
-      display: none;
     }
   }
 `;

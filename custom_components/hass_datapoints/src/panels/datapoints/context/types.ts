@@ -4,14 +4,14 @@ export interface HistoryTargetRowState {
   entity_id: string;
   color: string;
   visible?: boolean;
-  analysis?: Record<string, unknown>;
+  analysis?: RecordWithUnknownValues;
 }
 
 export interface HistoryRangeState {
-  startTime: Date | null;
-  endTime: Date | null;
-  previewZoomRange: { start: number; end: number } | null;
-  committedZoomRange: { start: number; end: number } | null;
+  startTime: Nullable<Date>;
+  endTime: Nullable<Date>;
+  previewZoomRange: Nullable<{ start: number; end: number }>;
+  committedZoomRange: Nullable<{ start: number; end: number }>;
 }
 
 export interface HistoryComparisonWindowState {
@@ -25,8 +25,8 @@ export interface HistoryComparisonWindowState {
 
 export interface HistoryComparisonState {
   windows: HistoryComparisonWindowState[];
-  selectedWindowId: string | null;
-  hoveredWindowId: string | null;
+  selectedWindowId: Nullable<string>;
+  hoveredWindowId: Nullable<string>;
 }
 
 export interface HistoryDisplayState {
@@ -34,8 +34,8 @@ export interface HistoryDisplayState {
 }
 
 export interface HistoryTargetSelectionState {
-  selection: Record<string, unknown>;
-  rawSelection: Record<string, unknown>;
+  selection: RecordWithUnknownValues;
+  rawSelection: RecordWithUnknownValues;
   rows: HistoryTargetRowState[];
 }
 
@@ -64,47 +64,48 @@ export interface HistoryPersistenceState {
 }
 
 export interface HistoryNavigationReadState {
-  entityFromUrl: string | null;
-  deviceFromUrl: string | null;
-  areaFromUrl: string | null;
-  labelFromUrl: string | null;
-  datapointsScopeFromUrl: string | null;
-  startFromUrl: string | null;
-  endFromUrl: string | null;
-  zoomStartFromUrl: string | null;
-  zoomEndFromUrl: string | null;
-  seriesColorsFromUrl: Record<string, string>;
-  dateWindowsFromUrl: Array<Record<string, unknown>>;
+  entityFromUrl: Nullable<string>;
+  deviceFromUrl: Nullable<string>;
+  areaFromUrl: Nullable<string>;
+  labelFromUrl: Nullable<string>;
+  datapointsScopeFromUrl: Nullable<string>;
+  startFromUrl: Nullable<string>;
+  endFromUrl: Nullable<string>;
+  zoomStartFromUrl: Nullable<string>;
+  zoomEndFromUrl: Nullable<string>;
+  seriesColorsFromUrl: RecordWithStringValues;
+  dateWindowsFromUrl: Array<RecordWithUnknownValues>;
+  pageStateFromUrl: Nullable<RecordWithUnknownValues>;
   hoursFromUrl: number;
   hasTargetInUrl: boolean;
   hasRangeInUrl: boolean;
-  sessionState: Record<string, unknown> | null;
+  sessionState: Nullable<RecordWithUnknownValues>;
 }
 
 export interface HistoryPanelRefs {
-  shellEl: HTMLElement | null;
-  chartEl: HTMLElement | null;
-  listEl: HTMLElement | null;
-  historyTargetsEl: HTMLElement | null;
-  rangeToolbarEl: HTMLElement | null;
+  shellEl: Nullable<HTMLElement>;
+  chartEl: Nullable<HTMLElement>;
+  listEl: Nullable<HTMLElement>;
+  historyTargetsEl: Nullable<HTMLElement>;
+  rangeToolbarEl: Nullable<HTMLElement>;
 }
 
 export interface HistoryAppStateContext {
   state: HistoryPageState;
   setSidebarCollapsed(value: boolean): void;
-  setRange(startTime: Date | null, endTime: Date | null): void;
-  setPreviewZoomRange(value: { start: number; end: number } | null): void;
-  setCommittedZoomRange(value: { start: number; end: number } | null): void;
-  setTargetSelection(value: Record<string, unknown>): void;
-  setTargetSelectionRaw(value: Record<string, unknown>): void;
+  setRange(startTime: Nullable<Date>, endTime: Nullable<Date>): void;
+  setPreviewZoomRange(value: Nullable<{ start: number; end: number }>): void;
+  setCommittedZoomRange(value: Nullable<{ start: number; end: number }>): void;
+  setTargetSelection(value: RecordWithUnknownValues): void;
+  setTargetSelectionRaw(value: RecordWithUnknownValues): void;
   setSeriesRows(rows: HistoryTargetRowState[]): void;
   setComparisonWindows(windows: HistoryComparisonWindowState[]): void;
-  setSelectedComparisonWindowId(value: string | null): void;
-  setHoveredComparisonWindowId(value: string | null): void;
+  setSelectedComparisonWindowId(value: Nullable<string>): void;
+  setHoveredComparisonWindowId(value: Nullable<string>): void;
 }
 
 export interface HistoryPageContext {
-  hass: HassLike | null;
+  hass: Nullable<HassLike>;
   app: HistoryAppStateContext;
   fetch: HistoryFetchContext;
   persistence: HistoryPersistenceContext;
@@ -115,7 +116,7 @@ export interface HistoryPageContext {
 export interface HistoryFetchContext {
   state: HistoryFetchState;
   ensureHistoryBounds(options: {
-    onSuccess(payload: { start: string | null; end: string | null }): void;
+    onSuccess(payload: { start: Nullable<string>; end: Nullable<string> }): void;
     onError?(error: unknown): void;
   }): Promise<void>;
   ensureUserPreferences<T>(options: {
@@ -127,7 +128,7 @@ export interface HistoryFetchContext {
   loadSavedPageIndicator<T>(options: {
     savedPageKey: string;
     fallbackValue: T;
-    onSuccess(saved: T | null): void;
+    onSuccess(saved: Nullable<T>): void;
     onError?(error: unknown): void;
   }): Promise<void>;
   resetTimelineEvents(): void;
@@ -178,24 +179,27 @@ export interface HistoryPersistenceContext {
 }
 
 export interface HistoryOrchestrationContext {
-  requestChartResizeRedraw(chartEl: HTMLElement | null): void;
+  requestChartResizeRedraw(chartEl: Nullable<HTMLElement>): void;
   cancelChartResizeRedraw(): void;
-  openTargetPicker(targetControl: HTMLElement | null): void;
+  openTargetPicker(
+    targetControl: Nullable<HTMLElement>,
+    anchorEl?: Nullable<HTMLElement>
+  ): void;
   renderComparisonTabs(options: {
-    chartEl: HTMLElement | null;
+    chartEl: Nullable<HTMLElement>;
     comparisonWindows: Array<{
       id: string;
       label?: string;
       start_time: string;
       end_time: string;
     }>;
-    selectedComparisonWindowId: string | null;
-    hoveredComparisonWindowId: string | null;
-    startTime: Date | null;
-    endTime: Date | null;
+    selectedComparisonWindowId: Nullable<string>;
+    hoveredComparisonWindowId: Nullable<string>;
+    startTime: Nullable<Date>;
+    endTime: Nullable<Date>;
     loadingComparisonWindowIds: string[];
-    comparisonTabRailComp: HTMLElement | null;
-    comparisonTabsHostEl: HTMLElement | null;
+    comparisonTabRailComp: Nullable<HTMLElement>;
+    comparisonTabsHostEl: Nullable<HTMLElement>;
     formatComparisonLabel(startTime: Date, endTime: Date): string;
     onActivate(tabId: string): void;
     onHover(tabId: string): void;
@@ -204,32 +208,32 @@ export interface HistoryOrchestrationContext {
     onDelete(tabId: string): void;
     onAdd(): void;
   }): {
-    comparisonTabRailComp: HTMLElement | null;
-    comparisonTabsHostEl: HTMLElement | null;
+    comparisonTabRailComp: Nullable<HTMLElement>;
+    comparisonTabsHostEl: Nullable<HTMLElement>;
   };
-  updateComparisonTabsOverflow(chartEl: HTMLElement | null): void;
+  updateComparisonTabsOverflow(chartEl: Nullable<HTMLElement>): void;
   handleComparisonTabHover(options: {
-    id: string | null | undefined;
-    hoveredComparisonWindowId: string | null;
-    setHoveredComparisonWindowId(value: string | null): void;
+    id: Nullable<string> | undefined;
+    hoveredComparisonWindowId: Nullable<string>;
+    setHoveredComparisonWindowId(value: Nullable<string>): void;
     updateComparisonRangePreview(): void;
     updateChartHoverIndicator(): void;
     renderContent(): void;
   }): void;
   handleComparisonTabLeave(options: {
-    id: string | null | undefined;
-    hoveredComparisonWindowId: string | null;
-    setHoveredComparisonWindowId(value: string | null): void;
+    id: Nullable<string> | undefined;
+    hoveredComparisonWindowId: Nullable<string>;
+    setHoveredComparisonWindowId(value: Nullable<string>): void;
     updateComparisonRangePreview(): void;
     updateChartHoverIndicator(): void;
     renderContent(): void;
   }): void;
   handleComparisonTabActivate(options: {
-    id: string | null | undefined;
+    id: Nullable<string> | undefined;
     comparisonWindows: Array<{ id: string }>;
-    selectedComparisonWindowId: string | null;
-    setSelectedComparisonWindowId(value: string | null): void;
-    setHoveredComparisonWindowId(value: string | null): void;
+    selectedComparisonWindowId: Nullable<string>;
+    setSelectedComparisonWindowId(value: Nullable<string>): void;
+    setHoveredComparisonWindowId(value: Nullable<string>): void;
     clearDeltaAnalysisSelectionState(): void;
     updateComparisonRangePreview(): void;
     updateChartHoverIndicator(): void;
@@ -241,16 +245,17 @@ export interface HistoryOrchestrationContext {
 
 export interface HistoryNavigationContext {
   readStateFromLocation(): HistoryNavigationReadState;
-  readSessionState(): Record<string, unknown> | null;
+  readSessionState(): Nullable<RecordWithUnknownValues>;
   saveSessionState(source: unknown): void;
   updateUrl(options: {
     entities: string[];
     datapointScope: string;
-    startTime: Date | null;
-    endTime: Date | null;
+    startTime: Nullable<Date>;
+    endTime: Nullable<Date>;
     hours: number;
-    committedZoomRange: { start: number; end: number } | null;
-    comparisonWindows: Array<Record<string, unknown>>;
+    committedZoomRange: Nullable<{ start: number; end: number }>;
+    comparisonWindows: Array<RecordWithUnknownValues>;
+    pageState: RecordWithUnknownValues;
     seriesRows: Array<{ entity_id: string; color: string }>;
     seriesColorQueryKey(entityId: string): string;
     push?: boolean;

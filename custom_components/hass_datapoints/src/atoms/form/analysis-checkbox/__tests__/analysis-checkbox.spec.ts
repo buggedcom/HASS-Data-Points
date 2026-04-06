@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "../analysis-checkbox";
 
-function createElement(props: Record<string, unknown> = {}) {
+function createElement(props: RecordWithUnknownValues = {}) {
   const el = document.createElement("analysis-checkbox") as HTMLElement & {
     checked: boolean;
     label: string;

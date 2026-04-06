@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "../inline-select";
 
-function createElement(props: Record<string, unknown> = {}) {
+function createElement(props: RecordWithUnknownValues = {}) {
   const el = document.createElement("inline-select") as HTMLElement & {
     value: string;
     options: Array<{ value: string; label: string }>;

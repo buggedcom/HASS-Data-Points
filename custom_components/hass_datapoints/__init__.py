@@ -9,6 +9,7 @@ from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components import panel_custom
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
+from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import config_validation as cv
 
@@ -38,6 +39,8 @@ from .anomaly_cache import AnomalyCache
 from . import websocket_api as ws_api
 
 type HassRecordsConfigEntry = ConfigEntry[HassRecordsStore]
+
+PLATFORMS: list[Platform] = [Platform.SENSOR]
 
 
 def _find_automation_id(hass: HomeAssistant, context) -> str | None:
@@ -159,12 +162,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: HassRecordsConfigEntry) 
     # Register websocket commands used by the frontend cards
     ws_api.async_register_commands(hass)
 
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
     return True
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: HassRecordsConfigEntry) -> bool:
     """Unload a config entry."""
+    unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     hass.services.async_remove(DOMAIN, SERVICE_RECORD)
     hass.data[DOMAIN].pop("store", None)
     hass.data[DOMAIN].pop("anomaly_cache", None)
-    return True
+    return unload_ok

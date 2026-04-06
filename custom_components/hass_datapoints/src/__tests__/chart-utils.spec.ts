@@ -3,7 +3,7 @@ import {
   clampChartValue,
   formatTooltipValue,
   formatTooltipDisplayValue,
-} from "@/lib/chart/chart-shell.js";
+} from "@/lib/chart/chart-shell";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // clampChartValue

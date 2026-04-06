@@ -9,7 +9,7 @@ import "@/molecules/chip-group/chip-group";
 export class CardActionTargets extends LitElement {
   static styles = styles;
 
-  @property({ attribute: false }) accessor hass: HassLike | null = null;
+  @property({ attribute: false }) accessor hass: Nullable<HassLike> = null;
 
   @property({ type: Boolean, attribute: "show-config-targets" })
   accessor showConfigTargets: boolean = true;

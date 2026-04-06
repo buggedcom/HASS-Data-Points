@@ -3,7 +3,7 @@
  * Pass the lower-cased `device_class` attribute value.
  */
 export function binaryOnLabel(deviceClass: string): string {
-  const labels: Record<string, string> = {
+  const labels: RecordWithStringValues = {
     battery: "low",
     battery_charging: "charging",
     carbon_monoxide: "detected",
@@ -40,7 +40,7 @@ export function binaryOnLabel(deviceClass: string): string {
  * Pass the lower-cased `device_class` attribute value.
  */
 export function binaryOffLabel(deviceClass: string): string {
-  const labels: Record<string, string> = {
+  const labels: RecordWithStringValues = {
     battery: "normal",
     battery_charging: "not charging",
     carbon_monoxide: "clear",

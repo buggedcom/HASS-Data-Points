@@ -10,7 +10,7 @@ export class EntityChip extends LitElement {
   @property({ type: String, attribute: "item-id" }) accessor itemId: string =
     "";
 
-  @property({ type: Object }) accessor hass: HassLike | null = null;
+  @property({ type: Object }) accessor hass: Nullable<HassLike> = null;
 
   @property({ type: Boolean }) accessor removable: boolean = false;
 

@@ -1,5 +1,6 @@
 import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
+import { localized, msg } from "@/lib/i18n/localize";
 
 import { styles } from "./sidebar-chart-display-section.styles";
 import "@/atoms/display/sidebar-options-section/sidebar-options-section";
@@ -29,15 +30,13 @@ export const HOVER_SNAP_MODE_OPTIONS = [
   { value: "snap_to_data_points", label: "Snap to data points" },
 ];
 
+@localized()
 export class SidebarChartDisplaySection extends LitElement {
   @property({ type: Boolean, attribute: "show-tooltips" })
   accessor showTooltips: boolean = true;
 
   @property({ type: Boolean, attribute: "show-hover-guides" })
   accessor showHoverGuides: boolean = false;
-
-  @property({ type: Boolean, attribute: "show-correlated-anomalies" })
-  accessor showCorrelatedAnomalies: boolean = false;
 
   @property({ type: Boolean, attribute: "show-data-gaps" })
   accessor showDataGaps: boolean = true;
@@ -56,6 +55,15 @@ export class SidebarChartDisplaySection extends LitElement {
   @property({ type: Boolean }) accessor open: boolean = true;
 
   static styles = styles;
+
+  private _localizedOptions(
+    options: Array<{ value: string; label: string }>
+  ): Array<{ value: string; label: string }> {
+    return options.map((opt) => ({
+      ...opt,
+      label: msg(opt.label),
+    }));
+  }
 
   private _emitDisplay(kind: string, value: boolean | string) {
     this.dispatchEvent(
@@ -90,8 +98,8 @@ export class SidebarChartDisplaySection extends LitElement {
   render() {
     return html`
       <sidebar-options-section
-        .title=${"Chart Display"}
-        .subtitle=${"Configure visual and interaction behaviour for the chart."}
+        .title=${msg("Chart Display")}
+        .subtitle=${msg("Configure visual and interaction behaviour for the chart.")}
         .collapsible=${this.collapsible}
         .open=${this.open}
       >
@@ -99,22 +107,17 @@ export class SidebarChartDisplaySection extends LitElement {
           .items=${[
             {
               name: "tooltips",
-              label: "Show tooltips",
+              label: msg("Show tooltips"),
               checked: this.showTooltips,
             },
             {
               name: "hover_guides",
-              label: "Emphasize hover guides",
+              label: msg("Emphasize hover guides"),
               checked: this.showHoverGuides,
             },
             {
-              name: "correlated_anomalies",
-              label: "Highlight correlated anomalies",
-              checked: this.showCorrelatedAnomalies,
-            },
-            {
               name: "data_gaps",
-              label: "Show data gaps",
+              label: msg("Show data gaps"),
               checked: this.showDataGaps,
             },
           ]}
@@ -126,7 +129,7 @@ export class SidebarChartDisplaySection extends LitElement {
             ?disabled=${!this.showDataGaps}
             @change=${this._onGapThresholdChange}
           >
-            ${DATA_GAP_THRESHOLD_OPTIONS.map(
+            ${this._localizedOptions(DATA_GAP_THRESHOLD_OPTIONS).map(
               (opt) => html`
                 <option
                   value=${opt.value}
@@ -137,13 +140,13 @@ export class SidebarChartDisplaySection extends LitElement {
               `
             )}
           </select>
-          <span>Gap threshold</span>
+          <span>${msg("Gap threshold")}</span>
         </div>
         <div class="y-axis-group">
           <radio-group
             .name=${"chart-y-axis-mode"}
             .value=${this.yAxisMode}
-            .options=${Y_AXIS_MODE_OPTIONS}
+            .options=${this._localizedOptions(Y_AXIS_MODE_OPTIONS)}
             @dp-radio-change=${this._onYAxisModeChange}
           ></radio-group>
         </div>
@@ -151,7 +154,7 @@ export class SidebarChartDisplaySection extends LitElement {
           <radio-group
             .name=${"chart-hover-snap-mode"}
             .value=${this.hoverSnapMode}
-            .options=${HOVER_SNAP_MODE_OPTIONS}
+            .options=${this._localizedOptions(HOVER_SNAP_MODE_OPTIONS)}
             @dp-radio-change=${this._onHoverSnapModeChange}
           ></radio-group>
         </div>

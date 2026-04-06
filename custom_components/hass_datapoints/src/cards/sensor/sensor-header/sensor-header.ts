@@ -10,12 +10,12 @@ export class SensorHeader extends LitElement {
 
   @property({ type: String }) accessor unit: string = "";
 
-  @property({ type: Object, attribute: false }) accessor stateObj: Record<
+  @property({ type: Object, attribute: false }) accessor stateObj: Nullable<Record<
     string,
     unknown
-  > | null = null;
+  >> = null;
 
-  @property({ type: Object, attribute: false }) accessor hass: HassLike | null =
+  @property({ type: Object, attribute: false }) accessor hass: Nullable<HassLike> =
     null;
 
   static styles = styles;

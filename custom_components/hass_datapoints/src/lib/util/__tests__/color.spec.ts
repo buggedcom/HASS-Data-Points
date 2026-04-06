@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { contrastColor, hexToRgba } from "@/lib/util/color.js";
+import { contrastColor, hexToRgba } from "@/lib/util/color";
 
 describe("color.js", () => {
   describe("GIVEN a hex color and alpha", () => {

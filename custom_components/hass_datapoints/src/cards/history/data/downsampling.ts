@@ -4,7 +4,7 @@ import type { Point } from "./types";
  * Map of human-readable interval strings to milliseconds.
  * Used when configuring downsampling bucket widths.
  */
-export const SAMPLE_INTERVAL_MS: Record<string, number> = {
+export const SAMPLE_INTERVAL_MS: RecordWithNumericValues = {
   "1s": 1_000,
   "5s": 5_000,
   "10s": 10_000,

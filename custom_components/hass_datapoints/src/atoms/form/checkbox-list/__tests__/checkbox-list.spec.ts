@@ -8,7 +8,7 @@ const defaultItems: CheckboxItem[] = [
   { name: "pressure", label: "Pressure", checked: true },
 ];
 
-function createElement(props: Record<string, unknown> = {}) {
+function createElement(props: RecordWithUnknownValues = {}) {
   const el = document.createElement("checkbox-list") as HTMLElement & {
     items: CheckboxItem[];
   };

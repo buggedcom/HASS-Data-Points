@@ -4,9 +4,9 @@ import {
   fetchAnomaliesFromBackend,
   fetchDownsampledHistory,
   fetchHistoryDuringPeriod,
-} from "@/lib/data/history-api.js";
+} from "@/lib/data/history-api";
 
-describe("history-api.js", () => {
+describe("history-api", () => {
   describe("GIVEN a downsample request", () => {
     describe("WHEN fetchDownsampledHistory is called", () => {
       it("THEN it sends the expected websocket payload", async () => {
@@ -62,6 +62,30 @@ describe("history-api.js", () => {
             anomaly_methods: ["iqr"],
             anomaly_sensitivity: "medium",
             comparison_entity_id: "sensor.b",
+          })
+        );
+      });
+
+      it("THEN it omits sample settings when anomaly_use_sampled_data is false", async () => {
+        expect.assertions(2);
+
+        const sendMessagePromise = vi.fn(async () => ({
+          anomaly_clusters: [],
+        }));
+        const hass = { connection: { sendMessagePromise } };
+
+        await expect(
+          fetchAnomaliesFromBackend(hass, "sensor.a", "start", "end", {
+            anomaly_methods: ["iqr"],
+            anomaly_use_sampled_data: false,
+            sample_interval: "24h",
+            sample_aggregate: "mean",
+          })
+        ).resolves.toEqual([]);
+        expect(sendMessagePromise).toHaveBeenCalledWith(
+          expect.not.objectContaining({
+            sample_interval: "24h",
+            sample_aggregate: "mean",
           })
         );
       });

@@ -1,4 +1,5 @@
-import { html } from "lit";
+import { CSSResultGroup, html } from "lit";
+import { msg } from "@/lib/i18n/localize";
 import { EditorBase } from "@/molecules/editor-base/editor-base";
 import { styles } from "./editor.styles";
 import "@/atoms/display/section-heading/section-heading";
@@ -9,81 +10,89 @@ import "@/atoms/form/editor-select/editor-select";
 import "@/atoms/form/editor-entity-list/editor-entity-list";
 
 export class HassRecordsStatisticsCardEditor extends EditorBase {
-  static styles = [EditorBase.styles, styles];
+  static styles: CSSResultGroup = [EditorBase.styles, styles];
 
-  _onStatTypeChange(st, checked) {
-    const cur = [...(this._config.stat_types || ["mean"])];
+  _onStatTypeChange(statType: string, checked: boolean): void {
+    const current = Array.isArray(this._config.stat_types)
+      ? [...(this._config.stat_types as string[])]
+      : ["mean"];
     if (checked) {
-      if (!cur.includes(st)) {
-        cur.push(st);
+      if (!current.includes(statType)) {
+        current.push(statType);
       }
     } else {
-      const i = cur.indexOf(st);
-      if (i !== -1) {
-        cur.splice(i, 1);
+      const index = current.indexOf(statType);
+      if (index !== -1) {
+        current.splice(index, 1);
       }
     }
-    this._set("stat_types", cur.length ? cur : ["mean"]);
+    this._set("stat_types", current.length ? current : ["mean"]);
   }
 
   render() {
     const c = this._config;
-    const statTypes = c.stat_types || ["mean"];
+    const statTypes = Array.isArray(c.stat_types)
+      ? (c.stat_types as string[])
+      : ["mean"];
 
     return html`
       <div class="ed">
-        <section-heading text="General"></section-heading>
+        <section-heading .text=${msg("General")}></section-heading>
         <editor-text-field
-          label="Card title (optional)"
+          .label=${msg("Card title (optional)")}
           .value=${c.title || ""}
-          @dp-field-change=${(e) => this._set("title", e.detail.value)}
+          @dp-field-change=${(e: CustomEvent<{ value: string }>) =>
+            this._set("title", e.detail.value)}
         ></editor-text-field>
         <editor-text-field
-          label="Hours to show"
+          .label=${msg("Hours to show")}
           type="number"
           .value=${String(c.hours_to_show ?? 168)}
-          @dp-field-change=${(e) => this._set("hours_to_show", e.detail.value)}
+          @dp-field-change=${(e: CustomEvent<{ value: string }>) =>
+            this._set("hours_to_show", e.detail.value)}
         ></editor-text-field>
 
-        <section-heading text="Period"></section-heading>
+        <section-heading .text=${msg("Period")}></section-heading>
         <editor-select
-          label="Period"
+          .label=${msg("Period")}
           .value=${c.period || "hour"}
           .options=${[
-            { value: "5minute", label: "5 minutes" },
-            { value: "hour", label: "Hour" },
-            { value: "day", label: "Day" },
-            { value: "week", label: "Week" },
-            { value: "month", label: "Month" },
+            { value: "5minute", label: msg("5 minutes") },
+            { value: "hour", label: msg("Hour") },
+            { value: "day", label: msg("Day") },
+            { value: "week", label: msg("Week") },
+            { value: "month", label: msg("Month") },
           ]}
-          @dp-select-change=${(e) => this._set("period", e.detail.value)}
+          @dp-select-change=${(e: CustomEvent<{ value: string }>) =>
+            this._set("period", e.detail.value)}
         ></editor-select>
 
-        <section-heading text="Stat types"></section-heading>
+        <section-heading .text=${msg("Stat types")}></section-heading>
         ${["mean", "min", "max", "sum", "state"].map(
-          (st) => html`
+          (statType: string) => html`
             <editor-switch
-              label=${st}
-              .checked=${statTypes.includes(st)}
-              @dp-switch-change=${(e) =>
-                this._onStatTypeChange(st, e.detail.checked)}
+              label=${statType}
+              .checked=${statTypes.includes(statType)}
+              @dp-switch-change=${(e: CustomEvent<{ checked: boolean }>) =>
+                this._onStatTypeChange(statType, e.detail.checked)}
             ></editor-switch>
           `
         )}
 
-        <section-heading text="Entity / statistic ID"></section-heading>
+        <section-heading .text=${msg("Entity / statistic ID")}></section-heading>
         <editor-entity-picker
-          label="Single entity / statistic ID"
+          .label=${msg("Single entity / statistic ID")}
           .value=${c.entity || ""}
           .hass=${this.hass}
-          @dp-entity-change=${(e) => this._set("entity", e.detail.value)}
+          @dp-entity-change=${(e: CustomEvent<{ value: string }>) =>
+            this._set("entity", e.detail.value)}
         ></editor-entity-picker>
 
-        <section-heading text="Multiple entities"></section-heading>
+        <section-heading .text=${msg("Multiple entities")}></section-heading>
         <editor-entity-list
           .entities=${c.entities || []}
           .hass=${this.hass}
-          @dp-entity-list-change=${(e) =>
+          @dp-entity-list-change=${(e: CustomEvent<{ entities: string[] }>) =>
             this._set(
               "entities",
               e.detail.entities.length ? e.detail.entities : undefined

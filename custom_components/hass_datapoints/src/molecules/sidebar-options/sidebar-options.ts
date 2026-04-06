@@ -110,6 +110,7 @@ export class SidebarOptions extends LitElement {
         ></sidebar-datapoint-display-section>
         <sidebar-analysis-section
           .anomalyOverlapMode=${this.anomalyOverlapMode}
+          .showCorrelatedAnomalies=${this.showCorrelatedAnomalies}
           .anyAnomaliesEnabled=${this.anyAnomaliesEnabled}
           collapsible
           .open=${this.analysisOpen}
@@ -118,7 +119,6 @@ export class SidebarOptions extends LitElement {
         <sidebar-chart-display-section
           .showTooltips=${this.showTooltips}
           .showHoverGuides=${this.showHoverGuides}
-          .showCorrelatedAnomalies=${this.showCorrelatedAnomalies}
           .showDataGaps=${this.showDataGaps}
           .dataGapThreshold=${this.dataGapThreshold}
           .yAxisMode=${this.yAxisMode}

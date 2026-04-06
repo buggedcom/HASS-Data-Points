@@ -3,10 +3,10 @@ import { createMockHass } from "@/test-support/mock-hass";
 import { HassRecordsSensorCard } from "../sensor.ts";
 import type { EventRecord } from "@/lib/types";
 
-import { fetchEvents } from "@/lib/data/events-api.js";
+import { fetchEvents } from "@/lib/data/events-api";
 
 vi.mock("@/chart-utils.js", async (importOriginal) => {
-  const mod = (await importOriginal()) as Record<string, unknown>;
+  const mod = (await importOriginal()) as RecordWithUnknownValues;
   return {
     ...mod,
     setupCanvas: vi.fn().mockReturnValue({ w: 400, h: 220 }),
@@ -32,7 +32,7 @@ vi.mock("@/chart-renderer.js", () => {
 });
 
 vi.mock("@/helpers.js", async (importOriginal) => {
-  const mod = (await importOriginal()) as Record<string, unknown>;
+  const mod = (await importOriginal()) as RecordWithUnknownValues;
   return {
     ...mod,
     contrastColor: vi.fn().mockReturnValue("#fff"),
@@ -42,8 +42,8 @@ vi.mock("@/helpers.js", async (importOriginal) => {
   };
 });
 
-vi.mock("@/lib/data/events-api.js", async (importOriginal) => {
-  const mod = (await importOriginal()) as Record<string, unknown>;
+vi.mock("@/lib/data/events-api", async (importOriginal) => {
+  const mod = (await importOriginal()) as RecordWithUnknownValues;
   return {
     ...mod,
     fetchEvents: vi.fn().mockResolvedValue([]),
@@ -83,7 +83,7 @@ const mockEvents: EventRecord[] = [
   },
 ];
 
-function createCard(config: Record<string, unknown> = {}) {
+function createCard(config: RecordWithUnknownValues = {}) {
   const el = document.createElement("hass-datapoints-sensor-card") as any;
   document.body.appendChild(el);
   el.setConfig({ entity: "sensor.temperature", ...config });
@@ -91,7 +91,7 @@ function createCard(config: Record<string, unknown> = {}) {
 }
 
 async function setupCard(
-  config: Record<string, unknown> = {},
+  config: RecordWithUnknownValues = {},
   events: EventRecord[] = []
 ) {
   vi.mocked(fetchEvents).mockResolvedValue(events as any);
@@ -115,7 +115,7 @@ function getSubText(el: any, subTag: string): string {
 }
 
 /** Helper: collect all text content from a shadow root, recursively through nested custom elements */
-function getAllText(root: ShadowRoot | null): string {
+function getAllText(root: Nullable<ShadowRoot>): string {
   if (!root) return "";
   const parts: string[] = [root.textContent ?? ""];
   for (const el of Array.from(root.querySelectorAll("*"))) {

@@ -3,7 +3,7 @@ import { property, state } from "lit/decorators.js";
 
 import { styles } from "./dev-tool-results.styles";
 import type { ChangeItem, WindowResult } from "@/cards/dev-tool/types";
-import { fmtDateTime } from "@/lib/util/format.js";
+import { fmtDateTime } from "@/lib/util/format";
 import "@/atoms/display/feedback-banner/feedback-banner";
 
 export class CardDevToolResults extends LitElement {

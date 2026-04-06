@@ -5,15 +5,15 @@ import { styles } from "./event-list-item.styles";
 import type { EventRecord, HassLike } from "@/lib/types";
 
 export class EventListItem extends LitElement {
-  @property({ type: Object }) accessor event: EventRecord | null = null;
+  @property({ type: Object }) accessor event: Nullable<EventRecord> = null;
 
-  @property({ type: Object }) accessor hass: HassLike | null = null;
+  @property({ type: Object }) accessor hass: Nullable<HassLike> = null;
 
   @property({ type: Boolean }) accessor editable: boolean = false;
 
   static styles = styles;
 
-  _formatTime(isoStr: string | null | undefined): string {
+  _formatTime(isoStr: Nullable<string> | undefined): string {
     if (!isoStr) {
       return "";
     }

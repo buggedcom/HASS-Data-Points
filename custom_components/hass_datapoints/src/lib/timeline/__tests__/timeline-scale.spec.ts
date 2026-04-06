@@ -35,7 +35,7 @@ import {
   endOfUnit,
   addUnit,
   snapDateToUnit,
-} from "@/lib/timeline/timeline-scale.js";
+} from "@/lib/timeline/timeline-scale";
 
 describe("timeline-scale lib", () => {
   describe("GIVEN range picker event payloads", () => {

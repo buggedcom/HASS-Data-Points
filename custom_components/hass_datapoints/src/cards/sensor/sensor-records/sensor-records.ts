@@ -13,10 +13,9 @@ export class SensorRecords extends LitElement {
   accessor hiddenEventIds: Set<string> = new Set();
 
   @property({ type: Number, attribute: "page-size" }) accessor pageSize:
-    | number
-    | null = null;
+    | Nullable<number> = null;
 
-  @property({ type: Number }) accessor limit: number | null = null;
+  @property({ type: Number }) accessor limit: Nullable<number> = null;
 
   @property({ type: Boolean, attribute: "show-full-message" })
   accessor showFullMessage: boolean = true;

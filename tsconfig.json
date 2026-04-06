@@ -3,7 +3,7 @@
     "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "allowJs": true,
+    "allowJs": false,
     "checkJs": false,
     "noEmit": true,
     "strict": true,
@@ -17,7 +17,6 @@
     }
   },
   "include": [
-    "custom_components/hass_datapoints/src/**/*.js",
     "custom_components/hass_datapoints/src/**/*.ts",
     "eslint.config.mjs",
     "prettier.config.cjs"

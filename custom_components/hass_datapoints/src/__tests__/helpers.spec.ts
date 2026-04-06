@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { esc, fmtRelativeTime } from "@/lib/util/format.js";
-import { hexToRgba, contrastColor } from "@/lib/util/color.js";
-import { buildDataPointsHistoryPath } from "@/lib/ha/navigation.js";
+import { esc, fmtRelativeTime } from "@/lib/util/format";
+import { hexToRgba, contrastColor } from "@/lib/util/color";
+import { buildDataPointsHistoryPath } from "@/lib/ha/navigation";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // esc

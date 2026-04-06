@@ -1,5 +1,5 @@
-import { fetchUserData, saveUserData } from "@/lib/data/preferences-api.js";
-import { downloadHistorySpreadsheet } from "@/lib/export-spreadsheet.js";
+import { fetchUserData, saveUserData } from "@/lib/data/preferences-api";
+import { downloadHistorySpreadsheet } from "@/lib/export-spreadsheet";
 import type {
   HistoryPersistenceContext,
   HistoryPersistenceState,
@@ -7,7 +7,7 @@ import type {
 import type { HassLike } from "@/lib/types";
 
 export function createHistoryPagePersistenceContext(
-  getHass: () => HassLike | null
+  getHass: () => Nullable<HassLike>
 ): HistoryPersistenceContext {
   const state: HistoryPersistenceState = {
     savingPreferences: false,
@@ -18,7 +18,12 @@ export function createHistoryPagePersistenceContext(
   return {
     state,
 
-    async saveUserPreferences(options): Promise<void> {
+    async saveUserPreferences<T>(options: {
+      preferencesKey: string;
+      payload: T;
+      onSuccess?: () => void;
+      onError?: (error: unknown) => void;
+    }): Promise<void> {
       const hass = getHass();
       if (!hass || state.savingPreferences) {
         return;
@@ -26,7 +31,11 @@ export function createHistoryPagePersistenceContext(
 
       state.savingPreferences = true;
       try {
-        await saveUserData(hass, options.preferencesKey, options.payload);
+        await saveUserData(
+          hass,
+          options.preferencesKey,
+          options.payload as unknown
+        );
         options.onSuccess?.();
       } catch (error) {
         options.onError?.(error);
@@ -75,7 +84,13 @@ export function createHistoryPagePersistenceContext(
       }
     },
 
-    async restorePageState<T>(options): Promise<void> {
+    async restorePageState<T>(options: {
+      savedPageKey: string;
+      fallbackValue: T;
+      onSuccess?(saved: T): void;
+      onMissing?(): void;
+      onError?(error: unknown): void;
+    }): Promise<void> {
       const hass = getHass();
       if (!hass) {
         return;

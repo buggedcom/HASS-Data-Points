@@ -1,5 +1,6 @@
 import { LitElement, html, nothing } from "lit";
 import { property } from "lit/decorators.js";
+import { localized, msg } from "@/lib/i18n/localize";
 
 import { styles } from "./target-row.styles";
 import type { HassLike, HassState } from "@/lib/types";
@@ -83,6 +84,7 @@ export function _hasActiveAnalysis(
 // Component
 // ---------------------------------------------------------------------------
 
+@localized()
 export class TargetRow extends LitElement {
   @property({ type: String }) accessor color: string = "#03a9f4";
 
@@ -102,10 +104,10 @@ export class TargetRow extends LitElement {
 
   /** HA entity state object. Provides entity_id, display name, unit, and icon for the row. */
   @property({ type: Object, attribute: false })
-  accessor stateObj: HassState | null = null;
+  accessor stateObj: Nullable<HassState> = null;
 
   /** HA hass object. Required by ha-state-icon to resolve entity icons correctly. */
-  @property({ type: Object, attribute: false }) accessor hass: HassLike | null =
+  @property({ type: Object, attribute: false }) accessor hass: Nullable<HassLike> =
     null;
 
   @property({ type: Array, attribute: "comparison-windows" })
@@ -144,7 +146,7 @@ export class TargetRow extends LitElement {
   /** Display name derived from the HA state object, falling back to the entity ID. */
   private get _entityName(): string {
     return (
-      ((this.stateObj?.attributes as Record<string, unknown> | undefined)
+      ((this.stateObj?.attributes as RecordWithUnknownValues | undefined)
         ?.friendly_name as string) ?? this._entityId
     );
   }
@@ -152,7 +154,7 @@ export class TargetRow extends LitElement {
   /** Unit of measurement derived from the HA state object. */
   private get _unit(): string {
     return (
-      ((this.stateObj?.attributes as Record<string, unknown> | undefined)
+      ((this.stateObj?.attributes as RecordWithUnknownValues | undefined)
         ?.unit_of_measurement as string) ?? ""
     );
   }
@@ -163,7 +165,7 @@ export class TargetRow extends LitElement {
     );
   }
 
-  private _emit(name: string, detail: Record<string, unknown>) {
+  private _emit(name: string, detail: RecordWithUnknownValues) {
     this.dispatchEvent(
       new CustomEvent(name, { detail, bubbles: true, composed: true })
     );
@@ -207,7 +209,7 @@ export class TargetRow extends LitElement {
   }
 
   private _onGroupAnalysisChange(e: CustomEvent) {
-    this._emit("dp-row-analysis-change", e.detail as Record<string, unknown>);
+    this._emit("dp-row-analysis-change", e.detail as RecordWithUnknownValues);
   }
 
   render() {
@@ -293,8 +295,8 @@ export class TargetRow extends LitElement {
                     : "Expand"} analysis options for ${this._entityName}"
                   aria-expanded=${this.analysis?.expanded}
                   title=${hasConfigured
-                    ? "Analysis configured"
-                    : "Configure analysis"}
+                    ? msg("Analysis configured")
+                    : msg("Configure analysis")}
                   @click=${this._onAnalysisToggle}
                 >
                   <ha-icon icon="mdi:chevron-down"></ha-icon>
@@ -384,7 +386,7 @@ export class TargetRow extends LitElement {
                         @change=${(e: Event) =>
                           this._onCheckbox("hide_source_series", e)}
                       />
-                      <span>Hide source series</span>
+                      <span>${msg("Hide source series")}</span>
                     </label>
                     ${this.rowCount > 1
                       ? html`
@@ -392,13 +394,13 @@ export class TargetRow extends LitElement {
                             type="button"
                             class="history-target-analysis-copy-btn"
                             title=${this.allAnalysisSame
-                              ? "All targets already have the same settings"
-                              : "Copy these analysis settings to all targets"}
+                              ? msg("All targets already have the same settings")
+                              : msg("Copy these analysis settings to all targets")}
                             ?disabled=${this.allAnalysisSame}
                             @click=${this._onCopyAnalysisToAll}
                           >
                             <ha-icon icon="mdi:content-copy"></ha-icon>
-                            Copy to all targets
+                            ${msg("Copy to all targets")}
                           </button>
                         `
                       : nothing}

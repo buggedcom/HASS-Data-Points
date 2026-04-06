@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ChartRenderer } from "@/lib/chart/chart-renderer.js";
+import { ChartRenderer } from "@/lib/chart/chart-renderer";
 
 /** Create a ChartRenderer with a fake canvas (no actual drawing needed). */
 function makeRenderer(cssWidth = 400, cssHeight = 300) {

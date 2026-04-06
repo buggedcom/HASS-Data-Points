@@ -1,12 +1,9 @@
-import { LitElement, html } from "lit";
+import { html, LitElement } from "lit";
 import { property, state } from "lit/decorators.js";
 
 import { styles } from "./range-toolbar.styles";
 import { localized, msg } from "@/lib/i18n/localize";
-import {
-  RANGE_SNAP_OPTIONS,
-  RANGE_ZOOM_OPTIONS,
-} from "@/lib/timeline/timeline-scale.js";
+import { RANGE_SNAP_OPTIONS, RANGE_ZOOM_OPTIONS, } from "@/lib/timeline/timeline-scale";
 import type { HassLike } from "@/lib/types";
 import "@/molecules/floating-menu/floating-menu";
 import "@/molecules/panel-timeline/panel-timeline";
@@ -34,16 +31,16 @@ export class RangeToolbar extends LitElement {
   static styles = styles;
 
   /** Home Assistant instance forwarded to the date picker. */
-  @property({ attribute: false }) accessor hass: HassLike | null = null;
+  @property({ attribute: false }) accessor hass: Nullable<HassLike> = null;
 
   /** Current chart start time. */
-  @property({ type: Object }) accessor startTime: Date | null = null;
+  @property({ type: Object }) accessor startTime: Nullable<Date> = null;
 
   /** Current chart end time. */
-  @property({ type: Object }) accessor endTime: Date | null = null;
+  @property({ type: Object }) accessor endTime: Nullable<Date> = null;
 
   /** Timeline bounds — passed to panel-timeline. */
-  @property({ type: Object }) accessor rangeBounds: unknown | null = null;
+  @property({ type: Object }) accessor rangeBounds: Nullable<unknown> = null;
 
   /** Current zoom level value (e.g. "auto", "day", "week_expanded"). */
   @property({ type: String, attribute: "zoom-level" })
@@ -66,31 +63,24 @@ export class RangeToolbar extends LitElement {
   accessor timelineEvents: unknown[] = [];
 
   /** Comparison overlay range in timeline coordinates. */
-  @property({ type: Object, attribute: false }) accessor comparisonPreview: {
-    start: number;
-    end: number;
-  } | null = null;
+  @property({ type: Object, attribute: false }) accessor comparisonPreview: Nullable<{ start: number;
+    end: number; }> = null;
 
   /** Main chart zoom highlight range. */
-  @property({ type: Object, attribute: false }) accessor zoomRange: {
-    start: number;
-    end: number;
-  } | null = null;
+  @property({ type: Object, attribute: false }) accessor zoomRange: Nullable<{ start: number;
+    end: number; }> = null;
 
   /** Comparison window zoom highlight range. */
-  @property({ type: Object, attribute: false }) accessor zoomWindowRange: {
-    start: number;
-    end: number;
-  } | null = null;
+  @property({ type: Object, attribute: false }) accessor zoomWindowRange: Nullable<{ start: number;
+    end: number; }> = null;
 
   /** Chart hover line timestamp. */
   @property({ type: Number, attribute: false }) accessor chartHoverTimeMs:
-    | number
-    | null = null;
+    | Nullable<number> = null;
 
   /** Comparison window hover line timestamp. */
   @property({ type: Number, attribute: false })
-  accessor chartHoverWindowTimeMs: number | null = null;
+  accessor chartHoverWindowTimeMs: Nullable<number> = null;
 
   @state() accessor _optionsView: string = "root";
 
@@ -101,8 +91,8 @@ export class RangeToolbar extends LitElement {
   // ── Public API ─────────────────────────────────────────────────────────────
 
   /** Sync mobile date inputs to the given start/end values. */
-  syncMobileDates(start: Date | null, end: Date | null): void {
-    const fmtInput = (d: Date | null) => {
+  syncMobileDates(start: Nullable<Date>, end: Nullable<Date>): void {
+    const fmtInput = (d: Nullable<Date>) => {
       if (!d) return "";
       const pad = (n: number) => String(n).padStart(2, "0");
       return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
@@ -132,10 +122,10 @@ export class RangeToolbar extends LitElement {
       "[data-options-current='snap']"
     );
     if (zoomCurrent) {
-      zoomCurrent.textContent = msg(zoomLabel, { id: zoomLabel });
+      zoomCurrent.textContent = msg(zoomLabel);
     }
     if (snapCurrent) {
-      snapCurrent.textContent = msg(snapLabel, { id: snapLabel });
+      snapCurrent.textContent = msg(snapLabel);
     }
     // Sync selected state on option buttons
     this.shadowRoot
@@ -178,7 +168,7 @@ export class RangeToolbar extends LitElement {
 
   // ── Private helpers ────────────────────────────────────────────────────────
 
-  private _emit(name: string, detail: Record<string, unknown> = {}): void {
+  private _emit(name: string, detail: RecordWithUnknownValues = {}): void {
     this.dispatchEvent(
       new CustomEvent(name, { detail, bubbles: true, composed: true })
     );
@@ -290,11 +280,11 @@ export class RangeToolbar extends LitElement {
     const start =
       value.start instanceof Date
         ? value.start
-        : (value as Record<string, unknown>).start;
+        : (value as RecordWithUnknownValues).start;
     const end =
       value.end instanceof Date
         ? value.end
-        : (value as Record<string, unknown>).end;
+        : (value as RecordWithUnknownValues).end;
     if (start && end) {
       this._emit("dp-date-picker-change", { start, end });
       this._togglePicker(false);
@@ -376,7 +366,7 @@ export class RangeToolbar extends LitElement {
           @click=${() => this._onOptionSelect("zoom", option.value)}
         >
           <span class="range-option-label"
-            >${msg(option.label, { id: option.label })}</span
+            >${msg(option.label)}</span
           >
         </button>
       `
@@ -394,7 +384,7 @@ export class RangeToolbar extends LitElement {
           @click=${() => this._onOptionSelect("snap", option.value)}
         >
           <span class="range-option-label"
-            >${msg(option.label, { id: option.label })}</span
+            >${msg(option.label)}</span
           >
         </button>
       `
@@ -411,7 +401,7 @@ export class RangeToolbar extends LitElement {
         <ha-icon-button
           id="range-sidebar-toggle"
           class="range-sidebar-toggle"
-          label=${msg("Toggle sidebar", { id: "Toggle sidebar" })}
+          label=${msg("Toggle sidebar")}
           @click=${this._onSidebarToggle}
         >
           <ha-icon icon=${sidebarToggleIcon}></ha-icon>
@@ -420,12 +410,12 @@ export class RangeToolbar extends LitElement {
         <div class="range-mobile-dates">
           <date-time-input
             id="range-mobile-start"
-            label=${msg("Start", { id: "Start" })}
+            label=${msg("Start")}
             @dp-datetime-change=${this._onMobileStartChange}
           ></date-time-input>
           <date-time-input
             id="range-mobile-end"
-            label=${msg("End", { id: "End" })}
+            label=${msg("End")}
             @dp-datetime-change=${this._onMobileEndChange}
           ></date-time-input>
         </div>
@@ -439,6 +429,7 @@ export class RangeToolbar extends LitElement {
             .zoomLevel=${this.zoomLevel}
             .dateSnapping=${this.dateSnapping}
             .isLiveEdge=${this.isLiveEdge}
+            .locale=${this.hass?.locale?.language ?? this.hass?.language ?? ""}
             .events=${this.timelineEvents}
             .comparisonPreview=${this.comparisonPreview}
             .zoomRange=${this.zoomRange}
@@ -454,7 +445,7 @@ export class RangeToolbar extends LitElement {
           <ha-icon-button
             id="range-picker-button"
             class="range-picker-button"
-            label=${msg("Select date range", { id: "Select date range" })}
+            label=${msg("Select date range")}
             aria-haspopup="dialog"
             aria-expanded=${this._pickerOpen ? "true" : "false"}
             @click=${this._onPickerButtonClick}
@@ -486,7 +477,7 @@ export class RangeToolbar extends LitElement {
           <ha-icon-button
             id="range-options-button"
             class="range-options-button"
-            label=${msg("Timeline options", { id: "Timeline options" })}
+            label=${msg("Timeline options")}
             aria-haspopup="menu"
             aria-expanded=${this._optionsOpen ? "true" : "false"}
             @click=${this._onOptionsButtonClick}
@@ -509,7 +500,7 @@ export class RangeToolbar extends LitElement {
                   @click=${() => this._onOptionsSubmenu("zoom")}
                 >
                   <span class="range-option-label"
-                    >${msg("Zoom level", { id: "Zoom level" })}</span
+                    >${msg("Zoom level")}</span
                   >
                   <span
                     class="range-submenu-meta"
@@ -522,7 +513,7 @@ export class RangeToolbar extends LitElement {
                   @click=${() => this._onOptionsSubmenu("snap")}
                 >
                   <span class="range-option-label"
-                    >${msg("Date snapping", { id: "Date snapping" })}</span
+                    >${msg("Date snapping")}</span
                   >
                   <span
                     class="range-submenu-meta"
@@ -546,7 +537,7 @@ export class RangeToolbar extends LitElement {
                     ><span>‹</span></span
                   >
                   <div class="range-options-title">
-                    ${msg("Zoom level", { id: "Zoom level" })}
+                    ${msg("Zoom level")}
                   </div>
                 </button>
               </div>
@@ -567,7 +558,7 @@ export class RangeToolbar extends LitElement {
                     ><span>‹</span></span
                   >
                   <div class="range-options-title">
-                    ${msg("Date snapping", { id: "Date snapping" })}
+                    ${msg("Date snapping")}
                   </div>
                 </button>
               </div>

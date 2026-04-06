@@ -1,14 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "../sidebar-chart-display-section";
 
-function createElement(props: Record<string, unknown> = {}) {
+function createElement(props: RecordWithUnknownValues = {}) {
   const el = document.createElement(
     "sidebar-chart-display-section"
   ) as HTMLElement & {
     showTooltips: boolean;
     showHoverGuides: boolean;
     hoverSnapMode: string;
-    showCorrelatedAnomalies: boolean;
     showDataGaps: boolean;
     dataGapThreshold: string;
     yAxisMode: string;
@@ -18,7 +17,6 @@ function createElement(props: Record<string, unknown> = {}) {
     showTooltips: true,
     showHoverGuides: false,
     hoverSnapMode: "follow_series",
-    showCorrelatedAnomalies: false,
     showDataGaps: true,
     dataGapThreshold: "2h",
     yAxisMode: "combined",

@@ -4,7 +4,7 @@ import "../editor-base";
 
 describe("editor-base", () => {
   let el: HTMLElement & {
-    _config: Record<string, unknown>;
+    _config: RecordWithUnknownValues;
     hass: unknown;
     setConfig: (c: unknown) => void;
     _set: (k: string, v: unknown) => void;

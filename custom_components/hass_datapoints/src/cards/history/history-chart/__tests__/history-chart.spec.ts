@@ -1,11 +1,19 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import * as historyApi from "@/lib/data/history-api.js";
+import * as historyApi from "@/lib/data/history-api";
 import "../history-chart";
 
 type HistoryChartEl = HTMLElement & {
   _hiddenSeries: Set<string>;
-  _config?: Record<string, unknown>;
-  _hass?: Record<string, unknown> | null;
+  _config?: RecordWithUnknownValues;
+  _hass?: Nullable<RecordWithUnknownValues>;
+  _drawRecordedEventPoints(
+    renderer: unknown,
+    visibleSeries: unknown[],
+    events: unknown[],
+    t0: number,
+    t1: number,
+    opts: RecordWithUnknownValues
+  ): Array<{ event: { id: string }; value: number; unit: string }>;
   _getDrawableComparisonResults(
     comparisonResults: Array<{
       id: string;
@@ -30,12 +38,48 @@ type HistoryChartEl = HTMLElement & {
       statsResult: unknown;
       label?: string;
     },
-    analysis: Record<string, unknown>,
+    analysis: RecordWithUnknownValues,
     renderT0: number,
     renderT1: number
   ): Promise<[number, number][]>;
   _renderLegend(series: unknown[], binaryBackgrounds: unknown[]): void;
   _syncTopSlotOffset(): void;
+  _syncChartViewportScroll(t0: number, t1: number, canvasWidth: number): void;
+  _resolveAnomalyClusterDisplay(
+    anomalyClusters: unknown[],
+    overlapMode: Nullable<string> | undefined,
+    correlatedSpans?: Array<{ start: number; end: number }>
+  ): {
+    baseClusters: unknown[];
+    regionClusters: unknown[];
+    showCorrelatedSpans: boolean;
+  };
+  _getComparisonWindowLineStyle(
+    isHovered: boolean,
+    isSelected: boolean,
+    hoveringDifferentComparison: boolean
+  ): {
+    lineOpacity: number;
+    lineWidth?: number;
+    dashed: boolean;
+    dashPattern?: number[];
+    hoverOpacity: number;
+  };
+  _filterClustersByCorrelatedSpans(
+    anomalyClusters: unknown[],
+    correlatedSpans: Array<{ start: number; end: number }>
+  ): unknown[];
+  _buildAnalysisCacheKey(
+    visibleSeries: Array<{
+      entityId: string;
+      pts: [number, number][];
+    }>,
+    selectedComparisonSeriesMap: Map<string, { entityId: string; pts: [number, number][] }>,
+    analysisMap: Map<string, RecordWithUnknownValues>,
+    allComparisonWindowsData: Record<string, Record<string, [number, number][]>>,
+    t0: number,
+    t1: number
+  ): string;
 };
 
 describe("hass-datapoints-history-chart", () => {
@@ -242,6 +286,212 @@ describe("hass-datapoints-history-chart", () => {
     });
   });
 
+  describe("GIVEN a hovered record event id is configured", () => {
+    describe("WHEN drawing recorded event points", () => {
+      it("THEN it draws an emphasized highlight dot for that event", () => {
+        expect.assertions(2);
+        const arcSpy = vi.fn();
+        const renderer = {
+          ctx: {
+            save: vi.fn(),
+            restore: vi.fn(),
+            beginPath: vi.fn(),
+            arc: arcSpy,
+            fill: vi.fn(),
+            stroke: vi.fn(),
+            fillStyle: "",
+            strokeStyle: "",
+            lineWidth: 0,
+          },
+          xOf: vi.fn(() => 42),
+          yOf: vi.fn(() => 24),
+          pad: { top: 12, left: 8 },
+          ch: 120,
+          _interpolateValue: vi.fn(() => 21.5),
+        };
+        el._config = {
+          hovered_event_ids: ["evt-1"],
+        };
+
+        const hits = el._drawRecordedEventPoints(
+          renderer as never,
+          [
+            {
+              entityId: "sensor.temperature",
+              pts: [[1_000, 21.5]],
+              axis: { min: 0, max: 30 },
+              unit: "°C",
+              color: "#03a9f4",
+            },
+          ],
+          [
+            {
+              id: "evt-1",
+              timestamp: new Date(1_000).toISOString(),
+              entity_ids: ["sensor.temperature"],
+              color: "#03a9f4",
+            },
+          ],
+          0,
+          2_000,
+          {}
+        );
+
+        expect(arcSpy.mock.calls.some((call) => call[2] === 18)).toBe(true);
+        expect(hits).toHaveLength(1);
+      });
+    });
+  });
+
+  describe("GIVEN comparison window line styling", () => {
+    describe("WHEN the date window is hovered", () => {
+      it("THEN it returns the same solid line style used by the normal chart", () => {
+        expect.assertions(1);
+        expect(el._getComparisonWindowLineStyle(true, false, false)).toEqual({
+          lineOpacity: 1,
+          dashed: false,
+          hoverOpacity: 0.85,
+        });
+      });
+    });
+
+    describe("WHEN a different date window is hovered while one is selected", () => {
+      it("THEN it returns the dimmed selected-window style used across chart modes", () => {
+        expect.assertions(1);
+        expect(el._getComparisonWindowLineStyle(false, true, true)).toEqual({
+          lineOpacity: 0.25,
+          lineWidth: 1.25,
+          dashed: false,
+          hoverOpacity: 0.25,
+        });
+      });
+    });
+  });
+
+  describe("GIVEN anomaly detection sampling is toggled", () => {
+    describe("WHEN building the analysis cache key", () => {
+      it("THEN the cache key changes when anomaly_use_sampled_data changes", () => {
+        expect.assertions(2);
+        const visibleSeries = [
+          {
+            entityId: "sensor.temperature",
+            pts: [
+              [0, 20],
+              [1_000, 21],
+            ] as [number, number][],
+          },
+        ];
+        const baseAnalysis = new Map([
+          [
+            "sensor.temperature",
+            {
+              show_anomalies: true,
+              anomaly_methods: ["iqr"],
+              anomaly_use_sampled_data: true,
+            },
+          ],
+        ]);
+        const rawAnalysis = new Map([
+          [
+            "sensor.temperature",
+            {
+              show_anomalies: true,
+              anomaly_methods: ["iqr"],
+              anomaly_use_sampled_data: false,
+            },
+          ],
+        ]);
+
+        const sampledKey = el._buildAnalysisCacheKey(
+          visibleSeries,
+          new Map(),
+          baseAnalysis,
+          {},
+          0,
+          1_000
+        );
+        const rawKey = el._buildAnalysisCacheKey(
+          visibleSeries,
+          new Map(),
+          rawAnalysis,
+          {},
+          0,
+          1_000
+        );
+
+        expect(sampledKey).not.toBe(rawKey);
+        expect(sampledKey.includes("true") || rawKey.includes("false")).toBe(
+          true
+        );
+      });
+    });
+  });
+
+  describe("GIVEN anomaly overlap display modes", () => {
+    const clusters = [
+      { id: "normal", isOverlap: false },
+      { id: "overlap", isOverlap: true },
+    ];
+
+    describe("WHEN overlap mode is all", () => {
+      it("THEN all clusters are rendered with no correlated span highlights", () => {
+        expect.assertions(3);
+
+        const result = el._resolveAnomalyClusterDisplay(clusters, "all");
+
+        expect(result.baseClusters).toEqual(clusters);
+        expect(result.showCorrelatedSpans).toBe(false);
+        expect(result.regionClusters).toEqual(clusters);
+      });
+    });
+
+    describe("WHEN overlap mode is only", () => {
+      it("THEN only overlap clusters remain visible", () => {
+        expect.assertions(3);
+
+        const result = el._resolveAnomalyClusterDisplay(clusters, "only", [
+          { start: 10, end: 20 },
+        ]);
+
+        expect(result.baseClusters).toEqual([]);
+        expect(result.showCorrelatedSpans).toBe(true);
+        expect(result.regionClusters).toEqual([]);
+      });
+    });
+
+    describe("WHEN overlap mode is only and correlated spans match multiple series clusters", () => {
+      it("THEN it keeps the clusters that intersect the correlated spans regardless of local isOverlap flags", () => {
+        expect.assertions(1);
+
+        const result = el._filterClustersByCorrelatedSpans(
+          [
+            {
+              id: "series-a",
+              isOverlap: false,
+              points: [{ timeMs: 100 }, { timeMs: 200 }],
+            },
+            {
+              id: "series-b",
+              isOverlap: true,
+              points: [{ timeMs: 110 }, { timeMs: 210 }],
+            },
+            {
+              id: "outside",
+              isOverlap: true,
+              points: [{ timeMs: 400 }, { timeMs: 500 }],
+            },
+          ],
+          [{ start: 90, end: 220 }]
+        );
+
+        expect(result.map((item) => (item as { id: string }).id)).toEqual([
+          "series-a",
+          "series-b",
+        ]);
+      });
+    });
+  });
+
   describe("GIVEN the comparison tab rail is visible", () => {
     describe("WHEN syncing the top slot offset", () => {
       it("THEN it stores the top slot height on the chart host", () => {
@@ -344,6 +594,31 @@ describe("hass-datapoints-history-chart", () => {
         onMouseLeave({ relatedTarget: addButton } as MouseEvent);
 
         expect(el._chartLastHover).toEqual({ timeMs: 1 });
+      });
+    });
+  });
+
+  describe("GIVEN a zoomed chart redraws after scrolling", () => {
+    describe("WHEN the recomputed scroll position differs only by a tiny amount", () => {
+      it("THEN it keeps the user's final scroll position", () => {
+        expect.assertions(3);
+        const viewport = document.createElement("div");
+        Object.defineProperty(viewport, "clientWidth", {
+          configurable: true,
+          value: 400,
+        });
+        viewport.scrollLeft = 301.5;
+        el._chartScrollViewportEl = viewport;
+        el._zoomRange = {
+          start: 300,
+          end: 700,
+        } as never;
+
+        el._syncChartViewportScroll(0, 1000, 1001);
+
+        expect(viewport.scrollLeft).toBe(301.5);
+        expect(el._scrollSyncSuspended).toBe(false);
+        expect(el._ignoreNextProgrammaticScrollEvent).toBe(false);
       });
     });
   });

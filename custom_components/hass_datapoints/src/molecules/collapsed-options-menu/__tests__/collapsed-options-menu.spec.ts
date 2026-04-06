@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "../collapsed-options-menu";
 
-function createElement(props: Record<string, unknown> = {}) {
+function createElement(props: RecordWithUnknownValues = {}) {
   const el = document.createElement("collapsed-options-menu") as HTMLElement & {
     datapointScope: string;
     showIcons: boolean;
@@ -15,7 +15,7 @@ function createElement(props: Record<string, unknown> = {}) {
     yAxisMode: string;
     anomalyOverlapMode: string;
     anyAnomaliesEnabled: boolean;
-    activeSection: string | null;
+    activeSection: Nullable<string>;
     updateComplete: Promise<boolean>;
   };
   Object.assign(el, {

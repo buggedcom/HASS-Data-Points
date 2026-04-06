@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, Callable
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
@@ -17,6 +17,7 @@ class HassRecordsStore:
     def __init__(self, hass: HomeAssistant) -> None:
         self._store: Store = Store(hass, STORAGE_VERSION, STORAGE_KEY)
         self._data: dict[str, Any] = {"events": []}
+        self._listeners: list[Callable[[], None]] = []
 
     async def async_load(self) -> None:
         """Load data from persistent storage."""
@@ -79,6 +80,7 @@ class HassRecordsStore:
 
         self._data["events"].append(event)
         await self._store.async_save(self._data)
+        self._notify_listeners()
         return event
 
     def get_events(
@@ -134,6 +136,25 @@ class HassRecordsStore:
 
         return min(timestamps).isoformat(), max(timestamps).isoformat()
 
+    def get_event_count(self) -> int:
+        """Return the total number of recorded events."""
+        return len(self._data.get("events", []))
+
+    def async_add_listener(self, listener: Callable[[], None]) -> Callable[[], None]:
+        """Register a callback for store mutations and return an unsubscribe function."""
+        self._listeners.append(listener)
+
+        def unsubscribe() -> None:
+            if listener in self._listeners:
+                self._listeners.remove(listener)
+
+        return unsubscribe
+
+    def _notify_listeners(self) -> None:
+        """Notify registered listeners that the store contents changed."""
+        for listener in list(self._listeners):
+            listener()
+
     async def async_update_event(
         self,
         event_id: str,
@@ -166,6 +187,7 @@ class HassRecordsStore:
                 if color is not None:
                     event["color"] = color
                 await self._store.async_save(self._data)
+                self._notify_listeners()
                 return event
         return None
 
@@ -177,6 +199,7 @@ class HassRecordsStore:
         if deleted:
             self._data["events"] = kept
             await self._store.async_save(self._data)
+            self._notify_listeners()
         return deleted
 
     async def async_delete_event(self, event_id: str) -> bool:
@@ -187,5 +210,6 @@ class HassRecordsStore:
         ]
         if len(self._data["events"]) < original_len:
             await self._store.async_save(self._data)
+            self._notify_listeners()
             return True
         return False

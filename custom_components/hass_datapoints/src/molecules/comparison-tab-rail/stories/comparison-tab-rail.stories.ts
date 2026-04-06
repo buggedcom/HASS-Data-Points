@@ -82,7 +82,7 @@ export default {
     hoveredId: "",
     overflowing: false,
   },
-  render: (args: Record<string, unknown>) => html`
+  render: (args: RecordWithUnknownValues) => html`
     <comparison-tab-rail
       .tabs=${args.tabs}
       .loadingIds=${args.loadingIds}

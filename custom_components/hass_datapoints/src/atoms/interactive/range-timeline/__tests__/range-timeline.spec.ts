@@ -24,11 +24,11 @@ const SAMPLE_BOUNDS: RangeBounds = {
   config: DAY_CONFIG,
 };
 
-function createElement(props: Record<string, unknown> = {}) {
+function createElement(props: RecordWithUnknownValues = {}) {
   const el = document.createElement("range-timeline") as HTMLElement & {
-    startTime: Date | null;
-    endTime: Date | null;
-    rangeBounds: RangeBounds | null;
+    startTime: Nullable<Date>;
+    endTime: Nullable<Date>;
+    rangeBounds: Nullable<RangeBounds>;
     zoomLevel: string;
     dateSnapping: string;
     isLiveEdge: boolean;

@@ -39,24 +39,24 @@ export function createHistoryPageAppStateContext(): HistoryAppStateContext {
       state.display.sidebarCollapsed = value;
     },
 
-    setRange(startTime: Date | null, endTime: Date | null): void {
+    setRange(startTime: Nullable<Date>, endTime: Nullable<Date>): void {
       state.range.startTime = startTime;
       state.range.endTime = endTime;
     },
 
-    setPreviewZoomRange(value: { start: number; end: number } | null): void {
+    setPreviewZoomRange(value: Nullable<{ start: number; end: number }>): void {
       state.range.previewZoomRange = value ? { ...value } : null;
     },
 
-    setCommittedZoomRange(value: { start: number; end: number } | null): void {
+    setCommittedZoomRange(value: Nullable<{ start: number; end: number }>): void {
       state.range.committedZoomRange = value ? { ...value } : null;
     },
 
-    setTargetSelection(value: Record<string, unknown>): void {
+    setTargetSelection(value: RecordWithUnknownValues): void {
       state.targets.selection = { ...(value || {}) };
     },
 
-    setTargetSelectionRaw(value: Record<string, unknown>): void {
+    setTargetSelectionRaw(value: RecordWithUnknownValues): void {
       state.targets.rawSelection = { ...(value || {}) };
     },
 
@@ -72,11 +72,11 @@ export function createHistoryPageAppStateContext(): HistoryAppStateContext {
         : [];
     },
 
-    setSelectedComparisonWindowId(value: string | null): void {
+    setSelectedComparisonWindowId(value: Nullable<string>): void {
       state.comparison.selectedWindowId = value || null;
     },
 
-    setHoveredComparisonWindowId(value: string | null): void {
+    setHoveredComparisonWindowId(value: Nullable<string>): void {
       state.comparison.hoveredWindowId = value || null;
     },
   };

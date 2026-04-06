@@ -21,7 +21,7 @@ export class EditorSelect extends LitElement {
   firstUpdated() {
     const el = this.shadowRoot!.querySelector(
       "ha-selector"
-    ) as HaSelector | null;
+    ) as Nullable<HaSelector>;
     if (el) {
       el.label = this.label;
       el.selector = { select: { options: this.options } };
@@ -32,7 +32,7 @@ export class EditorSelect extends LitElement {
   updated(changedProps: PropertyValues) {
     const el = this.shadowRoot!.querySelector(
       "ha-selector"
-    ) as HaSelector | null;
+    ) as Nullable<HaSelector>;
     if (!el) {
       return;
     }

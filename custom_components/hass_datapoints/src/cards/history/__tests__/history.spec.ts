@@ -17,16 +17,16 @@ import {
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
-vi.mock("@/lib/domain/chart-zoom.js", async (importOriginal) => {
-  const mod = (await importOriginal()) as Record<string, unknown>;
+vi.mock("@/lib/domain/chart-zoom", async (importOriginal) => {
+  const mod = (await importOriginal()) as RecordWithUnknownValues;
   return {
     ...mod,
     createChartZoomRange: vi.fn(() => null),
   };
 });
 
-vi.mock("@/lib/chart/chart-state.js", async (importOriginal) => {
-  const mod = (await importOriginal()) as Record<string, unknown>;
+vi.mock("@/lib/chart/chart-state", async (importOriginal) => {
+  const mod = (await importOriginal()) as RecordWithUnknownValues;
   return {
     ...mod,
     createHiddenEventIdSet: vi.fn(() => new Set()),
@@ -34,14 +34,14 @@ vi.mock("@/lib/chart/chart-state.js", async (importOriginal) => {
   };
 });
 
-vi.mock("../../../components/annotation-dialog/annotation-dialog.js", () => ({
+vi.mock("../../../components/annotation-dialog/annotation-dialog", () => ({
   HistoryAnnotationDialogController: vi.fn().mockImplementation(() => ({
     teardown: vi.fn(),
     open: vi.fn(),
   })),
 }));
 
-vi.mock("../../../lib/workers/history-analysis-client.js", () => ({
+vi.mock("../../../lib/workers/history-analysis-client", () => ({
   computeHistoryAnalysisInWorker: vi.fn().mockResolvedValue(null),
 }));
 
@@ -75,7 +75,7 @@ function createMockHass(overrides = {}) {
 }
 
 function createCard(
-  config: Record<string, unknown> = { entity: "sensor.example" }
+  config: RecordWithUnknownValues = { entity: "sensor.example" }
 ) {
   const el = new HassRecordsHistoryCard();
   el.setConfig(config);
@@ -198,7 +198,7 @@ describe("history", () => {
         expect(
           (
             el as unknown as {
-              _zoomRange: { start: number; end: number } | null;
+              _zoomRange: Nullable<{ start: number; end: number }>;
             }
           )._zoomRange
         ).toEqual({
@@ -256,7 +256,7 @@ describe("history", () => {
         expect(
           (
             el as unknown as {
-              _zoomRange: { start: number; end: number } | null;
+              _zoomRange: Nullable<{ start: number; end: number }>;
             }
           )._zoomRange
         ).toEqual({
@@ -264,6 +264,56 @@ describe("history", () => {
           end: 190,
         });
         vi.useRealTimers();
+      });
+    });
+  });
+
+  describe("GIVEN hidden event ids are toggled after data has loaded", () => {
+    describe("WHEN queueing a draw while an event is hidden", () => {
+      it("THEN it keeps the raw events cached while drawing only the visible events", () => {
+        expect.assertions(2);
+        const el = createCard({
+          entity: "sensor.example",
+          hidden_event_ids: ["evt-1"],
+        });
+        const chartQueueSpy = vi.fn();
+        (
+          el as unknown as {
+            _hiddenEventIds: Set<string>;
+          }
+        )._hiddenEventIds = new Set(["evt-1"]);
+        vi.spyOn(
+          el as unknown as { _chartEl: () => Nullable<RecordWithUnknownValues> },
+          "_chartEl"
+        ).mockReturnValue({
+          _queueDrawChart: chartQueueSpy,
+        });
+
+        (
+          el as unknown as {
+            _queueDrawChart: (
+              histResult: RecordWithUnknownValues,
+              statsResult: RecordWithUnknownValues,
+              events: unknown[],
+              t0: number,
+              t1: number
+            ) => void;
+          }
+        )._queueDrawChart(
+          {},
+          {},
+          [
+            {
+              id: "evt-1",
+              timestamp: "2026-03-31T10:00:00Z",
+            },
+          ],
+          0,
+          1
+        );
+
+        expect((el as unknown as { _lastEvents: unknown[] })._lastEvents).toHaveLength(1);
+        expect(chartQueueSpy.mock.calls[0][2]).toEqual([]);
       });
     });
   });
@@ -367,9 +417,9 @@ describe("history", () => {
         const el = createCard({ entity: "sensor.example" });
         const chartTag = {
           _renderComparisonPreviewOverlay: vi.fn(),
-        } as unknown as HTMLElement & Record<string, unknown>;
+        } as unknown as HTMLElement & RecordWithUnknownValues;
         vi.spyOn(
-          el as unknown as { _chartEl: () => HTMLElement | null },
+          el as unknown as { _chartEl: () => Nullable<HTMLElement> },
           "_chartEl"
         ).mockReturnValue(chartTag);
 
@@ -403,9 +453,9 @@ describe("history", () => {
         });
         const chartTag = {
           _renderComparisonPreviewOverlay: vi.fn(),
-        } as unknown as HTMLElement & Record<string, unknown>;
+        } as unknown as HTMLElement & RecordWithUnknownValues;
         vi.spyOn(
-          el as unknown as { _chartEl: () => HTMLElement | null },
+          el as unknown as { _chartEl: () => Nullable<HTMLElement> },
           "_chartEl"
         ).mockReturnValue(chartTag);
 

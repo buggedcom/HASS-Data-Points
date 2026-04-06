@@ -1,7 +1,8 @@
 import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
-
 import type { TemplateResult } from "lit";
+import { localized, msg } from "@/lib/i18n/localize";
+
 import { sharedStyles } from "../analysis-group-shared/analysis-group-shared.styles";
 import { styles } from "./analysis-rate-group.styles";
 import type { NormalizedAnalysis } from "@/molecules/target-row/types";
@@ -14,6 +15,7 @@ export const ANALYSIS_RATE_WINDOW_OPTIONS = [
   { value: "24h", label: "24 hours" },
 ];
 
+@localized()
 export class AnalysisRateGroup extends LitElement {
   @property({ type: Object }) accessor analysis: NormalizedAnalysis =
     {} as NormalizedAnalysis;
@@ -31,6 +33,15 @@ export class AnalysisRateGroup extends LitElement {
         composed: true,
       })
     );
+  }
+
+  private _localizedOptions(
+    options: Array<{ value: string; label: string }>
+  ): Array<{ value: string; label: string }> {
+    return options.map((opt) => ({
+      ...opt,
+      label: msg(opt.label),
+    }));
   }
 
   private _renderSelect(
@@ -66,7 +77,7 @@ export class AnalysisRateGroup extends LitElement {
     const a = this.analysis;
     return html`
       <analysis-group
-        .label=${"Show rate of change"}
+        .label=${msg("Show rate of change")}
         .checked=${a.show_rate_of_change}
         @dp-group-change=${this._onGroupChange}
       >
@@ -76,13 +87,13 @@ export class AnalysisRateGroup extends LitElement {
             .checked=${a.show_rate_crosshairs}
             @change=${(e: Event) => this._onCheckbox("show_rate_crosshairs", e)}
           />
-          <span>Show rate of change crosshairs</span>
+          <span>${msg("Show rate of change crosshairs")}</span>
         </label>
         <label class="field">
-          <span class="field-label">Rate window</span>
+          <span class="field-label">${msg("Rate window")}</span>
           ${this._renderSelect(
             "rate_window",
-            ANALYSIS_RATE_WINDOW_OPTIONS,
+            this._localizedOptions(ANALYSIS_RATE_WINDOW_OPTIONS),
             a.rate_window
           )}
         </label>

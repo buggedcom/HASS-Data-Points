@@ -1,9 +1,9 @@
 import { html, LitElement } from "lit";
-import { COLORS } from "@/constants.js";
-import { contrastColor } from "@/lib/util/color.js";
-import { attachTooltipBehaviour } from "@/lib/chart/chart-interaction.js";
-import { setupCanvas } from "@/charts/utils/chart-dom.js";
-import { ChartRenderer } from "@/lib/chart/chart-renderer.js";
+import { COLORS } from "@/constants";
+import { contrastColor } from "@/lib/util/color";
+import { attachTooltipBehaviour } from "@/lib/chart/chart-interaction";
+import { setupCanvas } from "@/charts/utils/chart-dom";
+import { ChartRenderer } from "@/lib/chart/chart-renderer";
 import type {
   CardConfig,
   EventRecordFull,
@@ -64,34 +64,34 @@ export class SensorChart extends LitElement {
   declare _loadMessage: string;
 
   // Set by parent before draw(); not reactive to avoid unnecessary re-renders
-  private _hass: HassLike | null = null;
+  private _hass: Nullable<HassLike> = null;
 
-  get hass(): HassLike | null {
+  get hass(): Nullable<HassLike> {
     return this._hass;
   }
 
-  set hass(value: HassLike | null) {
+  set hass(value: Nullable<HassLike>) {
     this._hass = value;
   }
 
-  private _canvasClickHandler: ((e: MouseEvent) => void) | null = null;
+  private _canvasClickHandler: Nullable<(e: MouseEvent) => void> = null;
 
   private _previousSeriesEndpoints: Map<string, { t: number; v: number }> =
     new Map();
 
-  private _lastDrawArgs:
-    | [
-        unknown,
-        EventRecordFull[],
-        number,
-        number,
-        CardConfig,
-        string,
-        Set<string>,
-      ]
-    | null = null;
+  private _lastDrawArgs: Nullable<
+    [
+      unknown,
+      EventRecordFull[],
+      number,
+      number,
+      CardConfig,
+      string,
+      Set<string>
+    ]
+  > = null;
 
-  private _resizeObserver: ResizeObserver | null = null;
+  private _resizeObserver: Nullable<ResizeObserver> = null;
 
   static styles = styles;
 
@@ -106,9 +106,8 @@ export class SensorChart extends LitElement {
   }
 
   disconnectedCallback() {
-    if (super.disconnectedCallback) {
-      super.disconnectedCallback();
-    }
+    // eslint-disable-next-line wc/guard-super-call
+    super.disconnectedCallback();
     if (this._resizeObserver) {
       this._resizeObserver.disconnect();
       this._resizeObserver = null;
@@ -152,7 +151,7 @@ export class SensorChart extends LitElement {
     const wrap = this.shadowRoot?.querySelector(".chart-wrap");
     if (!canvas || !wrap) return;
 
-    const { w, h } = setupCanvas(canvas, wrap, null) as {
+    const { w, h } = setupCanvas(canvas, wrap as HTMLElement, null) as {
       w: number;
       h: number;
     };
@@ -166,7 +165,9 @@ export class SensorChart extends LitElement {
     renderer.clear();
 
     const entityId = config.entity as string;
-    const lineColor = (config.graph_color as string) || (COLORS as string[])[0];
+    const lineColor =
+      (config.graph_color as string) ||
+      (COLORS as unknown as string[])[0];
     const stateList = this._getHistoryStatesForEntity(entityId, histResult);
 
     const pts: [number, number][] = [];
@@ -266,7 +267,14 @@ export class SensorChart extends LitElement {
       }
     }
 
-    attachTooltipBehaviour(this, canvas, renderer, enrichedEvents, t0, t1);
+    attachTooltipBehaviour(
+      this,
+      canvas,
+      renderer as unknown as import("@/lib/chart/chart-renderer").ChartRenderer,
+      enrichedEvents as unknown as import("@/lib/chart/chart-interaction").ChartEventRecord[],
+      t0,
+      t1
+    );
 
     if (this._canvasClickHandler)
       canvas.removeEventListener("click", this._canvasClickHandler);
@@ -275,7 +283,7 @@ export class SensorChart extends LitElement {
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
       const best = hits.reduce(
-        (closest: { hit: ChartHit; dist: number } | null, hit: ChartHit) => {
+        (closest: Nullable<{ hit: ChartHit; dist: number }>, hit: ChartHit) => {
           const dist = Math.hypot(hit.x - x, hit.y - y);
           if (dist > 18) return closest;
           if (!closest || dist < closest.dist) return { hit, dist };
@@ -307,7 +315,7 @@ export class SensorChart extends LitElement {
     histResult: unknown
   ): HassStateEntry[] {
     if (!histResult) return [];
-    const r = histResult as Record<string, unknown>;
+    const r = histResult as RecordWithUnknownValues;
     if (Array.isArray(r[entityId])) return r[entityId] as HassStateEntry[];
     if (Array.isArray(r)) {
       const rArr = r as unknown[];
@@ -322,11 +330,11 @@ export class SensorChart extends LitElement {
         );
     }
     const rObj = histResult as {
-      result?: Record<string, unknown> | unknown[][];
+      result?: RecordWithUnknownValues | unknown[][];
     };
     if (rObj && typeof rObj === "object") {
       const result = rObj.result;
-      if (Array.isArray((result as Record<string, unknown>)?.[entityId]))
+      if (Array.isArray((result as RecordWithUnknownValues)?.[entityId]))
         return (result as Record<string, HassStateEntry[]>)[entityId];
       if (Array.isArray((result as unknown[])?.[0]))
         return ((result as unknown[])[0] as HassStateEntry[]) || [];

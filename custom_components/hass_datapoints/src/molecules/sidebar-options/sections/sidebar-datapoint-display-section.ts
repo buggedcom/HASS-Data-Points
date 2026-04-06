@@ -1,10 +1,12 @@
 import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
+import { localized, msg } from "@/lib/i18n/localize";
 
 import { styles } from "./sidebar-datapoint-display-section.styles";
 import "@/atoms/display/sidebar-options-section/sidebar-options-section";
 import "@/atoms/form/checkbox-list/checkbox-list";
 
+@localized()
 export class SidebarDatapointDisplaySection extends LitElement {
   @property({ type: Boolean, attribute: "show-icons" })
   accessor showIcons: boolean = true;
@@ -32,8 +34,8 @@ export class SidebarDatapointDisplaySection extends LitElement {
   render() {
     return html`
       <sidebar-options-section
-        .title=${"Datapoint Display"}
-        .subtitle=${"Control how annotation datapoints are rendered on the chart."}
+        .title=${msg("Datapoint Display")}
+        .subtitle=${msg("Control how annotation datapoints are rendered on the chart.")}
         .collapsible=${this.collapsible}
         .open=${this.open}
       >
@@ -41,12 +43,12 @@ export class SidebarDatapointDisplaySection extends LitElement {
           .items=${[
             {
               name: "icons",
-              label: "Show datapoint icons",
+              label: msg("Show datapoint icons"),
               checked: this.showIcons,
             },
             {
               name: "lines",
-              label: "Show dotted lines",
+              label: msg("Show dotted lines"),
               checked: this.showLines,
             },
           ]}

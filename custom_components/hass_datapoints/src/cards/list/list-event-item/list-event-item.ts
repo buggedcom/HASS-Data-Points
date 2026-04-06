@@ -1,4 +1,4 @@
-import { LitElement, html } from "lit";
+import { html, LitElement } from "lit";
 import { property, state } from "lit/decorators.js";
 
 import { styles } from "./list-event-item.styles";
@@ -8,8 +8,8 @@ import type {
   EventItemLanguage,
   EventRecordFull,
 } from "@/cards/list/types";
-import { contrastColor } from "@/lib/util/color.js";
-import { fmtDateTime } from "@/lib/util/format.js";
+import { contrastColor } from "@/lib/util/color";
+import { fmtDateTime } from "@/lib/util/format";
 import {
   areaIcon,
   areaName,
@@ -19,7 +19,7 @@ import {
   entityName,
   labelIcon,
   labelName,
-} from "@/lib/ha/entity-name.js";
+} from "@/lib/ha/entity-name";
 import "@/cards/list/list-edit-form/list-edit-form";
 
 const DEFAULT_LANGUAGE: EventItemLanguage = {
@@ -39,7 +39,7 @@ const DEFAULT_LANGUAGE: EventItemLanguage = {
 export class CardListEventItem extends LitElement {
   static styles = styles;
 
-  @property({ attribute: false }) accessor eventRecord: EventRecordFull | null =
+  @property({ attribute: false }) accessor eventRecord: Nullable<EventRecordFull> =
     null;
 
   @property({ attribute: false }) accessor context: EventItemContext = {
@@ -55,7 +55,7 @@ export class CardListEventItem extends LitElement {
 
   @state() accessor _annotationExpanded = false;
 
-  private _dispatch(name: string, detail: Record<string, unknown> = {}): void {
+  private _dispatch(name: string, detail: RecordWithUnknownValues = {}): void {
     this.dispatchEvent(
       new CustomEvent(name, {
         detail,
@@ -75,7 +75,7 @@ export class CardListEventItem extends LitElement {
     const showEntities = this.context.showEntities;
     const showFullMessage = this.context.showFullMessage;
     const annText =
-      ev.annotation && ev.annotation !== ev.message ? ev.annotation : "";
+      ev.annotation && ev.annotation !== ev.message ? ev.annotation.trim() : "";
     const color = ev.color || "#03a9f4";
     const icon = ev.icon || "mdi:bookmark";
     const iconColor = contrastColor(color) as string;
@@ -100,6 +100,20 @@ export class CardListEventItem extends LitElement {
           ? " is-hidden"
           : ""}${isSimple ? " simple" : ""}"
         data-id=${ev.id}
+        @mouseenter=${() => {
+          this._dispatch("dp-hover-event-record", {
+            eventId: ev.id,
+            hovered: true,
+            eventRecord: ev,
+          });
+        }}
+        @mouseleave=${() => {
+          this._dispatch("dp-hover-event-record", {
+            eventId: ev.id,
+            hovered: false,
+            eventRecord: ev,
+          });
+        }}
         @click=${isExpandable
           ? (event: Event) => {
               const target = event.target as HTMLElement;
@@ -201,7 +215,7 @@ export class CardListEventItem extends LitElement {
                   ? ""
                   : " hidden"}"
               >
-                ${annText}
+                <span>${annText}</span>
               </div>`
             : ""}
           ${showEntities && hasRelated

@@ -1,10 +1,10 @@
-import { fetchEventBounds, fetchEvents } from "@/lib/data/events-api.js";
-import { fetchUserData } from "@/lib/data/preferences-api.js";
+import { fetchEventBounds, fetchEvents } from "@/lib/data/events-api";
+import { fetchUserData } from "@/lib/data/preferences-api";
 import type { HistoryFetchContext, HistoryFetchState } from "./types";
 import type { HassLike } from "@/lib/types";
 
 export function createHistoryPageFetchContext(
-  getHass: () => HassLike | null
+  getHass: () => Nullable<HassLike>
 ): HistoryFetchContext {
   const state: HistoryFetchState = {
     historyBoundsLoaded: false,
@@ -17,10 +17,10 @@ export function createHistoryPageFetchContext(
     timelineEventsKey: "",
   };
 
-  let historyBoundsPromise: Promise<void> | null = null;
-  let preferencesPromise: Promise<void> | null = null;
-  let savedPagePromise: Promise<void> | null = null;
-  let timelineEventsPromise: Promise<void> | null = null;
+  let historyBoundsPromise: Nullable<Promise<void>> = null;
+  let preferencesPromise: Nullable<Promise<void>> = null;
+  let savedPagePromise: Nullable<Promise<void>> = null;
+  let timelineEventsPromise: Nullable<Promise<void>> = null;
 
   return {
     state,
@@ -85,7 +85,7 @@ export function createHistoryPageFetchContext(
     async loadSavedPageIndicator<T>(options: {
       savedPageKey: string;
       fallbackValue: T;
-      onSuccess(saved: T | null): void;
+      onSuccess(saved: Nullable<T>): void;
       onError?(error: unknown): void;
     }): Promise<void> {
       const hass = getHass();
@@ -101,7 +101,7 @@ export function createHistoryPageFetchContext(
       )
         .then((saved) => {
           state.hasSavedPage = !!saved;
-          options.onSuccess((saved as T | null) ?? null);
+          options.onSuccess((saved as Nullable<T>) ?? null);
         })
         .catch((error) => {
           options.onError?.(error);

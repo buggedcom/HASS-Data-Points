@@ -4,9 +4,9 @@ import {
   buildDataPointsHistoryPath,
   navigateToDataPointsHistory,
   navigateToHistory,
-} from "@/lib/ha/navigation.js";
+} from "@/lib/ha/navigation";
 
-describe("navigation.js", () => {
+describe("navigation", () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });

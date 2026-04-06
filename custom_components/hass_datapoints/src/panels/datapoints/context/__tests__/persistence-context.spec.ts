@@ -3,15 +3,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createHistoryPagePersistenceContext } from "../persistence-context";
 import type { HassLike } from "@/lib/types";
 
-import { fetchUserData, saveUserData } from "@/lib/data/preferences-api.js";
-import { downloadHistorySpreadsheet } from "@/lib/export-spreadsheet.js";
+import { fetchUserData, saveUserData } from "@/lib/data/preferences-api";
+import { downloadHistorySpreadsheet } from "@/lib/export-spreadsheet";
 
-vi.mock("@/lib/data/preferences-api.js", () => ({
+vi.mock("@/lib/data/preferences-api", () => ({
   fetchUserData: vi.fn(),
   saveUserData: vi.fn(),
 }));
 
-vi.mock("@/lib/export-spreadsheet.js", () => ({
+vi.mock("@/lib/export-spreadsheet", () => ({
   downloadHistorySpreadsheet: vi.fn(),
 }));
 

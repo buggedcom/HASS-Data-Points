@@ -71,7 +71,7 @@ export function getHistoryStatesForEntity(
   if (!histResult) {
     return [];
   }
-  const result = histResult as Record<string, unknown>;
+  const result = histResult as RecordWithUnknownValues;
   if (Array.isArray(result[entityId])) {
     return result[entityId] as HaStateEntry[];
   }
@@ -94,7 +94,7 @@ export function getHistoryStatesForEntity(
   if (histResult && typeof histResult === "object") {
     const wrapped = histResult as { result?: unknown };
     if (
-      Array.isArray((wrapped.result as Record<string, unknown>)?.[entityId])
+      Array.isArray((wrapped.result as RecordWithUnknownValues)?.[entityId])
     ) {
       return (wrapped.result as Record<string, unknown[]>)[
         entityId

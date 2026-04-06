@@ -69,6 +69,15 @@ export default [
       "object-shorthand": ["error", "always", { avoidQuotes: true }],
       "prefer-destructuring": "off",
       "unused-imports/no-unused-imports": "error",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+          destructuredArrayIgnorePattern: "^_",
+        },
+      ],
       "wc/guard-super-call": "error",
       "wc/no-constructor-attributes": "error",
       "lit-a11y/anchor-is-valid": "off",

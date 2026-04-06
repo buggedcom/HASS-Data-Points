@@ -15,7 +15,7 @@ import {
   vi,
 } from "vitest";
 
-vi.mock("@/constants.js", () => ({
+vi.mock("@/constants", () => ({
   DOMAIN: "hass_datapoints",
 }));
 
@@ -24,7 +24,7 @@ let TestChartCardCtor: {
   new (): HTMLElement & {
     loadSpy: ReturnType<typeof vi.fn>;
     drawSpy: ReturnType<typeof vi.fn>;
-    setConfig: (config: Record<string, unknown>) => void;
+    setConfig: (config: RecordWithUnknownValues) => void;
     hass: unknown;
     updateComplete: Promise<unknown>;
     _lastDrawArgs: unknown[];
@@ -66,7 +66,7 @@ beforeAll(async () => {
 /** Deferred rAF: returns { flush } to run the queued callback on demand.
  *  Avoids the sync-rAF pitfall where the ID is overwritten after the callback. */
 function setupDeferredRaf() {
-  let pending: FrameRequestCallback | null = null;
+  let pending: Nullable<FrameRequestCallback> = null;
   let nextId = 1;
   vi.spyOn(window, "requestAnimationFrame").mockImplementation((cb) => {
     pending = cb;
@@ -102,7 +102,7 @@ function createMockHass(subscribeSpy?: ReturnType<typeof vi.fn>) {
 /** Create, configure, connect, and flush the initial rAF load. */
 async function setupCard(
   raf: ReturnType<typeof setupDeferredRaf>,
-  config: Record<string, unknown> = {},
+  config: RecordWithUnknownValues = {},
   hass = createMockHass()
 ) {
   const el = document.createElement("test-chart-card") as InstanceType<

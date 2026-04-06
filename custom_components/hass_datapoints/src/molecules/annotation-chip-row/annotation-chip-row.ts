@@ -18,7 +18,7 @@ export interface ChipItem {
   /** Optional secondary label such as the raw entity id. */
   secondaryText?: string;
   /** Entity state object used to render the same icon as linked entity rows. */
-  stateObj?: HassState | null;
+  stateObj?: Nullable<HassState>;
 }
 
 /**
@@ -35,7 +35,7 @@ export class AnnotationChipRow extends LitElement {
   @property({ type: Array }) accessor chips: ChipItem[] = [];
 
   /** HA hass object forwarded to annotation-chip when rendering entity icons. */
-  @property({ type: Object, attribute: false }) accessor hass: HassLike | null =
+  @property({ type: Object, attribute: false }) accessor hass: Nullable<HassLike> =
     null;
 
   /** Section label shown above the chips. */

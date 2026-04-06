@@ -65,7 +65,6 @@ export const styles = css`
     color: var(--secondary-text-color, #888);
     font-size: 9px;
     font-weight: 700;
-    line-height: 1;
     cursor: help;
     padding: 0;
     vertical-align: middle;

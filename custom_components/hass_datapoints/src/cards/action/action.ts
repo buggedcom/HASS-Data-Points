@@ -1,7 +1,7 @@
 import { LitElement, html } from "lit";
 
 import { styles } from "./action.styles";
-import { DOMAIN } from "@/constants.js";
+import { DOMAIN } from "@/constants";
 import type { HassLike, CardConfig } from "@/lib/types";
 import type {
   ConfigChipItem,
@@ -11,7 +11,7 @@ import type {
 import "@/atoms/display/color-swatch/color-swatch";
 import "@/atoms/display/feedback-banner/feedback-banner";
 import "@/cards/action/action-targets/action-targets";
-import { logger } from "@/lib/logger.js";
+import { logger } from "@/lib/logger";
 
 /**
  * hass-datapoints-action-card – Full form to record a custom event.
@@ -33,7 +33,7 @@ export class HassRecordsActionCard extends LitElement {
 
   declare _config: CardConfig;
 
-  declare _hass: HassLike | null;
+  declare _hass: Nullable<HassLike>;
 
   declare _color: string;
 
@@ -66,7 +66,7 @@ export class HassRecordsActionCard extends LitElement {
     this._hass = hass;
   }
 
-  get hass(): HassLike | null {
+  get hass(): Nullable<HassLike> {
     return this._hass;
   }
 
@@ -91,8 +91,8 @@ export class HassRecordsActionCard extends LitElement {
       }
       return [v as string];
     };
-    let raw: Record<string, unknown> | undefined;
-    if (cfg.target) raw = cfg.target as Record<string, unknown>;
+    let raw: RecordWithUnknownValues | undefined;
+    if (cfg.target) raw = cfg.target as RecordWithUnknownValues;
     else if (cfg.entity) raw = { entity_id: [cfg.entity] };
     else if ((cfg.entities as string[])?.length)
       raw = { entity_id: cfg.entities };
@@ -151,7 +151,7 @@ export class HassRecordsActionCard extends LitElement {
     >("#btn");
     if (btn) btn.disabled = true;
 
-    const data: Record<string, unknown> = { message };
+    const data: RecordWithUnknownValues = { message };
 
     const annEl = this.shadowRoot!.querySelector<HTMLTextAreaElement>("#ann");
     const ann = (annEl?.value || "").trim();

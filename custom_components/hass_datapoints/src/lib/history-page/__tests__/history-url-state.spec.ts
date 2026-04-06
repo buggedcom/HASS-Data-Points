@@ -4,10 +4,12 @@ import {
   makeDateWindowId,
   normalizeDateWindows,
   parseDateWindowsParam,
+  parseHistoryPageStateParam,
   serializeDateWindowsParam,
-} from "@/lib/history-page/history-url-state.js";
+  serializeHistoryPageStateParam,
+} from "@/lib/history-page/history-url-state";
 
-describe("history-url-state.js", () => {
+describe("history-url-state", () => {
   describe("GIVEN a label and existing ids", () => {
     describe("WHEN makeDateWindowId is called", () => {
       it("THEN it returns a unique slug id", () => {
@@ -71,6 +73,30 @@ describe("history-url-state.js", () => {
         expect(
           parseDateWindowsParam(serializeDateWindowsParam(windows))
         ).toEqual(windows);
+      });
+    });
+  });
+
+  describe("GIVEN page state objects", () => {
+    describe("WHEN they are serialized and parsed", () => {
+      it("THEN they round-trip through the page_state query param", () => {
+        expect.assertions(1);
+
+        const state = {
+          datapoint_scope: "all",
+          chart_hover_snap_mode: "snap_to_data_points",
+          series_rows: [
+            {
+              entity_id: "sensor.alpha",
+              visible: false,
+              color: "#abcdef",
+            },
+          ],
+        };
+
+        expect(
+          parseHistoryPageStateParam(serializeHistoryPageStateParam(state))
+        ).toEqual(state);
       });
     });
   });

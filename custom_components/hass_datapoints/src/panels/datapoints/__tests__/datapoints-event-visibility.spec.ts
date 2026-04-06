@@ -45,4 +45,40 @@ describe("HassRecordsHistoryPanel", () => {
       });
     });
   });
+
+  describe("GIVEN a hovered record event", () => {
+    describe("WHEN the hover starts", () => {
+      it("THEN it updates the hovered chart event ids and redraws", () => {
+        expect.assertions(2);
+        const panel = {
+          _hoveredEventIds: [],
+          _renderContent: vi.fn(),
+        };
+
+        HassRecordsHistoryPanel.prototype._handleHoverEventRecord.call(panel, {
+          detail: { eventId: "evt-3", hovered: true },
+        });
+
+        expect(panel._hoveredEventIds).toEqual(["evt-3"]);
+        expect(panel._renderContent).toHaveBeenCalledOnce();
+      });
+    });
+
+    describe("WHEN the hover ends", () => {
+      it("THEN it clears the hovered chart event ids and redraws", () => {
+        expect.assertions(2);
+        const panel = {
+          _hoveredEventIds: ["evt-3"],
+          _renderContent: vi.fn(),
+        };
+
+        HassRecordsHistoryPanel.prototype._handleHoverEventRecord.call(panel, {
+          detail: { eventId: "evt-3", hovered: false },
+        });
+
+        expect(panel._hoveredEventIds).toEqual([]);
+        expect(panel._renderContent).toHaveBeenCalledOnce();
+      });
+    });
+  });
 });

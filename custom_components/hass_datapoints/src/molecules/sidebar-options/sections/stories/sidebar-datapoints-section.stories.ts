@@ -26,7 +26,7 @@ export default {
   args: {
     datapointScope: "linked",
   },
-  render: (args: Record<string, unknown>) => html`
+  render: (args: RecordWithUnknownValues) => html`
     <sidebar-datapoints-section
       .datapointScope=${args.datapointScope}
     ></sidebar-datapoints-section>

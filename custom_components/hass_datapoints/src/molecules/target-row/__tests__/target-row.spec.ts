@@ -47,9 +47,9 @@ const MOCK_STATE_OBJ = {
   context: { id: "abc123", parent_id: null, user_id: null },
 };
 
-function createElement(props: Record<string, unknown> = {}) {
+function createElement(props: RecordWithUnknownValues = {}) {
   const el = document.createElement("target-row") as HTMLElement & {
-    stateObj: Record<string, unknown> | null;
+    stateObj: Nullable<RecordWithUnknownValues>;
     color: string;
     visible: boolean;
     analysis: NormalizedAnalysis;

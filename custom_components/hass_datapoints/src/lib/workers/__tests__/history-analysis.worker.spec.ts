@@ -11,7 +11,7 @@ import {
   getTrendWindowMs,
   interpolateSeriesValue,
   normalizeSeriesAnalysis,
-} from "@/lib/workers/history-analysis.worker.js";
+} from "@/lib/workers/history-analysis.worker";
 
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;

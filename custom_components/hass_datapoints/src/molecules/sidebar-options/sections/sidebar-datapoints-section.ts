@@ -1,5 +1,6 @@
 import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
+import { localized, msg } from "@/lib/i18n/localize";
 
 import { styles } from "./sidebar-datapoints-section.styles";
 import "@/atoms/display/sidebar-options-section/sidebar-options-section";
@@ -11,6 +12,7 @@ export const DATAPOINT_SCOPE_OPTIONS = [
   { value: "hidden", label: "Hide datapoints" },
 ];
 
+@localized()
 export class SidebarDatapointsSection extends LitElement {
   @property({ type: String, attribute: "datapoint-scope" })
   accessor datapointScope: string = "linked";
@@ -31,18 +33,27 @@ export class SidebarDatapointsSection extends LitElement {
     );
   }
 
+  private _localizedOptions(
+    options: Array<{ value: string; label: string }>
+  ): Array<{ value: string; label: string }> {
+    return options.map((opt) => ({
+      ...opt,
+      label: msg(opt.label),
+    }));
+  }
+
   render() {
     return html`
       <sidebar-options-section
-        .title=${"Datapoints"}
-        .subtitle=${"Choose which annotation datapoints appear on the chart."}
+        .title=${msg("Datapoints")}
+        .subtitle=${msg("Choose which annotation datapoints appear on the chart.")}
         .collapsible=${this.collapsible}
         .open=${this.open}
       >
         <radio-group
           .name=${"datapoint-scope"}
           .value=${this.datapointScope}
-          .options=${DATAPOINT_SCOPE_OPTIONS}
+          .options=${this._localizedOptions(DATAPOINT_SCOPE_OPTIONS)}
           @dp-radio-change=${this._onScopeChange}
         ></radio-group>
       </sidebar-options-section>

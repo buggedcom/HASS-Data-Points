@@ -1,4 +1,4 @@
-import { LitElement, html } from "lit";
+import { html, LitElement } from "lit";
 import { property, state } from "lit/decorators.js";
 
 import { styles } from "./dev-tool-windows.styles";
@@ -12,9 +12,8 @@ export class CardDevToolWindows extends LitElement {
   @state() accessor _nextWindowId = 1;
 
   connectedCallback() {
-    if (super.connectedCallback) {
-      super.connectedCallback();
-    }
+    // eslint-disable-next-line wc/guard-super-call
+    super.connectedCallback();
     if (this.windows.length === 0) {
       this.windows = [this._createWindow()];
     } else {

@@ -12,7 +12,7 @@ describe("navigation-context", () => {
   describe("GIVEN URL state is read", () => {
     describe("WHEN the current location contains history query params", () => {
       it("THEN it parses the URL state and session memory together", () => {
-        expect.assertions(7);
+        expect.assertions(8);
         window.sessionStorage.setItem(
           "hass_datapoints:panel_history_session",
           JSON.stringify({ sidebar_collapsed: true })
@@ -20,7 +20,7 @@ describe("navigation-context", () => {
         window.history.replaceState(
           null,
           "",
-          "/hass-datapoints-history?entity_id=sensor.one&start_time=2026-01-01T00:00:00.000Z&end_time=2026-01-02T00:00:00.000Z&hours_to_show=24&series_colors=temperature:%23abcdef"
+          `/hass-datapoints-history?entity_id=sensor.one&start_time=2026-01-01T00:00:00.000Z&end_time=2026-01-02T00:00:00.000Z&hours_to_show=24&series_colors=temperature:%23abcdef&page_state=${encodeURIComponent(JSON.stringify({ datapoint_scope: "hidden" }))}`
         );
 
         const context = createHistoryPageNavigationContext();
@@ -30,6 +30,7 @@ describe("navigation-context", () => {
         expect(state.startFromUrl).toBe("2026-01-01T00:00:00.000Z");
         expect(state.endFromUrl).toBe("2026-01-02T00:00:00.000Z");
         expect(state.hoursFromUrl).toBe(24);
+        expect(state.pageStateFromUrl).toEqual({ datapoint_scope: "hidden" });
         expect(state.hasTargetInUrl).toBe(true);
         expect(state.hasRangeInUrl).toBe(true);
         expect(state.sessionState).toEqual({ sidebar_collapsed: true });
@@ -87,7 +88,7 @@ describe("navigation-context", () => {
   describe("GIVEN the page URL is updated", () => {
     describe("WHEN new panel state is written to the location", () => {
       it("THEN it serializes the history URL params through browser history", () => {
-        expect.assertions(4);
+        expect.assertions(5);
         const context = createHistoryPageNavigationContext();
         const replaceSpy = vi.spyOn(window.history, "replaceState");
 
@@ -99,6 +100,7 @@ describe("navigation-context", () => {
           hours: 24,
           committedZoomRange: { start: 10, end: 20 },
           comparisonWindows: [],
+          pageState: { datapoint_scope: "hidden", split_chart_view: true },
           seriesRows: [{ entity_id: "sensor.one", color: "#abcdef" }],
           seriesColorQueryKey: () => "temperature",
           push: false,
@@ -109,6 +111,7 @@ describe("navigation-context", () => {
         expect(nextUrl).toContain("entity_id=sensor.one");
         expect(nextUrl).toContain("datapoints_scope=hidden");
         expect(nextUrl).toContain("series_colors=temperature%3A%23abcdef");
+        expect(nextUrl).toContain("page_state=");
       });
     });
   });

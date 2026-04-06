@@ -1,5 +1,6 @@
 import { html, LitElement, nothing } from "lit";
 import { property } from "lit/decorators.js";
+import { localized, msg } from "@/lib/i18n/localize";
 
 import { styles } from "./date-window-dialog.styles";
 import type { RangeBounds } from "@/atoms/interactive/range-timeline/types";
@@ -18,6 +19,7 @@ import "@/atoms/interactive/range-timeline/range-timeline";
  * @fires dp-window-shortcut - `{ direction: -1 | 1 }` fired when a "Use previous/next range" shortcut is clicked
  * @fires dp-window-date-change - `{ start: string, end: string }` fired when either datetime input changes
  */
+@localized()
 export class DateWindowDialog extends LitElement {
   static styles = styles;
 
@@ -51,7 +53,7 @@ export class DateWindowDialog extends LitElement {
   accessor submitLabel: string = "Create date window";
 
   /** Optional range bounds from the parent panel — used to set the timeline slider context. */
-  @property({ type: Object }) accessor rangeBounds: RangeBounds | null = null;
+  @property({ type: Object }) accessor rangeBounds: Nullable<RangeBounds> = null;
 
   /** Effective zoom level for the timeline slider (already resolved from "auto"). */
   @property({ type: String, attribute: "zoom-level" })
@@ -65,7 +67,7 @@ export class DateWindowDialog extends LitElement {
   shake() {
     const dialog = this.shadowRoot?.querySelector(
       "ha-dialog"
-    ) as HTMLElement | null;
+    ) as Nullable<HTMLElement>;
     if (!dialog) return;
     dialog.classList.remove("dp-shaking");
     // eslint-disable-next-line no-void
@@ -78,7 +80,7 @@ export class DateWindowDialog extends LitElement {
     );
   }
 
-  private _emit(name: string, detail: Record<string, unknown> = {}) {
+  private _emit(name: string, detail: RecordWithUnknownValues = {}) {
     this.dispatchEvent(
       new CustomEvent(name, {
         detail,
@@ -157,7 +159,7 @@ export class DateWindowDialog extends LitElement {
   }
 
   /** Parse the startValue / endValue strings to Date objects for the timeline. */
-  private _parseValueToDate(value: string): Date | null {
+  private _parseValueToDate(value: string): Nullable<Date> {
     if (!value) return null;
     const d = new Date(value);
     return Number.isNaN(d.getTime()) ? null : d;
@@ -175,25 +177,23 @@ export class DateWindowDialog extends LitElement {
         <span slot="heading">${this.heading}</span>
         <div class="date-window-dialog-content">
           <div class="date-window-dialog-body">
-            A date window saves a named date range as a tab, so you can quickly
-            preview it against the selected range or jump the chart back to it
-            later.
+            ${msg("A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later.")}
           </div>
 
           <div class="date-window-dialog-field name-field">
             <ha-textfield
               id="date-window-name"
-              label="Name"
-              placeholder="e.g. Heating season start"
+              label=${msg("Name")}
+              placeholder=${msg("e.g. Heating season start")}
               .value=${this.name}
             ></ha-textfield>
           </div>
 
           <div class="date-window-dialog-field">
-            <label>Date range</label>
+            <label>${msg("Date range")}</label>
             <div class="date-window-dialog-dates">
               <div class="date-window-dialog-field">
-                <label for="date-window-start">Start</label>
+                <label for="date-window-start">${msg("Start")}</label>
                 <input
                   id="date-window-start"
                   class="date-window-dialog-input"
@@ -204,7 +204,7 @@ export class DateWindowDialog extends LitElement {
                 />
               </div>
               <div class="date-window-dialog-field">
-                <label for="date-window-end">End</label>
+                <label for="date-window-end">${msg("End")}</label>
                 <input
                   id="date-window-end"
                   class="date-window-dialog-input"
@@ -235,10 +235,10 @@ export class DateWindowDialog extends LitElement {
             ? html`
                 <div class="date-window-dialog-shortcuts">
                   <ha-button @click=${this._onPreviousShortcut}
-                    >Use previous range</ha-button
+                    >${msg("Use previous range")}</ha-button
                   >
                   <ha-button @click=${this._onNextShortcut}
-                    >Use next range</ha-button
+                    >${msg("Use next range")}</ha-button
                   >
                 </div>
               `
@@ -250,7 +250,7 @@ export class DateWindowDialog extends LitElement {
                   <ha-button
                     class="date-window-dialog-delete"
                     @click=${this._onDelete}
-                    >Delete date window</ha-button
+                    >${msg("Delete date window")}</ha-button
                   >
                 `
               : nothing}
@@ -258,7 +258,7 @@ export class DateWindowDialog extends LitElement {
               <ha-button
                 class="date-window-dialog-cancel"
                 @click=${this._onCancel}
-                >Cancel</ha-button
+                >${msg("Cancel")}</ha-button
               >
               <ha-button
                 raised

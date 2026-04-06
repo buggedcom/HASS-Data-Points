@@ -14,14 +14,14 @@ export class EditorIconPicker extends LitElement {
 
   @property({ type: String }) accessor value: string = "mdi:bookmark";
 
-  @property({ type: Object }) accessor hass: HassLike | null = null;
+  @property({ type: Object }) accessor hass: Nullable<HassLike> = null;
 
   static styles = styles;
 
   firstUpdated() {
     const el = this.shadowRoot!.querySelector(
       "ha-icon-picker"
-    ) as HaIconPicker | null;
+    ) as Nullable<HaIconPicker>;
     if (el) {
       el.label = this.label;
       if (this.hass) {
@@ -34,7 +34,7 @@ export class EditorIconPicker extends LitElement {
   updated(changedProps: PropertyValues) {
     const el = this.shadowRoot!.querySelector(
       "ha-icon-picker"
-    ) as HaIconPicker | null;
+    ) as Nullable<HaIconPicker>;
     if (!el) {
       return;
     }

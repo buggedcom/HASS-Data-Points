@@ -1,7 +1,7 @@
 import { LitElement } from "lit";
-import { DOMAIN } from "@/constants.js";
+import { DOMAIN } from "@/constants";
 import type { CardConfig, HassLike } from "@/lib/types";
-import { logger } from "@/lib/logger.js";
+import { logger } from "@/lib/logger";
 
 /**
  * ChartCardBase – shared LitElement base class for history and statistics
@@ -37,17 +37,17 @@ export abstract class ChartCardBase extends LitElement {
 
   // ── Private lifecycle state ───────────────────────────────────────────────
 
-  private _unsubscribe: (() => void) | null = null;
+  private _unsubscribe: NullableCleanup = null;
 
-  private _resizeObserver: ResizeObserver | null = null;
+  private _resizeObserver: Nullable<ResizeObserver> = null;
 
-  private _loadRaf: number | null = null;
+  private _loadRaf: Nullable<number> = null;
 
   private _loadInFlight = false;
 
   private _hasStartedInitialLoad = false;
 
-  private _windowListener: (() => void) | null = null;
+  private _windowListener: NullableCleanup = null;
 
   /** True once _setupAutoRefresh and _setupResizeObserver have been called. */
   private _initialized = false;

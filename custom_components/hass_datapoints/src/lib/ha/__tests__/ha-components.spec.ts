@@ -4,7 +4,7 @@ import {
   confirmDestructiveAction,
   ensureHaComponents,
   waitForHaComponent,
-} from "@/lib/ha/ha-components.js";
+} from "@/lib/ha/ha-components";
 
 const { loadHaComponentsMock } = vi.hoisted(() => ({
   loadHaComponentsMock: vi.fn(async () => undefined),
@@ -14,7 +14,7 @@ vi.mock("@kipk/load-ha-components", () => ({
   loadHaComponents: loadHaComponentsMock,
 }));
 
-describe("ha-components.js", () => {
+describe("ha-components", () => {
   beforeEach(() => {
     loadHaComponentsMock.mockClear();
   });

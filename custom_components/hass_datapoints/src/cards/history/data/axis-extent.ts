@@ -5,8 +5,8 @@ import type { ValueExtent } from "./types";
  * Returns `null` if there are no finite values.
  */
 export function getAxisValueExtent(
-  allValues: (number | string | null | undefined)[]
-): ValueExtent | null {
+  allValues: (number | Nullable<string> | undefined)[]
+): Nullable<ValueExtent> {
   let min = Infinity;
   let max = -Infinity;
   for (const value of allValues) {

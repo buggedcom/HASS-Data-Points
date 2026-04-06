@@ -79,7 +79,7 @@ export default {
       "These targets will be associated with the new data point by default. Remove any that should not be linked.",
     emptyText: "No linked targets will be associated with this data point.",
   },
-  render: (args: Record<string, unknown>) => html`
+  render: (args: RecordWithUnknownValues) => html`
     <annotation-chip-row
       .chips=${args.chips}
       .label=${args.label}

@@ -1,28 +1,22 @@
-import { LitElement, html } from "lit";
+import { html, LitElement } from "lit";
+import { localized, msg } from "@/lib/i18n/localize";
 
 import { styles } from "./list.styles";
-import { DOMAIN } from "@/constants.js";
-import { navigateToDataPointsHistory } from "@/lib/ha/navigation.js";
-import { confirmDestructiveAction } from "@/lib/ha/ha-components.js";
-import {
-  deleteEvent,
-  fetchEvents,
-  updateEvent,
-} from "@/lib/data/events-api.js";
+import { DOMAIN } from "@/constants";
+import { navigateToDataPointsHistory } from "@/lib/ha/navigation";
+import { confirmDestructiveAction } from "@/lib/ha/ha-components";
+import { deleteEvent, fetchEvents, updateEvent } from "@/lib/data/events-api";
 import type { CardConfig, HassLike } from "@/lib/types";
-import type {
-  EditSaveDetail,
-  EventItemContext,
-  EventRecordFull,
-} from "@/cards/list/types";
+import type { EditSaveDetail, EventItemContext, EventRecordFull, } from "@/cards/list/types";
 import "@/atoms/interactive/search-bar/search-bar";
 import "@/atoms/interactive/pagination/pagination";
 import "@/cards/list/list-event-item/list-event-item";
-import { logger } from "@/lib/logger.js";
+import { logger } from "@/lib/logger";
 
 /**
  * hass-datapoints-list-card – Activity-style datagrid with search, pagination, edit/delete.
  */
+@localized()
 export class HassRecordsListCard extends LitElement {
   static properties = {
     _config: { state: true },
@@ -36,7 +30,7 @@ export class HassRecordsListCard extends LitElement {
 
   declare _config: CardConfig;
 
-  declare _hass: HassLike | null;
+  declare _hass: Nullable<HassLike>;
 
   declare _allEvents: EventRecordFull[];
 
@@ -44,7 +38,7 @@ export class HassRecordsListCard extends LitElement {
 
   declare _page: number;
 
-  declare _editingId: string | null;
+  declare _editingId: Nullable<string>;
 
   declare _editColor: string;
 
@@ -52,9 +46,9 @@ export class HassRecordsListCard extends LitElement {
 
   private _configKey = "";
 
-  private _unsubscribe: (() => void) | null = null;
+  private _unsubscribe: NullableCleanup = null;
 
-  private _windowListener: (() => void) | null = null;
+  private _windowListener: NullableCleanup = null;
 
   private _initialized = false;
 
@@ -91,7 +85,7 @@ export class HassRecordsListCard extends LitElement {
     }
   }
 
-  get hass(): HassLike | null {
+  get hass(): Nullable<HassLike> {
     return this._hass;
   }
 
@@ -146,6 +140,11 @@ export class HassRecordsListCard extends LitElement {
         end.getTime() - (cfg.hours_to_show as number) * 3600 * 1000
       ).toISOString();
     }
+    const effectiveEndTime = endTime || new Date().toISOString();
+    if (!startTime) {
+      this._allEvents = [];
+      return;
+    }
     let entityIds: string[] | undefined;
     if (cfg.entity) {
       entityIds = [cfg.entity as string];
@@ -157,10 +156,15 @@ export class HassRecordsListCard extends LitElement {
       entityIds = undefined;
     }
 
+    const hass = this._hass;
+    if (!hass) {
+      this._allEvents = [];
+      return;
+    }
     const events = (await fetchEvents(
-      this._hass,
+      hass,
       startTime,
-      endTime,
+      effectiveEndTime,
       cfg.datapoint_scope === "all" ? undefined : entityIds
     )) as EventRecordFull[];
     this._allEvents = [...events].reverse();
@@ -209,7 +213,10 @@ export class HassRecordsListCard extends LitElement {
         end_time: range?.end_time,
         zoom_start_time: range?.zoom_start_time,
         zoom_end_time: range?.zoom_end_time,
-        datapoint_scope: this._config?.datapoint_scope,
+        datapoint_scope:
+          typeof this._config?.datapoint_scope === "string"
+            ? this._config.datapoint_scope
+            : undefined,
       }
     );
   }
@@ -245,17 +252,21 @@ export class HassRecordsListCard extends LitElement {
   }
 
   private async _saveEdit(ev: EventRecordFull, values: EditSaveDetail) {
-    const msg = values.message.trim();
+    const message = values.message.trim();
     const ann = values.annotation.trim();
     const icon = values.icon || "mdi:bookmark";
     const color = values.color || this._editColor;
-    if (!msg) {
+    if (!message) {
+      return;
+    }
+    const hass = this._hass;
+    if (!hass) {
       return;
     }
     try {
-      await updateEvent(this._hass, ev.id, {
-        message: msg,
-        annotation: ann || msg,
+      await updateEvent(hass, ev.id, {
+        message,
+        annotation: ann || message,
         icon,
         color,
       });
@@ -269,13 +280,17 @@ export class HassRecordsListCard extends LitElement {
   private async _deleteEvent(ev: EventRecordFull) {
     const message = ev.message || "this record";
     const confirmed = await confirmDestructiveAction(this, {
-      title: "Delete record",
-      message: `Delete ${message}?`,
-      confirmLabel: "Delete record",
+      title: msg("Delete record"),
+      message: `${msg("Delete")} ${message}?`,
+      confirmLabel: msg("Delete record"),
     });
     if (!confirmed) return;
+    const hass = this._hass;
+    if (!hass) {
+      return;
+    }
     try {
-      await deleteEvent(this._hass, ev.id);
+      await deleteEvent(hass, ev.id);
       await this._load();
     } catch (err) {
       logger.error("[hass-datapoints list-card] delete failed", err);
@@ -302,28 +317,52 @@ export class HassRecordsListCard extends LitElement {
     );
   }
 
+  private _handleHoverEventRecord(
+    event: CustomEvent<{
+      eventId: string;
+      hovered: boolean;
+      eventRecord: EventRecordFull;
+    }>
+  ) {
+    this.dispatchEvent(
+      new CustomEvent("hass-datapoints-hover-event-record", {
+        bubbles: true,
+        composed: true,
+        detail: {
+          eventId: event.detail.eventId,
+          hovered: event.detail.hovered === true,
+          eventRecord: event.detail.eventRecord,
+        },
+      })
+    );
+  }
+
   private _itemContext(ev: EventRecordFull): EventItemContext {
     const cfg = this._config;
+    const hidden = ((cfg.hidden_event_ids as string[]) || []).includes(ev.id);
+    if (hidden !== (ev as unknown as RecordWithUnknownValues)._lastHidden) {
+      (ev as unknown as RecordWithUnknownValues)._lastHidden = hidden;
+    }
     return {
       hass: this._hass,
       showActions: cfg.show_actions !== false,
       showEntities: cfg.show_entities !== false,
       showFullMessage: cfg.show_full_message !== false,
-      hidden: ((cfg.hidden_event_ids as string[]) || []).includes(ev.id),
+      hidden,
       editing: this._editingId === ev.id,
       editColor: this._editColor,
       language: {
-        showAnnotation: "Show annotation",
-        openHistory: "Open related data point history",
-        editRecord: "Edit record",
-        deleteRecord: "Delete record",
-        showChartMarker: "Show chart marker",
-        hideChartMarker: "Hide chart marker",
-        chooseColor: "Choose colour",
-        save: "Save",
-        cancel: "Cancel",
-        message: "Message",
-        annotationFullMessage: "Annotation / full message",
+        showAnnotation: msg("Show annotation"),
+        openHistory: msg("Open related data point history"),
+        editRecord: msg("Edit record"),
+        deleteRecord: msg("Delete record"),
+        showChartMarker: msg("Show chart marker"),
+        hideChartMarker: msg("Hide chart marker"),
+        chooseColor: msg("Choose colour"),
+        save: msg("Save"),
+        cancel: msg("Cancel"),
+        message: msg("Message"),
+        annotationFullMessage: msg("Annotation / full message"),
       },
     };
   }
@@ -348,7 +387,7 @@ export class HassRecordsListCard extends LitElement {
               <div class="search-wrap">
                 <search-bar
                   .query=${this._searchQuery}
-                  placeholder="Search datapoints…"
+                  .placeholder=${msg("Search datapoints…")}
                   @dp-search=${this._onSearch}
                 ></search-bar>
               </div>
@@ -381,6 +420,15 @@ export class HassRecordsListCard extends LitElement {
                       }}
                       @dp-toggle-visibility=${() => {
                         this._toggleVisibility(ev);
+                      }}
+                      @dp-hover-event-record=${(
+                        event: CustomEvent<{
+                          eventId: string;
+                          hovered: boolean;
+                          eventRecord: EventRecordFull;
+                        }>
+                      ) => {
+                        this._handleHoverEventRecord(event);
                       }}
                       @dp-more-info=${(
                         event: CustomEvent<{ entityId: string }>

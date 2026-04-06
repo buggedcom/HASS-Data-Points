@@ -10,24 +10,43 @@ describe("orchestration-context", () => {
   describe("GIVEN a target picker control", () => {
     describe("WHEN the inner generic picker exists", () => {
       it("THEN it opens the generic picker instead of clicking the host", () => {
-        expect.assertions(3);
+        expect.assertions(5);
         const context = createHistoryPageOrchestrationContext();
         const open = vi.fn();
         const focus = vi.fn();
         const click = vi.fn();
+        const slotContainer = document.createElement("div");
+        slotContainer.style.display = "none";
+        const assignedSlot = document.createElement("slot");
+        slotContainer.appendChild(assignedSlot);
+        document.body.appendChild(slotContainer);
         const targetControl = {
           shadowRoot: {
             querySelector: vi.fn(() => ({ open })),
           },
+          assignedSlot,
+          style: {},
           focus,
           click,
         } as unknown as HTMLElement;
+        const anchorEl = {
+          getBoundingClientRect: () => ({
+            left: 12,
+            top: 24,
+            width: 28,
+            height: 28,
+          }),
+        } as unknown as HTMLElement;
 
-        context.openTargetPicker(targetControl);
+        context.openTargetPicker(targetControl, anchorEl);
 
         expect(open).toHaveBeenCalledTimes(1);
         expect(focus).not.toHaveBeenCalled();
         expect(click).not.toHaveBeenCalled();
+        expect(slotContainer.style.position).toBe("fixed");
+        expect(slotContainer.style.width).toBe("320px");
+
+        slotContainer.remove();
       });
     });
   });

@@ -6,22 +6,22 @@ import {
   mergeTargetSelections,
   resolveEntityIdsFromTarget,
   panelConfigTarget,
-} from "@/lib/domain/target-selection.js";
+} from "@/lib/domain/target-selection";
 import {
   normalizeHistorySeriesAnalysis,
   normalizeHistorySeriesRows,
   buildHistorySeriesRows,
   slugifySeriesName,
   parseSeriesColorsParam,
-} from "@/lib/domain/history-series.js";
+} from "@/lib/domain/history-series";
 import {
   parseDateValue,
   createChartZoomRange,
-} from "@/lib/domain/chart-zoom.js";
+} from "@/lib/domain/chart-zoom";
 
 // Override COLORS so assertions use predictable values independent of constants.js
-vi.mock("@/constants.js", async (importOriginal) => {
-  const real = (await importOriginal()) as Record<string, unknown>;
+vi.mock("@/constants", async (importOriginal) => {
+  const real = (await importOriginal()) as RecordWithUnknownValues;
   return { ...real, COLORS: ["#111111", "#222222", "#333333"] };
 });
 

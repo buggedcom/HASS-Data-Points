@@ -5,7 +5,7 @@ import { styles } from "./panel-timeline.styles";
 import type { EventMarker } from "./types";
 import type { RangeBounds } from "@/atoms/interactive/range-timeline/types";
 import "@/atoms/interactive/range-timeline/range-timeline";
-import { clampNumber } from "@/lib/timeline/timeline-scale.js";
+import { clampNumber } from "@/lib/timeline/timeline-scale";
 
 /**
  * `panel-timeline` is a panel-history-specific wrapper around `range-timeline`.
@@ -24,11 +24,11 @@ import { clampNumber } from "@/lib/timeline/timeline-scale.js";
  * @fires dp-range-scroll        - Bubbled from inner range-timeline
  */
 export class PanelTimeline extends LitElement {
-  @property({ type: Object }) accessor startTime: Date | null = null;
+  @property({ type: Object }) accessor startTime: Nullable<Date> = null;
 
-  @property({ type: Object }) accessor endTime: Date | null = null;
+  @property({ type: Object }) accessor endTime: Nullable<Date> = null;
 
-  @property({ type: Object }) accessor rangeBounds: RangeBounds | null = null;
+  @property({ type: Object }) accessor rangeBounds: Nullable<RangeBounds> = null;
 
   @property({ type: String }) accessor zoomLevel: string = "day";
 
@@ -36,27 +36,23 @@ export class PanelTimeline extends LitElement {
 
   @property({ type: Boolean }) accessor isLiveEdge: boolean = false;
 
-  @state() accessor hoveredPeriodRange: { start: number; end: number } | null =
+  @property({ type: String }) accessor locale: string = "";
+
+  @state() accessor hoveredPeriodRange: Nullable<{ start: number; end: number }> =
     null;
 
-  @property({ type: Object }) accessor comparisonPreview: {
-    start: number;
-    end: number;
-  } | null = null;
+  @property({ type: Object }) accessor comparisonPreview: Nullable<{ start: number;
+    end: number; }> = null;
 
-  @property({ type: Object }) accessor zoomRange: {
-    start: number;
-    end: number;
-  } | null = null;
+  @property({ type: Object }) accessor zoomRange: Nullable<{ start: number;
+    end: number; }> = null;
 
-  @property({ type: Object }) accessor zoomWindowRange: {
-    start: number;
-    end: number;
-  } | null = null;
+  @property({ type: Object }) accessor zoomWindowRange: Nullable<{ start: number;
+    end: number; }> = null;
 
-  @property({ type: Number }) accessor chartHoverTimeMs: number | null = null;
+  @property({ type: Number }) accessor chartHoverTimeMs: Nullable<number> = null;
 
-  @property({ type: Number }) accessor chartHoverWindowTimeMs: number | null =
+  @property({ type: Number }) accessor chartHoverWindowTimeMs: Nullable<number> =
     null;
 
   @property({ type: Array }) accessor events: EventMarker[] = [];
@@ -64,19 +60,19 @@ export class PanelTimeline extends LitElement {
   static styles = styles;
 
   // Cached overlay DOM refs (set in firstUpdated)
-  _rangeHoverPreviewEl: HTMLElement | null = null;
+  _rangeHoverPreviewEl: Nullable<HTMLElement> = null;
 
-  _rangeComparisonPreviewEl: HTMLElement | null = null;
+  _rangeComparisonPreviewEl: Nullable<HTMLElement> = null;
 
-  _rangeZoomHighlightEl: HTMLElement | null = null;
+  _rangeZoomHighlightEl: Nullable<HTMLElement> = null;
 
-  _rangeZoomWindowHighlightEl: HTMLElement | null = null;
+  _rangeZoomWindowHighlightEl: Nullable<HTMLElement> = null;
 
-  _rangeChartHoverLineEl: HTMLElement | null = null;
+  _rangeChartHoverLineEl: Nullable<HTMLElement> = null;
 
-  _rangeChartHoverWindowLineEl: HTMLElement | null = null;
+  _rangeChartHoverWindowLineEl: Nullable<HTMLElement> = null;
 
-  _rangeEventLayerEl: HTMLElement | null = null;
+  _rangeEventLayerEl: Nullable<HTMLElement> = null;
 
   firstUpdated() {
     const sr = this.shadowRoot!;
@@ -129,6 +125,7 @@ export class PanelTimeline extends LitElement {
         .zoomLevel=${this.zoomLevel}
         .dateSnapping=${this.dateSnapping}
         .isLiveEdge=${this.isLiveEdge}
+        .locale=${this.locale}
         @dp-range-period-hover=${this._onPeriodHoverInternal}
         @dp-range-period-leave=${this._onPeriodLeaveInternal}
       >
@@ -216,8 +213,8 @@ export class PanelTimeline extends LitElement {
   }
 
   _setRangeOverlay(
-    el: HTMLElement | null,
-    range: { start: number; end: number } | null
+    el: Nullable<HTMLElement>,
+    range: Nullable<{ start: number; end: number }>
   ) {
     if (!el) return;
     if (!range || !this.rangeBounds) {
@@ -242,7 +239,7 @@ export class PanelTimeline extends LitElement {
     el.classList.add("visible");
   }
 
-  _setHoverLine(el: HTMLElement | null, timeMs: number | null) {
+  _setHoverLine(el: Nullable<HTMLElement>, timeMs: Nullable<number>) {
     if (!el) return;
     if (timeMs == null || !this.rangeBounds) {
       el.classList.remove("visible");

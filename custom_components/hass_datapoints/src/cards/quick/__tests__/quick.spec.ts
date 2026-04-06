@@ -6,7 +6,7 @@ if (!customElements.get("hass-datapoints-quick-card")) {
   customElements.define("hass-datapoints-quick-card", HassRecordsQuickCard);
 }
 
-function createCard(config: Record<string, unknown> = {}) {
+function createCard(config: RecordWithUnknownValues = {}) {
   const el = document.createElement("hass-datapoints-quick-card") as any;
   document.body.appendChild(el);
   el.setConfig({ title: "Quick Record", ...config });

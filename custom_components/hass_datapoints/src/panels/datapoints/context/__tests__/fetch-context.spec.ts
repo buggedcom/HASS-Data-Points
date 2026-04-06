@@ -3,15 +3,15 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { createHistoryPageFetchContext } from "../fetch-context";
 import type { HassLike } from "@/lib/types";
 
-import { fetchEventBounds, fetchEvents } from "@/lib/data/events-api.js";
-import { fetchUserData } from "@/lib/data/preferences-api.js";
+import { fetchEventBounds, fetchEvents } from "@/lib/data/events-api";
+import { fetchUserData } from "@/lib/data/preferences-api";
 
-vi.mock("@/lib/data/events-api.js", () => ({
+vi.mock("@/lib/data/events-api", () => ({
   fetchEventBounds: vi.fn(),
   fetchEvents: vi.fn(),
 }));
 
-vi.mock("@/lib/data/preferences-api.js", () => ({
+vi.mock("@/lib/data/preferences-api", () => ({
   fetchUserData: vi.fn(),
 }));
 

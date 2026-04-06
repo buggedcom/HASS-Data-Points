@@ -3,7 +3,7 @@ import { createMockHass } from "@/test-support/mock-hass";
 import { SAMPLE_EVENT } from "@/test-support/fixtures";
 import "../event-list-item";
 
-function createElement(props: Record<string, unknown> = {}) {
+function createElement(props: RecordWithUnknownValues = {}) {
   const el = document.createElement("event-list-item") as HTMLElement & {
     event: typeof SAMPLE_EVENT;
     hass: unknown;

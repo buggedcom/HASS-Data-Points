@@ -8,15 +8,15 @@ import {
   vi,
 } from "vitest";
 
-import { fetchHistoryDuringPeriod } from "@/lib/data/history-api.js";
-import { fetchStatisticsDuringPeriod } from "@/lib/data/statistics-api.js";
+import { fetchHistoryDuringPeriod } from "@/lib/data/history-api";
+import { fetchStatisticsDuringPeriod } from "@/lib/data/statistics-api";
 import {
   fetchEvents,
   fetchEventBounds,
   deleteEvent,
   updateEvent,
-} from "@/lib/data/events-api.js";
-import { fetchUserData, saveUserData } from "@/lib/data/preferences-api.js";
+} from "@/lib/data/events-api";
+import { fetchUserData, saveUserData } from "@/lib/data/preferences-api";
 
 // events-api and preferences-api use `logger` as an implicit global in catch blocks.
 let warnSpy: ReturnType<typeof vi.fn>;

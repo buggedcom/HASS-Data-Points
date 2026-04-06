@@ -6,7 +6,7 @@ if (!customElements.get("hass-datapoints-action-card")) {
   customElements.define("hass-datapoints-action-card", HassRecordsActionCard);
 }
 
-function createCard(config: Record<string, unknown> = {}) {
+function createCard(config: RecordWithUnknownValues = {}) {
   const el = document.createElement("hass-datapoints-action-card") as any;
   document.body.appendChild(el);
   el.setConfig({ title: "Record Event", ...config });

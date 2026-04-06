@@ -1,5 +1,6 @@
-import { LitElement } from "lit";
+import { CSSResultGroup, LitElement } from "lit";
 import { property, state } from "lit/decorators.js";
+import { localized } from "@/lib/i18n/localize";
 
 import { styles } from "./editor-base.styles";
 import type { CardConfig, HassLike } from "@/lib/types";
@@ -9,18 +10,19 @@ import type { CardConfig, HassLike } from "@/lib/types";
  * Subclasses override `render()` to compose form atoms.
  * Provides `_set(key, value)` and `_fire(config)` for config updates.
  */
+@localized()
 export class EditorBase extends LitElement {
   @state() accessor _config: CardConfig = {};
 
-  @property({ type: Object }) accessor hass: HassLike | null = null;
+  @property({ type: Object }) accessor hass: Nullable<HassLike> = null;
 
-  static styles = styles;
+  static styles: CSSResultGroup = styles;
 
-  setConfig(config: CardConfig) {
+  setConfig(config: CardConfig): void {
     this._config = { ...config };
   }
 
-  _fire(cfg: CardConfig) {
+  _fire(cfg: CardConfig): void {
     this.dispatchEvent(
       new CustomEvent("config-changed", {
         detail: { config: { ...cfg } },
@@ -30,7 +32,7 @@ export class EditorBase extends LitElement {
     );
   }
 
-  _set(key: string, value: unknown) {
+  _set(key: string, value: unknown): void {
     const cfg = { ...this._config };
     if (value === "" || value === null || value === undefined) {
       delete cfg[key];

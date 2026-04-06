@@ -1,5 +1,6 @@
 import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
+import { localized, msg } from "@/lib/i18n/localize";
 
 import { styles } from "./range-timeline.styles";
 import type { RangeBounds } from "./types";
@@ -20,7 +21,12 @@ import {
   formatScaleLabel,
   formatContextLabel,
   formatPeriodSelectionLabel,
-} from "@/lib/timeline/timeline-scale.js";
+} from "@/lib/timeline/timeline-scale";
+import type {
+  RangeUnit,
+  RangeZoomConfig,
+  ZoomLevel,
+} from "@/lib/timeline/timeline-scale";
 
 /**
  * `range-timeline` is a scrollable, interactive time range slider atom.
@@ -40,12 +46,13 @@ import {
  * @fires dp-range-period-leave  - `{}` period button left
  * @fires dp-range-scroll        - `{}` timeline scrolled
  */
+@localized()
 export class RangeTimeline extends LitElement {
-  @property({ type: Object }) accessor startTime: Date | null = null;
+  @property({ type: Object }) accessor startTime: Nullable<Date> = null;
 
-  @property({ type: Object }) accessor endTime: Date | null = null;
+  @property({ type: Object }) accessor endTime: Nullable<Date> = null;
 
-  @property({ type: Object }) accessor rangeBounds: RangeBounds | null = null;
+  @property({ type: Object }) accessor rangeBounds: Nullable<RangeBounds> = null;
 
   @property({ type: String }) accessor zoomLevel: string = "day";
 
@@ -53,82 +60,84 @@ export class RangeTimeline extends LitElement {
 
   @property({ type: Boolean }) accessor isLiveEdge: boolean = false;
 
+  @property({ type: String }) accessor locale: string = "";
+
   static styles = styles;
 
   // --- Internal drag state ---
-  _draftStartTime: Date | null = null;
+  _draftStartTime: Nullable<Date> = null;
 
-  _draftEndTime: Date | null = null;
+  _draftEndTime: Nullable<Date> = null;
 
-  _activeRangeHandle: "start" | "end" | null = null;
+  _activeRangeHandle: Nullable<"start" | "end"> = null;
 
-  _hoveredRangeHandle: "start" | "end" | null = null;
+  _hoveredRangeHandle: Nullable<"start" | "end"> = null;
 
-  _focusedRangeHandle: "start" | "end" | null = null;
+  _focusedRangeHandle: Nullable<"start" | "end"> = null;
 
-  _hoveredPeriodRange: { unit: string; start: number; end: number } | null =
+  _hoveredPeriodRange: Nullable<{ unit: RangeUnit; start: number; end: number }> =
     null;
 
-  _rangePointerId: number | null = null;
+  _rangePointerId: Nullable<number> = null;
 
   _rangeInteractionActive = false;
 
   _rangeContentWidth = 0;
 
-  _rangeCommitTimer: ReturnType<typeof setTimeout> | null = null;
+  _rangeCommitTimer: Nullable<number> = null;
 
   // Scrollbar visibility state
   _isProgrammaticScroll = false;
 
-  _scrollbarHideTimer: ReturnType<typeof setTimeout> | null = null;
+  _scrollbarHideTimer: Nullable<number> = null;
 
   // Timeline pan/select state
-  _timelinePointerId: number | null = null;
+  _timelinePointerId: Nullable<number> = null;
 
   _timelinePointerStartX = 0;
 
   _timelinePointerStartScrollLeft = 0;
 
-  _timelinePointerStartTimestamp: number | null = null;
+  _timelinePointerStartTimestamp: Nullable<number> = null;
 
-  _timelinePointerMode: "pan" | "selection" | "interval_select" | null = null;
+  _timelinePointerMode: Nullable<"pan" | "selection" | "interval_select"> = null;
 
   _timelineDragStartRangeMs = 0;
 
   _timelineDragEndRangeMs = 0;
 
-  _timelineDragStartZoomRange: { start: number; end: number } | null = null;
+  _timelineDragStartZoomRange: Nullable<{ start: number; end: number }> = null;
 
   _timelinePointerMoved = false;
 
   _timelineTrackClickPending = false;
 
   // Cached DOM refs (set in firstUpdated)
-  _rangeScrollViewportEl: HTMLElement | null = null;
+  _rangeScrollViewportEl: Nullable<HTMLElement> = null;
 
-  _rangeTimelineEl: HTMLElement | null = null;
+  _rangeTimelineEl: Nullable<HTMLElement> = null;
 
-  _rangeTrackEl: HTMLElement | null = null;
+  _rangeTrackEl: Nullable<HTMLElement> = null;
 
-  _rangeTickLayerEl: HTMLElement | null = null;
+  _rangeTickLayerEl: Nullable<HTMLElement> = null;
 
-  _rangeLabelLayerEl: HTMLElement | null = null;
+  _rangeLabelLayerEl: Nullable<HTMLElement> = null;
 
-  _rangeContextLayerEl: HTMLElement | null = null;
+  _rangeContextLayerEl: Nullable<HTMLElement> = null;
 
-  _rangeSelectionEl: HTMLElement | null = null;
+  _rangeSelectionEl: Nullable<HTMLElement> = null;
 
-  _rangeStartHandleEl: HTMLElement | null = null;
+  _rangeStartHandleEl: Nullable<HTMLElement> = null;
 
-  _rangeEndHandleEl: HTMLElement | null = null;
+  _rangeEndHandleEl: Nullable<HTMLElement> = null;
 
-  _rangeStartTooltipEl: HTMLElement | null = null;
+  _rangeStartTooltipEl: Nullable<HTMLElement> = null;
 
-  _rangeEndTooltipEl: HTMLElement | null = null;
+  _rangeEndTooltipEl: Nullable<HTMLElement> = null;
 
-  _rangeJumpLeftEl: HTMLElement | null = null;
+  _rangeJumpLeftEl: Nullable<HTMLElement> = null;
 
-  _rangeJumpRightEl: HTMLElement | null = null;
+  _rangeJumpRightEl: Nullable<HTMLElement> = null;
 
   // Bound handlers
   _onRangePointerMove: (ev: PointerEvent) => void;
@@ -214,7 +223,7 @@ export class RangeTimeline extends LitElement {
     }
   }
 
-  _pctForTime(time: Date | null): number {
+  _pctForTime(time: Nullable<Date>): number {
     if (!time || !this.rangeBounds) return 0;
     const { min, max } = this.rangeBounds;
     return Math.max(
@@ -228,7 +237,7 @@ export class RangeTimeline extends LitElement {
       <ha-icon-button
         id="range-jump-left"
         class="range-selection-jump left"
-        label="Scroll to selected range"
+        .label=${msg("Scroll to selected range")}
         hidden
         @click=${() => this._revealSelectionInTimeline("smooth")}
       >
@@ -237,7 +246,7 @@ export class RangeTimeline extends LitElement {
       <ha-icon-button
         id="range-jump-right"
         class="range-selection-jump right"
-        label="Scroll to selected range"
+        .label=${msg("Scroll to selected range")}
         hidden
         @click=${() => this._revealSelectionInTimeline("smooth")}
       >
@@ -261,7 +270,7 @@ export class RangeTimeline extends LitElement {
           <div id="range-label-layer" class="range-label-layer"></div>
           <range-handle
             id="range-start-handle"
-            label="Start date and time"
+            .label=${msg("Start date and time")}
             .position=${this._pctForTime(this.startTime)}
             @dp-handle-drag-start=${(e: CustomEvent) =>
               this._beginRangePointerInteraction(
@@ -279,7 +288,7 @@ export class RangeTimeline extends LitElement {
           ></range-handle>
           <range-handle
             id="range-end-handle"
-            label="End date and time"
+            .label=${msg("End date and time")}
             .position=${this._pctForTime(this.endTime)}
             .live=${this.isLiveEdge}
             @dp-handle-drag-start=${(e: CustomEvent) =>
@@ -314,16 +323,14 @@ export class RangeTimeline extends LitElement {
   // Zoom / snap helpers
   // ---------------------------------------------------------------------------
 
-  _getZoomConfig() {
-    return (
-      ((RANGE_ZOOM_CONFIGS as Record<string, unknown>)[
-        this.zoomLevel
-      ] as typeof RANGE_ZOOM_CONFIGS.day) || RANGE_ZOOM_CONFIGS.month_short
-    );
+  _getZoomConfig(): RangeZoomConfig {
+    return RANGE_ZOOM_CONFIGS[this.zoomLevel] || RANGE_ZOOM_CONFIGS.month_short;
   }
 
-  _getEffectiveSnapUnit(): string {
-    if (this.dateSnapping !== "auto") return this.dateSnapping;
+  _getEffectiveSnapUnit(): RangeUnit {
+    if (this.dateSnapping !== "auto") {
+      return this.dateSnapping as RangeUnit;
+    }
     switch (this.zoomLevel) {
       case "quarterly":
       case "month_compressed":
@@ -341,6 +348,13 @@ export class RangeTimeline extends LitElement {
     }
   }
 
+  _getScaleLabelZoomLevel(): ZoomLevel {
+    if (this.zoomLevel === "quarterly" || this.zoomLevel === "month_short") {
+      return this.zoomLevel;
+    }
+    return "";
+  }
+
   _getSnapSpanMs(reference: Date = new Date()): number {
     const snapUnit = this._getEffectiveSnapUnit();
     const start = startOfUnit(reference, snapUnit);
@@ -348,9 +362,9 @@ export class RangeTimeline extends LitElement {
     return Math.max(SECOND_MS, end.getTime() - start.getTime());
   }
 
-  _countUnitsInRange(startMs: number, endMs: number, unit: string): number {
+  _countUnitsInRange(startMs: number, endMs: number, unit: RangeUnit): number {
     const totalMs = Math.max(0, endMs - startMs);
-    const perMs: Record<string, number> = {
+    const perMs: RecordWithNumericValues = {
       second: SECOND_MS,
       minute: 60 * SECOND_MS,
       hour: 60 * 60 * SECOND_MS,
@@ -411,7 +425,7 @@ export class RangeTimeline extends LitElement {
 
   _renderScaleMarkers(
     fragment: DocumentFragment,
-    unit: string,
+    unit: RangeUnit,
     className: string,
     total: number,
     step = 1
@@ -439,7 +453,7 @@ export class RangeTimeline extends LitElement {
     leftValue: number,
     total: number,
     text: string,
-    unit: string,
+    unit: RangeUnit,
     startTime: Date
   ): HTMLButtonElement {
     if (!this.rangeBounds) return document.createElement("button");
@@ -448,9 +462,10 @@ export class RangeTimeline extends LitElement {
     button.className = `range-period-button ${className}`;
     button.style.left = `${((leftValue - this.rangeBounds.min) / total) * 100}%`;
     button.textContent = text;
-    const selectionLabel = formatPeriodSelectionLabel(startTime, unit);
-    button.title = `Select ${selectionLabel}`;
-    button.setAttribute("aria-label", `Select ${selectionLabel}`);
+    const selectionLabel = formatPeriodSelectionLabel(startTime, unit, this.locale || undefined);
+    const selectTitle = `${msg("Select")} ${selectionLabel}`;
+    button.title = selectTitle;
+    button.setAttribute("aria-label", selectTitle);
     button.addEventListener("click", (ev) =>
       this._handleRangePeriodSelect(unit, startTime, ev)
     );
@@ -471,8 +486,8 @@ export class RangeTimeline extends LitElement {
 
   _getRangeUnitAnchorMs(
     startTime: Date,
-    unit: string,
-    anchor = "auto"
+    unit: RangeUnit,
+    anchor: "auto" | "center" | "start" = "auto"
   ): number {
     const unitStart = Math.max(
       startOfUnit(new Date(startTime), unit).getTime(),
@@ -503,7 +518,7 @@ export class RangeTimeline extends LitElement {
   }
 
   _computeRangeLabelStride(
-    unit: string,
+    unit: RangeUnit,
     formatter: (d: Date) => string,
     className: string,
     minGap: number
@@ -511,7 +526,7 @@ export class RangeTimeline extends LitElement {
     if (!this.rangeBounds || !this._rangeContentWidth) return 1;
     const total = Math.max(1, this.rangeBounds.max - this.rangeBounds.min);
     let current = startOfUnit(new Date(this.rangeBounds.min), unit);
-    let previousMs: number | null = null;
+    let previousMs: Nullable<number> = null;
     let minSpacingPx = Infinity;
     let maxLabelWidthPx = 0;
     let samples = 0;
@@ -557,24 +572,25 @@ export class RangeTimeline extends LitElement {
     const { config } = this.rangeBounds;
     const tickFragment = document.createDocumentFragment();
     const labelFragment = document.createDocumentFragment();
-    const contextFragment = document.createDocumentFragment();
+	    const contextFragment = document.createDocumentFragment();
+    const scaleLabelZoomLevel = this._getScaleLabelZoomLevel();
 
-    const scaleLabelStride =
+	    const scaleLabelStride =
       config.labelUnit === "month" || config.labelUnit === "day"
-        ? 1
-        : this._computeRangeLabelStride(
-            config.labelUnit,
-            (value) =>
-              formatScaleLabel(value, config.labelUnit, this.zoomLevel),
-            "range-scale-label",
-            RANGE_LABEL_MIN_GAP_PX
-          );
+	          ? 1
+	        : this._computeRangeLabelStride(
+	            config.labelUnit,
+	            (value) =>
+	              formatScaleLabel(value, config.labelUnit, scaleLabelZoomLevel, this.locale || undefined),
+	            "range-scale-label",
+	            RANGE_LABEL_MIN_GAP_PX
+	          );
     const contextLabelStride =
       config.contextUnit === "month" || config.contextUnit === "day"
         ? 1
         : this._computeRangeLabelStride(
             config.contextUnit,
-            (value) => formatContextLabel(value, config.contextUnit),
+            (value) => formatContextLabel(value, config.contextUnit, this.locale || undefined),
             "range-context-label",
             RANGE_CONTEXT_LABEL_MIN_GAP_PX
           );
@@ -609,14 +625,14 @@ export class RangeTimeline extends LitElement {
           config.labelUnit,
           "auto"
         );
-        const label = this._buildRangePeriodButton(
-          "range-scale-label",
-          leftValue,
-          total,
-          formatScaleLabel(labelRef, config.labelUnit, this.zoomLevel),
-          config.labelUnit,
-          labelRef
-        );
+	        const label = this._buildRangePeriodButton(
+	          "range-scale-label",
+	          leftValue,
+	          total,
+	          formatScaleLabel(labelRef, config.labelUnit, scaleLabelZoomLevel, this.locale || undefined),
+	          config.labelUnit,
+	          labelRef
+	        );
         labelFragment.appendChild(label);
       }
       labelRef = addUnit(labelRef, config.labelUnit, 1);
@@ -643,7 +659,7 @@ export class RangeTimeline extends LitElement {
           "range-context-label",
           contextRef.getTime(),
           total,
-          formatContextLabel(contextRef, config.contextUnit),
+          formatContextLabel(contextRef, config.contextUnit, this.locale || undefined),
           config.contextUnit,
           contextRef
         );
@@ -686,14 +702,14 @@ export class RangeTimeline extends LitElement {
       this._rangeStartHandleEl.style.left = `${startPct}%`;
       this._rangeStartHandleEl.setAttribute(
         "aria-valuetext",
-        formatRangeDateTime(this._draftStartTime)
+        formatRangeDateTime(this._draftStartTime, this.locale || undefined)
       );
     }
     if (this._rangeEndHandleEl) {
       this._rangeEndHandleEl.style.left = `${endPct}%`;
       this._rangeEndHandleEl.setAttribute(
         "aria-valuetext",
-        formatRangeDateTime(this._draftEndTime)
+        formatRangeDateTime(this._draftEndTime, this.locale || undefined)
       );
     }
 
@@ -776,14 +792,14 @@ export class RangeTimeline extends LitElement {
     );
     if (handle === "end" && this.isLiveEdge) {
       const dateEl = document.createElement("span");
-      dateEl.textContent = formatRangeDateTime(value);
+      dateEl.textContent = formatRangeDateTime(value, this.locale || undefined);
       const hintEl = document.createElement("span");
       hintEl.className = "range-tooltip-live-hint";
-      hintEl.textContent = "Updates with new data";
+      hintEl.textContent = msg("Updates with new data");
       tooltip.textContent = "";
       tooltip.append(dateEl, hintEl);
     } else {
-      tooltip.textContent = formatRangeDateTime(value);
+      tooltip.textContent = formatRangeDateTime(value, this.locale || undefined);
     }
     tooltip.style.left = `${clampedX}px`;
     tooltip.classList.add("visible");
@@ -794,7 +810,7 @@ export class RangeTimeline extends LitElement {
   // Period hover
   // ---------------------------------------------------------------------------
 
-  _handleRangePeriodSelect(unit: string, startTime: Date, ev: MouseEvent) {
+  _handleRangePeriodSelect(unit: RangeUnit, startTime: Date, ev: MouseEvent) {
     ev.preventDefault();
     ev.stopPropagation();
     const periodStart = startOfUnit(new Date(startTime), unit);
@@ -816,7 +832,7 @@ export class RangeTimeline extends LitElement {
     this._commitRangeSelection({ push: true });
   }
 
-  _setHoveredPeriodRange(unit: string, startTime: Date) {
+  _setHoveredPeriodRange(unit: RangeUnit, startTime: Date) {
     const start = startOfUnit(new Date(startTime), unit);
     const end = endOfUnit(new Date(startTime), unit);
     this._hoveredPeriodRange = {
@@ -833,7 +849,7 @@ export class RangeTimeline extends LitElement {
     );
   }
 
-  _clearHoveredPeriodRange(unit: string, startTime: Date) {
+  _clearHoveredPeriodRange(unit: RangeUnit, startTime: Date) {
     if (!this._hoveredPeriodRange) return;
     const start = startOfUnit(new Date(startTime), unit).getTime();
     const end = endOfUnit(new Date(startTime), unit).getTime();
@@ -951,7 +967,7 @@ export class RangeTimeline extends LitElement {
   // Coordinate math
   // ---------------------------------------------------------------------------
 
-  _timestampFromClientX(clientX: number): number | null {
+  _timestampFromClientX(clientX: number): Nullable<number> {
     if (!this.rangeBounds || !this._rangeTrackEl) return null;
     const rect = this._rangeTrackEl.getBoundingClientRect();
     if (!rect.width) return null;
@@ -1031,7 +1047,7 @@ export class RangeTimeline extends LitElement {
     endTimestamp: number
   ) {
     if (!this.rangeBounds) return;
-    const unit =
+    const unit: RangeUnit =
       this.rangeBounds.config?.labelUnit || this._getEffectiveSnapUnit();
     const startValue = Math.min(startTimestamp, endTimestamp);
     const endValue = Math.max(startTimestamp, endTimestamp);
@@ -1221,7 +1237,7 @@ export class RangeTimeline extends LitElement {
     if (currentValue == null) return;
 
     const config = this._getZoomConfig();
-    let nextValue: number | null = null;
+    let nextValue: Nullable<number> = null;
     if (detail.key === "ArrowLeft" || detail.key === "ArrowDown")
       nextValue = addUnit(new Date(currentValue), snapUnit, -1).getTime();
     if (detail.key === "ArrowRight" || detail.key === "ArrowUp")

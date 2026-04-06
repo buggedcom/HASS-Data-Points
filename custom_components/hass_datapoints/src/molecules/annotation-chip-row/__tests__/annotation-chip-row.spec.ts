@@ -23,13 +23,13 @@ const SAMPLE_CHIPS: ChipItem[] = [
   },
 ];
 
-function createElement(props: Record<string, unknown> = {}) {
+function createElement(props: RecordWithUnknownValues = {}) {
   const el = document.createElement("annotation-chip-row") as HTMLElement & {
     chips: ChipItem[];
     label: string;
     helpText: string;
     emptyText: string;
-    hass: Record<string, unknown> | null;
+    hass: Nullable<RecordWithUnknownValues>;
     updateComplete: Promise<boolean>;
   };
   Object.assign(el, {
@@ -117,9 +117,9 @@ describe("annotation-chip-row", () => {
         expect.assertions(2);
         const chips = Array.from(
           el.shadowRoot!.querySelectorAll("annotation-chip")
-        ) as (HTMLElement & { stateObj: Record<string, unknown> | null })[];
+        ) as (HTMLElement & { stateObj: Nullable<RecordWithUnknownValues> })[];
         expect(
-          (chips[0].stateObj?.attributes as Record<string, unknown>)?.icon
+          (chips[0].stateObj?.attributes as RecordWithUnknownValues)?.icon
         ).toBe("mdi:thermometer-lines");
         expect(chips[1].stateObj).toBeNull();
       });

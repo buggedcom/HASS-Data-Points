@@ -33,7 +33,9 @@ function makeAnalysis(
     trend_window: "24h",
     show_trend_crosshairs: false,
     show_summary_stats: false,
+    show_summary_stats_shading: false,
     show_rate_of_change: false,
+    show_rate_crosshairs: false,
     rate_window: "1h",
     show_threshold_analysis: false,
     show_threshold_shading: false,
@@ -51,6 +53,9 @@ function makeAnalysis(
     show_delta_tooltip: false,
     show_delta_lines: false,
     hide_source_series: false,
+    sample_interval: "raw",
+    sample_aggregate: "mean",
+    anomaly_use_sampled_data: false,
     ...overrides,
   };
 }
@@ -85,7 +90,10 @@ export const Checked = {
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const el = canvasElement.querySelector(
       "analysis-anomaly-group"
-    ) as HTMLElement & { shadowRoot: ShadowRoot };
+    ) as HTMLElement & {
+      shadowRoot: ShadowRoot;
+      analysis: NormalizedAnalysis;
+    };
     expect(
       el.shadowRoot.querySelector('ha-tooltip[for="anomaly-help-iqr"]')
     ).toBeTruthy();
@@ -100,7 +108,7 @@ export const CheckedWithMultipleMethods = {
         show_anomalies: true,
         anomaly_methods: ["iqr", "rolling_zscore"],
         anomaly_sensitivity: "high",
-        anomaly_overlap_mode: "highlight",
+        anomaly_overlap_mode: "only",
       })}
       .entityId=${"sensor.temperature"}
       .comparisonWindows=${comparisonWindows}
@@ -129,7 +137,10 @@ export const Finnish = {
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const el = canvasElement.querySelector(
       "analysis-anomaly-group"
-    ) as HTMLElement & { shadowRoot: ShadowRoot };
+    ) as HTMLElement & {
+      shadowRoot: ShadowRoot;
+      analysis: NormalizedAnalysis;
+    };
     expect(el.analysis.show_anomalies).toBe(true);
     expect(el.shadowRoot.textContent).toContain("Herkkyys");
     expect(el.shadowRoot.textContent).toContain("Tilastollinen poikkeama");

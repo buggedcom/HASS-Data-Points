@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { HassRecordsHistoryPanel } from "../datapoints.js";
+import { HassRecordsHistoryPanel } from "../datapoints";
 
 describe("HassRecordsHistoryPanel collapsed sidebar interactions", () => {
-  let panel: Record<string, unknown>;
+  let panel: RecordWithUnknownValues;
 
   beforeEach(() => {
     panel = {};
@@ -76,9 +76,9 @@ describe("HassRecordsHistoryPanel collapsed sidebar interactions", () => {
           },
         };
 
-        HassRecordsHistoryPanel.prototype._openTargetPicker.call(panel);
+        HassRecordsHistoryPanel.prototype._openTargetPicker.call(panel, null);
 
-        expect(openTargetPicker).toHaveBeenCalledWith(panel._targetControl);
+        expect(openTargetPicker).toHaveBeenCalledWith(panel._targetControl, null);
       });
     });
   });
@@ -101,9 +101,9 @@ describe("HassRecordsHistoryPanel collapsed sidebar interactions", () => {
           },
         };
 
-        HassRecordsHistoryPanel.prototype._openTargetPicker.call(panel);
+        HassRecordsHistoryPanel.prototype._openTargetPicker.call(panel, null);
 
-        expect(openTargetPicker).toHaveBeenCalledWith(panel._targetControl);
+        expect(openTargetPicker).toHaveBeenCalledWith(panel._targetControl, null);
       });
     });
   });

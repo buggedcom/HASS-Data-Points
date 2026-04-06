@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { ChartRenderer } from "@/lib/chart/chart-renderer.js";
+import { ChartRenderer } from "@/lib/chart/chart-renderer";
 
 function createRenderer() {
   const ctx = {
@@ -35,7 +35,7 @@ function createRenderer() {
   };
 }
 
-describe("chart-renderer.js", () => {
+describe("chart-renderer", () => {
   describe("GIVEN a renderer instance", () => {
     describe("WHEN the geometry helpers are called", () => {
       it("THEN they use the chart padding and drawable bounds", () => {

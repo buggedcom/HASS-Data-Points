@@ -7,14 +7,14 @@ import {
   normalizeHistorySeriesRows,
   parseSeriesColorsParam,
   slugifySeriesName,
-} from "@/lib/domain/history-series.js";
+} from "@/lib/domain/history-series";
 
-vi.mock("@/constants.js", async (importOriginal) => {
-  const real = (await importOriginal()) as Record<string, unknown>;
+vi.mock("@/constants", async (importOriginal) => {
+  const real = (await importOriginal()) as RecordWithUnknownValues;
   return { ...real, COLORS: ["#111111", "#222222", "#333333"] };
 });
 
-describe("history-series.js", () => {
+describe("history-series", () => {
   describe("GIVEN partial or legacy analysis config", () => {
     describe("WHEN normalizeHistorySeriesAnalysis is called", () => {
       it("THEN it applies the stable defaults and migrations", () => {

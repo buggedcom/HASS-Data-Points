@@ -24,7 +24,7 @@ export interface NormalizedAnalysis {
   anomaly_rate_window: string;
   anomaly_zscore_window: string;
   anomaly_persistence_window: string;
-  anomaly_comparison_window_id: string | null;
+  anomaly_comparison_window_id: Nullable<string>;
   show_delta_analysis: boolean;
   show_delta_tooltip: boolean;
   show_delta_lines: boolean;
@@ -42,8 +42,8 @@ export interface ComparisonWindow {
 export interface HassEntityState {
   entity_id: string;
   state: string;
-  attributes: Record<string, unknown>;
+  attributes: RecordWithUnknownValues;
   last_changed?: string;
   last_updated?: string;
-  context?: { id: string; parent_id: string | null; user_id: string | null };
+  context?: { id: string; parent_id: Nullable<string>; user_id: Nullable<string> };
 }

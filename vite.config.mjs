@@ -24,7 +24,7 @@ export default defineConfig({
     lib: {
       entry: resolve(
         __dirname,
-        "custom_components/hass_datapoints/src/register.js"
+        "custom_components/hass_datapoints/src/register.ts"
       ),
       formats: ["iife"],
       name: "HassDatapointsFrontend",

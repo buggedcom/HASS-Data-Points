@@ -1,12 +1,14 @@
 import {
   parseDateWindowsParam,
+  parseHistoryPageStateParam,
   serializeDateWindowsParam,
-} from "@/lib/history-page/history-url-state.js";
+  serializeHistoryPageStateParam,
+} from "@/lib/history-page/history-url-state";
 import {
   readHistoryPageSessionState,
   writeHistoryPageSessionState,
-} from "@/lib/history-page/history-session-state.js";
-import { parseSeriesColorsParam } from "@/lib/domain/history-series.js";
+} from "@/lib/history-page/history-session-state";
+import { parseSeriesColorsParam } from "@/lib/domain/history-series";
 import type {
   HistoryNavigationContext,
   HistoryNavigationReadState,
@@ -31,6 +33,9 @@ export function createHistoryPageNavigationContext(): HistoryNavigationContext {
       const dateWindowsFromUrl = parseDateWindowsParam(
         url.searchParams.get("date_windows")
       );
+      const pageStateFromUrl = parseHistoryPageStateParam(
+        url.searchParams.get("page_state")
+      );
       const hoursToShowRaw = Number.parseInt(
         url.searchParams.get("hours_to_show") || "",
         10
@@ -54,7 +59,11 @@ export function createHistoryPageNavigationContext(): HistoryNavigationContext {
         zoomStartFromUrl,
         zoomEndFromUrl,
         seriesColorsFromUrl,
-        dateWindowsFromUrl,
+        dateWindowsFromUrl: dateWindowsFromUrl as unknown as Record<
+          string,
+          unknown
+        >[],
+        pageStateFromUrl,
         hoursFromUrl: Number.isFinite(hoursToShowRaw) ? hoursToShowRaw : NaN,
         hasTargetInUrl,
         hasRangeInUrl,
@@ -62,12 +71,12 @@ export function createHistoryPageNavigationContext(): HistoryNavigationContext {
       };
     },
 
-    readSessionState(): Record<string, unknown> | null {
+    readSessionState(): Nullable<RecordWithUnknownValues> {
       return readHistoryPageSessionState();
     },
 
     saveSessionState(source: unknown): void {
-      writeHistoryPageSessionState(source);
+      writeHistoryPageSessionState(source as import("@/lib/history-page/history-session-state").HistoryPageSource);
     },
 
     updateUrl(options): void {
@@ -123,6 +132,13 @@ export function createHistoryPageNavigationContext(): HistoryNavigationContext {
         url.searchParams.set("date_windows", dateWindowsParam);
       } else {
         url.searchParams.delete("date_windows");
+      }
+
+      const pageStateParam = serializeHistoryPageStateParam(options.pageState);
+      if (pageStateParam) {
+        url.searchParams.set("page_state", pageStateParam);
+      } else {
+        url.searchParams.delete("page_state");
       }
 
       const seriesColorEntries = options.seriesRows

@@ -2,9 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createMockHass } from "@/test-support/mock-hass";
 import "../list-edit-form";
 
-function createElement(props: Record<string, unknown> = {}) {
+function createElement(props: RecordWithUnknownValues = {}) {
   const el = document.createElement("list-edit-form") as HTMLElement & {
-    eventRecord: Record<string, unknown>;
+    eventRecord: RecordWithUnknownValues;
     hass: unknown;
     updateComplete: Promise<void>;
   };

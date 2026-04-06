@@ -11,9 +11,9 @@ import {
   renderChartAxisOverlays,
   resolveChartLabelColor,
   setupCanvas,
-} from "@/lib/chart/chart-shell.js";
+} from "@/lib/chart/chart-shell";
 
-describe("chart-shell.js", () => {
+describe("chart-shell", () => {
   describe("GIVEN a chart title", () => {
     describe("WHEN buildChartCardShell is called", () => {
       it("THEN it returns the shared shell markup and style block", () => {

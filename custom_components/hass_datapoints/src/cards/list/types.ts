@@ -29,7 +29,7 @@ export interface EditSaveDetail {
 }
 
 export interface EventItemContext {
-  hass: HassLike | null;
+  hass: Nullable<HassLike>;
   showActions: boolean;
   showEntities: boolean;
   showFullMessage: boolean;

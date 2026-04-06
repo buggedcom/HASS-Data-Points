@@ -26,7 +26,7 @@ export class EditorTextField extends LitElement {
   firstUpdated() {
     const field = this.shadowRoot!.querySelector(
       "ha-textfield"
-    ) as HaTextField | null;
+    ) as Nullable<HaTextField>;
     if (field) {
       field.label = this.label;
       field.value = this.value;
@@ -45,7 +45,7 @@ export class EditorTextField extends LitElement {
   updated(changedProps: PropertyValues) {
     const field = this.shadowRoot!.querySelector(
       "ha-textfield"
-    ) as HaTextField | null;
+    ) as Nullable<HaTextField>;
     if (!field) {
       return;
     }

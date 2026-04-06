@@ -2,11 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createMockHass } from "@/test-support/mock-hass";
 import { HassRecordsStatisticsCard } from "../statistics.ts";
 
-import { fetchEvents } from "@/lib/data/events-api.js";
-import { fetchStatisticsDuringPeriod } from "@/lib/data/statistics-api.js";
+import { fetchEvents } from "@/lib/data/events-api";
+import { fetchStatisticsDuringPeriod } from "@/lib/data/statistics-api";
 
 vi.mock("@/chart-utils.js", async (importOriginal) => {
-  const mod = (await importOriginal()) as Record<string, unknown>;
+  const mod = (await importOriginal()) as RecordWithUnknownValues;
   return {
     ...mod,
     setupCanvas: vi.fn().mockReturnValue({ w: 400, h: 220 }),
@@ -27,24 +27,24 @@ vi.mock("@/chart-renderer.js", () => ({
   })),
 }));
 
-vi.mock("@/lib/data/statistics-api.js", async (importOriginal) => {
-  const mod = (await importOriginal()) as Record<string, unknown>;
+vi.mock("@/lib/data/statistics-api", async (importOriginal) => {
+  const mod = (await importOriginal()) as RecordWithUnknownValues;
   return {
     ...mod,
     fetchStatisticsDuringPeriod: vi.fn().mockResolvedValue({}),
   };
 });
 
-vi.mock("@/lib/data/events-api.js", async (importOriginal) => {
-  const mod = (await importOriginal()) as Record<string, unknown>;
+vi.mock("@/lib/data/events-api", async (importOriginal) => {
+  const mod = (await importOriginal()) as RecordWithUnknownValues;
   return {
     ...mod,
     fetchEvents: vi.fn().mockResolvedValue([]),
   };
 });
 
-vi.mock("@/constants.js", async (importOriginal) => {
-  const mod = (await importOriginal()) as Record<string, unknown>;
+vi.mock("@/constants", async (importOriginal) => {
+  const mod = (await importOriginal()) as RecordWithUnknownValues;
   return {
     ...mod,
     COLORS: ["#03a9f4", "#ff9800", "#4caf50"],
@@ -58,7 +58,7 @@ if (!customElements.get("hass-datapoints-statistics-card")) {
   );
 }
 
-function createCard(config: Record<string, unknown> = {}) {
+function createCard(config: RecordWithUnknownValues = {}) {
   const el = document.createElement("hass-datapoints-statistics-card") as any;
   document.body.appendChild(el);
   el.setConfig({ entity: "sensor.temperature", ...config });

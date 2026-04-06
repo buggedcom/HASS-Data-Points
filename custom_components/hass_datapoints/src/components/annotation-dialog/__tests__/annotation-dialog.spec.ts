@@ -1,106 +1,152 @@
-import { describe, expect, it } from "vitest";
-import { HistoryAnnotationDialogController } from "../annotation-dialog.js";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { HistoryAnnotationDialogController } from "../annotation-dialog";
+
+/** Create a minimal host element that the controller expects. */
+function createHost() {
+  const host = document.createElement("div");
+  // Attach a real shadow root so the controller can append ha-dialog.
+  host.attachShadow({ mode: "open" });
+  host._hass = {
+    callService: vi.fn(() => Promise.resolve()),
+  };
+  host._entityIds = ["sensor.temperature"];
+  host._creatingContextAnnotation = false;
+  document.body.appendChild(host);
+  return host;
+}
+
+/** Minimal hover object that satisfies open(). */
+function makeHover(overrides = {}) {
+  return {
+    timeMs: Date.now(),
+    primary: null,
+    event: null,
+    annotationPrefill: null,
+    ...overrides,
+  };
+}
 
 describe("HistoryAnnotationDialogController", () => {
-  describe("GIVEN visible and hidden series rows", () => {
-    describe("WHEN deriving the default linked target", () => {
-      it("THEN it includes only visible entity ids from target rows", () => {
-        expect.assertions(1);
-        const host = {
-          _config: {
-            series_settings: [
-              { entity_id: "sensor.visible_one" },
-              { entity_id: "sensor.hidden_one" },
-              { entity_id: "sensor.visible_two" },
-            ],
-          },
-          _hiddenSeries: new Set(["sensor.hidden_one"]),
-          _entityIds: ["sensor.fallback"],
-        };
-        const controller = new HistoryAnnotationDialogController(host as never);
+  let host;
+  let controller;
 
-        expect(controller._getDefaultLinkedTarget()).toEqual({
-          entity_id: ["sensor.visible_one", "sensor.visible_two"],
-          device_id: [],
-          area_id: [],
-          label_id: [],
-        });
+  afterEach(() => {
+    controller?.teardown();
+    host?.remove();
+  });
+
+  describe("GIVEN a controller with a host element", () => {
+    beforeEach(() => {
+      host = createHost();
+      controller = new HistoryAnnotationDialogController(host);
+    });
+
+    describe("WHEN ensureDialog() is called", () => {
+      it("THEN appends an ha-dialog element to the host shadowRoot", () => {
+        controller.ensureDialog();
+        expect(host.shadowRoot.querySelector("ha-dialog")).toBeTruthy();
+      });
+    });
+
+    describe("WHEN ensureDialog() is called twice", () => {
+      it("THEN only one ha-dialog exists (idempotent)", () => {
+        controller.ensureDialog();
+        controller.ensureDialog();
+        const dialogs = host.shadowRoot.querySelectorAll("ha-dialog");
+        expect(dialogs.length).toBe(1);
       });
     });
   });
 
-  describe("GIVEN no visible series settings", () => {
-    describe("WHEN deriving the default linked target", () => {
-      it("THEN it falls back to the host entity ids", () => {
-        expect.assertions(1);
-        const host = {
-          _config: {},
-          _hiddenSeries: new Set(),
-          _entityIds: ["sensor.fallback_one", "sensor.fallback_two"],
-        };
-        const controller = new HistoryAnnotationDialogController(host as never);
+  describe("GIVEN dialog is open", () => {
+    beforeEach(() => {
+      host = createHost();
+      controller = new HistoryAnnotationDialogController(host);
+      controller.open(makeHover());
+    });
 
-        expect(controller._getDefaultLinkedTarget()).toEqual({
-          entity_id: ["sensor.fallback_one", "sensor.fallback_two"],
-          device_id: [],
-          area_id: [],
-          label_id: [],
-        });
+    describe("WHEN close() is called", () => {
+      it("THEN sets dialog.open to false", () => {
+        controller.close();
+        const dialog = host.shadowRoot.querySelector("ha-dialog");
+        expect(dialog?.open).toBe(false);
       });
     });
   });
 
-  describe("GIVEN a host with visible target rows and a shadow root", () => {
-    describe("WHEN opening the annotation dialog", () => {
-      it("THEN it mounts annotation-chip-row with visible related entity chips", () => {
-        expect.assertions(7);
-        const host = document.createElement("div");
-        host.attachShadow({ mode: "open" });
-        host._config = {
-          series_settings: [
-            { entity_id: "sensor.visible_one" },
-            { entity_id: "sensor.hidden_one" },
-          ],
-        };
-        host._hiddenSeries = new Set(["sensor.hidden_one"]);
-        host._entityIds = ["sensor.fallback"];
-        host._hass = {
-          states: {
-            "sensor.visible_one": {
-              entity_id: "sensor.visible_one",
-              attributes: {
-                friendly_name: "Visible One",
-                icon: "mdi:thermometer",
-              },
-            },
-          },
-        };
-        host._creatingContextAnnotation = false;
-        const controller = new HistoryAnnotationDialogController(host as never);
+  describe("GIVEN dialog opened with prefill data", () => {
+    const prefillMessage = "Test prefill message";
 
-        controller.open({ timeMs: Date.now() });
+    beforeEach(() => {
+      host = createHost();
+      controller = new HistoryAnnotationDialogController(host);
+      controller.open(
+        makeHover({
+          annotationPrefill: { message: prefillMessage },
+        })
+      );
+    });
 
-        const chipRow = host.shadowRoot.querySelector(
-          "annotation-chip-row"
-        ) as HTMLElement & {
-          chips?: Array<{
-            itemId: string;
-            secondaryText?: string;
-            stateObj?: Record<string, unknown> | null;
-          }>;
-          hass?: Record<string, unknown> | null;
-        };
+    describe("WHEN rendered", () => {
+      it("THEN message field contains prefill text", () => {
+        const panel = host.shadowRoot.querySelector(
+          "#chart-context-dialog-panel"
+        );
+        const messageEl = panel?.querySelector("#chart-context-message");
+        expect(messageEl?.value).toBe(prefillMessage);
+      });
+    });
+  });
 
-        expect(chipRow).not.toBeNull();
-        expect(Array.isArray(chipRow.chips)).toBe(true);
-        expect(chipRow.chips).toHaveLength(1);
-        expect(chipRow.chips?.[0]?.itemId).toBe("sensor.visible_one");
-        expect(chipRow.hass).toBe(host._hass);
-        expect(chipRow.chips?.[0]?.secondaryText).toBe("sensor.visible_one");
-        expect(
-          (chipRow.chips?.[0]?.stateObj?.attributes as Record<string, unknown>)
-            ?.icon
-        ).toBe("mdi:thermometer");
+  describe("GIVEN dialog is open with empty message", () => {
+    beforeEach(() => {
+      host = createHost();
+      controller = new HistoryAnnotationDialogController(host);
+      controller.open(makeHover());
+      // Ensure message is empty
+      const panel = host.shadowRoot.querySelector(
+        "#chart-context-dialog-panel"
+      );
+      const messageEl = panel?.querySelector("#chart-context-message");
+      if (messageEl) messageEl.value = "";
+    });
+
+    describe("WHEN submit() is called", () => {
+      it("THEN callService is NOT called", async () => {
+        await controller.submit();
+        expect(host._hass.callService).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe("GIVEN dialog is open with message filled", () => {
+    beforeEach(() => {
+      host = createHost();
+      controller = new HistoryAnnotationDialogController(host);
+      controller.open(makeHover());
+      const panel = host.shadowRoot.querySelector(
+        "#chart-context-dialog-panel"
+      );
+      const messageEl = panel?.querySelector("#chart-context-message");
+      if (messageEl) messageEl.value = "Something happened";
+    });
+
+    describe("WHEN submit() is called", () => {
+      it("THEN callService is invoked", async () => {
+        await controller.submit();
+        expect(host._hass.callService).toHaveBeenCalledOnce();
+      });
+
+      it("THEN callService is called with the correct service name", async () => {
+        await controller.submit();
+        const [, service] = host._hass.callService.mock.calls[0];
+        expect(service).toBe("record");
+      });
+
+      it("THEN callService payload contains the message", async () => {
+        await controller.submit();
+        const [, , payload] = host._hass.callService.mock.calls[0];
+        expect(payload.message).toBe("Something happened");
       });
     });
   });

@@ -1,5 +1,6 @@
-import { html } from "lit";
-import { AMBER } from "@/constants.js";
+import { CSSResultGroup, html } from "lit";
+import { msg } from "@/lib/i18n/localize";
+import { AMBER } from "@/constants";
 import { EditorBase } from "@/molecules/editor-base/editor-base";
 import { styles } from "./editor.styles";
 import "@/atoms/display/section-heading/section-heading";
@@ -11,64 +12,72 @@ import "@/atoms/form/editor-icon-picker/editor-icon-picker";
 import "@/atoms/form/editor-entity-list/editor-entity-list";
 
 export class HassRecordsQuickCardEditor extends EditorBase {
-  static styles = [EditorBase.styles, styles];
+  static styles: CSSResultGroup = [EditorBase.styles, styles];
 
   render() {
     const c = this._config;
     return html`
       <div class="ed">
-        <section-heading text="General"></section-heading>
+        <section-heading .text=${msg("General")}></section-heading>
         <editor-text-field
-          label="Card title (optional)"
+          .label=${msg("Card title (optional)")}
           .value=${c.title || ""}
-          @dp-field-change=${(e) => this._set("title", e.detail.value)}
+          @dp-field-change=${(e: CustomEvent<{ value: string }>) =>
+            this._set("title", e.detail.value)}
         ></editor-text-field>
         <editor-text-field
-          label="Input placeholder text"
+          .label=${msg("Input placeholder text")}
           .value=${c.placeholder || ""}
-          @dp-field-change=${(e) => this._set("placeholder", e.detail.value)}
+          @dp-field-change=${(e: CustomEvent<{ value: string }>) =>
+            this._set("placeholder", e.detail.value)}
         ></editor-text-field>
 
-        <section-heading text="Icon & colour"></section-heading>
+        <section-heading .text=${msg("Icon & colour")}></section-heading>
         <editor-icon-picker
-          label="Icon"
+          .label=${msg("Icon")}
           .value=${c.icon || "mdi:bookmark"}
           .hass=${this.hass}
-          @dp-icon-change=${(e) => this._set("icon", e.detail.value)}
+          @dp-icon-change=${(e: CustomEvent<{ value: string }>) =>
+            this._set("icon", e.detail.value)}
         ></editor-icon-picker>
         <color-swatch
-          label="Colour"
+          .label=${msg("Colour")}
           .color=${c.color || AMBER}
-          @dp-color-change=${(e) => this._set("color", e.detail.color)}
+          @dp-color-change=${(e: CustomEvent<{ color: string }>) =>
+            this._set("color", e.detail.color)}
         ></color-swatch>
 
-        <section-heading text="Related items"></section-heading>
+        <section-heading .text=${msg("Related items")}></section-heading>
         <div class="note">
-          These items will be linked to every record made with this card.
+          ${msg(
+            "These items will be linked to every record made with this card.",
+            { id: "These items will be linked to every record made with this card." }
+          )}
         </div>
         <editor-entity-picker
-          label="Single entity (optional)"
+          .label=${msg("Single entity (optional)")}
           .value=${c.entity || ""}
           .hass=${this.hass}
-          @dp-entity-change=${(e) => this._set("entity", e.detail.value)}
+          @dp-entity-change=${(e: CustomEvent<{ value: string }>) =>
+            this._set("entity", e.detail.value)}
         ></editor-entity-picker>
-        <section-heading text="Multiple entities"></section-heading>
+        <section-heading .text=${msg("Multiple entities")}></section-heading>
         <editor-entity-list
           .entities=${c.entities || []}
           .hass=${this.hass}
-          button-label="Add related items"
-          @dp-entity-list-change=${(e) =>
+          .buttonLabel=${msg("Add related items")}
+          @dp-entity-list-change=${(e: CustomEvent<{ entities: string[] }>) =>
             this._set(
               "entities",
               e.detail.entities.length ? e.detail.entities : undefined
             )}
         ></editor-entity-list>
 
-        <section-heading text="Form fields"></section-heading>
+        <section-heading .text=${msg("Form fields")}></section-heading>
         <editor-switch
-          label="Show annotation field"
+          .label=${msg("Show annotation field")}
           .checked=${!!c.show_annotation}
-          @dp-switch-change=${(e) =>
+          @dp-switch-change=${(e: CustomEvent<{ checked: boolean }>) =>
             this._set("show_annotation", e.detail.checked || undefined)}
         ></editor-switch>
       </div>

@@ -1,12 +1,14 @@
 import { LitElement, html, nothing } from "lit";
 import { property } from "lit/decorators.js";
-
 import type { TemplateResult } from "lit";
+import { localized, msg } from "@/lib/i18n/localize";
+
 import { sharedStyles } from "../analysis-group-shared/analysis-group-shared.styles";
 import { styles } from "./analysis-threshold-group.styles";
 import type { NormalizedAnalysis } from "@/molecules/target-row/types";
 import "@/atoms/analysis/analysis-group/analysis-group";
 
+@localized()
 export class AnalysisThresholdGroup extends LitElement {
   @property({ type: Object }) accessor analysis: NormalizedAnalysis =
     {} as NormalizedAnalysis;
@@ -26,6 +28,15 @@ export class AnalysisThresholdGroup extends LitElement {
         composed: true,
       })
     );
+  }
+
+  private _localizedOptions(
+    options: Array<{ value: string; label: string }>
+  ): Array<{ value: string; label: string }> {
+    return options.map((opt) => ({
+      ...opt,
+      label: msg(opt.label),
+    }));
   }
 
   private _renderSelect(
@@ -65,7 +76,7 @@ export class AnalysisThresholdGroup extends LitElement {
     const a = this.analysis;
     return html`
       <analysis-group
-        .label=${"Show threshold analysis"}
+        .label=${msg("Show threshold analysis")}
         .checked=${a.show_threshold_analysis}
         @dp-group-change=${this._onGroupChange}
       >
@@ -76,10 +87,10 @@ export class AnalysisThresholdGroup extends LitElement {
             @change=${(e: Event) =>
               this._onCheckbox("show_threshold_shading", e)}
           />
-          <span>Shade threshold area</span>
+          <span>${msg("Shade threshold area")}</span>
         </label>
         <label class="field">
-          <span class="field-label">Threshold</span>
+          <span class="field-label">${msg("Threshold")}</span>
           <div class="toggle-group">
             <input
               class="input"
@@ -87,7 +98,7 @@ export class AnalysisThresholdGroup extends LitElement {
               step="any"
               inputmode="decimal"
               .value=${a.threshold_value}
-              placeholder="Threshold"
+              placeholder=${msg("Threshold")}
               @change=${(e: Event) => this._onInput("threshold_value", e)}
             />
             ${this.unit ? html`<span>${this.unit}</span>` : nothing}
@@ -96,13 +107,13 @@ export class AnalysisThresholdGroup extends LitElement {
         ${a.show_threshold_shading
           ? html`
               <label class="field">
-                <span class="field-label">Shade area</span>
+                <span class="field-label">${msg("Shade area")}</span>
                 ${this._renderSelect(
                   "threshold_direction",
-                  [
+                  this._localizedOptions([
                     { value: "above", label: "Shade above" },
                     { value: "below", label: "Shade below" },
-                  ],
+                  ]),
                   a.threshold_direction
                 )}
               </label>

@@ -19,16 +19,15 @@ defineInnerCardStub();
 
 function createElement() {
   const el = document.createElement("history-chart") as HTMLElement & {
-    config: Record<string, unknown> | null;
+    config: Nullable<RecordWithUnknownValues>;
     hass: unknown;
     chartEl:
-      | (HTMLElement & {
+      | Nullable<HTMLElement & {
           setConfig: ReturnType<typeof vi.fn>;
           setExternalZoomRange: ReturnType<typeof vi.fn>;
           hass: unknown;
-        })
-      | null;
-    setExternalZoomRange(range: { start: number; end: number } | null): void;
+        }>;
+    setExternalZoomRange(range: Nullable<{ start: number; end: number }>): void;
   };
   document.body.appendChild(el);
   return el;

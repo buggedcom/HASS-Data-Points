@@ -1,5 +1,6 @@
 import { html, LitElement } from "lit";
 import { property } from "lit/decorators.js";
+import { localized } from "@/lib/i18n/localize";
 
 import { styles } from "./target-row-list.styles";
 import type { HassLike, HassState } from "@/lib/types";
@@ -15,7 +16,7 @@ import "@/molecules/target-row/target-row";
 // would contain zero data points and produce meaningless results).
 // ---------------------------------------------------------------------------
 
-const _DURATION_SECONDS: Record<string, number> = {
+const _DURATION_SECONDS: RecordWithNumericValues = {
   raw: 0,
   "5s": 5,
   "10s": 10,
@@ -58,7 +59,7 @@ function _clampWindowsToInterval(
   if (intervalSecs === 0) return {}; // "raw" — no constraint
   const updates: Partial<NormalizedAnalysis> = {};
   for (const [key, options] of Object.entries(_WINDOW_OPTIONS)) {
-    const current = (analysis as Record<string, unknown>)[key] as
+    const current = (analysis as unknown as RecordWithUnknownValues)[key] as
       | string
       | undefined;
     if (!current || current === "point_to_point") continue;
@@ -68,7 +69,7 @@ function _clampWindowsToInterval(
         (opt) => (_DURATION_SECONDS[opt] ?? 0) >= intervalSecs
       );
       if (next) {
-        (updates as Record<string, unknown>)[key] = next;
+        (updates as unknown as RecordWithUnknownValues)[key] = next;
       }
     }
   }
@@ -102,6 +103,7 @@ export interface RowConfig {
  * @fires dp-row-analysis-change - Bubbled from child `target-row`. `{ entityId, key, value }`
  * @fires dp-row-copy-analysis-to-all - Bubbled from child `target-row`. `{ entityId, analysis }`
  */
+@localized()
 export class TargetRowList extends LitElement {
   @property({ type: Array }) accessor rows: RowConfig[] = [];
 
@@ -112,7 +114,7 @@ export class TargetRowList extends LitElement {
   > = {};
 
   /** HA hass object. Required by ha-state-icon inside target-row to resolve entity icons. */
-  @property({ type: Object, attribute: false }) accessor hass: HassLike | null =
+  @property({ type: Object, attribute: false }) accessor hass: Nullable<HassLike> =
     null;
 
   @property({ type: Boolean, attribute: "can-show-delta-analysis" })
@@ -134,7 +136,7 @@ export class TargetRowList extends LitElement {
   accessor computingMethodsByEntity: Map<string, Set<string>> = new Map();
 
   /** Index of the row currently being dragged, or null when not dragging. */
-  private _dragSourceIndex: number | null = null;
+  private _dragSourceIndex: Nullable<number> = null;
 
   static styles = styles;
 
@@ -378,7 +380,7 @@ export class TargetRowList extends LitElement {
   // ---------------------------------------------------------------------------
 
   /** Walk the composed event path to find the nearest target-row element. */
-  private _rowFromEvent(e: DragEvent): Element | null {
+  private _rowFromEvent(e: DragEvent): Nullable<Element> {
     for (const node of e.composedPath()) {
       if (
         node instanceof Element &&

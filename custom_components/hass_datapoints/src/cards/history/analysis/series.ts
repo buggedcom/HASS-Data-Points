@@ -70,7 +70,7 @@ export function buildLinearTrend(points: Point[]): Point[] {
 export function interpolateSeriesValue(
   points: Point[],
   timeMs: number
-): number | null {
+): Nullable<number> {
   if (!Array.isArray(points) || !points.length) {
     return null;
   }
@@ -104,7 +104,7 @@ export function buildRateOfChangePoints(
   const ratePoints: Point[] = [];
   for (let index = 1; index < points.length; index += 1) {
     const [timeMs, value] = points[index];
-    let comparisonPoint: Point | null = null;
+    let comparisonPoint: Nullable<Point> = null;
     if (rateWindow === "point_to_point") {
       comparisonPoint = points[index - 1];
     } else {

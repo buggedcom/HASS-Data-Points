@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "../dev-tool-results";
 
-function createElement(props: Record<string, unknown> = {}) {
+function createElement(props: RecordWithUnknownValues = {}) {
   const el = document.createElement("dev-tool-results") as HTMLElement & {
-    results: Array<Record<string, unknown>>;
+    results: Array<RecordWithUnknownValues>;
     updateComplete: Promise<void>;
   };
   Object.assign(el, {

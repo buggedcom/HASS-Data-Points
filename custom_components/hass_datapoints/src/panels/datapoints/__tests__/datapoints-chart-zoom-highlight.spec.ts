@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { HassRecordsHistoryPanel } from "../datapoints.js";
+import { HassRecordsHistoryPanel } from "../datapoints";
 
 describe("HassRecordsHistoryPanel chart zoom highlight", () => {
   afterEach(() => {

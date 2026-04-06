@@ -1,11 +1,13 @@
 import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
+import { localized, msg } from "@/lib/i18n/localize";
 
 import { sharedStyles } from "../analysis-group-shared/analysis-group-shared.styles";
 import { styles } from "./analysis-summary-group.styles";
 import type { NormalizedAnalysis } from "@/molecules/target-row/types";
 import "@/atoms/analysis/analysis-group/analysis-group";
 
+@localized()
 export class AnalysisSummaryGroup extends LitElement {
   @property({ type: Object }) accessor analysis: NormalizedAnalysis =
     {} as NormalizedAnalysis;
@@ -37,7 +39,7 @@ export class AnalysisSummaryGroup extends LitElement {
     const a = this.analysis;
     return html`
       <analysis-group
-        .label=${"Show min / max / mean"}
+        .label=${msg("Show min / max / mean")}
         .checked=${a.show_summary_stats}
         @dp-group-change=${this._onGroupChange}
       >
@@ -48,7 +50,7 @@ export class AnalysisSummaryGroup extends LitElement {
             @change=${(e: Event) =>
               this._onCheckbox("show_summary_stats_shading", e)}
           />
-          <span>Show range shading</span>
+          <span>${msg("Show range shading")}</span>
         </label>
       </analysis-group>
     `;

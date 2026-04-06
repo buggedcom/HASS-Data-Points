@@ -8,7 +8,7 @@ import "@/atoms/form/entity-chip/entity-chip";
 export class ChipGroup extends LitElement {
   @property({ type: Array }) accessor items: ChipItem[] = [];
 
-  @property({ type: Object }) accessor hass: HassLike | null = null;
+  @property({ type: Object }) accessor hass: Nullable<HassLike> = null;
 
   @property({ type: Boolean }) accessor removable: boolean = false;
 

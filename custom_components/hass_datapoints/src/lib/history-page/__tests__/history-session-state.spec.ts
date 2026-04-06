@@ -8,13 +8,13 @@ import {
   normalizeHistoryPagePreferences,
   readHistoryPageSessionState,
   writeHistoryPageSessionState,
-} from "@/lib/history-page/history-session-state.js";
+} from "@/lib/history-page/history-session-state";
 
 afterEach(() => {
   window.sessionStorage.clear();
 });
 
-describe("history-session-state.js", () => {
+describe("history-session-state", () => {
   describe("GIVEN the history page session keys", () => {
     describe("WHEN they are read", () => {
       it("THEN they stay namespaced under the integration domain", () => {
@@ -149,7 +149,32 @@ describe("history-session-state.js", () => {
           buildHistoryPagePreferencesPayload({
             _zoomLevel: "day",
             _dateSnapping: "minute",
+            _entities: ["sensor.a"],
             _seriesRows: [{ entity_id: "sensor.a", color: "#123456" }],
+            _targetSelection: { entity_id: ["sensor.a"] },
+            _targetSelectionRaw: { entity_id: ["sensor.a"] },
+            _datapointScope: "linked",
+            _showChartDatapointIcons: true,
+            _showChartDatapointLines: true,
+            _showChartTooltips: true,
+            _showChartEmphasizedHoverGuides: false,
+            _chartHoverSnapMode: "follow_series",
+            _delinkChartYAxis: false,
+            _splitChartView: false,
+            _showCorrelatedAnomalies: false,
+            _chartAnomalyOverlapMode: "all",
+            _showDataGaps: true,
+            _dataGapThreshold: "2h",
+            _contentSplitRatio: 0.5,
+            _startTime: null,
+            _endTime: null,
+            _chartZoomCommittedRange: null,
+            _hours: 24,
+            _sidebarCollapsed: false,
+            _sidebarAccordionTargetsOpen: true,
+            _sidebarAccordionDatapointsOpen: true,
+            _sidebarAccordionAnalysisOpen: true,
+            _sidebarAccordionChartOpen: true,
             _preferredSeriesColors: {},
             _comparisonWindows: normalized.comparisonWindows,
           })
@@ -158,6 +183,10 @@ describe("history-session-state.js", () => {
           date_snapping: "minute",
           series_colors: { "sensor.a": "#123456" },
           date_windows: normalized.comparisonWindows,
+          page_state: expect.objectContaining({
+            entities: ["sensor.a"],
+            chart_hover_snap_mode: "follow_series",
+          }),
         });
         expect(normalized.comparisonWindows).toHaveLength(1);
       });

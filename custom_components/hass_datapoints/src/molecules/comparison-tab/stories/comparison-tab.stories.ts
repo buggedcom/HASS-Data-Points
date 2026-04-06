@@ -69,7 +69,7 @@ export default {
     loading: false,
     editable: false,
   },
-  render: (args: Record<string, unknown>) => html`
+  render: (args: RecordWithUnknownValues) => html`
     <div
       style="display: flex; align-items: flex-end; border-bottom: 1px solid rgba(255,255,255,0.12); padding: 0 16px;"
     >

@@ -14,7 +14,7 @@ import {
   fetchEvents,
   invalidateEventsCache,
   updateEvent,
-} from "@/lib/data/events-api.js";
+} from "@/lib/data/events-api";
 
 let warnSpy: ReturnType<typeof vi.fn>;
 
@@ -31,7 +31,7 @@ afterAll(() => {
   vi.unstubAllGlobals();
 });
 
-describe("events-api.js", () => {
+describe("events-api", () => {
   describe("GIVEN an events fetch request", () => {
     describe("WHEN fetchEvents is called", () => {
       it("THEN it returns the normalized events payload", async () => {

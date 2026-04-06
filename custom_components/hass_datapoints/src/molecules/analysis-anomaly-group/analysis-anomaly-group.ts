@@ -74,7 +74,6 @@ export const ANALYSIS_ANOMALY_PERSISTENCE_WINDOW_OPTIONS = [
 
 export const ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS = [
   { value: "all", label: "Show all anomalies" },
-  { value: "highlight", label: "Highlight overlaps" },
   { value: "only", label: "Overlaps only" },
 ];
 
@@ -143,8 +142,8 @@ export class AnalysisAnomalyGroup extends LitElement {
   ): Array<{ value: string; label: string; help?: string }> {
     return options.map((option) => ({
       ...option,
-      label: msg(option.label, { id: option.label }),
-      help: option.help ? msg(option.help, { id: option.help }) : undefined,
+      label: msg(option.label),
+      help: option.help ? msg(option.help) : undefined,
     }));
   }
 
@@ -157,7 +156,7 @@ export class AnalysisAnomalyGroup extends LitElement {
         <analysis-method-subopts>
           <label class="field">
             <span class="field-label"
-              >${msg("Rate window", { id: "Rate window" })}</span
+              >${msg("Rate window")}</span
             >
             ${this._renderSelect(
               "anomaly_rate_window",
@@ -173,7 +172,7 @@ export class AnalysisAnomalyGroup extends LitElement {
         <analysis-method-subopts>
           <label class="field">
             <span class="field-label"
-              >${msg("Rolling window", { id: "Rolling window" })}</span
+              >${msg("Rolling window")}</span
             >
             ${this._renderSelect(
               "anomaly_zscore_window",
@@ -189,7 +188,7 @@ export class AnalysisAnomalyGroup extends LitElement {
         <analysis-method-subopts>
           <label class="field">
             <span class="field-label"
-              >${msg("Min flat duration", { id: "Min flat duration" })}</span
+              >${msg("Min flat duration")}</span
             >
             ${this._renderSelect(
               "anomaly_persistence_window",
@@ -207,7 +206,7 @@ export class AnalysisAnomalyGroup extends LitElement {
         <analysis-method-subopts>
           <label class="field">
             <span class="field-label"
-              >${msg("Compare to window", { id: "Compare to window" })}</span
+              >${msg("Compare to window")}</span
             >
             <select
               class="select"
@@ -218,7 +217,7 @@ export class AnalysisAnomalyGroup extends LitElement {
                 )}
             >
               <option value="" ?selected=${!a.anomaly_comparison_window_id}>
-                ${msg("— select window —", { id: "— select window —" })}
+                ${msg("— select window —")}
               </option>
               ${this.comparisonWindows.map(
                 (win) => html`
@@ -251,13 +250,13 @@ export class AnalysisAnomalyGroup extends LitElement {
     );
     return html`
       <analysis-group
-        .label=${msg("Show anomalies", { id: "Show anomalies" })}
+        .label=${msg("Show anomalies")}
         .checked=${a.show_anomalies}
         @dp-group-change=${this._onGroupChange}
       >
         <label class="field">
           <span class="field-label"
-            >${msg("Sensitivity", { id: "Sensitivity" })}</span
+            >${msg("Sensitivity")}</span
           >
           ${this._renderSelect(
             "anomaly_sensitivity",
@@ -278,9 +277,7 @@ export class AnalysisAnomalyGroup extends LitElement {
                     )}
                 />
                 <span
-                  >${msg("Use downsampled data for detection", {
-                    id: "Use downsampled data for detection",
-                  })}</span
+                  >${msg("Use downsampled data for detection")}</span
                 >
               </label>
             `
@@ -332,7 +329,7 @@ export class AnalysisAnomalyGroup extends LitElement {
                     ? html`
                         <span
                           class="method-computing-indicator"
-                          aria-label=${msg("Computing…", { id: "Computing…" })}
+                          aria-label=${msg("Computing…")}
                         >
                           <span class="method-computing-spinner"></span>
                           <span class="method-computing-progress"
@@ -351,9 +348,7 @@ export class AnalysisAnomalyGroup extends LitElement {
           ? html`
               <label class="field">
                 <span class="field-label"
-                  >${msg("When methods overlap", {
-                    id: "When methods overlap",
-                  })}</span
+                  >${msg("When methods overlap")}</span
                 >
                 ${this._renderSelect(
                   "anomaly_overlap_mode",

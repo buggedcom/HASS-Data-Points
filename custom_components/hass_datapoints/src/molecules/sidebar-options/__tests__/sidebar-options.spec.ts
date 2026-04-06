@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "../sidebar-options";
 
-function createElement(props: Record<string, unknown> = {}) {
+function createElement(props: RecordWithUnknownValues = {}) {
   const el = document.createElement("sidebar-options") as HTMLElement & {
     datapointScope: string;
     showIcons: boolean;
@@ -37,11 +37,14 @@ type DatapointDisplaySectionEl = HTMLElement & {
   showIcons: boolean;
   showLines: boolean;
 };
+type AnalysisSectionEl = HTMLElement & {
+  anomalyOverlapMode: string;
+  showCorrelatedAnomalies: boolean;
+};
 type ChartDisplaySectionEl = HTMLElement & {
   showTooltips: boolean;
   showHoverGuides: boolean;
   hoverSnapMode: string;
-  showCorrelatedAnomalies: boolean;
   showDataGaps: boolean;
   dataGapThreshold: string;
   yAxisMode: string;
@@ -81,6 +84,13 @@ describe("sidebar-options", () => {
         expect.assertions(1);
         expect(
           el.shadowRoot!.querySelector("sidebar-chart-display-section")
+        ).not.toBeNull();
+      });
+
+      it("THEN renders sidebar-analysis-section", () => {
+        expect.assertions(1);
+        expect(
+          el.shadowRoot!.querySelector("sidebar-analysis-section")
         ).not.toBeNull();
       });
     });
@@ -182,6 +192,23 @@ describe("sidebar-options", () => {
     });
   });
 
+  describe("GIVEN showCorrelatedAnomalies=true", () => {
+    beforeEach(async () => {
+      el = createElement({ showCorrelatedAnomalies: true });
+      await el.updateComplete;
+    });
+
+    describe("WHEN rendered", () => {
+      it("THEN sidebar-analysis-section receives showCorrelatedAnomalies=true", () => {
+        expect.assertions(1);
+        const section = el.shadowRoot!.querySelector<AnalysisSectionEl>(
+          "sidebar-analysis-section"
+        )!;
+        expect(section.showCorrelatedAnomalies).toBe(true);
+      });
+    });
+  });
+
   // ---------------------------------------------------------------------------
   // Event bubbling
   // ---------------------------------------------------------------------------
@@ -227,6 +254,25 @@ describe("sidebar-options", () => {
         );
         expect(handler).toHaveBeenCalledOnce();
         expect(handler.mock.calls[0][0].detail.kind).toBe("tooltips");
+      });
+    });
+
+    describe("WHEN dp-display-change bubbles from sidebar-analysis-section", () => {
+      it("THEN the event reaches listeners on the host element", () => {
+        expect.assertions(2);
+        const handler = vi.fn();
+        el.addEventListener("dp-display-change", handler);
+        el.shadowRoot!.querySelector("sidebar-analysis-section")!.dispatchEvent(
+          new CustomEvent("dp-display-change", {
+            detail: { kind: "correlated_anomalies", value: true },
+            bubbles: true,
+            composed: true,
+          })
+        );
+        expect(handler).toHaveBeenCalledOnce();
+        expect(handler.mock.calls[0][0].detail.kind).toBe(
+          "correlated_anomalies"
+        );
       });
     });
   });

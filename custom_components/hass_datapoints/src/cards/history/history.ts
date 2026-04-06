@@ -1,17 +1,17 @@
 import { html } from "lit";
 import { ChartCardBase } from "@/charts/base/chart-card-base";
 // Side-effect import: registers the hass-datapoints-history-chart custom element.
-import "./history-chart/history-chart.js";
-import { createChartZoomRange } from "@/lib/domain/chart-zoom.js";
+import "./history-chart/history-chart";
+import { createChartZoomRange } from "@/lib/domain/chart-zoom";
 import {
   createHiddenEventIdSet,
   createHiddenSeriesSet,
-} from "@/lib/chart/chart-state.js";
-import { HistoryAnnotationDialogController } from "@/components/annotation-dialog/annotation-dialog.js";
-import { fetchHistoryDuringPeriod } from "@/lib/data/history-api.js";
-import { fetchStatisticsDuringPeriod } from "@/lib/data/statistics-api.js";
-import { fetchEvents } from "@/lib/data/events-api.js";
-import { logger } from "@/lib/logger.js";
+} from "@/lib/chart/chart-state";
+import { HistoryAnnotationDialogController } from "@/components/annotation-dialog/annotation-dialog";
+import { fetchHistoryDuringPeriod } from "@/lib/data/history-api";
+import { fetchStatisticsDuringPeriod } from "@/lib/data/statistics-api";
+import { fetchEvents } from "@/lib/data/events-api";
+import { logger } from "@/lib/logger";
 import type { CardConfig } from "@/lib/types";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -32,8 +32,8 @@ interface ComparisonWindow {
 }
 
 interface ComparisonWindowResult extends ComparisonWindow {
-  histResult: Record<string, unknown>;
-  statsResult: Record<string, unknown>;
+  histResult: RecordWithUnknownValues;
+  statsResult: RecordWithUnknownValues;
 }
 
 interface DrawOptions {
@@ -42,9 +42,9 @@ interface DrawOptions {
 }
 
 interface PartialLoadState {
-  histResult: Record<string, unknown> | null;
-  statsResult: Record<string, unknown> | null;
-  events: unknown[] | null;
+  histResult: Nullable<RecordWithUnknownValues>;
+  statsResult: Nullable<RecordWithUnknownValues>;
+  events: Nullable<unknown[]>;
   histDone: boolean;
   statsDone: boolean;
   eventsDone: boolean;
@@ -52,12 +52,10 @@ interface PartialLoadState {
   statsFailed: boolean;
   eventsFailed: boolean;
   hasDrawnDrawable: boolean;
-  lastDrawState: {
-    histDone: boolean;
+  lastDrawState: Nullable<{ histDone: boolean;
     statsDone: boolean;
-    eventsDone: boolean;
-  } | null;
-  lastDrawQuality: { totalPoints: number } | null;
+    eventsDone: boolean; }>;
+  lastDrawQuality: Nullable<{ totalPoints: number }>;
 }
 
 // ── Card ──────────────────────────────────────────────────────────────────────
@@ -69,7 +67,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
 
   private _hiddenEventIds: Set<string> = new Set();
 
-  private _zoomRange: { start: number; end: number } | null = null;
+  private _zoomRange: Nullable<{ start: number; end: number }> = null;
 
   private _configKey: string | undefined;
 
@@ -77,13 +75,13 @@ export class HassRecordsHistoryCard extends ChartCardBase {
 
   private _comparisonDataCache: Map<string, ComparisonWindowResult> = new Map();
 
-  private _lastComparisonResults: ComparisonWindowResult[] | null = null;
+  private _lastComparisonResults: Nullable<ComparisonWindowResult[]> = null;
 
-  private _lastHistResult: Record<string, unknown> | null = null;
+  private _lastHistResult: Nullable<RecordWithUnknownValues> = null;
 
-  private _lastStatsResult: Record<string, unknown> | null = null;
+  private _lastStatsResult: Nullable<RecordWithUnknownValues> = null;
 
-  private _lastEvents: unknown[] | null = null;
+  private _lastEvents: Nullable<unknown[]> = null;
 
   private _lastT0: number = 0;
 
@@ -91,7 +89,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
 
   private _scrollSyncSuspended = false;
 
-  private _lastProgrammaticScrollLeft: number | null = null;
+  private _lastProgrammaticScrollLeft: Nullable<number> = null;
 
   private _ignoreNextProgrammaticScrollEvent = false;
 
@@ -99,9 +97,9 @@ export class HassRecordsHistoryCard extends ChartCardBase {
 
   private _drawRequestId = 0;
 
-  private _zoomReloadTimer: number | null = null;
+  private _zoomReloadTimer: Nullable<number> = null;
 
-  private _chartScrollViewportEl: Element | null = null;
+  private _chartScrollViewportEl: Nullable<Element> = null;
 
   private _annotationDialog: {
     teardown(): void;
@@ -135,7 +133,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
         this._queueDrawChart(
           this._lastHistResult,
           this._lastStatsResult || {},
-          this._filterEvents(this._lastEvents),
+          this._lastEvents,
           this._lastT0,
           this._lastT1
         );
@@ -214,13 +212,16 @@ export class HassRecordsHistoryCard extends ChartCardBase {
             ...entry,
             analysis:
               entry?.analysis && typeof entry.analysis === "object"
-                ? { ...(entry.analysis as Record<string, unknown>) }
+                ? { ...(entry.analysis as RecordWithUnknownValues) }
                 : entry?.analysis,
           }))
         : config.series_settings,
       hidden_event_ids: Array.isArray(config.hidden_event_ids)
         ? [...(config.hidden_event_ids as unknown[])]
         : config.hidden_event_ids,
+      hovered_event_ids: Array.isArray(config.hovered_event_ids)
+        ? [...(config.hovered_event_ids as unknown[])]
+        : config.hovered_event_ids,
       comparison_windows: Array.isArray(config.comparison_windows)
         ? (config.comparison_windows as ComparisonWindow[]).map((entry) => ({
             ...entry,
@@ -234,7 +235,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
           )
         : config.preload_comparison_windows,
       comparison_preview_overlay: config.comparison_preview_overlay
-        ? { ...(config.comparison_preview_overlay as Record<string, unknown>) }
+        ? { ...(config.comparison_preview_overlay as RecordWithUnknownValues) }
         : null,
       selected_comparison_window_id:
         (config.selected_comparison_window_id as string) || null,
@@ -252,12 +253,12 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       rate_window: (config.rate_window as string) || "1h",
       threshold_values:
         config.threshold_values && typeof config.threshold_values === "object"
-          ? { ...(config.threshold_values as Record<string, unknown>) }
+          ? { ...(config.threshold_values as RecordWithUnknownValues) }
           : {},
       threshold_directions:
         config.threshold_directions &&
         typeof config.threshold_directions === "object"
-          ? { ...(config.threshold_directions as Record<string, unknown>) }
+          ? { ...(config.threshold_directions as RecordWithUnknownValues) }
           : {},
       show_delta_analysis: config.show_delta_analysis === true,
       show_delta_tooltip: config.show_delta_tooltip !== false,
@@ -311,6 +312,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       zoom_end_time: (currentConfig as CardConfig).zoom_end_time,
       message_filter: (currentConfig as CardConfig).message_filter || "",
       hidden_event_ids: (currentConfig as CardConfig).hidden_event_ids || [],
+      hovered_event_ids: (currentConfig as CardConfig).hovered_event_ids || [],
       show_event_markers:
         (currentConfig as CardConfig).show_event_markers !== false,
       show_event_lines:
@@ -369,6 +371,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       zoom_end_time: nextConfig.zoom_end_time,
       message_filter: nextConfig.message_filter || "",
       hidden_event_ids: nextConfig.hidden_event_ids || [],
+      hovered_event_ids: nextConfig.hovered_event_ids || [],
       show_event_markers: nextConfig.show_event_markers !== false,
       show_event_lines: nextConfig.show_event_lines !== false,
       show_tooltips: nextConfig.show_tooltips !== false,
@@ -455,7 +458,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     this._zoomRange = createChartZoomRange(
       nextConfig.zoom_start_time as never,
       nextConfig.zoom_end_time as never
-    ) as { start: number; end: number } | null;
+    ) as Nullable<{ start: number; end: number }>;
     const chartEl = this._chartEl();
     if (chartEl) {
       chartEl.hass = this._hass;
@@ -500,7 +503,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       this._queueDrawChart(
         this._lastHistResult,
         this._lastStatsResult || {},
-        this._filterEvents(this._lastEvents),
+        this._lastEvents,
         this._lastT0,
         this._lastT1
       );
@@ -510,7 +513,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       this._queueDrawChart(
         this._lastHistResult,
         this._lastStatsResult || {},
-        this._filterEvents(this._lastEvents),
+        this._lastEvents,
         this._lastT0,
         this._lastT1
       );
@@ -522,7 +525,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
   get _entityIds(): string[] {
     if (this._config.entities) {
       return (
-        this._config.entities as Array<string | Record<string, string>>
+        this._config.entities as Array<string | RecordWithStringValues>
       ).map((e) => (typeof e === "string" ? e : (e.entity_id ?? e.entity)));
     }
     return [this._config.entity as string];
@@ -613,6 +616,10 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     start: Date,
     end: Date
   ): Promise<ComparisonWindowResult> {
+    const hass = this._hass;
+    if (!hass) {
+      return { id: win.id, time_offset_ms: win.time_offset_ms, histResult: {}, statsResult: {} };
+    }
     const cacheKey = this._getComparisonCacheKey(win, start, end);
     const cached = this._comparisonDataCache.get(cacheKey);
     if (cached) {
@@ -620,7 +627,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     }
 
     const historyPromise = fetchHistoryDuringPeriod(
-      this._hass,
+      hass,
       start.toISOString(),
       end.toISOString(),
       this._entityIds,
@@ -629,11 +636,11 @@ export class HassRecordsHistoryCard extends ChartCardBase {
         significant_changes_only: false,
         no_attributes: true,
       }
-    ).catch(() => ({}) as Record<string, unknown>);
+    ).catch(() => ({}) as RecordWithUnknownValues);
 
     const statisticsPromise = this._statisticsEntityIds.length
       ? fetchStatisticsDuringPeriod(
-          this._hass,
+          hass,
           start.toISOString(),
           end.toISOString(),
           this._statisticsEntityIds,
@@ -642,8 +649,8 @@ export class HassRecordsHistoryCard extends ChartCardBase {
             types: ["mean"],
             units: {},
           }
-        ).catch(() => ({}) as Record<string, unknown>)
-      : Promise.resolve({} as Record<string, unknown>);
+        ).catch(() => ({}) as RecordWithUnknownValues)
+      : Promise.resolve({} as RecordWithUnknownValues);
 
     const [histResult, statsResult] = await Promise.all([
       historyPromise,
@@ -652,8 +659,8 @@ export class HassRecordsHistoryCard extends ChartCardBase {
 
     const result: ComparisonWindowResult = {
       ...win,
-      histResult: (histResult as Record<string, unknown>) || {},
-      statsResult: (statsResult as Record<string, unknown>) || {},
+      histResult: (histResult as RecordWithUnknownValues) || {},
+      statsResult: (statsResult as RecordWithUnknownValues) || {},
     };
     this._comparisonDataCache.set(cacheKey, result);
     return result;
@@ -692,7 +699,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
           this._queueDrawChart(
             this._lastHistResult,
             this._lastStatsResult || {},
-            this._filterEvents(this._lastEvents),
+            this._lastEvents,
             this._lastT0,
             this._lastT1
           );
@@ -712,7 +719,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
 
   private _loadComparisonWindows({
     redraw = false,
-    requestId = null as number | null,
+    requestId = null as Nullable<number>,
     showLoading = false,
   } = {}): Promise<ComparisonWindowResult[]> {
     const { start, end } = this._getRange();
@@ -733,7 +740,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
         this._queueDrawChart(
           this._lastHistResult,
           this._lastStatsResult || {},
-          this._filterEvents(this._lastEvents),
+          this._lastEvents,
           this._lastT0,
           this._lastT1
         );
@@ -766,7 +773,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
         this._queueDrawChart(
           this._lastHistResult,
           this._lastStatsResult || {},
-          this._filterEvents(this._lastEvents),
+          this._lastEvents,
           this._lastT0,
           this._lastT1
         );
@@ -821,7 +828,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
           this._queueDrawChart(
             this._lastHistResult,
             this._lastStatsResult || {},
-            this._filterEvents(this._lastEvents),
+            this._lastEvents,
             this._lastT0,
             this._lastT1
           );
@@ -851,7 +858,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
             this._queueDrawChart(
               this._lastHistResult,
               this._lastStatsResult || {},
-              this._filterEvents(this._lastEvents),
+              this._lastEvents,
               this._lastT0,
               this._lastT1
             );
@@ -898,8 +905,8 @@ export class HassRecordsHistoryCard extends ChartCardBase {
 
     const logChartRedrawData = (
       reason: string,
-      histResult: Record<string, unknown>,
-      statsResult: Record<string, unknown>,
+      histResult: RecordWithUnknownValues,
+      statsResult: RecordWithUnknownValues,
       events: unknown[]
     ): void => {
       logger.log("[hass-datapoints history] redraw data update", {
@@ -985,7 +992,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
           this._queueDrawChart(
             this._lastHistResult,
             this._lastStatsResult || {},
-            filteredEvents,
+            partial.events || [],
             this._lastT0,
             this._lastT1,
             {
@@ -1022,7 +1029,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       this._queueDrawChart(
         partial.histResult || {},
         partial.statsResult || {},
-        filteredEvents,
+        partial.events || [],
         t0,
         t1,
         {
@@ -1060,8 +1067,14 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     this._loadComparisonWindows({ redraw: true, requestId }).catch(() => {});
 
     try {
+      const hass = this._hass;
+      if (!hass) {
+        this._setChartMessage("Failed to load data.");
+        this._setChartLoading(false);
+        return;
+      }
       fetchHistoryDuringPeriod(
-        this._hass,
+        hass,
         start.toISOString(),
         end.toISOString(),
         this._entityIds,
@@ -1072,7 +1085,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
         }
       )
         .then((histResult: unknown) => {
-          partial.histResult = (histResult as Record<string, unknown>) || {};
+          partial.histResult = (histResult as RecordWithUnknownValues) || {};
           partial.histDone = true;
           maybeDraw();
           finalize();
@@ -1090,7 +1103,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
 
       if (this._statisticsEntityIds.length) {
         fetchStatisticsDuringPeriod(
-          this._hass,
+          hass,
           start.toISOString(),
           end.toISOString(),
           this._statisticsEntityIds,
@@ -1102,7 +1115,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
         )
           .then((statsResult: unknown) => {
             partial.statsResult =
-              (statsResult as Record<string, unknown>) || {};
+              (statsResult as RecordWithUnknownValues) || {};
             partial.statsDone = true;
             maybeDraw();
             finalize();
@@ -1126,7 +1139,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
         finalize();
       } else {
         fetchEvents(
-          this._hass,
+          hass,
           start.toISOString(),
           end.toISOString(),
           this._config.datapoint_scope === "all" ? undefined : this._entityIds
@@ -1151,7 +1164,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     } catch (err) {
       this._setChartMessage("Failed to load data.");
       this._setChartLoading(false);
-      loggerlogger.error("[hass-datapoints history-card]", err);
+      logger.error("[hass-datapoints history-card]", err);
     }
   }
 
@@ -1172,11 +1185,11 @@ export class HassRecordsHistoryCard extends ChartCardBase {
   }
 
   /** Returns the hass-datapoints-history-chart element once it is in the shadow DOM. */
-  private _chartEl(): (HTMLElement & Record<string, unknown>) | null {
+  private _chartEl(): Nullable<HTMLElement & RecordWithUnknownValues> {
     return (
       (this.shadowRoot?.querySelector(
         "hass-datapoints-history-chart"
-      ) as HTMLElement & Record<string, unknown>) ?? null
+      ) as HTMLElement & RecordWithUnknownValues) ?? null
     );
   }
 
@@ -1185,14 +1198,15 @@ export class HassRecordsHistoryCard extends ChartCardBase {
    * draw args so the base-class ResizeObserver can replay via _drawChart().
    */
   private _queueDrawChart(
-    histResult: Record<string, unknown>,
-    statsResult: Record<string, unknown>,
+    histResult: RecordWithUnknownValues,
+    statsResult: RecordWithUnknownValues,
     events: unknown[],
     t0: number,
     t1: number,
     options: DrawOptions = {}
   ): void {
     const drawRequestId = ++this._drawRequestId;
+    const filteredEvents = this._filterEvents(events);
     // Persist for resize-triggered redraws
     this._lastHistResult = histResult;
     this._lastStatsResult = statsResult;
@@ -1220,7 +1234,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       (chartEl._queueDrawChart as (...a: unknown[]) => void)(
         histResult,
         statsResult,
-        events,
+        filteredEvents,
         t0,
         t1,
         { ...options, drawRequestId }
@@ -1251,8 +1265,8 @@ export class HassRecordsHistoryCard extends ChartCardBase {
    * in either the history or statistics result.
    */
   private _hasDrawableHistoryData(
-    histResult: Record<string, unknown>,
-    statsResult: Record<string, unknown>
+    histResult: RecordWithUnknownValues,
+    statsResult: RecordWithUnknownValues
   ): boolean {
     return this._entityIds.some((entityId) => {
       const histData = histResult[entityId];
@@ -1268,8 +1282,8 @@ export class HassRecordsHistoryCard extends ChartCardBase {
    * avoid downgrading a high-resolution draw with a lower-resolution one.
    */
   private _getDrawableHistoryQuality(
-    histResult: Record<string, unknown>,
-    statsResult: Record<string, unknown>
+    histResult: RecordWithUnknownValues,
+    statsResult: RecordWithUnknownValues
   ): { totalPoints: number } {
     let totalPoints = 0;
     for (const entityId of this._entityIds) {

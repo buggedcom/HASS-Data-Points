@@ -1,33 +1,44 @@
-import { html } from "lit";
+import { CSSResultGroup, html, PropertyValues } from "lit";
+import { msg } from "@/lib/i18n/localize";
 import { styles } from "./editor.styles";
 import { EditorBase } from "@/molecules/editor-base/editor-base";
+import type { HassLike } from "@/lib/types";
 import "@/atoms/display/section-heading/section-heading";
 import "@/atoms/display/color-swatch/color-swatch";
 import "@/atoms/form/editor-text-field/editor-text-field";
 import "@/atoms/form/editor-switch/editor-switch";
 import "@/atoms/form/editor-icon-picker/editor-icon-picker";
 
-export class HassRecordsActionCardEditor extends EditorBase {
-  static styles = [EditorBase.styles, styles];
+type TargetPickerValue = Record<string, string[]>;
+type TargetPickerElement = Element & {
+  hass?: Nullable<HassLike>;
+  value?: TargetPickerValue;
+};
 
-  _onTargetChanged(e) {
+export class HassRecordsActionCardEditor extends EditorBase {
+  static styles: CSSResultGroup = [EditorBase.styles, styles];
+
+  _onTargetChanged(e: CustomEvent<{ value?: TargetPickerValue }>): void {
     const val = e.detail.value;
-    const isEmpty = !val || Object.values(val).every((v) => !v?.length);
+    const isEmpty = !val || Object.values(val).every((value) => !value?.length);
     this._set("target", isEmpty ? undefined : val);
   }
 
-  firstUpdated() {
-    const tp = this.shadowRoot.querySelector("#target-picker");
+  firstUpdated(): void {
+    const tp = this.shadowRoot?.querySelector(
+      "#target-picker"
+    ) as Nullable<TargetPickerElement>;
     if (tp && this.hass) {
       tp.hass = this.hass;
-      tp.value = this._config.target ?? {};
+      tp.value = (this._config.target as TargetPickerValue | undefined) ?? {};
     }
   }
 
-  updated(changedProps) {
+  updated(changedProps: PropertyValues<this>): void {
     if (changedProps.has("hass") && this.hass) {
-      this.shadowRoot.querySelectorAll("ha-selector").forEach((el) => {
-        el.hass = this.hass;
+      this.shadowRoot?.querySelectorAll("ha-selector").forEach((el) => {
+        const selectorEl = el as TargetPickerElement;
+        selectorEl.hass = this.hass;
       });
     }
   }
@@ -36,17 +47,26 @@ export class HassRecordsActionCardEditor extends EditorBase {
     const c = this._config;
     return html`
       <div class="ed">
-        <section-heading text="General"></section-heading>
+        <section-heading
+          .text=${msg("General")}
+        ></section-heading>
         <editor-text-field
-          label="Card title (optional)"
+          .label=${msg("Card title (optional)")}
           .value=${c.title || ""}
-          @dp-field-change=${(e) => this._set("title", e.detail.value)}
+          @dp-field-change=${(e: CustomEvent<{ value: string }>) =>
+            this._set("title", e.detail.value)}
         ></editor-text-field>
 
-        <section-heading text="Related items"></section-heading>
+        <section-heading
+          .text=${msg("Related items")}
+        ></section-heading>
         <div class="note">
-          Pre-fill entities, devices, areas or labels that are always linked to
-          recordings from this card.
+          ${msg(
+            "Pre-fill entities, devices, areas or labels that are always linked to recordings from this card.",
+            {
+              id: "Pre-fill entities, devices, areas or labels that are always linked to recordings from this card.",
+            }
+          )}
         </div>
         <ha-selector
           id="target-picker"
@@ -55,48 +75,54 @@ export class HassRecordsActionCardEditor extends EditorBase {
           style="display:block;width:100%"
         ></ha-selector>
         <editor-switch
-          label="Show always included targets on card"
+          .label=${msg("Show always included targets on card")}
           .checked=${c.show_config_targets !== false}
-          @dp-switch-change=${(e) =>
+          @dp-switch-change=${(e: CustomEvent<{ checked: boolean }>) =>
             this._set(
               "show_config_targets",
               e.detail.checked ? undefined : false
             )}
         ></editor-switch>
         <editor-switch
-          label="Allow user to add more related items"
+          .label=${msg("Allow user to add more related items")}
           .checked=${c.show_target_picker !== false}
-          @dp-switch-change=${(e) =>
+          @dp-switch-change=${(e: CustomEvent<{ checked: boolean }>) =>
             this._set(
               "show_target_picker",
               e.detail.checked ? undefined : false
             )}
         ></editor-switch>
 
-        <section-heading text="Datapoint Appearance"></section-heading>
+        <section-heading
+          .text=${msg("Datapoint Appearance")}
+        ></section-heading>
         <editor-icon-picker
-          label="Default icon"
+          .label=${msg("Default icon")}
           .value=${c.default_icon || "mdi:bookmark"}
           .hass=${this.hass}
-          @dp-icon-change=${(e) => this._set("default_icon", e.detail.value)}
+          @dp-icon-change=${(e: CustomEvent<{ value: string }>) =>
+            this._set("default_icon", e.detail.value)}
         ></editor-icon-picker>
         <color-swatch
-          label="Default colour"
+          .label=${msg("Default colour")}
           .color=${c.default_color || "#03a9f4"}
-          @dp-color-change=${(e) => this._set("default_color", e.detail.color)}
+          @dp-color-change=${(e: CustomEvent<{ color: string }>) =>
+            this._set("default_color", e.detail.color)}
         ></color-swatch>
 
-        <section-heading text="Form fields"></section-heading>
+        <section-heading
+          .text=${msg("Form fields")}
+        ></section-heading>
         <editor-switch
-          label="Show date & time field"
+          .label=${msg("Show date & time field")}
           .checked=${c.show_date !== false}
-          @dp-switch-change=${(e) =>
+          @dp-switch-change=${(e: CustomEvent<{ checked: boolean }>) =>
             this._set("show_date", e.detail.checked ? undefined : false)}
         ></editor-switch>
         <editor-switch
-          label="Show annotation field"
+          .label=${msg("Show annotation field")}
           .checked=${c.show_annotation !== false}
-          @dp-switch-change=${(e) =>
+          @dp-switch-change=${(e: CustomEvent<{ checked: boolean }>) =>
             this._set("show_annotation", e.detail.checked ? undefined : false)}
         ></editor-switch>
       </div>

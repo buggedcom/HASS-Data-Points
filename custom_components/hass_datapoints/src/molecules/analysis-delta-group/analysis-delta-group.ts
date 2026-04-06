@@ -1,11 +1,13 @@
 import { LitElement, html, nothing } from "lit";
 import { property } from "lit/decorators.js";
+import { localized, msg } from "@/lib/i18n/localize";
 
 import { sharedStyles } from "../analysis-group-shared/analysis-group-shared.styles";
 import { styles } from "./analysis-delta-group.styles";
 import type { NormalizedAnalysis } from "@/molecules/target-row/types";
 import "@/atoms/analysis/analysis-group/analysis-group";
 
+@localized()
 export class AnalysisDeltaGroup extends LitElement {
   @property({ type: Object }) accessor analysis: NormalizedAnalysis =
     {} as NormalizedAnalysis;
@@ -42,7 +44,7 @@ export class AnalysisDeltaGroup extends LitElement {
 
     return html`
       <analysis-group
-        .label=${"Show delta vs selected date window"}
+        .label=${msg("Show delta vs selected date window")}
         .checked=${isOpen}
         .disabled=${!this.canShowDeltaAnalysis}
         .alignTop=${true}
@@ -52,7 +54,7 @@ export class AnalysisDeltaGroup extends LitElement {
           ? html`
               <span slot="hint"
                 ><br /><span class="help-text"
-                  >Select a date window tab to enable delta analysis.</span
+                  >${msg("Select a date window tab to enable delta analysis.")}</span
                 ></span
               >
             `
@@ -63,7 +65,7 @@ export class AnalysisDeltaGroup extends LitElement {
             .checked=${a.show_delta_tooltip}
             @change=${(e: Event) => this._onCheckbox("show_delta_tooltip", e)}
           />
-          <span>Show delta in tooltip</span>
+          <span>${msg("Show delta in tooltip")}</span>
         </label>
         <label class="option">
           <input
@@ -71,7 +73,7 @@ export class AnalysisDeltaGroup extends LitElement {
             .checked=${a.show_delta_lines}
             @change=${(e: Event) => this._onCheckbox("show_delta_lines", e)}
           />
-          <span>Show delta lines</span>
+          <span>${msg("Show delta lines")}</span>
         </label>
       </analysis-group>
     `;

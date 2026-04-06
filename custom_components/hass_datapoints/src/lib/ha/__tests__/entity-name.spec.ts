@@ -9,9 +9,9 @@ import {
   entityName,
   labelIcon,
   labelName,
-} from "@/lib/ha/entity-name.js";
+} from "@/lib/ha/entity-name";
 
-describe("entity-name.js", () => {
+describe("entity-name", () => {
   const hass = {
     states: {
       "sensor.alpha": {

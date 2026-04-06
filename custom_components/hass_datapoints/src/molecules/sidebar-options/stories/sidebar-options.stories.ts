@@ -85,7 +85,7 @@ export default {
     dataGapThreshold: "2h",
     yAxisMode: "combined",
   },
-  render: (args: Record<string, unknown>) => html`
+  render: (args: RecordWithUnknownValues) => html`
     <sidebar-options
       .datapointScope=${args.datapointScope}
       .showIcons=${args.showIcons}

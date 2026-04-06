@@ -7,7 +7,7 @@ import { createHistoryPagePersistenceContext } from "./persistence-context";
 import type { HistoryPageContext } from "./types";
 
 export function createHistoryPageContext(
-  hass: HassLike | null = null
+  hass: Nullable<HassLike> = null
 ): HistoryPageContext {
   const context: HistoryPageContext = {
     hass,

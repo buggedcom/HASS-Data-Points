@@ -1,7 +1,8 @@
 import { LitElement, html, nothing } from "lit";
 import { property } from "lit/decorators.js";
-
 import type { TemplateResult } from "lit";
+import { localized, msg } from "@/lib/i18n/localize";
+
 import { sharedStyles } from "../analysis-group-shared/analysis-group-shared.styles";
 import { styles } from "./analysis-sample-group.styles";
 import type { NormalizedAnalysis } from "@/molecules/target-row/types";
@@ -37,6 +38,7 @@ export const SAMPLE_AGGREGATE_OPTIONS = [
   { value: "last", label: "Last" },
 ];
 
+@localized()
 export class AnalysisSampleGroup extends LitElement {
   @property({ type: Object }) accessor analysis: NormalizedAnalysis =
     {} as NormalizedAnalysis;
@@ -54,6 +56,15 @@ export class AnalysisSampleGroup extends LitElement {
         composed: true,
       })
     );
+  }
+
+  private _localizedOptions(
+    options: Array<{ value: string; label: string }>
+  ): Array<{ value: string; label: string }> {
+    return options.map((opt) => ({
+      ...opt,
+      label: msg(opt.label),
+    }));
   }
 
   private _renderSelect(
@@ -89,25 +100,25 @@ export class AnalysisSampleGroup extends LitElement {
     const isEnabled = interval !== "raw";
     return html`
       <analysis-group
-        .label=${"Downsampling"}
+        .label=${msg("Downsampling")}
         .checked=${isEnabled}
         @dp-group-change=${this._onGroupChange}
       >
         <label class="field">
-          <span class="field-label">Interval</span>
+          <span class="field-label">${msg("Interval")}</span>
           ${this._renderSelect(
             "sample_interval",
-            SAMPLE_INTERVAL_OPTIONS,
+            this._localizedOptions(SAMPLE_INTERVAL_OPTIONS),
             interval
           )}
         </label>
         ${isEnabled
           ? html`
               <label class="field">
-                <span class="field-label">Aggregate</span>
+                <span class="field-label">${msg("Aggregate")}</span>
                 ${this._renderSelect(
                   "sample_aggregate",
-                  SAMPLE_AGGREGATE_OPTIONS,
+                  this._localizedOptions(SAMPLE_AGGREGATE_OPTIONS),
                   a.sample_aggregate ?? "mean"
                 )}
               </label>

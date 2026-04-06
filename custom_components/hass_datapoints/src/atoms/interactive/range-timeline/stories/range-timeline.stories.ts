@@ -132,7 +132,7 @@ export default {
     dateSnapping: "auto",
     isLiveEdge: false,
   },
-  render: (args: Record<string, unknown>) => html`
+  render: (args: RecordWithUnknownValues) => html`
     <div style="display: flex; padding: 8px 0;">
       <range-timeline
         .startTime=${START}

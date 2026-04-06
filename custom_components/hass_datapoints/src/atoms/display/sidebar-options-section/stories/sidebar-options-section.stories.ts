@@ -24,7 +24,7 @@ export default {
     title: "Chart Display",
     subtitle: "Configure visual and interaction behaviour for the chart.",
   },
-  render: (args: Record<string, unknown>) => html`
+  render: (args: RecordWithUnknownValues) => html`
     <sidebar-options-section .title=${args.title} .subtitle=${args.subtitle}>
       <div style="color: var(--secondary-text-color); font-size: 0.9rem;">
         Slotted body content goes here.

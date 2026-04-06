@@ -76,7 +76,7 @@ export default {
     showShortcuts: false,
     submitLabel: "Create date window",
   },
-  render: (args: Record<string, unknown>) => html`
+  render: (args: RecordWithUnknownValues) => html`
     <date-window-dialog
       .open=${args.open}
       .heading=${args.heading}

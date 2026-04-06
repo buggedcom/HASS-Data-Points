@@ -20,7 +20,7 @@ describe("types.ts", () => {
             {
               entity_id: string;
               state: string;
-              attributes: Record<string, unknown>;
+              attributes: RecordWithUnknownValues;
               last_changed: string;
               last_updated: string;
             }
@@ -39,7 +39,7 @@ describe("types.ts", () => {
         expectTypeOf<EventRecordFull["entity_ids"]>().toEqualTypeOf<
           string[] | undefined
         >();
-        expectTypeOf<CardConfig>().toEqualTypeOf<Record<string, unknown>>();
+        expectTypeOf<CardConfig>().toEqualTypeOf<RecordWithUnknownValues>();
 
         expect(true).toBe(true);
       });

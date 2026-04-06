@@ -106,13 +106,16 @@ needs_restart_for_changes() {
 
 LAST_HASH=""
 PREV_SNAPSHOT_DIR=""
+FORCE_REBUILD=false
 
 echo "Starting hass-datapoints watch mode..."
 echo "Polling every ${WATCH_INTERVAL}s"
+echo "Press Enter to manually trigger a rebuild and sync."
 
 while true; do
   CURRENT_HASH="$(snapshot)"
-  if [[ "$CURRENT_HASH" != "$LAST_HASH" ]]; then
+  if [[ "$CURRENT_HASH" != "$LAST_HASH" ]] || [[ "$FORCE_REBUILD" == "true" ]]; then
+    FORCE_REBUILD=false
     CURRENT_SNAPSHOT_DIR="$(mktemp -d)"
     rsync -a \
       --exclude '__pycache__/' \
@@ -168,5 +171,9 @@ while true; do
     fi
     PREV_SNAPSHOT_DIR="$CURRENT_SNAPSHOT_DIR"
   fi
-  sleep "$WATCH_INTERVAL"
+  if IFS= read -r -s -t "$WATCH_INTERVAL" _REPLY; then
+    echo "Manual rebuild triggered..."
+    FORCE_REBUILD=true
+    continue
+  fi
 done

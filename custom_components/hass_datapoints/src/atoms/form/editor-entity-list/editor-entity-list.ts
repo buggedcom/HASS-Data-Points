@@ -7,7 +7,7 @@ import type { HassLike } from "@/lib/types";
 export class EditorEntityList extends LitElement {
   @property({ type: Array }) accessor entities: string[] = [];
 
-  @property({ type: Object }) accessor hass: HassLike | null = null;
+  @property({ type: Object }) accessor hass: Nullable<HassLike> = null;
 
   @property({ type: String, attribute: "button-label" })
   accessor buttonLabel: string = "Add entity";

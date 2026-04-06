@@ -26,7 +26,7 @@ const SAMPLE_TABS: TabItem[] = [
   },
 ];
 
-function createElement(props: Record<string, unknown> = {}) {
+function createElement(props: RecordWithUnknownValues = {}) {
   const el = document.createElement("comparison-tab-rail") as HTMLElement & {
     tabs: TabItem[];
     loadingIds: string[];

@@ -3,10 +3,10 @@ import { createMockHass } from "@/test-support/mock-hass";
 import { HassRecordsListCard } from "../list.ts";
 import type { EventRecord } from "@/lib/types";
 
-import { fetchEvents } from "@/lib/data/events-api.js";
+import { fetchEvents } from "@/lib/data/events-api";
 
 vi.mock("@/helpers.js", async (importOriginal) => {
-  const mod = (await importOriginal()) as Record<string, unknown>;
+  const mod = (await importOriginal()) as RecordWithUnknownValues;
   return {
     ...mod,
     confirmDestructiveAction: vi.fn().mockResolvedValue(true),
@@ -14,8 +14,8 @@ vi.mock("@/helpers.js", async (importOriginal) => {
   };
 });
 
-vi.mock("@/lib/data/events-api.js", async (importOriginal) => {
-  const mod = (await importOriginal()) as Record<string, unknown>;
+vi.mock("@/lib/data/events-api", async (importOriginal) => {
+  const mod = (await importOriginal()) as RecordWithUnknownValues;
   return {
     ...mod,
     fetchEvents: vi.fn().mockResolvedValue([]),
@@ -57,7 +57,7 @@ const mockEvents: EventRecord[] = [
   },
 ];
 
-function createCard(config: Record<string, unknown> = {}) {
+function createCard(config: RecordWithUnknownValues = {}) {
   const el = document.createElement("hass-datapoints-list-card") as any;
   document.body.appendChild(el);
   el.setConfig(config);
@@ -71,7 +71,7 @@ function getEventItems(el: any) {
 }
 
 async function loadCard(
-  config: Record<string, unknown> = {},
+  config: RecordWithUnknownValues = {},
   events: EventRecord[] = []
 ) {
   vi.mocked(fetchEvents).mockResolvedValue(events as any);
@@ -150,6 +150,30 @@ describe("list", () => {
         expect(el.shadowRoot.textContent).not.toContain("No datapoints yet");
       });
     });
+
+    describe("WHEN an item emits a hover event", () => {
+      it("THEN the card re-dispatches the panel hover event", async () => {
+        expect.assertions(3);
+        const handler = vi.fn();
+        el.addEventListener("hass-datapoints-hover-event-record", handler);
+        const item = getEventItems(el)[0];
+        item.dispatchEvent(
+          new CustomEvent("dp-hover-event-record", {
+            bubbles: true,
+            composed: true,
+            detail: {
+              eventId: "evt-2",
+              hovered: true,
+              eventRecord: mockEvents[1],
+            },
+          })
+        );
+        await el.updateComplete;
+        expect(handler).toHaveBeenCalledOnce();
+        expect(handler.mock.calls[0][0].detail.eventId).toBe("evt-2");
+        expect(handler.mock.calls[0][0].detail.hovered).toBe(true);
+      });
+    });
   });
 
   describe("GIVEN a card with events and a search query matching one event", () => {
@@ -196,6 +220,42 @@ describe("list", () => {
         );
         await el.updateComplete;
         expect(el._page).toBe(1);
+      });
+    });
+  });
+
+  describe("GIVEN a card with a hidden event", () => {
+    beforeEach(async () => {
+      el = await loadCard({ hidden_event_ids: ["evt-1"] }, mockEvents);
+    });
+
+    describe("WHEN rendered", () => {
+      it("THEN the hidden event item has the is-hidden class", async () => {
+        expect.assertions(1);
+        const items = getEventItems(el);
+        const hiddenItem = items.find(
+          (item) => item.shadowRoot.textContent?.includes("First event")
+        )!;
+        await (hiddenItem as any).updateComplete;
+        expect(
+          hiddenItem.shadowRoot.querySelector(".event-item")?.classList.contains("is-hidden")
+        ).toBe(true);
+      });
+    });
+
+    describe("WHEN setConfig is called without the hidden id", () => {
+      it("THEN the item is no longer hidden", async () => {
+        expect.assertions(1);
+        el.setConfig({ hidden_event_ids: [] });
+        await el.updateComplete;
+        const items = getEventItems(el);
+        const item = items.find(
+          (row) => row.shadowRoot.textContent?.includes("First event")
+        )!;
+        await (item as any).updateComplete;
+        expect(
+          item.shadowRoot.querySelector(".event-item")?.classList.contains("is-hidden")
+        ).toBe(false);
       });
     });
   });

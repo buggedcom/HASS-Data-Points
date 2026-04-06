@@ -3,7 +3,7 @@ import { createMockHass } from "@/test-support/mock-hass";
 import { HassRecordsDevToolCard } from "../dev-tool.ts";
 
 vi.mock("@/helpers.js", async (importOriginal) => {
-  const mod = (await importOriginal()) as Record<string, unknown>;
+  const mod = (await importOriginal()) as RecordWithUnknownValues;
   return {
     ...mod,
     confirmDestructiveAction: vi.fn().mockResolvedValue(true),
@@ -18,7 +18,7 @@ if (!customElements.get("hass-datapoints-dev-tool-card")) {
   );
 }
 
-function createCard(config: Record<string, unknown> = {}) {
+function createCard(config: RecordWithUnknownValues = {}) {
   const el = document.createElement("hass-datapoints-dev-tool-card") as any;
   document.body.appendChild(el);
   el.setConfig({ title: "Dev Tool", ...config });
@@ -37,7 +37,7 @@ function getAnalyzeStatus(el: any) {
   };
 }
 
-async function setupCard(config: Record<string, unknown> = {}) {
+async function setupCard(config: RecordWithUnknownValues = {}) {
   const el = createCard(config);
   const hass = createMockHass({
     connection: {

@@ -9,7 +9,8 @@
  * legend remain accessible from the parent card's shadow root.
  */
 
-import { esc } from "@/lib/util/format.js";
+import { msg } from "@/lib/i18n/localize";
+import { esc } from "@/lib/util/format";
 import {
   binaryOffLabel,
   binaryOnLabel,
@@ -20,36 +21,54 @@ import {
   normalizeNumericHistory,
   normalizeStatisticsHistory,
   SAMPLE_INTERVAL_MS,
-} from "../history-data.js";
-import { clampChartValue } from "@/lib/chart/chart-shell.js";
+} from "../history-data";
+import { clampChartValue } from "@/lib/chart/chart-shell";
 import {
   renderChartAxisOverlays,
   resolveChartLabelColor,
   setupCanvas,
-} from "@/charts/utils/chart-dom.js";
+} from "@/charts/utils/chart-dom";
 import {
+  type AnomalyRegion,
   attachLineChartHover,
   attachLineChartRangeZoom,
+  buildAnomalyTooltipContent,
+  type ChartEventRecord,
   dispatchLineChartHover,
   hideLineChartHover,
   hideTooltip,
+  type HoverSeriesLike,
+  type HoverState,
+  type HoverValueEntry,
   showLineChartCrosshair,
   showLineChartTooltip,
-} from "@/lib/chart/chart-interaction.js";
-import { entityName } from "@/lib/ha/entity-name.js";
+} from "@/lib/chart/chart-interaction";
+import { entityName } from "@/lib/ha/entity-name";
 import {
+  type BackendAnomalyConfig,
   fetchAnomaliesFromBackend,
   fetchDownsampledHistory,
-} from "@/lib/data/history-api.js";
-import { COLORS } from "@/constants.js";
-import { contrastColor, hexToRgba } from "@/lib/util/color.js";
-import { ChartRenderer } from "@/lib/chart/chart-renderer.js";
-import { normalizeHistorySeriesAnalysis } from "@/lib/domain/history-series.js";
+} from "@/lib/data/history-api";
+import { COLORS } from "@/constants";
+import { contrastColor, hexToRgba } from "@/lib/util/color";
+import {
+  type AnnotationEvent,
+  type AnomalyCluster,
+  type ChartPoint,
+  ChartRenderer,
+  type ResolvedAxis,
+} from "@/lib/chart/chart-renderer";
+import {
+  type HistorySeriesAnalysis,
+  normalizeHistorySeriesAnalysis,
+  type PartialHistorySeriesAnalysis,
+} from "@/lib/domain/history-series";
 import {
   computeHistoryAnalysisInWorker,
   terminateHistoryAnalysisWorker,
-} from "@/lib/workers/history-analysis-client.js";
-import { logger } from "@/lib/logger.js";
+} from "@/lib/workers/history-analysis-client";
+import type { ComputeHistoryAnalysisPayload } from "@/lib/workers/history-analysis.worker";
+import { logger } from "@/lib/logger";
 import type { HassLike } from "@/lib/types";
 import {
   buildDeltaPoints,
@@ -59,8 +78,8 @@ import {
   buildSummaryStats,
   getTrendWindowMs,
 } from "../analysis/index";
-import { navigateToDataPointsHistory } from "@/lib/ha/navigation.js";
-import { styles } from "./history-chart.styles.js";
+import { navigateToDataPointsHistory } from "@/lib/ha/navigation";
+import { styles } from "./history-chart.styles";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
@@ -73,26 +92,7 @@ const HISTORY_CHART_MAX_ZOOM_MULTIPLIER = 365;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-interface SeriesAnalysis {
-  show_trend_lines?: boolean;
-  show_summary_stats?: boolean;
-  show_rate_of_change?: boolean;
-  show_threshold_analysis?: boolean;
-  show_anomalies?: boolean;
-  show_delta_analysis?: boolean;
-  hide_source_series?: boolean;
-  trend_method?: string;
-  trend_window?: string;
-  rate_window?: string;
-  anomaly_methods?: string[];
-  anomaly_sensitivity?: string;
-  anomaly_overlap_mode?: string;
-  anomaly_rate_window?: string;
-  anomaly_zscore_window?: string;
-  anomaly_persistence_window?: string;
-  anomaly_comparison_window_id?: string;
-  [key: string]: unknown;
-}
+type SeriesAnalysis = HistorySeriesAnalysis;
 
 interface SeriesItem {
   entityId: string;
@@ -107,6 +107,15 @@ interface AnalysisResult {
   summaryStats: unknown[];
   anomalySeries: unknown[];
 }
+
+type DrawArgs = [
+  histResult: unknown,
+  statsResult: unknown,
+  events: unknown[],
+  t0: number,
+  t1: number,
+  options?: RecordWithUnknownValues,
+];
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
@@ -149,15 +158,15 @@ export class HistoryChart extends HTMLElement {
           <ha-tooltip for="chart-add-annotation" placement="bottom" distance="8" show-delay="1000">Create Data Point</ha-tooltip>
           <div class="chart-zoom-selection" id="chart-zoom-selection" hidden></div>
         </div>
+        <button type="button" class="chart-adjust-axis" id="chart-adjust-axis" hidden>
+          <span>Adjust Y-Axis</span>
+        </button>
       </div>
       <div class="chart-axis-overlay left" id="chart-axis-left"></div>
       <div class="chart-axis-overlay right" id="chart-axis-right"></div>
       <button type="button" class="chart-zoom-out" id="chart-zoom-out" hidden>
         <ha-icon icon="mdi:magnify-minus-outline"></ha-icon>
         <span>Zoom out</span>
-      </button>
-      <button type="button" class="chart-adjust-axis" id="chart-adjust-axis" hidden>
-        <span>Adjust Y-Axis</span>
       </button>
       <div class="tooltip" id="tooltip">
         <div class="tt-time" id="tt-time"></div>
@@ -183,17 +192,17 @@ export class HistoryChart extends HTMLElement {
   }
 
   // ── Public API — set by parent card after construction ──────────────────────
-  private _hass: HassLike | null = null;
+  private _hass: Nullable<HassLike> = null;
 
-  get hass(): HassLike | null {
+  get hass(): Nullable<HassLike> {
     return this._hass;
   }
 
-  set hass(value: HassLike | null) {
+  set hass(value: Nullable<HassLike>) {
     this._hass = value;
   }
 
-  _config: Record<string, unknown> = {};
+  _config: RecordWithUnknownValues = {};
 
   // ── Instance state ──────────────────────────────────────────────────────────
 
@@ -207,7 +216,7 @@ export class HistoryChart extends HTMLElement {
   _drawRequestId = 0;
 
   /** Cached analysis result keyed by a content hash. */
-  _analysisCache: { key: string; result: AnalysisResult } | null = null;
+  _analysisCache: Nullable<{ key: string; result: AnalysisResult }> = null;
 
   /** Backend anomaly data keyed by entity ID. */
   _backendAnomalyByEntity: Map<string, unknown> = new Map();
@@ -225,19 +234,19 @@ export class HistoryChart extends HTMLElement {
    * Cleanup function returned by attachLineChartHover.
    * Must be called before re-attaching hover or before unmount.
    */
-  _chartHoverCleanup: (() => void) | null = null;
+  _chartHoverCleanup: NullableCleanup = null;
 
   /**
    * Cleanup function returned by attachLineChartRangeZoom.
    * Must be called before re-attaching zoom or before unmount.
    */
-  _chartZoomCleanup: (() => void) | null = null;
+  _chartZoomCleanup: NullableCleanup = null;
 
   /** True while the user is drag-zooming on the split chart overlay. */
   _chartZoomDragging = false;
 
   /** Last computed hover object — used by split-chart crosshair/tooltip. */
-  _chartLastHover: unknown = null;
+  _chartLastHover: Nullable<HoverState> = null;
 
   /**
    * When true, scroll sync events from the secondary (comparison) chart
@@ -249,7 +258,7 @@ export class HistoryChart extends HTMLElement {
    * The scrollLeft value of the last programmatic scroll, used to detect
    * and ignore the scroll event that the browser fires for that scroll.
    */
-  _lastProgrammaticScrollLeft: number | null = null;
+  _lastProgrammaticScrollLeft: Nullable<number> = null;
 
   /**
    * Set to true immediately before a programmatic scroll so the resulting
@@ -267,7 +276,7 @@ export class HistoryChart extends HTMLElement {
   // Use `this.querySelector` / `this.querySelectorAll` instead of
   // `this.shadowRoot.querySelector` because there is no shadow root.
 
-  private _el(id: string): Element | null {
+  private _el(id: string): Nullable<Element> {
     return this.querySelector(`#${id}`);
   }
 
@@ -309,12 +318,12 @@ export class HistoryChart extends HTMLElement {
    * Ported from _drawEmptyChartFrame in card-history.js.
    */
   _drawEmptyChartFrame(t0: number, t1: number): void {
-    const canvas = this._el("chart") as HTMLCanvasElement | null;
+    const canvas = this._el("chart") as Nullable<HTMLCanvasElement>;
     const wrap = this as HTMLElement;
     const scrollViewport = this._el(
       "chart-scroll-viewport"
-    ) as HTMLElement | null;
-    const chartStage = this._el("chart-stage") as HTMLElement | null;
+    ) as Nullable<HTMLElement>;
+    const chartStage = this._el("chart-stage") as Nullable<HTMLElement>;
     if (!canvas) {
       return;
     }
@@ -333,7 +342,7 @@ export class HistoryChart extends HTMLElement {
         canvas: HTMLCanvasElement,
         container: HTMLElement,
         cssHeight: number,
-        cssWidth?: number | null
+        cssWidth?: Nullable<number>
       ) => { w: number; h: number }
     )(canvas, chartStage || wrap, availableHeight, viewportWidth);
     const renderer = new ChartRenderer(canvas, w, h);
@@ -359,7 +368,8 @@ export class HistoryChart extends HTMLElement {
     renderChartAxisOverlays(
       this,
       renderer,
-      (renderer as unknown as { _activeAxes?: unknown[] })._activeAxes || []
+      ((renderer as unknown as { _activeAxes?: unknown[] })._activeAxes ||
+        []) as never[]
     );
   }
 
@@ -371,13 +381,13 @@ export class HistoryChart extends HTMLElement {
    */
   _getAvailableChartHeight(minChartHeight = 280): number {
     // Walk up to the ha-card ancestor which may live in the parent's shadow root.
-    const card = this.closest("ha-card") as HTMLElement | null;
-    const header = card?.querySelector(".card-header") as HTMLElement | null;
-    const topSlot = this._el("chart-top-slot") as HTMLElement | null;
-    const legend = this._el("legend") as HTMLElement | null;
+    const card = this.closest("ha-card") as Nullable<HTMLElement>;
+    const header = card?.querySelector(".card-header") as Nullable<HTMLElement>;
+    const topSlot = this._el("chart-top-slot") as Nullable<HTMLElement>;
+    const legend = this._el("legend") as Nullable<HTMLElement>;
     const scrollViewport = this._el(
       "chart-scroll-viewport"
-    ) as HTMLElement | null;
+    ) as Nullable<HTMLElement>;
     const wrap = this as HTMLElement;
 
     const cardHeight = card?.clientHeight || 0;
@@ -398,7 +408,7 @@ export class HistoryChart extends HTMLElement {
   }
 
   _syncTopSlotOffset(): void {
-    const topSlot = this._el("chart-top-slot") as HTMLElement | null;
+    const topSlot = this._el("chart-top-slot") as Nullable<HTMLElement>;
     const topSlotHeight =
       topSlot && !topSlot.hidden ? topSlot.offsetHeight || 0 : 0;
     this.style.setProperty("--dp-chart-top-slot-height", `${topSlotHeight}px`);
@@ -408,11 +418,11 @@ export class HistoryChart extends HTMLElement {
    * Toggle the legend `wrap-rows` class based on the card height.
    * Ported from _updateLegendLayout in card-history.js.
    */
-  _updateLegendLayout(legendEl: Element | null): void {
+  _updateLegendLayout(legendEl: Nullable<Element>): void {
     if (!legendEl) {
       return;
     }
-    const card = this.closest("ha-card") as HTMLElement | null;
+    const card = this.closest("ha-card") as Nullable<HTMLElement>;
     const cardHeight = card?.clientHeight || 0;
     if (this._legendWrapRows) {
       this._legendWrapRows =
@@ -431,7 +441,7 @@ export class HistoryChart extends HTMLElement {
     visible: boolean,
     onAdjust?: () => void
   ): void {
-    const button = this._el("chart-adjust-axis") as HTMLButtonElement | null;
+    const button = this._el("chart-adjust-axis") as Nullable<HTMLButtonElement>;
     if (!button) {
       return;
     }
@@ -440,6 +450,7 @@ export class HistoryChart extends HTMLElement {
       button.onclick = () => {
         this._adjustComparisonAxisScale = true;
         onAdjust?.();
+        this._redrawLastDraw();
       };
       return;
     }
@@ -451,16 +462,17 @@ export class HistoryChart extends HTMLElement {
    * Ported from _renderComparisonPreviewOverlay in card-history.js.
    */
   _renderComparisonPreviewOverlay(
-    renderer: { pad?: { left?: number } } | null = null
+    renderer: Nullable<{ pad?: { left?: number } }> = null
   ): void {
-    const overlayEl = this._el("chart-preview-overlay") as HTMLElement | null;
+    const overlayEl = this._el(
+      "chart-preview-overlay"
+    ) as Nullable<HTMLElement>;
     if (!overlayEl) {
       return;
     }
     const overlay =
       (this._config?.comparison_preview_overlay as
-        | { window_range_label?: string; actual_range_label?: string }
-        | null
+        | Nullable<{ window_range_label?: string; actual_range_label?: string }>
         | undefined) || null;
     if (!overlay?.window_range_label || !overlay?.actual_range_label) {
       overlayEl.hidden = true;
@@ -473,8 +485,8 @@ export class HistoryChart extends HTMLElement {
       overlayEl.style.left = "";
     }
     overlayEl.innerHTML = `
-      <div class="chart-preview-line"><strong>Date window:</strong> ${esc(overlay.window_range_label)}</div>
-      <div class="chart-preview-line"><strong>Actual:</strong> ${esc(overlay.actual_range_label)}</div>
+      <div class="chart-preview-line"><strong>${msg("Date window:")}</strong> ${esc(overlay.window_range_label)}</div>
+      <div class="chart-preview-line"><strong>${msg("Actual:")}</strong> ${esc(overlay.actual_range_label)}</div>
     `;
     overlayEl.hidden = false;
   }
@@ -491,7 +503,7 @@ export class HistoryChart extends HTMLElement {
     events: unknown[],
     t0: number,
     t1: number,
-    options: Record<string, unknown> = {}
+    options: RecordWithUnknownValues = {}
   ): void {
     const drawRequestId = ++this._drawRequestId;
     logger.log("[hass-datapoints history-card] draw queued", {
@@ -513,6 +525,65 @@ export class HistoryChart extends HTMLElement {
     });
   }
 
+  _redrawLastDraw(): void {
+    if (this._lastDrawArgs.length !== 5 && this._lastDrawArgs.length !== 6) {
+      return;
+    }
+    const [histResult, statsResult, events, t0, t1, options = {}] = this
+      ._lastDrawArgs as DrawArgs;
+    this._queueDrawChart(histResult, statsResult, events, t0, t1, options);
+  }
+
+  _buildBackendAnomalyConfig(
+    analysis: RecordWithUnknownValues
+  ): BackendAnomalyConfig {
+    const config: BackendAnomalyConfig = {
+      anomaly_methods: Array.isArray(analysis.anomaly_methods)
+        ? (analysis.anomaly_methods as string[])
+        : undefined,
+      anomaly_sensitivity:
+        typeof analysis.anomaly_sensitivity === "string"
+          ? analysis.anomaly_sensitivity
+          : undefined,
+      anomaly_overlap_mode:
+        typeof analysis.anomaly_overlap_mode === "string"
+          ? analysis.anomaly_overlap_mode
+          : undefined,
+      anomaly_rate_window:
+        typeof analysis.anomaly_rate_window === "string"
+          ? analysis.anomaly_rate_window
+          : undefined,
+      anomaly_zscore_window:
+        typeof analysis.anomaly_zscore_window === "string"
+          ? analysis.anomaly_zscore_window
+          : undefined,
+      anomaly_persistence_window:
+        typeof analysis.anomaly_persistence_window === "string"
+          ? analysis.anomaly_persistence_window
+          : undefined,
+      trend_method:
+        typeof analysis.trend_method === "string"
+          ? analysis.trend_method
+          : undefined,
+      trend_window:
+        typeof analysis.trend_window === "string"
+          ? analysis.trend_window
+          : undefined,
+      anomaly_use_sampled_data: analysis.anomaly_use_sampled_data !== false,
+    };
+    if (analysis.anomaly_use_sampled_data !== false) {
+      config.sample_interval =
+        typeof analysis.sample_interval === "string"
+          ? analysis.sample_interval
+          : null;
+      config.sample_aggregate =
+        typeof analysis.sample_aggregate === "string"
+          ? analysis.sample_aggregate
+          : null;
+    }
+    return config;
+  }
+
   // ── Instance method stubs — implemented by the parent card / JS layer ────────
 
   /** Build normalised state list for an entity from histResult/statsResult. Overridden by parent. */
@@ -523,23 +594,15 @@ export class HistoryChart extends HTMLElement {
   ): Array<{ lu: number; s: string }> {
     const entityIds =
       this._seriesSettings
-        ?.map((s: Record<string, string>) => s.entity_id)
+        ?.map((seriesSetting: { entity_id: string }) => seriesSetting.entity_id)
         .filter(Boolean) ?? [];
     const historyStates = getHistoryStatesForEntity(
       histResult,
       entityId,
       entityIds
     );
-    const rawHistory = normalizeNumericHistory(
-      entityId,
-      historyStates,
-      this._config
-    );
-    const statsHistory = normalizeStatisticsHistory(
-      entityId,
-      statsResult,
-      this._config
-    );
+    const rawHistory = normalizeNumericHistory(entityId, historyStates);
+    const statsHistory = normalizeStatisticsHistory(entityId, statsResult);
     return mergeNumericHistoryWithStatistics(rawHistory, statsHistory);
   }
 
@@ -572,9 +635,9 @@ export class HistoryChart extends HTMLElement {
   /** Return the "on" label for a binary_sensor entity. */
   _binaryOnLabel(entityId: string): string {
     const dc = (
-      this._hass as {
-        states?: Record<string, { attributes: Record<string, unknown> }>;
-      } | null
+      this._hass as Nullable<{
+        states?: Record<string, { attributes: RecordWithUnknownValues }>;
+      }>
     )?.states?.[entityId]?.attributes?.device_class as string | undefined;
     return binaryOnLabel(dc ?? "");
   }
@@ -582,9 +645,9 @@ export class HistoryChart extends HTMLElement {
   /** Return the "off" label for a binary_sensor entity. */
   _binaryOffLabel(entityId: string): string {
     const dc = (
-      this._hass as {
-        states?: Record<string, { attributes: Record<string, unknown> }>;
-      } | null
+      this._hass as Nullable<{
+        states?: Record<string, { attributes: RecordWithUnknownValues }>;
+      }>
     )?.states?.[entityId]?.attributes?.device_class as string | undefined;
     return binaryOffLabel(dc ?? "");
   }
@@ -594,12 +657,12 @@ export class HistoryChart extends HTMLElement {
     entityId: string,
     statsData: unknown
   ): Array<{ lu: number; s: string }> {
-    return normalizeStatisticsHistory(entityId, statsData, this._config);
+    return normalizeStatisticsHistory(entityId, statsData);
   }
 
   /** Render legend items for the given series and binary backgrounds. */
   _renderLegend(series: unknown[], binaryBackgrounds: unknown[]): void {
-    const legendEl = this.querySelector("#legend") as HTMLElement | null;
+    const legendEl = this.querySelector("#legend") as Nullable<HTMLElement>;
     if (!legendEl) return;
     const allItems = [
       ...(series as Array<{ entityId: string; label: string; color: string }>),
@@ -634,12 +697,12 @@ export class HistoryChart extends HTMLElement {
           "aria-pressed",
           this._hiddenSeries.has(entityId) ? "false" : "true"
         );
-        this._queueDrawChart(...(this._lastDrawArgs ?? []));
+        this._redrawLastDraw();
       });
     });
   }
 
-  /** Draw a single series line onto the renderer. */
+  /** Draw a single series line onto the renderer, with optional data-gap rendering. */
   _drawSeriesLine(
     renderer: unknown,
     pts: [number, number][],
@@ -648,21 +711,85 @@ export class HistoryChart extends HTMLElement {
     t1: number,
     min: number,
     max: number,
-    opts: Record<string, unknown>
+    opts: RecordWithUnknownValues
   ): void {
-    (
-      renderer as {
-        drawLine: (
-          pts: [number, number][],
-          color: string,
-          t0: number,
-          t1: number,
-          min: number,
-          max: number,
-          opts: Record<string, unknown>
-        ) => void;
+    const r = renderer as {
+      drawLine: (
+        pts: [number, number][],
+        color: string,
+        t0: number,
+        t1: number,
+        min: number,
+        max: number,
+        opts: RecordWithUnknownValues
+      ) => void;
+      drawGapMarkers: (
+        boundaryPoints: [number, number][],
+        color: string,
+        t0: number,
+        t1: number,
+        min: number,
+        max: number
+      ) => void;
+    };
+
+    const config = this._config as RecordWithUnknownValues | undefined;
+    const showGaps = config?.show_data_gaps !== false;
+    const gapThresholdKey = (config?.data_gap_threshold as string) || "2h";
+    const gapThresholdMs =
+      SAMPLE_INTERVAL_MS[gapThresholdKey] ?? 2 * 60 * 60_000;
+
+    if (!showGaps || pts.length < 2 || !Number.isFinite(gapThresholdMs)) {
+      r.drawLine(pts, color, t0, t1, min, max, opts);
+      return;
+    }
+
+    // Split pts into continuous segments separated by gaps.
+    const segments: [number, number][][] = [];
+    const gapBridges: [[number, number], [number, number]][] = [];
+    let current: [number, number][] = [pts[0]];
+
+    for (let i = 1; i < pts.length; i++) {
+      const dt = pts[i][0] - pts[i - 1][0];
+      if (dt > gapThresholdMs) {
+        segments.push(current);
+        gapBridges.push([pts[i - 1], pts[i]]);
+        current = [pts[i]];
+      } else {
+        current.push(pts[i]);
       }
-    ).drawLine(pts, color, t0, t1, min, max, opts);
+    }
+    segments.push(current);
+
+    // No gaps found — draw normally.
+    if (segments.length === 1) {
+      r.drawLine(pts, color, t0, t1, min, max, opts);
+      return;
+    }
+
+    // Draw each solid segment.
+    for (const seg of segments) {
+      r.drawLine(seg, color, t0, t1, min, max, opts);
+    }
+
+    // Draw dashed bridge lines through each gap.
+    const gapColor = color.startsWith("rgba")
+      ? color.replace(/[\d.]+\)$/, "0.35)")
+      : `${color}59`;
+    for (const [lastPt, firstPt] of gapBridges) {
+      r.drawLine([lastPt, firstPt], gapColor, t0, t1, min, max, {
+        dashed: true,
+        lineWidth: 1.2,
+        lineOpacity: 0.5,
+      });
+    }
+
+    // Draw boundary markers at gap edges.
+    const boundaryPoints: [number, number][] = gapBridges.flatMap(([a, b]) => [
+      a,
+      b,
+    ]);
+    r.drawGapMarkers(boundaryPoints, color, t0, t1, min, max);
   }
 
   /** Draw event point icons onto the renderer. */
@@ -672,7 +799,7 @@ export class HistoryChart extends HTMLElement {
     _events: unknown[],
     _t0: number,
     _t1: number,
-    _opts: Record<string, unknown>
+    _opts: RecordWithUnknownValues
   ): Array<{ event: { id: string }; value: number; unit: string }> {
     const renderer = _renderer as {
       ctx: CanvasRenderingContext2D;
@@ -680,7 +807,7 @@ export class HistoryChart extends HTMLElement {
       yOf(v: number, min: number, max: number): number;
       pad: { top: number; left: number };
       ch: number;
-      _interpolateValue(pts: [number, number][], t: number): number | null;
+      _interpolateValue(pts: [number, number][], t: number): Nullable<number>;
     };
     const series = _visibleSeries as Array<{
       entityId: string;
@@ -697,11 +824,11 @@ export class HistoryChart extends HTMLElement {
       icon?: string;
       color?: string;
     }>;
-    const opts = _opts as Record<string, unknown>;
+    const opts = _opts as RecordWithUnknownValues;
 
     const overlay = this.querySelector(
       "#chart-icon-overlay"
-    ) as HTMLElement | null;
+    ) as Nullable<HTMLElement>;
     if (overlay && !opts.skipOverlayClear) {
       overlay.innerHTML = "";
     }
@@ -713,14 +840,24 @@ export class HistoryChart extends HTMLElement {
       : 0;
     const hits: Array<{
       event: { id: string };
-      value: number | null;
+      value: Nullable<number>;
       unit: string;
       x: number;
       y: number;
-      entityId: string | null;
+      entityId: Nullable<string>;
     }> = [];
     const { ctx } = renderer;
     const showIcons = opts.showIcons !== false;
+    const fallbackHighlightedIds = Array.isArray(
+      this._config?.hovered_event_ids
+    )
+      ? (this._config.hovered_event_ids as string[])
+      : [];
+    const highlightedEventIds = new Set(
+      Array.isArray(opts.highlightedEventIds)
+        ? (opts.highlightedEventIds as string[])
+        : fallbackHighlightedIds
+    );
 
     for (const event of events) {
       const timestamp = new Date(event.timestamp).getTime();
@@ -765,15 +902,39 @@ export class HistoryChart extends HTMLElement {
       if (hasNumericTarget && value == null) continue;
       let y;
       if (hasNumericTarget) {
-        y = renderer.yOf(value!, targetSeries!.axis!.min, targetSeries!.axis!.max);
+        y = renderer.yOf(
+          value!,
+          targetSeries!.axis!.min,
+          targetSeries!.axis!.max
+        );
       } else if (linkedToOtherTarget) {
         y = renderer.pad.top + renderer.ch;
       } else {
         y = renderer.pad.top + 12;
       }
       const color = event.color || targetSeries?.color || "#03a9f4";
+      const isHighlighted = highlightedEventIds.has(String(event.id || ""));
+      const highlightOuterRadius = showIcons ? 18 : 10;
+      const highlightInnerRadius = showIcons ? 15 : 8;
       const outerRadius = showIcons ? 13 : 6;
       const innerRadius = showIcons ? 11 : 4;
+
+      if (isHighlighted) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(x, y, highlightOuterRadius, 0, Math.PI * 2);
+        ctx.fillStyle = hexToRgba(color, 0.18);
+        ctx.fill();
+        ctx.restore();
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(x, y, highlightInnerRadius, 0, Math.PI * 2);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2;
+        ctx.stroke();
+        ctx.restore();
+      }
 
       ctx.save();
       ctx.beginPath();
@@ -802,18 +963,18 @@ export class HistoryChart extends HTMLElement {
           },
           {
             start_time:
-              ((this._config as Record<string, unknown>)
+              ((this._config as RecordWithUnknownValues)
                 ?.start_time as string) || null,
             end_time:
-              ((this._config as Record<string, unknown>)?.end_time as string) ||
+              ((this._config as RecordWithUnknownValues)?.end_time as string) ||
               null,
             zoom_start_time:
-              ((this._config as Record<string, unknown>)
+              ((this._config as RecordWithUnknownValues)
                 ?.zoom_start_time as string) || null,
             zoom_end_time:
-              ((this._config as Record<string, unknown>)
+              ((this._config as RecordWithUnknownValues)
                 ?.zoom_end_time as string) || null,
-            datapoint_scope: (this._config as Record<string, unknown>)
+            datapoint_scope: (this._config as RecordWithUnknownValues)
               ?.datapoint_scope as string,
           }
         );
@@ -866,8 +1027,43 @@ export class HistoryChart extends HTMLElement {
   }
 
   /** Get [min, max] extent for an axis value array. */
-  _getAxisValueExtent(values: number[]): { min: number; max: number } | null {
+  _getAxisValueExtent(
+    values: number[]
+  ): Nullable<{ min: number; max: number }> {
     return getAxisValueExtent(values);
+  }
+
+  _getComparisonWindowLineStyle(
+    isHovered: boolean,
+    isSelected: boolean,
+    hoveringDifferentComparison: boolean
+  ): {
+    lineOpacity: number;
+    lineWidth?: number;
+    dashed: boolean;
+    dashPattern?: number[];
+    hoverOpacity: number;
+  } {
+    if (isHovered) {
+      return {
+        lineOpacity: 1,
+        dashed: false,
+        hoverOpacity: 0.85,
+      };
+    }
+    if (hoveringDifferentComparison && isSelected) {
+      return {
+        lineOpacity: 0.25,
+        lineWidth: 1.25,
+        dashed: false,
+        hoverOpacity: 0.25,
+      };
+    }
+    return {
+      lineOpacity: 0.85,
+      dashed: false,
+      hoverOpacity: 0.85,
+    };
   }
 
   /** Sync chart viewport scroll to the current zoom range. */
@@ -879,8 +1075,8 @@ export class HistoryChart extends HTMLElement {
     if (!this._chartScrollViewportEl || !this._zoomRange) {
       return;
     }
-    const viewportWidth = (this._chartScrollViewportEl as HTMLElement)
-      .clientWidth;
+    const viewport = this._chartScrollViewportEl as HTMLElement;
+    const viewportWidth = viewport.clientWidth;
     const totalMs = Math.max(1, _t1 - _t0);
     const visibleSpanMs =
       totalMs *
@@ -898,10 +1094,14 @@ export class HistoryChart extends HTMLElement {
     const ratio =
       maxStartOffsetMs > 0 ? (clampedStart - _t0) / maxStartOffsetMs : 0;
     const nextLeft = ratio * maxScrollLeft;
+    const currentLeft = viewport.scrollLeft;
+    if (Math.abs(currentLeft - nextLeft) < 2) {
+      return;
+    }
     this._scrollSyncSuspended = true;
     this._lastProgrammaticScrollLeft = nextLeft;
     this._ignoreNextProgrammaticScrollEvent = true;
-    (this._chartScrollViewportEl as HTMLElement).scrollLeft = nextLeft;
+    viewport.scrollLeft = nextLeft;
     window.requestAnimationFrame(() => {
       this._scrollSyncSuspended = false;
     });
@@ -909,11 +1109,11 @@ export class HistoryChart extends HTMLElement {
 
   /** Ensure the context annotation dialog element is present. */
   _ensureContextAnnotationDialog(): void {
-    const parentCard = (this.getRootNode() as ShadowRoot | null)
-      ?.host as Record<string, unknown> | null;
+    const parentCard = ((this.getRootNode() as Nullable<ShadowRoot>)?.host ??
+      null) as unknown as Nullable<RecordWithUnknownValues>;
     if (
       parentCard?._annotationDialog &&
-      typeof (parentCard._annotationDialog as Record<string, unknown>)
+      typeof (parentCard._annotationDialog as RecordWithUnknownValues)
         .ensureDialog === "function"
     ) {
       (parentCard._annotationDialog as { ensureDialog(): void }).ensureDialog();
@@ -922,11 +1122,11 @@ export class HistoryChart extends HTMLElement {
 
   /** Open the context annotation dialog with the given hover data. */
   _openContextAnnotationDialog(_hover: unknown): void {
-    const parentCard = (this.getRootNode() as ShadowRoot | null)
-      ?.host as Record<string, unknown> | null;
+    const parentCard = ((this.getRootNode() as Nullable<ShadowRoot>)?.host ??
+      null) as unknown as Nullable<RecordWithUnknownValues>;
     if (
       parentCard?._annotationDialog &&
-      typeof (parentCard._annotationDialog as Record<string, unknown>).open ===
+      typeof (parentCard._annotationDialog as RecordWithUnknownValues).open ===
         "function"
     ) {
       (parentCard._annotationDialog as { open(hover: unknown): void }).open(
@@ -937,12 +1137,12 @@ export class HistoryChart extends HTMLElement {
 
   /** Handle context menu on the chart canvas. */
   async _handleChartContextMenu(_hover: unknown): Promise<void> {
-    const parentCard = (this.getRootNode() as ShadowRoot | null)
-      ?.host as Record<string, unknown> | null;
-    const annotationDialog = parentCard?._annotationDialog as {
+    const parentCard = ((this.getRootNode() as Nullable<ShadowRoot>)?.host ??
+      null) as unknown as Nullable<RecordWithUnknownValues>;
+    const annotationDialog = parentCard?._annotationDialog as Nullable<{
       isOpen?(): boolean;
       open(hover: unknown): void;
-    } | null;
+    }>;
     if (!_hover || !this._hass || annotationDialog?.isOpen?.()) {
       return;
     }
@@ -951,25 +1151,46 @@ export class HistoryChart extends HTMLElement {
 
   /** Handle add-annotation click from the chart hover layer. */
   _handleChartAddAnnotation(_hover: unknown): void {
-    const parentCard = (this.getRootNode() as ShadowRoot | null)
-      ?.host as Record<string, unknown> | null;
-    const annotationDialog = parentCard?._annotationDialog as {
+    const parentCard = ((this.getRootNode() as Nullable<ShadowRoot>)?.host ??
+      null) as unknown as Nullable<RecordWithUnknownValues>;
+    const annotationDialog = parentCard?._annotationDialog as Nullable<{
       isOpen?(): boolean;
-    } | null;
+    }>;
     if (!_hover || !this._hass || annotationDialog?.isOpen?.()) {
       return;
     }
     this._openContextAnnotationDialog(_hover);
   }
 
-  /** Handle anomaly cluster click (add annotation prefill). Overridden by parent. */
-  _handleAnomalyAddAnnotation(): void {
-    // Overridden by parent.
+  /** Handle anomaly cluster click — opens the annotation dialog prefilled with anomaly details. */
+  _handleAnomalyAddAnnotation(_regions?: unknown): void {
+    const regions = _regions as AnomalyRegion[] | undefined;
+    if (!regions?.length || !this._hass) return;
+    const prefill = this._buildAnomalyAnnotationPrefill(regions);
+    const firstRegion = regions[0];
+    const points = firstRegion?.cluster?.points;
+    const peakPoint = points?.reduce(
+      (peak: Nullable<{ timeMs: number; residual: number }>, p) =>
+        !peak || Math.abs(p.residual) > Math.abs(peak.residual) ? p : peak,
+      null
+    );
+    const timeMs =
+      peakPoint?.timeMs ?? this._chartLastHover?.timeMs ?? Date.now();
+    this._openContextAnnotationDialog({ timeMs, annotationPrefill: prefill });
   }
 
-  /** Build an annotation prefill object from anomaly regions. Overridden by parent. */
-  _buildAnomalyAnnotationPrefill(): unknown {
-    return null;
+  /** Build an annotation prefill object from anomaly regions. */
+  _buildAnomalyAnnotationPrefill(_regions?: unknown): unknown {
+    const regions = _regions as AnomalyRegion[] | undefined;
+    if (!regions?.length) return {};
+    const content = buildAnomalyTooltipContent(regions);
+    const firstRegion = regions[0];
+    const entityId = firstRegion?.relatedEntityId ?? null;
+    return {
+      message: content ? `${content.description}\n${content.alert}` : "",
+      icon: "mdi:alert-circle",
+      linkedTarget: entityId ? { entity_id: [entityId] } : null,
+    };
   }
 
   /** Fire backend anomaly detection requests. */
@@ -982,27 +1203,19 @@ export class HistoryChart extends HTMLElement {
     if (!_anomalyEntityIds || !_anomalyEntityIds.length || !this._hass) {
       return;
     }
+    const hass = this._hass;
     _anomalyEntityIds.forEach((entityId) => {
       const analysis = _analysisMap.get(entityId) as
-        | Record<string, unknown>
+        | RecordWithUnknownValues
         | undefined;
       if (!analysis) {
         return;
       }
-      const config = {
-        anomaly_methods: analysis.anomaly_methods,
-        anomaly_sensitivity: analysis.anomaly_sensitivity,
-        anomaly_overlap_mode: analysis.anomaly_overlap_mode,
-        anomaly_rate_window: analysis.anomaly_rate_window,
-        anomaly_zscore_window: analysis.anomaly_zscore_window,
-        anomaly_persistence_window: analysis.anomaly_persistence_window,
-        trend_method: analysis.trend_method,
-        trend_window: analysis.trend_window,
-      };
+      const config = this._buildBackendAnomalyConfig(analysis);
       const configKey = JSON.stringify({
         ...config,
         anomaly_methods: [
-          ...((config.anomaly_methods as string[] | null) || []),
+          ...((config.anomaly_methods as Nullable<string[]>) || []),
         ].sort(),
       });
       const cached = this._backendAnomalyByEntity.get(entityId) as
@@ -1011,13 +1224,7 @@ export class HistoryChart extends HTMLElement {
       if (cached && cached.configKey === configKey) return;
       this._pendingAnomalyEntityIds.add(entityId);
       this._setChartLoading(true);
-      fetchAnomaliesFromBackend(
-        this._hass,
-        entityId,
-        _startIso,
-        _endIso,
-        config
-      )
+      fetchAnomaliesFromBackend(hass, entityId, _startIso, _endIso, config)
         .then((clusters) => {
           this._pendingAnomalyEntityIds.delete(entityId);
           // Discard if the time range changed while this request was in-flight.
@@ -1033,8 +1240,11 @@ export class HistoryChart extends HTMLElement {
           this._backendAnomalyByEntity.set(entityId, { configKey, clusters });
           // Patch the cached analysisResult directly so the worker cache remains valid.
           if (this._analysisCache?.result) {
-            const existing = this._analysisCache.result.anomalySeries || [];
-            const idx = existing.findIndex((e) => e.entityId === entityId);
+            const existing = (this._analysisCache.result.anomalySeries ||
+              []) as Array<{ entityId?: string; anomalyClusters?: unknown[] }>;
+            const idx = existing.findIndex(
+              (entry: { entityId?: string }) => entry.entityId === entityId
+            );
             const entry = { entityId, anomalyClusters: clusters };
             if (idx >= 0) {
               existing[idx] = entry;
@@ -1070,7 +1280,7 @@ export class HistoryChart extends HTMLElement {
 
   /** Dispatch a zoom preview event. */
   _dispatchZoomPreview(_range: unknown): void {
-    const range = _range as { startTime: number; endTime: number } | null;
+    const range = _range as Nullable<{ startTime: number; endTime: number }>;
     this.dispatchEvent(
       new CustomEvent("hass-datapoints-chart-zoom", {
         bubbles: true,
@@ -1101,7 +1311,7 @@ export class HistoryChart extends HTMLElement {
         detail: { start, end },
       })
     );
-    this._queueDrawChart(...(this._lastDrawArgs ?? []));
+    this._redrawLastDraw();
   }
 
   /** Clear the active zoom range. */
@@ -1117,7 +1327,7 @@ export class HistoryChart extends HTMLElement {
         detail: null,
       })
     );
-    this._queueDrawChart(...(this._lastDrawArgs ?? []));
+    this._redrawLastDraw();
   }
 
   /** Filter events list by hidden IDs and message filter. */
@@ -1129,7 +1339,7 @@ export class HistoryChart extends HTMLElement {
       entity_ids?: string[];
     }>;
     const query = String(
-      (this._config as Record<string, unknown>)?.message_filter || ""
+      (this._config as RecordWithUnknownValues)?.message_filter || ""
     )
       .trim()
       .toLowerCase();
@@ -1172,7 +1382,7 @@ export class HistoryChart extends HTMLElement {
     }> = [];
     for (const seriesItem of visibleSeries) {
       const analysis = _analysisMap.get(seriesItem.entityId) as
-        | Record<string, unknown>
+        | RecordWithUnknownValues
         | undefined;
       if (analysis?.show_anomalies !== true) continue;
       const clusters = anomalyClustersMap.get(seriesItem.entityId) || [];
@@ -1230,7 +1440,7 @@ export class HistoryChart extends HTMLElement {
 
     const activeCounts = new Map<string, number>();
     const spans: Array<{ start: number; end: number }> = [];
-    let spanStart: number | null = null;
+    let spanStart: Nullable<number> = null;
 
     for (const event of events) {
       const prev = activeCounts.get(event.entityId) || 0;
@@ -1258,11 +1468,11 @@ export class HistoryChart extends HTMLElement {
   /** Filter out annotated anomaly clusters. */
   _filterAnnotatedAnomalyClusters(
     _seriesItem: unknown,
-    _events: unknown[]
-  ): unknown[] {
+    _events: AnnotationEvent[]
+  ): AnomalyCluster[] {
     const seriesItem = _seriesItem as {
       entityId: string;
-      anomalyClusters?: Array<{ points: Array<{ timeMs: number }> }>;
+      anomalyClusters?: AnomalyCluster[];
     };
     if (
       !Array.isArray(seriesItem?.anomalyClusters) ||
@@ -1270,19 +1480,12 @@ export class HistoryChart extends HTMLElement {
     ) {
       return [];
     }
-    const visibleEvents = Array.isArray(_events)
-      ? (_events as Array<{
-          entity_ids?: string[];
-          timestamp: string;
-        }>)
-      : [];
+    const visibleEvents = Array.isArray(_events) ? _events : [];
     if (visibleEvents.length === 0) {
       return seriesItem.anomalyClusters;
     }
 
-    const getClusterRange = (cluster: {
-      points: Array<{ timeMs: number }>;
-    }) => {
+    const getClusterRange = (cluster: AnomalyCluster) => {
       if (!Array.isArray(cluster.points) || cluster.points.length === 0)
         return null;
       const startTime = cluster.points[0]?.timeMs;
@@ -1294,7 +1497,7 @@ export class HistoryChart extends HTMLElement {
       };
     };
 
-    return seriesItem.anomalyClusters.filter((cluster) => {
+    return seriesItem.anomalyClusters.filter((cluster): boolean => {
       const clusterRange = getClusterRange(cluster);
       if (!clusterRange) return true;
       return !visibleEvents.some((event) => {
@@ -1342,30 +1545,19 @@ export class HistoryChart extends HTMLElement {
           return;
         }
         const analysis = analysisMap.get(entityId) as
-          | Record<string, unknown>
+          | RecordWithUnknownValues
           | undefined;
         if (!analysis || analysis.show_anomalies !== true) {
           return;
         }
-        const config = {
-          anomaly_methods: analysis.anomaly_methods,
-          anomaly_sensitivity: analysis.anomaly_sensitivity,
-          anomaly_overlap_mode: analysis.anomaly_overlap_mode,
-          anomaly_rate_window: analysis.anomaly_rate_window,
-          anomaly_zscore_window: analysis.anomaly_zscore_window,
-          anomaly_persistence_window: analysis.anomaly_persistence_window,
-          trend_method: analysis.trend_method,
-          trend_window: analysis.trend_window,
-          sample_interval: analysis.sample_interval,
-          sample_aggregate: analysis.sample_aggregate,
-        };
+        const config = this._buildBackendAnomalyConfig(analysis);
         const configKey = JSON.stringify({
           ...config,
           windowId: comparisonWindow.id,
           startIso,
           endIso,
           anomaly_methods: [
-            ...((config.anomaly_methods as string[] | null) || []),
+            ...((config.anomaly_methods as Nullable<string[]>) || []),
           ].sort(),
         });
         const cacheKey = this._getComparisonAnomalyCacheKey(
@@ -1373,7 +1565,7 @@ export class HistoryChart extends HTMLElement {
           entityId
         );
         const cached = this._backendComparisonAnomalyByKey.get(cacheKey) as
-          | { configKey: string; clusters: unknown[] }
+          | { configKey: string; clusters: AnomalyCluster[] }
           | undefined;
         if (cached && cached.configKey === configKey) {
           return;
@@ -1382,8 +1574,13 @@ export class HistoryChart extends HTMLElement {
           return;
         }
         this._pendingComparisonAnomalyKeys.add(cacheKey);
+        const hass = this._hass;
+        if (!hass) {
+          this._pendingComparisonAnomalyKeys.delete(cacheKey);
+          return;
+        }
         fetchAnomaliesFromBackend(
-          this._hass,
+          hass,
           entityId,
           comparisonStartIso,
           comparisonEndIso,
@@ -1398,7 +1595,7 @@ export class HistoryChart extends HTMLElement {
               return;
             }
             const shiftedClusters = this._shiftComparisonAnomalyClusters(
-              Array.isArray(clusters) ? clusters : [],
+              (Array.isArray(clusters) ? clusters : []) as AnomalyCluster[],
               comparisonWindow.time_offset_ms
             );
             this._backendComparisonAnomalyByKey.set(cacheKey, {
@@ -1427,7 +1624,7 @@ export class HistoryChart extends HTMLElement {
   _renderSplitAxisOverlays(_tracks: unknown[]): void {
     const tracks = _tracks as Array<{
       renderer: {
-        pad: { left: number; top: number };
+        pad: { left: number; top: number; bottom: number };
         ch: number;
         yOf(v: number, min: number, max: number): number;
         _formatAxisTick(v: number, unit?: string): string;
@@ -1435,22 +1632,29 @@ export class HistoryChart extends HTMLElement {
       axis?: { ticks?: number[]; min: number; max: number; unit?: string };
       rowOffset: number;
     }>;
-    const leftEl = this.querySelector("#chart-axis-left") as HTMLElement | null;
+    const leftEl = this.querySelector(
+      "#chart-axis-left"
+    ) as Nullable<HTMLElement>;
     const rightEl = this.querySelector(
       "#chart-axis-right"
-    ) as HTMLElement | null;
+    ) as Nullable<HTMLElement>;
     if (!leftEl || !rightEl || !tracks.length) {
       return;
     }
 
     const primaryRenderer = tracks[0].renderer;
     const leftWidth = Math.max(0, primaryRenderer.pad.left);
+    const bottomHeight = Math.max(0, primaryRenderer.pad.bottom);
 
     leftEl.style.width = `${leftWidth}px`;
     rightEl.style.width = "0px";
 
     this.style.setProperty("--dp-chart-axis-left-width", `${leftWidth}px`);
     this.style.setProperty("--dp-chart-axis-right-width", "0px");
+    this.style.setProperty(
+      "--dp-chart-axis-bottom-height",
+      `${bottomHeight}px`
+    );
 
     const labelRight = 10;
     let labelsHtml = "";
@@ -1482,9 +1686,9 @@ export class HistoryChart extends HTMLElement {
     [key: string]: unknown;
   }> {
     return Array.isArray(
-      (this._config as Record<string, unknown>)?.series_settings
+      (this._config as RecordWithUnknownValues)?.series_settings
     )
-      ? ((this._config as Record<string, unknown>).series_settings as Array<{
+      ? ((this._config as RecordWithUnknownValues).series_settings as Array<{
           entity_id: string;
           color?: string;
           [key: string]: unknown;
@@ -1495,9 +1699,9 @@ export class HistoryChart extends HTMLElement {
   /** Active comparison windows from the card config. */
   get _comparisonWindows(): unknown[] {
     return Array.isArray(
-      (this._config as Record<string, unknown>)?.comparison_windows
+      (this._config as RecordWithUnknownValues)?.comparison_windows
     )
-      ? ((this._config as Record<string, unknown>)
+      ? ((this._config as RecordWithUnknownValues)
           .comparison_windows as unknown[])
       : [];
   }
@@ -1514,22 +1718,22 @@ export class HistoryChart extends HTMLElement {
     id: string;
     time_offset_ms: number;
     histResult: unknown;
-      statsResult: unknown;
-      label?: string;
-    }> {
+    statsResult: unknown;
+    label?: string;
+  }> {
     const drawableComparisonWindowIds = new Set(
       this._comparisonWindows
         .map((window) =>
-          String((window as Record<string, unknown> | null)?.id || "")
+          String((window as Nullable<RecordWithUnknownValues>)?.id || "")
         )
         .filter((id) => id.length > 0)
     );
     const selectedComparisonWindowId = String(
-      ((this._config as Record<string, unknown>)
+      ((this._config as RecordWithUnknownValues)
         ?.selected_comparison_window_id as string) || ""
     );
     const hoveredComparisonWindowId = String(
-      ((this._config as Record<string, unknown>)
+      ((this._config as RecordWithUnknownValues)
         ?.hovered_comparison_window_id as string) || ""
     );
     if (selectedComparisonWindowId) {
@@ -1546,25 +1750,91 @@ export class HistoryChart extends HTMLElement {
     );
   }
 
+  _resolveAnomalyClusterDisplay(
+    anomalyClusters: AnomalyCluster[],
+    overlapMode: Nullable<string> | undefined,
+    correlatedSpans: Array<{ start: number; end: number }> = []
+  ): {
+    baseClusters: AnomalyCluster[];
+    regionClusters: AnomalyCluster[];
+    showCorrelatedSpans: boolean;
+  } {
+    const normalClusters = anomalyClusters.filter(
+      (c) => !(c as { isOverlap?: boolean }).isOverlap
+    );
+    const overlapClusters = anomalyClusters.filter(
+      (c) => (c as { isOverlap?: boolean }).isOverlap === true
+    );
+
+    if (overlapMode === "only") {
+      const overlapOnlyClusters = this._filterClustersByCorrelatedSpans(
+        anomalyClusters,
+        correlatedSpans
+      );
+      return {
+        baseClusters: overlapOnlyClusters,
+        regionClusters: overlapOnlyClusters,
+        showCorrelatedSpans: true,
+      };
+    }
+
+    return {
+      baseClusters: [...normalClusters, ...overlapClusters],
+      regionClusters: [...normalClusters, ...overlapClusters],
+      showCorrelatedSpans: false,
+    };
+  }
+
+  _filterClustersByCorrelatedSpans(
+    anomalyClusters: AnomalyCluster[],
+    correlatedSpans: Array<{ start: number; end: number }>
+  ): AnomalyCluster[] {
+    if (!Array.isArray(anomalyClusters) || anomalyClusters.length === 0) {
+      return [];
+    }
+    if (!Array.isArray(correlatedSpans) || correlatedSpans.length === 0) {
+      return [];
+    }
+
+    return anomalyClusters.filter((cluster) => {
+      const points = (cluster as { points?: Array<{ timeMs: number }> }).points;
+      if (!Array.isArray(points) || points.length === 0) {
+        return false;
+      }
+      const startTime = Number(points[0]?.timeMs);
+      const endTime = Number(points[points.length - 1]?.timeMs);
+      if (!Number.isFinite(startTime) || !Number.isFinite(endTime)) {
+        return false;
+      }
+      const clusterStart = Math.min(startTime, endTime);
+      const clusterEnd = Math.max(startTime, endTime);
+
+      return correlatedSpans.some((span) => {
+        const spanStart = Number(span.start);
+        const spanEnd = Number(span.end);
+        if (!Number.isFinite(spanStart) || !Number.isFinite(spanEnd)) {
+          return false;
+        }
+        return clusterEnd >= spanStart && clusterStart <= spanEnd;
+      });
+    });
+  }
+
   _getComparisonAnomalyCacheKey(windowId: string, entityId: string): string {
     return `${windowId}:${entityId}`;
   }
 
   _shiftComparisonAnomalyClusters(
-    clusters: unknown[],
+    clusters: AnomalyCluster[],
     timeOffsetMs: number
-  ): unknown[] {
+  ): AnomalyCluster[] {
     return (Array.isArray(clusters) ? clusters : []).map((cluster) => ({
-      ...(cluster as Record<string, unknown>),
-      points: Array.isArray((cluster as Record<string, unknown>).points)
-        ? ((cluster as Record<string, unknown>).points as unknown[]).map(
-            (point) => ({
-              ...(point as Record<string, unknown>),
-              timeMs:
-                Number((point as Record<string, unknown>).timeMs) -
-                timeOffsetMs,
-            })
-          )
+      ...cluster,
+      points: Array.isArray(cluster.points)
+        ? cluster.points.map((point) => ({
+            ...point,
+            timeMs: Number(point.timeMs) - timeOffsetMs,
+          }))
         : [],
     }));
   }
@@ -1616,7 +1886,7 @@ export class HistoryChart extends HTMLElement {
       winEndIso,
       interval,
       (analysis.sample_aggregate as string) || "mean"
-    )) as [number, number][] | null;
+    )) as Nullable<[number, number][]>;
     if (!Array.isArray(sampledPts) || sampledPts.length === 0) {
       const targetIntervalMs = SAMPLE_INTERVAL_MS[interval] ?? 0;
       if (targetIntervalMs <= 0 || rawPoints.length === 0) {
@@ -1688,7 +1958,7 @@ export class HistoryChart extends HTMLElement {
     renderT0: number;
     renderT1: number;
     axis: { min: number; max: number };
-    rateAxis?: { min: number; max: number } | null;
+    rateAxis?: Nullable<{ min: number; max: number }>;
     events?: unknown[];
     comparisonWindowId: string;
   }): void {
@@ -1862,7 +2132,7 @@ export class HistoryChart extends HTMLElement {
             entityId,
             anomalyClusters: clusters,
           },
-          events
+          events as AnnotationEvent[]
         );
         if (filteredClusters.length > 0) {
           renderer.drawAnomalyClusters(
@@ -1877,11 +2147,18 @@ export class HistoryChart extends HTMLElement {
         }
       }
     }
-
   }
 
   /** Last comparison results fetched by the card. */
-  _lastComparisonResults: unknown[] | null = null;
+  _lastComparisonResults: Nullable<
+    Array<{
+      id: string;
+      time_offset_ms: number;
+      histResult: unknown;
+      statsResult: unknown;
+      label?: string;
+    }>
+  > = null;
 
   /** Series entity IDs that are currently hidden from the chart. */
   _hiddenSeries: Set<string> = new Set();
@@ -1893,19 +2170,19 @@ export class HistoryChart extends HTMLElement {
   _previousSeriesEndpoints: Map<string, { t: number; v: number }> = new Map();
 
   /** The currently active zoom range, or null if not zoomed. */
-  _zoomRange: { start: number; end: number } | null = null;
+  _zoomRange: Nullable<{ start: number; end: number }> = null;
 
   /** The chart scroll viewport element (set during draw). */
-  _chartScrollViewportEl: Element | null = null;
+  _chartScrollViewportEl: Nullable<HTMLElement> = null;
 
   /** The chart stage element (set during draw). */
-  _chartStageEl: Element | null = null;
+  _chartStageEl: Nullable<HTMLElement> = null;
 
   /** The annotation dialog controller. */
-  _annotationDialog: { isOpen?(): boolean } | null = null;
+  _annotationDialog: Nullable<{ isOpen?(): boolean }> = null;
 
   /** Debounce timer for dispatching zoom-apply after a user scroll. */
-  _scrollZoomApplyTimer: ReturnType<typeof setTimeout> | null = null;
+  _scrollZoomApplyTimer: Nullable<ReturnType<typeof setTimeout>> = null;
 
   /** Bound scroll handler — wired to _chartScrollViewportEl. */
   _onChartScroll: () => void = () => {
@@ -1947,7 +2224,7 @@ export class HistoryChart extends HTMLElement {
   };
 
   /** Last drawn anomaly regions (for hover hit-testing). */
-  _lastAnomalyRegions: unknown[] = [];
+  _lastAnomalyRegions: AnomalyRegion[] = [];
 
   /** Cache of last drawn history result. */
   _lastHistResult: unknown = null;
@@ -1956,7 +2233,10 @@ export class HistoryChart extends HTMLElement {
   _lastStatsResult: unknown = null;
 
   /** Cache of last drawn events list. */
-  _lastEvents: unknown[] | null = null;
+  _lastEvents: Nullable<AnnotationEvent[]> = null;
+
+  /** IDs of datapoint events currently hidden from the chart. */
+  _hiddenEventIds: Set<string> = new Set();
 
   /** Cache of last draw time range start (ms). */
   _lastT0: number = 0;
@@ -1965,7 +2245,7 @@ export class HistoryChart extends HTMLElement {
   _lastT1: number = 0;
 
   /** Cache of last _drawChart argument list. */
-  _lastDrawArgs: unknown[] = [];
+  _lastDrawArgs: DrawArgs | [] = [];
 
   /** Backend anomaly cache keyed by entity ID. Already declared above. */
   // _backendAnomalyByEntity — declared above
@@ -1980,20 +2260,25 @@ export class HistoryChart extends HTMLElement {
     events: unknown[],
     t0: number,
     t1: number,
-    options: Record<string, unknown> = {}
+    options: RecordWithUnknownValues = {}
   ): Promise<void> {
+    const chartEvents = (
+      Array.isArray(events) ? events : []
+    ) as AnnotationEvent[];
     hideTooltip(this);
     this._syncTopSlotOffset();
 
-    const canvas = this.querySelector("#chart") as HTMLCanvasElement | null;
+    const canvas = this.querySelector("#chart") as Nullable<HTMLCanvasElement>;
     const zoomOutButton = this.querySelector(
       "#chart-zoom-out"
-    ) as HTMLButtonElement | null;
+    ) as Nullable<HTMLButtonElement>;
     const wrap = this as HTMLElement;
     const scrollViewport = this.querySelector(
       "#chart-scroll-viewport"
-    ) as HTMLElement | null;
-    const chartStage = this.querySelector("#chart-stage") as HTMLElement | null;
+    ) as Nullable<HTMLElement>;
+    const chartStage = this.querySelector(
+      "#chart-stage"
+    ) as Nullable<HTMLElement>;
     this._chartScrollViewportEl = scrollViewport;
     this._chartStageEl = chartStage;
     const series: Array<{
@@ -2036,14 +2321,14 @@ export class HistoryChart extends HTMLElement {
     const drawableComparisonResults =
       this._getDrawableComparisonResults(comparisonResults);
     const selectedComparisonWindowId =
-      ((this._config as Record<string, unknown>)
-        ?.selected_comparison_window_id as string | null) || null;
+      ((this._config as RecordWithUnknownValues)
+        ?.selected_comparison_window_id as Nullable<string>) || null;
     const hoveredComparisonWindowId =
-      ((this._config as Record<string, unknown>)
-        ?.hovered_comparison_window_id as string | null) || null;
+      ((this._config as RecordWithUnknownValues)
+        ?.hovered_comparison_window_id as Nullable<string>) || null;
     const comparisonPreviewActive = this._comparisonWindows.length > 0;
     const delinkYAxis =
-      (this._config as Record<string, unknown>)?.delink_y_axis === true;
+      (this._config as RecordWithUnknownValues)?.delink_y_axis === true;
     const autoAdjustHoveredComparisonAxis =
       comparisonPreviewActive &&
       !!hoveredComparisonWindowId &&
@@ -2085,9 +2370,9 @@ export class HistoryChart extends HTMLElement {
       const pts: [number, number][] = [];
       const unit =
         ((
-          this._hass as {
-            states?: Record<string, { attributes: Record<string, unknown> }>;
-          } | null
+          this._hass as Nullable<{
+            states?: Record<string, { attributes: RecordWithUnknownValues }>;
+          }>
         )?.states?.[entityId]?.attributes?.unit_of_measurement as string) || "";
       const axisKey = delinkYAxis
         ? `${unit || "__unitless__"}::${entityId}`
@@ -2142,16 +2427,20 @@ export class HistoryChart extends HTMLElement {
           const interval =
             ((analysis as SeriesAnalysis).sample_interval as string) || "raw";
           if (interval === "raw") return;
+          const hass = this._hass;
+          if (!hass) {
+            return;
+          }
           try {
             const sampledPts = (await fetchDownsampledHistory(
-              this._hass,
+              hass,
               seriesItem.entityId,
               _startIso,
               _endIso,
               interval,
               ((analysis as SeriesAnalysis).sample_aggregate as string) ||
                 "mean"
-            )) as [number, number][] | null;
+            )) as Nullable<[number, number][]>;
             if (Array.isArray(sampledPts) && sampledPts.length > 0) {
               // Re-include statistics data for periods not covered by the downsampled range.
               // The backend only queries the recorder (high-res), so older long-term stats
@@ -2278,19 +2567,33 @@ export class HistoryChart extends HTMLElement {
       }
       this._lastHistResult = histResult;
       this._lastStatsResult = statsResult;
-      this._lastEvents = events;
+      this._lastEvents = chartEvents;
       this._lastT0 = t0;
       this._lastT1 = t1;
-      this._lastDrawArgs = [histResult, statsResult, events, t0, t1, options];
+      this._lastDrawArgs = [
+        histResult,
+        statsResult,
+        chartEvents,
+        t0,
+        t1,
+        options,
+      ];
       return;
     }
 
     this._lastHistResult = histResult;
     this._lastStatsResult = statsResult;
-    this._lastEvents = events;
+    this._lastEvents = chartEvents;
     this._lastT0 = t0;
     this._lastT1 = t1;
-    this._lastDrawArgs = [histResult, statsResult, events, t0, t1, options];
+    this._lastDrawArgs = [
+      histResult,
+      statsResult,
+      chartEvents,
+      t0,
+      t1,
+      options,
+    ];
 
     const visibleSeries = series.filter(
       (entry) => !this._hiddenSeries.has(entry.legendEntityId || entry.entityId)
@@ -2321,14 +2624,15 @@ export class HistoryChart extends HTMLElement {
         }
         const unit =
           ((
-            this._hass as {
-              states?: Record<string, { attributes: Record<string, unknown> }>;
-            } | null
+            this._hass as Nullable<{
+              states?: Record<string, { attributes: RecordWithUnknownValues }>;
+            }>
           )?.states?.[entityId]?.attributes?.unit_of_measurement as string) ||
           "";
         const analysis =
           analysisMap.get(entityId) ||
           (normalizeHistorySeriesAnalysis(null) as SeriesAnalysis);
+        // eslint-disable-next-line no-await-in-loop
         const points = await this._resolveComparisonWindowPoints(
           entityId,
           selectedComparisonResult,
@@ -2374,6 +2678,7 @@ export class HistoryChart extends HTMLElement {
       if (!allComparisonWindowsData[windowId][seriesItem.entityId]) {
         const compResult = comparisonResults.find((win) => win.id === windowId);
         if (compResult) {
+          // eslint-disable-next-line no-await-in-loop
           const pts = await this._resolveComparisonWindowPoints(
             seriesItem.entityId,
             compResult,
@@ -2479,10 +2784,10 @@ export class HistoryChart extends HTMLElement {
     chartStage?.querySelector("#chart-split-overlay")?.remove();
     const axisLeftEl = this.querySelector(
       "#chart-axis-left"
-    ) as HTMLElement | null;
+    ) as Nullable<HTMLElement>;
     const axisRightEl = this.querySelector(
       "#chart-axis-right"
-    ) as HTMLElement | null;
+    ) as Nullable<HTMLElement>;
     if (axisLeftEl) {
       axisLeftEl.style.display = "";
     }
@@ -2500,8 +2805,8 @@ export class HistoryChart extends HTMLElement {
     }
     const availableHeight = this._getAvailableChartHeight(minChartHeight);
     const viewportWidth = Math.max(
-      (scrollViewport as HTMLElement | null)?.clientWidth ||
-        (wrap as HTMLElement | null)?.clientWidth ||
+      (scrollViewport as Nullable<HTMLElement>)?.clientWidth ||
+        (wrap as Nullable<HTMLElement>)?.clientWidth ||
         360,
       360
     );
@@ -2523,7 +2828,7 @@ export class HistoryChart extends HTMLElement {
     );
 
     if (
-      (this._config as Record<string, unknown>)?.split_view === true &&
+      (this._config as RecordWithUnknownValues)?.split_view === true &&
       visibleSeries.length >= 2
     ) {
       if (zoomOutButton) {
@@ -2568,8 +2873,7 @@ export class HistoryChart extends HTMLElement {
         _anomalyEntityIds,
         analysisMap,
         _startIso,
-        _endIso,
-        options.drawRequestId as number
+        _endIso
       );
       return;
     }
@@ -2587,7 +2891,7 @@ export class HistoryChart extends HTMLElement {
         canvas: HTMLCanvasElement,
         container: HTMLElement,
         cssHeight: number,
-        cssWidth?: number | null
+        cssWidth?: Nullable<number>
       ) => { w: number; h: number }
     )(canvas!, (chartStage || wrap)!, availableHeight, canvasWidth);
     const renderer = new ChartRenderer(canvas!, w, h);
@@ -2685,12 +2989,12 @@ export class HistoryChart extends HTMLElement {
           }
           const unit =
             ((
-              this._hass as {
+              this._hass as Nullable<{
                 states?: Record<
                   string,
-                  { attributes: Record<string, unknown> }
+                  { attributes: RecordWithUnknownValues }
                 >;
-              } | null
+              }>
             )?.states?.[entityId]?.attributes?.unit_of_measurement as string) ||
             "";
           const axisKey = delinkYAxis
@@ -2699,6 +3003,7 @@ export class HistoryChart extends HTMLElement {
           const analysis =
             analysisMap.get(entityId) ||
             (normalizeHistorySeriesAnalysis(null) as SeriesAnalysis);
+          // eslint-disable-next-line no-await-in-loop
           const points = await this._resolveComparisonWindowPoints(
             entityId,
             win,
@@ -2788,18 +3093,9 @@ export class HistoryChart extends HTMLElement {
       }
     });
 
-    type ResolvedAxis = {
-      key: string;
-      unit: string;
-      color: string | null;
-      side: string;
-      min: number;
-      max: number;
-    };
-
     const resolvedAxes: ResolvedAxis[] = axes
       .filter((axis) => axis.values.length)
-      .map((axis) => {
+      .map((axis): Nullable<ResolvedAxis> => {
         const axisValues = series
           .filter((entry) => entry.axisKey === axis.key)
           .flatMap((entry) => entry.pts.map((point) => point[1]));
@@ -2820,7 +3116,7 @@ export class HistoryChart extends HTMLElement {
           key: axis.key,
           unit: axis.unit,
           color: axis.color,
-          side: axis.side,
+          side: axis.side === "right" ? "right" : "left",
           min: min - pad,
           max: max + pad,
         };
@@ -2828,7 +3124,7 @@ export class HistoryChart extends HTMLElement {
       .filter((ax): ax is NonNullable<typeof ax> => ax !== null);
     const deltaResolvedAxes: ResolvedAxis[] = Array.from(deltaAxisMap.values())
       .filter((axis) => axis.values.length)
-      .map((axis) => {
+      .map((axis): Nullable<ResolvedAxis> => {
         const extent = this._getAxisValueExtent(axis.values);
         if (!extent) {
           return null;
@@ -2839,7 +3135,7 @@ export class HistoryChart extends HTMLElement {
           key: axis.key,
           unit: axis.unit,
           color: axis.color,
-          side: axis.side,
+          side: axis.side === "right" ? "right" : "left",
           min: min - pad,
           max: max + pad,
         };
@@ -2847,7 +3143,7 @@ export class HistoryChart extends HTMLElement {
       .filter((ax): ax is NonNullable<typeof ax> => ax !== null);
     const rateResolvedAxes: ResolvedAxis[] = Array.from(rateAxisMap.values())
       .filter((axis) => axis.values.length)
-      .map((axis) => {
+      .map((axis): Nullable<ResolvedAxis> => {
         const extent = this._getAxisValueExtent(axis.values);
         if (!extent) {
           return null;
@@ -2858,7 +3154,7 @@ export class HistoryChart extends HTMLElement {
           key: axis.key,
           unit: axis.unit,
           color: axis.color,
-          side: axis.side,
+          side: axis.side === "right" ? "right" : "left",
           min: min - pad,
           max: max + pad,
         };
@@ -2895,13 +3191,17 @@ export class HistoryChart extends HTMLElement {
         axisLookup.get(s.axisKey) || activeAxes[0] || resolvedAxes[0];
     });
     renderChartAxisOverlays(this, renderer, activeAxes);
+    this.style.setProperty(
+      "--dp-chart-axis-bottom-height",
+      `${Math.max(0, (renderer as unknown as { pad: { bottom: number } }).pad.bottom)}px`
+    );
     binaryBackgrounds.forEach((binaryBackground) => {
       if (
         binaryBackground?.spans?.length &&
         !this._hiddenSeries.has(binaryBackground.entityId)
       ) {
         renderer.drawStateBands(
-          binaryBackground.spans,
+          binaryBackground.spans as Array<{ start: number; end: number }>,
           renderT0,
           renderT1,
           binaryBackground.color,
@@ -2909,15 +3209,22 @@ export class HistoryChart extends HTMLElement {
         );
       }
     });
-    if (
-      (this._config as Record<string, unknown>)?.show_correlated_anomalies ===
-      true
-    ) {
-      const correlatedSpans = this._buildCorrelatedAnomalySpans(
-        visibleSeries,
-        anomalyClustersMap,
-        analysisMap
-      );
+    const shouldUseCorrelatedSpans =
+      (this._config as RecordWithUnknownValues)?.show_correlated_anomalies ===
+        true ||
+      (this._config as RecordWithUnknownValues)?.anomaly_overlap_mode ===
+        "only";
+    const shouldDrawCorrelatedSpans =
+      (this._config as RecordWithUnknownValues)?.show_correlated_anomalies ===
+      true;
+    const correlatedSpans = shouldUseCorrelatedSpans
+      ? this._buildCorrelatedAnomalySpans(
+          visibleSeries,
+          anomalyClustersMap,
+          analysisMap
+        )
+      : [];
+    if (shouldDrawCorrelatedSpans) {
       if (correlatedSpans.length) {
         renderer.drawStateBands(
           correlatedSpans,
@@ -2952,11 +3259,11 @@ export class HistoryChart extends HTMLElement {
         return [];
       }
       const stats =
-        (summaryStatsMap.get(seriesItem.entityId) as {
+        (summaryStatsMap.get(seriesItem.entityId) as Nullable<{
           min: number;
           mean: number;
           max: number;
-        } | null) || null;
+        }>) || null;
       if (!stats) {
         return [];
       }
@@ -3112,6 +3419,7 @@ export class HistoryChart extends HTMLElement {
         const analysis =
           analysisMap.get(entityId) ||
           (normalizeHistorySeriesAnalysis(null) as SeriesAnalysis);
+        // eslint-disable-next-line no-await-in-loop
         const winPts = await this._resolveComparisonWindowPoints(
           entityId,
           win,
@@ -3125,9 +3433,9 @@ export class HistoryChart extends HTMLElement {
         // Find the axis this entity belongs to
         const unit =
           ((
-            this._hass as {
-              states?: Record<string, { attributes: Record<string, unknown> }>;
-            } | null
+            this._hass as Nullable<{
+              states?: Record<string, { attributes: RecordWithUnknownValues }>;
+            }>
           )?.states?.[entityId]?.attributes?.unit_of_measurement as string) ||
           "";
         const axisKey = delinkYAxis
@@ -3153,14 +3461,11 @@ export class HistoryChart extends HTMLElement {
           !!hoveredComparisonWindowId && win.id === hoveredComparisonWindowId;
         const isSelectedComparison =
           !!selectedComparisonWindowId && win.id === selectedComparisonWindowId;
-        let comparisonLineOpacity: number;
-        if (isHoveredComparison) {
-          comparisonLineOpacity = 1;
-        } else if (hoveringDifferentComparison && isSelectedComparison) {
-          comparisonLineOpacity = 0.25;
-        } else {
-          comparisonLineOpacity = 0.85;
-        }
+        const comparisonLineStyle = this._getComparisonWindowLineStyle(
+          isHoveredComparison,
+          isSelectedComparison,
+          hoveringDifferentComparison
+        );
         comparisonHoverSeries.push({
           entityId: `${win.id}:${entityId}`,
           relatedEntityId: entityId,
@@ -3171,7 +3476,7 @@ export class HistoryChart extends HTMLElement {
           pts: winPts,
           color: baseColor,
           axis,
-          hoverOpacity: comparisonLineOpacity,
+          hoverOpacity: comparisonLineStyle.hoverOpacity,
         });
         if (analysis.show_trend_lines === true && winPts.length >= 2) {
           const trendPts = this._buildTrendPoints(
@@ -3199,7 +3504,10 @@ export class HistoryChart extends HTMLElement {
               windowLabel: win.label || "Date window",
               unit,
               pts: trendPts,
-              color: hexToRgba(baseColor, Math.max(0.3, trendOptions.colorAlpha - 0.18)),
+              color: hexToRgba(
+                baseColor,
+                Math.max(0.3, trendOptions.colorAlpha - 0.18)
+              ),
               axis,
               rawVisible: true,
               hoverOpacity: Math.max(0.3, trendOptions.lineOpacity - 0.18),
@@ -3298,19 +3606,18 @@ export class HistoryChart extends HTMLElement {
           }
         }
         if (!hiddenComparisonEntityIds.has(entityId)) {
-        renderer.drawLine(
-          winPts,
-          baseColor,
-          renderT0,
+          renderer.drawLine(
+            winPts,
+            baseColor,
+            renderT0,
             renderT1,
             axis.min,
             axis.max,
             {
-              lineOpacity: comparisonLineOpacity,
-            lineWidth:
-              hoveringDifferentComparison && isSelectedComparison
-                ? 1.25
-                : undefined,
+              lineOpacity: comparisonLineStyle.lineOpacity,
+              lineWidth: comparisonLineStyle.lineWidth,
+              dashed: comparisonLineStyle.dashed,
+              dashPattern: comparisonLineStyle.dashPattern,
             }
           );
         }
@@ -3353,7 +3660,7 @@ export class HistoryChart extends HTMLElement {
         {
           lineOpacity: mainSeriesHoverOpacity,
           lineWidth:
-            (this._config as Record<string, unknown>)
+            (this._config as RecordWithUnknownValues)
               ?.comparison_hover_active === true
               ? 1.25
               : undefined,
@@ -3619,7 +3926,7 @@ export class HistoryChart extends HTMLElement {
       );
     });
     if (anomalySeries.length) {
-      const anomalyRegions: unknown[] = [];
+      const anomalyRegions: AnomalyRegion[] = [];
       anomalySeries.forEach((seriesItem) => {
         const seriesWithAxis = seriesItem as typeof seriesItem & {
           axis?: ResolvedAxis;
@@ -3630,17 +3937,21 @@ export class HistoryChart extends HTMLElement {
         }
         const visibleAnomalyClusters = this._filterAnnotatedAnomalyClusters(
           seriesItem,
-          events
+          events as AnnotationEvent[]
         );
         if (visibleAnomalyClusters.length === 0) {
           return;
         }
-        const normalClusters = visibleAnomalyClusters.filter(
-          (c) => !(c as { isOverlap?: boolean }).isOverlap
-        );
-        const overlapClusters = visibleAnomalyClusters.filter(
-          (c) => (c as { isOverlap?: boolean }).isOverlap === true
-        );
+        const overlapMode = (
+          analysisMap.get(seriesItem.entityId) ||
+          normalizeHistorySeriesAnalysis(null)
+        ).anomaly_overlap_mode;
+        const { baseClusters, regionClusters } =
+          this._resolveAnomalyClusterDisplay(
+            visibleAnomalyClusters,
+            overlapMode,
+            correlatedSpans
+          );
         const baseColor = hexToRgba(
           seriesItem.color,
           anyHiddenSourceSeries ? 0.96 : 0.86
@@ -3660,22 +3971,9 @@ export class HistoryChart extends HTMLElement {
           minRadiusX: 10,
           minRadiusY: 10,
         };
-        const overlapOptions = {
-          strokeAlpha: 0.98,
-          lineWidth: 2.8,
-          haloWidth: 7,
-          haloColor: "rgba(232,160,32,0.22)",
-          haloAlpha: 1,
-          fillColor: "rgba(232,160,32,0.1)",
-          fillAlpha: 1,
-          pointPadding: anyHiddenSourceSeries ? 15 : 13,
-          minRadiusX: 12,
-          minRadiusY: 12,
-        };
-        const overlapAccentColor = "rgba(232,160,32,0.94)";
-        if (normalClusters.length > 0) {
+        if (baseClusters.length > 0) {
           renderer.drawAnomalyClusters(
-            normalClusters,
+            baseClusters,
             baseColor,
             renderT0,
             renderT1,
@@ -3684,54 +3982,26 @@ export class HistoryChart extends HTMLElement {
             regionOptions
           );
         }
-        if (overlapClusters.length > 0) {
-          const overlapMode = (
-            analysisMap.get(seriesItem.entityId) ||
-            normalizeHistorySeriesAnalysis(null)
-          ).anomaly_overlap_mode;
-          // In "only" mode all shown clusters are already overlaps — draw with base style, no accent
-          renderer.drawAnomalyClusters(
-            overlapClusters,
-            baseColor,
-            renderT0,
-            renderT1,
-            axis.min,
-            axis.max,
-            regionOptions
-          );
-          if (overlapMode !== "only") {
-            renderer.drawAnomalyClusters(
-              overlapClusters,
-              overlapAccentColor,
-              renderT0,
-              renderT1,
-              axis.min,
-              axis.max,
-              overlapOptions
-            );
-          }
-        }
-        const allRegionClusters = [...normalClusters, ...overlapClusters];
         const clusterRegions = renderer.getAnomalyClusterRegions(
-          allRegionClusters,
+          regionClusters,
           renderT0,
           renderT1,
           axis.min,
           axis.max,
           regionOptions
         );
-        clusterRegions.forEach((region: unknown) => {
+        clusterRegions.forEach((region) => {
           const analysis =
             analysisMap.get(seriesItem.entityId) ||
             normalizeHistorySeriesAnalysis(null);
           anomalyRegions.push({
-            ...(region as object),
+            ...region,
             relatedEntityId: seriesItem.entityId,
-            label: seriesItem.label,
-            unit: seriesItem.unit || "",
-            color: seriesItem.color,
+            label: String(seriesItem.label),
+            unit: String(seriesItem.unit || ""),
+            color: (seriesItem.color as Nullable<string>) || null,
             sensitivity: (analysis as SeriesAnalysis).anomaly_sensitivity,
-          });
+          } as AnomalyRegion);
         });
       });
       this._lastAnomalyRegions = anomalyRegions;
@@ -3746,21 +4016,21 @@ export class HistoryChart extends HTMLElement {
             (entry as { relatedEntityId?: string; entityId: string }).entityId
         )
     );
-    renderer.drawAnnotations(events, renderT0, renderT1, {
+    renderer.drawAnnotations(chartEvents, renderT0, renderT1, {
       showLines:
-        (this._config as Record<string, unknown>).show_event_lines !== false,
+        (this._config as RecordWithUnknownValues).show_event_lines !== false,
       showMarkers:
-        (this._config as Record<string, unknown>).show_event_lines !== false,
+        (this._config as RecordWithUnknownValues).show_event_lines !== false,
     });
     const eventHits = this._drawRecordedEventPoints(
       renderer,
       visibleSeries,
-      events,
+      chartEvents,
       renderT0,
       renderT1,
       {
         showIcons:
-          (this._config as Record<string, unknown>).show_event_markers !==
+          (this._config as RecordWithUnknownValues).show_event_markers !==
           false,
       }
     );
@@ -3768,16 +4038,18 @@ export class HistoryChart extends HTMLElement {
     this._renderLegend(series, binaryBackgrounds);
 
     const eventValueMap = new Map(eventHits.map((hit) => [hit.event.id, hit]));
-    const enrichedEvents = events.map((event) => {
-      const hit = eventValueMap.get((event as { id: string }).id);
-      return hit
-        ? {
-            ...(event as object),
-            chart_value: hit.value,
-            chart_unit: hit.unit,
-          }
-        : event;
-    });
+    const enrichedEvents: ChartEventRecord[] = chartEvents.map(
+      (event): ChartEventRecord => {
+        const hit = eventValueMap.get(event.id || "");
+        return hit
+          ? {
+              ...(event as ChartEventRecord),
+              chart_value: hit.value,
+              chart_unit: hit.unit,
+            }
+          : (event as ChartEventRecord);
+      }
+    );
 
     if (visibleSeries.length) {
       this._ensureContextAnnotationDialog();
@@ -3785,12 +4057,12 @@ export class HistoryChart extends HTMLElement {
         this,
         canvas!,
         renderer,
-        hoverSeries,
-        enrichedEvents,
+        hoverSeries as HoverSeriesLike[],
+        enrichedEvents as ChartEventRecord[],
         renderT0,
         renderT1,
-        null,
-        null,
+        0,
+        0,
         activeAxes as unknown as null,
         {
           onContextMenu: (hover: unknown) =>
@@ -3799,30 +4071,38 @@ export class HistoryChart extends HTMLElement {
             this._handleChartAddAnnotation(hover),
           binaryStates: binaryBackgrounds.filter(
             (entry) => !this._hiddenSeries.has(entry.entityId)
-          ),
-          comparisonSeries: effectiveComparisonHoverSeries,
-          trendSeries: [...trendHoverSeries, ...comparisonTrendHoverSeries],
-          rateSeries: [...rateHoverSeries, ...comparisonRateHoverSeries],
-          deltaSeries: deltaHoverSeries,
+          ) as HoverSeriesLike[],
+          comparisonSeries: effectiveComparisonHoverSeries as HoverSeriesLike[],
+          trendSeries: [
+            ...trendHoverSeries,
+            ...comparisonTrendHoverSeries,
+          ] as HoverSeriesLike[],
+          rateSeries: [
+            ...rateHoverSeries,
+            ...comparisonRateHoverSeries,
+          ] as HoverSeriesLike[],
+          deltaSeries: deltaHoverSeries as HoverSeriesLike[],
           summarySeries: [
             ...summaryHoverSeries,
             ...comparisonSummaryHoverSeries,
-          ],
+          ] as HoverSeriesLike[],
           thresholdSeries: [
             ...thresholdHoverSeries,
             ...comparisonThresholdHoverSeries,
-          ],
+          ] as HoverSeriesLike[],
           anomalyRegions: Array.isArray(this._lastAnomalyRegions)
             ? this._lastAnomalyRegions
             : [],
-          hoverSurfaceEl: this.querySelector("#chart-icon-overlay"),
+          hoverSurfaceEl: this.querySelector(
+            "#chart-icon-overlay"
+          ) as Nullable<HTMLElement>,
           showTooltip:
-            (this._config as Record<string, unknown>).show_tooltips !== false,
+            (this._config as RecordWithUnknownValues).show_tooltips !== false,
           emphasizeHoverGuides:
-            (this._config as Record<string, unknown>).emphasize_hover_guides ===
+            (this._config as RecordWithUnknownValues).emphasize_hover_guides ===
             true,
           hoverSnapMode:
-            (this._config as Record<string, unknown>).hover_snap_mode ===
+            (this._config as RecordWithUnknownValues).hover_snap_mode ===
             "snap_to_data_points"
               ? "snap_to_data_points"
               : "follow_series",
@@ -3873,8 +4153,7 @@ export class HistoryChart extends HTMLElement {
       _anomalyEntityIds,
       analysisMap,
       _startIso,
-      _endIso,
-      options.drawRequestId as number
+      _endIso
     );
     this._fireComparisonBackendAnomalyRequests(
       drawableComparisonResults,
@@ -3919,11 +4198,13 @@ export class HistoryChart extends HTMLElement {
       "anomaly_zscore_window",
       "anomaly_persistence_window",
       "anomaly_comparison_window_id",
+      "anomaly_use_sampled_data",
     ] as const;
 
     const seriesPart = visibleSeries
       .map((s) => {
-        const a = analysisMap.get(s.entityId) || {};
+        const a =
+          analysisMap.get(s.entityId) || normalizeHistorySeriesAnalysis(null);
         const first = s.pts[0]?.[0] ?? 0;
         const last = s.pts[s.pts.length - 1]?.[0] ?? 0;
         const aKey = ANALYSIS_FIELDS.map((f) => JSON.stringify(a[f])).join(",");
@@ -3967,33 +4248,24 @@ export class HistoryChart extends HTMLElement {
       string,
       Record<string, [number, number][]>
     > = {}
-  ): {
-    series: {
-      entityId: string;
-      pts: [number, number][];
-      analysis: SeriesAnalysis;
-    }[];
-    comparisonSeries: { entityId: string; pts: [number, number][] }[];
-    hasSelectedComparisonWindow: boolean;
-    allComparisonWindowsData: Record<
-      string,
-      Record<string, [number, number][]>
-    >;
-  } {
-    return {
-      series: visibleSeries.map((seriesItem) => ({
+  ): ComputeHistoryAnalysisPayload {
+    const defaultAnalysis = normalizeHistorySeriesAnalysis(null);
+    const series: ComputeHistoryAnalysisPayload["series"] = visibleSeries.map(
+      (seriesItem) => ({
         entityId: seriesItem.entityId,
         pts: seriesItem.pts,
-        analysis:
-          analysisMap.get(seriesItem.entityId) ||
-          (normalizeHistorySeriesAnalysis(null) as SeriesAnalysis),
-      })),
-      comparisonSeries: Array.from(selectedComparisonSeriesMap.values()).map(
-        (seriesItem) => ({
-          entityId: seriesItem.entityId,
-          pts: seriesItem.pts,
-        })
-      ),
+        analysis: analysisMap.get(seriesItem.entityId) || defaultAnalysis,
+      })
+    );
+    const comparisonSeries: ComputeHistoryAnalysisPayload["comparisonSeries"] =
+      Array.from(selectedComparisonSeriesMap.values()).map((seriesItem) => ({
+        entityId: seriesItem.entityId,
+        pts: seriesItem.pts,
+      }));
+
+    return {
+      series,
+      comparisonSeries,
       hasSelectedComparisonWindow: hasSelectedComparisonWindow === true,
       allComparisonWindowsData,
     };
@@ -4016,7 +4288,7 @@ export class HistoryChart extends HTMLElement {
     > = {},
     t0 = 0,
     t1 = 0,
-    onProgress: ((progress: number) => void) | null = null
+    onProgress: Nullable<(progress: number) => void> = null
   ): Promise<AnalysisResult> {
     // Abort any in-flight worker computation from a previous (now stale) draw
     // request. This prevents the chart from hanging while waiting for a worker
@@ -4172,13 +4444,13 @@ export class HistoryChart extends HTMLElement {
               (entry) =>
                 entry &&
                 Number.isFinite(
-                  (entry as Record<string, unknown>).min as number
+                  (entry as RecordWithUnknownValues).min as number
                 ) &&
                 Number.isFinite(
-                  (entry as Record<string, unknown>).max as number
+                  (entry as RecordWithUnknownValues).max as number
                 ) &&
                 Number.isFinite(
-                  (entry as Record<string, unknown>).mean as number
+                  (entry as RecordWithUnknownValues).mean as number
                 )
             ),
           // Anomaly detection intentionally omitted in the fallback path.
@@ -4258,7 +4530,7 @@ export class HistoryChart extends HTMLElement {
     const seriesSettings = Array.isArray(this._config?.series_settings)
       ? (this._config.series_settings as Array<{
           entity_id?: string;
-          analysis?: unknown;
+          analysis?: Nullable<PartialHistorySeriesAnalysis>;
         }>)
       : [];
     return new Map(
@@ -4266,7 +4538,7 @@ export class HistoryChart extends HTMLElement {
         .filter((entry) => entry?.entity_id != null)
         .map((entry) => [
           entry.entity_id as string,
-          normalizeHistorySeriesAnalysis(entry?.analysis) as SeriesAnalysis,
+          normalizeHistorySeriesAnalysis(entry?.analysis),
         ])
     );
   }
@@ -4277,10 +4549,10 @@ export class HistoryChart extends HTMLElement {
    */
   _getSeriesAnalysis(
     entityId: string,
-    analysisMap: Map<string, SeriesAnalysis> | null = null
+    analysisMap: Nullable<Map<string, SeriesAnalysis>> = null
   ): SeriesAnalysis {
     const map = analysisMap || this._getSeriesAnalysisMap();
-    return normalizeHistorySeriesAnalysis(map.get(entityId)) as SeriesAnalysis;
+    return normalizeHistorySeriesAnalysis(map.get(entityId));
   }
 
   /**
@@ -4378,17 +4650,17 @@ export class HistoryChart extends HTMLElement {
     renderT1: number;
     canvasWidth: number;
     availableHeight: number;
-    chartStage: HTMLElement | null;
-    canvas: HTMLElement | null;
+    chartStage: Nullable<HTMLElement>;
+    canvas: Nullable<HTMLElement>;
     wrap: HTMLElement;
-    options: Record<string, unknown>;
+    options: RecordWithUnknownValues;
     drawableComparisonResults: unknown[];
-    selectedComparisonWindowId: string | null;
-    hoveredComparisonWindowId: string | null;
+    selectedComparisonWindowId: Nullable<string>;
+    hoveredComparisonWindowId: Nullable<string>;
     comparisonPreviewActive: boolean;
     hoveringDifferentComparison: boolean;
     analysisResult: unknown;
-    analysisMap: Map<string, unknown> | null;
+    analysisMap: Nullable<Map<string, unknown>>;
     hasSelectedComparisonWindow: boolean;
   }): Promise<void> {
     // Hide the shared canvas; split rows use their own canvases.
@@ -4414,7 +4686,7 @@ export class HistoryChart extends HTMLElement {
         totalHeight > availableHeight ? "auto" : "hidden";
     }
 
-    this._setChartLoading(!!(options as Record<string, unknown>).loading);
+    this._setChartLoading(!!(options as RecordWithUnknownValues).loading);
     this._setChartMessage("");
 
     // Clear the shared icon overlay once before iterating rows.
@@ -4426,58 +4698,65 @@ export class HistoryChart extends HTMLElement {
     // Build analysis lookup maps keyed by entityId.
     const trendPointsMap = new Map(
       (
-        ((analysisResult as Record<string, unknown>)
+        ((analysisResult as RecordWithUnknownValues)
           ?.trendSeries as unknown[]) || []
       ).map((entry: unknown) => [
-        (entry as Record<string, unknown>).entityId,
-        (entry as Record<string, unknown>).pts,
+        (entry as RecordWithUnknownValues).entityId,
+        (entry as RecordWithUnknownValues).pts,
       ])
     );
     const ratePointsMap = new Map(
       (
-        ((analysisResult as Record<string, unknown>)
+        ((analysisResult as RecordWithUnknownValues)
           ?.rateSeries as unknown[]) || []
       ).map((entry: unknown) => [
-        (entry as Record<string, unknown>).entityId,
-        (entry as Record<string, unknown>).pts,
+        (entry as RecordWithUnknownValues).entityId,
+        (entry as RecordWithUnknownValues).pts,
       ])
     );
     const deltaPointsMap = new Map(
       (
-        ((analysisResult as Record<string, unknown>)
+        ((analysisResult as RecordWithUnknownValues)
           ?.deltaSeries as unknown[]) || []
       ).map((entry: unknown) => [
-        (entry as Record<string, unknown>).entityId,
-        (entry as Record<string, unknown>).pts,
+        (entry as RecordWithUnknownValues).entityId,
+        (entry as RecordWithUnknownValues).pts,
       ])
     );
     const summaryStatsMap = new Map(
       (
-        ((analysisResult as Record<string, unknown>)
+        ((analysisResult as RecordWithUnknownValues)
           ?.summaryStats as unknown[]) || []
       ).map((entry: unknown) => [
-        (entry as Record<string, unknown>).entityId,
+        (entry as RecordWithUnknownValues).entityId,
         entry,
       ])
     );
     const anomalyClustersMap = new Map<string, unknown>(
       (
-        ((analysisResult as Record<string, unknown>)
+        ((analysisResult as RecordWithUnknownValues)
           ?.anomalySeries as unknown[]) || []
       ).map(
         (entry: unknown) =>
           [
-            (entry as Record<string, unknown>).entityId as string,
-            (entry as Record<string, unknown>).anomalyClusters,
+            (entry as RecordWithUnknownValues).entityId as string,
+            (entry as RecordWithUnknownValues).anomalyClusters,
           ] as [string, unknown]
       )
     );
     const effectiveAnalysisMap: Map<string, unknown> =
       analysisMap || new Map<string, unknown>();
 
-    const correlatedAnomalySpans: unknown[] =
-      (this._config as Record<string, unknown>)?.show_correlated_anomalies ===
-      true
+    const shouldUseCorrelatedAnomalySpans =
+      (this._config as RecordWithUnknownValues)?.show_correlated_anomalies ===
+        true ||
+      (this._config as RecordWithUnknownValues)?.anomaly_overlap_mode ===
+        "only";
+    const shouldDrawCorrelatedAnomalySpans =
+      (this._config as RecordWithUnknownValues)?.show_correlated_anomalies ===
+      true;
+    const correlatedAnomalySpans: Array<{ start: number; end: number }> =
+      shouldUseCorrelatedAnomalySpans
         ? this._buildCorrelatedAnomalySpans(
             visibleSeries,
             anomalyClustersMap as Map<string, unknown>,
@@ -4488,7 +4767,7 @@ export class HistoryChart extends HTMLElement {
     const tracks: unknown[] = [];
     for (let i = 0; i < N; i += 1) {
       const isLastRow = i === N - 1;
-      const seriesItem = visibleSeries[i] as Record<string, unknown>;
+      const seriesItem = visibleSeries[i] as RecordWithUnknownValues;
       const rowOffset = i * rowHeight;
 
       const rowDiv = document.createElement("div");
@@ -4505,7 +4784,7 @@ export class HistoryChart extends HTMLElement {
           canvas: HTMLCanvasElement,
           container: HTMLElement,
           cssHeight: number,
-          cssWidth?: number | null
+          cssWidth?: Nullable<number>
         ) => { w: number; h: number }
       )(rowCanvas, (chartStage || wrap)!, rowHeight, canvasWidth);
       const renderer = new ChartRenderer(rowCanvas, w, h);
@@ -4523,30 +4802,33 @@ export class HistoryChart extends HTMLElement {
       const rowAnalysis = (effectiveAnalysisMap.get(
         seriesItem.entityId as string
       ) || normalizeHistorySeriesAnalysis(null)) as SeriesAnalysis;
-      const rowTrendPts =
+      const rowTrendPts: ChartPoint[] =
         rowAnalysis.show_trend_lines === true
-          ? (trendPointsMap.get(seriesItem.entityId as string) as unknown[]) ||
-            []
+          ? (trendPointsMap.get(
+              seriesItem.entityId as string
+            ) as ChartPoint[]) || []
           : [];
-      const rowRatePts =
+      const rowRatePts: ChartPoint[] =
         rowAnalysis.show_rate_of_change === true
-          ? (ratePointsMap.get(seriesItem.entityId as string) as unknown[]) ||
-            []
+          ? (ratePointsMap.get(
+              seriesItem.entityId as string
+            ) as ChartPoint[]) || []
           : [];
-      const rowDeltaPts =
+      const rowDeltaPts: ChartPoint[] =
         rowAnalysis.show_delta_analysis === true && hasSelectedComparisonWindow
-          ? (deltaPointsMap.get(seriesItem.entityId as string) as unknown[]) ||
-            []
+          ? (deltaPointsMap.get(
+              seriesItem.entityId as string
+            ) as ChartPoint[]) || []
           : [];
       const rowSummaryStats =
         rowAnalysis.show_summary_stats === true
           ? summaryStatsMap.get(seriesItem.entityId as string) || null
           : null;
-      const rowAnomalyClusters =
+      const rowAnomalyClusters: AnomalyCluster[] =
         rowAnalysis.show_anomalies === true
           ? (anomalyClustersMap.get(
               seriesItem.entityId as string
-            ) as unknown[]) || []
+            ) as AnomalyCluster[]) || []
           : [];
       const rowHideSource = this._seriesShouldHideSource(
         rowAnalysis,
@@ -4561,11 +4843,11 @@ export class HistoryChart extends HTMLElement {
       let axisMax = 1;
       if (extent) {
         const pad =
-          ((extent as Record<string, number>).max -
-            (extent as Record<string, number>).min) *
+          ((extent as RecordWithNumericValues).max -
+            (extent as RecordWithNumericValues).min) *
             0.1 || 1;
-        axisMin = (extent as Record<string, number>).min - pad;
-        axisMax = (extent as Record<string, number>).max + pad;
+        axisMin = (extent as RecordWithNumericValues).min - pad;
+        axisMax = (extent as RecordWithNumericValues).max + pad;
       }
       const primaryAxisKey =
         (seriesItem.axisKey as string) ||
@@ -4573,54 +4855,54 @@ export class HistoryChart extends HTMLElement {
         "__unitless__";
       const axis = {
         key: primaryAxisKey,
-        unit: seriesItem.unit || "",
-        color: seriesItem.color,
-        side: "left",
+        unit: String(seriesItem.unit || ""),
+        color: (seriesItem.color as Nullable<string>) || null,
+        side: "left" as const,
         min: axisMin,
         max: axisMax,
         values: axisValues,
       };
 
       // Build secondary axes for rate-of-change and delta if needed.
-      const rowAxes: unknown[] = [axis];
-      let rowRateAxisKey: string | null = null;
+      const rowAxes: Array<ResolvedAxis & { values: number[] }> = [axis];
+      let rowRateAxisKey: Nullable<string> = null;
       if ((rowRatePts as [number, number][]).length >= 2) {
         const rateVals = (rowRatePts as [number, number][]).map(([, v]) => v);
         const rateExt = this._getAxisValueExtent(rateVals);
         if (rateExt) {
           const pad =
-            ((rateExt as Record<string, number>).max -
-              (rateExt as Record<string, number>).min) *
+            ((rateExt as RecordWithNumericValues).max -
+              (rateExt as RecordWithNumericValues).min) *
               0.1 || 1;
           rowRateAxisKey = `rate:${primaryAxisKey}`;
           rowAxes.push({
             key: rowRateAxisKey,
-            unit: seriesItem.unit ? `${seriesItem.unit}/h` : "Rate/h",
-            color: seriesItem.color,
-            side: "right",
-            min: (rateExt as Record<string, number>).min - pad,
-            max: (rateExt as Record<string, number>).max + pad,
+            unit: seriesItem.unit ? `${String(seriesItem.unit)}/h` : "Rate/h",
+            color: (seriesItem.color as Nullable<string>) || null,
+            side: "right" as const,
+            min: (rateExt as RecordWithNumericValues).min - pad,
+            max: (rateExt as RecordWithNumericValues).max + pad,
             values: rateVals,
           });
         }
       }
-      let rowDeltaAxisKey: string | null = null;
+      let rowDeltaAxisKey: Nullable<string> = null;
       if ((rowDeltaPts as [number, number][]).length >= 2) {
         const deltaVals = (rowDeltaPts as [number, number][]).map(([, v]) => v);
         const deltaExt = this._getAxisValueExtent(deltaVals);
         if (deltaExt) {
           const pad =
-            ((deltaExt as Record<string, number>).max -
-              (deltaExt as Record<string, number>).min) *
+            ((deltaExt as RecordWithNumericValues).max -
+              (deltaExt as RecordWithNumericValues).min) *
               0.1 || 1;
           rowDeltaAxisKey = `delta:${primaryAxisKey}`;
           rowAxes.push({
             key: rowDeltaAxisKey,
-            unit: seriesItem.unit ? `Δ ${seriesItem.unit}` : "Δ",
-            color: seriesItem.color,
-            side: "right",
-            min: (deltaExt as Record<string, number>).min - pad,
-            max: (deltaExt as Record<string, number>).max + pad,
+            unit: seriesItem.unit ? `Δ ${String(seriesItem.unit)}` : "Δ",
+            color: (seriesItem.color as Nullable<string>) || null,
+            side: "right" as const,
+            min: (deltaExt as RecordWithNumericValues).min - pad,
+            max: (deltaExt as RecordWithNumericValues).max + pad,
             values: deltaVals,
           });
         }
@@ -4638,13 +4920,13 @@ export class HistoryChart extends HTMLElement {
         max: number;
         [k: string]: unknown;
       };
-      const activeAxes = (renderer as unknown as Record<string, unknown>)
+      const activeAxes = (renderer as unknown as RecordWithUnknownValues)
         ._activeAxes as AxisLike[] | undefined;
       const resolvedAxis: AxisLike = activeAxes?.[0] || (axis as AxisLike);
-      const resolvedRateAxis: AxisLike | null = rowRateAxisKey
+      const resolvedRateAxis: Nullable<AxisLike> = rowRateAxisKey
         ? activeAxes?.find((a) => a.key === rowRateAxisKey) || null
         : null;
-      const resolvedDeltaAxis: AxisLike | null = rowDeltaAxisKey
+      const resolvedDeltaAxis: Nullable<AxisLike> = rowDeltaAxisKey
         ? activeAxes?.find((a) => a.key === rowDeltaAxisKey) || null
         : null;
       seriesItem.axis = resolvedAxis;
@@ -4678,6 +4960,7 @@ export class HistoryChart extends HTMLElement {
 
       // Draw comparison window series for this row's entity.
       for (const win of (drawableComparisonResults || []) as unknown[]) {
+        // eslint-disable-next-line no-await-in-loop
         const winPts = await this._resolveComparisonWindowPoints(
           seriesItem.entityId as string,
           win as {
@@ -4696,26 +4979,15 @@ export class HistoryChart extends HTMLElement {
         }
         const isHovered =
           !!hoveredComparisonWindowId &&
-          (win as Record<string, unknown>).id === hoveredComparisonWindowId;
+          (win as RecordWithUnknownValues).id === hoveredComparisonWindowId;
         const isSelected =
           !!selectedComparisonWindowId &&
-          (win as Record<string, unknown>).id === selectedComparisonWindowId;
-        let compLineOpacity: number;
-        if (isHovered) {
-          compLineOpacity = 1;
-        } else if (hoveringDifferentComparison && isSelected) {
-          compLineOpacity = 0.25;
-        } else {
-          compLineOpacity = 0.85;
-        }
-        let comparisonLineWidth;
-        if (isHovered) {
-          comparisonLineWidth = 3.2;
-        } else if (hoveringDifferentComparison && isSelected) {
-          comparisonLineWidth = 1.25;
-        } else {
-          comparisonLineWidth = undefined;
-        }
+          (win as RecordWithUnknownValues).id === selectedComparisonWindowId;
+        const comparisonLineStyle = this._getComparisonWindowLineStyle(
+          isHovered,
+          isSelected,
+          hoveringDifferentComparison
+        );
         renderer.drawLine(
           winPts,
           seriesItem.color as string,
@@ -4724,10 +4996,10 @@ export class HistoryChart extends HTMLElement {
           resolvedAxis.min,
           resolvedAxis.max,
           {
-            lineOpacity: compLineOpacity,
-            lineWidth: comparisonLineWidth,
-            dashed: isHovered,
-            dashPattern: isHovered ? [8, 4] : undefined,
+            lineOpacity: comparisonLineStyle.lineOpacity,
+            lineWidth: comparisonLineStyle.lineWidth,
+            dashed: comparisonLineStyle.dashed,
+            dashPattern: comparisonLineStyle.dashPattern,
           }
         );
         this._drawComparisonAnalysisOverlays({
@@ -4741,21 +5013,19 @@ export class HistoryChart extends HTMLElement {
           axis: resolvedAxis,
           rateAxis: resolvedRateAxis,
           events,
-          comparisonWindowId: String(
-            (win as Record<string, unknown>).id || ""
-          ),
+          comparisonWindowId: String((win as RecordWithUnknownValues).id || ""),
         });
       }
 
       // Draw binary state backgrounds on every row.
       (binaryBackgrounds as unknown[]).forEach((bg: unknown) => {
-        const bgItem = bg as Record<string, unknown>;
+        const bgItem = bg as RecordWithUnknownValues;
         if (
           !this._hiddenSeries.has(bgItem.entityId as string) &&
           (bgItem.spans as unknown[])?.length
         ) {
           renderer.drawStateBands(
-            bgItem.spans,
+            bgItem.spans as Array<{ start: number; end: number }>,
             renderT0,
             renderT1,
             bgItem.color as string,
@@ -4763,7 +5033,10 @@ export class HistoryChart extends HTMLElement {
           );
         }
       });
-      if ((correlatedAnomalySpans as unknown[]).length) {
+      if (
+        shouldDrawCorrelatedAnomalySpans &&
+        (correlatedAnomalySpans as unknown[]).length
+      ) {
         renderer.drawStateBands(
           correlatedAnomalySpans,
           renderT0,
@@ -4774,12 +5047,19 @@ export class HistoryChart extends HTMLElement {
       }
 
       // Draw annotation event lines and diamond markers on this row's canvas.
-      renderer.drawAnnotations(events || [], renderT0, renderT1, {
-        showLines:
-          (this._config as Record<string, unknown>).show_event_lines !== false,
-        showMarkers:
-          (this._config as Record<string, unknown>).show_event_lines !== false,
-      });
+      renderer.drawAnnotations(
+        events as AnnotationEvent[],
+        renderT0,
+        renderT1,
+        {
+          showLines:
+            (this._config as RecordWithUnknownValues).show_event_lines !==
+            false,
+          showMarkers:
+            (this._config as RecordWithUnknownValues).show_event_lines !==
+            false,
+        }
+      );
 
       // Draw recorded event point markers (circles + icon overlay elements).
       // The overlay has already been cleared above; skip clearing per-row and
@@ -4787,7 +5067,7 @@ export class HistoryChart extends HTMLElement {
       this._drawRecordedEventPoints(
         renderer,
         [seriesItem],
-        events || [],
+        events as AnnotationEvent[],
         renderT0,
         renderT1,
         {
@@ -4807,7 +5087,7 @@ export class HistoryChart extends HTMLElement {
             (seriesItem.pts as unknown[]).length
           ) {
             renderer.drawThresholdArea(
-              seriesItem.pts,
+              seriesItem.pts as ChartPoint[],
               thresholdValue,
               seriesItem.color as string,
               renderT0,
@@ -4831,8 +5111,8 @@ export class HistoryChart extends HTMLElement {
             hexToRgba(seriesItem.color as string, rowHideSource ? 0.82 : 0.46),
             renderT0,
             renderT1,
-            (resolvedAxis as Record<string, number>).min,
-            (resolvedAxis as Record<string, number>).max,
+            (resolvedAxis as RecordWithNumericValues).min,
+            (resolvedAxis as RecordWithNumericValues).max,
             { lineOpacity: rowHideSource ? 0.84 : 0.48, lineWidth: 1.15 }
           );
         }
@@ -4844,44 +5124,44 @@ export class HistoryChart extends HTMLElement {
         if (rowAnalysis.show_summary_stats_shading === true) {
           const fillAlpha = rowHideSource ? 0.1 : 0.06;
           renderer.drawGradientBand(
-            (rowSummaryStats as Record<string, number>).min,
-            (rowSummaryStats as Record<string, number>).mean,
+            (rowSummaryStats as RecordWithNumericValues).min,
+            (rowSummaryStats as RecordWithNumericValues).mean,
             seriesItem.color as string,
             renderT0,
             renderT1,
-            (resolvedAxis as Record<string, number>).min,
-            (resolvedAxis as Record<string, number>).max,
+            (resolvedAxis as RecordWithNumericValues).min,
+            (resolvedAxis as RecordWithNumericValues).max,
             { fillAlpha }
           );
           renderer.drawGradientBand(
-            (rowSummaryStats as Record<string, number>).max,
-            (rowSummaryStats as Record<string, number>).mean,
+            (rowSummaryStats as RecordWithNumericValues).max,
+            (rowSummaryStats as RecordWithNumericValues).mean,
             seriesItem.color as string,
             renderT0,
             renderT1,
-            (resolvedAxis as Record<string, number>).min,
-            (resolvedAxis as Record<string, number>).max,
+            (resolvedAxis as RecordWithNumericValues).min,
+            (resolvedAxis as RecordWithNumericValues).max,
             { fillAlpha }
           );
         }
         const summaryEntries = [
           {
             type: "min",
-            value: (rowSummaryStats as Record<string, number>).min,
+            value: (rowSummaryStats as RecordWithNumericValues).min,
             alpha: rowHideSource ? 0.78 : 0.42,
             width: 1.1,
             dotted: true,
           },
           {
             type: "mean",
-            value: (rowSummaryStats as Record<string, number>).mean,
+            value: (rowSummaryStats as RecordWithNumericValues).mean,
             alpha: rowHideSource ? 0.94 : 0.78,
             width: 1.8,
             dotted: false,
           },
           {
             type: "max",
-            value: (rowSummaryStats as Record<string, number>).max,
+            value: (rowSummaryStats as RecordWithNumericValues).max,
             alpha: rowHideSource ? 0.78 : 0.42,
             width: 1.1,
             dotted: true,
@@ -4897,8 +5177,8 @@ export class HistoryChart extends HTMLElement {
             hexToRgba(seriesItem.color as string, entry.alpha),
             renderT0,
             renderT1,
-            (resolvedAxis as Record<string, number>).min,
-            (resolvedAxis as Record<string, number>).max,
+            (resolvedAxis as RecordWithNumericValues).min,
+            (resolvedAxis as RecordWithNumericValues).max,
             {
               lineOpacity: rowHideSource ? 0.82 : 0.34,
               lineWidth: entry.width,
@@ -4919,8 +5199,8 @@ export class HistoryChart extends HTMLElement {
           hexToRgba(seriesItem.color as string, trendOpts.colorAlpha),
           renderT0,
           renderT1,
-          (resolvedAxis as Record<string, number>).min,
-          (resolvedAxis as Record<string, number>).max,
+          (resolvedAxis as RecordWithNumericValues).min,
+          (resolvedAxis as RecordWithNumericValues).max,
           {
             lineOpacity: trendOpts.lineOpacity,
             lineWidth: trendOpts.lineWidth,
@@ -4965,22 +5245,22 @@ export class HistoryChart extends HTMLElement {
       }
 
       // Anomaly clusters.
-      let rowAnomalyRegions: unknown[] = [];
+      let rowAnomalyRegions: AnomalyRegion[] = [];
       if ((rowAnomalyClusters as unknown[]).length) {
         const filteredClusters = this._filterAnnotatedAnomalyClusters(
           {
             entityId: seriesItem.entityId as string,
             anomalyClusters: rowAnomalyClusters,
           },
-          events || []
+          events as AnnotationEvent[]
         );
         if ((filteredClusters as unknown[]).length > 0) {
-          const normalClusters = (filteredClusters as unknown[]).filter(
-            (c: unknown) => !(c as Record<string, unknown>).isOverlap
-          );
-          const overlapClusters = (filteredClusters as unknown[]).filter(
-            (c: unknown) => (c as Record<string, unknown>).isOverlap === true
-          );
+          const { baseClusters, regionClusters } =
+            this._resolveAnomalyClusterDisplay(
+              filteredClusters,
+              rowAnalysis.anomaly_overlap_mode,
+              correlatedAnomalySpans
+            );
           const baseColor = hexToRgba(
             seriesItem.color as string,
             rowHideSource ? 0.96 : 0.86
@@ -5000,21 +5280,9 @@ export class HistoryChart extends HTMLElement {
             minRadiusX: 10,
             minRadiusY: 10,
           };
-          const overlapOpts = {
-            strokeAlpha: 0.98,
-            lineWidth: 2.8,
-            haloWidth: 7,
-            haloColor: "rgba(232,160,32,0.22)",
-            haloAlpha: 1,
-            fillColor: "rgba(232,160,32,0.1)",
-            fillAlpha: 1,
-            pointPadding: rowHideSource ? 15 : 13,
-            minRadiusX: 12,
-            minRadiusY: 12,
-          };
-          if (normalClusters.length > 0) {
+          if (baseClusters.length > 0) {
             renderer.drawAnomalyClusters(
-              normalClusters,
+              baseClusters,
               baseColor,
               renderT0,
               renderT1,
@@ -5022,46 +5290,27 @@ export class HistoryChart extends HTMLElement {
               resolvedAxis.max,
               regionOpts
             );
-          }
-          if (overlapClusters.length > 0) {
-            renderer.drawAnomalyClusters(
-              overlapClusters,
-              baseColor,
-              renderT0,
-              renderT1,
-              resolvedAxis.min,
-              resolvedAxis.max,
-              regionOpts
-            );
-            if (rowAnalysis.anomaly_overlap_mode !== "only") {
-              renderer.drawAnomalyClusters(
-                overlapClusters,
-                "rgba(232,160,32,0.94)",
-                renderT0,
-                renderT1,
-                (resolvedAxis as Record<string, number>).min,
-                (resolvedAxis as Record<string, number>).max,
-                overlapOpts
-              );
-            }
           }
           rowAnomalyRegions = renderer
             .getAnomalyClusterRegions(
-              [...normalClusters, ...overlapClusters],
+              regionClusters,
               renderT0,
               renderT1,
               resolvedAxis.min,
               resolvedAxis.max,
               regionOpts
             )
-            .map((region: unknown) => ({
-              ...(region as Record<string, unknown>),
-              relatedEntityId: seriesItem.entityId,
-              label: seriesItem.label,
-              unit: seriesItem.unit || "",
-              color: seriesItem.color,
-              sensitivity: rowAnalysis.anomaly_sensitivity,
-            }));
+            .map(
+              (region): AnomalyRegion =>
+                ({
+                  ...region,
+                  relatedEntityId: String(seriesItem.entityId),
+                  label: String(seriesItem.label),
+                  unit: String(seriesItem.unit || ""),
+                  color: (seriesItem.color as Nullable<string>) || null,
+                  sensitivity: String(rowAnalysis.anomaly_sensitivity || ""),
+                }) as unknown as AnomalyRegion
+            );
         }
       }
 
@@ -5085,7 +5334,7 @@ export class HistoryChart extends HTMLElement {
     this._renderSplitAxisOverlays(tracks);
     this._renderComparisonPreviewOverlay(
       tracks[0]
-        ? ((tracks[0] as Record<string, unknown>).renderer as {
+        ? ((tracks[0] as RecordWithUnknownValues).renderer as {
             pad?: { left?: number };
           })
         : null
@@ -5095,13 +5344,14 @@ export class HistoryChart extends HTMLElement {
     // tooltip can show interpolated values for the active date window.
     const comparisonHoverSeries: unknown[] = [];
     for (const track of tracks) {
-      const trackSeries = (track as Record<string, unknown>).series as Record<
+      const trackSeries = (track as RecordWithUnknownValues).series as Record<
         string,
         unknown
       >;
-      const trackAnalysis = ((track as Record<string, unknown>)
-        .analysis || normalizeHistorySeriesAnalysis(null)) as SeriesAnalysis;
+      const trackAnalysis = ((track as RecordWithUnknownValues).analysis ||
+        normalizeHistorySeriesAnalysis(null)) as SeriesAnalysis;
       for (const win of (drawableComparisonResults || []) as unknown[]) {
+        // eslint-disable-next-line no-await-in-loop
         const winPts = await this._resolveComparisonWindowPoints(
           trackSeries.entityId as string,
           win as {
@@ -5120,24 +5370,21 @@ export class HistoryChart extends HTMLElement {
         }
         const isHovered =
           !!hoveredComparisonWindowId &&
-          (win as Record<string, unknown>).id === hoveredComparisonWindowId;
+          (win as RecordWithUnknownValues).id === hoveredComparisonWindowId;
         const isSelected =
           !!selectedComparisonWindowId &&
-          (win as Record<string, unknown>).id === selectedComparisonWindowId;
-        let hoverOpacity: number;
-        if (isHovered) {
-          hoverOpacity = 0.85;
-        } else if (hoveringDifferentComparison && isSelected) {
-          hoverOpacity = 0.25;
-        } else {
-          hoverOpacity = 0.85;
-        }
+          (win as RecordWithUnknownValues).id === selectedComparisonWindowId;
+        const comparisonLineStyle = this._getComparisonWindowLineStyle(
+          isHovered,
+          isSelected,
+          hoveringDifferentComparison
+        );
         comparisonHoverSeries.push({
-          entityId: `${(win as Record<string, unknown>).id}:${trackSeries.entityId}`,
+          entityId: `${(win as RecordWithUnknownValues).id}:${trackSeries.entityId}`,
           relatedEntityId: trackSeries.entityId,
-          comparisonParentId: `${(win as Record<string, unknown>).id}:${trackSeries.entityId}`,
+          comparisonParentId: `${(win as RecordWithUnknownValues).id}:${trackSeries.entityId}`,
           label: trackSeries.label,
-          windowLabel: (win as Record<string, unknown>).label || "Date window",
+          windowLabel: (win as RecordWithUnknownValues).label || "Date window",
           unit: trackSeries.unit,
           pts: winPts,
           trendPts:
@@ -5150,10 +5397,7 @@ export class HistoryChart extends HTMLElement {
               : [],
           ratePts:
             trackAnalysis.show_rate_of_change === true && winPts.length >= 2
-              ? this._buildRateOfChangePoints(
-                  winPts,
-                  trackAnalysis.rate_window
-                )
+              ? this._buildRateOfChangePoints(winPts, trackAnalysis.rate_window)
               : [],
           summaryStats:
             trackAnalysis.show_summary_stats === true
@@ -5164,7 +5408,7 @@ export class HistoryChart extends HTMLElement {
               ? Number(trackAnalysis.threshold_value)
               : null,
           color: trackSeries.color,
-          hoverOpacity,
+          hoverOpacity: comparisonLineStyle.hoverOpacity,
           track,
         });
       }
@@ -5203,8 +5447,8 @@ export class HistoryChart extends HTMLElement {
     events: unknown[],
     t0: number,
     t1: number,
-    chartStage: HTMLElement | null,
-    options: Record<string, unknown>,
+    chartStage: Nullable<HTMLElement>,
+    options: RecordWithUnknownValues,
     analysisMap: Map<string, unknown>,
     hasSelectedComparisonWindow: boolean
   ): void {
@@ -5216,27 +5460,27 @@ export class HistoryChart extends HTMLElement {
       return;
     }
 
-    const primaryRenderer = (tracks[0] as Record<string, unknown>)
+    const primaryRenderer = (tracks[0] as RecordWithUnknownValues)
       .renderer as InstanceType<typeof ChartRenderer>;
-    const lastTrack = tracks[tracks.length - 1] as Record<string, unknown>;
+    const lastTrack = tracks[tracks.length - 1] as RecordWithUnknownValues;
     const eventThresholdMs = (
-      primaryRenderer as unknown as Record<string, number>
+      primaryRenderer as unknown as RecordWithNumericValues
     ).cw
       ? 14 *
-        ((t1 - t0) / (primaryRenderer as unknown as Record<string, number>).cw)
+        ((t1 - t0) / (primaryRenderer as unknown as RecordWithNumericValues).cw)
       : 0;
 
     // Vertical span of the plot area across all rows — used for the zoom selection highlight.
     const splitSelTop =
-      ((tracks[0] as Record<string, unknown>).rowOffset as number) +
-      (primaryRenderer.pad as Record<string, number>).top;
+      ((tracks[0] as RecordWithUnknownValues).rowOffset as number) +
+      (primaryRenderer.pad as RecordWithNumericValues).top;
     const splitSelBottom =
       (lastTrack.rowOffset as number) +
       (
         (lastTrack.renderer as InstanceType<typeof ChartRenderer>)
-          .pad as Record<string, number>
+          .pad as RecordWithNumericValues
       ).top +
-      (lastTrack.renderer as unknown as Record<string, number>).ch;
+      (lastTrack.renderer as unknown as RecordWithNumericValues).ch;
     const splitSelHeight = splitSelBottom - splitSelTop;
 
     // Shared transparent overlay spanning all rows.
@@ -5253,16 +5497,16 @@ export class HistoryChart extends HTMLElement {
       const rect = overlayEl.getBoundingClientRect();
       return clampChartValue(
         clientX - rect.left,
-        (primaryRenderer.pad as Record<string, number>).left,
-        (primaryRenderer.pad as Record<string, number>).left +
-          (primaryRenderer as unknown as Record<string, number>).cw
+        (primaryRenderer.pad as RecordWithNumericValues).left,
+        (primaryRenderer.pad as RecordWithNumericValues).left +
+          (primaryRenderer as unknown as RecordWithNumericValues).cw
       );
     };
 
     const stageXToTime = (stageX: number) => {
-      const ratio = (primaryRenderer as unknown as Record<string, number>).cw
-        ? (stageX - (primaryRenderer.pad as Record<string, number>).left) /
-          (primaryRenderer as unknown as Record<string, number>).cw
+      const ratio = (primaryRenderer as unknown as RecordWithNumericValues).cw
+        ? (stageX - (primaryRenderer.pad as RecordWithNumericValues).left) /
+          (primaryRenderer as unknown as RecordWithNumericValues).cw
         : 0;
       return t0 + ratio * (t1 - t0);
     };
@@ -5271,166 +5515,82 @@ export class HistoryChart extends HTMLElement {
       const rect = overlayEl.getBoundingClientRect();
       const localX = clientX - rect.left;
       return (
-        localX >= (primaryRenderer.pad as Record<string, number>).left &&
+        localX >= (primaryRenderer.pad as RecordWithNumericValues).left &&
         localX <=
-          (primaryRenderer.pad as Record<string, number>).left +
-            (primaryRenderer as unknown as Record<string, number>).cw
+          (primaryRenderer.pad as RecordWithNumericValues).left +
+            (primaryRenderer as unknown as RecordWithNumericValues).cw
       );
     };
 
     // ── Hover ──────────────────────────────────────────────────────────────────
     const buildSplitHover = (clientX: number) => {
       const baseRect = (
-        (tracks[0] as Record<string, unknown>).canvas as HTMLCanvasElement
+        (tracks[0] as RecordWithUnknownValues).canvas as HTMLCanvasElement
       ).getBoundingClientRect();
       if (
         !baseRect.width ||
-        !(primaryRenderer as unknown as Record<string, number>).cw
+        !(primaryRenderer as unknown as RecordWithNumericValues).cw
       ) {
         return null;
       }
       const localX = clampChartValue(
         clientX - baseRect.left,
-        (primaryRenderer.pad as Record<string, number>).left,
-        (primaryRenderer.pad as Record<string, number>).left +
-          (primaryRenderer as unknown as Record<string, number>).cw
+        (primaryRenderer.pad as RecordWithNumericValues).left,
+        (primaryRenderer.pad as RecordWithNumericValues).left +
+          (primaryRenderer as unknown as RecordWithNumericValues).cw
       );
       const ratio =
-        (localX - (primaryRenderer.pad as Record<string, number>).left) /
-        (primaryRenderer as unknown as Record<string, number>).cw;
+        (localX - (primaryRenderer.pad as RecordWithNumericValues).left) /
+        (primaryRenderer as unknown as RecordWithNumericValues).cw;
       const timeMs = t0 + ratio * (t1 - t0);
       const x = primaryRenderer.xOf(timeMs, t0, t1);
 
-      const values = (tracks as unknown[]).map((trackItem: unknown) => {
-        const {
-          renderer: trackRenderer,
-          series,
-          axis,
-          rowOffset,
-        } = trackItem as Record<string, unknown>;
-        const value = (
-          trackRenderer as InstanceType<typeof ChartRenderer>
-        )._interpolateValue((series as Record<string, unknown>).pts, timeMs);
-        if (value == null) {
-          return {
-            entityId: (series as Record<string, unknown>).entityId,
-            label: (series as Record<string, unknown>).label,
-            value: null,
-            unit: (series as Record<string, unknown>).unit,
-            color: (series as Record<string, unknown>).color,
-            opacity: 1,
-            hasValue: false,
-            axisSide: "left",
-            axisSlot: 0,
-          };
-        }
-        return {
-          entityId: (series as Record<string, unknown>).entityId,
-          label: (series as Record<string, unknown>).label,
-          value,
-          unit: (series as Record<string, unknown>).unit,
-          color: (series as Record<string, unknown>).color,
-          opacity: 1,
-          hasValue: true,
-          x,
-          y:
-            (rowOffset as number) +
-            (trackRenderer as InstanceType<typeof ChartRenderer>).yOf(
-              value,
-              (axis as Record<string, number>).min,
-              (axis as Record<string, number>).max
-            ),
-          axisSide: "left",
-          axisSlot: 0,
-        };
-      });
-
-      const hoveredEvents: unknown[] = [];
-      for (const event of (events || []) as unknown[]) {
-        const eventTime = new Date(
-          (event as Record<string, unknown>).timestamp as string
-        ).getTime();
-        if (eventTime < t0 || eventTime > t1) {
-          continue;
-        }
-        const distance = Math.abs(eventTime - timeMs);
-        if (distance <= eventThresholdMs) {
-          hoveredEvents.push({
-            ...(event as Record<string, unknown>),
-            _hoverDistanceMs: distance,
-          });
-        }
-      }
-      hoveredEvents.sort(
-        (a, b) =>
-          ((a as Record<string, number>)._hoverDistanceMs || 0) -
-          ((b as Record<string, number>)._hoverDistanceMs || 0)
-      );
-
-      const comparisonValues = (comparisonHoverSeries || []).map(
-        (chs: unknown) => {
+      const values: HoverValueEntry[] = (tracks as unknown[]).map(
+        (trackItem: unknown) => {
           const {
-            pts,
-            entityId,
-            relatedEntityId,
-            comparisonParentId,
-            label,
-            windowLabel,
-            unit,
-            color,
-            hoverOpacity,
-            track: cTrack,
-          } = chs as Record<string, unknown>;
+            renderer: trackRenderer,
+            series,
+            axis,
+            rowOffset,
+          } = trackItem as RecordWithUnknownValues;
           const value = (
-            (cTrack as Record<string, unknown>).renderer as InstanceType<
-              typeof ChartRenderer
-            >
-          )._interpolateValue(pts, timeMs);
+            trackRenderer as InstanceType<typeof ChartRenderer>
+          )._interpolateValue(
+            (series as RecordWithUnknownValues).pts as ChartPoint[],
+            timeMs
+          );
           if (value == null) {
             return {
-              entityId,
-              label,
+              entityId: String(
+                (series as RecordWithUnknownValues).entityId || ""
+              ),
+              label: String((series as RecordWithUnknownValues).label || ""),
               value: null,
-              unit,
-              color,
-              opacity: hoverOpacity,
+              unit: String((series as RecordWithUnknownValues).unit || ""),
+              color: String((series as RecordWithUnknownValues).color || ""),
+              opacity: 1,
               hasValue: false,
               axisSide: "left",
               axisSlot: 0,
             };
           }
           return {
-            entityId,
-            relatedEntityId,
-            comparisonParentId,
-            label,
-            windowLabel,
+            entityId: String(
+              (series as RecordWithUnknownValues).entityId || ""
+            ),
+            label: String((series as RecordWithUnknownValues).label || ""),
             value,
-            unit,
-            color,
-            opacity: hoverOpacity,
+            unit: String((series as RecordWithUnknownValues).unit || ""),
+            color: String((series as RecordWithUnknownValues).color || ""),
+            opacity: 1,
             hasValue: true,
             x,
             y:
-              ((cTrack as Record<string, unknown>).rowOffset as number) +
-              (
-                (cTrack as Record<string, unknown>).renderer as InstanceType<
-                  typeof ChartRenderer
-                >
-              ).yOf(
+              (rowOffset as number) +
+              (trackRenderer as InstanceType<typeof ChartRenderer>).yOf(
                 value,
-                (
-                  (cTrack as Record<string, unknown>).axis as Record<
-                    string,
-                    number
-                  >
-                ).min,
-                (
-                  (cTrack as Record<string, unknown>).axis as Record<
-                    string,
-                    number
-                  >
-                ).max
+                (axis as RecordWithNumericValues).min,
+                (axis as RecordWithNumericValues).max
               ),
             axisSide: "left",
             axisSlot: 0,
@@ -5438,13 +5598,106 @@ export class HistoryChart extends HTMLElement {
         }
       );
 
+      const hoveredEvents: Array<
+        ChartEventRecord & { _hoverDistanceMs: number }
+      > = [];
+      for (const event of (events || []) as unknown[]) {
+        const eventTime = new Date(
+          (event as RecordWithUnknownValues).timestamp as string
+        ).getTime();
+        if (eventTime < t0 || eventTime > t1) {
+          continue;
+        }
+        const distance = Math.abs(eventTime - timeMs);
+        if (distance <= eventThresholdMs) {
+          hoveredEvents.push({
+            ...(event as ChartEventRecord),
+            _hoverDistanceMs: distance,
+          });
+        }
+      }
+      hoveredEvents.sort(
+        (a, b) => (a._hoverDistanceMs || 0) - (b._hoverDistanceMs || 0)
+      );
+
+      const comparisonValues: HoverValueEntry[] = (
+        comparisonHoverSeries || []
+      ).map((chs: unknown) => {
+        const {
+          pts,
+          entityId,
+          relatedEntityId,
+          comparisonParentId,
+          label,
+          windowLabel,
+          unit,
+          color,
+          hoverOpacity,
+          track: cTrack,
+        } = chs as RecordWithUnknownValues;
+        const value = (
+          (cTrack as RecordWithUnknownValues).renderer as InstanceType<
+            typeof ChartRenderer
+          >
+        )._interpolateValue(pts as ChartPoint[], timeMs);
+        if (value == null) {
+          return {
+            entityId: String(entityId || ""),
+            label: String(label || ""),
+            value: null,
+            unit: String(unit || ""),
+            color: color as Nullable<string>,
+            opacity: Number(hoverOpacity) || 1,
+            hasValue: false,
+            axisSide: "left",
+            axisSlot: 0,
+          };
+        }
+        return {
+          entityId: String(entityId || ""),
+          relatedEntityId: String(relatedEntityId || ""),
+          comparisonParentId: String(comparisonParentId || ""),
+          label: String(label || ""),
+          windowLabel: String(windowLabel || ""),
+          value,
+          unit: String(unit || ""),
+          color: color as Nullable<string>,
+          opacity: Number(hoverOpacity) || 1,
+          hasValue: true,
+          x,
+          y:
+            ((cTrack as RecordWithUnknownValues).rowOffset as number) +
+            (
+              (cTrack as RecordWithUnknownValues).renderer as InstanceType<
+                typeof ChartRenderer
+              >
+            ).yOf(
+              value,
+              (
+                (cTrack as RecordWithUnknownValues).axis as Record<
+                  string,
+                  number
+                >
+              ).min,
+              (
+                (cTrack as RecordWithUnknownValues).axis as Record<
+                  string,
+                  number
+                >
+              ).max
+            ),
+          axisSide: "left",
+          axisSlot: 0,
+        };
+      });
+
       // ── Analysis hover values ────────────────────────────────────────────
-      const trendValues: unknown[] = [];
-      const rateValues: unknown[] = [];
-      const deltaValues: unknown[] = [];
-      const summaryValues: unknown[] = [];
-      const thresholdValues: unknown[] = [];
-      const anomalyRegions: unknown[] = [];
+      const trendValues: HoverValueEntry[] = [];
+      const rateValues: HoverValueEntry[] = [];
+      const deltaValues: HoverValueEntry[] = [];
+      const summaryValues: HoverValueEntry[] = [];
+      const thresholdValues: HoverValueEntry[] = [];
+      const anomalyRegions: AnomalyRegion[] = [];
       let showTrendCrosshairs = false;
 
       for (const track of tracks as unknown[]) {
@@ -5461,11 +5714,11 @@ export class HistoryChart extends HTMLElement {
           deltaPts: trackDeltaPts,
           deltaAxis: trackDeltaAxis,
           anomalyRegions: trackAnomalyRegions,
-        } = track as Record<string, unknown>;
+        } = track as RecordWithUnknownValues;
 
         const effectiveAnalysis = (trackAnalysis ||
           (analysisMap || new Map()).get(
-            (trackSeries as Record<string, unknown>).entityId as string
+            (trackSeries as RecordWithUnknownValues).entityId as string
           ) ||
           normalizeHistorySeriesAnalysis(null)) as SeriesAnalysis;
         const trackHideSource = this._seriesShouldHideSource(
@@ -5489,13 +5742,17 @@ export class HistoryChart extends HTMLElement {
             trackRenderer as InstanceType<typeof ChartRenderer>
           )._interpolateValue(trackTrendPts, timeMs);
           trendValues.push({
-            entityId: `trend:${(trackSeries as Record<string, unknown>).entityId}`,
-            relatedEntityId: (trackSeries as Record<string, unknown>).entityId,
-            label: (trackSeries as Record<string, unknown>).label,
-            baseLabel: (trackSeries as Record<string, unknown>).label,
-            unit: (trackSeries as Record<string, unknown>).unit || "",
+            entityId: `trend:${(trackSeries as RecordWithUnknownValues).entityId}`,
+            relatedEntityId: String(
+              (trackSeries as RecordWithUnknownValues).entityId || ""
+            ),
+            label: String((trackSeries as RecordWithUnknownValues).label || ""),
+            baseLabel: String(
+              (trackSeries as RecordWithUnknownValues).label || ""
+            ),
+            unit: String((trackSeries as RecordWithUnknownValues).unit || ""),
             color: hexToRgba(
-              (trackSeries as Record<string, unknown>).color as string,
+              (trackSeries as RecordWithUnknownValues).color as string,
               trendOpts.colorAlpha
             ),
             opacity: trendOpts.lineOpacity,
@@ -5508,8 +5765,8 @@ export class HistoryChart extends HTMLElement {
                     (trackRowOffset as number) +
                     (trackRenderer as InstanceType<typeof ChartRenderer>).yOf(
                       trendVal,
-                      (trackAxis as Record<string, number>).min,
-                      (trackAxis as Record<string, number>).max
+                      (trackAxis as RecordWithNumericValues).min,
+                      (trackAxis as RecordWithNumericValues).max
                     ),
                 }
               : {}),
@@ -5532,15 +5789,19 @@ export class HistoryChart extends HTMLElement {
             trackRenderer as InstanceType<typeof ChartRenderer>
           )._interpolateValue(trackRatePts, timeMs);
           rateValues.push({
-            entityId: `rate:${(trackSeries as Record<string, unknown>).entityId}`,
-            relatedEntityId: (trackSeries as Record<string, unknown>).entityId,
-            label: (trackSeries as Record<string, unknown>).label,
-            baseLabel: (trackSeries as Record<string, unknown>).label,
-            unit: (trackSeries as Record<string, unknown>).unit
-              ? `${(trackSeries as Record<string, unknown>).unit}/h`
+            entityId: `rate:${(trackSeries as RecordWithUnknownValues).entityId}`,
+            relatedEntityId: String(
+              (trackSeries as RecordWithUnknownValues).entityId || ""
+            ),
+            label: String((trackSeries as RecordWithUnknownValues).label || ""),
+            baseLabel: String(
+              (trackSeries as RecordWithUnknownValues).label || ""
+            ),
+            unit: (trackSeries as RecordWithUnknownValues).unit
+              ? `${String((trackSeries as RecordWithUnknownValues).unit)}/h`
               : "/h",
             color: hexToRgba(
-              (trackSeries as Record<string, unknown>).color as string,
+              (trackSeries as RecordWithUnknownValues).color as string,
               trackHideSource ? 0.96 : 0.82
             ),
             opacity: trackHideSource ? 0.88 : 0.66,
@@ -5553,8 +5814,8 @@ export class HistoryChart extends HTMLElement {
                     (trackRowOffset as number) +
                     (trackRenderer as InstanceType<typeof ChartRenderer>).yOf(
                       rateVal,
-                      (trackRateAxis as Record<string, number>).min,
-                      (trackRateAxis as Record<string, number>).max
+                      (trackRateAxis as RecordWithNumericValues).min,
+                      (trackRateAxis as RecordWithNumericValues).max
                     ),
                 }
               : {}),
@@ -5577,13 +5838,17 @@ export class HistoryChart extends HTMLElement {
             trackRenderer as InstanceType<typeof ChartRenderer>
           )._interpolateValue(trackDeltaPts, timeMs);
           deltaValues.push({
-            entityId: `delta:${(trackSeries as Record<string, unknown>).entityId}`,
-            relatedEntityId: (trackSeries as Record<string, unknown>).entityId,
-            label: (trackSeries as Record<string, unknown>).label,
-            baseLabel: (trackSeries as Record<string, unknown>).label,
-            unit: (trackSeries as Record<string, unknown>).unit || "",
+            entityId: `delta:${(trackSeries as RecordWithUnknownValues).entityId}`,
+            relatedEntityId: String(
+              (trackSeries as RecordWithUnknownValues).entityId || ""
+            ),
+            label: String((trackSeries as RecordWithUnknownValues).label || ""),
+            baseLabel: String(
+              (trackSeries as RecordWithUnknownValues).label || ""
+            ),
+            unit: String((trackSeries as RecordWithUnknownValues).unit || ""),
             color: hexToRgba(
-              (trackSeries as Record<string, unknown>).color as string,
+              (trackSeries as RecordWithUnknownValues).color as string,
               0.92
             ),
             opacity: 0.82,
@@ -5596,8 +5861,8 @@ export class HistoryChart extends HTMLElement {
                     (trackRowOffset as number) +
                     (trackRenderer as InstanceType<typeof ChartRenderer>).yOf(
                       deltaVal,
-                      (trackDeltaAxis as Record<string, number>).min,
-                      (trackDeltaAxis as Record<string, number>).max
+                      (trackDeltaAxis as RecordWithNumericValues).min,
+                      (trackDeltaAxis as RecordWithNumericValues).max
                     ),
                 }
               : {}),
@@ -5616,19 +5881,19 @@ export class HistoryChart extends HTMLElement {
           const summaryEntries = [
             {
               type: "min",
-              value: (trackSummaryStats as Record<string, number>).min,
+              value: (trackSummaryStats as RecordWithNumericValues).min,
               alphaV: trackHideSource ? 0.94 : 0.78,
               opac: trackHideSource ? 0.94 : 0.72,
             },
             {
               type: "mean",
-              value: (trackSummaryStats as Record<string, number>).mean,
+              value: (trackSummaryStats as RecordWithNumericValues).mean,
               alphaV: trackHideSource ? 0.94 : 0.78,
               opac: trackHideSource ? 0.94 : 0.72,
             },
             {
               type: "max",
-              value: (trackSummaryStats as Record<string, number>).max,
+              value: (trackSummaryStats as RecordWithNumericValues).max,
               alphaV: trackHideSource ? 0.94 : 0.78,
               opac: trackHideSource ? 0.94 : 0.72,
             },
@@ -5636,14 +5901,19 @@ export class HistoryChart extends HTMLElement {
           for (const entry of summaryEntries) {
             if (!Number.isFinite(entry.value)) continue;
             summaryValues.push({
-              entityId: `summary:${entry.type}:${(trackSeries as Record<string, unknown>).entityId}`,
-              relatedEntityId: (trackSeries as Record<string, unknown>)
-                .entityId,
-              label: (trackSeries as Record<string, unknown>).label,
-              baseLabel: (trackSeries as Record<string, unknown>).label,
-              unit: (trackSeries as Record<string, unknown>).unit || "",
+              entityId: `summary:${entry.type}:${(trackSeries as RecordWithUnknownValues).entityId}`,
+              relatedEntityId: String(
+                (trackSeries as RecordWithUnknownValues).entityId || ""
+              ),
+              label: String(
+                (trackSeries as RecordWithUnknownValues).label || ""
+              ),
+              baseLabel: String(
+                (trackSeries as RecordWithUnknownValues).label || ""
+              ),
+              unit: String((trackSeries as RecordWithUnknownValues).unit || ""),
               color: hexToRgba(
-                (trackSeries as Record<string, unknown>).color as string,
+                (trackSeries as RecordWithUnknownValues).color as string,
                 entry.alphaV
               ),
               opacity: entry.opac,
@@ -5663,14 +5933,19 @@ export class HistoryChart extends HTMLElement {
           const thresholdValue = Number(effectiveAnalysis.threshold_value);
           if (Number.isFinite(thresholdValue)) {
             thresholdValues.push({
-              entityId: `threshold:${(trackSeries as Record<string, unknown>).entityId}`,
-              relatedEntityId: (trackSeries as Record<string, unknown>)
-                .entityId,
-              label: (trackSeries as Record<string, unknown>).label,
-              baseLabel: (trackSeries as Record<string, unknown>).label,
-              unit: (trackSeries as Record<string, unknown>).unit || "",
+              entityId: `threshold:${(trackSeries as RecordWithUnknownValues).entityId}`,
+              relatedEntityId: String(
+                (trackSeries as RecordWithUnknownValues).entityId || ""
+              ),
+              label: String(
+                (trackSeries as RecordWithUnknownValues).label || ""
+              ),
+              baseLabel: String(
+                (trackSeries as RecordWithUnknownValues).label || ""
+              ),
+              unit: String((trackSeries as RecordWithUnknownValues).unit || ""),
               color: hexToRgba(
-                (trackSeries as Record<string, unknown>).color as string,
+                (trackSeries as RecordWithUnknownValues).color as string,
                 trackHideSource ? 0.82 : 0.46
               ),
               opacity: trackHideSource ? 0.84 : 0.48,
@@ -5686,27 +5961,27 @@ export class HistoryChart extends HTMLElement {
 
         // Anomaly regions — check which (if any) the cursor time falls within.
         if (Array.isArray(trackAnomalyRegions)) {
-          for (const region of trackAnomalyRegions as unknown[]) {
-            const clusterPoints = (region as Record<string, unknown>)?.cluster
+          for (const region of trackAnomalyRegions as AnomalyRegion[]) {
+            const clusterPoints = (region as RecordWithUnknownValues)?.cluster
               ? ((
-                  (region as Record<string, unknown>).cluster as Record<
+                  (region as RecordWithUnknownValues).cluster as Record<
                     string,
                     unknown
                   >
                 )?.points as unknown[] | undefined)
               : undefined;
             const regionStartMs = clusterPoints?.[0]
-              ? ((clusterPoints[0] as Record<string, number>)?.timeMs ??
-                (region as Record<string, number>).startTime)
-              : (region as Record<string, number>).startTime;
+              ? ((clusterPoints[0] as RecordWithNumericValues)?.timeMs ??
+                (region as RecordWithNumericValues).startTime)
+              : (region as RecordWithNumericValues).startTime;
             const regionEndMs = clusterPoints?.length
               ? ((
                   clusterPoints[clusterPoints.length - 1] as Record<
                     string,
                     number
                   >
-                )?.timeMs ?? (region as Record<string, number>).endTime)
-              : (region as Record<string, number>).endTime;
+                )?.timeMs ?? (region as RecordWithNumericValues).endTime)
+              : (region as RecordWithNumericValues).endTime;
             if (
               Number.isFinite(regionStartMs) &&
               Number.isFinite(regionEndMs) &&
@@ -5720,13 +5995,14 @@ export class HistoryChart extends HTMLElement {
       }
 
       for (const comparisonSeries of comparisonHoverSeries as unknown[]) {
-        const seriesEntry = comparisonSeries as Record<string, unknown>;
-        const track = seriesEntry.track as Record<string, unknown>;
-        const trackRenderer =
-          track.renderer as InstanceType<typeof ChartRenderer>;
-        const trackAxis = track.axis as Record<string, number>;
+        const seriesEntry = comparisonSeries as RecordWithUnknownValues;
+        const track = seriesEntry.track as RecordWithUnknownValues;
+        const trackRenderer = track.renderer as InstanceType<
+          typeof ChartRenderer
+        >;
+        const trackAxis = track.axis as RecordWithNumericValues;
         const trackRateAxis =
-          (track.rateAxis as Record<string, number> | null) || null;
+          (track.rateAxis as Nullable<RecordWithNumericValues>) || null;
         const trackRowOffset = track.rowOffset as number;
         const trendPts = Array.isArray(seriesEntry.trendPts)
           ? (seriesEntry.trendPts as [number, number][])
@@ -5735,12 +6011,12 @@ export class HistoryChart extends HTMLElement {
           const trendVal = trackRenderer._interpolateValue(trendPts, timeMs);
           trendValues.push({
             entityId: `trend:${seriesEntry.entityId as string}`,
-            relatedEntityId: seriesEntry.relatedEntityId || "",
-            comparisonParentId: seriesEntry.comparisonParentId || "",
-            label: seriesEntry.label,
-            baseLabel: seriesEntry.label,
-            windowLabel: seriesEntry.windowLabel || "Date window",
-            unit: seriesEntry.unit || "",
+            relatedEntityId: String(seriesEntry.relatedEntityId || ""),
+            comparisonParentId: String(seriesEntry.comparisonParentId || ""),
+            label: String(seriesEntry.label || ""),
+            baseLabel: String(seriesEntry.label || ""),
+            windowLabel: String(seriesEntry.windowLabel || "Date window"),
+            unit: String(seriesEntry.unit || ""),
             color: hexToRgba(seriesEntry.color as string, 0.34),
             opacity: 0.34,
             hasValue: trendVal != null,
@@ -5750,11 +6026,7 @@ export class HistoryChart extends HTMLElement {
                   x,
                   y:
                     trackRowOffset +
-                    trackRenderer.yOf(
-                      trendVal,
-                      trackAxis.min,
-                      trackAxis.max
-                    ),
+                    trackRenderer.yOf(trendVal, trackAxis.min, trackAxis.max),
                 }
               : {}),
             axisSide: "left",
@@ -5771,12 +6043,12 @@ export class HistoryChart extends HTMLElement {
           const rateVal = trackRenderer._interpolateValue(ratePts, timeMs);
           rateValues.push({
             entityId: `rate:${seriesEntry.entityId as string}`,
-            relatedEntityId: seriesEntry.relatedEntityId || "",
-            comparisonParentId: seriesEntry.comparisonParentId || "",
-            label: seriesEntry.label,
-            baseLabel: seriesEntry.label,
-            windowLabel: seriesEntry.windowLabel || "Date window",
-            unit: seriesEntry.unit ? `${seriesEntry.unit}/h` : "/h",
+            relatedEntityId: String(seriesEntry.relatedEntityId || ""),
+            comparisonParentId: String(seriesEntry.comparisonParentId || ""),
+            label: String(seriesEntry.label || ""),
+            baseLabel: String(seriesEntry.label || ""),
+            windowLabel: String(seriesEntry.windowLabel || "Date window"),
+            unit: seriesEntry.unit ? `${String(seriesEntry.unit)}/h` : "/h",
             color: hexToRgba(seriesEntry.color as string, 0.46),
             opacity: 0.46,
             hasValue: rateVal != null,
@@ -5800,9 +6072,8 @@ export class HistoryChart extends HTMLElement {
             comparisonDerived: true,
           });
         }
-        const summaryStats = seriesEntry.summaryStats as
-          | Record<string, number>
-          | null;
+        const summaryStats =
+          seriesEntry.summaryStats as Nullable<RecordWithNumericValues>;
         if (summaryStats) {
           [
             { type: "min", value: summaryStats.min },
@@ -5814,12 +6085,12 @@ export class HistoryChart extends HTMLElement {
             }
             summaryValues.push({
               entityId: `summary:${entry.type}:${seriesEntry.entityId as string}`,
-              relatedEntityId: seriesEntry.relatedEntityId || "",
-              comparisonParentId: seriesEntry.comparisonParentId || "",
-              label: seriesEntry.label,
-              baseLabel: seriesEntry.label,
-              windowLabel: seriesEntry.windowLabel || "Date window",
-              unit: seriesEntry.unit || "",
+              relatedEntityId: String(seriesEntry.relatedEntityId || ""),
+              comparisonParentId: String(seriesEntry.comparisonParentId || ""),
+              label: String(seriesEntry.label || ""),
+              baseLabel: String(seriesEntry.label || ""),
+              windowLabel: String(seriesEntry.windowLabel || "Date window"),
+              unit: String(seriesEntry.unit || ""),
               color: hexToRgba(
                 seriesEntry.color as string,
                 entry.type === "mean" ? 0.44 : 0.24
@@ -5840,12 +6111,12 @@ export class HistoryChart extends HTMLElement {
         if (Number.isFinite(thresholdValue)) {
           thresholdValues.push({
             entityId: `threshold:${seriesEntry.entityId as string}`,
-            relatedEntityId: seriesEntry.relatedEntityId || "",
-            comparisonParentId: seriesEntry.comparisonParentId || "",
-            label: seriesEntry.label,
-            baseLabel: seriesEntry.label,
-            windowLabel: seriesEntry.windowLabel || "Date window",
-            unit: seriesEntry.unit || "",
+            relatedEntityId: String(seriesEntry.relatedEntityId || ""),
+            comparisonParentId: String(seriesEntry.comparisonParentId || ""),
+            label: String(seriesEntry.label || ""),
+            baseLabel: String(seriesEntry.label || ""),
+            windowLabel: String(seriesEntry.windowLabel || "Date window"),
+            unit: String(seriesEntry.unit || ""),
             color: hexToRgba(seriesEntry.color as string, 0.28),
             opacity: 0.34,
             hasValue: true,
@@ -5861,10 +6132,10 @@ export class HistoryChart extends HTMLElement {
 
       const hideRawData = (tracks as unknown[]).every((track: unknown) => {
         const eff =
-          (track as Record<string, unknown>).analysis ||
+          (track as RecordWithUnknownValues).analysis ||
           (analysisMap || new Map()).get(
             (
-              (track as Record<string, unknown>).series as Record<
+              (track as RecordWithUnknownValues).series as Record<
                 string,
                 unknown
               >
@@ -5877,49 +6148,37 @@ export class HistoryChart extends HTMLElement {
         );
       });
 
-      const firstWithValue = (values as unknown[]).find(
-        (v: unknown) => (v as Record<string, unknown>).hasValue
-      ) as Record<string, unknown> | undefined;
+      const firstWithValue = values.find((value) => value.hasValue === true);
       return {
         x,
         y: firstWithValue?.y ?? splitSelTop + 12,
         timeMs,
         rangeStartMs: timeMs,
         rangeEndMs: timeMs,
-        values: (values as unknown[]).filter(
-          (v: unknown) => (v as Record<string, unknown>).hasValue
-        ),
+        values: values.filter((value) => value.hasValue === true),
         trendValues,
         rateValues,
         deltaValues,
         summaryValues,
         thresholdValues,
-        comparisonValues: (comparisonValues as unknown[]).filter(
-          (v: unknown) => (v as Record<string, unknown>).hasValue
+        comparisonValues: comparisonValues.filter(
+          (value) => value.hasValue === true
         ),
         binaryValues: [],
         primary: firstWithValue ?? null,
         event:
           hoveredEvents.length > 0
-            ? Object.fromEntries(
-                Object.entries(
-                  hoveredEvents[0] as Record<string, unknown>
-                ).filter(([key]) => key !== "_hoverDistanceMs")
-              )
+            ? (({ _hoverDistanceMs: _, ...event }) => event)(hoveredEvents[0])
             : null,
-        events: (hoveredEvents as unknown[]).map((ev: unknown) =>
-          Object.fromEntries(
-            Object.entries(ev as Record<string, unknown>).filter(
-              ([key]) => key !== "_hoverDistanceMs"
-            )
-          )
+        events: hoveredEvents.map(
+          ({ _hoverDistanceMs: _d, ...event }) => event
         ),
         anomalyRegions,
         emphasizeGuides: options.emphasizeHoverGuides === true,
         showTrendCrosshairs,
         hideRawData,
         splitVertical: { top: splitSelTop, height: splitSelHeight },
-      };
+      } satisfies HoverState;
     };
 
     const showFromPointer = (clientX: number, clientY: number) => {
@@ -5935,7 +6194,7 @@ export class HistoryChart extends HTMLElement {
       }
       this._chartLastHover = hover;
       showLineChartCrosshair(this, primaryRenderer, hover);
-      if ((this._config as Record<string, unknown>).show_tooltips !== false) {
+      if ((this._config as RecordWithUnknownValues).show_tooltips !== false) {
         showLineChartTooltip(this, hover, clientX, clientY);
       } else {
         hideTooltip(this);
@@ -5970,16 +6229,30 @@ export class HistoryChart extends HTMLElement {
     };
     const onTouchEnd = () => hideHover();
 
+    const onOverlayClick = (ev: MouseEvent) => {
+      if (this._chartZoomDragging) return;
+      const hover = this._chartLastHover as Nullable<{
+        anomalyRegions?: unknown[];
+      }>;
+      const regions = hover?.anomalyRegions;
+      if (!regions?.length) return;
+      ev.preventDefault();
+      ev.stopPropagation();
+      this._handleAnomalyAddAnnotation(regions);
+    };
+
     overlayEl.addEventListener("mousemove", onMouseMove);
     overlayEl.addEventListener("mouseleave", onMouseLeave);
     overlayEl.addEventListener("touchmove", onTouchMove, { passive: true });
     overlayEl.addEventListener("touchend", onTouchEnd);
+    overlayEl.addEventListener("click", onOverlayClick);
 
     this._chartHoverCleanup = () => {
       overlayEl.removeEventListener("mousemove", onMouseMove);
       overlayEl.removeEventListener("mouseleave", onMouseLeave);
       overlayEl.removeEventListener("touchmove", onTouchMove);
       overlayEl.removeEventListener("touchend", onTouchEnd);
+      overlayEl.removeEventListener("click", onOverlayClick);
     };
 
     // ── Zoom drag-select ───────────────────────────────────────────────────────
@@ -6007,7 +6280,7 @@ export class HistoryChart extends HTMLElement {
       (selection as HTMLElement).classList.add("visible");
     };
 
-    let zoomPointerId: number | null = null;
+    let zoomPointerId: Nullable<number> = null;
     let zoomStartX = 0;
     let zoomCurrentX = 0;
     let zoomDragging = false;

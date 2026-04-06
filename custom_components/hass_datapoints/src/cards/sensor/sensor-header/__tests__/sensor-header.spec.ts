@@ -1,16 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import "../sensor-header";
 
-function createElement(props: Record<string, unknown> = {}) {
+function createElement(props: RecordWithUnknownValues = {}) {
   const el = document.createElement("sensor-header") as HTMLElement &
-    Record<string, unknown>;
+    RecordWithUnknownValues;
   Object.assign(el, props);
   document.body.appendChild(el);
   return el;
 }
 
 describe("sensor-header", () => {
-  let el: HTMLElement & Record<string, unknown>;
+  let el: HTMLElement & RecordWithUnknownValues;
 
   afterEach(() => {
     el?.remove();

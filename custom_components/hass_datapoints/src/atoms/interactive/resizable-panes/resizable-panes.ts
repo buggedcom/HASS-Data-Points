@@ -39,9 +39,9 @@ export class ResizablePanes extends LitElement {
 
   // ── Internal drag state ────────────────────────────────────────────────────
 
-  private _pointerId: number | null = null;
+  private _pointerId: Nullable<number> = null;
 
-  private _splitterEl: HTMLButtonElement | null = null;
+  private _splitterEl: Nullable<HTMLButtonElement> = null;
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
 

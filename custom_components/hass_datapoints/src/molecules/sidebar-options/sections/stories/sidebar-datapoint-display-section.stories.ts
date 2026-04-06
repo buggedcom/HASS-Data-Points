@@ -29,7 +29,7 @@ export default {
     showIcons: true,
     showLines: true,
   },
-  render: (args: Record<string, unknown>) => html`
+  render: (args: RecordWithUnknownValues) => html`
     <sidebar-datapoint-display-section
       .showIcons=${args.showIcons}
       .showLines=${args.showLines}

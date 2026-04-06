@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { downloadHistorySpreadsheet } from "@/lib/export-spreadsheet.js";
+import { downloadHistorySpreadsheet } from "@/lib/export-spreadsheet";
 
-vi.mock("@/lib/ha/entity-name.js", () => ({
+vi.mock("@/lib/ha/entity-name", () => ({
   entityName: vi.fn((_hass, entityId: string) => `Name for ${entityId}`),
 }));
 
-vi.mock("@/lib/data/events-api.js", () => ({
+vi.mock("@/lib/data/events-api", () => ({
   fetchEvents: vi.fn(async () => [
     {
       timestamp: "2026-04-01T01:00:00.000Z",
@@ -22,7 +22,7 @@ vi.mock("@/lib/data/events-api.js", () => ({
   ]),
 }));
 
-vi.mock("@/lib/data/history-api.js", () => ({
+vi.mock("@/lib/data/history-api", () => ({
   fetchHistoryDuringPeriod: vi.fn(async () => ({
     "sensor.alpha": [
       { lu: new Date("2026-04-01T00:00:00.000Z").getTime(), s: "21.1" },
@@ -30,7 +30,7 @@ vi.mock("@/lib/data/history-api.js", () => ({
   })),
 }));
 
-describe("export-spreadsheet.js", () => {
+describe("export-spreadsheet", () => {
   afterEach(() => {
     vi.restoreAllMocks();
   });

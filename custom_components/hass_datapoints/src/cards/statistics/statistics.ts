@@ -2,26 +2,26 @@ import { LitElement, html } from "lit";
 import { state } from "lit/decorators.js";
 
 import { styles } from "./statistics.styles";
-import { COLORS, DOMAIN } from "@/constants.js";
-import { attachLineChartHover } from "@/lib/chart/chart-interaction.js";
+import { COLORS, DOMAIN } from "@/constants";
+import { attachLineChartHover } from "@/lib/chart/chart-interaction";
 import {
   renderChartAxisOverlays,
   resolveChartLabelColor,
   setupCanvas,
-} from "@/charts/utils/chart-dom.js";
-import { ChartRenderer } from "@/lib/chart/chart-renderer.js";
-import { fetchEvents } from "@/lib/data/events-api.js";
-import { fetchStatisticsDuringPeriod } from "@/lib/data/statistics-api.js";
+} from "@/charts/utils/chart-dom";
+import { ChartRenderer } from "@/lib/chart/chart-renderer";
+import { fetchEvents } from "@/lib/data/events-api";
+import { fetchStatisticsDuringPeriod } from "@/lib/data/statistics-api";
 import type { CardConfig, HassLike, SeriesItem } from "@/lib/types";
 import "@/molecules/chart-shell/chart-shell";
 import "@/molecules/chart-legend/chart-legend";
-import { logger } from "@/lib/logger.js";
+import { logger } from "@/lib/logger";
 
 /** A single entry returned by the HA statistics API. */
 interface StatsEntry {
   start: number | string;
 
-  [key: string]: number | string | null | undefined;
+  [key: string]: number | Nullable<string> | undefined;
 }
 
 /** Minimal entity-like object used by _statIds resolution. */
@@ -58,7 +58,7 @@ interface RendererLike {
 export class HassRecordsStatisticsCard extends LitElement {
   @state() accessor _config: CardConfig = {};
 
-  @state() accessor _hass: HassLike | null = null;
+  @state() accessor _hass: Nullable<HassLike> = null;
 
   @state() accessor _loading: boolean = false;
 
@@ -70,15 +70,15 @@ export class HassRecordsStatisticsCard extends LitElement {
 
   private _loadRequestId = 0;
 
-  private _lastDrawArgs: unknown[] | null = null;
+  private _lastDrawArgs: Nullable<unknown[]> = null;
 
-  private _chartHoverCleanup: (() => void) | null = null;
+  private _chartHoverCleanup: NullableCleanup = null;
 
-  private _unsubscribe: (() => void) | null = null;
+  private _unsubscribe: NullableCleanup = null;
 
-  private _windowListener: (() => void) | null = null;
+  private _windowListener: NullableCleanup = null;
 
-  private _resizeObserver: ResizeObserver | null = null;
+  private _resizeObserver: Nullable<ResizeObserver> = null;
 
   private _hasStartedInitialLoad = false;
 
@@ -109,7 +109,7 @@ export class HassRecordsStatisticsCard extends LitElement {
     }
   }
 
-  get hass(): HassLike | null {
+  get hass(): Nullable<HassLike> {
     return this._hass;
   }
 
@@ -215,8 +215,8 @@ export class HassRecordsStatisticsCard extends LitElement {
     this._drawEmptyChartFrame(t0, t1);
 
     const partial: {
-      statsResult: Record<string, unknown[]> | null;
-      events: unknown[] | null;
+      statsResult: Nullable<Record<string, unknown[]>>;
+      events: Nullable<unknown[]>;
       statsDone: boolean;
       eventsDone: boolean;
       statsFailed: boolean;
@@ -256,7 +256,7 @@ export class HassRecordsStatisticsCard extends LitElement {
           now.toISOString(),
           this._statIds,
           {
-            period: this._config.period,
+            period: this._config.period as string | undefined,
             types: this._config.stat_types,
             units: {},
           }
@@ -317,7 +317,10 @@ export class HassRecordsStatisticsCard extends LitElement {
       this.shadowRoot?.querySelector<HTMLCanvasElement>("canvas#chart");
     const wrap = this.shadowRoot?.querySelector(".chart-wrap");
     if (!canvas || !wrap) return;
-    const { w, h } = setupCanvas(canvas, wrap, 220) as { w: number; h: number };
+    const { w, h } = setupCanvas(canvas, wrap as HTMLElement, 220) as {
+      w: number;
+      h: number;
+    };
     const renderer = new (ChartRenderer as unknown as new (
       c: HTMLCanvasElement,
       w: number,
@@ -342,11 +345,11 @@ export class HassRecordsStatisticsCard extends LitElement {
       5,
       { fixedAxisOverlay: true }
     );
-    renderChartAxisOverlays(this, renderer, renderer._activeAxes || []);
+    renderChartAxisOverlays(this, renderer as never, (renderer._activeAxes || []) as never);
   }
 
   private _hasDrawableStatisticsData(
-    statsResult: Record<string, unknown>
+    statsResult: RecordWithUnknownValues
   ): boolean {
     return Object.values(statsResult || {}).some(
       (entries) => Array.isArray(entries) && entries.length > 0
@@ -367,7 +370,10 @@ export class HassRecordsStatisticsCard extends LitElement {
     const wrap = this.shadowRoot?.querySelector(".chart-wrap");
     if (!canvas || !wrap) return;
 
-    const { w, h } = setupCanvas(canvas, wrap, 220) as { w: number; h: number };
+    const { w, h } = setupCanvas(canvas, wrap as HTMLElement, 220) as {
+      w: number;
+      h: number;
+    };
     const renderer = new (ChartRenderer as unknown as new (
       c: HTMLCanvasElement,
       w: number,
@@ -379,7 +385,7 @@ export class HassRecordsStatisticsCard extends LitElement {
     const series: SeriesItem[] = [];
     const allVals: number[] = [];
     let colorIdx = 0;
-    const colors = COLORS as string[];
+    const colors = COLORS as unknown as string[];
 
     for (const [statId, entries] of Object.entries(statsResult)) {
       for (const statType of this._config.stat_types as string[]) {
@@ -439,7 +445,7 @@ export class HassRecordsStatisticsCard extends LitElement {
     renderer.drawGrid(t0, t1, chartMin, chartMax, 5, {
       fixedAxisOverlay: true,
     });
-    renderChartAxisOverlays(this, renderer, renderer._activeAxes || []);
+    renderChartAxisOverlays(this, renderer as never, (renderer._activeAxes || []) as never);
     for (const s of series) {
       const seriesPts = (() => {
         const pts: [number, number][] = [];
@@ -484,14 +490,14 @@ export class HassRecordsStatisticsCard extends LitElement {
     this._chartHoverCleanup = attachLineChartHover(
       this,
       canvas,
-      renderer,
+      renderer as unknown as import("@/lib/chart/chart-renderer").ChartRenderer,
       series,
-      events,
+      events as unknown as import("@/lib/chart/chart-interaction").ChartEventRecord[],
       t0,
       t1,
       chartMin,
       chartMax
-    ) as unknown as (() => void) | null;
+    ) as unknown as NullableCleanup;
   }
 
   render() {

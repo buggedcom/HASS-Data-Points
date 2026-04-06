@@ -11,8 +11,8 @@ type HistoryRow = {
 
 type DpHistoryTargets = HTMLElement & {
   rows: HistoryRow[];
-  states: Record<string, unknown>;
-  hass: Record<string, unknown> | null;
+  states: RecordWithUnknownValues;
+  hass: Nullable<RecordWithUnknownValues>;
   comparisonWindows: unknown[];
   canShowDeltaAnalysis: boolean;
   sidebarCollapsed: boolean;
@@ -138,14 +138,15 @@ describe("history-targets", () => {
 
     describe("WHEN add button is clicked", () => {
       it("THEN fires dp-targets-add-click event", async () => {
-        expect.assertions(1);
-        const events: Event[] = [];
+        expect.assertions(2);
+        const events: CustomEvent[] = [];
         el.addEventListener("dp-targets-add-click", (ev) => events.push(ev));
         el.shadowRoot!.querySelector<HTMLElement>(
           ".history-targets-collapsed-add"
         )!.click();
         await el.updateComplete;
         expect(events.length).toBe(1);
+        expect(events[0].detail.buttonEl).toBeInstanceOf(HTMLElement);
       });
     });
 
@@ -172,8 +173,8 @@ describe("history-targets", () => {
     beforeEach(async () => {
       el = createElement({
         rows: MOCK_ROWS,
-        hass: createMockHass() as unknown as Record<string, unknown>,
-        states: createMockHass().states as unknown as Record<string, unknown>,
+        hass: createMockHass() as unknown as RecordWithUnknownValues,
+        states: createMockHass().states as unknown as RecordWithUnknownValues,
         sidebarCollapsed: true,
       });
       await el.updateComplete;
@@ -219,8 +220,8 @@ describe("history-targets", () => {
     beforeEach(async () => {
       el = createElement({
         rows: MOCK_ROWS,
-        hass: createMockHass() as unknown as Record<string, unknown>,
-        states: createMockHass().states as unknown as Record<string, unknown>,
+        hass: createMockHass() as unknown as RecordWithUnknownValues,
+        states: createMockHass().states as unknown as RecordWithUnknownValues,
         sidebarCollapsed: true,
       });
       await el.updateComplete;
@@ -249,8 +250,8 @@ describe("history-targets", () => {
     beforeEach(async () => {
       el = createElement({
         rows: MOCK_ROWS,
-        hass: createMockHass() as unknown as Record<string, unknown>,
-        states: createMockHass().states as unknown as Record<string, unknown>,
+        hass: createMockHass() as unknown as RecordWithUnknownValues,
+        states: createMockHass().states as unknown as RecordWithUnknownValues,
         canShowDeltaAnalysis: true,
       });
       await el.updateComplete;

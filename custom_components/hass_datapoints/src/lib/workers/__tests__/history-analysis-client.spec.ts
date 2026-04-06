@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   computeHistoryAnalysisInWorker,
   terminateHistoryAnalysisWorker,
-} from "@/lib/workers/history-analysis-client.js";
+} from "@/lib/workers/history-analysis-client";
 
 // ── Mock HistoryAnalysisWorker ────────────────────────────────────────────────
 //
@@ -18,7 +18,7 @@ interface MockWorkerInstance {
   emit(type: string, event: unknown): void;
 }
 
-let currentMockWorker: MockWorkerInstance | null = null;
+let currentMockWorker: Nullable<MockWorkerInstance> = null;
 
 function MockHistoryAnalysisWorker(this: unknown): MockWorkerInstance {
   const listeners: Record<string, Array<(event: unknown) => void>> = {};
@@ -36,7 +36,7 @@ function MockHistoryAnalysisWorker(this: unknown): MockWorkerInstance {
   return instance;
 }
 
-vi.mock("@/lib/workers/history-analysis.worker.js?worker&inline", () => ({
+vi.mock("@/lib/workers/history-analysis.worker.ts?worker&inline", () => ({
   default: MockHistoryAnalysisWorker,
 }));
 

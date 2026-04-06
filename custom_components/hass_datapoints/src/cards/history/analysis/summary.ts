@@ -1,6 +1,6 @@
 import type { Point, SummaryStats } from "./types";
 
-export function buildSummaryStats(points: Point[]): SummaryStats | null {
+export function buildSummaryStats(points: Point[]): Nullable<SummaryStats> {
   if (!Array.isArray(points) || !points.length) {
     return null;
   }

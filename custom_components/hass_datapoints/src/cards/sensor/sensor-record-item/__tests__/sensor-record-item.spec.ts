@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "../sensor-record-item";
 
-vi.mock("@/lib/util/format.js", () => ({
+vi.mock("@/lib/util/format", () => ({
   fmtDateTime: vi.fn().mockReturnValue("2026-03-31 10:00"),
   fmtRelativeTime: vi.fn().mockReturnValue("2 hours ago"),
 }));
@@ -20,16 +20,16 @@ const sampleEvent = {
   dev: false,
 };
 
-function createElement(props: Record<string, unknown> = {}) {
+function createElement(props: RecordWithUnknownValues = {}) {
   const el = document.createElement("sensor-record-item") as HTMLElement &
-    Record<string, unknown>;
+    RecordWithUnknownValues;
   Object.assign(el, props);
   document.body.appendChild(el);
   return el;
 }
 
 describe("sensor-record-item", () => {
-  let el: HTMLElement & Record<string, unknown>;
+  let el: HTMLElement & RecordWithUnknownValues;
 
   afterEach(() => {
     el?.remove();

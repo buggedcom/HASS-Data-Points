@@ -3,7 +3,7 @@ import "../sidebar-chart-display-section";
 
 /**
  * `sidebar-chart-display-section` renders the "Chart Display" sidebar section,
- * grouping chart visual options: tooltips, hover guides, correlated anomalies, data gaps
+ * grouping chart visual options: tooltips, hover guides, data gaps
  * (with a dependent gap-threshold select), and y-axis layout mode.
  *
  * @fires dp-display-change - `{ kind: string, value: boolean | string }` fired when any option changes
@@ -31,11 +31,6 @@ export default {
       description:
         "Whether hover follows the interpolated series or snaps to actual datapoints.",
     },
-    showCorrelatedAnomalies: {
-      control: "boolean",
-      description:
-        "Whether correlated anomalies across series are highlighted.",
-    },
     showDataGaps: {
       control: "boolean",
       description:
@@ -58,17 +53,15 @@ export default {
     showTooltips: true,
     showHoverGuides: false,
     hoverSnapMode: "follow_series",
-    showCorrelatedAnomalies: false,
     showDataGaps: true,
     dataGapThreshold: "2h",
     yAxisMode: "combined",
   },
-  render: (args: Record<string, unknown>) => html`
+  render: (args: RecordWithUnknownValues) => html`
     <sidebar-chart-display-section
       .showTooltips=${args.showTooltips}
       .showHoverGuides=${args.showHoverGuides}
       .hoverSnapMode=${args.hoverSnapMode}
-      .showCorrelatedAnomalies=${args.showCorrelatedAnomalies}
       .showDataGaps=${args.showDataGaps}
       .dataGapThreshold=${args.dataGapThreshold}
       .yAxisMode=${args.yAxisMode}
@@ -90,7 +83,6 @@ export const AllCheckboxesOn = {
     showTooltips: true,
     showHoverGuides: true,
     hoverSnapMode: "snap_to_data_points",
-    showCorrelatedAnomalies: true,
     showDataGaps: true,
     dataGapThreshold: "1h",
   },

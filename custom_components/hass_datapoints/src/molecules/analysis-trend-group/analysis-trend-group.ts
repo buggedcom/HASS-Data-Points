@@ -1,7 +1,8 @@
 import { LitElement, html, nothing } from "lit";
 import { property } from "lit/decorators.js";
-
 import type { TemplateResult } from "lit";
+import { localized, msg } from "@/lib/i18n/localize";
+
 import { sharedStyles } from "../analysis-group-shared/analysis-group-shared.styles";
 import { styles } from "./analysis-trend-group.styles";
 import type { NormalizedAnalysis } from "@/molecules/target-row/types";
@@ -22,6 +23,7 @@ export const ANALYSIS_TREND_WINDOW_OPTIONS = [
   { value: "28d", label: "28 days" },
 ];
 
+@localized()
 export class AnalysisTrendGroup extends LitElement {
   @property({ type: Object }) accessor analysis: NormalizedAnalysis =
     {} as NormalizedAnalysis;
@@ -39,6 +41,15 @@ export class AnalysisTrendGroup extends LitElement {
         composed: true,
       })
     );
+  }
+
+  private _localizedOptions(
+    options: Array<{ value: string; label: string }>
+  ): Array<{ value: string; label: string }> {
+    return options.map((opt) => ({
+      ...opt,
+      label: msg(opt.label),
+    }));
   }
 
   private _renderSelect(
@@ -74,7 +85,7 @@ export class AnalysisTrendGroup extends LitElement {
     const a = this.analysis;
     return html`
       <analysis-group
-        .label=${"Show trend lines"}
+        .label=${msg("Show trend lines")}
         .checked=${a.show_trend_lines}
         @dp-group-change=${this._onGroupChange}
       >
@@ -85,23 +96,23 @@ export class AnalysisTrendGroup extends LitElement {
             @change=${(e: Event) =>
               this._onCheckbox("show_trend_crosshairs", e)}
           />
-          <span>Show trend crosshairs</span>
+          <span>${msg("Show trend crosshairs")}</span>
         </label>
         <label class="field">
-          <span class="field-label">Trend method</span>
+          <span class="field-label">${msg("Trend method")}</span>
           ${this._renderSelect(
             "trend_method",
-            ANALYSIS_TREND_METHOD_OPTIONS,
+            this._localizedOptions(ANALYSIS_TREND_METHOD_OPTIONS),
             a.trend_method
           )}
         </label>
         ${a.trend_method === "rolling_average"
           ? html`
               <label class="field">
-                <span class="field-label">Trend window</span>
+                <span class="field-label">${msg("Trend window")}</span>
                 ${this._renderSelect(
                   "trend_window",
-                  ANALYSIS_TREND_WINDOW_OPTIONS,
+                  this._localizedOptions(ANALYSIS_TREND_WINDOW_OPTIONS),
                   a.trend_window
                 )}
               </label>

@@ -85,7 +85,7 @@ export default {
       return {};
     },
   ],
-  render: (args: Record<string, unknown>) => html`
+  render: (args: RecordWithUnknownValues) => html`
     <div
       style="background: var(--card-background-color, #fff); padding: 12px 0; border-bottom: 1px solid var(--divider-color);"
     >
@@ -112,9 +112,9 @@ export const Default = {
     const panelTimeline = toolbar.shadowRoot.querySelector(
       "#range-panel-timeline"
     ) as HTMLElement & {
-      startTime: Date | null;
-      endTime: Date | null;
-      rangeBounds: RangeBounds | null;
+      startTime: Nullable<Date>;
+      endTime: Nullable<Date>;
+      rangeBounds: Nullable<RangeBounds>;
       zoomLevel: string;
       dateSnapping: string;
     };

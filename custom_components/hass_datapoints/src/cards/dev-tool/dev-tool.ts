@@ -1,8 +1,8 @@
-import { DOMAIN } from "@/constants.js";
-import { confirmDestructiveAction } from "@/lib/ha/ha-components.js";
-import { esc } from "@/lib/util/format.js";
+import { DOMAIN } from "@/constants";
+import { confirmDestructiveAction } from "@/lib/ha/ha-components";
+import { esc } from "@/lib/util/format";
 import type { HassLike } from "@/lib/types";
-import { logger } from "@/lib/logger.js";
+import { logger } from "@/lib/logger";
 import { styles } from "./dev-tool.styles";
 import type {
   ChangeItem,
@@ -14,9 +14,9 @@ import "@/cards/dev-tool/dev-tool-results/dev-tool-results";
 import "@/cards/dev-tool/dev-tool-windows/dev-tool-windows";
 
 export class HassRecordsDevToolCard extends HTMLElement {
-  _config: Record<string, unknown> = {};
+  _config: RecordWithUnknownValues = {};
 
-  _hass: HassLike | null = null;
+  _hass: Nullable<HassLike> = null;
 
   _rendered = false;
 
@@ -31,7 +31,7 @@ export class HassRecordsDevToolCard extends HTMLElement {
     this.attachShadow({ mode: "open" });
   }
 
-  setConfig(config: Record<string, unknown>) {
+  setConfig(config: RecordWithUnknownValues) {
     this._config = config || {};
   }
 
@@ -50,8 +50,7 @@ export class HassRecordsDevToolCard extends HTMLElement {
     }
 
     const entityPicker = this.shadowRoot.getElementById("entity-picker") as
-      | (HTMLElement & Record<string, unknown>)
-      | null;
+      | Nullable<HTMLElement & RecordWithUnknownValues>;
     if (!entityPicker) {
       return;
     }
@@ -102,8 +101,7 @@ export class HassRecordsDevToolCard extends HTMLElement {
     `;
 
     const entityPicker = this.shadowRoot!.getElementById("entity-picker") as
-      | (HTMLElement & Record<string, unknown>)
-      | null;
+      | Nullable<HTMLElement & RecordWithUnknownValues>;
     if (entityPicker) {
       entityPicker.selector = { entity: { multiple: true } };
       entityPicker.value = [];
@@ -200,7 +198,7 @@ export class HassRecordsDevToolCard extends HTMLElement {
             no_attributes: false,
           });
           const changes = this._detectChanges(
-            (raw as Record<string, unknown>) || {}
+            (raw as RecordWithUnknownValues) || {}
           );
           return {
             id: windowConfig.id,
@@ -226,11 +224,11 @@ export class HassRecordsDevToolCard extends HTMLElement {
     button.disabled = false;
   }
 
-  _detectChanges(histResult: Record<string, unknown>): ChangeItem[] {
+  _detectChanges(histResult: RecordWithUnknownValues): ChangeItem[] {
     const changes: ChangeItem[] = [];
 
     for (const [entityId, statesRaw] of Object.entries(histResult)) {
-      const states = statesRaw as Array<Record<string, unknown>>;
+      const states = statesRaw as Array<RecordWithUnknownValues>;
       if (!states?.length) {
         continue;
       }
@@ -268,7 +266,7 @@ export class HassRecordsDevToolCard extends HTMLElement {
             ? new Date(timestampRaw * 1000).toISOString()
             : new Date().toISOString();
 
-        let message: string | null = null;
+        let message: Nullable<string> = null;
         let icon = "mdi:bookmark";
         let color = "#03a9f4";
 
@@ -289,7 +287,7 @@ export class HassRecordsDevToolCard extends HTMLElement {
           icon = currentValue === "on" ? "mdi:lightbulb" : "mdi:lightbulb-off";
           color = currentValue === "on" ? "#ffee58" : "#9e9e9e";
         } else if (domain === "cover") {
-          const labels: Record<string, string> = {
+          const labels: RecordWithStringValues = {
             open: "opened",
             closed: "closed",
             opening: "opening",
@@ -306,10 +304,10 @@ export class HassRecordsDevToolCard extends HTMLElement {
           color = currentValue === "open" ? "#4caf50" : "#795548";
         } else if (domain === "climate") {
           const stateAttributes = state.a as
-            | Record<string, unknown>
+            | RecordWithUnknownValues
             | undefined;
           const previousAttributes = previous?.a as
-            | Record<string, unknown>
+            | RecordWithUnknownValues
             | undefined;
           const currentTemperature = stateAttributes?.temperature;
           const previousTemperature = previousAttributes?.temperature;
@@ -325,7 +323,7 @@ export class HassRecordsDevToolCard extends HTMLElement {
             icon = "mdi:thermostat";
             color = "#ff5722";
           } else if (!previous || previousValue !== currentValue) {
-            const modes: Record<string, string> = {
+            const modes: RecordWithStringValues = {
               heat: "heating",
               cool: "cooling",
               auto: "auto",
@@ -521,7 +519,7 @@ export class HassRecordsDevToolCard extends HTMLElement {
     try {
       const result = (await this._hass!.connection.sendMessagePromise({
         type: `${DOMAIN}/events/delete_dev`,
-      })) as Record<string, unknown>;
+      })) as RecordWithUnknownValues;
       const deleted = result.deleted as number;
       this._showFeedback(
         "delete-status",
@@ -544,8 +542,8 @@ export class HassRecordsDevToolCard extends HTMLElement {
     try {
       const result = (await this._hass!.connection.sendMessagePromise({
         type: `${DOMAIN}/events`,
-      })) as Record<string, unknown>;
-      const events = (result.events as Array<Record<string, unknown>>) || [];
+      })) as RecordWithUnknownValues;
+      const events = (result.events as Array<RecordWithUnknownValues>) || [];
       const count = events.filter((event) => event.dev).length;
       const countEl = this.shadowRoot!.getElementById("dev-count");
       const pluralEl = this.shadowRoot!.getElementById("dev-count-plural");

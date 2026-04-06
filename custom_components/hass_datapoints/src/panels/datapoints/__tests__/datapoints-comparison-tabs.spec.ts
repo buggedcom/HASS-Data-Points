@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { HassRecordsHistoryPanel } from "../datapoints.js";
+import { HassRecordsHistoryPanel } from "../datapoints";
 import { createHistoryPageOrchestrationContext } from "../context/orchestration-context";
 
 describe("HassRecordsHistoryPanel comparison tabs", () => {

@@ -304,14 +304,101 @@ The old `PANEL_HISTORY_STYLE` block still matters as a source of truth for many 
 
 ## i18n Guidance
 
-Current frontend i18n uses `@lit/localize` for the active migration path.
+The frontend uses `@lit/localize` in **runtime mode**. Source locale is English. The only translated locale is Finnish (`fi`).
 
-- Source strings live inline in component code.
-- Keep English source strings clear and searchable.
-- Do not mix in ad hoc translation systems for new work without a strong reason.
-- If a reusable atom/molecule should stay generic, pass already-resolved strings from the owner where that pattern is already established.
+### How it works
 
-Keep Home Assistant backend translation files separate from frontend component localization concerns.
+`src/lib/i18n/localize.ts` configures the localization runtime once. When the HA user's locale is Finnish, `setLocale("fi")` is called and the Finnish locale chunk is loaded asynchronously. Components decorated with `@localized()` re-render automatically when the locale changes.
+
+### String wrapping rules
+
+Every user-visible string in a component must be wrapped with `msg()`:
+
+```typescript
+import { msg, localized } from "@/lib/i18n/localize";
+
+@localized()
+class MyElement extends LitElement {
+  render() {
+    return html`<button>${msg("Save page state")}</button>`;
+  }
+}
+```
+
+**`msg()` cannot wrap template literals with runtime expressions.** For interpolated strings use numbered placeholders and a `t()` helper:
+
+```typescript
+function t(key: string, ...values: string[]): string {
+  let s = msg(key, { id: key });
+  values.forEach((v, i) => { s = s.replace(new RegExp(`\\{${i}\\}`, "g"), v); });
+  return s;
+}
+
+// Usage
+t("Anomaly at {0} with severity {1}", time, severity);
+```
+
+**Module-level arrays cannot use `msg()`** because the runtime is not yet loaded at module initialization. Build option arrays inside a method or getter so `msg()` is called at render time:
+
+```typescript
+// Wrong — msg() not yet active when the module loads
+const OPTIONS = [{ label: msg("Hour"), value: "hour" }];
+
+// Correct — msg() is called at render time
+get _localizedOptions() {
+  return [{ label: msg("Hour"), value: "hour" }];
+}
+```
+
+### Co-located translation files
+
+Each component owns its Finnish strings in a `*.i18n.fi.ts` file placed next to the component source:
+
+```text
+src/molecules/target-row/
+├── target-row.ts
+└── target-row.i18n.fi.ts
+```
+
+Every translation file exports a `translations` object typed as `ComponentTranslations`:
+
+```typescript
+import type { ComponentTranslations } from "@/lib/i18n/types";
+
+export const translations: ComponentTranslations = {
+  "Show anomalies": "Näytä anomaliat",
+  "Sensitivity": "Herkkyys",
+};
+```
+
+Keys are the English source strings exactly as they appear in `msg()` calls. Values are the Finnish equivalents.
+
+### Auto-discovery — no registration needed
+
+`src/lib/i18n/locales/fi.ts` uses `import.meta.glob` to merge every `*.i18n.fi.ts` file across the whole `src/` tree at build time. There is nothing to register: dropping a correctly structured file next to a component is sufficient.
+
+Duplicate keys are resolved by last-writer-wins (`Object.assign`). This is safe because any shared key (e.g. `"Auto"`) carries the same Finnish value regardless of which component declares it.
+
+### Adding i18n to a new component
+
+1. Add `@localized()` to the component class.
+2. Import `msg` (and `localized`) from `@/lib/i18n/localize`.
+3. Wrap every user-visible string in `msg()`.
+4. For interpolated strings, use the `t()` pattern with `{0}`, `{1}` … placeholders.
+5. Create `<component-name>.i18n.fi.ts` next to the component source with all Finnish translations.
+6. Run `pnpm build` — the file is auto-discovered.
+
+### Finnish translation quality
+
+The Finnish translations in this project are **machine-generated approximations**. They were produced by automated translation and have not been reviewed by a native Finnish speaker. Do not treat Finnish strings as authoritative phrasing — they exist for functional locale switching, not linguistic correctness.
+
+### General rules
+
+- Source strings live inline in component code, not in a separate strings file.
+- Keep English source strings clear and naturally readable — they are the display strings for English users.
+- Do not mix in ad hoc translation systems for new work.
+- If a reusable atom/molecule should stay generic (no locale dependency), pass already-resolved strings from the owner. This avoids forcing every atom to carry `@localized()`.
+- Keep HA backend translation files (`translations/en.json` etc.) separate from frontend component localization.
 
 ---
 
@@ -366,10 +453,14 @@ Keep Home Assistant backend translation files separate from frontend component l
 3. Add `types.ts` if types are shared by stories/tests/related subcomponents.
 4. Add a co-located spec in `__tests__/`.
 5. Add or update a component story in `stories/`.
-6. Run focused Vitest.
-7. Run `pnpm build`.
-8. If the component is user-facing and interactive, run Storybook verification too.
-9. For panel/history changes, verify manually in HA.
+6. If the component has user-visible strings:
+   - Add `@localized()` decorator and import `msg` from `@/lib/i18n/localize`.
+   - Wrap every user-visible string in `msg()`.
+   - Create `<component-name>.i18n.fi.ts` with Finnish translations for every wrapped string.
+7. Run focused Vitest.
+8. Run `pnpm build`.
+9. If the component is user-facing and interactive, run Storybook verification too.
+10. For panel/history changes, verify manually in HA.
 
 ---
 
@@ -527,3 +618,9 @@ When in doubt:
 - keep pages/panels as composition/state owners
 - colocate tests and stories with the thing they exercise
 - prefer smaller, verified refactors over giant rewrites
+
+---
+
+## Pull Request Priority
+
+Pull requests with **🤖🤖🤖** in the title are given attention first.

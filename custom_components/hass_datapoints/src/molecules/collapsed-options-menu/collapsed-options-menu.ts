@@ -51,9 +51,9 @@ export class CollapsedOptionsMenu extends LitElement {
 
   @property({ type: Boolean }) accessor anyAnomaliesEnabled: boolean = false;
 
-  @state() accessor activeSection: SectionKey | null = null;
+  @state() accessor activeSection: Nullable<SectionKey> = null;
 
-  private _closeTimer: ReturnType<typeof setTimeout> | null = null;
+  private _closeTimer: Nullable<ReturnType<typeof setTimeout>> = null;
 
   disconnectedCallback() {
     // eslint-disable-next-line wc/guard-super-call

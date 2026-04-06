@@ -26,10 +26,10 @@ const DEFAULT_LANGUAGE: EventItemLanguage = {
 export class CardListEditForm extends LitElement {
   static styles = styles;
 
-  @property({ attribute: false }) accessor eventRecord: EventRecordFull | null =
+  @property({ attribute: false }) accessor eventRecord: Nullable<EventRecordFull> =
     null;
 
-  @property({ attribute: false }) accessor hass: HassLike | null = null;
+  @property({ attribute: false }) accessor hass: Nullable<HassLike> = null;
 
   @property({ type: String }) accessor color = "#03a9f4";
 

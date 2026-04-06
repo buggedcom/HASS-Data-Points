@@ -22,7 +22,7 @@ export function selectHiddenEntityIds(state: HistoryPageState): string[] {
 
 export function selectEffectiveZoomRange(
   state: HistoryPageState
-): { start: number; end: number } | null {
+): Nullable<{ start: number; end: number }> {
   return state.range.previewZoomRange || state.range.committedZoomRange;
 }
 

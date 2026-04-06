@@ -1,4 +1,4 @@
-import { LitElement, html, nothing } from "lit";
+import { html, LitElement, nothing } from "lit";
 import { property, state } from "lit/decorators.js";
 
 import { classMap } from "lit/directives/class-map.js";
@@ -32,7 +32,7 @@ export class PanelShell extends LitElement {
   static styles = styles;
 
   /** Home Assistant object — forwarded to ha-menu-button and ha-top-app-bar-fixed. */
-  @property({ type: Object }) accessor hass: HassLike | null = null;
+  @property({ type: Object }) accessor hass: Nullable<HassLike> = null;
 
   /** Narrow layout flag — forwarded to ha-menu-button and ha-top-app-bar-fixed. */
   @property({ type: Boolean }) accessor narrow: boolean = false;
@@ -57,17 +57,17 @@ export class PanelShell extends LitElement {
   // ── Public API ─────────────────────────────────────────────────────────────
 
   /** Returns the `#page-content` element for layout height calculations. */
-  getPageContentEl(): HTMLElement | null {
+  getPageContentEl(): Nullable<HTMLElement> {
     return this.shadowRoot?.querySelector<HTMLElement>("#page-content") ?? null;
   }
 
   /** Returns the main `#content` element. */
-  getContentEl(): HTMLElement | null {
+  getContentEl(): Nullable<HTMLElement> {
     return this.shadowRoot?.querySelector<HTMLElement>("#content") ?? null;
   }
 
   /** Returns the `#collapsed-target-popup` element for imperative positioning. */
-  getTargetPopupEl(): HTMLElement | null {
+  getTargetPopupEl(): Nullable<HTMLElement> {
     return (
       this.shadowRoot?.querySelector<HTMLElement>("#collapsed-target-popup") ??
       null
@@ -75,7 +75,7 @@ export class PanelShell extends LitElement {
   }
 
   /** Returns the `#collapsed-options-popup` element for imperative positioning. */
-  getOptionsPopupEl(): HTMLElement | null {
+  getOptionsPopupEl(): Nullable<HTMLElement> {
     return (
       this.shadowRoot?.querySelector<HTMLElement>("#collapsed-options-popup") ??
       null
@@ -109,7 +109,7 @@ export class PanelShell extends LitElement {
 
   // ── Private helpers ────────────────────────────────────────────────────────
 
-  private _emit(name: string, detail: Record<string, unknown> = {}): void {
+  private _emit(name: string, detail: RecordWithUnknownValues = {}): void {
     this.dispatchEvent(
       new CustomEvent(name, { detail, bubbles: true, composed: true })
     );
@@ -198,8 +198,8 @@ export class PanelShell extends LitElement {
       ? "mdi:chevron-right"
       : "mdi:chevron-left";
     const sidebarLabel = this.sidebarCollapsed
-      ? msg("Expand targets sidebar", { id: "Expand targets sidebar" })
-      : msg("Collapse targets sidebar", { id: "Collapse targets sidebar" });
+      ? msg("Expand targets sidebar")
+      : msg("Collapse targets sidebar");
 
     return html`
       <ha-top-app-bar-fixed .hass=${this.hass} .narrow=${this.narrow}>
@@ -208,14 +208,14 @@ export class PanelShell extends LitElement {
           .hass=${this.hass}
           .narrow=${this.narrow}
         ></ha-menu-button>
-        <div slot="title">${msg("Datapoints", { id: "Datapoints" })}</div>
+        <div slot="title">${msg("Datapoints")}</div>
 
         <div slot="actionItems" class="page-header-actions">
           <div class="page-menu-wrap">
             <ha-icon-button
               id="page-menu-button"
               class="page-menu-button"
-              label=${msg("Page options", { id: "Page options" })}
+              label=${msg("Page options")}
               aria-haspopup="menu"
               aria-expanded=${this._pageMenuOpen ? "true" : "false"}
               @click=${this._onPageMenuButtonClick}
@@ -229,30 +229,24 @@ export class PanelShell extends LitElement {
             >
               <page-menu-item
                 icon="mdi:file-excel-outline"
-                label=${msg("Download spreadsheet", {
-                  id: "Download spreadsheet",
-                })}
+                label=${msg("Download spreadsheet")}
                 @dp-menu-action=${this._onMenuDownload}
               ></page-menu-item>
               <page-menu-item
                 icon="mdi:content-save-outline"
-                label=${msg("Save page state", { id: "Save page state" })}
+                label=${msg("Save page state")}
                 @dp-menu-action=${this._onMenuSave}
               ></page-menu-item>
               ${this.hasSavedState
                 ? html`
                     <page-menu-item
                       icon="mdi:restore"
-                      label=${msg("Restore saved page", {
-                        id: "Restore saved page",
-                      })}
+                      label=${msg("Restore saved page")}
                       @dp-menu-action=${this._onMenuRestore}
                     ></page-menu-item>
                     <page-menu-item
                       icon="mdi:delete-outline"
-                      label=${msg("Clear saved page", {
-                        id: "Clear saved page",
-                      })}
+                      label=${msg("Clear saved page")}
                       @dp-menu-action=${this._onMenuClear}
                     ></page-menu-item>
                   `

@@ -15,6 +15,21 @@
 
 ---
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Why Data Points is useful](#why-data-points-is-useful)
+- [What Data Points provides](#what-data-points-provides)
+- [Included UI](#included-ui)
+- [Roadmap](#roadmap)
+- [Installation](#installation)
+- [Setup](#setup)
+- [Recording datapoints](#recording-datapoints)
+- [How datapoints appear](#how-datapoints-appear)
+- [Cards in practice](#cards-in-practice)
+
+---
+
 ## Overview
 
 Data Points is a Home Assistant integration for recording timestamped events and then using them as analytical context across charts, lists, and a dedicated history page.
@@ -75,6 +90,8 @@ Data Points lets you:
 
 ### Cards
 
+> **Note:** The Lovelace card editors (the visual configuration UI shown when you click the pencil icon on a card in the dashboard editor) are included but are **still in development**. They may be partially functional or produce unexpected results. For reliable configuration, edit the card YAML directly.
+
 | Card                              | Purpose                                                                                                                            |
 | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | `hass-datapoints-action-card`     | Full recording form with message, annotation, icon, color, and related items.                                                      |
@@ -97,6 +114,49 @@ The integration also provides a full history page experience with:
 - timeline slider with zoom highlight synchronization
 - resizable chart/list split panes
 - chart-created datapoints and hover-driven comparison preview
+
+---
+
+## Roadmap
+
+The current integration already covers recording, browsing, chart overlays, comparison windows, and anomaly analysis. The next planned areas build on those foundations rather than replacing them.
+
+### Planned next features
+
+- **Multiple saved views / save files**
+  Persist more than one named chart-and-panel state so users can keep reusable investigation setups for different entities, labels, areas, and analysis workflows.
+
+- **Automatic historical period matching**
+  Find similar historical periods automatically for selected targets so the panel can suggest or create date windows without requiring manual range hunting.
+
+- **Chart-driven anomaly automation creation**
+  Turn chart analysis settings into Home Assistant automations so anomaly recognition can move from exploratory analysis into live monitoring.
+
+- **Automatic anomaly-to-datapoint generation**
+  Generate datapoints automatically when configured anomaly conditions are met, making anomalies first-class timeline events that can be reviewed, filtered, and linked back to entities.
+
+- **Backfilling tools for datapoint generation**
+  Add tools for creating datapoints from recent history and long-term statistics so important historical changes can be reconstructed after the fact.
+
+- **Anomalies summary card**
+  Provide a dedicated card for highlighting current or recent anomalies and deep-linking directly into the full datapoints history view for investigation.
+
+- **Drop-in replacements for HA sensor and statistics cards**
+  Expand the lightweight chart-card story so users can replace common Home Assistant sensor/statistics cards with equivalents that support datapoint overlays and deep linking by default.
+
+### Roadmap themes
+
+- **Operational memory**
+  Make saved investigative contexts and reconstructed historical events easier to preserve and reuse.
+
+- **Assisted comparison**
+  Reduce the manual work needed to find meaningful historical baselines for the current chart range.
+
+- **From analysis to action**
+  Let anomaly configuration graduate into automations, alerts, and auto-generated datapoints.
+
+- **Dashboard-native investigation**
+  Bring anomaly surfacing and datapoint-aware charting into smaller cards that work well in everyday dashboards.
 
 ---
 
@@ -211,6 +271,8 @@ On the sensor card, datapoints are drawn directly on the sensor series.
 ---
 
 ## Cards in practice
+
+> **Card editors are in development.** The visual editors shown in the HA dashboard UI when editing a card are not yet fully functional. All cards work correctly when configured via YAML. Use the YAML examples below as the primary configuration method until the editors are complete.
 
 ### Action card
 
@@ -725,6 +787,100 @@ Highlights:
   the dedicated datapoints history page
 - `lib/`
   shared chart logic, HA helpers, domain logic, workers, i18n, and utilities
+
+### Internationalisation (i18n)
+
+The frontend uses [`@lit/localize`](https://lit.dev/docs/localization/overview/) in **runtime mode**.
+
+**Source locale:** English (`en`) — all user-visible strings in the source code are written in English.  
+**Supported translated locale:** Finnish (`fi`).
+
+#### How the runtime works
+
+`src/lib/i18n/localize.ts` calls `configureLocalization` once at startup. When the HA user's locale is Finnish (`fi` or any `fi-*` BCP 47 tag), `setLocale("fi")` is called and the locale chunk is loaded. Components decorated with `@localized()` re-render automatically. Every string is wrapped with `msg()`:
+
+```typescript
+import { msg, localized } from "@/lib/i18n/localize";
+
+@localized()
+class MyElement extends LitElement {
+  render() {
+    return html`<span>${msg("Save page state")}</span>`;
+  }
+}
+```
+
+Interpolated strings that contain runtime values cannot be passed directly to `msg()`. Use numbered placeholders and a `t()` helper instead:
+
+```typescript
+function t(key: string, ...values: string[]): string {
+  let s = msg(key, { id: key });
+  values.forEach((v, i) => { s = s.replace(new RegExp(`\\{${i}\\}`, "g"), v); });
+  return s;
+}
+
+// Usage
+t("Anomaly at {0} with value {1}", formattedTime, formattedValue);
+```
+
+#### Co-located translation files
+
+Translations are **not** in a single central locale file. Each component owns its own translation file placed next to the component source:
+
+```text
+src/molecules/target-row/
+├── target-row.ts
+└── target-row.i18n.fi.ts   ← Finnish strings for this component
+```
+
+Every `*.i18n.fi.ts` file exports a `translations` object typed as `ComponentTranslations`:
+
+```typescript
+import type { ComponentTranslations } from "@/lib/i18n/types";
+
+export const translations: ComponentTranslations = {
+  "Show anomalies": "Näytä anomaliat",
+  "Sensitivity": "Herkkyys",
+};
+```
+
+#### Auto-discovery at build time
+
+`src/lib/i18n/locales/fi.ts` uses `import.meta.glob` to discover and merge every `*.i18n.fi.ts` file across the whole source tree at build time:
+
+```typescript
+const modules = import.meta.glob<{ translations: Record<string, string> }>(
+  "../../../**/*.i18n.fi.ts",
+  { eager: true }
+);
+
+const merged: Record<string, string> = {};
+for (const mod of Object.values(modules)) {
+  Object.assign(merged, mod.translations);
+}
+
+export const templates = merged satisfies LocaleModule["templates"];
+```
+
+No manual registration is needed. Adding a `*.i18n.fi.ts` file anywhere under `src/` is sufficient for its strings to be included in the built locale chunk.
+
+Duplicate keys are resolved by last-writer-wins (`Object.assign`). This is safe because any shared key (e.g. `"Auto"`) carries the same Finnish value regardless of which component declares it.
+
+#### Adding a new component translation
+
+1. Create `<component-name>.i18n.fi.ts` next to the component source file.
+2. Export a `translations` object containing the English key → Finnish value mappings.
+3. Wrap every user-visible string in the component source with `msg()`.
+4. Add `@localized()` to the component class.
+5. Run `pnpm build` — the new file is picked up automatically.
+
+#### Finnish translations
+
+The Finnish translations throughout this project are **machine-generated approximations**. They were produced by automated translation and have not been reviewed by a native Finnish speaker. Accuracy and phrasing may be imperfect.
+
+If you are a Finnish speaker and notice errors, corrections are welcome — edit the relevant `*.i18n.fi.ts` file and submit a pull request.
+
+---
 
 ### Remote Home Assistant development
 

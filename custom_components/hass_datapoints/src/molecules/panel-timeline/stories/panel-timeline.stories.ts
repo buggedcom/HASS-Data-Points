@@ -113,7 +113,7 @@ export default {
     chartHoverTimeMs: null,
     chartHoverWindowTimeMs: null,
   },
-  render: (args: Record<string, unknown>) => html`
+  render: (args: RecordWithUnknownValues) => html`
     <div style="display: flex; padding: 8px 0;">
       <panel-timeline
         .startTime=${START}

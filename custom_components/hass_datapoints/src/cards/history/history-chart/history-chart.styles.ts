@@ -375,8 +375,8 @@ export const styles = `
   }
   .chart-adjust-axis {
     position: absolute;
-    left: var(--dp-spacing-lg);
-    bottom: var(--dp-spacing-lg);
+    left: calc(var(--dp-chart-axis-left-width, 0px) + var(--dp-spacing-sm, 8px));
+    bottom: calc(var(--dp-chart-axis-bottom-height, 50px) + var(--dp-spacing-sm, 8px));
     display: inline-flex;
     align-items: center;
     gap: calc(var(--spacing, 8px) * 0.75);

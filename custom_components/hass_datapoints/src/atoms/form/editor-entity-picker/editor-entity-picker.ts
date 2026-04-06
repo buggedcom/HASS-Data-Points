@@ -15,14 +15,14 @@ export class EditorEntityPicker extends LitElement {
 
   @property({ type: String }) accessor value: string = "";
 
-  @property({ type: Object }) accessor hass: HassLike | null = null;
+  @property({ type: Object }) accessor hass: Nullable<HassLike> = null;
 
   static styles = styles;
 
   firstUpdated() {
     const el = this.shadowRoot!.querySelector(
       "ha-selector"
-    ) as HaSelector | null;
+    ) as Nullable<HaSelector>;
     if (el) {
       el.label = this.label;
       el.selector = { entity: {} };
@@ -36,7 +36,7 @@ export class EditorEntityPicker extends LitElement {
   updated(changedProps: PropertyValues) {
     const el = this.shadowRoot!.querySelector(
       "ha-selector"
-    ) as HaSelector | null;
+    ) as Nullable<HaSelector>;
     if (!el) {
       return;
     }

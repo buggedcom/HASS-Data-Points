@@ -22,7 +22,9 @@ function makeAnalysis(
     trend_window: "24h",
     show_trend_crosshairs: false,
     show_summary_stats: false,
+    show_summary_stats_shading: false,
     show_rate_of_change: false,
+    show_rate_crosshairs: false,
     rate_window: "1h",
     show_threshold_analysis: false,
     show_threshold_shading: false,
@@ -40,6 +42,9 @@ function makeAnalysis(
     show_delta_tooltip: false,
     show_delta_lines: false,
     hide_source_series: false,
+    sample_interval: "raw",
+    sample_aggregate: "mean",
+    anomaly_use_sampled_data: false,
     ...overrides,
   };
 }

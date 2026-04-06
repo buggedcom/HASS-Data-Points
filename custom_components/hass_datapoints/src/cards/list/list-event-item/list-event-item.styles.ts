@@ -168,12 +168,15 @@ export const styles = css`
     line-height: 1.6;
     color: var(--primary-text-color);
     margin-top: 10px;
-    white-space: pre-wrap;
-    word-break: break-word;
   }
 
   .ev-full-message.hidden {
     display: none;
+  }
+
+  .ev-full-message span {
+    white-space: pre-wrap;
+    word-break: break-word;
   }
 
   .ev-entities {
@@ -191,7 +194,7 @@ export const styles = css`
     line-height: 1.2;
     color: var(--primary-color);
     background: color-mix(in srgb, var(--primary-color) 12%, transparent);
-    padding: 6px 12px;
+    padding: 4px 7px;
     border-radius: 999px;
     cursor: pointer;
     border: none;

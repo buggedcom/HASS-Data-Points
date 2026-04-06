@@ -73,7 +73,7 @@ export default {
     sidebarCollapsed: false,
     canShowDeltaAnalysis: false,
   },
-  render: (args: Record<string, unknown>) => html`
+  render: (args: RecordWithUnknownValues) => html`
     <history-targets
       .rows=${SAMPLE_ROWS}
       .states=${mockHass.states}

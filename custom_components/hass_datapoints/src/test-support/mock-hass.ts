@@ -4,7 +4,7 @@ import { vi } from "vitest";
  * Creates a minimal mock of the Home Assistant `hass` object
  * for use in component tests.
  */
-export function createMockHass(overrides: Record<string, unknown> = {}) {
+export function createMockHass(overrides: RecordWithUnknownValues = {}) {
   return {
     states: {
       "sensor.temperature": {

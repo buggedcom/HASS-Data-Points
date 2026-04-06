@@ -1,6 +1,14 @@
 import type { HistoryOrchestrationContext } from "./types";
 
-function getInnerHistoryChart(chartEl: HTMLElement | null): HTMLElement | null {
+type DrawHost = HTMLElement & {
+  _drawChart?: (...args: unknown[]) => void;
+  _queueDrawChart?: (...args: unknown[]) => void;
+  _lastDrawArgs?: unknown[];
+};
+
+type PickerLike = Element & { open?: () => void };
+
+function getInnerHistoryChart(chartEl: Nullable<HTMLElement>): Nullable<HTMLElement> {
   if (!chartEl?.shadowRoot) {
     return null;
   }
@@ -14,17 +22,76 @@ function getInnerHistoryChart(chartEl: HTMLElement | null): HTMLElement | null {
 }
 
 function getComparisonTabsHost(
-  chartEl: HTMLElement | null
-): HTMLElement | null {
+  chartEl: Nullable<HTMLElement>
+): Nullable<HTMLElement> {
   const innerChart = getInnerHistoryChart(chartEl);
   return innerChart?.querySelector?.("#chart-top-slot") ?? null;
 }
 
+function ensureCollapsedPickerAnchor(
+  targetControl: HTMLElement,
+  anchorEl: Nullable<HTMLElement> | undefined
+): void {
+  const assignedSlot =
+    (targetControl as HTMLElement & { assignedSlot?: Nullable<HTMLSlotElement> })
+      .assignedSlot ?? null;
+  if (!assignedSlot) {
+    return;
+  }
+
+  const slotContainer =
+    assignedSlot.parentElement instanceof HTMLElement
+      ? assignedSlot.parentElement
+      : null;
+  let hiddenAnchorHost: Nullable<HTMLElement> = null;
+  if (slotContainer && window.getComputedStyle(slotContainer).display === "none") {
+    hiddenAnchorHost = slotContainer;
+  } else if (window.getComputedStyle(assignedSlot).display === "none") {
+    hiddenAnchorHost = assignedSlot;
+  }
+  if (!hiddenAnchorHost) {
+    return;
+  }
+
+  const anchorRect = anchorEl?.getBoundingClientRect();
+  const popupWidth = Math.max(320, Math.round(anchorRect?.width ?? 1));
+  const viewportPadding = 8;
+  const left = Math.max(
+    viewportPadding,
+    Math.min(
+      Math.round(anchorRect?.left ?? 0),
+      window.innerWidth - popupWidth - viewportPadding
+    )
+  );
+  const top = Math.round(anchorRect?.top ?? 0);
+  const width = popupWidth;
+  const height = Math.max(1, Math.round(anchorRect?.height ?? 1));
+
+  hiddenAnchorHost.style.display = "block";
+  hiddenAnchorHost.style.position = "fixed";
+  hiddenAnchorHost.style.left = `${left}px`;
+  hiddenAnchorHost.style.top = `${top}px`;
+  hiddenAnchorHost.style.width = `${width}px`;
+  hiddenAnchorHost.style.height = `${height}px`;
+  hiddenAnchorHost.style.margin = "0";
+  hiddenAnchorHost.style.padding = "0";
+  hiddenAnchorHost.style.opacity = "0";
+  hiddenAnchorHost.style.pointerEvents = "none";
+  hiddenAnchorHost.style.overflow = "visible";
+  hiddenAnchorHost.style.zIndex = "2147483647";
+
+  targetControl.style.display = "block";
+  targetControl.style.width = `${width}px`;
+  targetControl.style.height = `${height}px`;
+  targetControl.style.opacity = "0";
+  targetControl.style.pointerEvents = "none";
+}
+
 export function createHistoryPageOrchestrationContext(): HistoryOrchestrationContext {
-  let chartResizeRaf: number | null = null;
+  let chartResizeRaf: Nullable<number> = null;
 
   return {
-    requestChartResizeRedraw(chartEl: HTMLElement | null): void {
+    requestChartResizeRedraw(chartEl: Nullable<HTMLElement>): void {
       if (chartResizeRaf != null) {
         return;
       }
@@ -45,18 +112,10 @@ export function createHistoryPageOrchestrationContext(): HistoryOrchestrationCon
           typeof (chartEl as { _drawChart?: (...args: unknown[]) => void })
             ._drawChart === "function"
         ) {
-          (
-            chartEl as {
-              _drawChart: (...args: unknown[]) => void;
-              _lastDrawArgs: unknown[];
-            }
-          )._drawChart(
+          (chartEl as unknown as DrawHost)._drawChart!(
             ...(
-              chartEl as {
-                _drawChart: (...args: unknown[]) => void;
-                _lastDrawArgs: unknown[];
-              }
-            )._lastDrawArgs
+              chartEl as unknown as DrawHost
+            )._lastDrawArgs!
           );
           return;
         }
@@ -75,18 +134,10 @@ export function createHistoryPageOrchestrationContext(): HistoryOrchestrationCon
               innerChart as { _queueDrawChart?: (...args: unknown[]) => void }
             )._queueDrawChart === "function"
           ) {
-            (
-              innerChart as {
-                _queueDrawChart: (...args: unknown[]) => void;
-                _lastDrawArgs: unknown[];
-              }
-            )._queueDrawChart(
+            (innerChart as unknown as DrawHost)._queueDrawChart!(
               ...(
-                innerChart as {
-                  _queueDrawChart: (...args: unknown[]) => void;
-                  _lastDrawArgs: unknown[];
-                }
-              )._lastDrawArgs
+                innerChart as unknown as DrawHost
+              )._lastDrawArgs!
             );
             return;
           }
@@ -95,18 +146,10 @@ export function createHistoryPageOrchestrationContext(): HistoryOrchestrationCon
             typeof (innerChart as { _drawChart?: (...args: unknown[]) => void })
               ._drawChart === "function"
           ) {
-            (
-              innerChart as {
-                _drawChart: (...args: unknown[]) => void;
-                _lastDrawArgs: unknown[];
-              }
-            )._drawChart(
+            (innerChart as unknown as DrawHost)._drawChart!(
               ...(
-                innerChart as {
-                  _drawChart: (...args: unknown[]) => void;
-                  _lastDrawArgs: unknown[];
-                }
-              )._lastDrawArgs
+                innerChart as unknown as DrawHost
+              )._lastDrawArgs!
             );
           }
         }
@@ -122,13 +165,20 @@ export function createHistoryPageOrchestrationContext(): HistoryOrchestrationCon
       }
     },
 
-    openTargetPicker(targetControl: HTMLElement | null): void {
+    openTargetPicker(
+      targetControl: Nullable<HTMLElement>,
+      anchorEl?: Nullable<HTMLElement>
+    ): void {
       if (!targetControl) {
         return;
       }
 
+      ensureCollapsedPickerAnchor(targetControl, anchorEl);
+
       const genericPicker =
-        targetControl.shadowRoot?.querySelector?.("ha-generic-picker") ?? null;
+        (targetControl.shadowRoot?.querySelector?.(
+          "ha-generic-picker"
+        ) as Nullable<PickerLike>) ?? null;
       if (genericPicker && typeof genericPicker.open === "function") {
         genericPicker.open();
         return;
@@ -238,7 +288,7 @@ export function createHistoryPageOrchestrationContext(): HistoryOrchestrationCon
       };
     },
 
-    updateComparisonTabsOverflow(chartEl: HTMLElement | null): void {
+    updateComparisonTabsOverflow(chartEl: Nullable<HTMLElement>): void {
       window.requestAnimationFrame(() => {
         const innerChart = getInnerHistoryChart(chartEl);
         const shell = innerChart?.querySelector?.("#chart-tabs-shell") ?? null;

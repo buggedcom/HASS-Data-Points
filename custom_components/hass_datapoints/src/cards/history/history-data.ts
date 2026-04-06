@@ -8,16 +8,16 @@ export type {
   NormalisedState,
   Point,
   ValueExtent,
-} from "./data/types.js";
-export { SAMPLE_INTERVAL_MS, downsamplePts } from "./data/downsampling.js";
-export { binaryOffLabel, binaryOnLabel } from "./data/binary-labels.js";
+} from "./data/types";
+export { SAMPLE_INTERVAL_MS, downsamplePts } from "./data/downsampling";
+export { binaryOffLabel, binaryOnLabel } from "./data/binary-labels";
 export {
   getHistoryStatesForEntity,
   normalizeBinaryHistory,
   normalizeNumericHistory,
-} from "./data/history-normalization.js";
+} from "./data/history-normalization";
 export {
   mergeNumericHistoryWithStatistics,
   normalizeStatisticsHistory,
-} from "./data/statistics-normalization.js";
-export { getAxisValueExtent } from "./data/axis-extent.js";
+} from "./data/statistics-normalization";
+export { getAxisValueExtent } from "./data/axis-extent";

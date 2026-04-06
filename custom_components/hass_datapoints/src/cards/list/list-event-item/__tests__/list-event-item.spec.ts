@@ -25,10 +25,10 @@ const BASE_CONTEXT = {
   },
 };
 
-function createElement(props: Record<string, unknown> = {}) {
+function createElement(props: RecordWithUnknownValues = {}) {
   const el = document.createElement("list-event-item") as HTMLElement & {
-    eventRecord: Record<string, unknown>;
-    context: Record<string, unknown>;
+    eventRecord: RecordWithUnknownValues;
+    context: RecordWithUnknownValues;
     updateComplete: Promise<void>;
   };
   Object.assign(el, {
@@ -75,11 +75,11 @@ describe("list-event-item", () => {
         const stateIcon = entityChip.querySelector(
           "ha-state-icon"
         ) as HTMLElement & {
-          stateObj?: Record<string, unknown> | null;
+          stateObj?: Nullable<RecordWithUnknownValues>;
         };
         expect(stateIcon).not.toBeNull();
         expect(
-          (stateIcon.stateObj?.attributes as Record<string, unknown>)?.icon
+          (stateIcon.stateObj?.attributes as RecordWithUnknownValues)?.icon
         ).toBe("mdi:thermometer");
       });
 
@@ -151,6 +151,34 @@ describe("list-event-item", () => {
         expect(handler.mock.calls[0][0].detail.eventId).toBe("evt-1");
       });
     });
+
+    describe("WHEN the row is hovered", () => {
+      it("THEN it dispatches the hover event with hovered: true", () => {
+        expect.assertions(3);
+        const handler = vi.fn();
+        el.addEventListener("dp-hover-event-record", handler);
+        (
+          el.shadowRoot!.querySelector(".event-item") as HTMLElement
+        ).dispatchEvent(new MouseEvent("mouseenter", { bubbles: true }));
+        expect(handler).toHaveBeenCalledOnce();
+        expect(handler.mock.calls[0][0].detail.eventId).toBe("evt-1");
+        expect(handler.mock.calls[0][0].detail.hovered).toBe(true);
+      });
+    });
+
+    describe("WHEN the row hover ends", () => {
+      it("THEN it dispatches the hover event with hovered: false", () => {
+        expect.assertions(3);
+        const handler = vi.fn();
+        el.addEventListener("dp-hover-event-record", handler);
+        (
+          el.shadowRoot!.querySelector(".event-item") as HTMLElement
+        ).dispatchEvent(new MouseEvent("mouseleave", { bubbles: true }));
+        expect(handler).toHaveBeenCalledOnce();
+        expect(handler.mock.calls[0][0].detail.eventId).toBe("evt-1");
+        expect(handler.mock.calls[0][0].detail.hovered).toBe(false);
+      });
+    });
   });
 
   describe("GIVEN a hidden event row", () => {
@@ -182,6 +210,21 @@ describe("list-event-item", () => {
             'ha-icon-button[label="Show chart marker"]'
           )
         ).not.toBeNull();
+      });
+    });
+
+    describe("WHEN the show action is clicked", () => {
+      it("THEN it dispatches dp-toggle-visibility with the event id", () => {
+        expect.assertions(2);
+        const handler = vi.fn();
+        el.addEventListener("dp-toggle-visibility", handler);
+        (
+          el.shadowRoot!.querySelector(
+            'ha-icon-button[label="Show chart marker"]'
+          ) as HTMLElement
+        ).click();
+        expect(handler).toHaveBeenCalledOnce();
+        expect(handler.mock.calls[0][0].detail.eventId).toBe("evt-1");
       });
     });
   });

@@ -10,7 +10,7 @@ export function normalizeStatisticsHistory(
 ): NormalisedState[] {
   const statEntries =
     statsData && typeof statsData === "object"
-      ? ((statsData as Record<string, unknown>)[entityId] ?? [])
+      ? ((statsData as RecordWithUnknownValues)[entityId] ?? [])
       : [];
   return (Array.isArray(statEntries) ? (statEntries as HaStatEntry[]) : [])
     .map((entry) => {

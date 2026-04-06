@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createMockHass } from "@/test-support/mock-hass";
 import "../action-targets";
 
-function createElement(props: Record<string, unknown> = {}) {
+function createElement(props: RecordWithUnknownValues = {}) {
   const el = document.createElement("action-targets") as HTMLElement & {
     hass: unknown;
     showConfigTargets: boolean;
@@ -127,7 +127,7 @@ describe("action-targets", () => {
         expect(
           (
             el.shadowRoot!.querySelector("ha-selector") as {
-              value: Record<string, unknown>;
+              value: RecordWithUnknownValues;
             }
           ).value
         ).toEqual({});

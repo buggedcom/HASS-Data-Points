@@ -1,14 +1,6 @@
-export interface RangeZoomConfig {
-  baselineMs: number;
-  boundsUnit: string;
-  contextUnit: string;
-  detailUnit?: string;
-  detailStep?: number;
-  majorUnit: string;
-  labelUnit: string;
-  minorUnit: string;
-  pixelsPerUnit: number;
-}
+import type { RangeZoomConfig } from "@/lib/timeline/timeline-scale";
+
+export type { RangeZoomConfig } from "@/lib/timeline/timeline-scale";
 
 export interface RangeBounds {
   min: number;

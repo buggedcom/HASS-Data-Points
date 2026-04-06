@@ -1,12 +1,12 @@
 import { html, LitElement } from "lit";
 import { property, state } from "lit/decorators.js";
-import { fmtDateTime, fmtRelativeTime } from "@/lib/util/format.js";
+import { fmtDateTime, fmtRelativeTime } from "@/lib/util/format";
 import type { EventRecordFull } from "@/lib/types";
 import { styles } from "./sensor-record-item.styles";
 
 export class SensorRecordItem extends LitElement {
   @property({ type: Object, attribute: false })
-  accessor event: EventRecordFull | null = null;
+  accessor event: Nullable<EventRecordFull> = null;
 
   @property({ type: Boolean }) accessor hidden: boolean = false;
 

@@ -137,7 +137,7 @@ function makeEvents(entityId: string, hours: number) {
 // ── Mock hass factory ─────────────────────────────────────────────────────────
 
 function makeMockHass(
-  states: Record<string, unknown>,
+  states: RecordWithUnknownValues,
   historyData: Record<string, unknown[]>,
   events: unknown[] = []
 ) {
@@ -194,7 +194,7 @@ const unavailableState = {
 
 async function setupCard(
   canvasElement: HTMLElement,
-  config: Record<string, unknown>,
+  config: RecordWithUnknownValues,
   hass?: ReturnType<typeof makeMockHass>
 ) {
   const card = canvasElement.querySelector(
@@ -209,8 +209,18 @@ async function setupCard(
   return card;
 }
 
-const defaultDecorator = (story) =>
-  haCardWrapper(story() as TemplateResult, { rows: 3 });
+function withCardWrapper({
+  width = 360,
+  rows = 3,
+}: {
+  width?: number;
+  rows?: number;
+} = {}) {
+  return ((story: () => TemplateResult) =>
+    haCardWrapper(story() as TemplateResult, { width, rows })) as any;
+}
+
+const defaultDecorator = withCardWrapper({ rows: 3 });
 
 // ── Stories ───────────────────────────────────────────────────────────────────
 
@@ -329,9 +339,7 @@ export const WithAnnotationLines: Story = {
 /** Annotations on chart plus the records list below. */
 export const WithAnnotationsAndRecords: Story = {
   name: "With Annotations & Records",
-  decorators: [
-    (story) => haCardWrapper(story() as TemplateResult, { rows: 4 }),
-  ],
+  decorators: [withCardWrapper({ rows: 4 })],
   render: () =>
     html`<hass-datapoints-sensor-card></hass-datapoints-sensor-card>`,
   play: async ({ canvasElement }) => {
@@ -355,9 +363,7 @@ export const WithAnnotationsAndRecords: Story = {
 /** Records section visible with no events — shows empty state. */
 export const WithRecordsEmpty: Story = {
   name: "With Records (empty)",
-  decorators: [
-    (story) => haCardWrapper(story() as TemplateResult, { rows: 4 }),
-  ],
+  decorators: [withCardWrapper({ rows: 4 })],
   render: () =>
     html`<hass-datapoints-sensor-card></hass-datapoints-sensor-card>`,
   play: async ({ canvasElement }) => {
@@ -401,7 +407,7 @@ export const ExtendedRange: Story = {
 /** Narrow column — 320 px wide (e.g. single-column mobile or sidebar). */
 export const NarrowWidth: Story = {
   name: "Width: Narrow (320px)",
-  decorators: [(story) => haCardWrapper(story(), { width: 320, rows: 3 })],
+  decorators: [withCardWrapper({ width: 320, rows: 3 })],
   render: () =>
     html`<hass-datapoints-sensor-card></hass-datapoints-sensor-card>`,
   play: async ({ canvasElement }) => {
@@ -419,7 +425,7 @@ export const NarrowWidth: Story = {
 /** Standard column — 400 px wide (typical HA dashboard column). */
 export const MediumWidth: Story = {
   name: "Width: Medium (400px)",
-  decorators: [(story) => haCardWrapper(story(), { width: 400, rows: 3 })],
+  decorators: [withCardWrapper({ width: 400, rows: 3 })],
   render: () =>
     html`<hass-datapoints-sensor-card></hass-datapoints-sensor-card>`,
   play: async ({ canvasElement }) => {
@@ -437,7 +443,7 @@ export const MediumWidth: Story = {
 /** Wide column — 560 px wide (two-column span or wide layout). */
 export const WideWidth: Story = {
   name: "Width: Wide (560px)",
-  decorators: [(story) => haCardWrapper(story(), { width: 550, rows: 3 })],
+  decorators: [withCardWrapper({ width: 550, rows: 3 })],
   render: () =>
     html`<hass-datapoints-sensor-card></hass-datapoints-sensor-card>`,
   play: async ({ canvasElement }) => {
@@ -454,7 +460,7 @@ export const WideWidth: Story = {
 
 export const NarrowHeight: Story = {
   name: "Height: 2 rows",
-  decorators: [(story) => haCardWrapper(story(), { width: 320, rows: 2 })],
+  decorators: [withCardWrapper({ width: 320, rows: 2 })],
   render: () =>
     html`<hass-datapoints-sensor-card></hass-datapoints-sensor-card>`,
   play: async ({ canvasElement }) => {
@@ -471,7 +477,7 @@ export const NarrowHeight: Story = {
 
 export const MediumHeight: Story = {
   name: "Height: 4 rows",
-  decorators: [(story) => haCardWrapper(story(), { width: 320, rows: 4 })],
+  decorators: [withCardWrapper({ width: 320, rows: 4 })],
   render: () =>
     html`<hass-datapoints-sensor-card></hass-datapoints-sensor-card>`,
   play: async ({ canvasElement }) => {
@@ -488,7 +494,7 @@ export const MediumHeight: Story = {
 
 export const LargeHeight: Story = {
   name: "Height: 8 rows",
-  decorators: [(story) => haCardWrapper(story(), { width: 320, rows: 8 })],
+  decorators: [withCardWrapper({ width: 320, rows: 8 })],
   render: () =>
     html`<hass-datapoints-sensor-card></hass-datapoints-sensor-card>`,
   play: async ({ canvasElement }) => {

@@ -8,7 +8,7 @@ import {
   showLineChartCrosshair,
   showLineChartTooltip,
   showTooltip,
-} from "@/lib/chart/chart-interaction.js";
+} from "@/lib/chart/chart-interaction";
 
 function createCard() {
   const host = document.createElement("div");
@@ -96,7 +96,7 @@ function createCard() {
   };
 }
 
-describe("chart-interaction.js", () => {
+describe("chart-interaction", () => {
   describe("GIVEN related event ids", () => {
     describe("WHEN buildTooltipRelatedChips is called", () => {
       it("THEN it returns icon chips for related entities and targets", () => {

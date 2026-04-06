@@ -20,15 +20,15 @@ export interface HassState {
 
 export interface HassEntity {
   entity_id: string;
-  device_id: string | null;
-  area_id: string | null;
+  device_id: Nullable<string>;
+  area_id: Nullable<string>;
   labels: string[];
 }
 
 export interface HassDevice {
   id: string;
   name: string;
-  area_id: string | null;
+  area_id: Nullable<string>;
 }
 
 export interface HassArea {
@@ -41,7 +41,7 @@ export interface HassConnection {
     callback: (...args: unknown[]) => void,
     eventType: string
   ): Promise<() => void>;
-  sendMessagePromise(message: Record<string, unknown>): Promise<unknown>;
+  sendMessagePromise(message: RecordWithUnknownValues): Promise<unknown>;
 }
 
 export interface HassLike {
@@ -50,10 +50,14 @@ export interface HassLike {
   devices: Record<string, HassDevice>;
   areas: Record<string, HassArea>;
   connection: HassConnection;
+  /** Legacy system language — prefer locale.language for the user's UI language. */
+  language?: string;
+  /** User's locale preferences (HA 2022.3+). */
+  locale?: { language?: string };
   callService(
     domain: string,
     service: string,
-    data?: Record<string, unknown>
+    data?: RecordWithUnknownValues
   ): Promise<void>;
 }
 
@@ -79,18 +83,18 @@ export interface ChipItem {
 export interface EventRecord {
   id: string;
   message: string;
-  annotation: string | null;
-  icon: string | null;
+  annotation: Nullable<string>;
+  icon: Nullable<string>;
   color: string;
   timestamp: string;
-  entity_id: string | null;
-  device_id: string | null;
-  area_id: string | null;
-  label_id: string | null;
+  entity_id: Nullable<string>;
+  device_id: Nullable<string>;
+  area_id: Nullable<string>;
+  label_id: Nullable<string>;
   dev: boolean;
 }
 
-export type CardConfig = Record<string, unknown>;
+export type CardConfig = RecordWithUnknownValues;
 
 export interface EventRecordFull extends EventRecord {
   entity_ids?: string[];

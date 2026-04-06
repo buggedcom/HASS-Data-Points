@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { fetchStatisticsDuringPeriod } from "@/lib/data/statistics-api.js";
+import { fetchStatisticsDuringPeriod } from "@/lib/data/statistics-api";
 
-describe("statistics-api.js", () => {
+describe("statistics-api", () => {
   describe("GIVEN statistics request inputs", () => {
     describe("WHEN fetchStatisticsDuringPeriod is called", () => {
       it("THEN it normalizes ids, types, and units", async () => {

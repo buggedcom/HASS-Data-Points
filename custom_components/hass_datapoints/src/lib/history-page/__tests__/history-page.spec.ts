@@ -4,18 +4,18 @@ import {
   normalizeDateWindows,
   parseDateWindowsParam,
   serializeDateWindowsParam,
-} from "@/lib/history-page/history-url-state.js";
+} from "@/lib/history-page/history-url-state";
 import {
   readHistoryPageSessionState,
   buildHistoryPageSessionState,
   writeHistoryPageSessionState,
   normalizeHistoryPagePreferences,
   buildHistoryPagePreferencesPayload,
-} from "@/lib/history-page/history-session-state.js";
+} from "@/lib/history-page/history-session-state";
 
 // history-series.js (transitive dep) imports COLORS — override for predictable test colors.
-vi.mock("@/constants.js", async (importOriginal) => {
-  const real = (await importOriginal()) as Record<string, unknown>;
+vi.mock("@/constants", async (importOriginal) => {
+  const real = (await importOriginal()) as RecordWithUnknownValues;
   return { ...real, COLORS: ["#111111", "#222222", "#333333"] };
 });
 
@@ -127,6 +127,10 @@ describe("history-page libs", () => {
           date_snapping: "minute",
           series_colors: { "sensor.a": "#123456" },
           date_windows: normalizedPreferences.comparisonWindows,
+          page_state: expect.objectContaining({
+            entities: ["sensor.a"],
+            datapoint_scope: "linked",
+          }),
         });
       });
     });

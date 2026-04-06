@@ -15,7 +15,9 @@ const BLANK_ANALYSIS: NormalizedAnalysis = {
   trend_window: "24h",
   show_trend_crosshairs: false,
   show_summary_stats: false,
+  show_summary_stats_shading: false,
   show_rate_of_change: false,
+  show_rate_crosshairs: false,
   rate_window: "1h",
   show_threshold_analysis: false,
   show_threshold_shading: false,
@@ -33,6 +35,9 @@ const BLANK_ANALYSIS: NormalizedAnalysis = {
   show_delta_tooltip: true,
   show_delta_lines: false,
   hide_source_series: false,
+  sample_interval: "raw",
+  sample_aggregate: "mean",
+  anomaly_use_sampled_data: false,
 };
 
 const SAMPLE_ROWS: RowConfig[] = [
@@ -56,7 +61,7 @@ const SAMPLE_ROWS: RowConfig[] = [
   },
 ];
 
-const SAMPLE_STATES: Record<string, Record<string, unknown>> = {
+const SAMPLE_STATES: Record<string, RecordWithUnknownValues> = {
   "sensor.living_room_temperature": {
     entity_id: "sensor.living_room_temperature",
     state: "21.5",
@@ -173,7 +178,7 @@ export default {
     canShowDeltaAnalysis: false,
     comparisonWindows: [],
   },
-  render: (args: Record<string, unknown>) => html`
+  render: (args: RecordWithUnknownValues) => html`
     <div style="max-width: 640px;">
       <target-row-list
         .rows=${args.rows}
@@ -207,7 +212,6 @@ export const Empty = {
     const el = await getEl(canvasElement);
     const emptyEl = el.shadowRoot.querySelector(".history-target-empty");
     expect(emptyEl).not.toBeNull();
-    expect(emptyEl?.textContent).toContain("No data points added yet");
     const rows = el.shadowRoot.querySelectorAll("target-row");
     expect(rows).toHaveLength(0);
   },

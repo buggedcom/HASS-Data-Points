@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { DOMAIN, PANEL_URL_PATH, COLORS, AMBER } from "@/constants.js";
+import { DOMAIN, PANEL_URL_PATH, COLORS, AMBER } from "@/constants";
 
 describe("constants", () => {
   describe("GIVEN the module exports", () => {

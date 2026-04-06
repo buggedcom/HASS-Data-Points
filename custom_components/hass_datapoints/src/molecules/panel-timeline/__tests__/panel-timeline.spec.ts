@@ -23,20 +23,20 @@ const SAMPLE_BOUNDS: RangeBounds = {
   config: DAY_CONFIG,
 };
 
-function createElement(props: Record<string, unknown> = {}) {
+function createElement(props: RecordWithUnknownValues = {}) {
   const el = document.createElement("panel-timeline") as HTMLElement & {
-    startTime: Date | null;
-    endTime: Date | null;
-    rangeBounds: RangeBounds | null;
+    startTime: Nullable<Date>;
+    endTime: Nullable<Date>;
+    rangeBounds: Nullable<RangeBounds>;
     zoomLevel: string;
     dateSnapping: string;
     isLiveEdge: boolean;
-    hoveredPeriodRange: { start: number; end: number } | null;
-    comparisonPreview: { start: number; end: number } | null;
-    zoomRange: { start: number; end: number } | null;
-    zoomWindowRange: { start: number; end: number } | null;
-    chartHoverTimeMs: number | null;
-    chartHoverWindowTimeMs: number | null;
+    hoveredPeriodRange: Nullable<{ start: number; end: number }>;
+    comparisonPreview: Nullable<{ start: number; end: number }>;
+    zoomRange: Nullable<{ start: number; end: number }>;
+    zoomWindowRange: Nullable<{ start: number; end: number }>;
+    chartHoverTimeMs: Nullable<number>;
+    chartHoverWindowTimeMs: Nullable<number>;
     events: EventMarker[];
     updateComplete: Promise<boolean>;
   };
@@ -194,7 +194,7 @@ describe("panel-timeline", () => {
         const atom = el.shadowRoot!.querySelector(
           "range-timeline"
         ) as HTMLElement & {
-          rangeBounds: RangeBounds | null;
+          rangeBounds: Nullable<RangeBounds>;
           updateComplete: Promise<boolean>;
         };
         await atom.updateComplete;

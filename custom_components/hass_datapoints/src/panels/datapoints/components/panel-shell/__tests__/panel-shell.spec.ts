@@ -9,10 +9,10 @@ type DpPanelShell = HTMLElement & {
   updateComplete: Promise<boolean>;
   syncLayoutHeight(): void;
   closePageMenu(): void;
-  getPageContentEl(): HTMLElement | null;
-  getContentEl(): HTMLElement | null;
-  getTargetPopupEl(): HTMLElement | null;
-  getOptionsPopupEl(): HTMLElement | null;
+  getPageContentEl(): Nullable<HTMLElement>;
+  getContentEl(): Nullable<HTMLElement>;
+  getTargetPopupEl(): Nullable<HTMLElement>;
+  getOptionsPopupEl(): Nullable<HTMLElement>;
 };
 
 function createElement(props: Partial<DpPanelShell> = {}): DpPanelShell {

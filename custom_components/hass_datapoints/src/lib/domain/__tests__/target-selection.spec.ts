@@ -7,9 +7,9 @@ import {
   normalizeTargetValue,
   panelConfigTarget,
   resolveEntityIdsFromTarget,
-} from "@/lib/domain/target-selection.js";
+} from "@/lib/domain/target-selection";
 
-describe("target-selection.js", () => {
+describe("target-selection", () => {
   describe("GIVEN mixed entity id values", () => {
     describe("WHEN normalizeEntityIds is called", () => {
       it("THEN it keeps only trimmed string ids", () => {

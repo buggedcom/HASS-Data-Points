@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { setupCanvas } from "@/lib/chart/chart-shell.js";
+import { setupCanvas } from "@/lib/chart/chart-shell";
 
 // ---------------------------------------------------------------------------
 // setupCanvas — canvas dimension overflow safety

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   createHiddenSeriesSet,
   createHiddenEventIdSet,
-} from "@/lib/chart/chart-state.js";
+} from "@/lib/chart/chart-state";
 
 describe("chart-state lib", () => {
   describe("GIVEN series settings with hidden entries", () => {

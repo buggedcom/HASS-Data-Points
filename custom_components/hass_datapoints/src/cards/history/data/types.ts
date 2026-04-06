@@ -15,7 +15,7 @@ export interface HaStateEntry {
 /** Normalised statistics entry returned by the HA statistics API. */
 export interface HaStatEntry {
   start?: number | string;
-  mean?: number | string | null;
+  mean?: Nullable<number | string>;
 }
 
 /** Internal intermediate state record used during normalisation. */

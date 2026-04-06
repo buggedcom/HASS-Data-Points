@@ -1,7 +1,7 @@
 import { LitElement, html } from "lit";
 import { styles } from "./quick.styles";
-import { AMBER, DOMAIN } from "@/constants.js";
-import { logger } from "@/lib/logger.js";
+import { AMBER, DOMAIN } from "@/constants";
+import { logger } from "@/lib/logger";
 import type { HassLike } from "@/lib/types";
 import "@/atoms/display/feedback-banner/feedback-banner";
 import "@/cards/quick/quick-annotation/quick-annotation";
@@ -18,9 +18,9 @@ export class HassRecordsQuickCard extends LitElement {
 
   static styles = styles;
 
-  declare _config: Record<string, unknown>;
+  declare _config: RecordWithUnknownValues;
 
-  declare _hass: HassLike | null;
+  declare _hass: Nullable<HassLike>;
 
   declare _feedbackClass: string;
 
@@ -40,7 +40,7 @@ export class HassRecordsQuickCard extends LitElement {
     this._annotation = "";
   }
 
-  setConfig(config: Record<string, unknown>) {
+  setConfig(config: RecordWithUnknownValues) {
     this._config = config || {};
   }
 
@@ -48,7 +48,7 @@ export class HassRecordsQuickCard extends LitElement {
     this._hass = hass;
   }
 
-  get hass(): HassLike | null {
+  get hass(): Nullable<HassLike> {
     return this._hass;
   }
 
@@ -86,7 +86,7 @@ export class HassRecordsQuickCard extends LitElement {
     }
 
     const cfg = this._config;
-    const data: Record<string, unknown> = {
+    const data: RecordWithUnknownValues = {
       message,
       icon: cfg.icon || "mdi:bookmark",
       color: cfg.color || AMBER,
@@ -113,7 +113,11 @@ export class HassRecordsQuickCard extends LitElement {
     }
 
     try {
-      await this._hass.callService(DOMAIN, "record", data);
+      const hass = this._hass;
+      if (!hass) {
+        return;
+      }
+      await hass.callService(DOMAIN, "record", data);
       window.dispatchEvent(new CustomEvent("hass-datapoints-event-recorded"));
       if (msgEl) {
         msgEl.value = "";
@@ -123,7 +127,9 @@ export class HassRecordsQuickCard extends LitElement {
       this._feedbackText = "Recorded!";
       this._feedbackVisible = true;
       setTimeout(() => {
-        this._feedbackVisible = false;
+        if (this) {
+          this._feedbackVisible = false;
+        }
       }, 2500);
     } catch (e: unknown) {
       const error = e as Error;

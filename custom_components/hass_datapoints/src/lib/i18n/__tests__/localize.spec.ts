@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   getLocale,
-  localizeText,
+  msg,
   setFrontendLocale,
   syncFrontendLocale,
 } from "../localize";
@@ -40,10 +40,23 @@ describe("localize", () => {
   });
 
   describe("GIVEN a hass object", () => {
-    describe("WHEN syncing the frontend locale", () => {
+    describe("WHEN syncing the frontend locale via hass.language", () => {
       it("THEN uses hass.language", async () => {
         expect.assertions(2);
         const locale = await syncFrontendLocale({ language: "fi" });
+
+        expect(locale).toBe("fi");
+        expect(getLocale()).toBe("fi");
+      });
+    });
+
+    describe("WHEN syncing the frontend locale via hass.locale.language", () => {
+      it("THEN prefers hass.locale.language over hass.language", async () => {
+        expect.assertions(2);
+        const locale = await syncFrontendLocale({
+          language: "en",
+          locale: { language: "fi" },
+        });
 
         expect(locale).toBe("fi");
         expect(getLocale()).toBe("fi");
@@ -56,7 +69,7 @@ describe("localize", () => {
       it("THEN returns the translated string", async () => {
         expect.assertions(1);
         await setFrontendLocale("fi");
-        expect(localizeText("Download spreadsheet")).toBe("Lataa taulukko");
+        expect(msg("Download spreadsheet")).toBe("Lataa taulukko");
       });
     });
 
@@ -64,7 +77,7 @@ describe("localize", () => {
       it("THEN returns the source string", async () => {
         expect.assertions(1);
         await setFrontendLocale("en");
-        expect(localizeText("Download spreadsheet")).toBe(
+        expect(msg("Download spreadsheet")).toBe(
           "Download spreadsheet"
         );
       });

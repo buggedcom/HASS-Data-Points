@@ -6,7 +6,7 @@ interface MockWorkerInstance {
   emit(type: string, event: unknown): void;
 }
 
-let currentMockWorker: MockWorkerInstance | null = null;
+let currentMockWorker: Nullable<MockWorkerInstance> = null;
 
 function MockChartDataWorker(this: unknown): MockWorkerInstance {
   const listeners: Record<string, Array<(event: unknown) => void>> = {};
@@ -23,7 +23,7 @@ function MockChartDataWorker(this: unknown): MockWorkerInstance {
   return instance;
 }
 
-vi.mock("@/lib/workers/chart-data.worker.js?worker&inline", () => ({
+vi.mock("@/lib/workers/chart-data.worker.ts?worker&inline", () => ({
   default: MockChartDataWorker,
 }));
 
@@ -32,13 +32,13 @@ beforeEach(() => {
   currentMockWorker = null;
 });
 
-describe("chart-data-client.js", () => {
+describe("chart-data-client", () => {
   describe("GIVEN a downsample request", () => {
     describe("WHEN the worker responds successfully", () => {
       it("THEN the promise resolves with the worker result", async () => {
         expect.assertions(2);
         const { downsampleInWorker } =
-          await import("@/lib/workers/chart-data-client.js");
+          await import("@/lib/workers/chart-data-client");
 
         const promise = downsampleInWorker(
           [
@@ -76,7 +76,7 @@ describe("chart-data-client.js", () => {
       it("THEN the promise rejects with an Error", async () => {
         expect.assertions(1);
         const { downsampleInWorker } =
-          await import("@/lib/workers/chart-data-client.js");
+          await import("@/lib/workers/chart-data-client");
 
         const promise = downsampleInWorker([[0, 1]], 1000, "mean");
         const id = currentMockWorker!.postMessage.mock.calls[0][0].id;

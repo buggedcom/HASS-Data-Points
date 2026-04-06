@@ -5,7 +5,7 @@ import {
   fmtDateTime,
   fmtRelativeTime,
   fmtTime,
-} from "@/lib/util/format.js";
+} from "@/lib/util/format";
 
 describe("format.js", () => {
   beforeEach(() => {
