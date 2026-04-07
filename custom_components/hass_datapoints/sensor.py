@@ -1,4 +1,4 @@
-"""Sensor platform for Hass Records."""
+"""Sensor platform for Hass Data Points."""
 from __future__ import annotations
 
 from homeassistant.components.sensor import SensorEntity
@@ -8,7 +8,7 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN
-from .store import HassRecordsStore
+from .store import DatapointsStore
 
 
 async def async_setup_entry(
@@ -16,18 +16,18 @@ async def async_setup_entry(
     entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up Hass Records sensor entities from a config entry."""
-    store: HassRecordsStore = hass.data[DOMAIN]["store"]
-    async_add_entities([HassRecordsDatapointCountSensor(entry, store)])
+    """Set up Hass Data Points sensor entities from a config entry."""
+    store: DatapointsStore = hass.data[DOMAIN]["store"]
+    async_add_entities([DatapointsCountSensor(entry, store)])
 
 
-class HassRecordsDatapointCountSensor(SensorEntity):
+class DatapointsCountSensor(SensorEntity):
     """Expose the total number of recorded datapoints."""
 
     _attr_has_entity_name = True
     _attr_icon = "mdi:counter"
 
-    def __init__(self, entry: ConfigEntry, store: HassRecordsStore) -> None:
+    def __init__(self, entry: ConfigEntry, store: DatapointsStore) -> None:
         """Initialize the datapoint count sensor."""
         self._entry = entry
         self._store = store
@@ -40,7 +40,7 @@ class HassRecordsDatapointCountSensor(SensorEntity):
         """Return device information for the integration."""
         return DeviceInfo(
             identifiers={(DOMAIN, self._entry.entry_id)},
-            name="Hass Records",
+            name="Hass Data Points",
             manufacturer="buggedcom",
             model="Data Points",
         )

@@ -1,6 +1,7 @@
 """History utilities for hass_datapoints: recorder access and downsampling."""
 from __future__ import annotations
 
+import inspect
 import logging
 import math
 import statistics
@@ -9,6 +10,7 @@ from datetime import datetime, timezone
 _LOGGER = logging.getLogger(__name__)
 
 INTERVAL_SECONDS: dict[str, int] = {
+    "1s": 1,
     "5s": 5,
     "10s": 10,
     "15s": 15,
@@ -63,19 +65,64 @@ def fetch_entity_pts(hass, entity_id: str, start_time_iso: str, end_time_iso: st
         return []
 
     try:
-        states_dict = get_significant_states(
-            hass,
-            start_dt,
-            end_dt,
-            [entity_id],
-            significant_changes_only=False,
-            no_attributes=True,
-        )
+        signature = inspect.signature(get_significant_states)
+        positional_args = []
+        keyword_args = {}
+
+        for parameter in signature.parameters.values():
+            if parameter.kind in (
+                inspect.Parameter.VAR_POSITIONAL,
+                inspect.Parameter.VAR_KEYWORD,
+            ):
+                continue
+
+            if parameter.name in ("hass", "instance", "recorder", "recorder_instance"):
+                positional_args.append(hass)
+                continue
+
+            if parameter.name == "start_time":
+                positional_args.append(start_dt)
+                continue
+
+            if parameter.name == "end_time":
+                positional_args.append(end_dt)
+                continue
+
+            if parameter.name == "entity_ids":
+                positional_args.append([entity_id])
+                continue
+
+            if parameter.name == "entity_id":
+                positional_args.append(entity_id)
+                continue
+
+            if parameter.name == "include_start_time_state":
+                keyword_args["include_start_time_state"] = False
+                continue
+
+            if parameter.name == "significant_changes_only":
+                keyword_args["significant_changes_only"] = False
+                continue
+
+            if parameter.name == "minimal_response":
+                keyword_args["minimal_response"] = False
+                continue
+
+            if parameter.name == "no_attributes":
+                keyword_args["no_attributes"] = True
+                continue
+
+        states_dict = get_significant_states(*positional_args, **keyword_args)
     except Exception as err:  # noqa: BLE001
         _LOGGER.warning("hass_datapoints: get_significant_states failed for %s: %s", entity_id, err)
         return []
 
-    states = states_dict.get(entity_id, [])
+    if isinstance(states_dict, dict):
+        states = states_dict.get(entity_id, [])
+    elif isinstance(states_dict, list):
+        states = states_dict
+    else:
+        states = []
     pts: list = []
     for state in states:
         try:

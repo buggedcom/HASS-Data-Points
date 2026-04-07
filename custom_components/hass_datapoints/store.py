@@ -1,4 +1,4 @@
-"""Persistent storage for Hass Records events."""
+"""Persistent storage for Hass Data Points."""
 from __future__ import annotations
 
 import uuid
@@ -11,8 +11,8 @@ from homeassistant.helpers.storage import Store
 from .const import DOMAIN, STORAGE_KEY, STORAGE_VERSION
 
 
-class HassRecordsStore:
-    """Manages persistent storage of recorded events."""
+class DatapointsStore:
+    """Manages persistent storage of recorded data points."""
 
     def __init__(self, hass: HomeAssistant) -> None:
         self._store: Store = Store(hass, STORAGE_VERSION, STORAGE_KEY)

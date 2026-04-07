@@ -1,4 +1,4 @@
-"""WebSocket API for Hass Records frontend cards."""
+"""WebSocket API for Hass Data Points frontend cards."""
 from __future__ import annotations
 
 import logging
@@ -22,7 +22,7 @@ from .anomaly_cache import AnomalyCache, make_cache_key
 
 _LIVE_EDGE_SECONDS = 3600  # ranges ending within the last hour are not cached
 
-_VALID_INTERVALS = ["raw", "5s", "10s", "15s", "30s", "1m", "2m", "5m", "10m", "15m", "30m", "1h", "2h", "3h", "4h", "6h", "12h", "24h"]
+_VALID_INTERVALS = ["raw", "1s", "5s", "10s", "15s", "30s", "1m", "2m", "5m", "10m", "15m", "30m", "1h", "2h", "3h", "4h", "6h", "12h", "24h"]
 _VALID_AGGREGATES = ["mean", "min", "max", "median", "first", "last"]
 _VALID_ANOMALY_METHODS = ["trend_residual", "rate_of_change", "iqr", "rolling_zscore", "persistence", "comparison_window"]
 
@@ -327,24 +327,46 @@ async def ws_get_history(
         except ValueError:
             range_days = 0
 
+        raw_pts: list = []
+        used_statistics_fallback = False
+
         if range_days > _MAX_HISTORY_RANGE_DAYS:
             _LOGGER.info(
-                "hass_datapoints/history: skipping raw fetch for %s — "
-                "range %.1f days exceeds %d-day limit; frontend will use long-term statistics",
+                "hass_datapoints/history: using statistics fallback for %s — "
+                "range %.1f days exceeds %d-day raw-history limit",
                 entity_id, range_days, _MAX_HISTORY_RANGE_DAYS,
             )
-            connection.send_result(msg["id"], {"entity_id": entity_id, "pts": []})
-            return
-
-        raw_pts: list = await get_instance(hass).async_add_executor_job(
-            fetch_entity_pts, hass, entity_id, start_time, end_time
-        )
+            used_statistics_fallback = True
+            raw_pts = await get_instance(hass).async_add_executor_job(
+                fetch_entity_statistics_pts, hass, entity_id, start_time, end_time
+            )
+        else:
+            raw_pts = await get_instance(hass).async_add_executor_job(
+                fetch_entity_pts, hass, entity_id, start_time, end_time
+            )
+            if not raw_pts and interval != "raw":
+                _LOGGER.info(
+                    "hass_datapoints/history: using statistics fallback for %s — "
+                    "no raw recorder states were available",
+                    entity_id,
+                )
+                used_statistics_fallback = True
+                raw_pts = await get_instance(hass).async_add_executor_job(
+                    fetch_entity_statistics_pts, hass, entity_id, start_time, end_time
+                )
 
         if interval == "raw":
             pts = raw_pts
         else:
             interval_secs = parse_interval_seconds(interval)
             pts = downsample_pts(raw_pts, interval_secs, aggregate)
+
+        if used_statistics_fallback:
+            _LOGGER.debug(
+                "hass_datapoints/history: statistics fallback produced %d sampled pts for %s",
+                len(pts),
+                entity_id,
+            )
 
         connection.send_result(msg["id"], {"entity_id": entity_id, "pts": pts})
 

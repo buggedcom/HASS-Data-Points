@@ -1,4 +1,4 @@
-"""Constants for Hass Records."""
+"""Constants for Hass Data Points."""
 
 DOMAIN = "hass_datapoints"
 

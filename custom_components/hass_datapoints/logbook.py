@@ -1,4 +1,4 @@
-"""Logbook integration for Hass Records."""
+"""Logbook integration for Hass Data Points."""
 from __future__ import annotations
 
 from homeassistant.core import Event, HomeAssistant, callback
@@ -7,10 +7,10 @@ from .const import DOMAIN, EVENT_RECORDED, ATTR_MESSAGE, ATTR_ENTITY_IDS, ATTR_I
 
 
 def async_describe_events(
-    hass: HomeAssistant,
-    async_describe_event: callback,
+        hass: HomeAssistant,
+        async_describe_event: callback,
 ) -> None:
-    """Describe how Hass Records events appear in the logbook."""
+    """Describe how Hass Data Points events appear in the logbook."""
 
     @callback
     def async_describe_hass_datapoints_event(event: Event) -> dict:
@@ -21,7 +21,7 @@ def async_describe_events(
         color = data.get(ATTR_COLOR, "#03a9f4")
 
         result: dict = {
-            "name": "Hass Records",
+            "name": "Datapoint",
             "message": message,
             "icon": icon,
         }

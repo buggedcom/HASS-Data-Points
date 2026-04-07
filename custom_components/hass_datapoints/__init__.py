@@ -1,4 +1,4 @@
-"""Hass Records - Record custom events with chart annotations."""
+"""Hass Data Points - Record custom data points with chart annotations."""
 from __future__ import annotations
 
 from pathlib import Path
@@ -34,11 +34,11 @@ from .const import (
     PANEL_URL_PATH,
     SERVICE_RECORD,
 )
-from .store import HassRecordsStore
+from .store import DatapointsStore
 from .anomaly_cache import AnomalyCache
 from . import websocket_api as ws_api
 
-type HassRecordsConfigEntry = ConfigEntry[HassRecordsStore]
+type DatapointsConfigEntry = ConfigEntry[DatapointsStore]
 
 PLATFORMS: list[Platform] = [Platform.SENSOR]
 
@@ -117,9 +117,9 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     return True
 
 
-async def async_setup_entry(hass: HomeAssistant, entry: HassRecordsConfigEntry) -> bool:
-    """Set up Hass Records from a config entry."""
-    store = HassRecordsStore(hass)
+async def async_setup_entry(hass: HomeAssistant, entry: DatapointsConfigEntry) -> bool:
+    """Set up Hass Data Points from a config entry."""
+    store = DatapointsStore(hass)
     await store.async_load()
 
     hass.data.setdefault(DOMAIN, {})
@@ -167,7 +167,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: HassRecordsConfigEntry) 
     return True
 
 
-async def async_unload_entry(hass: HomeAssistant, entry: HassRecordsConfigEntry) -> bool:
+async def async_unload_entry(hass: HomeAssistant, entry: DatapointsConfigEntry) -> bool:
     """Unload a config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     hass.services.async_remove(DOMAIN, SERVICE_RECORD)

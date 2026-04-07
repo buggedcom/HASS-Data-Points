@@ -1,8 +1,8 @@
 record:
-  name: Record Event
+  name: Record Data Point
   description: >
-    Record a custom event that will appear in the logbook and as an annotation
-    on Hass Records history and statistics cards.
+    Record a custom data point that will appear in the logbook and as an
+    annotation on Hass Data Points history and statistics cards.
   fields:
     message:
       name: Message

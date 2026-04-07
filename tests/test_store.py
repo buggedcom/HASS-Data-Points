@@ -3,8 +3,6 @@ from __future__ import annotations
 
 import pytest
 
-from custom_components.hass_datapoints.store import HassRecordsStore
-
 
 # ---------------------------------------------------------------------------
 # async_load
