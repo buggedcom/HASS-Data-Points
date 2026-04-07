@@ -78,7 +78,9 @@ fi
 # ---------------------------------------------------------------------------
 
 dbg() {
-  echo "[debug] $*" >&2
+  if [[ $VERBOSE -eq 1 ]]; then
+    echo "[debug] $*" >&2
+  fi
 }
 
 dbg "=== dev-sync configuration ==="
@@ -128,6 +130,17 @@ if /usr/local/bin/docker inspect "$HA_DEV_CONTAINER" >/dev/null 2>&1; then
 else
   dbg "Container $HA_DEV_CONTAINER not found via docker — skipping sshd check."
 fi
+
+# ---------------------------------------------------------------------------
+# Version bump
+# ---------------------------------------------------------------------------
+
+if [[ $DRY_RUN -eq 1 ]]; then
+  NEW_VERSION="$(bash "$REPO_ROOT/scripts/bump-version.sh" --dry-run | tail -1)"
+else
+  NEW_VERSION="$(bash "$REPO_ROOT/scripts/bump-version.sh" | tail -1)"
+fi
+echo "Version bumped to $NEW_VERSION"
 
 # ---------------------------------------------------------------------------
 # Build

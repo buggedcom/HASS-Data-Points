@@ -36,6 +36,7 @@ snapshot() {
       ! -name '*.swp' \
       ! -name '*.tmp' \
       ! -path '*/__pycache__/*' \
+      ! -path '*/hass_datapoints/manifest.json' \
       | LC_ALL=C sort \
       | xargs shasum
   ) | shasum | awk '{print $1}'
@@ -51,6 +52,12 @@ before = pathlib.Path(sys.argv[1])
 after = pathlib.Path(sys.argv[2])
 repo_root = before.parent
 
+# Files modified automatically by dev-sync (version bump) — excluded from
+# change detection to prevent the watch loop from re-triggering itself.
+SYNC_GENERATED = {
+    "custom_components/hass_datapoints/manifest.json",
+}
+
 def digest_map(base: pathlib.Path):
     result = {}
     for path in sorted((base / "custom_components" / "hass_datapoints").rglob("*")):
@@ -63,6 +70,8 @@ def digest_map(base: pathlib.Path):
         if "__pycache__" in path.parts:
             continue
         rel = path.relative_to(base).as_posix()
+        if rel in SYNC_GENERATED:
+            continue
         result[rel] = hashlib.sha1(path.read_bytes()).hexdigest()
     for path in sorted((base / "scripts").rglob("*")):
         if not path.is_file():
@@ -160,7 +169,9 @@ while true; do
     fi
 
     if [[ $SYNC_EXIT_CODE -eq 0 ]]; then
-      LAST_HASH="$CURRENT_HASH"
+      # Re-snapshot after the sync so build artifacts (e.g. hass-datapoints-cards.js
+      # with its embedded version string) don't look like a new change on the next poll.
+      LAST_HASH="$(snapshot)"
       echo "Watch sync succeeded."
     else
       echo "Watch sync failed with exit code $SYNC_EXIT_CODE. Waiting for the next change..." >&2
