@@ -195,6 +195,9 @@ jobs:
     name: Build
     needs: [test-python, test-unit, test-storybook, test-chromatic, hacs]
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      attestations: write
     steps:
       - uses: actions/checkout@v4
 
@@ -223,3 +226,8 @@ jobs:
             git diff --stat custom_components/hass_datapoints/hass-datapoints-cards.js
             exit 1
           fi
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: custom_components/hass_datapoints/hass-datapoints-cards.js
