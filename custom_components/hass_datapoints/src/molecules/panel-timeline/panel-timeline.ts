@@ -28,7 +28,8 @@ export class PanelTimeline extends LitElement {
 
   @property({ type: Object }) accessor endTime: Nullable<Date> = null;
 
-  @property({ type: Object }) accessor rangeBounds: Nullable<RangeBounds> = null;
+  @property({ type: Object }) accessor rangeBounds: Nullable<RangeBounds> =
+    null;
 
   @property({ type: String }) accessor zoomLevel: string = "day";
 
@@ -38,22 +39,31 @@ export class PanelTimeline extends LitElement {
 
   @property({ type: String }) accessor locale: string = "";
 
-  @state() accessor hoveredPeriodRange: Nullable<{ start: number; end: number }> =
+  @state() accessor hoveredPeriodRange: Nullable<{
+    start: number;
+    end: number;
+  }> = null;
+
+  @property({ type: Object }) accessor comparisonPreview: Nullable<{
+    start: number;
+    end: number;
+  }> = null;
+
+  @property({ type: Object }) accessor zoomRange: Nullable<{
+    start: number;
+    end: number;
+  }> = null;
+
+  @property({ type: Object }) accessor zoomWindowRange: Nullable<{
+    start: number;
+    end: number;
+  }> = null;
+
+  @property({ type: Number }) accessor chartHoverTimeMs: Nullable<number> =
     null;
 
-  @property({ type: Object }) accessor comparisonPreview: Nullable<{ start: number;
-    end: number; }> = null;
-
-  @property({ type: Object }) accessor zoomRange: Nullable<{ start: number;
-    end: number; }> = null;
-
-  @property({ type: Object }) accessor zoomWindowRange: Nullable<{ start: number;
-    end: number; }> = null;
-
-  @property({ type: Number }) accessor chartHoverTimeMs: Nullable<number> = null;
-
-  @property({ type: Number }) accessor chartHoverWindowTimeMs: Nullable<number> =
-    null;
+  @property({ type: Number })
+  accessor chartHoverWindowTimeMs: Nullable<number> = null;
 
   @property({ type: Array }) accessor events: EventMarker[] = [];
 

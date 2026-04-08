@@ -76,7 +76,9 @@ export function createHistoryPageNavigationContext(): HistoryNavigationContext {
     },
 
     saveSessionState(source: unknown): void {
-      writeHistoryPageSessionState(source as import("@/lib/history-page/history-session-state").HistoryPageSource);
+      writeHistoryPageSessionState(
+        source as import("@/lib/history-page/history-session-state").HistoryPageSource
+      );
     },
 
     updateUrl(options): void {

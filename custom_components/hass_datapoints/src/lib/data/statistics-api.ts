@@ -29,13 +29,18 @@ export async function fetchStatisticsDuringPeriod<TResponse = unknown>(
     types: normalizedTypes,
   });
 
-  return withStableRangeCache(cacheKey, endTime, () => hass.connection.sendMessagePromise({
-      type: "recorder/statistics_during_period",
-      start_time: startTime,
-      end_time: endTime,
-      statistic_ids: normalizedStatisticIds,
-      period: options.period || "hour",
-      types: normalizedTypes,
-      units: options.units || {},
-    }) as Promise<TResponse>);
+  return withStableRangeCache(
+    cacheKey,
+    endTime,
+    () =>
+      hass.connection.sendMessagePromise({
+        type: "recorder/statistics_during_period",
+        start_time: startTime,
+        end_time: endTime,
+        statistic_ids: normalizedStatisticIds,
+        period: options.period || "hour",
+        types: normalizedTypes,
+        units: options.units || {},
+      }) as Promise<TResponse>
+  );
 }

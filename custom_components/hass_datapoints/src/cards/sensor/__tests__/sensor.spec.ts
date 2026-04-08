@@ -161,6 +161,13 @@ describe("sensor", () => {
         expect(el.shadowRoot.querySelector("sensor-chart")).toBeTruthy();
       });
 
+      it("THEN the sensor-chart tooltip template includes the message row anchor", async () => {
+        expect.assertions(1);
+        const chart = el.shadowRoot.querySelector("sensor-chart");
+        await chart.updateComplete;
+        expect(chart.shadowRoot?.querySelector("#tt-message-row")).toBeTruthy();
+      });
+
       it("THEN no annotation section is shown by default", () => {
         const recordsEl = el.shadowRoot.querySelector("sensor-records");
         expect(recordsEl).toBeNull();
@@ -209,9 +216,7 @@ describe("sensor", () => {
         // Wait for sensor-record-item sub-elements to render
         const items =
           recordsEl.shadowRoot.querySelectorAll("sensor-record-item");
-        await Promise.all(
-          [...items].map((item) => item.updateComplete)
-        );
+        await Promise.all([...items].map((item) => item.updateComplete));
         const allText = getAllText(el.shadowRoot);
         expect(allText).toContain("Test event");
         expect(allText).toContain("Second event");

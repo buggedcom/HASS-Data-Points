@@ -6,7 +6,12 @@ export default {
   component: "sidebar-analysis-section",
   parameters: {
     actions: {
-      handles: ["dp-analysis-change", "dp-display-change", "dp-item-change", "dp-radio-change"],
+      handles: [
+        "dp-analysis-change",
+        "dp-display-change",
+        "dp-item-change",
+        "dp-radio-change",
+      ],
     },
   },
   argTypes: {

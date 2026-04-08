@@ -9,6 +9,7 @@ import type {
   WindowConfig,
   WindowResult,
 } from "@/cards/dev-tool/types";
+import { HassRecordsDevToolCardEditor } from "./editor";
 import "@/atoms/display/feedback-banner/feedback-banner";
 import "@/cards/dev-tool/dev-tool-results/dev-tool-results";
 import "@/cards/dev-tool/dev-tool-windows/dev-tool-windows";
@@ -49,8 +50,9 @@ export class HassRecordsDevToolCard extends HTMLElement {
       return;
     }
 
-    const entityPicker = this.shadowRoot.getElementById("entity-picker") as
-      | Nullable<HTMLElement & RecordWithUnknownValues>;
+    const entityPicker = this.shadowRoot.getElementById(
+      "entity-picker"
+    ) as Nullable<HTMLElement & RecordWithUnknownValues>;
     if (!entityPicker) {
       return;
     }
@@ -100,8 +102,9 @@ export class HassRecordsDevToolCard extends HTMLElement {
       </ha-card>
     `;
 
-    const entityPicker = this.shadowRoot!.getElementById("entity-picker") as
-      | Nullable<HTMLElement & RecordWithUnknownValues>;
+    const entityPicker = this.shadowRoot!.getElementById(
+      "entity-picker"
+    ) as Nullable<HTMLElement & RecordWithUnknownValues>;
     if (entityPicker) {
       entityPicker.selector = { entity: { multiple: true } };
       entityPicker.value = [];
@@ -152,7 +155,6 @@ export class HassRecordsDevToolCard extends HTMLElement {
     return windowsEditor.getWindowConfigs().map((windowConfig, index) => ({
       ...windowConfig,
       label: windowConfig.label.trim() || `Window ${index + 1}`,
-      hours: Math.max(1, windowConfig.hours || 24),
     }));
   }
 
@@ -184,10 +186,8 @@ export class HassRecordsDevToolCard extends HTMLElement {
         windowConfigs.map(async (windowConfig) => {
           const start = windowConfig.startDt
             ? new Date(windowConfig.startDt)
-            : new Date(now.getTime() - windowConfig.hours * 3_600_000);
-          const end = windowConfig.startDt
-            ? new Date(start.getTime() + windowConfig.hours * 3_600_000)
             : now;
+          const end = windowConfig.endDt ? new Date(windowConfig.endDt) : now;
           const raw = await this._hass!.connection.sendMessagePromise({
             type: "history/history_during_period",
             start_time: start.toISOString(),
@@ -204,7 +204,7 @@ export class HassRecordsDevToolCard extends HTMLElement {
             id: windowConfig.id,
             label: windowConfig.label,
             startDt: windowConfig.startDt,
-            hours: windowConfig.hours,
+            endDt: windowConfig.endDt,
             changes,
             selected: changes.map((_, index) => index),
           };
@@ -598,4 +598,10 @@ export class HassRecordsDevToolCard extends HTMLElement {
   static getStubConfig() {
     return { title: "Dev Tool" };
   }
+
+  static getConfigElement(): HTMLElement {
+    return document.createElement("hass-datapoints-dev-tool-card-editor");
+  }
 }
+
+export { HassRecordsDevToolCardEditor };

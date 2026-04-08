@@ -115,9 +115,18 @@ export class CardDevToolResults extends LitElement {
         </div>
         <div id="results-list">
           ${this.results.map((result) => {
-            const rangeLabel = result.startDt
-              ? `from ${new Date(result.startDt).toLocaleString([], { dateStyle: "short", timeStyle: "short" } as Intl.DateTimeFormatOptions)} · ${result.hours}h`
-              : `most recent ${result.hours}h`;
+            const startLabel = result.startDt
+              ? new Date(result.startDt).toLocaleString([], {
+                  dateStyle: "short",
+                  timeStyle: "short",
+                } as Intl.DateTimeFormatOptions)
+              : "unknown start";
+            const rangeLabel = result.endDt
+              ? `${startLabel} → ${new Date(result.endDt).toLocaleString([], {
+                  dateStyle: "short",
+                  timeStyle: "short",
+                } as Intl.DateTimeFormatOptions)}`
+              : `${startLabel} → now`;
             const collapsed = this._collapsedWindowIds.includes(result.id);
             return html`
               <div

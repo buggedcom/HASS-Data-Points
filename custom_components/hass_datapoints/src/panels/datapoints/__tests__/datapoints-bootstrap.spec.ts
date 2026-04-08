@@ -67,19 +67,22 @@ describe("HassRecordsHistoryPanel bootstrap", () => {
           _seriesColorQueryKey: () => "temperature",
         };
 
-        HassRecordsHistoryPanel.prototype._applyPreferencePageState.call(panel, {
-          series_rows: [
-            {
-              entity_id: "sensor.temp",
-              color: "#ff0000",
-              visible: true,
-              analysis: {
-                sample_interval: "24h",
-                sample_aggregate: "mean",
+        HassRecordsHistoryPanel.prototype._applyPreferencePageState.call(
+          panel,
+          {
+            series_rows: [
+              {
+                entity_id: "sensor.temp",
+                color: "#ff0000",
+                visible: true,
+                analysis: {
+                  sample_interval: "24h",
+                  sample_aggregate: "mean",
+                },
               },
-            },
-          ],
-        });
+            ],
+          }
+        );
 
         expect(panel._seriesRows[0].analysis.sample_interval).toBe("24h");
         expect(panel._seriesRows[0].color).toBe("#ff0000");

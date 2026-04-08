@@ -1,10 +1,38 @@
-import { vi } from "vitest";
+type MockCallArgs = unknown[];
+
+type LocalMockFn = ((...args: MockCallArgs) => unknown) & {
+  mock: { calls: MockCallArgs[] };
+};
+
+function createLocalMockFn(
+  impl: (...args: MockCallArgs) => unknown
+): LocalMockFn {
+  const fn = ((...args: MockCallArgs) => {
+    fn.mock.calls.push(args);
+    return impl(...args);
+  }) as LocalMockFn;
+  fn.mock = { calls: [] };
+  return fn;
+}
+
+function createSpyFn(impl: (...args: MockCallArgs) => unknown): LocalMockFn {
+  const vitestVi = (
+    globalThis as typeof globalThis & {
+      vi?: { fn: (inner: (...args: MockCallArgs) => unknown) => LocalMockFn };
+    }
+  ).vi;
+  if (vitestVi?.fn) {
+    return vitestVi.fn(impl);
+  }
+  return createLocalMockFn(impl);
+}
 
 /**
  * Creates a minimal mock of the Home Assistant `hass` object
  * for use in component tests.
  */
 export function createMockHass(overrides: RecordWithUnknownValues = {}) {
+  const unsubscribe = createSpyFn(() => undefined);
   return {
     states: {
       "sensor.temperature": {
@@ -80,10 +108,10 @@ export function createMockHass(overrides: RecordWithUnknownValues = {}) {
       area_2: { area_id: "area_2", name: "Hallway" },
     },
     connection: {
-      subscribeEvents: vi.fn(() => Promise.resolve(vi.fn())),
-      sendMessagePromise: vi.fn(() => Promise.resolve({})),
+      subscribeEvents: createSpyFn(() => Promise.resolve(unsubscribe)),
+      sendMessagePromise: createSpyFn(() => Promise.resolve({})),
     },
-    callService: vi.fn(() => Promise.resolve()),
+    callService: createSpyFn(() => Promise.resolve()),
     ...overrides,
   };
 }

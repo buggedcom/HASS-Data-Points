@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createMockHass } from "@/test-support/mock-hass";
 import { HassRecordsQuickCard } from "../quick";
 
@@ -10,7 +10,9 @@ function createCard(config: RecordWithUnknownValues = {}) {
   const el = document.createElement("hass-datapoints-quick-card") as any;
   document.body.appendChild(el);
   el.setConfig({ title: "Quick Record", ...config });
-  el.hass = createMockHass();
+  el.hass = createMockHass({
+    callService: vi.fn(() => Promise.resolve()),
+  });
   return el;
 }
 

@@ -1,4 +1,4 @@
-import { html, LitElement } from "lit";
+import { html, LitElement, PropertyValues } from "lit";
 import { property, state } from "lit/decorators.js";
 import type { EventRecordFull } from "@/lib/types";
 import { styles } from "./sensor-records.styles";
@@ -12,8 +12,8 @@ export class SensorRecords extends LitElement {
   @property({ type: Object, attribute: false })
   accessor hiddenEventIds: Set<string> = new Set();
 
-  @property({ type: Number, attribute: "page-size" }) accessor pageSize:
-    | Nullable<number> = null;
+  @property({ type: Number, attribute: "page-size" })
+  accessor pageSize: Nullable<number> = null;
 
   @property({ type: Number }) accessor limit: Nullable<number> = null;
 
@@ -23,6 +23,56 @@ export class SensorRecords extends LitElement {
   @state() accessor _page: number = 0;
 
   static styles = styles;
+
+  private _paginationNotifyRaf: number | null = null;
+
+  protected updated(changedProps: PropertyValues<this>): void {
+    if (
+      changedProps.has("events") ||
+      changedProps.has("pageSize") ||
+      changedProps.has("limit") ||
+      changedProps.has("_page")
+    ) {
+      const sorted = [...this.events].sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+      const limited = this.limit ? sorted.slice(0, this.limit) : sorted;
+      const total = limited.length;
+      const totalPages = this.pageSize
+        ? Math.max(1, Math.ceil(total / this.pageSize))
+        : 1;
+      if (this._paginationNotifyRaf !== null) {
+        window.cancelAnimationFrame(this._paginationNotifyRaf);
+      }
+      this._paginationNotifyRaf = window.requestAnimationFrame(() => {
+        this._paginationNotifyRaf = null;
+        const paginationEl =
+          this.shadowRoot?.querySelector<HTMLElement>("pagination-nav");
+        const paginationHeight =
+          paginationEl?.getBoundingClientRect().height ?? 0;
+        this.dispatchEvent(
+          new CustomEvent("dp-sensor-pagination-visibility-change", {
+            detail: {
+              visible: totalPages > 1,
+              height: totalPages > 1 ? paginationHeight : 0,
+            },
+            bubbles: true,
+            composed: true,
+          })
+        );
+      });
+    }
+  }
+
+  disconnectedCallback(): void {
+    // eslint-disable-next-line wc/guard-super-call
+    super.disconnectedCallback();
+    if (this._paginationNotifyRaf !== null) {
+      window.cancelAnimationFrame(this._paginationNotifyRaf);
+      this._paginationNotifyRaf = null;
+    }
+  }
 
   render() {
     const sorted = [...this.events].sort(
@@ -67,6 +117,7 @@ export class SensorRecords extends LitElement {
         ${showPagination
           ? html`
               <pagination-nav
+                class="pagination-footer"
                 .page=${page}
                 .totalPages=${totalPages}
                 .totalItems=${total}

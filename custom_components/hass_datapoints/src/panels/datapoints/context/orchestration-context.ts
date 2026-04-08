@@ -8,7 +8,9 @@ type DrawHost = HTMLElement & {
 
 type PickerLike = Element & { open?: () => void };
 
-function getInnerHistoryChart(chartEl: Nullable<HTMLElement>): Nullable<HTMLElement> {
+function getInnerHistoryChart(
+  chartEl: Nullable<HTMLElement>
+): Nullable<HTMLElement> {
   if (!chartEl?.shadowRoot) {
     return null;
   }
@@ -33,8 +35,11 @@ function ensureCollapsedPickerAnchor(
   anchorEl: Nullable<HTMLElement> | undefined
 ): void {
   const assignedSlot =
-    (targetControl as HTMLElement & { assignedSlot?: Nullable<HTMLSlotElement> })
-      .assignedSlot ?? null;
+    (
+      targetControl as HTMLElement & {
+        assignedSlot?: Nullable<HTMLSlotElement>;
+      }
+    ).assignedSlot ?? null;
   if (!assignedSlot) {
     return;
   }
@@ -44,7 +49,10 @@ function ensureCollapsedPickerAnchor(
       ? assignedSlot.parentElement
       : null;
   let hiddenAnchorHost: Nullable<HTMLElement> = null;
-  if (slotContainer && window.getComputedStyle(slotContainer).display === "none") {
+  if (
+    slotContainer &&
+    window.getComputedStyle(slotContainer).display === "none"
+  ) {
     hiddenAnchorHost = slotContainer;
   } else if (window.getComputedStyle(assignedSlot).display === "none") {
     hiddenAnchorHost = assignedSlot;
@@ -113,9 +121,7 @@ export function createHistoryPageOrchestrationContext(): HistoryOrchestrationCon
             ._drawChart === "function"
         ) {
           (chartEl as unknown as DrawHost)._drawChart!(
-            ...(
-              chartEl as unknown as DrawHost
-            )._lastDrawArgs!
+            ...(chartEl as unknown as DrawHost)._lastDrawArgs!
           );
           return;
         }
@@ -135,9 +141,7 @@ export function createHistoryPageOrchestrationContext(): HistoryOrchestrationCon
             )._queueDrawChart === "function"
           ) {
             (innerChart as unknown as DrawHost)._queueDrawChart!(
-              ...(
-                innerChart as unknown as DrawHost
-              )._lastDrawArgs!
+              ...(innerChart as unknown as DrawHost)._lastDrawArgs!
             );
             return;
           }
@@ -147,9 +151,7 @@ export function createHistoryPageOrchestrationContext(): HistoryOrchestrationCon
               ._drawChart === "function"
           ) {
             (innerChart as unknown as DrawHost)._drawChart!(
-              ...(
-                innerChart as unknown as DrawHost
-              )._lastDrawArgs!
+              ...(innerChart as unknown as DrawHost)._lastDrawArgs!
             );
           }
         }

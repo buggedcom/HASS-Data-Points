@@ -21,12 +21,13 @@ function createElement() {
   const el = document.createElement("history-chart") as HTMLElement & {
     config: Nullable<RecordWithUnknownValues>;
     hass: unknown;
-    chartEl:
-      | Nullable<HTMLElement & {
-          setConfig: ReturnType<typeof vi.fn>;
-          setExternalZoomRange: ReturnType<typeof vi.fn>;
-          hass: unknown;
-        }>;
+    chartEl: Nullable<
+      HTMLElement & {
+        setConfig: ReturnType<typeof vi.fn>;
+        setExternalZoomRange: ReturnType<typeof vi.fn>;
+        hass: unknown;
+      }
+    >;
     setExternalZoomRange(range: Nullable<{ start: number; end: number }>): void;
   };
   document.body.appendChild(el);

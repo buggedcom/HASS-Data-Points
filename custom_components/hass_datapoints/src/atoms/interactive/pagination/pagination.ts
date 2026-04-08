@@ -50,8 +50,9 @@ export class Pagination extends LitElement {
         ‹
       </button>
       <span class="info">
-        <span>Page ${this.page + 1} of ${this.totalPages} </span>
-        <span> ${this.totalItems} ${this.label}</span>
+        <span>Page ${this.page + 1} of ${this.totalPages}</span>
+        <span class="sep" aria-hidden="true">•</span>
+        <span>${this.totalItems} ${this.label}</span>
       </span>
       <button
         type="button"

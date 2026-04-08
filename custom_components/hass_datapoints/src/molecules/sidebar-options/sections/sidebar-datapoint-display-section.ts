@@ -35,7 +35,9 @@ export class SidebarDatapointDisplaySection extends LitElement {
     return html`
       <sidebar-options-section
         .title=${msg("Datapoint Display")}
-        .subtitle=${msg("Control how annotation datapoints are rendered on the chart.")}
+        .subtitle=${msg(
+          "Control how annotation datapoints are rendered on the chart."
+        )}
         .collapsible=${this.collapsible}
         .open=${this.open}
       >

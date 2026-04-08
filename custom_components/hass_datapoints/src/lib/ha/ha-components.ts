@@ -55,23 +55,35 @@ interface ConfirmActionOptions {
   confirmLabel?: string;
 }
 
-async function preloadHistoryRouteComponents(tags: string[] = []): Promise<void> {
-  const historyTags = tags.filter((tag) => HA_HISTORY_ROUTE_COMPONENT_TAGS.has(tag) && !customElements.get(tag));
+async function preloadHistoryRouteComponents(
+  tags: string[] = []
+): Promise<void> {
+  const historyTags = tags.filter(
+    (tag) =>
+      HA_HISTORY_ROUTE_COMPONENT_TAGS.has(tag) && !customElements.get(tag)
+  );
   if (!historyTags.length) {
     return;
   }
 
   try {
-    const app = document.querySelector("home-assistant") as
-      | Nullable<HTMLElement & { hass?: { panels?: RecordWithUnknownValues } }>;
+    const app = document.querySelector("home-assistant") as Nullable<
+      HTMLElement & { hass?: { panels?: RecordWithUnknownValues } }
+    >;
     const panels = app?.hass?.panels;
     if (!panels?.history) {
-      logger.warn("[hass-datapoints ha] history panel not available for preload");
+      logger.warn(
+        "[hass-datapoints ha] history panel not available for preload"
+      );
       return;
     }
-    const resolver = document.createElement("partial-panel-resolver") as PartialPanelResolverElement;
+    const resolver = document.createElement(
+      "partial-panel-resolver"
+    ) as PartialPanelResolverElement;
     if (typeof resolver._updateRoutes !== "function") {
-      logger.warn("[hass-datapoints ha] partial-panel-resolver missing _updateRoutes");
+      logger.warn(
+        "[hass-datapoints ha] partial-panel-resolver missing _updateRoutes"
+      );
       return;
     }
     resolver.hass = { panels };
@@ -114,13 +126,16 @@ export function waitForHaComponent(
   ]);
 }
 
-export function ensureHaComponents(tags: string[] = []): Promise<
-  { tag: string; ready: boolean; defined: boolean }[]
-> {
+export function ensureHaComponents(
+  tags: string[] = []
+): Promise<{ tag: string; ready: boolean; defined: boolean }[]> {
   const componentTags = [...new Set((tags || []).filter(Boolean))];
-  const loaderTags = componentTags.filter((tag) => HA_COMPONENT_LOADER_SUPPORTED_TAGS.has(tag));
+  const loaderTags = componentTags.filter((tag) =>
+    HA_COMPONENT_LOADER_SUPPORTED_TAGS.has(tag)
+  );
   const loadPromise = Promise.resolve()
-    .then(() => typeof loadHaComponents === "function" && loaderTags.length
+    .then(() =>
+      typeof loadHaComponents === "function" && loaderTags.length
         ? Promise.resolve(loadHaComponents(loaderTags)).catch((error) => {
             logger.warn("[hass-datapoints ha] loader failed", {
               loaderTags,
@@ -128,47 +143,56 @@ export function ensureHaComponents(tags: string[] = []): Promise<
             });
             return undefined;
           })
-        : undefined)
+        : undefined
+    )
     .then(() => preloadHistoryRouteComponents(componentTags));
   return loadPromise
-    .then(() => Promise.all(componentTags.map((tag) => waitForHaComponent(tag))))
-    .then((results) => componentTags.map((tag, index) => ({
-          tag,
-          ready: !!results[index],
-          defined: !!customElements.get(tag),
-        })));
+    .then(() =>
+      Promise.all(componentTags.map((tag) => waitForHaComponent(tag)))
+    )
+    .then((results) =>
+      componentTags.map((tag, index) => ({
+        tag,
+        ready: !!results[index],
+        defined: !!customElements.get(tag),
+      }))
+    );
 }
 
 export function confirmDestructiveAction(
   host: Nullable<ConfirmActionHost> | undefined,
   options: ConfirmActionOptions = {}
 ): Promise<boolean> {
-  return ensureHaComponents(["ha-dialog"]).then(() => new Promise<boolean>((resolve) => {
-      const root = host?.shadowRoot || host;
-      if (!root || !("appendChild" in root)) {
-        // this is a fallback if something goes wrong with the custom element loader
-        // eslint-disable-next-line no-alert
-        const confirmation = window.confirm(options.message || options.title || "Are you sure?");
-        resolve(confirmation);
-        return;
-      }
+  return ensureHaComponents(["ha-dialog"]).then(
+    () =>
+      new Promise<boolean>((resolve) => {
+        const root = host?.shadowRoot || host;
+        if (!root || !("appendChild" in root)) {
+          // this is a fallback if something goes wrong with the custom element loader
+          // eslint-disable-next-line no-alert
+          const confirmation = window.confirm(
+            options.message || options.title || "Are you sure?"
+          );
+          resolve(confirmation);
+          return;
+        }
 
-      const dialog = document.createElement("ha-dialog") as HTMLElement & {
-        scrimClickAction?: boolean;
-        escapeKeyAction?: boolean;
-        open?: boolean;
-        headerTitle?: string;
-        hass?: unknown;
-      };
-      dialog.setAttribute("hideActions", "");
-      dialog.scrimClickAction = true;
-      dialog.escapeKeyAction = true;
-      dialog.open = false;
-      dialog.headerTitle = options.title || msg("Confirm delete");
-      if (host?._hass) {
-        dialog.hass = host._hass;
-      }
-      dialog.innerHTML = `
+        const dialog = document.createElement("ha-dialog") as HTMLElement & {
+          scrimClickAction?: boolean;
+          escapeKeyAction?: boolean;
+          open?: boolean;
+          headerTitle?: string;
+          hass?: unknown;
+        };
+        dialog.setAttribute("hideActions", "");
+        dialog.scrimClickAction = true;
+        dialog.escapeKeyAction = true;
+        dialog.open = false;
+        dialog.headerTitle = options.title || msg("Confirm delete");
+        if (host?._hass) {
+          dialog.hass = host._hass;
+        }
+        dialog.innerHTML = `
         <style>
           .confirm-dialog-body {
             padding: 0 var(--dp-spacing-lg, 24px) var(--dp-spacing-lg, 24px);
@@ -210,53 +234,58 @@ export function confirmDestructiveAction(
         </div>
       `;
 
-      let settled = false;
-      const finish = (value: boolean) => {
-        if (settled) {
-          return;
-        }
-        settled = true;
-        dialog.open = false;
-        resolve(value);
-      };
-
-      const cancelButton = dialog.querySelector(".confirm-dialog-button.cancel");
-      const confirmButton = dialog.querySelector(".confirm-dialog-button.confirm");
-
-      cancelButton?.addEventListener("click", () => {
-        finish(false);
-      });
-      confirmButton?.addEventListener("click", () => {
-        finish(true);
-      });
-      dialog.addEventListener("keydown", (event) => {
-        if (
-          event.key !== "Enter" ||
-          event.shiftKey ||
-          event.altKey ||
-          event.ctrlKey ||
-          event.metaKey
-        ) {
-          return;
-        }
-        event.preventDefault();
-        finish(true);
-      });
-      dialog.addEventListener(
-        "closed",
-        () => {
-          dialog.remove();
-          if (!settled) {
-            resolve(false);
+        let settled = false;
+        const finish = (value: boolean) => {
+          if (settled) {
+            return;
           }
-        },
-        { once: true }
-      );
+          settled = true;
+          dialog.open = false;
+          resolve(value);
+        };
 
-      root.appendChild(dialog);
-      dialog.open = true;
-      window.requestAnimationFrame(() => {
-        (confirmButton as Nullable<HTMLElement>)?.focus();
-      });
-    }));
+        const cancelButton = dialog.querySelector(
+          ".confirm-dialog-button.cancel"
+        );
+        const confirmButton = dialog.querySelector(
+          ".confirm-dialog-button.confirm"
+        );
+
+        cancelButton?.addEventListener("click", () => {
+          finish(false);
+        });
+        confirmButton?.addEventListener("click", () => {
+          finish(true);
+        });
+        dialog.addEventListener("keydown", (event) => {
+          if (
+            event.key !== "Enter" ||
+            event.shiftKey ||
+            event.altKey ||
+            event.ctrlKey ||
+            event.metaKey
+          ) {
+            return;
+          }
+          event.preventDefault();
+          finish(true);
+        });
+        dialog.addEventListener(
+          "closed",
+          () => {
+            dialog.remove();
+            if (!settled) {
+              resolve(false);
+            }
+          },
+          { once: true }
+        );
+
+        root.appendChild(dialog);
+        dialog.open = true;
+        window.requestAnimationFrame(() => {
+          (confirmButton as Nullable<HTMLElement>)?.focus();
+        });
+      })
+  );
 }

@@ -21,6 +21,12 @@ export const styles = css`
   .search-wrap {
     padding: var(--dp-spacing-md);
     flex: 0 0 auto;
+    border-bottom: 1px solid var(--divider-color, #eee);
+    background: color-mix(
+      in srgb,
+      var(--card-background-color, #fff) 92%,
+      var(--primary-background-color, #f7f7f7)
+    );
   }
   .search-wrap input {
     width: 100%;
@@ -37,6 +43,11 @@ export const styles = css`
   .pagination-wrap {
     flex: 0 0 auto;
     border-top: 1px solid var(--divider-color, #eee);
+    background: color-mix(
+      in srgb,
+      var(--card-background-color, #fff) 92%,
+      var(--primary-background-color, #f7f7f7)
+    );
   }
   .empty {
     text-align: center;

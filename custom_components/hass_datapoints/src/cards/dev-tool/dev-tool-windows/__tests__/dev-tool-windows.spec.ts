@@ -7,7 +7,7 @@ function createElement(props: RecordWithUnknownValues = {}) {
       id: number;
       label: string;
       startDt: string;
-      hours: number;
+      endDt: string;
     }>;
     updateComplete: Promise<void>;
   };

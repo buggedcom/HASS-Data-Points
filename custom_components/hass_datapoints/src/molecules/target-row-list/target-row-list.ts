@@ -114,8 +114,8 @@ export class TargetRowList extends LitElement {
   > = {};
 
   /** HA hass object. Required by ha-state-icon inside target-row to resolve entity icons. */
-  @property({ type: Object, attribute: false }) accessor hass: Nullable<HassLike> =
-    null;
+  @property({ type: Object, attribute: false })
+  accessor hass: Nullable<HassLike> = null;
 
   @property({ type: Boolean, attribute: "can-show-delta-analysis" })
   accessor canShowDeltaAnalysis: boolean = false;

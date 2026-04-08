@@ -1,4 +1,5 @@
 import { PANEL_URL_PATH } from "@/constants";
+import { serializeHistoryPageStateParam } from "@/lib/history-page/history-url-state";
 
 interface HistoryTargetSelection {
   entity_id?: string[];
@@ -13,10 +14,15 @@ interface HistoryNavigationOptions {
   end_time?: string | Nullable<number | Date>;
   zoom_start_time?: string | Nullable<number | Date>;
   zoom_end_time?: string | Nullable<number | Date>;
+  page_state?: Nullable<RecordWithUnknownValues>;
 }
 
 export function navigateToHistory(_card: unknown, entityIds: unknown): void {
-  const uniq = [...new Set((Array.isArray(entityIds) ? entityIds : []).filter(Boolean) as string[])];
+  const uniq = [
+    ...new Set(
+      (Array.isArray(entityIds) ? entityIds : []).filter(Boolean) as string[]
+    ),
+  ];
   const params = new URLSearchParams();
   if (uniq.length) {
     params.set("entity_id", uniq.join(","));
@@ -71,11 +77,20 @@ export function buildDataPointsHistoryPath(
   ) {
     params.set("start_time", start.toISOString());
     params.set("end_time", end.toISOString());
-    params.set("hours_to_show", String(Math.max(1, Math.round((end.getTime() - start.getTime()) / 3600000))));
+    params.set(
+      "hours_to_show",
+      String(
+        Math.max(1, Math.round((end.getTime() - start.getTime()) / 3600000))
+      )
+    );
   }
 
-  const zoomStart = options.zoom_start_time ? new Date(options.zoom_start_time) : null;
-  const zoomEnd = options.zoom_end_time ? new Date(options.zoom_end_time) : null;
+  const zoomStart = options.zoom_start_time
+    ? new Date(options.zoom_start_time)
+    : null;
+  const zoomEnd = options.zoom_end_time
+    ? new Date(options.zoom_end_time)
+    : null;
   if (
     zoomStart &&
     zoomEnd &&
@@ -85,6 +100,11 @@ export function buildDataPointsHistoryPath(
   ) {
     params.set("zoom_start_time", zoomStart.toISOString());
     params.set("zoom_end_time", zoomEnd.toISOString());
+  }
+
+  const pageStateParam = serializeHistoryPageStateParam(options.page_state);
+  if (pageStateParam) {
+    params.set("page_state", pageStateParam);
   }
 
   return `/${PANEL_URL_PATH}?${params.toString()}`;

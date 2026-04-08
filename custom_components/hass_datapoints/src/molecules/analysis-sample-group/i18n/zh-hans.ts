@@ -1,9 +1,9 @@
 import type { ComponentTranslations } from "@/lib/i18n/types";
 
 export const translations: ComponentTranslations = {
-  "Downsampling": "降采样",
-  "Interval": "间隔",
-  "Aggregate": "聚合",
+  Downsampling: "降采样",
+  Interval: "间隔",
+  Aggregate: "聚合",
   "Raw (no sampling)": "原始（无采样）",
   "5 seconds": "5秒",
   "10 seconds": "10秒",
@@ -23,9 +23,9 @@ export const translations: ComponentTranslations = {
   "12 hours": "12小时",
   "24 hours": "24小时",
   "Mean (average)": "平均值",
-  "Min": "最小",
-  "Max": "最大",
-  "Median": "中位数",
-  "First": "首个",
-  "Last": "最后一个",
+  Min: "最小",
+  Max: "最大",
+  Median: "中位数",
+  First: "首个",
+  Last: "最后一个",
 };

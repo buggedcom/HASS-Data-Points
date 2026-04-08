@@ -78,7 +78,10 @@ describe("HassRecordsHistoryPanel collapsed sidebar interactions", () => {
 
         HassRecordsHistoryPanel.prototype._openTargetPicker.call(panel, null);
 
-        expect(openTargetPicker).toHaveBeenCalledWith(panel._targetControl, null);
+        expect(openTargetPicker).toHaveBeenCalledWith(
+          panel._targetControl,
+          null
+        );
       });
     });
   });
@@ -103,7 +106,10 @@ describe("HassRecordsHistoryPanel collapsed sidebar interactions", () => {
 
         HassRecordsHistoryPanel.prototype._openTargetPicker.call(panel, null);
 
-        expect(openTargetPicker).toHaveBeenCalledWith(panel._targetControl, null);
+        expect(openTargetPicker).toHaveBeenCalledWith(
+          panel._targetControl,
+          null
+        );
       });
     });
   });

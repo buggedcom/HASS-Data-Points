@@ -3,11 +3,16 @@ import { localized, msg } from "@/lib/i18n/localize";
 
 import { styles } from "./list.styles";
 import { DOMAIN } from "@/constants";
+import { resolveEntityIdsFromTarget } from "@/lib/domain/target-selection";
 import { navigateToDataPointsHistory } from "@/lib/ha/navigation";
 import { confirmDestructiveAction } from "@/lib/ha/ha-components";
 import { deleteEvent, fetchEvents, updateEvent } from "@/lib/data/events-api";
 import type { CardConfig, HassLike } from "@/lib/types";
-import type { EditSaveDetail, EventItemContext, EventRecordFull, } from "@/cards/list/types";
+import type {
+  EditSaveDetail,
+  EventItemContext,
+  EventRecordFull,
+} from "@/cards/list/types";
 import "@/atoms/interactive/search-bar/search-bar";
 import "@/atoms/interactive/pagination/pagination";
 import "@/cards/list/list-event-item/list-event-item";
@@ -140,13 +145,15 @@ export class HassRecordsListCard extends LitElement {
         end.getTime() - (cfg.hours_to_show as number) * 3600 * 1000
       ).toISOString();
     }
-    const effectiveEndTime = endTime || new Date().toISOString();
     if (!startTime) {
-      this._allEvents = [];
-      return;
+      startTime = new Date(0).toISOString();
     }
+    const effectiveEndTime = endTime || new Date().toISOString();
     let entityIds: string[] | undefined;
-    if (cfg.entity) {
+    if (cfg.target) {
+      const resolved = resolveEntityIdsFromTarget(this._hass, cfg.target);
+      entityIds = resolved.length ? resolved : undefined;
+    } else if (cfg.entity) {
       entityIds = [cfg.entity as string];
     } else if (cfg.entities) {
       entityIds = (cfg.entities as Array<string | { entity: string }>).map(

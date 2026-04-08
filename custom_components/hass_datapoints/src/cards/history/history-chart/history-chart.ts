@@ -14,7 +14,6 @@ import { esc } from "@/lib/util/format";
 import {
   binaryOffLabel,
   binaryOnLabel,
-  downsamplePts,
   getAxisValueExtent,
   getHistoryStatesForEntity,
   mergeNumericHistoryWithStatistics,
@@ -40,6 +39,7 @@ import {
   type HoverSeriesLike,
   type HoverState,
   type HoverValueEntry,
+  resolveLineChartHoverTime,
   showLineChartCrosshair,
   showLineChartTooltip,
 } from "@/lib/chart/chart-interaction";
@@ -67,7 +67,16 @@ import {
   computeHistoryAnalysisInWorker,
   terminateHistoryAnalysisWorker,
 } from "@/lib/workers/history-analysis-client";
-import type { ComputeHistoryAnalysisPayload } from "@/lib/workers/history-analysis.worker";
+import { downsampleInWorker } from "@/lib/workers/chart-data-client";
+import {
+  type ChartAggregate,
+  downsamplePts,
+} from "@/lib/workers/chart-data.worker";
+import type {
+  ComparisonWindowAnalysis,
+  ComputeHistoryAnalysisPayload,
+  WorkerSeriesAnalysis,
+} from "@/lib/workers/history-analysis.worker";
 import { logger } from "@/lib/logger";
 import type { HassLike } from "@/lib/types";
 import {
@@ -106,6 +115,10 @@ interface AnalysisResult {
   deltaSeries: unknown[];
   summaryStats: unknown[];
   anomalySeries: unknown[];
+  comparisonWindowResults?: Record<
+    string,
+    Record<string, ComparisonWindowAnalysis>
+  >;
 }
 
 type DrawArgs = [
@@ -143,6 +156,7 @@ export class HistoryChart extends HTMLElement {
         <div class="chart-stage" id="chart-stage">
           <div class="chart-loading active" id="loading" aria-hidden="true">
             <div class="chart-loading-spinner"></div>
+            <span class="chart-loading-label">Loading</span>
           </div>
           <div class="chart-message" id="chart-message"></div>
           <canvas id="chart"></canvas>
@@ -265,6 +279,18 @@ export class HistoryChart extends HTMLElement {
    * scroll event can be identified and skipped by the scroll handler.
    */
   _ignoreNextProgrammaticScrollEvent = false;
+
+  /**
+   * Set when a user scroll settles and dispatches zoom-apply so the redraw
+   * does not nudge the viewport away from the user's final position.
+   */
+  _skipNextScrollViewportSync = false;
+
+  /**
+   * While this deadline is in the future, redraws should preserve the user's
+   * final scroll position instead of recomputing and snapping the viewport.
+   */
+  _preserveUserScrollViewportUntil = 0;
 
   /**
    * True while the user is in the process of creating a context annotation
@@ -1076,6 +1102,14 @@ export class HistoryChart extends HTMLElement {
       return;
     }
     const viewport = this._chartScrollViewportEl as HTMLElement;
+    if (Date.now() < this._preserveUserScrollViewportUntil) {
+      this._skipNextScrollViewportSync = false;
+      return;
+    }
+    if (this._skipNextScrollViewportSync) {
+      this._skipNextScrollViewportSync = false;
+      return;
+    }
     const viewportWidth = viewport.clientWidth;
     const totalMs = Math.max(1, _t1 - _t0);
     const visibleSpanMs =
@@ -1893,7 +1927,9 @@ export class HistoryChart extends HTMLElement {
         return rawPoints;
       }
       const sampleAggregate = ((analysis.sample_aggregate as string) ||
-        "mean") as Parameters<typeof downsamplePts>[2];
+        "mean") as ChartAggregate;
+      // Fallback: API returned no data, re-aggregate raw points synchronously.
+      // This is a degraded path so the synchronous version is fine here.
       return downsamplePts(rawPoints, targetIntervalMs, sampleAggregate);
     }
 
@@ -1924,10 +1960,14 @@ export class HistoryChart extends HTMLElement {
       if (rawOutsidePts.length > 0) {
         const targetIntervalMs = SAMPLE_INTERVAL_MS[interval] ?? 0;
         const sampleAggregate = ((analysis.sample_aggregate as string) ||
-          "mean") as Parameters<typeof downsamplePts>[2];
+          "mean") as ChartAggregate;
         const outsideStatsPts: [number, number][] =
           targetIntervalMs > 0
-            ? downsamplePts(rawOutsidePts, targetIntervalMs, sampleAggregate)
+            ? await downsampleInWorker(
+                rawOutsidePts,
+                targetIntervalMs,
+                sampleAggregate
+              )
             : rawOutsidePts;
         finalPts = [...outsideStatsPts, ...finalPts];
         finalPts.sort((a, b) => a[0] - b[0]);
@@ -1962,6 +2002,13 @@ export class HistoryChart extends HTMLElement {
     events?: unknown[];
     comparisonWindowId: string;
   }): void {
+    // Look up analysis that the worker pre-computed for this window/entity pair.
+    // Falls back to synchronous helpers if the cache is absent (e.g. first render).
+    const precomputed =
+      this._analysisCache?.result?.comparisonWindowResults?.[
+        comparisonWindowId
+      ]?.[entityId];
+
     if (analysis.show_threshold_analysis === true) {
       const thresholdValue = Number(analysis.threshold_value);
       if (Number.isFinite(thresholdValue)) {
@@ -1997,7 +2044,8 @@ export class HistoryChart extends HTMLElement {
     }
 
     if (analysis.show_summary_stats === true) {
-      const summaryStats = this._buildSummaryStats(comparisonPts);
+      const summaryStats =
+        precomputed?.summaryStats ?? this._buildSummaryStats(comparisonPts);
       if (
         Number.isFinite(summaryStats.min) &&
         Number.isFinite(summaryStats.max) &&
@@ -2052,11 +2100,13 @@ export class HistoryChart extends HTMLElement {
     }
 
     if (analysis.show_trend_lines === true && comparisonPts.length >= 2) {
-      const trendPts = this._buildTrendPoints(
-        comparisonPts,
-        analysis.trend_method,
-        analysis.trend_window
-      );
+      const trendPts =
+        (precomputed?.trendPts as [number, number][] | undefined) ??
+        this._buildTrendPoints(
+          comparisonPts,
+          analysis.trend_method,
+          analysis.trend_window
+        );
       if (trendPts.length >= 2) {
         const trendOptions = this._getTrendRenderOptions(
           analysis.trend_method as string,
@@ -2084,10 +2134,9 @@ export class HistoryChart extends HTMLElement {
       rateAxis &&
       comparisonPts.length >= 2
     ) {
-      const ratePts = this._buildRateOfChangePoints(
-        comparisonPts,
-        analysis.rate_window
-      );
+      const ratePts =
+        (precomputed?.ratePts as [number, number][] | undefined) ??
+        this._buildRateOfChangePoints(comparisonPts, analysis.rate_window);
       if (ratePts.length >= 2) {
         renderer.drawLine(
           ratePts,
@@ -2213,6 +2262,8 @@ export class HistoryChart extends HTMLElement {
     this._scrollZoomApplyTimer = setTimeout(() => {
       this._scrollZoomApplyTimer = null;
       if (!this._zoomRange) return;
+      this._skipNextScrollViewportSync = true;
+      this._preserveUserScrollViewportUntil = Date.now() + 1000;
       this.dispatchEvent(
         new CustomEvent("hass-datapoints-zoom-apply", {
           bubbles: true,
@@ -2432,14 +2483,16 @@ export class HistoryChart extends HTMLElement {
             return;
           }
           try {
+            const targetIntervalMs = SAMPLE_INTERVAL_MS[interval] ?? 0;
+            const sampleAggregate = (((analysis as SeriesAnalysis)
+              .sample_aggregate as string) || "mean") as ChartAggregate;
             const sampledPts = (await fetchDownsampledHistory(
               hass,
               seriesItem.entityId,
               _startIso,
               _endIso,
               interval,
-              ((analysis as SeriesAnalysis).sample_aggregate as string) ||
-                "mean"
+              sampleAggregate
             )) as Nullable<[number, number][]>;
             if (Array.isArray(sampledPts) && sampledPts.length > 0) {
               // Re-include statistics data for periods not covered by the downsampled range.
@@ -2471,14 +2524,9 @@ export class HistoryChart extends HTMLElement {
                   // as the downsampled recorder data so the chart looks visually
                   // consistent (e.g. 24h means throughout, not hourly oscillations
                   // on the left and 24h means on the right).
-                  const targetIntervalMs = SAMPLE_INTERVAL_MS[interval] ?? 0;
-                  const sampleAggregate = (((analysis as SeriesAnalysis)
-                    .sample_aggregate as string) || "mean") as Parameters<
-                    typeof downsamplePts
-                  >[2];
                   const outsideStatsPts: [number, number][] =
                     targetIntervalMs > 0
-                      ? downsamplePts(
+                      ? await downsampleInWorker(
                           rawOutsidePts,
                           targetIntervalMs,
                           sampleAggregate
@@ -2498,6 +2546,27 @@ export class HistoryChart extends HTMLElement {
                 axisEntry.values = finalPts
                   .map(([, v]) => v)
                   .filter(Number.isFinite);
+              }
+            } else if (
+              Array.isArray(seriesItem.pts) &&
+              seriesItem.pts.length > 0 &&
+              targetIntervalMs > 0
+            ) {
+              const fallbackPts = await downsampleInWorker(
+                seriesItem.pts as [number, number][],
+                targetIntervalMs,
+                sampleAggregate
+              );
+              if (fallbackPts.length > 0) {
+                seriesItem.pts = fallbackPts;
+                const axisEntry = axes.find(
+                  (ax) => ax.key === seriesItem.axisKey
+                );
+                if (axisEntry) {
+                  axisEntry.values = fallbackPts
+                    .map(([, v]) => v)
+                    .filter(Number.isFinite);
+                }
               }
             }
           } catch (err) {
@@ -2960,6 +3029,15 @@ export class HistoryChart extends HTMLElement {
       return (
         (analysis as SeriesAnalysis).show_trend_lines === true &&
         (analysis as SeriesAnalysis).show_trend_crosshairs === true
+      );
+    });
+    const anyRateCrosshairs = visibleSeries.some((seriesItem) => {
+      const analysis =
+        analysisMap.get(seriesItem.entityId) ||
+        normalizeHistorySeriesAnalysis(null);
+      return (
+        (analysis as SeriesAnalysis).show_rate_of_change === true &&
+        (analysis as SeriesAnalysis).show_rate_crosshairs === true
       );
     });
     this._setChartLoading(!!options.loading);
@@ -3479,11 +3557,17 @@ export class HistoryChart extends HTMLElement {
           hoverOpacity: comparisonLineStyle.hoverOpacity,
         });
         if (analysis.show_trend_lines === true && winPts.length >= 2) {
-          const trendPts = this._buildTrendPoints(
-            winPts,
-            analysis.trend_method,
-            analysis.trend_window
-          );
+          const winPrecomputed =
+            this._analysisCache?.result?.comparisonWindowResults?.[win.id]?.[
+              entityId
+            ];
+          const trendPts =
+            winPrecomputed?.trendPts ??
+            this._buildTrendPoints(
+              winPts,
+              analysis.trend_method,
+              analysis.trend_window
+            );
           if (trendPts.length >= 2) {
             const trendOptions = this._getTrendRenderOptions(
               analysis.trend_method as string,
@@ -3516,10 +3600,13 @@ export class HistoryChart extends HTMLElement {
           }
         }
         if (analysis.show_rate_of_change === true && winPts.length >= 2) {
-          const ratePts = this._buildRateOfChangePoints(
-            winPts,
-            analysis.rate_window
-          );
+          const winPrecomputed =
+            this._analysisCache?.result?.comparisonWindowResults?.[win.id]?.[
+              entityId
+            ];
+          const ratePts =
+            winPrecomputed?.ratePts ??
+            this._buildRateOfChangePoints(winPts, analysis.rate_window);
           const rateAxis = axisLookup.get(`rate:${axisKey}`) || axis;
           if (ratePts.length >= 2) {
             comparisonRateHoverSeries.push({
@@ -3546,7 +3633,12 @@ export class HistoryChart extends HTMLElement {
           }
         }
         if (analysis.show_summary_stats === true) {
-          const summaryStats = this._buildSummaryStats(winPts);
+          const winPrecomputed =
+            this._analysisCache?.result?.comparisonWindowResults?.[win.id]?.[
+              entityId
+            ];
+          const summaryStats =
+            winPrecomputed?.summaryStats ?? this._buildSummaryStats(winPts);
           [
             { type: "min", value: summaryStats.min },
             { type: "mean", value: summaryStats.mean },
@@ -3618,6 +3710,7 @@ export class HistoryChart extends HTMLElement {
               lineWidth: comparisonLineStyle.lineWidth,
               dashed: comparisonLineStyle.dashed,
               dashPattern: comparisonLineStyle.dashPattern,
+              stepped: analysis.stepped_series === true,
             }
           );
         }
@@ -3664,6 +3757,11 @@ export class HistoryChart extends HTMLElement {
               ?.comparison_hover_active === true
               ? 1.25
               : undefined,
+          stepped:
+            (
+              analysisMap.get(s.entityId) ||
+              normalizeHistorySeriesAnalysis(null)
+            ).stepped_series === true,
         }
       );
     }
@@ -3707,6 +3805,11 @@ export class HistoryChart extends HTMLElement {
       color: hexToRgba(seriesItem.color, anyHiddenSourceSeries ? 0.9 : 0.72),
       axis: seriesItem.rateAxis,
       rawVisible: !hiddenSourceEntityIds.has(seriesItem.entityId),
+      showCrosshair:
+        (
+          analysisMap.get(seriesItem.entityId) ||
+          normalizeHistorySeriesAnalysis(null)
+        ).show_rate_crosshairs === true,
       hoverOpacity: anyHiddenSourceSeries ? 0.88 : 0.66,
       rate: true,
     }));
@@ -4051,6 +4154,18 @@ export class HistoryChart extends HTMLElement {
       }
     );
 
+    const addButton = this.querySelector<HTMLElement>("#chart-add-annotation");
+    if (addButton) {
+      addButton.dataset.allowAddAnnotation =
+        (this._config as RecordWithUnknownValues).show_add_annotation_button ===
+        false
+          ? "false"
+          : "true";
+      if (addButton.dataset.allowAddAnnotation === "false") {
+        addButton.hidden = true;
+      }
+    }
+
     if (visibleSeries.length) {
       this._ensureContextAnnotationDialog();
       attachLineChartHover(
@@ -4067,8 +4182,11 @@ export class HistoryChart extends HTMLElement {
         {
           onContextMenu: (hover: unknown) =>
             this._handleChartContextMenu(hover),
-          onAddAnnotation: (hover: unknown) =>
-            this._handleChartAddAnnotation(hover),
+          onAddAnnotation:
+            (this._config as RecordWithUnknownValues)
+              .show_add_annotation_button === false
+              ? undefined
+              : (hover: unknown) => this._handleChartAddAnnotation(hover),
           binaryStates: binaryBackgrounds.filter(
             (entry) => !this._hiddenSeries.has(entry.entityId)
           ) as HoverSeriesLike[],
@@ -4107,6 +4225,7 @@ export class HistoryChart extends HTMLElement {
               ? "snap_to_data_points"
               : "follow_series",
           showTrendCrosshairs: anyTrendCrosshairs,
+          showRateCrosshairs: anyRateCrosshairs,
           hideRawData:
             hiddenSourceEntityIds.size === visibleSeries.length &&
             visibleSeries.length > 0,
@@ -4263,11 +4382,21 @@ export class HistoryChart extends HTMLElement {
         pts: seriesItem.pts,
       }));
 
+    const seriesAnalysisConfigs: Record<
+      string,
+      Partial<WorkerSeriesAnalysis>
+    > = {};
+    for (const seriesItem of visibleSeries) {
+      seriesAnalysisConfigs[seriesItem.entityId] =
+        analysisMap.get(seriesItem.entityId) || defaultAnalysis;
+    }
+
     return {
       series,
       comparisonSeries,
       hasSelectedComparisonWindow: hasSelectedComparisonWindow === true,
       allComparisonWindowsData,
+      seriesAnalysisConfigs,
     };
   }
 
@@ -4954,6 +5083,7 @@ export class HistoryChart extends HTMLElement {
           {
             lineWidth: comparisonPreviewActive ? 1.25 : 1.75,
             lineOpacity: mainSeriesOpacity,
+            stepped: rowAnalysis.stepped_series === true,
           }
         );
       }
@@ -5000,6 +5130,7 @@ export class HistoryChart extends HTMLElement {
             lineWidth: comparisonLineStyle.lineWidth,
             dashed: comparisonLineStyle.dashed,
             dashPattern: comparisonLineStyle.dashPattern,
+            stepped: rowAnalysis.stepped_series === true,
           }
         );
         this._drawComparisonAnalysisOverlays({
@@ -5379,29 +5510,40 @@ export class HistoryChart extends HTMLElement {
           isSelected,
           hoveringDifferentComparison
         );
+        const winId = String((win as RecordWithUnknownValues).id || "");
+        const splitPrecomputed =
+          this._analysisCache?.result?.comparisonWindowResults?.[winId]?.[
+            trackSeries.entityId as string
+          ];
         comparisonHoverSeries.push({
-          entityId: `${(win as RecordWithUnknownValues).id}:${trackSeries.entityId}`,
+          entityId: `${winId}:${trackSeries.entityId}`,
           relatedEntityId: trackSeries.entityId,
-          comparisonParentId: `${(win as RecordWithUnknownValues).id}:${trackSeries.entityId}`,
+          comparisonParentId: `${winId}:${trackSeries.entityId}`,
           label: trackSeries.label,
           windowLabel: (win as RecordWithUnknownValues).label || "Date window",
           unit: trackSeries.unit,
           pts: winPts,
           trendPts:
             trackAnalysis.show_trend_lines === true && winPts.length >= 2
-              ? this._buildTrendPoints(
+              ? (splitPrecomputed?.trendPts ??
+                this._buildTrendPoints(
                   winPts,
                   trackAnalysis.trend_method,
                   trackAnalysis.trend_window
-                )
+                ))
               : [],
           ratePts:
             trackAnalysis.show_rate_of_change === true && winPts.length >= 2
-              ? this._buildRateOfChangePoints(winPts, trackAnalysis.rate_window)
+              ? (splitPrecomputed?.ratePts ??
+                this._buildRateOfChangePoints(
+                  winPts,
+                  trackAnalysis.rate_window
+                ))
               : [],
           summaryStats:
             trackAnalysis.show_summary_stats === true
-              ? this._buildSummaryStats(winPts)
+              ? (splitPrecomputed?.summaryStats ??
+                this._buildSummaryStats(winPts))
               : null,
           thresholdValue:
             trackAnalysis.show_threshold_analysis === true
@@ -5542,7 +5684,24 @@ export class HistoryChart extends HTMLElement {
       const ratio =
         (localX - (primaryRenderer.pad as RecordWithNumericValues).left) /
         (primaryRenderer as unknown as RecordWithNumericValues).cw;
-      const timeMs = t0 + ratio * (t1 - t0);
+      const rawTimeMs = t0 + ratio * (t1 - t0);
+      const hoverSnapMode =
+        (this._config as RecordWithUnknownValues).hover_snap_mode ===
+        "snap_to_data_points"
+          ? "snap_to_data_points"
+          : "follow_series";
+      const splitHoverSeries = (tracks as RecordWithUnknownValues[]).map(
+        (track) => ({
+          pts:
+            ((track.series as RecordWithUnknownValues | undefined)
+              ?.pts as ChartPoint[]) || [],
+        })
+      );
+      const timeMs = resolveLineChartHoverTime(
+        splitHoverSeries as HoverSeriesLike[],
+        rawTimeMs,
+        hoverSnapMode
+      );
       const x = primaryRenderer.xOf(timeMs, t0, t1);
 
       const values: HoverValueEntry[] = (tracks as unknown[]).map(
@@ -5699,6 +5858,7 @@ export class HistoryChart extends HTMLElement {
       const thresholdValues: HoverValueEntry[] = [];
       const anomalyRegions: AnomalyRegion[] = [];
       let showTrendCrosshairs = false;
+      let showRateCrosshairs = false;
 
       for (const track of tracks as unknown[]) {
         const {
@@ -5785,6 +5945,9 @@ export class HistoryChart extends HTMLElement {
           (trackRatePts as unknown[]).length >= 2 &&
           trackRateAxis
         ) {
+          if (effectiveAnalysis.show_rate_crosshairs === true) {
+            showRateCrosshairs = true;
+          }
           const rateVal = (
             trackRenderer as InstanceType<typeof ChartRenderer>
           )._interpolateValue(trackRatePts, timeMs);
@@ -5823,6 +5986,7 @@ export class HistoryChart extends HTMLElement {
             axisSlot: 0,
             rate: true,
             rawVisible: !trackHideSource,
+            showCrosshair: effectiveAnalysis.show_rate_crosshairs === true,
           });
         }
 
@@ -6070,6 +6234,12 @@ export class HistoryChart extends HTMLElement {
             rate: true,
             rawVisible: true,
             comparisonDerived: true,
+            showCrosshair:
+              (
+                analysisMap.get(String(seriesEntry.relatedEntityId || "")) as
+                  | RecordWithUnknownValues
+                  | undefined
+              )?.show_rate_crosshairs === true,
           });
         }
         const summaryStats =
@@ -6176,6 +6346,7 @@ export class HistoryChart extends HTMLElement {
         anomalyRegions,
         emphasizeGuides: options.emphasizeHoverGuides === true,
         showTrendCrosshairs,
+        showRateCrosshairs,
         hideRawData,
         splitVertical: { top: splitSelTop, height: splitSelHeight },
       } satisfies HoverState;

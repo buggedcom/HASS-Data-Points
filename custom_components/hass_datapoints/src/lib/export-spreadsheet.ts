@@ -14,7 +14,9 @@ type HistoryResultShape =
   | Record<string, HistoryStateEntry[]>
   | HistoryStateEntry[][]
   | HistoryStateEntry[]
-  | Nullable<{ result?: Record<string, HistoryStateEntry[]> | HistoryStateEntry[][]; }>
+  | Nullable<{
+      result?: Record<string, HistoryStateEntry[]> | HistoryStateEntry[][];
+    }>
   | undefined;
 
 interface SpreadsheetDownloadOptions {
@@ -58,7 +60,9 @@ function columnNumberToName(index: number): string {
   return name;
 }
 
-function toIsoString(value: string | number | Nullable<Date> | undefined): string {
+function toIsoString(
+  value: string | number | Nullable<Date> | undefined
+): string {
   if (!value) {
     return "";
   }
@@ -76,7 +80,9 @@ function normalizeHistoryTimestamp(rawTimestamp: unknown): Nullable<number> {
     }
     return rawTimestamp * 1000;
   }
-  const timestamp = new Date((rawTimestamp as string | number | undefined) ?? 0).getTime();
+  const timestamp = new Date(
+    (rawTimestamp as string | number | undefined) ?? 0
+  ).getTime();
   if (!Number.isFinite(timestamp)) {
     return null;
   }
@@ -92,7 +98,11 @@ function getHistoryStatesForEntity(
     return [];
   }
   const asRecord = histResult as Record<string, HistoryStateEntry[]>;
-  if (typeof histResult === "object" && !Array.isArray(histResult) && Array.isArray(asRecord?.[entityId])) {
+  if (
+    typeof histResult === "object" &&
+    !Array.isArray(histResult) &&
+    Array.isArray(asRecord?.[entityId])
+  ) {
     return asRecord[entityId];
   }
   if (Array.isArray(histResult)) {
@@ -101,19 +111,36 @@ function getHistoryStatesForEntity(
       return histResult[entityIndex] as HistoryStateEntry[];
     }
     if (
-      histResult.every((entry) => entry && typeof entry === "object" && !Array.isArray(entry))
+      histResult.every(
+        (entry) => entry && typeof entry === "object" && !Array.isArray(entry)
+      )
     ) {
-      return (histResult as HistoryStateEntry[]).filter((entry) => entry.entity_id === entityId);
+      return (histResult as HistoryStateEntry[]).filter(
+        (entry) => entry.entity_id === entityId
+      );
     }
   }
   if (histResult && typeof histResult === "object") {
-    const withResult = histResult as { result?: Record<string, HistoryStateEntry[]> | HistoryStateEntry[][] };
-    if (Array.isArray((withResult.result as Record<string, HistoryStateEntry[]> | undefined)?.[entityId])) {
-      return (withResult.result as Record<string, HistoryStateEntry[]>)[entityId];
+    const withResult = histResult as {
+      result?: Record<string, HistoryStateEntry[]> | HistoryStateEntry[][];
+    };
+    if (
+      Array.isArray(
+        (
+          withResult.result as Record<string, HistoryStateEntry[]> | undefined
+        )?.[entityId]
+      )
+    ) {
+      return (withResult.result as Record<string, HistoryStateEntry[]>)[
+        entityId
+      ];
     }
     if (Array.isArray(withResult.result)) {
       const entityIndex = entityIds.indexOf(entityId);
-      if (entityIndex >= 0 && Array.isArray((withResult.result as HistoryStateEntry[][])[entityIndex])) {
+      if (
+        entityIndex >= 0 &&
+        Array.isArray((withResult.result as HistoryStateEntry[][])[entityIndex])
+      ) {
         return (withResult.result as HistoryStateEntry[][])[entityIndex];
       }
     }
@@ -142,7 +169,10 @@ function createWorksheetXml(rows: string[][]): string {
 
 function createWorkbookXml(sheets: WorkbookSheet[]): string {
   const sheetXml = sheets
-    .map((sheet, index) => `<sheet name="${escapeXml(sanitizeWorksheetName(sheet.name))}" sheetId="${index + 1}" r:id="rId${index + 1}"/>`)
+    .map(
+      (sheet, index) =>
+        `<sheet name="${escapeXml(sanitizeWorksheetName(sheet.name))}" sheetId="${index + 1}" r:id="rId${index + 1}"/>`
+    )
     .join("");
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
@@ -152,7 +182,10 @@ function createWorkbookXml(sheets: WorkbookSheet[]): string {
 
 function createWorkbookRelsXml(sheets: WorkbookSheet[]): string {
   const relXml = sheets
-    .map((_, index) => `<Relationship Id="rId${index + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${index + 1}.xml"/>`)
+    .map(
+      (_, index) =>
+        `<Relationship Id="rId${index + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${index + 1}.xml"/>`
+    )
     .join("");
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
@@ -201,7 +234,10 @@ function createStylesXml(): string {
 
 function createContentTypesXml(sheets: WorkbookSheet[]): string {
   const overrides = sheets
-    .map((_, index) => `<Override PartName="/xl/worksheets/sheet${index + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`)
+    .map(
+      (_, index) =>
+        `<Override PartName="/xl/worksheets/sheet${index + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`
+    )
     .join("");
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
@@ -292,7 +328,10 @@ function createZip(entries: Array<{ name: string; content: string }>): Blob {
     offset += localHeader.length + dataBytes.length;
   }
 
-  const centralDirectorySize = centralParts.reduce((sum, part) => sum + part.length, 0);
+  const centralDirectorySize = centralParts.reduce(
+    (sum, part) => sum + part.length,
+    0
+  );
   const endRecord = new Uint8Array(22);
   const endView = new DataView(endRecord.buffer);
   endView.setUint32(0, 0x06054b50, true);
@@ -304,9 +343,16 @@ function createZip(entries: Array<{ name: string; content: string }>): Blob {
   endView.setUint32(16, offset, true);
   endView.setUint16(20, 0, true);
 
-  return new Blob([...(localParts as BlobPart[]), ...(centralParts as BlobPart[]), endRecord as unknown as BlobPart], {
-    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  });
+  return new Blob(
+    [
+      ...(localParts as BlobPart[]),
+      ...(centralParts as BlobPart[]),
+      endRecord as unknown as BlobPart,
+    ],
+    {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    }
+  );
 }
 
 function downloadWorkbook(filename: string, blob: Blob): void {
@@ -352,17 +398,28 @@ function createCombinedRows(
       "Datapoint Label IDs",
     ],
   ];
-  const timestampMap = new Map<number, Map<string, string | EventRecordFull[]>>();
+  const timestampMap = new Map<
+    number,
+    Map<string, string | EventRecordFull[]>
+  >();
 
   for (const column of entityColumns) {
-    const states = getHistoryStatesForEntity(column.entityId, histResult, entityIds);
+    const states = getHistoryStatesForEntity(
+      column.entityId,
+      histResult,
+      entityIds
+    );
     for (const state of states) {
-      const timestamp = normalizeHistoryTimestamp(state?.lu ?? state?.lc ?? state?.last_changed ?? state?.last_updated);
+      const timestamp = normalizeHistoryTimestamp(
+        state?.lu ?? state?.lc ?? state?.last_changed ?? state?.last_updated
+      );
       if (timestamp == null || !Number.isFinite(timestamp)) {
         continue;
       }
       const rawValue = state?.s ?? state?.state ?? "";
-      const displayValue = column.unit ? `${rawValue} ${column.unit}` : `${rawValue}`;
+      const displayValue = column.unit
+        ? `${rawValue} ${column.unit}`
+        : `${rawValue}`;
       if (!timestampMap.has(timestamp)) {
         timestampMap.set(timestamp, new Map());
       }
@@ -379,34 +436,62 @@ function createCombinedRows(
       timestampMap.set(timestamp, new Map());
     }
     const rowMap = timestampMap.get(timestamp);
-    rowMap?.set("__datapoints__", [...((rowMap?.get("__datapoints__") as EventRecordFull[]) || []), event]);
+    rowMap?.set("__datapoints__", [
+      ...((rowMap?.get("__datapoints__") as EventRecordFull[]) || []),
+      event,
+    ]);
   }
 
-  const sortedTimestamps = [...timestampMap.keys()].sort((left, right) => left - right);
+  const sortedTimestamps = [...timestampMap.keys()].sort(
+    (left, right) => left - right
+  );
   for (const timestamp of sortedTimestamps) {
     const rowValues = timestampMap.get(timestamp);
-    const datapointEvents = ((rowValues?.get("__datapoints__") as EventRecordFull[]) || []);
+    const datapointEvents =
+      (rowValues?.get("__datapoints__") as EventRecordFull[]) || [];
     rows.push([
       toIsoString(timestamp),
-      ...entityColumns.map((column) => String(rowValues?.get(column.entityId) || "")),
-      datapointEvents.map((event) => event?.message || "").filter(Boolean).join("\n"),
-      datapointEvents.map((event) => event?.annotation || "").filter(Boolean).join("\n"),
-      datapointEvents.map((event) => event?.icon || "").filter(Boolean).join("\n"),
-      datapointEvents.map((event) => event?.color || "").filter(Boolean).join("\n"),
+      ...entityColumns.map((column) =>
+        String(rowValues?.get(column.entityId) || "")
+      ),
       datapointEvents
-        .map((event) => (Array.isArray(event?.entity_ids) ? event.entity_ids.join(", ") : ""))
+        .map((event) => event?.message || "")
         .filter(Boolean)
         .join("\n"),
       datapointEvents
-        .map((event) => (Array.isArray(event?.device_ids) ? event.device_ids.join(", ") : ""))
+        .map((event) => event?.annotation || "")
         .filter(Boolean)
         .join("\n"),
       datapointEvents
-        .map((event) => (Array.isArray(event?.area_ids) ? event.area_ids.join(", ") : ""))
+        .map((event) => event?.icon || "")
         .filter(Boolean)
         .join("\n"),
       datapointEvents
-        .map((event) => (Array.isArray(event?.label_ids) ? event.label_ids.join(", ") : ""))
+        .map((event) => event?.color || "")
+        .filter(Boolean)
+        .join("\n"),
+      datapointEvents
+        .map((event) =>
+          Array.isArray(event?.entity_ids) ? event.entity_ids.join(", ") : ""
+        )
+        .filter(Boolean)
+        .join("\n"),
+      datapointEvents
+        .map((event) =>
+          Array.isArray(event?.device_ids) ? event.device_ids.join(", ") : ""
+        )
+        .filter(Boolean)
+        .join("\n"),
+      datapointEvents
+        .map((event) =>
+          Array.isArray(event?.area_ids) ? event.area_ids.join(", ") : ""
+        )
+        .filter(Boolean)
+        .join("\n"),
+      datapointEvents
+        .map((event) =>
+          Array.isArray(event?.label_ids) ? event.label_ids.join(", ") : ""
+        )
         .filter(Boolean)
         .join("\n"),
     ]);
@@ -435,15 +520,24 @@ export async function downloadHistorySpreadsheet({
 }: SpreadsheetDownloadOptions): Promise<void> {
   const startIso = toIsoString(startTime);
   const endIso = toIsoString(endTime);
-  const normalizedEntityIds = Array.isArray(entityIds) ? entityIds.filter(Boolean) : [];
-  const eventEntityFilter = datapointScope === "all" ? undefined : normalizedEntityIds;
+  const normalizedEntityIds = Array.isArray(entityIds)
+    ? entityIds.filter(Boolean)
+    : [];
+  const eventEntityFilter =
+    datapointScope === "all" ? undefined : normalizedEntityIds;
 
   const [histResult, events] = await Promise.all([
-    fetchHistoryDuringPeriod<HistoryResultShape>(hass, startIso, endIso, normalizedEntityIds, {
-      include_start_time_state: true,
-      significant_changes_only: false,
-      no_attributes: true,
-    }),
+    fetchHistoryDuringPeriod<HistoryResultShape>(
+      hass,
+      startIso,
+      endIso,
+      normalizedEntityIds,
+      {
+        include_start_time_state: true,
+        significant_changes_only: false,
+        no_attributes: true,
+      }
+    ),
     fetchEvents<EventRecordFull>(hass, startIso, endIso, eventEntityFilter),
   ]);
 
@@ -480,5 +574,8 @@ export async function downloadHistorySpreadsheet({
     })),
   ]);
 
-  downloadWorkbook(buildFilename(filenamePrefix, startTime, endTime), workbookBlob);
+  downloadWorkbook(
+    buildFilename(filenamePrefix, startTime, endTime),
+    workbookBlob
+  );
 }

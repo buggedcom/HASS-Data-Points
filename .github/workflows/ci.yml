@@ -6,15 +6,21 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
-  validate:
-    name: Validate
+  # ══════════════════════════════════════════════════════════════════════════════
+  # Stage 1 — Lint & structural checks (all run in parallel)
+  # No tests start until every lint job in this stage is green.
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  lint-python:
+    name: Lint / Python
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      # ── Python checks ──────────────────────────────────────────
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -29,13 +35,23 @@ jobs:
           python -m py_compile custom_components/hass_datapoints/store.py
           python -m py_compile custom_components/hass_datapoints/websocket_api.py
 
-      - name: Install Python test dependencies
-        run: pip install pytest pytest-asyncio --quiet
+      - name: Validate manifest.json
+        run: python -c "import json; json.load(open('custom_components/hass_datapoints/manifest.json'))"
 
-      - name: Run Python tests
-        run: pytest tests/ -v
+      - name: Validate services.yaml
+        run: |
+          pip install pyyaml --quiet
+          python -c "import yaml; yaml.safe_load(open('custom_components/hass_datapoints/services.yaml'))"
 
-      # ── JS build & verify ──────────────────────────────────────
+      - name: Validate hacs.json
+        run: python -c "import json; json.load(open('hacs.json'))"
+
+  lint-frontend:
+    name: Lint / Frontend
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
 
@@ -45,7 +61,153 @@ jobs:
           node-version: "20"
           cache: "pnpm"
 
-      - name: Install JS dependencies
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: ESLint
+        run: pnpm lint:eslint
+
+      - name: Prettier
+        run: pnpm lint:prettier
+
+      - name: TypeScript type check
+        run: pnpm lint:types
+
+  hacs:
+    name: HACS Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: HACS Action
+        uses: hacs/action@main
+        with:
+          category: integration
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # Stage 2 — Tests (all four run in parallel, gated on Stage 1 lint)
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  test-python:
+    name: Test / Python
+    needs: [lint-python, lint-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pytest
+        run: pip install pytest pytest-asyncio --quiet
+
+      - name: Run Python tests
+        run: pytest tests/ -v
+
+  test-unit:
+    name: Test / Frontend unit
+    needs: [lint-python, lint-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run unit tests
+        run: pnpm exec vitest run --project unit
+
+  test-storybook:
+    name: Test / Storybook
+    needs: [lint-python, lint-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install chromium --with-deps
+
+      - name: Run Storybook interaction tests
+        run: pnpm exec vitest run --project storybook
+
+  test-chromatic:
+    name: Test / Chromatic
+    needs: [lint-python, lint-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history is required for TurboSnap (onlyChanged) to detect
+          # which stories are affected by each commit.
+          fetch-depth: 0
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Storybook
+        run: pnpm build-storybook
+
+      - name: Run Chromatic visual tests
+        uses: chromaui/action@v11
+        with:
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          storybookBuildDir: storybook-static
+          onlyChanged: true
+          zip: true
+
+  # ══════════════════════════════════════════════════════════════════════════════
+  # Stage 3 — Build (gated on all Stage 2 tests + HACS passing)
+  # ══════════════════════════════════════════════════════════════════════════════
+
+  build:
+    name: Build
+    needs: [test-python, test-unit, test-storybook, test-chromatic, hacs]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Build frontend JS
@@ -61,41 +223,3 @@ jobs:
             git diff --stat custom_components/hass_datapoints/hass-datapoints-cards.js
             exit 1
           fi
-
-      # ── Integration structure ──────────────────────────────────
-      - name: Validate manifest.json
-        run: python -c "import json; json.load(open('custom_components/hass_datapoints/manifest.json'))"
-
-      - name: Validate strings.json
-        run: python -c "import json; json.load(open('custom_components/hass_datapoints/strings.json'))"
-
-      - name: Validate services.yaml
-        run: |
-          pip install pyyaml --quiet
-          python -c "import yaml; yaml.safe_load(open('custom_components/hass_datapoints/services.yaml'))"
-
-      - name: Validate hacs.json
-        run: python -c "import json; json.load(open('hacs.json'))"
-
-      # ── Unit tests ─────────────────────────────────────────────
-      - name: Run unit tests
-        run: pnpm exec vitest run --project unit
-
-      # ── Storybook interaction tests ────────────────────────────
-      - name: Install Playwright browsers
-        run: pnpm exec playwright install chromium --with-deps
-
-      - name: Run Storybook tests
-        run: pnpm exec vitest run --project storybook
-
-  hacs:
-    name: HACS Validation
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: HACS Action
-        uses: hacs/action@main
-        with:
-          category: integration

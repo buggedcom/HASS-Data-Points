@@ -2,7 +2,7 @@ import type { ComponentTranslations } from "@/lib/i18n/types";
 
 export const translations: ComponentTranslations = {
   "Loading Datapoints…": "Datenpunkte werden geladen…",
-  "Datapoints": "Datenpunkte",
+  Datapoints: "Datenpunkte",
   "Page options": "Seitenoptionen",
   "Download spreadsheet": "Tabellenblatt herunterladen",
   "Save page state": "Seitenstatus speichern",

@@ -18,18 +18,20 @@ describe("history-series", () => {
   describe("GIVEN partial or legacy analysis config", () => {
     describe("WHEN normalizeHistorySeriesAnalysis is called", () => {
       it("THEN it applies the stable defaults and migrations", () => {
-        expect.assertions(3);
+        expect.assertions(4);
 
         const normalized = normalizeHistorySeriesAnalysis({
           show_anomalies: true,
           anomaly_method: "iqr",
           sample_interval: "raw",
           sample_aggregate: "median",
+          stepped_series: true,
         });
 
         expect(normalized.show_anomalies).toBe(true);
         expect(normalized.anomaly_methods).toEqual(["iqr"]);
         expect(normalized.sample_aggregate).toBe("median");
+        expect(normalized.stepped_series).toBe(true);
       });
     });
   });
@@ -37,11 +39,16 @@ describe("history-series", () => {
   describe("GIVEN a row analysis payload", () => {
     describe("WHEN historySeriesRowHasConfiguredAnalysis is called", () => {
       it("THEN it reports whether any analysis is enabled", () => {
-        expect.assertions(2);
+        expect.assertions(3);
 
         expect(
           historySeriesRowHasConfiguredAnalysis({
             analysis: { show_trend_lines: true },
+          })
+        ).toBe(true);
+        expect(
+          historySeriesRowHasConfiguredAnalysis({
+            analysis: { stepped_series: true },
           })
         ).toBe(true);
         expect(historySeriesRowHasConfiguredAnalysis({ analysis: {} })).toBe(

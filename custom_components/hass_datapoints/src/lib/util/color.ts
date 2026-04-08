@@ -10,7 +10,9 @@ export function hexToRgba(hex: string, alpha: number): string {
  * Return "#fff" or "#000" whichever has better contrast against the given hex
  * background colour, using the WCAG relative-luminance formula.
  */
-export function contrastColor(hex: Nullable<string> | undefined): "#fff" | "#000" {
+export function contrastColor(
+  hex: Nullable<string> | undefined
+): "#fff" | "#000" {
   if (!hex || typeof hex !== "string") {
     return "#fff";
   }

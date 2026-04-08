@@ -22,6 +22,15 @@ export const styles = css`
     overflow-y: auto;
   }
 
+  .pagination-footer {
+    border-top: 1px solid var(--divider-color, #eee);
+    background: color-mix(
+      in srgb,
+      var(--card-background-color, #fff) 92%,
+      var(--primary-background-color, #f7f7f7)
+    );
+  }
+
   .ann-empty {
     text-align: center;
     padding: 16px;

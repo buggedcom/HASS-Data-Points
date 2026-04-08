@@ -1,7 +1,6 @@
 import { html, LitElement } from "lit";
 import { COLORS } from "@/constants";
 import { contrastColor } from "@/lib/util/color";
-import { attachTooltipBehaviour } from "@/lib/chart/chart-interaction";
 import { setupCanvas } from "@/charts/utils/chart-dom";
 import { ChartRenderer } from "@/lib/chart/chart-renderer";
 import type {
@@ -57,11 +56,17 @@ export class SensorChart extends LitElement {
   static properties = {
     _chartReady: { state: true },
     _loadMessage: { state: true },
+    showAnnotationTooltips: {
+      type: Boolean,
+      attribute: "show-annotation-tooltips",
+    },
   };
 
   declare _chartReady: boolean;
 
   declare _loadMessage: string;
+
+  declare showAnnotationTooltips: boolean;
 
   // Set by parent before draw(); not reactive to avoid unnecessary re-renders
   private _hass: Nullable<HassLike> = null;
@@ -76,6 +81,10 @@ export class SensorChart extends LitElement {
 
   private _canvasClickHandler: Nullable<(e: MouseEvent) => void> = null;
 
+  private _canvasMoveHandler: Nullable<(e: MouseEvent) => void> = null;
+
+  private _canvasLeaveHandler: Nullable<(e: MouseEvent) => void> = null;
+
   private _previousSeriesEndpoints: Map<string, { t: number; v: number }> =
     new Map();
 
@@ -87,7 +96,7 @@ export class SensorChart extends LitElement {
       number,
       CardConfig,
       string,
-      Set<string>
+      Set<string>,
     ]
   > = null;
 
@@ -99,6 +108,7 @@ export class SensorChart extends LitElement {
     super();
     this._chartReady = false;
     this._loadMessage = "Loading…";
+    this.showAnnotationTooltips = false;
   }
 
   firstUpdated() {
@@ -116,6 +126,150 @@ export class SensorChart extends LitElement {
       this.shadowRoot?.querySelector<HTMLCanvasElement>("canvas#chart");
     if (canvas && this._canvasClickHandler)
       canvas.removeEventListener("click", this._canvasClickHandler);
+    if (canvas && this._canvasMoveHandler)
+      canvas.removeEventListener("mousemove", this._canvasMoveHandler);
+    if (canvas && this._canvasLeaveHandler)
+      canvas.removeEventListener("mouseleave", this._canvasLeaveHandler);
+  }
+
+  private _findHitAtPointer(
+    hits: ChartHit[],
+    clientX: number,
+    clientY: number,
+    canvas: HTMLCanvasElement
+  ): Nullable<ChartHit> {
+    const rect = canvas.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+    return (
+      hits.reduce(
+        (closest: Nullable<{ hit: ChartHit; dist: number }>, hit: ChartHit) => {
+          const dist = Math.hypot(hit.x - x, hit.y - y);
+          if (dist > 18) {
+            return closest;
+          }
+          if (!closest || dist < closest.dist) {
+            return { hit, dist };
+          }
+          return closest;
+        },
+        null
+      )?.hit ?? null
+    );
+  }
+
+  private _showAnnotationTooltip(
+    hit: ChartHit,
+    clientX: number,
+    clientY: number,
+    unit: string
+  ): void {
+    const wrap = this.shadowRoot?.querySelector<HTMLElement>(".chart-wrap");
+    const tooltip = this.shadowRoot?.querySelector<HTMLElement>("#tooltip");
+    const timeEl = this.shadowRoot?.querySelector<HTMLElement>("#tt-time");
+    const valueEl = this.shadowRoot?.querySelector<HTMLElement>("#tt-value");
+    const dotEl = this.shadowRoot?.querySelector<HTMLElement>("#tt-dot");
+    const messageEl =
+      this.shadowRoot?.querySelector<HTMLElement>("#tt-message");
+    const rowEl =
+      this.shadowRoot?.querySelector<HTMLElement>("#tt-message-row");
+    const annotationEl =
+      this.shadowRoot?.querySelector<HTMLElement>("#tt-annotation");
+    const entitiesEl =
+      this.shadowRoot?.querySelector<HTMLElement>("#tt-entities");
+    if (
+      !tooltip ||
+      !wrap ||
+      !timeEl ||
+      !valueEl ||
+      !dotEl ||
+      !messageEl ||
+      !rowEl ||
+      !annotationEl ||
+      !entitiesEl
+    ) {
+      return;
+    }
+
+    const eventTime = new Date(hit.event.timestamp);
+    timeEl.textContent = eventTime.toLocaleString();
+    valueEl.style.display = "block";
+    valueEl.textContent = Number.isFinite(hit.value)
+      ? `${hit.value.toFixed(2)}${unit ? ` ${unit}` : ""}`
+      : "";
+    dotEl.style.background = hit.event.color || "#03a9f4";
+    messageEl.textContent = hit.event.message || "";
+    rowEl.style.display = "flex";
+    if (hit.event.annotation) {
+      annotationEl.style.display = "block";
+      annotationEl.textContent = hit.event.annotation;
+    } else {
+      annotationEl.style.display = "none";
+      annotationEl.textContent = "";
+    }
+    entitiesEl.style.display = "none";
+    entitiesEl.textContent = "";
+    tooltip.style.display = "block";
+    const wrapRect = wrap.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    const offset = 12;
+    const maxLeft = Math.max(8, wrapRect.width - tooltipRect.width - 8);
+    const maxTop = Math.max(8, wrapRect.height - tooltipRect.height - 8);
+    const localLeft = Math.min(
+      maxLeft,
+      Math.max(8, clientX - wrapRect.left + offset)
+    );
+    const localTop = Math.min(
+      maxTop,
+      Math.max(8, clientY - wrapRect.top + offset)
+    );
+    tooltip.style.left = `${localLeft}px`;
+    tooltip.style.top = `${localTop}px`;
+  }
+
+  private _hideAnnotationTooltip(): void {
+    const tooltip = this.shadowRoot?.querySelector<HTMLElement>("#tooltip");
+    if (tooltip) {
+      tooltip.style.display = "none";
+    }
+  }
+
+  private _attachTooltipHitTarget(
+    overlay: HTMLElement,
+    hit: ChartHit,
+    unit: string
+  ): void {
+    const el = document.createElement("div");
+    el.className = "ann-hit";
+    el.style.left = `${hit.x}px`;
+    el.style.top = `${hit.y}px`;
+    el.dataset.eventId = hit.event.id;
+    this._attachTooltipInteractions(el, hit, unit);
+    overlay.appendChild(el);
+  }
+
+  private _attachTooltipInteractions(
+    el: HTMLElement,
+    hit: ChartHit,
+    unit: string
+  ): void {
+    const show = (clientX: number, clientY: number) => {
+      this._showAnnotationTooltip(hit, clientX, clientY, unit);
+    };
+    el.addEventListener("mouseenter", (e) => {
+      show(e.clientX, e.clientY);
+    });
+    el.addEventListener("mousemove", (e) => {
+      show(e.clientX, e.clientY);
+    });
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      show(e.clientX, e.clientY);
+    });
+    el.addEventListener("mouseleave", () => {
+      this._hideAnnotationTooltip();
+    });
   }
 
   private _setupResizeObserver() {
@@ -166,8 +320,7 @@ export class SensorChart extends LitElement {
 
     const entityId = config.entity as string;
     const lineColor =
-      (config.graph_color as string) ||
-      (COLORS as unknown as string[])[0];
+      (config.graph_color as string) || (COLORS as unknown as string[])[0];
     const stateList = this._getHistoryStatesForEntity(entityId, histResult);
 
     const pts: [number, number][] = [];
@@ -236,13 +389,6 @@ export class SensorChart extends LitElement {
             chartMax
           );
 
-    const hitValues = new Map(hits.map((hit) => [hit.event.id, hit.value]));
-    const enrichedEvents: EventRecordFull[] = visibleEvents.map((ev) => ({
-      ...ev,
-      chart_value: hitValues.get(ev.id),
-      chart_unit: unit,
-    }));
-
     const overlay =
       this.shadowRoot?.querySelector<HTMLElement>(".icon-overlay");
     if (overlay) {
@@ -258,45 +404,60 @@ export class SensorChart extends LitElement {
           el.innerHTML = `<ha-icon icon="${hit.event.icon || "mdi:bookmark"}" style="--mdc-icon-size:12px;color:${contrastColor(bgColor)}"></ha-icon>`;
           el.dataset.eventId = hit.event.id;
           el.addEventListener("click", (e) => {
+            if (this.showAnnotationTooltips) {
+              e.preventDefault();
+              e.stopPropagation();
+              this._showAnnotationTooltip(hit, e.clientX, e.clientY, unit);
+              return;
+            }
             e.preventDefault();
             e.stopPropagation();
             this._emitAnnotationClick(hit.event);
           });
+          if (this.showAnnotationTooltips) {
+            this._attachTooltipInteractions(el, hit, unit);
+          }
           overlay.appendChild(el);
+          if (this.showAnnotationTooltips) {
+            this._attachTooltipHitTarget(overlay, hit, unit);
+          }
+        }
+      } else if (this.showAnnotationTooltips) {
+        for (const hit of hits) {
+          this._attachTooltipHitTarget(overlay, hit, unit);
         }
       }
     }
 
-    attachTooltipBehaviour(
-      this,
-      canvas,
-      renderer as unknown as import("@/lib/chart/chart-renderer").ChartRenderer,
-      enrichedEvents as unknown as import("@/lib/chart/chart-interaction").ChartEventRecord[],
-      t0,
-      t1
-    );
-
     if (this._canvasClickHandler)
       canvas.removeEventListener("click", this._canvasClickHandler);
+    if (this._canvasMoveHandler)
+      canvas.removeEventListener("mousemove", this._canvasMoveHandler);
+    if (this._canvasLeaveHandler)
+      canvas.removeEventListener("mouseleave", this._canvasLeaveHandler);
+
+    this._canvasMoveHandler = () => {
+      this._hideAnnotationTooltip();
+    };
+    this._canvasLeaveHandler = () => {
+      this._hideAnnotationTooltip();
+    };
     this._canvasClickHandler = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const best = hits.reduce(
-        (closest: Nullable<{ hit: ChartHit; dist: number }>, hit: ChartHit) => {
-          const dist = Math.hypot(hit.x - x, hit.y - y);
-          if (dist > 18) return closest;
-          if (!closest || dist < closest.dist) return { hit, dist };
-          return closest;
-        },
-        null
-      );
+      const best = this._findHitAtPointer(hits, e.clientX, e.clientY, canvas);
       if (best) {
+        if (this.showAnnotationTooltips) {
+          e.preventDefault();
+          e.stopPropagation();
+          this._showAnnotationTooltip(best, e.clientX, e.clientY, unit);
+          return;
+        }
         e.preventDefault();
         e.stopPropagation();
-        this._emitAnnotationClick(best.hit.event);
+        this._emitAnnotationClick(best.event);
       }
     };
+    canvas.addEventListener("mousemove", this._canvasMoveHandler);
+    canvas.addEventListener("mouseleave", this._canvasLeaveHandler);
     canvas.addEventListener("click", this._canvasClickHandler);
   }
 
@@ -347,7 +508,12 @@ export class SensorChart extends LitElement {
       <div class="chart-wrap">
         <div class="chart-viewport">
           ${!this._chartReady
-            ? html` <div class="chart-loading">${this._loadMessage}</div>`
+            ? html`
+                <div class="chart-loading">
+                  <div class="chart-loading-spinner"></div>
+                  <div class="chart-loading-label">${this._loadMessage}</div>
+                </div>
+              `
             : ""}
           <canvas
             id="chart"
@@ -358,7 +524,10 @@ export class SensorChart extends LitElement {
         <div class="tooltip" id="tooltip">
           <div class="tt-time" id="tt-time"></div>
           <div class="tt-value" id="tt-value" style="display:none"></div>
-          <div style="display:flex;align-items:flex-start;gap:4px">
+          <div
+            id="tt-message-row"
+            style="display:flex;align-items:flex-start;gap:4px"
+          >
             <span class="tt-dot" id="tt-dot"></span>
             <span class="tt-message" id="tt-message"></span>
           </div>

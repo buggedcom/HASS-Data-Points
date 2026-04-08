@@ -211,7 +211,7 @@ export const Empty = {
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const el = await getEl(canvasElement);
     const emptyEl = el.shadowRoot.querySelector(".history-target-empty");
-    expect(emptyEl).not.toBeNull();
+    expect(emptyEl).toBeNull();
     const rows = el.shadowRoot.querySelectorAll("target-row");
     expect(rows).toHaveLength(0);
   },

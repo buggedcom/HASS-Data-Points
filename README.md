@@ -9,9 +9,14 @@
 <p align="center">
   <a href="https://github.com/home-assistant/home-assistant.io"><img src="https://img.shields.io/badge/Home%20Assistant-integration-41BDF5?logo=home-assistant&logoColor=white" alt="Home Assistant" /></a>
   <a href="https://hacs.xyz"><img src="https://img.shields.io/badge/HACS-Custom-orange?logo=home-assistant-community-store&logoColor=white" alt="HACS" /></a>
+  <a href="https://main--69cd024f27ae313c14343a9a.chromatic.com"><img src="https://img.shields.io/badge/Storybook-published-FF4785?logo=storybook&logoColor=white" alt="Storybook" /></a>
   <img src="https://img.shields.io/github/license/buggedcom/hass-datapoints" alt="License" />
   <img src="https://img.shields.io/github/v/release/buggedcom/hass-datapoints" alt="Release" />
 </p>
+
+![Screenshot.png](images/Screenshot.png)
+![Screenshot2.png](images/Screenshot2.png)
+![Screenshot3.png](images/Screenshot3.png)
 
 ---
 
@@ -21,12 +26,19 @@
 - [Why Data Points is useful](#why-data-points-is-useful)
 - [What Data Points provides](#what-data-points-provides)
 - [Included UI](#included-ui)
+- [Translations](#translations)
 - [Roadmap](#roadmap)
 - [Installation](#installation)
 - [Setup](#setup)
 - [Recording datapoints](#recording-datapoints)
 - [How datapoints appear](#how-datapoints-appear)
 - [Cards in practice](#cards-in-practice)
+- [History chart and page features](#history-chart-and-page-features)
+- [Anomaly detection](#anomaly-detection)
+- [Using automations to create useful analytical datapoints](#using-automations-to-create-useful-analytical-datapoints)
+- [WebSocket API](#websocket-api)
+- [Development](#development)
+- [Release and CI notes](#release-and-ci-notes)
 
 ---
 
@@ -90,8 +102,6 @@ Data Points lets you:
 
 ### Cards
 
-> **Note:** The Lovelace card editors (the visual configuration UI shown when you click the pencil icon on a card in the dashboard editor) are included but are **still in development**. They may be partially functional or produce unexpected results. For reliable configuration, edit the card YAML directly.
-
 | Card                              | Purpose                                                                                                                            |
 | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | `hass-datapoints-action-card`     | Full recording form with message, annotation, icon, color, and related items.                                                      |
@@ -101,6 +111,14 @@ Data Points lets you:
 | `hass-datapoints-history-card`    | Multi-series analysis chart with target rows, anomaly overlays, date windows, zoom, timeline slider, and chart-created datapoints. |
 | `hass-datapoints-statistics-card` | Long-term statistics chart with datapoint overlays.                                                                                |
 | `hass-datapoints-sensor-card`     | Sensor-focused chart with inline datapoint markers.                                                                                |
+
+All bundled cards now include Lovelace visual editors. The dev-tool editor is intentionally minimal because the card itself does not expose configurable options.
+
+The visual editor surface is complete across the bundled cards, so the typical setup flow is now:
+
+1. Add the card in Lovelace.
+2. Configure it entirely through the visual editor.
+3. Drop into YAML only if you prefer hand-tuned configuration.
 
 ### Dedicated history page / panel
 
@@ -114,6 +132,38 @@ The integration also provides a full history page experience with:
 - timeline slider with zoom highlight synchronization
 - resizable chart/list split panes
 - chart-created datapoints and hover-driven comparison preview
+
+---
+
+## Translations
+
+Data Points ships with both Home Assistant integration translations and frontend card/panel translations.
+
+### Included locales
+
+- English
+- Finnish
+- French
+- German
+- Spanish
+- Portuguese
+- Simplified Chinese
+
+### Translation quality
+
+English is the source language for the project.
+
+Finnish translations have been given more deliberate defaults because that is an actively used locale during development and validation.
+
+The other bundled non-English locales are currently machine translated. They are included so the UI is immediately usable in more Home Assistant setups without forcing everyone back to English, but they should still be treated as sensible defaults rather than fully reviewed product translations.
+
+If you spot awkward wording in any locale, translation improvements are very welcome.
+
+### Where translations live
+
+- Home Assistant integration/service strings live in:
+  `custom_components/hass_datapoints/translations/*.json`
+- Frontend component/card/panel strings live next to each surface in local `i18n/` directories under `custom_components/hass_datapoints/src/**/i18n/`
 
 ---
 
@@ -142,7 +192,7 @@ The current integration already covers recording, browsing, chart overlays, comp
   Provide a dedicated card for highlighting current or recent anomalies and deep-linking directly into the full datapoints history view for investigation.
 
 - **Drop-in replacements for HA sensor and statistics cards**
-  Expand the lightweight chart-card story so users can replace common Home Assistant sensor/statistics cards with equivalents that support datapoint overlays and deep linking by default.
+  Continue polishing the lightweight chart-card story so users can replace common Home Assistant sensor/statistics cards with equivalents that support datapoint overlays, deep linking, and richer contextual controls by default.
 
 ### Roadmap themes
 
@@ -746,6 +796,11 @@ pnpm vitest run <focused spec files>
 
 ### Storybook
 
+The published Storybook for the `main` branch is available at:
+**<https://main--69cd024f27ae313c14343a9a.chromatic.com>**
+
+To run Storybook locally or build it:
+
 ```bash
 pnpm storybook
 pnpm build-storybook
@@ -815,7 +870,9 @@ Interpolated strings that contain runtime values cannot be passed directly to `m
 ```typescript
 function t(key: string, ...values: string[]): string {
   let s = msg(key, { id: key });
-  values.forEach((v, i) => { s = s.replace(new RegExp(`\\{${i}\\}`, "g"), v); });
+  values.forEach((v, i) => {
+    s = s.replace(new RegExp(`\\{${i}\\}`, "g"), v);
+  });
   return s;
 }
 
@@ -840,7 +897,7 @@ import type { ComponentTranslations } from "@/lib/i18n/types";
 
 export const translations: ComponentTranslations = {
   "Show anomalies": "Näytä anomaliat",
-  "Sensitivity": "Herkkyys",
+  Sensitivity: "Herkkyys",
 };
 ```
 

@@ -56,6 +56,9 @@ importers:
       "@vitest/coverage-v8":
         specifier: 3.2.4
         version: 3.2.4(@vitest/browser@3.2.4)(vitest@3.2.4)
+      "@vitest/ui":
+        specifier: 3.2.4
+        version: 3.2.4(vitest@3.2.4)
       chromatic:
         specifier: ^16.0.0
         version: 16.0.0
@@ -109,7 +112,7 @@ importers:
         version: 7.3.1(@types/node@25.5.0)
       vitest:
         specifier: ^3.2.4
-        version: 3.2.4(@types/node@25.5.0)(@vitest/browser@3.2.4)(happy-dom@20.8.9)
+        version: 3.2.4(@types/node@25.5.0)(@vitest/browser@3.2.4)(@vitest/ui@3.2.4)(happy-dom@20.8.9)
 
 packages:
   "@adobe/css-tools@4.4.4":
@@ -1335,6 +1338,14 @@ packages:
         integrity: sha512-vAfasCOe6AIK70iP5UD11Ac4siNUNJ9i/9PZ3NKx07sG6sUxeag1LWdNrMWeKKYBLlzuK+Gn65Yd5nyL6ds+nw==,
       }
 
+  "@vitest/ui@3.2.4":
+    resolution:
+      {
+        integrity: sha512-hGISOaP18plkzbWEcP/QvtRW1xDXF2+96HbEX6byqQhAUbiS5oH6/9JwW+QsQCIYON2bI6QZBF+2PvOmrRZ9wA==,
+      }
+    peerDependencies:
+      vitest: 3.2.4
+
   "@vitest/utils@2.0.5":
     resolution:
       {
@@ -2172,6 +2183,12 @@ packages:
     peerDependenciesMeta:
       picomatch:
         optional: true
+
+  fflate@0.8.2:
+    resolution:
+      {
+        integrity: sha512-cPJU47OaAoCbg0pBvzsgpTPhmhqI5eJjh/JIu8tPj5q+T7iLvW/JAYUqmE7KOB4R1ZyEhzBaIQpQpardBF5z8A==,
+      }
 
   file-entry-cache@8.0.0:
     resolution:
@@ -4291,7 +4308,7 @@ snapshots:
     optionalDependencies:
       "@vitest/browser": 3.2.4(playwright@1.58.2)(vite@7.3.1(@types/node@25.5.0))(vitest@3.2.4)
       "@vitest/runner": 3.2.4
-      vitest: 3.2.4(@types/node@25.5.0)(@vitest/browser@3.2.4)(happy-dom@20.8.9)
+      vitest: 3.2.4(@types/node@25.5.0)(@vitest/browser@3.2.4)(@vitest/ui@3.2.4)(happy-dom@20.8.9)
     transitivePeerDependencies:
       - react
       - react-dom
@@ -4576,7 +4593,7 @@ snapshots:
       magic-string: 0.30.21
       sirv: 3.0.2
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/node@25.5.0)(@vitest/browser@3.2.4)(happy-dom@20.8.9)
+      vitest: 3.2.4(@types/node@25.5.0)(@vitest/browser@3.2.4)(@vitest/ui@3.2.4)(happy-dom@20.8.9)
       ws: 8.20.0
     optionalDependencies:
       playwright: 1.58.2
@@ -4601,7 +4618,7 @@ snapshots:
       std-env: 3.10.0
       test-exclude: 7.0.2
       tinyrainbow: 2.0.0
-      vitest: 3.2.4(@types/node@25.5.0)(@vitest/browser@3.2.4)(happy-dom@20.8.9)
+      vitest: 3.2.4(@types/node@25.5.0)(@vitest/browser@3.2.4)(@vitest/ui@3.2.4)(happy-dom@20.8.9)
     optionalDependencies:
       "@vitest/browser": 3.2.4(playwright@1.58.2)(vite@7.3.1(@types/node@25.5.0))(vitest@3.2.4)
     transitivePeerDependencies:
@@ -4661,6 +4678,17 @@ snapshots:
   "@vitest/spy@3.2.4":
     dependencies:
       tinyspy: 4.0.4
+
+  "@vitest/ui@3.2.4(vitest@3.2.4)":
+    dependencies:
+      "@vitest/utils": 3.2.4
+      fflate: 0.8.2
+      flatted: 3.4.2
+      pathe: 2.0.3
+      sirv: 3.0.2
+      tinyglobby: 0.2.15
+      tinyrainbow: 2.0.0
+      vitest: 3.2.4(@types/node@25.5.0)(@vitest/browser@3.2.4)(@vitest/ui@3.2.4)(happy-dom@20.8.9)
 
   "@vitest/utils@2.0.5":
     dependencies:
@@ -5253,6 +5281,8 @@ snapshots:
   fdir@6.5.0(picomatch@4.0.4):
     optionalDependencies:
       picomatch: 4.0.4
+
+  fflate@0.8.2: {}
 
   file-entry-cache@8.0.0:
     dependencies:
@@ -6259,7 +6289,7 @@ snapshots:
       "@types/node": 25.5.0
       fsevents: 2.3.3
 
-  vitest@3.2.4(@types/node@25.5.0)(@vitest/browser@3.2.4)(happy-dom@20.8.9):
+  vitest@3.2.4(@types/node@25.5.0)(@vitest/browser@3.2.4)(@vitest/ui@3.2.4)(happy-dom@20.8.9):
     dependencies:
       "@types/chai": 5.2.3
       "@vitest/expect": 3.2.4
@@ -6287,6 +6317,7 @@ snapshots:
     optionalDependencies:
       "@types/node": 25.5.0
       "@vitest/browser": 3.2.4(playwright@1.58.2)(vite@7.3.1(@types/node@25.5.0))(vitest@3.2.4)
+      "@vitest/ui": 3.2.4(vitest@3.2.4)
       happy-dom: 20.8.9
     transitivePeerDependencies:
       - jiti

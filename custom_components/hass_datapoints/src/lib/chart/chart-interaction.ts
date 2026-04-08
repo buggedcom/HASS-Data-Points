@@ -797,9 +797,7 @@ function resolveTooltipSeriesLabel(entry: HoverValueEntry): string {
   const isComparisonDerived =
     entry.comparisonDerived === true && entry.grouped === true;
   if (entry.comparison === true) {
-    const windowLabel = String(
-      entry.windowLabel || msg("Date window")
-    );
+    const windowLabel = String(entry.windowLabel || msg("Date window"));
     if (entry.grouped === true) {
       return windowLabel;
     }
@@ -1415,7 +1413,7 @@ export function showLineChartCrosshair(
       .join("")}
   `;
   renderChartAxisHoverDots(card, crosshairValues);
-  if (addButton) {
+  if (addButton && addButton.dataset.allowAddAnnotation !== "false") {
     addButton.hidden = false;
     addButton.style.left = `${hover.x}px`;
     if (hover.splitVertical) {

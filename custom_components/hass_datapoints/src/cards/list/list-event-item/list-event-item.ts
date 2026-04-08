@@ -39,8 +39,8 @@ const DEFAULT_LANGUAGE: EventItemLanguage = {
 export class CardListEventItem extends LitElement {
   static styles = styles;
 
-  @property({ attribute: false }) accessor eventRecord: Nullable<EventRecordFull> =
-    null;
+  @property({ attribute: false })
+  accessor eventRecord: Nullable<EventRecordFull> = null;
 
   @property({ attribute: false }) accessor context: EventItemContext = {
     hass: null,

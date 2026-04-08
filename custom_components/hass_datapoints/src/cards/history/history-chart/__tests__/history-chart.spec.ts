@@ -74,9 +74,15 @@ type HistoryChartEl = HTMLElement & {
       entityId: string;
       pts: [number, number][];
     }>,
-    selectedComparisonSeriesMap: Map<string, { entityId: string; pts: [number, number][] }>,
+    selectedComparisonSeriesMap: Map<
+      string,
+      { entityId: string; pts: [number, number][] }
+    >,
     analysisMap: Map<string, RecordWithUnknownValues>,
-    allComparisonWindowsData: Record<string, Record<string, [number, number][]>>,
+    allComparisonWindowsData: Record<
+      string,
+      Record<string, [number, number][]>
+    >,
     t0: number,
     t1: number
   ): string;
@@ -619,6 +625,53 @@ describe("hass-datapoints-history-chart", () => {
         expect(viewport.scrollLeft).toBe(301.5);
         expect(el._scrollSyncSuspended).toBe(false);
         expect(el._ignoreNextProgrammaticScrollEvent).toBe(false);
+      });
+    });
+
+    describe("WHEN a user scroll has just dispatched zoom-apply", () => {
+      it("THEN it does not resnap the viewport on the next redraw", () => {
+        expect.assertions(3);
+        const viewport = document.createElement("div");
+        Object.defineProperty(viewport, "clientWidth", {
+          configurable: true,
+          value: 400,
+        });
+        viewport.scrollLeft = 275;
+        el._chartScrollViewportEl = viewport;
+        el._zoomRange = {
+          start: 300,
+          end: 700,
+        } as never;
+        el._skipNextScrollViewportSync = true;
+
+        el._syncChartViewportScroll(0, 1000, 1001);
+
+        expect(viewport.scrollLeft).toBe(275);
+        expect(el._skipNextScrollViewportSync).toBe(false);
+        expect(el._scrollSyncSuspended).toBe(false);
+      });
+    });
+
+    describe("WHEN a follow-up redraw lands during the user scroll settle window", () => {
+      it("THEN it preserves the user's final scroll position", () => {
+        expect.assertions(2);
+        const viewport = document.createElement("div");
+        Object.defineProperty(viewport, "clientWidth", {
+          configurable: true,
+          value: 400,
+        });
+        viewport.scrollLeft = 333;
+        el._chartScrollViewportEl = viewport;
+        el._zoomRange = {
+          start: 300,
+          end: 700,
+        } as never;
+        el._preserveUserScrollViewportUntil = Date.now() + 1000;
+
+        el._syncChartViewportScroll(0, 1000, 1001);
+
+        expect(viewport.scrollLeft).toBe(333);
+        expect(el._skipNextScrollViewportSync).toBe(false);
       });
     });
   });

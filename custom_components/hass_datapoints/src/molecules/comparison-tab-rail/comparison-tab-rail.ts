@@ -73,7 +73,9 @@ export class ComparisonTabRail extends LitElement {
     if (!shell) {
       return;
     }
-    const rail = shell.querySelector(".chart-tabs-rail") as Nullable<HTMLElement>;
+    const rail = shell.querySelector(
+      ".chart-tabs-rail"
+    ) as Nullable<HTMLElement>;
     if (!rail) {
       return;
     }

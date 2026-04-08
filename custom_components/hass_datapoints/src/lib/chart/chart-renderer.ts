@@ -73,6 +73,7 @@ type DrawGridOptions = {
 type DrawLineOptions = {
   fillAlpha?: number;
   smooth?: boolean;
+  stepped?: boolean;
   dashed?: boolean;
   dotted?: boolean;
   dashPattern?: number[];
@@ -203,7 +204,10 @@ export class ChartRenderer {
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
   }
 
-  _normalizeAxes(vMinOrAxes: number | AxisInput[], vMax?: number): ResolvedAxis[] {
+  _normalizeAxes(
+    vMinOrAxes: number | AxisInput[],
+    vMax?: number
+  ): ResolvedAxis[] {
     const axisColumnWidth = ChartRenderer.AXIS_SLOT_WIDTH;
     const inputAxes = Array.isArray(vMinOrAxes)
       ? vMinOrAxes
@@ -262,7 +266,12 @@ export class ChartRenderer {
     return leftAxisX - 10 - (axis.slot ?? 0) * columnWidth;
   }
 
-  _formatTimeTick(t: number, t0: number, t1: number, tickSpanMs: Nullable<number> = null): string {
+  _formatTimeTick(
+    t: number,
+    t0: number,
+    t1: number,
+    tickSpanMs: Nullable<number> = null
+  ): string {
     const value = new Date(t);
     const spanMs = Math.max(0, t1 - t0);
     const detailSpanMs: number =
@@ -367,7 +376,10 @@ export class ChartRenderer {
     return niceFraction * 10 ** exponent;
   }
 
-  _buildNiceAxisScale(axis: ResolvedAxis, tickCount: number): { min: number; max: number; step: number; ticks: number[] } {
+  _buildNiceAxisScale(
+    axis: ResolvedAxis,
+    tickCount: number
+  ): { min: number; max: number; step: number; ticks: number[] } {
     const rawMin = Number.isFinite(axis.min) ? axis.min : 0;
     const rawMax = Number.isFinite(axis.max) ? axis.max : 1;
     if (rawMin === rawMax) {
@@ -627,7 +639,10 @@ export class ChartRenderer {
    * (caller must have already called moveTo(pts[0])). Each segment passes exactly
    * through the data points with tangents derived from neighbouring points.
    */
-  static _catmullRomPath(ctx: CanvasRenderingContext2D, pts: ChartPoint[]): void {
+  static _catmullRomPath(
+    ctx: CanvasRenderingContext2D,
+    pts: ChartPoint[]
+  ): void {
     for (let i = 1; i < pts.length; i++) {
       const pm1 = pts[Math.max(0, i - 2)];
       const p0 = pts[i - 1];
@@ -638,6 +653,15 @@ export class ChartRenderer {
       const cp2x = p1[0] - (p2[0] - p0[0]) / 6;
       const cp2y = p1[1] - (p2[1] - p0[1]) / 6;
       ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p1[0], p1[1]);
+    }
+  }
+
+  static _steppedPath(ctx: CanvasRenderingContext2D, pts: ChartPoint[]): void {
+    for (let i = 1; i < pts.length; i++) {
+      const previous = pts[i - 1];
+      const current = pts[i];
+      ctx.lineTo(current[0], previous[1]);
+      ctx.lineTo(current[0], current[1]);
     }
   }
 
@@ -658,10 +682,13 @@ export class ChartRenderer {
       ? (options.fillAlpha as number)
       : 0;
     const smooth = !!options.smooth;
+    const stepped = options.stepped === true;
     const dashed = !!options.dashed;
     const dotted = !!options.dotted;
     const dashPattern = Array.isArray(options.dashPattern)
-      ? options.dashPattern.filter((entry) => Number.isFinite(entry) && entry > 0)
+      ? options.dashPattern.filter(
+          (entry) => Number.isFinite(entry) && entry > 0
+        )
       : null;
     const lineOpacity = Number.isFinite(options.lineOpacity)
       ? (options.lineOpacity as number)
@@ -697,7 +724,9 @@ export class ChartRenderer {
       ctx.beginPath();
       ctx.moveTo(px[0][0], bottom);
       ctx.lineTo(px[0][0], px[0][1]);
-      if (smooth) {
+      if (stepped) {
+        ChartRenderer._steppedPath(ctx, px);
+      } else if (smooth) {
         ChartRenderer._catmullRomPath(ctx, px);
       } else {
         for (let i = 1; i < px.length; i++) {
@@ -712,7 +741,9 @@ export class ChartRenderer {
 
     ctx.beginPath();
     ctx.moveTo(px[0][0], px[0][1]);
-    if (smooth) {
+    if (stepped) {
+      ChartRenderer._steppedPath(ctx, px);
+    } else if (smooth) {
       ChartRenderer._catmullRomPath(ctx, px);
     } else {
       for (let i = 1; i < px.length; i++) {
@@ -721,7 +752,13 @@ export class ChartRenderer {
     }
     ctx.strokeStyle = color;
     ctx.lineWidth = lineWidth;
-    ctx.lineJoin = "round";
+    if (stepped) {
+      ctx.lineJoin = "miter";
+      ctx.lineCap = "butt";
+    } else {
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+    }
     ctx.stroke();
 
     ctx.restore();

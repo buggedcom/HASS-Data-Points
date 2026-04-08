@@ -48,7 +48,9 @@ export async function fetchEvents<T = RecordWithUnknownValues>(
       if (normalizedEntityIds.length) {
         msg.entity_ids = normalizedEntityIds;
       }
-      const result = (await hass.connection.sendMessagePromise(msg)) as EventFetchResult<T>;
+      const result = (await hass.connection.sendMessagePromise(
+        msg
+      )) as EventFetchResult<T>;
       return result.events || [];
     });
   } catch (err) {

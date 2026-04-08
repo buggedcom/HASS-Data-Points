@@ -38,7 +38,7 @@ describe("navigation", () => {
   describe("GIVEN datapoints target and range options", () => {
     describe("WHEN buildDataPointsHistoryPath is called", () => {
       it("THEN it builds the expected panel URL", () => {
-        expect.assertions(4);
+        expect.assertions(5);
 
         const path = buildDataPointsHistoryPath(
           {
@@ -53,6 +53,7 @@ describe("navigation", () => {
             end_time: "2026-04-01T03:00:00.000Z",
             zoom_start_time: "2026-04-01T01:00:00.000Z",
             zoom_end_time: "2026-04-01T02:00:00.000Z",
+            page_state: { split_chart_view: true },
           }
         );
 
@@ -60,6 +61,7 @@ describe("navigation", () => {
         expect(path).toContain("entity_id=sensor.a");
         expect(path).toContain("hours_to_show=3");
         expect(path).toContain("zoom_start_time=2026-04-01T01%3A00%3A00.000Z");
+        expect(path).toContain("page_state=");
       });
     });
   });

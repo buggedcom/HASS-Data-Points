@@ -22,7 +22,10 @@ export interface NormalizedHistoryDateWindow {
   end_time: string;
 }
 
-export function makeDateWindowId(label: string, existingIds = new Set<string>()): string {
+export function makeDateWindowId(
+  label: string,
+  existingIds = new Set<string>()
+): string {
   const base = slugifySeriesName(label) || "date-window";
   let candidate = base;
   let suffix = 2;
@@ -51,13 +54,15 @@ export function normalizeDateWindows(
       (window?.start_time || window?.start) as
         | string
         | number
-        | Nullable<Date> | undefined
+        | Nullable<Date>
+        | undefined
     );
     const end = parseDateValue(
       (window?.end_time || window?.end) as
         | string
         | number
-        | Nullable<Date> | undefined
+        | Nullable<Date>
+        | undefined
     );
 
     if (!label || !start || !end || start >= end) {
@@ -65,7 +70,8 @@ export function normalizeDateWindows(
     }
 
     const id =
-      String(window?.id || "").trim() || makeDateWindowId(`${label}-${index + 1}`, seen);
+      String(window?.id || "").trim() ||
+      makeDateWindowId(`${label}-${index + 1}`, seen);
 
     if (seen.has(id)) {
       return;
@@ -83,7 +89,9 @@ export function normalizeDateWindows(
   return normalized;
 }
 
-export function parseDateWindowsParam(value: unknown): NormalizedHistoryDateWindow[] {
+export function parseDateWindowsParam(
+  value: unknown
+): NormalizedHistoryDateWindow[] {
   if (!value || typeof value !== "string") {
     return [];
   }
@@ -110,23 +118,29 @@ export function serializeDateWindowsParam(
   }
 
   return normalized
-    .map((window) => [
+    .map((window) =>
+      [
         encodeURIComponent(window.id),
         encodeURIComponent(window.label),
         encodeURIComponent(window.start_time),
         encodeURIComponent(window.end_time),
-      ].join("~"))
+      ].join("~")
+    )
     .join("|");
 }
 
-export function parseHistoryPageStateParam(value: unknown): Nullable<RecordWithUnknownValues> {
+export function parseHistoryPageStateParam(
+  value: unknown
+): Nullable<RecordWithUnknownValues> {
   if (!value || typeof value !== "string") {
     return null;
   }
 
   try {
     const parsed = JSON.parse(value);
-    return parsed && typeof parsed === "object" ? (parsed as RecordWithUnknownValues) : null;
+    return parsed && typeof parsed === "object"
+      ? (parsed as RecordWithUnknownValues)
+      : null;
   } catch {
     return null;
   }

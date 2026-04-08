@@ -34,6 +34,53 @@ describe("history-api", () => {
           aggregate: "mean",
         });
       });
+
+      it("THEN it batches requests that exceed the backend range limit", async () => {
+        expect.assertions(4);
+
+        const sendMessagePromise = vi
+          .fn()
+          .mockResolvedValueOnce({ pts: [[1, 2]] })
+          .mockResolvedValueOnce({ pts: [[3, 4]] });
+        const hass = { connection: { sendMessagePromise } };
+
+        await expect(
+          fetchDownsampledHistory(
+            hass,
+            "sensor.a",
+            "2026-01-01T00:00:00.000Z",
+            "2026-04-05T00:00:00.000Z",
+            "24h",
+            "mean"
+          )
+        ).resolves.toEqual([
+          [1, 2],
+          [3, 4],
+        ]);
+        expect(sendMessagePromise).toHaveBeenCalledTimes(2);
+        expect(sendMessagePromise).toHaveBeenNthCalledWith(
+          1,
+          expect.objectContaining({
+            type: "hass_datapoints/history",
+            entity_id: "sensor.a",
+            start_time: "2026-01-01T00:00:00.000Z",
+            end_time: "2026-04-01T00:00:00.000Z",
+            interval: "24h",
+            aggregate: "mean",
+          })
+        );
+        expect(sendMessagePromise).toHaveBeenNthCalledWith(
+          2,
+          expect.objectContaining({
+            type: "hass_datapoints/history",
+            entity_id: "sensor.a",
+            start_time: "2026-04-01T00:00:00.001Z",
+            end_time: "2026-04-05T00:00:00.000Z",
+            interval: "24h",
+            aggregate: "mean",
+          })
+        );
+      });
     });
   });
 

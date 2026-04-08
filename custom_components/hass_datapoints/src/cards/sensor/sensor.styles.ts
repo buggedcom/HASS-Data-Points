@@ -21,6 +21,8 @@ export const styles = css`
   }
 
   .card-body {
+    pointer-events: none;
+    cursor: pointer;
     display: flex;
     flex-direction: column;
     flex: 0 0 auto;
@@ -28,7 +30,7 @@ export const styles = css`
       (
           var(--hr-body-rows, var(--row-size, 1)) *
             (var(--row-height, 1px) + var(--row-gap, 0px))
-        ) - var(--row-gap, 0px)
+        ) - var(--row-gap, 0px) - var(--hr-footer-height, 0px)
     );
     min-height: 0;
     position: relative;
@@ -44,7 +46,7 @@ export const styles = css`
       (
           var(--hr-body-rows, var(--row-size, 1)) *
             (var(--row-height, 1px) + var(--row-gap, 0px))
-        ) - var(--row-gap, 0px)
+        ) - var(--row-gap, 0px) - var(--hr-footer-height, 0px)
     );
     min-height: 0;
     overflow: hidden;

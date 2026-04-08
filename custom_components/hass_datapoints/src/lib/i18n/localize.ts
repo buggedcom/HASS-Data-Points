@@ -3,8 +3,17 @@ import {
   localized,
   msg as _litMsg,
 } from "@lit/localize";
+import supportedLocalesJson from "./supported-locales.json";
 
-const targetLocales = ["fi", "fr", "de", "es", "pt", "zh-Hans"];
+/**
+ * The canonical list of non-English locales supported by this integration.
+ * Consumed by localize.ts, the locale aggregator files, and the translation
+ * coverage tests.  Add a new locale here and the tests will immediately flag
+ * any missing translation files or untranslated strings.
+ */
+export const TARGET_LOCALES: readonly string[] = supportedLocalesJson;
+
+const targetLocales = TARGET_LOCALES as string[];
 
 const { getLocale, setLocale } = configureLocalization({
   sourceLocale: "en",
@@ -97,7 +106,10 @@ export async function syncFrontendLocale(
  * Instead of:  msg("Hello", { id: "Hello" })
  * Write:       msg("Hello")
  */
-export function msg(str: string, opts?: { id?: string; desc?: string }): string {
+export function msg(
+  str: string,
+  opts?: { id?: string; desc?: string }
+): string {
   return _litMsg(str, { ...opts, id: opts?.id ?? str }) as string;
 }
 

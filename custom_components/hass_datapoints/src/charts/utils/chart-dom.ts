@@ -1,8 +1,5 @@
 import { esc } from "@/lib/util/format";
-import {
-  ChartRenderer,
-  type ResolvedAxis,
-} from "@/lib/chart/chart-renderer";
+import { ChartRenderer, type ResolvedAxis } from "@/lib/chart/chart-renderer";
 
 /**
  * Shared chart card DOM utilities – styles, shell HTML, canvas setup, axis
@@ -761,7 +758,9 @@ export function buildChartCardShell(title?: Nullable<string>): string {
  * canvas-drawn axis labels use the correct colour for the active light/dark theme.
  * Falls back to the dark-mode default when the variable is unavailable.
  */
-export function resolveChartLabelColor(el: Nullable<Element> | undefined): string {
+export function resolveChartLabelColor(
+  el: Nullable<Element> | undefined
+): string {
   if (!el) {
     return "rgba(214,218,224,0.92)";
   }
@@ -832,7 +831,10 @@ export function renderChartAxisOverlays(
   const chartWrap = getRoot(card).querySelector(".chart-wrap");
   const chartWrapEl = chartWrap instanceof HTMLElement ? chartWrap : card;
   if (chartWrapEl) {
-    chartWrapEl.style.setProperty("--dp-chart-axis-left-width", `${leftWidth}px`);
+    chartWrapEl.style.setProperty(
+      "--dp-chart-axis-left-width",
+      `${leftWidth}px`
+    );
     chartWrapEl.style.setProperty(
       "--dp-chart-axis-right-width",
       `${rightWidth}px`
@@ -840,7 +842,8 @@ export function renderChartAxisOverlays(
   }
 
   const axisSlotWidth = ChartRenderer.AXIS_SLOT_WIDTH;
-  const axisOffset = (axis: ResolvedAxis) => 10 + (axis.slot ?? 0) * axisSlotWidth;
+  const axisOffset = (axis: ResolvedAxis) =>
+    10 + (axis.slot ?? 0) * axisSlotWidth;
   const unitCounts = axes.reduce((counts: Map<string, number>, axis) => {
     if (!axis?.unit) {
       return counts;
@@ -930,7 +933,9 @@ export function positionTooltip(
   const tipW = tipRect.width || 220;
   const tipH = tipRect.height || 64;
   const gap = 12;
-  const minLeft = Number.isFinite(bounds?.left) ? (bounds?.left as number) : gap;
+  const minLeft = Number.isFinite(bounds?.left)
+    ? (bounds?.left as number)
+    : gap;
   const maxLeft = Number.isFinite(bounds?.right)
     ? (bounds?.right as number)
     : window.innerWidth - gap;

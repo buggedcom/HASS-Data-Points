@@ -19,6 +19,19 @@ export const styles = css`
     font-weight: 500;
     color: var(--primary-text-color);
     flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .card-header-title {
+    min-width: 0;
+  }
+  .card-header-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
   }
   .chart-wrap {
     position: relative;

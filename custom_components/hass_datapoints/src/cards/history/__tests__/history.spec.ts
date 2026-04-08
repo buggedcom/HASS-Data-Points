@@ -14,6 +14,7 @@ import {
   it,
   vi,
 } from "vitest";
+import { navigateToDataPointsHistory } from "@/lib/ha/navigation";
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
@@ -44,6 +45,14 @@ vi.mock("../../../components/annotation-dialog/annotation-dialog", () => ({
 vi.mock("../../../lib/workers/history-analysis-client", () => ({
   computeHistoryAnalysisInWorker: vi.fn().mockResolvedValue(null),
 }));
+
+vi.mock("@/lib/ha/navigation", async (importOriginal) => {
+  const mod = (await importOriginal()) as RecordWithUnknownValues;
+  return {
+    ...mod,
+    navigateToDataPointsHistory: vi.fn(),
+  };
+});
 
 // Import the card AFTER mocks are set up
 let HassRecordsHistoryCard: typeof import("../history.ts").HassRecordsHistoryCard;
@@ -155,6 +164,53 @@ describe("history", () => {
           show_data_gaps: false,
         });
         expect((el as any)._config.show_data_gaps).toBe(false);
+      });
+    });
+  });
+
+  describe("GIVEN a card with a title", () => {
+    describe("WHEN it is rendered", () => {
+      it("THEN it shows the chevron action button", async () => {
+        expect.assertions(1);
+        const el = createCard({
+          entity: "sensor.example",
+          title: "History",
+        });
+        document.body.appendChild(el);
+        await el.updateComplete;
+
+        expect(el.shadowRoot?.querySelector("ha-icon-button")).toBeTruthy();
+      });
+    });
+  });
+
+  describe("GIVEN a titled card", () => {
+    describe("WHEN the chevron is clicked", () => {
+      it("THEN it navigates to the datapoints page with page state", async () => {
+        expect.assertions(2);
+        const el = createCard({
+          entity: "sensor.example",
+          title: "History",
+          show_trend_lines: true,
+        });
+        document.body.appendChild(el);
+        await el.updateComplete;
+
+        const button = el.shadowRoot?.querySelector("ha-icon-button");
+        button?.dispatchEvent(
+          new MouseEvent("click", { bubbles: true, composed: true })
+        );
+
+        expect(navigateToDataPointsHistory).toHaveBeenCalledTimes(1);
+        expect(
+          vi.mocked(navigateToDataPointsHistory).mock.calls[0]?.[2]
+        ).toEqual(
+          expect.objectContaining({
+            page_state: expect.objectContaining({
+              show_chart_trend_lines: true,
+            }),
+          })
+        );
       });
     });
   });
@@ -283,7 +339,9 @@ describe("history", () => {
           }
         )._hiddenEventIds = new Set(["evt-1"]);
         vi.spyOn(
-          el as unknown as { _chartEl: () => Nullable<RecordWithUnknownValues> },
+          el as unknown as {
+            _chartEl: () => Nullable<RecordWithUnknownValues>;
+          },
           "_chartEl"
         ).mockReturnValue({
           _queueDrawChart: chartQueueSpy,
@@ -312,7 +370,9 @@ describe("history", () => {
           1
         );
 
-        expect((el as unknown as { _lastEvents: unknown[] })._lastEvents).toHaveLength(1);
+        expect(
+          (el as unknown as { _lastEvents: unknown[] })._lastEvents
+        ).toHaveLength(1);
         expect(chartQueueSpy.mock.calls[0][2]).toEqual([]);
       });
     });

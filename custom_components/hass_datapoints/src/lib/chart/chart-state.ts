@@ -16,7 +16,9 @@ export function createHiddenSeriesSet(
   );
 }
 
-export function createHiddenEventIdSet(hiddenEventIds: string[] = []): Set<string> {
+export function createHiddenEventIdSet(
+  hiddenEventIds: string[] = []
+): Set<string> {
   return new Set(
     (Array.isArray(hiddenEventIds) ? hiddenEventIds : []).filter(Boolean)
   );

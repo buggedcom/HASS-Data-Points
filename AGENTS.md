@@ -61,7 +61,7 @@ The UI layer is intentionally split by responsibility:
 
 - `src/charts`
   Larger chart-oriented feature surfaces and chart cards.
-  Includes the history chart/card stack plus sensor/statistics chart surfaces.
+  Includes the history chart/card stack plus sensor/history chart surfaces.
 
 - `src/panels`
   Full page/panel composition.
@@ -131,7 +131,6 @@ Examples:
 - `cards/list`
 - `cards/quick`
 - `cards/history/history.ts`
-- `cards/statistics/statistics.ts`
 - `cards/sensor/sensor.ts`
 
 ### Pages / Panels
@@ -157,12 +156,23 @@ Preferred structure for reusable UI:
 src/<layer>/<component-name>/
 ├── <component-name>.ts
 ├── <component-name>.styles.ts
+├── i18n/                        # optional but preferred for component-local translations
+│   ├── fi.ts
+│   └── fr.ts
 ├── types.ts                     # optional but preferred when types are shared
 ├── __tests__/
 │   └── <component-name>.spec.ts
 └── stories/
     └── <component-name>.stories.ts
 ```
+
+### Localization structure
+
+Frontend component translations now live next to the component they belong to in a local `i18n/` directory.
+
+- Prefer `src/<layer>/<component-name>/i18n/<locale>.ts` for component-local Lit strings.
+- Keep Home Assistant integration/service translations in `custom_components/hass_datapoints/translations/<locale>.json`.
+- Do not add new frontend locale files under `src/lib/i18n/locales/`; that area is now only for locale loader wiring.
 
 ### Subcomponents
 
@@ -244,7 +254,6 @@ This repo has moved away from `Dp`/`dp-` and `card-` export prefixes in most act
 
 - Prefer export names like `PanelShell`, `RangeToolbar`, `HistoryChart`, `SensorChart`.
 - Custom element tags must still contain a hyphen.
-- Do not assume old `dp-` naming is still correct when adding new files.
 
 ### Compatibility / exceptions
 
@@ -330,7 +339,9 @@ class MyElement extends LitElement {
 ```typescript
 function t(key: string, ...values: string[]): string {
   let s = msg(key, { id: key });
-  values.forEach((v, i) => { s = s.replace(new RegExp(`\\{${i}\\}`, "g"), v); });
+  values.forEach((v, i) => {
+    s = s.replace(new RegExp(`\\{${i}\\}`, "g"), v);
+  });
   return s;
 }
 
@@ -345,7 +356,9 @@ t("Anomaly at {0} with severity {1}", time, severity);
 const OPTIONS = [{ label: msg("Hour"), value: "hour" }];
 
 // Correct — msg() is called at render time
-get _localizedOptions() {
+get;
+_localizedOptions();
+{
   return [{ label: msg("Hour"), value: "hour" }];
 }
 ```
@@ -367,7 +380,7 @@ import type { ComponentTranslations } from "@/lib/i18n/types";
 
 export const translations: ComponentTranslations = {
   "Show anomalies": "Näytä anomaliat",
-  "Sensitivity": "Herkkyys",
+  Sensitivity: "Herkkyys",
 };
 ```
 
@@ -427,6 +440,31 @@ The Finnish translations in this project are **machine-generated approximations*
 - When moving logic from a barrel file into dedicated modules, create per-module specs.
 - When fixing a regression, add a focused regression test in the nearest relevant area.
 - If a component has subcomponents, prefer separate subcomponent specs instead of only parent-level coverage.
+
+### Bug fix regression tests (mandatory)
+
+Every bug fix **must** be accompanied by a GIVEN / WHEN / THEN regression test that would have caught the bug before it was fixed.
+
+Structure:
+
+```typescript
+describe("GIVEN <the precondition that sets up the scenario>", () => {
+  describe("WHEN <the action or input that triggered the bug>", () => {
+    it("THEN <the correct observable outcome that was previously broken>", () => {
+      expect.assertions(1);
+      // …
+    });
+  });
+});
+```
+
+Rules:
+
+- The test **must fail** on the unfixed code and **pass** after the fix.
+- One focused test per bug — do not bundle unrelated regressions into the same `it`.
+- Place it in the spec file nearest to the fixed code (colocated `__tests__` directory).
+- The describe labels should describe the bug scenario in plain language, not the implementation detail.
+- Prefer testing the observable contract (rendered output, emitted event, returned value) over internal state.
 
 ---
 
@@ -525,7 +563,6 @@ Notable active areas:
 - `cards/list`
 - `cards/quick`
 - `cards/sensor`
-- `cards/statistics`
 - `charts/base`
 - `charts/utils`
 - `panels/datapoints`

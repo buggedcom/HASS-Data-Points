@@ -19,7 +19,14 @@ export class ChartShell extends LitElement {
     return html`
       <ha-card>
         ${this.cardTitle
-          ? html`<div class="card-header">${this.cardTitle}</div>`
+          ? html`
+              <div class="card-header">
+                <span class="card-header-title">${this.cardTitle}</span>
+                <span class="card-header-action">
+                  <slot name="header-action"></slot>
+                </span>
+              </div>
+            `
           : ""}
         <slot name="top"></slot>
         <div class="chart-wrap">

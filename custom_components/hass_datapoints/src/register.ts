@@ -2,6 +2,7 @@
 import { HassRecordsActionCard } from "@/cards/action/action";
 import { HassRecordsActionCardEditor } from "@/cards/action/editor";
 import { HassRecordsDevToolCard } from "@/cards/dev-tool/dev-tool";
+import { HassRecordsDevToolCardEditor } from "@/cards/dev-tool/editor";
 import { HassRecordsHistoryCard } from "@/cards/history/history";
 import { HassRecordsHistoryCardEditor } from "@/cards/history/editor";
 import { HassRecordsHistoryPanel } from "@/panels/datapoints/datapoints";
@@ -11,8 +12,6 @@ import { HassRecordsQuickCard } from "@/cards/quick/quick";
 import { HassRecordsQuickCardEditor } from "@/cards/quick/editor";
 import { HassRecordsSensorCard } from "@/cards/sensor/sensor";
 import { HassRecordsSensorCardEditor } from "@/cards/sensor/editor";
-import { HassRecordsStatisticsCard } from "@/cards/statistics/statistics";
-import { HassRecordsStatisticsCardEditor } from "@/cards/statistics/editor";
 
 interface LovelaceCardRegistration {
   type: string;
@@ -40,12 +39,6 @@ if (!customElements.get("hass-datapoints-quick-card")) {
 }
 if (!customElements.get("hass-datapoints-history-card")) {
   customElements.define("hass-datapoints-history-card", HassRecordsHistoryCard);
-}
-if (!customElements.get("hass-datapoints-statistics-card")) {
-  customElements.define(
-    "hass-datapoints-statistics-card",
-    HassRecordsStatisticsCard
-  );
 }
 if (!customElements.get("hass-datapoints-sensor-card")) {
   customElements.define("hass-datapoints-sensor-card", HassRecordsSensorCard);
@@ -85,12 +78,6 @@ if (!customElements.get("hass-datapoints-history-card-editor")) {
     HassRecordsHistoryCardEditor
   );
 }
-if (!customElements.get("hass-datapoints-statistics-card-editor")) {
-  customElements.define(
-    "hass-datapoints-statistics-card-editor",
-    HassRecordsStatisticsCardEditor
-  );
-}
 if (!customElements.get("hass-datapoints-sensor-card-editor")) {
   customElements.define(
     "hass-datapoints-sensor-card-editor",
@@ -101,6 +88,12 @@ if (!customElements.get("hass-datapoints-list-card-editor")) {
   customElements.define(
     "hass-datapoints-list-card-editor",
     HassRecordsListCardEditor
+  );
+}
+if (!customElements.get("hass-datapoints-dev-tool-card-editor")) {
+  customElements.define(
+    "hass-datapoints-dev-tool-card-editor",
+    HassRecordsDevToolCardEditor
   );
 }
 
@@ -127,13 +120,6 @@ const cardsToAdd: LovelaceCardRegistration[] = [
     name: "Hass Records – History Card",
     description:
       "History line chart with coloured annotation markers for recorded events.",
-    preview: false,
-  },
-  {
-    type: "hass-datapoints-statistics-card",
-    name: "Hass Records – Statistics Card",
-    description:
-      "Statistics line chart with coloured annotation markers for recorded events.",
     preview: false,
   },
   {
@@ -165,7 +151,7 @@ cardsToAdd.forEach((card) => {
 });
 
 console.groupCollapsed(
-  "%c hass-datapoints %c v0.3.432 loaded ",
+  "%c hass-datapoints %c v0.3.0 loaded ",
   "color:#fff;background:#03a9f4;font-weight:bold;padding:2px 6px;border-radius:3px 0 0 3px",
   "color:#03a9f4;background:#fff;font-weight:bold;padding:2px 6px;border:1px solid #03a9f4;border-radius:0 3px 3px 0"
 );

@@ -59,6 +59,14 @@ export const styles = css`
     gap: 3px;
   }
 
+  .w-end-wrap {
+    flex: 1.8;
+    min-width: 160px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
   .w-start-label,
   .w-field-label {
     font-size: 0.72em;
@@ -68,7 +76,7 @@ export const styles = css`
   }
 
   .w-start,
-  .w-hours,
+  .w-end,
   .w-label-native {
     padding: 9px 10px;
     width: 100%;
@@ -80,10 +88,6 @@ export const styles = css`
     color: var(--primary-text-color);
     font: inherit;
     font-size: 0.85em;
-  }
-
-  .w-hours-wrap {
-    flex: 0 0 74px;
   }
 
   .remove-window-btn {

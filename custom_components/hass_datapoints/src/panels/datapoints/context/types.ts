@@ -116,7 +116,10 @@ export interface HistoryPageContext {
 export interface HistoryFetchContext {
   state: HistoryFetchState;
   ensureHistoryBounds(options: {
-    onSuccess(payload: { start: Nullable<string>; end: Nullable<string> }): void;
+    onSuccess(payload: {
+      start: Nullable<string>;
+      end: Nullable<string>;
+    }): void;
     onError?(error: unknown): void;
   }): Promise<void>;
   ensureUserPreferences<T>(options: {

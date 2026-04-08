@@ -2,7 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "../sidebar-analysis-section";
 
 function createElement(props: RecordWithUnknownValues = {}) {
-  const el = document.createElement("sidebar-analysis-section") as HTMLElement & {
+  const el = document.createElement(
+    "sidebar-analysis-section"
+  ) as HTMLElement & {
     anomalyOverlapMode: string;
     showCorrelatedAnomalies: boolean;
     anyAnomaliesEnabled: boolean;
@@ -84,7 +86,9 @@ describe("sidebar-analysis-section", () => {
         expect.assertions(3);
         const handler = vi.fn();
         el.addEventListener("dp-display-change", handler);
-        el.shadowRoot!.querySelector<CheckboxListEl>("checkbox-list")!.dispatchEvent(
+        el.shadowRoot!.querySelector<CheckboxListEl>(
+          "checkbox-list"
+        )!.dispatchEvent(
           new CustomEvent("dp-item-change", {
             detail: { name: "correlated_anomalies", checked: true },
             bubbles: true,
@@ -105,7 +109,9 @@ describe("sidebar-analysis-section", () => {
         expect.assertions(3);
         const handler = vi.fn();
         el.addEventListener("dp-analysis-change", handler);
-        el.shadowRoot!.querySelector<RadioGroupEl>("radio-group")!.dispatchEvent(
+        el.shadowRoot!.querySelector<RadioGroupEl>(
+          "radio-group"
+        )!.dispatchEvent(
           new CustomEvent("dp-radio-change", {
             detail: { value: "only" },
             bubbles: true,
@@ -114,7 +120,9 @@ describe("sidebar-analysis-section", () => {
         );
 
         expect(handler).toHaveBeenCalledOnce();
-        expect(handler.mock.calls[0][0].detail.kind).toBe("anomaly_overlap_mode");
+        expect(handler.mock.calls[0][0].detail.kind).toBe(
+          "anomaly_overlap_mode"
+        );
         expect(handler.mock.calls[0][0].detail.value).toBe("only");
       });
     });

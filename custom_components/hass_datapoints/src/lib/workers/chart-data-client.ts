@@ -1,5 +1,8 @@
 import ChartDataWorker from "@/lib/workers/chart-data.worker.ts?worker&inline";
-import type { ChartAggregate, ChartPoint } from "@/lib/workers/chart-data.worker";
+import type {
+  ChartAggregate,
+  ChartPoint,
+} from "@/lib/workers/chart-data.worker";
 
 interface WorkerHandlers<T> {
   resolve: (value: T) => void;
@@ -21,19 +24,22 @@ function getChartDataWorker(): Worker {
     return workerInstance;
   }
   workerInstance = new ChartDataWorker();
-  workerInstance.addEventListener("message", (event: MessageEvent<ChartDataWorkerMessage<ChartPoint[]>>) => {
-    const { id, result, error } = event.data || {};
-    const handlers = pending.get(id || -1);
-    if (!handlers) {
-      return;
+  workerInstance.addEventListener(
+    "message",
+    (event: MessageEvent<ChartDataWorkerMessage<ChartPoint[]>>) => {
+      const { id, result, error } = event.data || {};
+      const handlers = pending.get(id || -1);
+      if (!handlers) {
+        return;
+      }
+      pending.delete(id || -1);
+      if (error) {
+        handlers.reject(new Error(error));
+      } else {
+        handlers.resolve(result || []);
+      }
     }
-    pending.delete(id || -1);
-    if (error) {
-      handlers.reject(new Error(error));
-    } else {
-      handlers.resolve(result || []);
-    }
-  });
+  );
   workerInstance.addEventListener("error", (err) => {
     pending.forEach(({ reject }) => {
       reject(err);

@@ -10,19 +10,29 @@ export class SensorHeader extends LitElement {
 
   @property({ type: String }) accessor unit: string = "";
 
-  @property({ type: Object, attribute: false }) accessor stateObj: Nullable<Record<
-    string,
-    unknown
-  >> = null;
+  @property({ type: Object, attribute: false }) accessor stateObj: Nullable<
+    Record<string, unknown>
+  > = null;
 
-  @property({ type: Object, attribute: false }) accessor hass: Nullable<HassLike> =
-    null;
+  @property({ type: Object, attribute: false })
+  accessor hass: Nullable<HassLike> = null;
 
   static styles = styles;
 
+  private _onHeaderClick(event: MouseEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.dispatchEvent(
+      new CustomEvent("dp-sensor-header-click", {
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
+
   render() {
     return html`
-      <div class="header">
+      <div class="header" @click=${this._onHeaderClick}>
         <div class="name">${this.name}</div>
         <div class="icon">
           <ha-state-icon
@@ -31,7 +41,7 @@ export class SensorHeader extends LitElement {
           ></ha-state-icon>
         </div>
       </div>
-      <div class="info">
+      <div class="info" @click=${this._onHeaderClick}>
         <span class="value first-part">${this.value}</span>
         <span class="measurement">${this.unit}</span>
       </div>

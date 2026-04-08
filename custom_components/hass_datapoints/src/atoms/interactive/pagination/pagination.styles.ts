@@ -30,5 +30,11 @@ export const styles = css`
   .info {
     min-width: 120px;
     text-align: center;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .sep {
+    opacity: 0.55;
   }
 `;

@@ -14,10 +14,7 @@ import {
   slugifySeriesName,
   parseSeriesColorsParam,
 } from "@/lib/domain/history-series";
-import {
-  parseDateValue,
-  createChartZoomRange,
-} from "@/lib/domain/chart-zoom";
+import { parseDateValue, createChartZoomRange } from "@/lib/domain/chart-zoom";
 
 // Override COLORS so assertions use predictable values independent of constants.js
 vi.mock("@/constants", async (importOriginal) => {
@@ -30,6 +27,7 @@ const DEFAULT_ANALYSIS = {
   sample_interval: "1m",
   sample_aggregate: "mean",
   anomaly_use_sampled_data: true,
+  stepped_series: false,
   show_trend_lines: false,
   trend_method: "rolling_average",
   trend_window: "24h",

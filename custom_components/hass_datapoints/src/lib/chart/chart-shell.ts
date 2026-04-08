@@ -16,7 +16,11 @@ export {
   setupCanvas,
 } from "@/charts/utils/chart-dom";
 
-export function clampChartValue(value: number, min: number, max: number): number {
+export function clampChartValue(
+  value: number,
+  min: number,
+  max: number
+): number {
   return Math.min(max, Math.max(min, value));
 }
 

@@ -7,7 +7,7 @@ const sampleResults = [
     id: 1,
     label: "Window 1",
     startDt: "",
-    hours: 24,
+    endDt: "",
     selected: [0, 1],
     changes: [
       {

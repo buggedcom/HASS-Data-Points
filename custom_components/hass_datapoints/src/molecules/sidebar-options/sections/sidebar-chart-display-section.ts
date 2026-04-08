@@ -99,7 +99,9 @@ export class SidebarChartDisplaySection extends LitElement {
     return html`
       <sidebar-options-section
         .title=${msg("Chart Display")}
-        .subtitle=${msg("Configure visual and interaction behaviour for the chart.")}
+        .subtitle=${msg(
+          "Configure visual and interaction behaviour for the chart."
+        )}
         .collapsible=${this.collapsible}
         .open=${this.open}
       >

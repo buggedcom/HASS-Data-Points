@@ -54,7 +54,9 @@ export class AnalysisDeltaGroup extends LitElement {
           ? html`
               <span slot="hint"
                 ><br /><span class="help-text"
-                  >${msg("Select a date window tab to enable delta analysis.")}</span
+                  >${msg(
+                    "Select a date window tab to enable delta analysis."
+                  )}</span
                 ></span
               >
             `

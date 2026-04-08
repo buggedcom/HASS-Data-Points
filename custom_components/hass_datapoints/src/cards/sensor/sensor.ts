@@ -22,6 +22,7 @@ export class HassRecordsSensorCard extends LitElement {
     _hass: { state: true },
     _annEvents: { state: true },
     _hiddenEventIds: { state: true },
+    _recordsFooterHeight: { state: true },
   };
 
   declare _config: CardConfig;
@@ -31,6 +32,8 @@ export class HassRecordsSensorCard extends LitElement {
   declare _annEvents: EventRecordFull[];
 
   declare _hiddenEventIds: Set<string>;
+
+  declare _recordsFooterHeight: number;
 
   private _initialized = false;
 
@@ -54,6 +57,7 @@ export class HassRecordsSensorCard extends LitElement {
     this._hass = null;
     this._annEvents = [];
     this._hiddenEventIds = new Set();
+    this._recordsFooterHeight = 0;
   }
 
   setConfig(config: CardConfig) {
@@ -131,11 +135,16 @@ export class HassRecordsSensorCard extends LitElement {
     const gridRows = this._gridRows();
     if (!this._config?.show_records) {
       shell.style.setProperty("--hr-body-rows", String(gridRows));
+      shell.style.setProperty("--hr-footer-height", "0px");
       return;
     }
     const totalRows = Math.max(3, gridRows);
     const bodyRows = Math.max(2, this._bodyRows(totalRows));
     shell.style.setProperty("--hr-body-rows", String(bodyRows));
+    shell.style.setProperty(
+      "--hr-footer-height",
+      `${Math.max(0, this._recordsFooterHeight)}px`
+    );
   }
 
   private _gridRows(): number {
@@ -147,10 +156,11 @@ export class HassRecordsSensorCard extends LitElement {
 
   private _bodyRows(totalRows: number): number {
     if (!this._config?.show_records) return totalRows;
-    return Math.min(
+    const bodyRows = Math.min(
       totalRows - 1,
       3 + Math.floor(Math.max(0, totalRows - 4) / 4)
     );
+    return bodyRows;
   }
 
   private _toggleEventVisibility(eventId: string) {
@@ -189,6 +199,45 @@ export class HassRecordsSensorCard extends LitElement {
           : null,
       }
     );
+  }
+
+  private _openTargetHistoryDialog() {
+    const entityId = this._config?.entity as Nullable<string>;
+    if (!entityId) {
+      return;
+    }
+    this.dispatchEvent(
+      new CustomEvent("hass-more-info", {
+        bubbles: true,
+        composed: true,
+        detail: { entityId },
+      })
+    );
+  }
+
+  private _onCardClick(event: Event) {
+    const path = event.composedPath();
+    const interactiveTagNames = new Set([
+      "BUTTON",
+      "A",
+      "INPUT",
+      "TEXTAREA",
+      "SELECT",
+      "PAGINATION-NAV",
+    ]);
+    const hitInteractive = path.some((node) => {
+      if (!(node instanceof HTMLElement)) {
+        return false;
+      }
+      if (interactiveTagNames.has(node.tagName)) {
+        return true;
+      }
+      return !!node.closest("button,a,input,textarea,select,pagination-nav");
+    });
+    if (hitInteractive) {
+      return;
+    }
+    this._openTargetHistoryDialog();
   }
 
   async _load() {
@@ -261,6 +310,12 @@ export class HassRecordsSensorCard extends LitElement {
     this._navigateToEventHistory(e.detail.event);
   }
 
+  private _onHeaderClick(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this._openTargetHistoryDialog();
+  }
+
   render() {
     const stateObj = this.hass?.states?.[this._config?.entity as string];
     const sensorName =
@@ -273,7 +328,7 @@ export class HassRecordsSensorCard extends LitElement {
       (stateObj?.attributes?.unit_of_measurement as string) || "";
 
     return html`
-      <ha-card>
+      <ha-card @click=${this._onCardClick}>
         <div class="card-shell">
           <div class="card-body">
             <sensor-header
@@ -282,9 +337,12 @@ export class HassRecordsSensorCard extends LitElement {
               .unit=${sensorUnit}
               .stateObj=${stateObj}
               .hass=${this.hass}
+              @dp-sensor-header-click=${this._onHeaderClick}
             ></sensor-header>
           </div>
           <sensor-chart
+            .showAnnotationTooltips=${this._config.show_annotation_tooltips ===
+            true}
             @dp-sensor-annotation-click=${this._onAnnotationClick}
           ></sensor-chart>
           ${this._config?.show_records
@@ -307,6 +365,12 @@ export class HassRecordsSensorCard extends LitElement {
                     e: CustomEvent<{ event: EventRecordFull }>
                   ) => {
                     this._navigateToEventHistory(e.detail.event);
+                  }}
+                  @dp-sensor-pagination-visibility-change=${(
+                    e: CustomEvent<{ visible: boolean; height: number }>
+                  ) => {
+                    this._recordsFooterHeight =
+                      e.detail.visible === true ? e.detail.height : 0;
                   }}
                 ></sensor-records>
               `

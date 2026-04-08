@@ -272,6 +272,37 @@ describe("chart-interaction", () => {
             ?.hasAttribute("hidden")
         ).toBe(false);
       });
+
+      it("THEN it renders rate-of-change crosshair points when only rate crosshairs are enabled", () => {
+        expect.assertions(1);
+
+        const card = createCard();
+        const renderer = {
+          pad: { top: 24 },
+          ch: 120,
+        };
+
+        showLineChartCrosshair(card, renderer, {
+          x: 120,
+          values: [],
+          rateValues: [
+            {
+              hasValue: true,
+              x: 120,
+              y: 48,
+              color: "#ff5500",
+              axisSide: "right",
+              opacity: 0.66,
+              showCrosshair: true,
+            },
+          ],
+          showRateCrosshairs: true,
+        });
+
+        expect(
+          card.shadowRoot.getElementById("crosshair-points")?.innerHTML
+        ).toContain("crosshair-point");
+      });
     });
   });
 
@@ -384,7 +415,9 @@ describe("chart-interaction", () => {
           100
         );
 
-        const tooltip = card.shadowRoot.getElementById("tooltip") as HTMLElement;
+        const tooltip = card.shadowRoot.getElementById(
+          "tooltip"
+        ) as HTMLElement;
         const seriesMarkup =
           card.shadowRoot.getElementById("tt-series")?.innerHTML || "";
         const dateWindowIndex = seriesMarkup.indexOf("February: Alpha Sensor");
@@ -438,8 +471,12 @@ describe("chart-interaction", () => {
           120
         );
 
-        const ttValue = card.shadowRoot.getElementById("tt-value") as HTMLElement;
-        const ttSeries = card.shadowRoot.getElementById("tt-series") as HTMLElement;
+        const ttValue = card.shadowRoot.getElementById(
+          "tt-value"
+        ) as HTMLElement;
+        const ttSeries = card.shadowRoot.getElementById(
+          "tt-series"
+        ) as HTMLElement;
 
         expect(ttValue.style.display).toBe("none");
         expect(ttSeries.style.display).toBe("grid");

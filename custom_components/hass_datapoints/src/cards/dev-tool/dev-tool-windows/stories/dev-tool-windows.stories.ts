@@ -21,8 +21,13 @@ export const Multiple = {
   render: () => html`
     <dev-tool-windows
       .windows=${[
-        { id: 1, label: "Bedroom", startDt: "", hours: 24 },
-        { id: 2, label: "Outside", startDt: "2026-03-31T10:00", hours: 48 },
+        { id: 1, label: "Bedroom", startDt: "", endDt: "" },
+        {
+          id: 2,
+          label: "Outside",
+          startDt: "2026-03-31T10:00",
+          endDt: "2026-04-02T10:00",
+        },
       ]}
     ></dev-tool-windows>
   `,

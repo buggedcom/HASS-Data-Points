@@ -1,17 +1,12 @@
 {
   "domain": "hass_datapoints",
   "name": "Hass Data Points",
-  "version": "0.3.698",
+  "version": "0.3.824",
   "documentation": "https://github.com/buggedcom/hass-datapoints",
   "issue_tracker": "https://github.com/buggedcom/hass-datapoints/issues",
   "codeowners": [],
   "requirements": [],
-  "dependencies": [
-    "frontend",
-    "history",
-    "logbook",
-    "recorder"
-  ],
+  "dependencies": ["frontend", "history", "logbook", "recorder"],
   "iot_class": "local_push",
   "config_flow": true
 }

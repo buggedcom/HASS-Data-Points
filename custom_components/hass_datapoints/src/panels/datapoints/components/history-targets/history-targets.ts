@@ -132,9 +132,9 @@ export class HistoryTargets extends LitElement {
             this._onCollapsedEntityClick(ev, row.entity_id)}
         >
           <ha-state-icon
-            .stateObj=${(this.hass?.states as RecordWithUnknownValues | undefined)?.[
-              row.entity_id
-            ]}
+            .stateObj=${(
+              this.hass?.states as RecordWithUnknownValues | undefined
+            )?.[row.entity_id]}
             .hass=${this.hass}
             aria-hidden="true"
           ></ha-state-icon>

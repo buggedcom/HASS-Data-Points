@@ -37,6 +37,50 @@ interface BackendAnomalyResult<TCluster> {
   anomaly_clusters?: TCluster[];
 }
 
+const MAX_DOWNSAMPLED_HISTORY_RANGE_MS = 90 * 24 * 60 * 60 * 1000;
+
+function parseIsoTimeMs(value: string): Nullable<number> {
+  const timeMs = Date.parse(value);
+  if (!Number.isFinite(timeMs)) {
+    return null;
+  }
+  return timeMs;
+}
+
+function buildDownsampledHistoryChunks(
+  startTime: string,
+  endTime: string
+): Array<{ startTime: string; endTime: string }> {
+  const startTimeMs = parseIsoTimeMs(startTime);
+  const endTimeMs = parseIsoTimeMs(endTime);
+  if (
+    startTimeMs == null ||
+    endTimeMs == null ||
+    endTimeMs <= startTimeMs ||
+    endTimeMs - startTimeMs <= MAX_DOWNSAMPLED_HISTORY_RANGE_MS
+  ) {
+    return [{ startTime, endTime }];
+  }
+
+  const chunks: Array<{ startTime: string; endTime: string }> = [];
+  let chunkStartMs = startTimeMs;
+  while (chunkStartMs < endTimeMs) {
+    const chunkEndMs = Math.min(
+      endTimeMs,
+      chunkStartMs + MAX_DOWNSAMPLED_HISTORY_RANGE_MS
+    );
+    chunks.push({
+      startTime: new Date(chunkStartMs).toISOString(),
+      endTime: new Date(chunkEndMs).toISOString(),
+    });
+    if (chunkEndMs >= endTimeMs) {
+      break;
+    }
+    chunkStartMs = chunkEndMs + 1;
+  }
+  return chunks;
+}
+
 export function fetchDownsampledHistory<TPoint = unknown>(
   hass: Pick<HassLike, "connection">,
   entityId: string,
@@ -54,16 +98,41 @@ export function fetchDownsampledHistory<TPoint = unknown>(
     aggregate,
   });
 
-  return withStableRangeCache(cacheKey, endTime, () => hass.connection
-      .sendMessagePromise({
-        type: "hass_datapoints/history",
-        entity_id: entityId,
-        start_time: startTime,
-        end_time: endTime,
-        interval,
-        aggregate,
-      })
-      .then((result) => ((result as DownsampledHistoryResult<TPoint>).pts || []) as TPoint[]));
+  return withStableRangeCache(cacheKey, endTime, async () => {
+    const chunks = buildDownsampledHistoryChunks(startTime, endTime);
+    const responses = await Promise.all(
+      chunks.map(async (chunk) =>
+        hass.connection.sendMessagePromise({
+          type: "hass_datapoints/history",
+          entity_id: entityId,
+          start_time: chunk.startTime,
+          end_time: chunk.endTime,
+          interval,
+          aggregate,
+        })
+      )
+    );
+
+    const mergedPoints = responses.flatMap(
+      (result) =>
+        ((result as DownsampledHistoryResult<TPoint>).pts || []) as TPoint[]
+    );
+
+    if (!mergedPoints.length) {
+      return [];
+    }
+
+    const dedupedPoints = new Map<string, TPoint>();
+    for (const point of mergedPoints) {
+      if (Array.isArray(point) && point.length > 0) {
+        dedupedPoints.set(String(point[0]), point);
+      } else {
+        dedupedPoints.set(JSON.stringify(point), point);
+      }
+    }
+
+    return [...dedupedPoints.values()];
+  });
 }
 
 export function fetchAnomaliesFromBackend<TCluster = unknown>(
@@ -104,7 +173,11 @@ export function fetchAnomaliesFromBackend<TCluster = unknown>(
           }
         : {}),
     })
-    .then((result) => ((result as BackendAnomalyResult<TCluster>).anomaly_clusters || []) as TCluster[]);
+    .then(
+      (result) =>
+        ((result as BackendAnomalyResult<TCluster>).anomaly_clusters ||
+          []) as TCluster[]
+    );
 }
 
 export async function fetchHistoryDuringPeriod<TResponse = unknown>(
@@ -125,13 +198,18 @@ export async function fetchHistoryDuringPeriod<TResponse = unknown>(
     no_attributes: options.no_attributes !== false,
   });
 
-  return withStableRangeCache(cacheKey, endTime, () => hass.connection.sendMessagePromise({
-      type: "history/history_during_period",
-      start_time: startTime,
-      end_time: endTime,
-      entity_ids: normalizedEntityIds,
-      include_start_time_state: options.include_start_time_state !== false,
-      significant_changes_only: !!options.significant_changes_only,
-      no_attributes: options.no_attributes !== false,
-    }) as Promise<TResponse>);
+  return withStableRangeCache(
+    cacheKey,
+    endTime,
+    () =>
+      hass.connection.sendMessagePromise({
+        type: "history/history_during_period",
+        start_time: startTime,
+        end_time: endTime,
+        entity_ids: normalizedEntityIds,
+        include_start_time_state: options.include_start_time_state !== false,
+        significant_changes_only: !!options.significant_changes_only,
+        no_attributes: options.no_attributes !== false,
+      }) as Promise<TResponse>
+  );
 }

@@ -20,11 +20,12 @@ export const styles = `
   }
   ha-card { padding: 0; overflow: visible; height: 100%; display: flex; flex-direction: column; }
   .card-header {
-    padding: var(--dp-spacing-lg) var(--dp-spacing-lg) 0;
+    padding: var(--dp-spacing-lg);
     font-size: 1.1em;
     font-weight: 500;
     color: var(--primary-text-color);
     flex: 0 0 auto;
+    line-height: 1.3;
   }
   .chart-top-slot[hidden] {
     display: none;
@@ -181,18 +182,21 @@ export const styles = `
   canvas { display: block; }
   .chart-loading {
     position: absolute;
-    top: var(--dp-spacing-sm);
-    left: var(--dp-spacing-md);
+    top: 50%;
+    left: 50%;
     display: none;
     align-items: center;
     justify-content: center;
-    width: calc(var(--spacing, 8px) * 3);
-    height: calc(var(--spacing, 8px) * 3);
+    gap: var(--dp-spacing-sm);
+    min-width: calc(var(--spacing, 8px) * 12);
+    min-height: calc(var(--spacing, 8px) * 5);
+    padding: var(--dp-spacing-sm) var(--dp-spacing-md);
     border-radius: 999px;
     background: color-mix(in srgb, var(--card-background-color, #fff) 92%, transparent);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
     z-index: 6;
     pointer-events: none;
+    transform: translate(-50%, -50%);
   }
   .chart-loading.active {
     display: inline-flex;
@@ -204,6 +208,14 @@ export const styles = `
     border: 2px solid color-mix(in srgb, var(--primary-color, #03a9f4) 22%, transparent);
     border-top-color: var(--primary-color, #03a9f4);
     animation: chart-spinner 0.9s linear infinite;
+  }
+  .chart-loading::after {
+    content: none;
+  }
+  .chart-loading-label {
+    color: var(--secondary-text-color);
+    font-size: 0.85rem;
+    font-weight: 500;
   }
   @keyframes chart-spinner {
     to {

@@ -7,14 +7,13 @@ export const styles = css`
   }
   ha-card {
     height: 100%;
-    padding: 12px;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     overflow: hidden;
     box-sizing: border-box;
     position: relative;
-    gap: 8px;
+    gap: 12px;
   }
   feedback-banner {
     position: absolute;
@@ -26,12 +25,22 @@ export const styles = css`
     --dp-feedback-radius: 4px;
   }
   .card-header {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 1.1em;
+    padding: 16px 16px 0;
+    font-size: 1rem;
     font-weight: 500;
+    line-height: 1.5;
     color: var(--primary-text-color);
+  }
+  .card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+  .card-content.with-header {
+    padding-top: 12px;
   }
   .input-row {
     display: flex;

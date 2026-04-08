@@ -27,7 +27,11 @@ export interface PanelTargetConfig {
   entity?: string | string[];
 }
 
-type TargetSelectionValue = string | string[] | Nullable<TargetValueShape> | undefined;
+type TargetSelectionValue =
+  | string
+  | string[]
+  | Nullable<TargetValueShape>
+  | undefined;
 
 interface ResolvableEntityEntry extends Partial<HassEntity> {
   deviceId?: Nullable<string>;
@@ -41,7 +45,7 @@ export function normalizeEntityIds(value: unknown): string[] {
   }
 
   return (Array.isArray(value) ? value : [value])
-    .map((item) => typeof item === "string" ? item.trim() : "")
+    .map((item) => (typeof item === "string" ? item.trim() : ""))
     .filter(Boolean);
 }
 
@@ -101,12 +105,16 @@ export function mergeTargetSelections(
 
   for (const target of targets) {
     const normalized = normalizeTargetSelection(target);
-    for (const key of Object.keys(merged) as (keyof NormalizedTargetSelection)[]) {
+    for (const key of Object.keys(
+      merged
+    ) as (keyof NormalizedTargetSelection)[]) {
       merged[key].push(...normalized[key]);
     }
   }
 
-  for (const key of Object.keys(merged) as (keyof NormalizedTargetSelection)[]) {
+  for (const key of Object.keys(
+    merged
+  ) as (keyof NormalizedTargetSelection)[]) {
     merged[key] = [...new Set(merged[key])];
   }
 

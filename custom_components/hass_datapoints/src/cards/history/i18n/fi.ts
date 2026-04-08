@@ -11,8 +11,7 @@ export const translations: ComponentTranslations = {
   "Card title (optional)": "Kortin otsikko (valinnainen)",
   "Hours to show": "Näytettävät tunnit",
   "Single entity": "Yksittäinen entiteetti",
-  "Show data gaps":
-    "Näytä tietoaukot",
+  "Show data gaps": "Näytä tietoaukot",
   "Highlight missing data ranges with dashed lines and boundary markers":
     "Korosta puuttuvat tietoalueet katkoviivoilla ja rajamerkeillä",
 };

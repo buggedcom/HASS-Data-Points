@@ -1,5 +1,6 @@
 import { html } from "lit";
 import { ChartCardBase } from "@/charts/base/chart-card-base";
+import { styles } from "./history.styles";
 // Side-effect import: registers the hass-datapoints-history-chart custom element.
 import "./history-chart/history-chart";
 import { createChartZoomRange } from "@/lib/domain/chart-zoom";
@@ -7,12 +8,18 @@ import {
   createHiddenEventIdSet,
   createHiddenSeriesSet,
 } from "@/lib/chart/chart-state";
+import {
+  normalizeTargetValue,
+  resolveEntityIdsFromTarget,
+} from "@/lib/domain/target-selection";
 import { HistoryAnnotationDialogController } from "@/components/annotation-dialog/annotation-dialog";
 import { fetchHistoryDuringPeriod } from "@/lib/data/history-api";
 import { fetchStatisticsDuringPeriod } from "@/lib/data/statistics-api";
 import { fetchEvents } from "@/lib/data/events-api";
 import { logger } from "@/lib/logger";
 import type { CardConfig } from "@/lib/types";
+import { navigateToDataPointsHistory } from "@/lib/ha/navigation";
+import { buildHistoryPageSessionState } from "@/lib/history-page/history-session-state";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -52,15 +59,19 @@ interface PartialLoadState {
   statsFailed: boolean;
   eventsFailed: boolean;
   hasDrawnDrawable: boolean;
-  lastDrawState: Nullable<{ histDone: boolean;
+  lastDrawState: Nullable<{
+    histDone: boolean;
     statsDone: boolean;
-    eventsDone: boolean; }>;
+    eventsDone: boolean;
+  }>;
   lastDrawQuality: Nullable<{ totalPoints: number }>;
 }
 
 // ── Card ──────────────────────────────────────────────────────────────────────
 
 export class HassRecordsHistoryCard extends ChartCardBase {
+  static styles = styles;
+
   // ── State ──────────────────────────────────────────────────────────────────
 
   private _hiddenSeries: Set<string> = new Set();
@@ -198,15 +209,24 @@ export class HassRecordsHistoryCard extends ChartCardBase {
   // ── Configuration ──────────────────────────────────────────────────────────
 
   override setConfig(config: CardConfig): void {
-    if (!config.entity && !config.entities) {
+    if (
+      !config.entity &&
+      !config.entities &&
+      !config.target &&
+      !(
+        Array.isArray(config.series_settings) &&
+        config.series_settings.length > 0
+      )
+    ) {
       throw new Error(
-        "hass-datapoints-history-card: define `entity` or `entities`"
+        "hass-datapoints-history-card: define `target`, `entity`, `entities` or `series_settings`"
       );
     }
 
     const nextConfig: CardConfig = {
       hours_to_show: 24,
       ...config,
+      target: config.target ? normalizeTargetValue(config.target) : undefined,
       series_settings: Array.isArray(config.series_settings)
         ? (config.series_settings as SeriesSettingEntry[]).map((entry) => ({
             ...entry,
@@ -273,6 +293,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     const currentConfig = this._config || {};
 
     const currentDataKey = JSON.stringify({
+      target: (currentConfig as CardConfig).target || null,
       entities: (currentConfig as CardConfig).entities,
       entity: (currentConfig as CardConfig).entity,
       series_entities: Array.isArray(
@@ -292,6 +313,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       end_time: (currentConfig as CardConfig).end_time,
     });
     const nextDataKey = JSON.stringify({
+      target: nextConfig.target || null,
       entities: nextConfig.entities,
       entity: nextConfig.entity,
       series_entities: Array.isArray(nextConfig.series_settings)
@@ -523,6 +545,22 @@ export class HassRecordsHistoryCard extends ChartCardBase {
   // ── Entity helpers ─────────────────────────────────────────────────────────
 
   get _entityIds(): string[] {
+    if (Array.isArray(this._config.series_settings)) {
+      const ids = (this._config.series_settings as SeriesSettingEntry[])
+        .map(
+          (entry) =>
+            entry?.entity_id || entry?.entity || entry?.entityId || null
+        )
+        .filter(
+          (value): value is string => typeof value === "string" && !!value
+        );
+      if (ids.length) {
+        return [...new Set(ids)];
+      }
+    }
+    if (this._config.target) {
+      return resolveEntityIdsFromTarget(this._hass, this._config.target);
+    }
     if (this._config.entities) {
       return (
         this._config.entities as Array<string | RecordWithStringValues>
@@ -618,7 +656,12 @@ export class HassRecordsHistoryCard extends ChartCardBase {
   ): Promise<ComparisonWindowResult> {
     const hass = this._hass;
     if (!hass) {
-      return { id: win.id, time_offset_ms: win.time_offset_ms, histResult: {}, statsResult: {} };
+      return {
+        id: win.id,
+        time_offset_ms: win.time_offset_ms,
+        histResult: {},
+        statsResult: {},
+      };
     }
     const cacheKey = this._getComparisonCacheKey(win, start, end);
     const cached = this._comparisonDataCache.get(cacheKey);
@@ -1324,6 +1367,119 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     });
   }
 
+  private _buildNavigationPageState(): RecordWithUnknownValues {
+    const range = this._getRange();
+    const fallbackZoomRange =
+      typeof this._config.zoom_start_time !== "undefined" &&
+      typeof this._config.zoom_end_time !== "undefined"
+        ? {
+            start: this._config.zoom_start_time as string | number | Date,
+            end: this._config.zoom_end_time as string | number | Date,
+          }
+        : null;
+    const targetSelection =
+      this._config.target && typeof this._config.target === "object"
+        ? normalizeTargetValue(this._config.target)
+        : { entity_id: this._entityIds };
+    const baseState = buildHistoryPageSessionState({
+      _entities: this._entityIds,
+      _seriesRows: Array.isArray(this._config.series_settings)
+        ? [...(this._config.series_settings as unknown[])]
+        : this._entityIds.map((entityId) => ({ entity_id: entityId })),
+      _targetSelection: targetSelection as RecordWithUnknownValues,
+      _targetSelectionRaw: targetSelection as RecordWithUnknownValues,
+      _datapointScope: (this._config.datapoint_scope as string) || "linked",
+      _showChartDatapointIcons: this._config.show_event_markers !== false,
+      _showChartDatapointLines: this._config.show_event_lines !== false,
+      _showChartTooltips: this._config.show_tooltips !== false,
+      _showChartEmphasizedHoverGuides:
+        this._config.emphasize_hover_guides === true,
+      _chartHoverSnapMode:
+        (this._config.hover_snap_mode as string) || "follow_series",
+      _delinkChartYAxis: this._config.delink_y_axis === true,
+      _splitChartView: this._config.split_view === true,
+      _showCorrelatedAnomalies: this._config.show_correlated_anomalies === true,
+      _chartAnomalyOverlapMode: "all",
+      _showDataGaps: this._config.show_data_gaps !== false,
+      _dataGapThreshold: (this._config.data_gap_threshold as string) || "2h",
+      _contentSplitRatio: 0.62,
+      _startTime: range.start,
+      _endTime: range.end,
+      _chartZoomCommittedRange: this._zoomRange
+        ? {
+            start: this._zoomRange.start,
+            end: this._zoomRange.end,
+          }
+        : fallbackZoomRange,
+      _comparisonWindows: Array.isArray(this._config.comparison_windows)
+        ? [...(this._config.comparison_windows as ComparisonWindow[])]
+        : [],
+      _hours: Number(this._config.hours_to_show || 24),
+      _sidebarCollapsed: false,
+      _sidebarAccordionTargetsOpen: true,
+      _sidebarAccordionDatapointsOpen: true,
+      _sidebarAccordionAnalysisOpen: true,
+      _sidebarAccordionChartOpen: true,
+      _zoomLevel: "auto",
+      _dateSnapping: "hour",
+      _preferredSeriesColors: {},
+    }) as unknown as RecordWithUnknownValues;
+
+    return {
+      ...baseState,
+      show_chart_trend_lines: this._config.show_trend_lines === true,
+      show_chart_summary_stats: this._config.show_summary_stats === true,
+      show_chart_rate_of_change: this._config.show_rate_of_change === true,
+      show_chart_threshold_analysis:
+        this._config.show_threshold_analysis === true,
+      show_chart_threshold_shading:
+        this._config.show_threshold_shading === true,
+      show_chart_anomalies: this._config.show_anomalies === true,
+      show_chart_trend_crosshairs: this._config.show_trend_crosshairs === true,
+      chart_trend_method:
+        (this._config.trend_method as string) || "rolling_average",
+      chart_trend_window: (this._config.trend_window as string) || "24h",
+      chart_rate_window: (this._config.rate_window as string) || "1h",
+      chart_anomaly_sensitivity:
+        (this._config.anomaly_sensitivity as string) || "medium",
+      chart_threshold_values:
+        (this._config.threshold_values as RecordWithUnknownValues) || {},
+      chart_threshold_directions:
+        (this._config.threshold_directions as RecordWithUnknownValues) || {},
+      show_chart_delta_analysis: this._config.show_delta_analysis === true,
+      show_chart_delta_tooltip: this._config.show_delta_tooltip !== false,
+      show_chart_delta_lines: this._config.show_delta_lines === true,
+      hide_chart_source_series: this._config.hide_raw_data === true,
+      chart_anomaly_rate_window: (this._config.rate_window as string) || "1h",
+    };
+  }
+
+  private _navigateToPanel(event: Event): void {
+    event.preventDefault();
+    event.stopPropagation();
+    const range = this._getRange();
+    const zoomStartTime = this._zoomRange?.start
+      ? this._zoomRange.start
+      : (this._config.zoom_start_time as string | number | Date | undefined);
+    const zoomEndTime = this._zoomRange?.end
+      ? this._zoomRange.end
+      : (this._config.zoom_end_time as string | number | Date | undefined);
+    navigateToDataPointsHistory(
+      this,
+      this._config.target && typeof this._config.target === "object"
+        ? (normalizeTargetValue(this._config.target) as RecordWithStringValues)
+        : { entity_id: this._entityIds },
+      {
+        datapoint_scope: (this._config.datapoint_scope as string) || undefined,
+        start_time: Number.isFinite(this._lastT0) ? this._lastT0 : range.start,
+        end_time: Number.isFinite(this._lastT1) ? this._lastT1 : range.end,
+        zoom_start_time: zoomStartTime,
+        zoom_end_time: zoomEndTime,
+        page_state: this._buildNavigationPageState(),
+      }
+    );
+  }
+
   // ── Keyboard / scroll handlers ─────────────────────────────────────────────
 
   private _handleWindowKeyDown(ev: KeyboardEvent): void {
@@ -1406,7 +1562,20 @@ export class HassRecordsHistoryCard extends ChartCardBase {
     return html`
       <ha-card>
         ${this._config?.title
-          ? html`<div class="card-header">${this._config.title as string}</div>`
+          ? html`
+              <h1 class="card-header">
+                <span class="card-header-title"
+                  >${this._config.title as string}</span
+                >
+                <ha-icon-button
+                  class="card-header-action"
+                  .label=${"Open in Data Points"}
+                  @click=${this._navigateToPanel}
+                >
+                  <ha-icon icon="mdi:chevron-right"></ha-icon>
+                </ha-icon-button>
+              </h1>
+            `
           : ""}
         <hass-datapoints-history-chart></hass-datapoints-history-chart>
       </ha-card>

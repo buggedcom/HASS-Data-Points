@@ -21,7 +21,10 @@ const compat = new FlatCompat({
 export default [
   {
     ignores: [
+      // Build assets
       "custom_components/hass_datapoints/hass-datapoints-cards.js",
+      // Storybook build output
+      "storybook-static/**",
       "node_modules/**",
       ".git/**",
       ".claude/**",

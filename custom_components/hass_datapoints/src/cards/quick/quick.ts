@@ -2,6 +2,7 @@ import { LitElement, html } from "lit";
 import { styles } from "./quick.styles";
 import { AMBER, DOMAIN } from "@/constants";
 import { logger } from "@/lib/logger";
+import { resolveEntityIdsFromTarget } from "@/lib/domain/target-selection";
 import type { HassLike } from "@/lib/types";
 import "@/atoms/display/feedback-banner/feedback-banner";
 import "@/cards/quick/quick-annotation/quick-annotation";
@@ -98,7 +99,9 @@ export class HassRecordsQuickCard extends LitElement {
     }
 
     let entityIds: string[];
-    if (cfg.entity) {
+    if (cfg.target) {
+      entityIds = resolveEntityIdsFromTarget(this._hass, cfg.target);
+    } else if (cfg.entity) {
       entityIds = [cfg.entity as string];
     } else if (cfg.entities) {
       entityIds = Array.isArray(cfg.entities)
@@ -153,41 +156,36 @@ export class HassRecordsQuickCard extends LitElement {
 
     return html`
       <ha-card>
-        ${hasTitle
-          ? html`
-              <div class="card-header">
-                <ha-icon .icon=${cfgIcon}></ha-icon>
-                ${cfg.title}
-              </div>
-            `
-          : ""}
-        <div class="input-row">
-          <ha-textfield
-            id="msg"
-            .placeholder=${cfg.placeholder || "Note something…"}
-          ></ha-textfield>
-          <ha-button
-            id="btn"
-            raised
-            style=${`--mdc-theme-primary: ${cfgColor}`}
-            @click=${this._record}
-          >
-            <ha-icon .icon=${cfgIcon} slot="icon"></ha-icon>
-            Record
-          </ha-button>
+        ${hasTitle ? html` <div class="card-header">${cfg.title}</div> ` : ""}
+        <div class="card-content ${hasTitle ? "with-header" : ""}">
+          <div class="input-row">
+            <ha-textfield
+              id="msg"
+              .placeholder=${cfg.placeholder || "Note something…"}
+            ></ha-textfield>
+            <ha-button
+              id="btn"
+              raised
+              style=${`--mdc-theme-primary: ${cfgColor}`}
+              @click=${this._record}
+            >
+              <ha-icon .icon=${cfgIcon} slot="icon"></ha-icon>
+              Record
+            </ha-button>
+          </div>
+          ${showAnnotation
+            ? html`
+                <quick-annotation
+                  .value=${this._annotation}
+                  @dp-annotation-input=${(
+                    event: CustomEvent<{ value: string }>
+                  ) => {
+                    this._annotation = event.detail.value;
+                  }}
+                ></quick-annotation>
+              `
+            : ""}
         </div>
-        ${showAnnotation
-          ? html`
-              <quick-annotation
-                .value=${this._annotation}
-                @dp-annotation-input=${(
-                  event: CustomEvent<{ value: string }>
-                ) => {
-                  this._annotation = event.detail.value;
-                }}
-              ></quick-annotation>
-            `
-          : ""}
         <feedback-banner
           .kind=${this._feedbackClass}
           .text=${this._feedbackText}
@@ -208,14 +206,18 @@ export class HassRecordsQuickCard extends LitElement {
 
   getGridOptions() {
     const hasAnnotation = !!this._config?.show_annotation;
+    const hasTitle = !!this._config?.title;
+    const baseRows = hasAnnotation ? 3 : 1;
+    const rows = hasTitle ? baseRows + 1 : baseRows;
     return {
-      rows: hasAnnotation ? 3 : 1,
-      min_rows: hasAnnotation ? 3 : 1,
-      max_rows: hasAnnotation ? 3 : 1,
+      rows,
+      min_rows: rows,
+      max_rows: rows,
     };
   }
 
   getCardSize() {
-    return this._config?.show_annotation ? 3 : 1;
+    const baseRows = this._config?.show_annotation ? 3 : 1;
+    return this._config?.title ? baseRows + 1 : baseRows;
   }
 }

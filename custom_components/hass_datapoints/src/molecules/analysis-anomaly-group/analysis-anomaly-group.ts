@@ -155,9 +155,7 @@ export class AnalysisAnomalyGroup extends LitElement {
       return html`
         <analysis-method-subopts>
           <label class="field">
-            <span class="field-label"
-              >${msg("Rate window")}</span
-            >
+            <span class="field-label">${msg("Rate window")}</span>
             ${this._renderSelect(
               "anomaly_rate_window",
               this._localizedOptions(ANALYSIS_ANOMALY_RATE_WINDOW_OPTIONS),
@@ -171,9 +169,7 @@ export class AnalysisAnomalyGroup extends LitElement {
       return html`
         <analysis-method-subopts>
           <label class="field">
-            <span class="field-label"
-              >${msg("Rolling window")}</span
-            >
+            <span class="field-label">${msg("Rolling window")}</span>
             ${this._renderSelect(
               "anomaly_zscore_window",
               this._localizedOptions(ANALYSIS_ANOMALY_ZSCORE_WINDOW_OPTIONS),
@@ -187,9 +183,7 @@ export class AnalysisAnomalyGroup extends LitElement {
       return html`
         <analysis-method-subopts>
           <label class="field">
-            <span class="field-label"
-              >${msg("Min flat duration")}</span
-            >
+            <span class="field-label">${msg("Min flat duration")}</span>
             ${this._renderSelect(
               "anomaly_persistence_window",
               this._localizedOptions(
@@ -205,9 +199,7 @@ export class AnalysisAnomalyGroup extends LitElement {
       return html`
         <analysis-method-subopts>
           <label class="field">
-            <span class="field-label"
-              >${msg("Compare to window")}</span
-            >
+            <span class="field-label">${msg("Compare to window")}</span>
             <select
               class="select"
               @change=${(e: Event) =>
@@ -255,9 +247,7 @@ export class AnalysisAnomalyGroup extends LitElement {
         @dp-group-change=${this._onGroupChange}
       >
         <label class="field">
-          <span class="field-label"
-            >${msg("Sensitivity")}</span
-          >
+          <span class="field-label">${msg("Sensitivity")}</span>
           ${this._renderSelect(
             "anomaly_sensitivity",
             sensitivityOptions,
@@ -276,9 +266,7 @@ export class AnalysisAnomalyGroup extends LitElement {
                       (e.target as HTMLInputElement).checked
                     )}
                 />
-                <span
-                  >${msg("Use downsampled data for detection")}</span
-                >
+                <span>${msg("Use downsampled data for detection")}</span>
               </label>
             `
           : nothing}
@@ -347,9 +335,7 @@ export class AnalysisAnomalyGroup extends LitElement {
         ${Array.isArray(a.anomaly_methods) && a.anomaly_methods.length >= 2
           ? html`
               <label class="field">
-                <span class="field-label"
-                  >${msg("When methods overlap")}</span
-                >
+                <span class="field-label">${msg("When methods overlap")}</span>
                 ${this._renderSelect(
                   "anomaly_overlap_mode",
                   overlapOptions,

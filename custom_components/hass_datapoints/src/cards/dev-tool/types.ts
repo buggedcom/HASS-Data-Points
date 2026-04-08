@@ -10,14 +10,14 @@ export interface WindowConfig {
   id: number;
   label: string;
   startDt: string;
-  hours: number;
+  endDt: string;
 }
 
 export interface WindowResult {
   id: number;
   label: string;
   startDt: string;
-  hours: number;
+  endDt: string;
   changes: ChangeItem[];
   selected: number[];
 }

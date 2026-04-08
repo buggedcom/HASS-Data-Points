@@ -3,6 +3,7 @@ import type { ComponentTranslations } from "@/lib/i18n/types";
 export const translations: ComponentTranslations = {
   "Analysis configured": "Analyysi määritetty",
   "Configure analysis": "Määritä analyysi",
+  "Stepped series": "Porrastettu sarja",
   "Hide source series": "Piilota lähdesarja",
   "All targets already have the same settings":
     "Kaikilla kohteilla on jo samat asetukset",

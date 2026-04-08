@@ -1,11 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-  esc,
-  fmtDateTime,
-  fmtRelativeTime,
-  fmtTime,
-} from "@/lib/util/format";
+import { esc, fmtDateTime, fmtRelativeTime, fmtTime } from "@/lib/util/format";
 
 describe("format.js", () => {
   beforeEach(() => {

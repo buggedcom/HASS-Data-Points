@@ -34,6 +34,7 @@ export interface HistorySeriesAnalysis {
   hide_source_series: boolean;
   sample_interval: string;
   sample_aggregate: string;
+  stepped_series: boolean;
   anomaly_use_sampled_data: boolean;
 }
 
@@ -59,6 +60,7 @@ const VALID_ANOMALY_METHODS = [
 
 const VALID_SAMPLE_INTERVALS = [
   "raw",
+  "1s",
   "5s",
   "10s",
   "15s",
@@ -78,7 +80,14 @@ const VALID_SAMPLE_INTERVALS = [
   "24h",
 ];
 
-const VALID_SAMPLE_AGGREGATES = ["mean", "min", "max", "median", "first", "last"];
+const VALID_SAMPLE_AGGREGATES = [
+  "mean",
+  "min",
+  "max",
+  "median",
+  "first",
+  "last",
+];
 
 export function normalizeHistorySeriesAnalysis(
   analysis: Nullable<PartialHistorySeriesAnalysis> | undefined
@@ -87,51 +96,72 @@ export function normalizeHistorySeriesAnalysis(
   return {
     expanded: source.expanded === true,
     show_trend_lines: source.show_trend_lines === true,
-    trend_method: source.trend_method === "linear_trend" ? "linear_trend" : "rolling_average",
-    trend_window: typeof source.trend_window === "string" && source.trend_window ? source.trend_window : "24h",
+    trend_method:
+      source.trend_method === "linear_trend"
+        ? "linear_trend"
+        : "rolling_average",
+    trend_window:
+      typeof source.trend_window === "string" && source.trend_window
+        ? source.trend_window
+        : "24h",
     show_trend_crosshairs: source.show_trend_crosshairs !== false,
     show_summary_stats: source.show_summary_stats === true,
     show_summary_stats_shading: source.show_summary_stats_shading === true,
     show_rate_of_change: source.show_rate_of_change === true,
     show_rate_crosshairs: source.show_rate_crosshairs !== false,
-    rate_window: typeof source.rate_window === "string" && source.rate_window ? source.rate_window : "1h",
+    rate_window:
+      typeof source.rate_window === "string" && source.rate_window
+        ? source.rate_window
+        : "1h",
     show_threshold_analysis: source.show_threshold_analysis === true,
     show_threshold_shading: source.show_threshold_shading === true,
     threshold_value:
-      typeof source.threshold_value === "string" || typeof source.threshold_value === "number"
+      typeof source.threshold_value === "string" ||
+      typeof source.threshold_value === "number"
         ? String(source.threshold_value).trim()
         : "",
-    threshold_direction: source.threshold_direction === "below" ? "below" : "above",
+    threshold_direction:
+      source.threshold_direction === "below" ? "below" : "above",
     show_anomalies: source.show_anomalies === true,
     anomaly_methods: (() => {
       if (Array.isArray(source.anomaly_methods)) {
-        return source.anomaly_methods.filter((method): method is string => typeof method === "string" && VALID_ANOMALY_METHODS.includes(method));
+        return source.anomaly_methods.filter(
+          (method): method is string =>
+            typeof method === "string" && VALID_ANOMALY_METHODS.includes(method)
+        );
       }
       const legacy =
-        typeof source.anomaly_method === "string" && VALID_ANOMALY_METHODS.includes(source.anomaly_method)
+        typeof source.anomaly_method === "string" &&
+        VALID_ANOMALY_METHODS.includes(source.anomaly_method)
           ? source.anomaly_method
           : null;
       return legacy ? [legacy] : [];
     })(),
-    anomaly_overlap_mode: source.anomaly_overlap_mode === "only" ? "only" : "all",
+    anomaly_overlap_mode:
+      source.anomaly_overlap_mode === "only" ? "only" : "all",
     anomaly_sensitivity:
-      typeof source.anomaly_sensitivity === "string" && source.anomaly_sensitivity
+      typeof source.anomaly_sensitivity === "string" &&
+      source.anomaly_sensitivity
         ? source.anomaly_sensitivity
         : "medium",
     anomaly_rate_window:
-      typeof source.anomaly_rate_window === "string" && source.anomaly_rate_window
+      typeof source.anomaly_rate_window === "string" &&
+      source.anomaly_rate_window
         ? source.anomaly_rate_window
         : "1h",
     anomaly_zscore_window:
-      typeof source.anomaly_zscore_window === "string" && source.anomaly_zscore_window
+      typeof source.anomaly_zscore_window === "string" &&
+      source.anomaly_zscore_window
         ? source.anomaly_zscore_window
         : "24h",
     anomaly_persistence_window:
-      typeof source.anomaly_persistence_window === "string" && source.anomaly_persistence_window
+      typeof source.anomaly_persistence_window === "string" &&
+      source.anomaly_persistence_window
         ? source.anomaly_persistence_window
         : "1h",
     anomaly_comparison_window_id:
-      typeof source.anomaly_comparison_window_id === "string" && source.anomaly_comparison_window_id
+      typeof source.anomaly_comparison_window_id === "string" &&
+      source.anomaly_comparison_window_id
         ? source.anomaly_comparison_window_id
         : null,
     show_delta_analysis: source.show_delta_analysis === true,
@@ -139,19 +169,24 @@ export function normalizeHistorySeriesAnalysis(
     show_delta_lines: source.show_delta_lines === true,
     hide_source_series: source.hide_source_series === true,
     sample_interval:
-      typeof source.sample_interval === "string" && VALID_SAMPLE_INTERVALS.includes(source.sample_interval)
+      typeof source.sample_interval === "string" &&
+      VALID_SAMPLE_INTERVALS.includes(source.sample_interval)
         ? source.sample_interval
         : "1m",
     sample_aggregate:
-      typeof source.sample_aggregate === "string" && VALID_SAMPLE_AGGREGATES.includes(source.sample_aggregate)
+      typeof source.sample_aggregate === "string" &&
+      VALID_SAMPLE_AGGREGATES.includes(source.sample_aggregate)
         ? source.sample_aggregate
         : "mean",
+    stepped_series: source.stepped_series === true,
     anomaly_use_sampled_data: source.anomaly_use_sampled_data !== false,
   };
 }
 
 export function historySeriesRowHasConfiguredAnalysis(
-  row: Nullable<{ analysis?: Nullable<PartialHistorySeriesAnalysis> }> | undefined
+  row:
+    | Nullable<{ analysis?: Nullable<PartialHistorySeriesAnalysis> }>
+    | undefined
 ): boolean {
   const analysis = normalizeHistorySeriesAnalysis(row?.analysis);
   return (
@@ -161,6 +196,7 @@ export function historySeriesRowHasConfiguredAnalysis(
     analysis.show_threshold_analysis ||
     analysis.show_anomalies ||
     analysis.show_delta_analysis ||
+    analysis.stepped_series ||
     analysis.hide_source_series
   );
 }
@@ -172,7 +208,8 @@ export function normalizeHistorySeriesRows(rows: unknown): HistorySeriesRow[] {
   const seen = new Set<string>();
   const normalized: HistorySeriesRow[] = [];
   rows.forEach((row, index) => {
-    const entityId = typeof row?.entity_id === "string" ? row.entity_id.trim() : "";
+    const entityId =
+      typeof row?.entity_id === "string" ? row.entity_id.trim() : "";
     if (!entityId || seen.has(entityId)) {
       return;
     }
@@ -190,11 +227,20 @@ export function normalizeHistorySeriesRows(rows: unknown): HistorySeriesRow[] {
   return normalized;
 }
 
-export function buildHistorySeriesRows(entityIds: unknown, previousRows: unknown[] = []): HistorySeriesRow[] {
+export function buildHistorySeriesRows(
+  entityIds: unknown,
+  previousRows: unknown[] = []
+): HistorySeriesRow[] {
   const normalizedPrevious = normalizeHistorySeriesRows(previousRows);
-  const previousMap = new Map(normalizedPrevious.map((row) => [row.entity_id, row]));
-  const intervals = normalizedPrevious.map((row) => row.analysis.sample_interval);
-  const allSame = intervals.length > 0 && intervals.every((interval) => interval === intervals[0]);
+  const previousMap = new Map(
+    normalizedPrevious.map((row) => [row.entity_id, row])
+  );
+  const intervals = normalizedPrevious.map(
+    (row) => row.analysis.sample_interval
+  );
+  const allSame =
+    intervals.length > 0 &&
+    intervals.every((interval) => interval === intervals[0]);
   const inheritedSampleSettings = allSame
     ? {
         sample_interval: intervals[0],

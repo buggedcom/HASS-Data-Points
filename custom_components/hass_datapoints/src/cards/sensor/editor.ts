@@ -58,6 +58,15 @@ export class HassRecordsSensorCardEditor extends EditorBase {
           @dp-select-change=${(e: CustomEvent<{ value: string }>) =>
             this._set("annotation_style", e.detail.value)}
         ></editor-select>
+        <editor-switch
+          .label=${msg("Show annotation tooltips")}
+          .checked=${c.show_annotation_tooltips === true}
+          @dp-switch-change=${(e: CustomEvent<{ checked: boolean }>) =>
+            this._set(
+              "show_annotation_tooltips",
+              e.detail.checked ? true : undefined
+            )}
+        ></editor-switch>
 
         <section-heading .text=${msg("Records list")}></section-heading>
         <editor-switch
@@ -85,10 +94,9 @@ export class HassRecordsSensorCardEditor extends EditorBase {
         <editor-switch
           .label=${msg("Show full message")}
           .checked=${c.records_show_full_message !== false}
-          .tooltip=${msg(
-            "User will be able to expand the row if hidden",
-            { id: "User will be able to expand the row if hidden" }
-          )}
+          .tooltip=${msg("User will be able to expand the row if hidden", {
+            id: "User will be able to expand the row if hidden",
+          })}
           @dp-switch-change=${(e: CustomEvent<{ checked: boolean }>) =>
             this._set(
               "records_show_full_message",

@@ -3,7 +3,10 @@ import { property, state } from "lit/decorators.js";
 
 import { styles } from "./range-toolbar.styles";
 import { localized, msg } from "@/lib/i18n/localize";
-import { RANGE_SNAP_OPTIONS, RANGE_ZOOM_OPTIONS, } from "@/lib/timeline/timeline-scale";
+import {
+  RANGE_SNAP_OPTIONS,
+  RANGE_ZOOM_OPTIONS,
+} from "@/lib/timeline/timeline-scale";
 import type { HassLike } from "@/lib/types";
 import "@/molecules/floating-menu/floating-menu";
 import "@/molecules/panel-timeline/panel-timeline";
@@ -63,20 +66,22 @@ export class RangeToolbar extends LitElement {
   accessor timelineEvents: unknown[] = [];
 
   /** Comparison overlay range in timeline coordinates. */
-  @property({ type: Object, attribute: false }) accessor comparisonPreview: Nullable<{ start: number;
-    end: number; }> = null;
+  @property({ type: Object, attribute: false })
+  accessor comparisonPreview: Nullable<{ start: number; end: number }> = null;
 
   /** Main chart zoom highlight range. */
-  @property({ type: Object, attribute: false }) accessor zoomRange: Nullable<{ start: number;
-    end: number; }> = null;
+  @property({ type: Object, attribute: false }) accessor zoomRange: Nullable<{
+    start: number;
+    end: number;
+  }> = null;
 
   /** Comparison window zoom highlight range. */
-  @property({ type: Object, attribute: false }) accessor zoomWindowRange: Nullable<{ start: number;
-    end: number; }> = null;
+  @property({ type: Object, attribute: false })
+  accessor zoomWindowRange: Nullable<{ start: number; end: number }> = null;
 
   /** Chart hover line timestamp. */
-  @property({ type: Number, attribute: false }) accessor chartHoverTimeMs:
-    | Nullable<number> = null;
+  @property({ type: Number, attribute: false })
+  accessor chartHoverTimeMs: Nullable<number> = null;
 
   /** Comparison window hover line timestamp. */
   @property({ type: Number, attribute: false })
@@ -365,9 +370,7 @@ export class RangeToolbar extends LitElement {
           data-option-value=${option.value}
           @click=${() => this._onOptionSelect("zoom", option.value)}
         >
-          <span class="range-option-label"
-            >${msg(option.label)}</span
-          >
+          <span class="range-option-label">${msg(option.label)}</span>
         </button>
       `
     );
@@ -383,9 +386,7 @@ export class RangeToolbar extends LitElement {
           data-option-value=${option.value}
           @click=${() => this._onOptionSelect("snap", option.value)}
         >
-          <span class="range-option-label"
-            >${msg(option.label)}</span
-          >
+          <span class="range-option-label">${msg(option.label)}</span>
         </button>
       `
     );
@@ -499,9 +500,7 @@ export class RangeToolbar extends LitElement {
                   class="range-submenu-trigger"
                   @click=${() => this._onOptionsSubmenu("zoom")}
                 >
-                  <span class="range-option-label"
-                    >${msg("Zoom level")}</span
-                  >
+                  <span class="range-option-label">${msg("Zoom level")}</span>
                   <span
                     class="range-submenu-meta"
                     data-options-current="zoom"
@@ -536,9 +535,7 @@ export class RangeToolbar extends LitElement {
                   <span class="range-options-back" aria-hidden="true"
                     ><span>‹</span></span
                   >
-                  <div class="range-options-title">
-                    ${msg("Zoom level")}
-                  </div>
+                  <div class="range-options-title">${msg("Zoom level")}</div>
                 </button>
               </div>
               <div class="range-options-list">${this._renderZoomOptions()}</div>
@@ -557,9 +554,7 @@ export class RangeToolbar extends LitElement {
                   <span class="range-options-back" aria-hidden="true"
                     ><span>‹</span></span
                   >
-                  <div class="range-options-title">
-                    ${msg("Date snapping")}
-                  </div>
+                  <div class="range-options-title">${msg("Date snapping")}</div>
                 </button>
               </div>
               <div class="range-options-list">${this._renderSnapOptions()}</div>

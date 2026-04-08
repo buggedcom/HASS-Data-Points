@@ -233,12 +233,14 @@ describe("list", () => {
       it("THEN the hidden event item has the is-hidden class", async () => {
         expect.assertions(1);
         const items = getEventItems(el);
-        const hiddenItem = items.find(
-          (item) => item.shadowRoot.textContent?.includes("First event")
+        const hiddenItem = items.find((item) =>
+          item.shadowRoot.textContent?.includes("First event")
         )!;
         await (hiddenItem as any).updateComplete;
         expect(
-          hiddenItem.shadowRoot.querySelector(".event-item")?.classList.contains("is-hidden")
+          hiddenItem.shadowRoot
+            .querySelector(".event-item")
+            ?.classList.contains("is-hidden")
         ).toBe(true);
       });
     });
@@ -249,12 +251,14 @@ describe("list", () => {
         el.setConfig({ hidden_event_ids: [] });
         await el.updateComplete;
         const items = getEventItems(el);
-        const item = items.find(
-          (row) => row.shadowRoot.textContent?.includes("First event")
+        const item = items.find((row) =>
+          row.shadowRoot.textContent?.includes("First event")
         )!;
         await (item as any).updateComplete;
         expect(
-          item.shadowRoot.querySelector(".event-item")?.classList.contains("is-hidden")
+          item.shadowRoot
+            .querySelector(".event-item")
+            ?.classList.contains("is-hidden")
         ).toBe(false);
       });
     });

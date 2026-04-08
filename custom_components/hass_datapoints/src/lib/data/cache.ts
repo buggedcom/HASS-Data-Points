@@ -15,10 +15,16 @@ interface CachedRangeEntry<T> {
 const dataRangeCache = new Map<CacheKey, CachedRangeEntry<unknown>>();
 
 export function normalizeCacheIdList(values: unknown): string[] {
-  return [...new Set((Array.isArray(values) ? values : []).filter(Boolean) as string[])].sort();
+  return [
+    ...new Set(
+      (Array.isArray(values) ? values : []).filter(Boolean) as string[]
+    ),
+  ].sort();
 }
 
-export function shouldUseStableRangeCache(endTime: string | number | Nullable<Date> | undefined): boolean {
+export function shouldUseStableRangeCache(
+  endTime: string | number | Nullable<Date> | undefined
+): boolean {
   const endMs = new Date(endTime || 0).getTime();
   if (!Number.isFinite(endMs)) {
     return false;
@@ -41,7 +47,10 @@ export function getCachedRangePromise<T>(key: CacheKey): Nullable<Promise<T>> {
   return entry.promise as Promise<T>;
 }
 
-export function setCachedRangePromise<T>(key: CacheKey, promise: Promise<T>): Promise<T> {
+export function setCachedRangePromise<T>(
+  key: CacheKey,
+  promise: Promise<T>
+): Promise<T> {
   dataRangeCache.set(key, {
     promise,
     expiresAt: Date.now() + DATA_RANGE_CACHE_TTL_MS,
@@ -73,7 +82,9 @@ export function withStableRangeCache<T>(
   return setCachedRangePromise(key, promise);
 }
 
-export function clearStableRangeCacheMatching(predicate: ((key: CacheKey) => boolean) | unknown): number {
+export function clearStableRangeCacheMatching(
+  predicate: ((key: CacheKey) => boolean) | unknown
+): number {
   if (typeof predicate !== "function") {
     return 0;
   }

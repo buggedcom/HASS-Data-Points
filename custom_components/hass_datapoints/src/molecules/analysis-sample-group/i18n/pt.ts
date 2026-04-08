@@ -1,9 +1,9 @@
 import type { ComponentTranslations } from "@/lib/i18n/types";
 
 export const translations: ComponentTranslations = {
-  "Downsampling": "Reamostragem",
-  "Interval": "Intervalo",
-  "Aggregate": "Agregado",
+  Downsampling: "Reamostragem",
+  Interval: "Intervalo",
+  Aggregate: "Agregado",
   "Raw (no sampling)": "Em bruto (sem amostragem)",
   "5 seconds": "5 segundos",
   "10 seconds": "10 segundos",
@@ -23,9 +23,9 @@ export const translations: ComponentTranslations = {
   "12 hours": "12 horas",
   "24 hours": "24 horas",
   "Mean (average)": "Média",
-  "Min": "Mín.",
-  "Max": "Máx.",
-  "Median": "Mediana",
-  "First": "Primeiro",
-  "Last": "Último",
+  Min: "Mín.",
+  Max: "Máx.",
+  Median: "Mediana",
+  First: "Primeiro",
+  Last: "Último",
 };

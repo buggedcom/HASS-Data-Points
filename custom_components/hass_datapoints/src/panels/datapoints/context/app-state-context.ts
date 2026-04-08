@@ -48,7 +48,9 @@ export function createHistoryPageAppStateContext(): HistoryAppStateContext {
       state.range.previewZoomRange = value ? { ...value } : null;
     },
 
-    setCommittedZoomRange(value: Nullable<{ start: number; end: number }>): void {
+    setCommittedZoomRange(
+      value: Nullable<{ start: number; end: number }>
+    ): void {
       state.range.committedZoomRange = value ? { ...value } : null;
     },
 

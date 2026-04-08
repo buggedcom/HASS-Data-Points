@@ -21,6 +21,7 @@ export const styles = css`
     overflow: hidden;
     text-overflow: ellipsis;
     min-width: 0;
+    pointer-events: none;
   }
 
   .icon {
@@ -41,6 +42,7 @@ export const styles = css`
     padding: 0 16px 16px;
     margin-top: -4px;
     line-height: var(--ha-line-height-condensed);
+    pointer-events: none;
   }
 
   .value {
@@ -55,6 +57,7 @@ export const styles = css`
     font-size: 1rem;
     color: var(--secondary-text-color);
     font-weight: 400;
+    pointer-events: none;
   }
 
   .first-part {

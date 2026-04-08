@@ -5,5 +5,5 @@ export const translations: ComponentTranslations = {
   "Scroll to selected range": "Deslocar para o intervalo selecionado",
   "Start date and time": "Data e hora de início",
   "End date and time": "Data e hora de fim",
-  "Select": "Selecionar",
+  Select: "Selecionar",
 };

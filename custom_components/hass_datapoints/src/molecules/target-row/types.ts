@@ -31,6 +31,7 @@ export interface NormalizedAnalysis {
   hide_source_series: boolean;
   sample_interval: string;
   sample_aggregate: string;
+  stepped_series: boolean;
   anomaly_use_sampled_data: boolean;
 }
 
@@ -45,5 +46,9 @@ export interface HassEntityState {
   attributes: RecordWithUnknownValues;
   last_changed?: string;
   last_updated?: string;
-  context?: { id: string; parent_id: Nullable<string>; user_id: Nullable<string> };
+  context?: {
+    id: string;
+    parent_id: Nullable<string>;
+    user_id: Nullable<string>;
+  };
 }

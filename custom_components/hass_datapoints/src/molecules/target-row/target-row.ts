@@ -62,6 +62,7 @@ export function _hasConfiguredAnalysis(a: NormalizedAnalysis): boolean {
     a.show_threshold_analysis ||
     a.show_anomalies ||
     a.show_delta_analysis ||
+    a.stepped_series ||
     a.hide_source_series
   );
 }
@@ -107,8 +108,8 @@ export class TargetRow extends LitElement {
   accessor stateObj: Nullable<HassState> = null;
 
   /** HA hass object. Required by ha-state-icon to resolve entity icons correctly. */
-  @property({ type: Object, attribute: false }) accessor hass: Nullable<HassLike> =
-    null;
+  @property({ type: Object, attribute: false })
+  accessor hass: Nullable<HassLike> = null;
 
   @property({ type: Array, attribute: "comparison-windows" })
   accessor comparisonWindows: ComparisonWindow[] = [];
@@ -337,6 +338,15 @@ export class TargetRow extends LitElement {
                     .entityId=${this._entityId}
                     @dp-group-analysis-change=${this._onGroupAnalysisChange}
                   ></analysis-sample-group>
+                  <label class="history-target-analysis-option">
+                    <input
+                      type="checkbox"
+                      .checked=${a.stepped_series === true}
+                      @change=${(e: Event) =>
+                        this._onCheckbox("stepped_series", e)}
+                    />
+                    <span>${msg("Stepped series")}</span>
+                  </label>
                   <analysis-trend-group
                     .analysis=${a}
                     .entityId=${this._entityId}
@@ -394,8 +404,12 @@ export class TargetRow extends LitElement {
                             type="button"
                             class="history-target-analysis-copy-btn"
                             title=${this.allAnalysisSame
-                              ? msg("All targets already have the same settings")
-                              : msg("Copy these analysis settings to all targets")}
+                              ? msg(
+                                  "All targets already have the same settings"
+                                )
+                              : msg(
+                                  "Copy these analysis settings to all targets"
+                                )}
                             ?disabled=${this.allAnalysisSame}
                             @click=${this._onCopyAnalysisToAll}
                           >

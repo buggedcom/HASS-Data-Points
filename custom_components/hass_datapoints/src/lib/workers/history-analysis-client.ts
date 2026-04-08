@@ -1,5 +1,8 @@
 import HistoryAnalysisWorker from "@/lib/workers/history-analysis.worker.ts?worker&inline";
-import type { ComputeHistoryAnalysisPayload, HistoryAnalysisResult } from "@/lib/workers/history-analysis.worker";
+import type {
+  ComputeHistoryAnalysisPayload,
+  HistoryAnalysisResult,
+} from "@/lib/workers/history-analysis.worker";
 
 interface WorkerHandlers<T> {
   resolve: (value: T) => void;
@@ -21,19 +24,22 @@ function getHistoryAnalysisWorker(): Worker {
     return workerInstance;
   }
   workerInstance = new HistoryAnalysisWorker();
-  workerInstance.addEventListener("message", (event: MessageEvent<HistoryWorkerMessage<HistoryAnalysisResult>>) => {
-    const { id, result, error } = event.data || {};
-    const handlers = pending.get(id || -1);
-    if (!handlers) {
-      return;
+  workerInstance.addEventListener(
+    "message",
+    (event: MessageEvent<HistoryWorkerMessage<HistoryAnalysisResult>>) => {
+      const { id, result, error } = event.data || {};
+      const handlers = pending.get(id || -1);
+      if (!handlers) {
+        return;
+      }
+      pending.delete(id || -1);
+      if (error) {
+        handlers.reject(new Error(error));
+        return;
+      }
+      handlers.resolve(result as HistoryAnalysisResult);
     }
-    pending.delete(id || -1);
-    if (error) {
-      handlers.reject(new Error(error));
-      return;
-    }
-    handlers.resolve(result as HistoryAnalysisResult);
-  });
+  );
   workerInstance.addEventListener("error", (error) => {
     pending.forEach((handlers) => {
       handlers.reject(error);

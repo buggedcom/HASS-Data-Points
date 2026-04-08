@@ -160,7 +160,9 @@ interface RangeEventLike {
   };
 }
 
-export function extractRangeValue(source: Nullable<RangeEventLike> | undefined): {
+export function extractRangeValue(
+  source: Nullable<RangeEventLike> | undefined
+): {
   start: Nullable<Date>;
   end: Nullable<Date>;
 } {
@@ -172,10 +174,16 @@ export function extractRangeValue(source: Nullable<RangeEventLike> | undefined):
   const value = detail.value || source.value || source.target?.value || {};
   return {
     start: parseDateValue(
-      detail.startDate || value.startDate || source.startDate || source.target?.startDate
+      detail.startDate ||
+        value.startDate ||
+        source.startDate ||
+        source.target?.startDate
     ),
     end: parseDateValue(
-      detail.endDate || value.endDate || source.endDate || source.target?.endDate
+      detail.endDate ||
+        value.endDate ||
+        source.endDate ||
+        source.target?.endDate
     ),
   };
 }
@@ -211,7 +219,10 @@ export function formatRangeDuration(start: Date, end: Date): string {
     return "--";
   }
 
-  const totalMinutes = Math.max(0, Math.round((end.getTime() - start.getTime()) / 60000));
+  const totalMinutes = Math.max(
+    0,
+    Math.round((end.getTime() - start.getTime()) / 60000)
+  );
   const days = Math.floor(totalMinutes / 1440);
   const hours = Math.floor((totalMinutes % 1440) / 60);
   const minutes = totalMinutes % 60;
@@ -241,7 +252,15 @@ function startOfLocalDay(value: Date): Date {
 }
 
 function startOfLocalHour(value: Date): Date {
-  return new Date(value.getFullYear(), value.getMonth(), value.getDate(), value.getHours(), 0, 0, 0);
+  return new Date(
+    value.getFullYear(),
+    value.getMonth(),
+    value.getDate(),
+    value.getHours(),
+    0,
+    0,
+    0
+  );
 }
 
 function startOfLocalMinute(value: Date): Date {
@@ -350,7 +369,10 @@ function getWeekOfYear(value: Date): number {
 }
 
 function getWeekLabel(value: Date, locale?: string): string {
-  return value.toLocaleString(locale ? [locale] : [], { month: "short", day: "numeric" });
+  return value.toLocaleString(locale ? [locale] : [], {
+    month: "short",
+    day: "numeric",
+  });
 }
 
 function formatDayLabel(value: Date, locale?: string): string {
@@ -361,20 +383,31 @@ function formatHourLabel(value: Date, locale?: string): string {
   return value.toLocaleTimeString(locale ? [locale] : [], { hour: "2-digit" });
 }
 
-function formatQuarterLabel(value: Date, zoomLevel: ZoomLevel = "", locale?: string): string {
+function formatQuarterLabel(
+  value: Date,
+  zoomLevel: ZoomLevel = "",
+  locale?: string
+): string {
   return zoomLevel === "quarterly"
     ? `Q${Math.floor(value.getMonth() / 3) + 1}`
     : formatMonthLabel(value, locale);
 }
 
-function formatScaleLabel(value: Date, unit: RangeUnit, zoomLevel: ZoomLevel = "", locale?: string): string {
+function formatScaleLabel(
+  value: Date,
+  unit: RangeUnit,
+  zoomLevel: ZoomLevel = "",
+  locale?: string
+): string {
   switch (unit) {
     case "quarter":
       return formatQuarterLabel(value, zoomLevel, locale);
     case "month":
       return formatMonthLabel(value, locale);
     case "week":
-      return zoomLevel === "month_short" ? `${msg("Wk")} ${getWeekOfYear(value)}` : getWeekLabel(value, locale);
+      return zoomLevel === "month_short"
+        ? `${msg("Wk")} ${getWeekOfYear(value)}`
+        : getWeekLabel(value, locale);
     case "day":
       return formatDayLabel(value, locale);
     case "hour":
@@ -384,31 +417,52 @@ function formatScaleLabel(value: Date, unit: RangeUnit, zoomLevel: ZoomLevel = "
   }
 }
 
-function formatContextLabel(value: Date, unit: "year" | "month" | "day", locale?: string): string {
+function formatContextLabel(
+  value: Date,
+  unit: "year" | "month" | "day",
+  locale?: string
+): string {
   switch (unit) {
     case "year":
       return formatYearLabel(value, locale);
     case "month":
-      return value.toLocaleString(locale ? [locale] : [], { month: "short", year: "numeric" });
+      return value.toLocaleString(locale ? [locale] : [], {
+        month: "short",
+        year: "numeric",
+      });
     case "day":
-      return value.toLocaleString(locale ? [locale] : [], { month: "short", day: "numeric" });
+      return value.toLocaleString(locale ? [locale] : [], {
+        month: "short",
+        day: "numeric",
+      });
     default:
       return formatRangeTick(value, locale);
   }
 }
 
-function formatPeriodSelectionLabel(value: Date, unit: RangeUnit, locale?: string): string {
+function formatPeriodSelectionLabel(
+  value: Date,
+  unit: RangeUnit,
+  locale?: string
+): string {
   switch (unit) {
     case "year":
       return formatYearLabel(value, locale);
     case "quarter":
       return `${formatQuarterLabel(value, "", locale)} ${formatYearLabel(value, locale)}`;
     case "month":
-      return value.toLocaleString(locale ? [locale] : [], { month: "long", year: "numeric" });
+      return value.toLocaleString(locale ? [locale] : [], {
+        month: "long",
+        year: "numeric",
+      });
     case "week":
       return `${msg("Week of")} ${value.toLocaleString(locale ? [locale] : [], { month: "short", day: "numeric", year: "numeric" })}`;
     case "day":
-      return value.toLocaleString(locale ? [locale] : [], { month: "short", day: "numeric", year: "numeric" });
+      return value.toLocaleString(locale ? [locale] : [], {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
     case "hour":
       return value.toLocaleString(locale ? [locale] : [], {
         month: "short",
@@ -506,7 +560,9 @@ function addUnit(value: Date, unit: RangeUnit, amount = 1): Date {
 function snapDateToUnit(value: Date, unit: RangeUnit): Date {
   const start = startOfUnit(value, unit);
   const end = endOfUnit(value, unit);
-  return value.getTime() - start.getTime() < end.getTime() - value.getTime() ? start : end;
+  return value.getTime() - start.getTime() < end.getTime() - value.getTime()
+    ? start
+    : end;
 }
 
 export {

@@ -78,6 +78,7 @@ describe("dev-tool", () => {
       });
 
       it("THEN it has at least one comparison window row", () => {
+        expect.assertions(1);
         const windows =
           getWindows(el).shadowRoot.querySelectorAll(".window-row");
         expect(windows.length).toBeGreaterThanOrEqual(1);
@@ -126,6 +127,7 @@ describe("dev-tool", () => {
 
     describe("WHEN a window is removed", () => {
       it("THEN one window row remains", () => {
+        expect.assertions(1);
         const windows =
           getWindows(el).shadowRoot.querySelectorAll(".window-row");
         expect(windows.length).toBe(1);
@@ -140,6 +142,7 @@ describe("dev-tool", () => {
 
     describe("WHEN analyze is clicked with no entities", () => {
       it("THEN an error feedback is shown", async () => {
+        expect.assertions(1);
         el.shadowRoot.querySelector(".analyze-btn").click();
         await el.updateComplete;
         expect(getAnalyzeStatus(el).shadowRoot.textContent).toContain(
@@ -173,6 +176,7 @@ describe("dev-tool", () => {
 
     describe("WHEN the count is displayed", () => {
       it("THEN it shows 2 dev datapoints", () => {
+        expect.assertions(1);
         expect(el.shadowRoot.textContent).toContain("2");
       });
     });
@@ -181,7 +185,18 @@ describe("dev-tool", () => {
   describe("GIVEN the static config methods", () => {
     describe("WHEN getStubConfig is called", () => {
       it("THEN it returns default config", () => {
+        expect.assertions(1);
         expect(HassRecordsDevToolCard.getStubConfig()).toHaveProperty("title");
+      });
+    });
+
+    describe("WHEN getConfigElement is called", () => {
+      it("THEN it returns the dev-tool editor element tag", () => {
+        expect.assertions(1);
+        const editorEl = HassRecordsDevToolCard.getConfigElement();
+        expect(editorEl.tagName.toLowerCase()).toBe(
+          "hass-datapoints-dev-tool-card-editor"
+        );
       });
     });
   });

@@ -5,5 +5,5 @@ export const translations: ComponentTranslations = {
   "Scroll to selected range": "滚动到选定范围",
   "Start date and time": "开始日期和时间",
   "End date and time": "结束日期和时间",
-  "Select": "选择",
+  Select: "选择",
 };

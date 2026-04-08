@@ -3,6 +3,7 @@ import { msg } from "@/lib/i18n/localize";
 import { styles } from "./editor.styles";
 import { EditorBase } from "@/molecules/editor-base/editor-base";
 import type { HassLike } from "@/lib/types";
+import { normalizeTargetValue } from "@/lib/domain/target-selection";
 import "@/atoms/display/section-heading/section-heading";
 import "@/atoms/display/color-swatch/color-swatch";
 import "@/atoms/form/editor-text-field/editor-text-field";
@@ -18,23 +19,55 @@ type TargetPickerElement = Element & {
 export class HassRecordsActionCardEditor extends EditorBase {
   static styles: CSSResultGroup = [EditorBase.styles, styles];
 
-  _onTargetChanged(e: CustomEvent<{ value?: TargetPickerValue }>): void {
-    const val = e.detail.value;
-    const isEmpty = !val || Object.values(val).every((value) => !value?.length);
-    this._set("target", isEmpty ? undefined : val);
+  private _configTarget(): TargetPickerValue {
+    return (
+      (normalizeTargetValue(
+        this._config.target ?? {
+          entity_id:
+            Array.isArray(this._config.entities) && this._config.entities.length
+              ? this._config.entities
+              : this._config.entity,
+        }
+      ) as TargetPickerValue) ?? {}
+    );
   }
 
-  firstUpdated(): void {
+  private _syncTargetPicker(): void {
     const tp = this.shadowRoot?.querySelector(
       "#target-picker"
     ) as Nullable<TargetPickerElement>;
-    if (tp && this.hass) {
-      tp.hass = this.hass;
-      tp.value = (this._config.target as TargetPickerValue | undefined) ?? {};
+    if (!tp) {
+      return;
     }
+    if (this.hass) {
+      tp.hass = this.hass;
+    }
+    tp.value = this._configTarget();
+  }
+
+  private _setTargetConfig(target: TargetPickerValue | undefined): void {
+    const cfg = { ...this._config };
+    delete cfg.entity;
+    delete cfg.entities;
+    if (!target || Object.values(target).every((value) => !value?.length)) {
+      delete cfg.target;
+    } else {
+      cfg.target = target;
+    }
+    this._config = cfg;
+    this._fire(cfg);
+  }
+
+  _onTargetChanged(e: CustomEvent<{ value?: TargetPickerValue }>): void {
+    const val = e.detail.value;
+    const isEmpty = !val || Object.values(val).every((value) => !value?.length);
+    this._setTargetConfig(isEmpty ? undefined : val);
   }
 
   updated(changedProps: PropertyValues<this>): void {
+    if (changedProps.has("hass") || changedProps.has("_config")) {
+      this._syncTargetPicker();
+    }
     if (changedProps.has("hass") && this.hass) {
       this.shadowRoot?.querySelectorAll("ha-selector").forEach((el) => {
         const selectorEl = el as TargetPickerElement;
@@ -47,9 +80,7 @@ export class HassRecordsActionCardEditor extends EditorBase {
     const c = this._config;
     return html`
       <div class="ed">
-        <section-heading
-          .text=${msg("General")}
-        ></section-heading>
+        <section-heading .text=${msg("General")}></section-heading>
         <editor-text-field
           .label=${msg("Card title (optional)")}
           .value=${c.title || ""}
@@ -57,9 +88,7 @@ export class HassRecordsActionCardEditor extends EditorBase {
             this._set("title", e.detail.value)}
         ></editor-text-field>
 
-        <section-heading
-          .text=${msg("Related items")}
-        ></section-heading>
+        <section-heading .text=${msg("Related items")}></section-heading>
         <div class="note">
           ${msg(
             "Pre-fill entities, devices, areas or labels that are always linked to recordings from this card.",
@@ -71,6 +100,8 @@ export class HassRecordsActionCardEditor extends EditorBase {
         <ha-selector
           id="target-picker"
           .selector=${{ target: {} }}
+          .hass=${this.hass}
+          .value=${this._configTarget()}
           @value-changed=${this._onTargetChanged}
           style="display:block;width:100%"
         ></ha-selector>
@@ -93,9 +124,7 @@ export class HassRecordsActionCardEditor extends EditorBase {
             )}
         ></editor-switch>
 
-        <section-heading
-          .text=${msg("Datapoint Appearance")}
-        ></section-heading>
+        <section-heading .text=${msg("Datapoint Appearance")}></section-heading>
         <editor-icon-picker
           .label=${msg("Default icon")}
           .value=${c.default_icon || "mdi:bookmark"}
@@ -110,9 +139,7 @@ export class HassRecordsActionCardEditor extends EditorBase {
             this._set("default_color", e.detail.color)}
         ></color-swatch>
 
-        <section-heading
-          .text=${msg("Form fields")}
-        ></section-heading>
+        <section-heading .text=${msg("Form fields")}></section-heading>
         <editor-switch
           .label=${msg("Show date & time field")}
           .checked=${c.show_date !== false}

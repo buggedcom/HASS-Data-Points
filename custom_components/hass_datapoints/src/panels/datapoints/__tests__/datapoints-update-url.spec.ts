@@ -55,7 +55,8 @@ describe("HassRecordsHistoryPanel updateUrl", () => {
           _dateSnapping: "hour",
           _hiddenEventIds: [],
           _selectedComparisonWindowId: null,
-          _seriesColorQueryKey: HassRecordsHistoryPanel.prototype._seriesColorQueryKey,
+          _seriesColorQueryKey:
+            HassRecordsHistoryPanel.prototype._seriesColorQueryKey,
         };
 
         HassRecordsHistoryPanel.prototype._updateUrl.call(panel, {

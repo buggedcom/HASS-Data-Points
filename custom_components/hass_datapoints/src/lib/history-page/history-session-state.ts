@@ -1,5 +1,8 @@
 import { DOMAIN } from "@/constants";
-import { normalizeDateWindows, type HistoryDateWindowInput } from "@/lib/history-page/history-url-state";
+import {
+  normalizeDateWindows,
+  type HistoryDateWindowInput,
+} from "@/lib/history-page/history-url-state";
 import type { SelectOption } from "@/lib/types";
 
 /**
@@ -29,7 +32,10 @@ export interface HistoryPageSource {
   _contentSplitRatio: number;
   _startTime: Nullable<Date>;
   _endTime: Nullable<Date>;
-  _chartZoomCommittedRange: Nullable<{ start: string | number | Date; end: string | number | Date }>;
+  _chartZoomCommittedRange: Nullable<{
+    start: string | number | Date;
+    end: string | number | Date;
+  }>;
   _comparisonWindows: HistoryDateWindowInput[];
   _hours: number;
   _sidebarCollapsed: boolean;
@@ -108,9 +114,11 @@ export interface NormalizedHistoryPagePreferences {
   dateSnapping: string;
   preferredSeriesColors: RecordWithStringValues;
   comparisonWindows: ReturnType<typeof normalizeDateWindows>;
-  pageState: Nullable<RecordWithUnknownValues & {
-    date_windows?: ReturnType<typeof normalizeDateWindows>;
-  }>;
+  pageState: Nullable<
+    RecordWithUnknownValues & {
+      date_windows?: ReturnType<typeof normalizeDateWindows>;
+    }
+  >;
   shouldPersistDefaults: boolean;
 }
 
@@ -127,13 +135,17 @@ export function readHistoryPageSessionState(): Nullable<RecordWithUnknownValues>
     }
 
     const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === "object" ? (parsed as RecordWithUnknownValues) : null;
+    return parsed && typeof parsed === "object"
+      ? (parsed as RecordWithUnknownValues)
+      : null;
   } catch {
     return null;
   }
 }
 
-export function buildHistoryPageSessionState(source: HistoryPageSource): HistoryPageSessionState {
+export function buildHistoryPageSessionState(
+  source: HistoryPageSource
+): HistoryPageSessionState {
   return {
     entities: source._entities,
     series_rows: source._seriesRows,
@@ -185,9 +197,12 @@ export function buildHistoryPageSessionState(source: HistoryPageSource): History
     date_windows: normalizeDateWindows(source._comparisonWindows),
     hours: source._hours,
     sidebar_collapsed: source._sidebarCollapsed,
-    sidebar_accordion_targets_open: source._sidebarAccordionTargetsOpen !== false,
-    sidebar_accordion_datapoints_open: source._sidebarAccordionDatapointsOpen !== false,
-    sidebar_accordion_analysis_open: source._sidebarAccordionAnalysisOpen !== false,
+    sidebar_accordion_targets_open:
+      source._sidebarAccordionTargetsOpen !== false,
+    sidebar_accordion_datapoints_open:
+      source._sidebarAccordionDatapointsOpen !== false,
+    sidebar_accordion_analysis_open:
+      source._sidebarAccordionAnalysisOpen !== false,
     sidebar_accordion_chart_open: source._sidebarAccordionChartOpen !== false,
   };
 }
@@ -207,8 +222,12 @@ export function normalizeHistoryPagePreferences(
   preferences: Nullable<HistoryPagePreferences> | undefined,
   options: HistoryPagePreferencesOptions = {}
 ): NormalizedHistoryPagePreferences {
-  const zoomValues = new Set((options.zoomOptions || []).map((option) => option.value));
-  const snapValues = new Set((options.snapOptions || []).map((option) => option.value));
+  const zoomValues = new Set(
+    (options.zoomOptions || []).map((option) => option.value)
+  );
+  const snapValues = new Set(
+    (options.snapOptions || []).map((option) => option.value)
+  );
   let shouldPersistDefaults = false;
 
   const normalized: NormalizedHistoryPagePreferences = {
@@ -227,7 +246,10 @@ export function normalizeHistoryPagePreferences(
       shouldPersistDefaults = true;
     }
 
-    if (preferences.date_snapping && snapValues.has(preferences.date_snapping)) {
+    if (
+      preferences.date_snapping &&
+      snapValues.has(preferences.date_snapping)
+    ) {
       normalized.dateSnapping = preferences.date_snapping;
     } else {
       shouldPersistDefaults = true;
@@ -235,23 +257,29 @@ export function normalizeHistoryPagePreferences(
 
     normalized.preferredSeriesColors =
       preferences.series_colors && typeof preferences.series_colors === "object"
-        ? Object.entries(preferences.series_colors).reduce<RecordWithStringValues>(
-            (acc, [entityId, color]) => {
-              if (typeof entityId === "string" && /^#[0-9a-f]{6}$/i.test(color || "")) {
-                acc[entityId] = color;
-              }
-              return acc;
-            },
-            {}
-          )
+        ? Object.entries(
+            preferences.series_colors
+          ).reduce<RecordWithStringValues>((acc, [entityId, color]) => {
+            if (
+              typeof entityId === "string" &&
+              /^#[0-9a-f]{6}$/i.test(color || "")
+            ) {
+              acc[entityId] = color;
+            }
+            return acc;
+          }, {})
         : {};
 
-    normalized.comparisonWindows = normalizeDateWindows(preferences.date_windows);
+    normalized.comparisonWindows = normalizeDateWindows(
+      preferences.date_windows
+    );
     normalized.pageState =
       preferences.page_state && typeof preferences.page_state === "object"
         ? {
             ...preferences.page_state,
-            date_windows: normalizeDateWindows(preferences.page_state?.date_windows as HistoryDateWindowInput[]),
+            date_windows: normalizeDateWindows(
+              preferences.page_state?.date_windows as HistoryDateWindowInput[]
+            ),
           }
         : null;
   } else {
@@ -265,18 +293,25 @@ export function normalizeHistoryPagePreferences(
 export function buildHistoryPagePreferencesPayload(
   source: HistoryPageSource
 ): HistoryPagePreferences {
-  const preferredSeriesColors = source._seriesRows.reduce<RecordWithStringValues>(
-    (acc, row) => {
-      const entityId =
-        typeof row === "object" && row && "entity_id" in row ? row.entity_id : null;
-      const color = typeof row === "object" && row && "color" in row ? row.color : null;
-      if (typeof entityId === "string" && /^#[0-9a-f]{6}$/i.test(String(color || ""))) {
-        acc[entityId] = String(color);
-      }
-      return acc;
-    },
-    { ...source._preferredSeriesColors }
-  );
+  const preferredSeriesColors =
+    source._seriesRows.reduce<RecordWithStringValues>(
+      (acc, row) => {
+        const entityId =
+          typeof row === "object" && row && "entity_id" in row
+            ? row.entity_id
+            : null;
+        const color =
+          typeof row === "object" && row && "color" in row ? row.color : null;
+        if (
+          typeof entityId === "string" &&
+          /^#[0-9a-f]{6}$/i.test(String(color || ""))
+        ) {
+          acc[entityId] = String(color);
+        }
+        return acc;
+      },
+      { ...source._preferredSeriesColors }
+    );
 
   return {
     zoom_level: source._zoomLevel,

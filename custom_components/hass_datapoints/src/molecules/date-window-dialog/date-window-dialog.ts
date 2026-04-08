@@ -53,7 +53,8 @@ export class DateWindowDialog extends LitElement {
   accessor submitLabel: string = "Create date window";
 
   /** Optional range bounds from the parent panel — used to set the timeline slider context. */
-  @property({ type: Object }) accessor rangeBounds: Nullable<RangeBounds> = null;
+  @property({ type: Object }) accessor rangeBounds: Nullable<RangeBounds> =
+    null;
 
   /** Effective zoom level for the timeline slider (already resolved from "auto"). */
   @property({ type: String, attribute: "zoom-level" })
@@ -177,7 +178,9 @@ export class DateWindowDialog extends LitElement {
         <span slot="heading">${this.heading}</span>
         <div class="date-window-dialog-content">
           <div class="date-window-dialog-body">
-            ${msg("A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later.")}
+            ${msg(
+              "A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later."
+            )}
           </div>
 
           <div class="date-window-dialog-field name-field">

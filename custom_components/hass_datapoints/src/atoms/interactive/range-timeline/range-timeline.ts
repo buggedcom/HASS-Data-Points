@@ -52,7 +52,8 @@ export class RangeTimeline extends LitElement {
 
   @property({ type: Object }) accessor endTime: Nullable<Date> = null;
 
-  @property({ type: Object }) accessor rangeBounds: Nullable<RangeBounds> = null;
+  @property({ type: Object }) accessor rangeBounds: Nullable<RangeBounds> =
+    null;
 
   @property({ type: String }) accessor zoomLevel: string = "day";
 
@@ -75,8 +76,11 @@ export class RangeTimeline extends LitElement {
 
   _focusedRangeHandle: Nullable<"start" | "end"> = null;
 
-  _hoveredPeriodRange: Nullable<{ unit: RangeUnit; start: number; end: number }> =
-    null;
+  _hoveredPeriodRange: Nullable<{
+    unit: RangeUnit;
+    start: number;
+    end: number;
+  }> = null;
 
   _rangePointerId: Nullable<number> = null;
 
@@ -100,7 +104,8 @@ export class RangeTimeline extends LitElement {
 
   _timelinePointerStartTimestamp: Nullable<number> = null;
 
-  _timelinePointerMode: Nullable<"pan" | "selection" | "interval_select"> = null;
+  _timelinePointerMode: Nullable<"pan" | "selection" | "interval_select"> =
+    null;
 
   _timelineDragStartRangeMs = 0;
 
@@ -462,7 +467,11 @@ export class RangeTimeline extends LitElement {
     button.className = `range-period-button ${className}`;
     button.style.left = `${((leftValue - this.rangeBounds.min) / total) * 100}%`;
     button.textContent = text;
-    const selectionLabel = formatPeriodSelectionLabel(startTime, unit, this.locale || undefined);
+    const selectionLabel = formatPeriodSelectionLabel(
+      startTime,
+      unit,
+      this.locale || undefined
+    );
     const selectTitle = `${msg("Select")} ${selectionLabel}`;
     button.title = selectTitle;
     button.setAttribute("aria-label", selectTitle);
@@ -572,25 +581,35 @@ export class RangeTimeline extends LitElement {
     const { config } = this.rangeBounds;
     const tickFragment = document.createDocumentFragment();
     const labelFragment = document.createDocumentFragment();
-	    const contextFragment = document.createDocumentFragment();
+    const contextFragment = document.createDocumentFragment();
     const scaleLabelZoomLevel = this._getScaleLabelZoomLevel();
 
-	    const scaleLabelStride =
+    const scaleLabelStride =
       config.labelUnit === "month" || config.labelUnit === "day"
-	          ? 1
-	        : this._computeRangeLabelStride(
-	            config.labelUnit,
-	            (value) =>
-	              formatScaleLabel(value, config.labelUnit, scaleLabelZoomLevel, this.locale || undefined),
-	            "range-scale-label",
-	            RANGE_LABEL_MIN_GAP_PX
-	          );
+        ? 1
+        : this._computeRangeLabelStride(
+            config.labelUnit,
+            (value) =>
+              formatScaleLabel(
+                value,
+                config.labelUnit,
+                scaleLabelZoomLevel,
+                this.locale || undefined
+              ),
+            "range-scale-label",
+            RANGE_LABEL_MIN_GAP_PX
+          );
     const contextLabelStride =
       config.contextUnit === "month" || config.contextUnit === "day"
         ? 1
         : this._computeRangeLabelStride(
             config.contextUnit,
-            (value) => formatContextLabel(value, config.contextUnit, this.locale || undefined),
+            (value) =>
+              formatContextLabel(
+                value,
+                config.contextUnit,
+                this.locale || undefined
+              ),
             "range-context-label",
             RANGE_CONTEXT_LABEL_MIN_GAP_PX
           );
@@ -625,14 +644,19 @@ export class RangeTimeline extends LitElement {
           config.labelUnit,
           "auto"
         );
-	        const label = this._buildRangePeriodButton(
-	          "range-scale-label",
-	          leftValue,
-	          total,
-	          formatScaleLabel(labelRef, config.labelUnit, scaleLabelZoomLevel, this.locale || undefined),
-	          config.labelUnit,
-	          labelRef
-	        );
+        const label = this._buildRangePeriodButton(
+          "range-scale-label",
+          leftValue,
+          total,
+          formatScaleLabel(
+            labelRef,
+            config.labelUnit,
+            scaleLabelZoomLevel,
+            this.locale || undefined
+          ),
+          config.labelUnit,
+          labelRef
+        );
         labelFragment.appendChild(label);
       }
       labelRef = addUnit(labelRef, config.labelUnit, 1);
@@ -659,7 +683,11 @@ export class RangeTimeline extends LitElement {
           "range-context-label",
           contextRef.getTime(),
           total,
-          formatContextLabel(contextRef, config.contextUnit, this.locale || undefined),
+          formatContextLabel(
+            contextRef,
+            config.contextUnit,
+            this.locale || undefined
+          ),
           config.contextUnit,
           contextRef
         );
@@ -799,7 +827,10 @@ export class RangeTimeline extends LitElement {
       tooltip.textContent = "";
       tooltip.append(dateEl, hintEl);
     } else {
-      tooltip.textContent = formatRangeDateTime(value, this.locale || undefined);
+      tooltip.textContent = formatRangeDateTime(
+        value,
+        this.locale || undefined
+      );
     }
     tooltip.style.left = `${clampedX}px`;
     tooltip.classList.add("visible");

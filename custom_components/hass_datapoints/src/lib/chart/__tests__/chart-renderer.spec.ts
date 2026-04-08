@@ -95,6 +95,38 @@ describe("chart-renderer", () => {
         expect(ctx.moveTo).toHaveBeenCalled();
         expect(ctx.stroke).toHaveBeenCalled();
       });
+
+      it("THEN stepped lines draw horizontal and vertical segments", () => {
+        expect.assertions(4);
+
+        const { ctx, renderer } = createRenderer();
+
+        renderer.drawLine(
+          [
+            [0, 0],
+            [5, 10],
+            [10, 4],
+          ],
+          "#83c705",
+          0,
+          10,
+          0,
+          10,
+          { stepped: true }
+        );
+
+        expect(ctx.lineTo).toHaveBeenCalledTimes(4);
+        expect(ctx.lineTo.mock.calls).toEqual(
+          expect.arrayContaining([
+            [200, 152],
+            [200, 24],
+            [388, 24],
+            [388, 100.8],
+          ])
+        );
+        expect(ctx.lineJoin).toBe("miter");
+        expect(ctx.lineCap).toBe("butt");
+      });
     });
   });
 });

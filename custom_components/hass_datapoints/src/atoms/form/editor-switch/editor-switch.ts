@@ -21,7 +21,9 @@ export class EditorSwitch extends LitElement {
     if (ff) {
       ff.label = this.label;
     }
-    const sw = this.shadowRoot!.querySelector("ha-switch") as Nullable<HaSwitch>;
+    const sw = this.shadowRoot!.querySelector(
+      "ha-switch"
+    ) as Nullable<HaSwitch>;
     if (sw) {
       sw.checked = this.checked;
     }
@@ -29,7 +31,9 @@ export class EditorSwitch extends LitElement {
 
   updated(changedProps: PropertyValues) {
     if (changedProps.has("checked")) {
-      const sw = this.shadowRoot!.querySelector("ha-switch") as Nullable<HaSwitch>;
+      const sw = this.shadowRoot!.querySelector(
+        "ha-switch"
+      ) as Nullable<HaSwitch>;
       if (sw) {
         sw.checked = this.checked;
       }

@@ -12,7 +12,7 @@ function createElement(props: RecordWithUnknownValues = {}) {
         id: 1,
         label: "Window 1",
         startDt: "",
-        hours: 24,
+        endDt: "",
         selected: [0],
         changes: [
           {

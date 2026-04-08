@@ -112,15 +112,33 @@ def _get_global_history_bounds(hass: HomeAssistant) -> tuple[str | None, str | N
         return None, None, "recorder_session_unavailable"
 
     query_variants = [
+        # HA recorder has long exposed recorder_runs as the broadest source of
+        # database coverage. Newer schemas use explicit start/end columns.
         ("recorder_runs:start_end", "recorder_runs", "start", "end"),
+        # Older recorder schemas used created/closed style columns instead of
+        # start/end, so keep this fallback for older Core installs and upgrades.
         ("recorder_runs:created_closed", "recorder_runs", "created", "closed_incorrect"),
+        # Modern recorder tables expose UNIX-second timestamp mirrors for fast
+        # numeric filtering; these appeared after the older datetime columns.
         ("states:last_updated_ts", "states", "last_updated_ts", "last_updated_ts"),
+        # Older and mid-era HA recorder schemas only had datetime columns on
+        # states, so we still probe them for long-lived upgraded databases.
         ("states:last_updated", "states", "last_updated", "last_updated"),
+        # Events gained *_ts numeric mirrors in newer HA recorder versions, so
+        # prefer them when available for consistent timestamp normalization.
         ("events:time_fired_ts", "events", "time_fired_ts", "time_fired_ts"),
+        # Older event tables only expose datetime values, especially on
+        # databases that have been upgraded across many HA releases.
         ("events:time_fired", "events", "time_fired", "time_fired"),
+        # Long-term statistics in newer HA versions expose start_ts as a numeric
+        # mirror of start, which is the most robust source when present.
         ("statistics:start_ts", "statistics", "start_ts", "start_ts"),
+        # Older statistics schemas only expose the datetime start column.
         ("statistics:start", "statistics", "start", "start"),
+        # statistics_short_term followed the same migration path as statistics:
+        # newer HA builds provide numeric *_ts columns for recorder access.
         ("statistics_short_term:start_ts", "statistics_short_term", "start_ts", "start_ts"),
+        # Older short-term statistics tables only expose datetime start.
         ("statistics_short_term:start", "statistics_short_term", "start", "start"),
     ]
 

@@ -33,7 +33,7 @@ export class CardDevToolWindows extends LitElement {
       id: nextId,
       label: "",
       startDt: "",
-      hours: 24,
+      endDt: "",
     };
   }
 
@@ -109,9 +109,7 @@ export class CardDevToolWindows extends LitElement {
                   />
                 </div>
                 <div class="w-start-wrap">
-                  <span class="w-start-label"
-                    >Start date/time (empty = most recent)</span
-                  >
+                  <span class="w-start-label">Start date/time</span>
                   <input
                     class="w-start"
                     type="datetime-local"
@@ -123,23 +121,15 @@ export class CardDevToolWindows extends LitElement {
                       })}
                   />
                 </div>
-                <div class="w-hours-wrap">
-                  <div class="w-field-label">Hours</div>
+                <div class="w-end-wrap">
+                  <div class="w-field-label">End date/time (optional)</div>
                   <input
-                    class="w-hours"
-                    type="number"
-                    min="1"
-                    max="8760"
-                    .value=${String(windowConfig.hours)}
+                    class="w-end"
+                    type="datetime-local"
+                    .value=${windowConfig.endDt}
                     @input=${(event: Event) =>
                       this._updateWindow(windowConfig.id, {
-                        hours: Math.max(
-                          1,
-                          parseInt(
-                            (event.currentTarget as HTMLInputElement).value,
-                            10
-                          ) || 24
-                        ),
+                        endDt: (event.currentTarget as HTMLInputElement).value,
                       })}
                   />
                 </div>

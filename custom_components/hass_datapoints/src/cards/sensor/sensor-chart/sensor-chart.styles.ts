@@ -23,15 +23,46 @@ export const styles = css`
   }
 
   .chart-loading {
-    text-align: center;
-    padding: 28px 16px 24px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-width: 168px;
+    padding: 18px 18px 16px;
+    border-radius: 18px;
+    transform: translate(-50%, -50%);
+    background: color-mix(
+      in srgb,
+      var(--card-background-color, #fff) 92%,
+      transparent
+    );
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
     color: var(--secondary-text-color);
+    z-index: 2;
+    text-align: center;
+  }
+
+  .chart-loading-spinner {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid
+      color-mix(in srgb, var(--primary-color, #03a9f4) 22%, transparent);
+    border-top-color: var(--primary-color, #03a9f4);
+    animation: sensor-chart-spinner 0.9s linear infinite;
+  }
+
+  .chart-loading-label {
+    font-size: 0.85rem;
+    font-weight: 500;
   }
 
   .icon-overlay {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
+    display: contents;
   }
 
   .ann-icon {
@@ -46,6 +77,19 @@ export const styles = css`
     pointer-events: auto;
     cursor: pointer;
     box-shadow: 0 0 0 2px var(--card-background-color, #fff);
+    z-index: 1;
+  }
+
+  .ann-hit {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: auto;
+    cursor: pointer;
+    background: transparent;
+    z-index: 2;
   }
 
   .ann-icon ha-icon {
@@ -53,7 +97,7 @@ export const styles = css`
   }
 
   .tooltip {
-    position: fixed;
+    position: absolute;
     background: var(--card-background-color, #fff);
     border: 1px solid var(--divider-color, #ddd);
     border-radius: 8px;
@@ -101,5 +145,11 @@ export const styles = css`
     color: var(--secondary-text-color);
     margin-top: 6px;
     white-space: pre-wrap;
+  }
+
+  @keyframes sensor-chart-spinner {
+    to {
+      transform: rotate(360deg);
+    }
   }
 `;

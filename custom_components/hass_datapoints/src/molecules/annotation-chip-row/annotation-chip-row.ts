@@ -35,8 +35,8 @@ export class AnnotationChipRow extends LitElement {
   @property({ type: Array }) accessor chips: ChipItem[] = [];
 
   /** HA hass object forwarded to annotation-chip when rendering entity icons. */
-  @property({ type: Object, attribute: false }) accessor hass: Nullable<HassLike> =
-    null;
+  @property({ type: Object, attribute: false })
+  accessor hass: Nullable<HassLike> = null;
 
   /** Section label shown above the chips. */
   @property({ type: String }) accessor label: string = "Linked targets";

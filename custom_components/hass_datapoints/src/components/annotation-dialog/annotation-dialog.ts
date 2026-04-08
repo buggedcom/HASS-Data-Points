@@ -37,7 +37,13 @@ type ChipRowElement = HTMLElement & {
   chips: unknown[];
 };
 
-type HaInputElement = Element & { hass?: unknown; value?: string; disabled?: boolean; selector?: unknown; focus?: () => void };
+type HaInputElement = Element & {
+  hass?: unknown;
+  value?: string;
+  disabled?: boolean;
+  selector?: unknown;
+  focus?: () => void;
+};
 type HaButtonElement = Element & { disabled?: boolean };
 
 type HoverState = {
@@ -64,10 +70,15 @@ type AnnotationDialogHost = HTMLElement & {
 
 export class HistoryAnnotationDialogController {
   private _host: AnnotationDialogHost;
+
   private _dialogEl: Nullable<DialogElement>;
+
   private _panelEl: Nullable<HTMLElement>;
+
   private _chipRowEl: Nullable<ChipRowElement>;
+
   private _linkedTarget: NormalizedTargetSelection;
+
   private _target: NormalizedTargetSelection;
 
   constructor(host: AnnotationDialogHost) {
@@ -87,7 +98,9 @@ export class HistoryAnnotationDialogController {
     if (this._dialogEl || !this._host.shadowRoot) {
       return;
     }
-    const dialog = document.createElement("ha-dialog") as unknown as DialogElement;
+    const dialog = document.createElement(
+      "ha-dialog"
+    ) as unknown as DialogElement;
     dialog.id = "chart-context-dialog";
     dialog.scrimClickAction = true;
     dialog.escapeKeyAction = true;
@@ -181,7 +194,10 @@ export class HistoryAnnotationDialogController {
           icon: entityIcon(this._host._hass, id),
           name,
           secondaryText: name !== id ? id : "",
-          stateObj: (this._host?._hass?.states as RecordWithUnknownValues | undefined)?.[id] ?? null,
+          stateObj:
+            (
+              this._host?._hass?.states as RecordWithUnknownValues | undefined
+            )?.[id] ?? null,
         };
       }),
       ...(target.device_id || []).map((id) => ({
@@ -265,21 +281,29 @@ export class HistoryAnnotationDialogController {
       hover?.annotationPrefill && typeof hover.annotationPrefill === "object"
         ? hover.annotationPrefill
         : {};
-    const messageEl = this._panelEl.querySelector("#chart-context-message") as Nullable<HaInputElement>;
+    const messageEl = this._panelEl.querySelector(
+      "#chart-context-message"
+    ) as Nullable<HaInputElement>;
     const annotationEl = this._panelEl.querySelector(
       "#chart-context-annotation"
     ) as Nullable<HaInputElement>;
-    const iconPicker = this._panelEl.querySelector("#chart-context-icon") as Nullable<HaInputElement>;
+    const iconPicker = this._panelEl.querySelector(
+      "#chart-context-icon"
+    ) as Nullable<HaInputElement>;
     if (iconPicker) {
       iconPicker.hass = this._host._hass;
       iconPicker.value = prefill.icon || hover?.event?.icon || "mdi:bookmark";
     }
-    const targetSel = this._panelEl.querySelector("#chart-context-target") as Nullable<HaInputElement>;
+    const targetSel = this._panelEl.querySelector(
+      "#chart-context-target"
+    ) as Nullable<HaInputElement>;
     if (targetSel) {
       targetSel.hass = this._host._hass;
       targetSel.value = "{}";
       targetSel.addEventListener("value-changed", (ev) => {
-        this._target = normalizeTargetSelection((ev as CustomEvent).detail.value || {});
+        this._target = normalizeTargetSelection(
+          (ev as CustomEvent).detail.value || {}
+        );
       });
     }
     if (messageEl) {
@@ -294,7 +318,9 @@ export class HistoryAnnotationDialogController {
       "#chart-context-linked-targets"
     );
     if (chipContainer && !this._chipRowEl) {
-      const chipRow = document.createElement("annotation-chip-row") as unknown as ChipRowElement;
+      const chipRow = document.createElement(
+        "annotation-chip-row"
+      ) as unknown as ChipRowElement;
       chipRow.hass = this._host._hass ?? null;
       chipRow.addEventListener("dp-target-remove", (ev) => {
         const detail = (ev as CustomEvent).detail;
@@ -308,7 +334,9 @@ export class HistoryAnnotationDialogController {
     }
 
     this.bindTargetChipActions();
-    const colorInput = this._panelEl.querySelector("#chart-context-color") as Nullable<HTMLInputElement>;
+    const colorInput = this._panelEl.querySelector(
+      "#chart-context-color"
+    ) as Nullable<HTMLInputElement>;
     const colorPreview = this._panelEl.querySelector(
       "#chart-context-color-preview"
     ) as Nullable<HTMLElement>;
@@ -343,15 +371,27 @@ export class HistoryAnnotationDialogController {
     if (!this._panelEl || !this._host._hass) {
       return;
     }
-    const messageEl = this._panelEl.querySelector("#chart-context-message") as Nullable<HaInputElement>;
+    const messageEl = this._panelEl.querySelector(
+      "#chart-context-message"
+    ) as Nullable<HaInputElement>;
     const annotationEl = this._panelEl.querySelector(
       "#chart-context-annotation"
     ) as Nullable<HaInputElement>;
-    const dateEl = this._panelEl.querySelector("#chart-context-date") as Nullable<HaInputElement>;
-    const iconPicker = this._panelEl.querySelector("#chart-context-icon") as Nullable<HaInputElement>;
-    const colorInput = this._panelEl.querySelector("#chart-context-color") as Nullable<HaInputElement>;
-    const saveButton = this._dialogEl?.querySelector("#chart-context-save") as Nullable<HaButtonElement>;
-    const feedbackEl = this._panelEl.querySelector("#chart-context-feedback") as Nullable<HTMLElement>;
+    const dateEl = this._panelEl.querySelector(
+      "#chart-context-date"
+    ) as Nullable<HaInputElement>;
+    const iconPicker = this._panelEl.querySelector(
+      "#chart-context-icon"
+    ) as Nullable<HaInputElement>;
+    const colorInput = this._panelEl.querySelector(
+      "#chart-context-color"
+    ) as Nullable<HaInputElement>;
+    const saveButton = this._dialogEl?.querySelector(
+      "#chart-context-save"
+    ) as Nullable<HaButtonElement>;
+    const feedbackEl = this._panelEl.querySelector(
+      "#chart-context-feedback"
+    ) as Nullable<HTMLElement>;
 
     const message = (messageEl?.value || "").trim();
     if (!message) {
@@ -400,14 +440,23 @@ export class HistoryAnnotationDialogController {
       feedbackEl.textContent = "";
     }
     try {
-      await (this._host._hass as { callService: (d: string, s: string, data: unknown) => Promise<unknown> }).callService(DOMAIN, "record", payload);
+      await (
+        this._host._hass as {
+          callService: (
+            d: string,
+            s: string,
+            data: unknown
+          ) => Promise<unknown>;
+        }
+      ).callService(DOMAIN, "record", payload);
       invalidateEventsCache();
       window.dispatchEvent(new CustomEvent("hass-datapoints-event-recorded"));
       this.close();
     } catch (err) {
       if (feedbackEl) {
         feedbackEl.hidden = false;
-        feedbackEl.textContent = (err as Error)?.message || "Failed to create annotation.";
+        feedbackEl.textContent =
+          (err as Error)?.message || "Failed to create annotation.";
       }
       this._shake();
       logger.error("[hass-datapoints history-card]", err);
@@ -526,7 +575,9 @@ export class HistoryAnnotationDialogController {
       this._dialogEl.hass = this._host._hass;
       this._dialogEl.dialogInitialFocus = "#chart-context-message";
     }
-    const targetSel = this._panelEl.querySelector("#chart-context-target") as Nullable<HaInputElement>;
+    const targetSel = this._panelEl.querySelector(
+      "#chart-context-target"
+    ) as Nullable<HaInputElement>;
     if (targetSel) {
       targetSel.selector = { target: {} };
     }
@@ -534,7 +585,11 @@ export class HistoryAnnotationDialogController {
     this._dialogEl.open = true;
     this._host._creatingContextAnnotation = true;
     window.requestAnimationFrame(() => {
-      (this._panelEl?.querySelector("#chart-context-message") as Nullable<HTMLElement>)?.focus?.();
+      (
+        this._panelEl?.querySelector(
+          "#chart-context-message"
+        ) as Nullable<HTMLElement>
+      )?.focus?.();
     });
   }
 

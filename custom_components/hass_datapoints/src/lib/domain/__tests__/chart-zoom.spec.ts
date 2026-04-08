@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  createChartZoomRange,
-  parseDateValue,
-} from "@/lib/domain/chart-zoom";
+import { createChartZoomRange, parseDateValue } from "@/lib/domain/chart-zoom";
 
 describe("chart-zoom.js", () => {
   describe("GIVEN values in mixed date shapes", () => {

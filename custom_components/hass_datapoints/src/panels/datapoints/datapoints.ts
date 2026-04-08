@@ -52,6 +52,7 @@ import {
   startOfUnit,
 } from "@/lib/timeline/timeline-scale";
 import { logger } from "@/lib/logger";
+import type { HassLike } from "@/lib/types";
 
 import "@/molecules/target-row/target-row";
 import "@/molecules/target-row-list/target-row-list";
@@ -177,7 +178,7 @@ type ResizablePanesElement = HTMLElement & {
 // Shared timeline, domain, and history-page helpers now live in dedicated subsystem files.
 
 export class HassRecordsHistoryPanel extends HTMLElement {
-  [key: string]: any;
+  [key: string]: unknown;
 
   constructor() {
     super();
@@ -292,11 +293,13 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._onHoverEventRecord = (ev: Event) => this._handleHoverEventRecord(ev);
     this._onToggleSeriesVisibility = (ev: Event) =>
       this._handleToggleSeriesVisibility(ev);
-    this._onComparisonLoading = (ev: Event) => this._handleComparisonLoading(ev);
+    this._onComparisonLoading = (ev: Event) =>
+      this._handleComparisonLoading(ev);
     this._computingEntityIds = new Set();
     this._analysisProgress = 0;
     this._computingMethods = new Map(); // entityId → Set<methodName> of in-flight anomaly methods
-    this._onAnalysisComputing = (ev: Event) => this._handleAnalysisComputing(ev);
+    this._onAnalysisComputing = (ev: Event) =>
+      this._handleAnalysisComputing(ev);
     this._onAnalysisMethodResult = (ev: Event) =>
       this._handleAnalysisMethodResult(ev);
     this._onWindowPointerDown = (_ev: Event) => this._handleWindowPointerDown();
@@ -476,7 +479,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._context.persistence.state.exportBusy = !!value;
   }
 
-  set hass(hass: any) {
+  set hass(hass: HassLike) {
     this._hass = hass;
     this._context.hass = hass;
     syncFrontendLocale(this._hass).then(() => {
@@ -524,7 +527,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._bootstrapAfterShellBuilt();
   }
 
-  set panel(panel: any) {
+  set panel(panel: Nullable<{ config?: RecordWithUnknownValues }>) {
     this._panel = panel;
     this._initFromContext();
     if (this._rendered) {
@@ -875,7 +878,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     }, 160);
   }
 
-  _applyPreferencePageState(state: Nullable<Record<string, any>>) {
+  _applyPreferencePageState(state: Nullable<RecordWithUnknownValues>) {
     if (!state || typeof state !== "object") {
       return;
     }
@@ -1251,8 +1254,9 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._sidebarOptionsComp.anomalyOverlapMode = this._chartAnomalyOverlapMode;
     this._sidebarOptionsComp.anyAnomaliesEnabled = (
       this._seriesRows ?? []
-    ).some((r: { analysis?: { show_anomalies?: boolean } }) =>
-      r.analysis?.show_anomalies === true
+    ).some(
+      (r: { analysis?: { show_anomalies?: boolean } }) =>
+        r.analysis?.show_anomalies === true
     );
     this._sidebarOptionsComp.targetsOpen = this._sidebarAccordionTargetsOpen;
     this._sidebarOptionsComp.datapointsOpen =
@@ -1615,7 +1619,9 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       ?.addEventListener("click", () => this._applyDateWindowShortcut(1));
   }
 
-  _openDateWindowDialog(targetWindow: Nullable<NormalizedHistoryDateWindow> = null) {
+  _openDateWindowDialog(
+    targetWindow: Nullable<NormalizedHistoryDateWindow> = null
+  ) {
     this._ensureDateWindowDialog();
     this._dateWindowDialogOpen = true;
     this._editingDateWindowId = targetWindow?.id || null;
@@ -1844,19 +1850,27 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     });
   }
 
-  _handleComparisonLoading(ev: DetailEvent<{ ids?: string[]; loading?: boolean }>) {
+  _handleComparisonLoading(
+    ev: DetailEvent<{ ids?: string[]; loading?: boolean }>
+  ) {
     const ids = Array.isArray(ev?.detail?.ids)
       ? ev.detail.ids.filter(Boolean)
       : [];
     const loading = ev?.detail?.loading === true;
     this._loadingComparisonWindowIds = loading
       ? [...new Set([...this._loadingComparisonWindowIds, ...ids])]
-      : this._loadingComparisonWindowIds.filter((id: string) => !ids.includes(id));
+      : this._loadingComparisonWindowIds.filter(
+          (id: string) => !ids.includes(id)
+        );
     this._renderComparisonTabs();
   }
 
   _handleAnalysisComputing(
-    ev: DetailEvent<{ computing?: boolean; entityIds?: string[]; progress?: number }>
+    ev: DetailEvent<{
+      computing?: boolean;
+      entityIds?: string[];
+      progress?: number;
+    }>
   ) {
     const computing = ev?.detail?.computing === true;
     const entityIds = Array.isArray(ev?.detail?.entityIds)
@@ -2231,10 +2245,13 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       preferencesKey: PANEL_HISTORY_PREFERENCES_KEY,
       fallbackValue: null,
       onSuccess: (preferences: unknown) => {
-        const normalized = normalizeHistoryPagePreferences(preferences as any, {
-          zoomOptions: RANGE_ZOOM_OPTIONS,
-          snapOptions: RANGE_SNAP_OPTIONS,
-        });
+        const normalized = normalizeHistoryPagePreferences(
+          preferences as Nullable<RecordWithUnknownValues>,
+          {
+            zoomOptions: RANGE_ZOOM_OPTIONS,
+            snapOptions: RANGE_SNAP_OPTIONS,
+          }
+        );
         this._zoomLevel = normalized.zoomLevel;
         this._dateSnapping = normalized.dateSnapping;
         this._resolvedAutoZoomLevel =
@@ -2332,7 +2349,9 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     );
     histTargets.addEventListener(
       "dp-row-analysis-change",
-      (ev: DetailEvent<{ entityId?: string; key?: string; value?: unknown }>) => {
+      (
+        ev: DetailEvent<{ entityId?: string; key?: string; value?: unknown }>
+      ) => {
         const { entityId, key, value } = ev.detail || {};
         this._setSeriesAnalysisOption(entityId, key, value);
       }
@@ -2381,7 +2400,9 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     );
     histTargets.addEventListener(
       "dp-collapsed-entity-click",
-      (ev: DetailEvent<{ entityId?: string; buttonEl?: Nullable<HTMLElement> }>) => {
+      (
+        ev: DetailEvent<{ entityId?: string; buttonEl?: Nullable<HTMLElement> }>
+      ) => {
         const { entityId, buttonEl } = ev.detail || {};
         if (!entityId) {
           return;
@@ -2566,48 +2587,58 @@ export class HassRecordsHistoryPanel extends HTMLElement {
           }
         }
       );
-      sidebarComp.addEventListener("dp-analysis-change", (ev: DetailEvent<{
-        kind?: string;
-        value?: string;
-      }>) => {
-        const { kind, value } = ev.detail || {};
-        if (
-          kind === "anomaly_overlap_mode" &&
-          ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS.some((o) => o.value === value)
-        ) {
-          if (this._chartAnomalyOverlapMode === value) {
-            return;
+      sidebarComp.addEventListener(
+        "dp-analysis-change",
+        (
+          ev: DetailEvent<{
+            kind?: string;
+            value?: string;
+          }>
+        ) => {
+          const { kind, value } = ev.detail || {};
+          if (
+            kind === "anomaly_overlap_mode" &&
+            ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS.some((o) => o.value === value)
+          ) {
+            if (this._chartAnomalyOverlapMode === value) {
+              return;
+            }
+            this._chartAnomalyOverlapMode = value;
+            this._saveSessionState();
+            this._updateUrl({ push: false });
+            this._renderSidebarOptions();
+            this._renderContent();
           }
-          this._chartAnomalyOverlapMode = value;
+        }
+      );
+      sidebarComp.addEventListener(
+        "dp-accordion-change",
+        (
+          ev: DetailEvent<{
+            targetsOpen?: boolean;
+            datapointsOpen?: boolean;
+            analysisOpen?: boolean;
+            chartOpen?: boolean;
+          }>
+        ) => {
+          const { targetsOpen, datapointsOpen, analysisOpen, chartOpen } =
+            ev.detail || {};
+          if (typeof targetsOpen === "boolean") {
+            this._sidebarAccordionTargetsOpen = targetsOpen;
+          }
+          if (typeof datapointsOpen === "boolean") {
+            this._sidebarAccordionDatapointsOpen = datapointsOpen;
+          }
+          if (typeof analysisOpen === "boolean") {
+            this._sidebarAccordionAnalysisOpen = analysisOpen;
+          }
+          if (typeof chartOpen === "boolean") {
+            this._sidebarAccordionChartOpen = chartOpen;
+          }
           this._saveSessionState();
           this._updateUrl({ push: false });
-          this._renderSidebarOptions();
-          this._renderContent();
         }
-      });
-      sidebarComp.addEventListener("dp-accordion-change", (ev: DetailEvent<{
-        targetsOpen?: boolean;
-        datapointsOpen?: boolean;
-        analysisOpen?: boolean;
-        chartOpen?: boolean;
-      }>) => {
-        const { targetsOpen, datapointsOpen, analysisOpen, chartOpen } =
-          ev.detail || {};
-        if (typeof targetsOpen === "boolean") {
-          this._sidebarAccordionTargetsOpen = targetsOpen;
-        }
-        if (typeof datapointsOpen === "boolean") {
-          this._sidebarAccordionDatapointsOpen = datapointsOpen;
-        }
-        if (typeof analysisOpen === "boolean") {
-          this._sidebarAccordionAnalysisOpen = analysisOpen;
-        }
-        if (typeof chartOpen === "boolean") {
-          this._sidebarAccordionChartOpen = chartOpen;
-        }
-        this._saveSessionState();
-        this._updateUrl({ push: false });
-      });
+      );
       this._sidebarOptionsEl.appendChild(sidebarComp);
       this._sidebarOptionsComp = sidebarComp;
     }
@@ -2643,11 +2674,11 @@ export class HassRecordsHistoryPanel extends HTMLElement {
         (ev: DetailEvent<{ start?: string; end?: string }>) => {
           const start = this._parseDateWindowInputValue(ev.detail?.start || "");
           const end = this._parseDateWindowInputValue(ev.detail?.end || "");
-        if (start && end && start < end) {
-          this._dateWindowDialogDraftRange = { start, end };
-        } else {
-          this._dateWindowDialogDraftRange = null;
-        }
+          if (start && end && start < end) {
+            this._dateWindowDialogDraftRange = { start, end };
+          } else {
+            this._dateWindowDialogDraftRange = null;
+          }
         }
       );
       this.shadowRoot.appendChild(dialogComp);
@@ -2810,7 +2841,9 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     );
     targetRow.addEventListener(
       "dp-row-analysis-change",
-      (ev: DetailEvent<{ entityId?: string; key?: string; value?: unknown }>) => {
+      (
+        ev: DetailEvent<{ entityId?: string; key?: string; value?: unknown }>
+      ) => {
         this._setSeriesAnalysisOption(
           ev.detail?.entityId,
           ev.detail?.key,
@@ -2825,10 +2858,13 @@ export class HassRecordsHistoryPanel extends HTMLElement {
         this._copyAnalysisToAll(id, analysis);
       }
     );
-    targetRow.addEventListener("dp-row-remove", (ev: DetailEvent<{ index?: number }>) => {
-      this._hideCollapsedTargetPopup();
-      this._removeSeriesRow(ev.detail?.index);
-    });
+    targetRow.addEventListener(
+      "dp-row-remove",
+      (ev: DetailEvent<{ index?: number }>) => {
+        this._hideCollapsedTargetPopup();
+        this._removeSeriesRow(ev.detail?.index);
+      }
+    );
     popup.appendChild(targetRow);
 
     // Position the popup to the right of the anchor button.
@@ -2947,12 +2983,15 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       menu = document.createElement(
         "collapsed-options-menu"
       ) as CollapsedOptionsMenuElement;
-      menu.addEventListener("dp-scope-change", (ev: DetailEvent<{ value?: string }>) => {
-        const { value } = ev.detail || {};
-        if (value) {
-          this._setDatapointScope(value);
+      menu.addEventListener(
+        "dp-scope-change",
+        (ev: DetailEvent<{ value?: string }>) => {
+          const { value } = ev.detail || {};
+          if (value) {
+            this._setDatapointScope(value);
+          }
         }
-      });
+      );
       menu.addEventListener(
         "dp-display-change",
         (ev: DetailEvent<{ kind?: string; value?: unknown }>) => {
@@ -2967,22 +3006,27 @@ export class HassRecordsHistoryPanel extends HTMLElement {
           }
         }
       );
-      menu.addEventListener("dp-analysis-change", (ev: DetailEvent<{
-        kind?: string;
-        value?: string;
-      }>) => {
-        const { kind, value } = ev.detail || {};
-        if (
-          kind === "anomaly_overlap_mode" &&
-          value !== this._chartAnomalyOverlapMode
-        ) {
-          this._chartAnomalyOverlapMode = value;
-          this._saveSessionState();
-          this._updateUrl({ push: false });
-          this._renderSidebarOptions();
-          this._renderContent();
+      menu.addEventListener(
+        "dp-analysis-change",
+        (
+          ev: DetailEvent<{
+            kind?: string;
+            value?: string;
+          }>
+        ) => {
+          const { kind, value } = ev.detail || {};
+          if (
+            kind === "anomaly_overlap_mode" &&
+            value !== this._chartAnomalyOverlapMode
+          ) {
+            this._chartAnomalyOverlapMode = value;
+            this._saveSessionState();
+            this._updateUrl({ push: false });
+            this._renderSidebarOptions();
+            this._renderContent();
+          }
         }
-      });
+      );
       popup.appendChild(menu);
     }
 
@@ -3141,7 +3185,10 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     if (!normalizedEntityId || !normalizedKey) {
       return;
     }
-    if (normalizedKey === "anomaly_comparison_window_id" && value === "__add_new__") {
+    if (
+      normalizedKey === "anomaly_comparison_window_id" &&
+      value === "__add_new__"
+    ) {
       this._pendingAnomalyComparisonWindowEntityId = normalizedEntityId;
       this._openDateWindowDialog();
       return;
@@ -3219,23 +3266,23 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     let changed = false;
     this._seriesRows = this._seriesRows.map(
       (row: { entity_id: string; analysis?: RecordWithUnknownValues }) => {
-      if (row.entity_id === normalizedEntityId) {
-        return row;
-      }
-      const currentAnalysis = normalizeHistorySeriesAnalysis(row.analysis);
-      const nextAnalysis = normalizeHistorySeriesAnalysis({
-        ...sourceAnalysis,
-        // Preserve per-row state that shouldn't be overwritten
-        expanded: currentAnalysis.expanded,
-        // Don't copy anomaly_comparison_window_id — it's entity-specific
-        anomaly_comparison_window_id:
-          currentAnalysis.anomaly_comparison_window_id,
-      });
-      if (JSON.stringify(nextAnalysis) === JSON.stringify(currentAnalysis)) {
-        return row;
-      }
-      changed = true;
-      return { ...row, analysis: nextAnalysis };
+        if (row.entity_id === normalizedEntityId) {
+          return row;
+        }
+        const currentAnalysis = normalizeHistorySeriesAnalysis(row.analysis);
+        const nextAnalysis = normalizeHistorySeriesAnalysis({
+          ...sourceAnalysis,
+          // Preserve per-row state that shouldn't be overwritten
+          expanded: currentAnalysis.expanded,
+          // Don't copy anomaly_comparison_window_id — it's entity-specific
+          anomaly_comparison_window_id:
+            currentAnalysis.anomaly_comparison_window_id,
+        });
+        if (JSON.stringify(nextAnalysis) === JSON.stringify(currentAnalysis)) {
+          return row;
+        }
+        changed = true;
+        return { ...row, analysis: nextAnalysis };
       }
     );
     if (!changed) {
@@ -3297,7 +3344,9 @@ export class HassRecordsHistoryPanel extends HTMLElement {
   }
 
   _handleDatePickerChange(ev: Event) {
-    const { start, end } = extractRangeValue(ev as any);
+    const { start, end } = extractRangeValue(
+      ev as Parameters<typeof extractRangeValue>[0]
+    );
     if (!start || !end || start >= end) {
       return;
     }
@@ -3590,9 +3639,11 @@ export class HassRecordsHistoryPanel extends HTMLElement {
   ) {
     const detail = ev.detail;
     const start = Number.isFinite(detail?.startTime)
-      ? detail?.startTime ?? null
+      ? (detail?.startTime ?? null)
       : null;
-    const end = Number.isFinite(detail?.endTime) ? detail?.endTime ?? null : null;
+    const end = Number.isFinite(detail?.endTime)
+      ? (detail?.endTime ?? null)
+      : null;
     const isPreview = !!detail?.preview;
     const source = detail?.source || "select";
     const nextRange =
@@ -3717,7 +3768,8 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       return;
     }
     const index = this._seriesRows.findIndex(
-      (row: { entity_id: string; visible?: boolean }) => row.entity_id === entityId
+      (row: { entity_id: string; visible?: boolean }) =>
+        row.entity_id === entityId
     );
     if (index === -1 || this._seriesRows[index].visible === visible) {
       return;
@@ -3963,9 +4015,12 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       hours: this._hours,
       committedZoomRange: this._chartZoomCommittedRange,
       comparisonWindows: this._comparisonWindows,
-      pageState: buildHistoryPageSessionState(this as unknown as HistoryPageSource),
+      pageState: buildHistoryPageSessionState(
+        this as unknown as HistoryPageSource
+      ),
       seriesRows: this._seriesRows,
-      seriesColorQueryKey: (entityId: string) => this._seriesColorQueryKey(entityId),
+      seriesColorQueryKey: (entityId: string) =>
+        this._seriesColorQueryKey(entityId),
       push,
     });
   }
@@ -4095,13 +4150,15 @@ export class HassRecordsHistoryPanel extends HTMLElement {
 
       const chartConfig = {
         entities: this._entities,
-        series_settings: this._seriesRows.map((row: RecordWithUnknownValues) => ({
-          ...row,
-          analysis: {
-            ...(row.analysis || {}),
-            anomaly_overlap_mode: this._chartAnomalyOverlapMode,
-          },
-        })),
+        series_settings: this._seriesRows.map(
+          (row: RecordWithUnknownValues) => ({
+            ...row,
+            analysis: {
+              ...(row.analysis || {}),
+              anomaly_overlap_mode: this._chartAnomalyOverlapMode,
+            },
+          })
+        ),
         datapoint_scope: this._datapointScope,
         show_event_markers: this._showChartDatapointIcons,
         show_event_lines: this._showChartDatapointLines,
@@ -4139,7 +4196,9 @@ export class HassRecordsHistoryPanel extends HTMLElement {
         "hass-datapoints-history-card"
       ) as HistoryCardElement;
       chart.setConfig(chartConfig);
-      (content.querySelector("#chart-card-host") as HTMLElement).appendChild(chart);
+      (content.querySelector("#chart-card-host") as HTMLElement).appendChild(
+        chart
+      );
       // Use history-chart as a pure JS config-diffing controller — not a DOM wrapper.
       const historyChartMol = {
         _configKey: JSON.stringify(chartConfig),
@@ -4186,12 +4245,13 @@ export class HassRecordsHistoryPanel extends HTMLElement {
         resizablePanes.addEventListener(
           "dp-panes-resize",
           (ev: DetailEvent<{ ratio?: number; committed?: boolean }>) => {
-          this._contentSplitRatio = ev.detail?.ratio ?? this._contentSplitRatio;
-          this._requestChartResizeRedraw();
-          if (ev.detail?.committed) {
-            this._saveSessionState();
-            window.requestAnimationFrame(() => this._syncRangeControl());
-          }
+            this._contentSplitRatio =
+              ev.detail?.ratio ?? this._contentSplitRatio;
+            this._requestChartResizeRedraw();
+            if (ev.detail?.committed) {
+              this._saveSessionState();
+              window.requestAnimationFrame(() => this._syncRangeControl());
+            }
           }
         );
       }

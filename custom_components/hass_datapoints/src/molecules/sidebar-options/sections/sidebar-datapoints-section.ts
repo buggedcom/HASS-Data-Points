@@ -46,7 +46,9 @@ export class SidebarDatapointsSection extends LitElement {
     return html`
       <sidebar-options-section
         .title=${msg("Datapoints")}
-        .subtitle=${msg("Choose which annotation datapoints appear on the chart.")}
+        .subtitle=${msg(
+          "Choose which annotation datapoints appear on the chart."
+        )}
         .collapsible=${this.collapsible}
         .open=${this.open}
       >

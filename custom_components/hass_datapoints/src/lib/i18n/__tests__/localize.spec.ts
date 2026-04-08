@@ -5,6 +5,9 @@ import {
   setFrontendLocale,
   syncFrontendLocale,
 } from "../localize";
+// Pre-warm the Finnish locale module so the first dynamic import in setLocale()
+// hits the module cache rather than cold-loading 25 eagerly-glob'd files.
+import "@/lib/i18n/locales/fi";
 
 describe("localize", () => {
   describe("GIVEN a requested locale", () => {
@@ -77,9 +80,7 @@ describe("localize", () => {
       it("THEN returns the source string", async () => {
         expect.assertions(1);
         await setFrontendLocale("en");
-        expect(msg("Download spreadsheet")).toBe(
-          "Download spreadsheet"
-        );
+        expect(msg("Download spreadsheet")).toBe("Download spreadsheet");
       });
     });
   });

@@ -8,6 +8,7 @@ export const SAMPLE_INTERVAL_MS: RecordWithNumericValues = {
   "1s": 1_000,
   "5s": 5_000,
   "10s": 10_000,
+  "15s": 15_000,
   "30s": 30_000,
   "1m": 60_000,
   "2m": 2 * 60_000,

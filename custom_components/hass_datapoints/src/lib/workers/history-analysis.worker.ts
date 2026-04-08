@@ -28,7 +28,18 @@ export interface ComputeHistoryAnalysisPayload {
   series?: WorkerSeriesInput[];
   comparisonSeries?: ComparisonSeriesInput[];
   hasSelectedComparisonWindow?: boolean;
-  allComparisonWindowsData?: Record<string, Record<string, HistoryAnalysisPoint[]>>;
+  allComparisonWindowsData?: Record<
+    string,
+    Record<string, HistoryAnalysisPoint[]>
+  >;
+  /** Per-entity analysis config used to compute comparisonWindowResults. */
+  seriesAnalysisConfigs?: Record<string, Partial<WorkerSeriesAnalysis>>;
+}
+
+export interface ComparisonWindowAnalysis {
+  trendPts: HistoryAnalysisPoint[];
+  ratePts: HistoryAnalysisPoint[];
+  summaryStats: Nullable<{ min: number; max: number; mean: number }>;
 }
 
 export interface TrendSeriesResult {
@@ -49,6 +60,11 @@ export interface HistoryAnalysisResult {
   deltaSeries: TrendSeriesResult[];
   summaryStats: SummaryStatsResult[];
   anomalySeries: unknown[];
+  /** Pre-computed analysis per comparison window and entity. */
+  comparisonWindowResults: Record<
+    string,
+    Record<string, ComparisonWindowAnalysis>
+  >;
 }
 
 const HOUR_MS = 60 * 60 * 1000;
@@ -66,8 +82,16 @@ export function getTrendWindowMs(value: string): number {
   return windows[value] || windows["24h"];
 }
 
-export function buildRollingAverageTrend(points: HistoryAnalysisPoint[], windowMs: number): HistoryAnalysisPoint[] {
-  if (!Array.isArray(points) || points.length < 2 || !Number.isFinite(windowMs) || windowMs <= 0) {
+export function buildRollingAverageTrend(
+  points: HistoryAnalysisPoint[],
+  windowMs: number
+): HistoryAnalysisPoint[] {
+  if (
+    !Array.isArray(points) ||
+    points.length < 2 ||
+    !Number.isFinite(windowMs) ||
+    windowMs <= 0
+  ) {
     return [];
   }
   const trendPoints: HistoryAnalysisPoint[] = [];
@@ -76,7 +100,10 @@ export function buildRollingAverageTrend(points: HistoryAnalysisPoint[], windowM
   for (let index = 0; index < points.length; index += 1) {
     const [time, value] = points[index];
     windowSum += value;
-    while (windowStartIndex < index && time - points[windowStartIndex][0] > windowMs) {
+    while (
+      windowStartIndex < index &&
+      time - points[windowStartIndex][0] > windowMs
+    ) {
       windowSum -= points[windowStartIndex][1];
       windowStartIndex += 1;
     }
@@ -88,7 +115,9 @@ export function buildRollingAverageTrend(points: HistoryAnalysisPoint[], windowM
   return trendPoints;
 }
 
-export function buildLinearTrend(points: HistoryAnalysisPoint[]): HistoryAnalysisPoint[] {
+export function buildLinearTrend(
+  points: HistoryAnalysisPoint[]
+): HistoryAnalysisPoint[] {
   if (!Array.isArray(points) || points.length < 2) {
     return [];
   }
@@ -136,22 +165,36 @@ export function buildTrendPoints(
 }
 
 export function normalizeSeriesAnalysis(
-  analysis: Partial<Nullable<Record<keyof WorkerSeriesAnalysis, unknown>>> | undefined
+  analysis:
+    | Partial<Nullable<Record<keyof WorkerSeriesAnalysis, unknown>>>
+    | undefined
 ): WorkerSeriesAnalysis {
   const source = analysis && typeof analysis === "object" ? analysis : {};
 
   return {
     show_trend_lines: source.show_trend_lines === true,
-    trend_method: source.trend_method === "linear_trend" ? "linear_trend" : "rolling_average",
-    trend_window: typeof source.trend_window === "string" && source.trend_window ? source.trend_window : "24h",
+    trend_method:
+      source.trend_method === "linear_trend"
+        ? "linear_trend"
+        : "rolling_average",
+    trend_window:
+      typeof source.trend_window === "string" && source.trend_window
+        ? source.trend_window
+        : "24h",
     show_summary_stats: source.show_summary_stats === true,
     show_rate_of_change: source.show_rate_of_change === true,
-    rate_window: typeof source.rate_window === "string" && source.rate_window ? source.rate_window : "1h",
+    rate_window:
+      typeof source.rate_window === "string" && source.rate_window
+        ? source.rate_window
+        : "1h",
     show_delta_analysis: source.show_delta_analysis === true,
   };
 }
 
-export function interpolateSeriesValue(points: HistoryAnalysisPoint[], timeMs: number): Nullable<number> {
+export function interpolateSeriesValue(
+  points: HistoryAnalysisPoint[],
+  timeMs: number
+): Nullable<number> {
   if (!Array.isArray(points) || points.length === 0) {
     return null;
   }
@@ -175,7 +218,10 @@ export function interpolateSeriesValue(points: HistoryAnalysisPoint[], timeMs: n
   return null;
 }
 
-export function buildRateOfChangePoints(points: HistoryAnalysisPoint[], rateWindow: string): HistoryAnalysisPoint[] {
+export function buildRateOfChangePoints(
+  points: HistoryAnalysisPoint[],
+  rateWindow: string
+): HistoryAnalysisPoint[] {
   if (!Array.isArray(points) || points.length < 2) {
     return [];
   }
@@ -190,7 +236,11 @@ export function buildRateOfChangePoints(points: HistoryAnalysisPoint[], rateWind
       if (!Number.isFinite(windowMs) || windowMs <= 0) {
         continue;
       }
-      for (let candidateIndex = index - 1; candidateIndex >= 0; candidateIndex -= 1) {
+      for (
+        let candidateIndex = index - 1;
+        candidateIndex >= 0;
+        candidateIndex -= 1
+      ) {
         const candidatePoint = points[candidateIndex];
         if (timeMs - candidatePoint[0] >= windowMs) {
           comparisonPoint = candidatePoint;
@@ -244,7 +294,9 @@ export function buildDeltaPoints(
   return deltaPoints;
 }
 
-export function buildSummaryStats(points: HistoryAnalysisPoint[]): Nullable<{ min: number; max: number; mean: number }> {
+export function buildSummaryStats(
+  points: HistoryAnalysisPoint[]
+): Nullable<{ min: number; max: number; mean: number }> {
   if (!Array.isArray(points) || points.length === 0) {
     return null;
   }
@@ -276,11 +328,15 @@ export function buildSummaryStats(points: HistoryAnalysisPoint[]): Nullable<{ mi
   };
 }
 
-export function computeHistoryAnalysis(payload: ComputeHistoryAnalysisPayload): HistoryAnalysisResult {
-  const series = (Array.isArray(payload?.series) ? payload.series : []).map((seriesItem) => ({
+export function computeHistoryAnalysis(
+  payload: ComputeHistoryAnalysisPayload
+): HistoryAnalysisResult {
+  const series = (Array.isArray(payload?.series) ? payload.series : []).map(
+    (seriesItem) => ({
       ...seriesItem,
       analysis: normalizeSeriesAnalysis(seriesItem?.analysis),
-    }));
+    })
+  );
   const comparisonSeries = new Map(
     (Array.isArray(payload?.comparisonSeries) ? payload.comparisonSeries : [])
       .filter((entry) => entry?.entityId)
@@ -292,6 +348,7 @@ export function computeHistoryAnalysis(payload: ComputeHistoryAnalysisPayload): 
     deltaSeries: [],
     summaryStats: [],
     anomalySeries: [],
+    comparisonWindowResults: {},
   };
 
   for (const seriesItem of series) {
@@ -302,7 +359,11 @@ export function computeHistoryAnalysis(payload: ComputeHistoryAnalysisPayload): 
     }
 
     if (analysis.show_trend_lines === true) {
-      const trendPoints = buildTrendPoints(points, analysis.trend_method, analysis.trend_window);
+      const trendPoints = buildTrendPoints(
+        points,
+        analysis.trend_method,
+        analysis.trend_window
+      );
       if (trendPoints.length >= 2) {
         result.trendSeries.push({
           entityId: seriesItem.entityId,
@@ -331,7 +392,10 @@ export function computeHistoryAnalysis(payload: ComputeHistoryAnalysisPayload): 
       }
     }
 
-    if (analysis.show_delta_analysis === true && payload?.hasSelectedComparisonWindow === true) {
+    if (
+      analysis.show_delta_analysis === true &&
+      payload?.hasSelectedComparisonWindow === true
+    ) {
       const comparisonEntry = comparisonSeries.get(seriesItem.entityId);
       const comparisonPoints = comparisonEntry?.pts ?? [];
       if (comparisonPoints.length >= 2) {
@@ -346,15 +410,64 @@ export function computeHistoryAnalysis(payload: ComputeHistoryAnalysisPayload): 
     }
   }
 
+  // Comparison window analysis — per-window, per-entity trend/rate/summary.
+  const seriesAnalysisConfigs =
+    typeof payload?.seriesAnalysisConfigs === "object" &&
+    payload.seriesAnalysisConfigs !== null
+      ? payload.seriesAnalysisConfigs
+      : {};
+  const allComparisonWindowsData =
+    typeof payload?.allComparisonWindowsData === "object" &&
+    payload.allComparisonWindowsData !== null
+      ? payload.allComparisonWindowsData
+      : {};
+
+  for (const [windowId, entityPtsMap] of Object.entries(
+    allComparisonWindowsData
+  )) {
+    result.comparisonWindowResults[windowId] = {};
+    for (const [entityId, pts] of Object.entries(entityPtsMap)) {
+      const winAnalysis = normalizeSeriesAnalysis(
+        seriesAnalysisConfigs[entityId]
+      );
+      result.comparisonWindowResults[windowId][entityId] = {
+        trendPts:
+          winAnalysis.show_trend_lines && pts.length >= 2
+            ? buildTrendPoints(
+                pts,
+                winAnalysis.trend_method,
+                winAnalysis.trend_window
+              )
+            : [],
+        ratePts:
+          winAnalysis.show_rate_of_change && pts.length >= 2
+            ? buildRateOfChangePoints(pts, winAnalysis.rate_window)
+            : [],
+        summaryStats: winAnalysis.show_summary_stats
+          ? buildSummaryStats(pts)
+          : null,
+      };
+    }
+  }
+
   return result;
 }
 
 const workerScope = globalThis as typeof globalThis & {
-  onmessage: Nullable<(event: MessageEvent<{ id?: number; payload: ComputeHistoryAnalysisPayload }>) => void>;
+  onmessage: Nullable<
+    (
+      event: MessageEvent<{
+        id?: number;
+        payload: ComputeHistoryAnalysisPayload;
+      }>
+    ) => void
+  >;
   postMessage: (message: unknown) => void;
 };
 
-workerScope.onmessage = (event: MessageEvent<{ id?: number; payload: ComputeHistoryAnalysisPayload }>) => {
+workerScope.onmessage = (
+  event: MessageEvent<{ id?: number; payload: ComputeHistoryAnalysisPayload }>
+) => {
   const { id, payload } = event.data || {};
   try {
     const result = computeHistoryAnalysis(payload);

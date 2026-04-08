@@ -1,4 +1,3 @@
- 
 /**
  * Chart data worker — offloads CPU-bound data preparation from the main thread.
  *
@@ -6,7 +5,13 @@
  *   • downsample  — fixed-width time-bucket aggregation (mean/min/max/median/first/last)
  */
 
-export type ChartAggregate = "mean" | "min" | "max" | "median" | "first" | "last";
+export type ChartAggregate =
+  | "mean"
+  | "min"
+  | "max"
+  | "median"
+  | "first"
+  | "last";
 export type ChartPoint = [number, number];
 
 export interface DownsamplePayload {
@@ -15,7 +20,11 @@ export interface DownsamplePayload {
   aggregate: ChartAggregate;
 }
 
-export function downsamplePts(pts: ChartPoint[], intervalMs: number, aggregate: string): ChartPoint[] {
+export function downsamplePts(
+  pts: ChartPoint[],
+  intervalMs: number,
+  aggregate: string
+): ChartPoint[] {
   if (!pts.length || intervalMs <= 0) {
     return pts;
   }
@@ -41,7 +50,10 @@ export function downsamplePts(pts: ChartPoint[], intervalMs: number, aggregate: 
     } else if (aggregate === "median") {
       const sorted = [...values].sort((a, b) => a - b);
       const mid = Math.floor(sorted.length / 2);
-      agg = sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+      agg =
+        sorted.length % 2 !== 0
+          ? sorted[mid]
+          : (sorted[mid - 1] + sorted[mid]) / 2;
     } else if (aggregate === "first") {
       agg = values[0];
     } else if (aggregate === "last") {
@@ -73,7 +85,11 @@ self.onmessage = ({ data }: MessageEvent<ChartDataWorkerRequest>) => {
   try {
     let result: ChartPoint[];
     if (type === "downsample") {
-      result = downsamplePts(payload.pts, payload.intervalMs, payload.aggregate);
+      result = downsamplePts(
+        payload.pts,
+        payload.intervalMs,
+        payload.aggregate
+      );
     } else {
       throw new Error(`Unknown message type: ${type}`);
     }

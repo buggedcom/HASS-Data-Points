@@ -68,7 +68,9 @@ export class SidebarAnalysisSection extends LitElement {
     return html`
       <sidebar-options-section
         .title=${msg("Analysis")}
-        .subtitle=${msg("Configure how anomalies and overlapping detections are displayed.")}
+        .subtitle=${msg(
+          "Configure how anomalies and overlapping detections are displayed."
+        )}
         .collapsible=${this.collapsible}
         .open=${this.open}
       >
@@ -87,13 +89,17 @@ export class SidebarAnalysisSection extends LitElement {
               <radio-group
                 .name=${"chart-anomaly-overlap-mode"}
                 .value=${this.anomalyOverlapMode}
-                .options=${this._localizedOptions(ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS)}
+                .options=${this._localizedOptions(
+                  ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS
+                )}
                 @dp-radio-change=${this._onAnomalyOverlapModeChange}
               ></radio-group>
             `
           : html`
               <p class="no-anomalies-notice">
-                ${msg("Enable anomaly detection on a target first — open a target's settings and check Show anomalies.")}
+                ${msg(
+                  "Enable anomaly detection on a target first — open a target's settings and check Show anomalies."
+                )}
               </p>
             `}
       </sidebar-options-section>

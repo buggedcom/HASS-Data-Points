@@ -41,7 +41,9 @@ function mdiKey(iconStr: Nullable<string> | undefined): Nullable<string> {
 /**
  * Resolve an icon string to its SVG path data, or null if not found.
  */
-function resolveMdiPath(iconStr: Nullable<string> | undefined): Nullable<string> {
+function resolveMdiPath(
+  iconStr: Nullable<string> | undefined
+): Nullable<string> {
   const key = mdiKey(iconStr);
   const mdiIcons = mdi as unknown as MdiIconModule;
   return key && mdiIcons[key] ? mdiIcons[key] : null;

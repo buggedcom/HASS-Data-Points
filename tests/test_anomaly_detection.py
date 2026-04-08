@@ -193,6 +193,10 @@ class DescribeDetectRollingZscore:
         pts = [[i * 60_000, float(i)] for i in range(30)]
         assert detect_rolling_zscore(pts, "medium", 86400) == []
 
+    def test_GIVEN_flat_series_WHEN_called_THEN_returns_empty(self):
+        pts = [[i * 60_000, 5.0] for i in range(30)]
+        assert detect_rolling_zscore(pts, "medium", 3600) == []
+
 
 # ---------------------------------------------------------------------------
 # detect_trend_residual
@@ -212,6 +216,10 @@ class DescribeDetectTrendResidual:
     def test_GIVEN_perfectly_linear_series_WHEN_linear_trend_method_THEN_returns_empty(self):
         pts = [[i * 3_600_000, float(i)] for i in range(24)]
         assert detect_trend_residual(pts, "medium", "linear_trend", "24h") == []
+
+    def test_GIVEN_flat_series_WHEN_called_THEN_returns_empty(self):
+        pts = [[i * 3_600_000, 8.0] for i in range(24)]
+        assert detect_trend_residual(pts, "medium", "rolling_average", "24h") == []
 
 
 # ---------------------------------------------------------------------------
@@ -238,6 +246,12 @@ class DescribeDetectPersistence:
         pts = [[i * 60_000, 5.0] for i in range(20)]
         assert detect_persistence(pts, "medium", 3600) == []
 
+    def test_GIVEN_single_flat_run_WHEN_called_THEN_returns_exactly_one_cluster(self):
+        pts = [[i * 3_600_000, 5.0] for i in range(4)]
+        pts += [[4 * 3_600_000, 20.0], [5 * 3_600_000, 22.0], [6 * 3_600_000, 24.0]]
+        result = detect_persistence(pts, "medium", 3600)
+        assert len(result) == 1
+
 
 # ---------------------------------------------------------------------------
 # detect_rate_of_change
@@ -257,6 +271,16 @@ class DescribeDetectRateOfChange:
     def test_GIVEN_constant_rate_of_change_WHEN_called_THEN_returns_empty(self):
         pts = [[i * 3_600_000, float(i * 10)] for i in range(24)]
         assert detect_rate_of_change(pts, "medium", "1h") == []
+
+    def test_GIVEN_flat_series_WHEN_called_THEN_returns_empty(self):
+        pts = [[i * 3_600_000, 7.0] for i in range(24)]
+        assert detect_rate_of_change(pts, "medium", "1h") == []
+
+    def test_GIVEN_single_sudden_jump_WHEN_called_THEN_returns_one_cluster(self):
+        pts = [[i * 3_600_000, float(i)] for i in range(10)]
+        pts += [[10 * 3_600_000, 100.0], [11 * 3_600_000, 101.0], [12 * 3_600_000, 102.0]]
+        result = detect_rate_of_change(pts, "medium", "1h")
+        assert len(result) == 1
 
 
 # ---------------------------------------------------------------------------
@@ -281,6 +305,18 @@ class DescribeDetectComparisonWindow:
     def test_GIVEN_identical_primary_and_comparison_WHEN_called_THEN_returns_empty(self):
         series = [[i * 3_600_000, float(i)] for i in range(24)]
         assert detect_comparison_window(series, series, "medium") == []
+
+    def test_GIVEN_flat_matching_series_WHEN_called_THEN_returns_empty(self):
+        pts = [[i * 3_600_000, 10.0] for i in range(24)]
+        comp = [[i * 3_600_000, 10.0] for i in range(24)]
+        assert detect_comparison_window(pts, comp, "medium") == []
+
+    def test_GIVEN_single_spike_against_comparison_WHEN_called_THEN_returns_one_cluster(self):
+        pts = [[i * 3_600_000, 10.0] for i in range(24)]
+        comp = [[i * 3_600_000, 10.0] for i in range(24)]
+        pts[8] = [8 * 3_600_000, 1000.0]
+        result = detect_comparison_window(pts, comp, "medium")
+        assert len(result) == 1
 
 
 # ---------------------------------------------------------------------------
