@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
-# bump-version.sh — Increment the patch segment of the version in
+# bump-version.sh — Increment the version in
 #   custom_components/hass_datapoints/manifest.json  (canonical source)
 #   package.json                                      (kept in sync)
 #
-# Usage: bash scripts/bump-version.sh [--dry-run]
+# Usage: bash scripts/bump-version.sh [patch|minor|major] [--dry-run]
 #
-# Reads the current version from manifest.json, bumps the PATCH component by 1,
-# and writes the new version back to both files.  Prints the new version string
-# to stdout so callers can capture it.
+# Bump type defaults to "patch" when omitted.
+# Prints the new version string to stdout so callers can capture it.
 
 set -euo pipefail
 
@@ -17,11 +16,13 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 MANIFEST="$REPO_ROOT/custom_components/hass_datapoints/manifest.json"
 PACKAGE="$REPO_ROOT/package.json"
 
+BUMP_TYPE="patch"
 DRY_RUN=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
+    patch|minor|major) BUMP_TYPE="$1" ;;
     --dry-run) DRY_RUN=1 ;;
-    *) echo "Unknown argument: $1" >&2; exit 1 ;;
+    *) echo "Usage: bump-version.sh [patch|minor|major] [--dry-run]" >&2; exit 1 ;;
   esac
   shift
 done
@@ -40,8 +41,11 @@ if [[ -z "$MAJOR" || -z "$MINOR" || -z "$PATCH" ]]; then
   exit 1
 fi
 
-NEW_PATCH=$(( PATCH + 1 ))
-NEW_VERSION="${MAJOR}.${MINOR}.${NEW_PATCH}"
+case "$BUMP_TYPE" in
+  major) NEW_VERSION="$(( MAJOR + 1 )).0.0" ;;
+  minor) NEW_VERSION="${MAJOR}.$(( MINOR + 1 )).0" ;;
+  patch) NEW_VERSION="${MAJOR}.${MINOR}.$(( PATCH + 1 ))" ;;
+esac
 
 echo "[bump-version] $CURRENT_VERSION → $NEW_VERSION"
 
