@@ -1,5 +1,5 @@
 import { loadHaComponents } from "@kipk/load-ha-components";
-import { esc } from "@/lib/util/format";
+import { html, render } from "lit";
 import { msg } from "@/lib/i18n/localize";
 
 const HA_COMPONENT_LOAD_TIMEOUT_MS = 6000;
@@ -192,48 +192,6 @@ export function confirmDestructiveAction(
         if (host?._hass) {
           dialog.hass = host._hass;
         }
-        dialog.innerHTML = `
-        <style>
-          .confirm-dialog-body {
-            padding: 0 var(--dp-spacing-lg, 24px) var(--dp-spacing-lg, 24px);
-            color: var(--primary-text-color);
-          }
-          .confirm-dialog-message {
-            line-height: 1.5;
-            color: var(--secondary-text-color, var(--primary-text-color));
-          }
-          .confirm-dialog-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: var(--dp-spacing-sm, 8px);
-            margin-top: var(--dp-spacing-lg, 24px);
-          }
-          .confirm-dialog-button {
-            border: 0;
-            border-radius: 999px;
-            padding: 0 16px;
-            height: 36px;
-            font: inherit;
-            cursor: pointer;
-          }
-          .confirm-dialog-button.cancel {
-            background: transparent;
-            color: var(--primary-text-color);
-          }
-          .confirm-dialog-button.confirm {
-            background: var(--error-color, #db4437);
-            color: white;
-          }
-        </style>
-        <div class="confirm-dialog-body">
-          <div class="confirm-dialog-message">${esc(options.message || msg("Are you sure you want to delete this item?"))}</div>
-          <div class="confirm-dialog-actions">
-            <button type="button" class="confirm-dialog-button cancel">${esc(options.cancelLabel || msg("Cancel"))}</button>
-            <button type="button" class="confirm-dialog-button confirm">${esc(options.confirmLabel || msg("Delete"))}</button>
-          </div>
-        </div>
-      `;
-
         let settled = false;
         const finish = (value: boolean) => {
           if (settled) {
@@ -244,19 +202,66 @@ export function confirmDestructiveAction(
           resolve(value);
         };
 
-        const cancelButton = dialog.querySelector(
-          ".confirm-dialog-button.cancel"
-        );
-        const confirmButton = dialog.querySelector(
-          ".confirm-dialog-button.confirm"
+        render(
+          html`
+            <style>
+              .confirm-dialog-body {
+                padding: 0 var(--dp-spacing-lg, 24px) var(--dp-spacing-lg, 24px);
+                color: var(--primary-text-color);
+              }
+              .confirm-dialog-message {
+                line-height: 1.5;
+                color: var(--secondary-text-color, var(--primary-text-color));
+              }
+              .confirm-dialog-actions {
+                display: flex;
+                justify-content: flex-end;
+                gap: var(--dp-spacing-sm, 8px);
+                margin-top: var(--dp-spacing-lg, 24px);
+              }
+              .confirm-dialog-button {
+                border: 0;
+                border-radius: 999px;
+                padding: 0 16px;
+                height: 36px;
+                font: inherit;
+                cursor: pointer;
+              }
+              .confirm-dialog-button.cancel {
+                background: transparent;
+                color: var(--primary-text-color);
+              }
+              .confirm-dialog-button.confirm {
+                background: var(--error-color, #db4437);
+                color: white;
+              }
+            </style>
+            <div class="confirm-dialog-body">
+              <div class="confirm-dialog-message">
+                ${options.message ||
+                msg("Are you sure you want to delete this item?")}
+              </div>
+              <div class="confirm-dialog-actions">
+                <button
+                  type="button"
+                  class="confirm-dialog-button cancel"
+                  @click=${() => finish(false)}
+                >
+                  ${options.cancelLabel || msg("Cancel")}
+                </button>
+                <button
+                  type="button"
+                  class="confirm-dialog-button confirm"
+                  @click=${() => finish(true)}
+                >
+                  ${options.confirmLabel || msg("Delete")}
+                </button>
+              </div>
+            </div>
+          `,
+          dialog
         );
 
-        cancelButton?.addEventListener("click", () => {
-          finish(false);
-        });
-        confirmButton?.addEventListener("click", () => {
-          finish(true);
-        });
         dialog.addEventListener("keydown", (event) => {
           if (
             event.key !== "Enter" ||
@@ -284,7 +289,11 @@ export function confirmDestructiveAction(
         root.appendChild(dialog);
         dialog.open = true;
         window.requestAnimationFrame(() => {
-          (confirmButton as Nullable<HTMLElement>)?.focus();
+          (
+            dialog.querySelector(
+              ".confirm-dialog-button.confirm"
+            ) as Nullable<HTMLElement>
+          )?.focus();
         });
       })
   );

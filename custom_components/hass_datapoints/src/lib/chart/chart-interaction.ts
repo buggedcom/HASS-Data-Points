@@ -1,3 +1,4 @@
+import { html, render, type TemplateResult } from "lit";
 import { msg } from "@/lib/i18n/localize";
 import {
   areaIcon,
@@ -9,7 +10,7 @@ import {
   labelIcon,
   labelName,
 } from "@/lib/ha/entity-name";
-import { esc, fmtDateTime } from "@/lib/util/format";
+import { fmtDateTime } from "@/lib/util/format";
 import {
   clampChartValue,
   formatTooltipDisplayValue,
@@ -662,26 +663,40 @@ function buildAnnotationTooltip(
   tooltip.className = "tooltip secondary annotation-tooltip";
 
   const hasValue = event?.chart_value != null && event.chart_value !== "";
-  const valueMarkup = hasValue
-    ? `<div class="tt-value">${esc(formatTooltipValue(event.chart_value, event.chart_unit))}</div>`
-    : "";
   const message = event?.message || "Data point";
   const annotation =
     event?.annotation && event.annotation !== event.message
       ? event.annotation
       : "";
-  const relatedMarkup = buildTooltipRelatedChips(interactionState._hass, event);
+  const chips = buildTooltipRelatedChips(interactionState._hass, event);
 
-  tooltip.innerHTML = `
-    <div class="tt-time">${esc(fmtDateTime(event.timestamp))}</div>
-    ${valueMarkup}
-    <div class="tt-message-row">
-      <span class="tt-dot" style="background:${esc(event?.color || "#03a9f4")}"></span>
-      <span class="tt-message">${esc(message)}</span>
-    </div>
-    <div class="tt-annotation" style="display:${annotation ? "block" : "none"}">${esc(annotation)}</div>
-    <div class="tt-entities" style="display:${relatedMarkup ? "flex" : "none"}">${relatedMarkup}</div>
-  `;
+  render(
+    html`
+      <div class="tt-time">${fmtDateTime(event.timestamp)}</div>
+      ${hasValue
+        ? html`<div class="tt-value">
+            ${formatTooltipValue(event.chart_value, event.chart_unit)}
+          </div>`
+        : ""}
+      <div class="tt-message-row">
+        <span
+          class="tt-dot"
+          style="background:${event?.color || "#03a9f4"}"
+        ></span>
+        <span class="tt-message">${message}</span>
+      </div>
+      <div
+        class="tt-annotation"
+        style="display:${annotation ? "block" : "none"}"
+      >
+        ${annotation}
+      </div>
+      <div class="tt-entities" style="display:${chips ? "flex" : "none"}">
+        ${chips}
+      </div>
+    `,
+    tooltip
+  );
   return tooltip;
 }
 
@@ -759,7 +774,7 @@ export function showTooltip(
     : "";
   ttValue.style.display = hasValue ? "block" : "none";
   if (ttSeries) {
-    ttSeries.innerHTML = "";
+    render(html``, ttSeries);
     ttSeries.style.display = "none";
   }
   ttDot.style.background = event.color || "#03a9f4";
@@ -770,9 +785,9 @@ export function showTooltip(
   const ann = event.annotation !== event.message ? event.annotation : "";
   ttAnn.textContent = ann || "";
   ttAnn.style.display = ann ? "block" : "none";
-  const relatedMarkup = buildTooltipRelatedChips(interactionState._hass, event);
-  ttEntities.innerHTML = relatedMarkup;
-  ttEntities.style.display = relatedMarkup ? "flex" : "none";
+  const chips = buildTooltipRelatedChips(interactionState._hass, event);
+  render(chips ?? html``, ttEntities);
+  ttEntities.style.display = chips ? "flex" : "none";
 
   const chartBounds = (
     root.querySelector(".chart-wrap") ?? card
@@ -1238,30 +1253,41 @@ export function showLineChartTooltip(
       : "";
     ttValue.style.display = value ? "block" : "none";
     if (ttSeries) {
-      ttSeries.innerHTML = "";
+      render(html``, ttSeries);
       ttSeries.style.display = "none";
     }
   } else {
     ttValue.textContent = "";
     ttValue.style.display = "none";
     if (ttSeries) {
-      ttSeries.innerHTML = displayRows
-        .map(
-          (entry) => `
-        <div class="tt-series-row ${entry.grouped === true && entry.rawVisible === true ? "subordinate" : ""}">
-          <div class="tt-series-main">
-            ${
-              entry.grouped === true && entry.rawVisible === true
-                ? ""
-                : `<span class="tt-dot" style="background:${esc(entry.color || "#03a9f4")}"></span>`
-            }
-            <span class="tt-series-label">${esc(resolveTooltipSeriesLabel(entry))}</span>
-          </div>
-          <span class="tt-series-value">${esc(formatTooltipDisplayValue(entry.value, entry.unit))}</span>
-        </div>
-      `
-        )
-        .join("");
+      render(
+        html`${displayRows.map(
+          (entry) => html`
+            <div
+              class="tt-series-row ${entry.grouped === true &&
+              entry.rawVisible === true
+                ? "subordinate"
+                : ""}"
+            >
+              <div class="tt-series-main">
+                ${entry.grouped === true && entry.rawVisible === true
+                  ? ""
+                  : html`<span
+                      class="tt-dot"
+                      style="background:${entry.color || "#03a9f4"}"
+                    ></span>`}
+                <span class="tt-series-label"
+                  >${resolveTooltipSeriesLabel(entry)}</span
+                >
+              </div>
+              <span class="tt-series-value"
+                >${formatTooltipDisplayValue(entry.value, entry.unit)}</span
+              >
+            </div>
+          `
+        )}`,
+        ttSeries
+      );
       ttSeries.style.display = displayRows.length ? "grid" : "none";
     }
   }
@@ -1270,7 +1296,7 @@ export function showLineChartTooltip(
   ttMsg.textContent = "";
   ttAnn.textContent = "";
   ttAnn.style.display = "none";
-  ttEntities.innerHTML = "";
+  render(html``, ttEntities);
   ttEntities.style.display = "none";
 
   if (
@@ -1318,7 +1344,7 @@ export function showLineChartTooltip(
 export function buildTooltipRelatedChips(
   hass: Nullable<HassLike> | undefined,
   event: Nullable<TooltipRelatedEvent> | undefined
-): string {
+): TemplateResult | null {
   const entities = Array.isArray(event?.entity_ids) ? event.entity_ids : [];
   const devices = Array.isArray(event?.device_ids) ? event.device_ids : [];
   const areas = Array.isArray(event?.area_ids) ? event.area_ids : [];
@@ -1341,17 +1367,15 @@ export function buildTooltipRelatedChips(
       label: labelName(hass, id),
     })),
   ].filter((chip) => chip.label);
-  if (!chips.length) return "";
-  return chips
-    .map(
-      (chip) => `
-    <span class="tt-entity-chip" title="${esc(chip.label)}">
-      <ha-icon icon="${esc(chip.icon)}"></ha-icon>
-      <span>${esc(chip.label)}</span>
-    </span>
-  `
-    )
-    .join("");
+  if (!chips.length) return null;
+  return html`${chips.map(
+    (chip) => html`
+      <span class="tt-entity-chip" title="${chip.label}">
+        <ha-icon icon="${chip.icon}"></ha-icon>
+        <span>${chip.label}</span>
+      </span>
+    `
+  )}`;
 }
 
 export function showLineChartCrosshair(
@@ -1388,30 +1412,39 @@ export function showLineChartCrosshair(
       : []),
     ...(hover.comparisonValues || []),
   ];
-  points.innerHTML = `
-    ${crosshairValues
-      .filter((entry) => entry.hasValue !== false)
-      .map(
-        (entry) => `
-      <span
-        class="crosshair-line horizontal series ${hover.emphasizeGuides ? "emphasized" : "subtle"}"
-        style="top:${entry.y}px;color:${esc(entry.color || "#03a9f4")};opacity:${Number.isFinite(entry.opacity) ? entry.opacity : 1}"
-      ></span>
-    `
-      )
-      .join("")}
-    ${crosshairValues
-      .filter((entry) => entry.hasValue !== false)
-      .map(
-        (entry) => `
-    <span
-      class="crosshair-point"
-      style="left:${entry.x}px;top:${entry.y}px;background:${esc(entry.color || "#03a9f4")};opacity:${Number.isFinite(entry.opacity) ? entry.opacity : 1}"
-    ></span>
-    `
-      )
-      .join("")}
-  `;
+  render(
+    html`
+      ${crosshairValues
+        .filter((entry) => entry.hasValue !== false)
+        .map(
+          (entry) => html`
+            <span
+              class="crosshair-line horizontal series ${hover.emphasizeGuides
+                ? "emphasized"
+                : "subtle"}"
+              style="top:${entry.y}px;color:${entry.color ||
+              "#03a9f4"};opacity:${Number.isFinite(entry.opacity)
+                ? entry.opacity
+                : 1}"
+            ></span>
+          `
+        )}
+      ${crosshairValues
+        .filter((entry) => entry.hasValue !== false)
+        .map(
+          (entry) => html`
+            <span
+              class="crosshair-point"
+              style="left:${entry.x}px;top:${entry.y}px;background:${entry.color ||
+              "#03a9f4"};opacity:${Number.isFinite(entry.opacity)
+                ? entry.opacity
+                : 1}"
+            ></span>
+          `
+        )}
+    `,
+    points
+  );
   renderChartAxisHoverDots(card, crosshairValues);
   if (addButton && addButton.dataset.allowAddAnnotation !== "false") {
     addButton.hidden = false;
@@ -1499,7 +1532,7 @@ export function hideLineChartHover(card: ChartInteractionHost): void {
   const points = getRoot(card).getElementById("crosshair-points");
   const addButton = getRoot(card).getElementById("chart-add-annotation");
   if (overlay) overlay.hidden = true;
-  if (points) points.innerHTML = "";
+  if (points) render(html``, points);
   renderChartAxisHoverDots(card, []);
   const horizontal = getRoot(card).getElementById("crosshair-horizontal");
   if (horizontal) horizontal.hidden = true;

@@ -1,7 +1,6 @@
-import { html, LitElement } from "lit";
+import { html, LitElement, render } from "lit";
 import { COLORS } from "@/constants";
 import { contrastColor } from "@/lib/util/color";
-import { esc } from "@/lib/util/format";
 import { setupCanvas } from "@/charts/utils/chart-dom";
 import { ChartRenderer } from "@/lib/chart/chart-renderer";
 import type {
@@ -407,7 +406,13 @@ export class SensorChart extends LitElement {
           el.style.left = `${hit.x}px`;
           el.style.top = `${hit.y}px`;
           el.style.background = bgColor;
-          el.innerHTML = `<ha-icon icon="${esc(hit.event.icon || "mdi:bookmark")}" style="--mdc-icon-size:12px;color:${contrastColor(bgColor)}"></ha-icon>`;
+          render(
+            html`<ha-icon
+              icon="${hit.event.icon || "mdi:bookmark"}"
+              style="--mdc-icon-size:12px;color:${contrastColor(bgColor)}"
+            ></ha-icon>`,
+            el
+          );
           el.dataset.eventId = hit.event.id;
           el.addEventListener("click", (e) => {
             if (this.showAnnotationTooltips) {

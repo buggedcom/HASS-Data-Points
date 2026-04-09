@@ -1,4 +1,4 @@
-import { esc } from "@/lib/util/format";
+import { html, render, type TemplateResult } from "lit";
 import { ChartRenderer, type ResolvedAxis } from "@/lib/chart/chart-renderer";
 
 /**
@@ -696,7 +696,7 @@ export function buildChartCardShell(title?: Nullable<string>): string {
   return `
     <style>${CHART_STYLE}</style>
     <ha-card>
-      ${title ? `<div class="card-header">${esc(title)}</div>` : ""}
+      ${title ? `<div class="card-header">${title}</div>` : ""}
       <div class="chart-top-slot" id="chart-top-slot" hidden></div>
       <div class="chart-wrap">
         <div class="chart-preview-overlay" id="chart-preview-overlay" hidden></div>
@@ -856,31 +856,56 @@ export function renderChartAxisOverlays(
     if (!duplicateUnit || !axis?.color) {
       return "";
     }
-    return `color:${esc(axis.color)};`;
+    return `color:${axis.color};`;
   };
 
-  const buildAxisMarkup = (axis: ResolvedAxis) => {
-    const labels = (axis.ticks || [])
-      .map((tick: number) => {
-        const y = renderer.yOf(tick, axis.min, axis.max);
-        return `<div class="chart-axis-label" style="top:${Math.round(y) + 1}px;${axis.side === "left" ? `right:${axisOffset(axis)}px;text-align:right;` : `left:${axisOffset(axis)}px;text-align:left;`}${axisTextStyle(axis)}">${esc(renderer._formatAxisTick(tick, axis.unit))}</div>`;
-      })
-      .join("");
-    const unit = axis.unit
-      ? `<div class="chart-axis-unit" style="top:${Math.max(0, renderer.pad.top - 18)}px;${axis.side === "left" ? `right:${axisOffset(axis)}px;text-align:right;` : `left:${axisOffset(axis)}px;text-align:left;`}${axisTextStyle(axis)}">${esc(axis.unit)}</div>`
+  const buildAxisMarkup = (axis: ResolvedAxis): TemplateResult => {
+    const labelItems = (axis.ticks || []).map((tick: number) => {
+      const y = renderer.yOf(tick, axis.min, axis.max);
+      const sideStyle =
+        axis.side === "left"
+          ? `right:${axisOffset(axis)}px;text-align:right;`
+          : `left:${axisOffset(axis)}px;text-align:left;`;
+      return html`<div
+        class="chart-axis-label"
+        style="top:${Math.round(y) + 1}px;${sideStyle}${axisTextStyle(axis)}"
+      >
+        ${renderer._formatAxisTick(tick, axis.unit)}
+      </div>`;
+    });
+    const unitItem = axis.unit
+      ? html`<div
+          class="chart-axis-unit"
+          style="top:${Math.max(0, renderer.pad.top - 18)}px;${axis.side ===
+          "left"
+            ? `right:${axisOffset(axis)}px;text-align:right;`
+            : `left:${axisOffset(axis)}px;text-align:left;`}${axisTextStyle(
+            axis
+          )}"
+        >
+          ${axis.unit}
+        </div>`
       : "";
-    return `${labels}${unit}`;
+    return html`${labelItems}${unitItem}`;
   };
 
   const leftAxes = axes.filter((axis) => axis.side !== "right");
   const rightAxes = axes.filter((axis) => axis.side === "right");
 
-  leftEl.innerHTML = leftAxes.length
-    ? `<div class="chart-axis-divider"></div>${leftAxes.map((axis) => buildAxisMarkup(axis)).join("")}`
-    : "";
-  rightEl.innerHTML = rightAxes.length
-    ? `<div class="chart-axis-divider"></div>${rightAxes.map((axis) => buildAxisMarkup(axis)).join("")}`
-    : "";
+  render(
+    leftAxes.length
+      ? html`<div class="chart-axis-divider"></div>
+          ${leftAxes.map((axis) => buildAxisMarkup(axis))}`
+      : html``,
+    leftEl
+  );
+  render(
+    rightAxes.length
+      ? html`<div class="chart-axis-divider"></div>
+          ${rightAxes.map((axis) => buildAxisMarkup(axis))}`
+      : html``,
+    rightEl
+  );
 
   leftEl.classList.toggle("visible", !!leftAxes.length);
   rightEl.classList.toggle("visible", !!rightAxes.length);
