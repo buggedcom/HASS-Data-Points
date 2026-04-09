@@ -47,6 +47,15 @@ _ha_exceptions = MagicMock()
 _ha_exceptions.Unauthorized = _Unauthorized
 _stub("homeassistant.exceptions", _ha_exceptions)
 
+# -- homeassistant.auth -------------------------------------------------------
+# POLICY_READ must be a real string constant so _can_read_entity can pass it
+# as an argument to user.permissions.check_entity in tests.
+_ha_auth_permissions_const = MagicMock()
+_ha_auth_permissions_const.POLICY_READ = "read"
+_stub("homeassistant.auth", MagicMock())
+_stub("homeassistant.auth.permissions", MagicMock())
+_stub("homeassistant.auth.permissions.const", _ha_auth_permissions_const)
+
 # -- homeassistant core -------------------------------------------------------
 _ha_core = MagicMock()
 _ha_core.HomeAssistant = MagicMock

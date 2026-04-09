@@ -101,8 +101,8 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install pytest
-        run: pip install pytest pytest-asyncio --quiet
+      - name: Install Python dependencies
+        run: pip install -r requirements_dev.txt --quiet
 
       - name: Run Python tests
         run: pytest tests/ -v

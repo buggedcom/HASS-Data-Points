@@ -22,12 +22,15 @@ from custom_components.hass_datapoints.websocket_api import (
     _VALID_ANOMALY_OVERLAP_MODES,
     _VALID_ANOMALY_SENSITIVITY,
     _VALID_TREND_METHODS,
+    _can_read_entity,
     _normalize_recorder_timestamp,
     _require_admin,
     ws_clear_cache,
     ws_delete_dev_events,
     ws_delete_event,
+    ws_get_anomalies,
     ws_get_events,
+    ws_get_history,
     ws_update_event,
 )
 
@@ -97,12 +100,26 @@ def _make_hass(store: object) -> MagicMock:
     return hass
 
 
-def _make_connection(*, is_admin: bool = True) -> MagicMock:
-    """Return a mock ActiveConnection. Defaults to an admin user."""
+def _make_connection(
+    *,
+    is_admin: bool = True,
+    allowed_entities: list[str] | None = None,
+) -> MagicMock:
+    """Return a mock ActiveConnection.
+
+    *allowed_entities* is only relevant for non-admin users.  When provided,
+    ``user.permissions.check_entity`` returns True only for listed entity IDs.
+    When omitted for a non-admin user, all entity checks return False (no access).
+    """
     connection = MagicMock()
     connection.send_result = MagicMock()
     connection.send_error = MagicMock()
     connection.user.is_admin = is_admin
+    if not is_admin:
+        allowed = set(allowed_entities or [])
+        connection.user.permissions.check_entity.side_effect = (
+            lambda entity_id, _policy: entity_id in allowed
+        )
     return connection
 
 
@@ -532,3 +549,288 @@ class DescribeValidationConstants:
         validator = vol.Length(max=_MAX_LEN_MESSAGE)
         with pytest.raises(vol.Invalid):
             validator("x" * (_MAX_LEN_MESSAGE + 1))
+
+
+# ---------------------------------------------------------------------------
+# _can_read_entity — unit tests for the permission helper
+# ---------------------------------------------------------------------------
+
+
+class DescribeCanReadEntity:
+    def test_GIVEN_admin_user_WHEN_called_THEN_returns_true_for_any_entity(self):
+        user = MagicMock()
+        user.is_admin = True
+        assert _can_read_entity(user, "sensor.secret") is True
+
+    def test_GIVEN_non_admin_with_permission_WHEN_called_THEN_returns_true(self):
+        user = MagicMock()
+        user.is_admin = False
+        user.permissions.check_entity.return_value = True
+        assert _can_read_entity(user, "sensor.allowed") is True
+
+    def test_GIVEN_non_admin_without_permission_WHEN_called_THEN_returns_false(self):
+        user = MagicMock()
+        user.is_admin = False
+        user.permissions.check_entity.return_value = False
+        assert _can_read_entity(user, "sensor.forbidden") is False
+
+    def test_GIVEN_permissions_raises_WHEN_called_THEN_returns_true_permissive(self):
+        """Unexpected permission errors should not block the caller."""
+        user = MagicMock()
+        user.is_admin = False
+        user.permissions.check_entity.side_effect = RuntimeError("boom")
+        assert _can_read_entity(user, "sensor.any") is True
+
+
+# ---------------------------------------------------------------------------
+# ws_get_events — entity permission filtering
+# ---------------------------------------------------------------------------
+
+
+class DescribeWsGetEventsPermissions:
+    async def test_GIVEN_admin_user_with_entity_filter_WHEN_called_THEN_passes_filter_unchanged(
+        self,
+    ):
+        store = MagicMock()
+        store.get_events.return_value = []
+        hass = _make_hass(store)
+        connection = _make_connection(is_admin=True)
+        msg = {
+            "id": 1,
+            "type": f"{DOMAIN}/events",
+            "entity_ids": ["sensor.a", "sensor.b"],
+        }
+
+        await ws_get_events(hass, connection, msg)
+
+        store.get_events.assert_called_once_with(
+            start=None, end=None, entity_ids=["sensor.a", "sensor.b"]
+        )
+
+    async def test_GIVEN_non_admin_user_WHEN_entity_ids_include_forbidden_THEN_forbidden_stripped(
+        self,
+    ):
+        store = MagicMock()
+        store.get_events.return_value = []
+        hass = _make_hass(store)
+        # sensor.a is allowed, sensor.secret is not
+        connection = _make_connection(is_admin=False, allowed_entities=["sensor.a"])
+        msg = {
+            "id": 1,
+            "type": f"{DOMAIN}/events",
+            "entity_ids": ["sensor.a", "sensor.secret"],
+        }
+
+        await ws_get_events(hass, connection, msg)
+
+        store.get_events.assert_called_once_with(
+            start=None, end=None, entity_ids=["sensor.a"]
+        )
+
+    async def test_GIVEN_non_admin_user_WHEN_all_entity_ids_forbidden_THEN_empty_filter_passed(
+        self,
+    ):
+        store = MagicMock()
+        store.get_events.return_value = []
+        hass = _make_hass(store)
+        connection = _make_connection(is_admin=False, allowed_entities=[])
+        msg = {
+            "id": 1,
+            "type": f"{DOMAIN}/events",
+            "entity_ids": ["sensor.secret"],
+        }
+
+        await ws_get_events(hass, connection, msg)
+
+        store.get_events.assert_called_once_with(start=None, end=None, entity_ids=[])
+
+    async def test_GIVEN_non_admin_user_WHEN_no_entity_filter_THEN_store_called_with_none(
+        self,
+    ):
+        """No entity_ids in message → pass None to store (no filtering applied)."""
+        store = MagicMock()
+        store.get_events.return_value = []
+        hass = _make_hass(store)
+        connection = _make_connection(is_admin=False, allowed_entities=[])
+        msg = {"id": 1, "type": f"{DOMAIN}/events"}
+
+        await ws_get_events(hass, connection, msg)
+
+        store.get_events.assert_called_once_with(start=None, end=None, entity_ids=None)
+
+
+# ---------------------------------------------------------------------------
+# ws_get_history — entity permission check
+# ---------------------------------------------------------------------------
+
+
+def _make_hass_for_history() -> MagicMock:
+    """hass mock whose recorder instance has an awaitable async_add_executor_job."""
+    import custom_components.hass_datapoints.websocket_api as ws_mod  # noqa: PLC0415
+
+    hass = MagicMock()
+    hass.data = {DOMAIN: {}}
+    recorder_instance = MagicMock()
+    recorder_instance.async_add_executor_job = AsyncMock(return_value=[])
+    # get_instance is imported at module level; patch it on the module object.
+    ws_mod.get_instance = MagicMock(return_value=recorder_instance)
+    return hass
+
+
+class DescribeWsGetHistoryPermissions:
+    async def test_GIVEN_admin_user_WHEN_entity_requested_THEN_proceeds(self):
+        hass = _make_hass_for_history()
+        connection = _make_connection(is_admin=True)
+        msg = {
+            "id": 1,
+            "entity_id": "sensor.secret",
+            "start_time": "2024-01-01T00:00:00+00:00",
+            "end_time": "2024-01-02T00:00:00+00:00",
+            "interval": "raw",
+            "aggregate": "mean",
+        }
+
+        await ws_get_history(hass, connection, msg)
+
+        connection.send_error.assert_not_called()
+        connection.send_result.assert_called_once()
+
+    async def test_GIVEN_non_admin_user_with_permission_WHEN_called_THEN_proceeds(self):
+        hass = _make_hass_for_history()
+        connection = _make_connection(
+            is_admin=False, allowed_entities=["sensor.allowed"]
+        )
+        msg = {
+            "id": 1,
+            "entity_id": "sensor.allowed",
+            "start_time": "2024-01-01T00:00:00+00:00",
+            "end_time": "2024-01-02T00:00:00+00:00",
+            "interval": "raw",
+            "aggregate": "mean",
+        }
+
+        await ws_get_history(hass, connection, msg)
+
+        connection.send_error.assert_not_called()
+        connection.send_result.assert_called_once()
+
+    async def test_GIVEN_non_admin_user_without_permission_WHEN_called_THEN_sends_unauthorized(
+        self,
+    ):
+        hass = _make_hass_for_history()
+        connection = _make_connection(is_admin=False, allowed_entities=[])
+        msg = {
+            "id": 1,
+            "entity_id": "sensor.secret",
+            "start_time": "2024-01-01T00:00:00+00:00",
+            "end_time": "2024-01-02T00:00:00+00:00",
+            "interval": "raw",
+            "aggregate": "mean",
+        }
+
+        await ws_get_history(hass, connection, msg)
+
+        connection.send_result.assert_not_called()
+        connection.send_error.assert_called_once()
+        error_code = connection.send_error.call_args[0][1]
+        assert error_code == "unauthorized"
+
+
+# ---------------------------------------------------------------------------
+# ws_get_anomalies — entity permission check
+# ---------------------------------------------------------------------------
+
+
+def _make_hass_for_anomalies() -> MagicMock:
+    """hass mock suitable for ws_get_anomalies (cache absent, executor returns [])."""
+    import custom_components.hass_datapoints.websocket_api as ws_mod  # noqa: PLC0415
+
+    hass = MagicMock()
+    hass.data = {DOMAIN: {}}  # no anomaly_cache
+    recorder_instance = MagicMock()
+    recorder_instance.async_add_executor_job = AsyncMock(return_value=[])
+    ws_mod.get_instance = MagicMock(return_value=recorder_instance)
+    hass.async_add_executor_job = AsyncMock(return_value=[])
+    return hass
+
+
+def _anomaly_msg(entity_id: str, comparison_entity_id: str | None = None) -> dict:
+    msg = {
+        "id": 1,
+        "entity_id": entity_id,
+        "start_time": "2024-01-01T00:00:00+00:00",
+        "end_time": "2024-01-02T00:00:00+00:00",
+        "anomaly_methods": ["iqr"],
+        "anomaly_sensitivity": "medium",
+        "anomaly_overlap_mode": "all",
+        "anomaly_rate_window": "1h",
+        "anomaly_zscore_window": "24h",
+        "anomaly_persistence_window": "1h",
+        "trend_method": "rolling_average",
+        "trend_window": "24h",
+        "comparison_time_offset_ms": 0,
+    }
+    if comparison_entity_id:
+        msg["comparison_entity_id"] = comparison_entity_id
+        msg["comparison_start_time"] = "2024-01-01T00:00:00+00:00"
+        msg["comparison_end_time"] = "2024-01-02T00:00:00+00:00"
+    return msg
+
+
+class DescribeWsGetAnomaliesPermissions:
+    async def test_GIVEN_non_admin_without_permission_WHEN_called_THEN_sends_unauthorized(
+        self,
+    ):
+        hass = _make_hass_for_anomalies()
+        connection = _make_connection(is_admin=False, allowed_entities=[])
+
+        await ws_get_anomalies(hass, connection, _anomaly_msg("sensor.secret"))
+
+        connection.send_result.assert_not_called()
+        connection.send_error.assert_called_once()
+        assert connection.send_error.call_args[0][1] == "unauthorized"
+
+    async def test_GIVEN_admin_WHEN_called_THEN_proceeds(self):
+        hass = _make_hass_for_anomalies()
+        connection = _make_connection(is_admin=True)
+
+        await ws_get_anomalies(hass, connection, _anomaly_msg("sensor.any"))
+
+        connection.send_error.assert_not_called()
+        connection.send_result.assert_called_once()
+
+    async def test_GIVEN_non_admin_with_primary_permission_but_not_comparison_WHEN_called_THEN_sends_unauthorized(
+        self,
+    ):
+        hass = _make_hass_for_anomalies()
+        connection = _make_connection(
+            is_admin=False, allowed_entities=["sensor.primary"]
+        )
+
+        await ws_get_anomalies(
+            hass,
+            connection,
+            _anomaly_msg("sensor.primary", comparison_entity_id="sensor.forbidden"),
+        )
+
+        connection.send_result.assert_not_called()
+        connection.send_error.assert_called_once()
+        assert connection.send_error.call_args[0][1] == "unauthorized"
+
+    async def test_GIVEN_non_admin_with_both_permissions_WHEN_called_THEN_proceeds(
+        self,
+    ):
+        hass = _make_hass_for_anomalies()
+        connection = _make_connection(
+            is_admin=False,
+            allowed_entities=["sensor.primary", "sensor.comparison"],
+        )
+
+        await ws_get_anomalies(
+            hass,
+            connection,
+            _anomaly_msg("sensor.primary", comparison_entity_id="sensor.comparison"),
+        )
+
+        connection.send_error.assert_not_called()
+        connection.send_result.assert_called_once()
