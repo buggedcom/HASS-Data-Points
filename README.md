@@ -10,8 +10,8 @@
   <a href="https://github.com/home-assistant/home-assistant.io"><img src="https://img.shields.io/badge/Home%20Assistant-integration-41BDF5?logo=home-assistant&logoColor=white" alt="Home Assistant" /></a>
   <a href="https://hacs.xyz"><img src="https://img.shields.io/badge/HACS-Custom-orange?logo=home-assistant-community-store&logoColor=white" alt="HACS" /></a>
   <a href="https://main--69cd024f27ae313c14343a9a.chromatic.com"><img src="https://img.shields.io/badge/Storybook-published-FF4785?logo=storybook&logoColor=white" alt="Storybook" /></a>
-  <img src="https://img.shields.io/github/license/buggedcom/hass-datapoints" alt="License" />
-  <img src="https://img.shields.io/github/v/release/buggedcom/hass-datapoints" alt="Release" />
+  <img src="https://img.shields.io/github/license/buggedcom/HASS-Data-Points" alt="License" />
+  <img src="https://img.shields.io/github/v/release/buggedcom/HASS-Data-Points" alt="Release" />
 </p>
 
 ![Screenshot.png](images/Screenshot.png)
@@ -102,15 +102,14 @@ Data Points lets you:
 
 ### Cards
 
-| Card                              | Purpose                                                                                                                            |
-| --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `hass-datapoints-action-card`     | Full recording form with message, annotation, icon, color, and related items.                                                      |
-| `hass-datapoints-quick-card`      | Lightweight card for quick operational notes.                                                                                      |
-| `hass-datapoints-list-card`       | Searchable, editable, hide/show capable datapoint list.                                                                            |
-| `hass-datapoints-dev-tool-card`   | Generate useful development datapoints from HA history and clean up development datapoints.                                        |
-| `hass-datapoints-history-card`    | Multi-series analysis chart with target rows, anomaly overlays, date windows, zoom, timeline slider, and chart-created datapoints. |
-| `hass-datapoints-statistics-card` | Long-term statistics chart with datapoint overlays.                                                                                |
-| `hass-datapoints-sensor-card`     | Sensor-focused chart with inline datapoint markers.                                                                                |
+| Card                            | Purpose                                                                                                                            |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `hass-datapoints-action-card`   | Full recording form with message, annotation, icon, color, and related items.                                                      |
+| `hass-datapoints-quick-card`    | Lightweight card for quick operational notes.                                                                                      |
+| `hass-datapoints-list-card`     | Searchable, editable, hide/show capable datapoint list.                                                                            |
+| `hass-datapoints-dev-tool-card` | Generate useful development datapoints from HA history and clean up development datapoints.                                        |
+| `hass-datapoints-history-card`  | Multi-series analysis chart with target rows, anomaly overlays, date windows, zoom, timeline slider, and chart-created datapoints. |
+| `hass-datapoints-sensor-card`   | Sensor-focused chart with inline datapoint markers.                                                                                |
 
 All bundled cards now include Lovelace visual editors. The dev-tool editor is intentionally minimal because the card itself does not expose configurable options.
 
@@ -142,20 +141,18 @@ Data Points ships with both Home Assistant integration translations and frontend
 ### Included locales
 
 - English
-- Finnish
-- French
-- German
-- Spanish
-- Portuguese
-- Simplified Chinese
+- Finnish 🤖
+- French 🤖
+- German 🤖
+- Spanish 🤖
+- Portuguese 🤖
+- Simplified Chinese 🤖
 
 ### Translation quality
 
 English is the source language for the project.
 
-Finnish translations have been given more deliberate defaults because that is an actively used locale during development and validation.
-
-The other bundled non-English locales are currently machine translated. They are included so the UI is immediately usable in more Home Assistant setups without forcing everyone back to English, but they should still be treated as sensible defaults rather than fully reviewed product translations.
+The other bundled non-English locales are currently machine 🤖 translated. They are included so the UI is immediately usable in more Home Assistant setups without forcing everyone back to English, but they should still be treated as sensible defaults rather than fully reviewed product translations.
 
 If you spot awkward wording in any locale, translation improvements are very welcome.
 
@@ -322,7 +319,7 @@ On the sensor card, datapoints are drawn directly on the sensor series.
 
 ## Cards in practice
 
-> **Card editors are in development.** The visual editors shown in the HA dashboard UI when editing a card are not yet fully functional. All cards work correctly when configured via YAML. Use the YAML examples below as the primary configuration method until the editors are complete.
+> **Card editors are in development.** The cards are functional but still have certain layout and styling issues. Most functionality is fine but there are still some rough edges.
 
 ### Action card
 
@@ -774,8 +771,8 @@ Events are stored in:
 ### Setup
 
 ```bash
-git clone https://github.com/buggedcom/hass-datapoints.git
-cd hass-datapoints
+git clone https://github.com/buggedcom/HASS-Data-Points.git
+cd HASS-Data-Points
 corepack enable
 pnpm install
 pnpm hooks:install
