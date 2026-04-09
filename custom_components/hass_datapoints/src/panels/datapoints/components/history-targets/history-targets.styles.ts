@@ -24,7 +24,7 @@ export const styles = css`
   }
 
   .history-target-rows {
-    width: calc(var(--sidebar-width-expanded) - var(--dp-spacing-lg) * 2);
+    width: 100%;
   }
 
   .sidebar-section-header {

@@ -14907,7 +14907,6 @@
 		render() {
 			return b`
       <div class="context-form-field">
-        <label class="context-form-label">${this.label}</label>
         <div class="context-form-help">
           ${this.chips.length > 0 ? this.helpText : this.emptyText}
         </div>
@@ -15074,7 +15073,7 @@
 			this._linkedTarget = current;
 			if (this._chipRowEl) {
 				this._chipRowEl.hass = this._host._hass ?? null;
-				this._chipRowEl.chips = this._buildChips(this._linkedTarget);
+				this._chipRowEl.chips = this._buildChips(mergeTargetSelections(this._linkedTarget, this._target));
 			}
 		}
 		bindTargetChipActions() {}
@@ -15095,14 +15094,6 @@
 				iconPicker.hass = this._host._hass;
 				iconPicker.value = prefill.icon || hover?.event?.icon || "mdi:bookmark";
 			}
-			const targetSel = this._panelEl.querySelector("#chart-context-target");
-			if (targetSel) {
-				targetSel.hass = this._host._hass;
-				targetSel.value = "{}";
-				targetSel.addEventListener("value-changed", (ev) => {
-					this._target = normalizeTargetSelection(ev.detail.value || {});
-				});
-			}
 			if (messageEl) messageEl.value = prefill.message || "";
 			if (annotationEl) annotationEl.value = prefill.annotation || "";
 			const chipContainer = this._panelEl.querySelector("#chart-context-linked-targets");
@@ -15117,6 +15108,18 @@
 				this._chipRowEl = chipRow;
 			}
 			if (this._chipRowEl) this._chipRowEl.chips = this._buildChips(this._linkedTarget);
+			const targetSel = this._panelEl.querySelector("#chart-context-target");
+			if (targetSel) {
+				targetSel.hass = this._host._hass;
+				targetSel.selector = { target: {} };
+				targetSel.addEventListener("value-changed", (ev) => {
+					this._target = mergeTargetSelections(this._target, normalizeTargetSelection(ev.detail.value || {}));
+					if (this._chipRowEl) {
+						this._chipRowEl.hass = this._host._hass ?? null;
+						this._chipRowEl.chips = this._buildChips(mergeTargetSelections(this._linkedTarget, this._target));
+					}
+				});
+			}
 			this.bindTargetChipActions();
 			const colorInput = this._panelEl.querySelector("#chart-context-color");
 			const colorPreview = this._panelEl.querySelector("#chart-context-color-preview");
@@ -15207,10 +15210,10 @@
         .context-dialog-content { display: grid; gap: 16px; padding-top: 4px; }
         .context-form { display: grid; gap: 16px; }
         .context-form-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
-        .context-form-main, .context-form-side { display: grid; gap: 16px; min-width: 0; }
-        .context-form-side { align-content: start; justify-items: start; }
+        .context-form-row { display: grid; gap: 16px; align-items: start; }
+        .context-form-row-message-date { grid-template-columns: minmax(0, 1fr) 220px; }
+        .context-form-row-icon-color { grid-template-columns: 220px auto; }
         .context-form-field { display: grid; gap: 6px; min-width: 0; }
-        .context-form-field.compact-field { justify-items: start; }
         .context-form-label { font-size: 0.9rem; font-weight: 600; color: var(--primary-text-color); }
         .context-form-help { font-size: 0.8rem; color: var(--secondary-text-color); line-height: 1.45; }
         .context-form-help-inline { display: inline-flex; align-items: center; gap: 6px; }
@@ -15227,40 +15230,47 @@
         .context-color-control { display: flex; align-items: center; gap: 10px; }
         .context-color-preview { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--divider-color, #ccc); background: ${esc(defaultColor)}; flex: 0 0 auto; }
         .context-color-input { width: 56px; height: 36px; padding: 0; border: none; background: transparent; cursor: pointer; }
-        .context-date-input { width: 220px; max-width: 100%; }
-        .context-icon-input { width: 220px; max-width: 100%; }
+        .context-date-input { width: 100%; box-sizing: border-box; }
+        .context-icon-input { width: 100%; }
         .context-form-feedback { color: var(--error-color); font-size: 0.84rem; }
         .context-form-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 8px; }
         .context-form-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-left: auto; }
+        @media (max-width: 600px) {
+          .context-form-row-message-date,
+          .context-form-row-icon-color { grid-template-columns: minmax(0, 1fr); }
+        }
       </style>
       <div class="context-dialog-content">
         <div class="context-form">
           <div class="context-form-grid">
-            <div class="context-form-main">
+            <!-- Row 1: Message + Date/time -->
+            <div class="context-form-row context-form-row-message-date">
               <div class="context-form-field">
                 <label class="context-form-label" for="chart-context-message">Message</label>
                 <div class="context-form-help">Use a short title that will be shown in the chart tooltip and records list.</div>
                 <ha-textfield id="chart-context-message" placeholder="What happened?" style="width:100%"></ha-textfield>
               </div>
               <div class="context-form-field">
-                <label class="context-form-label" for="chart-context-annotation">Annotation</label>
-                <div class="context-form-help">Add any longer context, outcome, or note you want to keep with this data point.</div>
-                <textarea id="chart-context-annotation" class="context-annotation-input" placeholder="Detailed note shown on chart hover..."></textarea>
-              </div>
-              <div id="chart-context-linked-targets"></div>
-              <div class="context-form-field">
-                <label class="context-form-label" for="chart-context-target">Additional related items</label>
-                <div class="context-form-help">Optionally add more entities, devices, areas, or labels that should also be linked to this annotation.</div>
-                <ha-selector id="chart-context-target"></ha-selector>
-              </div>
-            </div>
-            <div class="context-form-side">
-              <div class="context-form-field compact-field">
                 <label class="context-form-label" for="chart-context-date">Date and time</label>
                 <div class="context-form-help">The annotation will be placed at this exact moment on the chart.</div>
                 <ha-textfield id="chart-context-date" class="context-date-input" type="datetime-local" value="${esc(this.formatDate(hover.timeMs))}"></ha-textfield>
               </div>
-              <div class="context-form-field compact-field">
+            </div>
+            <!-- Row 2: Annotation -->
+            <div class="context-form-field">
+              <label class="context-form-label" for="chart-context-annotation">Annotation</label>
+              <div class="context-form-help">Add any longer context, outcome, or note you want to keep with this data point.</div>
+              <textarea id="chart-context-annotation" class="context-annotation-input" placeholder="Detailed note shown on chart hover..."></textarea>
+            </div>
+            <!-- Row 3: Linked targets -->
+            <div class="context-form-field">
+              <label class="context-form-label">Linked targets</label>
+              <div id="chart-context-linked-targets"></div>
+              <ha-selector id="chart-context-target"></ha-selector>
+            </div>
+            <!-- Row 4: Icon + Color -->
+            <div class="context-form-row context-form-row-icon-color">
+              <div class="context-form-field">
                 <label class="context-form-label" for="chart-context-icon">Icon</label>
                 <div class="context-form-help">Choose the icon shown for this data point in the chart and records list.</div>
                 <ha-icon-picker id="chart-context-icon" class="context-icon-input" label="Icon"></ha-icon-picker>
@@ -15292,8 +15302,6 @@
 				this._dialogEl.hass = this._host._hass;
 				this._dialogEl.dialogInitialFocus = "#chart-context-message";
 			}
-			const targetSel = this._panelEl.querySelector("#chart-context-target");
-			if (targetSel) targetSel.selector = { target: {} };
 			this.bindFields(hover);
 			this._dialogEl.open = true;
 			this._host._creatingContextAnnotation = true;
@@ -24624,6 +24632,7 @@
       position: absolute;
       top: 0;
       left: 0;
+      min-width: min(380px, 85vw);
       width: min(380px, 85vw);
       height: 100%;
       z-index: 10;
@@ -24687,6 +24696,12 @@
 
     .sidebar-toggle-button {
       display: none;
+    }
+  }
+
+  @media (max-width: 545px) {
+    .page-sidebar {
+      width: min(380px, 95vw);
     }
   }
 `;
@@ -25177,7 +25192,7 @@
   }
 
   .history-target-rows {
-    width: calc(var(--sidebar-width-expanded) - var(--dp-spacing-lg) * 2);
+    width: 100%;
   }
 
   .sidebar-section-header {
@@ -29882,6 +29897,7 @@
       position: absolute;
       top: 0;
       left: 0;
+      min-width: min(380px, 85vw);
       width: min(380px, 85vw);
       height: 100%;
       z-index: 10;
@@ -29961,6 +29977,12 @@
 
     .range-mobile-dates {
       display: flex;
+    }
+  }
+
+  @media (max-width: 545px) {
+    .page-sidebar {
+      width: min(380px, 95vw);
     }
   }
 `;

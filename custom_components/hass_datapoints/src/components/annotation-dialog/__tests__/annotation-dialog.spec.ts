@@ -150,4 +150,141 @@ describe("HistoryAnnotationDialogController", () => {
       });
     });
   });
+
+  // ---------------------------------------------------------------------------
+  // Layout
+  // ---------------------------------------------------------------------------
+
+  describe("GIVEN dialog is open", () => {
+    beforeEach(() => {
+      host = createHost();
+      controller = new HistoryAnnotationDialogController(host);
+      controller.open(makeHover());
+    });
+
+    describe("WHEN rendered", () => {
+      it("THEN message and date fields share the message-date row", () => {
+        const panel = host.shadowRoot.querySelector(
+          "#chart-context-dialog-panel"
+        );
+        const row = panel?.querySelector(".context-form-row-message-date");
+        expect(row).not.toBeNull();
+        expect(row?.querySelector("#chart-context-message")).not.toBeNull();
+        expect(row?.querySelector("#chart-context-date")).not.toBeNull();
+      });
+
+      it("THEN icon and color fields share the icon-color row", () => {
+        const panel = host.shadowRoot.querySelector(
+          "#chart-context-dialog-panel"
+        );
+        const row = panel?.querySelector(".context-form-row-icon-color");
+        expect(row).not.toBeNull();
+        expect(row?.querySelector("#chart-context-icon")).not.toBeNull();
+        expect(row?.querySelector("#chart-context-color")).not.toBeNull();
+      });
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Target selector — always visible, no toggle button
+  // ---------------------------------------------------------------------------
+
+  describe("GIVEN dialog is open", () => {
+    let panel;
+
+    beforeEach(() => {
+      host = createHost();
+      controller = new HistoryAnnotationDialogController(host);
+      controller.open(makeHover());
+      panel = host.shadowRoot.querySelector("#chart-context-dialog-panel");
+    });
+
+    describe("WHEN rendered", () => {
+      it("THEN the ha-selector for targets is present in the DOM", () => {
+        expect(panel?.querySelector("#chart-context-target")).not.toBeNull();
+      });
+
+      it("THEN there is no hidden target wrapper element", () => {
+        expect(panel?.querySelector("#chart-context-target-wrap")).toBeNull();
+      });
+
+      it("THEN there is no Add-target toggle button", () => {
+        expect(panel?.querySelector("#chart-context-add-target")).toBeNull();
+      });
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Target accumulation
+  // ---------------------------------------------------------------------------
+
+  describe("GIVEN dialog is open", () => {
+    let panel;
+    let chipRow;
+
+    beforeEach(() => {
+      host = createHost();
+      // Reset entity ids so the default linked target is empty, giving us a
+      // clean baseline for testing extra-target accumulation.
+      host._entityIds = [];
+      controller = new HistoryAnnotationDialogController(host);
+      controller.open(makeHover());
+      panel = host.shadowRoot.querySelector("#chart-context-dialog-panel");
+      chipRow = panel?.querySelector("annotation-chip-row");
+    });
+
+    describe("WHEN value-changed fires twice with different entity_ids", () => {
+      beforeEach(() => {
+        const targetSel = panel?.querySelector("#chart-context-target");
+        targetSel?.dispatchEvent(
+          new CustomEvent("value-changed", {
+            detail: { value: { entity_id: ["sensor.a"] } },
+            bubbles: false,
+          })
+        );
+        targetSel?.dispatchEvent(
+          new CustomEvent("value-changed", {
+            detail: { value: { entity_id: ["sensor.b"] } },
+            bubbles: false,
+          })
+        );
+      });
+
+      it("THEN the chip row contains chips for both entities", () => {
+        const chips = chipRow?.chips ?? [];
+        const ids = chips.map((c) => c.itemId);
+        expect(ids).toContain("sensor.a");
+        expect(ids).toContain("sensor.b");
+      });
+
+      it("THEN the chip row contains exactly two chips", () => {
+        expect((chipRow?.chips ?? []).length).toBe(2);
+      });
+    });
+
+    describe("WHEN value-changed fires with entity_id then device_id", () => {
+      beforeEach(() => {
+        const targetSel = panel?.querySelector("#chart-context-target");
+        targetSel?.dispatchEvent(
+          new CustomEvent("value-changed", {
+            detail: { value: { entity_id: ["sensor.x"] } },
+            bubbles: false,
+          })
+        );
+        targetSel?.dispatchEvent(
+          new CustomEvent("value-changed", {
+            detail: { value: { device_id: ["device-1"] } },
+            bubbles: false,
+          })
+        );
+      });
+
+      it("THEN the chip row contains both the entity and the device", () => {
+        const chips = chipRow?.chips ?? [];
+        const ids = chips.map((c) => c.itemId);
+        expect(ids).toContain("sensor.x");
+        expect(ids).toContain("device-1");
+      });
+    });
+  });
 });

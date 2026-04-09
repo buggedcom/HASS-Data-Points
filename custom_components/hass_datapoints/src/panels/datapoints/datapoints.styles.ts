@@ -2114,6 +2114,7 @@ export const PANEL_HISTORY_STYLE = `
       position: absolute;
       top: 0;
       left: 0;
+      min-width: min(380px, 85vw);
       width: min(380px, 85vw);
       height: 100%;
       z-index: 10;
@@ -2193,6 +2194,12 @@ export const PANEL_HISTORY_STYLE = `
 
     .range-mobile-dates {
       display: flex;
+    }
+  }
+
+  @media (max-width: 545px) {
+    .page-sidebar {
+      width: min(380px, 95vw);
     }
   }
 `;
