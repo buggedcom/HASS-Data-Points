@@ -8,6 +8,7 @@ import uuid
 from datetime import UTC, datetime
 
 import voluptuous as vol
+from homeassistant.auth.permissions.const import POLICY_READ
 from homeassistant.components import websocket_api
 from homeassistant.components.recorder import get_instance
 from homeassistant.core import HomeAssistant, callback
@@ -121,10 +122,17 @@ async def ws_get_events(
 ) -> None:
     """Return recorded events, with optional time/entity filters."""
     store = hass.data[DOMAIN]["store"]
+    entity_ids = msg.get("entity_ids")
+    # For non-admin users, remove any entity IDs they are not permitted to read
+    # so the store never returns events tagged with inaccessible entities.
+    if entity_ids is not None and not connection.user.is_admin:
+        entity_ids = [
+            eid for eid in entity_ids if _can_read_entity(connection.user, eid)
+        ]
     events = store.get_events(
         start=msg.get("start_time"),
         end=msg.get("end_time"),
-        entity_ids=msg.get("entity_ids"),
+        entity_ids=entity_ids,
     )
     connection.send_result(msg["id"], {"events": events})
 
@@ -308,6 +316,22 @@ def _require_admin(connection: websocket_api.ActiveConnection, msg: dict) -> boo
     return True
 
 
+def _can_read_entity(user, entity_id: str) -> bool:
+    """Return True if *user* has read permission for *entity_id*.
+
+    Admin users always pass.  Non-admin users are checked against the HA
+    permission policy attached to their account.  Any unexpected error
+    (e.g. missing permissions object on a system user) is treated as
+    permissive so we don't accidentally block valid callers.
+    """
+    if user.is_admin:
+        return True
+    try:
+        return bool(user.permissions.check_entity(entity_id, POLICY_READ))
+    except Exception:  # noqa: BLE001
+        return True
+
+
 def _valid_uuid(value: str) -> str:
     """Voluptuous validator — raises Invalid if value is not a well-formed UUID."""
     try:
@@ -421,6 +445,11 @@ async def ws_get_history(
 ) -> None:
     """Return (optionally downsampled) entity history as [[timeMs, value], ...]."""
     entity_id: str = msg["entity_id"]
+    if not _can_read_entity(connection.user, entity_id):
+        connection.send_error(
+            msg["id"], "unauthorized", "Access to this entity is not permitted"
+        )
+        return
     start_time: str = msg["start_time"]
     end_time: str = msg["end_time"]
     interval: str = msg["interval"]
@@ -553,6 +582,21 @@ async def ws_get_anomalies(
 ) -> None:
     """Run backend anomaly detection for a single entity and return clusters."""
     entity_id: str = msg["entity_id"]
+    if not _can_read_entity(connection.user, entity_id):
+        connection.send_error(
+            msg["id"], "unauthorized", "Access to this entity is not permitted"
+        )
+        return
+    comparison_entity_id: str | None = msg.get("comparison_entity_id")
+    if comparison_entity_id and not _can_read_entity(
+        connection.user, comparison_entity_id
+    ):
+        connection.send_error(
+            msg["id"],
+            "unauthorized",
+            "Access to the comparison entity is not permitted",
+        )
+        return
     start_time: str = msg["start_time"]
     end_time: str = msg["end_time"]
 

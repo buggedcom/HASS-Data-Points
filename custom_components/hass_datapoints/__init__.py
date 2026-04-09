@@ -154,10 +154,21 @@ async def async_setup_entry(hass: HomeAssistant, entry: DatapointsConfigEntry) -
 
         automation_id = _find_automation_id(hass, call.context)
 
+        # For user-initiated calls, filter entity_ids to those the caller is
+        # permitted to read.  Automation / system calls (no user_id) bypass
+        # this check so they can tag events with any entity.
+        entity_ids = call.data.get(ATTR_ENTITY_IDS)
+        if call.context.user_id:
+            user = await hass.auth.async_get_user(call.context.user_id)
+            if user is not None and not user.is_admin and entity_ids:
+                entity_ids = [
+                    eid for eid in entity_ids if ws_api._can_read_entity(user, eid)
+                ]
+
         event_data = await store.async_record(
             message=call.data[ATTR_MESSAGE],
             annotation=call.data.get(ATTR_ANNOTATION),
-            entity_ids=call.data.get(ATTR_ENTITY_IDS),
+            entity_ids=entity_ids,
             device_ids=call.data.get(ATTR_DEVICE_IDS),
             area_ids=call.data.get(ATTR_AREA_IDS),
             label_ids=call.data.get(ATTR_LABEL_IDS),
