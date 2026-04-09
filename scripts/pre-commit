@@ -3,8 +3,9 @@
 # pre-commit hook:
 #  1. Format all staged Prettier-supported files (ts, js, md, json, css, html…)
 #  2. Lint & format staged Python files with ruff
-#  3. Validate TypeScript types when frontend sources/config change
-#  4. Rebuild hass-datapoints-cards.js when any src/ file is staged
+#  3. Lint package.json version specifiers when package metadata changes
+#  4. Validate TypeScript types when frontend sources/config change
+#  5. Rebuild hass-datapoints-cards.js when any src/ file is staged
 #
 # Install:  pnpm hooks:install
 #           (or manually: ln -sf ../../scripts/pre-commit .git/hooks/pre-commit)
@@ -35,7 +36,11 @@ STAGED_SRC=$(git diff --cached --name-only --diff-filter=ACMR \
 STAGED_TYPECHECK=$(git diff --cached --name-only --diff-filter=ACMR \
   | grep -E "^(custom_components/hass_datapoints/src/.*\\.(ts|js)|tsconfig.*\\.json|package\\.json)$" || true)
 
-if [ -z "$STAGED_PRETTIER" ] && [ -z "$STAGED_PY" ] && [ -z "$STAGED_SRC" ] && [ -z "$STAGED_TYPECHECK" ]; then
+# Staged package metadata files that should trigger package.json linting
+STAGED_PACKAGE_JSON=$(git diff --cached --name-only --diff-filter=ACMR \
+  | grep -E "^package\\.json$" || true)
+
+if [ -z "$STAGED_PRETTIER" ] && [ -z "$STAGED_PY" ] && [ -z "$STAGED_SRC" ] && [ -z "$STAGED_TYPECHECK" ] && [ -z "$STAGED_PACKAGE_JSON" ]; then
   exit 0
 fi
 
@@ -45,8 +50,8 @@ if [ -n "$STAGED_PRETTIER" ]; then
     echo "[pre-commit] pnpm is required for Prettier." >&2
     exit 1
   fi
-  echo "[pre-commit] Formatting staged files with Prettier…"
-  echo "$STAGED_PRETTIER" | xargs pnpm prettier --cache --write --
+  echo "[pre-commit] Formatting staged files with Prettier and Eslint…"
+  echo "$STAGED_PRETTIER" | xargs pnpm format --
   # Re-stage any files Prettier modified
   echo "$STAGED_PRETTIER" | xargs git add
 fi
@@ -71,7 +76,17 @@ if [ -n "$STAGED_PY" ]; then
   echo "$STAGED_PY" | xargs git add
 fi
 
-# ── 3. Validate frontend types ─────────────────────────────────────────────────
+# ── 3. Lint package.json versions ──────────────────────────────────────────────
+if [ -n "$STAGED_PACKAGE_JSON" ]; then
+  if ! command -v pnpm >/dev/null 2>&1; then
+    echo "[pre-commit] pnpm is required to lint package.json." >&2
+    exit 1
+  fi
+  echo "[pre-commit] Linting package.json versions…"
+  pnpm lint:package-json
+fi
+
+# ── 4. Validate frontend types ─────────────────────────────────────────────────
 if [ -n "$STAGED_TYPECHECK" ]; then
   if ! command -v pnpm >/dev/null 2>&1; then
     echo "[pre-commit] pnpm is required to validate TypeScript types." >&2
@@ -81,7 +96,7 @@ if [ -n "$STAGED_TYPECHECK" ]; then
   pnpm lint:types
 fi
 
-# ── 4. Rebuild the bundle ──────────────────────────────────────────────────────
+# ── 5. Rebuild the bundle ──────────────────────────────────────────────────────
 if [ -n "$STAGED_SRC" ]; then
   if ! command -v pnpm >/dev/null 2>&1; then
     echo "[pre-commit] pnpm is required to build frontend assets." >&2

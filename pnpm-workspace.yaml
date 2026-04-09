@@ -3,3 +3,8 @@ packages:
 
 minimumReleaseAge: 1440
 trustPolicy: no-downgrade
+trustPolicyExclude:
+  # Package: semver@6.3.1 AND semver@5.7.2
+  # Reason: Old version released after higher-trust versions; dependency chain cannot yet be upgraded. Version and repo manually checked.
+  # Risk Assessment: Used only as version parser; no runtime execution path; no CVE exposure.
+  - semver@6.3.1 || 5.7.2

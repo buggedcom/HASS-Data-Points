@@ -18,6 +18,9 @@ pnpm test
 echo "[pre-push] Running ESLint without fixes…"
 pnpm lint:eslint
 
+echo "[pre-push] Linting package.json versions…"
+pnpm lint:package-json
+
 echo "[pre-push] Running Prettier checks…"
 pnpm lint:prettier
 
