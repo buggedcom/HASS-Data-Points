@@ -7,6 +7,12 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Default to read-only for all jobs. Jobs that need additional permissions
+# (e.g. build provenance attestation) declare them explicitly at the job level,
+# which fully overrides this block for that job.
+permissions:
+  contents: read
+
 jobs:
   # ══════════════════════════════════════════════════════════════════════════════
   # Stage 1 — Lint & structural checks (all run in parallel)
@@ -197,6 +203,7 @@ jobs:
     needs: [test-python, test-unit, test-storybook, test-chromatic, hacs]
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       id-token: write
       attestations: write
     steps:

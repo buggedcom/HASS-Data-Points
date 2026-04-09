@@ -9,6 +9,9 @@ jobs:
   commitlint:
     name: Validate commit messages
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -17,6 +20,6 @@ jobs:
       - name: Lint commit messages
         uses: wagoid/commitlint-github-action@v6
         with:
-          configFile: .github/commitlint.config.js
+          configFile: .github/commitlint.config.mjs
           failOnWarnings: false
           helpURL: https://www.conventionalcommits.org/en/v1.0.0/
