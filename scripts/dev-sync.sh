@@ -132,17 +132,6 @@ else
 fi
 
 # ---------------------------------------------------------------------------
-# Version bump
-# ---------------------------------------------------------------------------
-
-if [[ $DRY_RUN -eq 1 ]]; then
-  NEW_VERSION="$(bash "$REPO_ROOT/scripts/bump-version.sh" --dry-run | tail -1)"
-else
-  NEW_VERSION="$(bash "$REPO_ROOT/scripts/bump-version.sh" | tail -1)"
-fi
-echo "Version bumped to $NEW_VERSION"
-
-# ---------------------------------------------------------------------------
 # Build
 # ---------------------------------------------------------------------------
 
