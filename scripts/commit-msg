@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+#
+# commit-msg hook: validates Conventional Commits format.
+#
+# Install:  pnpm hooks:install
+#           (or manually: ln -sf ../../scripts/commit-msg .git/hooks/commit-msg)
+#
+# Spec: https://www.conventionalcommits.org/en/v1.0.0/
+
+set -euo pipefail
+
+MSG_FILE="$1"
+FIRST_LINE=$(head -n1 "$MSG_FILE")
+
+# ── Skip special commits ───────────────────────────────────────────────────────
+# Merge commits, reverts created by git, and fixup!/squash! interactive-rebase
+# commits are allowed through without validation.
+if echo "$FIRST_LINE" | grep -qE "^(Merge |Revert \"|fixup! |squash! )"; then
+  exit 0
+fi
+
+# ── Validate against Conventional Commits ─────────────────────────────────────
+# Pattern: <type>[(<scope>)][!]: <description>
+TYPES="feat|fix|chore|doc|docs|refactor|test|ci|perf|style|revert"
+PATTERN="^(${TYPES})(\([^)]+\))?(!)?: .+"
+
+if ! echo "$FIRST_LINE" | grep -qE "$PATTERN"; then
+  echo "" >&2
+  echo "[commit-msg] ✗  Commit message does not follow Conventional Commits." >&2
+  echo "" >&2
+  echo "  Got:      $FIRST_LINE" >&2
+  echo "" >&2
+  echo "  Expected: <type>[(<scope>)][!]: <description>" >&2
+  echo "  Types:    feat  fix  chore  doc  docs  refactor  test  ci  perf  style  revert" >&2
+  echo "  Examples: feat(list): add pagination to event list" >&2
+  echo "            fix: correct date validation in store" >&2
+  echo "            chore!: drop support for HA < 2024.1" >&2
+  echo "" >&2
+  echo "  See: https://www.conventionalcommits.org/" >&2
+  echo "" >&2
+  exit 1
+fi
+
+echo "[commit-msg] ✓ Commit message is valid."
+exit 0

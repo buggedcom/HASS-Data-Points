@@ -1,0 +1,59 @@
+name: Feature request
+description: Suggest an improvement or new capability
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have an idea for Hass Data Points? Describe it below.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      description: Which part of the integration does this relate to?
+      multiple: true
+      options:
+        - Quick card
+        - Action card
+        - History card
+        - List card
+        - Sensor card
+        - Statistics card
+        - Dev tool card
+        - Datapoints panel
+        - Python backend / automations / services
+        - Localisation / i18n
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: What are you trying to do, or what limitation are you hitting?
+      placeholder: "When I … I can't … because …"
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: Describe what you'd like to happen. Sketches or config YAML snippets are welcome.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any workarounds you've tried, or other approaches you thought about.
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Screenshots, links to similar features in other integrations, or anything else useful.

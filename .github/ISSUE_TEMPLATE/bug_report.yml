@@ -1,0 +1,94 @@
+name: Bug report
+description: Report a problem with Hass Data Points
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Please fill in as much detail as you can — it helps a lot.
+
+  - type: dropdown
+    id: card
+    attributes:
+      label: Affected card or area
+      description: Which part of the integration is affected?
+      multiple: true
+      options:
+        - Quick card
+        - Action card
+        - History card
+        - List card
+        - Sensor card
+        - Statistics card
+        - Dev tool card
+        - Datapoints panel
+        - Python backend / automations
+        - Installation / setup
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: integration-version
+    attributes:
+      label: Integration version
+      description: Found in HACS or `custom_components/hass_datapoints/manifest.json`
+      placeholder: "e.g. 0.4.1"
+    validations:
+      required: true
+
+  - type: input
+    id: ha-version
+    attributes:
+      label: Home Assistant version
+      placeholder: "e.g. 2025.4.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: install-method
+    attributes:
+      label: Installation method
+      options:
+        - HACS
+        - Manual
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Go to …
+        2. Click on …
+        3. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behaviour
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs or errors
+      description: Paste any errors from the browser console or Home Assistant logs.
+      render: text
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Screenshots, card YAML config, or anything else that might help.

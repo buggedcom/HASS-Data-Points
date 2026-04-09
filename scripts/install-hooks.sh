@@ -10,9 +10,11 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 HOOKS_DIR="$REPO_ROOT/.git/hooks"
 
-ln -sf "../../scripts/pre-commit" "$HOOKS_DIR/pre-commit"
-ln -sf "../../scripts/pre-push" "$HOOKS_DIR/pre-push"
+ln -sf "../../scripts/pre-commit"  "$HOOKS_DIR/pre-commit"
+ln -sf "../../scripts/commit-msg"  "$HOOKS_DIR/commit-msg"
+ln -sf "../../scripts/pre-push"    "$HOOKS_DIR/pre-push"
 chmod +x "$SCRIPT_DIR/pre-commit"
+chmod +x "$SCRIPT_DIR/commit-msg"
 chmod +x "$SCRIPT_DIR/pre-push"
 
 echo "✓ Git hooks installed"
