@@ -1,0 +1,9 @@
+name: "CodeQL config"
+
+# Exclude the Vite-built JS bundle from analysis.  It is generated output —
+# the authoritative source is the TypeScript under src/, which CodeQL analyses
+# directly.  Scanning the bundle produces false positives (e.g. lit-html's
+# internal /-->/ template-parser regex flagged as a bad HTML sanitiser) with
+# no actionable remediation path.
+paths-ignore:
+  - "custom_components/hass_datapoints/hass-datapoints-cards.js"
