@@ -135,8 +135,14 @@ fi
 # Build
 # ---------------------------------------------------------------------------
 
+# Generate a short ID stamped into the bundle so the browser console confirms
+# which dev-sync build is loaded.  Only set here — build.sh never sets it, so
+# production/CI builds never carry a sync ID.
+VITE_DEV_SYNC_ID=$(( RANDOM % 9000 + 1000 ))
+export VITE_DEV_SYNC_ID
+
 if [[ $DO_BUILD -eq 1 ]]; then
-  echo "Building frontend bundle..."
+  echo "Building frontend bundle... (sync #${VITE_DEV_SYNC_ID})"
   bash "$REPO_ROOT/scripts/build.sh"
 fi
 
@@ -269,3 +275,7 @@ if [[ $DO_RESTART -eq 1 ]]; then
 fi
 
 echo "Sync complete."
+
+if [[ $DO_BUILD -eq 1 ]]; then
+  echo "Look for DEV#${VITE_DEV_SYNC_ID}"
+fi

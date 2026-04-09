@@ -102,7 +102,7 @@ if [ -n "$STAGED_SRC" ]; then
     echo "[pre-commit] pnpm is required to build frontend assets." >&2
     exit 1
   fi
-  echo "[pre-commit] src/ files changed — rebuilding $OUT_FILE…"
+  echo "[pre-commit] src/ files changed — rebuilding $OUT_FILE …"
   pnpm build
   git add "$OUT_FILE"
   echo "[pre-commit] ✓ $OUT_FILE rebuilt and staged"
