@@ -9,8 +9,8 @@
  * legend remain accessible from the parent card's shadow root.
  */
 
+import { html, render } from "lit";
 import { msg } from "@/lib/i18n/localize";
-import { esc } from "@/lib/util/format";
 import {
   binaryOffLabel,
   binaryOnLabel,
@@ -531,10 +531,17 @@ export class HistoryChart extends HTMLElement {
     } else {
       overlayEl.style.left = "";
     }
-    overlayEl.innerHTML = `
-      <div class="chart-preview-line"><strong>${msg("Date window:")}</strong> ${esc(overlay.window_range_label)}</div>
-      <div class="chart-preview-line"><strong>${msg("Actual:")}</strong> ${esc(overlay.actual_range_label)}</div>
-    `;
+    render(
+      html`
+        <div class="chart-preview-line">
+          <strong>${msg("Date window:")}</strong> ${overlay.window_range_label}
+        </div>
+        <div class="chart-preview-line">
+          <strong>${msg("Actual:")}</strong> ${overlay.actual_range_label}
+        </div>
+      `,
+      overlayEl
+    );
     overlayEl.hidden = false;
   }
 
@@ -720,33 +727,33 @@ export class HistoryChart extends HTMLElement {
       }>),
     ];
     this._updateLegendLayout(legendEl);
-    legendEl.innerHTML = allItems
-      .map((item) => {
+    render(
+      html`${allItems.map((item) => {
         const hidden = this._hiddenSeries?.has(item.entityId);
-        return `<div class="legend-item">
-        <button type="button" class="legend-toggle" aria-pressed="${hidden ? "false" : "true"}" data-entity-id="${esc(item.entityId)}">
-          <span class="legend-line" style="background:${esc(item.color)}"></span>
-          <span class="legend-label">${esc(item.label)}</span>
-        </button>
-      </div>`;
-      })
-      .join("");
-    legendEl.querySelectorAll(".legend-toggle").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const entityId = (btn as HTMLElement).dataset.entityId;
-        if (!entityId || !this._hiddenSeries) return;
-        if (this._hiddenSeries.has(entityId)) {
-          this._hiddenSeries.delete(entityId);
-        } else {
-          this._hiddenSeries.add(entityId);
-        }
-        btn.setAttribute(
-          "aria-pressed",
-          this._hiddenSeries.has(entityId) ? "false" : "true"
-        );
-        this._redrawLastDraw();
-      });
-    });
+        return html`
+          <div class="legend-item">
+            <button
+              type="button"
+              class="legend-toggle"
+              aria-pressed="${hidden ? "false" : "true"}"
+              @click=${() => {
+                if (!this._hiddenSeries) return;
+                if (this._hiddenSeries.has(item.entityId)) {
+                  this._hiddenSeries.delete(item.entityId);
+                } else {
+                  this._hiddenSeries.add(item.entityId);
+                }
+                this._redrawLastDraw();
+              }}
+            >
+              <span class="legend-line" style="background:${item.color}"></span>
+              <span class="legend-label">${item.label}</span>
+            </button>
+          </div>
+        `;
+      })}`,
+      legendEl
+    );
   }
 
   /** Draw a single series line onto the renderer, with optional data-gap rendering. */
@@ -1038,7 +1045,13 @@ export class HistoryChart extends HTMLElement {
           "aria-label",
           event.message || "Open related history"
         );
-        iconEl.innerHTML = `<ha-icon icon="${esc(event.icon || "mdi:bookmark")}" style="color:${contrastColor(color)}"></ha-icon>`;
+        render(
+          html`<ha-icon
+            icon="${event.icon || "mdi:bookmark"}"
+            style="color:${contrastColor(color)}"
+          ></ha-icon>`,
+          iconEl
+        );
         iconEl.addEventListener("click", navigateToHistory);
         overlay.appendChild(iconEl);
       } else if (overlay) {
@@ -1725,21 +1738,40 @@ export class HistoryChart extends HTMLElement {
     );
 
     const labelRight = 10;
-    let labelsHtml = "";
+    const labelItems: import("lit").TemplateResult[] = [];
     for (const { renderer, axis, rowOffset } of tracks) {
       if (!axis?.ticks?.length) continue;
       for (const tick of axis.ticks) {
         const y = rowOffset + renderer.yOf(tick, axis.min, axis.max);
         const formatted = renderer._formatAxisTick(tick, axis.unit);
-        labelsHtml += `<div class="chart-axis-label" style="top:${Math.round(y) + 1}px;right:${labelRight}px;text-align:right;">${esc(formatted)}</div>`;
+        labelItems.push(
+          html`<div
+            class="chart-axis-label"
+            style="top:${Math.round(y) +
+            1}px;right:${labelRight}px;text-align:right;"
+          >
+            ${formatted}
+          </div>`
+        );
       }
       if (axis.unit) {
         const unitY = rowOffset + Math.max(0, primaryRenderer.pad.top - 18);
-        labelsHtml += `<div class="chart-axis-unit" style="top:${unitY}px;right:${labelRight}px;text-align:right;">${esc(axis.unit)}</div>`;
+        labelItems.push(
+          html`<div
+            class="chart-axis-unit"
+            style="top:${unitY}px;right:${labelRight}px;text-align:right;"
+          >
+            ${axis.unit}
+          </div>`
+        );
       }
     }
 
-    leftEl.innerHTML = `<div class="chart-axis-divider"></div>${labelsHtml}`;
+    render(
+      html`<div class="chart-axis-divider"></div>
+        ${labelItems}`,
+      leftEl
+    );
     leftEl.classList.add("visible");
     rightEl.innerHTML = "";
     rightEl.classList.remove("visible");

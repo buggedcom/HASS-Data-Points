@@ -4,7 +4,6 @@ import { localized, msg } from "@/lib/i18n/localize";
 
 import { styles } from "./history-targets.styles";
 import { entityName } from "@/lib/ha/entity-name";
-import { esc } from "@/lib/util/format";
 import type { HassLike, HassState } from "@/lib/types";
 import "@/molecules/target-row-list/target-row-list";
 
@@ -125,8 +124,8 @@ export class HistoryTargets extends LitElement {
             ? "is-hidden"
             : ""}"
           data-entity-id=${row.entity_id}
-          style="--row-color:${esc(row.color)}"
-          aria-label=${esc(label)}
+          style="--row-color:${row.color}"
+          aria-label=${label}
           aria-pressed=${row.visible === false ? "false" : "true"}
           @click=${(ev: Event) =>
             this._onCollapsedEntityClick(ev, row.entity_id)}

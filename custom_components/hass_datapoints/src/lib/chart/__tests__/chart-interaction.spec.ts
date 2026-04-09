@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { html, render } from "lit";
 
 import {
   buildTooltipRelatedChips,
@@ -103,13 +104,15 @@ describe("chart-interaction", () => {
         expect.assertions(2);
 
         const card = createCard();
-        const markup = buildTooltipRelatedChips(card._hass, {
+        const chips = buildTooltipRelatedChips(card._hass, {
           entity_ids: ["sensor.alpha"],
           device_ids: ["device.one"],
         });
+        const container = document.createElement("div");
+        render(chips ?? html``, container);
 
-        expect(markup).toContain("Alpha Sensor");
-        expect(markup).toContain("Radiator");
+        expect(container.textContent).toContain("Alpha Sensor");
+        expect(container.textContent).toContain("Radiator");
       });
     });
   });

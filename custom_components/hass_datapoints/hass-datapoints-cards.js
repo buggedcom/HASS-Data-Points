@@ -5779,37 +5779,6 @@
 		}
 	};
 	//#endregion
-	//#region custom_components/hass_datapoints/src/lib/util/format.ts
-	function fmtTime(iso) {
-		return new Date(iso).toLocaleTimeString([], {
-			hour: "2-digit",
-			minute: "2-digit"
-		});
-	}
-	function fmtDateTime(iso) {
-		return new Date(iso).toLocaleString([], {
-			month: "short",
-			day: "numeric",
-			hour: "2-digit",
-			minute: "2-digit"
-		});
-	}
-	function fmtRelativeTime(iso) {
-		const diff = Date.now() - new Date(iso).getTime();
-		const mins = Math.floor(diff / 6e4);
-		if (mins < 1) return "Just now";
-		if (mins < 60) return `${mins}m ago`;
-		const hours = Math.floor(mins / 60);
-		if (hours < 24) return `${hours}h ago`;
-		const days = Math.floor(hours / 24);
-		if (days < 7) return `${days}d ago`;
-		return fmtDateTime(iso);
-	}
-	/** Escape HTML for safe inline insertion */
-	function esc(str) {
-		return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
-	}
-	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/ha/ha-components.ts
 	var HA_COMPONENT_LOAD_TIMEOUT_MS = 6e3;
 	var HA_COMPONENT_LOADER_SUPPORTED_TAGS = new Set([
@@ -5902,47 +5871,6 @@
 			dialog.open = false;
 			dialog.headerTitle = options.title || msg("Confirm delete");
 			if (host?._hass) dialog.hass = host._hass;
-			dialog.innerHTML = `
-        <style>
-          .confirm-dialog-body {
-            padding: 0 var(--dp-spacing-lg, 24px) var(--dp-spacing-lg, 24px);
-            color: var(--primary-text-color);
-          }
-          .confirm-dialog-message {
-            line-height: 1.5;
-            color: var(--secondary-text-color, var(--primary-text-color));
-          }
-          .confirm-dialog-actions {
-            display: flex;
-            justify-content: flex-end;
-            gap: var(--dp-spacing-sm, 8px);
-            margin-top: var(--dp-spacing-lg, 24px);
-          }
-          .confirm-dialog-button {
-            border: 0;
-            border-radius: 999px;
-            padding: 0 16px;
-            height: 36px;
-            font: inherit;
-            cursor: pointer;
-          }
-          .confirm-dialog-button.cancel {
-            background: transparent;
-            color: var(--primary-text-color);
-          }
-          .confirm-dialog-button.confirm {
-            background: var(--error-color, #db4437);
-            color: white;
-          }
-        </style>
-        <div class="confirm-dialog-body">
-          <div class="confirm-dialog-message">${esc(options.message || msg("Are you sure you want to delete this item?"))}</div>
-          <div class="confirm-dialog-actions">
-            <button type="button" class="confirm-dialog-button cancel">${esc(options.cancelLabel || msg("Cancel"))}</button>
-            <button type="button" class="confirm-dialog-button confirm">${esc(options.confirmLabel || msg("Delete"))}</button>
-          </div>
-        </div>
-      `;
 			let settled = false;
 			const finish = (value) => {
 				if (settled) return;
@@ -5950,14 +5878,61 @@
 				dialog.open = false;
 				resolve(value);
 			};
-			const cancelButton = dialog.querySelector(".confirm-dialog-button.cancel");
-			const confirmButton = dialog.querySelector(".confirm-dialog-button.confirm");
-			cancelButton?.addEventListener("click", () => {
-				finish(false);
-			});
-			confirmButton?.addEventListener("click", () => {
-				finish(true);
-			});
+			D(b`
+            <style>
+              .confirm-dialog-body {
+                padding: 0 var(--dp-spacing-lg, 24px) var(--dp-spacing-lg, 24px);
+                color: var(--primary-text-color);
+              }
+              .confirm-dialog-message {
+                line-height: 1.5;
+                color: var(--secondary-text-color, var(--primary-text-color));
+              }
+              .confirm-dialog-actions {
+                display: flex;
+                justify-content: flex-end;
+                gap: var(--dp-spacing-sm, 8px);
+                margin-top: var(--dp-spacing-lg, 24px);
+              }
+              .confirm-dialog-button {
+                border: 0;
+                border-radius: 999px;
+                padding: 0 16px;
+                height: 36px;
+                font: inherit;
+                cursor: pointer;
+              }
+              .confirm-dialog-button.cancel {
+                background: transparent;
+                color: var(--primary-text-color);
+              }
+              .confirm-dialog-button.confirm {
+                background: var(--error-color, #db4437);
+                color: white;
+              }
+            </style>
+            <div class="confirm-dialog-body">
+              <div class="confirm-dialog-message">
+                ${options.message || msg("Are you sure you want to delete this item?")}
+              </div>
+              <div class="confirm-dialog-actions">
+                <button
+                  type="button"
+                  class="confirm-dialog-button cancel"
+                  @click=${() => finish(false)}
+                >
+                  ${options.cancelLabel || msg("Cancel")}
+                </button>
+                <button
+                  type="button"
+                  class="confirm-dialog-button confirm"
+                  @click=${() => finish(true)}
+                >
+                  ${options.confirmLabel || msg("Delete")}
+                </button>
+              </div>
+            </div>
+          `, dialog);
 			dialog.addEventListener("keydown", (event) => {
 				if (event.key !== "Enter" || event.shiftKey || event.altKey || event.ctrlKey || event.metaKey) return;
 				event.preventDefault();
@@ -5970,7 +5945,7 @@
 			root.appendChild(dialog);
 			dialog.open = true;
 			window.requestAnimationFrame(() => {
-				confirmButton?.focus();
+				dialog.querySelector(".confirm-dialog-button.confirm")?.focus();
 			});
 		}));
 	}
@@ -6173,6 +6148,37 @@
     color: var(--secondary-text-color);
   }
 `;
+	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/util/format.ts
+	function fmtTime(iso) {
+		return new Date(iso).toLocaleTimeString([], {
+			hour: "2-digit",
+			minute: "2-digit"
+		});
+	}
+	function fmtDateTime(iso) {
+		return new Date(iso).toLocaleString([], {
+			month: "short",
+			day: "numeric",
+			hour: "2-digit",
+			minute: "2-digit"
+		});
+	}
+	function fmtRelativeTime(iso) {
+		const diff = Date.now() - new Date(iso).getTime();
+		const mins = Math.floor(diff / 6e4);
+		if (mins < 1) return "Just now";
+		if (mins < 60) return `${mins}m ago`;
+		const hours = Math.floor(mins / 60);
+		if (hours < 24) return `${hours}h ago`;
+		const days = Math.floor(hours / 24);
+		if (days < 7) return `${days}d ago`;
+		return fmtDateTime(iso);
+	}
+	/** Escape HTML for safe inline insertion */
+	function esc(str) {
+		return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/dev-tool/dev-tool-results/dev-tool-results.ts
 	var _results_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -6680,39 +6686,48 @@
 		_render() {
 			this._rendered = true;
 			const cfg = this._config;
-			this.shadowRoot.innerHTML = `
-      <style>${styles$58}</style>
-      <ha-card>
-        ${cfg.title ? `<div class="card-header">${esc(cfg.title)}</div>` : ""}
-
-        <div class="section-title">Analyze HA History</div>
-
-        <div class="form-group">
-          <ha-selector id="entity-picker" label="Entities to analyze"></ha-selector>
-        </div>
-
-        <dev-tool-windows id="windows-editor"></dev-tool-windows>
-
-        <div class="analyze-row">
-          <ha-button id="analyze-btn" class="analyze-btn" raised>Analyze all windows</ha-button>
-        </div>
-
-        <feedback-banner id="analyze-status"></feedback-banner>
-
-        <dev-tool-results id="results-container"></dev-tool-results>
-
-        <hr class="divider">
-
-        <div class="dev-section">
-          <div class="section-title">Dev Datapoints</div>
-          <div class="dev-summary">
-            <span class="dev-count-label">Currently recorded:&nbsp;<span class="dev-count-num" id="dev-count">—</span>&nbsp;dev data point<span id="dev-count-plural">s</span></span>
+			if (!this.shadowRoot.adoptedStyleSheets.length) {
+				const sheet = new CSSStyleSheet();
+				sheet.replaceSync(styles$58);
+				this.shadowRoot.adoptedStyleSheets = [sheet];
+			}
+			D(b`
+        <ha-card>
+          ${cfg.title ? b`<div class="card-header">${cfg.title}</div>` : ""}
+          <div class="section-title">Analyze HA History</div>
+          <div class="form-group">
+            <ha-selector
+              id="entity-picker"
+              label="Entities to analyze"
+            ></ha-selector>
           </div>
-          <ha-button class="delete-btn" id="delete-dev-btn">Delete all dev datapoints</ha-button>
-          <feedback-banner id="delete-status"></feedback-banner>
-        </div>
-      </ha-card>
-    `;
+          <dev-tool-windows id="windows-editor"></dev-tool-windows>
+          <div class="analyze-row">
+            <ha-button id="analyze-btn" class="analyze-btn" raised
+              >Analyze all windows</ha-button
+            >
+          </div>
+          <feedback-banner id="analyze-status"></feedback-banner>
+          <dev-tool-results id="results-container"></dev-tool-results>
+          <hr class="divider" />
+          <div class="dev-section">
+            <div class="section-title">Dev Datapoints</div>
+            <div class="dev-summary">
+              <span class="dev-count-label"
+                >Currently recorded:&nbsp;<span
+                  class="dev-count-num"
+                  id="dev-count"
+                  >—</span
+                >&nbsp;dev data point<span id="dev-count-plural">s</span></span
+              >
+            </div>
+            <ha-button class="delete-btn" id="delete-dev-btn"
+              >Delete all dev datapoints</ha-button
+            >
+            <feedback-banner id="delete-status"></feedback-banner>
+          </div>
+        </ha-card>
+      `, this.shadowRoot);
 			const entityPicker = this.shadowRoot.getElementById("entity-picker");
 			if (entityPicker) {
 				entityPicker.selector = { entity: { multiple: true } };
@@ -8438,18 +8453,31 @@
 		}, /* @__PURE__ */ new Map());
 		const axisTextStyle = (axis) => {
 			if (!(!!axis?.unit && (unitCounts.get(axis.unit) || 0) > 1) || !axis?.color) return "";
-			return `color:${esc(axis.color)};`;
+			return `color:${axis.color};`;
 		};
 		const buildAxisMarkup = (axis) => {
-			return `${(axis.ticks || []).map((tick) => {
+			return b`${(axis.ticks || []).map((tick) => {
 				const y = renderer.yOf(tick, axis.min, axis.max);
-				return `<div class="chart-axis-label" style="top:${Math.round(y) + 1}px;${axis.side === "left" ? `right:${axisOffset(axis)}px;text-align:right;` : `left:${axisOffset(axis)}px;text-align:left;`}${axisTextStyle(axis)}">${esc(renderer._formatAxisTick(tick, axis.unit))}</div>`;
-			}).join("")}${axis.unit ? `<div class="chart-axis-unit" style="top:${Math.max(0, renderer.pad.top - 18)}px;${axis.side === "left" ? `right:${axisOffset(axis)}px;text-align:right;` : `left:${axisOffset(axis)}px;text-align:left;`}${axisTextStyle(axis)}">${esc(axis.unit)}</div>` : ""}`;
+				const sideStyle = axis.side === "left" ? `right:${axisOffset(axis)}px;text-align:right;` : `left:${axisOffset(axis)}px;text-align:left;`;
+				return b`<div
+        class="chart-axis-label"
+        style="top:${Math.round(y) + 1}px;${sideStyle}${axisTextStyle(axis)}"
+      >
+        ${renderer._formatAxisTick(tick, axis.unit)}
+      </div>`;
+			})}${axis.unit ? b`<div
+          class="chart-axis-unit"
+          style="top:${Math.max(0, renderer.pad.top - 18)}px;${axis.side === "left" ? `right:${axisOffset(axis)}px;text-align:right;` : `left:${axisOffset(axis)}px;text-align:left;`}${axisTextStyle(axis)}"
+        >
+          ${axis.unit}
+        </div>` : ""}`;
 		};
 		const leftAxes = axes.filter((axis) => axis.side !== "right");
 		const rightAxes = axes.filter((axis) => axis.side === "right");
-		leftEl.innerHTML = leftAxes.length ? `<div class="chart-axis-divider"></div>${leftAxes.map((axis) => buildAxisMarkup(axis)).join("")}` : "";
-		rightEl.innerHTML = rightAxes.length ? `<div class="chart-axis-divider"></div>${rightAxes.map((axis) => buildAxisMarkup(axis)).join("")}` : "";
+		D(leftAxes.length ? b`<div class="chart-axis-divider"></div>
+          ${leftAxes.map((axis) => buildAxisMarkup(axis))}` : b``, leftEl);
+		D(rightAxes.length ? b`<div class="chart-axis-divider"></div>
+          ${rightAxes.map((axis) => buildAxisMarkup(axis))}` : b``, rightEl);
 		leftEl.classList.toggle("visible", !!leftAxes.length);
 		rightEl.classList.toggle("visible", !!rightAxes.length);
 	}
@@ -8766,20 +8794,32 @@
 		const interactionState = getInteractionState(card);
 		const tooltip = document.createElement("div");
 		tooltip.className = "tooltip secondary annotation-tooltip";
-		const valueMarkup = event?.chart_value != null && event.chart_value !== "" ? `<div class="tt-value">${esc(formatTooltipValue(event.chart_value, event.chart_unit))}</div>` : "";
+		const hasValue = event?.chart_value != null && event.chart_value !== "";
 		const message = event?.message || "Data point";
 		const annotation = event?.annotation && event.annotation !== event.message ? event.annotation : "";
-		const relatedMarkup = buildTooltipRelatedChips(interactionState._hass, event);
-		tooltip.innerHTML = `
-    <div class="tt-time">${esc(fmtDateTime(event.timestamp))}</div>
-    ${valueMarkup}
-    <div class="tt-message-row">
-      <span class="tt-dot" style="background:${esc(event?.color || "#03a9f4")}"></span>
-      <span class="tt-message">${esc(message)}</span>
-    </div>
-    <div class="tt-annotation" style="display:${annotation ? "block" : "none"}">${esc(annotation)}</div>
-    <div class="tt-entities" style="display:${relatedMarkup ? "flex" : "none"}">${relatedMarkup}</div>
-  `;
+		const chips = buildTooltipRelatedChips(interactionState._hass, event);
+		D(b`
+      <div class="tt-time">${fmtDateTime(event.timestamp)}</div>
+      ${hasValue ? b`<div class="tt-value">
+            ${formatTooltipValue(event.chart_value, event.chart_unit)}
+          </div>` : ""}
+      <div class="tt-message-row">
+        <span
+          class="tt-dot"
+          style="background:${event?.color || "#03a9f4"}"
+        ></span>
+        <span class="tt-message">${message}</span>
+      </div>
+      <div
+        class="tt-annotation"
+        style="display:${annotation ? "block" : "none"}"
+      >
+        ${annotation}
+      </div>
+      <div class="tt-entities" style="display:${chips ? "flex" : "none"}">
+        ${chips}
+      </div>
+    `, tooltip);
 		return tooltip;
 	}
 	function renderAnnotationTooltips(card, hover, anchorTooltip, bounds = null) {
@@ -9061,22 +9101,31 @@
 			ttValue.textContent = value ? formatTooltipDisplayValue(value.value, value.unit) : "";
 			ttValue.style.display = value ? "block" : "none";
 			if (ttSeries) {
-				ttSeries.innerHTML = "";
+				D(b``, ttSeries);
 				ttSeries.style.display = "none";
 			}
 		} else {
 			ttValue.textContent = "";
 			ttValue.style.display = "none";
 			if (ttSeries) {
-				ttSeries.innerHTML = displayRows.map((entry) => `
-        <div class="tt-series-row ${entry.grouped === true && entry.rawVisible === true ? "subordinate" : ""}">
-          <div class="tt-series-main">
-            ${entry.grouped === true && entry.rawVisible === true ? "" : `<span class="tt-dot" style="background:${esc(entry.color || "#03a9f4")}"></span>`}
-            <span class="tt-series-label">${esc(resolveTooltipSeriesLabel(entry))}</span>
-          </div>
-          <span class="tt-series-value">${esc(formatTooltipDisplayValue(entry.value, entry.unit))}</span>
-        </div>
-      `).join("");
+				D(b`${displayRows.map((entry) => b`
+            <div
+              class="tt-series-row ${entry.grouped === true && entry.rawVisible === true ? "subordinate" : ""}"
+            >
+              <div class="tt-series-main">
+                ${entry.grouped === true && entry.rawVisible === true ? "" : b`<span
+                      class="tt-dot"
+                      style="background:${entry.color || "#03a9f4"}"
+                    ></span>`}
+                <span class="tt-series-label"
+                  >${resolveTooltipSeriesLabel(entry)}</span
+                >
+              </div>
+              <span class="tt-series-value"
+                >${formatTooltipDisplayValue(entry.value, entry.unit)}</span
+              >
+            </div>
+          `)}`, ttSeries);
 				ttSeries.style.display = displayRows.length ? "grid" : "none";
 			}
 		}
@@ -9084,7 +9133,7 @@
 		ttMsg.textContent = "";
 		ttAnn.textContent = "";
 		ttAnn.style.display = "none";
-		ttEntities.innerHTML = "";
+		D(b``, ttEntities);
 		ttEntities.style.display = "none";
 		if (anomalyTooltip && ttSecondaryTitle && ttSecondaryDescription && ttSecondaryAlert && ttSecondaryInstruction) {
 			const anomalyContent = buildAnomalyTooltipContent(hover.anomalyRegions);
@@ -9130,13 +9179,13 @@
 				label: labelName(hass, id)
 			}))
 		].filter((chip) => chip.label);
-		if (!chips.length) return "";
-		return chips.map((chip) => `
-    <span class="tt-entity-chip" title="${esc(chip.label)}">
-      <ha-icon icon="${esc(chip.icon)}"></ha-icon>
-      <span>${esc(chip.label)}</span>
-    </span>
-  `).join("");
+		if (!chips.length) return null;
+		return b`${chips.map((chip) => b`
+      <span class="tt-entity-chip" title="${chip.label}">
+        <ha-icon icon="${chip.icon}"></ha-icon>
+        <span>${chip.label}</span>
+      </span>
+    `)}`;
 	}
 	function showLineChartCrosshair(card, renderer, hover) {
 		const overlay = getRoot(card).getElementById("chart-crosshair");
@@ -9161,20 +9210,20 @@
 			...hover.showRateCrosshairs === true ? (hover.rateValues || []).filter((entry) => entry.showCrosshair === true) : [],
 			...hover.comparisonValues || []
 		];
-		points.innerHTML = `
-    ${crosshairValues.filter((entry) => entry.hasValue !== false).map((entry) => `
-      <span
-        class="crosshair-line horizontal series ${hover.emphasizeGuides ? "emphasized" : "subtle"}"
-        style="top:${entry.y}px;color:${esc(entry.color || "#03a9f4")};opacity:${Number.isFinite(entry.opacity) ? entry.opacity : 1}"
-      ></span>
-    `).join("")}
-    ${crosshairValues.filter((entry) => entry.hasValue !== false).map((entry) => `
-    <span
-      class="crosshair-point"
-      style="left:${entry.x}px;top:${entry.y}px;background:${esc(entry.color || "#03a9f4")};opacity:${Number.isFinite(entry.opacity) ? entry.opacity : 1}"
-    ></span>
-    `).join("")}
-  `;
+		D(b`
+      ${crosshairValues.filter((entry) => entry.hasValue !== false).map((entry) => b`
+            <span
+              class="crosshair-line horizontal series ${hover.emphasizeGuides ? "emphasized" : "subtle"}"
+              style="top:${entry.y}px;color:${entry.color || "#03a9f4"};opacity:${Number.isFinite(entry.opacity) ? entry.opacity : 1}"
+            ></span>
+          `)}
+      ${crosshairValues.filter((entry) => entry.hasValue !== false).map((entry) => b`
+            <span
+              class="crosshair-point"
+              style="left:${entry.x}px;top:${entry.y}px;background:${entry.color || "#03a9f4"};opacity:${Number.isFinite(entry.opacity) ? entry.opacity : 1}"
+            ></span>
+          `)}
+    `, points);
 		renderChartAxisHoverDots(card, crosshairValues);
 		if (addButton && addButton.dataset.allowAddAnnotation !== "false") {
 			addButton.hidden = false;
@@ -9228,7 +9277,7 @@
 		const points = getRoot(card).getElementById("crosshair-points");
 		const addButton = getRoot(card).getElementById("chart-add-annotation");
 		if (overlay) overlay.hidden = true;
-		if (points) points.innerHTML = "";
+		if (points) D(b``, points);
 		renderChartAxisHoverDots(card, []);
 		const horizontal = getRoot(card).getElementById("crosshair-horizontal");
 		if (horizontal) horizontal.hidden = true;
@@ -11513,10 +11562,14 @@
 			}
 			if (renderer?.pad?.left != null) overlayEl.style.left = `${Math.max(8, renderer.pad.left + 8)}px`;
 			else overlayEl.style.left = "";
-			overlayEl.innerHTML = `
-      <div class="chart-preview-line"><strong>${msg("Date window:")}</strong> ${esc(overlay.window_range_label)}</div>
-      <div class="chart-preview-line"><strong>${msg("Actual:")}</strong> ${esc(overlay.actual_range_label)}</div>
-    `;
+			D(b`
+        <div class="chart-preview-line">
+          <strong>${msg("Date window:")}</strong> ${overlay.window_range_label}
+        </div>
+        <div class="chart-preview-line">
+          <strong>${msg("Actual:")}</strong> ${overlay.actual_range_label}
+        </div>
+      `, overlayEl);
 			overlayEl.hidden = false;
 		}
 		/**
@@ -11610,24 +11663,26 @@
 			if (!legendEl) return;
 			const allItems = [...series, ...binaryBackgrounds];
 			this._updateLegendLayout(legendEl);
-			legendEl.innerHTML = allItems.map((item) => {
-				return `<div class="legend-item">
-        <button type="button" class="legend-toggle" aria-pressed="${this._hiddenSeries?.has(item.entityId) ? "false" : "true"}" data-entity-id="${esc(item.entityId)}">
-          <span class="legend-line" style="background:${esc(item.color)}"></span>
-          <span class="legend-label">${esc(item.label)}</span>
-        </button>
-      </div>`;
-			}).join("");
-			legendEl.querySelectorAll(".legend-toggle").forEach((btn) => {
-				btn.addEventListener("click", () => {
-					const entityId = btn.dataset.entityId;
-					if (!entityId || !this._hiddenSeries) return;
-					if (this._hiddenSeries.has(entityId)) this._hiddenSeries.delete(entityId);
-					else this._hiddenSeries.add(entityId);
-					btn.setAttribute("aria-pressed", this._hiddenSeries.has(entityId) ? "false" : "true");
+			D(b`${allItems.map((item) => {
+				return b`
+          <div class="legend-item">
+            <button
+              type="button"
+              class="legend-toggle"
+              aria-pressed="${this._hiddenSeries?.has(item.entityId) ? "false" : "true"}"
+              @click=${() => {
+					if (!this._hiddenSeries) return;
+					if (this._hiddenSeries.has(item.entityId)) this._hiddenSeries.delete(item.entityId);
+					else this._hiddenSeries.add(item.entityId);
 					this._redrawLastDraw();
-				});
-			});
+				}}
+            >
+              <span class="legend-line" style="background:${item.color}"></span>
+              <span class="legend-label">${item.label}</span>
+            </button>
+          </div>
+        `;
+			})}`, legendEl);
 		}
 		/** Draw a single series line onto the renderer, with optional data-gap rendering. */
 		_drawSeriesLine(renderer, pts, color, t0, t1, min, max, opts) {
@@ -11763,7 +11818,10 @@
 					iconEl.style.top = `${y + yOffset}px`;
 					iconEl.title = event.message || "Open related history";
 					iconEl.setAttribute("aria-label", event.message || "Open related history");
-					iconEl.innerHTML = `<ha-icon icon="${esc(event.icon || "mdi:bookmark")}" style="color:${contrastColor(color)}"></ha-icon>`;
+					D(b`<ha-icon
+            icon="${event.icon || "mdi:bookmark"}"
+            style="color:${contrastColor(color)}"
+          ></ha-icon>`, iconEl);
 					iconEl.addEventListener("click", navigateToHistory);
 					overlay.appendChild(iconEl);
 				} else if (overlay) {
@@ -12165,20 +12223,31 @@
 			this.style.setProperty("--dp-chart-axis-right-width", "0px");
 			this.style.setProperty("--dp-chart-axis-bottom-height", `${bottomHeight}px`);
 			const labelRight = 10;
-			let labelsHtml = "";
+			const labelItems = [];
 			for (const { renderer, axis, rowOffset } of tracks) {
 				if (!axis?.ticks?.length) continue;
 				for (const tick of axis.ticks) {
 					const y = rowOffset + renderer.yOf(tick, axis.min, axis.max);
 					const formatted = renderer._formatAxisTick(tick, axis.unit);
-					labelsHtml += `<div class="chart-axis-label" style="top:${Math.round(y) + 1}px;right:${labelRight}px;text-align:right;">${esc(formatted)}</div>`;
+					labelItems.push(b`<div
+            class="chart-axis-label"
+            style="top:${Math.round(y) + 1}px;right:${labelRight}px;text-align:right;"
+          >
+            ${formatted}
+          </div>`);
 				}
 				if (axis.unit) {
 					const unitY = rowOffset + Math.max(0, primaryRenderer.pad.top - 18);
-					labelsHtml += `<div class="chart-axis-unit" style="top:${unitY}px;right:${labelRight}px;text-align:right;">${esc(axis.unit)}</div>`;
+					labelItems.push(b`<div
+            class="chart-axis-unit"
+            style="top:${unitY}px;right:${labelRight}px;text-align:right;"
+          >
+            ${axis.unit}
+          </div>`);
 				}
 			}
-			leftEl.innerHTML = `<div class="chart-axis-divider"></div>${labelsHtml}`;
+			D(b`<div class="chart-axis-divider"></div>
+        ${labelItems}`, leftEl);
 			leftEl.classList.add("visible");
 			rightEl.innerHTML = "";
 			rightEl.classList.remove("visible");
@@ -25474,8 +25543,8 @@
           type="button"
           class="history-targets-collapsed-item ${row.visible === false ? "is-hidden" : ""}"
           data-entity-id=${row.entity_id}
-          style="--row-color:${esc(row.color)}"
-          aria-label=${esc(label)}
+          style="--row-color:${row.color}"
+          aria-label=${label}
           aria-pressed=${row.visible === false ? "false" : "true"}
           @click=${(ev) => this._onCollapsedEntityClick(ev, row.entity_id)}
         >
@@ -35187,7 +35256,10 @@
 					el.style.left = `${hit.x}px`;
 					el.style.top = `${hit.y}px`;
 					el.style.background = bgColor;
-					el.innerHTML = `<ha-icon icon="${esc(hit.event.icon || "mdi:bookmark")}" style="--mdc-icon-size:12px;color:${contrastColor(bgColor)}"></ha-icon>`;
+					D(b`<ha-icon
+              icon="${hit.event.icon || "mdi:bookmark"}"
+              style="--mdc-icon-size:12px;color:${contrastColor(bgColor)}"
+            ></ha-icon>`, el);
 					el.dataset.eventId = hit.event.id;
 					el.addEventListener("click", (e) => {
 						if (this.showAnnotationTooltips) {

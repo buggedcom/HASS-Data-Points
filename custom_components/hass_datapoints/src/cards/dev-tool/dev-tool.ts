@@ -1,6 +1,6 @@
+import { html, render } from "lit";
 import { DOMAIN } from "@/constants";
 import { confirmDestructiveAction } from "@/lib/ha/ha-components";
-import { esc } from "@/lib/util/format";
 import type { HassLike } from "@/lib/types";
 import { logger } from "@/lib/logger";
 import { styles } from "./dev-tool.styles";
@@ -75,39 +75,53 @@ export class HassRecordsDevToolCard extends HTMLElement {
   _render() {
     this._rendered = true;
     const cfg = this._config;
-    this.shadowRoot!.innerHTML = `
-      <style>${styles}</style>
-      <ha-card>
-        ${cfg.title ? `<div class="card-header">${esc(cfg.title as string)}</div>` : ""}
-
-        <div class="section-title">Analyze HA History</div>
-
-        <div class="form-group">
-          <ha-selector id="entity-picker" label="Entities to analyze"></ha-selector>
-        </div>
-
-        <dev-tool-windows id="windows-editor"></dev-tool-windows>
-
-        <div class="analyze-row">
-          <ha-button id="analyze-btn" class="analyze-btn" raised>Analyze all windows</ha-button>
-        </div>
-
-        <feedback-banner id="analyze-status"></feedback-banner>
-
-        <dev-tool-results id="results-container"></dev-tool-results>
-
-        <hr class="divider">
-
-        <div class="dev-section">
-          <div class="section-title">Dev Datapoints</div>
-          <div class="dev-summary">
-            <span class="dev-count-label">Currently recorded:&nbsp;<span class="dev-count-num" id="dev-count">—</span>&nbsp;dev data point<span id="dev-count-plural">s</span></span>
+    if (!this.shadowRoot!.adoptedStyleSheets.length) {
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(styles);
+      this.shadowRoot!.adoptedStyleSheets = [sheet];
+    }
+    render(
+      html`
+        <ha-card>
+          ${cfg.title
+            ? html`<div class="card-header">${cfg.title as string}</div>`
+            : ""}
+          <div class="section-title">Analyze HA History</div>
+          <div class="form-group">
+            <ha-selector
+              id="entity-picker"
+              label="Entities to analyze"
+            ></ha-selector>
           </div>
-          <ha-button class="delete-btn" id="delete-dev-btn">Delete all dev datapoints</ha-button>
-          <feedback-banner id="delete-status"></feedback-banner>
-        </div>
-      </ha-card>
-    `;
+          <dev-tool-windows id="windows-editor"></dev-tool-windows>
+          <div class="analyze-row">
+            <ha-button id="analyze-btn" class="analyze-btn" raised
+              >Analyze all windows</ha-button
+            >
+          </div>
+          <feedback-banner id="analyze-status"></feedback-banner>
+          <dev-tool-results id="results-container"></dev-tool-results>
+          <hr class="divider" />
+          <div class="dev-section">
+            <div class="section-title">Dev Datapoints</div>
+            <div class="dev-summary">
+              <span class="dev-count-label"
+                >Currently recorded:&nbsp;<span
+                  class="dev-count-num"
+                  id="dev-count"
+                  >—</span
+                >&nbsp;dev data point<span id="dev-count-plural">s</span></span
+              >
+            </div>
+            <ha-button class="delete-btn" id="delete-dev-btn"
+              >Delete all dev datapoints</ha-button
+            >
+            <feedback-banner id="delete-status"></feedback-banner>
+          </div>
+        </ha-card>
+      `,
+      this.shadowRoot!
+    );
 
     const entityPicker = this.shadowRoot!.getElementById(
       "entity-picker"
