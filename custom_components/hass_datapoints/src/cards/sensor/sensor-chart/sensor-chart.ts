@@ -117,13 +117,11 @@ export class SensorChart extends LitElement {
   }
 
   connectedCallback() {
-    // eslint-disable-next-line wc/guard-super-call
     super.connectedCallback();
     this._setupResizeObserver();
   }
 
   disconnectedCallback() {
-    // eslint-disable-next-line wc/guard-super-call
     super.disconnectedCallback();
     if (this._resizeObserver) {
       this._resizeObserver.disconnect();

@@ -92,14 +92,12 @@ export class HassRecordsSensorCard extends LitElement {
   }
 
   connectedCallback() {
-    // eslint-disable-next-line wc/guard-super-call
     super.connectedCallback();
     this._setupResizeObserver();
     if (this._initialized && this._hass) this._load();
   }
 
   disconnectedCallback() {
-    // eslint-disable-next-line wc/guard-super-call
     super.disconnectedCallback();
     if (this._unsubscribe) {
       this._unsubscribe();

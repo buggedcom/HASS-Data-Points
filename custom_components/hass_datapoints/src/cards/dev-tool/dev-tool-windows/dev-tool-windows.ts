@@ -12,7 +12,6 @@ export class CardDevToolWindows extends LitElement {
   @state() accessor _nextWindowId = 1;
 
   connectedCallback() {
-    // eslint-disable-next-line wc/guard-super-call
     super.connectedCallback();
     if (this.windows.length === 0) {
       this.windows = [this._createWindow()];

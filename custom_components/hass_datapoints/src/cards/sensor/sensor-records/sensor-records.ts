@@ -66,7 +66,6 @@ export class SensorRecords extends LitElement {
   }
 
   disconnectedCallback(): void {
-    // eslint-disable-next-line wc/guard-super-call
     super.disconnectedCallback();
     if (this._paginationNotifyRaf !== null) {
       window.cancelAnimationFrame(this._paginationNotifyRaf);

@@ -56,7 +56,6 @@ export class CollapsedOptionsMenu extends LitElement {
   private _closeTimer: Nullable<ReturnType<typeof setTimeout>> = null;
 
   disconnectedCallback() {
-    // eslint-disable-next-line wc/guard-super-call
     super.disconnectedCallback();
     if (this._closeTimer !== null) {
       clearTimeout(this._closeTimer);

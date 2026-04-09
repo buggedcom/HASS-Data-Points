@@ -273,9 +273,9 @@ export class HassRecordsDevToolCard extends HTMLElement {
             ? new Date(timestampRaw * 1000).toISOString()
             : new Date().toISOString();
 
-        let message: Nullable<string> = null;
-        let icon = "mdi:bookmark";
-        let color = "#03a9f4";
+        let message: Nullable<string>;
+        let icon: string;
+        let color: string;
 
         if (domain === "binary_sensor" || domain === "input_boolean") {
           message = `${friendlyName}: ${this._binaryLabel(deviceClass, currentValue)}`;

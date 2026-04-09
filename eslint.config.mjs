@@ -1,9 +1,10 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { includeIgnoreFile } from "@eslint/compat";
 import js from "@eslint/js";
-import { FlatCompat } from "@eslint/eslintrc";
 import eslintConfigPrettier from "eslint-config-prettier";
+import { configs, plugins } from "eslint-config-airbnb-extended";
 import litPlugin from "eslint-plugin-lit";
 import litA11yPlugin from "eslint-plugin-lit-a11y";
 import unusedImports from "eslint-plugin-unused-imports";
@@ -13,10 +14,7 @@ import tseslint from "typescript-eslint";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-const compat = new FlatCompat({
-  baseDirectory: __dirname,
-});
+const gitignorePath = path.resolve(__dirname, ".gitignore");
 
 export default [
   {
@@ -31,8 +29,17 @@ export default [
       ".idea/**",
     ],
   },
+  // Ignore files and folders listed in .gitignore
+  includeIgnoreFile(gitignorePath),
+  // ESLint recommended
   js.configs.recommended,
-  ...compat.extends("airbnb-base"),
+  // Airbnb base rules (replaces legacy compat.extends("airbnb-base")).
+  // configs.base.recommended uses @stylistic and import-x but does not bundle
+  // their plugin registrations — include the plugin objects first.
+  plugins.stylistic,
+  plugins.importX,
+  ...configs.base.recommended,
+  // TypeScript recommended (non-type-aware — no parserOptions.project needed)
   ...tseslint.configs.recommended.map((config) => ({
     ...config,
     files: ["custom_components/hass_datapoints/src/**/*.{js,ts}"],
@@ -57,10 +64,11 @@ export default [
       "class-methods-use-this": "off",
       "consistent-return": "off",
       curly: ["error", "all"],
-      "import/extensions": "off",
-      "import/no-mutable-exports": "off",
-      "import/no-unresolved": "off",
-      "import/prefer-default-export": "off",
+      // airbnb-extended uses import-x plugin (successor to eslint-plugin-import)
+      "import-x/extensions": "off",
+      "import-x/no-mutable-exports": "off",
+      "import-x/no-unresolved": "off",
+      "import-x/prefer-default-export": "off",
       "no-console": "warn",
       "no-continue": "off",
       "no-param-reassign": "off",
@@ -107,7 +115,7 @@ export default [
     ],
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
-      "import/no-extraneous-dependencies": "off",
+      "import-x/no-extraneous-dependencies": "off",
     },
   },
   eslintConfigPrettier,
