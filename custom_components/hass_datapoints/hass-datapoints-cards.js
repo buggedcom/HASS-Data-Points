@@ -38300,7 +38300,7 @@ ${content.alert}` : "",
     }
   });
   console.groupCollapsed(
-    "%c hass-datapoints %c v0.4.0 loaded ",
+    "%c hass-datapoints %c v0.4.2 loaded ",
     "color:#fff;background:#03a9f4;font-weight:bold;padding:2px 6px;border-radius:3px 0 0 3px",
     "color:#03a9f4;background:#fff;font-weight:bold;padding:2px 6px;border:1px solid #03a9f4;border-radius:0 3px 3px 0"
   );

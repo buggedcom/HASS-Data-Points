@@ -13,6 +13,8 @@ from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import config_validation as cv
 
+CONFIG_SCHEMA = cv.empty_config_schema(__name__)
+
 from .const import (
     ATTR_ANNOTATION,
     ATTR_AREA_IDS,
