@@ -6,10 +6,22 @@ from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+import voluptuous as vol
 from homeassistant.exceptions import Unauthorized
 
 from custom_components.hass_datapoints.const import DOMAIN
 from custom_components.hass_datapoints.websocket_api import (
+    _MAX_LEN_COLOR,
+    _MAX_LEN_ICON,
+    _MAX_LEN_MESSAGE,
+    _MAX_LEN_WINDOW,
+    _RE_DURATION,
+    _RE_HEX_COLOR,
+    _RE_MDI_ICON,
+    _VALID_ANOMALY_METHODS,
+    _VALID_ANOMALY_OVERLAP_MODES,
+    _VALID_ANOMALY_SENSITIVITY,
+    _VALID_TREND_METHODS,
     _normalize_recorder_timestamp,
     _require_admin,
     ws_clear_cache,
@@ -352,3 +364,171 @@ class DescribeWsClearCache:
         cache.clear_entity.assert_called_once_with("sensor.temp")
         result = connection.send_result.call_args[0][1]
         assert result["cleared"] == 2
+
+    async def test_GIVEN_non_admin_user_WHEN_called_THEN_raises_unauthorized(self):
+        cache = MagicMock()
+        hass = MagicMock()
+        hass.data = {DOMAIN: {"anomaly_cache": cache}}
+        connection = _make_connection(is_admin=False)
+        msg = {"id": 1}
+
+        with pytest.raises(Unauthorized):
+            await ws_clear_cache(hass, connection, msg)
+
+        cache.clear_all.assert_not_called()
+        connection.send_result.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# Validation constants — unit tests for regex patterns and allowed values
+# ---------------------------------------------------------------------------
+
+
+class DescribeValidationConstants:
+    # --- _RE_MDI_ICON ---
+
+    def test_GIVEN_valid_mdi_icon_WHEN_matched_THEN_passes(self):
+        validator = vol.Match(_RE_MDI_ICON)
+        assert validator("mdi:home") == "mdi:home"
+        assert validator("mdi:thermometer-lines") == "mdi:thermometer-lines"
+        assert validator("mdi:ab1") == "mdi:ab1"
+
+    def test_GIVEN_invalid_icon_WHEN_matched_THEN_raises(self):
+        validator = vol.Match(_RE_MDI_ICON)
+        with pytest.raises(vol.Invalid):
+            validator("home")
+        with pytest.raises(vol.Invalid):
+            validator("fa:home")
+        with pytest.raises(vol.Invalid):
+            validator("mdi:")
+        with pytest.raises(vol.Invalid):
+            validator("mdi:Home")  # uppercase not allowed
+
+    def test_GIVEN_icon_exceeds_max_len_WHEN_validated_THEN_raises(self):
+        validator = vol.Length(max=_MAX_LEN_ICON)
+        with pytest.raises(vol.Invalid):
+            validator("x" * (_MAX_LEN_ICON + 1))
+
+    # --- _RE_HEX_COLOR ---
+
+    def test_GIVEN_valid_hex_colors_WHEN_matched_THEN_passes(self):
+        validator = vol.Match(_RE_HEX_COLOR)
+        assert validator("#fff") == "#fff"
+        assert validator("#FF0000") == "#FF0000"
+        assert validator("#aabbccdd") == "#aabbccdd"
+
+    def test_GIVEN_invalid_hex_color_WHEN_matched_THEN_raises(self):
+        validator = vol.Match(_RE_HEX_COLOR)
+        with pytest.raises(vol.Invalid):
+            validator("red")
+        with pytest.raises(vol.Invalid):
+            validator("ff0000")  # missing #
+        with pytest.raises(vol.Invalid):
+            validator("#gg0000")  # invalid hex chars
+
+    def test_GIVEN_color_exceeds_max_len_WHEN_validated_THEN_raises(self):
+        validator = vol.Length(max=_MAX_LEN_COLOR)
+        with pytest.raises(vol.Invalid):
+            validator("#" + "0" * _MAX_LEN_COLOR)
+
+    # --- _RE_DURATION ---
+
+    def test_GIVEN_valid_duration_strings_WHEN_matched_THEN_passes(self):
+        validator = vol.Match(_RE_DURATION)
+        for value in ["1s", "30m", "24h", "7d", "100s"]:
+            assert validator(value) == value
+
+    def test_GIVEN_invalid_duration_WHEN_matched_THEN_raises(self):
+        validator = vol.Match(_RE_DURATION)
+        with pytest.raises(vol.Invalid):
+            validator("1hour")
+        with pytest.raises(vol.Invalid):
+            validator("h")
+        with pytest.raises(vol.Invalid):
+            validator("1H")  # uppercase not allowed
+        with pytest.raises(vol.Invalid):
+            validator("")
+
+    def test_GIVEN_window_exceeds_max_len_WHEN_validated_THEN_raises(self):
+        validator = vol.Length(max=_MAX_LEN_WINDOW)
+        with pytest.raises(vol.Invalid):
+            validator("1" * (_MAX_LEN_WINDOW + 1) + "h")
+
+    # --- _VALID_ANOMALY_SENSITIVITY ---
+
+    def test_GIVEN_valid_sensitivity_WHEN_checked_THEN_passes(self):
+        validator = vol.In(_VALID_ANOMALY_SENSITIVITY)
+        for value in ["low", "medium", "high"]:
+            assert validator(value) == value
+
+    def test_GIVEN_invalid_sensitivity_WHEN_checked_THEN_raises(self):
+        validator = vol.In(_VALID_ANOMALY_SENSITIVITY)
+        with pytest.raises(vol.Invalid):
+            validator("extreme")
+
+    # --- _VALID_ANOMALY_OVERLAP_MODES ---
+
+    def test_GIVEN_valid_overlap_mode_WHEN_checked_THEN_passes(self):
+        validator = vol.In(_VALID_ANOMALY_OVERLAP_MODES)
+        for value in ["all", "highlight", "only"]:
+            assert validator(value) == value
+
+    def test_GIVEN_invalid_overlap_mode_WHEN_checked_THEN_raises(self):
+        validator = vol.In(_VALID_ANOMALY_OVERLAP_MODES)
+        with pytest.raises(vol.Invalid):
+            validator("none")
+
+    # --- _VALID_TREND_METHODS ---
+
+    def test_GIVEN_valid_trend_method_WHEN_checked_THEN_passes(self):
+        validator = vol.In(_VALID_TREND_METHODS)
+        for value in ["rolling_average", "linear_trend"]:
+            assert validator(value) == value
+
+    def test_GIVEN_invalid_trend_method_WHEN_checked_THEN_raises(self):
+        validator = vol.In(_VALID_TREND_METHODS)
+        with pytest.raises(vol.Invalid):
+            validator("polynomial")
+
+    # --- _VALID_ANOMALY_METHODS list ---
+
+    def test_GIVEN_valid_anomaly_methods_WHEN_checked_THEN_all_pass(self):
+        for method in _VALID_ANOMALY_METHODS:
+            assert vol.In(_VALID_ANOMALY_METHODS)(method) == method
+
+    def test_GIVEN_invalid_anomaly_method_in_list_WHEN_validated_THEN_raises(self):
+        schema = vol.All([vol.In(_VALID_ANOMALY_METHODS)], vol.Length(min=1))
+        with pytest.raises(vol.Invalid):
+            schema(["not_a_method"])
+
+    def test_GIVEN_empty_anomaly_methods_list_WHEN_validated_THEN_raises(self):
+        schema = vol.All([vol.In(_VALID_ANOMALY_METHODS)], vol.Length(min=1))
+        with pytest.raises(vol.Invalid):
+            schema([])
+
+    # --- comparison_time_offset_ms range ---
+
+    def test_GIVEN_offset_within_range_WHEN_validated_THEN_passes(self):
+        validator = vol.Range(min=-315_576_000_000, max=315_576_000_000)
+        assert validator(0) == 0
+        assert validator(-315_576_000_000) == -315_576_000_000
+        assert validator(315_576_000_000) == 315_576_000_000
+
+    def test_GIVEN_offset_outside_range_WHEN_validated_THEN_raises(self):
+        validator = vol.Range(min=-315_576_000_000, max=315_576_000_000)
+        with pytest.raises(vol.Invalid):
+            validator(315_576_000_001)
+        with pytest.raises(vol.Invalid):
+            validator(-315_576_000_001)
+
+    # --- message / annotation length cap ---
+
+    def test_GIVEN_message_within_limit_WHEN_validated_THEN_passes(self):
+        validator = vol.Length(max=_MAX_LEN_MESSAGE)
+        assert validator("hello") == "hello"
+        assert validator("x" * _MAX_LEN_MESSAGE) == "x" * _MAX_LEN_MESSAGE
+
+    def test_GIVEN_message_exceeds_limit_WHEN_validated_THEN_raises(self):
+        validator = vol.Length(max=_MAX_LEN_MESSAGE)
+        with pytest.raises(vol.Invalid):
+            validator("x" * (_MAX_LEN_MESSAGE + 1))

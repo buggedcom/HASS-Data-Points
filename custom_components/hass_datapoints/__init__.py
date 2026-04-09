@@ -70,15 +70,27 @@ def _find_automation_id(hass: HomeAssistant, context) -> str | None:
 
 SERVICE_RECORD_SCHEMA = vol.Schema(
     {
-        vol.Required(ATTR_MESSAGE): cv.string,
-        vol.Optional(ATTR_ANNOTATION): cv.string,
+        vol.Required(ATTR_MESSAGE): vol.All(
+            cv.string, vol.Length(max=ws_api._MAX_LEN_MESSAGE)
+        ),
+        vol.Optional(ATTR_ANNOTATION): vol.All(
+            cv.string, vol.Length(max=ws_api._MAX_LEN_MESSAGE)
+        ),
         vol.Optional(ATTR_ENTITY_IDS): vol.All(cv.ensure_list, [cv.entity_id]),
         vol.Optional(ATTR_DEVICE_IDS): vol.All(cv.ensure_list, [cv.string]),
         vol.Optional(ATTR_AREA_IDS): vol.All(cv.ensure_list, [cv.string]),
         vol.Optional(ATTR_LABEL_IDS): vol.All(cv.ensure_list, [cv.string]),
-        vol.Optional(ATTR_ICON): cv.string,
-        vol.Optional(ATTR_COLOR): vol.Any(
+        vol.Optional(ATTR_ICON): vol.All(
             cv.string,
+            vol.Length(max=ws_api._MAX_LEN_ICON),
+            vol.Match(ws_api._RE_MDI_ICON),
+        ),
+        vol.Optional(ATTR_COLOR): vol.Any(
+            vol.All(
+                cv.string,
+                vol.Length(max=ws_api._MAX_LEN_COLOR),
+                vol.Match(ws_api._RE_HEX_COLOR),
+            ),
             vol.All(
                 [vol.Coerce(int)],
                 vol.Length(min=3, max=3),

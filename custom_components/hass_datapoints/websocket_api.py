@@ -61,6 +61,22 @@ _VALID_ANOMALY_METHODS = [
     "persistence",
     "comparison_window",
 ]
+_VALID_ANOMALY_SENSITIVITY = ["low", "medium", "high"]
+_VALID_ANOMALY_OVERLAP_MODES = ["all", "highlight", "only"]
+_VALID_TREND_METHODS = ["rolling_average", "linear_trend"]
+
+# Field-length caps for free-text event fields stored in .storage/
+_MAX_LEN_MESSAGE = 10_000
+_MAX_LEN_ICON = 255
+_MAX_LEN_COLOR = 20
+_MAX_LEN_WINDOW = 20  # interval strings like "24h", "30m"
+
+# Validator for MDI icon names (e.g. "mdi:bookmark", "mdi:home-outline")
+_RE_MDI_ICON = r"^mdi:[a-z0-9][a-z0-9\-]*$"
+# Validator for CSS hex colors (#rgb, #rrggbb, #rrggbbaa)
+_RE_HEX_COLOR = r"^#[0-9a-fA-F]{3,8}$"
+# Validator for duration strings accepted by parse_interval_seconds ("1h", "30m", "24h", …)
+_RE_DURATION = r"^\d+[smhd]$"
 
 # Maximum date-range span accepted by ws_get_history.  Requests beyond this
 # limit return an empty pts list so the frontend gracefully falls back to the
@@ -305,14 +321,18 @@ def _valid_uuid(value: str) -> str:
     {
         vol.Required("type"): f"{DOMAIN}/events/update",
         vol.Required("event_id"): vol.All(str, _valid_uuid),
-        vol.Optional("message"): str,
-        vol.Optional("annotation"): str,
+        vol.Optional("message"): vol.All(str, vol.Length(max=_MAX_LEN_MESSAGE)),
+        vol.Optional("annotation"): vol.All(str, vol.Length(max=_MAX_LEN_MESSAGE)),
         vol.Optional("entity_ids"): [str],
         vol.Optional("device_ids"): [str],
         vol.Optional("area_ids"): [str],
         vol.Optional("label_ids"): [str],
-        vol.Optional("icon"): str,
-        vol.Optional("color"): str,
+        vol.Optional("icon"): vol.All(
+            str, vol.Length(max=_MAX_LEN_ICON), vol.Match(_RE_MDI_ICON)
+        ),
+        vol.Optional("color"): vol.All(
+            str, vol.Length(max=_MAX_LEN_COLOR), vol.Match(_RE_HEX_COLOR)
+        ),
     }
 )
 @websocket_api.async_response
@@ -386,7 +406,7 @@ async def ws_delete_dev_events(
 @websocket_api.websocket_command(
     {
         vol.Required("type"): f"{DOMAIN}/history",
-        vol.Required("entity_id"): str,
+        vol.Required("entity_id"): cv.entity_id,
         vol.Required("start_time"): str,
         vol.Required("end_time"): str,
         vol.Required("interval"): vol.In(_VALID_INTERVALS),
@@ -488,23 +508,41 @@ def _run_detection(pts: list, config: dict, comparison_pts: list | None = None) 
 @websocket_api.websocket_command(
     {
         vol.Required("type"): f"{DOMAIN}/anomalies",
-        vol.Required("entity_id"): str,
+        vol.Required("entity_id"): cv.entity_id,
         vol.Required("start_time"): str,
         vol.Required("end_time"): str,
-        vol.Required("anomaly_methods"): [str],
-        vol.Optional("anomaly_sensitivity", default="medium"): str,
-        vol.Optional("anomaly_overlap_mode", default="all"): str,
-        vol.Optional("anomaly_rate_window", default="1h"): str,
-        vol.Optional("anomaly_zscore_window", default="24h"): str,
-        vol.Optional("anomaly_persistence_window", default="1h"): str,
-        vol.Optional("trend_method", default="rolling_average"): str,
-        vol.Optional("trend_window", default="24h"): str,
+        vol.Required("anomaly_methods"): vol.All(
+            [vol.In(_VALID_ANOMALY_METHODS)], vol.Length(min=1)
+        ),
+        vol.Optional("anomaly_sensitivity", default="medium"): vol.In(
+            _VALID_ANOMALY_SENSITIVITY
+        ),
+        vol.Optional("anomaly_overlap_mode", default="all"): vol.In(
+            _VALID_ANOMALY_OVERLAP_MODES
+        ),
+        vol.Optional("anomaly_rate_window", default="1h"): vol.All(
+            str, vol.Length(max=_MAX_LEN_WINDOW), vol.Match(_RE_DURATION)
+        ),
+        vol.Optional("anomaly_zscore_window", default="24h"): vol.All(
+            str, vol.Length(max=_MAX_LEN_WINDOW), vol.Match(_RE_DURATION)
+        ),
+        vol.Optional("anomaly_persistence_window", default="1h"): vol.All(
+            str, vol.Length(max=_MAX_LEN_WINDOW), vol.Match(_RE_DURATION)
+        ),
+        vol.Optional("trend_method", default="rolling_average"): vol.In(
+            _VALID_TREND_METHODS
+        ),
+        vol.Optional("trend_window", default="24h"): vol.All(
+            str, vol.Length(max=_MAX_LEN_WINDOW), vol.Match(_RE_DURATION)
+        ),
         vol.Optional("sample_interval"): vol.In(_VALID_INTERVALS),
         vol.Optional("sample_aggregate", default="mean"): vol.In(_VALID_AGGREGATES),
         vol.Optional("comparison_entity_id"): cv.entity_id,
         vol.Optional("comparison_start_time"): str,
         vol.Optional("comparison_end_time"): str,
-        vol.Optional("comparison_time_offset_ms", default=0): int,
+        vol.Optional("comparison_time_offset_ms", default=0): vol.All(
+            int, vol.Range(min=-315_576_000_000, max=315_576_000_000)
+        ),
     }
 )
 @websocket_api.async_response
@@ -655,7 +693,7 @@ async def ws_get_anomalies(
 @websocket_api.websocket_command(
     {
         vol.Required("type"): f"{DOMAIN}/cache/clear",
-        vol.Optional("entity_id"): str,
+        vol.Optional("entity_id"): cv.entity_id,
     }
 )
 @websocket_api.async_response
@@ -665,6 +703,7 @@ async def ws_clear_cache(
     msg: dict,
 ) -> None:
     """Clear anomaly cache entries (all, or for a specific entity)."""
+    _require_admin(connection, msg)
     cache: AnomalyCache | None = hass.data.get(DOMAIN, {}).get("anomaly_cache")
     if cache is None:
         connection.send_result(msg["id"], {"cleared": 0})
