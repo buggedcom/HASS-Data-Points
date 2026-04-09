@@ -78,10 +78,15 @@ import { logger } from "@/lib/logger";
 import type { HassLike } from "@/lib/types";
 import {
   buildDeltaPoints,
+  buildEmaTrend,
   buildLinearTrend,
+  buildLowessTrend,
+  buildPolynomialTrend,
   buildRateOfChangePoints,
   buildRollingAverageTrend,
   buildSummaryStats,
+  getEmaAlpha,
+  getLowessBandwidth,
   getTrendWindowMs,
 } from "../analysis";
 import { navigateToDataPointsHistory } from "@/lib/ha/navigation";
@@ -4673,10 +4678,19 @@ export class HistoryChart extends HTMLElement {
       return [];
     }
     const method = _method || "rolling_average";
-    if (method === "linear_trend") {
-      return buildLinearTrend(_pts);
+    const window = _window || "24h";
+    switch (method) {
+      case "linear_trend":
+        return buildLinearTrend(_pts);
+      case "ema":
+        return buildEmaTrend(_pts, getEmaAlpha(window));
+      case "polynomial_trend":
+        return buildPolynomialTrend(_pts);
+      case "lowess":
+        return buildLowessTrend(_pts, getLowessBandwidth(window, _pts));
+      default:
+        return buildRollingAverageTrend(_pts, getTrendWindowMs(window));
     }
-    return buildRollingAverageTrend(_pts, getTrendWindowMs(_window || "24h"));
   }
 
   /** Build rate-of-change points from raw series data. */
@@ -4795,6 +4809,33 @@ export class HistoryChart extends HTMLElement {
         lineOpacity: hideRawData ? 0.86 : 0.74,
         lineWidth: 2.1,
         dashed: true,
+        dotted: false,
+      };
+    }
+    if (method === "ema") {
+      return {
+        colorAlpha: hideRawData ? 0.92 : 0.84,
+        lineOpacity: hideRawData ? 0.86 : 0.65,
+        lineWidth: 2.0,
+        dashed: false,
+        dotted: true,
+      };
+    }
+    if (method === "polynomial_trend") {
+      return {
+        colorAlpha: hideRawData ? 0.94 : 0.86,
+        lineOpacity: hideRawData ? 0.86 : 0.72,
+        lineWidth: 2.0,
+        dashed: true,
+        dotted: false,
+      };
+    }
+    if (method === "lowess") {
+      return {
+        colorAlpha: hideRawData ? 0.9 : 0.82,
+        lineOpacity: hideRawData ? 0.84 : 0.6,
+        lineWidth: 1.8,
+        dashed: false,
         dotted: false,
       };
     }

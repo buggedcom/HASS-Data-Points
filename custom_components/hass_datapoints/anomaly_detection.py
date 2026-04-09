@@ -45,7 +45,10 @@ def _persistence_flat_fraction(sensitivity: str) -> float:
 # ---------------------------------------------------------------------------
 
 _TREND_WINDOWS_MS: dict[str, int] = {
+    "30m": 1_800_000,
     "1h": 3_600_000,
+    "2h": 7_200_000,
+    "3h": 10_800_000,
     "6h": 21_600_000,
     "24h": 86_400_000,
     "7d": 604_800_000,
@@ -142,11 +145,138 @@ def _build_linear_trend(pts: list) -> list:
     ]
 
 
+_EMA_ALPHAS = {
+    "30m": 0.97,
+    "1h": 0.92,
+    "2h": 0.88,
+    "3h": 0.84,
+    "6h": 0.75,
+    "24h": 0.5,
+    "7d": 0.25,
+    "14d": 0.15,
+    "21d": 0.1,
+    "28d": 0.07,
+}
+
+_LOWESS_FRACTIONS = {
+    "30m": 0.05,
+    "1h": 0.1,
+    "2h": 0.13,
+    "3h": 0.16,
+    "6h": 0.2,
+    "24h": 0.3,
+    "7d": 0.4,
+    "14d": 0.55,
+    "21d": 0.7,
+    "28d": 0.85,
+}
+
+
+def _build_ema(pts: list, alpha: float) -> list:
+    if len(pts) < 2:
+        return []
+    a = max(0.0, min(1.0, alpha))
+    result = [[pts[0][0], pts[0][1]]]
+    for i in range(1, len(pts)):
+        ema = a * pts[i][1] + (1 - a) * result[-1][1]
+        result.append([pts[i][0], ema])
+    return result
+
+
+def _build_polynomial_trend(pts: list) -> list:
+    if len(pts) < 3:
+        return []
+    origin = pts[0][0]
+    scale = (pts[-1][0] - origin) or 1.0
+    s0 = s1 = s2 = s3 = s4 = 0.0
+    t0 = t1 = t2 = 0.0
+    for time, value in pts:
+        x = (time - origin) / scale
+        x2 = x * x
+        s0 += 1
+        s1 += x
+        s2 += x2
+        s3 += x2 * x
+        s4 += x2 * x2
+        t0 += value
+        t1 += x * value
+        t2 += x2 * value
+    det = s0 * (s2 * s4 - s3 * s3) - s1 * (s1 * s4 - s3 * s2) + s2 * (s1 * s3 - s2 * s2)
+    if not math.isfinite(det) or abs(det) < 1e-12:
+        return []
+    a = (
+        t0 * (s2 * s4 - s3 * s3) - s1 * (t1 * s4 - s3 * t2) + s2 * (t1 * s3 - s2 * t2)
+    ) / det
+    b = (
+        s0 * (t1 * s4 - s3 * t2) - t0 * (s1 * s4 - s3 * s2) + s2 * (s1 * t2 - t1 * s2)
+    ) / det
+    c = (
+        s0 * (s2 * t2 - t1 * s3) - s1 * (s1 * t2 - t1 * s2) + t0 * (s1 * s3 - s2 * s2)
+    ) / det
+    return [
+        [time, a + b * ((time - origin) / scale) + c * ((time - origin) / scale) ** 2]
+        for time, _ in pts
+    ]
+
+
+def _build_lowess(pts: list, bandwidth: float) -> list:
+    if len(pts) < 2:
+        return []
+    MAX_INPUT = 2000
+    MAX_OUTPUT = 300
+    n = len(pts)
+
+    def subsample(total: int, max_count: int) -> list:
+        if total <= max_count:
+            return list(range(total))
+        return [round(i / (max_count - 1) * (total - 1)) for i in range(max_count)]
+
+    input_idx = subsample(n, MAX_INPUT)
+    output_idx = subsample(n, MAX_OUTPUT)
+
+    result = []
+    for oi in output_idx:
+        xi = pts[oi][0]
+        sum_w = sum_wx = sum_wy = sum_wxx = sum_wxy = 0.0
+        for k in range(len(input_idx)):
+            d = abs(pts[input_idx[k]][0] - xi)
+            if d >= bandwidth:
+                continue
+            norm_dist = d / bandwidth
+            u = 1 - norm_dist**3
+            w = u**3
+            if w <= 0:
+                continue
+            xj, yj = pts[input_idx[k]][0], pts[input_idx[k]][1]
+            sum_w += w
+            sum_wx += w * xj
+            sum_wy += w * yj
+            sum_wxx += w * xj * xj
+            sum_wxy += w * xj * yj
+        denom = sum_w * sum_wxx - sum_wx * sum_wx
+        if not math.isfinite(denom) or abs(denom) < 1e-12:
+            result.append([xi, sum_wy / sum_w if sum_w > 0 else pts[oi][1]])
+            continue
+        slope = (sum_w * sum_wxy - sum_wx * sum_wy) / denom
+        intercept = (sum_wy - slope * sum_wx) / sum_w
+        result.append([xi, intercept + slope * xi])
+    return result
+
+
 def _build_trend_pts(pts: list, method: str, trend_window: str) -> list:
     if len(pts) < 2:
         return []
     if method == "linear_trend":
         return _build_linear_trend(pts)
+    if method == "ema":
+        return _build_ema(pts, _EMA_ALPHAS.get(trend_window, 0.5))
+    if method == "polynomial_trend":
+        return _build_polynomial_trend(pts)
+    if method == "lowess":
+        fraction = _LOWESS_FRACTIONS.get(trend_window, 0.3)
+        span = (pts[-1][0] - pts[0][0]) if len(pts) >= 2 else 0
+        bandwidth = fraction * span if span > 0 else fraction
+        return _build_lowess(pts, bandwidth)
     return _build_rolling_average(pts, _trend_window_ms(trend_window))
 
 

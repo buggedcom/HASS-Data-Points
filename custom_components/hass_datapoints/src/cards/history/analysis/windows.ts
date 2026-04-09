@@ -2,7 +2,10 @@ const HOUR_MS = 60 * 60 * 1000;
 
 export function getTrendWindowMs(value: string): number {
   const windows: RecordWithNumericValues = {
+    "30m": 30 * 60 * 1000,
     "1h": HOUR_MS,
+    "2h": 2 * HOUR_MS,
+    "3h": 3 * HOUR_MS,
     "6h": 6 * HOUR_MS,
     "24h": 24 * HOUR_MS,
     "7d": 7 * 24 * HOUR_MS,

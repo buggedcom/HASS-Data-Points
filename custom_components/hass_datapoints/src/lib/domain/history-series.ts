@@ -8,7 +8,12 @@ import { normalizeEntityIds } from "@/lib/domain/target-selection";
 export interface HistorySeriesAnalysis {
   expanded: boolean;
   show_trend_lines: boolean;
-  trend_method: "linear_trend" | "rolling_average";
+  trend_method:
+    | "linear_trend"
+    | "rolling_average"
+    | "ema"
+    | "polynomial_trend"
+    | "lowess";
   trend_window: string;
   show_trend_crosshairs: boolean;
   show_summary_stats: boolean;
@@ -96,10 +101,17 @@ export function normalizeHistorySeriesAnalysis(
   return {
     expanded: source.expanded === true,
     show_trend_lines: source.show_trend_lines === true,
-    trend_method:
-      source.trend_method === "linear_trend"
-        ? "linear_trend"
-        : "rolling_average",
+    trend_method: (
+      [
+        "linear_trend",
+        "rolling_average",
+        "ema",
+        "polynomial_trend",
+        "lowess",
+      ] as const
+    ).includes(source.trend_method as HistorySeriesAnalysis["trend_method"])
+      ? (source.trend_method as HistorySeriesAnalysis["trend_method"])
+      : "rolling_average",
     trend_window:
       typeof source.trend_window === "string" && source.trend_window
         ? source.trend_window
