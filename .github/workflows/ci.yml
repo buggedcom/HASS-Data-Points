@@ -178,7 +178,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build Storybook
-        run: pnpm build-storybook
+        run: pnpm build-storybook --stats-json
 
       - name: Run Chromatic visual tests
         uses: chromaui/action@v11
