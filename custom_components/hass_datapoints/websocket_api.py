@@ -4,12 +4,15 @@ from __future__ import annotations
 
 import logging
 import time
+import uuid
 from datetime import UTC, datetime
 
 import voluptuous as vol
 from homeassistant.components import websocket_api
 from homeassistant.components.recorder import get_instance
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.exceptions import Unauthorized
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.recorder import session_scope
 from sqlalchemy import inspect as sqlalchemy_inspect
 from sqlalchemy import text
@@ -193,7 +196,7 @@ def _get_global_history_bounds(
     end_candidates: list[tuple[datetime, str]] = []
 
     def _quote(identifier: str) -> str:
-        return f'"{identifier}"'
+        return '"' + identifier.replace('"', '""') + '"'
 
     try:
         with session_scope(session=get_session()) as session:
@@ -282,10 +285,26 @@ def _normalize_recorder_timestamp(value: object) -> str | None:
     return None
 
 
+def _require_admin(connection: websocket_api.ActiveConnection, msg: dict) -> bool:
+    """Return True if the connection user is an admin, else send error and return False."""
+    if not connection.user.is_admin:
+        raise Unauthorized
+    return True
+
+
+def _valid_uuid(value: str) -> str:
+    """Voluptuous validator — raises Invalid if value is not a well-formed UUID."""
+    try:
+        uuid.UUID(value)
+    except ValueError as exc:
+        raise vol.Invalid("Must be a valid UUID") from exc
+    return value
+
+
 @websocket_api.websocket_command(
     {
         vol.Required("type"): f"{DOMAIN}/events/update",
-        vol.Required("event_id"): str,
+        vol.Required("event_id"): vol.All(str, _valid_uuid),
         vol.Optional("message"): str,
         vol.Optional("annotation"): str,
         vol.Optional("entity_ids"): [str],
@@ -303,6 +322,7 @@ async def ws_update_event(
     msg: dict,
 ) -> None:
     """Update a recorded event by ID."""
+    _require_admin(connection, msg)
     store = hass.data[DOMAIN]["store"]
     updated = await store.async_update_event(
         event_id=msg["event_id"],
@@ -324,7 +344,7 @@ async def ws_update_event(
 @websocket_api.websocket_command(
     {
         vol.Required("type"): f"{DOMAIN}/events/delete",
-        vol.Required("event_id"): str,
+        vol.Required("event_id"): vol.All(str, _valid_uuid),
     }
 )
 @websocket_api.async_response
@@ -334,6 +354,7 @@ async def ws_delete_event(
     msg: dict,
 ) -> None:
     """Delete a recorded event by ID."""
+    _require_admin(connection, msg)
     store = hass.data[DOMAIN]["store"]
     deleted = await store.async_delete_event(msg["event_id"])
     connection.send_result(msg["id"], {"deleted": deleted})
@@ -351,6 +372,7 @@ async def ws_delete_dev_events(
     msg: dict,
 ) -> None:
     """Delete all dev-flagged events."""
+    _require_admin(connection, msg)
     store = hass.data[DOMAIN]["store"]
     deleted = await store.async_delete_dev_events()
     connection.send_result(msg["id"], {"deleted": deleted})
@@ -479,7 +501,7 @@ def _run_detection(pts: list, config: dict, comparison_pts: list | None = None) 
         vol.Optional("trend_window", default="24h"): str,
         vol.Optional("sample_interval"): vol.In(_VALID_INTERVALS),
         vol.Optional("sample_aggregate", default="mean"): vol.In(_VALID_AGGREGATES),
-        vol.Optional("comparison_entity_id"): str,
+        vol.Optional("comparison_entity_id"): cv.entity_id,
         vol.Optional("comparison_start_time"): str,
         vol.Optional("comparison_end_time"): str,
         vol.Optional("comparison_time_offset_ms", default=0): int,

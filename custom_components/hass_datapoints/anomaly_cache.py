@@ -29,6 +29,7 @@ CREATE INDEX IF NOT EXISTS idx_created ON anomaly_cache (created_at);
 
 _TTL_DAYS = 30
 _LIVE_EDGE_SECONDS = 3600  # ranges ending within the last hour are not cached
+_MAX_CACHE_ENTRY_BYTES = 5 * 1024 * 1024  # 5 MB per entry — guards against DoS
 
 
 def make_cache_key(entity_id: str, start_time: str, end_time: str, config: dict) -> str:
@@ -105,6 +106,8 @@ class AnomalyCache:
     ) -> None:
         """Store clusters for a closed range."""
         clusters_json = json.dumps(clusters)
+        if len(clusters_json.encode()) > _MAX_CACHE_ENTRY_BYTES:
+            return  # silently skip — result is too large to cache safely
         now = time.time()
         with self._connect() as conn:
             conn.execute(

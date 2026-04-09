@@ -59,9 +59,16 @@ class DatapointsStore:
     ) -> dict[str, Any]:
         """Record a new event and persist it."""
         if date:
-            dt = datetime.fromisoformat(date)
-            if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=UTC)
+            try:
+                dt = datetime.fromisoformat(date)
+            except ValueError:
+                dt = datetime.now(UTC)
+            else:
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=UTC)
+                # Reject implausible years — avoids out-of-range storage / display bugs
+                if not (1970 <= dt.year <= 2100):
+                    dt = datetime.now(UTC)
             ts = dt.isoformat()
         else:
             ts = datetime.now(UTC).isoformat()
