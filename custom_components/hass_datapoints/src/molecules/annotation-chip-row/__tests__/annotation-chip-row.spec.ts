@@ -61,13 +61,9 @@ describe("annotation-chip-row", () => {
     });
 
     describe("WHEN rendered", () => {
-      it("THEN renders the label", () => {
+      it("THEN does not render an internal label (label is owned by the outer form field)", () => {
         expect.assertions(1);
-        expect(
-          el
-            .shadowRoot!.querySelector(".context-form-label")
-            ?.textContent?.trim()
-        ).toBe("Linked targets");
+        expect(el.shadowRoot!.querySelector(".context-form-label")).toBeNull();
       });
 
       it("THEN renders the help text", () => {
@@ -217,23 +213,23 @@ describe("annotation-chip-row", () => {
   });
 
   // ---------------------------------------------------------------------------
-  // Custom label / text
+  // Custom text props
   // ---------------------------------------------------------------------------
 
-  describe("GIVEN a custom label", () => {
+  describe("GIVEN a custom emptyText", () => {
     beforeEach(async () => {
-      el = createElement({ label: "Related items" });
+      el = createElement({ chips: [], emptyText: "Nothing here yet." });
       await el.updateComplete;
     });
 
-    describe("WHEN rendered", () => {
-      it("THEN shows the custom label", () => {
+    describe("WHEN rendered with no chips", () => {
+      it("THEN shows the custom empty text", () => {
         expect.assertions(1);
         expect(
           el
-            .shadowRoot!.querySelector(".context-form-label")
+            .shadowRoot!.querySelector(".context-form-help")
             ?.textContent?.trim()
-        ).toBe("Related items");
+        ).toBe("Nothing here yet.");
       });
     });
   });

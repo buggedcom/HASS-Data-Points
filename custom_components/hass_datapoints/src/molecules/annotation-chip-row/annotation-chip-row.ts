@@ -70,7 +70,6 @@ export class AnnotationChipRow extends LitElement {
   render() {
     return html`
       <div class="context-form-field">
-        <label class="context-form-label">${this.label}</label>
         <div class="context-form-help">
           ${this.chips.length > 0 ? this.helpText : this.emptyText}
         </div>
