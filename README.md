@@ -141,7 +141,7 @@ Data Points ships with both Home Assistant integration translations and frontend
 ### Included locales
 
 - English
-- Finnish 🤖
+- Finnish
 - French 🤖
 - German 🤖
 - Spanish 🤖
@@ -150,7 +150,7 @@ Data Points ships with both Home Assistant integration translations and frontend
 
 ### Translation quality
 
-English is the source language for the project.
+English is the source language for the project. Finnish translations were written by a native speaker.
 
 The other bundled non-English locales are currently machine 🤖 translated. They are included so the UI is immediately usable in more Home Assistant setups without forcing everyone back to English, but they should still be treated as sensible defaults rather than fully reviewed product translations.
 
@@ -845,11 +845,21 @@ Highlights:
 The frontend uses [`@lit/localize`](https://lit.dev/docs/localization/overview/) in **runtime mode**.
 
 **Source locale:** English (`en`) — all user-visible strings in the source code are written in English.  
-**Supported translated locale:** Finnish (`fi`).
+**Supported translated locales:** German (`de`), Spanish (`es`), Finnish (`fi`), French (`fr`), Portuguese (`pt`), Simplified Chinese (`zh-Hans`).
+
+The canonical list of supported locales is maintained in a single file:
+
+```
+src/lib/i18n/supported-locales.json
+```
+
+Both `localize.ts` and the translation coverage tests read from this file, so adding a locale there is the only registration step needed.
 
 #### How the runtime works
 
-`src/lib/i18n/localize.ts` calls `configureLocalization` once at startup. When the HA user's locale is Finnish (`fi` or any `fi-*` BCP 47 tag), `setLocale("fi")` is called and the locale chunk is loaded. Components decorated with `@localized()` re-render automatically. Every string is wrapped with `msg()`:
+`src/lib/i18n/localize.ts` calls `configureLocalization` once at startup. The user's Home Assistant UI language is read from `hass.locale.language` (falling back to `hass.language`) and normalised to the nearest supported locale — for example `fr-CA` resolves to `fr`. The matching locale chunk is then lazy-loaded and components decorated with `@localized()` re-render automatically.
+
+Every user-visible string is wrapped with `msg()`:
 
 ```typescript
 import { msg, localized } from "@/lib/i18n/localize";
@@ -879,15 +889,21 @@ t("Anomaly at {0} with value {1}", formattedTime, formattedValue);
 
 #### Co-located translation files
 
-Translations are **not** in a single central locale file. Each component owns its own translation file placed next to the component source:
+Translations are **not** in a single central locale file. Each component that has translatable strings owns an `i18n/` subdirectory containing one file per locale:
 
 ```text
 src/molecules/target-row/
 ├── target-row.ts
-└── target-row.i18n.fi.ts   ← Finnish strings for this component
+└── i18n/
+    ├── de.ts
+    ├── es.ts
+    ├── fi.ts
+    ├── fr.ts
+    ├── pt.ts
+    └── zh-hans.ts
 ```
 
-Every `*.i18n.fi.ts` file exports a `translations` object typed as `ComponentTranslations`:
+Every locale file exports a `translations` object typed as `ComponentTranslations`:
 
 ```typescript
 import type { ComponentTranslations } from "@/lib/i18n/types";
@@ -900,11 +916,12 @@ export const translations: ComponentTranslations = {
 
 #### Auto-discovery at build time
 
-`src/lib/i18n/locales/fi.ts` uses `import.meta.glob` to discover and merge every `*.i18n.fi.ts` file across the whole source tree at build time:
+Each `src/lib/i18n/locales/<locale>.ts` file uses `import.meta.glob` to discover and merge every matching `i18n/<locale>.ts` file across the entire source tree:
 
 ```typescript
+// src/lib/i18n/locales/fi.ts
 const modules = import.meta.glob<{ translations: Record<string, string> }>(
-  "../../../**/*.i18n.fi.ts",
+  "../../../**/i18n/fi.ts",
   { eager: true }
 );
 
@@ -916,23 +933,41 @@ for (const mod of Object.values(modules)) {
 export const templates = merged satisfies LocaleModule["templates"];
 ```
 
-No manual registration is needed. Adding a `*.i18n.fi.ts` file anywhere under `src/` is sufficient for its strings to be included in the built locale chunk.
+No manual registration is needed. Creating an `i18n/fi.ts` file anywhere under `src/` is sufficient for its strings to be included in the built locale chunk.
 
-Duplicate keys are resolved by last-writer-wins (`Object.assign`). This is safe because any shared key (e.g. `"Auto"`) carries the same Finnish value regardless of which component declares it.
+Duplicate keys are resolved by last-writer-wins (`Object.assign`). This is safe because any shared key (e.g. `"Auto"`) carries the same translated value regardless of which component declares it.
 
-#### Adding a new component translation
+#### Translation coverage tests
 
-1. Create `<component-name>.i18n.fi.ts` next to the component source file.
-2. Export a `translations` object containing the English key → Finnish value mappings.
-3. Wrap every user-visible string in the component source with `msg()`.
-4. Add `@localized()` to the component class.
-5. Run `pnpm build` — the new file is picked up automatically.
+`src/lib/i18n/__tests__/translations-coverage.spec.ts` enforces three rules across every component `i18n/` directory automatically:
 
-#### Finnish translations
+1. **Locale presence** — every supported locale file must exist.
+2. **Key completeness** — every locale file must contain exactly the same set of keys (no missing translations, no stale extras left over after a key is renamed or removed).
+3. **Value completeness** — every translated value must differ from its English source key, unless the string is listed in `UNTRANSLATED_WHITELIST` (reserved for technical terms, proper nouns, and abbreviations that are genuinely the same across languages).
 
-The Finnish translations throughout this project are **machine-generated approximations**. They were produced by automated translation and have not been reviewed by a native Finnish speaker. Accuracy and phrasing may be imperfect.
+Run the tests with `pnpm test` to catch any gaps before committing.
 
-If you are a Finnish speaker and notice errors, corrections are welcome — edit the relevant `*.i18n.fi.ts` file and submit a pull request.
+#### Adding translations to a new component
+
+1. Create an `i18n/` subdirectory next to the component source file.
+2. Add a `<locale>.ts` file for **each** locale listed in `supported-locales.json`.
+3. Each file exports a `translations` object with the same keys (English source string → translated value).
+4. Wrap every user-visible string in the component with `msg()` and add `@localized()` to the class.
+5. Run `pnpm test` — the coverage tests will fail immediately if any locale file is missing or has mismatched keys.
+
+#### Adding a new locale
+
+1. Add the locale code to `src/lib/i18n/supported-locales.json`.
+2. Create `src/lib/i18n/locales/<locale>.ts` with the `import.meta.glob` pattern above, substituting the new locale code.
+3. Add a `case` for the new locale in the `loadLocale` switch in `localize.ts`.
+4. Add a normalisation branch in `normalizeLocale` in `localize.ts` to map BCP 47 variants (e.g. `pt-BR`) to the canonical code.
+5. Add an `i18n/<locale>.ts` file to every component directory that already has an `i18n/` subdirectory — the coverage tests will list exactly which ones are missing.
+
+#### Non-English translations
+
+The English translations were written by a native speaker. All other bundled locales are currently **machine-translated** — they are included so the UI is usable out of the box in more Home Assistant setups, but they should be treated as reasonable defaults rather than fully reviewed translations.
+
+Translation improvements for any locale are welcome — edit the relevant `i18n/<locale>.ts` and json files and open a pull request.
 
 ---
 
@@ -965,4 +1000,5 @@ pnpm dev:watch
 
 - CI checks build correctness and integration metadata.
 - The built frontend bundle is committed as `custom_components/hass_datapoints/hass-datapoints-cards.js`.
-- Pre-commit hooks rebuild the frontend when needed.
+- Pre-commit hooks format staged files, validate frontend types, and rebuild the frontend when needed.
+- Pre-push hooks run tests, lint checks, and frontend type validation before pushing.
