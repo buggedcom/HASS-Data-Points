@@ -1,4 +1,5 @@
 """Sensor platform for Hass Data Points."""
+
 from __future__ import annotations
 
 from homeassistant.components.sensor import SensorEntity

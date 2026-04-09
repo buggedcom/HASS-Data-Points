@@ -1,14 +1,16 @@
 """Persistent storage for Hass Data Points."""
+
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
-from typing import Any, Callable
+from collections.abc import Callable
+from datetime import UTC, datetime
+from typing import Any
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
 
-from .const import DOMAIN, STORAGE_KEY, STORAGE_VERSION
+from .const import STORAGE_KEY, STORAGE_VERSION
 
 
 class DatapointsStore:
@@ -59,10 +61,10 @@ class DatapointsStore:
         if date:
             dt = datetime.fromisoformat(date)
             if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=timezone.utc)
+                dt = dt.replace(tzinfo=UTC)
             ts = dt.isoformat()
         else:
-            ts = datetime.now(timezone.utc).isoformat()
+            ts = datetime.now(UTC).isoformat()
         event: dict[str, Any] = {
             "id": str(uuid.uuid4()),
             "timestamp": ts,
@@ -111,10 +113,11 @@ class DatapointsStore:
             seen_ids: set[str] = set()
             for event in events:
                 ev_entities = set(event.get("entity_ids", []))
-                if not ev_entities or ev_entities & requested:
-                    if event["id"] not in seen_ids:
-                        seen_ids.add(event["id"])
-                        filtered.append(event)
+                if (not ev_entities or ev_entities & requested) and event[
+                    "id"
+                ] not in seen_ids:
+                    seen_ids.add(event["id"])
+                    filtered.append(event)
             events = filtered
 
         return events
@@ -205,9 +208,7 @@ class DatapointsStore:
     async def async_delete_event(self, event_id: str) -> bool:
         """Delete an event by ID. Returns True if found and deleted."""
         original_len = len(self._data["events"])
-        self._data["events"] = [
-            e for e in self._data["events"] if e["id"] != event_id
-        ]
+        self._data["events"] = [e for e in self._data["events"] if e["id"] != event_id]
         if len(self._data["events"]) < original_len:
             await self._store.async_save(self._data)
             self._notify_listeners()

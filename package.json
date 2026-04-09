@@ -14,6 +14,7 @@
     "dev:sync": "bash scripts/dev-sync.sh",
     "dev:watch": "bash scripts/dev-watch.sh",
     "hooks:install": "bash scripts/install-hooks.sh",
+    "py:install": "python3 -m venv .venv && .venv/bin/pip install -r requirements_dev.txt",
     "lint:eslint:cmd": "eslint \"custom_components/hass_datapoints/src/**/*.{js,ts}\" --cache --cache-strategy=content --cache-location=node_modules/.cache/eslint/.eslintcache",
     "lint:eslint": "pnpm lint:eslint:cmd --max-warnings=0",
     "format:eslint": "pnpm lint:eslint:cmd --fix",

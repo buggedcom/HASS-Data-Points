@@ -4,6 +4,7 @@ Pure Python (stdlib only: math, statistics) — no pip dependencies.
 All six algorithms are ported faithfully from:
   src/lib/workers/history-analysis.worker.js
 """
+
 from __future__ import annotations
 
 import math
@@ -12,6 +13,7 @@ import statistics
 # ---------------------------------------------------------------------------
 # Sensitivity helpers
 # ---------------------------------------------------------------------------
+
 
 def _zscore_threshold(sensitivity: str) -> float:
     """Threshold multiplier for z-score / trend-residual / rate-of-change / comparison."""
@@ -74,6 +76,7 @@ def _persistence_window_ms(value: str) -> int:
 # Interpolation
 # ---------------------------------------------------------------------------
 
+
 def _interpolate(pts: list, time_ms: int) -> float | None:
     """Linear interpolation into a sorted pts list [[timeMs, value], ...]."""
     if not pts:
@@ -96,6 +99,7 @@ def _interpolate(pts: list, time_ms: int) -> float | None:
 # ---------------------------------------------------------------------------
 # Trend helpers (for trend_residual)
 # ---------------------------------------------------------------------------
+
 
 def _build_rolling_average(pts: list, window_ms: int) -> list:
     if len(pts) < 2 or window_ms <= 0:
@@ -173,6 +177,7 @@ def _build_rate_pts(pts: list, rate_window: str) -> list:
 # Algorithm 1: IQR
 # ---------------------------------------------------------------------------
 
+
 def detect_iqr(pts: list, sensitivity: str) -> list[dict]:
     """Detect anomalies via interquartile range fencing."""
     if len(pts) < 4:
@@ -195,12 +200,16 @@ def detect_iqr(pts: list, sensitivity: str) -> list[dict]:
     def flush() -> None:
         if current:
             max_dev = max(abs(p["residual"]) for p in current)
-            clusters.append({"points": current[:], "maxDeviation": max_dev, "anomalyMethod": "iqr"})
+            clusters.append(
+                {"points": current[:], "maxDeviation": max_dev, "anomalyMethod": "iqr"}
+            )
             current.clear()
 
     for t, v in pts:
         if v < lower or v > upper:
-            current.append({"timeMs": t, "value": v, "baselineValue": q2, "residual": v - q2})
+            current.append(
+                {"timeMs": t, "value": v, "baselineValue": q2, "residual": v - q2}
+            )
         else:
             flush()
     flush()
@@ -211,7 +220,10 @@ def detect_iqr(pts: list, sensitivity: str) -> list[dict]:
 # Algorithm 2: Rolling z-score
 # ---------------------------------------------------------------------------
 
-def detect_rolling_zscore(pts: list, sensitivity: str, window_seconds: int) -> list[dict]:
+
+def detect_rolling_zscore(
+    pts: list, sensitivity: str, window_seconds: int
+) -> list[dict]:
     """Detect anomalies via rolling z-score within a sliding time window."""
     if len(pts) < 3:
         return []
@@ -239,7 +251,15 @@ def detect_rolling_zscore(pts: list, sensitivity: str, window_seconds: int) -> l
             continue
         zscore = (v - mean) / std
         if abs(zscore) >= threshold:
-            residuals.append({"timeMs": t, "value": v, "baselineValue": mean, "residual": v - mean, "flagged": True})
+            residuals.append(
+                {
+                    "timeMs": t,
+                    "value": v,
+                    "baselineValue": mean,
+                    "residual": v - mean,
+                    "flagged": True,
+                }
+            )
         else:
             residuals.append({"timeMs": t, "flagged": False})
 
@@ -249,7 +269,13 @@ def detect_rolling_zscore(pts: list, sensitivity: str, window_seconds: int) -> l
     def flush() -> None:
         if current:
             max_dev = max(abs(p["residual"]) for p in current)
-            clusters.append({"points": current[:], "maxDeviation": max_dev, "anomalyMethod": "rolling_zscore"})
+            clusters.append(
+                {
+                    "points": current[:],
+                    "maxDeviation": max_dev,
+                    "anomalyMethod": "rolling_zscore",
+                }
+            )
             current.clear()
 
     for r in residuals:
@@ -265,7 +291,10 @@ def detect_rolling_zscore(pts: list, sensitivity: str, window_seconds: int) -> l
 # Algorithm 3: Trend residual
 # ---------------------------------------------------------------------------
 
-def detect_trend_residual(pts: list, sensitivity: str, method: str, trend_window: str) -> list[dict]:
+
+def detect_trend_residual(
+    pts: list, sensitivity: str, method: str, trend_window: str
+) -> list[dict]:
     """Detect anomalies as residuals against a trend line / rolling average."""
     if len(pts) < 3:
         return []
@@ -277,7 +306,9 @@ def detect_trend_residual(pts: list, sensitivity: str, method: str, trend_window
         bv = _interpolate(baseline, t)
         if bv is None or not math.isfinite(bv):
             continue
-        res_pts.append({"timeMs": t, "value": v, "baselineValue": bv, "residual": v - bv})
+        res_pts.append(
+            {"timeMs": t, "value": v, "baselineValue": bv, "residual": v - bv}
+        )
     if len(res_pts) < 3:
         return []
     sum_sq = sum(p["residual"] ** 2 for p in res_pts)
@@ -292,7 +323,13 @@ def detect_trend_residual(pts: list, sensitivity: str, method: str, trend_window
     def flush() -> None:
         if current:
             max_dev = max(abs(p["residual"]) for p in current)
-            clusters.append({"points": current[:], "maxDeviation": max_dev, "anomalyMethod": "trend_residual"})
+            clusters.append(
+                {
+                    "points": current[:],
+                    "maxDeviation": max_dev,
+                    "anomalyMethod": "trend_residual",
+                }
+            )
             current.clear()
 
     for p in res_pts:
@@ -307,6 +344,7 @@ def detect_trend_residual(pts: list, sensitivity: str, method: str, trend_window
 # ---------------------------------------------------------------------------
 # Algorithm 4: Persistence (stuck / flat segments)
 # ---------------------------------------------------------------------------
+
 
 def detect_persistence(pts: list, sensitivity: str, window_seconds: int) -> list[dict]:
     """Detect anomalies where the signal is stuck flat for longer than window_seconds."""
@@ -338,12 +376,14 @@ def detect_persistence(pts: list, sensitivity: str, window_seconds: int) -> list
                 }
                 for k in range(run_start, run_end + 1)
             ]
-            clusters.append({
-                "points": cluster_pts,
-                "maxDeviation": run_max - run_min,
-                "anomalyMethod": "persistence",
-                "flatRange": run_max - run_min,
-            })
+            clusters.append(
+                {
+                    "points": cluster_pts,
+                    "maxDeviation": run_max - run_min,
+                    "anomalyMethod": "persistence",
+                    "flatRange": run_max - run_min,
+                }
+            )
 
     for i in range(1, len(pts)):
         v = pts[i][1]
@@ -363,6 +403,7 @@ def detect_persistence(pts: list, sensitivity: str, window_seconds: int) -> list
 # ---------------------------------------------------------------------------
 # Algorithm 5: Rate of change
 # ---------------------------------------------------------------------------
+
 
 def detect_rate_of_change(pts: list, sensitivity: str, rate_window: str) -> list[dict]:
     """Detect anomalies via unusual rate-of-change."""
@@ -385,7 +426,13 @@ def detect_rate_of_change(pts: list, sensitivity: str, rate_window: str) -> list
     def flush() -> None:
         if current:
             max_dev = max(abs(p["residual"]) for p in current)
-            clusters.append({"points": current[:], "maxDeviation": max_dev, "anomalyMethod": "rate_of_change"})
+            clusters.append(
+                {
+                    "points": current[:],
+                    "maxDeviation": max_dev,
+                    "anomalyMethod": "rate_of_change",
+                }
+            )
             current.clear()
 
     for t, rate in rate_pts:
@@ -395,7 +442,14 @@ def detect_rate_of_change(pts: list, sensitivity: str, rate_window: str) -> list
             if src_val is None or not math.isfinite(src_val):
                 flush()
                 continue
-            current.append({"timeMs": t, "value": src_val, "baselineValue": mean_rate, "residual": residual})
+            current.append(
+                {
+                    "timeMs": t,
+                    "value": src_val,
+                    "baselineValue": mean_rate,
+                    "residual": residual,
+                }
+            )
         else:
             flush()
     flush()
@@ -405,6 +459,7 @@ def detect_rate_of_change(pts: list, sensitivity: str, rate_window: str) -> list
 # ---------------------------------------------------------------------------
 # Algorithm 6: Comparison window
 # ---------------------------------------------------------------------------
+
 
 def detect_comparison_window(
     pts: list,
@@ -422,7 +477,9 @@ def detect_comparison_window(
         comp_v = _interpolate(comparison_pts, comp_t)
         if comp_v is None or not math.isfinite(comp_v):
             continue
-        delta_pts.append({"timeMs": t, "value": v, "compValue": comp_v, "delta": v - comp_v})
+        delta_pts.append(
+            {"timeMs": t, "value": v, "compValue": comp_v, "delta": v - comp_v}
+        )
 
     if len(delta_pts) < 3:
         return []
@@ -440,18 +497,26 @@ def detect_comparison_window(
     def flush() -> None:
         if current:
             max_dev = max(abs(p["residual"]) for p in current)
-            clusters.append({"points": current[:], "maxDeviation": max_dev, "anomalyMethod": "comparison_window"})
+            clusters.append(
+                {
+                    "points": current[:],
+                    "maxDeviation": max_dev,
+                    "anomalyMethod": "comparison_window",
+                }
+            )
             current.clear()
 
     for p in delta_pts:
         residual = p["delta"] - mean_delta
         if abs(residual) >= threshold:
-            current.append({
-                "timeMs": p["timeMs"],
-                "value": p["value"],
-                "baselineValue": p["compValue"],
-                "residual": p["value"] - p["compValue"],
-            })
+            current.append(
+                {
+                    "timeMs": p["timeMs"],
+                    "value": p["value"],
+                    "baselineValue": p["compValue"],
+                    "residual": p["value"] - p["compValue"],
+                }
+            )
         else:
             flush()
     flush()
@@ -462,7 +527,10 @@ def detect_comparison_window(
 # Overlap mode
 # ---------------------------------------------------------------------------
 
-def apply_overlap_mode(clusters_by_method: dict[str, list[dict]], mode: str) -> list[dict]:
+
+def apply_overlap_mode(
+    clusters_by_method: dict[str, list[dict]], mode: str
+) -> list[dict]:
     """Apply overlap mode logic matching the JS worker's applyAnomalyOverlapMode."""
     method_keys = list(clusters_by_method.keys())
     if len(method_keys) <= 1 or mode == "all":
@@ -470,12 +538,16 @@ def apply_overlap_mode(clusters_by_method: dict[str, list[dict]], mode: str) -> 
 
     flagged_by_method: dict[str, set[int]] = {}
     for m in method_keys:
-        flagged_by_method[m] = {p["timeMs"] for c in clusters_by_method[m] for p in c["points"]}
+        flagged_by_method[m] = {
+            p["timeMs"] for c in clusters_by_method[m] for p in c["points"]
+        }
 
     overlap_times: set[int] = set()
     for m in method_keys:
         for t in flagged_by_method[m]:
-            if any(other != m and t in flagged_by_method[other] for other in method_keys):
+            if any(
+                other != m and t in flagged_by_method[other] for other in method_keys
+            ):
                 overlap_times.add(t)
 
     if mode == "only":
@@ -491,16 +563,21 @@ def apply_overlap_mode(clusters_by_method: dict[str, list[dict]], mode: str) -> 
                     continue
                 seen.add(key)
                 detected_by = [
-                    other for other in method_keys
+                    other
+                    for other in method_keys
                     if any(p["timeMs"] in flagged_by_method[other] for p in pts)
                 ]
-                result.append({
-                    **cluster,
-                    "points": pts,
-                    "maxDeviation": max((abs(p.get("residual", 0)) for p in pts), default=0),
-                    "isOverlap": True,
-                    "detectedByMethods": detected_by,
-                })
+                result.append(
+                    {
+                        **cluster,
+                        "points": pts,
+                        "maxDeviation": max(
+                            (abs(p.get("residual", 0)) for p in pts), default=0
+                        ),
+                        "isOverlap": True,
+                        "detectedByMethods": detected_by,
+                    }
+                )
         return result
 
     # "highlight" mode
@@ -510,12 +587,19 @@ def apply_overlap_mode(clusters_by_method: dict[str, list[dict]], mode: str) -> 
             has_overlap = any(p["timeMs"] in overlap_times for p in cluster["points"])
             detected_by = (
                 [
-                    other for other in method_keys
-                    if any(p["timeMs"] in flagged_by_method[other] for p in cluster["points"])
+                    other
+                    for other in method_keys
+                    if any(
+                        p["timeMs"] in flagged_by_method[other]
+                        for p in cluster["points"]
+                    )
                 ]
-                if has_overlap else [m]
+                if has_overlap
+                else [m]
             )
-            result.append({**cluster, "isOverlap": has_overlap, "detectedByMethods": detected_by})
+            result.append(
+                {**cluster, "isOverlap": has_overlap, "detectedByMethods": detected_by}
+            )
     return result
 
 
@@ -523,42 +607,53 @@ def apply_overlap_mode(clusters_by_method: dict[str, list[dict]], mode: str) -> 
 # Top-level entry point
 # ---------------------------------------------------------------------------
 
+
 def _parse_window_seconds(window_str: str, window_map: dict) -> int:
     """Convert a window string like '1h' to seconds."""
     ms = window_map.get(window_str, 0)
     return ms // 1000 if ms else 0
 
 
-_TREND_WINDOWS_SECONDS: dict[str, int] = {k: v // 1000 for k, v in {
-    "1h": 3_600_000,
-    "6h": 21_600_000,
-    "24h": 86_400_000,
-    "7d": 604_800_000,
-    "14d": 1_209_600_000,
-    "21d": 1_814_400_000,
-    "28d": 2_419_200_000,
-}.items()}
+_TREND_WINDOWS_SECONDS: dict[str, int] = {
+    k: v // 1000
+    for k, v in {
+        "1h": 3_600_000,
+        "6h": 21_600_000,
+        "24h": 86_400_000,
+        "7d": 604_800_000,
+        "14d": 1_209_600_000,
+        "21d": 1_814_400_000,
+        "28d": 2_419_200_000,
+    }.items()
+}
 
-_PERSISTENCE_WINDOWS_SECONDS: dict[str, int] = {k: v // 1000 for k, v in {
-    "30m": 1_800_000,
-    "1h": 3_600_000,
-    "3h": 10_800_000,
-    "6h": 21_600_000,
-    "12h": 43_200_000,
-    "24h": 86_400_000,
-}.items()}
+_PERSISTENCE_WINDOWS_SECONDS: dict[str, int] = {
+    k: v // 1000
+    for k, v in {
+        "30m": 1_800_000,
+        "1h": 3_600_000,
+        "3h": 10_800_000,
+        "6h": 21_600_000,
+        "12h": 43_200_000,
+        "24h": 86_400_000,
+    }.items()
+}
 
-VALID_ANOMALY_METHODS = frozenset([
-    "trend_residual",
-    "rate_of_change",
-    "iqr",
-    "rolling_zscore",
-    "persistence",
-    "comparison_window",
-])
+VALID_ANOMALY_METHODS = frozenset(
+    [
+        "trend_residual",
+        "rate_of_change",
+        "iqr",
+        "rolling_zscore",
+        "persistence",
+        "comparison_window",
+    ]
+)
 
 
-def run_anomaly_detection(pts: list, config: dict, comparison_pts: list | None = None) -> list[dict]:
+def run_anomaly_detection(
+    pts: list, config: dict, comparison_pts: list | None = None
+) -> list[dict]:
     """Run all requested anomaly detection methods and apply overlap mode.
 
     config keys (matching NormalizedAnalysis):
@@ -575,7 +670,9 @@ def run_anomaly_detection(pts: list, config: dict, comparison_pts: list | None =
     if not pts or len(pts) < 3:
         return []
 
-    methods: list[str] = [m for m in config.get("anomaly_methods", []) if m in VALID_ANOMALY_METHODS]
+    methods: list[str] = [
+        m for m in config.get("anomaly_methods", []) if m in VALID_ANOMALY_METHODS
+    ]
     if not methods:
         return []
 
@@ -588,8 +685,12 @@ def run_anomaly_detection(pts: list, config: dict, comparison_pts: list | None =
     trend_window: str = config.get("trend_window", "24h")
     time_offset_ms: int = int(config.get("comparison_time_offset_ms", 0))
 
-    zscore_seconds = _TREND_WINDOWS_SECONDS.get(zscore_window, _TREND_WINDOWS_SECONDS["24h"])
-    persistence_seconds = _PERSISTENCE_WINDOWS_SECONDS.get(persistence_window, _PERSISTENCE_WINDOWS_SECONDS["1h"])
+    zscore_seconds = _TREND_WINDOWS_SECONDS.get(
+        zscore_window, _TREND_WINDOWS_SECONDS["24h"]
+    )
+    persistence_seconds = _PERSISTENCE_WINDOWS_SECONDS.get(
+        persistence_window, _PERSISTENCE_WINDOWS_SECONDS["1h"]
+    )
 
     clusters_by_method: dict[str, list[dict]] = {}
 
@@ -619,7 +720,9 @@ def run_anomaly_detection(pts: list, config: dict, comparison_pts: list | None =
             clusters_by_method["persistence"] = result
 
     if "comparison_window" in methods and comparison_pts and len(comparison_pts) >= 3:
-        result = detect_comparison_window(pts, comparison_pts, sensitivity, time_offset_ms)
+        result = detect_comparison_window(
+            pts, comparison_pts, sensitivity, time_offset_ms
+        )
         if result:
             clusters_by_method["comparison_window"] = result
 

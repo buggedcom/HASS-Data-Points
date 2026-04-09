@@ -1,24 +1,23 @@
 """Hass Data Points - Record custom data points with chart annotations."""
+
 from __future__ import annotations
 
 from pathlib import Path
 
 import voluptuous as vol
-
-from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components import panel_custom
+from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import config_validation as cv
 
-CONFIG_SCHEMA = cv.empty_config_schema(__name__)
-
+from . import websocket_api as ws_api
+from .anomaly_cache import AnomalyCache
 from .const import (
     ATTR_ANNOTATION,
     ATTR_AREA_IDS,
-    ATTR_AUTOMATION_ID,
     ATTR_COLOR,
     ATTR_DATE,
     ATTR_DEV,
@@ -37,8 +36,8 @@ from .const import (
     SERVICE_RECORD,
 )
 from .store import DatapointsStore
-from .anomaly_cache import AnomalyCache
-from . import websocket_api as ws_api
+
+CONFIG_SCHEMA = cv.empty_config_schema(__name__)
 
 type DatapointsConfigEntry = ConfigEntry[DatapointsStore]
 
@@ -69,7 +68,6 @@ def _find_automation_id(hass: HomeAssistant, context) -> str | None:
     return None
 
 
-
 SERVICE_RECORD_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_MESSAGE): cv.string,
@@ -95,13 +93,15 @@ SERVICE_RECORD_SCHEMA = vol.Schema(
 async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     """Set up static resources shared across all config entries."""
     # Serve the frontend card JS file
-    await hass.http.async_register_static_paths([
-        StaticPathConfig(
-            FRONTEND_URL,
-            str(Path(__file__).parent / "hass-datapoints-cards.js"),
-            cache_headers=False,
-        )
-    ])
+    await hass.http.async_register_static_paths(
+        [
+            StaticPathConfig(
+                FRONTEND_URL,
+                str(Path(__file__).parent / "hass-datapoints-cards.js"),
+                cache_headers=False,
+            )
+        ]
+    )
 
     # Auto-register as a Lovelace module resource so cards are immediately available
     add_extra_js_url(hass, FRONTEND_URL)

@@ -9,3 +9,6 @@ node_modules/
 /build-storybook.log
 dev/
 storybook-static
+
+# Python virtual environment
+.venv/

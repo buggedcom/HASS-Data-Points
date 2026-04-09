@@ -1,30 +1,63 @@
 """WebSocket API for Hass Data Points frontend cards."""
+
 from __future__ import annotations
 
 import logging
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
+
+import voluptuous as vol
+from homeassistant.components import websocket_api
+from homeassistant.components.recorder import get_instance
+from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.recorder import session_scope
+from sqlalchemy import inspect as sqlalchemy_inspect
+from sqlalchemy import text
+
+from .anomaly_cache import AnomalyCache, make_cache_key
+from .anomaly_detection import run_anomaly_detection
+from .const import DOMAIN
+from .history_utils import (
+    downsample_pts,
+    fetch_entity_pts,
+    fetch_entity_statistics_pts,
+    parse_interval_seconds,
+)
 
 _LOGGER = logging.getLogger(__name__)
 
-import voluptuous as vol
-from sqlalchemy import inspect as sqlalchemy_inspect, text
-
-from homeassistant.components.recorder import get_instance
-from homeassistant.components import websocket_api
-from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.recorder import session_scope
-
-from .const import DOMAIN
-from .history_utils import fetch_entity_pts, fetch_entity_statistics_pts, downsample_pts, parse_interval_seconds
-from .anomaly_detection import run_anomaly_detection
-from .anomaly_cache import AnomalyCache, make_cache_key
-
 _LIVE_EDGE_SECONDS = 3600  # ranges ending within the last hour are not cached
 
-_VALID_INTERVALS = ["raw", "1s", "5s", "10s", "15s", "30s", "1m", "2m", "5m", "10m", "15m", "30m", "1h", "2h", "3h", "4h", "6h", "12h", "24h"]
+_VALID_INTERVALS = [
+    "raw",
+    "1s",
+    "5s",
+    "10s",
+    "15s",
+    "30s",
+    "1m",
+    "2m",
+    "5m",
+    "10m",
+    "15m",
+    "30m",
+    "1h",
+    "2h",
+    "3h",
+    "4h",
+    "6h",
+    "12h",
+    "24h",
+]
 _VALID_AGGREGATES = ["mean", "min", "max", "median", "first", "last"]
-_VALID_ANOMALY_METHODS = ["trend_residual", "rate_of_change", "iqr", "rolling_zscore", "persistence", "comparison_window"]
+_VALID_ANOMALY_METHODS = [
+    "trend_residual",
+    "rate_of_change",
+    "iqr",
+    "rolling_zscore",
+    "persistence",
+    "comparison_window",
+]
 
 # Maximum date-range span accepted by ws_get_history.  Requests beyond this
 # limit return an empty pts list so the frontend gracefully falls back to the
@@ -91,7 +124,9 @@ async def ws_get_event_bounds(
     """Return the earliest and latest recorded event timestamps."""
     try:
         store = hass.data[DOMAIN]["store"]
-        start_time, end_time, source = await hass.async_add_executor_job(_get_global_history_bounds, hass)
+        start_time, end_time, source = await hass.async_add_executor_job(
+            _get_global_history_bounds, hass
+        )
         if start_time is None and end_time is None:
             start_time, end_time = store.get_event_bounds()
             source = "datapoints_store_fallback"
@@ -104,7 +139,9 @@ async def ws_get_event_bounds(
         connection.send_error(msg["id"], "bounds_error", "Failed to fetch event bounds")
 
 
-def _get_global_history_bounds(hass: HomeAssistant) -> tuple[str | None, str | None, str]:
+def _get_global_history_bounds(
+    hass: HomeAssistant,
+) -> tuple[str | None, str | None, str]:
     """Return earliest/latest recorder timestamps for Home Assistant globally."""
     recorder = get_instance(hass)
     get_session = getattr(recorder, "get_session", None)
@@ -117,7 +154,12 @@ def _get_global_history_bounds(hass: HomeAssistant) -> tuple[str | None, str | N
         ("recorder_runs:start_end", "recorder_runs", "start", "end"),
         # Older recorder schemas used created/closed style columns instead of
         # start/end, so keep this fallback for older Core installs and upgrades.
-        ("recorder_runs:created_closed", "recorder_runs", "created", "closed_incorrect"),
+        (
+            "recorder_runs:created_closed",
+            "recorder_runs",
+            "created",
+            "closed_incorrect",
+        ),
         # Modern recorder tables expose UNIX-second timestamp mirrors for fast
         # numeric filtering; these appeared after the older datetime columns.
         ("states:last_updated_ts", "states", "last_updated_ts", "last_updated_ts"),
@@ -137,7 +179,12 @@ def _get_global_history_bounds(hass: HomeAssistant) -> tuple[str | None, str | N
         ("statistics:start", "statistics", "start", "start"),
         # statistics_short_term followed the same migration path as statistics:
         # newer HA builds provide numeric *_ts columns for recorder access.
-        ("statistics_short_term:start_ts", "statistics_short_term", "start_ts", "start_ts"),
+        (
+            "statistics_short_term:start_ts",
+            "statistics_short_term",
+            "start_ts",
+            "start_ts",
+        ),
         # Older short-term statistics tables only expose datetime start.
         ("statistics_short_term:start", "statistics_short_term", "start", "start"),
     ]
@@ -162,7 +209,8 @@ def _get_global_history_bounds(hass: HomeAssistant) -> tuple[str | None, str | N
                 if table_name not in column_cache:
                     try:
                         column_cache[table_name] = {
-                            column["name"] for column in inspector.get_columns(table_name)
+                            column["name"]
+                            for column in inspector.get_columns(table_name)
                         }
                     except Exception:
                         column_cache[table_name] = set()
@@ -174,7 +222,9 @@ def _get_global_history_bounds(hass: HomeAssistant) -> tuple[str | None, str | N
                 columns = _get_columns(table_name)
                 if start_column not in columns:
                     continue
-                end_expr = f"MAX({_quote(end_column)})" if end_column in columns else "NULL"
+                end_expr = (
+                    f"MAX({_quote(end_column)})" if end_column in columns else "NULL"
+                )
                 query = text(
                     f"SELECT MIN({_quote(start_column)}) AS start_ts, "
                     f"{end_expr} AS end_ts FROM {_quote(table_name)}"
@@ -213,7 +263,7 @@ def _normalize_recorder_timestamp(value: object) -> str | None:
         return None
 
     if isinstance(value, (int, float)):
-        return datetime.fromtimestamp(float(value), tz=timezone.utc).isoformat()
+        return datetime.fromtimestamp(float(value), tz=UTC).isoformat()
 
     if isinstance(value, str):
         try:
@@ -221,12 +271,12 @@ def _normalize_recorder_timestamp(value: object) -> str | None:
         except ValueError:
             return None
         if parsed.tzinfo is None:
-            parsed = parsed.replace(tzinfo=timezone.utc)
+            parsed = parsed.replace(tzinfo=UTC)
         return parsed.isoformat()
 
     if isinstance(value, datetime):
         if value.tzinfo is None:
-            value = value.replace(tzinfo=timezone.utc)
+            value = value.replace(tzinfo=UTC)
         return value.isoformat()
 
     return None
@@ -310,6 +360,7 @@ async def ws_delete_dev_events(
 # New: hass_datapoints/history — downsampled history
 # ---------------------------------------------------------------------------
 
+
 @websocket_api.websocket_command(
     {
         vol.Required("type"): f"{DOMAIN}/history",
@@ -352,7 +403,9 @@ async def ws_get_history(
             _LOGGER.info(
                 "hass_datapoints/history: using statistics fallback for %s — "
                 "range %.1f days exceeds %d-day raw-history limit",
-                entity_id, range_days, _MAX_HISTORY_RANGE_DAYS,
+                entity_id,
+                range_days,
+                _MAX_HISTORY_RANGE_DAYS,
             )
             used_statistics_fallback = True
             raw_pts = await get_instance(hass).async_add_executor_job(
@@ -397,12 +450,15 @@ async def ws_get_history(
 # New: hass_datapoints/anomalies — backend anomaly detection
 # ---------------------------------------------------------------------------
 
+
 def _run_detection(pts: list, config: dict, comparison_pts: list | None = None) -> list:
     """Blocking helper: run anomaly detection on pre-fetched pts."""
     clusters = run_anomaly_detection(pts, config, comparison_pts)
     _LOGGER.info(
         "hass_datapoints: anomaly detection → %d clusters from %d pts (methods=%s)",
-        len(clusters), len(pts), config.get("anomaly_methods"),
+        len(clusters),
+        len(pts),
+        config.get("anomaly_methods"),
     )
     return clusters
 
@@ -466,14 +522,20 @@ async def ws_get_anomalies(
         is_live = (time.time() - end_ts) < _LIVE_EDGE_SECONDS
 
         cache: AnomalyCache | None = hass.data.get(DOMAIN, {}).get("anomaly_cache")
-        cache_key = make_cache_key(entity_id, start_time, end_time, config) if cache else None
+        cache_key = (
+            make_cache_key(entity_id, start_time, end_time, config) if cache else None
+        )
 
         if cache and cache_key and not is_live:
             cached = await hass.async_add_executor_job(cache.get, cache_key)
             if cached is not None:
                 connection.send_result(
                     msg["id"],
-                    {"entity_id": entity_id, "anomaly_clusters": cached, "cached": True},
+                    {
+                        "entity_id": entity_id,
+                        "anomaly_clusters": cached,
+                        "cached": True,
+                    },
                 )
                 return
 
@@ -503,8 +565,15 @@ async def ws_get_anomalies(
             pts = downsample_pts(pts, interval_secs, sample_aggregate)
 
         if len(pts) < 3:
-            _LOGGER.info("hass_datapoints: anomaly detection skipped for %s — only %d pts", entity_id, len(pts))
-            connection.send_result(msg["id"], {"entity_id": entity_id, "anomaly_clusters": [], "cached": False})
+            _LOGGER.info(
+                "hass_datapoints: anomaly detection skipped for %s — only %d pts",
+                entity_id,
+                len(pts),
+            )
+            connection.send_result(
+                msg["id"],
+                {"entity_id": entity_id, "anomaly_clusters": [], "cached": False},
+            )
             return
 
         # Guard against very large point counts that would cause the detection
@@ -516,7 +585,9 @@ async def ws_get_anomalies(
             _LOGGER.warning(
                 "hass_datapoints: capping %d pts to %d before anomaly detection for %s "
                 "— consider enabling sample_interval for large date ranges",
-                len(pts), _ANOMALY_MAX_PTS, entity_id,
+                len(pts),
+                _ANOMALY_MAX_PTS,
+                entity_id,
             )
             pts = pts[-_ANOMALY_MAX_PTS:]
 
@@ -526,10 +597,16 @@ async def ws_get_anomalies(
         comparison_end_time = config.get("comparison_end_time")
         if comparison_entity_id and comparison_start_time and comparison_end_time:
             comparison_pts = await recorder.async_add_executor_job(
-                fetch_entity_pts, hass, comparison_entity_id, comparison_start_time, comparison_end_time
+                fetch_entity_pts,
+                hass,
+                comparison_entity_id,
+                comparison_start_time,
+                comparison_end_time,
             )
 
-        clusters: list = await hass.async_add_executor_job(_run_detection, pts, config, comparison_pts)
+        clusters: list = await hass.async_add_executor_job(
+            _run_detection, pts, config, comparison_pts
+        )
 
         if cache and cache_key and not is_live and clusters:
             await hass.async_add_executor_job(
@@ -543,12 +620,15 @@ async def ws_get_anomalies(
 
     except Exception as err:  # noqa: BLE001
         _LOGGER.error("hass_datapoints/anomalies failed for %s: %s", entity_id, err)
-        connection.send_error(msg["id"], "detection_error", "Failed to run anomaly detection")
+        connection.send_error(
+            msg["id"], "detection_error", "Failed to run anomaly detection"
+        )
 
 
 # ---------------------------------------------------------------------------
 # New: hass_datapoints/cache/clear — cache management
 # ---------------------------------------------------------------------------
+
 
 @websocket_api.websocket_command(
     {

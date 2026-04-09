@@ -1,32 +1,79 @@
 #!/usr/bin/env bash
 #
-# pre-commit hook: rebuild hass-datapoints-cards.js when any src/ file is staged.
+# pre-commit hook:
+#  1. Format all staged Prettier-supported files (ts, js, md, json, css, html…)
+#  2. Lint & format staged Python files with ruff
+#  3. Rebuild hass-datapoints-cards.js when any src/ file is staged
 #
 # Install:  pnpm hooks:install
 #           (or manually: ln -sf ../../scripts/pre-commit .git/hooks/pre-commit)
+#
+# Python linting requires ruff: pip install -r requirements_dev.txt
 
 set -euo pipefail
 
 SRC_DIR="custom_components/hass_datapoints/src"
 OUT_FILE="custom_components/hass_datapoints/hass-datapoints-cards.js"
 
-# Check if any src/ JS files are staged
-STAGED_SRC=$(git diff --cached --name-only --diff-filter=ACMR -- "$SRC_DIR/*.js" 2>/dev/null || true)
+# Extensions Prettier handles in this repo
+PRETTIER_EXTS="ts|js|mjs|cjs|css|html|json|md|yaml|yml"
 
-if [ -z "$STAGED_SRC" ]; then
+# Staged files that Prettier should format
+STAGED_PRETTIER=$(git diff --cached --name-only --diff-filter=ACMR \
+  | grep -E "\.(${PRETTIER_EXTS})$" || true)
+
+# Staged Python files
+STAGED_PY=$(git diff --cached --name-only --diff-filter=ACMR \
+  | grep -E "\.py$" || true)
+
+# Staged files under src/ that trigger a bundle rebuild
+STAGED_SRC=$(git diff --cached --name-only --diff-filter=ACMR \
+  | grep "^$SRC_DIR/" || true)
+
+if [ -z "$STAGED_PRETTIER" ] && [ -z "$STAGED_PY" ] && [ -z "$STAGED_SRC" ]; then
   exit 0
 fi
 
-if ! command -v pnpm >/dev/null 2>&1; then
-  echo "[pre-commit] pnpm is required to build frontend assets." >&2
-  exit 1
+# ── 1. Format with Prettier ────────────────────────────────────────────────────
+if [ -n "$STAGED_PRETTIER" ]; then
+  if ! command -v pnpm >/dev/null 2>&1; then
+    echo "[pre-commit] pnpm is required for Prettier." >&2
+    exit 1
+  fi
+  echo "[pre-commit] Formatting staged files with Prettier…"
+  echo "$STAGED_PRETTIER" | xargs pnpm prettier --cache --write --
+  # Re-stage any files Prettier modified
+  echo "$STAGED_PRETTIER" | xargs git add
 fi
 
-echo "[pre-commit] src/ files changed — rebuilding $OUT_FILE via pnpm …"
+# ── 2. Lint & format Python with ruff ─────────────────────────────────────────
+if [ -n "$STAGED_PY" ]; then
+  # Prefer the venv ruff, fall back to whatever is on PATH
+  REPO_ROOT="$(git rev-parse --show-toplevel)"
+  RUFF="${REPO_ROOT}/.venv/bin/ruff"
+  if [ ! -x "$RUFF" ]; then
+    RUFF="$(command -v ruff || true)"
+  fi
+  if [ -z "$RUFF" ]; then
+    echo "[pre-commit] ruff not found — install with: pnpm py:install" >&2
+    exit 1
+  fi
+  echo "[pre-commit] Linting staged Python files with ruff…"
+  # Auto-fix safe lint issues, then format
+  echo "$STAGED_PY" | xargs "$RUFF" check --fix --
+  echo "$STAGED_PY" | xargs "$RUFF" format --
+  # Re-stage any files ruff modified
+  echo "$STAGED_PY" | xargs git add
+fi
 
-pnpm build
-
-# Stage the rebuilt output so the commit includes it
-git add "$OUT_FILE"
-
-echo "[pre-commit] ✓ $OUT_FILE rebuilt and staged"
+# ── 3. Rebuild the bundle ──────────────────────────────────────────────────────
+if [ -n "$STAGED_SRC" ]; then
+  if ! command -v pnpm >/dev/null 2>&1; then
+    echo "[pre-commit] pnpm is required to build frontend assets." >&2
+    exit 1
+  fi
+  echo "[pre-commit] src/ files changed — rebuilding $OUT_FILE…"
+  pnpm build
+  git add "$OUT_FILE"
+  echo "[pre-commit] ✓ $OUT_FILE rebuilt and staged"
+fi

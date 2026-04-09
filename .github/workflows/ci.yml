@@ -24,14 +24,14 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Check Python syntax
-        run: |
-          python -m py_compile custom_components/hass_datapoints/__init__.py
-          python -m py_compile custom_components/hass_datapoints/config_flow.py
-          python -m py_compile custom_components/hass_datapoints/const.py
-          python -m py_compile custom_components/hass_datapoints/logbook.py
-          python -m py_compile custom_components/hass_datapoints/store.py
-          python -m py_compile custom_components/hass_datapoints/websocket_api.py
+      - name: Install dev dependencies
+        run: pip install -r requirements_dev.txt --quiet
+
+      - name: ruff lint
+        run: ruff check custom_components/hass_datapoints/
+
+      - name: ruff format check
+        run: ruff format --check custom_components/hass_datapoints/
 
       - name: Validate manifest.json
         run: python -c "import json; json.load(open('custom_components/hass_datapoints/manifest.json'))"

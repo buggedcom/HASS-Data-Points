@@ -1,4 +1,5 @@
 """Config flow for Hass Data Points."""
+
 from __future__ import annotations
 
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult

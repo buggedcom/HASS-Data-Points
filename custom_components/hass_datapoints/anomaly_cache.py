@@ -7,13 +7,13 @@ served instantly.
 All public methods are synchronous and must be called via
 ``hass.async_add_executor_job``.
 """
+
 from __future__ import annotations
 
 import hashlib
 import json
 import sqlite3
 import time
-
 
 _SCHEMA_SQL = """
 CREATE TABLE IF NOT EXISTS anomaly_cache (

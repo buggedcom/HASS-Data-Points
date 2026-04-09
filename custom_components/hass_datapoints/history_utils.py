@@ -1,11 +1,12 @@
 """History utilities for hass_datapoints: recorder access and downsampling."""
+
 from __future__ import annotations
 
 import inspect
 import logging
 import math
 import statistics
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -39,11 +40,13 @@ def parse_interval_seconds(interval: str) -> int:
 def _parse_dt(iso: str) -> datetime:
     dt = datetime.fromisoformat(iso)
     if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
+        dt = dt.replace(tzinfo=UTC)
     return dt
 
 
-def fetch_entity_pts(hass, entity_id: str, start_time_iso: str, end_time_iso: str) -> list:
+def fetch_entity_pts(
+    hass, entity_id: str, start_time_iso: str, end_time_iso: str
+) -> list:
     """Fetch raw [[timeMs, value], ...] from recorder.
 
     Must be called via hass.async_add_executor_job — this function is blocking.
@@ -61,7 +64,9 @@ def fetch_entity_pts(hass, entity_id: str, start_time_iso: str, end_time_iso: st
         start_dt = _parse_dt(start_time_iso)
         end_dt = _parse_dt(end_time_iso)
     except ValueError:
-        _LOGGER.warning("hass_datapoints: invalid time range %s – %s", start_time_iso, end_time_iso)
+        _LOGGER.warning(
+            "hass_datapoints: invalid time range %s – %s", start_time_iso, end_time_iso
+        )
         return []
 
     try:
@@ -114,7 +119,9 @@ def fetch_entity_pts(hass, entity_id: str, start_time_iso: str, end_time_iso: st
 
         states_dict = get_significant_states(*positional_args, **keyword_args)
     except Exception as err:  # noqa: BLE001
-        _LOGGER.warning("hass_datapoints: get_significant_states failed for %s: %s", entity_id, err)
+        _LOGGER.warning(
+            "hass_datapoints: get_significant_states failed for %s: %s", entity_id, err
+        )
         return []
 
     if isinstance(states_dict, dict):
@@ -141,11 +148,18 @@ def fetch_entity_pts(hass, entity_id: str, start_time_iso: str, end_time_iso: st
                 continue
         pts.append([ts_ms, value])
 
-    _LOGGER.debug("hass_datapoints: fetch_entity_pts %s → %d pts (%d states)", entity_id, len(pts), len(states))
+    _LOGGER.debug(
+        "hass_datapoints: fetch_entity_pts %s → %d pts (%d states)",
+        entity_id,
+        len(pts),
+        len(states),
+    )
     return pts
 
 
-def fetch_entity_statistics_pts(hass, entity_id: str, start_time_iso: str, end_time_iso: str) -> list:
+def fetch_entity_statistics_pts(
+    hass, entity_id: str, start_time_iso: str, end_time_iso: str
+) -> list:
     """Fetch hourly long-term statistics as [[timeMs, mean], ...].
 
     Must be called via hass.async_add_executor_job — this function is blocking.
@@ -176,7 +190,11 @@ def fetch_entity_statistics_pts(hass, entity_id: str, start_time_iso: str, end_t
             {"mean"},
         )
     except Exception as err:  # noqa: BLE001
-        _LOGGER.debug("hass_datapoints: statistics_during_period failed for %s: %s", entity_id, err)
+        _LOGGER.debug(
+            "hass_datapoints: statistics_during_period failed for %s: %s",
+            entity_id,
+            err,
+        )
         return []
 
     entries = stats_dict.get(entity_id, [])
@@ -205,7 +223,9 @@ def fetch_entity_statistics_pts(hass, entity_id: str, start_time_iso: str, end_t
             continue
         pts.append([ts_ms, mean_f])
 
-    _LOGGER.debug("hass_datapoints: fetch_entity_statistics_pts %s → %d pts", entity_id, len(pts))
+    _LOGGER.debug(
+        "hass_datapoints: fetch_entity_statistics_pts %s → %d pts", entity_id, len(pts)
+    )
     return pts
 
 
