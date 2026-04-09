@@ -299,6 +299,13 @@ export class HistoryChart extends HTMLElement {
   _ignoreNextProgrammaticScrollEvent = false;
 
   /**
+   * When true, the next call to _syncChartViewportScroll will skip
+   * repositioning the viewport and clear this flag. Used to prevent
+   * a snap-back immediately after the user commits a zoom via scroll.
+   */
+  _skipNextScrollViewportSync = false;
+
+  /**
    * True while the user is in the process of creating a context annotation
    * (i.e. after clicking the "+" button but before the dialog closes).
    */
@@ -1118,6 +1125,10 @@ export class HistoryChart extends HTMLElement {
           this._scrollSyncSuspended = false;
         });
       }
+      return;
+    }
+    if (this._skipNextScrollViewportSync) {
+      this._skipNextScrollViewportSync = false;
       return;
     }
     const viewportWidth = viewport.clientWidth;

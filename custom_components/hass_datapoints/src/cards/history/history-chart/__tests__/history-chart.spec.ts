@@ -687,8 +687,8 @@ describe("hass-datapoints-history-chart", () => {
       });
     });
 
-    describe("WHEN a follow-up redraw lands during the user scroll settle window", () => {
-      it("THEN it preserves the user's final scroll position", () => {
+    describe("WHEN a follow-up redraw fires with no skip flag set", () => {
+      it("THEN it syncs the viewport to the computed scroll position", () => {
         expect.assertions(2);
         const viewport = document.createElement("div");
         Object.defineProperty(viewport, "clientWidth", {
@@ -701,11 +701,10 @@ describe("hass-datapoints-history-chart", () => {
           start: 300,
           end: 700,
         } as never;
-        el._preserveUserScrollViewportUntil = Date.now() + 1000;
 
         el._syncChartViewportScroll(0, 1000, 1001);
 
-        expect(viewport.scrollLeft).toBe(333);
+        expect(viewport.scrollLeft).toBe(300.3);
         expect(el._skipNextScrollViewportSync).toBe(false);
       });
     });
