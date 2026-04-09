@@ -11,10 +11,16 @@ import "@/atoms/analysis/analysis-group/analysis-group";
 export const ANALYSIS_TREND_METHOD_OPTIONS = [
   { value: "rolling_average", label: "Rolling average" },
   { value: "linear_trend", label: "Linear trend" },
+  { value: "ema", label: "Exponential moving average" },
+  { value: "polynomial_trend", label: "Polynomial trend" },
+  { value: "lowess", label: "LOWESS smooth" },
 ];
 
 export const ANALYSIS_TREND_WINDOW_OPTIONS = [
+  { value: "30m", label: "30 minutes" },
   { value: "1h", label: "1 hour" },
+  { value: "2h", label: "2 hours" },
+  { value: "3h", label: "3 hours" },
   { value: "6h", label: "6 hours" },
   { value: "24h", label: "24 hours" },
   { value: "7d", label: "7 days" },
@@ -106,7 +112,7 @@ export class AnalysisTrendGroup extends LitElement {
             a.trend_method
           )}
         </label>
-        ${a.trend_method === "rolling_average"
+        ${["rolling_average", "ema", "lowess"].includes(a.trend_method)
           ? html`
               <label class="field">
                 <span class="field-label">${msg("Trend window")}</span>

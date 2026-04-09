@@ -34,6 +34,7 @@
 - [How datapoints appear](#how-datapoints-appear)
 - [Cards in practice](#cards-in-practice)
 - [History chart and page features](#history-chart-and-page-features)
+- [Trend analysis](#trend-analysis)
 - [Anomaly detection](#anomaly-detection)
 - [Using automations to create useful analytical datapoints](#using-automations-to-create-useful-analytical-datapoints)
 - [WebSocket API](#websocket-api)
@@ -469,6 +470,109 @@ The history chart supports:
 ### Create datapoints from the chart
 
 The chart `+` action can create a datapoint at the inspected time. The dialog can prefill related items from the currently visible target rows so that the note is immediately linked to the right series.
+
+---
+
+## Trend analysis
+
+Trend analysis overlays a computed curve on top of the raw sensor data in the chart. Each method answers a different question about your data, so choosing the right one depends on what you are investigating.
+
+Enable trend lines from the analysis panel for each target row. The trend window selector controls how much history the smoothing methods use to compute each point.
+
+### Linear trend
+
+A straight line fitted to all visible points using least-squares regression.
+
+**What it shows:** The overall direction of the data — whether the value is rising, falling, or flat across the whole window.
+
+**Use it when:**
+
+- You want to confirm a slow long-term drift (e.g. sensor calibration drift, gradual battery discharge)
+- You are comparing the slope between two time windows to detect a change in behavior
+- The data is noisy but you only care about the broad direction, not local variation
+
+**Avoid it when:** The signal is clearly non-linear (curved, periodic, or mean-reverting). A straight line will misrepresent those patterns.
+
+### Rolling average
+
+A sliding-window mean that replaces each point with the average of all points within the preceding time window.
+
+**What it shows:** The local level of the data, smoothed to remove high-frequency noise. The resulting curve lags the true signal — the tighter the window, the less lag; the wider the window, the smoother the result.
+
+**Use it when:**
+
+- You want to see the general level of a noisy sensor (temperature, humidity, energy)
+- You are trying to compare two smoothed series to spot divergence
+- The window length roughly matches the natural timescale of the change you are investigating (e.g. a 1h window for heating dynamics, a 24h window for daily patterns)
+
+**Avoid it when:** You need responsiveness to recent changes. Because the window weights all points equally, a sharp step up will only be fully reflected in the average after the window has fully moved past the step.
+
+### Exponential moving average (EMA)
+
+A weighted average where recent points contribute more than older ones. The `alpha` parameter controls responsiveness: values near 1 track the signal closely with little smoothing; values near 0 produce a heavily smoothed curve that responds slowly.
+
+The window selector maps to alpha values tuned for typical HA data cadences:
+`30m → 0.97`, `1h → 0.92`, `6h → 0.75`, `24h → 0.50`, `7d → 0.25`, `14d → 0.15`, `21d → 0.10`, `28d → 0.07`.
+
+**What it shows:** The local level of the data, like rolling average, but with less lag. A step change will begin appearing in the EMA immediately; a rolling average of equivalent width will not reflect it until the window moves past the old values.
+
+**Use it when:**
+
+- You want smoothing similar to rolling average but with faster response to real changes
+- You are investigating whether a recent change represents a new pattern or a transient spike
+- The data has an irregular update cadence (EMA is computed point-to-point, so it does not require evenly spaced samples)
+
+**Avoid it when:** You need a precise, interpretable window like "the average over the last hour". EMA is adaptive and does not have a hard time boundary, so its output at any point blends all past data with exponentially decaying weight.
+
+### Polynomial trend (quadratic)
+
+A quadratic (degree-2) curve fitted globally to all visible points using least-squares regression.
+
+**What it shows:** The overall shape of the data — whether it is arcing upward, bending back down, or following a U or inverted-U curve. A linear trend can only say "up" or "down"; the polynomial trend can also say "accelerating" or "decelerating".
+
+**Use it when:**
+
+- You suspect a non-linear drift — for example a battery whose discharge rate changes over time, or a room that heats quickly then tapers off
+- You want to see whether a recovery is complete or still in progress
+- Seasonal effects within the window create a visible curve
+
+**Avoid it when:**
+
+- The data is periodic or highly variable — the polynomial fit covers the entire window and will be distorted by extreme values at either end
+- You only need a directional signal; use linear trend instead as it is easier to interpret
+
+### LOWESS (Locally Weighted Scatterplot Smoothing)
+
+A non-parametric smoother that computes a weighted local linear regression at each point, using only nearby data within a bandwidth window. The tricubic weight function gives maximum influence to very close neighbors and smoothly reduces weight toward the bandwidth boundary.
+
+**What it shows:** The underlying shape of the data without assuming any global functional form. LOWESS can follow curves, plateaus, transitions, and reversals that would require a high-degree polynomial to approximate analytically.
+
+**Use it when:**
+
+- The signal has a complex or unknown shape — for example temperature that rises, plateaus during occupancy, then drops overnight
+- You want a visually clean, intuitive curve that roughly follows the "center" of the data at every local region
+- You are investigating whether a specific period deviates from the local pattern (compare the LOWESS curve to the raw signal)
+- The window selector controls locality: a 1h bandwidth tracks rapid changes; a 24h bandwidth gives a broad global shape
+
+**Avoid it when:**
+
+- The series is very short (fewer than 5–10 points) — local regression needs enough neighbors to be meaningful
+- You need a mathematically interpretable output; LOWESS is empirical and does not produce slope or intercept values
+
+### Rate of change
+
+Computes the per-hour rate of change between each point and a lookback comparison. In point-to-point mode, each point is compared to the immediately preceding one. In windowed mode (e.g. 1h), each point is compared to the nearest point that is at least one window-width earlier.
+
+**What it shows:** How fast the value is changing, expressed in units per hour. A flat original series produces a rate near zero. A sharp spike appears as a large positive or negative value.
+
+**Use it when:**
+
+- You want to confirm whether a temperature is rising or falling fast enough to be significant
+- You are investigating an abrupt event — an open window, a power surge, a pump starting — that shows up as a spike in rate of change
+- You are comparing rate-of-change between two periods to detect whether the dynamics have changed (e.g. heating slower than it used to be)
+- Point-to-point mode is useful for fine-grained detection; windowed mode reduces noise from rapid oscillations
+
+**Avoid it when:** The sensor updates irregularly or has long gaps — rate of change over a large gap can produce misleadingly large or small values. Use a windowed mode with a window wider than typical gaps to reduce this.
 
 ---
 

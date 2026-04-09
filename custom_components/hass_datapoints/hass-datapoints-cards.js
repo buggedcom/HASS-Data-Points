@@ -9953,7 +9953,13 @@
 		return {
 			expanded: source.expanded === true,
 			show_trend_lines: source.show_trend_lines === true,
-			trend_method: source.trend_method === "linear_trend" ? "linear_trend" : "rolling_average",
+			trend_method: [
+				"linear_trend",
+				"rolling_average",
+				"ema",
+				"polynomial_trend",
+				"lowess"
+			].includes(source.trend_method) ? source.trend_method : "rolling_average",
 			trend_window: typeof source.trend_window === "string" && source.trend_window ? source.trend_window : "24h",
 			show_trend_crosshairs: source.show_trend_crosshairs !== false,
 			show_summary_stats: source.show_summary_stats === true,
@@ -10039,7 +10045,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/workers/history-analysis.worker.ts?worker&inline
-	var jsContent$1 = "(function() {\n	//#region custom_components/hass_datapoints/src/lib/workers/history-analysis.worker.ts\n	const HOUR_MS = 3600 * 1e3;\n	function getTrendWindowMs(value) {\n		const windows = {\n			\"1h\": 3600 * 1e3,\n			\"6h\": 360 * 60 * 1e3,\n			\"24h\": 1440 * 60 * 1e3,\n			\"7d\": 10080 * 60 * 1e3,\n			\"14d\": 336 * 60 * 60 * 1e3,\n			\"21d\": 504 * 60 * 60 * 1e3,\n			\"28d\": 672 * 60 * 60 * 1e3\n		};\n		return windows[value] || windows[\"24h\"];\n	}\n	function buildRollingAverageTrend(points, windowMs) {\n		if (!Array.isArray(points) || points.length < 2 || !Number.isFinite(windowMs) || windowMs <= 0) return [];\n		const trendPoints = [];\n		let windowStartIndex = 0;\n		let windowSum = 0;\n		for (let index = 0; index < points.length; index += 1) {\n			const [time, value] = points[index];\n			windowSum += value;\n			while (windowStartIndex < index && time - points[windowStartIndex][0] > windowMs) {\n				windowSum -= points[windowStartIndex][1];\n				windowStartIndex += 1;\n			}\n			const count = index - windowStartIndex + 1;\n			if (count > 0) trendPoints.push([time, windowSum / count]);\n		}\n		return trendPoints;\n	}\n	function buildLinearTrend(points) {\n		if (!Array.isArray(points) || points.length < 2) return [];\n		const origin = points[0][0];\n		let sumX = 0;\n		let sumY = 0;\n		let sumXX = 0;\n		let sumXY = 0;\n		for (const [time, value] of points) {\n			const x = (time - origin) / HOUR_MS;\n			sumX += x;\n			sumY += value;\n			sumXX += x * x;\n			sumXY += x * value;\n		}\n		const count = points.length;\n		const denominator = count * sumXX - sumX * sumX;\n		if (!Number.isFinite(denominator) || Math.abs(denominator) < 1e-9) return [];\n		const slope = (count * sumXY - sumX * sumY) / denominator;\n		const intercept = (sumY - slope * sumX) / count;\n		const firstTime = points[0][0];\n		const lastTime = points[points.length - 1][0];\n		const firstX = (firstTime - origin) / HOUR_MS;\n		const lastX = (lastTime - origin) / HOUR_MS;\n		return [[firstTime, intercept + slope * firstX], [lastTime, intercept + slope * lastX]];\n	}\n	function buildTrendPoints(points, method, trendWindow) {\n		if (!Array.isArray(points) || points.length < 2) return [];\n		if (method === \"linear_trend\") return buildLinearTrend(points);\n		return buildRollingAverageTrend(points, getTrendWindowMs(trendWindow));\n	}\n	function normalizeSeriesAnalysis(analysis) {\n		const source = analysis && typeof analysis === \"object\" ? analysis : {};\n		return {\n			show_trend_lines: source.show_trend_lines === true,\n			trend_method: source.trend_method === \"linear_trend\" ? \"linear_trend\" : \"rolling_average\",\n			trend_window: typeof source.trend_window === \"string\" && source.trend_window ? source.trend_window : \"24h\",\n			show_summary_stats: source.show_summary_stats === true,\n			show_rate_of_change: source.show_rate_of_change === true,\n			rate_window: typeof source.rate_window === \"string\" && source.rate_window ? source.rate_window : \"1h\",\n			show_delta_analysis: source.show_delta_analysis === true\n		};\n	}\n	function interpolateSeriesValue(points, timeMs) {\n		if (!Array.isArray(points) || points.length === 0) return null;\n		if (timeMs < points[0][0] || timeMs > points[points.length - 1][0]) return null;\n		if (timeMs === points[0][0]) return points[0][1];\n		if (timeMs === points[points.length - 1][0]) return points[points.length - 1][1];\n		for (let index = 0; index < points.length - 1; index += 1) {\n			const [startTime, startValue] = points[index];\n			const [endTime, endValue] = points[index + 1];\n			if (timeMs >= startTime && timeMs <= endTime) {\n				const fraction = (timeMs - startTime) / (endTime - startTime);\n				return startValue + (endValue - startValue) * fraction;\n			}\n		}\n		return null;\n	}\n	function buildRateOfChangePoints(points, rateWindow) {\n		if (!Array.isArray(points) || points.length < 2) return [];\n		const ratePoints = [];\n		for (let index = 1; index < points.length; index += 1) {\n			const [timeMs, value] = points[index];\n			let comparisonPoint = null;\n			if (rateWindow === \"point_to_point\") comparisonPoint = points[index - 1];\n			else {\n				const windowMs = getTrendWindowMs(rateWindow);\n				if (!Number.isFinite(windowMs) || windowMs <= 0) continue;\n				for (let candidateIndex = index - 1; candidateIndex >= 0; candidateIndex -= 1) {\n					const candidatePoint = points[candidateIndex];\n					if (timeMs - candidatePoint[0] >= windowMs) {\n						comparisonPoint = candidatePoint;\n						break;\n					}\n				}\n				if (!comparisonPoint) comparisonPoint = points[0];\n			}\n			if (!Array.isArray(comparisonPoint) || comparisonPoint.length < 2) continue;\n			const deltaMs = timeMs - comparisonPoint[0];\n			if (!Number.isFinite(deltaMs) || deltaMs <= 0) continue;\n			const deltaHours = deltaMs / HOUR_MS;\n			if (!Number.isFinite(deltaHours) || deltaHours <= 0) continue;\n			const rateValue = (value - comparisonPoint[1]) / deltaHours;\n			if (!Number.isFinite(rateValue)) continue;\n			ratePoints.push([timeMs, rateValue]);\n		}\n		return ratePoints;\n	}\n	function buildDeltaPoints(sourcePoints, comparisonPoints) {\n		if (!Array.isArray(sourcePoints) || sourcePoints.length < 2 || !Array.isArray(comparisonPoints) || comparisonPoints.length < 2) return [];\n		const deltaPoints = [];\n		for (const [timeMs, value] of sourcePoints) {\n			const comparisonValue = interpolateSeriesValue(comparisonPoints, timeMs);\n			if (comparisonValue == null) continue;\n			deltaPoints.push([timeMs, value - comparisonValue]);\n		}\n		return deltaPoints;\n	}\n	function buildSummaryStats(points) {\n		if (!Array.isArray(points) || points.length === 0) return null;\n		let min = Infinity;\n		let max = -Infinity;\n		let sum = 0;\n		let count = 0;\n		for (const point of points) {\n			const value = Number(point?.[1]);\n			if (!Number.isFinite(value)) continue;\n			if (value < min) min = value;\n			if (value > max) max = value;\n			sum += value;\n			count += 1;\n		}\n		if (!Number.isFinite(min) || !Number.isFinite(max) || count === 0) return null;\n		return {\n			min,\n			max,\n			mean: sum / count\n		};\n	}\n	function computeHistoryAnalysis(payload) {\n		const series = (Array.isArray(payload?.series) ? payload.series : []).map((seriesItem) => ({\n			...seriesItem,\n			analysis: normalizeSeriesAnalysis(seriesItem?.analysis)\n		}));\n		const comparisonSeries = new Map((Array.isArray(payload?.comparisonSeries) ? payload.comparisonSeries : []).filter((entry) => entry?.entityId).map((entry) => [entry.entityId, entry]));\n		const result = {\n			trendSeries: [],\n			rateSeries: [],\n			deltaSeries: [],\n			summaryStats: [],\n			anomalySeries: [],\n			comparisonWindowResults: {}\n		};\n		for (const seriesItem of series) {\n			const points = Array.isArray(seriesItem?.pts) ? seriesItem.pts : [];\n			const analysis = normalizeSeriesAnalysis(seriesItem?.analysis);\n			if (points.length < 2) continue;\n			if (analysis.show_trend_lines === true) {\n				const trendPoints = buildTrendPoints(points, analysis.trend_method, analysis.trend_window);\n				if (trendPoints.length >= 2) result.trendSeries.push({\n					entityId: seriesItem.entityId,\n					pts: trendPoints\n				});\n			}\n			if (analysis.show_rate_of_change === true) {\n				const ratePoints = buildRateOfChangePoints(points, analysis.rate_window);\n				if (ratePoints.length >= 2) result.rateSeries.push({\n					entityId: seriesItem.entityId,\n					pts: ratePoints\n				});\n			}\n			if (analysis.show_summary_stats === true) {\n				const summaryStats = buildSummaryStats(points);\n				if (summaryStats) result.summaryStats.push({\n					entityId: seriesItem.entityId,\n					...summaryStats\n				});\n			}\n			if (analysis.show_delta_analysis === true && payload?.hasSelectedComparisonWindow === true) {\n				const comparisonPoints = comparisonSeries.get(seriesItem.entityId)?.pts ?? [];\n				if (comparisonPoints.length >= 2) {\n					const deltaPoints = buildDeltaPoints(points, comparisonPoints);\n					if (deltaPoints.length >= 2) result.deltaSeries.push({\n						entityId: seriesItem.entityId,\n						pts: deltaPoints\n					});\n				}\n			}\n		}\n		const seriesAnalysisConfigs = typeof payload?.seriesAnalysisConfigs === \"object\" && payload.seriesAnalysisConfigs !== null ? payload.seriesAnalysisConfigs : {};\n		const allComparisonWindowsData = typeof payload?.allComparisonWindowsData === \"object\" && payload.allComparisonWindowsData !== null ? payload.allComparisonWindowsData : {};\n		for (const [windowId, entityPtsMap] of Object.entries(allComparisonWindowsData)) {\n			result.comparisonWindowResults[windowId] = {};\n			for (const [entityId, pts] of Object.entries(entityPtsMap)) {\n				const winAnalysis = normalizeSeriesAnalysis(seriesAnalysisConfigs[entityId]);\n				result.comparisonWindowResults[windowId][entityId] = {\n					trendPts: winAnalysis.show_trend_lines && pts.length >= 2 ? buildTrendPoints(pts, winAnalysis.trend_method, winAnalysis.trend_window) : [],\n					ratePts: winAnalysis.show_rate_of_change && pts.length >= 2 ? buildRateOfChangePoints(pts, winAnalysis.rate_window) : [],\n					summaryStats: winAnalysis.show_summary_stats ? buildSummaryStats(pts) : null\n				};\n			}\n		}\n		return result;\n	}\n	const workerScope = globalThis;\n	workerScope.onmessage = (event) => {\n		const { id, payload } = event.data || {};\n		try {\n			const result = computeHistoryAnalysis(payload);\n			workerScope.postMessage({\n				id,\n				result\n			});\n		} catch (error) {\n			workerScope.postMessage({\n				id,\n				error: error instanceof Error ? error.message : String(error)\n			});\n		}\n	};\n	//#endregion\n})();\n";
+	var jsContent$1 = "(function() {\n	//#region custom_components/hass_datapoints/src/cards/history/analysis/windows.ts\n	const HOUR_MS = 3600 * 1e3;\n	function getTrendWindowMs(value) {\n		const windows = {\n			\"30m\": 1800 * 1e3,\n			\"1h\": HOUR_MS,\n			\"2h\": 2 * HOUR_MS,\n			\"3h\": 3 * HOUR_MS,\n			\"6h\": 6 * HOUR_MS,\n			\"24h\": 24 * HOUR_MS,\n			\"7d\": 168 * HOUR_MS,\n			\"14d\": 336 * HOUR_MS,\n			\"21d\": 504 * HOUR_MS,\n			\"28d\": 672 * HOUR_MS\n		};\n		return windows[value] ?? windows[\"24h\"];\n	}\n	//#endregion\n	//#region custom_components/hass_datapoints/src/cards/history/analysis/series.ts\n	function getEmaAlpha(window) {\n		return {\n			\"30m\": .97,\n			\"1h\": .92,\n			\"2h\": .88,\n			\"3h\": .84,\n			\"6h\": .75,\n			\"24h\": .5,\n			\"7d\": .25,\n			\"14d\": .15,\n			\"21d\": .1,\n			\"28d\": .07\n		}[window] ?? .5;\n	}\n	function getLowessBandwidth(window, points) {\n		const fraction = {\n			\"30m\": .05,\n			\"1h\": .1,\n			\"2h\": .13,\n			\"3h\": .16,\n			\"6h\": .2,\n			\"24h\": .3,\n			\"7d\": .4,\n			\"14d\": .55,\n			\"21d\": .7,\n			\"28d\": .85\n		}[window] ?? .3;\n		if (points.length < 2) return fraction;\n		const span = points[points.length - 1][0] - points[0][0];\n		return span > 0 ? fraction * span : fraction;\n	}\n	function buildRollingAverageTrend(points, windowMs) {\n		if (!Array.isArray(points) || points.length < 2 || !Number.isFinite(windowMs) || windowMs <= 0) return [];\n		const trendPoints = [];\n		let windowStartIndex = 0;\n		let windowSum = 0;\n		for (let index = 0; index < points.length; index += 1) {\n			const [time, value] = points[index];\n			windowSum += value;\n			while (windowStartIndex < index && time - points[windowStartIndex][0] > windowMs) {\n				windowSum -= points[windowStartIndex][1];\n				windowStartIndex += 1;\n			}\n			const count = index - windowStartIndex + 1;\n			if (count > 0) trendPoints.push([time, windowSum / count]);\n		}\n		return trendPoints;\n	}\n	function buildLinearTrend(points) {\n		if (!Array.isArray(points) || points.length < 2) return [];\n		const origin = points[0][0];\n		let sumX = 0;\n		let sumY = 0;\n		let sumXX = 0;\n		let sumXY = 0;\n		for (const [time, value] of points) {\n			const x = (time - origin) / (3600 * 1e3);\n			sumX += x;\n			sumY += value;\n			sumXX += x * x;\n			sumXY += x * value;\n		}\n		const count = points.length;\n		const denominator = count * sumXX - sumX * sumX;\n		if (!Number.isFinite(denominator) || Math.abs(denominator) < 1e-9) return [];\n		const slope = (count * sumXY - sumX * sumY) / denominator;\n		const intercept = (sumY - slope * sumX) / count;\n		const firstTime = points[0][0];\n		const lastTime = points[points.length - 1][0];\n		const firstX = (firstTime - origin) / (3600 * 1e3);\n		const lastX = (lastTime - origin) / (3600 * 1e3);\n		return [[firstTime, intercept + slope * firstX], [lastTime, intercept + slope * lastX]];\n	}\n	function buildEmaTrend(points, alpha) {\n		if (!Array.isArray(points) || points.length < 2) return [];\n		const a = Math.max(0, Math.min(1, alpha));\n		const result = [[points[0][0], points[0][1]]];\n		for (let i = 1; i < points.length; i += 1) {\n			const ema = a * points[i][1] + (1 - a) * result[i - 1][1];\n			result.push([points[i][0], ema]);\n		}\n		return result;\n	}\n	function buildPolynomialTrend(points) {\n		if (!Array.isArray(points) || points.length < 3) return [];\n		const origin = points[0][0];\n		const scale = points[points.length - 1][0] - origin || 1;\n		let s0 = 0;\n		let s1 = 0;\n		let s2 = 0;\n		let s3 = 0;\n		let s4 = 0;\n		let t0 = 0;\n		let t1 = 0;\n		let t2 = 0;\n		for (const [time, value] of points) {\n			const x = (time - origin) / scale;\n			const x2 = x * x;\n			s0 += 1;\n			s1 += x;\n			s2 += x2;\n			s3 += x2 * x;\n			s4 += x2 * x2;\n			t0 += value;\n			t1 += x * value;\n			t2 += x2 * value;\n		}\n		const det = s0 * (s2 * s4 - s3 * s3) - s1 * (s1 * s4 - s3 * s2) + s2 * (s1 * s3 - s2 * s2);\n		if (!Number.isFinite(det) || Math.abs(det) < 1e-12) return [];\n		const a = (t0 * (s2 * s4 - s3 * s3) - s1 * (t1 * s4 - s3 * t2) + s2 * (t1 * s3 - s2 * t2)) / det;\n		const b = (s0 * (t1 * s4 - s3 * t2) - t0 * (s1 * s4 - s3 * s2) + s2 * (s1 * t2 - t1 * s2)) / det;\n		const c = (s0 * (s2 * t2 - t1 * s3) - s1 * (s1 * t2 - t1 * s2) + t0 * (s1 * s3 - s2 * s2)) / det;\n		return points.map(([time]) => {\n			const x = (time - origin) / scale;\n			return [time, a + b * x + c * x * x];\n		});\n	}\n	function buildLowessTrend(points, bandwidth) {\n		if (!Array.isArray(points) || points.length < 2) return [];\n		const MAX_INPUT = 2e3;\n		const MAX_OUTPUT = 300;\n		const subsample = (n, max) => n <= max ? Array.from({ length: n }, (_, i) => i) : Array.from({ length: max }, (_, i) => Math.round(i / (max - 1) * (n - 1)));\n		const inputIdx = subsample(points.length, MAX_INPUT);\n		const outputIdx = subsample(points.length, MAX_OUTPUT);\n		const result = [];\n		for (const oi of outputIdx) {\n			const xi = points[oi][0];\n			let sumW = 0;\n			let sumWX = 0;\n			let sumWY = 0;\n			let sumWXX = 0;\n			let sumWXY = 0;\n			for (let k = 0; k < inputIdx.length; k += 1) {\n				const d = Math.abs(points[inputIdx[k]][0] - xi);\n				if (d >= bandwidth) continue;\n				const normDist = d / bandwidth;\n				const u = 1 - normDist * normDist * normDist;\n				const w = u * u * u;\n				if (w <= 0) continue;\n				const xj = points[inputIdx[k]][0];\n				const yj = points[inputIdx[k]][1];\n				sumW += w;\n				sumWX += w * xj;\n				sumWY += w * yj;\n				sumWXX += w * xj * xj;\n				sumWXY += w * xj * yj;\n			}\n			const denom = sumW * sumWXX - sumWX * sumWX;\n			if (!Number.isFinite(denom) || Math.abs(denom) < 1e-12) {\n				result.push([xi, sumW > 0 ? sumWY / sumW : points[oi][1]]);\n				continue;\n			}\n			const slope = (sumW * sumWXY - sumWX * sumWY) / denom;\n			const intercept = (sumWY - slope * sumWX) / sumW;\n			result.push([xi, intercept + slope * xi]);\n		}\n		return result;\n	}\n	function interpolateSeriesValue(points, timeMs) {\n		if (!Array.isArray(points) || !points.length) return null;\n		if (timeMs < points[0][0] || timeMs > points[points.length - 1][0]) return null;\n		if (timeMs === points[0][0]) return points[0][1];\n		if (timeMs === points[points.length - 1][0]) return points[points.length - 1][1];\n		for (let index = 0; index < points.length - 1; index += 1) {\n			const [startTime, startValue] = points[index];\n			const [endTime, endValue] = points[index + 1];\n			if (timeMs >= startTime && timeMs <= endTime) return startValue + (timeMs - startTime) / (endTime - startTime) * (endValue - startValue);\n		}\n		return null;\n	}\n	function buildRateOfChangePoints(points, rateWindow = \"1h\") {\n		if (!Array.isArray(points) || points.length < 2) return [];\n		const ratePoints = [];\n		for (let index = 1; index < points.length; index += 1) {\n			const [timeMs, value] = points[index];\n			let comparisonPoint = null;\n			if (rateWindow === \"point_to_point\") comparisonPoint = points[index - 1];\n			else {\n				const windowMs = getTrendWindowMs(rateWindow);\n				if (!Number.isFinite(windowMs) || windowMs <= 0) continue;\n				for (let candidateIndex = index - 1; candidateIndex >= 0; candidateIndex -= 1) {\n					const candidatePoint = points[candidateIndex];\n					if (timeMs - candidatePoint[0] >= windowMs) {\n						comparisonPoint = candidatePoint;\n						break;\n					}\n				}\n				if (!comparisonPoint) comparisonPoint = points[0];\n			}\n			if (!Array.isArray(comparisonPoint) || comparisonPoint.length < 2) continue;\n			const deltaMs = timeMs - comparisonPoint[0];\n			if (!Number.isFinite(deltaMs) || deltaMs <= 0) continue;\n			const deltaHours = deltaMs / (3600 * 1e3);\n			if (!Number.isFinite(deltaHours) || deltaHours <= 0) continue;\n			const rateValue = (value - comparisonPoint[1]) / deltaHours;\n			if (!Number.isFinite(rateValue)) continue;\n			ratePoints.push([timeMs, rateValue]);\n		}\n		return ratePoints;\n	}\n	function buildDeltaPoints(sourcePoints, comparisonPoints) {\n		if (!Array.isArray(sourcePoints) || sourcePoints.length < 2 || !Array.isArray(comparisonPoints) || comparisonPoints.length < 2) return [];\n		const deltaPoints = [];\n		for (const [timeMs, value] of sourcePoints) {\n			const comparisonValue = interpolateSeriesValue(comparisonPoints, timeMs);\n			if (comparisonValue == null) continue;\n			deltaPoints.push([timeMs, value - comparisonValue]);\n		}\n		return deltaPoints;\n	}\n	//#endregion\n	//#region custom_components/hass_datapoints/src/cards/history/analysis/summary.ts\n	function buildSummaryStats(points) {\n		if (!Array.isArray(points) || !points.length) return null;\n		let min = Infinity;\n		let max = -Infinity;\n		let sum = 0;\n		let count = 0;\n		for (const point of points) {\n			const value = Number(point?.[1]);\n			if (!Number.isFinite(value)) continue;\n			if (value < min) min = value;\n			if (value > max) max = value;\n			sum += value;\n			count += 1;\n		}\n		if (!Number.isFinite(min) || !Number.isFinite(max) || count === 0) return null;\n		return {\n			min,\n			max,\n			mean: sum / count\n		};\n	}\n	//#endregion\n	//#region custom_components/hass_datapoints/src/lib/workers/history-analysis.worker.ts\n	function normalizeSeriesAnalysis(analysis) {\n		const source = analysis && typeof analysis === \"object\" ? analysis : {};\n		return {\n			show_trend_lines: source.show_trend_lines === true,\n			trend_method: [\n				\"linear_trend\",\n				\"rolling_average\",\n				\"ema\",\n				\"polynomial_trend\",\n				\"lowess\"\n			].includes(source.trend_method) ? source.trend_method : \"rolling_average\",\n			trend_window: typeof source.trend_window === \"string\" && source.trend_window ? source.trend_window : \"24h\",\n			show_summary_stats: source.show_summary_stats === true,\n			show_rate_of_change: source.show_rate_of_change === true,\n			rate_window: typeof source.rate_window === \"string\" && source.rate_window ? source.rate_window : \"1h\",\n			show_delta_analysis: source.show_delta_analysis === true\n		};\n	}\n	function buildTrendPoints(points, method, trendWindow) {\n		if (!Array.isArray(points) || points.length < 2) return [];\n		switch (method) {\n			case \"linear_trend\": return buildLinearTrend(points);\n			case \"ema\": return buildEmaTrend(points, getEmaAlpha(trendWindow));\n			case \"polynomial_trend\": return buildPolynomialTrend(points);\n			case \"lowess\": return buildLowessTrend(points, getLowessBandwidth(trendWindow, points));\n			default: return buildRollingAverageTrend(points, getTrendWindowMs(trendWindow));\n		}\n	}\n	function computeHistoryAnalysis(payload) {\n		const series = (Array.isArray(payload?.series) ? payload.series : []).map((seriesItem) => ({\n			...seriesItem,\n			analysis: normalizeSeriesAnalysis(seriesItem?.analysis)\n		}));\n		const comparisonSeries = new Map((Array.isArray(payload?.comparisonSeries) ? payload.comparisonSeries : []).filter((entry) => entry?.entityId).map((entry) => [entry.entityId, entry]));\n		const result = {\n			trendSeries: [],\n			rateSeries: [],\n			deltaSeries: [],\n			summaryStats: [],\n			anomalySeries: [],\n			comparisonWindowResults: {}\n		};\n		for (const seriesItem of series) {\n			const points = Array.isArray(seriesItem?.pts) ? seriesItem.pts : [];\n			const analysis = normalizeSeriesAnalysis(seriesItem?.analysis);\n			if (points.length < 2) continue;\n			if (analysis.show_trend_lines === true) {\n				const trendPoints = buildTrendPoints(points, analysis.trend_method, analysis.trend_window);\n				if (trendPoints.length >= 2) result.trendSeries.push({\n					entityId: seriesItem.entityId,\n					pts: trendPoints\n				});\n			}\n			if (analysis.show_rate_of_change === true) {\n				const ratePoints = buildRateOfChangePoints(points, analysis.rate_window);\n				if (ratePoints.length >= 2) result.rateSeries.push({\n					entityId: seriesItem.entityId,\n					pts: ratePoints\n				});\n			}\n			if (analysis.show_summary_stats === true) {\n				const summaryStats = buildSummaryStats(points);\n				if (summaryStats) result.summaryStats.push({\n					entityId: seriesItem.entityId,\n					...summaryStats\n				});\n			}\n			if (analysis.show_delta_analysis === true && payload?.hasSelectedComparisonWindow === true) {\n				const comparisonPoints = comparisonSeries.get(seriesItem.entityId)?.pts ?? [];\n				if (comparisonPoints.length >= 2) {\n					const deltaPoints = buildDeltaPoints(points, comparisonPoints);\n					if (deltaPoints.length >= 2) result.deltaSeries.push({\n						entityId: seriesItem.entityId,\n						pts: deltaPoints\n					});\n				}\n			}\n		}\n		const seriesAnalysisConfigs = typeof payload?.seriesAnalysisConfigs === \"object\" && payload.seriesAnalysisConfigs !== null ? payload.seriesAnalysisConfigs : {};\n		const allComparisonWindowsData = typeof payload?.allComparisonWindowsData === \"object\" && payload.allComparisonWindowsData !== null ? payload.allComparisonWindowsData : {};\n		for (const [windowId, entityPtsMap] of Object.entries(allComparisonWindowsData)) {\n			result.comparisonWindowResults[windowId] = {};\n			for (const [entityId, pts] of Object.entries(entityPtsMap)) {\n				const winAnalysis = normalizeSeriesAnalysis(seriesAnalysisConfigs[entityId]);\n				result.comparisonWindowResults[windowId][entityId] = {\n					trendPts: winAnalysis.show_trend_lines && pts.length >= 2 ? buildTrendPoints(pts, winAnalysis.trend_method, winAnalysis.trend_window) : [],\n					ratePts: winAnalysis.show_rate_of_change && pts.length >= 2 ? buildRateOfChangePoints(pts, winAnalysis.rate_window) : [],\n					summaryStats: winAnalysis.show_summary_stats ? buildSummaryStats(pts) : null\n				};\n			}\n		}\n		return result;\n	}\n	const workerScope = globalThis;\n	workerScope.onmessage = (event) => {\n		const { id, payload } = event.data || {};\n		try {\n			const result = computeHistoryAnalysis(payload);\n			workerScope.postMessage({\n				id,\n				result\n			});\n		} catch (error) {\n			workerScope.postMessage({\n				id,\n				error: error instanceof Error ? error.message : String(error)\n			});\n		}\n	};\n	//#endregion\n})();\n";
 	var blob$1 = typeof self !== "undefined" && self.Blob && new Blob(["(self.URL || self.webkitURL).revokeObjectURL(self.location.href);", jsContent$1], { type: "text/javascript;charset=utf-8" });
 	function WorkerWrapper$1(options) {
 		let objURL;
@@ -10191,7 +10197,10 @@
 	var HOUR_MS$1 = 3600 * 1e3;
 	function getTrendWindowMs(value) {
 		const windows = {
+			"30m": 1800 * 1e3,
 			"1h": HOUR_MS$1,
+			"2h": 2 * HOUR_MS$1,
+			"3h": 3 * HOUR_MS$1,
 			"6h": 6 * HOUR_MS$1,
 			"24h": 24 * HOUR_MS$1,
 			"7d": 168 * HOUR_MS$1,
@@ -10203,6 +10212,37 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/analysis/series.ts
+	function getEmaAlpha(window) {
+		return {
+			"30m": .97,
+			"1h": .92,
+			"2h": .88,
+			"3h": .84,
+			"6h": .75,
+			"24h": .5,
+			"7d": .25,
+			"14d": .15,
+			"21d": .1,
+			"28d": .07
+		}[window] ?? .5;
+	}
+	function getLowessBandwidth(window, points) {
+		const fraction = {
+			"30m": .05,
+			"1h": .1,
+			"2h": .13,
+			"3h": .16,
+			"6h": .2,
+			"24h": .3,
+			"7d": .4,
+			"14d": .55,
+			"21d": .7,
+			"28d": .85
+		}[window] ?? .3;
+		if (points.length < 2) return fraction;
+		const span = points[points.length - 1][0] - points[0][0];
+		return span > 0 ? fraction * span : fraction;
+	}
 	function buildRollingAverageTrend(points, windowMs) {
 		if (!Array.isArray(points) || points.length < 2 || !Number.isFinite(windowMs) || windowMs <= 0) return [];
 		const trendPoints = [];
@@ -10244,6 +10284,91 @@
 		const firstX = (firstTime - origin) / (3600 * 1e3);
 		const lastX = (lastTime - origin) / (3600 * 1e3);
 		return [[firstTime, intercept + slope * firstX], [lastTime, intercept + slope * lastX]];
+	}
+	function buildEmaTrend(points, alpha) {
+		if (!Array.isArray(points) || points.length < 2) return [];
+		const a = Math.max(0, Math.min(1, alpha));
+		const result = [[points[0][0], points[0][1]]];
+		for (let i = 1; i < points.length; i += 1) {
+			const ema = a * points[i][1] + (1 - a) * result[i - 1][1];
+			result.push([points[i][0], ema]);
+		}
+		return result;
+	}
+	function buildPolynomialTrend(points) {
+		if (!Array.isArray(points) || points.length < 3) return [];
+		const origin = points[0][0];
+		const scale = points[points.length - 1][0] - origin || 1;
+		let s0 = 0;
+		let s1 = 0;
+		let s2 = 0;
+		let s3 = 0;
+		let s4 = 0;
+		let t0 = 0;
+		let t1 = 0;
+		let t2 = 0;
+		for (const [time, value] of points) {
+			const x = (time - origin) / scale;
+			const x2 = x * x;
+			s0 += 1;
+			s1 += x;
+			s2 += x2;
+			s3 += x2 * x;
+			s4 += x2 * x2;
+			t0 += value;
+			t1 += x * value;
+			t2 += x2 * value;
+		}
+		const det = s0 * (s2 * s4 - s3 * s3) - s1 * (s1 * s4 - s3 * s2) + s2 * (s1 * s3 - s2 * s2);
+		if (!Number.isFinite(det) || Math.abs(det) < 1e-12) return [];
+		const a = (t0 * (s2 * s4 - s3 * s3) - s1 * (t1 * s4 - s3 * t2) + s2 * (t1 * s3 - s2 * t2)) / det;
+		const b = (s0 * (t1 * s4 - s3 * t2) - t0 * (s1 * s4 - s3 * s2) + s2 * (s1 * t2 - t1 * s2)) / det;
+		const c = (s0 * (s2 * t2 - t1 * s3) - s1 * (s1 * t2 - t1 * s2) + t0 * (s1 * s3 - s2 * s2)) / det;
+		return points.map(([time]) => {
+			const x = (time - origin) / scale;
+			return [time, a + b * x + c * x * x];
+		});
+	}
+	function buildLowessTrend(points, bandwidth) {
+		if (!Array.isArray(points) || points.length < 2) return [];
+		const MAX_INPUT = 2e3;
+		const MAX_OUTPUT = 300;
+		const subsample = (n, max) => n <= max ? Array.from({ length: n }, (_, i) => i) : Array.from({ length: max }, (_, i) => Math.round(i / (max - 1) * (n - 1)));
+		const inputIdx = subsample(points.length, MAX_INPUT);
+		const outputIdx = subsample(points.length, MAX_OUTPUT);
+		const result = [];
+		for (const oi of outputIdx) {
+			const xi = points[oi][0];
+			let sumW = 0;
+			let sumWX = 0;
+			let sumWY = 0;
+			let sumWXX = 0;
+			let sumWXY = 0;
+			for (let k = 0; k < inputIdx.length; k += 1) {
+				const d = Math.abs(points[inputIdx[k]][0] - xi);
+				if (d >= bandwidth) continue;
+				const normDist = d / bandwidth;
+				const u = 1 - normDist * normDist * normDist;
+				const w = u * u * u;
+				if (w <= 0) continue;
+				const xj = points[inputIdx[k]][0];
+				const yj = points[inputIdx[k]][1];
+				sumW += w;
+				sumWX += w * xj;
+				sumWY += w * yj;
+				sumWXX += w * xj * xj;
+				sumWXY += w * xj * yj;
+			}
+			const denom = sumW * sumWXX - sumWX * sumWX;
+			if (!Number.isFinite(denom) || Math.abs(denom) < 1e-12) {
+				result.push([xi, sumW > 0 ? sumWY / sumW : points[oi][1]]);
+				continue;
+			}
+			const slope = (sumW * sumWXY - sumWX * sumWY) / denom;
+			const intercept = (sumWY - slope * sumWX) / sumW;
+			result.push([xi, intercept + slope * xi]);
+		}
+		return result;
 	}
 	function interpolateSeriesValue(points, timeMs) {
 		if (!Array.isArray(points) || !points.length) return null;
@@ -13568,8 +13693,15 @@
 		/** Build trend points from raw series data. */
 		_buildTrendPoints(_pts, _method, _window) {
 			if (!Array.isArray(_pts) || _pts.length < 2) return [];
-			if ((_method || "rolling_average") === "linear_trend") return buildLinearTrend(_pts);
-			return buildRollingAverageTrend(_pts, getTrendWindowMs(_window || "24h"));
+			const method = _method || "rolling_average";
+			const window = _window || "24h";
+			switch (method) {
+				case "linear_trend": return buildLinearTrend(_pts);
+				case "ema": return buildEmaTrend(_pts, getEmaAlpha(window));
+				case "polynomial_trend": return buildPolynomialTrend(_pts);
+				case "lowess": return buildLowessTrend(_pts, getLowessBandwidth(window, _pts));
+				default: return buildRollingAverageTrend(_pts, getTrendWindowMs(window));
+			}
 		}
 		/** Build rate-of-change points from raw series data. */
 		_buildRateOfChangePoints(_pts, _window) {
@@ -13628,6 +13760,27 @@
 				lineOpacity: hideRawData ? .86 : .74,
 				lineWidth: 2.1,
 				dashed: true,
+				dotted: false
+			};
+			if (method === "ema") return {
+				colorAlpha: hideRawData ? .92 : .84,
+				lineOpacity: hideRawData ? .86 : .65,
+				lineWidth: 2,
+				dashed: false,
+				dotted: true
+			};
+			if (method === "polynomial_trend") return {
+				colorAlpha: hideRawData ? .94 : .86,
+				lineOpacity: hideRawData ? .86 : .72,
+				lineWidth: 2,
+				dashed: true,
+				dotted: false
+			};
+			if (method === "lowess") return {
+				colorAlpha: hideRawData ? .9 : .82,
+				lineOpacity: hideRawData ? .84 : .6,
+				lineWidth: 1.8,
+				dashed: false,
 				dotted: false
 			};
 			return {
@@ -16819,17 +16972,44 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/analysis-trend-group.ts
 	var _AnalysisTrendGroup, _analysis_accessor_storage$6, _entityId_accessor_storage$6;
-	var ANALYSIS_TREND_METHOD_OPTIONS = [{
-		value: "rolling_average",
-		label: "Rolling average"
-	}, {
-		value: "linear_trend",
-		label: "Linear trend"
-	}];
+	var ANALYSIS_TREND_METHOD_OPTIONS = [
+		{
+			value: "rolling_average",
+			label: "Rolling average"
+		},
+		{
+			value: "linear_trend",
+			label: "Linear trend"
+		},
+		{
+			value: "ema",
+			label: "Exponential moving average"
+		},
+		{
+			value: "polynomial_trend",
+			label: "Polynomial trend"
+		},
+		{
+			value: "lowess",
+			label: "LOWESS smooth"
+		}
+	];
 	var ANALYSIS_TREND_WINDOW_OPTIONS = [
+		{
+			value: "30m",
+			label: "30 minutes"
+		},
 		{
 			value: "1h",
 			label: "1 hour"
+		},
+		{
+			value: "2h",
+			label: "2 hours"
+		},
+		{
+			value: "3h",
+			label: "3 hours"
 		},
 		{
 			value: "6h",
@@ -16929,7 +17109,11 @@
           <span class="field-label">${msg("Trend method")}</span>
           ${this._renderSelect("trend_method", this._localizedOptions(ANALYSIS_TREND_METHOD_OPTIONS), a.trend_method)}
         </label>
-        ${a.trend_method === "rolling_average" ? b`
+        ${[
+				"rolling_average",
+				"ema",
+				"lowess"
+			].includes(a.trend_method) ? b`
               <label class="field">
                 <span class="field-label">${msg("Trend window")}</span>
                 ${this._renderSelect("trend_window", this._localizedOptions(ANALYSIS_TREND_WINDOW_OPTIONS), a.trend_window)}
@@ -36411,7 +36595,7 @@
 	].forEach((card) => {
 		if (!registeredTypes.has(card.type)) window.customCards?.push(card);
 	});
-	console.groupCollapsed(`%c hass-datapoints %c v0.4.2 loaded `, "color:#fff;background:#03a9f4;font-weight:bold;padding:2px 6px;border-radius:3px 0 0 3px", "color:#03a9f4;background:#fff;font-weight:bold;padding:2px 6px;border:1px solid #03a9f4;border-radius:0 3px 3px 0", ...[]);
+	console.groupCollapsed(`%c hass-datapoints %c v0.5.0 loaded `, "color:#fff;background:#03a9f4;font-weight:bold;padding:2px 6px;border-radius:3px 0 0 3px", "color:#03a9f4;background:#fff;font-weight:bold;padding:2px 6px;border:1px solid #03a9f4;border-radius:0 3px 3px 0", ...[]);
 	console.log("Enable debug logging by setting %cwindow.__HASS_DATAPOINTS_DEV__ = true", "color:#333;background:#eee;border:1px solid #777;padding:2px 6px;border-radius:5px; font-family: Courier");
 	console.groupEnd();
 	//#endregion
