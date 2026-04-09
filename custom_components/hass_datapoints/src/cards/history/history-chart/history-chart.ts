@@ -6429,11 +6429,37 @@ export class HistoryChart extends HTMLElement {
       this._handleAnomalyAddAnnotation(regions);
     };
 
+    // Add annotation button — wire up click and preserve hover on mouseleave.
+    const addAnnotationBtn = this.querySelector<HTMLButtonElement>(
+      "#chart-add-annotation"
+    );
+    const onAddBtnClick = (ev: MouseEvent) => {
+      if (
+        (this._config as RecordWithUnknownValues).show_add_annotation_button ===
+          false ||
+        !this._chartLastHover
+      ) {
+        return;
+      }
+      ev.preventDefault();
+      ev.stopPropagation();
+      this._handleChartAddAnnotation(this._chartLastHover);
+    };
+    const onAddBtnLeave = (ev: MouseEvent) => {
+      const nextTarget = ev.relatedTarget;
+      if (nextTarget instanceof Node && overlayEl.contains(nextTarget)) {
+        return;
+      }
+      hideHover();
+    };
+
     overlayEl.addEventListener("mousemove", onMouseMove);
     overlayEl.addEventListener("mouseleave", onMouseLeave);
     overlayEl.addEventListener("touchmove", onTouchMove, { passive: true });
     overlayEl.addEventListener("touchend", onTouchEnd);
     overlayEl.addEventListener("click", onOverlayClick);
+    addAnnotationBtn?.addEventListener("click", onAddBtnClick);
+    addAnnotationBtn?.addEventListener("mouseleave", onAddBtnLeave);
 
     this._chartHoverCleanup = () => {
       overlayEl.removeEventListener("mousemove", onMouseMove);
@@ -6441,6 +6467,8 @@ export class HistoryChart extends HTMLElement {
       overlayEl.removeEventListener("touchmove", onTouchMove);
       overlayEl.removeEventListener("touchend", onTouchEnd);
       overlayEl.removeEventListener("click", onOverlayClick);
+      addAnnotationBtn?.removeEventListener("click", onAddBtnClick);
+      addAnnotationBtn?.removeEventListener("mouseleave", onAddBtnLeave);
     };
 
     // ── Zoom drag-select ───────────────────────────────────────────────────────

@@ -7962,41 +7962,51 @@ ${s2.description}`).join("\n\n");
       );
     }
   }
-  let workerInstance = null;
+  let workerInstance;
   let requestId = 0;
   const pending = /* @__PURE__ */ new Map();
   function getChartDataWorker() {
-    if (workerInstance) {
+    if (workerInstance !== void 0) {
       return workerInstance;
     }
-    workerInstance = new WorkerWrapper();
-    workerInstance.addEventListener(
-      "message",
-      (event) => {
-        const { id, result, error } = event.data || {};
-        const handlers = pending.get(id || -1);
-        if (!handlers) {
-          return;
+    try {
+      workerInstance = new WorkerWrapper();
+      workerInstance.addEventListener(
+        "message",
+        (event) => {
+          const { id, result, error } = event.data || {};
+          const handlers = pending.get(id || -1);
+          if (!handlers) {
+            return;
+          }
+          pending.delete(id || -1);
+          if (error) {
+            handlers.reject(new Error(error));
+          } else {
+            handlers.resolve(result || []);
+          }
         }
-        pending.delete(id || -1);
-        if (error) {
-          handlers.reject(new Error(error));
-        } else {
-          handlers.resolve(result || []);
-        }
-      }
-    );
-    workerInstance.addEventListener("error", (err) => {
-      pending.forEach(({ reject }) => {
-        reject(err);
+      );
+      workerInstance.addEventListener("error", (err) => {
+        pending.forEach(({ reject }) => {
+          reject(err);
+        });
+        pending.clear();
+        workerInstance = null;
       });
-      pending.clear();
+    } catch {
       workerInstance = null;
-    });
+    }
     return workerInstance;
   }
   function downsampleInWorker(pts, intervalMs, aggregate) {
+    if (pts.length === 0) {
+      return Promise.resolve([]);
+    }
     const worker = getChartDataWorker();
+    if (!worker) {
+      return Promise.reject(new Error("Worker not available"));
+    }
     return new Promise((resolve, reject) => {
       const id = ++requestId;
       pending.set(id, { resolve, reject });
@@ -8992,6 +9002,7 @@ ${s2.description}`).join("\n\n");
       __publicField$V(this, "_scrollSyncSuspended", false);
       __publicField$V(this, "_lastProgrammaticScrollLeft", null);
       __publicField$V(this, "_ignoreNextProgrammaticScrollEvent", false);
+      __publicField$V(this, "_skipNextScrollViewportSync", false);
       __publicField$V(this, "_creatingContextAnnotation", false);
       __publicField$V(this, "_lastComparisonResults", null);
       __publicField$V(this, "_hiddenSeries", /* @__PURE__ */ new Set());
@@ -9687,6 +9698,10 @@ ${s2.description}`).join("\n\n");
             this._scrollSyncSuspended = false;
           });
         }
+        return;
+      }
+      if (this._skipNextScrollViewportSync) {
+        this._skipNextScrollViewportSync = false;
         return;
       }
       const viewportWidth = viewport.clientWidth;
@@ -13531,17 +13546,39 @@ ${content.alert}` : "",
         ev.stopPropagation();
         this._handleAnomalyAddAnnotation(regions);
       };
+      const addAnnotationBtn = this.querySelector(
+        "#chart-add-annotation"
+      );
+      const onAddBtnClick = (ev) => {
+        if (this._config.show_add_annotation_button === false || !this._chartLastHover) {
+          return;
+        }
+        ev.preventDefault();
+        ev.stopPropagation();
+        this._handleChartAddAnnotation(this._chartLastHover);
+      };
+      const onAddBtnLeave = (ev) => {
+        const nextTarget = ev.relatedTarget;
+        if (nextTarget instanceof Node && overlayEl.contains(nextTarget)) {
+          return;
+        }
+        hideHover();
+      };
       overlayEl.addEventListener("mousemove", onMouseMove);
       overlayEl.addEventListener("mouseleave", onMouseLeave);
       overlayEl.addEventListener("touchmove", onTouchMove, { passive: true });
       overlayEl.addEventListener("touchend", onTouchEnd);
       overlayEl.addEventListener("click", onOverlayClick);
+      addAnnotationBtn?.addEventListener("click", onAddBtnClick);
+      addAnnotationBtn?.addEventListener("mouseleave", onAddBtnLeave);
       this._chartHoverCleanup = () => {
         overlayEl.removeEventListener("mousemove", onMouseMove);
         overlayEl.removeEventListener("mouseleave", onMouseLeave);
         overlayEl.removeEventListener("touchmove", onTouchMove);
         overlayEl.removeEventListener("touchend", onTouchEnd);
         overlayEl.removeEventListener("click", onOverlayClick);
+        addAnnotationBtn?.removeEventListener("click", onAddBtnClick);
+        addAnnotationBtn?.removeEventListener("mouseleave", onAddBtnLeave);
       };
       const selection = this.querySelector("#chart-zoom-selection");
       const hideZoomSelection = () => {
@@ -38263,7 +38300,7 @@ ${content.alert}` : "",
     }
   });
   console.groupCollapsed(
-    "%c hass-datapoints %c v0.3.976 loaded ",
+    "%c hass-datapoints %c v0.4.0 loaded ",
     "color:#fff;background:#03a9f4;font-weight:bold;padding:2px 6px;border-radius:3px 0 0 3px",
     "color:#03a9f4;background:#fff;font-weight:bold;padding:2px 6px;border:1px solid #03a9f4;border-radius:0 3px 3px 0"
   );
