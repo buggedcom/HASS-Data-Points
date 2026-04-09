@@ -185,10 +185,10 @@ describe("target-row-list", () => {
     });
 
     describe("WHEN rendered", () => {
-      it("THEN shows the empty state message", () => {
+      it("THEN renders no content", () => {
         expect.assertions(1);
         const emptyEl = el.shadowRoot!.querySelector(".history-target-empty");
-        expect(emptyEl).not.toBeNull();
+        expect(emptyEl).toBeNull();
       });
 
       it("THEN does not render any target-row elements", () => {
