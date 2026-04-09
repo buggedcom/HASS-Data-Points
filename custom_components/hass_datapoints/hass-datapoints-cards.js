@@ -15228,7 +15228,7 @@
         .context-chip-remove:hover { background: color-mix(in srgb, currentColor 12%, transparent); }
         .context-chip-remove ha-icon { --mdc-icon-size: 12px; pointer-events: none; }
         .context-color-control { display: flex; align-items: center; gap: 10px; }
-        .context-color-preview { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--divider-color, #ccc); background: ${esc(defaultColor)}; flex: 0 0 auto; }
+        .context-color-preview { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--divider-color, #ccc); flex: 0 0 auto; }
         .context-color-input { width: 56px; height: 36px; padding: 0; border: none; background: transparent; cursor: pointer; }
         .context-date-input { width: 100%; box-sizing: border-box; }
         .context-icon-input { width: 100%; }

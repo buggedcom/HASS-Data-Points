@@ -7,7 +7,7 @@
  * Containers pass child content through a <slot>.
  */
 
-import { html, render } from "lit";
+import { html, svg, render } from "lit";
 import * as mdi from "@mdi/js";
 
 type MdiIconModule = RecordWithStringValues;
@@ -54,13 +54,44 @@ function resolveMdiPath(
 // Icon elements — ha-icon, ha-state-icon, ha-svg-icon
 // ---------------------------------------------------------------------------
 
+const HA_ICON_STYLES = `
+  :host {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--mdc-icon-size, 24px);
+    height: var(--mdc-icon-size, 24px);
+    flex-shrink: 0;
+  }
+  svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    fill: currentColor;
+  }
+`;
+
 class HaIconStub extends HTMLElement {
   protected _icon: Nullable<string>;
+
+  // Shared stylesheet — created once per class, applied to every icon shadow root.
+  private static _sheet: CSSStyleSheet | null = null;
+
+  private static _getSheet(): CSSStyleSheet {
+    if (!HaIconStub._sheet) {
+      HaIconStub._sheet = new CSSStyleSheet();
+      HaIconStub._sheet.replaceSync(HA_ICON_STYLES);
+    }
+    return HaIconStub._sheet;
+  }
 
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
     this._icon = null;
+    if (this.shadowRoot) {
+      this.shadowRoot.adoptedStyleSheets = [HaIconStub._getSheet()];
+    }
   }
 
   connectedCallback() {
@@ -95,31 +126,17 @@ class HaIconStub extends HTMLElement {
     if (!this.shadowRoot) {
       return;
     }
-    this.shadowRoot.innerHTML = `
-      <style>
-        :host {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: var(--mdc-icon-size, 24px);
-          height: var(--mdc-icon-size, 24px);
-          flex-shrink: 0;
-        }
-        svg {
-          width: 100%;
-          height: 100%;
-          display: block;
-          fill: currentColor;
-        }
-      </style>
-      <svg viewBox="0 0 24 24" aria-hidden="true">
+    render(
+      svg`<svg viewBox="0 0 24 24" aria-hidden="true">
         ${
           path
-            ? `<path d="${path}" />`
-            : `<circle cx="12" cy="12" r="8" opacity="0.35" /><circle cx="12" cy="12" r="3" opacity="0.6" />`
+            ? svg`<path d="${path}"></path>`
+            : svg`<circle cx="12" cy="12" r="8" opacity="0.35"></circle
+              ><circle cx="12" cy="12" r="3" opacity="0.6"></circle>`
         }
-      </svg>
-    `;
+      </svg>`,
+      this.shadowRoot
+    );
   }
 }
 
@@ -174,26 +191,20 @@ customElements.define(
 
     _render(): void {
       const path = this.path || null;
-      const fallback = `<circle cx="12" cy="12" r="8" opacity="0.35" />`;
       if (!this.shadowRoot) {
         return;
       }
-      this.shadowRoot.innerHTML = `
-      <style>
-        :host {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          width: var(--mdc-icon-size, 24px);
-          height: var(--mdc-icon-size, 24px);
-          flex-shrink: 0;
-        }
-        svg { width: 100%; height: 100%; display: block; fill: currentColor; }
-      </style>
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        ${path ? `<path d="${path}" />` : fallback}
-      </svg>
-    `;
+      // Styles are inherited via adoptedStyleSheets set in HaIconStub constructor.
+      render(
+        svg`<svg viewBox="0 0 24 24" aria-hidden="true">
+          ${
+            path
+              ? svg`<path d="${path}"></path>`
+              : svg`<circle cx="12" cy="12" r="8" opacity="0.35"></circle>`
+          }
+        </svg>`,
+        this.shadowRoot
+      );
     }
   }
 );
@@ -201,6 +212,23 @@ customElements.define(
 // ---------------------------------------------------------------------------
 // Button elements — ha-icon-button
 // ---------------------------------------------------------------------------
+
+const HA_ICON_BUTTON_STYLES = `
+  :host {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: transparent;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: background 120ms;
+  }
+  :host(:hover) { background: rgba(128, 128, 128, 0.12); }
+  ::slotted(*), slot { pointer-events: none; }
+`;
 
 customElements.define(
   "ha-icon-button",
@@ -211,25 +239,10 @@ customElements.define(
       if (!this.shadowRoot) {
         return;
       }
-      this.shadowRoot.innerHTML = `
-        <style>
-          :host {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: transparent;
-            cursor: pointer;
-            box-sizing: border-box;
-            transition: background 120ms;
-          }
-          :host(:hover) { background: rgba(128, 128, 128, 0.12); }
-          ::slotted(*), slot { pointer-events: none; }
-        </style>
-        <slot></slot>
-      `;
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(HA_ICON_BUTTON_STYLES);
+      this.shadowRoot.adoptedStyleSheets = [sheet];
+      this.shadowRoot.appendChild(document.createElement("slot"));
     }
   }
 );
@@ -382,6 +395,37 @@ for (const tag of FIELD_ELEMENTS) {
 // Switch / toggle — ha-switch
 // ---------------------------------------------------------------------------
 
+const HA_SWITCH_STYLES = `
+  :host {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+  }
+  .track {
+    width: 36px;
+    height: 20px;
+    border-radius: 10px;
+    background: var(--disabled-text-color, #bdbdbd);
+    position: relative;
+    transition: background 120ms;
+  }
+  :host([checked]) .track,
+  .track.on { background: var(--primary-color, #03a9f4); }
+  .thumb {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    transition: transform 120ms;
+  }
+  :host([checked]) .thumb,
+  .track.on .thumb { transform: translateX(16px); }
+`;
+
 if (!customElements.get("ha-switch")) {
   customElements.define(
     "ha-switch",
@@ -391,6 +435,11 @@ if (!customElements.get("ha-switch")) {
       constructor() {
         super();
         this.attachShadow({ mode: "open" });
+        if (this.shadowRoot) {
+          const sheet = new CSSStyleSheet();
+          sheet.replaceSync(HA_SWITCH_STYLES);
+          this.shadowRoot.adoptedStyleSheets = [sheet];
+        }
         this._renderSwitch();
       }
 
@@ -407,41 +456,14 @@ if (!customElements.get("ha-switch")) {
         if (!this.shadowRoot) {
           return;
         }
-        this.shadowRoot.innerHTML = `
-          <style>
-            :host {
-              display: inline-flex;
-              align-items: center;
-              cursor: pointer;
-            }
-            .track {
-              width: 36px;
-              height: 20px;
-              border-radius: 10px;
-              background: var(--disabled-text-color, #bdbdbd);
-              position: relative;
-              transition: background 120ms;
-            }
-            :host([checked]) .track,
-            .track.on { background: var(--primary-color, #03a9f4); }
-            .thumb {
-              position: absolute;
-              top: 2px;
-              left: 2px;
-              width: 16px;
-              height: 16px;
-              border-radius: 50%;
-              background: #fff;
-              box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-              transition: transform 120ms;
-            }
-            :host([checked]) .thumb,
-            .track.on .thumb { transform: translateX(16px); }
-          </style>
-          <div class="track ${checked ? "on" : ""}">
-            <div class="thumb"></div>
-          </div>
-        `;
+        render(
+          html`
+            <div class="track ${checked ? "on" : ""}">
+              <div class="thumb"></div>
+            </div>
+          `,
+          this.shadowRoot
+        );
       }
     }
   );
