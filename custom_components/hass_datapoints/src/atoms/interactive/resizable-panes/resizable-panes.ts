@@ -1,4 +1,4 @@
-import { LitElement, html } from "lit";
+import { html, LitElement } from "lit";
 import { property } from "lit/decorators.js";
 
 import { styles } from "./resizable-panes.styles";
@@ -48,6 +48,19 @@ export class ResizablePanes extends LitElement {
   firstUpdated() {
     this._splitterEl = this.shadowRoot?.querySelector(".pane-splitter") ?? null;
     this._applyRatio();
+  }
+
+  disconnectedCallback() {
+    // eslint-disable-next-line wc/guard-super-call
+    super.disconnectedCallback();
+    // Clean up global pointer listeners if disconnected during an active drag.
+    if (this._pointerId != null) {
+      window.removeEventListener("pointermove", this._onPointerMove);
+      window.removeEventListener("pointerup", this._onPointerUp);
+      window.removeEventListener("pointercancel", this._onPointerUp);
+      this._splitterEl?.classList.remove("dragging");
+      this._pointerId = null;
+    }
   }
 
   updated(changed: Map<string, unknown>) {

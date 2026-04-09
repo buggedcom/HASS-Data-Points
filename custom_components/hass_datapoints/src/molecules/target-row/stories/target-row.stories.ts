@@ -55,6 +55,7 @@ const BLANK_ANALYSIS: NormalizedAnalysis = {
   hide_source_series: false,
   sample_interval: "raw",
   sample_aggregate: "mean",
+  stepped_series: false,
   anomaly_use_sampled_data: false,
 };
 

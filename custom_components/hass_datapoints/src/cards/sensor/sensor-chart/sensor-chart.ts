@@ -115,6 +115,12 @@ export class SensorChart extends LitElement {
     this._setupResizeObserver();
   }
 
+  connectedCallback() {
+    // eslint-disable-next-line wc/guard-super-call
+    super.connectedCallback();
+    this._setupResizeObserver();
+  }
+
   disconnectedCallback() {
     // eslint-disable-next-line wc/guard-super-call
     super.disconnectedCallback();
@@ -273,6 +279,7 @@ export class SensorChart extends LitElement {
   }
 
   private _setupResizeObserver() {
+    if (this._resizeObserver) return;
     if (!window.ResizeObserver) return;
     this._resizeObserver = new ResizeObserver(() => {
       if (this._lastDrawArgs) this.draw(...this._lastDrawArgs);

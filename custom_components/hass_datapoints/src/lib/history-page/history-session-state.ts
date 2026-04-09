@@ -49,6 +49,7 @@ export interface HistoryPageSource {
 }
 
 export interface HistoryPageSessionState {
+  [key: string]: unknown;
   entities: string[];
   series_rows: unknown[];
   target_selection: Nullable<RecordWithUnknownValues>;

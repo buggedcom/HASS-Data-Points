@@ -84,6 +84,13 @@ export class PanelTimeline extends LitElement {
 
   _rangeEventLayerEl: Nullable<HTMLElement> = null;
 
+  private _liveZoomRange: Nullable<{ start: number; end: number }> | undefined =
+    undefined;
+
+  private _liveZoomWindowRange:
+    | Nullable<{ start: number; end: number }>
+    | undefined = undefined;
+
   firstUpdated() {
     const sr = this.shadowRoot!;
     this._rangeHoverPreviewEl = sr.getElementById("range-hover-preview");
@@ -119,6 +126,12 @@ export class PanelTimeline extends LitElement {
     ];
 
     if (trackProps.some((p) => changed.has(p))) {
+      if (changed.has("zoomRange")) {
+        this._liveZoomRange = this.zoomRange ?? null;
+      }
+      if (changed.has("zoomWindowRange")) {
+        this._liveZoomWindowRange = this.zoomWindowRange ?? null;
+      }
       this._syncTrackOverlays();
     }
     if (timelineProps.some((p) => changed.has(p))) {
@@ -204,6 +217,19 @@ export class PanelTimeline extends LitElement {
     timeline?.revealSelection?.();
   }
 
+  syncZoomHighlights(
+    zoomRange: Nullable<{ start: number; end: number }>,
+    zoomWindowRange: Nullable<{ start: number; end: number }>
+  ) {
+    this._liveZoomRange = zoomRange ? { ...zoomRange } : null;
+    this._liveZoomWindowRange = zoomWindowRange ? { ...zoomWindowRange } : null;
+    this._setRangeOverlay(this._rangeZoomHighlightEl, this._liveZoomRange);
+    this._setRangeOverlay(
+      this._rangeZoomWindowHighlightEl,
+      this._liveZoomWindowRange
+    );
+  }
+
   _onPeriodHoverInternal(ev: CustomEvent) {
     const { start, end } = ev.detail as { start: Date; end: Date };
     this.hoveredPeriodRange = { start: start.getTime(), end: end.getTime() };
@@ -265,6 +291,14 @@ export class PanelTimeline extends LitElement {
   }
 
   _syncTrackOverlays() {
+    const zoomRange =
+      this._liveZoomRange !== undefined
+        ? this._liveZoomRange
+        : (this.zoomRange ?? null);
+    const zoomWindowRange =
+      this._liveZoomWindowRange !== undefined
+        ? this._liveZoomWindowRange
+        : (this.zoomWindowRange ?? null);
     this._setRangeOverlay(
       this._rangeHoverPreviewEl,
       this.hoveredPeriodRange ?? null
@@ -273,11 +307,8 @@ export class PanelTimeline extends LitElement {
       this._rangeComparisonPreviewEl,
       this.comparisonPreview ?? null
     );
-    this._setRangeOverlay(this._rangeZoomHighlightEl, this.zoomRange ?? null);
-    this._setRangeOverlay(
-      this._rangeZoomWindowHighlightEl,
-      this.zoomWindowRange ?? null
-    );
+    this._setRangeOverlay(this._rangeZoomHighlightEl, zoomRange);
+    this._setRangeOverlay(this._rangeZoomWindowHighlightEl, zoomWindowRange);
   }
 
   _syncTimelineOverlays() {

@@ -123,6 +123,14 @@ export function createHistoryPageFetchContext(
       if (!hass || state.timelineEventsKey === key || timelineEventsPromise) {
         return timelineEventsPromise ?? Promise.resolve();
       }
+      if (
+        options.datapointScope === "linked" &&
+        options.entityIds.length === 0
+      ) {
+        state.timelineEventsKey = key;
+        options.onSuccess([], key);
+        return Promise.resolve();
+      }
 
       state.timelineEventsLoading = true;
       timelineEventsPromise = fetchEvents(

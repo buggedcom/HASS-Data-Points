@@ -3,6 +3,7 @@ import {
   parseHistoryPageStateParam,
   serializeDateWindowsParam,
   serializeHistoryPageStateParam,
+  type NormalizedHistoryDateWindow,
 } from "@/lib/history-page/history-url-state";
 import {
   readHistoryPageSessionState,
@@ -59,10 +60,8 @@ export function createHistoryPageNavigationContext(): HistoryNavigationContext {
         zoomStartFromUrl,
         zoomEndFromUrl,
         seriesColorsFromUrl,
-        dateWindowsFromUrl: dateWindowsFromUrl as unknown as Record<
-          string,
-          unknown
-        >[],
+        dateWindowsFromUrl:
+          dateWindowsFromUrl as unknown as NormalizedHistoryDateWindow[],
         pageStateFromUrl,
         hoursFromUrl: Number.isFinite(hoursToShowRaw) ? hoursToShowRaw : NaN,
         hasTargetInUrl,

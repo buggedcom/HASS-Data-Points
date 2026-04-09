@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 /**
  * card-chart-base.spec.ts
  *
@@ -209,6 +210,40 @@ describe("card-chart-base", () => {
           "hass-datapoints-event-recorded",
           expect.any(Function)
         );
+      });
+    });
+  });
+
+  describe("GIVEN an initialized chart card is reconnected", () => {
+    describe("WHEN connectedCallback runs again after cleanup", () => {
+      it("THEN it re-establishes auto-refresh and resize observation", async () => {
+        expect.assertions(3);
+        const subscribeSpy = vi.fn().mockResolvedValue(vi.fn());
+        const observe = vi.fn();
+        const disconnect = vi.fn();
+        class MockResizeObserver {
+          observe = observe;
+
+          disconnect = disconnect;
+        }
+        vi.stubGlobal(
+          "ResizeObserver",
+          MockResizeObserver as unknown as typeof ResizeObserver
+        );
+        const el = await setupCard(raf, {}, createMockHass(subscribeSpy));
+        await Promise.resolve();
+        await Promise.resolve();
+
+        document.body.removeChild(el);
+        subscribeSpy.mockClear();
+        observe.mockClear();
+
+        document.body.appendChild(el);
+        await el.updateComplete;
+
+        expect(subscribeSpy).toHaveBeenCalledTimes(1);
+        expect(observe).toHaveBeenCalledTimes(1);
+        expect(el.loadSpy).toHaveBeenCalled();
       });
     });
   });

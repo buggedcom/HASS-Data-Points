@@ -1,7 +1,7 @@
 {
   "domain": "hass_datapoints",
   "name": "Hass Data Points",
-  "version": "0.3.824",
+  "version": "0.3.976",
   "documentation": "https://github.com/buggedcom/hass-datapoints",
   "issue_tracker": "https://github.com/buggedcom/hass-datapoints/issues",
   "codeowners": [],

@@ -103,6 +103,35 @@ describe("hass-datapoints-history-chart", () => {
     el?.remove();
   });
 
+  describe("GIVEN the history chart disconnects", () => {
+    describe("WHEN disconnectedCallback runs", () => {
+      it("THEN it tears down listeners and timers", () => {
+        expect.assertions(6);
+        const hoverCleanup = vi.fn();
+        const zoomCleanup = vi.fn();
+        const removeEventListener = vi.fn();
+        const clearTimeoutSpy = vi.spyOn(globalThis, "clearTimeout");
+        const viewport = {
+          removeEventListener,
+        } as unknown as HTMLElement;
+
+        el._chartHoverCleanup = hoverCleanup;
+        el._chartZoomCleanup = zoomCleanup;
+        el._chartScrollViewportEl = viewport;
+        el._scrollZoomApplyTimer = setTimeout(() => {}, 1000);
+
+        el.disconnectedCallback();
+
+        expect(hoverCleanup).toHaveBeenCalledTimes(1);
+        expect(zoomCleanup).toHaveBeenCalledTimes(1);
+        expect(removeEventListener).toHaveBeenCalledTimes(1);
+        expect(el._chartHoverCleanup).toBeNull();
+        expect(el._chartZoomCleanup).toBeNull();
+        expect(clearTimeoutSpy).toHaveBeenCalled();
+      });
+    });
+  });
+
   describe("GIVEN the chart shell is initialized", () => {
     describe("WHEN the top slot host is inspected", () => {
       it("THEN it renders the comparison tab mount point", () => {

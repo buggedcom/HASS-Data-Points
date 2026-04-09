@@ -87,8 +87,14 @@ export abstract class ChartCardBase extends LitElement {
   connectedCallback(): void {
     // eslint-disable-next-line wc/guard-super-call
     super.connectedCallback();
+    if (this._initialized) {
+      if (!this._unsubscribe || !this._windowListener) {
+        this._setupAutoRefresh();
+      }
+      this._setupResizeObserver();
+    }
     // Re-added to DOM after removal: kick off a load if we have hass.
-    if (this._hass && !this._hasStartedInitialLoad) {
+    if (this._hass) {
       this._scheduleLoad();
     }
   }
@@ -133,6 +139,7 @@ export abstract class ChartCardBase extends LitElement {
 
   private _setupAutoRefresh(): void {
     if (!this._hass) return;
+    if (this._unsubscribe || this._windowListener) return;
 
     this._hass.connection
       .subscribeEvents(() => {
@@ -153,6 +160,7 @@ export abstract class ChartCardBase extends LitElement {
   }
 
   private _setupResizeObserver(): void {
+    if (this._resizeObserver) return;
     // Observe either the .chart-wrap div (legacy) or hass-datapoints-history-chart element
     // (new architecture where the sub-component is the chart container).
     const wrap =

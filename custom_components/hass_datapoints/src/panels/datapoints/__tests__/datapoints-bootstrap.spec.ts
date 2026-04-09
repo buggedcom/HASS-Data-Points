@@ -158,4 +158,68 @@ describe("HassRecordsHistoryPanel bootstrap", () => {
       });
     });
   });
+
+  describe("GIVEN the panel disconnects after boot work has started", () => {
+    describe("WHEN disconnectedCallback runs", () => {
+      it("THEN it clears pending reconnect-sensitive state", () => {
+        expect.assertions(10);
+        const removeEventListener = vi.spyOn(window, "removeEventListener");
+        const clearTimeout = vi.spyOn(window, "clearTimeout");
+        const hideCollapsedTargetPopup = vi.fn();
+        const hideCollapsedOptionsPopup = vi.fn();
+        const cancelChartResizeRedraw = vi.fn();
+        const tabletMq = { removeEventListener: vi.fn() };
+        const mobileMq = { removeEventListener: vi.fn() };
+        const haEventUnsubscribe = vi.fn();
+        const panel = {
+          _mqTablet: tabletMq,
+          _mqMobile: mobileMq,
+          _onLayoutChange: () => {},
+          _onOverlayKeydown: () => {},
+          _onPopState: () => {},
+          _onLocationChanged: () => {},
+          _onWindowPointerDown: () => {},
+          _onWindowResize: () => {},
+          _onEventRecorded: () => {},
+          _onChartHover: () => {},
+          _onChartZoom: () => {},
+          _onRecordsSearch: () => {},
+          _onToggleEventVisibility: () => {},
+          _onHoverEventRecord: () => {},
+          _onToggleSeriesVisibility: () => {},
+          _onComparisonLoading: () => {},
+          _onAnalysisComputing: () => {},
+          _onAnalysisMethodResult: () => {},
+          removeEventListener: vi.fn(),
+          _haEventUnsubscribe: haEventUnsubscribe,
+          _rangeCommitTimer: 1,
+          _autoZoomTimer: 2,
+          _pendingPreferencesSaveTimer: 3,
+          _chartZoomStateCommitTimer: 4,
+          _hideCollapsedTargetPopup: hideCollapsedTargetPopup,
+          _hideCollapsedOptionsPopup: hideCollapsedOptionsPopup,
+          _uiReadyPromise: Promise.resolve(),
+          _uiReadyApplied: true,
+          _context: {
+            orchestration: {
+              cancelChartResizeRedraw,
+            },
+          },
+        };
+
+        HassRecordsHistoryPanel.prototype.disconnectedCallback.call(panel);
+
+        expect(tabletMq.removeEventListener).toHaveBeenCalledTimes(1);
+        expect(mobileMq.removeEventListener).toHaveBeenCalledTimes(1);
+        expect(removeEventListener).toHaveBeenCalled();
+        expect(haEventUnsubscribe).toHaveBeenCalledTimes(1);
+        expect(clearTimeout).toHaveBeenCalledTimes(4);
+        expect(hideCollapsedTargetPopup).toHaveBeenCalledTimes(1);
+        expect(hideCollapsedOptionsPopup).toHaveBeenCalledTimes(1);
+        expect(panel._uiReadyPromise).toBeNull();
+        expect(panel._uiReadyApplied).toBe(false);
+        expect(cancelChartResizeRedraw).toHaveBeenCalledTimes(1);
+      });
+    });
+  });
 });

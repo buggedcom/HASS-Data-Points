@@ -39,6 +39,10 @@ function createElement(props: RecordWithUnknownValues = {}) {
     chartHoverWindowTimeMs: Nullable<number>;
     events: EventMarker[];
     updateComplete: Promise<boolean>;
+    syncZoomHighlights(
+      zoomRange: Nullable<{ start: number; end: number }>,
+      zoomWindowRange: Nullable<{ start: number; end: number }>
+    ): void;
   };
   Object.assign(el, {
     startTime: null,
@@ -228,6 +232,33 @@ describe("panel-timeline", () => {
         const preview = el.shadowRoot!.getElementById("range-hover-preview")!;
         expect(preview.style.left).not.toBe("");
         expect(preview.style.width).not.toBe("");
+      });
+    });
+  });
+
+  describe("GIVEN a rendered panel timeline with bounds", () => {
+    beforeEach(async () => {
+      el = createElement({
+        rangeBounds: SAMPLE_BOUNDS,
+      });
+      await el.updateComplete;
+    });
+
+    describe("WHEN syncZoomHighlights() is called", () => {
+      it("THEN the zoom overlays update immediately", () => {
+        expect.assertions(4);
+        el.syncZoomHighlights(
+          { start: JAN_15, end: JAN_15 + 3_600_000 },
+          { start: JAN_15 + 600_000, end: JAN_15 + 1_800_000 }
+        );
+        const zoomEl = el.shadowRoot!.getElementById("range-zoom-highlight")!;
+        const zoomWindowEl = el.shadowRoot!.getElementById(
+          "range-zoom-window-highlight"
+        )!;
+        expect(zoomEl.classList.contains("visible")).toBe(true);
+        expect(zoomWindowEl.classList.contains("visible")).toBe(true);
+        expect(zoomEl.style.left).not.toBe("");
+        expect(zoomWindowEl.style.width).not.toBe("");
       });
     });
   });

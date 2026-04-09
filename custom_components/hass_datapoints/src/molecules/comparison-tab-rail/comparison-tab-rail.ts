@@ -49,13 +49,19 @@ export class ComparisonTabRail extends LitElement {
   connectedCallback() {
     // eslint-disable-next-line wc/guard-super-call
     super.connectedCallback();
+    if (this._resizeObserver) {
+      return;
+    }
     this._resizeObserver = new ResizeObserver(() => this._checkOverflow());
     this.updateComplete.then(() => {
+      if (!this.isConnected || !this._resizeObserver) {
+        return;
+      }
       const shell = this.shadowRoot?.querySelector(
         ".chart-tabs-shell"
       ) as Nullable<HTMLElement>;
       if (shell) {
-        this._resizeObserver!.observe(shell);
+        this._resizeObserver.observe(shell);
       }
     });
   }
@@ -64,6 +70,7 @@ export class ComparisonTabRail extends LitElement {
     // eslint-disable-next-line wc/guard-super-call
     super.disconnectedCallback();
     this._resizeObserver?.disconnect();
+    this._resizeObserver = undefined;
   }
 
   private _checkOverflow() {

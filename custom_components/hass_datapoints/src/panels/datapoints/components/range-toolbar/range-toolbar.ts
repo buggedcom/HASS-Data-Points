@@ -171,6 +171,24 @@ export class RangeToolbar extends LitElement {
     panelTimeline.revealSelection?.();
   }
 
+  syncZoomHighlights(
+    zoomRange: Nullable<{ start: number; end: number }>,
+    zoomWindowRange: Nullable<{ start: number; end: number }>
+  ): void {
+    const panelTimeline = this.shadowRoot?.querySelector<
+      HTMLElement & {
+        syncZoomHighlights?: (
+          zoomRange: Nullable<{ start: number; end: number }>,
+          zoomWindowRange: Nullable<{ start: number; end: number }>
+        ) => void;
+      }
+    >("#range-panel-timeline");
+    if (!panelTimeline) {
+      return;
+    }
+    panelTimeline.syncZoomHighlights?.(zoomRange, zoomWindowRange);
+  }
+
   // ── Private helpers ────────────────────────────────────────────────────────
 
   private _emit(name: string, detail: RecordWithUnknownValues = {}): void {

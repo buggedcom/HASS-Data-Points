@@ -230,6 +230,59 @@ describe("range-timeline", () => {
     });
   });
 
+  describe("GIVEN a range-timeline with active timers and observers", () => {
+    beforeEach(async () => {
+      class MockResizeObserver {
+        observe = vi.fn();
+
+        disconnect = vi.fn();
+      }
+      vi.stubGlobal(
+        "ResizeObserver",
+        MockResizeObserver as unknown as typeof ResizeObserver
+      );
+      el = createElement({ rangeBounds: SAMPLE_BOUNDS });
+      await el.updateComplete;
+    });
+
+    describe("WHEN disconnectedCallback runs", () => {
+      it("THEN it clears timers, removes scroll listeners, and disconnects the observer", () => {
+        expect.assertions(4);
+        const viewport = el.shadowRoot!.getElementById(
+          "range-scroll-viewport"
+        ) as HTMLElement;
+        const removeSpy = vi.spyOn(viewport, "removeEventListener");
+        const clearSpy = vi.spyOn(window, "clearTimeout");
+        const observer = (
+          el as HTMLElement & { _resizeObserver: { disconnect: () => void } }
+        )._resizeObserver;
+        const disconnectSpy = vi.spyOn(observer, "disconnect");
+        (
+          el as HTMLElement & {
+            _rangeCommitTimer: number;
+            _scrollbarHideTimer: number;
+          }
+        )._rangeCommitTimer = window.setTimeout(() => {}, 1000);
+        (
+          el as HTMLElement & {
+            _rangeCommitTimer: number;
+            _scrollbarHideTimer: number;
+          }
+        )._scrollbarHideTimer = window.setTimeout(() => {}, 1000);
+
+        el.disconnectedCallback();
+
+        expect(removeSpy).toHaveBeenCalledWith("scroll", expect.any(Function));
+        expect(clearSpy).toHaveBeenCalled();
+        expect(disconnectSpy).toHaveBeenCalledTimes(1);
+        expect(
+          (el as HTMLElement & { _resizeObserver: Nullable<unknown> })
+            ._resizeObserver
+        ).toBeNull();
+      });
+    });
+  });
+
   // ---------------------------------------------------------------------------
   // Events — period buttons
   // ---------------------------------------------------------------------------

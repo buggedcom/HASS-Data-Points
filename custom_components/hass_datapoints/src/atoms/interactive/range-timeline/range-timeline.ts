@@ -144,6 +144,10 @@ export class RangeTimeline extends LitElement {
 
   _rangeJumpRightEl: Nullable<HTMLElement> = null;
 
+  _resizeObserver: Nullable<ResizeObserver> = null;
+
+  _onRangeScroll: () => void;
+
   // Bound handlers
   _onRangePointerMove: (ev: PointerEvent) => void;
 
@@ -164,13 +168,42 @@ export class RangeTimeline extends LitElement {
       this._handleTimelinePointerMove(ev);
     this._onTimelinePointerUp = (ev: PointerEvent) =>
       this._finishTimelinePointerInteraction(ev);
+    this._onRangeScroll = () => {
+      this._updateSelectionJumpControls();
+      this._syncVisibleRangeLabels();
+      this._updateRangeTooltip();
+      this.dispatchEvent(
+        new CustomEvent("dp-range-scroll", { bubbles: true, composed: true })
+      );
+      if (!this._isProgrammaticScroll) {
+        this._showScrollbar();
+      }
+    };
   }
 
   disconnectedCallback() {
     // eslint-disable-next-line wc/guard-super-call
     super.disconnectedCallback();
+    if (this._rangeScrollViewportEl) {
+      this._rangeScrollViewportEl.removeEventListener(
+        "scroll",
+        this._onRangeScroll
+      );
+    }
     this._detachRangePointerListeners();
     this._detachTimelinePointerListeners();
+    if (this._rangeCommitTimer) {
+      window.clearTimeout(this._rangeCommitTimer);
+      this._rangeCommitTimer = null;
+    }
+    if (this._scrollbarHideTimer) {
+      window.clearTimeout(this._scrollbarHideTimer);
+      this._scrollbarHideTimer = null;
+    }
+    if (this._resizeObserver) {
+      this._resizeObserver.disconnect();
+      this._resizeObserver = null;
+    }
   }
 
   firstUpdated() {
@@ -190,26 +223,21 @@ export class RangeTimeline extends LitElement {
     this._rangeJumpLeftEl = sr.getElementById("range-jump-left");
     this._rangeJumpRightEl = sr.getElementById("range-jump-right");
 
-    this._rangeScrollViewportEl?.addEventListener("scroll", () => {
-      this._updateSelectionJumpControls();
-      this._syncVisibleRangeLabels();
-      this._updateRangeTooltip();
-      this.dispatchEvent(
-        new CustomEvent("dp-range-scroll", { bubbles: true, composed: true })
-      );
-      if (!this._isProgrammaticScroll) {
-        this._showScrollbar();
-      }
-    });
+    this._rangeScrollViewportEl?.addEventListener(
+      "scroll",
+      this._onRangeScroll
+    );
 
     if (typeof ResizeObserver !== "undefined") {
-      const ro = new ResizeObserver(() => {
+      this._resizeObserver = new ResizeObserver(() => {
         this._syncTimelineWidth();
         this._updateSelectionJumpControls();
         this._syncVisibleRangeLabels();
         this._revealSelectionInTimeline("auto");
       });
-      if (this._rangeScrollViewportEl) ro.observe(this._rangeScrollViewportEl);
+      if (this._rangeScrollViewportEl) {
+        this._resizeObserver.observe(this._rangeScrollViewportEl);
+      }
     }
 
     this._syncRangeControl();

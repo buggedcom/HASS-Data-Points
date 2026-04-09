@@ -213,4 +213,41 @@ describe("comparison-tab-rail", () => {
       });
     });
   });
+
+  describe("GIVEN the rail reconnects", () => {
+    describe("WHEN disconnected and connected again", () => {
+      it("THEN it disconnects and recreates its ResizeObserver cleanly", async () => {
+        expect.assertions(4);
+        const observe = vi.fn();
+        const disconnect = vi.fn();
+        class MockResizeObserver {
+          observe = observe;
+
+          disconnect = disconnect;
+        }
+        vi.stubGlobal(
+          "ResizeObserver",
+          MockResizeObserver as unknown as typeof ResizeObserver
+        );
+
+        el = createElement();
+        await el.updateComplete;
+        await Promise.resolve();
+
+        document.body.removeChild(el);
+        expect(disconnect).toHaveBeenCalledTimes(1);
+
+        observe.mockClear();
+        document.body.appendChild(el);
+        await el.updateComplete;
+        await Promise.resolve();
+
+        expect(observe).toHaveBeenCalledTimes(1);
+        expect(
+          (el as HTMLElement & { _resizeObserver?: unknown })._resizeObserver
+        ).toBeTruthy();
+        expect(disconnect).toHaveBeenCalledTimes(1);
+      });
+    });
+  });
 });

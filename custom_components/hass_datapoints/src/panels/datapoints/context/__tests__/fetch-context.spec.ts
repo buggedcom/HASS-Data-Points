@@ -135,4 +135,32 @@ describe("fetch-context", () => {
       });
     });
   });
+
+  describe("GIVEN timeline events are requested in linked scope with no entities", () => {
+    describe("WHEN loadTimelineEvents is called", () => {
+      it("THEN it returns an empty result without fetching events", async () => {
+        expect.assertions(3);
+        vi.mocked(fetchEvents).mockResolvedValue([{ id: "evt-1" }]);
+        const context = createHistoryPageFetchContext(() => hass);
+        const onSuccess = vi.fn();
+
+        await context.loadTimelineEvents({
+          startIso: "2026-01-01T00:00:00.000Z",
+          endIso: "2026-01-02T00:00:00.000Z",
+          datapointScope: "linked",
+          entityIds: [],
+          onSuccess,
+        });
+
+        expect(fetchEvents).not.toHaveBeenCalled();
+        expect(onSuccess).toHaveBeenCalledWith(
+          [],
+          "2026-01-01T00:00:00.000Z|2026-01-02T00:00:00.000Z|linked|"
+        );
+        expect(context.state.timelineEventsKey).toBe(
+          "2026-01-01T00:00:00.000Z|2026-01-02T00:00:00.000Z|linked|"
+        );
+      });
+    });
+  });
 });

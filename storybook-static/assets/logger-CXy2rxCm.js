@@ -1,1 +1,0 @@
-const e=()=>typeof window<"u"&&!!window.__HASS_DATAPOINTS_DEV__,n={log:(...o)=>{e()&&console.log(...o)},debug:(...o)=>{e()&&console.debug(...o)},info:(...o)=>{e()&&console.info(...o)},warn:(...o)=>console.warn(...o),error:(...o)=>console.error(...o)};export{n as l};

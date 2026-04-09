@@ -4213,7 +4213,13 @@
     // ── Lifecycle ─────────────────────────────────────────────────────────────
     connectedCallback() {
       super.connectedCallback();
-      if (this._hass && !this._hasStartedInitialLoad) {
+      if (this._initialized) {
+        if (!this._unsubscribe || !this._windowListener) {
+          this._setupAutoRefresh();
+        }
+        this._setupResizeObserver();
+      }
+      if (this._hass) {
         this._scheduleLoad();
       }
     }
@@ -4247,6 +4253,7 @@
     // ── Setup helpers ─────────────────────────────────────────────────────────
     _setupAutoRefresh() {
       if (!this._hass) return;
+      if (this._unsubscribe || this._windowListener) return;
       this._hass.connection.subscribeEvents(() => {
         this._scheduleLoad();
       }, `${DOMAIN}_event_recorded`).then((unsub) => {
@@ -4262,6 +4269,7 @@
       );
     }
     _setupResizeObserver() {
+      if (this._resizeObserver) return;
       const wrap = this.shadowRoot?.querySelector(".chart-wrap") ?? this.shadowRoot?.querySelector("hass-datapoints-history-chart");
       if (!wrap || !window.ResizeObserver) return;
       this._resizeObserver = new ResizeObserver(() => {
@@ -7999,65 +8007,6 @@ ${s2.description}`).join("\n\n");
       });
     });
   }
-  function downsamplePts(pts, intervalMs, aggregate) {
-    if (!pts.length || intervalMs <= 0) {
-      return pts;
-    }
-    const buckets = /* @__PURE__ */ new Map();
-    const bucketRepTime = /* @__PURE__ */ new Map();
-    for (const [time, value] of pts) {
-      const idx = Math.floor(time / intervalMs);
-      if (!buckets.has(idx)) {
-        buckets.set(idx, []);
-        bucketRepTime.set(idx, time);
-      }
-      buckets.get(idx)?.push(value);
-    }
-    const result = [];
-    for (const idx of [...buckets.keys()].sort((a2, b2) => a2 - b2)) {
-      const values = buckets.get(idx) || [];
-      const repTime = bucketRepTime.get(idx) || 0;
-      let agg;
-      if (aggregate === "min") {
-        agg = Math.min(...values);
-      } else if (aggregate === "max") {
-        agg = Math.max(...values);
-      } else if (aggregate === "median") {
-        const sorted = [...values].sort((a2, b2) => a2 - b2);
-        const mid = Math.floor(sorted.length / 2);
-        agg = sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
-      } else if (aggregate === "first") {
-        agg = values[0];
-      } else if (aggregate === "last") {
-        agg = values[values.length - 1];
-      } else {
-        agg = values.reduce((sum, current) => sum + current, 0) / values.length;
-      }
-      result.push([repTime, agg]);
-    }
-    return result;
-  }
-  self.onmessage = ({ data }) => {
-    const { id, type, payload } = data || {};
-    try {
-      let result;
-      if (type === "downsample") {
-        result = downsamplePts(
-          payload.pts,
-          payload.intervalMs,
-          payload.aggregate
-        );
-      } else {
-        throw new Error(`Unknown message type: ${type}`);
-      }
-      self.postMessage({ id, result });
-    } catch (err) {
-      self.postMessage({
-        id,
-        error: String(err)
-      });
-    }
-  };
   const HOUR_MS$1 = 60 * 60 * 1e3;
   function getTrendWindowMs(value) {
     const windows = {
@@ -8322,7 +8271,7 @@ ${s2.description}`).join("\n\n");
     return normalized.map(
       (window2) => [
         encodeURIComponent(window2.id),
-        encodeURIComponent(window2.label),
+        encodeURIComponent(window2.label ?? ""),
         encodeURIComponent(window2.start_time),
         encodeURIComponent(window2.end_time)
       ].join("~")
@@ -9043,8 +8992,6 @@ ${s2.description}`).join("\n\n");
       __publicField$V(this, "_scrollSyncSuspended", false);
       __publicField$V(this, "_lastProgrammaticScrollLeft", null);
       __publicField$V(this, "_ignoreNextProgrammaticScrollEvent", false);
-      __publicField$V(this, "_skipNextScrollViewportSync", false);
-      __publicField$V(this, "_preserveUserScrollViewportUntil", 0);
       __publicField$V(this, "_creatingContextAnnotation", false);
       __publicField$V(this, "_lastComparisonResults", null);
       __publicField$V(this, "_hiddenSeries", /* @__PURE__ */ new Set());
@@ -9083,8 +9030,6 @@ ${s2.description}`).join("\n\n");
         this._scrollZoomApplyTimer = setTimeout(() => {
           this._scrollZoomApplyTimer = null;
           if (!this._zoomRange) return;
-          this._skipNextScrollViewportSync = true;
-          this._preserveUserScrollViewportUntil = Date.now() + 1e3;
           this.dispatchEvent(
             new CustomEvent("hass-datapoints-zoom-apply", {
               bubbles: true,
@@ -9164,6 +9109,26 @@ ${s2.description}`).join("\n\n");
       </div>
       <div id="annotation-tooltips"></div>
       <div class="legend" id="legend"></div>`;
+    }
+    disconnectedCallback() {
+      if (this._chartHoverCleanup) {
+        this._chartHoverCleanup();
+        this._chartHoverCleanup = null;
+      }
+      if (this._chartZoomCleanup) {
+        this._chartZoomCleanup();
+        this._chartZoomCleanup = null;
+      }
+      if (this._chartScrollViewportEl) {
+        this._chartScrollViewportEl.removeEventListener(
+          "scroll",
+          this._onChartScroll
+        );
+      }
+      if (this._scrollZoomApplyTimer !== null) {
+        clearTimeout(this._scrollZoomApplyTimer);
+        this._scrollZoomApplyTimer = null;
+      }
     }
     get hass() {
       return this._hass;
@@ -9709,16 +9674,19 @@ ${s2.description}`).join("\n\n");
     }
     /** Sync chart viewport scroll to the current zoom range. */
     _syncChartViewportScroll(_t0, _t1, _canvasWidth) {
-      if (!this._chartScrollViewportEl || !this._zoomRange) {
+      if (!this._chartScrollViewportEl) {
         return;
       }
       const viewport = this._chartScrollViewportEl;
-      if (Date.now() < this._preserveUserScrollViewportUntil) {
-        this._skipNextScrollViewportSync = false;
-        return;
-      }
-      if (this._skipNextScrollViewportSync) {
-        this._skipNextScrollViewportSync = false;
+      if (!this._zoomRange) {
+        if (viewport.scrollLeft !== 0) {
+          this._scrollSyncSuspended = true;
+          this._ignoreNextProgrammaticScrollEvent = true;
+          viewport.scrollLeft = 0;
+          window.requestAnimationFrame(() => {
+            this._scrollSyncSuspended = false;
+          });
+        }
         return;
       }
       const viewportWidth = viewport.clientWidth;
@@ -10324,7 +10292,7 @@ ${content.alert}` : "",
           return rawPoints;
         }
         const sampleAggregate = analysis.sample_aggregate || "mean";
-        return downsamplePts(rawPoints, targetIntervalMs, sampleAggregate);
+        return downsampleInWorker(rawPoints, targetIntervalMs, sampleAggregate);
       }
       let finalPts = sampledPts.map(
         ([timestamp, value]) => [timestamp - comparisonWindow.time_offset_ms, value]
@@ -15079,6 +15047,10 @@ ${content.alert}` : "",
         nextConfig.zoom_start_time,
         nextConfig.zoom_end_time
       );
+      if (dataChanged || comparisonChanged || preloadComparisonChanged) {
+        this._pruneComparisonDataCache(nextConfig);
+        this._lastComparisonResults = null;
+      }
       const chartEl = this._chartEl();
       if (chartEl) {
         chartEl.hass = this._hass;
@@ -15160,6 +15132,33 @@ ${content.alert}` : "",
       return { start, end };
     }
     // ── Comparison windows ─────────────────────────────────────────────────────
+    _pruneComparisonDataCache(config) {
+      if (!this._comparisonDataCache.size) {
+        return;
+      }
+      const end = config.end_time ? new Date(config.end_time) : /* @__PURE__ */ new Date();
+      const start = config.start_time ? new Date(config.start_time) : new Date(
+        end.getTime() - Number(config.hours_to_show || 24) * 3600 * 1e3
+      );
+      const windows = [
+        ...Array.isArray(config.comparison_windows) ? config.comparison_windows : [],
+        ...Array.isArray(config.preload_comparison_windows) ? config.preload_comparison_windows : []
+      ];
+      const keepKeys = /* @__PURE__ */ new Set();
+      for (const win of windows) {
+        if (win?.time_offset_ms == null) {
+          continue;
+        }
+        const winStart = new Date(start.getTime() + win.time_offset_ms);
+        const winEnd = new Date(end.getTime() + win.time_offset_ms);
+        keepKeys.add(this._getComparisonCacheKey(win, winStart, winEnd));
+      }
+      for (const cacheKey of this._comparisonDataCache.keys()) {
+        if (!keepKeys.has(cacheKey)) {
+          this._comparisonDataCache.delete(cacheKey);
+        }
+      }
+    }
     get _comparisonWindows() {
       return Array.isArray(this._config?.comparison_windows) ? this._config.comparison_windows.filter(
         (w) => w?.time_offset_ms != null
@@ -21765,8 +21764,14 @@ ${content.alert}` : "",
     }
     connectedCallback() {
       super.connectedCallback();
+      if (this._resizeObserver) {
+        return;
+      }
       this._resizeObserver = new ResizeObserver(() => this._checkOverflow());
       this.updateComplete.then(() => {
+        if (!this.isConnected || !this._resizeObserver) {
+          return;
+        }
         const shell = this.shadowRoot?.querySelector(
           ".chart-tabs-shell"
         );
@@ -21778,6 +21783,7 @@ ${content.alert}` : "",
     disconnectedCallback() {
       super.disconnectedCallback();
       this._resizeObserver?.disconnect();
+      this._resizeObserver = void 0;
     }
     _checkOverflow() {
       const shell = this.shadowRoot?.querySelector(
@@ -22622,6 +22628,8 @@ ${content.alert}` : "",
       __publicField$r(this, "_rangeEndTooltipEl", null);
       __publicField$r(this, "_rangeJumpLeftEl", null);
       __publicField$r(this, "_rangeJumpRightEl", null);
+      __publicField$r(this, "_resizeObserver", null);
+      __publicField$r(this, "_onRangeScroll");
       __publicField$r(this, "_onRangePointerMove");
       __publicField$r(this, "_onRangePointerUp");
       __publicField$r(this, "_onTimelinePointerMove");
@@ -22630,11 +22638,40 @@ ${content.alert}` : "",
       this._onRangePointerUp = (ev) => this._finishRangePointerInteraction(ev);
       this._onTimelinePointerMove = (ev) => this._handleTimelinePointerMove(ev);
       this._onTimelinePointerUp = (ev) => this._finishTimelinePointerInteraction(ev);
+      this._onRangeScroll = () => {
+        this._updateSelectionJumpControls();
+        this._syncVisibleRangeLabels();
+        this._updateRangeTooltip();
+        this.dispatchEvent(
+          new CustomEvent("dp-range-scroll", { bubbles: true, composed: true })
+        );
+        if (!this._isProgrammaticScroll) {
+          this._showScrollbar();
+        }
+      };
     }
     disconnectedCallback() {
       super.disconnectedCallback();
+      if (this._rangeScrollViewportEl) {
+        this._rangeScrollViewportEl.removeEventListener(
+          "scroll",
+          this._onRangeScroll
+        );
+      }
       this._detachRangePointerListeners();
       this._detachTimelinePointerListeners();
+      if (this._rangeCommitTimer) {
+        window.clearTimeout(this._rangeCommitTimer);
+        this._rangeCommitTimer = null;
+      }
+      if (this._scrollbarHideTimer) {
+        window.clearTimeout(this._scrollbarHideTimer);
+        this._scrollbarHideTimer = null;
+      }
+      if (this._resizeObserver) {
+        this._resizeObserver.disconnect();
+        this._resizeObserver = null;
+      }
     }
     firstUpdated() {
       const sr = this.shadowRoot;
@@ -22651,25 +22688,20 @@ ${content.alert}` : "",
       this._rangeEndTooltipEl = sr.getElementById("range-tooltip-end");
       this._rangeJumpLeftEl = sr.getElementById("range-jump-left");
       this._rangeJumpRightEl = sr.getElementById("range-jump-right");
-      this._rangeScrollViewportEl?.addEventListener("scroll", () => {
-        this._updateSelectionJumpControls();
-        this._syncVisibleRangeLabels();
-        this._updateRangeTooltip();
-        this.dispatchEvent(
-          new CustomEvent("dp-range-scroll", { bubbles: true, composed: true })
-        );
-        if (!this._isProgrammaticScroll) {
-          this._showScrollbar();
-        }
-      });
+      this._rangeScrollViewportEl?.addEventListener(
+        "scroll",
+        this._onRangeScroll
+      );
       if (typeof ResizeObserver !== "undefined") {
-        const ro = new ResizeObserver(() => {
+        this._resizeObserver = new ResizeObserver(() => {
           this._syncTimelineWidth();
           this._updateSelectionJumpControls();
           this._syncVisibleRangeLabels();
           this._revealSelectionInTimeline("auto");
         });
-        if (this._rangeScrollViewportEl) ro.observe(this._rangeScrollViewportEl);
+        if (this._rangeScrollViewportEl) {
+          this._resizeObserver.observe(this._rangeScrollViewportEl);
+        }
       }
       this._syncRangeControl();
     }
@@ -24261,6 +24293,16 @@ ${content.alert}` : "",
     firstUpdated() {
       this._splitterEl = this.shadowRoot?.querySelector(".pane-splitter") ?? null;
       this._applyRatio();
+    }
+    disconnectedCallback() {
+      super.disconnectedCallback();
+      if (this._pointerId != null) {
+        window.removeEventListener("pointermove", this._onPointerMove);
+        window.removeEventListener("pointerup", this._onPointerUp);
+        window.removeEventListener("pointercancel", this._onPointerUp);
+        this._splitterEl?.classList.remove("dragging");
+        this._pointerId = null;
+      }
     }
     updated(changed) {
       if (changed.has("ratio") || changed.has("direction") || changed.has("secondHidden")) {
@@ -26247,6 +26289,8 @@ ${content.alert}` : "",
       __publicField$j(this, "_rangeChartHoverLineEl", null);
       __publicField$j(this, "_rangeChartHoverWindowLineEl", null);
       __publicField$j(this, "_rangeEventLayerEl", null);
+      __publicField$j(this, "_liveZoomRange");
+      __publicField$j(this, "_liveZoomWindowRange");
     }
     firstUpdated() {
       const sr = this.shadowRoot;
@@ -26280,6 +26324,12 @@ ${content.alert}` : "",
         "rangeBounds"
       ];
       if (trackProps.some((p2) => changed.has(p2))) {
+        if (changed.has("zoomRange")) {
+          this._liveZoomRange = this.zoomRange ?? null;
+        }
+        if (changed.has("zoomWindowRange")) {
+          this._liveZoomWindowRange = this.zoomWindowRange ?? null;
+        }
         this._syncTrackOverlays();
       }
       if (timelineProps.some((p2) => changed.has(p2))) {
@@ -26359,6 +26409,15 @@ ${content.alert}` : "",
       );
       timeline?.revealSelection?.();
     }
+    syncZoomHighlights(zoomRange, zoomWindowRange) {
+      this._liveZoomRange = zoomRange ? { ...zoomRange } : null;
+      this._liveZoomWindowRange = zoomWindowRange ? { ...zoomWindowRange } : null;
+      this._setRangeOverlay(this._rangeZoomHighlightEl, this._liveZoomRange);
+      this._setRangeOverlay(
+        this._rangeZoomWindowHighlightEl,
+        this._liveZoomWindowRange
+      );
+    }
     _onPeriodHoverInternal(ev) {
       const { start, end } = ev.detail;
       this.hoveredPeriodRange = { start: start.getTime(), end: end.getTime() };
@@ -26411,6 +26470,8 @@ ${content.alert}` : "",
       el.classList.add("visible");
     }
     _syncTrackOverlays() {
+      const zoomRange = this._liveZoomRange !== void 0 ? this._liveZoomRange : this.zoomRange ?? null;
+      const zoomWindowRange = this._liveZoomWindowRange !== void 0 ? this._liveZoomWindowRange : this.zoomWindowRange ?? null;
       this._setRangeOverlay(
         this._rangeHoverPreviewEl,
         this.hoveredPeriodRange ?? null
@@ -26419,11 +26480,8 @@ ${content.alert}` : "",
         this._rangeComparisonPreviewEl,
         this.comparisonPreview ?? null
       );
-      this._setRangeOverlay(this._rangeZoomHighlightEl, this.zoomRange ?? null);
-      this._setRangeOverlay(
-        this._rangeZoomWindowHighlightEl,
-        this.zoomWindowRange ?? null
-      );
+      this._setRangeOverlay(this._rangeZoomHighlightEl, zoomRange);
+      this._setRangeOverlay(this._rangeZoomWindowHighlightEl, zoomWindowRange);
     }
     _syncTimelineOverlays() {
       this._setHoverLine(
@@ -26722,6 +26780,13 @@ ${content.alert}` : "",
         return;
       }
       panelTimeline.revealSelection?.();
+    }
+    syncZoomHighlights(zoomRange, zoomWindowRange) {
+      const panelTimeline = this.shadowRoot?.querySelector("#range-panel-timeline");
+      if (!panelTimeline) {
+        return;
+      }
+      panelTimeline.syncZoomHighlights?.(zoomRange, zoomWindowRange);
     }
     // ── Private helpers ────────────────────────────────────────────────────────
     _emit(name, detail = {}) {
@@ -27249,6 +27314,11 @@ ${content.alert}` : "",
         const key = `${options.startIso}|${options.endIso}|${options.datapointScope}|${options.entityIds.join(",")}`;
         if (!hass || state.timelineEventsKey === key || timelineEventsPromise) {
           return timelineEventsPromise ?? Promise.resolve();
+        }
+        if (options.datapointScope === "linked" && options.entityIds.length === 0) {
+          state.timelineEventsKey = key;
+          options.onSuccess([], key);
+          return Promise.resolve();
         }
         state.timelineEventsLoading = true;
         timelineEventsPromise = fetchEvents(
@@ -30481,6 +30551,7 @@ ${content.alert}` : "",
       this._collapsedPopupAnchorEl = null;
       this._collapsedPopupOutsideClickHandler = null;
       this._collapsedPopupKeyHandler = null;
+      this._lastSyncedLocale = "";
       this._datapointScope = "linked";
       this._showChartDatapointIcons = true;
       this._showChartDatapointLines = true;
@@ -30713,7 +30784,7 @@ ${content.alert}` : "",
     set hass(hass) {
       this._hass = hass;
       this._context.hass = hass;
-      syncFrontendLocale(this._hass).then(() => {
+      syncFrontendLocale(this._hass).then((locale) => {
         if (!this.isConnected) {
           return;
         }
@@ -30721,8 +30792,45 @@ ${content.alert}` : "",
           this._buildLoadingShell();
           return;
         }
-        if (this._rendered) {
+        if (!this._rendered) {
+          return;
+        }
+        if (locale !== this._lastSyncedLocale) {
+          this._lastSyncedLocale = locale;
           this._renderContent();
+        } else {
+          if (this._shellEl && this._hass) {
+            this._shellEl.hass = this._hass;
+          }
+          if (this._chartEl) {
+            this._chartEl.hass = this._hass;
+          }
+          if (this._listEl) {
+            this._listEl.hass = this._hass;
+          }
+          if (this._targetControl && this._hass) {
+            this._targetControl.hass = this._hass;
+          }
+          if (this._historyTargetsComp) {
+            this._historyTargetsComp.hass = this._hass ?? null;
+            this._historyTargetsComp.states = this._hass?.states ?? {};
+          }
+          if (this._rowListEl) {
+            this._rowListEl.hass = this._hass ?? null;
+            this._rowListEl.states = this._hass?.states ?? {};
+          }
+          if (this._rangeToolbarComp) {
+            this._rangeToolbarComp.hass = this._hass ?? null;
+          }
+          this.shadowRoot?.querySelectorAll(
+            "[data-series-icon-entity-id], [data-series-collapsed-icon-entity-id]"
+          ).forEach((iconEl) => {
+            const icon = iconEl;
+            const entityId = icon.dataset.seriesIconEntityId || icon.dataset.seriesCollapsedIconEntityId;
+            if (!entityId) return;
+            icon.stateObj = this._hass?.states?.[entityId];
+            icon.hass = this._hass;
+          });
         }
       });
       if (!this._haEventUnsubscribe && this._hass?.connection) {
@@ -30750,7 +30858,9 @@ ${content.alert}` : "",
       if (!this._shellBuilt) {
         return;
       }
-      this._bootstrapAfterShellBuilt();
+      this._ensureHistoryBounds();
+      this._ensureUserPreferences();
+      this._loadSavedPageIndicator();
     }
     set panel(panel) {
       this._panel = panel;
@@ -30885,6 +30995,18 @@ ${content.alert}` : "",
         window.clearTimeout(this._autoZoomTimer);
         this._autoZoomTimer = null;
       }
+      if (this._pendingPreferencesSaveTimer) {
+        window.clearTimeout(this._pendingPreferencesSaveTimer);
+        this._pendingPreferencesSaveTimer = null;
+      }
+      if (this._chartZoomStateCommitTimer) {
+        window.clearTimeout(this._chartZoomStateCommitTimer);
+        this._chartZoomStateCommitTimer = null;
+      }
+      this._hideCollapsedTargetPopup();
+      this._hideCollapsedOptionsPopup();
+      this._uiReadyPromise = null;
+      this._uiReadyApplied = false;
       this._context.orchestration.cancelChartResizeRedraw();
     }
     _initFromContext() {
@@ -30907,7 +31029,7 @@ ${content.alert}` : "",
         sessionState
       } = this._context.navigation.readStateFromLocation();
       const persistedState = pageStateFromUrl && typeof pageStateFromUrl === "object" ? { ...sessionState || {}, ...pageStateFromUrl } : sessionState;
-      const panelCfg = this._panel?.config || {};
+      const panelCfg = this._panel?.config ?? {};
       this._hasTargetInUrl = hasTargetInUrl;
       this._hasRangeInUrl = hasRangeInUrl;
       this._hasPageStateInUrl = !!pageStateFromUrl;
@@ -30918,7 +31040,7 @@ ${content.alert}` : "",
       this._sidebarAccordionDatapointsOpen = persistedState?.sidebar_accordion_datapoints_open !== false;
       this._sidebarAccordionAnalysisOpen = persistedState?.sidebar_accordion_analysis_open !== false;
       this._sidebarAccordionChartOpen = persistedState?.sidebar_accordion_chart_open !== false;
-      if (Number.isFinite(persistedState?.content_split_ratio)) {
+      if (persistedState && Number.isFinite(persistedState.content_split_ratio)) {
         this._contentSplitRatio = clampNumber(
           persistedState.content_split_ratio,
           0.25,
@@ -30953,7 +31075,9 @@ ${content.alert}` : "",
       this._dataGapThreshold = DATA_GAP_THRESHOLD_OPTIONS.some(
         (option) => option.value === persistedState?.data_gap_threshold
       ) ? persistedState.data_gap_threshold : "2h";
-      this._comparisonWindows = dateWindowsFromUrl.length ? dateWindowsFromUrl : normalizeDateWindows(persistedState?.date_windows);
+      this._comparisonWindows = dateWindowsFromUrl.length ? dateWindowsFromUrl : normalizeDateWindows(
+        persistedState?.date_windows
+      );
       const targetFromUrl = normalizeTargetValue({
         entity_id: entityFromUrl ? entityFromUrl.split(",") : [],
         device_id: deviceFromUrl ? deviceFromUrl.split(",") : [],
@@ -31006,7 +31130,7 @@ ${content.alert}` : "",
       }
       if (Number.isFinite(hoursFromUrl) && hoursFromUrl > 0) {
         this._hours = hoursFromUrl;
-      } else if (!hasRangeInUrl && Number.isFinite(persistedState?.hours) && persistedState.hours > 0) {
+      } else if (!hasRangeInUrl && persistedState && Number.isFinite(persistedState.hours) && persistedState.hours > 0) {
         this._hours = persistedState.hours;
       } else if (panelCfg.hours_to_show) {
         this._hours = panelCfg.hours_to_show;
@@ -31039,64 +31163,69 @@ ${content.alert}` : "",
       if (!state || typeof state !== "object") {
         return;
       }
+      const s2 = state;
       if (!this._hasPageStateInUrl) {
-        this._sidebarCollapsed = !!state.sidebar_collapsed;
-        this._sidebarAccordionTargetsOpen = state.sidebar_accordion_targets_open !== false;
-        this._sidebarAccordionDatapointsOpen = state.sidebar_accordion_datapoints_open !== false;
-        this._sidebarAccordionAnalysisOpen = state.sidebar_accordion_analysis_open !== false;
-        this._sidebarAccordionChartOpen = state.sidebar_accordion_chart_open !== false;
-        if (Number.isFinite(state.content_split_ratio)) {
+        this._sidebarCollapsed = !!s2.sidebar_collapsed;
+        this._sidebarAccordionTargetsOpen = s2.sidebar_accordion_targets_open !== false;
+        this._sidebarAccordionDatapointsOpen = s2.sidebar_accordion_datapoints_open !== false;
+        this._sidebarAccordionAnalysisOpen = s2.sidebar_accordion_analysis_open !== false;
+        this._sidebarAccordionChartOpen = s2.sidebar_accordion_chart_open !== false;
+        if (Number.isFinite(s2.content_split_ratio)) {
           this._contentSplitRatio = clampNumber(
-            state.content_split_ratio,
+            s2.content_split_ratio,
             0.25,
             0.75
           );
         }
-        this._showChartDatapointIcons = state.show_chart_datapoint_icons !== false;
-        this._showChartDatapointLines = state.show_chart_datapoint_lines !== false;
-        this._showChartTooltips = state.show_chart_tooltips !== false;
-        this._showChartEmphasizedHoverGuides = state.show_chart_emphasized_hover_guides === true;
-        this._chartHoverSnapMode = state.chart_hover_snap_mode === "snap_to_data_points" ? "snap_to_data_points" : "follow_series";
-        this._delinkChartYAxis = state.delink_chart_y_axis === true;
-        this._splitChartView = state.split_chart_view === true;
-        this._showCorrelatedAnomalies = state.show_chart_correlated_anomalies === true;
+        this._showChartDatapointIcons = s2.show_chart_datapoint_icons !== false;
+        this._showChartDatapointLines = s2.show_chart_datapoint_lines !== false;
+        this._showChartTooltips = s2.show_chart_tooltips !== false;
+        this._showChartEmphasizedHoverGuides = s2.show_chart_emphasized_hover_guides === true;
+        this._chartHoverSnapMode = s2.chart_hover_snap_mode === "snap_to_data_points" ? "snap_to_data_points" : "follow_series";
+        this._delinkChartYAxis = s2.delink_chart_y_axis === true;
+        this._splitChartView = s2.split_chart_view === true;
+        this._showCorrelatedAnomalies = s2.show_chart_correlated_anomalies === true;
         this._chartAnomalyOverlapMode = ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS.some(
-          (option) => option.value === state.chart_anomaly_overlap_mode
-        ) ? state.chart_anomaly_overlap_mode : "all";
-        this._showDataGaps = state.show_data_gaps !== false;
+          (option) => option.value === s2.chart_anomaly_overlap_mode
+        ) ? s2.chart_anomaly_overlap_mode : "all";
+        this._showDataGaps = s2.show_data_gaps !== false;
         this._dataGapThreshold = DATA_GAP_THRESHOLD_OPTIONS.some(
-          (option) => option.value === state.data_gap_threshold
-        ) ? state.data_gap_threshold : this._dataGapThreshold;
-        this._datapointScope = state.datapoint_scope === "all" || state.datapoint_scope === "hidden" ? state.datapoint_scope : "linked";
+          (option) => option.value === s2.data_gap_threshold
+        ) ? s2.data_gap_threshold : this._dataGapThreshold;
+        this._datapointScope = s2.datapoint_scope === "all" || s2.datapoint_scope === "hidden" ? s2.datapoint_scope : "linked";
       }
       if (!this._hasTargetInUrl) {
-        if (state.target_selection) {
-          this._targetSelection = normalizeTargetValue(state.target_selection);
+        if (s2.target_selection) {
+          this._targetSelection = normalizeTargetValue(
+            s2.target_selection
+          );
         }
-        if (state.target_selection_raw) {
-          this._targetSelectionRaw = state.target_selection_raw;
+        if (s2.target_selection_raw) {
+          this._targetSelectionRaw = s2.target_selection_raw;
         }
       }
-      if (Array.isArray(state.series_rows)) {
-        const nextRows = !this._hasTargetInUrl ? normalizeHistorySeriesRows(state.series_rows) : this._mergeSavedSeriesRows(this._seriesRows, state.series_rows);
+      if (Array.isArray(s2.series_rows)) {
+        const nextRows = !this._hasTargetInUrl ? normalizeHistorySeriesRows(s2.series_rows) : this._mergeSavedSeriesRows(this._seriesRows, s2.series_rows);
         this._seriesRows = this._applyPreferredSeriesColors(nextRows);
         this._syncSeriesState();
       }
       if (!this._hasRangeInUrl) {
-        const start = parseDateValue(state.start_time);
-        const end = parseDateValue(state.end_time);
+        const start = parseDateValue(s2.start_time);
+        const end = parseDateValue(s2.end_time);
         if (start && end && start < end) {
           this._startTime = start;
           this._endTime = end;
         }
-        const zoomStart = parseDateValue(state.zoom_start_time);
-        const zoomEnd = parseDateValue(state.zoom_end_time);
+        const zoomStart = parseDateValue(s2.zoom_start_time);
+        const zoomEnd = parseDateValue(s2.zoom_end_time);
         this._chartZoomCommittedRange = zoomStart && zoomEnd && zoomStart < zoomEnd ? { start: zoomStart.getTime(), end: zoomEnd.getTime() } : this._chartZoomCommittedRange;
-        if (Number.isFinite(state.hours) && state.hours > 0) {
-          this._hours = state.hours;
+        if (s2.hours && Number.isFinite(s2.hours) && s2.hours > 0) {
+          this._hours = s2.hours;
         }
-        if (Array.isArray(state.date_windows) && !this._hasPageStateInUrl) {
-          this._comparisonWindows = normalizeDateWindows(state.date_windows);
+        if (Array.isArray(s2.date_windows) && !this._hasPageStateInUrl) {
+          this._comparisonWindows = normalizeDateWindows(
+            s2.date_windows
+          );
         }
       }
     }
@@ -31213,7 +31342,9 @@ ${content.alert}` : "",
               return;
             }
             this._uiReadyApplied = true;
-            this._buildShell();
+            if (!this._shellBuilt) {
+              this._buildShell();
+            }
             this._syncControls();
             this._bootstrapAfterShellBuilt();
           });
@@ -31409,13 +31540,12 @@ ${content.alert}` : "",
       if (!this._startTime || !this._endTime) {
         return [];
       }
+      const startTime = this._startTime;
       const previewWindows = comparisonIds.map(
-        (id) => this._comparisonWindows.find(
-          (window2) => window2.id === id
-        ) || null
-      ).filter(Boolean).map((window2) => ({
+        (id) => this._comparisonWindows.find((w) => w.id === id) ?? null
+      ).filter((w) => w !== null).map((window2) => ({
         ...window2,
-        time_offset_ms: new Date(window2.start_time).getTime() - this._startTime.getTime()
+        time_offset_ms: new Date(window2.start_time).getTime() - startTime.getTime()
       }));
       return previewWindows;
     }
@@ -31423,12 +31553,11 @@ ${content.alert}` : "",
       if (!this._startTime || !this._endTime) {
         return [];
       }
+      const startTime = this._startTime;
       const preloadWindows = this._comparisonWindows.map((window2) => ({
         ...window2,
-        time_offset_ms: new Date(window2.start_time).getTime() - this._startTime.getTime()
-      })).filter(
-        (window2) => Number.isFinite(window2.time_offset_ms)
-      );
+        time_offset_ms: new Date(window2.start_time).getTime() - startTime.getTime()
+      })).filter((window2) => Number.isFinite(window2.time_offset_ms));
       return preloadWindows;
     }
     _getActiveComparisonWindow() {
@@ -31856,9 +31985,7 @@ ${content.alert}` : "",
         }
         if (progress === 0) {
           for (const id of entityIds) {
-            const row = this._seriesRows?.find(
-              (r2) => r2.entity_id === id
-            );
+            const row = this._seriesRows?.find((r2) => r2.entity_id === id);
             const methods = row?.analysis?.show_anomalies === true && Array.isArray(row.analysis.anomaly_methods) ? row.analysis.anomaly_methods : [];
             this._computingMethods.set(id, new Set(methods));
             logger$1.log(
@@ -31980,7 +32107,9 @@ ${content.alert}` : "",
       if (!content) {
         return;
       }
-      const resizablePanes = content.querySelector("#content-resizable-panes");
+      const resizablePanes = content.querySelector(
+        "#content-resizable-panes"
+      );
       if (resizablePanes) {
         resizablePanes.ratio = this._contentSplitRatio;
       } else {
@@ -32142,7 +32271,7 @@ ${content.alert}` : "",
       if (!this._hass || !this._rangeBounds) {
         return;
       }
-      if (this._datapointScope === "hidden") {
+      if (this._datapointScope === "hidden" || this._datapointScope === "linked" && this._entities.length === 0) {
         this._timelineEvents = [];
         this._context.fetch.resetTimelineEvents();
         if (this._rendered && this._rangeToolbarComp) {
@@ -32212,7 +32341,7 @@ ${content.alert}` : "",
       const payload = buildHistoryPagePreferencesPayload(
         this
       );
-      this._preferredSeriesColors = payload.series_colors;
+      this._preferredSeriesColors = payload.series_colors ?? {};
       this._context.persistence.saveUserPreferences({
         preferencesKey: PANEL_HISTORY_PREFERENCES_KEY,
         payload
@@ -32623,7 +32752,10 @@ ${content.alert}` : "",
       if (this._seriesRows[index].color === color) {
         return;
       }
-      this._seriesRows[index] = { ...this._seriesRows[index], color };
+      this._seriesRows[index] = {
+        ...this._seriesRows[index],
+        color
+      };
       this._saveUserPreferences();
       this._saveSessionState();
       this._updateUrl({ push: false });
@@ -32662,7 +32794,7 @@ ${content.alert}` : "",
       }
       const row = this._seriesRows[index];
       this._collapsedPopupEntityId = entityId;
-      this._collapsedPopupAnchorEl = anchorEl;
+      this._collapsedPopupAnchorEl = anchorEl ?? null;
       popup.innerHTML = "";
       const targetRow = document.createElement("target-row");
       targetRow.hideDragHandle = true;
@@ -32799,7 +32931,9 @@ ${content.alert}` : "",
         return;
       }
       const popup = this._shellEl?.getTargetPopupEl();
-      const targetRow = popup?.querySelector("target-row");
+      const targetRow = popup?.querySelector(
+        "target-row"
+      );
       if (targetRow) {
         targetRow.analysis = row.analysis;
         targetRow.color = row.color;
@@ -33067,26 +33201,24 @@ ${content.alert}` : "",
         return;
       }
       let changed = false;
-      this._seriesRows = this._seriesRows.map(
-        (row) => {
-          if (row.entity_id === normalizedEntityId) {
-            return row;
-          }
-          const currentAnalysis = normalizeHistorySeriesAnalysis(row.analysis);
-          const nextAnalysis = normalizeHistorySeriesAnalysis({
-            ...sourceAnalysis,
-            // Preserve per-row state that shouldn't be overwritten
-            expanded: currentAnalysis.expanded,
-            // Don't copy anomaly_comparison_window_id — it's entity-specific
-            anomaly_comparison_window_id: currentAnalysis.anomaly_comparison_window_id
-          });
-          if (JSON.stringify(nextAnalysis) === JSON.stringify(currentAnalysis)) {
-            return row;
-          }
-          changed = true;
-          return { ...row, analysis: nextAnalysis };
+      this._seriesRows = this._seriesRows.map((row) => {
+        if (row.entity_id === normalizedEntityId) {
+          return row;
         }
-      );
+        const currentAnalysis = normalizeHistorySeriesAnalysis(row.analysis);
+        const nextAnalysis = normalizeHistorySeriesAnalysis({
+          ...sourceAnalysis,
+          // Preserve per-row state that shouldn't be overwritten
+          expanded: currentAnalysis.expanded,
+          // Don't copy anomaly_comparison_window_id — it's entity-specific
+          anomaly_comparison_window_id: currentAnalysis.anomaly_comparison_window_id
+        });
+        if (JSON.stringify(nextAnalysis) === JSON.stringify(currentAnalysis)) {
+          return row;
+        }
+        changed = true;
+        return { ...row, analysis: nextAnalysis };
+      });
       if (!changed) {
         return;
       }
@@ -33404,7 +33536,9 @@ ${content.alert}` : "",
         }
       }
       this._updateChartZoomHighlight();
-      this._renderComparisonTabs();
+      if (!isPreview && source !== "scroll") {
+        this._renderComparisonTabs();
+      }
       if (!nextRange) {
         this._rangeToolbarComp?.revealSelection?.();
       }
@@ -33525,32 +33659,38 @@ ${content.alert}` : "",
         return;
       }
       const highlightRange = this._chartZoomRange || this._chartZoomCommittedRange;
-      if (!this._rangeBounds || !highlightRange) {
-        this._rangeToolbarComp.zoomRange = null;
-        this._updateZoomWindowHighlight();
-        return;
-      }
-      this._rangeToolbarComp.zoomRange = {
+      const nextZoomRange = this._rangeBounds && highlightRange ? {
         start: +highlightRange.start,
         end: +highlightRange.end
-      };
-      this._updateZoomWindowHighlight();
+      } : null;
+      const nextZoomWindowRange = this._getZoomWindowHighlightRange();
+      this._rangeToolbarComp.syncZoomHighlights(
+        nextZoomRange,
+        nextZoomWindowRange
+      );
     }
     _updateZoomWindowHighlight() {
       if (!this._rangeToolbarComp) {
         return;
       }
+      this._rangeToolbarComp.syncZoomHighlights(
+        this._rangeBounds && (this._chartZoomRange || this._chartZoomCommittedRange) ? {
+          start: +(this._chartZoomRange || this._chartZoomCommittedRange).start,
+          end: +(this._chartZoomRange || this._chartZoomCommittedRange).end
+        } : null,
+        this._getZoomWindowHighlightRange()
+      );
+    }
+    _getZoomWindowHighlightRange() {
       const activeWindow = this._getActiveComparisonWindow();
       const zoomRange = this._chartZoomRange || this._chartZoomCommittedRange;
       if (!this._rangeBounds || !activeWindow || !zoomRange || !this._startTime) {
-        this._rangeToolbarComp.zoomWindowRange = null;
-        return;
+        return null;
       }
       const windowStartMs = new Date(activeWindow.start_time).getTime();
       const windowEndMs = new Date(activeWindow.end_time).getTime();
       if (!Number.isFinite(windowStartMs) || !Number.isFinite(windowEndMs) || windowStartMs >= windowEndMs) {
-        this._rangeToolbarComp.zoomWindowRange = null;
-        return;
+        return null;
       }
       const timeOffsetMs = windowStartMs - this._startTime.getTime();
       const zoomStartMs = +zoomRange.start + timeOffsetMs;
@@ -33558,10 +33698,9 @@ ${content.alert}` : "",
       const intersectStart = Math.max(windowStartMs, zoomStartMs);
       const intersectEnd = Math.min(windowEndMs, zoomEndMs);
       if (intersectStart >= intersectEnd) {
-        this._rangeToolbarComp.zoomWindowRange = null;
-        return;
+        return null;
       }
-      this._rangeToolbarComp.zoomWindowRange = {
+      return {
         start: intersectStart,
         end: intersectEnd
       };
@@ -33746,6 +33885,9 @@ ${content.alert}` : "",
         return;
       }
       if (!this._entities.length) {
+        if (this._contentKey === "__empty__") {
+          return;
+        }
         this._chartHoverTimeMs = null;
         this._updateChartHoverIndicator();
         this._chartZoomRange = null;
@@ -33756,7 +33898,7 @@ ${content.alert}` : "",
           Select one or more entities to inspect annotated history.
         </ha-card>
       `;
-        this._contentKey = "";
+        this._contentKey = "__empty__";
         this._chartEl = null;
         this._historyChartMol = null;
         this._listEl = null;
@@ -33798,15 +33940,13 @@ ${content.alert}` : "",
       `;
         const chartConfig2 = {
           entities: this._entities,
-          series_settings: this._seriesRows.map(
-            (row) => ({
-              ...row,
-              analysis: {
-                ...row.analysis || {},
-                anomaly_overlap_mode: this._chartAnomalyOverlapMode
-              }
-            })
-          ),
+          series_settings: this._seriesRows.map((row) => ({
+            ...row,
+            analysis: {
+              ...row.analysis || {},
+              anomaly_overlap_mode: this._chartAnomalyOverlapMode
+            }
+          })),
           datapoint_scope: this._datapointScope,
           show_event_markers: this._showChartDatapointIcons,
           show_event_lines: this._showChartDatapointLines,
@@ -36537,6 +36677,10 @@ ${content.alert}` : "",
     firstUpdated() {
       this._setupResizeObserver();
     }
+    connectedCallback() {
+      super.connectedCallback();
+      this._setupResizeObserver();
+    }
     disconnectedCallback() {
       super.disconnectedCallback();
       if (this._resizeObserver) {
@@ -36650,6 +36794,7 @@ ${content.alert}` : "",
       });
     }
     _setupResizeObserver() {
+      if (this._resizeObserver) return;
       if (!window.ResizeObserver) return;
       this._resizeObserver = new ResizeObserver(() => {
         if (this._lastDrawArgs) this.draw(...this._lastDrawArgs);
@@ -37439,6 +37584,7 @@ ${content.alert}` : "",
     }
     connectedCallback() {
       super.connectedCallback();
+      this._setupResizeObserver();
       if (this._initialized && this._hass) this._load();
     }
     disconnectedCallback() {
@@ -37460,6 +37606,7 @@ ${content.alert}` : "",
       });
     }
     _setupResizeObserver() {
+      if (this._resizeObserver) return;
       if (!window.ResizeObserver) return;
       this._resizeObserver = new ResizeObserver(() => {
         this._applyLayoutSizing();
@@ -38116,7 +38263,7 @@ ${content.alert}` : "",
     }
   });
   console.groupCollapsed(
-    "%c hass-datapoints %c v0.3.824 loaded ",
+    "%c hass-datapoints %c v0.3.976 loaded ",
     "color:#fff;background:#03a9f4;font-weight:bold;padding:2px 6px;border-radius:3px 0 0 3px",
     "color:#03a9f4;background:#fff;font-weight:bold;padding:2px 6px;border:1px solid #03a9f4;border-radius:0 3px 3px 0"
   );

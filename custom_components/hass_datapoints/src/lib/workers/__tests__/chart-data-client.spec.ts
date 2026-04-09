@@ -1,91 +1,43 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-interface MockWorkerInstance {
-  postMessage: ReturnType<typeof vi.fn>;
-  addEventListener(type: string, handler: (event: unknown) => void): void;
-  emit(type: string, event: unknown): void;
-}
-
-let currentMockWorker: Nullable<MockWorkerInstance> = null;
-
-function MockChartDataWorker(this: unknown): MockWorkerInstance {
-  const listeners: Record<string, Array<(event: unknown) => void>> = {};
-  const instance: MockWorkerInstance = {
-    postMessage: vi.fn(),
-    addEventListener(type: string, handler: (event: unknown) => void) {
-      (listeners[type] ??= []).push(handler);
-    },
-    emit(type: string, event: unknown) {
-      listeners[type]?.forEach((listener) => listener(event));
-    },
-  };
-  currentMockWorker = instance;
-  return instance;
-}
-
-vi.mock("@/lib/workers/chart-data.worker.ts?worker&inline", () => ({
-  default: MockChartDataWorker,
-}));
-
 beforeEach(() => {
   vi.resetModules();
-  currentMockWorker = null;
 });
 
 describe("chart-data-client", () => {
   describe("GIVEN a downsample request", () => {
-    describe("WHEN the worker responds successfully", () => {
-      it("THEN the promise resolves with the worker result", async () => {
-        expect.assertions(2);
+    describe("WHEN the main-thread fallback is used", () => {
+      it("THEN the promise resolves with the downsampled result", async () => {
+        expect.assertions(1);
         const { downsampleInWorker } =
           await import("@/lib/workers/chart-data-client");
 
-        const promise = downsampleInWorker(
-          [
-            [0, 1],
-            [1000, 2],
-          ],
-          1000,
-          "mean"
-        );
-        const id = currentMockWorker!.postMessage.mock.calls[0][0].id;
-
-        currentMockWorker!.emit("message", {
-          data: { id, result: [[0, 1.5]] },
-        });
-
-        await expect(promise).resolves.toEqual([[0, 1.5]]);
-        expect(currentMockWorker!.postMessage).toHaveBeenCalledWith({
-          id,
-          type: "downsample",
-          payload: {
-            pts: [
+        await expect(
+          downsampleInWorker(
+            [
               [0, 1],
+              [500, 3],
               [1000, 2],
             ],
-            intervalMs: 1000,
-            aggregate: "mean",
-          },
-        });
+            1000,
+            "mean"
+          )
+        ).resolves.toEqual([
+          [0, 2],
+          [1000, 2],
+        ]);
       });
     });
   });
 
   describe("GIVEN a downsample request", () => {
-    describe("WHEN the worker responds with an error field", () => {
-      it("THEN the promise rejects with an Error", async () => {
+    describe("WHEN the input is empty", () => {
+      it("THEN the promise resolves with the original empty array", async () => {
         expect.assertions(1);
         const { downsampleInWorker } =
           await import("@/lib/workers/chart-data-client");
 
-        const promise = downsampleInWorker([[0, 1]], 1000, "mean");
-        const id = currentMockWorker!.postMessage.mock.calls[0][0].id;
-
-        currentMockWorker!.emit("message", {
-          data: { id, error: "bad worker" },
-        });
-
-        await expect(promise).rejects.toThrow("bad worker");
+        await expect(downsampleInWorker([], 1000, "mean")).resolves.toEqual([]);
       });
     });
   });

@@ -17,9 +17,10 @@ export interface HistoryDateWindowInput {
 
 export interface NormalizedHistoryDateWindow {
   id: string;
-  label: string;
+  label?: string;
   start_time: string;
   end_time: string;
+  [key: string]: unknown;
 }
 
 export function makeDateWindowId(
@@ -121,7 +122,7 @@ export function serializeDateWindowsParam(
     .map((window) =>
       [
         encodeURIComponent(window.id),
-        encodeURIComponent(window.label),
+        encodeURIComponent(window.label ?? ""),
         encodeURIComponent(window.start_time),
         encodeURIComponent(window.end_time),
       ].join("~")

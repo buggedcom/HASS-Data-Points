@@ -68,10 +68,7 @@ import {
   terminateHistoryAnalysisWorker,
 } from "@/lib/workers/history-analysis-client";
 import { downsampleInWorker } from "@/lib/workers/chart-data-client";
-import {
-  type ChartAggregate,
-  downsamplePts,
-} from "@/lib/workers/chart-data.worker";
+import type { ChartAggregate } from "@/lib/workers/chart-data.worker";
 import type {
   ComparisonWindowAnalysis,
   ComputeHistoryAnalysisPayload,
@@ -205,6 +202,27 @@ export class HistoryChart extends HTMLElement {
       <div class="legend" id="legend"></div>`;
   }
 
+  disconnectedCallback(): void {
+    if (this._chartHoverCleanup) {
+      this._chartHoverCleanup();
+      this._chartHoverCleanup = null;
+    }
+    if (this._chartZoomCleanup) {
+      this._chartZoomCleanup();
+      this._chartZoomCleanup = null;
+    }
+    if (this._chartScrollViewportEl) {
+      this._chartScrollViewportEl.removeEventListener(
+        "scroll",
+        this._onChartScroll
+      );
+    }
+    if (this._scrollZoomApplyTimer !== null) {
+      clearTimeout(this._scrollZoomApplyTimer);
+      this._scrollZoomApplyTimer = null;
+    }
+  }
+
   // ── Public API — set by parent card after construction ──────────────────────
   private _hass: Nullable<HassLike> = null;
 
@@ -279,18 +297,6 @@ export class HistoryChart extends HTMLElement {
    * scroll event can be identified and skipped by the scroll handler.
    */
   _ignoreNextProgrammaticScrollEvent = false;
-
-  /**
-   * Set when a user scroll settles and dispatches zoom-apply so the redraw
-   * does not nudge the viewport away from the user's final position.
-   */
-  _skipNextScrollViewportSync = false;
-
-  /**
-   * While this deadline is in the future, redraws should preserve the user's
-   * final scroll position instead of recomputing and snapping the viewport.
-   */
-  _preserveUserScrollViewportUntil = 0;
 
   /**
    * True while the user is in the process of creating a context annotation
@@ -1098,16 +1104,20 @@ export class HistoryChart extends HTMLElement {
     _t1: number,
     _canvasWidth: number
   ): void {
-    if (!this._chartScrollViewportEl || !this._zoomRange) {
+    if (!this._chartScrollViewportEl) {
       return;
     }
     const viewport = this._chartScrollViewportEl as HTMLElement;
-    if (Date.now() < this._preserveUserScrollViewportUntil) {
-      this._skipNextScrollViewportSync = false;
-      return;
-    }
-    if (this._skipNextScrollViewportSync) {
-      this._skipNextScrollViewportSync = false;
+    if (!this._zoomRange) {
+      // No active zoom — the full range is visible, scroll must be at origin.
+      if (viewport.scrollLeft !== 0) {
+        this._scrollSyncSuspended = true;
+        this._ignoreNextProgrammaticScrollEvent = true;
+        viewport.scrollLeft = 0;
+        window.requestAnimationFrame(() => {
+          this._scrollSyncSuspended = false;
+        });
+      }
       return;
     }
     const viewportWidth = viewport.clientWidth;
@@ -1928,9 +1938,7 @@ export class HistoryChart extends HTMLElement {
       }
       const sampleAggregate = ((analysis.sample_aggregate as string) ||
         "mean") as ChartAggregate;
-      // Fallback: API returned no data, re-aggregate raw points synchronously.
-      // This is a degraded path so the synchronous version is fine here.
-      return downsamplePts(rawPoints, targetIntervalMs, sampleAggregate);
+      return downsampleInWorker(rawPoints, targetIntervalMs, sampleAggregate);
     }
 
     let finalPts = sampledPts.map(
@@ -2262,8 +2270,6 @@ export class HistoryChart extends HTMLElement {
     this._scrollZoomApplyTimer = setTimeout(() => {
       this._scrollZoomApplyTimer = null;
       if (!this._zoomRange) return;
-      this._skipNextScrollViewportSync = true;
-      this._preserveUserScrollViewportUntil = Date.now() + 1000;
       this.dispatchEvent(
         new CustomEvent("hass-datapoints-zoom-apply", {
           bubbles: true,

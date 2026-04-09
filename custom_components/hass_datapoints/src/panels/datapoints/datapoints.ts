@@ -22,6 +22,7 @@ import { parseDateValue } from "@/lib/domain/chart-zoom";
 import {
   buildHistoryPagePreferencesPayload,
   buildHistoryPageSessionState,
+  type HistoryPageSessionState,
   type HistoryPageSource,
   normalizeHistoryPagePreferences,
   PANEL_HISTORY_PREFERENCES_KEY,
@@ -66,6 +67,11 @@ import "@/panels/datapoints/components/panel-shell/panel-shell";
 import "@/panels/datapoints/components/history-targets/history-targets";
 import "@/panels/datapoints/components/range-toolbar/range-toolbar";
 import { createHistoryPageContext } from "@/panels/datapoints/context/create-history-page-context";
+import type {
+  HistoryPageContext,
+  HistoryComparisonWindowState,
+  HistoryTargetRowState,
+} from "@/panels/datapoints/context/types";
 import {
   PANEL_HISTORY_LOADING_STYLE,
   PANEL_HISTORY_STYLE,
@@ -97,6 +103,18 @@ type HistoryTargetsElement = HTMLElement & {
   comparisonWindows: NormalizedHistoryDateWindow[];
   canShowDeltaAnalysis: boolean;
   sidebarCollapsed: boolean;
+  getRowListEl(): Nullable<RowListElement>;
+};
+
+type RowListElement = HTMLElement & {
+  rows: unknown[];
+  states: RecordWithUnknownValues;
+  hass: unknown;
+  canShowDeltaAnalysis: boolean;
+  comparisonWindows: NormalizedHistoryDateWindow[];
+  computingEntityIds: Set<string>;
+  analysisProgress: number;
+  computingMethodsByEntity: Map<string, unknown>;
 };
 
 type TargetPickerElement = HTMLElement & {
@@ -133,10 +151,71 @@ type RangeToolbarElement = HTMLElement & {
   chartHoverTimeMs: Nullable<number>;
   chartHoverWindowTimeMs: Nullable<number>;
   updateComplete: Promise<void>;
+  syncMobileDates(start: Nullable<Date>, end: Nullable<Date>): void;
+  syncZoomHighlights(
+    zoomRange: Nullable<{ start: number; end: number }>,
+    zoomWindowRange: Nullable<{ start: number; end: number }>
+  ): void;
+  closeMenus(): void;
+  syncOptionsLabels(): void;
+  revealSelection(): void;
 };
 
-type SidebarOptionsElement = HTMLElement;
-type DateWindowDialogElement = HTMLElement;
+type PanelShellElement = HTMLElement & {
+  hass: unknown;
+  narrow: boolean;
+  sidebarCollapsed: boolean;
+  hasSavedState: boolean;
+  layoutMode: string;
+  updateComplete: Promise<unknown>;
+  syncLayoutHeight(): void;
+  getTargetPopupEl(): Nullable<HTMLElement>;
+  getOptionsPopupEl(): Nullable<HTMLElement>;
+  closePageMenu(): void;
+};
+
+type SidebarOptionsElement = HTMLElement & {
+  datapointScope: string;
+  showIcons: boolean;
+  showLines: boolean;
+  showTooltips: boolean;
+  showHoverGuides: boolean;
+  hoverSnapMode: string;
+  showCorrelatedAnomalies: boolean;
+  showDataGaps: boolean;
+  dataGapThreshold: string;
+  yAxisMode: string;
+  anomalyOverlapMode: string;
+  anyAnomaliesEnabled: boolean;
+  targetsOpen: boolean;
+  datapointsOpen: boolean;
+  analysisOpen: boolean;
+  chartOpen: boolean;
+};
+
+type LegacyDialogElement = HTMLElement & {
+  open: boolean;
+  headerTitle: string;
+};
+
+type DialogInputElement = HTMLElement & {
+  value: string;
+  hass?: unknown;
+};
+
+type DateWindowDialogElement = HTMLElement & {
+  open: boolean;
+  heading: string;
+  submitLabel: string;
+  showDelete: boolean;
+  showShortcuts: boolean;
+  name: string;
+  startValue: string;
+  endValue: string;
+  rangeBounds: unknown;
+  zoomLevel: string;
+  dateSnapping: string;
+};
 type CollapsedOptionsMenuElement = HTMLElement & {
   datapointScope: string;
   showIcons: boolean;
@@ -180,6 +259,251 @@ type ResizablePanesElement = HTMLElement & {
 export class HassRecordsHistoryPanel extends HTMLElement {
   [key: string]: unknown;
 
+  // Explicit declarations take precedence over the index signature so TypeScript
+  // knows the concrete types for the properties accessed most frequently.
+  declare _context: HistoryPageContext;
+
+  declare _hass: Nullable<HassLike>;
+
+  declare _mqTablet: MediaQueryList;
+
+  declare _mqMobile: MediaQueryList;
+
+  declare _onLayoutChange: () => void;
+
+  declare _onChartHover: EventListener;
+
+  declare _onChartZoom: EventListener;
+
+  declare _onRecordsSearch: EventListener;
+
+  declare _onToggleEventVisibility: EventListener;
+
+  declare _onHoverEventRecord: EventListener;
+
+  declare _onToggleSeriesVisibility: EventListener;
+
+  declare _onComparisonLoading: EventListener;
+
+  declare _onAnalysisComputing: EventListener;
+
+  declare _onAnalysisMethodResult: EventListener;
+
+  declare _onEventRecorded: () => void;
+
+  declare _onPopState: () => void;
+
+  declare _onLocationChanged: () => void;
+
+  declare _onOverlayKeydown: Nullable<(ev: KeyboardEvent) => void>;
+
+  // Additional typed property declarations
+  declare _rendered: boolean;
+
+  declare _shellBuilt: boolean;
+
+  declare _narrow: boolean;
+
+  declare _hours: number;
+
+  declare _panel: Nullable<{ config?: RecordWithUnknownValues }>;
+
+  declare _layoutMode: string;
+
+  declare _contentKey: string;
+
+  declare _contentSplitRatio: number;
+
+  declare _datapointScope: string;
+
+  declare _showChartDatapointIcons: boolean;
+
+  declare _showChartDatapointLines: boolean;
+
+  declare _showChartTooltips: boolean;
+
+  declare _showChartEmphasizedHoverGuides: boolean;
+
+  declare _chartHoverSnapMode: string;
+
+  declare _delinkChartYAxis: boolean;
+
+  declare _splitChartView: boolean;
+
+  declare _showCorrelatedAnomalies: boolean;
+
+  declare _chartAnomalyOverlapMode: string;
+
+  declare _showDataGaps: boolean;
+
+  declare _dataGapThreshold: string;
+
+  declare _historyStartTime: Nullable<Date>;
+
+  declare _historyEndTime: Nullable<Date>;
+
+  declare _timelineEvents: unknown[];
+
+  declare _preferredSeriesColors: RecordWithStringValues;
+
+  declare _loadingComparisonWindowIds: string[];
+
+  declare _comparisonTabsHostEl: Nullable<HTMLElement>;
+
+  declare _comparisonTabRailComp: Nullable<HTMLElement>;
+
+  declare _pendingAnomalyComparisonWindowEntityId: Nullable<string>;
+
+  declare _dateWindowDialogOpen: boolean;
+
+  declare _editingDateWindowId: Nullable<string>;
+
+  declare _dateWindowDialogComp: Nullable<DateWindowDialogElement>;
+
+  declare _dateWindowDialogEl: Nullable<LegacyDialogElement>;
+
+  declare _dateWindowDialogNameEl: Nullable<DialogInputElement>;
+
+  declare _dateWindowDialogStartEl: Nullable<DialogInputElement>;
+
+  declare _dateWindowDialogEndEl: Nullable<DialogInputElement>;
+
+  declare _dateWindowDialogShortcutsEl: Nullable<HTMLElement>;
+
+  declare _dateWindowDialogDraftRange: Nullable<{ start: Date; end: Date }>;
+
+  declare _uiReadyPromise: Nullable<Promise<unknown>>;
+
+  declare _uiReadyApplied: boolean;
+
+  declare _chartEl: Nullable<HistoryCardElement>;
+
+  declare _historyChartMol: Nullable<{
+    _configKey: string;
+    chartEl: HTMLElement;
+  }>;
+
+  declare _listEl: Nullable<ListCardElement>;
+
+  declare _chartConfigKey: string;
+
+  declare _listConfigKey: string;
+
+  declare _shellEl: Nullable<PanelShellElement>;
+
+  declare _contentHostEl: Nullable<HTMLElement>;
+
+  declare _contentSplitterEl: Nullable<ResizablePanesElement>;
+
+  declare _targetControl: Nullable<TargetPickerElement>;
+
+  declare _targetRowsEl: Nullable<HistoryTargetsElement>;
+
+  declare _historyTargetsComp: Nullable<HistoryTargetsElement>;
+
+  declare _rowListEl: Nullable<RowListElement>;
+
+  declare _targetRowsRenderKey: string;
+
+  declare _sidebarOptionsEl: Nullable<HTMLElement>;
+
+  declare _sidebarOptionsComp: Nullable<SidebarOptionsElement>;
+
+  declare _sidebarAccordionTargetsOpen: boolean;
+
+  declare _sidebarAccordionDatapointsOpen: boolean;
+
+  declare _sidebarAccordionAnalysisOpen: boolean;
+
+  declare _sidebarAccordionChartOpen: boolean;
+
+  declare _dateControl: Nullable<HTMLElement>;
+
+  declare _dateRangePickerEl: Nullable<HTMLElement>;
+
+  declare _panelTimelineEl: Nullable<RangeToolbarElement>;
+
+  declare _rangeToolbarComp: Nullable<RangeToolbarElement>;
+
+  declare _rangeBounds: Nullable<{ min: number; max: number; config: unknown }>;
+
+  declare _autoZoomTimer: Nullable<number>;
+
+  declare _rangeCommitTimer: Nullable<number>;
+
+  declare _chartZoomStateCommitTimer: Nullable<number>;
+
+  declare _resolvedAutoZoomLevel: Nullable<string>;
+
+  declare _hoveredPeriodRange: Nullable<unknown>;
+
+  declare _chartHoverTimeMs: Nullable<number>;
+
+  declare _zoomLevel: string;
+
+  declare _dateSnapping: string;
+
+  declare _hasTargetInUrl: boolean;
+
+  declare _hasRangeInUrl: boolean;
+
+  declare _hasPageStateInUrl: boolean;
+
+  declare _localPageStateDirty: boolean;
+
+  declare _pendingPreferencesSaveTimer: Nullable<number>;
+
+  declare _recordsSearchQuery: string;
+
+  declare _hiddenEventIds: string[];
+
+  declare _hoveredEventIds: string[];
+
+  declare _restoredFromSession: boolean;
+
+  declare _pageMenuOpen: boolean;
+
+  declare _onWindowPointerDown: EventListener;
+
+  declare _onWindowResize: () => void;
+
+  declare _onCollapsedSidebarClick: EventListener;
+
+  declare _haEventUnsubscribe: Nullable<() => void>;
+
+  declare _computingEntityIds: Set<string>;
+
+  declare _analysisProgress: number;
+
+  declare _computingMethods: Map<string, Set<string>>;
+
+  declare _draftStartTime: Nullable<Date>;
+
+  declare _draftEndTime: Nullable<Date>;
+
+  declare _entities: string[];
+
+  declare _collapsedPopupEntityId: Nullable<string>;
+
+  declare _collapsedPopupAnchorEl: Nullable<HTMLElement>;
+
+  declare _collapsedPopupOutsideClickHandler: Nullable<EventListener>;
+
+  declare _collapsedPopupKeyHandler: Nullable<(ev: KeyboardEvent) => void>;
+
+  declare _collapsedOptionsOutsideClickHandler: Nullable<EventListener>;
+
+  declare _collapsedOptionsKeyHandler: Nullable<(ev: KeyboardEvent) => void>;
+
+  declare _collapsedOptionsPopupOpen: boolean;
+
+  declare _collapsedOptionsAnchorEl: Nullable<HTMLElement>;
+
+  /** The last locale string returned by syncFrontendLocale — used to detect
+   *  actual locale changes so we can avoid a full re-render on routine hass
+   *  updates where the locale hasn't changed. */
+  declare _lastSyncedLocale: string;
+
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -206,6 +530,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._collapsedPopupAnchorEl = null;
     this._collapsedPopupOutsideClickHandler = null;
     this._collapsedPopupKeyHandler = null;
+    this._lastSyncedLocale = "";
     this._datapointScope = "linked";
     this._showChartDatapointIcons = true;
     this._showChartDatapointLines = true;
@@ -482,7 +807,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
   set hass(hass: HassLike) {
     this._hass = hass;
     this._context.hass = hass;
-    syncFrontendLocale(this._hass).then(() => {
+    syncFrontendLocale(this._hass).then((locale) => {
       if (!this.isConnected) {
         return;
       }
@@ -490,8 +815,63 @@ export class HassRecordsHistoryPanel extends HTMLElement {
         this._buildLoadingShell();
         return;
       }
-      if (this._rendered) {
+      if (!this._rendered) {
+        return;
+      }
+      if (locale !== this._lastSyncedLocale) {
+        // Locale changed (e.g. user switched language) — full re-render needed
+        // to pick up newly translated strings.
+        this._lastSyncedLocale = locale;
         this._renderContent();
+      } else {
+        // Routine hass update — push hass directly to already-mounted
+        // sub-components without a full re-render.  _renderContent() is
+        // called explicitly from every code path that actually changes
+        // entity / config state.
+        if (this._shellEl && this._hass) {
+          this._shellEl.hass = this._hass;
+        }
+        if (this._chartEl) {
+          this._chartEl.hass = this._hass;
+        }
+        if (this._listEl) {
+          this._listEl.hass = this._hass;
+        }
+        if (this._targetControl && this._hass) {
+          this._targetControl.hass = this._hass;
+        }
+        // Sidebar: push live states so entity icons/labels stay current.
+        if (this._historyTargetsComp) {
+          this._historyTargetsComp.hass = this._hass ?? null;
+          this._historyTargetsComp.states =
+            (this._hass?.states as RecordWithUnknownValues) ?? {};
+        }
+        if (this._rowListEl) {
+          this._rowListEl.hass = this._hass ?? null;
+          this._rowListEl.states =
+            (this._hass?.states as RecordWithUnknownValues) ?? {};
+        }
+        if (this._rangeToolbarComp) {
+          this._rangeToolbarComp.hass = this._hass ?? null;
+        }
+        // Inline HA state-icon elements rendered directly into the shadow DOM.
+        this.shadowRoot
+          ?.querySelectorAll(
+            "[data-series-icon-entity-id], [data-series-collapsed-icon-entity-id]"
+          )
+          .forEach((iconEl) => {
+            const icon = iconEl as HTMLElement & {
+              dataset: DOMStringMap;
+              stateObj?: unknown;
+              hass?: unknown;
+            };
+            const entityId =
+              icon.dataset.seriesIconEntityId ||
+              icon.dataset.seriesCollapsedIconEntityId;
+            if (!entityId) return;
+            icon.stateObj = this._hass?.states?.[entityId];
+            icon.hass = this._hass;
+          });
       }
     });
     if (!this._haEventUnsubscribe && this._hass?.connection) {
@@ -524,7 +904,19 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     if (!this._shellBuilt) {
       return;
     }
-    this._bootstrapAfterShellBuilt();
+    // Re-attempt the one-time data fetches on every hass update — the fetch
+    // context guards each with a loaded/loading flag so they only fire once.
+    // This handles the case where hass arrived after the shell was first built
+    // and the initial bootstrap ran without a valid connection.
+    this._ensureHistoryBounds();
+    this._ensureUserPreferences();
+    this._loadSavedPageIndicator();
+    // _bootstrapAfterShellBuilt() is intentionally NOT called here — it was
+    // previously called on every hass update which triggered _renderContent()
+    // and _syncHassBindings() (including DOM querySelectorAll and full target-
+    // row re-renders) multiple times per second.  Those are now handled by the
+    // microtask above (hass push) and by explicit calls from state-change
+    // handlers.
   }
 
   set panel(panel: Nullable<{ config?: RecordWithUnknownValues }>) {
@@ -667,6 +1059,18 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       window.clearTimeout(this._autoZoomTimer);
       this._autoZoomTimer = null;
     }
+    if (this._pendingPreferencesSaveTimer) {
+      window.clearTimeout(this._pendingPreferencesSaveTimer);
+      this._pendingPreferencesSaveTimer = null;
+    }
+    if (this._chartZoomStateCommitTimer) {
+      window.clearTimeout(this._chartZoomStateCommitTimer);
+      this._chartZoomStateCommitTimer = null;
+    }
+    this._hideCollapsedTargetPopup();
+    this._hideCollapsedOptionsPopup();
+    this._uiReadyPromise = null;
+    this._uiReadyApplied = false;
     this._context.orchestration.cancelChartResizeRedraw();
   }
 
@@ -689,11 +1093,15 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       pageStateFromUrl,
       sessionState,
     } = this._context.navigation.readStateFromLocation();
-    const persistedState =
+    type PersistedState = Partial<HistoryPageSessionState> & {
+      [key: string]: unknown;
+    };
+    const persistedState: PersistedState | null = (
       pageStateFromUrl && typeof pageStateFromUrl === "object"
         ? { ...(sessionState || {}), ...pageStateFromUrl }
-        : sessionState;
-    const panelCfg = this._panel?.config || {};
+        : sessionState
+    ) as PersistedState | null;
+    const panelCfg = this._panel?.config ?? ({} as RecordWithUnknownValues);
     this._hasTargetInUrl = hasTargetInUrl;
     this._hasRangeInUrl = hasRangeInUrl;
     this._hasPageStateInUrl = !!pageStateFromUrl;
@@ -709,9 +1117,9 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       persistedState?.sidebar_accordion_analysis_open !== false;
     this._sidebarAccordionChartOpen =
       persistedState?.sidebar_accordion_chart_open !== false;
-    if (Number.isFinite(persistedState?.content_split_ratio)) {
+    if (persistedState && Number.isFinite(persistedState.content_split_ratio)) {
       this._contentSplitRatio = clampNumber(
-        persistedState.content_split_ratio,
+        persistedState.content_split_ratio as number,
         0.25,
         0.75
       );
@@ -753,17 +1161,21 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._chartAnomalyOverlapMode = ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS.some(
       (o) => o.value === persistedState?.chart_anomaly_overlap_mode
     )
-      ? persistedState.chart_anomaly_overlap_mode
+      ? (persistedState!.chart_anomaly_overlap_mode as string)
       : "all";
     this._showDataGaps = persistedState?.show_data_gaps !== false;
     this._dataGapThreshold = DATA_GAP_THRESHOLD_OPTIONS.some(
       (option) => option.value === persistedState?.data_gap_threshold
     )
-      ? persistedState.data_gap_threshold
+      ? (persistedState!.data_gap_threshold as string)
       : "2h";
     this._comparisonWindows = dateWindowsFromUrl.length
       ? dateWindowsFromUrl
-      : normalizeDateWindows(persistedState?.date_windows);
+      : normalizeDateWindows(
+          persistedState?.date_windows as
+            | NormalizedHistoryDateWindow[]
+            | undefined
+        );
     const targetFromUrl = normalizeTargetValue({
       entity_id: entityFromUrl ? entityFromUrl.split(",") : [],
       device_id: deviceFromUrl ? deviceFromUrl.split(",") : [],
@@ -810,11 +1222,11 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     const start =
       parseDateValue(startFromUrl) ||
       (!hasRangeInUrl ? parseDateValue(persistedState?.start_time) : null) ||
-      parseDateValue(panelCfg.start_time);
+      parseDateValue(panelCfg.start_time as string | undefined);
     const end =
       parseDateValue(endFromUrl) ||
       (!hasRangeInUrl ? parseDateValue(persistedState?.end_time) : null) ||
-      parseDateValue(panelCfg.end_time);
+      parseDateValue(panelCfg.end_time as string | undefined);
     const zoomStart =
       parseDateValue(zoomStartFromUrl) ||
       (!zoomStartFromUrl && !zoomEndFromUrl
@@ -844,12 +1256,13 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       this._hours = hoursFromUrl;
     } else if (
       !hasRangeInUrl &&
-      Number.isFinite(persistedState?.hours) &&
-      persistedState.hours > 0
+      persistedState &&
+      Number.isFinite(persistedState.hours) &&
+      (persistedState.hours as number) > 0
     ) {
-      this._hours = persistedState.hours;
+      this._hours = persistedState.hours as number;
     } else if (panelCfg.hours_to_show) {
-      this._hours = panelCfg.hours_to_show;
+      this._hours = panelCfg.hours_to_show as number;
     }
     const now = new Date();
     this._startTime = startOfUnit(now, "week");
@@ -882,91 +1295,98 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     if (!state || typeof state !== "object") {
       return;
     }
+    // Cast to typed partial for safe property access
+    const s = state as Partial<HistoryPageSessionState> & {
+      [key: string]: unknown;
+    };
     if (!this._hasPageStateInUrl) {
-      this._sidebarCollapsed = !!state.sidebar_collapsed;
+      this._sidebarCollapsed = !!s.sidebar_collapsed;
       this._sidebarAccordionTargetsOpen =
-        state.sidebar_accordion_targets_open !== false;
+        s.sidebar_accordion_targets_open !== false;
       this._sidebarAccordionDatapointsOpen =
-        state.sidebar_accordion_datapoints_open !== false;
+        s.sidebar_accordion_datapoints_open !== false;
       this._sidebarAccordionAnalysisOpen =
-        state.sidebar_accordion_analysis_open !== false;
+        s.sidebar_accordion_analysis_open !== false;
       this._sidebarAccordionChartOpen =
-        state.sidebar_accordion_chart_open !== false;
-      if (Number.isFinite(state.content_split_ratio)) {
+        s.sidebar_accordion_chart_open !== false;
+      if (Number.isFinite(s.content_split_ratio)) {
         this._contentSplitRatio = clampNumber(
-          state.content_split_ratio,
+          s.content_split_ratio as number,
           0.25,
           0.75
         );
       }
-      this._showChartDatapointIcons =
-        state.show_chart_datapoint_icons !== false;
-      this._showChartDatapointLines =
-        state.show_chart_datapoint_lines !== false;
-      this._showChartTooltips = state.show_chart_tooltips !== false;
+      this._showChartDatapointIcons = s.show_chart_datapoint_icons !== false;
+      this._showChartDatapointLines = s.show_chart_datapoint_lines !== false;
+      this._showChartTooltips = s.show_chart_tooltips !== false;
       this._showChartEmphasizedHoverGuides =
-        state.show_chart_emphasized_hover_guides === true;
+        s.show_chart_emphasized_hover_guides === true;
       this._chartHoverSnapMode =
-        state.chart_hover_snap_mode === "snap_to_data_points"
+        s.chart_hover_snap_mode === "snap_to_data_points"
           ? "snap_to_data_points"
           : "follow_series";
-      this._delinkChartYAxis = state.delink_chart_y_axis === true;
-      this._splitChartView = state.split_chart_view === true;
+      this._delinkChartYAxis = s.delink_chart_y_axis === true;
+      this._splitChartView = s.split_chart_view === true;
       this._showCorrelatedAnomalies =
-        state.show_chart_correlated_anomalies === true;
+        s.show_chart_correlated_anomalies === true;
       this._chartAnomalyOverlapMode =
         ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS.some(
-          (option) => option.value === state.chart_anomaly_overlap_mode
+          (option) => option.value === s.chart_anomaly_overlap_mode
         )
-          ? state.chart_anomaly_overlap_mode
+          ? (s.chart_anomaly_overlap_mode as string)
           : "all";
-      this._showDataGaps = state.show_data_gaps !== false;
+      this._showDataGaps = s.show_data_gaps !== false;
       this._dataGapThreshold = DATA_GAP_THRESHOLD_OPTIONS.some(
-        (option) => option.value === state.data_gap_threshold
+        (option) => option.value === s.data_gap_threshold
       )
-        ? state.data_gap_threshold
+        ? (s.data_gap_threshold as string)
         : this._dataGapThreshold;
       this._datapointScope =
-        state.datapoint_scope === "all" || state.datapoint_scope === "hidden"
-          ? state.datapoint_scope
+        s.datapoint_scope === "all" || s.datapoint_scope === "hidden"
+          ? s.datapoint_scope
           : "linked";
     }
 
     if (!this._hasTargetInUrl) {
-      if (state.target_selection) {
-        this._targetSelection = normalizeTargetValue(state.target_selection);
+      if (s.target_selection) {
+        this._targetSelection = normalizeTargetValue(
+          s.target_selection as RecordWithUnknownValues
+        );
       }
-      if (state.target_selection_raw) {
-        this._targetSelectionRaw = state.target_selection_raw;
+      if (s.target_selection_raw) {
+        this._targetSelectionRaw =
+          s.target_selection_raw as RecordWithUnknownValues;
       }
     }
 
-    if (Array.isArray(state.series_rows)) {
+    if (Array.isArray(s.series_rows)) {
       const nextRows = !this._hasTargetInUrl
-        ? normalizeHistorySeriesRows(state.series_rows)
-        : this._mergeSavedSeriesRows(this._seriesRows, state.series_rows);
+        ? normalizeHistorySeriesRows(s.series_rows)
+        : this._mergeSavedSeriesRows(this._seriesRows, s.series_rows);
       this._seriesRows = this._applyPreferredSeriesColors(nextRows);
       this._syncSeriesState();
     }
 
     if (!this._hasRangeInUrl) {
-      const start = parseDateValue(state.start_time);
-      const end = parseDateValue(state.end_time);
+      const start = parseDateValue(s.start_time);
+      const end = parseDateValue(s.end_time);
       if (start && end && start < end) {
         this._startTime = start;
         this._endTime = end;
       }
-      const zoomStart = parseDateValue(state.zoom_start_time);
-      const zoomEnd = parseDateValue(state.zoom_end_time);
+      const zoomStart = parseDateValue(s.zoom_start_time);
+      const zoomEnd = parseDateValue(s.zoom_end_time);
       this._chartZoomCommittedRange =
         zoomStart && zoomEnd && zoomStart < zoomEnd
           ? { start: zoomStart.getTime(), end: zoomEnd.getTime() }
           : this._chartZoomCommittedRange;
-      if (Number.isFinite(state.hours) && state.hours > 0) {
-        this._hours = state.hours;
+      if (s.hours && Number.isFinite(s.hours) && (s.hours as number) > 0) {
+        this._hours = s.hours as number;
       }
-      if (Array.isArray(state.date_windows) && !this._hasPageStateInUrl) {
-        this._comparisonWindows = normalizeDateWindows(state.date_windows);
+      if (Array.isArray(s.date_windows) && !this._hasPageStateInUrl) {
+        this._comparisonWindows = normalizeDateWindows(
+          s.date_windows as NormalizedHistoryDateWindow[]
+        );
       }
     }
   }
@@ -1095,7 +1515,13 @@ export class HassRecordsHistoryPanel extends HTMLElement {
               return;
             }
             this._uiReadyApplied = true;
-            this._buildShell();
+            if (!this._shellBuilt) {
+              // First load only — build the full shell DOM.  On reconnect after
+              // navigation, _shellBuilt is already true so we skip this; tearing
+              // down root.innerHTML while connectedCallback's RAF is mid-flight
+              // was the root cause of the crash-on-return bug.
+              this._buildShell();
+            }
             this._syncControls();
             this._bootstrapAfterShellBuilt();
           });
@@ -1332,18 +1758,16 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     if (!this._startTime || !this._endTime) {
       return [];
     }
+    const startTime = this._startTime!;
     const previewWindows = comparisonIds
       .map(
-        (id: string) =>
-          this._comparisonWindows.find(
-            (window: NormalizedHistoryDateWindow) => window.id === id
-          ) || null
+        (id: string) => this._comparisonWindows.find((w) => w.id === id) ?? null
       )
-      .filter(Boolean)
-      .map((window: NormalizedHistoryDateWindow) => ({
+      .filter((w): w is HistoryComparisonWindowState => w !== null)
+      .map((window) => ({
         ...window,
         time_offset_ms:
-          new Date(window.start_time).getTime() - this._startTime.getTime(),
+          new Date(window.start_time).getTime() - startTime.getTime(),
       }));
     return previewWindows;
   }
@@ -1352,16 +1776,14 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     if (!this._startTime || !this._endTime) {
       return [];
     }
+    const startTime = this._startTime!;
     const preloadWindows = this._comparisonWindows
-      .map((window: NormalizedHistoryDateWindow) => ({
+      .map((window) => ({
         ...window,
         time_offset_ms:
-          new Date(window.start_time).getTime() - this._startTime.getTime(),
+          new Date(window.start_time).getTime() - startTime.getTime(),
       }))
-      .filter(
-        (window: NormalizedHistoryDateWindow & { time_offset_ms: number }) =>
-          Number.isFinite(window.time_offset_ms)
-      );
+      .filter((window) => Number.isFinite(window.time_offset_ms));
     return preloadWindows;
   }
 
@@ -1586,7 +2008,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     `;
     dialog.addEventListener("closed", () => this._closeDateWindowDialog(true));
     this.shadowRoot.appendChild(dialog);
-    this._dateWindowDialogEl = dialog;
+    this._dateWindowDialogEl = dialog as unknown as LegacyDialogElement;
     this._dateWindowDialogNameEl = dialog.querySelector("#date-window-name");
     this._dateWindowDialogStartEl = dialog.querySelector("#date-window-start");
     this._dateWindowDialogEndEl = dialog.querySelector("#date-window-end");
@@ -1677,7 +2099,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     }
     const deleteButton = this._dateWindowDialogEl?.querySelector(
       "#date-window-delete"
-    );
+    ) as HTMLElement | null;
     if (deleteButton) {
       deleteButton.hidden = !targetWindow;
       deleteButton.style.display = targetWindow ? "" : "none";
@@ -1890,10 +2312,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       // configs so each entity knows which anomaly method spinners to show.
       if (progress === 0) {
         for (const id of entityIds) {
-          const row = this._seriesRows?.find(
-            (r: { entity_id: string; analysis?: RecordWithUnknownValues }) =>
-              r.entity_id === id
-          );
+          const row = this._seriesRows?.find((r) => r.entity_id === id);
           const methods =
             row?.analysis?.show_anomalies === true &&
             Array.isArray(row.analysis.anomaly_methods)
@@ -2033,7 +2452,9 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       return;
     }
     // Drive the resizable-panes atom when present; fall back to CSS variable.
-    const resizablePanes = content.querySelector("#content-resizable-panes");
+    const resizablePanes = content.querySelector(
+      "#content-resizable-panes"
+    ) as Nullable<ResizablePanesElement>;
     if (resizablePanes) {
       resizablePanes.ratio = this._contentSplitRatio;
     } else {
@@ -2212,7 +2633,10 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     if (!this._hass || !this._rangeBounds) {
       return;
     }
-    if (this._datapointScope === "hidden") {
+    if (
+      this._datapointScope === "hidden" ||
+      (this._datapointScope === "linked" && this._entities.length === 0)
+    ) {
       this._timelineEvents = [];
       this._context.fetch.resetTimelineEvents();
       if (this._rendered && this._rangeToolbarComp) {
@@ -2220,8 +2644,8 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       }
       return;
     }
-    const startIso = new Date(this._rangeBounds.min).toISOString();
-    const endIso = new Date(this._rangeBounds.max).toISOString();
+    const startIso = new Date(this._rangeBounds!.min).toISOString();
+    const endIso = new Date(this._rangeBounds!.max).toISOString();
     await this._context.fetch.loadTimelineEvents({
       startIso,
       endIso,
@@ -2287,7 +2711,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     const payload = buildHistoryPagePreferencesPayload(
       this as unknown as HistoryPageSource
     );
-    this._preferredSeriesColors = payload.series_colors;
+    this._preferredSeriesColors = payload.series_colors ?? {};
     this._context.persistence.saveUserPreferences({
       preferencesKey: PANEL_HISTORY_PREFERENCES_KEY,
       payload,
@@ -2370,7 +2794,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
         if (!Array.isArray(rows)) {
           return;
         }
-        this._seriesRows = rows;
+        this._seriesRows = rows as HistoryTargetRowState[];
         this._syncSeriesState();
         this._saveSessionState();
         this._renderTargetRows();
@@ -2414,7 +2838,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
         }
       }
     );
-    this._shellEl.appendChild(histTargets);
+    this._shellEl!.appendChild(histTargets);
     this._historyTargetsComp = histTargets;
 
     // target-row-list is rendered inside history-targets; keep a ref via its accessor
@@ -2541,7 +2965,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     rangeToolbar.addEventListener("dp-date-picker-change", (ev) => {
       this._handleDatePickerChange(ev);
     });
-    this._shellEl.appendChild(rangeToolbar);
+    this._shellEl!.appendChild(rangeToolbar);
     this._rangeToolbarComp = rangeToolbar;
 
     this._dateControl = rangeToolbar;
@@ -2603,7 +3027,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
             if (this._chartAnomalyOverlapMode === value) {
               return;
             }
-            this._chartAnomalyOverlapMode = value;
+            this._chartAnomalyOverlapMode = value!;
             this._saveSessionState();
             this._updateUrl({ push: false });
             this._renderSidebarOptions();
@@ -2714,8 +3138,8 @@ export class HassRecordsHistoryPanel extends HTMLElement {
   }
 
   _addSeriesRows(entityIds: string[] | string) {
-    const merged = new Map(
-      this._seriesRows.map((row: { entity_id: string }) => [row.entity_id, row])
+    const merged = new Map<string, HistoryTargetRowState>(
+      this._seriesRows.map((row) => [row.entity_id, row])
     );
     normalizeEntityIds(entityIds).forEach((entityId, index) => {
       if (merged.has(entityId)) {
@@ -2752,7 +3176,10 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     if (this._seriesRows[index].color === color) {
       return;
     }
-    this._seriesRows[index] = { ...this._seriesRows[index], color };
+    this._seriesRows[index] = {
+      ...this._seriesRows[index],
+      color: color as string,
+    };
     this._saveUserPreferences();
     this._saveSessionState();
     this._updateUrl({ push: false });
@@ -2803,7 +3230,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
 
     // Store state for refresh after re-renders
     this._collapsedPopupEntityId = entityId;
-    this._collapsedPopupAnchorEl = anchorEl;
+    this._collapsedPopupAnchorEl = anchorEl ?? null;
 
     // Mount a target-row — replacing the old _buildSingleRowHTML + data-attribute wiring.
     popup.innerHTML = "";
@@ -2811,7 +3238,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     targetRow.hideDragHandle = true;
     targetRow.color = row.color;
     targetRow.visible = row.visible !== false;
-    targetRow.analysis = row.analysis || {};
+    targetRow.analysis = (row.analysis || {}) as RecordWithUnknownValues;
     targetRow.index = index;
     targetRow.entityId = row.entity_id;
     targetRow.stateObj = this._hass?.states?.[row.entity_id] ?? null;
@@ -2956,9 +3383,11 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     // Sync lightweight properties on the existing targetRow without rebuilding
     // the DOM — avoids flickering and preserves in-progress user interaction.
     const popup = this._shellEl?.getTargetPopupEl();
-    const targetRow = popup?.querySelector("target-row");
+    const targetRow = popup?.querySelector(
+      "target-row"
+    ) as TargetRowElement | null;
     if (targetRow) {
-      targetRow.analysis = row.analysis;
+      targetRow.analysis = row.analysis as unknown as RecordWithUnknownValues;
       targetRow.color = row.color;
       targetRow.visible = row.visible !== false;
       targetRow.stateObj = this._hass?.states?.[row.entity_id] ?? null;
@@ -3019,7 +3448,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
             kind === "anomaly_overlap_mode" &&
             value !== this._chartAnomalyOverlapMode
           ) {
-            this._chartAnomalyOverlapMode = value;
+            this._chartAnomalyOverlapMode = value!;
             this._saveSessionState();
             this._updateUrl({ push: false });
             this._renderSidebarOptions();
@@ -3264,27 +3693,25 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       return;
     }
     let changed = false;
-    this._seriesRows = this._seriesRows.map(
-      (row: { entity_id: string; analysis?: RecordWithUnknownValues }) => {
-        if (row.entity_id === normalizedEntityId) {
-          return row;
-        }
-        const currentAnalysis = normalizeHistorySeriesAnalysis(row.analysis);
-        const nextAnalysis = normalizeHistorySeriesAnalysis({
-          ...sourceAnalysis,
-          // Preserve per-row state that shouldn't be overwritten
-          expanded: currentAnalysis.expanded,
-          // Don't copy anomaly_comparison_window_id — it's entity-specific
-          anomaly_comparison_window_id:
-            currentAnalysis.anomaly_comparison_window_id,
-        });
-        if (JSON.stringify(nextAnalysis) === JSON.stringify(currentAnalysis)) {
-          return row;
-        }
-        changed = true;
-        return { ...row, analysis: nextAnalysis };
+    this._seriesRows = this._seriesRows.map((row) => {
+      if (row.entity_id === normalizedEntityId) {
+        return row;
       }
-    );
+      const currentAnalysis = normalizeHistorySeriesAnalysis(row.analysis);
+      const nextAnalysis = normalizeHistorySeriesAnalysis({
+        ...sourceAnalysis,
+        // Preserve per-row state that shouldn't be overwritten
+        expanded: currentAnalysis.expanded,
+        // Don't copy anomaly_comparison_window_id — it's entity-specific
+        anomaly_comparison_window_id:
+          currentAnalysis.anomaly_comparison_window_id,
+      });
+      if (JSON.stringify(nextAnalysis) === JSON.stringify(currentAnalysis)) {
+        return row;
+      }
+      changed = true;
+      return { ...row, analysis: nextAnalysis };
+    });
     if (!changed) {
       return;
     }
@@ -3531,7 +3958,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
   }
 
   _getSnapSpanMs(reference = this._startTime || new Date()) {
-    const snapUnit = this._getEffectiveSnapUnit();
+    const snapUnit = this._getEffectiveSnapUnit() as RangeUnit;
     const start = startOfUnit(reference, snapUnit);
     const end = endOfUnit(reference, snapUnit);
     return Math.max(SECOND_MS, end.getTime() - start.getTime());
@@ -3665,7 +4092,9 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       }
     }
     this._updateChartZoomHighlight();
-    this._renderComparisonTabs();
+    if (!isPreview && source !== "scroll") {
+      this._renderComparisonTabs();
+    }
     if (!nextRange) {
       this._rangeToolbarComp?.revealSelection?.();
     }
@@ -3808,27 +4237,42 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     }
     const highlightRange =
       this._chartZoomRange || this._chartZoomCommittedRange;
-    if (!this._rangeBounds || !highlightRange) {
-      this._rangeToolbarComp.zoomRange = null;
-      this._updateZoomWindowHighlight();
-      return;
-    }
-    this._rangeToolbarComp.zoomRange = {
-      start: +highlightRange.start,
-      end: +highlightRange.end,
-    };
-    this._updateZoomWindowHighlight();
+    const nextZoomRange =
+      this._rangeBounds && highlightRange
+        ? {
+            start: +highlightRange.start,
+            end: +highlightRange.end,
+          }
+        : null;
+    const nextZoomWindowRange = this._getZoomWindowHighlightRange();
+    this._rangeToolbarComp.syncZoomHighlights(
+      nextZoomRange,
+      nextZoomWindowRange
+    );
   }
 
   _updateZoomWindowHighlight() {
     if (!this._rangeToolbarComp) {
       return;
     }
+    this._rangeToolbarComp.syncZoomHighlights(
+      this._rangeBounds &&
+        (this._chartZoomRange || this._chartZoomCommittedRange)
+        ? {
+            start: +(this._chartZoomRange || this._chartZoomCommittedRange)!
+              .start,
+            end: +(this._chartZoomRange || this._chartZoomCommittedRange)!.end,
+          }
+        : null,
+      this._getZoomWindowHighlightRange()
+    );
+  }
+
+  _getZoomWindowHighlightRange() {
     const activeWindow = this._getActiveComparisonWindow();
     const zoomRange = this._chartZoomRange || this._chartZoomCommittedRange;
     if (!this._rangeBounds || !activeWindow || !zoomRange || !this._startTime) {
-      this._rangeToolbarComp.zoomWindowRange = null;
-      return;
+      return null;
     }
     const windowStartMs = new Date(activeWindow.start_time).getTime();
     const windowEndMs = new Date(activeWindow.end_time).getTime();
@@ -3837,8 +4281,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
       !Number.isFinite(windowEndMs) ||
       windowStartMs >= windowEndMs
     ) {
-      this._rangeToolbarComp.zoomWindowRange = null;
-      return;
+      return null;
     }
     // The zoom range is in main-chart time. Shift it into the comparison
     // window's real-time coordinate space so it can be overlaid on the
@@ -3849,10 +4292,9 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     const intersectStart = Math.max(windowStartMs, zoomStartMs);
     const intersectEnd = Math.min(windowEndMs, zoomEndMs);
     if (intersectStart >= intersectEnd) {
-      this._rangeToolbarComp.zoomWindowRange = null;
-      return;
+      return null;
     }
-    this._rangeToolbarComp.zoomWindowRange = {
+    return {
       start: intersectStart,
       end: intersectEnd,
     };
@@ -4081,6 +4523,10 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     }
 
     if (!this._entities.length) {
+      // Guard: if the empty-state card is already shown there's nothing to do.
+      if (this._contentKey === "__empty__") {
+        return;
+      }
       this._chartHoverTimeMs = null;
       this._updateChartHoverIndicator();
       this._chartZoomRange = null;
@@ -4091,7 +4537,9 @@ export class HassRecordsHistoryPanel extends HTMLElement {
           Select one or more entities to inspect annotated history.
         </ha-card>
       `;
-      this._contentKey = "";
+      // Use a sentinel so subsequent calls (e.g. on every hass update) know
+      // the empty state is already rendered and bail out immediately above.
+      this._contentKey = "__empty__";
       this._chartEl = null;
       this._historyChartMol = null;
       this._listEl = null;
@@ -4150,15 +4598,13 @@ export class HassRecordsHistoryPanel extends HTMLElement {
 
       const chartConfig = {
         entities: this._entities,
-        series_settings: this._seriesRows.map(
-          (row: RecordWithUnknownValues) => ({
-            ...row,
-            analysis: {
-              ...(row.analysis || {}),
-              anomaly_overlap_mode: this._chartAnomalyOverlapMode,
-            },
-          })
-        ),
+        series_settings: this._seriesRows.map((row) => ({
+          ...row,
+          analysis: {
+            ...(row.analysis || {}),
+            anomaly_overlap_mode: this._chartAnomalyOverlapMode,
+          },
+        })),
         datapoint_scope: this._datapointScope,
         show_event_markers: this._showChartDatapointIcons,
         show_event_lines: this._showChartDatapointLines,
@@ -4273,7 +4719,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     this._renderComparisonTabs();
     const chartConfig = {
       entities: this._entities,
-      series_settings: this._seriesRows.map((row: RecordWithUnknownValues) => ({
+      series_settings: this._seriesRows.map((row) => ({
         ...row,
         analysis: {
           ...(row.analysis || {}),

@@ -481,6 +481,14 @@ export class HassRecordsHistoryCard extends ChartCardBase {
       nextConfig.zoom_start_time as never,
       nextConfig.zoom_end_time as never
     ) as Nullable<{ start: number; end: number }>;
+    if (dataChanged || comparisonChanged || preloadComparisonChanged) {
+      // Comparison payloads can be large and are keyed by range/window.
+      // Prune stale entries on range/entity/window changes so a long-lived page
+      // does not retain every historical fetch for the whole session while
+      // still preserving currently relevant cached payloads.
+      this._pruneComparisonDataCache(nextConfig);
+      this._lastComparisonResults = null;
+    }
     const chartEl = this._chartEl();
     if (chartEl) {
       chartEl.hass = this._hass;
@@ -590,6 +598,42 @@ export class HassRecordsHistoryCard extends ChartCardBase {
   }
 
   // ── Comparison windows ─────────────────────────────────────────────────────
+
+  private _pruneComparisonDataCache(config: CardConfig): void {
+    if (!this._comparisonDataCache.size) {
+      return;
+    }
+    const end = config.end_time
+      ? new Date(config.end_time as string)
+      : new Date();
+    const start = config.start_time
+      ? new Date(config.start_time as string)
+      : new Date(
+          end.getTime() - Number(config.hours_to_show || 24) * 3600 * 1000
+        );
+    const windows = [
+      ...(Array.isArray(config.comparison_windows)
+        ? (config.comparison_windows as ComparisonWindow[])
+        : []),
+      ...(Array.isArray(config.preload_comparison_windows)
+        ? (config.preload_comparison_windows as ComparisonWindow[])
+        : []),
+    ];
+    const keepKeys = new Set<string>();
+    for (const win of windows) {
+      if (win?.time_offset_ms == null) {
+        continue;
+      }
+      const winStart = new Date(start.getTime() + win.time_offset_ms);
+      const winEnd = new Date(end.getTime() + win.time_offset_ms);
+      keepKeys.add(this._getComparisonCacheKey(win, winStart, winEnd));
+    }
+    for (const cacheKey of this._comparisonDataCache.keys()) {
+      if (!keepKeys.has(cacheKey)) {
+        this._comparisonDataCache.delete(cacheKey);
+      }
+    }
+  }
 
   private get _comparisonWindows(): ComparisonWindow[] {
     return Array.isArray(this._config?.comparison_windows)

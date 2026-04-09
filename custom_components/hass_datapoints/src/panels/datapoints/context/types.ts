@@ -1,10 +1,12 @@
 import type { HassLike } from "@/lib/types";
+import type { HistorySeriesAnalysis } from "@/lib/domain/history-series";
+import type { NormalizedHistoryDateWindow } from "@/lib/history-page/history-url-state";
 
 export interface HistoryTargetRowState {
   entity_id: string;
   color: string;
   visible?: boolean;
-  analysis?: RecordWithUnknownValues;
+  analysis?: HistorySeriesAnalysis;
 }
 
 export interface HistoryRangeState {
@@ -17,6 +19,7 @@ export interface HistoryRangeState {
 export interface HistoryComparisonWindowState {
   id: string;
   name?: string;
+  label?: string;
   start_time: string;
   end_time: string;
   color?: string;
@@ -74,7 +77,7 @@ export interface HistoryNavigationReadState {
   zoomStartFromUrl: Nullable<string>;
   zoomEndFromUrl: Nullable<string>;
   seriesColorsFromUrl: RecordWithStringValues;
-  dateWindowsFromUrl: Array<RecordWithUnknownValues>;
+  dateWindowsFromUrl: NormalizedHistoryDateWindow[];
   pageStateFromUrl: Nullable<RecordWithUnknownValues>;
   hoursFromUrl: number;
   hasTargetInUrl: boolean;

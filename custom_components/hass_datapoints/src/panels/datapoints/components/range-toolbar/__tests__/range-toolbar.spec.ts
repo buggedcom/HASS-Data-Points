@@ -21,6 +21,10 @@ type DpRangeToolbar = HTMLElement & {
   closeMenus(): void;
   syncOptionsLabels(): void;
   revealSelection(): void;
+  syncZoomHighlights(
+    zoomRange: Nullable<{ start: number; end: number }>,
+    zoomWindowRange: Nullable<{ start: number; end: number }>
+  ): void;
 };
 
 function createElement(props: Partial<DpRangeToolbar> = {}): DpRangeToolbar {
@@ -276,6 +280,27 @@ describe("range-toolbar", () => {
           calls += 1;
         };
         el.revealSelection();
+        await el.updateComplete;
+        expect(calls).toBe(1);
+      });
+    });
+
+    describe("WHEN syncZoomHighlights() is called", () => {
+      it("THEN forwards the call to the inner panel-timeline", async () => {
+        expect.assertions(1);
+        const panelTimeline = el.shadowRoot!.querySelector(
+          "panel-timeline"
+        ) as HTMLElement & {
+          syncZoomHighlights: (
+            zoomRange: Nullable<{ start: number; end: number }>,
+            zoomWindowRange: Nullable<{ start: number; end: number }>
+          ) => void;
+        };
+        let calls = 0;
+        panelTimeline.syncZoomHighlights = () => {
+          calls += 1;
+        };
+        el.syncZoomHighlights({ start: 10, end: 20 }, { start: 12, end: 18 });
         await el.updateComplete;
         expect(calls).toBe(1);
       });

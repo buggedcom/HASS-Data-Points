@@ -565,6 +565,32 @@ describe("history", () => {
         expect((chartTag as any)._lastComparisonResults).toHaveLength(1);
       });
     });
+
+    describe("WHEN the visible range changes", () => {
+      it("THEN it clears stale cached comparison payloads", () => {
+        expect.assertions(1);
+        const el = createCard({
+          entity: "sensor.example",
+          start_time: "2026-03-23T00:00:00.000Z",
+          end_time: "2026-03-30T00:00:00.000Z",
+        });
+        (el as any)._comparisonDataCache.set("old-range", {
+          id: "window-1",
+          time_offset_ms: -3600000,
+          histResult: { "sensor.example": [{ lu: 1, s: "22" }] },
+          statsResult: {},
+        });
+
+        el.setConfig({
+          entity: "sensor.example",
+          start_time: "2026-03-24T00:00:00.000Z",
+          end_time: "2026-03-31T00:00:00.000Z",
+          preload_comparison_windows: [],
+        });
+
+        expect((el as any)._comparisonDataCache.size).toBe(0);
+      });
+    });
   });
 
   describe("GIVEN a card without a title", () => {
