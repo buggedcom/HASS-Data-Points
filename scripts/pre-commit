@@ -3,7 +3,8 @@
 # pre-commit hook:
 #  1. Format all staged Prettier-supported files (ts, js, md, json, css, html…)
 #  2. Lint & format staged Python files with ruff
-#  3. Rebuild hass-datapoints-cards.js when any src/ file is staged
+#  3. Validate TypeScript types when frontend sources/config change
+#  4. Rebuild hass-datapoints-cards.js when any src/ file is staged
 #
 # Install:  pnpm hooks:install
 #           (or manually: ln -sf ../../scripts/pre-commit .git/hooks/pre-commit)
@@ -30,7 +31,11 @@ STAGED_PY=$(git diff --cached --name-only --diff-filter=ACMR \
 STAGED_SRC=$(git diff --cached --name-only --diff-filter=ACMR \
   | grep "^$SRC_DIR/" || true)
 
-if [ -z "$STAGED_PRETTIER" ] && [ -z "$STAGED_PY" ] && [ -z "$STAGED_SRC" ]; then
+# Staged frontend/config files that should trigger a type check
+STAGED_TYPECHECK=$(git diff --cached --name-only --diff-filter=ACMR \
+  | grep -E "^(custom_components/hass_datapoints/src/.*\\.(ts|js)|tsconfig.*\\.json|package\\.json)$" || true)
+
+if [ -z "$STAGED_PRETTIER" ] && [ -z "$STAGED_PY" ] && [ -z "$STAGED_SRC" ] && [ -z "$STAGED_TYPECHECK" ]; then
   exit 0
 fi
 
@@ -66,7 +71,17 @@ if [ -n "$STAGED_PY" ]; then
   echo "$STAGED_PY" | xargs git add
 fi
 
-# ── 3. Rebuild the bundle ──────────────────────────────────────────────────────
+# ── 3. Validate frontend types ─────────────────────────────────────────────────
+if [ -n "$STAGED_TYPECHECK" ]; then
+  if ! command -v pnpm >/dev/null 2>&1; then
+    echo "[pre-commit] pnpm is required to validate TypeScript types." >&2
+    exit 1
+  fi
+  echo "[pre-commit] Validating TypeScript types…"
+  pnpm lint:types
+fi
+
+# ── 4. Rebuild the bundle ──────────────────────────────────────────────────────
 if [ -n "$STAGED_SRC" ]; then
   if ! command -v pnpm >/dev/null 2>&1; then
     echo "[pre-commit] pnpm is required to build frontend assets." >&2

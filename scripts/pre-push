@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+#
+# pre-push hook:
+#  1. Run frontend tests
+#  2. Run lint checks without applying fixes
+#  3. Validate TypeScript types
+
+set -euo pipefail
+
+if ! command -v pnpm >/dev/null 2>&1; then
+  echo "[pre-push] pnpm is required to run validation checks." >&2
+  exit 1
+fi
+
+echo "[pre-push] Running tests…"
+pnpm test
+
+echo "[pre-push] Running ESLint without fixes…"
+pnpm lint:eslint
+
+echo "[pre-push] Running Prettier checks…"
+pnpm lint:prettier
+
+echo "[pre-push] Validating TypeScript types…"
+pnpm lint:types
