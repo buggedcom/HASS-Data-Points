@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Appends the GitHub issue number from the branch name to the commit message.
+# Branch format: (branch|hotfix)/XXXX-description → appends "#XXXX"
+# Skips merge commits, squash commits, and messages that already contain the ref.
+
+COMMIT_MSG_FILE="$1"
+COMMIT_SOURCE="$2"
+
+# Don't modify merge or squash commits
+if [ "$COMMIT_SOURCE" = "merge" ] || [ "$COMMIT_SOURCE" = "squash" ]; then
+  exit 0
+fi
+
+BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null)
+
+# Extract issue number from branch|hotfix/XXXX-...
+ISSUE=$(echo "$BRANCH" | grep -oE '^(branch|hotfix)/([0-9]+)' | grep -oE '[0-9]+$')
+
+if [ -z "$ISSUE" ]; then
+  exit 0
+fi
+
+REF="#${ISSUE}"
+
+# Skip if the ref is already present
+if grep -qF "$REF" "$COMMIT_MSG_FILE"; then
+  exit 0
+fi
+
+# Append ref to the end of the subject line (first non-empty, non-comment line)
+TMPFILE=$(mktemp)
+
+awk -v ref="$REF" '
+  BEGIN { appended = 0 }
+  !appended && /^[^#]/ && NF {
+    print $0 " " ref
+    appended = 1
+    next
+  }
+  { print }
+' "$COMMIT_MSG_FILE" > "$TMPFILE"
+
+mv "$TMPFILE" "$COMMIT_MSG_FILE"
