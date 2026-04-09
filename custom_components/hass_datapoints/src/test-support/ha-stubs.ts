@@ -7,6 +7,7 @@
  * Containers pass child content through a <slot>.
  */
 
+import { html, render } from "lit";
 import * as mdi from "@mdi/js";
 
 type MdiIconModule = RecordWithStringValues;
@@ -303,9 +304,23 @@ const HA_FIELD_STYLES = `
 class HaFieldStub extends HTMLElement {
   value: Nullable<string | number> = null;
 
+  // Shared stylesheet — created once per class, applied to every shadow root.
+  private static _sheet: CSSStyleSheet | null = null;
+
+  private static _getSheet(): CSSStyleSheet {
+    if (!HaFieldStub._sheet) {
+      HaFieldStub._sheet = new CSSStyleSheet();
+      HaFieldStub._sheet.replaceSync(HA_FIELD_STYLES);
+    }
+    return HaFieldStub._sheet;
+  }
+
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
+    if (this.shadowRoot) {
+      this.shadowRoot.adoptedStyleSheets = [HaFieldStub._getSheet()];
+    }
   }
 
   connectedCallback() {
@@ -329,14 +344,20 @@ class HaFieldStub extends HTMLElement {
     if (!this.shadowRoot) {
       return;
     }
-    this.shadowRoot.innerHTML = `
-      <style>${HA_FIELD_STYLES}</style>
-      <div class="field-wrapper ${hasValue ? "has-value" : ""} ${label ? "has-placeholder" : ""}">
-        ${label ? `<span class="field-label">${label}</span>` : ""}
-        ${hasValue ? `<span class="field-value">${value}</span>` : ""}
-        <span class="field-arrow">▾</span>
-      </div>
-    `;
+    render(
+      html`
+        <div
+          class="field-wrapper ${hasValue ? "has-value" : ""} ${label
+            ? "has-placeholder"
+            : ""}"
+        >
+          ${label ? html`<span class="field-label">${label}</span>` : ""}
+          ${hasValue ? html`<span class="field-value">${value}</span>` : ""}
+          <span class="field-arrow">▾</span>
+        </div>
+      `,
+      this.shadowRoot
+    );
   }
 }
 
