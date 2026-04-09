@@ -2733,7 +2733,7 @@
     return fmtDateTime(iso);
   }
   function esc(str) {
-    return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
   }
   const HA_COMPONENT_LOAD_TIMEOUT_MS = 6e3;
   const HA_COMPONENT_LOADER_SUPPORTED_TAGS = /* @__PURE__ */ new Set([

@@ -1000,5 +1000,5 @@ pnpm dev:watch
 
 - CI checks build correctness and integration metadata.
 - The built frontend bundle is committed as `custom_components/hass_datapoints/hass-datapoints-cards.js`.
-- Pre-commit hooks format staged files, validate frontend types, and rebuild the frontend when needed.
-- Pre-push hooks run tests, lint checks, and frontend type validation before pushing.
+- Pre-commit hooks format staged files, lint package.json versions, validate frontend types, and rebuild the frontend when needed.
+- Pre-push hooks run tests, lint checks, package.json version linting, and frontend type validation before pushing.
