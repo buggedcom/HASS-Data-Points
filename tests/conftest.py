@@ -28,15 +28,8 @@ def _stub(name: str, obj: object | None = None) -> None:
 
 
 # -- voluptuous ---------------------------------------------------------------
-_vol = MagicMock()
-_vol.Schema = MagicMock(return_value=MagicMock())
-_vol.Required = MagicMock(return_value="required")
-_vol.Optional = MagicMock(return_value="optional")
-_vol.All = MagicMock(return_value=MagicMock())
-_vol.Any = MagicMock(return_value=MagicMock())
-_vol.Coerce = MagicMock(return_value=MagicMock())
-_vol.Length = MagicMock(return_value=MagicMock())
-_stub("voluptuous", _vol)
+# voluptuous is a real dependency listed in requirements_dev.txt; do NOT stub
+# it so that tests exercising vol.Match / vol.In / vol.Range work correctly.
 
 # -- sqlalchemy ---------------------------------------------------------------
 _sa = MagicMock()
