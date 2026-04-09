@@ -83,7 +83,7 @@ import {
   buildRollingAverageTrend,
   buildSummaryStats,
   getTrendWindowMs,
-} from "../analysis/index";
+} from "../analysis";
 import { navigateToDataPointsHistory } from "@/lib/ha/navigation";
 import { styles } from "./history-chart.styles";
 

@@ -2859,8 +2859,7 @@ export class HassRecordsHistoryPanel extends HTMLElement {
     targetControl.addEventListener(
       "value-changed",
       (ev: DetailEvent<{ value?: unknown }>) => {
-        const hasValue =
-          ev.detail && Object.prototype.hasOwnProperty.call(ev.detail, "value");
+        const hasValue = ev.detail && Object.hasOwn(ev.detail, "value");
         if (!hasValue) {
           return;
         }

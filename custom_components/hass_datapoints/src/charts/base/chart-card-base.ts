@@ -85,7 +85,6 @@ export abstract class ChartCardBase extends LitElement {
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
   connectedCallback(): void {
-    // eslint-disable-next-line wc/guard-super-call
     super.connectedCallback();
     if (this._initialized) {
       if (!this._unsubscribe || !this._windowListener) {
@@ -111,7 +110,6 @@ export abstract class ChartCardBase extends LitElement {
   }
 
   disconnectedCallback(): void {
-    // eslint-disable-next-line wc/guard-super-call
     super.disconnectedCallback();
     this._cleanup();
   }

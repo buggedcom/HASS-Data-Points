@@ -182,7 +182,6 @@ export class RangeTimeline extends LitElement {
   }
 
   disconnectedCallback() {
-    // eslint-disable-next-line wc/guard-super-call
     super.disconnectedCallback();
     if (this._rangeScrollViewportEl) {
       this._rangeScrollViewportEl.removeEventListener(

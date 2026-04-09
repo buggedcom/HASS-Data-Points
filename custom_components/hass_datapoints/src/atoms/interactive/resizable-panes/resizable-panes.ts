@@ -51,7 +51,6 @@ export class ResizablePanes extends LitElement {
   }
 
   disconnectedCallback() {
-    // eslint-disable-next-line wc/guard-super-call
     super.disconnectedCallback();
     // Clean up global pointer listeners if disconnected during an active drag.
     if (this._pointerId != null) {

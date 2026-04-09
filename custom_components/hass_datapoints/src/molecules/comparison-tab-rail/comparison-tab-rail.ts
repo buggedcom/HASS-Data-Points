@@ -47,7 +47,6 @@ export class ComparisonTabRail extends LitElement {
   private _resizeObserver?: ResizeObserver;
 
   connectedCallback() {
-    // eslint-disable-next-line wc/guard-super-call
     super.connectedCallback();
     if (this._resizeObserver) {
       return;
@@ -67,7 +66,6 @@ export class ComparisonTabRail extends LitElement {
   }
 
   disconnectedCallback() {
-    // eslint-disable-next-line wc/guard-super-call
     super.disconnectedCallback();
     this._resizeObserver?.disconnect();
     this._resizeObserver = undefined;

@@ -95,7 +95,6 @@ export class HassRecordsListCard extends LitElement {
   }
 
   connectedCallback() {
-    // eslint-disable-next-line wc/guard-super-call
     super.connectedCallback();
     this._windowListener = () => this._load();
     window.addEventListener(
@@ -105,7 +104,6 @@ export class HassRecordsListCard extends LitElement {
   }
 
   disconnectedCallback() {
-    // eslint-disable-next-line wc/guard-super-call
     super.disconnectedCallback();
     if (this._unsubscribe) {
       this._unsubscribe();
