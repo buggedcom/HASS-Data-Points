@@ -50,4 +50,9 @@ export const styles = css`
   .input-row ha-textfield {
     flex: 1;
   }
+  .no-permission {
+    color: var(--secondary-text-color);
+    font-size: 0.875rem;
+    margin: 0;
+  }
 `;

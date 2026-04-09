@@ -40,7 +40,10 @@ export default {
 
 export const Default = {
   render: () =>
-    html`<dev-tool-results .results=${sampleResults}></dev-tool-results>`,
+    html`<dev-tool-results
+      .results=${sampleResults}
+      .isAdmin=${true}
+    ></dev-tool-results>`,
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     const el = canvasElement.querySelector(
       "dev-tool-results"

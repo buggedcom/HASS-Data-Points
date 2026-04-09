@@ -5,6 +5,7 @@ import "../list-event-item";
 const BASE_CONTEXT = {
   hass: createMockHass(),
   showActions: true,
+  canEdit: true,
   showEntities: true,
   showFullMessage: false,
   hidden: false,
@@ -177,6 +178,40 @@ describe("list-event-item", () => {
         expect(handler).toHaveBeenCalledOnce();
         expect(handler.mock.calls[0][0].detail.eventId).toBe("evt-1");
         expect(handler.mock.calls[0][0].detail.hovered).toBe(false);
+      });
+    });
+  });
+
+  describe("GIVEN a non-admin user (canEdit: false)", () => {
+    beforeEach(async () => {
+      el = createElement({
+        context: { ...BASE_CONTEXT, canEdit: false },
+      });
+      await el.updateComplete;
+    });
+
+    describe("WHEN rendered", () => {
+      it("THEN the edit button is not shown", () => {
+        expect.assertions(1);
+        expect(
+          el.shadowRoot!.querySelector('ha-icon-button[label="Edit record"]')
+        ).toBeNull();
+      });
+
+      it("THEN the delete button is not shown", () => {
+        expect.assertions(1);
+        expect(
+          el.shadowRoot!.querySelector('ha-icon-button[label="Delete record"]')
+        ).toBeNull();
+      });
+
+      it("THEN the visibility toggle is still shown", () => {
+        expect.assertions(1);
+        expect(
+          el.shadowRoot!.querySelector(
+            'ha-icon-button[label="Hide chart marker"]'
+          )
+        ).not.toBeNull();
       });
     });
   });

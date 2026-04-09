@@ -31,6 +31,8 @@ export interface EditSaveDetail {
 export interface EventItemContext {
   hass: Nullable<HassLike>;
   showActions: boolean;
+  /** Whether the current user may edit or delete records (admin-only). */
+  canEdit: boolean;
   showEntities: boolean;
   showFullMessage: boolean;
   hidden: boolean;

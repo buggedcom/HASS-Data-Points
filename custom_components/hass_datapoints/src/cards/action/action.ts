@@ -231,9 +231,25 @@ export class HassRecordsActionCard extends LitElement {
     }
   }
 
+  private get _isAdmin(): boolean {
+    return this._hass?.user?.is_admin === true;
+  }
+
   render() {
     const cfg = this._config;
     const hasTitle = !!cfg.title;
+
+    if (!this._isAdmin) {
+      return html`
+        <ha-card>
+          ${hasTitle ? html`<div class="card-header">${cfg.title}</div>` : ""}
+          <div class="no-permission">
+            Recording datapoints requires an admin account.
+          </div>
+        </ha-card>
+      `;
+    }
+
     const showDate = cfg.show_date !== false;
     const showAnnotation = cfg.show_annotation !== false;
     const showConfigTargets = cfg.show_config_targets !== false;

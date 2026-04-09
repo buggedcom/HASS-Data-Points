@@ -11,6 +11,8 @@ export class CardDevToolResults extends LitElement {
 
   @property({ attribute: false }) accessor results: WindowResult[] = [];
 
+  @property({ type: Boolean }) accessor isAdmin = false;
+
   @property({ type: String }) accessor statusKind = "";
 
   @property({ type: String }) accessor statusText = "";
@@ -109,9 +111,14 @@ export class CardDevToolResults extends LitElement {
             <strong>${summary.selected}</strong> of ${summary.total} selected
             across ${summary.windows} window${summary.windows === 1 ? "" : "s"}
           </span>
-          <ha-button id="record-btn" raised @click=${this._emitRecordRequest}
-            >Record selected as dev datapoints</ha-button
-          >
+          ${this.isAdmin
+            ? html`<ha-button
+                id="record-btn"
+                raised
+                @click=${this._emitRecordRequest}
+                >Record selected as dev datapoints</ha-button
+              >`
+            : ""}
         </div>
         <div id="results-list">
           ${this.results.map((result) => {

@@ -85,4 +85,10 @@ export const styles = css`
     margin-top: 8px;
     --mdc-theme-primary: var(--primary-color);
   }
+
+  .no-permission {
+    padding: 8px 0;
+    color: var(--secondary-text-color);
+    font-size: 0.875rem;
+  }
 `;

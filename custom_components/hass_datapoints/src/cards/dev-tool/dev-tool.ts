@@ -63,6 +63,13 @@ export class HassRecordsDevToolCard extends HTMLElement {
     setTimeout(() => {
       this._suppressEntityChange = false;
     }, 100);
+
+    const resultsEl = this.shadowRoot.getElementById(
+      "results-container"
+    ) as Nullable<HTMLElement & RecordWithUnknownValues>;
+    if (resultsEl) {
+      resultsEl.isAdmin = this._hass.user?.is_admin === true;
+    }
   }
 
   _render() {

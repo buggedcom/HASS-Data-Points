@@ -147,6 +147,10 @@ export class HassRecordsQuickCard extends LitElement {
     }
   }
 
+  private get _isAdmin(): boolean {
+    return this._hass?.user?.is_admin === true;
+  }
+
   render() {
     const cfg = this._config;
     const cfgIcon = cfg.icon || "mdi:bookmark";
@@ -157,41 +161,49 @@ export class HassRecordsQuickCard extends LitElement {
     return html`
       <ha-card>
         ${hasTitle ? html` <div class="card-header">${cfg.title}</div> ` : ""}
-        <div class="card-content ${hasTitle ? "with-header" : ""}">
-          <div class="input-row">
-            <ha-textfield
-              id="msg"
-              .placeholder=${cfg.placeholder || "Note something…"}
-            ></ha-textfield>
-            <ha-button
-              id="btn"
-              raised
-              style=${`--mdc-theme-primary: ${cfgColor}`}
-              @click=${this._record}
-            >
-              <ha-icon .icon=${cfgIcon} slot="icon"></ha-icon>
-              Record
-            </ha-button>
-          </div>
-          ${showAnnotation
-            ? html`
-                <quick-annotation
-                  .value=${this._annotation}
-                  @dp-annotation-input=${(
-                    event: CustomEvent<{ value: string }>
-                  ) => {
-                    this._annotation = event.detail.value;
-                  }}
-                ></quick-annotation>
-              `
-            : ""}
-        </div>
-        <feedback-banner
-          .kind=${this._feedbackClass}
-          .text=${this._feedbackText}
-          .visible=${this._feedbackVisible}
-          variant="quick"
-        ></feedback-banner>
+        ${this._isAdmin
+          ? html`
+              <div class="card-content ${hasTitle ? "with-header" : ""}">
+                <div class="input-row">
+                  <ha-textfield
+                    id="msg"
+                    .placeholder=${cfg.placeholder || "Note something…"}
+                  ></ha-textfield>
+                  <ha-button
+                    id="btn"
+                    raised
+                    style=${`--mdc-theme-primary: ${cfgColor}`}
+                    @click=${this._record}
+                  >
+                    <ha-icon .icon=${cfgIcon} slot="icon"></ha-icon>
+                    Record
+                  </ha-button>
+                </div>
+                ${showAnnotation
+                  ? html`
+                      <quick-annotation
+                        .value=${this._annotation}
+                        @dp-annotation-input=${(
+                          event: CustomEvent<{ value: string }>
+                        ) => {
+                          this._annotation = event.detail.value;
+                        }}
+                      ></quick-annotation>
+                    `
+                  : ""}
+              </div>
+              <feedback-banner
+                .kind=${this._feedbackClass}
+                .text=${this._feedbackText}
+                .visible=${this._feedbackVisible}
+                variant="quick"
+              ></feedback-banner>
+            `
+          : html`<div class="card-content ${hasTitle ? "with-header" : ""}">
+              <p class="no-permission">
+                Recording datapoints requires an admin account.
+              </p>
+            </div>`}
       </ha-card>
     `;
   }

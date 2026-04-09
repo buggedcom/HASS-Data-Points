@@ -45,6 +45,7 @@ export class CardListEventItem extends LitElement {
   @property({ attribute: false }) accessor context: EventItemContext = {
     hass: null,
     showActions: true,
+    canEdit: true,
     showEntities: true,
     showFullMessage: true,
     hidden: false,
@@ -72,6 +73,7 @@ export class CardListEventItem extends LitElement {
 
     const ev = this.eventRecord;
     const showActions = this.context.showActions;
+    const canEdit = this.context.canEdit;
     const showEntities = this.context.showEntities;
     const showFullMessage = this.context.showFullMessage;
     const annText =
@@ -185,25 +187,33 @@ export class CardListEventItem extends LitElement {
                     >
                       <ha-icon icon=${visibilityIcon}></ha-icon>
                     </ha-icon-button>
-                    <ha-icon-button
-                      label=${this.context.language.editRecord}
-                      @click=${(event: Event) => {
-                        event.stopPropagation();
-                        this._dispatch("dp-edit-event", { eventRecord: ev });
-                      }}
-                    >
-                      <ha-icon icon="mdi:pencil-outline"></ha-icon>
-                    </ha-icon-button>
-                    <ha-icon-button
-                      label=${this.context.language.deleteRecord}
-                      style="--icon-primary-color:var(--error-color,#f44336)"
-                      @click=${(event: Event) => {
-                        event.stopPropagation();
-                        this._dispatch("dp-delete-event", { eventRecord: ev });
-                      }}
-                    >
-                      <ha-icon icon="mdi:delete-outline"></ha-icon>
-                    </ha-icon-button>
+                    ${canEdit
+                      ? html`
+                          <ha-icon-button
+                            label=${this.context.language.editRecord}
+                            @click=${(event: Event) => {
+                              event.stopPropagation();
+                              this._dispatch("dp-edit-event", {
+                                eventRecord: ev,
+                              });
+                            }}
+                          >
+                            <ha-icon icon="mdi:pencil-outline"></ha-icon>
+                          </ha-icon-button>
+                          <ha-icon-button
+                            label=${this.context.language.deleteRecord}
+                            style="--icon-primary-color:var(--error-color,#f44336)"
+                            @click=${(event: Event) => {
+                              event.stopPropagation();
+                              this._dispatch("dp-delete-event", {
+                                eventRecord: ev,
+                              });
+                            }}
+                          >
+                            <ha-icon icon="mdi:delete-outline"></ha-icon>
+                          </ha-icon-button>
+                        `
+                      : ""}
                   </div>
                 `
               : ""}
@@ -299,7 +309,7 @@ export class CardListEventItem extends LitElement {
                 </div>
               `
             : ""}
-          ${showActions && isEditing
+          ${showActions && canEdit && isEditing
             ? html`
                 <list-edit-form
                   .eventRecord=${ev}

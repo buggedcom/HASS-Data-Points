@@ -111,6 +111,7 @@ export function createMockHass(overrides: RecordWithUnknownValues = {}) {
       subscribeEvents: createSpyFn(() => Promise.resolve(unsubscribe)),
       sendMessagePromise: createSpyFn(() => Promise.resolve({})),
     },
+    user: { is_admin: true },
     callService: createSpyFn(() => Promise.resolve()),
     ...overrides,
   };

@@ -348,7 +348,7 @@ color: "#ff9800"
 
 ### List card
 
-Use this to browse, search, edit, hide, restore, and delete datapoints.
+Use this to browse, search, and hide datapoints. Admin users also see edit and delete buttons for each record.
 
 ```yaml
 type: custom:hass-datapoints-list-card
@@ -753,8 +753,8 @@ The frontend uses the following WebSocket commands:
 | Type                            | Purpose                              |
 | ------------------------------- | ------------------------------------ |
 | `hass_datapoints/events`        | Fetch recorded datapoints/events     |
-| `hass_datapoints/events/update` | Update an existing datapoint         |
-| `hass_datapoints/events/delete` | Delete a datapoint                   |
+| `hass_datapoints/events/update` | Update an existing datapoint (admin) |
+| `hass_datapoints/events/delete` | Delete a datapoint (admin)           |
 | `hass_datapoints/history`       | Fetch history/downsampled chart data |
 | `hass_datapoints/anomalies`     | Fetch backend anomaly results        |
 

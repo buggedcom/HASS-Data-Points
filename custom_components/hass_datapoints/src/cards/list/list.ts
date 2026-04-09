@@ -353,6 +353,7 @@ export class HassRecordsListCard extends LitElement {
     return {
       hass: this._hass,
       showActions: cfg.show_actions !== false,
+      canEdit: this._hass?.user?.is_admin === true,
       showEntities: cfg.show_entities !== false,
       showFullMessage: cfg.show_full_message !== false,
       hidden,

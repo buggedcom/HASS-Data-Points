@@ -585,6 +585,12 @@
     margin-top: 8px;
     --mdc-theme-primary: var(--primary-color);
   }
+
+  .no-permission {
+    padding: 8px 0;
+    color: var(--secondary-text-color);
+    font-size: 0.875rem;
+  }
 `;
   const DOMAIN = "hass_datapoints";
   const PANEL_URL_PATH = "hass-datapoints-history";
@@ -1408,9 +1414,22 @@
         this._record();
       }
     }
+    get _isAdmin() {
+      return this._hass?.user?.is_admin === true;
+    }
     render() {
       const cfg = this._config;
       const hasTitle = !!cfg.title;
+      if (!this._isAdmin) {
+        return b`
+        <ha-card>
+          ${hasTitle ? b`<div class="card-header">${cfg.title}</div>` : ""}
+          <div class="no-permission">
+            Recording datapoints requires an admin account.
+          </div>
+        </ha-card>
+      `;
+      }
       const showDate = cfg.show_date !== false;
       const showAnnotation = cfg.show_annotation !== false;
       const showConfigTargets = cfg.show_config_targets !== false;
@@ -3177,15 +3196,16 @@
   var __privateGet$K = (obj, member, getter) => (__accessCheck$K(obj, member, "read from private field"), member.get(obj));
   var __privateAdd$K = (obj, member, value) => member.has(obj) ? __typeError$L("Cannot add the same private member more than once") : member instanceof WeakSet ? member.add(obj) : member.set(obj, value);
   var __privateSet$K = (obj, member, value, setter) => (__accessCheck$K(obj, member, "write to private field"), member.set(obj, value), value);
-  var __collapsedWindowIds_dec, _statusVisible_dec, _statusText_dec, _statusKind_dec, _results_dec, _a$L, _init$L, _results, _statusKind, _statusText, _statusVisible, __collapsedWindowIds;
-  class CardDevToolResults extends (_a$L = i$2, _results_dec = [n({ attribute: false })], _statusKind_dec = [n({ type: String })], _statusText_dec = [n({ type: String })], _statusVisible_dec = [n({ type: Boolean })], __collapsedWindowIds_dec = [r()], _a$L) {
+  var __collapsedWindowIds_dec, _statusVisible_dec, _statusText_dec, _statusKind_dec, _isAdmin_dec, _results_dec, _a$L, _init$L, _results, _isAdmin, _statusKind, _statusText, _statusVisible, __collapsedWindowIds;
+  class CardDevToolResults extends (_a$L = i$2, _results_dec = [n({ attribute: false })], _isAdmin_dec = [n({ type: Boolean })], _statusKind_dec = [n({ type: String })], _statusText_dec = [n({ type: String })], _statusVisible_dec = [n({ type: Boolean })], __collapsedWindowIds_dec = [r()], _a$L) {
     constructor() {
       super(...arguments);
       __privateAdd$K(this, _results, __runInitializers$L(_init$L, 8, this, [])), __runInitializers$L(_init$L, 11, this);
-      __privateAdd$K(this, _statusKind, __runInitializers$L(_init$L, 12, this, "")), __runInitializers$L(_init$L, 15, this);
-      __privateAdd$K(this, _statusText, __runInitializers$L(_init$L, 16, this, "")), __runInitializers$L(_init$L, 19, this);
-      __privateAdd$K(this, _statusVisible, __runInitializers$L(_init$L, 20, this, false)), __runInitializers$L(_init$L, 23, this);
-      __privateAdd$K(this, __collapsedWindowIds, __runInitializers$L(_init$L, 24, this, [])), __runInitializers$L(_init$L, 27, this);
+      __privateAdd$K(this, _isAdmin, __runInitializers$L(_init$L, 12, this, false)), __runInitializers$L(_init$L, 15, this);
+      __privateAdd$K(this, _statusKind, __runInitializers$L(_init$L, 16, this, "")), __runInitializers$L(_init$L, 19, this);
+      __privateAdd$K(this, _statusText, __runInitializers$L(_init$L, 20, this, "")), __runInitializers$L(_init$L, 23, this);
+      __privateAdd$K(this, _statusVisible, __runInitializers$L(_init$L, 24, this, false)), __runInitializers$L(_init$L, 27, this);
+      __privateAdd$K(this, __collapsedWindowIds, __runInitializers$L(_init$L, 28, this, [])), __runInitializers$L(_init$L, 31, this);
     }
     _emitSelection() {
       this.dispatchEvent(
@@ -3264,9 +3284,12 @@
             <strong>${summary.selected}</strong> of ${summary.total} selected
             across ${summary.windows} window${summary.windows === 1 ? "" : "s"}
           </span>
-          <ha-button id="record-btn" raised @click=${this._emitRecordRequest}
-            >Record selected as dev datapoints</ha-button
-          >
+          ${this.isAdmin ? b`<ha-button
+                id="record-btn"
+                raised
+                @click=${this._emitRecordRequest}
+                >Record selected as dev datapoints</ha-button
+              >` : ""}
         </div>
         <div id="results-list">
           ${this.results.map((result) => {
@@ -3367,11 +3390,13 @@
   }
   _init$L = __decoratorStart$L(_a$L);
   _results = /* @__PURE__ */ new WeakMap();
+  _isAdmin = /* @__PURE__ */ new WeakMap();
   _statusKind = /* @__PURE__ */ new WeakMap();
   _statusText = /* @__PURE__ */ new WeakMap();
   _statusVisible = /* @__PURE__ */ new WeakMap();
   __collapsedWindowIds = /* @__PURE__ */ new WeakMap();
   __decorateElement$L(_init$L, 4, "results", _results_dec, CardDevToolResults, _results);
+  __decorateElement$L(_init$L, 4, "isAdmin", _isAdmin_dec, CardDevToolResults, _isAdmin);
   __decorateElement$L(_init$L, 4, "statusKind", _statusKind_dec, CardDevToolResults, _statusKind);
   __decorateElement$L(_init$L, 4, "statusText", _statusText_dec, CardDevToolResults, _statusText);
   __decorateElement$L(_init$L, 4, "statusVisible", _statusVisible_dec, CardDevToolResults, _statusVisible);
@@ -3722,6 +3747,12 @@
       setTimeout(() => {
         this._suppressEntityChange = false;
       }, 100);
+      const resultsEl = this.shadowRoot.getElementById(
+        "results-container"
+      );
+      if (resultsEl) {
+        resultsEl.isAdmin = this._hass.user?.is_admin === true;
+      }
     }
     _render() {
       this._rendered = true;
@@ -9147,6 +9178,10 @@ ${s2.description}`).join("\n\n");
     set hass(value) {
       this._hass = value;
     }
+    /** True when the current user may create a data point via the chart + button. */
+    get _canAddAnnotation() {
+      return this._config.show_add_annotation_button !== false && this._hass?.user?.is_admin === true;
+    }
     // ── DOM helpers ─────────────────────────────────────────────────────────────
     // Use `this.querySelector` / `this.querySelectorAll` instead of
     // `this.shadowRoot.querySelector` because there is no shadow root.
@@ -9760,7 +9795,7 @@ ${s2.description}`).join("\n\n");
     _handleChartAddAnnotation(_hover) {
       const parentCard = this.getRootNode()?.host ?? null;
       const annotationDialog = parentCard?._annotationDialog;
-      if (!_hover || !this._hass || annotationDialog?.isOpen?.()) {
+      if (!_hover || !this._hass || !this._hass.user?.is_admin || annotationDialog?.isOpen?.()) {
         return;
       }
       this._openContextAnnotationDialog(_hover);
@@ -11938,7 +11973,7 @@ ${content.alert}` : "",
       );
       const addButton = this.querySelector("#chart-add-annotation");
       if (addButton) {
-        addButton.dataset.allowAddAnnotation = this._config.show_add_annotation_button === false ? "false" : "true";
+        addButton.dataset.allowAddAnnotation = this._canAddAnnotation ? "true" : "false";
         if (addButton.dataset.allowAddAnnotation === "false") {
           addButton.hidden = true;
         }
@@ -11958,7 +11993,7 @@ ${content.alert}` : "",
           activeAxes,
           {
             onContextMenu: (hover) => this._handleChartContextMenu(hover),
-            onAddAnnotation: this._config.show_add_annotation_button === false ? void 0 : (hover) => this._handleChartAddAnnotation(hover),
+            onAddAnnotation: this._canAddAnnotation ? (hover) => this._handleChartAddAnnotation(hover) : void 0,
             binaryStates: binaryBackgrounds.filter(
               (entry) => !this._hiddenSeries.has(entry.entityId)
             ),
@@ -13550,7 +13585,7 @@ ${content.alert}` : "",
         "#chart-add-annotation"
       );
       const onAddBtnClick = (ev) => {
-        if (this._config.show_add_annotation_button === false || !this._chartLastHover) {
+        if (!this._canAddAnnotation || !this._chartLastHover) {
           return;
         }
         ev.preventDefault();
@@ -35065,6 +35100,7 @@ ${content.alert}` : "",
       __privateAdd$6(this, _context, __runInitializers$7(_init$7, 12, this, {
         hass: null,
         showActions: true,
+        canEdit: true,
         showEntities: true,
         showFullMessage: true,
         hidden: false,
@@ -35089,6 +35125,7 @@ ${content.alert}` : "",
       }
       const ev = this.eventRecord;
       const showActions = this.context.showActions;
+      const canEdit = this.context.canEdit;
       const showEntities = this.context.showEntities;
       const showFullMessage = this.context.showFullMessage;
       const annText = ev.annotation && ev.annotation !== ev.message ? ev.annotation.trim() : "";
@@ -35188,25 +35225,31 @@ ${content.alert}` : "",
                     >
                       <ha-icon icon=${visibilityIcon}></ha-icon>
                     </ha-icon-button>
-                    <ha-icon-button
-                      label=${this.context.language.editRecord}
-                      @click=${(event) => {
+                    ${canEdit ? b`
+                          <ha-icon-button
+                            label=${this.context.language.editRecord}
+                            @click=${(event) => {
         event.stopPropagation();
-        this._dispatch("dp-edit-event", { eventRecord: ev });
+        this._dispatch("dp-edit-event", {
+          eventRecord: ev
+        });
       }}
-                    >
-                      <ha-icon icon="mdi:pencil-outline"></ha-icon>
-                    </ha-icon-button>
-                    <ha-icon-button
-                      label=${this.context.language.deleteRecord}
-                      style="--icon-primary-color:var(--error-color,#f44336)"
-                      @click=${(event) => {
+                          >
+                            <ha-icon icon="mdi:pencil-outline"></ha-icon>
+                          </ha-icon-button>
+                          <ha-icon-button
+                            label=${this.context.language.deleteRecord}
+                            style="--icon-primary-color:var(--error-color,#f44336)"
+                            @click=${(event) => {
         event.stopPropagation();
-        this._dispatch("dp-delete-event", { eventRecord: ev });
+        this._dispatch("dp-delete-event", {
+          eventRecord: ev
+        });
       }}
-                    >
-                      <ha-icon icon="mdi:delete-outline"></ha-icon>
-                    </ha-icon-button>
+                          >
+                            <ha-icon icon="mdi:delete-outline"></ha-icon>
+                          </ha-icon-button>
+                        ` : ""}
                   </div>
                 ` : ""}
           </div>
@@ -35288,7 +35331,7 @@ ${content.alert}` : "",
       )}
                 </div>
               ` : ""}
-          ${showActions && isEditing ? b`
+          ${showActions && canEdit && isEditing ? b`
                 <list-edit-form
                   .eventRecord=${ev}
                   .hass=${this.context.hass}
@@ -35614,6 +35657,7 @@ ${content.alert}` : "",
       return {
         hass: this._hass,
         showActions: cfg.show_actions !== false,
+        canEdit: this._hass?.user?.is_admin === true,
         showEntities: cfg.show_entities !== false,
         showFullMessage: cfg.show_full_message !== false,
         hidden,
@@ -35906,6 +35950,11 @@ ${content.alert}` : "",
   .input-row ha-textfield {
     flex: 1;
   }
+  .no-permission {
+    color: var(--secondary-text-color);
+    font-size: 0.875rem;
+    margin: 0;
+  }
 `;
   const styles$9 = i$5`
   :host {
@@ -36127,6 +36176,9 @@ ${content.alert}` : "",
         btn.disabled = false;
       }
     }
+    get _isAdmin() {
+      return this._hass?.user?.is_admin === true;
+    }
     render() {
       const cfg = this._config;
       const cfgIcon = cfg.icon || "mdi:bookmark";
@@ -36136,37 +36188,43 @@ ${content.alert}` : "",
       return b`
       <ha-card>
         ${hasTitle ? b` <div class="card-header">${cfg.title}</div> ` : ""}
-        <div class="card-content ${hasTitle ? "with-header" : ""}">
-          <div class="input-row">
-            <ha-textfield
-              id="msg"
-              .placeholder=${cfg.placeholder || "Note something…"}
-            ></ha-textfield>
-            <ha-button
-              id="btn"
-              raised
-              style=${`--mdc-theme-primary: ${cfgColor}`}
-              @click=${this._record}
-            >
-              <ha-icon .icon=${cfgIcon} slot="icon"></ha-icon>
-              Record
-            </ha-button>
-          </div>
-          ${showAnnotation ? b`
-                <quick-annotation
-                  .value=${this._annotation}
-                  @dp-annotation-input=${(event) => {
+        ${this._isAdmin ? b`
+              <div class="card-content ${hasTitle ? "with-header" : ""}">
+                <div class="input-row">
+                  <ha-textfield
+                    id="msg"
+                    .placeholder=${cfg.placeholder || "Note something…"}
+                  ></ha-textfield>
+                  <ha-button
+                    id="btn"
+                    raised
+                    style=${`--mdc-theme-primary: ${cfgColor}`}
+                    @click=${this._record}
+                  >
+                    <ha-icon .icon=${cfgIcon} slot="icon"></ha-icon>
+                    Record
+                  </ha-button>
+                </div>
+                ${showAnnotation ? b`
+                      <quick-annotation
+                        .value=${this._annotation}
+                        @dp-annotation-input=${(event) => {
         this._annotation = event.detail.value;
       }}
-                ></quick-annotation>
-              ` : ""}
-        </div>
-        <feedback-banner
-          .kind=${this._feedbackClass}
-          .text=${this._feedbackText}
-          .visible=${this._feedbackVisible}
-          variant="quick"
-        ></feedback-banner>
+                      ></quick-annotation>
+                    ` : ""}
+              </div>
+              <feedback-banner
+                .kind=${this._feedbackClass}
+                .text=${this._feedbackText}
+                .visible=${this._feedbackVisible}
+                variant="quick"
+              ></feedback-banner>
+            ` : b`<div class="card-content ${hasTitle ? "with-header" : ""}">
+              <p class="no-permission">
+                Recording datapoints requires an admin account.
+              </p>
+            </div>`}
       </ha-card>
     `;
     }

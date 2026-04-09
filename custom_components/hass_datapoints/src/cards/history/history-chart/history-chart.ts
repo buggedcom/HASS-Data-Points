@@ -234,6 +234,14 @@ export class HistoryChart extends HTMLElement {
     this._hass = value;
   }
 
+  /** True when the current user may create a data point via the chart + button. */
+  private get _canAddAnnotation(): boolean {
+    return (
+      (this._config as RecordWithUnknownValues).show_add_annotation_button !==
+        false && this._hass?.user?.is_admin === true
+    );
+  }
+
   _config: RecordWithUnknownValues = {};
 
   // ── Instance state ──────────────────────────────────────────────────────────
@@ -1211,7 +1219,12 @@ export class HistoryChart extends HTMLElement {
     const annotationDialog = parentCard?._annotationDialog as Nullable<{
       isOpen?(): boolean;
     }>;
-    if (!_hover || !this._hass || annotationDialog?.isOpen?.()) {
+    if (
+      !_hover ||
+      !this._hass ||
+      !this._hass.user?.is_admin ||
+      annotationDialog?.isOpen?.()
+    ) {
       return;
     }
     this._openContextAnnotationDialog(_hover);
@@ -4173,11 +4186,9 @@ export class HistoryChart extends HTMLElement {
 
     const addButton = this.querySelector<HTMLElement>("#chart-add-annotation");
     if (addButton) {
-      addButton.dataset.allowAddAnnotation =
-        (this._config as RecordWithUnknownValues).show_add_annotation_button ===
-        false
-          ? "false"
-          : "true";
+      addButton.dataset.allowAddAnnotation = this._canAddAnnotation
+        ? "true"
+        : "false";
       if (addButton.dataset.allowAddAnnotation === "false") {
         addButton.hidden = true;
       }
@@ -4199,11 +4210,9 @@ export class HistoryChart extends HTMLElement {
         {
           onContextMenu: (hover: unknown) =>
             this._handleChartContextMenu(hover),
-          onAddAnnotation:
-            (this._config as RecordWithUnknownValues)
-              .show_add_annotation_button === false
-              ? undefined
-              : (hover: unknown) => this._handleChartAddAnnotation(hover),
+          onAddAnnotation: this._canAddAnnotation
+            ? (hover: unknown) => this._handleChartAddAnnotation(hover)
+            : undefined,
           binaryStates: binaryBackgrounds.filter(
             (entry) => !this._hiddenSeries.has(entry.entityId)
           ) as HoverSeriesLike[],
@@ -6434,11 +6443,7 @@ export class HistoryChart extends HTMLElement {
       "#chart-add-annotation"
     );
     const onAddBtnClick = (ev: MouseEvent) => {
-      if (
-        (this._config as RecordWithUnknownValues).show_add_annotation_button ===
-          false ||
-        !this._chartLastHover
-      ) {
+      if (!this._canAddAnnotation || !this._chartLastHover) {
         return;
       }
       ev.preventDefault();

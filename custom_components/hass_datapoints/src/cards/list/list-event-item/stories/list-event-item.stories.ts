@@ -16,6 +16,7 @@ const baseEvent = {
 const baseContext = {
   hass: createMockHass(),
   showActions: true,
+  canEdit: true,
   showEntities: true,
   showFullMessage: false,
   hidden: false,

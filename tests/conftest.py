@@ -6,6 +6,7 @@ environment.  We stub every top-level import that the package's __init__.py
 (anomaly_detection, anomaly_cache, history_utils, store) can be imported
 and tested in isolation.
 """
+
 from __future__ import annotations
 
 import sys
@@ -13,12 +14,12 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-
 # ---------------------------------------------------------------------------
 # Stub out third-party / HA modules before pytest collects any test file.
 # Python executes custom_components/hass_datapoints/__init__.py whenever any
 # sub-module is imported, so every module-level import there must be covered.
 # ---------------------------------------------------------------------------
+
 
 def _stub(name: str, obj: object | None = None) -> None:
     """Insert *obj* (or a fresh MagicMock) into sys.modules under *name*."""
@@ -43,6 +44,16 @@ _sa.inspect = MagicMock()
 _sa.text = MagicMock()
 _stub("sqlalchemy", _sa)
 
+
+# -- homeassistant.exceptions -------------------------------------------------
+class _Unauthorized(Exception):
+    """Minimal Unauthorized stub — mirrors homeassistant.exceptions.Unauthorized."""
+
+
+_ha_exceptions = MagicMock()
+_ha_exceptions.Unauthorized = _Unauthorized
+_stub("homeassistant.exceptions", _ha_exceptions)
+
 # -- homeassistant core -------------------------------------------------------
 _ha_core = MagicMock()
 _ha_core.HomeAssistant = MagicMock
@@ -57,9 +68,11 @@ _ha_const.Platform = MagicMock()
 _ha_const.Platform.SENSOR = "sensor"
 _stub("homeassistant.const", _ha_const)
 
+
 # -- homeassistant.config_entries ---------------------------------------------
 class _FakeConfigFlow:
     """Minimal ConfigFlow stub that records what the step methods return."""
+
     _unique_id: str | None = None
 
     def __init_subclass__(cls, domain: str | None = None, **kwargs) -> None:
@@ -76,6 +89,7 @@ class _FakeConfigFlow:
 
     def async_show_form(self, **kwargs) -> dict:
         return {"type": "form", **kwargs}
+
 
 _ha_ce = MagicMock()
 _ha_ce.ConfigEntry = MagicMock
@@ -94,10 +108,13 @@ _ha_cv.entity_id = MagicMock()
 _ha_cv.ensure_list = MagicMock()
 _stub("homeassistant.helpers.config_validation", _ha_cv)
 
+
 class _FakeStore:
     """Minimal stub for homeassistant.helpers.storage.Store."""
+
     def __init__(self, *args, **kwargs) -> None:
         pass
+
 
 _ha_storage = MagicMock()
 _ha_storage.Store = _FakeStore
@@ -106,9 +123,11 @@ _stub("homeassistant.helpers.storage", _ha_storage)
 _ha_recorder_helper = MagicMock()
 _stub("homeassistant.helpers.recorder", _ha_recorder_helper)
 
+
 # -- homeassistant.components.sensor ------------------------------------------
 class _FakeSensorEntity:
     """Minimal SensorEntity stub that records state writes and listener removals."""
+
     _attr_has_entity_name: bool = False
     _attr_icon: str | None = None
     _attr_unique_id: str | None = None
@@ -131,6 +150,7 @@ class _FakeSensorEntity:
     async def async_added_to_hass(self) -> None:
         pass
 
+
 _ha_sensor = MagicMock()
 _ha_sensor.SensorEntity = _FakeSensorEntity
 _stub("homeassistant.components.sensor", _ha_sensor)
@@ -149,9 +169,11 @@ _stub("homeassistant.components.frontend", MagicMock())
 _stub("homeassistant.components.panel_custom", MagicMock())
 _stub("homeassistant.components.http", MagicMock())
 _ha_ws_api = MagicMock()
-_ha_ws_api.websocket_command = lambda schema: (lambda fn: fn)
+_ha_ws_api.websocket_command = lambda schema: lambda fn: fn
 _ha_ws_api.async_response = lambda fn: fn
-_ha_components.websocket_api = _ha_ws_api  # for "from homeassistant.components import websocket_api"
+_ha_components.websocket_api = (
+    _ha_ws_api  # for "from homeassistant.components import websocket_api"
+)
 _stub("homeassistant.components.websocket_api", _ha_ws_api)
 
 _ha_recorder_component = MagicMock()
@@ -163,6 +185,7 @@ _stub("homeassistant.components.recorder.statistics", MagicMock())
 # ---------------------------------------------------------------------------
 # Reusable store fixture
 # ---------------------------------------------------------------------------
+
 
 @pytest.fixture()
 def mock_store():

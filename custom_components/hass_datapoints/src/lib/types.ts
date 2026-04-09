@@ -50,6 +50,8 @@ export interface HassLike {
   devices: Record<string, HassDevice>;
   areas: Record<string, HassArea>;
   connection: HassConnection;
+  /** The currently logged-in HA user. */
+  user?: { is_admin: boolean };
   /** Legacy system language — prefer locale.language for the user's UI language. */
   language?: string;
   /** User's locale preferences (HA 2022.3+). */
