@@ -5,6 +5,7 @@ import { localized, msg } from "@/lib/i18n/localize";
 import { styles } from "./sidebar-chart-display-section.styles";
 import "@/atoms/display/sidebar-options-section/sidebar-options-section";
 import "@/atoms/form/checkbox-list/checkbox-list";
+import "@/atoms/form/inline-select/inline-select";
 import "@/atoms/form/radio-group/radio-group";
 
 export const DATA_GAP_THRESHOLD_OPTIONS = [
@@ -83,7 +84,7 @@ export class SidebarChartDisplaySection extends LitElement {
   private _onGapThresholdChange(e: Event) {
     this._emitDisplay(
       "data_gap_threshold",
-      (e.target as HTMLSelectElement).value
+      (e as CustomEvent<{ value: string }>).detail.value
     );
   }
 
@@ -126,22 +127,12 @@ export class SidebarChartDisplaySection extends LitElement {
           @dp-item-change=${this._onCheckboxChange}
         ></checkbox-list>
         <div class="is-subopt ${this.showDataGaps ? "" : "is-disabled"}">
-          <select
-            class="gap-select"
-            ?disabled=${!this.showDataGaps}
-            @change=${this._onGapThresholdChange}
-          >
-            ${this._localizedOptions(DATA_GAP_THRESHOLD_OPTIONS).map(
-              (opt) => html`
-                <option
-                  value=${opt.value}
-                  ?selected=${opt.value === this.dataGapThreshold}
-                >
-                  ${opt.label}
-                </option>
-              `
-            )}
-          </select>
+          <inline-select
+            .value=${this.dataGapThreshold}
+            .options=${this._localizedOptions(DATA_GAP_THRESHOLD_OPTIONS)}
+            .disabled=${!this.showDataGaps}
+            @dp-select-change=${this._onGapThresholdChange}
+          ></inline-select>
           <span>${msg("Gap threshold")}</span>
         </div>
         <div class="y-axis-group">

@@ -33,7 +33,11 @@ export class InlineSelect extends LitElement {
       >
         ${this.options.map(
           (opt) => html`
-            <option value=${opt.value} ?selected=${opt.value === this.value}>
+            <option
+              value=${opt.value}
+              ?selected=${opt.value === this.value}
+              ?disabled=${opt.disabled === true}
+            >
               ${opt.label}
             </option>
           `

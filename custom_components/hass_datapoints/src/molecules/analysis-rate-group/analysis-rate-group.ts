@@ -1,12 +1,12 @@
 import { LitElement, html } from "lit";
 import { property } from "lit/decorators.js";
-import type { TemplateResult } from "lit";
 import { localized, msg } from "@/lib/i18n/localize";
 
 import { sharedStyles } from "../analysis-group-shared/analysis-group-shared.styles";
 import { styles } from "./analysis-rate-group.styles";
 import type { NormalizedAnalysis } from "@/molecules/target-row/types";
 import "@/atoms/analysis/analysis-group/analysis-group";
+import "@/atoms/form/inline-select/inline-select";
 
 export const ANALYSIS_RATE_WINDOW_OPTIONS = [
   { value: "point_to_point", label: "Point to point" },
@@ -44,27 +44,6 @@ export class AnalysisRateGroup extends LitElement {
     }));
   }
 
-  private _renderSelect(
-    key: string,
-    options: { value: string; label: string }[],
-    value: string
-  ): TemplateResult {
-    return html`
-      <select
-        class="select"
-        @change=${(e: Event) =>
-          this._emit(key, (e.target as HTMLSelectElement).value)}
-      >
-        ${options.map(
-          (opt) =>
-            html`<option value=${opt.value} ?selected=${opt.value === value}>
-              ${opt.label}
-            </option>`
-        )}
-      </select>
-    `;
-  }
-
   private _onGroupChange(e: CustomEvent) {
     this._emit("show_rate_of_change", e.detail.checked);
   }
@@ -91,11 +70,15 @@ export class AnalysisRateGroup extends LitElement {
         </label>
         <label class="field">
           <span class="field-label">${msg("Rate window")}</span>
-          ${this._renderSelect(
-            "rate_window",
-            this._localizedOptions(ANALYSIS_RATE_WINDOW_OPTIONS),
-            a.rate_window
-          )}
+          <inline-select
+            .value=${a.rate_window}
+            .options=${this._localizedOptions(ANALYSIS_RATE_WINDOW_OPTIONS)}
+            @dp-select-change=${(e: Event) =>
+              this._emit(
+                "rate_window",
+                (e as CustomEvent<{ value: string }>).detail.value
+              )}
+          ></inline-select>
         </label>
       </analysis-group>
     `;

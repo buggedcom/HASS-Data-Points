@@ -10,6 +10,7 @@ import type {
 } from "@/molecules/target-row/types";
 import "@/atoms/analysis/analysis-group/analysis-group";
 import "@/atoms/analysis/analysis-method-subopts/analysis-method-subopts";
+import "@/atoms/form/inline-select/inline-select";
 import {
   ANALYSIS_TREND_METHOD_OPTIONS,
   ANALYSIS_TREND_WINDOW_OPTIONS,
@@ -116,27 +117,6 @@ export class AnalysisAnomalyGroup extends LitElement {
     );
   }
 
-  private _renderSelect(
-    key: string,
-    options: { value: string; label: string }[],
-    value: string
-  ): TemplateResult {
-    return html`
-      <select
-        class="select"
-        @change=${(e: Event) =>
-          this._emit(key, (e.target as HTMLSelectElement).value)}
-      >
-        ${options.map(
-          (opt) =>
-            html`<option value=${opt.value} ?selected=${opt.value === value}>
-              ${opt.label}
-            </option>`
-        )}
-      </select>
-    `;
-  }
-
   private _onGroupChange(e: CustomEvent) {
     this._emit("show_anomalies", e.detail.checked);
   }
@@ -156,63 +136,56 @@ export class AnalysisAnomalyGroup extends LitElement {
     a: NormalizedAnalysis
   ): TemplateResult | typeof nothing {
     if (opt.value === "trend_residual") {
-      const anomalyMethod = a.anomaly_trend_method || "";
+      const storedMethod = a.anomaly_trend_method || "";
+      const trendLinesEnabled = a.show_trend_lines === true;
+      // When "Same as display trend" is disabled (trend lines off) and the
+      // stored value is "" (follow display), fall back to the first real method
+      // so the select is never stuck on a disabled option.
+      const effectiveMethod =
+        !trendLinesEnabled && storedMethod === ""
+          ? (ANALYSIS_TREND_METHOD_OPTIONS[0]?.value ?? "rolling_average")
+          : storedMethod;
       const methodOptions = [
-        { value: "", label: msg("Same as display trend") },
+        {
+          value: "",
+          label: msg("Same as display trend"),
+          disabled: !trendLinesEnabled,
+        },
         ...this._localizedOptions(ANALYSIS_TREND_METHOD_OPTIONS),
       ];
       const windowOptions = this._localizedOptions(
         ANALYSIS_TREND_WINDOW_OPTIONS
       );
       const showWindow = ["rolling_average", "ema", "lowess"].includes(
-        anomalyMethod
+        effectiveMethod
       );
       return html`
         <analysis-method-subopts>
           <label class="field">
             <span class="field-label">${msg("Trend method")}</span>
-            <select
-              class="select"
-              @change=${(e: Event) =>
+            <inline-select
+              .value=${effectiveMethod}
+              .options=${methodOptions}
+              @dp-select-change=${(e: Event) =>
                 this._emit(
                   "anomaly_trend_method",
-                  (e.target as HTMLSelectElement).value
+                  (e as CustomEvent<{ value: string }>).detail.value
                 )}
-            >
-              ${methodOptions.map(
-                (methodOpt) =>
-                  html`<option
-                    value=${methodOpt.value}
-                    ?selected=${methodOpt.value === anomalyMethod}
-                  >
-                    ${methodOpt.label}
-                  </option>`
-              )}
-            </select>
+            ></inline-select>
           </label>
           ${showWindow
             ? html`
                 <label class="field">
                   <span class="field-label">${msg("Trend window")}</span>
-                  <select
-                    class="select"
-                    @change=${(e: Event) =>
+                  <inline-select
+                    .value=${a.anomaly_trend_window}
+                    .options=${windowOptions}
+                    @dp-select-change=${(e: Event) =>
                       this._emit(
                         "anomaly_trend_window",
-                        (e.target as HTMLSelectElement).value
+                        (e as CustomEvent<{ value: string }>).detail.value
                       )}
-                  >
-                    ${windowOptions.map(
-                      (windowOpt) =>
-                        html`<option
-                          value=${windowOpt.value}
-                          ?selected=${windowOpt.value ===
-                          a.anomaly_trend_window}
-                        >
-                          ${windowOpt.label}
-                        </option>`
-                    )}
-                  </select>
+                  ></inline-select>
                 </label>
               `
             : nothing}
@@ -224,11 +197,17 @@ export class AnalysisAnomalyGroup extends LitElement {
         <analysis-method-subopts>
           <label class="field">
             <span class="field-label">${msg("Rate window")}</span>
-            ${this._renderSelect(
-              "anomaly_rate_window",
-              this._localizedOptions(ANALYSIS_ANOMALY_RATE_WINDOW_OPTIONS),
-              a.anomaly_rate_window
-            )}
+            <inline-select
+              .value=${a.anomaly_rate_window}
+              .options=${this._localizedOptions(
+                ANALYSIS_ANOMALY_RATE_WINDOW_OPTIONS
+              )}
+              @dp-select-change=${(e: Event) =>
+                this._emit(
+                  "anomaly_rate_window",
+                  (e as CustomEvent<{ value: string }>).detail.value
+                )}
+            ></inline-select>
           </label>
         </analysis-method-subopts>
       `;
@@ -238,11 +217,17 @@ export class AnalysisAnomalyGroup extends LitElement {
         <analysis-method-subopts>
           <label class="field">
             <span class="field-label">${msg("Rolling window")}</span>
-            ${this._renderSelect(
-              "anomaly_zscore_window",
-              this._localizedOptions(ANALYSIS_ANOMALY_ZSCORE_WINDOW_OPTIONS),
-              a.anomaly_zscore_window
-            )}
+            <inline-select
+              .value=${a.anomaly_zscore_window}
+              .options=${this._localizedOptions(
+                ANALYSIS_ANOMALY_ZSCORE_WINDOW_OPTIONS
+              )}
+              @dp-select-change=${(e: Event) =>
+                this._emit(
+                  "anomaly_zscore_window",
+                  (e as CustomEvent<{ value: string }>).detail.value
+                )}
+            ></inline-select>
           </label>
         </analysis-method-subopts>
       `;
@@ -252,44 +237,42 @@ export class AnalysisAnomalyGroup extends LitElement {
         <analysis-method-subopts>
           <label class="field">
             <span class="field-label">${msg("Min flat duration")}</span>
-            ${this._renderSelect(
-              "anomaly_persistence_window",
-              this._localizedOptions(
+            <inline-select
+              .value=${a.anomaly_persistence_window}
+              .options=${this._localizedOptions(
                 ANALYSIS_ANOMALY_PERSISTENCE_WINDOW_OPTIONS
-              ),
-              a.anomaly_persistence_window
-            )}
+              )}
+              @dp-select-change=${(e: Event) =>
+                this._emit(
+                  "anomaly_persistence_window",
+                  (e as CustomEvent<{ value: string }>).detail.value
+                )}
+            ></inline-select>
           </label>
         </analysis-method-subopts>
       `;
     }
     if (opt.value === "comparison_window") {
+      const comparisonOptions = [
+        { value: "", label: msg("— select window —") },
+        ...this.comparisonWindows.map((win) => ({
+          value: win.id,
+          label: win.label || win.id,
+        })),
+      ];
       return html`
         <analysis-method-subopts>
           <label class="field">
             <span class="field-label">${msg("Compare to window")}</span>
-            <select
-              class="select"
-              @change=${(e: Event) =>
+            <inline-select
+              .value=${a.anomaly_comparison_window_id ?? ""}
+              .options=${comparisonOptions}
+              @dp-select-change=${(e: Event) =>
                 this._emit(
                   "anomaly_comparison_window_id",
-                  (e.target as HTMLSelectElement).value
+                  (e as CustomEvent<{ value: string }>).detail.value
                 )}
-            >
-              <option value="" ?selected=${!a.anomaly_comparison_window_id}>
-                ${msg("— select window —")}
-              </option>
-              ${this.comparisonWindows.map(
-                (win) => html`
-                  <option
-                    value=${win.id}
-                    ?selected=${a.anomaly_comparison_window_id === win.id}
-                  >
-                    ${win.label || win.id}
-                  </option>
-                `
-              )}
-            </select>
+            ></inline-select>
           </label>
         </analysis-method-subopts>
       `;
@@ -302,11 +285,11 @@ export class AnalysisAnomalyGroup extends LitElement {
     const sensitivityOptions = this._localizedOptions(
       ANALYSIS_ANOMALY_SENSITIVITY_OPTIONS
     );
-    const methodOptions = this._localizedOptions(
-      ANALYSIS_ANOMALY_METHOD_OPTIONS
-    );
     const overlapOptions = this._localizedOptions(
       ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS
+    );
+    const methodOptions = this._localizedOptions(
+      ANALYSIS_ANOMALY_METHOD_OPTIONS
     );
     return html`
       <analysis-group
@@ -316,11 +299,15 @@ export class AnalysisAnomalyGroup extends LitElement {
       >
         <label class="field">
           <span class="field-label">${msg("Sensitivity")}</span>
-          ${this._renderSelect(
-            "anomaly_sensitivity",
-            sensitivityOptions,
-            a.anomaly_sensitivity
-          )}
+          <inline-select
+            .value=${a.anomaly_sensitivity}
+            .options=${sensitivityOptions}
+            @dp-select-change=${(e: Event) =>
+              this._emit(
+                "anomaly_sensitivity",
+                (e as CustomEvent<{ value: string }>).detail.value
+              )}
+          ></inline-select>
         </label>
         ${a.sample_interval && a.sample_interval !== "raw"
           ? html`
@@ -404,11 +391,15 @@ export class AnalysisAnomalyGroup extends LitElement {
           ? html`
               <label class="field">
                 <span class="field-label">${msg("When methods overlap")}</span>
-                ${this._renderSelect(
-                  "anomaly_overlap_mode",
-                  overlapOptions,
-                  a.anomaly_overlap_mode
-                )}
+                <inline-select
+                  .value=${a.anomaly_overlap_mode}
+                  .options=${overlapOptions}
+                  @dp-select-change=${(e: Event) =>
+                    this._emit(
+                      "anomaly_overlap_mode",
+                      (e as CustomEvent<{ value: string }>).detail.value
+                    )}
+                ></inline-select>
               </label>
             `
           : nothing}

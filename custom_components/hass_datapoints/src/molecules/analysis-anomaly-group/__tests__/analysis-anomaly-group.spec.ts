@@ -142,10 +142,11 @@ describe("analysis-anomaly-group", () => {
     });
   });
 
-  describe("GIVEN trend_residual method is checked with anomaly_trend_method=''", () => {
+  describe("GIVEN trend_residual method is checked with anomaly_trend_method='' and show_trend_lines=true", () => {
     beforeEach(async () => {
       el = createElement({
         analysis: {
+          show_trend_lines: true,
           show_anomalies: true,
           anomaly_methods: ["trend_residual"],
           anomaly_trend_method: "",
@@ -156,39 +157,53 @@ describe("analysis-anomaly-group", () => {
     });
 
     describe("WHEN rendered", () => {
-      it("THEN shows a trend method select inside method subopts", () => {
+      it("THEN shows a trend method inline-select inside method subopts", () => {
         expect.assertions(1);
         const subopts = el.shadowRoot!.querySelector("analysis-method-subopts");
         expect(subopts).toBeTruthy();
       });
 
-      it("THEN the trend method select has 'Same as display trend' selected by default", () => {
+      it("THEN the trend method inline-select has value='' (Same as display trend)", () => {
         expect.assertions(1);
-        const select = el.shadowRoot!.querySelector(
-          "analysis-method-subopts select"
-        ) as HTMLSelectElement;
-        expect(select.value).toBe("");
+        const inlineSelect = el.shadowRoot!.querySelector(
+          "analysis-method-subopts inline-select"
+        ) as HTMLElement & { value: string };
+        expect(inlineSelect.value).toBe("");
       });
 
-      it("THEN the trend window select is NOT shown when method is empty", () => {
+      it("THEN the Same as display trend option is NOT disabled", () => {
         expect.assertions(1);
-        const selects = el.shadowRoot!.querySelectorAll(
-          "analysis-method-subopts select"
+        const inlineSelect = el.shadowRoot!.querySelector(
+          "analysis-method-subopts inline-select"
+        ) as HTMLElement & { options: { value: string; disabled?: boolean }[] };
+        const opt = inlineSelect.options.find((o) => o.value === "");
+        expect(opt?.disabled).toBeFalsy();
+      });
+
+      it("THEN the trend window inline-select is NOT shown when method is empty", () => {
+        expect.assertions(1);
+        const inlineSelects = el.shadowRoot!.querySelectorAll(
+          "analysis-method-subopts inline-select"
         );
-        expect(selects.length).toBe(1);
+        expect(inlineSelects.length).toBe(1);
       });
     });
 
-    describe("WHEN the trend method select changes to 'ema'", () => {
+    describe("WHEN the trend method inline-select changes to 'ema'", () => {
       it("THEN dispatches dp-group-analysis-change with key=anomaly_trend_method and value=ema", () => {
         expect.assertions(3);
         const handler = vi.fn();
         el.addEventListener("dp-group-analysis-change", handler);
-        const select = el.shadowRoot!.querySelector(
-          "analysis-method-subopts select"
-        ) as HTMLSelectElement;
-        select.value = "ema";
-        select.dispatchEvent(new Event("change", { bubbles: true }));
+        const inlineSelect = el.shadowRoot!.querySelector(
+          "analysis-method-subopts inline-select"
+        )!;
+        inlineSelect.dispatchEvent(
+          new CustomEvent("dp-select-change", {
+            detail: { value: "ema" },
+            bubbles: true,
+            composed: true,
+          })
+        );
         expect(handler).toHaveBeenCalledOnce();
         expect(handler.mock.calls[0][0].detail.key).toBe(
           "anomaly_trend_method"
@@ -212,30 +227,35 @@ describe("analysis-anomaly-group", () => {
     });
 
     describe("WHEN rendered", () => {
-      it("THEN shows both trend method and trend window selects", () => {
+      it("THEN shows both trend method and trend window inline-selects", () => {
         expect.assertions(2);
-        const selects = el.shadowRoot!.querySelectorAll(
-          "analysis-method-subopts select"
+        const inlineSelects = el.shadowRoot!.querySelectorAll(
+          "analysis-method-subopts inline-select"
         );
-        expect(selects.length).toBe(2);
-        // Verify the window select contains the expected option value
-        // (jsdom does not reliably reflect ?selected on non-first options)
-        const windowSelect = selects[1] as HTMLSelectElement;
-        expect(windowSelect.querySelector('option[value="6h"]')).not.toBeNull();
+        expect(inlineSelects.length).toBe(2);
+        const windowSelect = inlineSelects[1] as HTMLElement & {
+          value: string;
+        };
+        expect(windowSelect.value).toBe("6h");
       });
     });
 
-    describe("WHEN the trend window select changes", () => {
+    describe("WHEN the trend window inline-select changes", () => {
       it("THEN dispatches dp-group-analysis-change with key=anomaly_trend_window", () => {
         expect.assertions(3);
         const handler = vi.fn();
         el.addEventListener("dp-group-analysis-change", handler);
-        const selects = el.shadowRoot!.querySelectorAll(
-          "analysis-method-subopts select"
+        const inlineSelects = el.shadowRoot!.querySelectorAll(
+          "analysis-method-subopts inline-select"
         );
-        const windowSelect = selects[1] as HTMLSelectElement;
-        windowSelect.value = "24h";
-        windowSelect.dispatchEvent(new Event("change", { bubbles: true }));
+        const windowSelect = inlineSelects[1]!;
+        windowSelect.dispatchEvent(
+          new CustomEvent("dp-select-change", {
+            detail: { value: "24h" },
+            bubbles: true,
+            composed: true,
+          })
+        );
         expect(handler).toHaveBeenCalledOnce();
         expect(handler.mock.calls[0][0].detail.key).toBe(
           "anomaly_trend_window"
@@ -259,12 +279,54 @@ describe("analysis-anomaly-group", () => {
     });
 
     describe("WHEN rendered", () => {
-      it("THEN does NOT show a trend window select (linear trend has no window)", () => {
+      it("THEN does NOT show a trend window inline-select (linear trend has no window)", () => {
         expect.assertions(1);
-        const selects = el.shadowRoot!.querySelectorAll(
-          "analysis-method-subopts select"
+        const inlineSelects = el.shadowRoot!.querySelectorAll(
+          "analysis-method-subopts inline-select"
         );
-        expect(selects.length).toBe(1);
+        expect(inlineSelects.length).toBe(1);
+      });
+    });
+  });
+
+  describe("GIVEN trend_residual method is checked with anomaly_trend_method='' and show_trend_lines=false", () => {
+    beforeEach(async () => {
+      el = createElement({
+        analysis: {
+          show_trend_lines: false,
+          show_anomalies: true,
+          anomaly_methods: ["trend_residual"],
+          anomaly_trend_method: "",
+          anomaly_trend_window: "24h",
+        },
+      });
+      await el.updateComplete;
+    });
+
+    describe("WHEN rendered", () => {
+      it("THEN the Same as display trend option is disabled", () => {
+        expect.assertions(1);
+        const inlineSelect = el.shadowRoot!.querySelector(
+          "analysis-method-subopts inline-select"
+        ) as HTMLElement & { options: { value: string; disabled?: boolean }[] };
+        const opt = inlineSelect.options.find((o) => o.value === "");
+        expect(opt?.disabled).toBe(true);
+      });
+
+      it("THEN the inline-select value falls back to the first real method (rolling_average)", () => {
+        expect.assertions(1);
+        const inlineSelect = el.shadowRoot!.querySelector(
+          "analysis-method-subopts inline-select"
+        ) as HTMLElement & { value: string };
+        expect(inlineSelect.value).toBe("rolling_average");
+      });
+
+      it("THEN the trend window inline-select IS shown because rolling_average needs a window", () => {
+        expect.assertions(1);
+        const inlineSelects = el.shadowRoot!.querySelectorAll(
+          "analysis-method-subopts inline-select"
+        );
+        expect(inlineSelects.length).toBe(2);
       });
     });
   });
