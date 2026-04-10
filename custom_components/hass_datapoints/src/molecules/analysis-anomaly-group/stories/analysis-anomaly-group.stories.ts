@@ -124,6 +124,7 @@ export const TrendDeviationDefaultTrend = {
   render: () => html`
     <analysis-anomaly-group
       .analysis=${makeAnalysis({
+        show_trend_lines: true,
         show_anomalies: true,
         anomaly_methods: ["trend_residual"],
         anomaly_trend_method: "",
@@ -137,13 +138,19 @@ export const TrendDeviationDefaultTrend = {
     const el = canvasElement.querySelector(
       "analysis-anomaly-group"
     ) as HTMLElement & { shadowRoot: ShadowRoot };
-    // Subopts should render with a single method select
-    const selects = el.shadowRoot.querySelectorAll(
-      "analysis-method-subopts select"
+    // Subopts should render with a single method inline-select
+    const inlineSelects = el.shadowRoot.querySelectorAll(
+      "analysis-method-subopts inline-select"
     );
-    expect(selects.length).toBe(1);
-    expect((selects[0] as HTMLSelectElement).value).toBe("");
-    expect(el.shadowRoot.textContent).toContain("Same as display trend");
+    expect(inlineSelects.length).toBe(1);
+    const methodSelect = inlineSelects[0] as HTMLElement & {
+      value: string;
+      options: Array<{ value: string; label: string }>;
+    };
+    expect(methodSelect.value).toBe("");
+    expect(
+      methodSelect.options.some((o) => o.label === "Same as display trend")
+    ).toBe(true);
   },
 };
 
@@ -165,17 +172,17 @@ export const TrendDeviationOverriddenWithEma = {
     const el = canvasElement.querySelector(
       "analysis-anomaly-group"
     ) as HTMLElement & { shadowRoot: ShadowRoot };
-    // Both method and window selects should be visible
-    const selects = el.shadowRoot.querySelectorAll(
-      "analysis-method-subopts select"
+    // Both method and window inline-selects should be visible
+    const inlineSelects = el.shadowRoot.querySelectorAll(
+      "analysis-method-subopts inline-select"
     );
-    expect(selects.length).toBe(2);
-    expect(
-      (selects[0] as HTMLSelectElement).querySelector('option[value="ema"]')
-    ).toBeTruthy();
-    expect(
-      (selects[1] as HTMLSelectElement).querySelector('option[value="6h"]')
-    ).toBeTruthy();
+    expect(inlineSelects.length).toBe(2);
+    expect((inlineSelects[0] as HTMLElement & { value: string }).value).toBe(
+      "ema"
+    );
+    expect((inlineSelects[1] as HTMLElement & { value: string }).value).toBe(
+      "6h"
+    );
   },
 };
 
@@ -213,11 +220,11 @@ export const TrendDeviationOverriddenWithLinear = {
     const el = canvasElement.querySelector(
       "analysis-anomaly-group"
     ) as HTMLElement & { shadowRoot: ShadowRoot };
-    // Linear trend has no window — only the method select should render
-    const selects = el.shadowRoot.querySelectorAll(
-      "analysis-method-subopts select"
+    // Linear trend has no window — only the method inline-select should render
+    const inlineSelects = el.shadowRoot.querySelectorAll(
+      "analysis-method-subopts inline-select"
     );
-    expect(selects.length).toBe(1);
+    expect(inlineSelects.length).toBe(1);
   },
 };
 

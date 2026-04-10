@@ -1,12 +1,12 @@
 import { LitElement, html, nothing } from "lit";
 import { property } from "lit/decorators.js";
-import type { TemplateResult } from "lit";
 import { localized, msg } from "@/lib/i18n/localize";
 
 import { sharedStyles } from "../analysis-group-shared/analysis-group-shared.styles";
 import { styles } from "./analysis-sample-group.styles";
 import type { NormalizedAnalysis } from "@/molecules/target-row/types";
 import "@/atoms/analysis/analysis-group/analysis-group";
+import "@/atoms/form/inline-select/inline-select";
 
 export const SAMPLE_INTERVAL_OPTIONS = [
   { value: "raw", label: "Raw (no sampling)" },
@@ -67,27 +67,6 @@ export class AnalysisSampleGroup extends LitElement {
     }));
   }
 
-  private _renderSelect(
-    key: string,
-    options: { value: string; label: string }[],
-    value: string
-  ): TemplateResult {
-    return html`
-      <select
-        class="select"
-        @change=${(e: Event) =>
-          this._emit(key, (e.target as HTMLSelectElement).value)}
-      >
-        ${options.map(
-          (opt) =>
-            html`<option value=${opt.value} ?selected=${opt.value === value}>
-              ${opt.label}
-            </option>`
-        )}
-      </select>
-    `;
-  }
-
   private _onGroupChange(e: CustomEvent) {
     // Toggling the group on/off switches between "raw" and "5m" as default.
     const enabled = e.detail.checked;
@@ -106,21 +85,29 @@ export class AnalysisSampleGroup extends LitElement {
       >
         <label class="field">
           <span class="field-label">${msg("Interval")}</span>
-          ${this._renderSelect(
-            "sample_interval",
-            this._localizedOptions(SAMPLE_INTERVAL_OPTIONS),
-            interval
-          )}
+          <inline-select
+            .value=${interval}
+            .options=${this._localizedOptions(SAMPLE_INTERVAL_OPTIONS)}
+            @dp-select-change=${(e: Event) =>
+              this._emit(
+                "sample_interval",
+                (e as CustomEvent<{ value: string }>).detail.value
+              )}
+          ></inline-select>
         </label>
         ${isEnabled
           ? html`
               <label class="field">
                 <span class="field-label">${msg("Aggregate")}</span>
-                ${this._renderSelect(
-                  "sample_aggregate",
-                  this._localizedOptions(SAMPLE_AGGREGATE_OPTIONS),
-                  a.sample_aggregate ?? "mean"
-                )}
+                <inline-select
+                  .value=${a.sample_aggregate ?? "mean"}
+                  .options=${this._localizedOptions(SAMPLE_AGGREGATE_OPTIONS)}
+                  @dp-select-change=${(e: Event) =>
+                    this._emit(
+                      "sample_aggregate",
+                      (e as CustomEvent<{ value: string }>).detail.value
+                    )}
+                ></inline-select>
               </label>
             `
           : nothing}

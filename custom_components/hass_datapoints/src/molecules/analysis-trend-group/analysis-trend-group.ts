@@ -1,12 +1,12 @@
 import { LitElement, html, nothing } from "lit";
 import { property } from "lit/decorators.js";
-import type { TemplateResult } from "lit";
 import { localized, msg } from "@/lib/i18n/localize";
 
 import { sharedStyles } from "../analysis-group-shared/analysis-group-shared.styles";
 import { styles } from "./analysis-trend-group.styles";
 import type { NormalizedAnalysis } from "@/molecules/target-row/types";
 import "@/atoms/analysis/analysis-group/analysis-group";
+import "@/atoms/form/inline-select/inline-select";
 
 export const ANALYSIS_TREND_METHOD_OPTIONS = [
   { value: "rolling_average", label: "Rolling average" },
@@ -58,27 +58,6 @@ export class AnalysisTrendGroup extends LitElement {
     }));
   }
 
-  private _renderSelect(
-    key: string,
-    options: { value: string; label: string }[],
-    value: string
-  ): TemplateResult {
-    return html`
-      <select
-        class="select"
-        @change=${(e: Event) =>
-          this._emit(key, (e.target as HTMLSelectElement).value)}
-      >
-        ${options.map(
-          (opt) =>
-            html`<option value=${opt.value} ?selected=${opt.value === value}>
-              ${opt.label}
-            </option>`
-        )}
-      </select>
-    `;
-  }
-
   private _onGroupChange(e: CustomEvent) {
     this._emit("show_trend_lines", e.detail.checked);
   }
@@ -106,21 +85,31 @@ export class AnalysisTrendGroup extends LitElement {
         </label>
         <label class="field">
           <span class="field-label">${msg("Trend method")}</span>
-          ${this._renderSelect(
-            "trend_method",
-            this._localizedOptions(ANALYSIS_TREND_METHOD_OPTIONS),
-            a.trend_method
-          )}
+          <inline-select
+            .value=${a.trend_method}
+            .options=${this._localizedOptions(ANALYSIS_TREND_METHOD_OPTIONS)}
+            @dp-select-change=${(e: Event) =>
+              this._emit(
+                "trend_method",
+                (e as CustomEvent<{ value: string }>).detail.value
+              )}
+          ></inline-select>
         </label>
         ${["rolling_average", "ema", "lowess"].includes(a.trend_method)
           ? html`
               <label class="field">
                 <span class="field-label">${msg("Trend window")}</span>
-                ${this._renderSelect(
-                  "trend_window",
-                  this._localizedOptions(ANALYSIS_TREND_WINDOW_OPTIONS),
-                  a.trend_window
-                )}
+                <inline-select
+                  .value=${a.trend_window}
+                  .options=${this._localizedOptions(
+                    ANALYSIS_TREND_WINDOW_OPTIONS
+                  )}
+                  @dp-select-change=${(e: Event) =>
+                    this._emit(
+                      "trend_window",
+                      (e as CustomEvent<{ value: string }>).detail.value
+                    )}
+                ></inline-select>
               </label>
             `
           : nothing}

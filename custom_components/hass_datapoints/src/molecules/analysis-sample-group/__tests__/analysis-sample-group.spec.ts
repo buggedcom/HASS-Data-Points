@@ -68,19 +68,18 @@ describe("analysis-sample-group", () => {
     });
 
     describe("WHEN rendered", () => {
-      it("THEN interval select shows raw as selected value", () => {
-        const selects = el.shadowRoot!.querySelectorAll("select");
-        const intervalSelect = selects[0] as HTMLSelectElement;
-        const selectedOpt = [...intervalSelect.options].find((o) =>
-          o.hasAttribute("selected")
-        );
-        expect(selectedOpt?.value).toBe("raw");
+      it("THEN interval inline-select shows raw as value", () => {
+        const inlineSelects = el.shadowRoot!.querySelectorAll("inline-select");
+        const intervalSelect = inlineSelects[0] as HTMLElement & {
+          value: string;
+        };
+        expect(intervalSelect.value).toBe("raw");
       });
 
-      it("THEN aggregate select is not rendered", () => {
-        const selects = el.shadowRoot!.querySelectorAll("select");
-        // Only one select (interval) should be present when disabled
-        expect(selects.length).toBe(1);
+      it("THEN aggregate inline-select is not rendered", () => {
+        const inlineSelects = el.shadowRoot!.querySelectorAll("inline-select");
+        // Only one inline-select (interval) should be present when disabled
+        expect(inlineSelects.length).toBe(1);
       });
     });
   });
@@ -94,18 +93,17 @@ describe("analysis-sample-group", () => {
     });
 
     describe("WHEN rendered", () => {
-      it("THEN interval select shows 1m as selected value", () => {
-        const selects = el.shadowRoot!.querySelectorAll("select");
-        const intervalSelect = selects[0] as HTMLSelectElement;
-        const selectedOpt = [...intervalSelect.options].find((o) =>
-          o.hasAttribute("selected")
-        );
-        expect(selectedOpt?.value).toBe("1m");
+      it("THEN interval inline-select shows 1m as value", () => {
+        const inlineSelects = el.shadowRoot!.querySelectorAll("inline-select");
+        const intervalSelect = inlineSelects[0] as HTMLElement & {
+          value: string;
+        };
+        expect(intervalSelect.value).toBe("1m");
       });
 
-      it("THEN aggregate select is rendered", () => {
-        const selects = el.shadowRoot!.querySelectorAll("select");
-        expect(selects.length).toBe(2);
+      it("THEN aggregate inline-select is rendered", () => {
+        const inlineSelects = el.shadowRoot!.querySelectorAll("inline-select");
+        expect(inlineSelects.length).toBe(2);
       });
     });
   });
@@ -119,16 +117,18 @@ describe("analysis-sample-group", () => {
       await el.updateComplete;
     });
 
-    describe("WHEN interval select changes to 5m", () => {
+    describe("WHEN interval inline-select emits dp-select-change to 5m", () => {
       it("THEN fires dp-group-analysis-change with key=sample_interval and value=5m", () => {
         expect.assertions(3);
         const handler = vi.fn();
         el.addEventListener("dp-group-analysis-change", handler);
-        const selects = el.shadowRoot!.querySelectorAll("select");
-        const intervalSelect = selects[0] as HTMLSelectElement;
-        intervalSelect.value = "5m";
-        intervalSelect.dispatchEvent(
-          new Event("change", { bubbles: true, composed: true })
+        const inlineSelects = el.shadowRoot!.querySelectorAll("inline-select");
+        inlineSelects[0].dispatchEvent(
+          new CustomEvent("dp-select-change", {
+            detail: { value: "5m" },
+            bubbles: true,
+            composed: true,
+          })
         );
         expect(handler).toHaveBeenCalledOnce();
         expect(handler.mock.calls[0][0].detail.key).toBe("sample_interval");
@@ -136,16 +136,18 @@ describe("analysis-sample-group", () => {
       });
     });
 
-    describe("WHEN aggregate select changes to max", () => {
+    describe("WHEN aggregate inline-select emits dp-select-change to max", () => {
       it("THEN fires dp-group-analysis-change with key=sample_aggregate and value=max", () => {
         expect.assertions(3);
         const handler = vi.fn();
         el.addEventListener("dp-group-analysis-change", handler);
-        const selects = el.shadowRoot!.querySelectorAll("select");
-        const aggregateSelect = selects[1] as HTMLSelectElement;
-        aggregateSelect.value = "max";
-        aggregateSelect.dispatchEvent(
-          new Event("change", { bubbles: true, composed: true })
+        const inlineSelects = el.shadowRoot!.querySelectorAll("inline-select");
+        inlineSelects[1].dispatchEvent(
+          new CustomEvent("dp-select-change", {
+            detail: { value: "max" },
+            bubbles: true,
+            composed: true,
+          })
         );
         expect(handler).toHaveBeenCalledOnce();
         expect(handler.mock.calls[0][0].detail.key).toBe("sample_aggregate");

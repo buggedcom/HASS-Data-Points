@@ -57,7 +57,9 @@ describe("sidebar-chart-display-section", () => {
 
       it("THEN renders the gap threshold select", () => {
         expect.assertions(1);
-        expect(el.shadowRoot!.querySelector(".gap-select")).not.toBeNull();
+        expect(
+          el.shadowRoot!.querySelector(".is-subopt inline-select")
+        ).not.toBeNull();
       });
 
       it("THEN renders the y-axis radio-group", () => {
@@ -74,11 +76,12 @@ describe("sidebar-chart-display-section", () => {
     });
 
     describe("WHEN rendered", () => {
-      it("THEN the gap threshold select is not disabled", () => {
+      it("THEN the gap threshold inline-select is not disabled", () => {
         expect.assertions(1);
-        const select =
-          el.shadowRoot!.querySelector<HTMLSelectElement>(".gap-select")!;
-        expect(select.disabled).toBe(false);
+        const inlineSelect = el.shadowRoot!.querySelector<
+          HTMLElement & { disabled: boolean }
+        >(".is-subopt inline-select")!;
+        expect(inlineSelect.disabled).toBe(false);
       });
 
       it("THEN the subopt wrapper does not have is-disabled class", () => {
@@ -96,11 +99,12 @@ describe("sidebar-chart-display-section", () => {
     });
 
     describe("WHEN rendered", () => {
-      it("THEN the gap threshold select is disabled", () => {
+      it("THEN the gap threshold inline-select is disabled", () => {
         expect.assertions(1);
-        const select =
-          el.shadowRoot!.querySelector<HTMLSelectElement>(".gap-select")!;
-        expect(select.disabled).toBe(true);
+        const inlineSelect = el.shadowRoot!.querySelector<
+          HTMLElement & { disabled: boolean }
+        >(".is-subopt inline-select")!;
+        expect(inlineSelect.disabled).toBe(true);
       });
 
       it("THEN the subopt wrapper has is-disabled class", () => {
@@ -169,15 +173,21 @@ describe("sidebar-chart-display-section", () => {
       });
     });
 
-    describe("WHEN the gap threshold select changes", () => {
+    describe("WHEN the gap threshold inline-select emits dp-select-change", () => {
       it("THEN dispatches dp-display-change with kind=data_gap_threshold and the new value", () => {
         expect.assertions(3);
         const handler = vi.fn();
         el.addEventListener("dp-display-change", handler);
-        const select =
-          el.shadowRoot!.querySelector<HTMLSelectElement>(".gap-select")!;
-        select.value = "6h";
-        select.dispatchEvent(new Event("change"));
+        const inlineSelect = el.shadowRoot!.querySelector(
+          ".is-subopt inline-select"
+        )!;
+        inlineSelect.dispatchEvent(
+          new CustomEvent("dp-select-change", {
+            detail: { value: "6h" },
+            bubbles: true,
+            composed: true,
+          })
+        );
         expect(handler).toHaveBeenCalledOnce();
         expect(handler.mock.calls[0][0].detail.kind).toBe("data_gap_threshold");
         expect(handler.mock.calls[0][0].detail.value).toBe("6h");
