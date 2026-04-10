@@ -10,6 +10,8 @@ and tested in isolation.
 from __future__ import annotations
 
 import sys
+from datetime import UTC
+from datetime import datetime as _datetime
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -68,6 +70,16 @@ _stub("homeassistant.core", _ha_core)
 _ha_const = MagicMock()
 _ha_const.Platform = MagicMock()
 _ha_const.Platform.SENSOR = "sensor"
+
+
+class _UnitOfTime:
+    HOURS = "h"
+    MINUTES = "min"
+    SECONDS = "s"
+    DAYS = "d"
+
+
+_ha_const.UnitOfTime = _UnitOfTime
 _stub("homeassistant.const", _ha_const)
 
 
@@ -153,8 +165,16 @@ class _FakeSensorEntity:
         pass
 
 
+class _SensorDeviceClass:
+    TIMESTAMP = "timestamp"
+    DURATION = "duration"
+    ENERGY = "energy"
+    TEMPERATURE = "temperature"
+
+
 _ha_sensor = MagicMock()
 _ha_sensor.SensorEntity = _FakeSensorEntity
+_ha_sensor.SensorDeviceClass = _SensorDeviceClass
 _stub("homeassistant.components.sensor", _ha_sensor)
 
 # -- homeassistant.helpers.entity / entity_platform ---------------------------
@@ -162,6 +182,34 @@ _ha_entity = MagicMock()
 _ha_entity.DeviceInfo = dict  # DeviceInfo is essentially a typed dict
 _stub("homeassistant.helpers.entity", _ha_entity)
 _stub("homeassistant.helpers.entity_platform", MagicMock())
+
+# -- homeassistant.helpers.event ----------------------------------------------
+_ha_event = MagicMock()
+# async_track_time_interval returns an unsubscribe callable; default to a no-op.
+_ha_event.async_track_time_interval = MagicMock(return_value=lambda: None)
+_ha_event.async_track_time_change = MagicMock(return_value=lambda: None)
+_stub("homeassistant.helpers.event", _ha_event)
+
+# -- homeassistant.util / homeassistant.util.dt --------------------------------
+
+
+def _default_as_utc(dt: _datetime) -> _datetime:
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=UTC)
+    return dt
+
+
+_ha_dt_util = MagicMock()
+_ha_dt_util.now.side_effect = lambda: _datetime.now(UTC)
+_ha_dt_util.start_of_local_day.side_effect = lambda: _datetime.now(UTC).replace(
+    hour=0, minute=0, second=0, microsecond=0
+)
+_ha_dt_util.as_utc.side_effect = _default_as_utc
+
+_ha_util = MagicMock()
+_ha_util.dt = _ha_dt_util
+_stub("homeassistant.util", _ha_util)
+_stub("homeassistant.util.dt", _ha_dt_util)
 
 # -- homeassistant.components -------------------------------------------------
 _ha_components = MagicMock()

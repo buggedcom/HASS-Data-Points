@@ -221,3 +221,21 @@ class DatapointsStore:
             self._notify_listeners()
             return True
         return False
+
+    def get_last_event(self) -> dict[str, Any] | None:
+        """Return the most recently recorded event by timestamp, or None if empty."""
+        events = self._data.get("events", [])
+        if not events:
+            return None
+        return max(events, key=lambda e: e.get("timestamp", ""))
+
+    def get_events_count_in_range(self, start: str, end: str | None = None) -> int:
+        """Return the count of events within the given ISO timestamp range."""
+        return len(self.get_events(start=start, end=end))
+
+    def get_automation_manual_counts(self) -> tuple[int, int]:
+        """Return (automation_count, manual_count) for all recorded events."""
+        events = self._data.get("events", [])
+        automation = sum(1 for e in events if e.get("automation_id"))
+        manual = sum(1 for e in events if not e.get("automation_id"))
+        return automation, manual
