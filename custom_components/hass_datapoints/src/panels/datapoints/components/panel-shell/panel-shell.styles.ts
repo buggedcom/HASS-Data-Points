@@ -357,6 +357,7 @@ export const styles = css`
     .page-sidebar.collapsed {
       position: relative;
       width: auto;
+      min-width: 0;
       box-shadow: none;
       border-right: 1px solid
         color-mix(

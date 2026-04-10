@@ -19,7 +19,6 @@ body:
         - History card
         - List card
         - Sensor card
-        - Statistics card
         - Dev tool card
         - Datapoints panel
         - Python backend / automations / services
