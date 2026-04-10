@@ -1,13 +1,20 @@
 #!/usr/bin/env bash
 # Appends the GitHub issue number from the branch name to the commit message.
 # Branch format: (branch|hotfix)/XXXX-description → appends "#XXXX"
-# Skips merge commits, squash commits, and messages that already contain the ref.
+# Skips merge commits, squash commits, fixup commits, and messages that already contain the ref.
 
 COMMIT_MSG_FILE="$1"
 COMMIT_SOURCE="$2"
 
 # Don't modify merge or squash commits
 if [ "$COMMIT_SOURCE" = "merge" ] || [ "$COMMIT_SOURCE" = "squash" ]; then
+  exit 0
+fi
+
+# fixup! and squash! prefixes are used by git rebase --autosquash.
+# Appending an issue ref would break subject-line matching, so skip them.
+FIRST_LINE=$(head -n1 "$COMMIT_MSG_FILE")
+if echo "$FIRST_LINE" | grep -qE "^(fixup|squash)! "; then
   exit 0
 fi
 
