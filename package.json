@@ -13,7 +13,11 @@
     "version:major": "bash scripts/bump-version.sh major",
     "build": "bash scripts/build.sh",
     "test": "vitest run",
+    "test:unit": "pnpm test:watch:unit run",
+    "test:sb": "pnpm test:watch:sb run",
     "test:watch": "vitest",
+    "test:watch:unit": "vitest --project unit",
+    "test:watch:storybook": "vitest --project storybook",
     "dev:sync": "bash scripts/dev-sync.sh",
     "dev:watch": "bash scripts/dev-watch.sh",
     "hooks:install": "bash scripts/install-hooks.sh",
@@ -27,8 +31,8 @@
     "lint:types": "tsc --noEmit",
     "lint": "pnpm run lint:eslint && pnpm run lint:package-json && pnpm run lint:prettier && pnpm run lint:types",
     "format": "pnpm run format:eslint && pnpm run format:prettier",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "sb": "storybook dev -p 6006",
+    "sb:build": "storybook build"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "5.1.1",

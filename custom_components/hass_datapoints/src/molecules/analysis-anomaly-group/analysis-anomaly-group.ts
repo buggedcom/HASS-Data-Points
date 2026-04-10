@@ -10,6 +10,10 @@ import type {
 } from "@/molecules/target-row/types";
 import "@/atoms/analysis/analysis-group/analysis-group";
 import "@/atoms/analysis/analysis-method-subopts/analysis-method-subopts";
+import {
+  ANALYSIS_TREND_METHOD_OPTIONS,
+  ANALYSIS_TREND_WINDOW_OPTIONS,
+} from "@/molecules/analysis-trend-group/analysis-trend-group";
 
 export const ANALYSIS_ANOMALY_SENSITIVITY_OPTIONS = [
   { value: "low", label: "Low" },
@@ -151,6 +155,70 @@ export class AnalysisAnomalyGroup extends LitElement {
     opt: { value: string },
     a: NormalizedAnalysis
   ): TemplateResult | typeof nothing {
+    if (opt.value === "trend_residual") {
+      const anomalyMethod = a.anomaly_trend_method || "";
+      const methodOptions = [
+        { value: "", label: msg("Same as display trend") },
+        ...this._localizedOptions(ANALYSIS_TREND_METHOD_OPTIONS),
+      ];
+      const windowOptions = this._localizedOptions(
+        ANALYSIS_TREND_WINDOW_OPTIONS
+      );
+      const showWindow = ["rolling_average", "ema", "lowess"].includes(
+        anomalyMethod
+      );
+      return html`
+        <analysis-method-subopts>
+          <label class="field">
+            <span class="field-label">${msg("Trend method")}</span>
+            <select
+              class="select"
+              @change=${(e: Event) =>
+                this._emit(
+                  "anomaly_trend_method",
+                  (e.target as HTMLSelectElement).value
+                )}
+            >
+              ${methodOptions.map(
+                (methodOpt) =>
+                  html`<option
+                    value=${methodOpt.value}
+                    ?selected=${methodOpt.value === anomalyMethod}
+                  >
+                    ${methodOpt.label}
+                  </option>`
+              )}
+            </select>
+          </label>
+          ${showWindow
+            ? html`
+                <label class="field">
+                  <span class="field-label">${msg("Trend window")}</span>
+                  <select
+                    class="select"
+                    @change=${(e: Event) =>
+                      this._emit(
+                        "anomaly_trend_window",
+                        (e.target as HTMLSelectElement).value
+                      )}
+                  >
+                    ${windowOptions.map(
+                      (windowOpt) =>
+                        html`<option
+                          value=${windowOpt.value}
+                          ?selected=${windowOpt.value ===
+                          a.anomaly_trend_window}
+                        >
+                          ${windowOpt.label}
+                        </option>`
+                    )}
+                  </select>
+                </label>
+              `
+            : nothing}
+        </analysis-method-subopts>
+      `;
+    }
     if (opt.value === "rate_of_change") {
       return html`
         <analysis-method-subopts>

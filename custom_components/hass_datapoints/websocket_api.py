@@ -64,7 +64,13 @@ _VALID_ANOMALY_METHODS = [
 ]
 _VALID_ANOMALY_SENSITIVITY = ["low", "medium", "high"]
 _VALID_ANOMALY_OVERLAP_MODES = ["all", "highlight", "only"]
-_VALID_TREND_METHODS = ["rolling_average", "linear_trend"]
+_VALID_TREND_METHODS = [
+    "rolling_average",
+    "linear_trend",
+    "ema",
+    "polynomial_trend",
+    "lowess",
+]
 
 # Field-length caps for free-text event fields stored in .storage/
 _MAX_LEN_MESSAGE = 10_000

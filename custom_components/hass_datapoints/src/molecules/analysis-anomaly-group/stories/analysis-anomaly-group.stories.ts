@@ -57,6 +57,8 @@ function makeAnalysis(
     sample_aggregate: "mean",
     stepped_series: false,
     anomaly_use_sampled_data: false,
+    anomaly_trend_method: "",
+    anomaly_trend_window: "24h",
     ...overrides,
   };
 }
@@ -110,6 +112,127 @@ export const CheckedWithMultipleMethods = {
         anomaly_methods: ["iqr", "rolling_zscore"],
         anomaly_sensitivity: "high",
         anomaly_overlap_mode: "only",
+      })}
+      .entityId=${"sensor.temperature"}
+      .comparisonWindows=${comparisonWindows}
+    ></analysis-anomaly-group>
+  `,
+};
+
+export const TrendDeviationDefaultTrend = {
+  name: "Trend deviation — same as display trend",
+  render: () => html`
+    <analysis-anomaly-group
+      .analysis=${makeAnalysis({
+        show_anomalies: true,
+        anomaly_methods: ["trend_residual"],
+        anomaly_trend_method: "",
+        anomaly_trend_window: "24h",
+      })}
+      .entityId=${"sensor.temperature"}
+      .comparisonWindows=${comparisonWindows}
+    ></analysis-anomaly-group>
+  `,
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const el = canvasElement.querySelector(
+      "analysis-anomaly-group"
+    ) as HTMLElement & { shadowRoot: ShadowRoot };
+    // Subopts should render with a single method select
+    const selects = el.shadowRoot.querySelectorAll(
+      "analysis-method-subopts select"
+    );
+    expect(selects.length).toBe(1);
+    expect((selects[0] as HTMLSelectElement).value).toBe("");
+    expect(el.shadowRoot.textContent).toContain("Same as display trend");
+  },
+};
+
+export const TrendDeviationOverriddenWithEma = {
+  name: "Trend deviation — overridden with EMA 6h",
+  render: () => html`
+    <analysis-anomaly-group
+      .analysis=${makeAnalysis({
+        show_anomalies: true,
+        anomaly_methods: ["trend_residual"],
+        anomaly_trend_method: "ema",
+        anomaly_trend_window: "6h",
+      })}
+      .entityId=${"sensor.temperature"}
+      .comparisonWindows=${comparisonWindows}
+    ></analysis-anomaly-group>
+  `,
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const el = canvasElement.querySelector(
+      "analysis-anomaly-group"
+    ) as HTMLElement & { shadowRoot: ShadowRoot };
+    // Both method and window selects should be visible
+    const selects = el.shadowRoot.querySelectorAll(
+      "analysis-method-subopts select"
+    );
+    expect(selects.length).toBe(2);
+    expect(
+      (selects[0] as HTMLSelectElement).querySelector('option[value="ema"]')
+    ).toBeTruthy();
+    expect(
+      (selects[1] as HTMLSelectElement).querySelector('option[value="6h"]')
+    ).toBeTruthy();
+  },
+};
+
+export const TrendDeviationOverriddenWithLowess = {
+  name: "Trend deviation — overridden with LOWESS 24h",
+  render: () => html`
+    <analysis-anomaly-group
+      .analysis=${makeAnalysis({
+        show_anomalies: true,
+        anomaly_methods: ["trend_residual"],
+        anomaly_trend_method: "lowess",
+        anomaly_trend_window: "24h",
+      })}
+      .entityId=${"sensor.temperature"}
+      .comparisonWindows=${comparisonWindows}
+    ></analysis-anomaly-group>
+  `,
+};
+
+export const TrendDeviationOverriddenWithLinear = {
+  name: "Trend deviation — overridden with linear (no window)",
+  render: () => html`
+    <analysis-anomaly-group
+      .analysis=${makeAnalysis({
+        show_anomalies: true,
+        anomaly_methods: ["trend_residual"],
+        anomaly_trend_method: "linear_trend",
+        anomaly_trend_window: "24h",
+      })}
+      .entityId=${"sensor.temperature"}
+      .comparisonWindows=${comparisonWindows}
+    ></analysis-anomaly-group>
+  `,
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const el = canvasElement.querySelector(
+      "analysis-anomaly-group"
+    ) as HTMLElement & { shadowRoot: ShadowRoot };
+    // Linear trend has no window — only the method select should render
+    const selects = el.shadowRoot.querySelectorAll(
+      "analysis-method-subopts select"
+    );
+    expect(selects.length).toBe(1);
+  },
+};
+
+export const TrendDeviationAlongsideOtherMethods = {
+  name: "Trend deviation alongside other methods",
+  render: () => html`
+    <analysis-anomaly-group
+      .analysis=${makeAnalysis({
+        show_anomalies: true,
+        anomaly_methods: ["trend_residual", "rate_of_change", "iqr"],
+        anomaly_sensitivity: "high",
+        anomaly_overlap_mode: "only",
+        anomaly_trend_method: "polynomial_trend",
+        anomaly_trend_window: "24h",
+        anomaly_rate_window: "6h",
       })}
       .entityId=${"sensor.temperature"}
       .comparisonWindows=${comparisonWindows}

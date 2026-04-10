@@ -36,6 +36,45 @@ describe("history-series", () => {
     });
   });
 
+  describe("GIVEN anomaly trend override fields", () => {
+    describe("WHEN normalizeHistorySeriesAnalysis is called with no anomaly_trend_method", () => {
+      it("THEN anomaly_trend_method defaults to empty string", () => {
+        expect.assertions(1);
+        const normalized = normalizeHistorySeriesAnalysis({});
+        expect(normalized.anomaly_trend_method).toBe("");
+      });
+    });
+
+    describe("WHEN normalizeHistorySeriesAnalysis is called with anomaly_trend_method set", () => {
+      it("THEN anomaly_trend_method is preserved", () => {
+        expect.assertions(1);
+        const normalized = normalizeHistorySeriesAnalysis({
+          anomaly_trend_method: "lowess",
+        });
+        expect(normalized.anomaly_trend_method).toBe("lowess");
+      });
+    });
+
+    describe("WHEN normalizeHistorySeriesAnalysis is called with no anomaly_trend_window", () => {
+      it("THEN anomaly_trend_window defaults to 24h", () => {
+        expect.assertions(1);
+        const normalized = normalizeHistorySeriesAnalysis({});
+        expect(normalized.anomaly_trend_window).toBe("24h");
+      });
+    });
+
+    describe("WHEN normalizeHistorySeriesAnalysis is called with anomaly_trend_window set", () => {
+      it("THEN anomaly_trend_window is preserved", () => {
+        expect.assertions(1);
+        const normalized = normalizeHistorySeriesAnalysis({
+          anomaly_trend_method: "ema",
+          anomaly_trend_window: "6h",
+        });
+        expect(normalized.anomaly_trend_window).toBe("6h");
+      });
+    });
+  });
+
   describe("GIVEN a row analysis payload", () => {
     describe("WHEN historySeriesRowHasConfiguredAnalysis is called", () => {
       it("THEN it reports whether any analysis is enabled", () => {

@@ -57,6 +57,8 @@ const BLANK_ANALYSIS: NormalizedAnalysis = {
   sample_aggregate: "mean",
   stepped_series: false,
   anomaly_use_sampled_data: false,
+  anomaly_trend_method: "",
+  anomaly_trend_window: "24h",
 };
 
 const MOCK_STATE_OBJ: HassEntityState = {
