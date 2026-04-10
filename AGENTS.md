@@ -26,7 +26,7 @@ This file is the working project guide for contributors and coding agents. Use i
 1. `pnpm build`
 2. `pnpm test`
 3. `pnpm vitest run <focused spec files>`
-4. `pnpm build-storybook`
+4. `pnpm sb:build`
 
 When making scoped changes, run focused Vitest first, then `pnpm build`, then broader verification as needed.
 
@@ -313,11 +313,11 @@ The old `PANEL_HISTORY_STYLE` block still matters as a source of truth for many 
 
 ## i18n Guidance
 
-The frontend uses `@lit/localize` in **runtime mode**. Source locale is English. The only translated locale is Finnish (`fi`).
+The frontend uses `@lit/localize` in **runtime mode**. Source locale is English. Supported translated locales: **de, es, fi, fr, pt, zh-hans**.
 
 ### How it works
 
-`src/lib/i18n/localize.ts` configures the localization runtime once. When the HA user's locale is Finnish, `setLocale("fi")` is called and the Finnish locale chunk is loaded asynchronously. Components decorated with `@localized()` re-render automatically when the locale changes.
+`src/lib/i18n/localize.ts` configures the localization runtime once. When the HA user's locale matches a supported locale, `setLocale("<code>")` is called and the locale chunk is loaded asynchronously. Components decorated with `@localized()` re-render automatically when the locale changes.
 
 ### String wrapping rules
 
@@ -355,22 +355,26 @@ t("Anomaly at {0} with severity {1}", time, severity);
 // Wrong — msg() not yet active when the module loads
 const OPTIONS = [{ label: msg("Hour"), value: "hour" }];
 
-// Correct — msg() is called at render time
-get;
-_localizedOptions();
-{
+// Correct — msg() is called at render time via _localizedOptions()
+private _localizedOptions() {
   return [{ label: msg("Hour"), value: "hour" }];
 }
 ```
 
 ### Co-located translation files
 
-Each component owns its Finnish strings in a `*.i18n.fi.ts` file placed next to the component source:
+Each component owns its translations in an `i18n/` subdirectory next to the component source, one file per locale:
 
 ```text
-src/molecules/target-row/
-├── target-row.ts
-└── target-row.i18n.fi.ts
+src/molecules/analysis-anomaly-group/
+├── analysis-anomaly-group.ts
+└── i18n/
+    ├── de.ts
+    ├── es.ts
+    ├── fi.ts
+    ├── fr.ts
+    ├── pt.ts
+    └── zh-hans.ts
 ```
 
 Every translation file exports a `translations` object typed as `ComponentTranslations`:
@@ -379,18 +383,22 @@ Every translation file exports a `translations` object typed as `ComponentTransl
 import type { ComponentTranslations } from "@/lib/i18n/types";
 
 export const translations: ComponentTranslations = {
-  "Show anomalies": "Näytä anomaliat",
+  "Show anomalies": "Näytä poikkeamat",
   Sensitivity: "Herkkyys",
 };
 ```
 
-Keys are the English source strings exactly as they appear in `msg()` calls. Values are the Finnish equivalents.
+Keys are the English source strings exactly as they appear in `msg()` calls. Values are the translated equivalents.
+
+### Adding new strings
+
+When you add a new `msg("Some string")` call to a component, you **must** add the translation to **all six** locale files in that component's `i18n/` directory. Leave no locale file missing a key — missing keys silently fall back to English but the files should be kept in sync.
 
 ### Auto-discovery — no registration needed
 
-`src/lib/i18n/locales/fi.ts` uses `import.meta.glob` to merge every `*.i18n.fi.ts` file across the whole `src/` tree at build time. There is nothing to register: dropping a correctly structured file next to a component is sufficient.
+`src/lib/i18n/locales/<locale>.ts` uses `import.meta.glob` to merge every `i18n/<locale>.ts` file across the whole `src/` tree at build time. There is nothing to register: dropping a correctly structured file into the component's `i18n/` directory is sufficient.
 
-Duplicate keys are resolved by last-writer-wins (`Object.assign`). This is safe because any shared key (e.g. `"Auto"`) carries the same Finnish value regardless of which component declares it.
+Duplicate keys are resolved by last-writer-wins (`Object.assign`). This is safe because any shared key (e.g. `"1 hour"`) carries the same translation regardless of which component declares it.
 
 ### Adding i18n to a new component
 
@@ -400,10 +408,6 @@ Duplicate keys are resolved by last-writer-wins (`Object.assign`). This is safe 
 4. For interpolated strings, use the `t()` pattern with `{0}`, `{1}` … placeholders.
 5. Create `<component-name>.i18n.fi.ts` next to the component source with all Finnish translations.
 6. Run `pnpm build` — the file is auto-discovered.
-
-### Finnish translation quality
-
-The Finnish translations in this project are **machine-generated approximations**. They were produced by automated translation and have not been reviewed by a native Finnish speaker. Do not treat Finnish strings as authoritative phrasing — they exist for functional locale switching, not linguistic correctness.
 
 ### General rules
 
@@ -641,6 +645,19 @@ Do not assume backend support means all frontend chart logic can be removed. Che
 1. Focused panel specs
 2. `pnpm build`
 3. Manual HA verification for sidebar behavior, tabs, range toolbar, split panes, and chart/list coordination
+
+---
+
+## Bulk Action Checklist
+
+After any task that touches multiple files — new features, refactors, adding fields, renaming, adding translations — always run these two commands as the final step before finishing:
+
+```bash
+pnpm format        # auto-fixes Prettier and ESLint formatting in one pass
+pnpm lint:types    # TypeScript type-check across the whole project
+```
+
+Both must pass clean before the work is considered done. If `lint:types` reports errors, fix them before stopping. If `format` rewrites files, stage the changes.
 
 ---
 

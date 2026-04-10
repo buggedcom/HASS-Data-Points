@@ -2237,6 +2237,9 @@
 			"Show all anomalies": "Näytä kaikki poikkeamat",
 			"Overlaps only": "Vain päällekkäisyydet",
 			"Computing…": "Lasketaan…",
+			"Trend method": "Trendimenetelmä",
+			"Trend window": "Trendiikkuna",
+			"Same as display trend": "Sama kuin näyttötrendi",
 			"1 hour": "1 tunti",
 			"3 hours": "3 tuntia",
 			"6 hours": "6 tuntia",
@@ -2755,6 +2758,9 @@
 			"Show all anomalies": "Afficher toutes les anomalies",
 			"Overlaps only": "Chevauchements uniquement",
 			"Computing…": "Calcul…",
+			"Trend method": "Méthode de tendance",
+			"Trend window": "Fenêtre de tendance",
+			"Same as display trend": "Identique à la tendance affichée",
 			"1 hour": "1 heure",
 			"3 hours": "3 heures",
 			"6 hours": "6 heures",
@@ -3273,6 +3279,9 @@
 			"Show all anomalies": "Alle Anomalien anzeigen",
 			"Overlaps only": "Nur Überlappungen",
 			"Computing…": "Wird berechnet…",
+			"Trend method": "Trendmethode",
+			"Trend window": "Trendfenster",
+			"Same as display trend": "Wie Anzeigetrend",
 			"1 hour": "1 Stunde",
 			"3 hours": "3 Stunden",
 			"6 hours": "6 Stunden",
@@ -3791,6 +3800,9 @@
 			"Show all anomalies": "Mostrar todas las anomalías",
 			"Overlaps only": "Solo solapamientos",
 			"Computing…": "Calculando…",
+			"Trend method": "Método de tendencia",
+			"Trend window": "Ventana de tendencia",
+			"Same as display trend": "Igual que la tendencia de visualización",
 			"1 hour": "1 hora",
 			"3 hours": "3 horas",
 			"6 hours": "6 horas",
@@ -4309,6 +4321,9 @@
 			"Show all anomalies": "Mostrar todas as anomalias",
 			"Overlaps only": "Apenas sobreposições",
 			"Computing…": "A calcular…",
+			"Trend method": "Método de tendência",
+			"Trend window": "Janela de tendência",
+			"Same as display trend": "Igual à tendência de apresentação",
 			"1 hour": "1 hora",
 			"3 hours": "3 horas",
 			"6 hours": "6 horas",
@@ -4827,6 +4842,9 @@
 			"Show all anomalies": "显示所有异常",
 			"Overlaps only": "仅重叠项",
 			"Computing…": "计算中…",
+			"Trend method": "趋势方法",
+			"Trend window": "趋势窗口",
+			"Same as display trend": "与显示趋势相同",
 			"1 hour": "1小时",
 			"3 hours": "3小时",
 			"6 hours": "6小时",
@@ -9983,6 +10001,8 @@
 			anomaly_zscore_window: typeof source.anomaly_zscore_window === "string" && source.anomaly_zscore_window ? source.anomaly_zscore_window : "24h",
 			anomaly_persistence_window: typeof source.anomaly_persistence_window === "string" && source.anomaly_persistence_window ? source.anomaly_persistence_window : "1h",
 			anomaly_comparison_window_id: typeof source.anomaly_comparison_window_id === "string" && source.anomaly_comparison_window_id ? source.anomaly_comparison_window_id : null,
+			anomaly_trend_method: typeof source.anomaly_trend_method === "string" ? source.anomaly_trend_method : "",
+			anomaly_trend_window: typeof source.anomaly_trend_window === "string" && source.anomaly_trend_window ? source.anomaly_trend_window : "24h",
 			show_delta_analysis: source.show_delta_analysis === true,
 			show_delta_tooltip: source.show_delta_tooltip !== false,
 			show_delta_lines: source.show_delta_lines === true,
@@ -11730,8 +11750,14 @@
 				anomaly_rate_window: typeof analysis.anomaly_rate_window === "string" ? analysis.anomaly_rate_window : void 0,
 				anomaly_zscore_window: typeof analysis.anomaly_zscore_window === "string" ? analysis.anomaly_zscore_window : void 0,
 				anomaly_persistence_window: typeof analysis.anomaly_persistence_window === "string" ? analysis.anomaly_persistence_window : void 0,
-				trend_method: typeof analysis.trend_method === "string" ? analysis.trend_method : void 0,
-				trend_window: typeof analysis.trend_window === "string" ? analysis.trend_window : void 0,
+				trend_method: (() => {
+					if (typeof analysis.anomaly_trend_method === "string" && analysis.anomaly_trend_method) return analysis.anomaly_trend_method;
+					return typeof analysis.trend_method === "string" ? analysis.trend_method : void 0;
+				})(),
+				trend_window: (() => {
+					if (typeof analysis.anomaly_trend_method === "string" && analysis.anomaly_trend_method && typeof analysis.anomaly_trend_window === "string" && analysis.anomaly_trend_window) return analysis.anomaly_trend_window;
+					return typeof analysis.trend_window === "string" ? analysis.trend_window : void 0;
+				})(),
 				anomaly_use_sampled_data: analysis.anomaly_use_sampled_data !== false
 			};
 			if (analysis.anomaly_use_sampled_data !== false) {
@@ -13571,7 +13597,9 @@
 				"anomaly_zscore_window",
 				"anomaly_persistence_window",
 				"anomaly_comparison_window_id",
-				"anomaly_use_sampled_data"
+				"anomaly_use_sampled_data",
+				"anomaly_trend_method",
+				"anomaly_trend_window"
 			];
 			return `${t0}:${t1}|${visibleSeries.map((s) => {
 				const a = analysisMap.get(s.entityId) || normalizeHistorySeriesAnalysis(null);
@@ -17729,6 +17757,53 @@
 			}));
 		}
 		_renderMethodSubopts(opt, a) {
+			if (opt.value === "trend_residual") {
+				const anomalyMethod = a.anomaly_trend_method || "";
+				const methodOptions = [{
+					value: "",
+					label: msg("Same as display trend")
+				}, ...this._localizedOptions(ANALYSIS_TREND_METHOD_OPTIONS)];
+				const windowOptions = this._localizedOptions(ANALYSIS_TREND_WINDOW_OPTIONS);
+				const showWindow = [
+					"rolling_average",
+					"ema",
+					"lowess"
+				].includes(anomalyMethod);
+				return b`
+        <analysis-method-subopts>
+          <label class="field">
+            <span class="field-label">${msg("Trend method")}</span>
+            <select
+              class="select"
+              @change=${(e) => this._emit("anomaly_trend_method", e.target.value)}
+            >
+              ${methodOptions.map((methodOpt) => b`<option
+                    value=${methodOpt.value}
+                    ?selected=${methodOpt.value === anomalyMethod}
+                  >
+                    ${methodOpt.label}
+                  </option>`)}
+            </select>
+          </label>
+          ${showWindow ? b`
+                <label class="field">
+                  <span class="field-label">${msg("Trend window")}</span>
+                  <select
+                    class="select"
+                    @change=${(e) => this._emit("anomaly_trend_window", e.target.value)}
+                  >
+                    ${windowOptions.map((windowOpt) => b`<option
+                          value=${windowOpt.value}
+                          ?selected=${windowOpt.value === a.anomaly_trend_window}
+                        >
+                          ${windowOpt.label}
+                        </option>`)}
+                  </select>
+                </label>
+              ` : A}
+        </analysis-method-subopts>
+      `;
+			}
 			if (opt.value === "rate_of_change") return b`
         <analysis-method-subopts>
           <label class="field">

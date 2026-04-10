@@ -903,8 +903,8 @@ The published Storybook for the `main` branch is available at:
 To run Storybook locally or build it:
 
 ```bash
-pnpm storybook
-pnpm build-storybook
+pnpm sb
+pnpm sb:build
 ```
 
 ### Frontend source layout

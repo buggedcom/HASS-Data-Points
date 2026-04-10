@@ -33,6 +33,8 @@ export interface HistorySeriesAnalysis {
   anomaly_zscore_window: string;
   anomaly_persistence_window: string;
   anomaly_comparison_window_id: Nullable<string>;
+  anomaly_trend_method: string;
+  anomaly_trend_window: string;
   show_delta_analysis: boolean;
   show_delta_tooltip: boolean;
   show_delta_lines: boolean;
@@ -176,6 +178,15 @@ export function normalizeHistorySeriesAnalysis(
       source.anomaly_comparison_window_id
         ? source.anomaly_comparison_window_id
         : null,
+    anomaly_trend_method:
+      typeof source.anomaly_trend_method === "string"
+        ? source.anomaly_trend_method
+        : "",
+    anomaly_trend_window:
+      typeof source.anomaly_trend_window === "string" &&
+      source.anomaly_trend_window
+        ? source.anomaly_trend_window
+        : "24h",
     show_delta_analysis: source.show_delta_analysis === true,
     show_delta_tooltip: source.show_delta_tooltip !== false,
     show_delta_lines: source.show_delta_lines === true,

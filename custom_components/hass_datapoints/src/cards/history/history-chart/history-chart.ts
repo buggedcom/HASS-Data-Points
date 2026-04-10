@@ -620,14 +620,30 @@ export class HistoryChart extends HTMLElement {
         typeof analysis.anomaly_persistence_window === "string"
           ? analysis.anomaly_persistence_window
           : undefined,
-      trend_method:
-        typeof analysis.trend_method === "string"
+      trend_method: (() => {
+        if (
+          typeof analysis.anomaly_trend_method === "string" &&
+          analysis.anomaly_trend_method
+        ) {
+          return analysis.anomaly_trend_method;
+        }
+        return typeof analysis.trend_method === "string"
           ? analysis.trend_method
-          : undefined,
-      trend_window:
-        typeof analysis.trend_window === "string"
+          : undefined;
+      })(),
+      trend_window: (() => {
+        if (
+          typeof analysis.anomaly_trend_method === "string" &&
+          analysis.anomaly_trend_method &&
+          typeof analysis.anomaly_trend_window === "string" &&
+          analysis.anomaly_trend_window
+        ) {
+          return analysis.anomaly_trend_window;
+        }
+        return typeof analysis.trend_window === "string"
           ? analysis.trend_window
-          : undefined,
+          : undefined;
+      })(),
       anomaly_use_sampled_data: analysis.anomaly_use_sampled_data !== false,
     };
     if (analysis.anomaly_use_sampled_data !== false) {
@@ -4381,6 +4397,8 @@ export class HistoryChart extends HTMLElement {
       "anomaly_persistence_window",
       "anomaly_comparison_window_id",
       "anomaly_use_sampled_data",
+      "anomaly_trend_method",
+      "anomaly_trend_window",
     ] as const;
 
     const seriesPart = visibleSeries
