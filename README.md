@@ -380,20 +380,6 @@ entities:
 hours_to_show: 72
 ```
 
-### Statistics card
-
-Use this when the entity is best viewed through long-term statistics.
-
-```yaml
-type: custom:hass-datapoints-statistics-card
-title: Daily energy
-entity: sensor.daily_energy
-hours_to_show: 168
-period: hour
-stat_types:
-  - mean
-```
-
 ### Dev tool card
 
 Use this for seeding and cleanup workflows:

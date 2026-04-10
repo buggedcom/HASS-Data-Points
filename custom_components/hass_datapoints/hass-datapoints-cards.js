@@ -25024,6 +25024,7 @@
     .page-sidebar.collapsed {
       position: relative;
       width: auto;
+      min-width: 0;
       box-shadow: none;
       border-right: 1px solid
         color-mix(
@@ -36719,7 +36720,7 @@
 	].forEach((card) => {
 		if (!registeredTypes.has(card.type)) window.customCards?.push(card);
 	});
-	console.groupCollapsed(`%c hass-datapoints %c v0.5.0 loaded `, "color:#fff;background:#03a9f4;font-weight:bold;padding:2px 6px;border-radius:3px 0 0 3px", "color:#03a9f4;background:#fff;font-weight:bold;padding:2px 6px;border:1px solid #03a9f4;border-radius:0 3px 3px 0", ...[]);
+	console.groupCollapsed(`%c hass-datapoints %c v0.5.1 loaded `, "color:#fff;background:#03a9f4;font-weight:bold;padding:2px 6px;border-radius:3px 0 0 3px", "color:#03a9f4;background:#fff;font-weight:bold;padding:2px 6px;border:1px solid #03a9f4;border-radius:0 3px 3px 0", ...[]);
 	console.log("Enable debug logging by setting %cwindow.__HASS_DATAPOINTS_DEV__ = true", "color:#333;background:#eee;border:1px solid #777;padding:2px 6px;border-radius:5px; font-family: Courier");
 	console.groupEnd();
 	//#endregion
