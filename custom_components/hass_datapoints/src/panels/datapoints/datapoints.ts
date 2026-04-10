@@ -77,6 +77,10 @@ import {
   PANEL_HISTORY_STYLE,
 } from "./datapoints.styles";
 
+/** Module-level set of all currently-connected panel instances.
+ *  Used by the orphan-recovery guard to avoid disrupting a live replacement. */
+const _liveInstances = new Set<object>();
+
 const DATA_GAP_THRESHOLD_OPTIONS = [
   { value: "auto", label: "Auto-detect" },
   { value: "5m", label: "5 minutes" },
@@ -453,6 +457,9 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
 
   declare _pendingPreferencesSaveTimer: Nullable<number>;
 
+  /** Timer ID for the orphan-recovery guard set in disconnectedCallback. */
+  declare _orphanRecoveryTimer: Nullable<number>;
+
   declare _recordsSearchQuery: string;
 
   declare _hiddenEventIds: string[];
@@ -603,6 +610,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     this._hasPageStateInUrl = false;
     this._localPageStateDirty = false;
     this._pendingPreferencesSaveTimer = null;
+    this._orphanRecoveryTimer = null;
     this._recordsSearchQuery = "";
     this._hiddenEventIds = [];
     this._hoveredEventIds = [];
@@ -886,10 +894,25 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
         .catch(() => {});
     }
     if (!this._rendered) {
+      logger.warn("[dp-lifecycle] set hass: first hass — transitioning to rendered", {
+        isConnected: this.isConnected,
+        hadUiReadyPromise: !!this._uiReadyPromise,
+        shellBuilt: this._shellBuilt,
+      });
       this._rendered = true;
       this._initFromContext();
       if (this.isConnected) {
         this._buildLoadingShell();
+        // _ensureUiComponentsReady() may have already resolved (all HA components
+        // were already registered) before hass arrived and set _rendered = true.
+        // In that case its callback bailed out early and the shell was never built.
+        // Reset the promise so the call below creates a fresh one and runs the
+        // shell-build logic now that _rendered is true.
+        logger.warn("[dp-lifecycle] set hass: resetting uiReadyPromise and re-running ensureUiComponentsReady");
+        this._uiReadyPromise = null;
+        this._ensureUiComponentsReady();
+      } else {
+        logger.warn("[dp-lifecycle] set hass: not connected — skipping shell build");
       }
     }
     if (
@@ -933,6 +956,22 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
   }
 
   connectedCallback() {
+    // Cancel any pending orphan-recovery dispatch from a previous disconnect.
+    if (this._orphanRecoveryTimer) {
+      window.clearTimeout(this._orphanRecoveryTimer);
+      this._orphanRecoveryTimer = null;
+    }
+    _liveInstances.add(this);
+    logger.warn("[dp-lifecycle] connectedCallback", {
+      rendered: this._rendered,
+      shellBuilt: this._shellBuilt,
+      uiReadyPromise: !!this._uiReadyPromise,
+      uiReadyApplied: this._uiReadyApplied,
+      entityCount: this._entities?.length ?? 0,
+      contentKey: this._contentKey,
+      hasContentHostEl: !!this._contentHostEl,
+      hasShellEl: !!this._shellEl,
+    });
     this._mqTablet.addEventListener("change", this._onLayoutChange);
     this._mqMobile.addEventListener("change", this._onLayoutChange);
     this._updateLayoutMode();
@@ -985,14 +1024,18 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       this._onAnalysisMethodResult
     );
     if (this._rendered && !this._shellBuilt) {
+      logger.warn("[dp-lifecycle] connectedCallback: rendered but no shell — building loading shell");
       this._buildLoadingShell();
     }
     this._ensureUiComponentsReady();
     if (this._rendered && this._shellBuilt) {
+      logger.warn("[dp-lifecycle] connectedCallback: shell already built — scheduling reconnect RAF render");
       window.requestAnimationFrame(() => {
         if (!this.isConnected) {
+          logger.warn("[dp-lifecycle] connectedCallback RAF: aborted (not connected)");
           return;
         }
+        logger.warn("[dp-lifecycle] connectedCallback RAF: calling syncControls + renderContent");
         this._syncControls();
         this._renderContent();
         if (this._restoredFromSession) {
@@ -1000,10 +1043,16 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
           this._updateUrl({ push: false });
         }
       });
+    } else {
+      logger.warn("[dp-lifecycle] connectedCallback: no RAF scheduled", {
+        rendered: this._rendered,
+        shellBuilt: this._shellBuilt,
+      });
     }
   }
 
   disconnectedCallback() {
+    _liveInstances.delete(this);
     this._mqTablet.removeEventListener("change", this._onLayoutChange);
     this._mqMobile.removeEventListener("change", this._onLayoutChange);
     if (this._onOverlayKeydown) {
@@ -1067,11 +1116,44 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       window.clearTimeout(this._chartZoomStateCommitTimer);
       this._chartZoomStateCommitTimer = null;
     }
+    if (this._orphanRecoveryTimer) {
+      window.clearTimeout(this._orphanRecoveryTimer);
+      this._orphanRecoveryTimer = null;
+    }
     this._hideCollapsedTargetPopup();
     this._hideCollapsedOptionsPopup();
+    logger.warn("[dp-lifecycle] disconnectedCallback", {
+      rendered: this._rendered,
+      shellBuilt: this._shellBuilt,
+      uiReadyApplied: this._uiReadyApplied,
+      entityCount: this._entities?.length ?? 0,
+    });
     this._uiReadyPromise = null;
     this._uiReadyApplied = false;
     this._context.orchestration.cancelChartResizeRedraw();
+
+    // Orphan-recovery guard: HA's WebSocket reconnect flow can remove this
+    // element without ever re-adding it (connectedCallback never fires again),
+    // leaving the panel area blank.  If we are still detached after a grace
+    // period, fire a synthetic location-changed so HA's router re-evaluates
+    // the current URL and re-mounts the panel.
+    this._orphanRecoveryTimer = window.setTimeout(() => {
+      this._orphanRecoveryTimer = null;
+      if (!this.isConnected) {
+        // Don't fire if another instance is already live — would disrupt it.
+        const hasLiveInstance = [..._liveInstances].some((i) => i !== this);
+        if (hasLiveInstance) {
+          logger.warn(
+            "[dp-lifecycle] orphan recovery: another instance already live — skipping location-changed"
+          );
+          return;
+        }
+        logger.warn(
+          "[dp-lifecycle] orphan recovery: still detached after grace period — dispatching location-changed"
+        );
+        window.dispatchEvent(new CustomEvent("location-changed", { bubbles: true }));
+      }
+    }, 3000);
   }
 
   _initFromContext() {
@@ -1392,6 +1474,11 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
   }
 
   _buildLoadingShell() {
+    logger.warn("[dp-lifecycle] _buildLoadingShell called", {
+      rendered: this._rendered,
+      shellBuilt: this._shellBuilt,
+      isConnected: this.isConnected,
+    });
     this._shellBuilt = false;
     const loadingLabel = msg("Loading Datapoints…");
     const root = this.shadowRoot;
@@ -1410,6 +1497,11 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
   }
 
   _buildShell() {
+    logger.warn("[dp-lifecycle] _buildShell called", {
+      rendered: this._rendered,
+      isConnected: this.isConnected,
+      entityCount: this._entities?.length ?? 0,
+    });
     this._shellBuilt = true;
     const root = this.shadowRoot;
     if (!root) {
@@ -1477,8 +1569,14 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
 
   _bootstrapAfterShellBuilt() {
     if (!this._shellBuilt) {
+      logger.warn("[dp-lifecycle] _bootstrapAfterShellBuilt: skipped — shell not built");
       return;
     }
+    logger.warn("[dp-lifecycle] _bootstrapAfterShellBuilt: running", {
+      rendered: this._rendered,
+      entityCount: this._entities?.length ?? 0,
+      contentKey: this._contentKey,
+    });
     this._ensureHistoryBounds();
     this._ensureUserPreferences();
     this._loadSavedPageIndicator();
@@ -1492,8 +1590,18 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
 
   _ensureUiComponentsReady() {
     if (this._uiReadyPromise) {
+      logger.warn("[dp-lifecycle] _ensureUiComponentsReady: promise already exists — returning cached", {
+        rendered: this._rendered,
+        shellBuilt: this._shellBuilt,
+        uiReadyApplied: this._uiReadyApplied,
+      });
       return this._uiReadyPromise;
     }
+    logger.warn("[dp-lifecycle] _ensureUiComponentsReady: creating new promise", {
+      rendered: this._rendered,
+      shellBuilt: this._shellBuilt,
+      isConnected: this.isConnected,
+    });
     const componentTags = [
       "ha-top-app-bar-fixed",
       "ha-menu-button",
@@ -1507,11 +1615,29 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       .then((results) => results)
       .then(() => {
         if (!this.isConnected || !this._rendered) {
+          // hass hasn't arrived yet (or element disconnected).  Clear the stored
+          // promise so that the next call — triggered once hass sets _rendered=true
+          // or connectedCallback fires again — will create a fresh one and actually
+          // build the shell.
+          logger.warn("[dp-lifecycle] _ensureUiComponentsReady: components ready but bailing early", {
+            isConnected: this.isConnected,
+            rendered: this._rendered,
+            shellBuilt: this._shellBuilt,
+          });
+          this._uiReadyPromise = null;
           return;
         }
+        logger.warn("[dp-lifecycle] _ensureUiComponentsReady: components ready — scheduling double RAF", {
+          shellBuilt: this._shellBuilt,
+          uiReadyApplied: this._uiReadyApplied,
+        });
         window.requestAnimationFrame(() => {
           window.requestAnimationFrame(() => {
             if (!this.isConnected || !this._rendered) {
+              logger.warn("[dp-lifecycle] _ensureUiComponentsReady double RAF: aborted", {
+                isConnected: this.isConnected,
+                rendered: this._rendered,
+              });
               return;
             }
             this._uiReadyApplied = true;
@@ -1520,8 +1646,12 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
               // navigation, _shellBuilt is already true so we skip this; tearing
               // down root.innerHTML while connectedCallback's RAF is mid-flight
               // was the root cause of the crash-on-return bug.
+              logger.warn("[dp-lifecycle] _ensureUiComponentsReady double RAF: calling _buildShell");
               this._buildShell();
+            } else {
+              logger.warn("[dp-lifecycle] _ensureUiComponentsReady double RAF: shell already built — skipping _buildShell");
             }
+            logger.warn("[dp-lifecycle] _ensureUiComponentsReady double RAF: calling syncControls + bootstrapAfterShellBuilt");
             this._syncControls();
             this._bootstrapAfterShellBuilt();
           });
@@ -4518,6 +4648,11 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
   _renderContent() {
     const content = this._contentHostEl;
     if (!content) {
+      logger.warn("[dp-lifecycle] _renderContent: aborted — no contentHostEl", {
+        rendered: this._rendered,
+        shellBuilt: this._shellBuilt,
+        entityCount: this._entities?.length ?? 0,
+      });
       return;
     }
 
@@ -4526,6 +4661,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       if (this._contentKey === "__empty__") {
         return;
       }
+      logger.warn("[dp-lifecycle] _renderContent: rendering empty state (no entities)");
       this._chartHoverTimeMs = null;
       this._updateChartHoverIndicator();
       this._chartZoomRange = null;
@@ -4571,6 +4707,16 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
         this._listEl.isConnected &&
         content.contains(this._listEl)
       );
+
+    logger.warn("[dp-lifecycle] _renderContent: key check", {
+      keyMatch: this._contentKey === contentKey,
+      chartMounted,
+      listMounted,
+      hasChartEl: !!this._chartEl,
+      chartElConnected: this._chartEl?.isConnected,
+      contentContainsChart: this._chartEl ? content.contains(this._chartEl) : false,
+      entityCount: this._entities.length,
+    });
 
     if (this._contentKey !== contentKey || !chartMounted || !listMounted) {
       this._chartHoverTimeMs = null;
@@ -4705,6 +4851,9 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       this._contentKey = contentKey;
       this._chartConfigKey = "";
       this._listConfigKey = "";
+      logger.warn("[dp-lifecycle] _renderContent: full render complete", {
+        entityCount: this._entities.length,
+      });
     }
 
     content.classList.toggle("datapoints-hidden", !showRecordsPanel);

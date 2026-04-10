@@ -7048,6 +7048,17 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/charts/base/chart-card-base.ts
 	/**
+	* Call an HA unsubscribe function, swallowing any synchronous error or async
+	* rejection (e.g. `{code: 'not_found'}` after a WebSocket reconnect invalidated
+	* the subscription server-side).
+	*/
+	function _safeUnsub(unsub) {
+		try {
+			const result = unsub();
+			if (result != null && typeof result.then === "function") result.catch(() => {});
+		} catch {}
+	}
+	/**
 	* ChartCardBase – shared LitElement base class for history and statistics
 	* chart cards.
 	*
@@ -7147,7 +7158,9 @@
 			this._hass.connection.subscribeEvents(() => {
 				this._scheduleLoad();
 			}, `${DOMAIN}_event_recorded`).then((unsub) => {
-				this._unsubscribe = unsub;
+				const unsubFn = unsub;
+				if (!this.isConnected) _safeUnsub(unsubFn);
+				else this._unsubscribe = unsubFn;
 			}).catch(() => {});
 			this._windowListener = () => {
 				this._scheduleLoad();
@@ -7169,7 +7182,7 @@
 				this._loadRaf = null;
 			}
 			if (this._unsubscribe) {
-				this._unsubscribe();
+				_safeUnsub(this._unsubscribe);
 				this._unsubscribe = null;
 			}
 			if (this._windowListener) {
@@ -30418,6 +30431,9 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/datapoints.ts
+	/** Module-level set of all currently-connected panel instances.
+	*  Used by the orphan-recovery guard to avoid disrupting a live replacement. */
+	var _liveInstances = /* @__PURE__ */ new Set();
 	var DATA_GAP_THRESHOLD_OPTIONS = [
 		{
 			value: "auto",
@@ -30566,6 +30582,7 @@
 			this._hasPageStateInUrl = false;
 			this._localPageStateDirty = false;
 			this._pendingPreferencesSaveTimer = null;
+			this._orphanRecoveryTimer = null;
 			this._recordsSearchQuery = "";
 			this._hiddenEventIds = [];
 			this._hoveredEventIds = [];
@@ -30763,9 +30780,19 @@
 				this._haEventUnsubscribe = unsub;
 			}).catch(() => {});
 			if (!this._rendered) {
+				logger$1.warn("[dp-lifecycle] set hass: first hass — transitioning to rendered", {
+					isConnected: this.isConnected,
+					hadUiReadyPromise: !!this._uiReadyPromise,
+					shellBuilt: this._shellBuilt
+				});
 				this._rendered = true;
 				this._initFromContext();
-				if (this.isConnected) this._buildLoadingShell();
+				if (this.isConnected) {
+					this._buildLoadingShell();
+					logger$1.warn("[dp-lifecycle] set hass: resetting uiReadyPromise and re-running ensureUiComponentsReady");
+					this._uiReadyPromise = null;
+					this._ensureUiComponentsReady();
+				} else logger$1.warn("[dp-lifecycle] set hass: not connected — skipping shell build");
 			}
 			if (!this._seriesRows.length && Object.keys(this._targetSelection || {}).length) this._seriesRows = buildHistorySeriesRows(resolveEntityIdsFromTarget(this._hass, this._targetSelection));
 			this._syncSeriesState();
@@ -30786,6 +30813,21 @@
 			this._narrow = value;
 		}
 		connectedCallback() {
+			if (this._orphanRecoveryTimer) {
+				window.clearTimeout(this._orphanRecoveryTimer);
+				this._orphanRecoveryTimer = null;
+			}
+			_liveInstances.add(this);
+			logger$1.warn("[dp-lifecycle] connectedCallback", {
+				rendered: this._rendered,
+				shellBuilt: this._shellBuilt,
+				uiReadyPromise: !!this._uiReadyPromise,
+				uiReadyApplied: this._uiReadyApplied,
+				entityCount: this._entities?.length ?? 0,
+				contentKey: this._contentKey,
+				hasContentHostEl: !!this._contentHostEl,
+				hasShellEl: !!this._shellEl
+			});
 			this._mqTablet.addEventListener("change", this._onLayoutChange);
 			this._mqMobile.addEventListener("change", this._onLayoutChange);
 			this._updateLayoutMode();
@@ -30807,19 +30849,33 @@
 			this.addEventListener("hass-datapoints-comparison-loading", this._onComparisonLoading);
 			this.addEventListener("hass-datapoints-analysis-computing", this._onAnalysisComputing);
 			this.addEventListener("hass-datapoints-analysis-method-result", this._onAnalysisMethodResult);
-			if (this._rendered && !this._shellBuilt) this._buildLoadingShell();
+			if (this._rendered && !this._shellBuilt) {
+				logger$1.warn("[dp-lifecycle] connectedCallback: rendered but no shell — building loading shell");
+				this._buildLoadingShell();
+			}
 			this._ensureUiComponentsReady();
-			if (this._rendered && this._shellBuilt) window.requestAnimationFrame(() => {
-				if (!this.isConnected) return;
-				this._syncControls();
-				this._renderContent();
-				if (this._restoredFromSession) {
-					this._restoredFromSession = false;
-					this._updateUrl({ push: false });
-				}
+			if (this._rendered && this._shellBuilt) {
+				logger$1.warn("[dp-lifecycle] connectedCallback: shell already built — scheduling reconnect RAF render");
+				window.requestAnimationFrame(() => {
+					if (!this.isConnected) {
+						logger$1.warn("[dp-lifecycle] connectedCallback RAF: aborted (not connected)");
+						return;
+					}
+					logger$1.warn("[dp-lifecycle] connectedCallback RAF: calling syncControls + renderContent");
+					this._syncControls();
+					this._renderContent();
+					if (this._restoredFromSession) {
+						this._restoredFromSession = false;
+						this._updateUrl({ push: false });
+					}
+				});
+			} else logger$1.warn("[dp-lifecycle] connectedCallback: no RAF scheduled", {
+				rendered: this._rendered,
+				shellBuilt: this._shellBuilt
 			});
 		}
 		disconnectedCallback() {
+			_liveInstances.delete(this);
 			this._mqTablet.removeEventListener("change", this._onLayoutChange);
 			this._mqMobile.removeEventListener("change", this._onLayoutChange);
 			if (this._onOverlayKeydown) window.removeEventListener("keydown", this._onOverlayKeydown);
@@ -30857,11 +30913,32 @@
 				window.clearTimeout(this._chartZoomStateCommitTimer);
 				this._chartZoomStateCommitTimer = null;
 			}
+			if (this._orphanRecoveryTimer) {
+				window.clearTimeout(this._orphanRecoveryTimer);
+				this._orphanRecoveryTimer = null;
+			}
 			this._hideCollapsedTargetPopup();
 			this._hideCollapsedOptionsPopup();
+			logger$1.warn("[dp-lifecycle] disconnectedCallback", {
+				rendered: this._rendered,
+				shellBuilt: this._shellBuilt,
+				uiReadyApplied: this._uiReadyApplied,
+				entityCount: this._entities?.length ?? 0
+			});
 			this._uiReadyPromise = null;
 			this._uiReadyApplied = false;
 			this._context.orchestration.cancelChartResizeRedraw();
+			this._orphanRecoveryTimer = window.setTimeout(() => {
+				this._orphanRecoveryTimer = null;
+				if (!this.isConnected) {
+					if ([..._liveInstances].some((i) => i !== this)) {
+						logger$1.warn("[dp-lifecycle] orphan recovery: another instance already live — skipping location-changed");
+						return;
+					}
+					logger$1.warn("[dp-lifecycle] orphan recovery: still detached after grace period — dispatching location-changed");
+					window.dispatchEvent(new CustomEvent("location-changed", { bubbles: true }));
+				}
+			}, 3e3);
 		}
 		_initFromContext() {
 			const { entityFromUrl, deviceFromUrl, areaFromUrl, labelFromUrl, datapointsScopeFromUrl, startFromUrl, endFromUrl, zoomStartFromUrl, zoomEndFromUrl, seriesColorsFromUrl, dateWindowsFromUrl, hoursFromUrl, hasTargetInUrl, hasRangeInUrl, pageStateFromUrl, sessionState } = this._context.navigation.readStateFromLocation();
@@ -31002,6 +31079,11 @@
 			}
 		}
 		_buildLoadingShell() {
+			logger$1.warn("[dp-lifecycle] _buildLoadingShell called", {
+				rendered: this._rendered,
+				shellBuilt: this._shellBuilt,
+				isConnected: this.isConnected
+			});
 			this._shellBuilt = false;
 			const loadingLabel = msg("Loading Datapoints…");
 			const root = this.shadowRoot;
@@ -31017,6 +31099,11 @@
     `;
 		}
 		_buildShell() {
+			logger$1.warn("[dp-lifecycle] _buildShell called", {
+				rendered: this._rendered,
+				isConnected: this.isConnected,
+				entityCount: this._entities?.length ?? 0
+			});
 			this._shellBuilt = true;
 			const root = this.shadowRoot;
 			if (!root) return;
@@ -31056,7 +31143,15 @@
 			this._shellEl?.syncLayoutHeight();
 		}
 		_bootstrapAfterShellBuilt() {
-			if (!this._shellBuilt) return;
+			if (!this._shellBuilt) {
+				logger$1.warn("[dp-lifecycle] _bootstrapAfterShellBuilt: skipped — shell not built");
+				return;
+			}
+			logger$1.warn("[dp-lifecycle] _bootstrapAfterShellBuilt: running", {
+				rendered: this._rendered,
+				entityCount: this._entities?.length ?? 0,
+				contentKey: this._contentKey
+			});
 			this._ensureHistoryBounds();
 			this._ensureUserPreferences();
 			this._loadSavedPageIndicator();
@@ -31068,7 +31163,19 @@
 			}
 		}
 		_ensureUiComponentsReady() {
-			if (this._uiReadyPromise) return this._uiReadyPromise;
+			if (this._uiReadyPromise) {
+				logger$1.warn("[dp-lifecycle] _ensureUiComponentsReady: promise already exists — returning cached", {
+					rendered: this._rendered,
+					shellBuilt: this._shellBuilt,
+					uiReadyApplied: this._uiReadyApplied
+				});
+				return this._uiReadyPromise;
+			}
+			logger$1.warn("[dp-lifecycle] _ensureUiComponentsReady: creating new promise", {
+				rendered: this._rendered,
+				shellBuilt: this._shellBuilt,
+				isConnected: this.isConnected
+			});
 			this._uiReadyPromise = ensureHaComponents([
 				"ha-top-app-bar-fixed",
 				"ha-menu-button",
@@ -31078,12 +31185,34 @@
 				"ha-target-picker",
 				"ha-date-range-picker"
 			]).then((results) => results).then(() => {
-				if (!this.isConnected || !this._rendered) return;
+				if (!this.isConnected || !this._rendered) {
+					logger$1.warn("[dp-lifecycle] _ensureUiComponentsReady: components ready but bailing early", {
+						isConnected: this.isConnected,
+						rendered: this._rendered,
+						shellBuilt: this._shellBuilt
+					});
+					this._uiReadyPromise = null;
+					return;
+				}
+				logger$1.warn("[dp-lifecycle] _ensureUiComponentsReady: components ready — scheduling double RAF", {
+					shellBuilt: this._shellBuilt,
+					uiReadyApplied: this._uiReadyApplied
+				});
 				window.requestAnimationFrame(() => {
 					window.requestAnimationFrame(() => {
-						if (!this.isConnected || !this._rendered) return;
+						if (!this.isConnected || !this._rendered) {
+							logger$1.warn("[dp-lifecycle] _ensureUiComponentsReady double RAF: aborted", {
+								isConnected: this.isConnected,
+								rendered: this._rendered
+							});
+							return;
+						}
 						this._uiReadyApplied = true;
-						if (!this._shellBuilt) this._buildShell();
+						if (!this._shellBuilt) {
+							logger$1.warn("[dp-lifecycle] _ensureUiComponentsReady double RAF: calling _buildShell");
+							this._buildShell();
+						} else logger$1.warn("[dp-lifecycle] _ensureUiComponentsReady double RAF: shell already built — skipping _buildShell");
+						logger$1.warn("[dp-lifecycle] _ensureUiComponentsReady double RAF: calling syncControls + bootstrapAfterShellBuilt");
 						this._syncControls();
 						this._bootstrapAfterShellBuilt();
 					});
@@ -32869,9 +32998,17 @@
 		}
 		_renderContent() {
 			const content = this._contentHostEl;
-			if (!content) return;
+			if (!content) {
+				logger$1.warn("[dp-lifecycle] _renderContent: aborted — no contentHostEl", {
+					rendered: this._rendered,
+					shellBuilt: this._shellBuilt,
+					entityCount: this._entities?.length ?? 0
+				});
+				return;
+			}
 			if (!this._entities.length) {
 				if (this._contentKey === "__empty__") return;
+				logger$1.warn("[dp-lifecycle] _renderContent: rendering empty state (no entities)");
 				this._chartHoverTimeMs = null;
 				this._updateChartHoverIndicator();
 				this._chartZoomRange = null;
@@ -32901,6 +33038,15 @@
 			const showRecordsPanel = this._datapointScope !== "hidden";
 			const chartMounted = !!(this._chartEl && this._chartEl.isConnected && content.contains(this._chartEl));
 			const listMounted = !showRecordsPanel || !!(this._listEl && this._listEl.isConnected && content.contains(this._listEl));
+			logger$1.warn("[dp-lifecycle] _renderContent: key check", {
+				keyMatch: this._contentKey === contentKey,
+				chartMounted,
+				listMounted,
+				hasChartEl: !!this._chartEl,
+				chartElConnected: this._chartEl?.isConnected,
+				contentContainsChart: this._chartEl ? content.contains(this._chartEl) : false,
+				entityCount: this._entities.length
+			});
 			if (this._contentKey !== contentKey || !chartMounted || !listMounted) {
 				this._chartHoverTimeMs = null;
 				this._updateChartHoverIndicator();
@@ -33004,6 +33150,7 @@
 				this._contentKey = contentKey;
 				this._chartConfigKey = "";
 				this._listConfigKey = "";
+				logger$1.warn("[dp-lifecycle] _renderContent: full render complete", { entityCount: this._entities.length });
 			}
 			content.classList.toggle("datapoints-hidden", !showRecordsPanel);
 			const resizablePanesEl = content.querySelector("#content-resizable-panes");
@@ -36871,7 +37018,7 @@
 	].forEach((card) => {
 		if (!registeredTypes.has(card.type)) window.customCards?.push(card);
 	});
-	console.groupCollapsed(`%c hass-datapoints %c v0.5.1 loaded `, "color:#fff;background:#03a9f4;font-weight:bold;padding:2px 6px;border-radius:3px 0 0 3px", "color:#03a9f4;background:#fff;font-weight:bold;padding:2px 6px;border:1px solid #03a9f4;border-radius:0 3px 3px 0", ...[]);
+	console.groupCollapsed(`%c hass-datapoints %c v0.5.1 loaded%c %c DEV#6600 `, "color:#fff;background:#03a9f4;font-weight:bold;padding:2px 6px;border-radius:3px 0 0 3px", "color:#03a9f4;background:#fff;font-weight:bold;padding:2px 6px;border:1px solid #03a9f4;border-radius:0 3px 3px 0", ...["background:transparent;", "color:#fff;background:#f57c00;font-weight:bold;padding:2px 6px;border-radius:3px"]);
 	console.log("Enable debug logging by setting %cwindow.__HASS_DATAPOINTS_DEV__ = true", "color:#333;background:#eee;border:1px solid #777;padding:2px 6px;border-radius:5px; font-family: Courier");
 	console.groupEnd();
 	//#endregion
