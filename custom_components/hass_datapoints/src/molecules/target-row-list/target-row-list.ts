@@ -45,8 +45,8 @@ const _DURATION_SECONDS: RecordWithNumericValues = {
 // "point_to_point" is always valid so it is excluded (never needs clamping).
 const _WINDOW_OPTIONS: Record<string, string[]> = {
   trend_window: ["1h", "6h", "24h", "7d", "14d", "21d", "28d"],
-  rate_window: ["1h", "6h", "24h"],
-  anomaly_rate_window: ["1h", "6h", "24h"],
+  rate_window: ["30m", "1h", "2h", "3h", "6h", "24h", "7d"],
+  anomaly_rate_window: ["30m", "1h", "2h", "3h", "6h", "24h", "7d"],
   anomaly_zscore_window: ["1h", "6h", "24h", "7d"],
   anomaly_persistence_window: ["30m", "1h", "3h", "6h", "12h", "24h"],
 };

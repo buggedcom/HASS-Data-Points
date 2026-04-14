@@ -22,6 +22,8 @@ import {
   createMonitor,
   updateMonitor,
   type AnomalyMonitor,
+  type CombinedMonitor,
+  type IndividualMonitor,
   type CreateMonitorPayload,
   type MonitorType,
 } from "@/lib/data/monitors-api";
@@ -129,10 +131,12 @@ export class AnomalyMonitorWizard extends LitElement {
   @property({ type: Array }) accessor prefillEntityIds: string[] = [];
 
   /** Pre-fill analysis settings (applied to pre-filled entities). */
-  @property({ type: Object }) accessor prefillAnalysis: Partial<NormalizedAnalysis> | null = null;
+  @property({ type: Object })
+  accessor prefillAnalysis: Partial<NormalizedAnalysis> | null = null;
 
   /** If set, the wizard is in edit mode for this monitor. */
-  @property({ type: Object }) accessor editMonitor: AnomalyMonitor | null = null;
+  @property({ type: Object }) accessor editMonitor: AnomalyMonitor | null =
+    null;
 
   /**
    * Entity IDs from the current chart that have anomaly detection enabled
@@ -150,7 +154,8 @@ export class AnomalyMonitorWizard extends LitElement {
   /** Resolved entity IDs — populated from _target when advancing to step 2. */
   @state() accessor _entityIds: string[] = [];
 
-  @state() accessor _entityConfigs: Map<string, EntityAnalysisConfig> = new Map();
+  @state() accessor _entityConfigs: Map<string, EntityAnalysisConfig> =
+    new Map();
 
   @state() accessor _activeEntityId: string = "";
 
@@ -190,7 +195,9 @@ export class AnomalyMonitorWizard extends LitElement {
     if (this.editMonitor) {
       const m = this.editMonitor;
       const ids =
-        m.type === "combined" ? [...(m as any).entity_ids] : [(m as any).entity_id];
+        m.type === "combined"
+          ? [...(m as CombinedMonitor).entity_ids]
+          : [(m as IndividualMonitor).entity_id];
       const cfg = configFromMonitor(m);
       const configs = new Map<string, EntityAnalysisConfig>();
       for (const id of ids) configs.set(id, { ...cfg });
@@ -203,11 +210,15 @@ export class AnomalyMonitorWizard extends LitElement {
       this._lookBackHours = m.look_back_hours;
       this._scanIntervalMinutes = m.scan_interval_minutes;
       this._monitorType = m.type;
-      this._overlapMode = m.type === "combined" ? (m as any).overlap_mode ?? "all" : "all";
+      this._overlapMode =
+        m.type === "combined"
+          ? ((m as CombinedMonitor).overlap_mode ?? "all")
+          : "all";
     } else {
       const ids = [...(this.prefillEntityIds ?? [])];
       const configs = new Map<string, EntityAnalysisConfig>();
-      for (const id of ids) configs.set(id, defaultEntityConfig(this.prefillAnalysis));
+      for (const id of ids)
+        configs.set(id, defaultEntityConfig(this.prefillAnalysis));
 
       this._step = 1;
       this._target = ids.length ? { entity_id: ids } : {};
@@ -291,7 +302,9 @@ export class AnomalyMonitorWizard extends LitElement {
       this._step = 2;
     } else if (this._step === 2 && !this.editMonitor) {
       // Sync target picker back to the current resolved entity list
-      this._target = this._entityIds.length ? { entity_id: [...this._entityIds] } : {};
+      this._target = this._entityIds.length
+        ? { entity_id: [...this._entityIds] }
+        : {};
       this._step = 1;
     }
     this._error = "";
@@ -307,7 +320,8 @@ export class AnomalyMonitorWizard extends LitElement {
       // Sync entity configs to the resolved list
       const newConfigs = new Map(this._entityConfigs);
       for (const id of resolved) {
-        if (!newConfigs.has(id)) newConfigs.set(id, defaultEntityConfig(this.prefillAnalysis));
+        if (!newConfigs.has(id))
+          newConfigs.set(id, defaultEntityConfig(this.prefillAnalysis));
       }
       for (const id of [...newConfigs.keys()]) {
         if (!resolved.includes(id)) newConfigs.delete(id);
@@ -389,7 +403,10 @@ export class AnomalyMonitorWizard extends LitElement {
           ...this._configPayload(cfgEntityId),
         });
         saved.push(result);
-      } else if (this._monitorType === "combined" || this._entityIds.length === 1) {
+      } else if (
+        this._monitorType === "combined" ||
+        this._entityIds.length === 1
+      ) {
         // Single combined sensor (or one entity → always individual)
         const primaryId = this._entityIds[0] ?? "";
         const payload: CreateMonitorPayload = {
@@ -408,18 +425,20 @@ export class AnomalyMonitorWizard extends LitElement {
         saved.push(await createMonitor(this.hass, payload));
       } else {
         // Individual monitors — one sensor per entity, each with its own config
-        for (const entityId of this._entityIds) {
-          const baseName = entityId.split(".").pop() ?? entityId;
-          const result = await createMonitor(this.hass, {
-            monitor_type: "individual",
-            name: `${baseName} ${msg("anomalies")}`,
-            entity_id: entityId,
-            look_back_hours: this._lookBackHours,
-            scan_interval_minutes: this._scanIntervalMinutes,
-            ...this._configPayload(entityId),
-          });
-          saved.push(result);
-        }
+        const results = await Promise.all(
+          this._entityIds.map((entityId) => {
+            const baseName = entityId.split(".").pop() ?? entityId;
+            return createMonitor(this.hass!, {
+              monitor_type: "individual",
+              name: `${baseName} ${msg("anomalies")}`,
+              entity_id: entityId,
+              look_back_hours: this._lookBackHours,
+              scan_interval_minutes: this._scanIntervalMinutes,
+              ...this._configPayload(entityId),
+            });
+          })
+        );
+        saved.push(...results);
       }
 
       this._emit("dp-monitor-wizard-saved", { monitors: saved });
@@ -437,7 +456,7 @@ export class AnomalyMonitorWizard extends LitElement {
   private _entityName(entityId: string): string {
     if (!this.hass) return entityId;
     return (
-      (this.hass as any).states?.[entityId]?.attributes?.friendly_name ??
+      this.hass.states[entityId]?.attributes?.friendly_name ??
       entityId.split(".").pop() ??
       entityId
     );
@@ -451,13 +470,13 @@ export class AnomalyMonitorWizard extends LitElement {
       label:
         n <= 2
           ? msg("All anomalies overlap")
-          : `${msg("All")  } ${n} ${  msg("anomalies overlap")}`,
+          : `${msg("All")} ${n} ${msg("anomalies overlap")}`,
     });
     if (n > 2) {
       for (let i = n - 1; i >= 2; i--) {
         opts.push({
           value: `any_${i}`,
-          label: `${msg("Any")  } ${i}+ ${  msg("entities overlap")}`,
+          label: `${msg("Any")} ${i}+ ${msg("entities overlap")}`,
         });
       }
     }
@@ -472,7 +491,9 @@ export class AnomalyMonitorWizard extends LitElement {
       this._monitorType === "combined" || this._entityIds.length <= 1
         ? 1
         : this._entityIds.length;
-    return count === 1 ? msg("Create 1 sensor") : `${msg("Create")} ${count} ${msg("sensors")}`;
+    return count === 1
+      ? msg("Create 1 sensor")
+      : `${msg("Create")} ${count} ${msg("sensors")}`;
   }
 
   // -------------------------------------------------------------------------
@@ -484,11 +505,11 @@ export class AnomalyMonitorWizard extends LitElement {
     if (isEdit) {
       return html`
         <div class="step-bar">
-          <span class=${`step${  this._step === 2 ? " active" : ""}`}
+          <span class=${`step${this._step === 2 ? " active" : ""}`}
             >1. ${msg("Analysis")}</span
           >
           <ha-icon icon="mdi:chevron-right" class="step-sep"></ha-icon>
-          <span class=${`step${  this._step === 3 ? " active" : ""}`}
+          <span class=${`step${this._step === 3 ? " active" : ""}`}
             >2. ${msg("Schedule")}</span
           >
         </div>
@@ -496,15 +517,15 @@ export class AnomalyMonitorWizard extends LitElement {
     }
     return html`
       <div class="step-bar">
-        <span class=${`step${  this._step === 1 ? " active" : ""}`}
+        <span class=${`step${this._step === 1 ? " active" : ""}`}
           >1. ${msg("Entities")}</span
         >
         <ha-icon icon="mdi:chevron-right" class="step-sep"></ha-icon>
-        <span class=${`step${  this._step === 2 ? " active" : ""}`}
+        <span class=${`step${this._step === 2 ? " active" : ""}`}
           >2. ${msg("Analysis")}</span
         >
         <ha-icon icon="mdi:chevron-right" class="step-sep"></ha-icon>
-        <span class=${`step${  this._step === 3 ? " active" : ""}`}
+        <span class=${`step${this._step === 3 ? " active" : ""}`}
           >3. ${msg("Schedule")}</span
         >
       </div>
@@ -532,7 +553,9 @@ export class AnomalyMonitorWizard extends LitElement {
       ${suggestions.length > 0
         ? html`
             <div class="wizard-section">
-              <p class="wizard-section-label">${msg("Add from current chart")}</p>
+              <p class="wizard-section-label">
+                ${msg("Add from current chart")}
+              </p>
               <div class="wizard-entity-chips">
                 ${suggestions.map(
                   (id) => html`
@@ -540,7 +563,9 @@ export class AnomalyMonitorWizard extends LitElement {
                       class="suggestion-chip"
                       type="button"
                       @click=${() => this._addSuggestedEntity(id)}
-                    >${this._entityName(id)}</button>
+                    >
+                      ${this._entityName(id)}
+                    </button>
                   `
                 )}
               </div>
@@ -565,7 +590,7 @@ export class AnomalyMonitorWizard extends LitElement {
               ${this._entityIds.map(
                 (id) => html`
                   <button
-                    class=${`entity-tab${  id === activeId ? " active" : ""}`}
+                    class=${`entity-tab${id === activeId ? " active" : ""}`}
                     @click=${() => {
                       this._activeEntityId = id;
                     }}
@@ -639,7 +664,9 @@ export class AnomalyMonitorWizard extends LitElement {
                       )}
                   ></inline-select>
                 </label>
-                <p class="wizard-notice">${msg("Detection will run on the downsampled data.")}</p>
+                <p class="wizard-notice">
+                  ${msg("Detection will run on the downsampled data.")}
+                </p>
               </div>
             `
           : nothing}
@@ -899,7 +926,8 @@ export class AnomalyMonitorWizard extends LitElement {
                   { value: "combined", label: msg("Combined sensor") },
                 ]}
                 @dp-select-change=${(e: Event) => {
-                  const val = (e as CustomEvent<{ value: string }>).detail?.value as MonitorType;
+                  const val = (e as CustomEvent<{ value: string }>).detail
+                    ?.value as MonitorType;
                   this._monitorType = val;
                   // Reset overlap mode to a sensible default when switching
                   if (val === "combined") this._overlapMode = "all";
@@ -908,9 +936,9 @@ export class AnomalyMonitorWizard extends LitElement {
             </div>
           `
         : nothing}
-
       ${(isMulti || this.editMonitor?.type === "combined") &&
-      (this._monitorType === "combined" || this.editMonitor?.type === "combined")
+      (this._monitorType === "combined" ||
+        this.editMonitor?.type === "combined")
         ? html`
             <div class="wizard-field">
               <label class="field-label">${msg("Overlap mode")}</label>
@@ -918,7 +946,8 @@ export class AnomalyMonitorWizard extends LitElement {
                 .value=${this._overlapMode}
                 .options=${this._overlapOptions()}
                 @dp-select-change=${(e: Event) => {
-                  const val = (e as CustomEvent<{ value: string }>).detail?.value;
+                  const val = (e as CustomEvent<{ value: string }>).detail
+                    ?.value;
                   if (val) this._overlapMode = val;
                 }}
               ></inline-select>
@@ -951,11 +980,9 @@ export class AnomalyMonitorWizard extends LitElement {
 
         <div class="wizard-content">
           ${this._renderStepBar()}
-
           ${this._step === 1 ? this._renderStep1() : nothing}
           ${this._step === 2 ? this._renderStep2() : nothing}
           ${this._step === 3 ? this._renderStep3() : nothing}
-
           ${this._error
             ? html`<div class="wizard-error">${this._error}</div>`
             : nothing}
@@ -964,14 +991,18 @@ export class AnomalyMonitorWizard extends LitElement {
             <ha-button @click=${this._onClose}>${msg("Cancel")}</ha-button>
             <span class="dialog-spacer"></span>
             ${canGoBack
-              ? html`<ha-button @click=${this._onBack}>${msg("Back")}</ha-button>`
+              ? html`<ha-button @click=${this._onBack}
+                  >${msg("Back")}</ha-button
+                >`
               : nothing}
             ${this._step < 3
-              ? html`<ha-button raised @click=${this._onNext}>${msg("Next")}</ha-button>`
+              ? html`<ha-button raised @click=${this._onNext}
+                  >${msg("Next")}</ha-button
+                >`
               : html`<ha-button
-                    raised
-                    .disabled=${this._saving}
-                    @click=${this._onSubmit}
+                  raised
+                  .disabled=${this._saving}
+                  @click=${this._onSubmit}
                   >${this._saveLabel()}</ha-button
                 >`}
           </div>

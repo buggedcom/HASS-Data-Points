@@ -17327,8 +17327,20 @@
 			label: "Point to point"
 		},
 		{
+			value: "30m",
+			label: "30 minutes"
+		},
+		{
 			value: "1h",
 			label: "1 hour"
+		},
+		{
+			value: "2h",
+			label: "2 hours"
+		},
+		{
+			value: "3h",
+			label: "3 hours"
 		},
 		{
 			value: "6h",
@@ -17337,6 +17349,10 @@
 		{
 			value: "24h",
 			label: "24 hours"
+		},
+		{
+			value: "7d",
+			label: "7 days"
 		}
 	];
 	var AnalysisRateGroup = (_analysis_accessor_storage$4 = /* @__PURE__ */ new WeakMap(), _entityId_accessor_storage$4 = /* @__PURE__ */ new WeakMap(), _AnalysisRateGroup = class AnalysisRateGroup extends i$2 {
@@ -17620,7 +17636,11 @@
     font: inherit;
     font-size: 0.82rem;
     color: var(--primary-color, #3b82f6);
-    background: color-mix(in srgb, var(--primary-color, #3b82f6) 14%, transparent);
+    background: color-mix(
+      in srgb,
+      var(--primary-color, #3b82f6) 14%,
+      transparent
+    );
     cursor: pointer;
     --mdc-icon-size: 16px;
     appearance: none;
@@ -17630,7 +17650,11 @@
 
   .save-monitor-btn:hover,
   .save-monitor-btn:focus-visible {
-    background: color-mix(in srgb, var(--primary-color, #3b82f6) 22%, transparent);
+    background: color-mix(
+      in srgb,
+      var(--primary-color, #3b82f6) 22%,
+      transparent
+    );
     outline: none;
   }
 `;
@@ -17711,8 +17735,24 @@
 	];
 	var ANALYSIS_ANOMALY_RATE_WINDOW_OPTIONS = [
 		{
+			value: "point_to_point",
+			label: "Point to point"
+		},
+		{
+			value: "30m",
+			label: "30 minutes"
+		},
+		{
 			value: "1h",
 			label: "1 hour"
+		},
+		{
+			value: "2h",
+			label: "2 hours"
+		},
+		{
+			value: "3h",
+			label: "3 hours"
 		},
 		{
 			value: "6h",
@@ -17721,6 +17761,10 @@
 		{
 			value: "24h",
 			label: "24 hours"
+		},
+		{
+			value: "7d",
+			label: "7 days"
 		}
 	];
 	var ANALYSIS_ANOMALY_ZSCORE_WINDOW_OPTIONS = [
@@ -20946,14 +20990,22 @@
 			"28d"
 		],
 		rate_window: [
+			"30m",
 			"1h",
+			"2h",
+			"3h",
 			"6h",
-			"24h"
+			"24h",
+			"7d"
 		],
 		anomaly_rate_window: [
+			"30m",
 			"1h",
+			"2h",
+			"3h",
 			"6h",
-			"24h"
+			"24h",
+			"7d"
 		],
 		anomaly_zscore_window: [
 			"1h",
@@ -24489,7 +24541,10 @@
     white-space: nowrap;
     cursor: pointer;
     flex-shrink: 0;
-    transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
+    transition:
+      border-color 120ms ease,
+      color 120ms ease,
+      background 120ms ease;
     appearance: none;
     -webkit-appearance: none;
   }
@@ -25031,17 +25086,19 @@
 						payload.overlap_mode = this._overlapMode;
 					}
 					saved.push(await createMonitor(this.hass, payload));
-				} else for (const entityId of this._entityIds) {
-					const baseName = entityId.split(".").pop() ?? entityId;
-					const result = await createMonitor(this.hass, {
-						monitor_type: "individual",
-						name: `${baseName} ${msg("anomalies")}`,
-						entity_id: entityId,
-						look_back_hours: this._lookBackHours,
-						scan_interval_minutes: this._scanIntervalMinutes,
-						...this._configPayload(entityId)
-					});
-					saved.push(result);
+				} else {
+					const results = await Promise.all(this._entityIds.map((entityId) => {
+						const baseName = entityId.split(".").pop() ?? entityId;
+						return createMonitor(this.hass, {
+							monitor_type: "individual",
+							name: `${baseName} ${msg("anomalies")}`,
+							entity_id: entityId,
+							look_back_hours: this._lookBackHours,
+							scan_interval_minutes: this._scanIntervalMinutes,
+							...this._configPayload(entityId)
+						});
+					}));
+					saved.push(...results);
 				}
 				this._emit("dp-monitor-wizard-saved", { monitors: saved });
 			} catch (err) {
@@ -25052,7 +25109,7 @@
 		}
 		_entityName(entityId) {
 			if (!this.hass) return entityId;
-			return this.hass.states?.[entityId]?.attributes?.friendly_name ?? entityId.split(".").pop() ?? entityId;
+			return this.hass.states[entityId]?.attributes?.friendly_name ?? entityId.split(".").pop() ?? entityId;
 		}
 		_overlapOptions() {
 			const n = this._entityIds.length;
@@ -25119,14 +25176,18 @@
 
       ${suggestions.length > 0 ? b`
             <div class="wizard-section">
-              <p class="wizard-section-label">${msg("Add from current chart")}</p>
+              <p class="wizard-section-label">
+                ${msg("Add from current chart")}
+              </p>
               <div class="wizard-entity-chips">
                 ${suggestions.map((id) => b`
                     <button
                       class="suggestion-chip"
                       type="button"
                       @click=${() => this._addSuggestedEntity(id)}
-                    >${this._entityName(id)}</button>
+                    >
+                      ${this._entityName(id)}
+                    </button>
                   `)}
               </div>
             </div>
@@ -25197,7 +25258,9 @@
                     @dp-select-change=${(e) => this._updateEntityConfig(entityId, "sample_aggregate", e.detail.value)}
                   ></inline-select>
                 </label>
-                <p class="wizard-notice">${msg("Detection will run on the downsampled data.")}</p>
+                <p class="wizard-notice">
+                  ${msg("Detection will run on the downsampled data.")}
+                </p>
               </div>
             ` : A}
       </div>
@@ -25408,7 +25471,6 @@
               ></inline-select>
             </div>
           ` : A}
-
       ${(isMulti || this.editMonitor?.type === "combined") && (this._monitorType === "combined" || this.editMonitor?.type === "combined") ? b`
             <div class="wizard-field">
               <label class="field-label">${msg("Overlap mode")}</label>
@@ -25441,21 +25503,23 @@
 
         <div class="wizard-content">
           ${this._renderStepBar()}
-
           ${this._step === 1 ? this._renderStep1() : A}
           ${this._step === 2 ? this._renderStep2() : A}
           ${this._step === 3 ? this._renderStep3() : A}
-
           ${this._error ? b`<div class="wizard-error">${this._error}</div>` : A}
 
           <div class="dialog-actions">
             <ha-button @click=${this._onClose}>${msg("Cancel")}</ha-button>
             <span class="dialog-spacer"></span>
-            ${canGoBack ? b`<ha-button @click=${this._onBack}>${msg("Back")}</ha-button>` : A}
-            ${this._step < 3 ? b`<ha-button raised @click=${this._onNext}>${msg("Next")}</ha-button>` : b`<ha-button
-                    raised
-                    .disabled=${this._saving}
-                    @click=${this._onSubmit}
+            ${canGoBack ? b`<ha-button @click=${this._onBack}
+                  >${msg("Back")}</ha-button
+                >` : A}
+            ${this._step < 3 ? b`<ha-button raised @click=${this._onNext}
+                  >${msg("Next")}</ha-button
+                >` : b`<ha-button
+                  raised
+                  .disabled=${this._saving}
+                  @click=${this._onSubmit}
                   >${this._saveLabel()}</ha-button
                 >`}
           </div>
@@ -25649,7 +25713,11 @@
     font: inherit;
     font-size: 0.82rem;
     color: var(--primary-color, #3b82f6);
-    background: color-mix(in srgb, var(--primary-color, #3b82f6) 14%, transparent);
+    background: color-mix(
+      in srgb,
+      var(--primary-color, #3b82f6) 14%,
+      transparent
+    );
     cursor: pointer;
     --mdc-icon-size: 16px;
     appearance: none;
@@ -25659,7 +25727,11 @@
 
   .new-monitor-btn:hover,
   .new-monitor-btn:focus-visible {
-    background: color-mix(in srgb, var(--primary-color, #3b82f6) 22%, transparent);
+    background: color-mix(
+      in srgb,
+      var(--primary-color, #3b82f6) 22%,
+      transparent
+    );
     outline: none;
   }
 `;
@@ -25796,8 +25868,18 @@
 			const clusterCount = monitor.last_cluster_count ?? 0;
 			const isDisabled = !monitor.enabled;
 			const hasAnomaly = !isDisabled && clusterCount > 0;
-			const statusLabel = isDisabled ? msg("Disabled") : hasAnomaly ? msg("Anomaly detected") : msg("Normal");
-			const statusClass = isDisabled ? "disabled" : hasAnomaly ? "anomaly" : "normal";
+			let statusLabel;
+			let statusClass;
+			if (isDisabled) {
+				statusLabel = msg("Disabled");
+				statusClass = "disabled";
+			} else if (hasAnomaly) {
+				statusLabel = msg("Anomaly detected");
+				statusClass = "anomaly";
+			} else {
+				statusLabel = msg("Normal");
+				statusClass = "normal";
+			}
 			const history = monitor.scan_history ?? [];
 			let consecutive = 0;
 			for (let i = history.length - 1; i >= 0; i--) if ((history[i].count ?? 0) > 0) consecutive++;
@@ -25809,7 +25891,9 @@
           <span class="monitor-type-badge">
             ${monitor.type === "combined" ? "⬡ combined" : "● individual"}
           </span>
-          <span class="monitor-status-badge ${statusClass}">${statusLabel}</span>
+          <span class="monitor-status-badge ${statusClass}"
+            >${statusLabel}</span
+          >
         </div>
 
         <div class="monitor-entities">
@@ -25828,14 +25912,17 @@
             ${clusterCount} ${msg("cluster(s)")}
             ${consecutive > 0 ? b`· ${msg(`persistent for ${consecutive} scans`)}` : A}
           </span>
-          ${monitor.last_scan_at ? b`<span>${msg("Last scan:")} ${new Date(monitor.last_scan_at).toLocaleString()}</span>` : A}
+          ${monitor.last_scan_at ? b`<span
+                >${msg("Last scan:")}
+                ${new Date(monitor.last_scan_at).toLocaleString()}</span
+              >` : A}
         </div>
 
         <div class="monitor-actions">
-          <ha-button @click=${() => this._onEdit(monitor)}>${msg("Edit")}</ha-button>
-          <ha-button
-            @click=${() => this._onToggleEnabled(monitor)}
+          <ha-button @click=${() => this._onEdit(monitor)}
+            >${msg("Edit")}</ha-button
           >
+          <ha-button @click=${() => this._onToggleEnabled(monitor)}>
             ${monitor.enabled ? msg("Disable") : msg("Enable")}
           </ha-button>
           ${monitor.device_id ? b`<a
@@ -25847,22 +25934,27 @@
                 ${msg("Device")}
               </a>` : A}
           <div class="monitor-actions-spacer"></div>
-          <ha-button
-            class="delete-btn"
-            @click=${() => this._onDelete(monitor)}
-          >${msg("Delete")}</ha-button>
+          <ha-button class="delete-btn" @click=${() => this._onDelete(monitor)}
+            >${msg("Delete")}</ha-button
+          >
         </div>
       </div>
     `;
+		}
+		_renderMonitorList() {
+			if (this._loading) return b`<div class="monitors-empty">${msg("Loading…")}</div>`;
+			if (this._monitors.length === 0) return b`<div class="monitors-empty">
+        ${msg("No monitors configured. Click \"New monitor\" to get started.")}
+      </div>`;
+			return b`<div class="monitors-grid">
+      ${this._monitors.map((m) => this._renderMonitorCard(m))}
+    </div>`;
 		}
 		render() {
 			return b`
       <div class="monitors-panel">
         <div class="monitors-header">
-          <ha-icon-button
-            label=${msg("Back")}
-            @click=${this._onClose}
-          >
+          <ha-icon-button label=${msg("Back")} @click=${this._onClose}>
             <ha-icon icon="mdi:arrow-left"></ha-icon>
           </ha-icon-button>
           <h2>${msg("Anomaly monitors")}</h2>
@@ -25872,11 +25964,7 @@
           </button>
         </div>
 
-        ${this._loading ? b`<div class="monitors-empty">${msg("Loading…")}</div>` : this._monitors.length === 0 ? b`<div class="monitors-empty">
-              ${msg("No monitors configured. Click \"New monitor\" to get started.")}
-            </div>` : b`<div class="monitors-grid">
-              ${this._monitors.map((m) => this._renderMonitorCard(m))}
-            </div>`}
+        ${this._renderMonitorList()}
       </div>
 
       <anomaly-monitor-wizard

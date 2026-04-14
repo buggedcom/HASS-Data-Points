@@ -103,6 +103,7 @@ export class AnomalyMonitorsPanel extends LitElement {
 
   private async _onDelete(monitor: AnomalyMonitor) {
     if (!this.hass) return;
+
     if (
       !window.confirm(
         msg(`Delete monitor "${monitor.name}"? This cannot be undone.`)
@@ -116,8 +117,8 @@ export class AnomalyMonitorsPanel extends LitElement {
 
   private _renderSparkline(history: ScanHistoryEntry[]) {
     const W = 120;
-      const H = 28;
-      const PAD = 2;
+    const H = 28;
+    const PAD = 2;
     const counts = history.map((e) => e.count);
     if (counts.length < 2) {
       return html`<svg width=${W} height=${H}></svg>`;
@@ -125,8 +126,7 @@ export class AnomalyMonitorsPanel extends LitElement {
     const max = Math.max(...counts, 1);
     const pts = counts
       .map((c, i) => {
-        const x =
-          PAD + (i / Math.max(counts.length - 1, 1)) * (W - PAD * 2);
+        const x = PAD + (i / Math.max(counts.length - 1, 1)) * (W - PAD * 2);
         const y = H - PAD - (c / max) * (H - PAD * 2);
         return `${x.toFixed(1)},${y.toFixed(1)}`;
       })
@@ -152,16 +152,18 @@ export class AnomalyMonitorsPanel extends LitElement {
     const isDisabled = !monitor.enabled;
     const hasAnomaly = !isDisabled && clusterCount > 0;
 
-    const statusLabel = isDisabled
-      ? msg("Disabled")
-      : hasAnomaly
-      ? msg("Anomaly detected")
-      : msg("Normal");
-    const statusClass = isDisabled
-      ? "disabled"
-      : hasAnomaly
-      ? "anomaly"
-      : "normal";
+    let statusLabel: string;
+    let statusClass: string;
+    if (isDisabled) {
+      statusLabel = msg("Disabled");
+      statusClass = "disabled";
+    } else if (hasAnomaly) {
+      statusLabel = msg("Anomaly detected");
+      statusClass = "anomaly";
+    } else {
+      statusLabel = msg("Normal");
+      statusClass = "normal";
+    }
 
     // Consecutive anomalous scans
     const history = monitor.scan_history ?? [];
@@ -178,7 +180,9 @@ export class AnomalyMonitorsPanel extends LitElement {
           <span class="monitor-type-badge">
             ${monitor.type === "combined" ? "⬡ combined" : "● individual"}
           </span>
-          <span class="monitor-status-badge ${statusClass}">${statusLabel}</span>
+          <span class="monitor-status-badge ${statusClass}"
+            >${statusLabel}</span
+          >
         </div>
 
         <div class="monitor-entities">
@@ -202,15 +206,18 @@ export class AnomalyMonitorsPanel extends LitElement {
               : nothing}
           </span>
           ${monitor.last_scan_at
-            ? html`<span>${msg("Last scan:")} ${new Date(monitor.last_scan_at).toLocaleString()}</span>`
+            ? html`<span
+                >${msg("Last scan:")}
+                ${new Date(monitor.last_scan_at).toLocaleString()}</span
+              >`
             : nothing}
         </div>
 
         <div class="monitor-actions">
-          <ha-button @click=${() => this._onEdit(monitor)}>${msg("Edit")}</ha-button>
-          <ha-button
-            @click=${() => this._onToggleEnabled(monitor)}
+          <ha-button @click=${() => this._onEdit(monitor)}
+            >${msg("Edit")}</ha-button
           >
+          <ha-button @click=${() => this._onToggleEnabled(monitor)}>
             ${monitor.enabled ? msg("Disable") : msg("Enable")}
           </ha-button>
           ${monitor.device_id
@@ -224,23 +231,33 @@ export class AnomalyMonitorsPanel extends LitElement {
               </a>`
             : nothing}
           <div class="monitor-actions-spacer"></div>
-          <ha-button
-            class="delete-btn"
-            @click=${() => this._onDelete(monitor)}
-          >${msg("Delete")}</ha-button>
+          <ha-button class="delete-btn" @click=${() => this._onDelete(monitor)}
+            >${msg("Delete")}</ha-button
+          >
         </div>
       </div>
     `;
+  }
+
+  private _renderMonitorList() {
+    if (this._loading) {
+      return html`<div class="monitors-empty">${msg("Loading…")}</div>`;
+    }
+    if (this._monitors.length === 0) {
+      return html`<div class="monitors-empty">
+        ${msg('No monitors configured. Click "New monitor" to get started.')}
+      </div>`;
+    }
+    return html`<div class="monitors-grid">
+      ${this._monitors.map((m) => this._renderMonitorCard(m))}
+    </div>`;
   }
 
   render() {
     return html`
       <div class="monitors-panel">
         <div class="monitors-header">
-          <ha-icon-button
-            label=${msg("Back")}
-            @click=${this._onClose}
-          >
+          <ha-icon-button label=${msg("Back")} @click=${this._onClose}>
             <ha-icon icon="mdi:arrow-left"></ha-icon>
           </ha-icon-button>
           <h2>${msg("Anomaly monitors")}</h2>
@@ -250,15 +267,7 @@ export class AnomalyMonitorsPanel extends LitElement {
           </button>
         </div>
 
-        ${this._loading
-          ? html`<div class="monitors-empty">${msg("Loading…")}</div>`
-          : this._monitors.length === 0
-          ? html`<div class="monitors-empty">
-              ${msg('No monitors configured. Click "New monitor" to get started.')}
-            </div>`
-          : html`<div class="monitors-grid">
-              ${this._monitors.map((m) => this._renderMonitorCard(m))}
-            </div>`}
+        ${this._renderMonitorList()}
       </div>
 
       <anomaly-monitor-wizard

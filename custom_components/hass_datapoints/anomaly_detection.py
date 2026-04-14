@@ -284,6 +284,23 @@ def _build_rate_pts(pts: list, rate_window: str) -> list:
     """Build rate-of-change points [[timeMs, rate_per_hour], ...]."""
     if len(pts) < 2:
         return []
+
+    # point_to_point: compare each reading to its immediate predecessor.
+    # Mirrors buildRateOfChangePoints() in series.ts.
+    if rate_window == "point_to_point":
+        rate_pts = []
+        for i in range(1, len(pts)):
+            t, v = pts[i]
+            comp_t, comp_v = pts[i - 1]
+            delta_ms = t - comp_t
+            if not (delta_ms > 0 and math.isfinite(delta_ms)):
+                continue
+            delta_h = delta_ms / 3_600_000.0
+            rate = (v - comp_v) / delta_h
+            if math.isfinite(rate):
+                rate_pts.append([t, rate])
+        return rate_pts
+
     window_ms = _trend_window_ms(rate_window)
     rate_pts = []
     for i in range(1, len(pts)):

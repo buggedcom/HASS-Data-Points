@@ -5,15 +5,15 @@ import * as monitorsApi from "@/lib/data/monitors-api";
 function createHass() {
   return {
     connection: {
-      sendMessagePromise: vi.fn().mockResolvedValue({ monitor: { id: "new-id" } }),
+      sendMessagePromise: vi
+        .fn()
+        .mockResolvedValue({ monitor: { id: "new-id" } }),
     },
     states: {},
   };
 }
 
-function createElement(
-  props: RecordWithUnknownValues = {}
-) {
+function createElement(props: RecordWithUnknownValues = {}) {
   const el = document.createElement("anomaly-monitor-wizard") as HTMLElement & {
     hass: unknown;
     open: boolean;
@@ -166,7 +166,9 @@ describe("anomaly-monitor-wizard", () => {
       ) as HTMLElement;
       nextBtn?.click();
       await el.updateComplete;
-      expect(el.shadowRoot!.textContent).toContain("Select at least one entity");
+      expect(el.shadowRoot!.textContent).toContain(
+        "Select at least one entity"
+      );
     });
   });
 
@@ -240,7 +242,9 @@ describe("anomaly-monitor-wizard", () => {
       saveBtn?.click();
       await el.updateComplete;
       // Allow async submit
-      await new Promise((r) => setTimeout(r, 0));
+      await new Promise<void>((r) => {
+        setTimeout(r, 0);
+      });
       expect(createMonitorSpy).toHaveBeenCalledOnce();
     });
 
@@ -254,7 +258,9 @@ describe("anomaly-monitor-wizard", () => {
         "ha-button[raised]"
       ) as HTMLElement;
       saveBtn?.click();
-      await new Promise((r) => setTimeout(r, 10));
+      await new Promise<void>((r) => {
+        setTimeout(r, 10);
+      });
       expect(saved).toHaveLength(1);
     });
   });
@@ -311,7 +317,9 @@ describe("anomaly-monitor-wizard", () => {
         "ha-button[raised]"
       ) as HTMLElement;
       saveBtn?.click();
-      await new Promise((r) => setTimeout(r, 10));
+      await new Promise<void>((r) => {
+        setTimeout(r, 10);
+      });
       expect(createMonitorSpy).not.toHaveBeenCalled();
       createMonitorSpy.mockRestore();
     });

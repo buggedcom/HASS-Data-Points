@@ -282,6 +282,18 @@ class DescribeDetectRateOfChange:
         result = detect_rate_of_change(pts, "medium", "1h")
         assert len(result) == 1
 
+    def test_GIVEN_point_to_point_window_and_sudden_spike_WHEN_called_THEN_detects_anomaly(self):
+        # Steady 1-unit/hour ramp, then a sudden 180-unit jump between two consecutive points
+        pts = [[i * 3_600_000, float(i)] for i in range(20)]
+        pts += [[20 * 3_600_000, 200.0], [21 * 3_600_000, 201.0]]
+        result = detect_rate_of_change(pts, "medium", "point_to_point")
+        assert len(result) >= 1
+        assert result[0]["anomalyMethod"] == "rate_of_change"
+
+    def test_GIVEN_point_to_point_window_and_constant_rate_WHEN_called_THEN_returns_empty(self):
+        pts = [[i * 3_600_000, float(i * 10)] for i in range(24)]
+        assert detect_rate_of_change(pts, "medium", "point_to_point") == []
+
 
 # ---------------------------------------------------------------------------
 # detect_comparison_window

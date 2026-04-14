@@ -87,7 +87,11 @@ export const styles = css`
     font: inherit;
     font-size: 0.82rem;
     color: var(--primary-color, #3b82f6);
-    background: color-mix(in srgb, var(--primary-color, #3b82f6) 14%, transparent);
+    background: color-mix(
+      in srgb,
+      var(--primary-color, #3b82f6) 14%,
+      transparent
+    );
     cursor: pointer;
     --mdc-icon-size: 16px;
     appearance: none;
@@ -97,7 +101,11 @@ export const styles = css`
 
   .save-monitor-btn:hover,
   .save-monitor-btn:focus-visible {
-    background: color-mix(in srgb, var(--primary-color, #3b82f6) 22%, transparent);
+    background: color-mix(
+      in srgb,
+      var(--primary-color, #3b82f6) 22%,
+      transparent
+    );
     outline: none;
   }
 `;

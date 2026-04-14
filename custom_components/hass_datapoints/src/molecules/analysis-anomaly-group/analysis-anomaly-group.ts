@@ -56,9 +56,14 @@ export const ANALYSIS_ANOMALY_METHOD_OPTIONS = [
 ];
 
 export const ANALYSIS_ANOMALY_RATE_WINDOW_OPTIONS = [
+  { value: "point_to_point", label: "Point to point" },
+  { value: "30m", label: "30 minutes" },
   { value: "1h", label: "1 hour" },
+  { value: "2h", label: "2 hours" },
+  { value: "3h", label: "3 hours" },
   { value: "6h", label: "6 hours" },
   { value: "24h", label: "24 hours" },
+  { value: "7d", label: "7 days" },
 ];
 
 export const ANALYSIS_ANOMALY_ZSCORE_WINDOW_OPTIONS = [
@@ -403,7 +408,9 @@ export class AnalysisAnomalyGroup extends LitElement {
               </label>
             `
           : nothing}
-        ${a.show_anomalies && Array.isArray(a.anomaly_methods) && a.anomaly_methods.length > 0
+        ${a.show_anomalies &&
+        Array.isArray(a.anomaly_methods) &&
+        a.anomaly_methods.length > 0
           ? html`
               <button class="save-monitor-btn" @click=${this._onSaveAsMonitor}>
                 <ha-icon icon="mdi:bell-plus-outline"></ha-icon>

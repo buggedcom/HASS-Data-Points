@@ -85,7 +85,9 @@ export interface CreateMonitorPayload {
   anomaly_use_sampled_data?: boolean;
 }
 
-export type UpdateMonitorPayload = Partial<Omit<CreateMonitorPayload, "monitor_type">> & {
+export type UpdateMonitorPayload = Partial<
+  Omit<CreateMonitorPayload, "monitor_type">
+> & {
   monitor_id: string;
 };
 

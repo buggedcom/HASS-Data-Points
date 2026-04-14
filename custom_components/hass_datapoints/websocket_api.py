@@ -74,6 +74,10 @@ _VALID_ANOMALY_METHODS = [
     "comparison_window",
 ]
 _VALID_ANOMALY_SENSITIVITY = ["low", "medium", "high"]
+_VALID_RATE_WINDOWS = [
+    "point_to_point",
+    "30m", "1h", "2h", "3h", "6h", "24h", "7d", "14d", "21d", "28d",
+]
 _VALID_ANOMALY_OVERLAP_MODES = ["all", "highlight", "only"]
 _VALID_TREND_METHODS = [
     "rolling_average",
@@ -596,9 +600,7 @@ def _run_detection(pts: list, config: dict, comparison_pts: list | None = None) 
         vol.Optional("anomaly_overlap_mode", default="all"): vol.In(
             _VALID_ANOMALY_OVERLAP_MODES
         ),
-        vol.Optional("anomaly_rate_window", default="1h"): vol.All(
-            str, vol.Length(max=_MAX_LEN_WINDOW), vol.Match(_RE_DURATION)
-        ),
+        vol.Optional("anomaly_rate_window", default="1h"): vol.In(_VALID_RATE_WINDOWS),
         vol.Optional("anomaly_zscore_window", default="24h"): vol.All(
             str, vol.Length(max=_MAX_LEN_WINDOW), vol.Match(_RE_DURATION)
         ),
@@ -820,9 +822,7 @@ _MONITOR_ANALYSIS_FIELDS = {
     ),
     vol.Optional("anomaly_sensitivity"): vol.In(_VALID_ANOMALY_SENSITIVITY),
     vol.Optional("anomaly_overlap_mode"): vol.In(["all", "highlight", "only"]),
-    vol.Optional("anomaly_rate_window"): vol.All(
-        str, vol.Length(max=_MAX_LEN_WINDOW), vol.Match(_RE_DURATION)
-    ),
+    vol.Optional("anomaly_rate_window"): vol.In(_VALID_RATE_WINDOWS),
     vol.Optional("anomaly_zscore_window"): vol.All(
         str, vol.Length(max=_MAX_LEN_WINDOW), vol.Match(_RE_DURATION)
     ),

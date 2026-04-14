@@ -1047,7 +1047,10 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       // Collect other chart entities that have anomaly detection enabled
       const suggestedIds: string[] = (this._seriesRows ?? [])
         .filter(
-          (r: { entity_id: string; analysis?: { show_anomalies?: boolean; anomaly_methods?: string[] } }) =>
+          (r: {
+            entity_id: string;
+            analysis?: { show_anomalies?: boolean; anomaly_methods?: string[] };
+          }) =>
             r.analysis?.show_anomalies === true &&
             Array.isArray(r.analysis.anomaly_methods) &&
             r.analysis.anomaly_methods.length > 0 &&
@@ -1055,7 +1058,12 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
             r.entity_id !== entityId
         )
         .map((r: { entity_id: string }) => r.entity_id);
-      this._openMonitorWizard(entityId ? [entityId] : [], analysis, null, suggestedIds);
+      this._openMonitorWizard(
+        entityId ? [entityId] : [],
+        analysis,
+        null,
+        suggestedIds
+      );
     });
     if (this._rendered && !this._shellBuilt) {
       logger.warn(

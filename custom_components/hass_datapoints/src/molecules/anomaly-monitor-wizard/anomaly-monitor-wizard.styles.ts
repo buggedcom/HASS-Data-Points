@@ -104,7 +104,10 @@ export const styles = css`
     white-space: nowrap;
     cursor: pointer;
     flex-shrink: 0;
-    transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
+    transition:
+      border-color 120ms ease,
+      color 120ms ease,
+      background 120ms ease;
     appearance: none;
     -webkit-appearance: none;
   }

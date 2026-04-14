@@ -11,7 +11,10 @@ import { logger } from "@/lib/logger";
 function _safeUnsub(unsub: () => void | PromiseLike<unknown>): void {
   try {
     const result = unsub();
-    if (result != null && typeof (result as PromiseLike<unknown>).then === "function") {
+    if (
+      result != null &&
+      typeof (result as PromiseLike<unknown>).then === "function"
+    ) {
       (result as Promise<unknown>).catch(() => {});
     }
   } catch {
