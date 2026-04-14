@@ -11451,6 +11451,7 @@
 					this._scrollZoomApplyTimer = setTimeout(() => {
 						this._scrollZoomApplyTimer = null;
 						if (!this._zoomRange) return;
+						this._skipNextScrollViewportSync = true;
 						this.dispatchEvent(new CustomEvent("hass-datapoints-zoom-apply", {
 							bubbles: true,
 							composed: true,
@@ -12053,10 +12054,10 @@
 			}
 			const viewportWidth = viewport.clientWidth;
 			const totalMs = Math.max(1, _t1 - _t0);
-			const visibleSpanMs = totalMs * Math.min(1, viewportWidth / Math.max(_canvasWidth, viewportWidth));
+			const spanMs = Math.max(1, this._zoomRange.end - this._zoomRange.start);
 			const maxScrollLeft = Math.max(0, Math.max(_canvasWidth, viewportWidth) - viewportWidth);
-			const maxStartOffsetMs = Math.max(0, totalMs - visibleSpanMs);
-			const clampedStart = clampChartValue(this._zoomRange.start, _t0, _t1 - visibleSpanMs);
+			const maxStartOffsetMs = Math.max(0, totalMs - spanMs);
+			const clampedStart = clampChartValue(this._zoomRange.start, _t0, _t1 - spanMs);
 			const nextLeft = (maxStartOffsetMs > 0 ? (clampedStart - _t0) / maxStartOffsetMs : 0) * maxScrollLeft;
 			const currentLeft = viewport.scrollLeft;
 			if (Math.abs(currentLeft - nextLeft) < 2) return;

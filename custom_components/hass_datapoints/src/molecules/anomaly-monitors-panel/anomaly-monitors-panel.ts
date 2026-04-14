@@ -104,11 +104,11 @@ export class AnomalyMonitorsPanel extends LitElement {
   private async _onDelete(monitor: AnomalyMonitor) {
     if (!this.hass) return;
 
-    if (
-      !window.confirm(
-        msg(`Delete monitor "${monitor.name}"? This cannot be undone.`)
-      )
-    ) {
+    // eslint-disable-next-line no-alert
+    const confirmed = window.confirm(
+      msg(`Delete monitor "${monitor.name}"? This cannot be undone.`)
+    );
+    if (!confirmed) {
       return;
     }
     await deleteMonitor(this.hass, monitor.id);

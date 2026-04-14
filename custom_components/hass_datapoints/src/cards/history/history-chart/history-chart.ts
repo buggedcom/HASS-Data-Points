@@ -1179,18 +1179,22 @@ export class HistoryChart extends HTMLElement {
     }
     const viewportWidth = viewport.clientWidth;
     const totalMs = Math.max(1, _t1 - _t0);
-    const visibleSpanMs =
-      totalMs *
-      Math.min(1, viewportWidth / Math.max(_canvasWidth, viewportWidth));
+    // Use the actual zoom span so the math is consistent with _onChartScroll,
+    // which also uses (totalMs - spanMs) as the effective scroll range.
+    // The canvas-width-based visibleSpanMs approximation diverges when the
+    // canvas is clamped at max zoom (especially on high-DPI displays where
+    // MAX_CANVAS_WIDTH_PX is smaller), causing nextLeft to differ from
+    // scrollLeft by hundreds of pixels and producing a visible jump.
+    const spanMs = Math.max(1, this._zoomRange.end - this._zoomRange.start);
     const maxScrollLeft = Math.max(
       0,
       Math.max(_canvasWidth, viewportWidth) - viewportWidth
     );
-    const maxStartOffsetMs = Math.max(0, totalMs - visibleSpanMs);
+    const maxStartOffsetMs = Math.max(0, totalMs - spanMs);
     const clampedStart = clampChartValue(
       this._zoomRange.start,
       _t0,
-      _t1 - visibleSpanMs
+      _t1 - spanMs
     );
     const ratio =
       maxStartOffsetMs > 0 ? (clampedStart - _t0) / maxStartOffsetMs : 0;
@@ -2351,6 +2355,9 @@ export class HistoryChart extends HTMLElement {
     this._scrollZoomApplyTimer = setTimeout(() => {
       this._scrollZoomApplyTimer = null;
       if (!this._zoomRange) return;
+      // Prevent _syncChartViewportScroll from snapping the viewport back to a
+      // slightly different position when the zoom-apply re-render fires.
+      this._skipNextScrollViewportSync = true;
       this.dispatchEvent(
         new CustomEvent("hass-datapoints-zoom-apply", {
           bubbles: true,
