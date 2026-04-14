@@ -3045,10 +3045,12 @@ export class HistoryChart extends HTMLElement {
       chartStage.style.width = `${canvasWidth}px`;
       chartStage.style.height = `${availableHeight}px`;
     }
-    // Restore default vertical overflow in non-split mode (split mode may have set it to auto).
+    // Restore defaults in non-split mode (split mode may have overridden these).
     if (scrollViewport) {
       scrollViewport.style.overflowY = "";
     }
+    // Reset chart element height so the pane's height: 100% takes over again.
+    wrap.style.height = "";
     const { w, h } = (
       setupCanvas as (
         canvas: HTMLCanvasElement,
@@ -4926,7 +4928,7 @@ export class HistoryChart extends HTMLElement {
     }
 
     const N = (visibleSeries as unknown[]).length;
-    const MIN_ROW_HEIGHT = 140;
+    const MIN_ROW_HEIGHT = 200;
     const rowHeight = Math.max(MIN_ROW_HEIGHT, Math.floor(availableHeight / N));
     const totalHeight = rowHeight * N;
 
@@ -4935,12 +4937,21 @@ export class HistoryChart extends HTMLElement {
       chartStage.style.height = `${totalHeight}px`;
     }
 
-    // Enable vertical scrolling in the viewport when the split rows don't all
-    // fit within the available height (e.g. many series with a small panel).
+    // When the split rows exceed the available height, expand the chart element
+    // itself so the parent pane (.pane-first) can scroll vertically — giving a
+    // natural page-level scroll rather than a small internal viewport scroll.
     const splitScrollViewport = this.querySelector("#chart-scroll-viewport");
-    if (splitScrollViewport) {
-      (splitScrollViewport as HTMLElement).style.overflowY =
-        totalHeight > availableHeight ? "auto" : "hidden";
+    if (totalHeight > availableHeight) {
+      wrap.style.height = `${totalHeight}px`;
+      // Keep the viewport non-scrolling vertically; the pane container scrolls.
+      if (splitScrollViewport) {
+        (splitScrollViewport as HTMLElement).style.overflowY = "hidden";
+      }
+    } else {
+      wrap.style.height = "";
+      if (splitScrollViewport) {
+        (splitScrollViewport as HTMLElement).style.overflowY = "hidden";
+      }
     }
 
     this._setChartLoading(!!(options as RecordWithUnknownValues).loading);
