@@ -135,6 +135,14 @@ export class TargetRowList extends LitElement {
   @property({ type: Object, attribute: false })
   accessor computingMethodsByEntity: Map<string, Set<string>> = new Map();
 
+  /**
+   * Optional map of entityId → disambiguated display label. When provided,
+   * each target-row uses this label instead of its state's friendly_name.
+   * Used when multiple entities share the same friendly name.
+   */
+  @property({ type: Object, attribute: false })
+  accessor labelMap: Map<string, string> = new Map();
+
   /** Index of the row currently being dragged, or null when not dragging. */
   private _dragSourceIndex: Nullable<number> = null;
 
@@ -245,6 +253,7 @@ export class TargetRowList extends LitElement {
                 entity-id=${row.entity_id}
                 .canShowDeltaAnalysis=${this.canShowDeltaAnalysis}
                 .stateObj=${this.states?.[row.entity_id] ?? null}
+                .label=${this.labelMap.get(row.entity_id) ?? null}
                 .hass=${this.hass ?? null}
                 .comparisonWindows=${this.comparisonWindows}
                 .computing=${this.computingEntityIds?.has(row.entity_id) ??

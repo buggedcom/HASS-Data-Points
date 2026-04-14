@@ -21,7 +21,7 @@ interface HassWithLabels {
   labels?: Record<string, { name?: string }>;
   states?: Record<string, HassState>;
   entities?: Record<string, RegistryEntryWithIcon>;
-  devices?: Record<string, { name?: string }>;
+  devices?: Record<string, { name?: string; area_id?: Nullable<string> }>;
   areas?: Record<string, { name?: string }>;
 }
 
@@ -187,8 +187,12 @@ export function disambiguateEntityNames(
     const entry = hass?.entities?.[entityId] as
       | RegistryEntryWithIcon
       | undefined;
-    const areaId = entry?.area_id || entry?.areaId;
     const deviceId = entry?.device_id || entry?.deviceId;
+    // Area can be set directly on the entity, or inherited from its parent device
+    const areaId =
+      entry?.area_id ||
+      entry?.areaId ||
+      (deviceId ? hass?.devices?.[deviceId]?.area_id : null);
 
     let qualifier;
     if (areaId) {

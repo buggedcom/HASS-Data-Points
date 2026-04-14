@@ -1,5 +1,5 @@
 import { COLORS, DOMAIN } from "@/constants";
-import { entityName } from "@/lib/ha/entity-name";
+import { disambiguateEntityNames, entityName } from "@/lib/ha/entity-name";
 import { msg, syncFrontendLocale } from "@/lib/i18n/localize";
 import {
   confirmDestructiveAction,
@@ -868,6 +868,12 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
           this._rowListEl.hass = this._hass ?? null;
           this._rowListEl.states =
             (this._hass?.states as RecordWithUnknownValues) ?? {};
+          this._rowListEl.labelMap = disambiguateEntityNames(
+            this._hass,
+            (this._seriesRows ?? []).map(
+              (r: { entity_id: string }) => r.entity_id
+            )
+          );
         }
         if (this._rangeToolbarComp) {
           this._rangeToolbarComp.hass = this._hass ?? null;
@@ -3391,6 +3397,10 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       this._rowListEl.rows = this._seriesRows;
       this._rowListEl.states = this._hass?.states ?? {};
       this._rowListEl.hass = this._hass ?? null;
+      this._rowListEl.labelMap = disambiguateEntityNames(
+        this._hass,
+        (this._seriesRows ?? []).map((r: { entity_id: string }) => r.entity_id)
+      );
       this._rowListEl.canShowDeltaAnalysis = !!this._selectedComparisonWindowId;
       this._rowListEl.comparisonWindows = this._comparisonWindows;
     }
