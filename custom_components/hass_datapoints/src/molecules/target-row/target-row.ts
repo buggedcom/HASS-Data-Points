@@ -259,6 +259,7 @@ export class TargetRow extends LitElement {
                 class="history-target-color"
                 .value=${this.color}
                 aria-label="Line color for ${this._entityId}"
+                @input=${this._onColorChange}
                 @change=${this._onColorChange}
               />
               <span class="history-target-color-icon" aria-hidden="true">
