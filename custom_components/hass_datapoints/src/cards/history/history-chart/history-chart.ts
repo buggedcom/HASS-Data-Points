@@ -890,7 +890,11 @@ export class HistoryChart extends HTMLElement {
       yOf(v: number, min: number, max: number): number;
       pad: { top: number; left: number };
       ch: number;
-      _interpolateValue(pts: [number, number][], t: number): Nullable<number>;
+      _interpolateValue(
+        pts: [number, number][],
+        t: number,
+        stepped?: boolean
+      ): Nullable<number>;
     };
     const series = _visibleSeries as Array<{
       entityId: string;
@@ -2440,6 +2444,7 @@ export class HistoryChart extends HTMLElement {
       color: string;
       axisKey: string;
       axis?: unknown;
+      stepped?: boolean;
     }> = [];
     const axes: Array<{
       key: string;
@@ -2552,6 +2557,8 @@ export class HistoryChart extends HTMLElement {
         }
       }
       if (pts.length) {
+        const seriesAnalysis =
+          analysisMap.get(entityId) || normalizeHistorySeriesAnalysis(null);
         series.push({
           entityId,
           legendEntityId: entityId,
@@ -2560,6 +2567,7 @@ export class HistoryChart extends HTMLElement {
           pts,
           color: seriesSetting.color || COLORS[i % COLORS.length],
           axisKey,
+          stepped: (seriesAnalysis as SeriesAnalysis).stepped_series === true,
         });
       }
     });
@@ -5865,7 +5873,8 @@ export class HistoryChart extends HTMLElement {
             trackRenderer as InstanceType<typeof ChartRenderer>
           )._interpolateValue(
             (series as RecordWithUnknownValues).pts as ChartPoint[],
-            timeMs
+            timeMs,
+            !!(series as RecordWithUnknownValues).stepped
           );
           if (value == null) {
             return {
