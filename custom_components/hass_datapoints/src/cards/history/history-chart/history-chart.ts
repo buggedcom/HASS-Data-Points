@@ -1297,7 +1297,8 @@ export class HistoryChart extends HTMLElement {
     const firstRegion = regions[0];
     const entityId = firstRegion?.relatedEntityId ?? null;
     return {
-      message: content ? `${content.description}\n${content.alert}` : "",
+      annotation: content ? `${content.description}\n${content.alert}` : "",
+      message: content ? content.title : "",
       icon: "mdi:alert-circle",
       linkedTarget: entityId ? { entity_id: [entityId] } : null,
     };
@@ -2485,6 +2486,11 @@ export class HistoryChart extends HTMLElement {
       hoveredComparisonWindowId !== selectedComparisonWindowId;
     const hasSelectedComparisonWindow = !!selectedComparisonWindowId;
 
+    const entityLabelMap = disambiguateEntityNames(
+      this._hass,
+      (seriesSettings as Array<{ entity_id: string }>).map((s) => s.entity_id)
+    );
+
     seriesSettings.forEach((seriesSetting, i) => {
       const entityId = seriesSetting.entity_id;
       const domain = entityId.split(".")[0];
@@ -2498,7 +2504,7 @@ export class HistoryChart extends HTMLElement {
         if (spans.length) {
           binaryBackgrounds.push({
             entityId,
-            label: entityName(this._hass, entityId) || entityId,
+            label: entityLabelMap.get(entityId) || entityId,
             color: seriesSetting.color || COLORS[i % COLORS.length],
             onLabel: this._binaryOnLabel(entityId),
             offLabel: this._binaryOffLabel(entityId),
@@ -2545,7 +2551,7 @@ export class HistoryChart extends HTMLElement {
         series.push({
           entityId,
           legendEntityId: entityId,
-          label: entityName(this._hass, entityId) || entityId,
+          label: entityLabelMap.get(entityId) || entityId,
           unit,
           pts,
           color: seriesSetting.color || COLORS[i % COLORS.length],
@@ -2808,7 +2814,7 @@ export class HistoryChart extends HTMLElement {
         }
         selectedComparisonSeriesMap.set(entityId, {
           entityId,
-          label: entityName(this._hass, entityId) || entityId,
+          label: entityLabelMap.get(entityId) || entityId,
           unit,
           color: seriesSetting.color || COLORS[index % COLORS.length],
           pts: points,
