@@ -10,7 +10,7 @@ from typing import Any
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
 
-from .const import STORAGE_KEY, STORAGE_VERSION
+from .const import MONITOR_SCAN_HISTORY_MAX, STORAGE_KEY, STORAGE_VERSION
 
 
 class DatapointsStore:
@@ -18,7 +18,7 @@ class DatapointsStore:
 
     def __init__(self, hass: HomeAssistant) -> None:
         self._store: Store = Store(hass, STORAGE_VERSION, STORAGE_KEY)
-        self._data: dict[str, Any] = {"events": []}
+        self._data: dict[str, Any] = {"events": [], "monitors": []}
         self._listeners: list[Callable[[], None]] = []
 
     async def async_load(self) -> None:
@@ -42,6 +42,9 @@ class DatapointsStore:
                 # Migrate: add automation_id (None for events recorded before this field existed)
                 if "automation_id" not in event:
                     event["automation_id"] = None
+            # Migrate: add monitors key if absent (v1 → v2)
+            if "monitors" not in self._data:
+                self._data["monitors"] = []
 
     async def async_record(
         self,
@@ -239,3 +242,70 @@ class DatapointsStore:
         automation = sum(1 for e in events if e.get("automation_id"))
         manual = sum(1 for e in events if not e.get("automation_id"))
         return automation, manual
+
+    # ---------------------------------------------------------------------------
+    # Monitor CRUD
+    # ---------------------------------------------------------------------------
+
+    def get_monitors(self) -> list[dict[str, Any]]:
+        """Return the full list of anomaly monitor records."""
+        return list(self._data.get("monitors", []))
+
+    def get_monitor(self, monitor_id: str) -> dict[str, Any] | None:
+        """Return a single monitor record by ID, or None if not found."""
+        for m in self._data.get("monitors", []):
+            if m.get("id") == monitor_id:
+                return m
+        return None
+
+    async def async_create_monitor(self, monitor: dict[str, Any]) -> dict[str, Any]:
+        """Persist a new monitor record and notify listeners."""
+        if "monitors" not in self._data:
+            self._data["monitors"] = []
+        self._data["monitors"].append(monitor)
+        await self._store.async_save(self._data)
+        self._notify_listeners()
+        return monitor
+
+    async def async_update_monitor(
+        self, monitor_id: str, updates: dict[str, Any]
+    ) -> dict[str, Any] | None:
+        """Apply *updates* to the monitor identified by *monitor_id*.
+
+        Returns the updated record, or None if the monitor was not found.
+        """
+        for m in self._data.get("monitors", []):
+            if m.get("id") == monitor_id:
+                m.update(updates)
+                await self._store.async_save(self._data)
+                self._notify_listeners()
+                return m
+        return None
+
+    async def async_delete_monitor(self, monitor_id: str) -> bool:
+        """Delete the monitor identified by *monitor_id*.
+
+        Returns True if the monitor was found and deleted.
+        """
+        original_len = len(self._data.get("monitors", []))
+        self._data["monitors"] = [
+            m for m in self._data.get("monitors", []) if m.get("id") != monitor_id
+        ]
+        if len(self._data["monitors"]) < original_len:
+            await self._store.async_save(self._data)
+            self._notify_listeners()
+            return True
+        return False
+
+    @staticmethod
+    def append_scan_history(
+        monitor: dict[str, Any],
+        scan_time_iso: str,
+        count: int,
+        max_entries: int = MONITOR_SCAN_HISTORY_MAX,
+    ) -> None:
+        """Append a scan result to the monitor's ring buffer (mutates in-place)."""
+        history: list[dict[str, Any]] = monitor.setdefault("scan_history", [])
+        history.append({"t": scan_time_iso, "count": count})
+        if len(history) > max_entries:
+            monitor["scan_history"] = history[-max_entries:]

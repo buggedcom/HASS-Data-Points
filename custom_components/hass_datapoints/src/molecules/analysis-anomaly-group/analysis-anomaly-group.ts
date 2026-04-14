@@ -403,8 +403,26 @@ export class AnalysisAnomalyGroup extends LitElement {
               </label>
             `
           : nothing}
+        ${a.show_anomalies && Array.isArray(a.anomaly_methods) && a.anomaly_methods.length > 0
+          ? html`
+              <button class="save-monitor-btn" @click=${this._onSaveAsMonitor}>
+                <ha-icon icon="mdi:bell-plus-outline"></ha-icon>
+                ${msg("Save as monitor")}
+              </button>
+            `
+          : nothing}
       </analysis-group>
     `;
+  }
+
+  private _onSaveAsMonitor() {
+    this.dispatchEvent(
+      new CustomEvent("dp-anomaly-save-monitor", {
+        detail: { entityId: this.entityId, analysis: this.analysis },
+        bubbles: true,
+        composed: true,
+      })
+    );
   }
 }
 

@@ -76,4 +76,28 @@ export const styles = css`
     outline: 2px solid var(--primary-color, #03a9f4);
     outline-offset: 2px;
   }
+
+  .save-monitor-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border: 0;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 0.82rem;
+    color: var(--primary-color, #3b82f6);
+    background: color-mix(in srgb, var(--primary-color, #3b82f6) 14%, transparent);
+    cursor: pointer;
+    --mdc-icon-size: 16px;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: background 120ms ease;
+  }
+
+  .save-monitor-btn:hover,
+  .save-monitor-btn:focus-visible {
+    background: color-mix(in srgb, var(--primary-color, #3b82f6) 22%, transparent);
+    outline: none;
+  }
 `;

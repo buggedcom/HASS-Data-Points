@@ -20,7 +20,18 @@ from sqlalchemy import text
 
 from .anomaly_cache import AnomalyCache, make_cache_key
 from .anomaly_detection import run_anomaly_detection
-from .const import DOMAIN
+from .const import (
+    DOMAIN,
+    KEY_ADD_BINARY_SENSOR_ENTITIES,
+    KEY_ADD_SENSOR_ENTITIES,
+    KEY_ADD_SWITCH_ENTITIES,
+    KEY_MONITOR_BINARY_SENSORS,
+    KEY_MONITOR_SENSORS,
+    KEY_MONITOR_SWITCHES,
+    KEY_STORE,
+    MONITOR_DEFAULT_LOOK_BACK_HOURS,
+    MONITOR_DEFAULT_SCAN_INTERVAL_MINUTES,
+)
 from .history_utils import (
     downsample_pts,
     fetch_entity_pts,
@@ -109,6 +120,10 @@ def async_register_commands(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, ws_get_history)
     websocket_api.async_register_command(hass, ws_get_anomalies)
     websocket_api.async_register_command(hass, ws_clear_cache)
+    websocket_api.async_register_command(hass, ws_monitors_list)
+    websocket_api.async_register_command(hass, ws_monitors_create)
+    websocket_api.async_register_command(hass, ws_monitors_update)
+    websocket_api.async_register_command(hass, ws_monitors_delete)
 
 
 @websocket_api.websocket_command(
@@ -345,6 +360,32 @@ def _valid_uuid(value: str) -> str:
     except ValueError as exc:
         raise vol.Invalid("Must be a valid UUID") from exc
     return value
+
+
+def _get_monitor_device(hass: HomeAssistant, monitor_id: str):
+    """Return the HA device registry entry for a monitor, or None."""
+    from homeassistant.helpers import device_registry as dr  # noqa: PLC0415
+
+    entries = hass.config_entries.async_entries(DOMAIN)
+    if not entries:
+        return None
+    entry_id = entries[0].entry_id
+    device_reg = dr.async_get(hass)
+    return device_reg.async_get_device(
+        identifiers={(DOMAIN, f"{entry_id}_monitor_{monitor_id}")}
+    )
+
+
+def _valid_overlap_mode(value: str) -> str:
+    """Voluptuous validator for overlap_mode.
+
+    Accepts "all", "any", legacy "any_two_plus", and "any_N" where N >= 2.
+    """
+    if value in ("all", "any", "any_two_plus"):
+        return value
+    if value.startswith("any_") and value[4:].isdigit() and int(value[4:]) >= 2:
+        return value
+    raise vol.Invalid(f"Invalid overlap_mode: {value!r}")
 
 
 @websocket_api.websocket_command(
@@ -766,3 +807,270 @@ async def ws_clear_cache(
         cleared = await hass.async_add_executor_job(cache.clear_all)
 
     connection.send_result(msg["id"], {"cleared": cleared})
+
+
+# ---------------------------------------------------------------------------
+# Anomaly Monitors — CRUD
+# ---------------------------------------------------------------------------
+
+# Shared analysis schema fields for monitor create/update
+_MONITOR_ANALYSIS_FIELDS = {
+    vol.Optional("anomaly_methods"): vol.All(
+        [vol.In(_VALID_ANOMALY_METHODS)], vol.Length(min=1)
+    ),
+    vol.Optional("anomaly_sensitivity"): vol.In(_VALID_ANOMALY_SENSITIVITY),
+    vol.Optional("anomaly_overlap_mode"): vol.In(["all", "highlight", "only"]),
+    vol.Optional("anomaly_rate_window"): vol.All(
+        str, vol.Length(max=_MAX_LEN_WINDOW), vol.Match(_RE_DURATION)
+    ),
+    vol.Optional("anomaly_zscore_window"): vol.All(
+        str, vol.Length(max=_MAX_LEN_WINDOW), vol.Match(_RE_DURATION)
+    ),
+    vol.Optional("anomaly_persistence_window"): vol.All(
+        str, vol.Length(max=_MAX_LEN_WINDOW), vol.Match(_RE_DURATION)
+    ),
+    vol.Optional("anomaly_trend_method"): vol.In(_VALID_TREND_METHODS),
+    vol.Optional("anomaly_trend_window"): vol.All(
+        str, vol.Length(max=_MAX_LEN_WINDOW), vol.Match(_RE_DURATION)
+    ),
+    vol.Optional("sample_interval"): vol.In(_VALID_INTERVALS),
+    vol.Optional("sample_aggregate"): vol.In(_VALID_AGGREGATES),
+    vol.Optional("anomaly_use_sampled_data"): bool,
+}
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/monitors/list",
+    }
+)
+@websocket_api.async_response
+async def ws_monitors_list(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict,
+) -> None:
+    """Return all anomaly monitor records, each annotated with its HA device_id."""
+    from homeassistant.helpers import device_registry as dr  # noqa: PLC0415
+
+    _require_admin(connection, msg)
+    store = hass.data[DOMAIN][KEY_STORE]
+
+    device_reg = dr.async_get(hass)
+    entries = hass.config_entries.async_entries(DOMAIN)
+    entry_id = entries[0].entry_id if entries else None
+
+    monitors = []
+    for monitor in store.get_monitors():
+        m = dict(monitor)
+        if entry_id:
+            device = device_reg.async_get_device(
+                identifiers={(DOMAIN, f"{entry_id}_monitor_{monitor['id']}")}
+            )
+            m["device_id"] = device.id if device else None
+        else:
+            m["device_id"] = None
+        monitors.append(m)
+
+    connection.send_result(msg["id"], {"monitors": monitors})
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/monitors/create",
+        vol.Required("monitor_type"): vol.In(["individual", "combined"]),
+        vol.Optional("entity_id"): cv.entity_id,
+        vol.Optional("entity_ids"): [cv.entity_id],
+        vol.Required("name"): vol.All(str, vol.Length(min=1, max=100)),
+        vol.Optional("look_back_hours", default=MONITOR_DEFAULT_LOOK_BACK_HOURS): vol.All(
+            int, vol.Range(min=1, max=168)
+        ),
+        vol.Optional(
+            "scan_interval_minutes", default=MONITOR_DEFAULT_SCAN_INTERVAL_MINUTES
+        ): vol.All(int, vol.Range(min=5, max=1440)),
+        vol.Optional("overlap_mode", default="all"): _valid_overlap_mode,
+        vol.Optional("enabled", default=True): bool,
+        **_MONITOR_ANALYSIS_FIELDS,
+    }
+)
+@websocket_api.async_response
+async def ws_monitors_create(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict,
+) -> None:
+    """Create a new anomaly monitor and register its sensor entity."""
+    _require_admin(connection, msg)
+    from .sensor import DatapointsMonitorSensor  # noqa: PLC0415
+
+    store = hass.data[DOMAIN][KEY_STORE]
+    monitor_id = str(uuid.uuid4())
+    monitor: dict = {
+        "id": monitor_id,
+        "type": msg["monitor_type"],
+        "name": msg["name"],
+        "enabled": msg.get("enabled", True),
+        "look_back_hours": msg["look_back_hours"],
+        "scan_interval_minutes": msg["scan_interval_minutes"],
+        "overlap_mode": msg.get("overlap_mode", "all"),
+        "created_at": datetime.now(UTC).isoformat(),
+        "last_scan_at": None,
+        "last_cluster_count": 0,
+        "scan_history": [],
+        "anomaly_methods": msg.get("anomaly_methods", ["trend_residual"]),
+        "anomaly_sensitivity": msg.get("anomaly_sensitivity", "medium"),
+        "anomaly_overlap_mode": msg.get("anomaly_overlap_mode", "all"),
+        "anomaly_rate_window": msg.get("anomaly_rate_window", "1h"),
+        "anomaly_zscore_window": msg.get("anomaly_zscore_window", "24h"),
+        "anomaly_persistence_window": msg.get("anomaly_persistence_window", "1h"),
+        "anomaly_trend_method": msg.get("anomaly_trend_method", "rolling_average"),
+        "anomaly_trend_window": msg.get("anomaly_trend_window", "24h"),
+        "sample_interval": msg.get("sample_interval"),
+        "sample_aggregate": msg.get("sample_aggregate", "mean"),
+        "anomaly_use_sampled_data": msg.get("anomaly_use_sampled_data", False),
+    }
+    if msg["monitor_type"] == "individual":
+        monitor["entity_id"] = msg.get("entity_id", "")
+    else:
+        monitor["entity_ids"] = msg.get("entity_ids", [])
+
+    await store.async_create_monitor(monitor)
+
+    entries = list(hass.config_entries.async_entries(DOMAIN))
+    if entries:
+        from .binary_sensor import (  # noqa: PLC0415
+            DatapointsMonitorProblemBinarySensor,
+            DatapointsMonitorStalledBinarySensor,
+        )
+        from .sensor import (  # noqa: PLC0415
+            DatapointsMonitorAnomalyDurationSensor,
+            DatapointsMonitorConsecutiveScansSensor,
+            DatapointsMonitorDataPointsSensor,
+            DatapointsMonitorLastAnomalySensor,
+            DatapointsMonitorLastScanSensor,
+        )
+        from .switch import DatapointsMonitorEnabledSwitch  # noqa: PLC0415
+
+        entry = entries[0]
+
+        sensor = DatapointsMonitorSensor(entry, store, hass, monitor_id)
+        hass.data[DOMAIN][KEY_MONITOR_SENSORS][monitor_id] = sensor
+        hass.data[DOMAIN][KEY_ADD_SENSOR_ENTITIES]([
+            sensor,
+            DatapointsMonitorConsecutiveScansSensor(entry, store, monitor_id),
+            DatapointsMonitorLastScanSensor(entry, store, monitor_id),
+            DatapointsMonitorLastAnomalySensor(entry, store, monitor_id),
+            DatapointsMonitorAnomalyDurationSensor(entry, store, hass, monitor_id),
+            DatapointsMonitorDataPointsSensor(entry, store, monitor_id),
+        ])
+
+        stalled = DatapointsMonitorStalledBinarySensor(entry, store, hass, monitor_id)
+        problem = DatapointsMonitorProblemBinarySensor(entry, store, hass, monitor_id)
+        hass.data[DOMAIN][KEY_MONITOR_BINARY_SENSORS][monitor_id] = (stalled, problem)
+        hass.data[DOMAIN][KEY_ADD_BINARY_SENSOR_ENTITIES]([stalled, problem])
+
+        switch = DatapointsMonitorEnabledSwitch(entry, store, hass, monitor_id)
+        hass.data[DOMAIN][KEY_MONITOR_SWITCHES][monitor_id] = switch
+        hass.data[DOMAIN][KEY_ADD_SWITCH_ENTITIES]([switch])
+
+    connection.send_result(msg["id"], {"monitor": monitor})
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/monitors/update",
+        vol.Required("monitor_id"): vol.All(str, _valid_uuid),
+        vol.Optional("name"): vol.All(str, vol.Length(min=1, max=100)),
+        vol.Optional("enabled"): bool,
+        vol.Optional("look_back_hours"): vol.All(int, vol.Range(min=1, max=168)),
+        vol.Optional("scan_interval_minutes"): vol.All(int, vol.Range(min=5, max=1440)),
+        vol.Optional("overlap_mode"): _valid_overlap_mode,
+        **_MONITOR_ANALYSIS_FIELDS,
+    }
+)
+@websocket_api.async_response
+async def ws_monitors_update(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict,
+) -> None:
+    """Partially update an anomaly monitor."""
+    _require_admin(connection, msg)
+    store = hass.data[DOMAIN][KEY_STORE]
+    monitor_id: str = msg["monitor_id"]
+
+    _allowed_keys = {
+        "name",
+        "enabled",
+        "look_back_hours",
+        "scan_interval_minutes",
+        "overlap_mode",
+        "anomaly_methods",
+        "anomaly_sensitivity",
+        "anomaly_overlap_mode",
+        "anomaly_rate_window",
+        "anomaly_zscore_window",
+        "anomaly_persistence_window",
+        "anomaly_trend_method",
+        "anomaly_trend_window",
+        "sample_interval",
+        "sample_aggregate",
+        "anomaly_use_sampled_data",
+    }
+    updates = {k: v for k, v in msg.items() if k in _allowed_keys}
+    updated = await store.async_update_monitor(monitor_id, updates)
+    if updated is None:
+        connection.send_error(msg["id"], "not_found", "Monitor not found")
+        return
+
+    if "name" in updates:
+        from homeassistant.helpers import device_registry as dr  # noqa: PLC0415
+
+        device = _get_monitor_device(hass, monitor_id)
+        if device is not None:
+            dr.async_get(hass).async_update_device(device.id, name=updates["name"])
+
+    connection.send_result(msg["id"], {"monitor": updated})
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/monitors/delete",
+        vol.Required("monitor_id"): vol.All(str, _valid_uuid),
+    }
+)
+@websocket_api.async_response
+async def ws_monitors_delete(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict,
+) -> None:
+    """Delete an anomaly monitor and remove its sensor entity."""
+    _require_admin(connection, msg)
+    store = hass.data[DOMAIN][KEY_STORE]
+    monitor_id: str = msg["monitor_id"]
+
+    deleted = await store.async_delete_monitor(monitor_id)
+    if not deleted:
+        connection.send_error(msg["id"], "not_found", "Monitor not found")
+        return
+
+    # Look up the device before removing entities (while identifiers still resolve).
+    device = _get_monitor_device(hass, monitor_id)
+
+    sensor = hass.data[DOMAIN].get(KEY_MONITOR_SENSORS, {}).pop(monitor_id, None)
+    if sensor is not None:
+        await sensor.async_remove()
+
+    for binary_sensor in hass.data[DOMAIN].get(KEY_MONITOR_BINARY_SENSORS, {}).pop(monitor_id, ()):
+        await binary_sensor.async_remove()
+
+    switch = hass.data[DOMAIN].get(KEY_MONITOR_SWITCHES, {}).pop(monitor_id, None)
+    if switch is not None:
+        await switch.async_remove()
+
+    if device is not None:
+        from homeassistant.helpers import device_registry as dr  # noqa: PLC0415
+        dr.async_get(hass).async_remove_device(device.id)
+
+    connection.send_result(msg["id"], {"deleted": True})

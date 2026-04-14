@@ -231,6 +231,11 @@ _stub("homeassistant.components.recorder", _ha_recorder_component)
 _stub("homeassistant.components.recorder.history", MagicMock())
 _stub("homeassistant.components.recorder.statistics", MagicMock())
 
+# -- homeassistant.components.persistent_notification -------------------------
+_ha_pn = MagicMock()
+_ha_pn.async_create = MagicMock()
+_stub("homeassistant.components.persistent_notification", _ha_pn)
+
 
 # ---------------------------------------------------------------------------
 # Reusable store fixture

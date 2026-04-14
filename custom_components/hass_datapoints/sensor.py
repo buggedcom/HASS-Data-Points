@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -14,8 +15,25 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_time_interval
 from homeassistant.util import dt as dt_util
 
-from .const import DOMAIN
+from .anomaly_detection import run_anomaly_detection
+from .const import (
+    DOMAIN,
+    EVENT_ANOMALY_DETECTED,
+    EVENT_ANOMALY_RESOLVED,
+    KEY_ADD_SENSOR_ENTITIES,
+    KEY_MONITOR_SENSORS,
+    KEY_STORE,
+    PANEL_URL_PATH,
+)
+from .history_utils import (
+    downsample_pts,
+    fetch_entity_pts,
+    fetch_entity_statistics_pts,
+    parse_interval_seconds,
+)
 from .store import DatapointsStore
+
+_LOGGER = logging.getLogger(__name__)
 
 _UPDATE_INTERVAL = timedelta(minutes=5)
 
@@ -26,7 +44,12 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up Hass Data Points sensor entities from a config entry."""
-    store: DatapointsStore = hass.data[DOMAIN]["store"]
+    store: DatapointsStore = hass.data[DOMAIN][KEY_STORE]
+
+    # Store callback for dynamic sensor creation from WS handlers
+    hass.data[DOMAIN][KEY_ADD_SENSOR_ENTITIES] = async_add_entities
+    hass.data[DOMAIN][KEY_MONITOR_SENSORS] = {}
+
     async_add_entities(
         [
             DatapointsCountSensor(entry, store),
@@ -39,6 +62,23 @@ async def async_setup_entry(
             DatapointsManualCountSensor(entry, store),
         ]
     )
+
+    # Re-register sensors for monitors that survived a restart
+    monitor_sensors: list[SensorEntity] = []
+    for monitor in store.get_monitors():
+        mid = monitor["id"]
+        s = DatapointsMonitorSensor(entry, store, hass, mid)
+        hass.data[DOMAIN][KEY_MONITOR_SENSORS][mid] = s
+        monitor_sensors.extend([
+            s,
+            DatapointsMonitorConsecutiveScansSensor(entry, store, mid),
+            DatapointsMonitorLastScanSensor(entry, store, mid),
+            DatapointsMonitorLastAnomalySensor(entry, store, mid),
+            DatapointsMonitorAnomalyDurationSensor(entry, store, hass, mid),
+            DatapointsMonitorDataPointsSensor(entry, store, mid),
+        ])
+    monitor_sensors.append(DatapointsAggregateAnomalyMonitorsSensor(entry, store))
+    async_add_entities(monitor_sensors)
 
 
 # ---------------------------------------------------------------------------
@@ -280,3 +320,569 @@ class DatapointsManualCountSensor(_DatapointsSensorBase):
     def _compute(self) -> int:
         _, manual = self._store.get_automation_manual_counts()
         return manual
+
+
+# ---------------------------------------------------------------------------
+# Monitor helpers
+# ---------------------------------------------------------------------------
+
+
+def _build_detection_config(monitor: dict[str, Any]) -> dict[str, Any]:
+    """Map monitor record → anomaly_detection config dict."""
+    return {
+        "anomaly_methods": monitor.get("anomaly_methods", ["trend_residual"]),
+        "anomaly_sensitivity": monitor.get("anomaly_sensitivity", "medium"),
+        "anomaly_overlap_mode": monitor.get("anomaly_overlap_mode", "all"),
+        "anomaly_rate_window": monitor.get("anomaly_rate_window", "1h"),
+        "anomaly_zscore_window": monitor.get("anomaly_zscore_window", "24h"),
+        "anomaly_persistence_window": monitor.get("anomaly_persistence_window", "1h"),
+        "trend_method": monitor.get("anomaly_trend_method", "rolling_average"),
+        "trend_window": monitor.get("anomaly_trend_window", "24h"),
+        "sample_interval": monitor.get("sample_interval"),
+        "sample_aggregate": monitor.get("sample_aggregate", "mean"),
+    }
+
+
+def _run_detection_sync(pts: list, config: dict[str, Any]) -> list:
+    """Blocking wrapper: run anomaly detection and return clusters."""
+    return run_anomaly_detection(pts, config)
+
+
+def _overlap_threshold(mode: str, entity_count: int) -> int:
+    """Return the minimum number of entities that must be anomalous simultaneously.
+
+    Supports:
+      "all"          → all entities (entity_count)
+      "any" / "any_1"→ any single entity (1)
+      "any_two_plus" → legacy alias for 2
+      "any_N"        → at least N (N >= 2)
+    """
+    if mode == "all":
+        return entity_count
+    if mode in ("any", "any_1"):
+        return 1
+    if mode == "any_two_plus":
+        return 2
+    if mode.startswith("any_") and mode[4:].isdigit():
+        return max(1, int(mode[4:]))
+    return 1  # safe fallback
+
+
+def _run_combined_detection(
+    all_entity_pts: dict[str, list],
+    config: dict[str, Any],
+    overlap_mode: str,
+) -> int:
+    """Run detection per entity and count time windows where entities overlap."""
+    entity_ids = list(all_entity_pts.keys())
+    if len(entity_ids) < 2:
+        return 0
+
+    # Build cluster time-windows per entity: list of (min_ms, max_ms) tuples
+    entity_windows: list[list[tuple[int, int]]] = []
+    for eid in entity_ids:
+        pts = all_entity_pts[eid]
+        if len(pts) < 3:
+            entity_windows.append([])
+            continue
+        clusters = run_anomaly_detection(pts, config)
+        windows: list[tuple[int, int]] = []
+        for cluster in clusters:
+            pts_in_cluster = cluster.get("pts", [])
+            if pts_in_cluster:
+                times = [p[0] for p in pts_in_cluster]
+                windows.append((min(times), max(times)))
+        entity_windows.append(windows)
+
+    # Count qualifying overlap events
+    required = _overlap_threshold(overlap_mode, len(entity_ids))
+    count = 0
+    # Use all cluster start times as candidate check points
+    for i, windows_i in enumerate(entity_windows):
+        for win_start, win_end in windows_i:
+            check_time = (win_start + win_end) // 2
+            hits = sum(
+                1
+                for j, windows_j in enumerate(entity_windows)
+                if j != i
+                and any(s <= check_time <= e for s, e in windows_j)
+            )
+            if hits + 1 >= required:
+                count += 1
+    return count
+
+
+# ---------------------------------------------------------------------------
+# Monitor sensor
+# ---------------------------------------------------------------------------
+
+
+class DatapointsMonitorSensor(_DatapointsSensorBase):
+    """A sensor that runs scheduled anomaly detection for a single monitor config."""
+
+    _attr_icon = "mdi:bell-alert-outline"
+
+    def __init__(
+        self,
+        entry: ConfigEntry,
+        store: DatapointsStore,
+        hass: HomeAssistant,
+        monitor_id: str,
+    ) -> None:
+        """Initialise the monitor sensor."""
+        super().__init__(entry, store)
+        self._hass = hass
+        self._monitor_id = monitor_id
+        self._unsub_timer: Any = None
+
+        monitor = store.get_monitor(monitor_id) or {}
+        self._attr_unique_id = f"{entry.entry_id}_monitor_{monitor_id}"
+        self._attr_name = monitor.get("name", f"Anomaly monitor {monitor_id[:8]}")
+        self._attr_native_value = monitor.get("last_cluster_count", 0)
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Each monitor is its own device, nested under the main integration device."""
+        return _monitor_device_info(self._entry, self._store, self._monitor_id)
+
+    async def async_added_to_hass(self) -> None:
+        """Register store listener and schedule the scan timer."""
+        await super().async_added_to_hass()
+        self._schedule_timer()
+
+    def _schedule_timer(self) -> None:
+        """Cancel any existing timer and create a new one if the monitor is enabled."""
+        if self._unsub_timer is not None:
+            self._unsub_timer()
+            self._unsub_timer = None
+
+        monitor = self._store.get_monitor(self._monitor_id)
+        if not monitor or not monitor.get("enabled", True):
+            return
+
+        interval_minutes = monitor.get(
+            "scan_interval_minutes", 30
+        )
+        interval = timedelta(minutes=max(1, interval_minutes))
+
+        def _on_remove() -> None:
+            if self._unsub_timer is not None:
+                self._unsub_timer()
+                self._unsub_timer = None
+
+        self._unsub_timer = async_track_time_interval(
+            self._hass, self._handle_scan_tick, interval
+        )
+        self.async_on_remove(_on_remove)
+
+    def _handle_scan_tick(self, now: datetime) -> None:
+        """Trigger a scan on the next event loop iteration."""
+        self._hass.async_create_task(self._run_scan())
+
+    async def _run_scan(self) -> None:
+        """Fetch history, run detection, update state and store."""
+        from homeassistant.components.recorder import get_instance  # noqa: PLC0415
+
+        monitor = self._store.get_monitor(self._monitor_id)
+        if not monitor or not monitor.get("enabled", True):
+            return
+
+        monitor_type = monitor.get("type", "individual")
+        look_back_hours = monitor.get("look_back_hours", 24)
+        config = _build_detection_config(monitor)
+        now = datetime.now(UTC)
+        start_time = (now - timedelta(hours=look_back_hours)).isoformat()
+        end_time = now.isoformat()
+
+        try:
+            recorder = get_instance(self._hass)
+
+            if monitor_type == "combined":
+                entity_ids = monitor.get("entity_ids", [])
+                all_pts: dict[str, list] = {}
+                for eid in entity_ids:
+                    pts = await recorder.async_add_executor_job(
+                        fetch_entity_pts, self._hass, eid, start_time, end_time
+                    )
+                    stats = await recorder.async_add_executor_job(
+                        fetch_entity_statistics_pts,
+                        self._hass,
+                        eid,
+                        start_time,
+                        end_time,
+                    )
+                    if stats:
+                        if pts:
+                            first_ms = pts[0][0]
+                            stats = [p for p in stats if p[0] < first_ms]
+                        if stats:
+                            import operator  # noqa: PLC0415
+                            pts = sorted(stats + pts, key=operator.itemgetter(0))
+                    sample_interval = monitor.get("sample_interval")
+                    if sample_interval and sample_interval != "raw":
+                        interval_secs = parse_interval_seconds(sample_interval)
+                        pts = downsample_pts(
+                            pts, interval_secs, monitor.get("sample_aggregate", "mean")
+                        )
+                    all_pts[eid] = pts
+
+                data_point_count = sum(len(v) for v in all_pts.values())
+                overlap_mode = monitor.get("overlap_mode", "all")
+                cluster_count = await self._hass.async_add_executor_job(
+                    _run_combined_detection, all_pts, config, overlap_mode
+                )
+            else:
+                entity_id = monitor.get("entity_id", "")
+                pts = await recorder.async_add_executor_job(
+                    fetch_entity_pts, self._hass, entity_id, start_time, end_time
+                )
+                stats = await recorder.async_add_executor_job(
+                    fetch_entity_statistics_pts,
+                    self._hass,
+                    entity_id,
+                    start_time,
+                    end_time,
+                )
+                if stats:
+                    if pts:
+                        first_ms = pts[0][0]
+                        stats = [p for p in stats if p[0] < first_ms]
+                    if stats:
+                        import operator  # noqa: PLC0415
+                        pts = sorted(stats + pts, key=operator.itemgetter(0))
+                sample_interval = monitor.get("sample_interval")
+                if sample_interval and sample_interval != "raw":
+                    interval_secs = parse_interval_seconds(sample_interval)
+                    pts = downsample_pts(
+                        pts, interval_secs, monitor.get("sample_aggregate", "mean")
+                    )
+
+                data_point_count = len(pts)
+                if len(pts) < 3:
+                    cluster_count = 0
+                else:
+                    clusters = await self._hass.async_add_executor_job(
+                        _run_detection_sync, pts, config
+                    )
+                    cluster_count = len(clusters)
+
+        except Exception as err:  # noqa: BLE001
+            _LOGGER.error(
+                "DatapointsMonitorSensor scan failed for monitor %s: %s",
+                self._monitor_id,
+                err,
+            )
+            return
+
+        scan_time = now.isoformat()
+        monitor_copy = self._store.get_monitor(self._monitor_id)
+        if monitor_copy is None:
+            return  # deleted while scan was running
+
+        prev_count: int = monitor_copy.get("last_cluster_count", 0)
+
+        DatapointsStore.append_scan_history(monitor_copy, scan_time, cluster_count)
+        scan_updates: dict[str, Any] = {
+            "last_scan_at": scan_time,
+            "last_cluster_count": cluster_count,
+            "scan_history": monitor_copy["scan_history"],
+            "last_scan_data_points": data_point_count,
+        }
+        if prev_count == 0 and cluster_count > 0:
+            scan_updates["last_anomaly_at"] = scan_time
+        await self._store.async_update_monitor(self._monitor_id, scan_updates)
+        self._attr_native_value = cluster_count
+        self.async_write_ha_state()
+
+        # Fire transition events on the HA event bus.
+        if prev_count == 0 and cluster_count > 0:
+            consecutive = 0
+            for entry in reversed(monitor_copy.get("scan_history", [])):
+                if entry.get("count", 0) > 0:
+                    consecutive += 1
+                else:
+                    break
+            base: dict = {
+                "monitor_id": self._monitor_id,
+                "monitor_name": monitor.get("name", ""),
+                "monitor_type": monitor_type,
+                "scan_time": scan_time,
+            }
+            if monitor_type == "combined":
+                base["entity_ids"] = monitor.get("entity_ids", [])
+            else:
+                base["entity_id"] = monitor.get("entity_id", "")
+            self._hass.bus.async_fire(
+                EVENT_ANOMALY_DETECTED,
+                {**base, "cluster_count": cluster_count, "consecutive_anomalous_scans": consecutive},
+            )
+        elif prev_count > 0 and cluster_count == 0:
+            base = {
+                "monitor_id": self._monitor_id,
+                "monitor_name": monitor.get("name", ""),
+                "monitor_type": monitor_type,
+                "scan_time": scan_time,
+            }
+            if monitor_type == "combined":
+                base["entity_ids"] = monitor.get("entity_ids", [])
+            else:
+                base["entity_id"] = monitor.get("entity_id", "")
+            self._hass.bus.async_fire(EVENT_ANOMALY_RESOLVED, base)
+
+    async def _handle_entity_unavailable(self, entity_id: str) -> None:
+        """Disable the monitor and fire a persistent notification."""
+        from homeassistant.components import persistent_notification  # noqa: PLC0415
+
+        await self._store.async_update_monitor(self._monitor_id, {"enabled": False})
+        persistent_notification.async_create(
+            self._hass,
+            f"Anomaly monitor **{self._store.get_monitor(self._monitor_id) or {}}** was disabled because entity `{entity_id}` is unavailable.",
+            title="Hass Data Points — Monitor disabled",
+            notification_id=f"dp_monitor_disabled_{self._monitor_id}",
+        )
+
+    def _handle_store_update(self) -> None:
+        """Refresh name, value, and reschedule timer when the monitor config changes."""
+        monitor = self._store.get_monitor(self._monitor_id)
+        if monitor is None:
+            return
+        self._attr_name = monitor.get("name", self._attr_name)
+        self._attr_native_value = monitor.get(
+            "last_cluster_count", self._attr_native_value
+        )
+        self._schedule_timer()
+        self.async_write_ha_state()
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        """Return extended attributes for automations and dashboards."""
+        monitor = self._store.get_monitor(self._monitor_id)
+        if not monitor:
+            return {}
+        attrs: dict[str, Any] = {
+            "look_back_hours": monitor.get("look_back_hours", 24),
+            "scan_interval_minutes": monitor.get("scan_interval_minutes", 30),
+            "anomaly_methods": monitor.get("anomaly_methods", []),
+            "sensitivity": monitor.get("anomaly_sensitivity", "medium"),
+        }
+        if monitor.get("type") == "combined":
+            attrs["entity_ids"] = monitor.get("entity_ids", [])
+        else:
+            attrs["entity_id"] = monitor.get("entity_id", "")
+        return attrs
+
+
+# ---------------------------------------------------------------------------
+# Per-monitor device helper
+# ---------------------------------------------------------------------------
+
+
+def _monitor_device_info(
+    entry: ConfigEntry, store: DatapointsStore, monitor_id: str
+) -> DeviceInfo:
+    """Return DeviceInfo pointing to the per-monitor device."""
+    monitor = store.get_monitor(monitor_id) or {}
+    return DeviceInfo(
+        identifiers={(DOMAIN, f"{entry.entry_id}_monitor_{monitor_id}")},
+        name=monitor.get("name", f"Anomaly monitor {monitor_id[:8]}"),
+        manufacturer="buggedcom",
+        model="Anomaly Monitor",
+        configuration_url=f"/{PANEL_URL_PATH}",
+        via_device=(DOMAIN, entry.entry_id),
+    )
+
+
+def _consecutive_anomalous_scans(scan_history: list[dict[str, Any]]) -> int:
+    """Return the trailing streak of scans with cluster_count > 0."""
+    consecutive = 0
+    for entry in reversed(scan_history):
+        if entry.get("count", 0) > 0:
+            consecutive += 1
+        else:
+            break
+    return consecutive
+
+
+# ---------------------------------------------------------------------------
+# Per-monitor device sensors
+# ---------------------------------------------------------------------------
+
+
+class DatapointsMonitorConsecutiveScansSensor(_DatapointsSensorBase):
+    """Reports the number of consecutive anomalous scans for a monitor."""
+
+    _attr_icon = "mdi:repeat-variant"
+    _attr_native_unit_of_measurement = "scans"
+
+    def __init__(
+        self, entry: ConfigEntry, store: DatapointsStore, monitor_id: str
+    ) -> None:
+        super().__init__(entry, store)
+        self._monitor_id = monitor_id
+        self._attr_unique_id = f"{entry.entry_id}_monitor_{monitor_id}_consecutive_scans"
+        self._attr_name = "Consecutive anomalous scans"
+        self._attr_native_value = self._compute()
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        return _monitor_device_info(self._entry, self._store, self._monitor_id)
+
+    def _compute(self) -> int:
+        monitor = self._store.get_monitor(self._monitor_id)
+        if not monitor:
+            return 0
+        return _consecutive_anomalous_scans(monitor.get("scan_history", []))
+
+
+class DatapointsMonitorLastScanSensor(_DatapointsSensorBase):
+    """Reports the timestamp of the last scan for a monitor."""
+
+    _attr_icon = "mdi:clock-check-outline"
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+    _attr_entity_registry_enabled_default = False  # diagnostic — hidden by default
+
+    def __init__(
+        self, entry: ConfigEntry, store: DatapointsStore, monitor_id: str
+    ) -> None:
+        super().__init__(entry, store)
+        self._monitor_id = monitor_id
+        self._attr_unique_id = f"{entry.entry_id}_monitor_{monitor_id}_last_scan_at"
+        self._attr_name = "Last scan"
+        self._attr_native_value = self._compute()
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        return _monitor_device_info(self._entry, self._store, self._monitor_id)
+
+    def _compute(self) -> datetime | None:
+        monitor = self._store.get_monitor(self._monitor_id)
+        if not monitor:
+            return None
+        raw = monitor.get("last_scan_at")
+        if not raw:
+            return None
+        try:
+            dt = datetime.fromisoformat(raw)
+            return dt if dt.tzinfo else dt.replace(tzinfo=UTC)
+        except ValueError:
+            return None
+
+
+class DatapointsMonitorLastAnomalySensor(_DatapointsSensorBase):
+    """Reports the timestamp when an anomaly was last detected for a monitor."""
+
+    _attr_icon = "mdi:clock-alert-outline"
+    _attr_device_class = SensorDeviceClass.TIMESTAMP
+
+    def __init__(
+        self, entry: ConfigEntry, store: DatapointsStore, monitor_id: str
+    ) -> None:
+        super().__init__(entry, store)
+        self._monitor_id = monitor_id
+        self._attr_unique_id = f"{entry.entry_id}_monitor_{monitor_id}_last_anomaly_at"
+        self._attr_name = "Last anomaly detected"
+        self._attr_native_value = self._compute()
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        return _monitor_device_info(self._entry, self._store, self._monitor_id)
+
+    def _compute(self) -> datetime | None:
+        monitor = self._store.get_monitor(self._monitor_id)
+        if not monitor:
+            return None
+        raw = monitor.get("last_anomaly_at")
+        if not raw:
+            return None
+        try:
+            dt = datetime.fromisoformat(raw)
+            return dt if dt.tzinfo else dt.replace(tzinfo=UTC)
+        except ValueError:
+            return None
+
+
+class DatapointsMonitorAnomalyDurationSensor(_DatapointsPeriodicSensorBase):
+    """Reports how many minutes the current anomaly has been active.
+
+    Returns 0 when there is no active anomaly. Time-driven so the value
+    increases with wall clock time without needing a store update.
+    """
+
+    _attr_icon = "mdi:timer-alert-outline"
+    _attr_native_unit_of_measurement = UnitOfTime.MINUTES
+
+    def __init__(
+        self,
+        entry: ConfigEntry,
+        store: DatapointsStore,
+        hass: HomeAssistant,
+        monitor_id: str,
+    ) -> None:
+        super().__init__(entry, store, hass)
+        self._monitor_id = monitor_id
+        self._attr_unique_id = f"{entry.entry_id}_monitor_{monitor_id}_anomaly_duration"
+        self._attr_name = "Anomaly duration"
+        self._attr_native_value = self._compute()
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        return _monitor_device_info(self._entry, self._store, self._monitor_id)
+
+    def _compute(self) -> int:
+        monitor = self._store.get_monitor(self._monitor_id)
+        if not monitor or (monitor.get("last_cluster_count") or 0) == 0:
+            return 0
+        consecutive = _consecutive_anomalous_scans(monitor.get("scan_history", []))
+        interval = monitor.get("scan_interval_minutes", 30)
+        return consecutive * interval
+
+
+class DatapointsMonitorDataPointsSensor(_DatapointsSensorBase):
+    """Reports the number of data points found in the last scan."""
+
+    _attr_icon = "mdi:chart-scatter-plot"
+    _attr_native_unit_of_measurement = "points"
+
+    def __init__(
+        self, entry: ConfigEntry, store: DatapointsStore, monitor_id: str
+    ) -> None:
+        super().__init__(entry, store)
+        self._monitor_id = monitor_id
+        self._attr_unique_id = f"{entry.entry_id}_monitor_{monitor_id}_data_points"
+        self._attr_name = "Data points in last scan"
+        self._attr_native_value = self._compute()
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        return _monitor_device_info(self._entry, self._store, self._monitor_id)
+
+    def _compute(self) -> int:
+        monitor = self._store.get_monitor(self._monitor_id)
+        if not monitor:
+            return 0
+        return monitor.get("last_scan_data_points") or 0
+
+
+# ---------------------------------------------------------------------------
+# Aggregate monitor sensor
+# ---------------------------------------------------------------------------
+
+
+class DatapointsAggregateAnomalyMonitorsSensor(_DatapointsSensorBase):
+    """Reports the count of enabled monitors that currently have anomalies detected."""
+
+    _attr_icon = "mdi:bell-alert"
+
+    def __init__(self, entry: ConfigEntry, store: DatapointsStore) -> None:
+        """Initialise the aggregate anomaly monitors sensor."""
+        super().__init__(entry, store)
+        self._attr_unique_id = f"{entry.entry_id}_anomaly_monitors_active"
+        self._attr_name = "Anomaly monitors active"
+        self._attr_native_value = self._compute()
+
+    def _compute(self) -> int:
+        return sum(
+            1
+            for m in self._store.get_monitors()
+            if m.get("enabled", True) and (m.get("last_cluster_count") or 0) > 0
+        )

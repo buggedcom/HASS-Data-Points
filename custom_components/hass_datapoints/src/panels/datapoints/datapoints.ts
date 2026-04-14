@@ -61,6 +61,8 @@ import "@/molecules/sidebar-options/sidebar-options";
 import "@/molecules/collapsed-options-menu/collapsed-options-menu";
 import "@/molecules/comparison-tab-rail/comparison-tab-rail";
 import "@/molecules/date-window-dialog/date-window-dialog";
+import "@/molecules/anomaly-monitor-wizard/anomaly-monitor-wizard";
+import "@/molecules/anomaly-monitors-panel/anomaly-monitors-panel";
 import "@/atoms/interactive/resizable-panes/resizable-panes";
 import "@/molecules/history-chart/history-chart";
 import "@/panels/datapoints/components/panel-shell/panel-shell";
@@ -511,6 +513,12 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
    *  updates where the locale hasn't changed. */
   declare _lastSyncedLocale: string;
 
+  /** Whether the anomaly monitors management panel is currently shown. */
+  declare _showMonitorsPanel: boolean;
+
+  /** Imperative wizard element appended to the shadow root. */
+  declare _monitorWizardComp: Nullable<HTMLElement>;
+
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -611,6 +619,8 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     this._localPageStateDirty = false;
     this._pendingPreferencesSaveTimer = null;
     this._orphanRecoveryTimer = null;
+    this._showMonitorsPanel = false;
+    this._monitorWizardComp = null;
     this._recordsSearchQuery = "";
     this._hiddenEventIds = [];
     this._hoveredEventIds = [];
@@ -894,11 +904,14 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
         .catch(() => {});
     }
     if (!this._rendered) {
-      logger.warn("[dp-lifecycle] set hass: first hass — transitioning to rendered", {
-        isConnected: this.isConnected,
-        hadUiReadyPromise: !!this._uiReadyPromise,
-        shellBuilt: this._shellBuilt,
-      });
+      logger.warn(
+        "[dp-lifecycle] set hass: first hass — transitioning to rendered",
+        {
+          isConnected: this.isConnected,
+          hadUiReadyPromise: !!this._uiReadyPromise,
+          shellBuilt: this._shellBuilt,
+        }
+      );
       this._rendered = true;
       this._initFromContext();
       if (this.isConnected) {
@@ -908,11 +921,15 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
         // In that case its callback bailed out early and the shell was never built.
         // Reset the promise so the call below creates a fresh one and runs the
         // shell-build logic now that _rendered is true.
-        logger.warn("[dp-lifecycle] set hass: resetting uiReadyPromise and re-running ensureUiComponentsReady");
+        logger.warn(
+          "[dp-lifecycle] set hass: resetting uiReadyPromise and re-running ensureUiComponentsReady"
+        );
         this._uiReadyPromise = null;
         this._ensureUiComponentsReady();
       } else {
-        logger.warn("[dp-lifecycle] set hass: not connected — skipping shell build");
+        logger.warn(
+          "[dp-lifecycle] set hass: not connected — skipping shell build"
+        );
       }
     }
     if (
@@ -1023,19 +1040,44 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       "hass-datapoints-analysis-method-result",
       this._onAnalysisMethodResult
     );
+    this.addEventListener("dp-anomaly-save-monitor", (ev: Event) => {
+      const detail = (ev as CustomEvent).detail ?? {};
+      const entityId: string = detail.entityId ?? "";
+      const analysis = detail.analysis ?? null;
+      // Collect other chart entities that have anomaly detection enabled
+      const suggestedIds: string[] = (this._seriesRows ?? [])
+        .filter(
+          (r: { entity_id: string; analysis?: { show_anomalies?: boolean; anomaly_methods?: string[] } }) =>
+            r.analysis?.show_anomalies === true &&
+            Array.isArray(r.analysis.anomaly_methods) &&
+            r.analysis.anomaly_methods.length > 0 &&
+            !r.entity_id.startsWith("binary_sensor.") &&
+            r.entity_id !== entityId
+        )
+        .map((r: { entity_id: string }) => r.entity_id);
+      this._openMonitorWizard(entityId ? [entityId] : [], analysis, null, suggestedIds);
+    });
     if (this._rendered && !this._shellBuilt) {
-      logger.warn("[dp-lifecycle] connectedCallback: rendered but no shell — building loading shell");
+      logger.warn(
+        "[dp-lifecycle] connectedCallback: rendered but no shell — building loading shell"
+      );
       this._buildLoadingShell();
     }
     this._ensureUiComponentsReady();
     if (this._rendered && this._shellBuilt) {
-      logger.warn("[dp-lifecycle] connectedCallback: shell already built — scheduling reconnect RAF render");
+      logger.warn(
+        "[dp-lifecycle] connectedCallback: shell already built — scheduling reconnect RAF render"
+      );
       window.requestAnimationFrame(() => {
         if (!this.isConnected) {
-          logger.warn("[dp-lifecycle] connectedCallback RAF: aborted (not connected)");
+          logger.warn(
+            "[dp-lifecycle] connectedCallback RAF: aborted (not connected)"
+          );
           return;
         }
-        logger.warn("[dp-lifecycle] connectedCallback RAF: calling syncControls + renderContent");
+        logger.warn(
+          "[dp-lifecycle] connectedCallback RAF: calling syncControls + renderContent"
+        );
         this._syncControls();
         this._renderContent();
         if (this._restoredFromSession) {
@@ -1151,7 +1193,9 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
         logger.warn(
           "[dp-lifecycle] orphan recovery: still detached after grace period — dispatching location-changed"
         );
-        window.dispatchEvent(new CustomEvent("location-changed", { bubbles: true }));
+        window.dispatchEvent(
+          new CustomEvent("location-changed", { bubbles: true })
+        );
       }
     }, 3000);
   }
@@ -1538,6 +1582,10 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     shell.addEventListener("dp-shell-menu-clear", () =>
       this._clearSavedPageState()
     );
+    shell.addEventListener("dp-shell-menu-monitors", () => {
+      this._showMonitorsPanel = true;
+      this._renderContent();
+    });
     shell.addEventListener("dp-shell-sidebar-toggle", () =>
       this._toggleSidebarCollapsed()
     );
@@ -1569,7 +1617,9 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
 
   _bootstrapAfterShellBuilt() {
     if (!this._shellBuilt) {
-      logger.warn("[dp-lifecycle] _bootstrapAfterShellBuilt: skipped — shell not built");
+      logger.warn(
+        "[dp-lifecycle] _bootstrapAfterShellBuilt: skipped — shell not built"
+      );
       return;
     }
     logger.warn("[dp-lifecycle] _bootstrapAfterShellBuilt: running", {
@@ -1590,18 +1640,24 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
 
   _ensureUiComponentsReady() {
     if (this._uiReadyPromise) {
-      logger.warn("[dp-lifecycle] _ensureUiComponentsReady: promise already exists — returning cached", {
-        rendered: this._rendered,
-        shellBuilt: this._shellBuilt,
-        uiReadyApplied: this._uiReadyApplied,
-      });
+      logger.warn(
+        "[dp-lifecycle] _ensureUiComponentsReady: promise already exists — returning cached",
+        {
+          rendered: this._rendered,
+          shellBuilt: this._shellBuilt,
+          uiReadyApplied: this._uiReadyApplied,
+        }
+      );
       return this._uiReadyPromise;
     }
-    logger.warn("[dp-lifecycle] _ensureUiComponentsReady: creating new promise", {
-      rendered: this._rendered,
-      shellBuilt: this._shellBuilt,
-      isConnected: this.isConnected,
-    });
+    logger.warn(
+      "[dp-lifecycle] _ensureUiComponentsReady: creating new promise",
+      {
+        rendered: this._rendered,
+        shellBuilt: this._shellBuilt,
+        isConnected: this.isConnected,
+      }
+    );
     const componentTags = [
       "ha-top-app-bar-fixed",
       "ha-menu-button",
@@ -1619,25 +1675,34 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
           // promise so that the next call — triggered once hass sets _rendered=true
           // or connectedCallback fires again — will create a fresh one and actually
           // build the shell.
-          logger.warn("[dp-lifecycle] _ensureUiComponentsReady: components ready but bailing early", {
-            isConnected: this.isConnected,
-            rendered: this._rendered,
-            shellBuilt: this._shellBuilt,
-          });
+          logger.warn(
+            "[dp-lifecycle] _ensureUiComponentsReady: components ready but bailing early",
+            {
+              isConnected: this.isConnected,
+              rendered: this._rendered,
+              shellBuilt: this._shellBuilt,
+            }
+          );
           this._uiReadyPromise = null;
           return;
         }
-        logger.warn("[dp-lifecycle] _ensureUiComponentsReady: components ready — scheduling double RAF", {
-          shellBuilt: this._shellBuilt,
-          uiReadyApplied: this._uiReadyApplied,
-        });
+        logger.warn(
+          "[dp-lifecycle] _ensureUiComponentsReady: components ready — scheduling double RAF",
+          {
+            shellBuilt: this._shellBuilt,
+            uiReadyApplied: this._uiReadyApplied,
+          }
+        );
         window.requestAnimationFrame(() => {
           window.requestAnimationFrame(() => {
             if (!this.isConnected || !this._rendered) {
-              logger.warn("[dp-lifecycle] _ensureUiComponentsReady double RAF: aborted", {
-                isConnected: this.isConnected,
-                rendered: this._rendered,
-              });
+              logger.warn(
+                "[dp-lifecycle] _ensureUiComponentsReady double RAF: aborted",
+                {
+                  isConnected: this.isConnected,
+                  rendered: this._rendered,
+                }
+              );
               return;
             }
             this._uiReadyApplied = true;
@@ -1646,12 +1711,18 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
               // navigation, _shellBuilt is already true so we skip this; tearing
               // down root.innerHTML while connectedCallback's RAF is mid-flight
               // was the root cause of the crash-on-return bug.
-              logger.warn("[dp-lifecycle] _ensureUiComponentsReady double RAF: calling _buildShell");
+              logger.warn(
+                "[dp-lifecycle] _ensureUiComponentsReady double RAF: calling _buildShell"
+              );
               this._buildShell();
             } else {
-              logger.warn("[dp-lifecycle] _ensureUiComponentsReady double RAF: shell already built — skipping _buildShell");
+              logger.warn(
+                "[dp-lifecycle] _ensureUiComponentsReady double RAF: shell already built — skipping _buildShell"
+              );
             }
-            logger.warn("[dp-lifecycle] _ensureUiComponentsReady double RAF: calling syncControls + bootstrapAfterShellBuilt");
+            logger.warn(
+              "[dp-lifecycle] _ensureUiComponentsReady double RAF: calling syncControls + bootstrapAfterShellBuilt"
+            );
             this._syncControls();
             this._bootstrapAfterShellBuilt();
           });
@@ -2858,6 +2929,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     this._mountRangeToolbarControl();
     this._mountSidebarOptionsControl();
     this._mountDateWindowDialogControl();
+    this._mountMonitorWizard();
     this._syncControls();
   }
 
@@ -3195,6 +3267,58 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       this._sidebarOptionsEl.appendChild(sidebarComp);
       this._sidebarOptionsComp = sidebarComp;
     }
+  }
+
+  _mountMonitorWizard() {
+    if (!this.shadowRoot || this._monitorWizardComp) return;
+    const wizard = document.createElement(
+      "anomaly-monitor-wizard"
+    ) as HTMLElement & {
+      hass: unknown;
+      open: boolean;
+      prefillEntityIds: string[];
+      prefillAnalysis: unknown;
+      editMonitor: unknown;
+      suggestedEntityIds: string[];
+    };
+    wizard.hass = this._hass;
+    wizard.open = false;
+    wizard.suggestedEntityIds = [];
+    wizard.addEventListener("dp-monitor-wizard-close", () => {
+      wizard.open = false;
+    });
+    wizard.addEventListener("dp-monitor-wizard-saved", () => {
+      wizard.open = false;
+    });
+    this.shadowRoot.appendChild(wizard);
+    this._monitorWizardComp = wizard as HTMLElement;
+  }
+
+  _openMonitorWizard(
+    entityIds: string[],
+    analysis: unknown,
+    editMonitor: unknown = null,
+    suggestedEntityIds: string[] = []
+  ) {
+    if (!this.shadowRoot) return;
+    if (!this._monitorWizardComp) {
+      this._mountMonitorWizard();
+    }
+    const wizard = this._monitorWizardComp as HTMLElement & {
+      hass: unknown;
+      open: boolean;
+      prefillEntityIds: string[];
+      prefillAnalysis: unknown;
+      editMonitor: unknown;
+      suggestedEntityIds: string[];
+    };
+    if (!wizard) return;
+    wizard.hass = this._hass;
+    wizard.editMonitor = editMonitor;
+    wizard.prefillEntityIds = entityIds;
+    wizard.prefillAnalysis = analysis;
+    wizard.suggestedEntityIds = suggestedEntityIds;
+    wizard.open = true;
   }
 
   _mountDateWindowDialogControl() {
@@ -4656,12 +4780,43 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       return;
     }
 
+    // Monitors panel overlay — replaces normal content area when active
+    if (this._showMonitorsPanel) {
+      this._contentKey = "__monitors__";
+      this._chartEl = null;
+      this._listEl = null;
+      content.innerHTML = "";
+      const panel = document.createElement(
+        "anomaly-monitors-panel"
+      ) as HTMLElement & {
+        hass: unknown;
+      };
+      panel.hass = this._hass;
+      panel.addEventListener("dp-monitors-panel-close", () => {
+        this._showMonitorsPanel = false;
+        this._contentKey = "";
+        this._renderContent();
+      });
+      panel.addEventListener("dp-monitors-panel-new", () => {
+        this._openMonitorWizard([], null);
+      });
+      content.appendChild(panel);
+      return;
+    }
+
+    // Clear monitors panel sentinel when returning to normal content
+    if (this._contentKey === "__monitors__") {
+      this._contentKey = "";
+    }
+
     if (!this._entities.length) {
       // Guard: if the empty-state card is already shown there's nothing to do.
       if (this._contentKey === "__empty__") {
         return;
       }
-      logger.warn("[dp-lifecycle] _renderContent: rendering empty state (no entities)");
+      logger.warn(
+        "[dp-lifecycle] _renderContent: rendering empty state (no entities)"
+      );
       this._chartHoverTimeMs = null;
       this._updateChartHoverIndicator();
       this._chartZoomRange = null;
@@ -4714,7 +4869,9 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       listMounted,
       hasChartEl: !!this._chartEl,
       chartElConnected: this._chartEl?.isConnected,
-      contentContainsChart: this._chartEl ? content.contains(this._chartEl) : false,
+      contentContainsChart: this._chartEl
+        ? content.contains(this._chartEl)
+        : false,
       entityCount: this._entities.length,
     });
 

@@ -29,6 +29,12 @@ from .const import (
     DOMAIN,
     EVENT_RECORDED,
     FRONTEND_URL,
+    KEY_ADD_BINARY_SENSOR_ENTITIES,
+    KEY_ADD_SENSOR_ENTITIES,
+    KEY_ADD_SWITCH_ENTITIES,
+    KEY_MONITOR_BINARY_SENSORS,
+    KEY_MONITOR_SENSORS,
+    KEY_MONITOR_SWITCHES,
     PANEL_COMPONENT,
     PANEL_ICON,
     PANEL_TITLE,
@@ -41,7 +47,7 @@ CONFIG_SCHEMA = cv.empty_config_schema(__name__)
 
 type DatapointsConfigEntry = ConfigEntry[DatapointsStore]
 
-PLATFORMS: list[Platform] = [Platform.SENSOR]
+PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.BINARY_SENSOR, Platform.SWITCH]
 
 
 def _find_automation_id(hass: HomeAssistant, context) -> str | None:
@@ -137,7 +143,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: DatapointsConfigEntry) -
     await store.async_load()
 
     hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN]["store"] = store
+    hass.data[DOMAIN]["store"] = store  # also referenced via KEY_STORE = "store"
 
     # Initialise anomaly result cache (SQLite, run in executor).
     db_path = hass.config.path(".storage", "hass_datapoints_cache.db")
@@ -198,4 +204,10 @@ async def async_unload_entry(hass: HomeAssistant, entry: DatapointsConfigEntry) 
     hass.services.async_remove(DOMAIN, SERVICE_RECORD)
     hass.data[DOMAIN].pop("store", None)
     hass.data[DOMAIN].pop("anomaly_cache", None)
+    hass.data[DOMAIN].pop(KEY_ADD_SENSOR_ENTITIES, None)
+    hass.data[DOMAIN].pop(KEY_ADD_BINARY_SENSOR_ENTITIES, None)
+    hass.data[DOMAIN].pop(KEY_ADD_SWITCH_ENTITIES, None)
+    hass.data[DOMAIN].pop(KEY_MONITOR_SENSORS, None)
+    hass.data[DOMAIN].pop(KEY_MONITOR_BINARY_SENSORS, None)
+    hass.data[DOMAIN].pop(KEY_MONITOR_SWITCHES, None)
     return unload_ok

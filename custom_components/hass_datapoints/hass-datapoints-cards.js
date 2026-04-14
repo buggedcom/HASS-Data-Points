@@ -589,7 +589,7 @@
 	(s$1.litElementVersions ??= []).push("4.2.2");
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/action.styles.ts
-	var styles$71 = i$5`
+	var styles$73 = i$5`
   :host {
     display: block;
   }
@@ -684,7 +684,7 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/constants.ts
 	/**
-	* Shared constants used by all Hass Records cards.
+	* Shared constants used by all Hass Datapoints cards.
 	*/
 	var DOMAIN = "hass_datapoints";
 	var PANEL_URL_PATH = "hass-datapoints-history";
@@ -753,7 +753,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/display/color-swatch/color-swatch.styles.ts
-	var styles$70 = i$5`
+	var styles$72 = i$5`
   :host {
     display: block;
   }
@@ -915,13 +915,13 @@
     `;
 		}
 	};
-	_defineProperty(ColorSwatch, "styles", styles$70);
+	_defineProperty(ColorSwatch, "styles", styles$72);
 	__decorate([n$1({ type: String })], ColorSwatch.prototype, "color", null);
 	__decorate([n$1({ type: String })], ColorSwatch.prototype, "label", null);
 	customElements.define("color-swatch", ColorSwatch);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/display/feedback-banner/feedback-banner.styles.ts
-	var styles$69 = i$5`
+	var styles$71 = i$5`
   :host {
     display: block;
   }
@@ -998,7 +998,7 @@
     `;
 		}
 	};
-	_defineProperty(FeedbackBanner, "styles", styles$69);
+	_defineProperty(FeedbackBanner, "styles", styles$71);
 	__decorate([n$1({ type: String })], FeedbackBanner.prototype, "kind", null);
 	__decorate([n$1({ type: String })], FeedbackBanner.prototype, "text", null);
 	__decorate([n$1({ type: Boolean })], FeedbackBanner.prototype, "visible", null);
@@ -1006,7 +1006,7 @@
 	customElements.define("feedback-banner", FeedbackBanner);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/action-targets/action-targets.styles.ts
-	var styles$68 = i$5`
+	var styles$70 = i$5`
   :host {
     display: block;
   }
@@ -1018,7 +1018,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/chip-group/chip-group.styles.ts
-	var styles$67 = i$5`
+	var styles$69 = i$5`
   :host {
     display: block;
   }
@@ -1035,7 +1035,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/entity-chip/entity-chip.styles.ts
-	var styles$66 = i$5`
+	var styles$68 = i$5`
   :host {
     display: inline-flex;
   }
@@ -1067,14 +1067,14 @@
 	//#region custom_components/hass_datapoints/src/atoms/form/entity-chip/entity-chip.ts
 	var _type_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _itemId_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$14 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$16 = /* @__PURE__ */ new WeakMap();
 	var _removable_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var EntityChip = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _type_accessor_storage$2, "entity");
 			_classPrivateFieldInitSpec(this, _itemId_accessor_storage$1, "");
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$14, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$16, null);
 			_classPrivateFieldInitSpec(this, _removable_accessor_storage$1, false);
 		}
 		get type() {
@@ -1090,10 +1090,10 @@
 			_classPrivateFieldSet2(_itemId_accessor_storage$1, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$14, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$16, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$14, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$16, this, value);
 		}
 		get removable() {
 			return _classPrivateFieldGet2(_removable_accessor_storage$1, this);
@@ -1134,7 +1134,7 @@
     `;
 		}
 	};
-	_defineProperty(EntityChip, "styles", styles$66);
+	_defineProperty(EntityChip, "styles", styles$68);
 	__decorate([n$1({ type: String })], EntityChip.prototype, "type", null);
 	__decorate([n$1({
 		type: String,
@@ -1146,14 +1146,14 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/chip-group/chip-group.ts
 	var _items_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$13 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$15 = /* @__PURE__ */ new WeakMap();
 	var _removable_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _label_accessor_storage$13 = /* @__PURE__ */ new WeakMap();
 	var ChipGroup = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _items_accessor_storage$1, []);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$13, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$15, null);
 			_classPrivateFieldInitSpec(this, _removable_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _label_accessor_storage$13, "");
 		}
@@ -1164,10 +1164,10 @@
 			_classPrivateFieldSet2(_items_accessor_storage$1, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$13, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$15, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$13, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$15, this, value);
 		}
 		get removable() {
 			return _classPrivateFieldGet2(_removable_accessor_storage, this);
@@ -1207,7 +1207,7 @@
     `;
 		}
 	};
-	_defineProperty(ChipGroup, "styles", styles$67);
+	_defineProperty(ChipGroup, "styles", styles$69);
 	__decorate([n$1({ type: Array })], ChipGroup.prototype, "items", null);
 	__decorate([n$1({ type: Object })], ChipGroup.prototype, "hass", null);
 	__decorate([n$1({ type: Boolean })], ChipGroup.prototype, "removable", null);
@@ -1215,7 +1215,7 @@
 	customElements.define("chip-group", ChipGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/action-targets/action-targets.ts
-	var _hass_accessor_storage$12 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$14 = /* @__PURE__ */ new WeakMap();
 	var _showConfigTargets_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _showTargetPicker_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _configChips_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -1223,17 +1223,17 @@
 	var CardActionTargets = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$12, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$14, null);
 			_classPrivateFieldInitSpec(this, _showConfigTargets_accessor_storage, true);
 			_classPrivateFieldInitSpec(this, _showTargetPicker_accessor_storage, true);
 			_classPrivateFieldInitSpec(this, _configChips_accessor_storage, []);
 			_classPrivateFieldInitSpec(this, _targetValue_accessor_storage, {});
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$12, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$14, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$12, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$14, this, value);
 		}
 		get showConfigTargets() {
 			return _classPrivateFieldGet2(_showConfigTargets_accessor_storage, this);
@@ -1294,7 +1294,7 @@
     `;
 		}
 	};
-	_defineProperty(CardActionTargets, "styles", styles$68);
+	_defineProperty(CardActionTargets, "styles", styles$70);
 	__decorate([n$1({ attribute: false })], CardActionTargets.prototype, "hass", null);
 	__decorate([n$1({
 		type: Boolean,
@@ -1613,7 +1613,7 @@
 		_feedbackText: { state: true },
 		_feedbackVisible: { state: true }
 	});
-	_defineProperty(HassDatapointsActionCard, "styles", styles$71);
+	_defineProperty(HassDatapointsActionCard, "styles", styles$73);
 	//#endregion
 	//#region node_modules/.pnpm/@lit+localize@0.12.2/node_modules/@lit/localize/internal/locale-status-event.js
 	/**
@@ -5186,7 +5186,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/editor.styles.ts
-	var styles$65 = i$5`
+	var styles$67 = i$5`
   .note {
     font-size: 0.78rem;
     color: var(--secondary-text-color);
@@ -5194,7 +5194,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/editor-base/editor-base.styles.ts
-	var styles$64 = i$5`
+	var styles$66 = i$5`
   :host {
     display: block;
   }
@@ -5207,12 +5207,12 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/editor-base/editor-base.ts
-	var _EditorBase, _config_accessor_storage, _hass_accessor_storage$11;
-	var EditorBase = (_config_accessor_storage = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$11 = /* @__PURE__ */ new WeakMap(), _EditorBase = class EditorBase extends i$2 {
+	var _EditorBase, _config_accessor_storage, _hass_accessor_storage$13;
+	var EditorBase = (_config_accessor_storage = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$13 = /* @__PURE__ */ new WeakMap(), _EditorBase = class EditorBase extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _config_accessor_storage, {});
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$11, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$13, null);
 		}
 		get _config() {
 			return _classPrivateFieldGet2(_config_accessor_storage, this);
@@ -5221,10 +5221,10 @@
 			_classPrivateFieldSet2(_config_accessor_storage, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$11, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$13, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$11, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$13, this, value);
 		}
 		setConfig(config) {
 			this._config = { ...config };
@@ -5243,7 +5243,7 @@
 			this._config = cfg;
 			this._fire(cfg);
 		}
-	}, _defineProperty(_EditorBase, "styles", styles$64), _EditorBase);
+	}, _defineProperty(_EditorBase, "styles", styles$66), _EditorBase);
 	__decorate([r$1()], EditorBase.prototype, "_config", null);
 	__decorate([n$1({ type: Object })], EditorBase.prototype, "hass", null);
 	EditorBase = __decorate([localized()], EditorBase);
@@ -5318,7 +5318,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/display/section-heading/section-heading.styles.ts
-	var styles$63 = i$5`
+	var styles$65 = i$5`
   :host {
     display: block;
   }
@@ -5348,12 +5348,12 @@
 			return b`<div class="heading">${this.text}</div>`;
 		}
 	};
-	_defineProperty(SectionHeading, "styles", styles$63);
+	_defineProperty(SectionHeading, "styles", styles$65);
 	__decorate([n$1({ type: String })], SectionHeading.prototype, "text", null);
 	customElements.define("section-heading", SectionHeading);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/editor-text-field/editor-text-field.styles.ts
-	var styles$62 = i$5`
+	var styles$64 = i$5`
   :host {
     display: block;
   }
@@ -5437,7 +5437,7 @@
 			return b`<ha-textfield @input=${this._onInput}></ha-textfield>`;
 		}
 	};
-	_defineProperty(EditorTextField, "styles", styles$62);
+	_defineProperty(EditorTextField, "styles", styles$64);
 	__decorate([n$1({ type: String })], EditorTextField.prototype, "label", null);
 	__decorate([n$1({ type: String })], EditorTextField.prototype, "value", null);
 	__decorate([n$1({ type: String })], EditorTextField.prototype, "type", null);
@@ -5446,7 +5446,7 @@
 	customElements.define("editor-text-field", EditorTextField);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/editor-switch/editor-switch.styles.ts
-	var styles$61 = i$5`
+	var styles$63 = i$5`
   :host {
     display: block;
   }
@@ -5554,14 +5554,14 @@
     `;
 		}
 	};
-	_defineProperty(EditorSwitch, "styles", styles$61);
+	_defineProperty(EditorSwitch, "styles", styles$63);
 	__decorate([n$1({ type: String })], EditorSwitch.prototype, "label", null);
 	__decorate([n$1({ type: Boolean })], EditorSwitch.prototype, "checked", null);
 	__decorate([n$1({ type: String })], EditorSwitch.prototype, "tooltip", null);
 	customElements.define("editor-switch", EditorSwitch);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/editor-icon-picker/editor-icon-picker.styles.ts
-	var styles$60 = i$5`
+	var styles$62 = i$5`
   :host {
     display: block;
   }
@@ -5574,13 +5574,13 @@
 	//#region custom_components/hass_datapoints/src/atoms/form/editor-icon-picker/editor-icon-picker.ts
 	var _label_accessor_storage$10 = /* @__PURE__ */ new WeakMap();
 	var _value_accessor_storage$7 = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$10 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$12 = /* @__PURE__ */ new WeakMap();
 	var EditorIconPicker = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _label_accessor_storage$10, "");
 			_classPrivateFieldInitSpec(this, _value_accessor_storage$7, "mdi:bookmark");
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$10, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$12, null);
 		}
 		get label() {
 			return _classPrivateFieldGet2(_label_accessor_storage$10, this);
@@ -5595,10 +5595,10 @@
 			_classPrivateFieldSet2(_value_accessor_storage$7, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$10, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$12, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$10, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$12, this, value);
 		}
 		firstUpdated() {
 			const el = this.shadowRoot.querySelector("ha-icon-picker");
@@ -5627,7 +5627,7 @@
     ></ha-icon-picker>`;
 		}
 	};
-	_defineProperty(EditorIconPicker, "styles", styles$60);
+	_defineProperty(EditorIconPicker, "styles", styles$62);
 	__decorate([n$1({ type: String })], EditorIconPicker.prototype, "label", null);
 	__decorate([n$1({ type: String })], EditorIconPicker.prototype, "value", null);
 	__decorate([n$1({ type: Object })], EditorIconPicker.prototype, "hass", null);
@@ -5727,7 +5727,7 @@
     `;
 		}
 	};
-	_defineProperty(HassDatapointsActionCardEditor, "styles", [EditorBase.styles, styles$65]);
+	_defineProperty(HassDatapointsActionCardEditor, "styles", [EditorBase.styles, styles$67]);
 	//#endregion
 	//#region node_modules/.pnpm/@kipk+load-ha-components@1.0.3/node_modules/@kipk/load-ha-components/dist/load-ha-components.js
 	/**
@@ -5969,7 +5969,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/dev-tool/dev-tool.styles.ts
-	var styles$59 = `
+	var styles$61 = `
   :host { display: block; }
   ha-card { padding: 16px; }
   .card-header {
@@ -6040,7 +6040,7 @@
 	_defineProperty(HassDatapointsDevToolCardEditor, "styles", [EditorBase.styles]);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/dev-tool/dev-tool-results/dev-tool-results.styles.ts
-	var styles$58 = i$5`
+	var styles$60 = i$5`
   :host {
     display: block;
     margin-top: 18px;
@@ -6407,7 +6407,7 @@
     `;
 		}
 	};
-	_defineProperty(CardDevToolResults, "styles", styles$58);
+	_defineProperty(CardDevToolResults, "styles", styles$60);
 	__decorate([n$1({ attribute: false })], CardDevToolResults.prototype, "results", null);
 	__decorate([n$1({ type: Boolean })], CardDevToolResults.prototype, "isAdmin", null);
 	__decorate([n$1({ type: String })], CardDevToolResults.prototype, "statusKind", null);
@@ -6417,7 +6417,7 @@
 	customElements.define("dev-tool-results", CardDevToolResults);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/dev-tool/dev-tool-windows/dev-tool-windows.styles.ts
-	var styles$57 = i$5`
+	var styles$59 = i$5`
   :host {
     display: block;
   }
@@ -6660,7 +6660,7 @@
     `;
 		}
 	};
-	_defineProperty(CardDevToolWindows, "styles", styles$57);
+	_defineProperty(CardDevToolWindows, "styles", styles$59);
 	__decorate([n$1({ attribute: false })], CardDevToolWindows.prototype, "windows", null);
 	__decorate([r$1()], CardDevToolWindows.prototype, "_nextWindowId", null);
 	customElements.define("dev-tool-windows", CardDevToolWindows);
@@ -6706,7 +6706,7 @@
 			const cfg = this._config;
 			if (!this.shadowRoot.adoptedStyleSheets.length) {
 				const sheet = new CSSStyleSheet();
-				sheet.replaceSync(styles$59);
+				sheet.replaceSync(styles$61);
 				this.shadowRoot.adoptedStyleSheets = [sheet];
 			}
 			D(b`
@@ -7200,7 +7200,7 @@
 	};
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history.styles.ts
-	var styles$56 = i$5`
+	var styles$58 = i$5`
   :host {
     display: block;
     height: 100%;
@@ -10615,7 +10615,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/history-chart.styles.ts
-	var styles$55 = `
+	var styles$57 = `
   hass-datapoints-history-chart {
     position: relative;
     display: flex;
@@ -11515,7 +11515,7 @@
 		connectedCallback() {
 			this.style.cssText = "position:relative;display:flex;flex-direction:column;height:100%;min-height:0;padding:var(--dp-spacing-sm,8px) var(--dp-spacing-md,12px) var(--dp-spacing-md,12px);box-sizing:border-box;overflow:visible;isolation:isolate;z-index:3;";
 			if (this.querySelector("#chart")) return;
-			this.innerHTML = `<style>${styles$55}</style>
+			this.innerHTML = `<style>${styles$57}</style>
       <div class="chart-top-slot" id="chart-top-slot" hidden></div>
       <div class="chart-preview-overlay" id="chart-preview-overlay" hidden></div>
       <div class="chart-scroll-viewport" id="chart-scroll-viewport">
@@ -14892,7 +14892,7 @@
 	});
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/annotation-chip-row/annotation-chip-row.styles.ts
-	var styles$54 = i$5`
+	var styles$56 = i$5`
   :host {
     display: block;
   }
@@ -14923,7 +14923,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/interactive/annotation-chip/annotation-chip.styles.ts
-	var styles$53 = i$5`
+	var styles$55 = i$5`
   :host {
     display: inline-flex;
   }
@@ -14989,20 +14989,20 @@
 	var _type_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _itemId_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _icon_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
-	var _name_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
+	var _name_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
 	var _secondaryText_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _stateObj_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$9 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$11 = /* @__PURE__ */ new WeakMap();
 	var AnnotationChip = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _type_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _itemId_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _icon_accessor_storage$2, "");
-			_classPrivateFieldInitSpec(this, _name_accessor_storage$3, "");
+			_classPrivateFieldInitSpec(this, _name_accessor_storage$4, "");
 			_classPrivateFieldInitSpec(this, _secondaryText_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _stateObj_accessor_storage$2, null);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$9, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$11, null);
 		}
 		get type() {
 			return _classPrivateFieldGet2(_type_accessor_storage, this);
@@ -15023,10 +15023,10 @@
 			_classPrivateFieldSet2(_icon_accessor_storage$2, this, value);
 		}
 		get name() {
-			return _classPrivateFieldGet2(_name_accessor_storage$3, this);
+			return _classPrivateFieldGet2(_name_accessor_storage$4, this);
 		}
 		set name(value) {
-			_classPrivateFieldSet2(_name_accessor_storage$3, this, value);
+			_classPrivateFieldSet2(_name_accessor_storage$4, this, value);
 		}
 		get secondaryText() {
 			return _classPrivateFieldGet2(_secondaryText_accessor_storage, this);
@@ -15041,10 +15041,10 @@
 			_classPrivateFieldSet2(_stateObj_accessor_storage$2, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$9, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$11, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$9, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$11, this, value);
 		}
 		_onRemove() {
 			this.dispatchEvent(new CustomEvent("dp-chip-remove", {
@@ -15081,7 +15081,7 @@
     `;
 		}
 	};
-	_defineProperty(AnnotationChip, "styles", styles$53);
+	_defineProperty(AnnotationChip, "styles", styles$55);
 	__decorate([n$1({ type: String })], AnnotationChip.prototype, "type", null);
 	__decorate([n$1({
 		type: String,
@@ -15105,7 +15105,7 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/annotation-chip-row/annotation-chip-row.ts
 	var _chips_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$8 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$10 = /* @__PURE__ */ new WeakMap();
 	var _label_accessor_storage$9 = /* @__PURE__ */ new WeakMap();
 	var _helpText_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _emptyText_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -15120,7 +15120,7 @@
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _chips_accessor_storage, []);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$8, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$10, null);
 			_classPrivateFieldInitSpec(this, _label_accessor_storage$9, "Linked targets");
 			_classPrivateFieldInitSpec(this, _helpText_accessor_storage, "These targets will be associated with the new data point by default. Remove any that should not be linked.");
 			_classPrivateFieldInitSpec(this, _emptyText_accessor_storage, "No linked targets will be associated with this data point.");
@@ -15132,10 +15132,10 @@
 			_classPrivateFieldSet2(_chips_accessor_storage, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$8, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$10, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$8, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$10, this, value);
 		}
 		get label() {
 			return _classPrivateFieldGet2(_label_accessor_storage$9, this);
@@ -15195,7 +15195,7 @@
     `;
 		}
 	};
-	_defineProperty(AnnotationChipRow, "styles", styles$54);
+	_defineProperty(AnnotationChipRow, "styles", styles$56);
 	__decorate([n$1({ type: Array })], AnnotationChipRow.prototype, "chips", null);
 	__decorate([n$1({
 		type: Object,
@@ -16609,11 +16609,11 @@
 			return document.createElement("hass-datapoints-history-card-editor");
 		}
 	};
-	_defineProperty(HassDatapointsHistoryCard, "styles", styles$56);
+	_defineProperty(HassDatapointsHistoryCard, "styles", styles$58);
 	customElements.define("hass-datapoints-history-card", HassDatapointsHistoryCard);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/editor.styles.ts
-	var styles$52 = i$5``;
+	var styles$54 = i$5``;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-group-shared/analysis-group-shared.styles.ts
 	var sharedStyles = i$5`
@@ -16681,10 +16681,10 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-sample-group/analysis-sample-group.styles.ts
-	var styles$51 = i$5``;
+	var styles$53 = i$5``;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/analysis/analysis-group/analysis-group.styles.ts
-	var styles$50 = i$5`
+	var styles$52 = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -16813,7 +16813,7 @@
     `;
 		}
 	};
-	_defineProperty(AnalysisGroup, "styles", styles$50);
+	_defineProperty(AnalysisGroup, "styles", styles$52);
 	__decorate([n$1({ type: String })], AnalysisGroup.prototype, "label", null);
 	__decorate([n$1({ type: Boolean })], AnalysisGroup.prototype, "checked", null);
 	__decorate([n$1({ type: Boolean })], AnalysisGroup.prototype, "disabled", null);
@@ -16824,7 +16824,7 @@
 	customElements.define("analysis-group", AnalysisGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/inline-select/inline-select.styles.ts
-	var styles$49 = i$5`
+	var styles$51 = i$5`
   :host {
     display: inline-block;
   }
@@ -16901,7 +16901,7 @@
     `;
 		}
 	};
-	_defineProperty(InlineSelect, "styles", styles$49);
+	_defineProperty(InlineSelect, "styles", styles$51);
 	__decorate([n$1({ type: String })], InlineSelect.prototype, "value", null);
 	__decorate([n$1({ type: Array })], InlineSelect.prototype, "options", null);
 	__decorate([n$1({ type: Boolean })], InlineSelect.prototype, "disabled", null);
@@ -17079,7 +17079,7 @@
       </analysis-group>
     `;
 		}
-	}, _defineProperty(_AnalysisSampleGroup, "styles", [sharedStyles, styles$51]), _AnalysisSampleGroup);
+	}, _defineProperty(_AnalysisSampleGroup, "styles", [sharedStyles, styles$53]), _AnalysisSampleGroup);
 	__decorate([n$1({ type: Object })], AnalysisSampleGroup.prototype, "analysis", null);
 	__decorate([n$1({
 		type: String,
@@ -17089,7 +17089,7 @@
 	customElements.define("analysis-sample-group", AnalysisSampleGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/analysis-trend-group.styles.ts
-	var styles$48 = i$5``;
+	var styles$50 = i$5``;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/analysis-trend-group.ts
 	var _AnalysisTrendGroup, _analysis_accessor_storage$6, _entityId_accessor_storage$6;
@@ -17239,7 +17239,7 @@
       </analysis-group>
     `;
 		}
-	}, _defineProperty(_AnalysisTrendGroup, "styles", [sharedStyles, styles$48]), _AnalysisTrendGroup);
+	}, _defineProperty(_AnalysisTrendGroup, "styles", [sharedStyles, styles$50]), _AnalysisTrendGroup);
 	__decorate([n$1({ type: Object })], AnalysisTrendGroup.prototype, "analysis", null);
 	__decorate([n$1({
 		type: String,
@@ -17249,7 +17249,7 @@
 	customElements.define("analysis-trend-group", AnalysisTrendGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/analysis-summary-group.styles.ts
-	var styles$47 = i$5``;
+	var styles$49 = i$5``;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/analysis-summary-group.ts
 	var _AnalysisSummaryGroup, _analysis_accessor_storage$5, _entityId_accessor_storage$5;
@@ -17307,7 +17307,7 @@
       </analysis-group>
     `;
 		}
-	}, _defineProperty(_AnalysisSummaryGroup, "styles", [sharedStyles, styles$47]), _AnalysisSummaryGroup);
+	}, _defineProperty(_AnalysisSummaryGroup, "styles", [sharedStyles, styles$49]), _AnalysisSummaryGroup);
 	__decorate([n$1({ type: Object })], AnalysisSummaryGroup.prototype, "analysis", null);
 	__decorate([n$1({
 		type: String,
@@ -17317,7 +17317,7 @@
 	customElements.define("analysis-summary-group", AnalysisSummaryGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/analysis-rate-group.styles.ts
-	var styles$46 = i$5``;
+	var styles$48 = i$5``;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/analysis-rate-group.ts
 	var _AnalysisRateGroup, _analysis_accessor_storage$4, _entityId_accessor_storage$4;
@@ -17407,7 +17407,7 @@
       </analysis-group>
     `;
 		}
-	}, _defineProperty(_AnalysisRateGroup, "styles", [sharedStyles, styles$46]), _AnalysisRateGroup);
+	}, _defineProperty(_AnalysisRateGroup, "styles", [sharedStyles, styles$48]), _AnalysisRateGroup);
 	__decorate([n$1({ type: Object })], AnalysisRateGroup.prototype, "analysis", null);
 	__decorate([n$1({
 		type: String,
@@ -17417,7 +17417,7 @@
 	customElements.define("analysis-rate-group", AnalysisRateGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/analysis-threshold-group.styles.ts
-	var styles$45 = i$5``;
+	var styles$47 = i$5``;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/analysis-threshold-group.ts
 	var _AnalysisThresholdGroup, _analysis_accessor_storage$3, _entityId_accessor_storage$3, _unit_accessor_storage$1;
@@ -17522,7 +17522,7 @@
       </analysis-group>
     `;
 		}
-	}, _defineProperty(_AnalysisThresholdGroup, "styles", [sharedStyles, styles$45]), _AnalysisThresholdGroup);
+	}, _defineProperty(_AnalysisThresholdGroup, "styles", [sharedStyles, styles$47]), _AnalysisThresholdGroup);
 	__decorate([n$1({ type: Object })], AnalysisThresholdGroup.prototype, "analysis", null);
 	__decorate([n$1({
 		type: String,
@@ -17533,7 +17533,7 @@
 	customElements.define("analysis-threshold-group", AnalysisThresholdGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/analysis-anomaly-group.styles.ts
-	var styles$44 = i$5`
+	var styles$46 = i$5`
   .method-computing-indicator {
     display: inline-flex;
     align-items: center;
@@ -17609,10 +17609,34 @@
     outline: 2px solid var(--primary-color, #03a9f4);
     outline-offset: 2px;
   }
+
+  .save-monitor-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border: 0;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 0.82rem;
+    color: var(--primary-color, #3b82f6);
+    background: color-mix(in srgb, var(--primary-color, #3b82f6) 14%, transparent);
+    cursor: pointer;
+    --mdc-icon-size: 16px;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: background 120ms ease;
+  }
+
+  .save-monitor-btn:hover,
+  .save-monitor-btn:focus-visible {
+    background: color-mix(in srgb, var(--primary-color, #3b82f6) 22%, transparent);
+    outline: none;
+  }
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/analysis/analysis-method-subopts/analysis-method-subopts.styles.ts
-	var styles$43 = i$5`
+	var styles$45 = i$5`
   :host {
     display: block;
     --dp-spacing-sm: var(--spacing, 8px);
@@ -17634,7 +17658,7 @@
 			return b`<div class="subopts"><slot></slot></div>`;
 		}
 	};
-	_defineProperty(AnalysisMethodSubopts, "styles", styles$43);
+	_defineProperty(AnalysisMethodSubopts, "styles", styles$45);
 	customElements.define("analysis-method-subopts", AnalysisMethodSubopts);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/analysis-anomaly-group.ts
@@ -18005,10 +18029,26 @@
                 ></inline-select>
               </label>
             ` : A}
+        ${a.show_anomalies && Array.isArray(a.anomaly_methods) && a.anomaly_methods.length > 0 ? b`
+              <button class="save-monitor-btn" @click=${this._onSaveAsMonitor}>
+                <ha-icon icon="mdi:bell-plus-outline"></ha-icon>
+                ${msg("Save as monitor")}
+              </button>
+            ` : A}
       </analysis-group>
     `;
 		}
-	}, _defineProperty(_AnalysisAnomalyGroup, "styles", [sharedStyles, styles$44]), _AnalysisAnomalyGroup);
+		_onSaveAsMonitor() {
+			this.dispatchEvent(new CustomEvent("dp-anomaly-save-monitor", {
+				detail: {
+					entityId: this.entityId,
+					analysis: this.analysis
+				},
+				bubbles: true,
+				composed: true
+			}));
+		}
+	}, _defineProperty(_AnalysisAnomalyGroup, "styles", [sharedStyles, styles$46]), _AnalysisAnomalyGroup);
 	__decorate([n$1({ type: Object })], AnalysisAnomalyGroup.prototype, "analysis", null);
 	__decorate([n$1({
 		type: String,
@@ -18034,7 +18074,7 @@
 	customElements.define("analysis-anomaly-group", AnalysisAnomalyGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-delta-group/analysis-delta-group.styles.ts
-	var styles$42 = i$5`
+	var styles$44 = i$5`
   .help-text {
     display: inline-block;
     color: var(--secondary-text-color);
@@ -18124,7 +18164,7 @@
       </analysis-group>
     `;
 		}
-	}, _defineProperty(_AnalysisDeltaGroup, "styles", [sharedStyles, styles$42]), _AnalysisDeltaGroup);
+	}, _defineProperty(_AnalysisDeltaGroup, "styles", [sharedStyles, styles$44]), _AnalysisDeltaGroup);
 	__decorate([n$1({ type: Object })], AnalysisDeltaGroup.prototype, "analysis", null);
 	__decorate([n$1({
 		type: String,
@@ -18138,14 +18178,14 @@
 	customElements.define("analysis-delta-group", AnalysisDeltaGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/sidebar-datapoints-section.styles.ts
-	var styles$41 = i$5`
+	var styles$43 = i$5`
   :host {
     display: block;
   }
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/display/sidebar-options-section/sidebar-options-section.styles.ts
-	var styles$40 = i$5`
+	var styles$42 = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -18159,7 +18199,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/display/sidebar-section-header/sidebar-section-header.styles.ts
-	var styles$39 = i$5`
+	var styles$41 = i$5`
   :host {
     display: block;
   }
@@ -18222,14 +18262,14 @@
 	var _title_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _subtitle_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _collapsible_accessor_storage$5 = /* @__PURE__ */ new WeakMap();
-	var _open_accessor_storage$7 = /* @__PURE__ */ new WeakMap();
+	var _open_accessor_storage$8 = /* @__PURE__ */ new WeakMap();
 	var SidebarSectionHeader = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _title_accessor_storage$1, "");
 			_classPrivateFieldInitSpec(this, _subtitle_accessor_storage$1, "");
 			_classPrivateFieldInitSpec(this, _collapsible_accessor_storage$5, false);
-			_classPrivateFieldInitSpec(this, _open_accessor_storage$7, true);
+			_classPrivateFieldInitSpec(this, _open_accessor_storage$8, true);
 		}
 		get title() {
 			return _classPrivateFieldGet2(_title_accessor_storage$1, this);
@@ -18250,10 +18290,10 @@
 			_classPrivateFieldSet2(_collapsible_accessor_storage$5, this, value);
 		}
 		get open() {
-			return _classPrivateFieldGet2(_open_accessor_storage$7, this);
+			return _classPrivateFieldGet2(_open_accessor_storage$8, this);
 		}
 		set open(value) {
-			_classPrivateFieldSet2(_open_accessor_storage$7, this, value);
+			_classPrivateFieldSet2(_open_accessor_storage$8, this, value);
 		}
 		_emitToggle() {
 			this.dispatchEvent(new CustomEvent("dp-section-toggle", {
@@ -18304,7 +18344,7 @@
     `;
 		}
 	};
-	_defineProperty(SidebarSectionHeader, "styles", styles$39);
+	_defineProperty(SidebarSectionHeader, "styles", styles$41);
 	__decorate([n$1({ type: String })], SidebarSectionHeader.prototype, "title", null);
 	__decorate([n$1({ type: String })], SidebarSectionHeader.prototype, "subtitle", null);
 	__decorate([n$1({ type: Boolean })], SidebarSectionHeader.prototype, "collapsible", null);
@@ -18315,14 +18355,14 @@
 	var _title_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _subtitle_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _collapsible_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
-	var _open_accessor_storage$6 = /* @__PURE__ */ new WeakMap();
+	var _open_accessor_storage$7 = /* @__PURE__ */ new WeakMap();
 	var SidebarOptionsSection = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _title_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _subtitle_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _collapsible_accessor_storage$4, false);
-			_classPrivateFieldInitSpec(this, _open_accessor_storage$6, true);
+			_classPrivateFieldInitSpec(this, _open_accessor_storage$7, true);
 		}
 		get title() {
 			return _classPrivateFieldGet2(_title_accessor_storage, this);
@@ -18343,10 +18383,10 @@
 			_classPrivateFieldSet2(_collapsible_accessor_storage$4, this, value);
 		}
 		get open() {
-			return _classPrivateFieldGet2(_open_accessor_storage$6, this);
+			return _classPrivateFieldGet2(_open_accessor_storage$7, this);
 		}
 		set open(value) {
-			_classPrivateFieldSet2(_open_accessor_storage$6, this, value);
+			_classPrivateFieldSet2(_open_accessor_storage$7, this, value);
 		}
 		_onToggle(e) {
 			e.stopPropagation();
@@ -18372,7 +18412,7 @@
     `;
 		}
 	};
-	_defineProperty(SidebarOptionsSection, "styles", styles$40);
+	_defineProperty(SidebarOptionsSection, "styles", styles$42);
 	__decorate([n$1({ type: String })], SidebarOptionsSection.prototype, "title", null);
 	__decorate([n$1({ type: String })], SidebarOptionsSection.prototype, "subtitle", null);
 	__decorate([n$1({ type: Boolean })], SidebarOptionsSection.prototype, "collapsible", null);
@@ -18380,7 +18420,7 @@
 	customElements.define("sidebar-options-section", SidebarOptionsSection);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/radio-group/radio-group.styles.ts
-	var styles$38 = i$5`
+	var styles$40 = i$5`
   :host {
     display: block;
   }
@@ -18407,21 +18447,21 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/radio-group/radio-group.ts
-	var _name_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
+	var _name_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
 	var _value_accessor_storage$5 = /* @__PURE__ */ new WeakMap();
 	var _options_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var RadioGroup = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _name_accessor_storage$2, "");
+			_classPrivateFieldInitSpec(this, _name_accessor_storage$3, "");
 			_classPrivateFieldInitSpec(this, _value_accessor_storage$5, "");
 			_classPrivateFieldInitSpec(this, _options_accessor_storage$1, []);
 		}
 		get name() {
-			return _classPrivateFieldGet2(_name_accessor_storage$2, this);
+			return _classPrivateFieldGet2(_name_accessor_storage$3, this);
 		}
 		set name(value) {
-			_classPrivateFieldSet2(_name_accessor_storage$2, this, value);
+			_classPrivateFieldSet2(_name_accessor_storage$3, this, value);
 		}
 		get value() {
 			return _classPrivateFieldGet2(_value_accessor_storage$5, this);
@@ -18464,14 +18504,14 @@
     `;
 		}
 	};
-	_defineProperty(RadioGroup, "styles", styles$38);
+	_defineProperty(RadioGroup, "styles", styles$40);
 	__decorate([n$1({ type: String })], RadioGroup.prototype, "name", null);
 	__decorate([n$1({ type: String })], RadioGroup.prototype, "value", null);
 	__decorate([n$1({ type: Array })], RadioGroup.prototype, "options", null);
 	customElements.define("radio-group", RadioGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/sidebar-datapoints-section.ts
-	var _SidebarDatapointsSection, _datapointScope_accessor_storage$2, _collapsible_accessor_storage$3, _open_accessor_storage$5;
+	var _SidebarDatapointsSection, _datapointScope_accessor_storage$2, _collapsible_accessor_storage$3, _open_accessor_storage$6;
 	var DATAPOINT_SCOPE_OPTIONS = [
 		{
 			value: "linked",
@@ -18486,12 +18526,12 @@
 			label: "Hide datapoints"
 		}
 	];
-	var SidebarDatapointsSection = (_datapointScope_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$5 = /* @__PURE__ */ new WeakMap(), _SidebarDatapointsSection = class SidebarDatapointsSection extends i$2 {
+	var SidebarDatapointsSection = (_datapointScope_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$6 = /* @__PURE__ */ new WeakMap(), _SidebarDatapointsSection = class SidebarDatapointsSection extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _datapointScope_accessor_storage$2, "linked");
 			_classPrivateFieldInitSpec(this, _collapsible_accessor_storage$3, false);
-			_classPrivateFieldInitSpec(this, _open_accessor_storage$5, true);
+			_classPrivateFieldInitSpec(this, _open_accessor_storage$6, true);
 		}
 		get datapointScope() {
 			return _classPrivateFieldGet2(_datapointScope_accessor_storage$2, this);
@@ -18506,10 +18546,10 @@
 			_classPrivateFieldSet2(_collapsible_accessor_storage$3, this, value);
 		}
 		get open() {
-			return _classPrivateFieldGet2(_open_accessor_storage$5, this);
+			return _classPrivateFieldGet2(_open_accessor_storage$6, this);
 		}
 		set open(value) {
-			_classPrivateFieldSet2(_open_accessor_storage$5, this, value);
+			_classPrivateFieldSet2(_open_accessor_storage$6, this, value);
 		}
 		_onScopeChange(e) {
 			this.dispatchEvent(new CustomEvent("dp-scope-change", {
@@ -18541,7 +18581,7 @@
       </sidebar-options-section>
     `;
 		}
-	}, _defineProperty(_SidebarDatapointsSection, "styles", styles$41), _SidebarDatapointsSection);
+	}, _defineProperty(_SidebarDatapointsSection, "styles", styles$43), _SidebarDatapointsSection);
 	__decorate([n$1({
 		type: String,
 		attribute: "datapoint-scope"
@@ -18552,14 +18592,14 @@
 	customElements.define("sidebar-datapoints-section", SidebarDatapointsSection);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/sidebar-datapoint-display-section.styles.ts
-	var styles$37 = i$5`
+	var styles$39 = i$5`
   :host {
     display: block;
   }
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/checkbox-list/checkbox-list.styles.ts
-	var styles$36 = i$5`
+	var styles$38 = i$5`
   :host {
     display: block;
   }
@@ -18622,19 +18662,19 @@
     `;
 		}
 	};
-	_defineProperty(CheckboxList, "styles", styles$36);
+	_defineProperty(CheckboxList, "styles", styles$38);
 	__decorate([n$1({ type: Array })], CheckboxList.prototype, "items", null);
 	customElements.define("checkbox-list", CheckboxList);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/sidebar-datapoint-display-section.ts
-	var _SidebarDatapointDisplaySection, _showIcons_accessor_storage$2, _showLines_accessor_storage$2, _collapsible_accessor_storage$2, _open_accessor_storage$4;
-	var SidebarDatapointDisplaySection = (_showIcons_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showLines_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$4 = /* @__PURE__ */ new WeakMap(), _SidebarDatapointDisplaySection = class SidebarDatapointDisplaySection extends i$2 {
+	var _SidebarDatapointDisplaySection, _showIcons_accessor_storage$2, _showLines_accessor_storage$2, _collapsible_accessor_storage$2, _open_accessor_storage$5;
+	var SidebarDatapointDisplaySection = (_showIcons_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showLines_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$5 = /* @__PURE__ */ new WeakMap(), _SidebarDatapointDisplaySection = class SidebarDatapointDisplaySection extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _showIcons_accessor_storage$2, true);
 			_classPrivateFieldInitSpec(this, _showLines_accessor_storage$2, true);
 			_classPrivateFieldInitSpec(this, _collapsible_accessor_storage$2, false);
-			_classPrivateFieldInitSpec(this, _open_accessor_storage$4, true);
+			_classPrivateFieldInitSpec(this, _open_accessor_storage$5, true);
 		}
 		get showIcons() {
 			return _classPrivateFieldGet2(_showIcons_accessor_storage$2, this);
@@ -18655,10 +18695,10 @@
 			_classPrivateFieldSet2(_collapsible_accessor_storage$2, this, value);
 		}
 		get open() {
-			return _classPrivateFieldGet2(_open_accessor_storage$4, this);
+			return _classPrivateFieldGet2(_open_accessor_storage$5, this);
 		}
 		set open(value) {
-			_classPrivateFieldSet2(_open_accessor_storage$4, this, value);
+			_classPrivateFieldSet2(_open_accessor_storage$5, this, value);
 		}
 		_onCheckboxChange(e) {
 			const { name, checked } = e.detail;
@@ -18694,7 +18734,7 @@
       </sidebar-options-section>
     `;
 		}
-	}, _defineProperty(_SidebarDatapointDisplaySection, "styles", styles$37), _SidebarDatapointDisplaySection);
+	}, _defineProperty(_SidebarDatapointDisplaySection, "styles", styles$39), _SidebarDatapointDisplaySection);
 	__decorate([n$1({
 		type: Boolean,
 		attribute: "show-icons"
@@ -18709,7 +18749,7 @@
 	customElements.define("sidebar-datapoint-display-section", SidebarDatapointDisplaySection);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/sidebar-analysis-section.styles.ts
-	var styles$35 = i$5`
+	var styles$37 = i$5`
   :host {
     display: block;
   }
@@ -18737,7 +18777,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/sidebar-analysis-section.ts
-	var _SidebarAnalysisSection, _anomalyOverlapMode_accessor_storage$2, _showCorrelatedAnomal_accessor_storage$2, _anyAnomaliesEnabled_accessor_storage$2, _collapsible_accessor_storage$1, _open_accessor_storage$3;
+	var _SidebarAnalysisSection, _anomalyOverlapMode_accessor_storage$2, _showCorrelatedAnomal_accessor_storage$2, _anyAnomaliesEnabled_accessor_storage$2, _collapsible_accessor_storage$1, _open_accessor_storage$4;
 	var ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS$1 = [{
 		value: "all",
 		label: "Show all anomalies"
@@ -18745,14 +18785,14 @@
 		value: "only",
 		label: "Overlaps only"
 	}];
-	var SidebarAnalysisSection = (_anomalyOverlapMode_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showCorrelatedAnomal_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _anyAnomaliesEnabled_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _SidebarAnalysisSection = class SidebarAnalysisSection extends i$2 {
+	var SidebarAnalysisSection = (_anomalyOverlapMode_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showCorrelatedAnomal_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _anyAnomaliesEnabled_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$4 = /* @__PURE__ */ new WeakMap(), _SidebarAnalysisSection = class SidebarAnalysisSection extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _anomalyOverlapMode_accessor_storage$2, "all");
 			_classPrivateFieldInitSpec(this, _showCorrelatedAnomal_accessor_storage$2, false);
 			_classPrivateFieldInitSpec(this, _anyAnomaliesEnabled_accessor_storage$2, false);
 			_classPrivateFieldInitSpec(this, _collapsible_accessor_storage$1, false);
-			_classPrivateFieldInitSpec(this, _open_accessor_storage$3, true);
+			_classPrivateFieldInitSpec(this, _open_accessor_storage$4, true);
 		}
 		get anomalyOverlapMode() {
 			return _classPrivateFieldGet2(_anomalyOverlapMode_accessor_storage$2, this);
@@ -18779,10 +18819,10 @@
 			_classPrivateFieldSet2(_collapsible_accessor_storage$1, this, value);
 		}
 		get open() {
-			return _classPrivateFieldGet2(_open_accessor_storage$3, this);
+			return _classPrivateFieldGet2(_open_accessor_storage$4, this);
 		}
 		set open(value) {
-			_classPrivateFieldSet2(_open_accessor_storage$3, this, value);
+			_classPrivateFieldSet2(_open_accessor_storage$4, this, value);
 		}
 		_localizedOptions(options) {
 			return options.map((opt) => ({
@@ -18845,7 +18885,7 @@
       </sidebar-options-section>
     `;
 		}
-	}, _defineProperty(_SidebarAnalysisSection, "styles", styles$35), _SidebarAnalysisSection);
+	}, _defineProperty(_SidebarAnalysisSection, "styles", styles$37), _SidebarAnalysisSection);
 	__decorate([n$1({
 		type: String,
 		attribute: "anomaly-overlap-mode"
@@ -18864,7 +18904,7 @@
 	customElements.define("sidebar-analysis-section", SidebarAnalysisSection);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/sidebar-chart-display-section.styles.ts
-	var styles$34 = i$5`
+	var styles$36 = i$5`
   :host {
     display: block;
     --dp-spacing-sm: var(--spacing, 8px);
@@ -18908,7 +18948,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/sidebar-chart-display-section.ts
-	var _SidebarChartDisplaySection, _showTooltips_accessor_storage$2, _showHoverGuides_accessor_storage$2, _showDataGaps_accessor_storage$2, _dataGapThreshold_accessor_storage$2, _yAxisMode_accessor_storage$2, _hoverSnapMode_accessor_storage$2, _collapsible_accessor_storage, _open_accessor_storage$2;
+	var _SidebarChartDisplaySection, _showTooltips_accessor_storage$2, _showHoverGuides_accessor_storage$2, _showDataGaps_accessor_storage$2, _dataGapThreshold_accessor_storage$2, _yAxisMode_accessor_storage$2, _hoverSnapMode_accessor_storage$2, _collapsible_accessor_storage, _open_accessor_storage$3;
 	var DATA_GAP_THRESHOLD_OPTIONS$1 = [
 		{
 			value: "auto",
@@ -18968,7 +19008,7 @@
 		value: "snap_to_data_points",
 		label: "Snap to data points"
 	}];
-	var SidebarChartDisplaySection = (_showTooltips_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showHoverGuides_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showDataGaps_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _dataGapThreshold_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _yAxisMode_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _hoverSnapMode_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _SidebarChartDisplaySection = class SidebarChartDisplaySection extends i$2 {
+	var SidebarChartDisplaySection = (_showTooltips_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showHoverGuides_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showDataGaps_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _dataGapThreshold_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _yAxisMode_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _hoverSnapMode_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _SidebarChartDisplaySection = class SidebarChartDisplaySection extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _showTooltips_accessor_storage$2, true);
@@ -18978,7 +19018,7 @@
 			_classPrivateFieldInitSpec(this, _yAxisMode_accessor_storage$2, "combined");
 			_classPrivateFieldInitSpec(this, _hoverSnapMode_accessor_storage$2, "follow_series");
 			_classPrivateFieldInitSpec(this, _collapsible_accessor_storage, false);
-			_classPrivateFieldInitSpec(this, _open_accessor_storage$2, true);
+			_classPrivateFieldInitSpec(this, _open_accessor_storage$3, true);
 		}
 		get showTooltips() {
 			return _classPrivateFieldGet2(_showTooltips_accessor_storage$2, this);
@@ -19023,10 +19063,10 @@
 			_classPrivateFieldSet2(_collapsible_accessor_storage, this, value);
 		}
 		get open() {
-			return _classPrivateFieldGet2(_open_accessor_storage$2, this);
+			return _classPrivateFieldGet2(_open_accessor_storage$3, this);
 		}
 		set open(value) {
-			_classPrivateFieldSet2(_open_accessor_storage$2, this, value);
+			_classPrivateFieldSet2(_open_accessor_storage$3, this, value);
 		}
 		_localizedOptions(options) {
 			return options.map((opt) => ({
@@ -19113,7 +19153,7 @@
       </sidebar-options-section>
     `;
 		}
-	}, _defineProperty(_SidebarChartDisplaySection, "styles", styles$34), _SidebarChartDisplaySection);
+	}, _defineProperty(_SidebarChartDisplaySection, "styles", styles$36), _SidebarChartDisplaySection);
 	__decorate([n$1({
 		type: Boolean,
 		attribute: "show-tooltips"
@@ -19464,7 +19504,7 @@
     `;
 		}
 	};
-	_defineProperty(HassDatapointsHistoryCardEditor, "styles", [EditorBase.styles, styles$52]);
+	_defineProperty(HassDatapointsHistoryCardEditor, "styles", [EditorBase.styles, styles$54]);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/data/preferences-api.ts
 	/** HA user-data key for the saved history page. Stored via frontend/set_user_data. */
@@ -19883,7 +19923,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/target-row.styles.ts
-	var styles$33 = i$5`
+	var styles$35 = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -20377,7 +20417,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/target-row.ts
-	var _TargetRow, _color_accessor_storage$1, _visible_accessor_storage, _analysis_accessor_storage, _index_accessor_storage, _entityId_accessor_storage, _canShowDeltaAnalysis_accessor_storage$2, _stateObj_accessor_storage$1, _hass_accessor_storage$7, _comparisonWindows_accessor_storage$2, _computing_accessor_storage, _computingProgress_accessor_storage, _computingMethods_accessor_storage, _rowCount_accessor_storage, _allAnalysisSame_accessor_storage, _hideDragHandle_accessor_storage;
+	var _TargetRow, _color_accessor_storage$1, _visible_accessor_storage, _analysis_accessor_storage, _index_accessor_storage, _entityId_accessor_storage, _canShowDeltaAnalysis_accessor_storage$2, _stateObj_accessor_storage$1, _hass_accessor_storage$9, _comparisonWindows_accessor_storage$2, _computing_accessor_storage, _computingProgress_accessor_storage, _computingMethods_accessor_storage, _rowCount_accessor_storage, _allAnalysisSame_accessor_storage, _hideDragHandle_accessor_storage;
 	function deriveSwatchIconColor(color) {
 		const hex = String(color || "").trim();
 		const normalizedHex = /^#([0-9a-f]{6})$/i.test(hex) ? hex : null;
@@ -20401,7 +20441,7 @@
 	function _hasActiveAnalysis(a, hasComparisonWindow) {
 		return a.show_trend_lines || a.show_summary_stats || a.show_rate_of_change || a.show_threshold_analysis || a.show_anomalies || a.show_delta_analysis && hasComparisonWindow;
 	}
-	var TargetRow = (_color_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _visible_accessor_storage = /* @__PURE__ */ new WeakMap(), _analysis_accessor_storage = /* @__PURE__ */ new WeakMap(), _index_accessor_storage = /* @__PURE__ */ new WeakMap(), _entityId_accessor_storage = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _stateObj_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$7 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _computing_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingProgress_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingMethods_accessor_storage = /* @__PURE__ */ new WeakMap(), _rowCount_accessor_storage = /* @__PURE__ */ new WeakMap(), _allAnalysisSame_accessor_storage = /* @__PURE__ */ new WeakMap(), _hideDragHandle_accessor_storage = /* @__PURE__ */ new WeakMap(), _TargetRow = class TargetRow extends i$2 {
+	var TargetRow = (_color_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _visible_accessor_storage = /* @__PURE__ */ new WeakMap(), _analysis_accessor_storage = /* @__PURE__ */ new WeakMap(), _index_accessor_storage = /* @__PURE__ */ new WeakMap(), _entityId_accessor_storage = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _stateObj_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$9 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _computing_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingProgress_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingMethods_accessor_storage = /* @__PURE__ */ new WeakMap(), _rowCount_accessor_storage = /* @__PURE__ */ new WeakMap(), _allAnalysisSame_accessor_storage = /* @__PURE__ */ new WeakMap(), _hideDragHandle_accessor_storage = /* @__PURE__ */ new WeakMap(), _TargetRow = class TargetRow extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _color_accessor_storage$1, "#03a9f4");
@@ -20411,7 +20451,7 @@
 			_classPrivateFieldInitSpec(this, _entityId_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _canShowDeltaAnalysis_accessor_storage$2, false);
 			_classPrivateFieldInitSpec(this, _stateObj_accessor_storage$1, null);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$7, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$9, null);
 			_classPrivateFieldInitSpec(this, _comparisonWindows_accessor_storage$2, []);
 			_classPrivateFieldInitSpec(this, _computing_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _computingProgress_accessor_storage, 0);
@@ -20463,10 +20503,10 @@
 			_classPrivateFieldSet2(_stateObj_accessor_storage$1, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$7, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$9, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$7, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$9, this, value);
 		}
 		get comparisonWindows() {
 			return _classPrivateFieldGet2(_comparisonWindows_accessor_storage$2, this);
@@ -20743,7 +20783,7 @@
       </div>
     `;
 		}
-	}, _defineProperty(_TargetRow, "styles", styles$33), _TargetRow);
+	}, _defineProperty(_TargetRow, "styles", styles$35), _TargetRow);
 	__decorate([n$1({ type: String })], TargetRow.prototype, "color", null);
 	__decorate([n$1({ type: Boolean })], TargetRow.prototype, "visible", null);
 	__decorate([n$1({ type: Object })], TargetRow.prototype, "analysis", null);
@@ -20796,7 +20836,7 @@
 	customElements.define("target-row", TargetRow);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/target-row-list.styles.ts
-	var styles$32 = i$5`
+	var styles$34 = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -20870,7 +20910,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/target-row-list.ts
-	var _TargetRowList, _rows_accessor_storage$1, _states_accessor_storage$1, _hass_accessor_storage$6, _canShowDeltaAnalysis_accessor_storage$1, _comparisonWindows_accessor_storage$1, _computingEntityIds_accessor_storage, _analysisProgress_accessor_storage, _computingMethodsByEn_accessor_storage;
+	var _TargetRowList, _rows_accessor_storage$1, _states_accessor_storage$1, _hass_accessor_storage$8, _canShowDeltaAnalysis_accessor_storage$1, _comparisonWindows_accessor_storage$1, _computingEntityIds_accessor_storage, _analysisProgress_accessor_storage, _computingMethodsByEn_accessor_storage;
 	var _DURATION_SECONDS = {
 		raw: 0,
 		"5s": 5,
@@ -20944,12 +20984,12 @@
 		}
 		return updates;
 	}
-	var TargetRowList = (_rows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _states_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$6 = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _analysisProgress_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingMethodsByEn_accessor_storage = /* @__PURE__ */ new WeakMap(), _TargetRowList = class TargetRowList extends i$2 {
+	var TargetRowList = (_rows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _states_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$8 = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _analysisProgress_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingMethodsByEn_accessor_storage = /* @__PURE__ */ new WeakMap(), _TargetRowList = class TargetRowList extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _rows_accessor_storage$1, []);
 			_classPrivateFieldInitSpec(this, _states_accessor_storage$1, {});
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$6, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$8, null);
 			_classPrivateFieldInitSpec(this, _canShowDeltaAnalysis_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _comparisonWindows_accessor_storage$1, []);
 			_classPrivateFieldInitSpec(this, _computingEntityIds_accessor_storage, /* @__PURE__ */ new Set());
@@ -21047,10 +21087,10 @@
 			_classPrivateFieldSet2(_states_accessor_storage$1, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$6, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$8, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$6, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$8, this, value);
 		}
 		get canShowDeltaAnalysis() {
 			return _classPrivateFieldGet2(_canShowDeltaAnalysis_accessor_storage$1, this);
@@ -21194,7 +21234,7 @@
 				r.classList.remove("is-drag-over-before", "is-drag-over-after");
 			});
 		}
-	}, _defineProperty(_TargetRowList, "styles", styles$32), _TargetRowList);
+	}, _defineProperty(_TargetRowList, "styles", styles$34), _TargetRowList);
 	__decorate([n$1({ type: Array })], TargetRowList.prototype, "rows", null);
 	__decorate([n$1({
 		type: Object,
@@ -21228,7 +21268,7 @@
 	customElements.define("target-row-list", TargetRowList);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sidebar-options.styles.ts
-	var styles$31 = i$5`
+	var styles$33 = i$5`
   :host {
     display: block;
     --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
@@ -21440,7 +21480,7 @@
     `;
 		}
 	};
-	_defineProperty(SidebarOptions, "styles", styles$31);
+	_defineProperty(SidebarOptions, "styles", styles$33);
 	__decorate([n$1({
 		type: String,
 		attribute: "datapoint-scope"
@@ -21505,7 +21545,7 @@
 	customElements.define("sidebar-options", SidebarOptions);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/collapsed-options-menu/collapsed-options-menu.styles.ts
-	var styles$30 = i$5`
+	var styles$32 = i$5`
   :host {
     display: block;
   }
@@ -21829,7 +21869,7 @@
     `;
 		}
 	};
-	_defineProperty(CollapsedOptionsMenu, "styles", styles$30);
+	_defineProperty(CollapsedOptionsMenu, "styles", styles$32);
 	__decorate([n$1({ type: String })], CollapsedOptionsMenu.prototype, "datapointScope", null);
 	__decorate([n$1({ type: Boolean })], CollapsedOptionsMenu.prototype, "showIcons", null);
 	__decorate([n$1({ type: Boolean })], CollapsedOptionsMenu.prototype, "showLines", null);
@@ -21874,7 +21914,7 @@
 	});
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab-rail/comparison-tab-rail.styles.ts
-	var styles$29 = i$5`
+	var styles$31 = i$5`
   :host {
     display: block;
   }
@@ -21971,7 +22011,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab/comparison-tab.styles.ts
-	var styles$28 = i$5`
+	var styles$30 = i$5`
   :host {
     display: contents;
   }
@@ -22189,7 +22229,7 @@
 	var _detail_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _active_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _previewing_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _loading_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _loading_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _editable_accessor_storage = /* @__PURE__ */ new WeakMap();
 	/**
 	* `comparison-tab` renders a single comparison date-window tab in the chart
@@ -22209,7 +22249,7 @@
 			_classPrivateFieldInitSpec(this, _detail_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _active_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _previewing_accessor_storage, false);
-			_classPrivateFieldInitSpec(this, _loading_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _loading_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _editable_accessor_storage, false);
 		}
 		get tabId() {
@@ -22243,10 +22283,10 @@
 			_classPrivateFieldSet2(_previewing_accessor_storage, this, value);
 		}
 		get loading() {
-			return _classPrivateFieldGet2(_loading_accessor_storage, this);
+			return _classPrivateFieldGet2(_loading_accessor_storage$1, this);
 		}
 		set loading(value) {
-			_classPrivateFieldSet2(_loading_accessor_storage, this, value);
+			_classPrivateFieldSet2(_loading_accessor_storage$1, this, value);
 		}
 		get editable() {
 			return _classPrivateFieldGet2(_editable_accessor_storage, this);
@@ -22343,7 +22383,7 @@
     `;
 		}
 	};
-	_defineProperty(ComparisonTab, "styles", styles$28);
+	_defineProperty(ComparisonTab, "styles", styles$30);
 	__decorate([n$1({
 		type: String,
 		attribute: "tab-id"
@@ -22448,7 +22488,7 @@
       </div>
     `;
 		}
-	}, _defineProperty(_ComparisonTabRail, "styles", styles$29), _ComparisonTabRail);
+	}, _defineProperty(_ComparisonTabRail, "styles", styles$31), _ComparisonTabRail);
 	__decorate([n$1({ type: Array })], ComparisonTabRail.prototype, "tabs", null);
 	__decorate([n$1({
 		type: Array,
@@ -22463,7 +22503,7 @@
 	customElements.define("comparison-tab-rail", ComparisonTabRail);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/date-window-dialog.styles.ts
-	var styles$27 = i$5`
+	var styles$29 = i$5`
   :host {
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
     --dp-spacing-sm: var(--spacing, 8px);
@@ -22619,7 +22659,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-timeline.styles.ts
-	var styles$26 = i$5`
+	var styles$28 = i$5`
   :host {
     display: block;
     position: relative;
@@ -22956,7 +22996,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/interactive/range-handle/range-handle.styles.ts
-	var styles$25 = i$5`
+	var styles$27 = i$5`
   :host {
     position: absolute;
     top: 26px;
@@ -23127,7 +23167,7 @@
     `;
 		}
 	};
-	_defineProperty(RangeHandle, "styles", styles$25);
+	_defineProperty(RangeHandle, "styles", styles$27);
 	__decorate([n$1({ type: Number })], RangeHandle.prototype, "position", null);
 	__decorate([n$1({ type: String })], RangeHandle.prototype, "label", null);
 	__decorate([n$1({ type: Boolean })], RangeHandle.prototype, "live", null);
@@ -24038,7 +24078,7 @@
 				}));
 			}
 		}
-	}, _defineProperty(_RangeTimeline, "styles", styles$26), _RangeTimeline);
+	}, _defineProperty(_RangeTimeline, "styles", styles$28), _RangeTimeline);
 	__decorate([n$1({ type: Object })], RangeTimeline.prototype, "startTime", null);
 	__decorate([n$1({ type: Object })], RangeTimeline.prototype, "endTime", null);
 	__decorate([n$1({ type: Object })], RangeTimeline.prototype, "rangeBounds", null);
@@ -24050,13 +24090,13 @@
 	customElements.define("range-timeline", RangeTimeline);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/date-window-dialog.ts
-	var _DateWindowDialog, _open_accessor_storage$1, _heading_accessor_storage, _name_accessor_storage$1, _startValue_accessor_storage, _endValue_accessor_storage, _showDelete_accessor_storage, _showShortcuts_accessor_storage, _submitLabel_accessor_storage, _rangeBounds_accessor_storage$2, _zoomLevel_accessor_storage$2, _dateSnapping_accessor_storage$2;
-	var DateWindowDialog = (_open_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _heading_accessor_storage = /* @__PURE__ */ new WeakMap(), _name_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _startValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _endValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _showDelete_accessor_storage = /* @__PURE__ */ new WeakMap(), _showShortcuts_accessor_storage = /* @__PURE__ */ new WeakMap(), _submitLabel_accessor_storage = /* @__PURE__ */ new WeakMap(), _rangeBounds_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _zoomLevel_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _dateSnapping_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _DateWindowDialog = class DateWindowDialog extends i$2 {
+	var _DateWindowDialog, _open_accessor_storage$2, _heading_accessor_storage, _name_accessor_storage$2, _startValue_accessor_storage, _endValue_accessor_storage, _showDelete_accessor_storage, _showShortcuts_accessor_storage, _submitLabel_accessor_storage, _rangeBounds_accessor_storage$2, _zoomLevel_accessor_storage$2, _dateSnapping_accessor_storage$2;
+	var DateWindowDialog = (_open_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _heading_accessor_storage = /* @__PURE__ */ new WeakMap(), _name_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _startValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _endValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _showDelete_accessor_storage = /* @__PURE__ */ new WeakMap(), _showShortcuts_accessor_storage = /* @__PURE__ */ new WeakMap(), _submitLabel_accessor_storage = /* @__PURE__ */ new WeakMap(), _rangeBounds_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _zoomLevel_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _dateSnapping_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _DateWindowDialog = class DateWindowDialog extends i$2 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _open_accessor_storage$1, false);
+			_classPrivateFieldInitSpec(this, _open_accessor_storage$2, false);
 			_classPrivateFieldInitSpec(this, _heading_accessor_storage, "Add date window");
-			_classPrivateFieldInitSpec(this, _name_accessor_storage$1, "");
+			_classPrivateFieldInitSpec(this, _name_accessor_storage$2, "");
 			_classPrivateFieldInitSpec(this, _startValue_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _endValue_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _showDelete_accessor_storage, false);
@@ -24067,10 +24107,10 @@
 			_classPrivateFieldInitSpec(this, _dateSnapping_accessor_storage$2, "hour");
 		}
 		get open() {
-			return _classPrivateFieldGet2(_open_accessor_storage$1, this);
+			return _classPrivateFieldGet2(_open_accessor_storage$2, this);
 		}
 		set open(value) {
-			_classPrivateFieldSet2(_open_accessor_storage$1, this, value);
+			_classPrivateFieldSet2(_open_accessor_storage$2, this, value);
 		}
 		get heading() {
 			return _classPrivateFieldGet2(_heading_accessor_storage, this);
@@ -24079,10 +24119,10 @@
 			_classPrivateFieldSet2(_heading_accessor_storage, this, value);
 		}
 		get name() {
-			return _classPrivateFieldGet2(_name_accessor_storage$1, this);
+			return _classPrivateFieldGet2(_name_accessor_storage$2, this);
 		}
 		set name(value) {
-			_classPrivateFieldSet2(_name_accessor_storage$1, this, value);
+			_classPrivateFieldSet2(_name_accessor_storage$2, this, value);
 		}
 		get startValue() {
 			return _classPrivateFieldGet2(_startValue_accessor_storage, this);
@@ -24308,7 +24348,7 @@
       </ha-dialog>
     `;
 		}
-	}, _defineProperty(_DateWindowDialog, "styles", styles$27), _DateWindowDialog);
+	}, _defineProperty(_DateWindowDialog, "styles", styles$29), _DateWindowDialog);
 	__decorate([n$1({ type: Boolean })], DateWindowDialog.prototype, "open", null);
 	__decorate([n$1({ type: String })], DateWindowDialog.prototype, "heading", null);
 	__decorate([n$1({ type: String })], DateWindowDialog.prototype, "name", null);
@@ -24343,6 +24383,1519 @@
 	})], DateWindowDialog.prototype, "dateSnapping", null);
 	DateWindowDialog = __decorate([localized()], DateWindowDialog);
 	customElements.define("date-window-dialog", DateWindowDialog);
+	//#endregion
+	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/anomaly-monitor-wizard.styles.ts
+	var styles$26 = i$5`
+  /* ---- Dialog content wrapper ---- */
+
+  .wizard-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-width: min(480px, 90vw);
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 0 2px 4px;
+  }
+
+  /* ---- Step indicator bar ---- */
+
+  .step-bar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
+    margin-bottom: 4px;
+  }
+
+  .step {
+    font-size: 0.82rem;
+    color: var(--secondary-text-color);
+    padding: 3px 8px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  .step.active {
+    color: var(--primary-color);
+    font-weight: 600;
+    background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+  }
+
+  .step-sep {
+    --mdc-icon-size: 14px;
+    color: var(--divider-color, rgba(0, 0, 0, 0.2));
+    flex-shrink: 0;
+  }
+
+  /* ---- Generic sections ---- */
+
+  .wizard-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .wizard-section-label {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: var(--secondary-text-color);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  /* ---- Entity chips ---- */
+
+  .wizard-entity-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .suggestion-chip {
+    cursor: pointer;
+    opacity: 0.75;
+    transition: opacity 120ms ease;
+  }
+
+  .suggestion-chip:hover {
+    opacity: 1;
+  }
+
+  /* ---- Step 2: Entity tabs ---- */
+
+  .entity-tabs {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    flex-wrap: nowrap;
+    scrollbar-width: thin;
+  }
+
+  .entity-tab {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border: 1.5px solid var(--divider-color, rgba(0, 0, 0, 0.12));
+    border-radius: 12px;
+    background: transparent;
+    color: var(--secondary-text-color);
+    font: inherit;
+    font-size: 0.82rem;
+    white-space: nowrap;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  .entity-tab:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+  }
+
+  .entity-tab.active {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+    font-weight: 500;
+  }
+
+  /* ---- Step 2: Analysis sections ---- */
+
+  .wizard-analysis-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 12px;
+    border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.08));
+    border-radius: 8px;
+  }
+
+  .wizard-analysis-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .wizard-analysis-subopts {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-left: 20px;
+    border-left: 2px solid var(--divider-color, rgba(0, 0, 0, 0.08));
+    margin-left: 4px;
+  }
+
+  /* ---- Method list ---- */
+
+  .method-list {
+    display: grid;
+    gap: 8px;
+  }
+
+  .method-item {
+    display: grid;
+    gap: 6px;
+  }
+
+  /* ---- Form elements ---- */
+
+  .field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .field-label {
+    font-size: 0.82rem;
+    color: var(--secondary-text-color);
+    flex-shrink: 0;
+  }
+
+  .option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+
+  /* ---- Step 3 ---- */
+
+  .wizard-inline-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .wizard-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  ha-textfield {
+    width: 100%;
+  }
+
+  /* ---- Notice ---- */
+
+  .wizard-notice {
+    margin: 4px 0 0;
+    font-size: 0.8rem;
+    color: var(--secondary-text-color);
+  }
+
+  /* ---- Error ---- */
+
+  .wizard-error {
+    color: var(--error-color, #f44336);
+    font-size: 0.84rem;
+    padding: 6px 0;
+  }
+
+  /* ---- Footer actions ---- */
+
+  .dialog-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding-top: 8px;
+    border-top: 1px solid var(--divider-color, rgba(0, 0, 0, 0.08));
+    margin-top: 4px;
+  }
+
+  .dialog-spacer {
+    flex: 1;
+  }
+`;
+	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/data/monitors-api.ts
+	/** Return all entity IDs associated with a monitor (works for both types). */
+	function monitorEntityIds(monitor) {
+		if (monitor.type === "combined") return monitor.entity_ids;
+		return [monitor.entity_id];
+	}
+	async function fetchMonitors(hass) {
+		try {
+			return (await hass.connection.sendMessagePromise({ type: `hass_datapoints/monitors/list` })).monitors ?? [];
+		} catch (err) {
+			logger.warn("[hass-datapoints] fetchMonitors failed:", err);
+			return [];
+		}
+	}
+	async function createMonitor(hass, payload) {
+		const result = await hass.connection.sendMessagePromise({
+			type: `${DOMAIN}/monitors/create`,
+			...payload
+		});
+		if (!result.monitor) throw new Error("createMonitor: no monitor in response");
+		return result.monitor;
+	}
+	async function updateMonitor(hass, payload) {
+		const result = await hass.connection.sendMessagePromise({
+			type: `${DOMAIN}/monitors/update`,
+			...payload
+		});
+		if (!result.monitor) throw new Error("updateMonitor: no monitor in response");
+		return result.monitor;
+	}
+	async function deleteMonitor(hass, monitorId) {
+		await hass.connection.sendMessagePromise({
+			type: `${DOMAIN}/monitors/delete`,
+			monitor_id: monitorId
+		});
+	}
+	//#endregion
+	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/anomaly-monitor-wizard.ts
+	var _AnomalyMonitorWizard, _hass_accessor_storage$7, _open_accessor_storage$1, _prefillEntityIds_accessor_storage, _prefillAnalysis_accessor_storage, _editMonitor_accessor_storage$1, _suggestedEntityIds_accessor_storage, _step_accessor_storage, _target_accessor_storage, _entityIds_accessor_storage, _entityConfigs_accessor_storage, _activeEntityId_accessor_storage, _name_accessor_storage$1, _lookBackHours_accessor_storage, _scanIntervalMinutes_accessor_storage, _monitorType_accessor_storage, _overlapMode_accessor_storage, _error_accessor_storage, _saving_accessor_storage;
+	var LOOK_BACK_OPTIONS = [
+		{
+			value: 6,
+			label: "6 hours"
+		},
+		{
+			value: 12,
+			label: "12 hours"
+		},
+		{
+			value: 24,
+			label: "24 hours"
+		},
+		{
+			value: 48,
+			label: "48 hours"
+		},
+		{
+			value: 168,
+			label: "7 days"
+		}
+	];
+	var SCAN_INTERVAL_OPTIONS = [
+		{
+			value: 15,
+			label: "15 minutes"
+		},
+		{
+			value: 30,
+			label: "30 minutes"
+		},
+		{
+			value: 60,
+			label: "1 hour"
+		},
+		{
+			value: 120,
+			label: "2 hours"
+		},
+		{
+			value: 360,
+			label: "6 hours"
+		}
+	];
+	function defaultEntityConfig(prefill) {
+		return {
+			anomaly_methods: prefill?.anomaly_methods?.length ? [...prefill.anomaly_methods] : ["trend_residual"],
+			anomaly_sensitivity: prefill?.anomaly_sensitivity ?? "medium",
+			anomaly_rate_window: prefill?.anomaly_rate_window ?? "1h",
+			anomaly_zscore_window: prefill?.anomaly_zscore_window ?? "24h",
+			anomaly_persistence_window: prefill?.anomaly_persistence_window ?? "1h",
+			anomaly_trend_method: prefill?.anomaly_trend_method || "rolling_average",
+			anomaly_trend_window: prefill?.anomaly_trend_window ?? "24h",
+			sample_interval: prefill?.sample_interval ?? "raw",
+			sample_aggregate: prefill?.sample_aggregate ?? "mean",
+			anomaly_use_sampled_data: prefill?.anomaly_use_sampled_data ?? false
+		};
+	}
+	function configFromMonitor(m) {
+		return {
+			anomaly_methods: [...m.anomaly_methods],
+			anomaly_sensitivity: m.anomaly_sensitivity,
+			anomaly_rate_window: m.anomaly_rate_window,
+			anomaly_zscore_window: m.anomaly_zscore_window,
+			anomaly_persistence_window: m.anomaly_persistence_window,
+			anomaly_trend_method: m.anomaly_trend_method,
+			anomaly_trend_window: m.anomaly_trend_window,
+			sample_interval: m.sample_interval ?? "raw",
+			sample_aggregate: m.sample_aggregate ?? "mean",
+			anomaly_use_sampled_data: m.anomaly_use_sampled_data ?? false
+		};
+	}
+	var AnomalyMonitorWizard = (_hass_accessor_storage$7 = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _prefillEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _prefillAnalysis_accessor_storage = /* @__PURE__ */ new WeakMap(), _editMonitor_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _suggestedEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _step_accessor_storage = /* @__PURE__ */ new WeakMap(), _target_accessor_storage = /* @__PURE__ */ new WeakMap(), _entityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _entityConfigs_accessor_storage = /* @__PURE__ */ new WeakMap(), _activeEntityId_accessor_storage = /* @__PURE__ */ new WeakMap(), _name_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _lookBackHours_accessor_storage = /* @__PURE__ */ new WeakMap(), _scanIntervalMinutes_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitorType_accessor_storage = /* @__PURE__ */ new WeakMap(), _overlapMode_accessor_storage = /* @__PURE__ */ new WeakMap(), _error_accessor_storage = /* @__PURE__ */ new WeakMap(), _saving_accessor_storage = /* @__PURE__ */ new WeakMap(), _AnomalyMonitorWizard = class AnomalyMonitorWizard extends i$2 {
+		constructor(..._args) {
+			super(..._args);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$7, null);
+			_classPrivateFieldInitSpec(this, _open_accessor_storage$1, false);
+			_classPrivateFieldInitSpec(this, _prefillEntityIds_accessor_storage, []);
+			_classPrivateFieldInitSpec(this, _prefillAnalysis_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _editMonitor_accessor_storage$1, null);
+			_classPrivateFieldInitSpec(this, _suggestedEntityIds_accessor_storage, []);
+			_classPrivateFieldInitSpec(this, _step_accessor_storage, 1);
+			_classPrivateFieldInitSpec(this, _target_accessor_storage, {});
+			_classPrivateFieldInitSpec(this, _entityIds_accessor_storage, []);
+			_classPrivateFieldInitSpec(this, _entityConfigs_accessor_storage, /* @__PURE__ */ new Map());
+			_classPrivateFieldInitSpec(this, _activeEntityId_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _name_accessor_storage$1, "");
+			_classPrivateFieldInitSpec(this, _lookBackHours_accessor_storage, 24);
+			_classPrivateFieldInitSpec(this, _scanIntervalMinutes_accessor_storage, 30);
+			_classPrivateFieldInitSpec(this, _monitorType_accessor_storage, "individual");
+			_classPrivateFieldInitSpec(this, _overlapMode_accessor_storage, "all");
+			_classPrivateFieldInitSpec(this, _error_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _saving_accessor_storage, false);
+		}
+		get hass() {
+			return _classPrivateFieldGet2(_hass_accessor_storage$7, this);
+		}
+		set hass(value) {
+			_classPrivateFieldSet2(_hass_accessor_storage$7, this, value);
+		}
+		get open() {
+			return _classPrivateFieldGet2(_open_accessor_storage$1, this);
+		}
+		set open(value) {
+			_classPrivateFieldSet2(_open_accessor_storage$1, this, value);
+		}
+		get prefillEntityIds() {
+			return _classPrivateFieldGet2(_prefillEntityIds_accessor_storage, this);
+		}
+		set prefillEntityIds(value) {
+			_classPrivateFieldSet2(_prefillEntityIds_accessor_storage, this, value);
+		}
+		get prefillAnalysis() {
+			return _classPrivateFieldGet2(_prefillAnalysis_accessor_storage, this);
+		}
+		set prefillAnalysis(value) {
+			_classPrivateFieldSet2(_prefillAnalysis_accessor_storage, this, value);
+		}
+		get editMonitor() {
+			return _classPrivateFieldGet2(_editMonitor_accessor_storage$1, this);
+		}
+		set editMonitor(value) {
+			_classPrivateFieldSet2(_editMonitor_accessor_storage$1, this, value);
+		}
+		get suggestedEntityIds() {
+			return _classPrivateFieldGet2(_suggestedEntityIds_accessor_storage, this);
+		}
+		set suggestedEntityIds(value) {
+			_classPrivateFieldSet2(_suggestedEntityIds_accessor_storage, this, value);
+		}
+		get _step() {
+			return _classPrivateFieldGet2(_step_accessor_storage, this);
+		}
+		set _step(value) {
+			_classPrivateFieldSet2(_step_accessor_storage, this, value);
+		}
+		get _target() {
+			return _classPrivateFieldGet2(_target_accessor_storage, this);
+		}
+		set _target(value) {
+			_classPrivateFieldSet2(_target_accessor_storage, this, value);
+		}
+		get _entityIds() {
+			return _classPrivateFieldGet2(_entityIds_accessor_storage, this);
+		}
+		set _entityIds(value) {
+			_classPrivateFieldSet2(_entityIds_accessor_storage, this, value);
+		}
+		get _entityConfigs() {
+			return _classPrivateFieldGet2(_entityConfigs_accessor_storage, this);
+		}
+		set _entityConfigs(value) {
+			_classPrivateFieldSet2(_entityConfigs_accessor_storage, this, value);
+		}
+		get _activeEntityId() {
+			return _classPrivateFieldGet2(_activeEntityId_accessor_storage, this);
+		}
+		set _activeEntityId(value) {
+			_classPrivateFieldSet2(_activeEntityId_accessor_storage, this, value);
+		}
+		get _name() {
+			return _classPrivateFieldGet2(_name_accessor_storage$1, this);
+		}
+		set _name(value) {
+			_classPrivateFieldSet2(_name_accessor_storage$1, this, value);
+		}
+		get _lookBackHours() {
+			return _classPrivateFieldGet2(_lookBackHours_accessor_storage, this);
+		}
+		set _lookBackHours(value) {
+			_classPrivateFieldSet2(_lookBackHours_accessor_storage, this, value);
+		}
+		get _scanIntervalMinutes() {
+			return _classPrivateFieldGet2(_scanIntervalMinutes_accessor_storage, this);
+		}
+		set _scanIntervalMinutes(value) {
+			_classPrivateFieldSet2(_scanIntervalMinutes_accessor_storage, this, value);
+		}
+		get _monitorType() {
+			return _classPrivateFieldGet2(_monitorType_accessor_storage, this);
+		}
+		set _monitorType(value) {
+			_classPrivateFieldSet2(_monitorType_accessor_storage, this, value);
+		}
+		get _overlapMode() {
+			return _classPrivateFieldGet2(_overlapMode_accessor_storage, this);
+		}
+		set _overlapMode(value) {
+			_classPrivateFieldSet2(_overlapMode_accessor_storage, this, value);
+		}
+		get _error() {
+			return _classPrivateFieldGet2(_error_accessor_storage, this);
+		}
+		set _error(value) {
+			_classPrivateFieldSet2(_error_accessor_storage, this, value);
+		}
+		get _saving() {
+			return _classPrivateFieldGet2(_saving_accessor_storage, this);
+		}
+		set _saving(value) {
+			_classPrivateFieldSet2(_saving_accessor_storage, this, value);
+		}
+		connectedCallback() {
+			super.connectedCallback();
+			this._initFromProps();
+		}
+		updated(changed) {
+			if (changed.has("open") && this.open) this._initFromProps();
+			if (changed.has("editMonitor") && this.editMonitor) this._initFromProps();
+		}
+		_initFromProps() {
+			if (this.editMonitor) {
+				const m = this.editMonitor;
+				const ids = m.type === "combined" ? [...m.entity_ids] : [m.entity_id];
+				const cfg = configFromMonitor(m);
+				const configs = /* @__PURE__ */ new Map();
+				for (const id of ids) configs.set(id, { ...cfg });
+				this._step = 2;
+				this._entityIds = ids;
+				this._entityConfigs = configs;
+				this._activeEntityId = ids[0] ?? "";
+				this._name = m.name;
+				this._lookBackHours = m.look_back_hours;
+				this._scanIntervalMinutes = m.scan_interval_minutes;
+				this._monitorType = m.type;
+				this._overlapMode = m.type === "combined" ? m.overlap_mode ?? "all" : "all";
+			} else {
+				const ids = [...this.prefillEntityIds ?? []];
+				const configs = /* @__PURE__ */ new Map();
+				for (const id of ids) configs.set(id, defaultEntityConfig(this.prefillAnalysis));
+				this._step = 1;
+				this._target = ids.length ? { entity_id: ids } : {};
+				this._entityIds = ids;
+				this._entityConfigs = configs;
+				this._activeEntityId = ids[0] ?? "";
+				this._name = "";
+				this._lookBackHours = 24;
+				this._scanIntervalMinutes = 30;
+				this._monitorType = "individual";
+				this._overlapMode = "all";
+			}
+			this._error = "";
+			this._saving = false;
+		}
+		_getEntityConfig(entityId) {
+			return this._entityConfigs.get(entityId) ?? defaultEntityConfig();
+		}
+		_updateEntityConfig(entityId, key, value) {
+			const current = this._getEntityConfig(entityId);
+			const updated = new Map(this._entityConfigs);
+			updated.set(entityId, {
+				...current,
+				[key]: value
+			});
+			this._entityConfigs = updated;
+		}
+		_toggleMethod(entityId, method, checked) {
+			const cfg = this._getEntityConfig(entityId);
+			const methods = checked ? [...cfg.anomaly_methods, method] : cfg.anomaly_methods.filter((m) => m !== method);
+			this._updateEntityConfig(entityId, "anomaly_methods", methods);
+		}
+		_onTargetChanged(ev) {
+			this._target = normalizeTargetValue(ev.detail?.value ?? {});
+		}
+		_addSuggestedEntity(entityId) {
+			const current = this._target.entity_id ?? [];
+			if (!current.includes(entityId)) this._target = {
+				...this._target,
+				entity_id: [...current, entityId]
+			};
+		}
+		_emit(name, detail = {}) {
+			this.dispatchEvent(new CustomEvent(name, {
+				detail,
+				bubbles: true,
+				composed: true
+			}));
+		}
+		_onClose() {
+			this._emit("dp-monitor-wizard-close");
+		}
+		_onDialogClosed() {
+			this._emit("dp-monitor-wizard-close");
+		}
+		_onBack() {
+			if (this._step === 3) this._step = 2;
+			else if (this._step === 2 && !this.editMonitor) {
+				this._target = this._entityIds.length ? { entity_id: [...this._entityIds] } : {};
+				this._step = 1;
+			}
+			this._error = "";
+		}
+		_onNext() {
+			if (this._step === 1) {
+				const resolved = resolveEntityIdsFromTarget(this.hass, this._target);
+				if (resolved.length === 0) {
+					this._error = msg("Select at least one entity.");
+					return;
+				}
+				const newConfigs = new Map(this._entityConfigs);
+				for (const id of resolved) if (!newConfigs.has(id)) newConfigs.set(id, defaultEntityConfig(this.prefillAnalysis));
+				for (const id of [...newConfigs.keys()]) if (!resolved.includes(id)) newConfigs.delete(id);
+				this._entityIds = resolved;
+				this._entityConfigs = newConfigs;
+				this._activeEntityId = resolved[0] ?? "";
+				this._error = "";
+				this._step = 2;
+			} else if (this._step === 2) {
+				if (this._entityIds.some((id) => this._getEntityConfig(id).anomaly_methods.length === 0)) {
+					this._error = msg("Each entity needs at least one detection method.");
+					return;
+				}
+				if (!this._name) {
+					const firstId = this._entityIds[0] ?? "";
+					const baseName = firstId.split(".").pop() ?? firstId;
+					this._name = this._entityIds.length > 1 ? msg("Anomaly monitor") : `${baseName} ${msg("anomalies")}`;
+				}
+				this._error = "";
+				this._step = 3;
+			}
+		}
+		_configPayload(entityId) {
+			const cfg = this._getEntityConfig(entityId);
+			const base = {
+				anomaly_methods: cfg.anomaly_methods,
+				anomaly_sensitivity: cfg.anomaly_sensitivity,
+				anomaly_rate_window: cfg.anomaly_rate_window,
+				anomaly_zscore_window: cfg.anomaly_zscore_window,
+				anomaly_persistence_window: cfg.anomaly_persistence_window,
+				anomaly_trend_method: cfg.anomaly_trend_method || "rolling_average",
+				anomaly_trend_window: cfg.anomaly_trend_window || "24h"
+			};
+			if (cfg.sample_interval && cfg.sample_interval !== "raw") {
+				base.sample_interval = cfg.sample_interval;
+				base.sample_aggregate = cfg.sample_aggregate;
+				base.anomaly_use_sampled_data = true;
+			}
+			return base;
+		}
+		async _onSubmit() {
+			if (!this.hass) return;
+			if (!this._name.trim()) {
+				this._error = msg("Name is required.");
+				return;
+			}
+			this._saving = true;
+			this._error = "";
+			try {
+				const saved = [];
+				if (this.editMonitor) {
+					const cfgEntityId = this._activeEntityId || this._entityIds[0] || "";
+					const result = await updateMonitor(this.hass, {
+						monitor_id: this.editMonitor.id,
+						name: this._name.trim(),
+						look_back_hours: this._lookBackHours,
+						scan_interval_minutes: this._scanIntervalMinutes,
+						...this.editMonitor.type === "combined" ? { overlap_mode: this._overlapMode } : {},
+						...this._configPayload(cfgEntityId)
+					});
+					saved.push(result);
+				} else if (this._monitorType === "combined" || this._entityIds.length === 1) {
+					const primaryId = this._entityIds[0] ?? "";
+					const payload = {
+						monitor_type: this._entityIds.length > 1 ? "combined" : "individual",
+						name: this._name.trim(),
+						look_back_hours: this._lookBackHours,
+						scan_interval_minutes: this._scanIntervalMinutes,
+						...this._configPayload(primaryId)
+					};
+					if (this._entityIds.length === 1) payload.entity_id = this._entityIds[0];
+					else {
+						payload.entity_ids = [...this._entityIds];
+						payload.overlap_mode = this._overlapMode;
+					}
+					saved.push(await createMonitor(this.hass, payload));
+				} else for (const entityId of this._entityIds) {
+					const baseName = entityId.split(".").pop() ?? entityId;
+					const result = await createMonitor(this.hass, {
+						monitor_type: "individual",
+						name: `${baseName} ${msg("anomalies")}`,
+						entity_id: entityId,
+						look_back_hours: this._lookBackHours,
+						scan_interval_minutes: this._scanIntervalMinutes,
+						...this._configPayload(entityId)
+					});
+					saved.push(result);
+				}
+				this._emit("dp-monitor-wizard-saved", { monitors: saved });
+			} catch (err) {
+				this._error = String(err);
+			} finally {
+				this._saving = false;
+			}
+		}
+		_entityName(entityId) {
+			if (!this.hass) return entityId;
+			return this.hass.states?.[entityId]?.attributes?.friendly_name ?? entityId.split(".").pop() ?? entityId;
+		}
+		_overlapOptions() {
+			const n = this._entityIds.length;
+			const opts = [];
+			opts.push({
+				value: "all",
+				label: n <= 2 ? msg("All anomalies overlap") : `${msg("All")} ${n} ${msg("anomalies overlap")}`
+			});
+			if (n > 2) for (let i = n - 1; i >= 2; i--) opts.push({
+				value: `any_${i}`,
+				label: `${msg("Any")} ${i}+ ${msg("entities overlap")}`
+			});
+			opts.push({
+				value: "any",
+				label: msg("Any anomaly from any series")
+			});
+			return opts;
+		}
+		_saveLabel() {
+			if (this._saving) return msg("Saving…");
+			if (this.editMonitor) return msg("Save changes");
+			const count = this._monitorType === "combined" || this._entityIds.length <= 1 ? 1 : this._entityIds.length;
+			return count === 1 ? msg("Create 1 sensor") : `${msg("Create")} ${count} ${msg("sensors")}`;
+		}
+		_renderStepBar() {
+			if (!!this.editMonitor) return b`
+        <div class="step-bar">
+          <span class=${`step${this._step === 2 ? " active" : ""}`}
+            >1. ${msg("Analysis")}</span
+          >
+          <ha-icon icon="mdi:chevron-right" class="step-sep"></ha-icon>
+          <span class=${`step${this._step === 3 ? " active" : ""}`}
+            >2. ${msg("Schedule")}</span
+          >
+        </div>
+      `;
+			return b`
+      <div class="step-bar">
+        <span class=${`step${this._step === 1 ? " active" : ""}`}
+          >1. ${msg("Entities")}</span
+        >
+        <ha-icon icon="mdi:chevron-right" class="step-sep"></ha-icon>
+        <span class=${`step${this._step === 2 ? " active" : ""}`}
+          >2. ${msg("Analysis")}</span
+        >
+        <ha-icon icon="mdi:chevron-right" class="step-sep"></ha-icon>
+        <span class=${`step${this._step === 3 ? " active" : ""}`}
+          >3. ${msg("Schedule")}</span
+        >
+      </div>
+    `;
+		}
+		_renderStep1() {
+			const selectedEntityIds = this._target.entity_id ?? [];
+			const suggestions = this.suggestedEntityIds.filter((id) => !selectedEntityIds.includes(id));
+			return b`
+      <div class="wizard-section">
+        <ha-target-picker
+          .hass=${this.hass}
+          .value=${this._target}
+          @value-changed=${this._onTargetChanged}
+        ></ha-target-picker>
+      </div>
+
+      ${suggestions.length > 0 ? b`
+            <div class="wizard-section">
+              <p class="wizard-section-label">${msg("Add from current chart")}</p>
+              <div class="wizard-entity-chips">
+                ${suggestions.map((id) => b`
+                    <button
+                      class="suggestion-chip"
+                      type="button"
+                      @click=${() => this._addSuggestedEntity(id)}
+                    >${this._entityName(id)}</button>
+                  `)}
+              </div>
+            </div>
+          ` : A}
+    `;
+		}
+		_renderStep2() {
+			const showTabs = this._entityIds.length > 1;
+			const activeId = this._activeEntityId || this._entityIds[0] || "";
+			return b`
+      ${showTabs ? b`
+            <div class="entity-tabs">
+              ${this._entityIds.map((id) => b`
+                  <button
+                    class=${`entity-tab${id === activeId ? " active" : ""}`}
+                    @click=${() => {
+				this._activeEntityId = id;
+			}}
+                  >
+                    ${this._entityName(id)}
+                  </button>
+                `)}
+            </div>
+          ` : A}
+      ${activeId ? this._renderEntityAnalysis(activeId) : A}
+    `;
+		}
+		_renderEntityAnalysis(entityId) {
+			const cfg = this._getEntityConfig(entityId);
+			const hasSampling = cfg.sample_interval && cfg.sample_interval !== "raw";
+			return b`
+      <!-- Downsampling -->
+      <div class="wizard-analysis-section">
+        <div class="wizard-analysis-section-header">
+          <label class="option">
+            <input
+              type="checkbox"
+              .checked=${hasSampling}
+              @change=${(e) => {
+				const on = e.target.checked;
+				this._updateEntityConfig(entityId, "sample_interval", on ? "5m" : "raw");
+			}}
+            />
+            <span>${msg("Downsampling")}</span>
+          </label>
+        </div>
+        ${hasSampling ? b`
+              <div class="wizard-analysis-subopts">
+                <label class="field">
+                  <span class="field-label">${msg("Interval")}</span>
+                  <inline-select
+                    .value=${cfg.sample_interval}
+                    .options=${SAMPLE_INTERVAL_OPTIONS.filter((o) => o.value !== "raw").map((o) => ({
+				...o,
+				label: msg(o.label)
+			}))}
+                    @dp-select-change=${(e) => this._updateEntityConfig(entityId, "sample_interval", e.detail.value)}
+                  ></inline-select>
+                </label>
+                <label class="field">
+                  <span class="field-label">${msg("Aggregate")}</span>
+                  <inline-select
+                    .value=${cfg.sample_aggregate}
+                    .options=${SAMPLE_AGGREGATE_OPTIONS.map((o) => ({
+				...o,
+				label: msg(o.label)
+			}))}
+                    @dp-select-change=${(e) => this._updateEntityConfig(entityId, "sample_aggregate", e.detail.value)}
+                  ></inline-select>
+                </label>
+                <p class="wizard-notice">${msg("Detection will run on the downsampled data.")}</p>
+              </div>
+            ` : A}
+      </div>
+
+      <!-- Sensitivity -->
+      <div class="wizard-analysis-section">
+        <label class="field">
+          <span class="field-label">${msg("Sensitivity")}</span>
+          <inline-select
+            .value=${cfg.anomaly_sensitivity}
+            .options=${ANALYSIS_ANOMALY_SENSITIVITY_OPTIONS.map((o) => ({
+				...o,
+				label: msg(o.label)
+			}))}
+            @dp-select-change=${(e) => this._updateEntityConfig(entityId, "anomaly_sensitivity", e.detail.value)}
+          ></inline-select>
+        </label>
+      </div>
+
+      <!-- Detection methods -->
+      <div class="wizard-analysis-section">
+        <p class="wizard-section-label">${msg("Detection methods")}</p>
+        <div class="method-list">
+          ${ANALYSIS_ANOMALY_METHOD_OPTIONS.filter((o) => o.value !== "comparison_window").map((opt) => {
+				const isChecked = cfg.anomaly_methods.includes(opt.value);
+				return b`
+              <div class="method-item">
+                <label class="option">
+                  <input
+                    type="checkbox"
+                    .checked=${isChecked}
+                    @change=${(e) => this._toggleMethod(entityId, opt.value, e.target.checked)}
+                  />
+                  <span>${msg(opt.label)}</span>
+                </label>
+                ${isChecked ? this._renderMethodSubopts(entityId, opt.value, cfg) : A}
+              </div>
+            `;
+			})}
+        </div>
+      </div>
+
+      <!-- Overlap (when 2+ methods selected) -->
+      ${cfg.anomaly_methods.length >= 2 ? b`
+            <div class="wizard-analysis-section">
+              <label class="field">
+                <span class="field-label">${msg("When methods overlap")}</span>
+                <inline-select
+                  .value=${cfg.anomaly_sensitivity}
+                  .options=${[{
+				value: "all",
+				label: msg("Show all anomalies")
+			}, {
+				value: "only",
+				label: msg("Overlaps only")
+			}]}
+                  @dp-select-change=${() => {}}
+                ></inline-select>
+              </label>
+            </div>
+          ` : A}
+    `;
+		}
+		_renderMethodSubopts(entityId, method, cfg) {
+			if (method === "trend_residual") {
+				const showWindow = [
+					"rolling_average",
+					"ema",
+					"lowess"
+				].includes(cfg.anomaly_trend_method);
+				return b`
+        <div class="wizard-analysis-subopts">
+          <label class="field">
+            <span class="field-label">${msg("Trend method")}</span>
+            <inline-select
+              .value=${cfg.anomaly_trend_method}
+              .options=${ANALYSIS_TREND_METHOD_OPTIONS.map((o) => ({
+					...o,
+					label: msg(o.label)
+				}))}
+              @dp-select-change=${(e) => this._updateEntityConfig(entityId, "anomaly_trend_method", e.detail.value)}
+            ></inline-select>
+          </label>
+          ${showWindow ? b`
+                <label class="field">
+                  <span class="field-label">${msg("Trend window")}</span>
+                  <inline-select
+                    .value=${cfg.anomaly_trend_window}
+                    .options=${ANALYSIS_TREND_WINDOW_OPTIONS.map((o) => ({
+					...o,
+					label: msg(o.label)
+				}))}
+                    @dp-select-change=${(e) => this._updateEntityConfig(entityId, "anomaly_trend_window", e.detail.value)}
+                  ></inline-select>
+                </label>
+              ` : A}
+        </div>
+      `;
+			}
+			if (method === "rate_of_change") return b`
+        <div class="wizard-analysis-subopts">
+          <label class="field">
+            <span class="field-label">${msg("Rate window")}</span>
+            <inline-select
+              .value=${cfg.anomaly_rate_window}
+              .options=${ANALYSIS_ANOMALY_RATE_WINDOW_OPTIONS.map((o) => ({
+				...o,
+				label: msg(o.label)
+			}))}
+              @dp-select-change=${(e) => this._updateEntityConfig(entityId, "anomaly_rate_window", e.detail.value)}
+            ></inline-select>
+          </label>
+        </div>
+      `;
+			if (method === "rolling_zscore") return b`
+        <div class="wizard-analysis-subopts">
+          <label class="field">
+            <span class="field-label">${msg("Rolling window")}</span>
+            <inline-select
+              .value=${cfg.anomaly_zscore_window}
+              .options=${ANALYSIS_ANOMALY_ZSCORE_WINDOW_OPTIONS.map((o) => ({
+				...o,
+				label: msg(o.label)
+			}))}
+              @dp-select-change=${(e) => this._updateEntityConfig(entityId, "anomaly_zscore_window", e.detail.value)}
+            ></inline-select>
+          </label>
+        </div>
+      `;
+			if (method === "persistence") return b`
+        <div class="wizard-analysis-subopts">
+          <label class="field">
+            <span class="field-label">${msg("Min flat duration")}</span>
+            <inline-select
+              .value=${cfg.anomaly_persistence_window}
+              .options=${ANALYSIS_ANOMALY_PERSISTENCE_WINDOW_OPTIONS.map((o) => ({
+				...o,
+				label: msg(o.label)
+			}))}
+              @dp-select-change=${(e) => this._updateEntityConfig(entityId, "anomaly_persistence_window", e.detail.value)}
+            ></inline-select>
+          </label>
+        </div>
+      `;
+			return A;
+		}
+		_renderStep3() {
+			const isMulti = this._entityIds.length > 1;
+			return b`
+      <div class="wizard-section">
+        <ha-textfield
+          label=${msg("Monitor name")}
+          .value=${this._name}
+          @input=${(e) => {
+				this._name = e.target.value;
+			}}
+        ></ha-textfield>
+      </div>
+
+      <div class="wizard-inline-row">
+        <div class="wizard-field">
+          <label class="field-label">${msg("Look-back period")}</label>
+          <inline-select
+            .value=${String(this._lookBackHours)}
+            .options=${LOOK_BACK_OPTIONS.map((o) => ({
+				value: String(o.value),
+				label: msg(o.label)
+			}))}
+            @dp-select-change=${(e) => {
+				const val = e.detail?.value;
+				if (val) this._lookBackHours = parseInt(val, 10);
+			}}
+          ></inline-select>
+        </div>
+        <div class="wizard-field">
+          <label class="field-label">${msg("Scan interval")}</label>
+          <inline-select
+            .value=${String(this._scanIntervalMinutes)}
+            .options=${SCAN_INTERVAL_OPTIONS.map((o) => ({
+				value: String(o.value),
+				label: msg(o.label)
+			}))}
+            @dp-select-change=${(e) => {
+				const val = e.detail?.value;
+				if (val) this._scanIntervalMinutes = parseInt(val, 10);
+			}}
+          ></inline-select>
+        </div>
+      </div>
+
+      ${isMulti && !this.editMonitor ? b`
+            <div class="wizard-field">
+              <label class="field-label">${msg("Sensor type")}</label>
+              <inline-select
+                .value=${this._monitorType}
+                .options=${[{
+				value: "individual",
+				label: msg("Individual sensors")
+			}, {
+				value: "combined",
+				label: msg("Combined sensor")
+			}]}
+                @dp-select-change=${(e) => {
+				const val = e.detail?.value;
+				this._monitorType = val;
+				if (val === "combined") this._overlapMode = "all";
+			}}
+              ></inline-select>
+            </div>
+          ` : A}
+
+      ${(isMulti || this.editMonitor?.type === "combined") && (this._monitorType === "combined" || this.editMonitor?.type === "combined") ? b`
+            <div class="wizard-field">
+              <label class="field-label">${msg("Overlap mode")}</label>
+              <inline-select
+                .value=${this._overlapMode}
+                .options=${this._overlapOptions()}
+                @dp-select-change=${(e) => {
+				const val = e.detail?.value;
+				if (val) this._overlapMode = val;
+			}}
+              ></inline-select>
+            </div>
+          ` : A}
+    `;
+		}
+		render() {
+			const isEdit = !!this.editMonitor;
+			const canGoBack = this._step > 1 && !isEdit || this._step === 3 && isEdit;
+			return b`
+      <ha-dialog
+        ?open=${this.open}
+        hideActions
+        .scrimClickAction=${"close"}
+        .escapeKeyAction=${"close"}
+        @closed=${this._onDialogClosed}
+      >
+        <span slot="heading">
+          ${isEdit ? msg("Edit monitor") : msg("Create monitor")}
+        </span>
+
+        <div class="wizard-content">
+          ${this._renderStepBar()}
+
+          ${this._step === 1 ? this._renderStep1() : A}
+          ${this._step === 2 ? this._renderStep2() : A}
+          ${this._step === 3 ? this._renderStep3() : A}
+
+          ${this._error ? b`<div class="wizard-error">${this._error}</div>` : A}
+
+          <div class="dialog-actions">
+            <ha-button @click=${this._onClose}>${msg("Cancel")}</ha-button>
+            <span class="dialog-spacer"></span>
+            ${canGoBack ? b`<ha-button @click=${this._onBack}>${msg("Back")}</ha-button>` : A}
+            ${this._step < 3 ? b`<ha-button raised @click=${this._onNext}>${msg("Next")}</ha-button>` : b`<ha-button
+                    raised
+                    .disabled=${this._saving}
+                    @click=${this._onSubmit}
+                  >${this._saveLabel()}</ha-button
+                >`}
+          </div>
+        </div>
+      </ha-dialog>
+    `;
+		}
+	}, _defineProperty(_AnomalyMonitorWizard, "styles", styles$26), _AnomalyMonitorWizard);
+	__decorate([n$1({ type: Object })], AnomalyMonitorWizard.prototype, "hass", null);
+	__decorate([n$1({ type: Boolean })], AnomalyMonitorWizard.prototype, "open", null);
+	__decorate([n$1({ type: Array })], AnomalyMonitorWizard.prototype, "prefillEntityIds", null);
+	__decorate([n$1({ type: Object })], AnomalyMonitorWizard.prototype, "prefillAnalysis", null);
+	__decorate([n$1({ type: Object })], AnomalyMonitorWizard.prototype, "editMonitor", null);
+	__decorate([n$1({ type: Array })], AnomalyMonitorWizard.prototype, "suggestedEntityIds", null);
+	__decorate([r$1()], AnomalyMonitorWizard.prototype, "_step", null);
+	__decorate([r$1()], AnomalyMonitorWizard.prototype, "_target", null);
+	__decorate([r$1()], AnomalyMonitorWizard.prototype, "_entityIds", null);
+	__decorate([r$1()], AnomalyMonitorWizard.prototype, "_entityConfigs", null);
+	__decorate([r$1()], AnomalyMonitorWizard.prototype, "_activeEntityId", null);
+	__decorate([r$1()], AnomalyMonitorWizard.prototype, "_name", null);
+	__decorate([r$1()], AnomalyMonitorWizard.prototype, "_lookBackHours", null);
+	__decorate([r$1()], AnomalyMonitorWizard.prototype, "_scanIntervalMinutes", null);
+	__decorate([r$1()], AnomalyMonitorWizard.prototype, "_monitorType", null);
+	__decorate([r$1()], AnomalyMonitorWizard.prototype, "_overlapMode", null);
+	__decorate([r$1()], AnomalyMonitorWizard.prototype, "_error", null);
+	__decorate([r$1()], AnomalyMonitorWizard.prototype, "_saving", null);
+	AnomalyMonitorWizard = __decorate([localized()], AnomalyMonitorWizard);
+	customElements.define("anomaly-monitor-wizard", AnomalyMonitorWizard);
+	//#endregion
+	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitors-panel/anomaly-monitors-panel.styles.ts
+	var styles$25 = i$5`
+  :host {
+    --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
+    --dp-spacing-sm: var(--spacing, 8px);
+    --dp-spacing-md: calc(var(--spacing, 8px) * 1.5);
+    --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
+    display: block;
+  }
+
+  .monitors-panel {
+    padding: var(--dp-spacing-sm);
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  .monitors-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--dp-spacing-md);
+  }
+
+  .monitors-header h2 {
+    margin: 0;
+    font-size: 1.1em;
+    font-weight: 500;
+  }
+
+  .monitors-empty {
+    text-align: center;
+    color: var(--secondary-text-color);
+    padding: var(--dp-spacing-lg);
+  }
+
+  .monitors-grid {
+    display: grid;
+    gap: var(--dp-spacing-sm);
+  }
+
+  .monitor-card {
+    background: var(--card-background-color, var(--secondary-background-color));
+    border-radius: 8px;
+    padding: var(--dp-spacing-sm) var(--dp-spacing-md);
+    box-shadow: var(--ha-card-box-shadow, none);
+    display: grid;
+    gap: var(--dp-spacing-xs);
+  }
+
+  .monitor-card-header {
+    display: flex;
+    align-items: center;
+    gap: var(--dp-spacing-sm);
+    flex-wrap: wrap;
+  }
+
+  .monitor-name {
+    font-weight: 500;
+    flex: 1;
+  }
+
+  .monitor-type-badge {
+    font-size: 0.8em;
+    padding: 2px 6px;
+    border-radius: 10px;
+    background: var(--divider-color);
+    color: var(--secondary-text-color);
+    white-space: nowrap;
+  }
+
+  .monitor-status-badge {
+    font-size: 0.8em;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .monitor-status-badge.anomaly {
+    background: var(--error-color, #db4437);
+    color: white;
+  }
+
+  .monitor-status-badge.normal {
+    background: var(--success-color, #43a047);
+    color: white;
+  }
+
+  .monitor-status-badge.disabled {
+    background: var(--divider-color);
+    color: var(--secondary-text-color);
+  }
+
+  .monitor-entities {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .monitor-entity-chip {
+    font-size: 0.8em;
+    padding: 1px 6px;
+    background: var(--divider-color);
+    border-radius: 10px;
+    color: var(--secondary-text-color);
+  }
+
+  .monitor-stats {
+    display: flex;
+    gap: var(--dp-spacing-md);
+    align-items: center;
+    flex-wrap: wrap;
+    color: var(--secondary-text-color);
+    font-size: 0.85em;
+  }
+
+  .monitor-sparkline {
+    flex: 0 0 auto;
+  }
+
+  .monitor-actions {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: var(--dp-spacing-xs);
+    border-top: 1px solid var(--divider-color);
+    padding-top: var(--dp-spacing-xs);
+  }
+
+  .monitor-actions-spacer {
+    flex: 1;
+  }
+
+  a.device-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.85em;
+    color: var(--primary-color);
+    text-decoration: none;
+    padding: 0 4px;
+  }
+
+  a.device-link:hover {
+    text-decoration: underline;
+  }
+
+  a.device-link ha-icon {
+    --mdc-icon-size: 16px;
+  }
+
+  /* ---- "New monitor" button — matches save-monitor-btn style ---- */
+
+  .new-monitor-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px;
+    border: 0;
+    border-radius: 6px;
+    font: inherit;
+    font-size: 0.82rem;
+    color: var(--primary-color, #3b82f6);
+    background: color-mix(in srgb, var(--primary-color, #3b82f6) 14%, transparent);
+    cursor: pointer;
+    --mdc-icon-size: 16px;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: background 120ms ease;
+  }
+
+  .new-monitor-btn:hover,
+  .new-monitor-btn:focus-visible {
+    background: color-mix(in srgb, var(--primary-color, #3b82f6) 22%, transparent);
+    outline: none;
+  }
+`;
+	//#endregion
+	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitors-panel/anomaly-monitors-panel.ts
+	var _AnomalyMonitorsPanel, _hass_accessor_storage$6, _monitors_accessor_storage, _loading_accessor_storage, _editMonitor_accessor_storage, _wizardOpen_accessor_storage;
+	var AnomalyMonitorsPanel = (_hass_accessor_storage$6 = /* @__PURE__ */ new WeakMap(), _monitors_accessor_storage = /* @__PURE__ */ new WeakMap(), _loading_accessor_storage = /* @__PURE__ */ new WeakMap(), _editMonitor_accessor_storage = /* @__PURE__ */ new WeakMap(), _wizardOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _AnomalyMonitorsPanel = class AnomalyMonitorsPanel extends i$2 {
+		constructor(..._args) {
+			super(..._args);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$6, null);
+			_classPrivateFieldInitSpec(this, _monitors_accessor_storage, []);
+			_classPrivateFieldInitSpec(this, _loading_accessor_storage, true);
+			_classPrivateFieldInitSpec(this, _editMonitor_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _wizardOpen_accessor_storage, false);
+			_defineProperty(this, "_pollInterval", null);
+		}
+		get hass() {
+			return _classPrivateFieldGet2(_hass_accessor_storage$6, this);
+		}
+		set hass(value) {
+			_classPrivateFieldSet2(_hass_accessor_storage$6, this, value);
+		}
+		get _monitors() {
+			return _classPrivateFieldGet2(_monitors_accessor_storage, this);
+		}
+		set _monitors(value) {
+			_classPrivateFieldSet2(_monitors_accessor_storage, this, value);
+		}
+		get _loading() {
+			return _classPrivateFieldGet2(_loading_accessor_storage, this);
+		}
+		set _loading(value) {
+			_classPrivateFieldSet2(_loading_accessor_storage, this, value);
+		}
+		get _editMonitor() {
+			return _classPrivateFieldGet2(_editMonitor_accessor_storage, this);
+		}
+		set _editMonitor(value) {
+			_classPrivateFieldSet2(_editMonitor_accessor_storage, this, value);
+		}
+		get _wizardOpen() {
+			return _classPrivateFieldGet2(_wizardOpen_accessor_storage, this);
+		}
+		set _wizardOpen(value) {
+			_classPrivateFieldSet2(_wizardOpen_accessor_storage, this, value);
+		}
+		connectedCallback() {
+			super.connectedCallback();
+			this._load();
+			this._pollInterval = setInterval(() => this._load(), 3e4);
+		}
+		disconnectedCallback() {
+			super.disconnectedCallback();
+			if (this._pollInterval !== null) {
+				clearInterval(this._pollInterval);
+				this._pollInterval = null;
+			}
+		}
+		async _load() {
+			if (!this.hass) return;
+			try {
+				this._monitors = await fetchMonitors(this.hass);
+			} catch {} finally {
+				this._loading = false;
+			}
+		}
+		_emit(name, detail = {}) {
+			this.dispatchEvent(new CustomEvent(name, {
+				detail,
+				bubbles: true,
+				composed: true
+			}));
+		}
+		_onNewMonitor() {
+			this._emit("dp-monitors-panel-new");
+		}
+		_onClose() {
+			this._emit("dp-monitors-panel-close");
+		}
+		_onEdit(monitor) {
+			this._editMonitor = monitor;
+			this._wizardOpen = true;
+		}
+		_onWizardClose() {
+			this._wizardOpen = false;
+			this._editMonitor = null;
+		}
+		async _onWizardSaved() {
+			this._wizardOpen = false;
+			this._editMonitor = null;
+			await this._load();
+		}
+		async _onToggleEnabled(monitor) {
+			if (!this.hass) return;
+			await updateMonitor(this.hass, {
+				monitor_id: monitor.id,
+				enabled: !monitor.enabled
+			});
+			await this._load();
+		}
+		async _onDelete(monitor) {
+			if (!this.hass) return;
+			if (!window.confirm(msg(`Delete monitor "${monitor.name}"? This cannot be undone.`))) return;
+			await deleteMonitor(this.hass, monitor.id);
+			await this._load();
+		}
+		_renderSparkline(history) {
+			const W = 120;
+			const H = 28;
+			const PAD = 2;
+			const counts = history.map((e) => e.count);
+			if (counts.length < 2) return b`<svg width=${W} height=${H}></svg>`;
+			const max = Math.max(...counts, 1);
+			return b`<svg
+      class="monitor-sparkline"
+      width=${W}
+      height=${H}
+      aria-hidden="true"
+    >
+      <polyline
+        points=${counts.map((c, i) => {
+				const x = PAD + i / Math.max(counts.length - 1, 1) * (W - PAD * 2);
+				const y = H - PAD - c / max * (H - PAD * 2);
+				return `${x.toFixed(1)},${y.toFixed(1)}`;
+			}).join(" ")}
+        fill="none"
+        stroke="var(--primary-color)"
+        stroke-width="1.5"
+      />
+    </svg>`;
+		}
+		_renderMonitorCard(monitor) {
+			const entityIds = monitorEntityIds(monitor);
+			const clusterCount = monitor.last_cluster_count ?? 0;
+			const isDisabled = !monitor.enabled;
+			const hasAnomaly = !isDisabled && clusterCount > 0;
+			const statusLabel = isDisabled ? msg("Disabled") : hasAnomaly ? msg("Anomaly detected") : msg("Normal");
+			const statusClass = isDisabled ? "disabled" : hasAnomaly ? "anomaly" : "normal";
+			const history = monitor.scan_history ?? [];
+			let consecutive = 0;
+			for (let i = history.length - 1; i >= 0; i--) if ((history[i].count ?? 0) > 0) consecutive++;
+			else break;
+			return b`
+      <div class="monitor-card">
+        <div class="monitor-card-header">
+          <span class="monitor-name">${monitor.name}</span>
+          <span class="monitor-type-badge">
+            ${monitor.type === "combined" ? "⬡ combined" : "● individual"}
+          </span>
+          <span class="monitor-status-badge ${statusClass}">${statusLabel}</span>
+        </div>
+
+        <div class="monitor-entities">
+          ${entityIds.map((eid) => b`
+              <entity-chip
+                .hass=${this.hass}
+                type="entity"
+                itemId=${eid}
+              ></entity-chip>
+            `)}
+        </div>
+
+        <div class="monitor-stats">
+          ${this._renderSparkline(history)}
+          <span>
+            ${clusterCount} ${msg("cluster(s)")}
+            ${consecutive > 0 ? b`· ${msg(`persistent for ${consecutive} scans`)}` : A}
+          </span>
+          ${monitor.last_scan_at ? b`<span>${msg("Last scan:")} ${new Date(monitor.last_scan_at).toLocaleString()}</span>` : A}
+        </div>
+
+        <div class="monitor-actions">
+          <ha-button @click=${() => this._onEdit(monitor)}>${msg("Edit")}</ha-button>
+          <ha-button
+            @click=${() => this._onToggleEnabled(monitor)}
+          >
+            ${monitor.enabled ? msg("Disable") : msg("Enable")}
+          </ha-button>
+          ${monitor.device_id ? b`<a
+                class="device-link"
+                href=${`/config/devices/device/${monitor.device_id}`}
+                title=${msg("View device")}
+              >
+                <ha-icon icon="mdi:chip"></ha-icon>
+                ${msg("Device")}
+              </a>` : A}
+          <div class="monitor-actions-spacer"></div>
+          <ha-button
+            class="delete-btn"
+            @click=${() => this._onDelete(monitor)}
+          >${msg("Delete")}</ha-button>
+        </div>
+      </div>
+    `;
+		}
+		render() {
+			return b`
+      <div class="monitors-panel">
+        <div class="monitors-header">
+          <ha-icon-button
+            label=${msg("Back")}
+            @click=${this._onClose}
+          >
+            <ha-icon icon="mdi:arrow-left"></ha-icon>
+          </ha-icon-button>
+          <h2>${msg("Anomaly monitors")}</h2>
+          <button class="new-monitor-btn" @click=${this._onNewMonitor}>
+            <ha-icon icon="mdi:bell-plus-outline"></ha-icon>
+            ${msg("New monitor")}
+          </button>
+        </div>
+
+        ${this._loading ? b`<div class="monitors-empty">${msg("Loading…")}</div>` : this._monitors.length === 0 ? b`<div class="monitors-empty">
+              ${msg("No monitors configured. Click \"New monitor\" to get started.")}
+            </div>` : b`<div class="monitors-grid">
+              ${this._monitors.map((m) => this._renderMonitorCard(m))}
+            </div>`}
+      </div>
+
+      <anomaly-monitor-wizard
+        .hass=${this.hass}
+        .open=${this._wizardOpen}
+        .editMonitor=${this._editMonitor}
+        @dp-monitor-wizard-close=${this._onWizardClose}
+        @dp-monitor-wizard-saved=${this._onWizardSaved}
+      ></anomaly-monitor-wizard>
+    `;
+		}
+	}, _defineProperty(_AnomalyMonitorsPanel, "styles", styles$25), _AnomalyMonitorsPanel);
+	__decorate([n$1({ type: Object })], AnomalyMonitorsPanel.prototype, "hass", null);
+	__decorate([r$1()], AnomalyMonitorsPanel.prototype, "_monitors", null);
+	__decorate([r$1()], AnomalyMonitorsPanel.prototype, "_loading", null);
+	__decorate([r$1()], AnomalyMonitorsPanel.prototype, "_editMonitor", null);
+	__decorate([r$1()], AnomalyMonitorsPanel.prototype, "_wizardOpen", null);
+	AnomalyMonitorsPanel = __decorate([localized()], AnomalyMonitorsPanel);
+	customElements.define("anomaly-monitors-panel", AnomalyMonitorsPanel);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/interactive/resizable-panes/resizable-panes.styles.ts
 	var styles$24 = i$5`
@@ -25411,6 +26964,10 @@
 			this._togglePageMenu(false);
 			this._emit("dp-shell-menu-clear");
 		}
+		_onMenuMonitors() {
+			this._togglePageMenu(false);
+			this._emit("dp-shell-menu-monitors");
+		}
 		_onSidebarToggle() {
 			this._emit("dp-shell-sidebar-toggle");
 		}
@@ -25447,6 +27004,11 @@
               .open=${this._pageMenuOpen}
               @dp-menu-close=${this._onPageMenuClose}
             >
+              <page-menu-item
+                icon="mdi:bell-alert-outline"
+                label=${msg("Anomaly monitors")}
+                @dp-menu-action=${this._onMenuMonitors}
+              ></page-menu-item>
               <page-menu-item
                 icon="mdi:file-excel-outline"
                 label=${msg("Download spreadsheet")}
@@ -30583,6 +32145,8 @@
 			this._localPageStateDirty = false;
 			this._pendingPreferencesSaveTimer = null;
 			this._orphanRecoveryTimer = null;
+			this._showMonitorsPanel = false;
+			this._monitorWizardComp = null;
 			this._recordsSearchQuery = "";
 			this._hiddenEventIds = [];
 			this._hoveredEventIds = [];
@@ -30849,6 +32413,13 @@
 			this.addEventListener("hass-datapoints-comparison-loading", this._onComparisonLoading);
 			this.addEventListener("hass-datapoints-analysis-computing", this._onAnalysisComputing);
 			this.addEventListener("hass-datapoints-analysis-method-result", this._onAnalysisMethodResult);
+			this.addEventListener("dp-anomaly-save-monitor", (ev) => {
+				const detail = ev.detail ?? {};
+				const entityId = detail.entityId ?? "";
+				const analysis = detail.analysis ?? null;
+				const suggestedIds = (this._seriesRows ?? []).filter((r) => r.analysis?.show_anomalies === true && Array.isArray(r.analysis.anomaly_methods) && r.analysis.anomaly_methods.length > 0 && !r.entity_id.startsWith("binary_sensor.") && r.entity_id !== entityId).map((r) => r.entity_id);
+				this._openMonitorWizard(entityId ? [entityId] : [], analysis, null, suggestedIds);
+			});
 			if (this._rendered && !this._shellBuilt) {
 				logger$1.warn("[dp-lifecycle] connectedCallback: rendered but no shell — building loading shell");
 				this._buildLoadingShell();
@@ -31124,6 +32695,10 @@
 			shell.addEventListener("dp-shell-menu-save", () => this._savePageState());
 			shell.addEventListener("dp-shell-menu-restore", () => this._restorePageState());
 			shell.addEventListener("dp-shell-menu-clear", () => this._clearSavedPageState());
+			shell.addEventListener("dp-shell-menu-monitors", () => {
+				this._showMonitorsPanel = true;
+				this._renderContent();
+			});
 			shell.addEventListener("dp-shell-sidebar-toggle", () => this._toggleSidebarCollapsed());
 			shell.addEventListener("dp-shell-scrim-click", () => {
 				if (!this._sidebarCollapsed) this._toggleSidebarCollapsed();
@@ -31949,6 +33524,7 @@
 			this._mountRangeToolbarControl();
 			this._mountSidebarOptionsControl();
 			this._mountDateWindowDialogControl();
+			this._mountMonitorWizard();
 			this._syncControls();
 		}
 		_mountHistoryTargetsControl() {
@@ -32141,6 +33717,33 @@
 				this._sidebarOptionsEl.appendChild(sidebarComp);
 				this._sidebarOptionsComp = sidebarComp;
 			}
+		}
+		_mountMonitorWizard() {
+			if (!this.shadowRoot || this._monitorWizardComp) return;
+			const wizard = document.createElement("anomaly-monitor-wizard");
+			wizard.hass = this._hass;
+			wizard.open = false;
+			wizard.suggestedEntityIds = [];
+			wizard.addEventListener("dp-monitor-wizard-close", () => {
+				wizard.open = false;
+			});
+			wizard.addEventListener("dp-monitor-wizard-saved", () => {
+				wizard.open = false;
+			});
+			this.shadowRoot.appendChild(wizard);
+			this._monitorWizardComp = wizard;
+		}
+		_openMonitorWizard(entityIds, analysis, editMonitor = null, suggestedEntityIds = []) {
+			if (!this.shadowRoot) return;
+			if (!this._monitorWizardComp) this._mountMonitorWizard();
+			const wizard = this._monitorWizardComp;
+			if (!wizard) return;
+			wizard.hass = this._hass;
+			wizard.editMonitor = editMonitor;
+			wizard.prefillEntityIds = entityIds;
+			wizard.prefillAnalysis = analysis;
+			wizard.suggestedEntityIds = suggestedEntityIds;
+			wizard.open = true;
 		}
 		_mountDateWindowDialogControl() {
 			if (this.shadowRoot) {
@@ -33006,6 +34609,25 @@
 				});
 				return;
 			}
+			if (this._showMonitorsPanel) {
+				this._contentKey = "__monitors__";
+				this._chartEl = null;
+				this._listEl = null;
+				content.innerHTML = "";
+				const panel = document.createElement("anomaly-monitors-panel");
+				panel.hass = this._hass;
+				panel.addEventListener("dp-monitors-panel-close", () => {
+					this._showMonitorsPanel = false;
+					this._contentKey = "";
+					this._renderContent();
+				});
+				panel.addEventListener("dp-monitors-panel-new", () => {
+					this._openMonitorWizard([], null);
+				});
+				content.appendChild(panel);
+				return;
+			}
+			if (this._contentKey === "__monitors__") this._contentKey = "";
 			if (!this._entities.length) {
 				if (this._contentKey === "__empty__") return;
 				logger$1.warn("[dp-lifecycle] _renderContent: rendering empty state (no entities)");
@@ -37018,7 +38640,7 @@
 	].forEach((card) => {
 		if (!registeredTypes.has(card.type)) window.customCards?.push(card);
 	});
-	console.groupCollapsed(`%c hass-datapoints %c v0.5.1 loaded%c %c DEV#6600 `, "color:#fff;background:#03a9f4;font-weight:bold;padding:2px 6px;border-radius:3px 0 0 3px", "color:#03a9f4;background:#fff;font-weight:bold;padding:2px 6px;border:1px solid #03a9f4;border-radius:0 3px 3px 0", ...["background:transparent;", "color:#fff;background:#f57c00;font-weight:bold;padding:2px 6px;border-radius:3px"]);
+	console.groupCollapsed(`%c hass-datapoints %c v0.5.1 loaded `, "color:#fff;background:#03a9f4;font-weight:bold;padding:2px 6px;border-radius:3px 0 0 3px", "color:#03a9f4;background:#fff;font-weight:bold;padding:2px 6px;border:1px solid #03a9f4;border-radius:0 3px 3px 0", ...[]);
 	console.log("Enable debug logging by setting %cwindow.__HASS_DATAPOINTS_DEV__ = true", "color:#333;background:#eee;border:1px solid #777;padding:2px 6px;border-radius:5px; font-family: Courier");
 	console.groupEnd();
 	//#endregion

@@ -19,7 +19,8 @@ class DescribeAsyncLoad:
     ):
         self.store._store.async_load.return_value = None
         await self.store.async_load()
-        assert self.store._data == {"events": []}
+        assert self.store._data["events"] == []
+        assert "monitors" in self.store._data
 
     async def test_GIVEN_existing_persisted_events_WHEN_loaded_THEN_data_contains_those_events(
         self,
