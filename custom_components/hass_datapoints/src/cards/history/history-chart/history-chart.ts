@@ -17,6 +17,7 @@ import {
   getAxisValueExtent,
   getHistoryStatesForEntity,
   mergeNumericHistoryWithStatistics,
+  normalizeBinaryHistory,
   normalizeNumericHistory,
   normalizeStatisticsHistory,
   SAMPLE_INTERVAL_MS,
@@ -43,7 +44,7 @@ import {
   showLineChartCrosshair,
   showLineChartTooltip,
 } from "@/lib/chart/chart-interaction";
-import { entityName } from "@/lib/ha/entity-name";
+import { disambiguateEntityNames, entityName } from "@/lib/ha/entity-name";
 import {
   type BackendAnomalyConfig,
   fetchAnomaliesFromBackend,
@@ -680,7 +681,10 @@ export class HistoryChart extends HTMLElement {
       entityId,
       entityIds
     );
-    const rawHistory = normalizeNumericHistory(entityId, historyStates);
+    const isBinary = entityId.split(".")[0] === "binary_sensor";
+    const rawHistory = isBinary
+      ? normalizeBinaryHistory(entityId, historyStates)
+      : normalizeNumericHistory(entityId, historyStates);
     const statsHistory = normalizeStatisticsHistory(entityId, statsResult);
     return mergeNumericHistoryWithStatistics(rawHistory, statsHistory);
   }

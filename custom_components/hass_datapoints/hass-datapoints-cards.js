@@ -7347,6 +7347,21 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/data/history-normalization.ts
 	/**
+	* Normalises a raw binary sensor state list from the HA history API into a
+	* sorted array of `{ lu, s }` records.
+	*/
+	function normalizeBinaryHistory(_entityId, histStates) {
+		return (Array.isArray(histStates) ? histStates : []).map((state) => {
+			const rawTimestamp = state?.lu;
+			const timeSec = typeof rawTimestamp === "number" ? rawTimestamp : new Date(state?.last_changed || state?.lu || 0).getTime() / 1e3;
+			if (!Number.isFinite(timeSec)) return null;
+			return {
+				lu: Math.round(timeSec * 1e3) / 1e3,
+				s: String(state?.s ?? state?.state ?? "")
+			};
+		}).filter((entry) => entry !== null).sort((a, b) => a.lu - b.lu);
+	}
+	/**
 	* Normalises a raw numeric sensor state list from the HA history API into an
 	* array of `{ lu, s }` records (non-finite values filtered out).
 	*/
@@ -8616,6 +8631,31 @@
 		if (!hass || !areaId) return "mdi:floor-plan";
 		const entityId = firstRelatedEntityId(hass, (entry) => (entry.area_id || entry.areaId) === areaId);
 		return entityId ? entityIcon(hass, entityId) : "mdi:floor-plan";
+	}
+	/**
+	* Returns a Map of entityId → display label. When multiple entity IDs share
+	* the same friendly name, duplicates are prefixed with the best available
+	* qualifier in order: area name → device name → last segment of entity_id.
+	*/
+	function disambiguateEntityNames(hass, entityIds) {
+		const labels = /* @__PURE__ */ new Map();
+		if (!entityIds.length) return labels;
+		for (const entityId of entityIds) labels.set(entityId, entityName(hass, entityId) || entityId);
+		const nameCounts = /* @__PURE__ */ new Map();
+		for (const label of labels.values()) nameCounts.set(label, (nameCounts.get(label) ?? 0) + 1);
+		for (const entityId of entityIds) {
+			const name = labels.get(entityId);
+			if ((nameCounts.get(name) ?? 0) <= 1) continue;
+			const entry = hass?.entities?.[entityId];
+			const areaId = entry?.area_id || entry?.areaId;
+			const deviceId = entry?.device_id || entry?.deviceId;
+			let qualifier;
+			if (areaId) qualifier = areaName(hass, areaId);
+			else if (deviceId) qualifier = deviceName(hass, deviceId);
+			else qualifier = entityId.split(".")[1] ?? entityId;
+			if (qualifier && qualifier !== name) labels.set(entityId, `${qualifier} · ${name}`);
+		}
+		return labels;
 	}
 	function labelName(hass, labelId) {
 		if (!hass || !labelId) return labelId || "";
@@ -11782,7 +11822,8 @@
 		}
 		/** Build normalised state list for an entity from histResult/statsResult. Overridden by parent. */
 		_buildEntityStateList(entityId, histResult, statsResult) {
-			return mergeNumericHistoryWithStatistics(normalizeNumericHistory(entityId, getHistoryStatesForEntity$1(histResult, entityId, this._seriesSettings?.map((seriesSetting) => seriesSetting.entity_id).filter(Boolean) ?? [])), normalizeStatisticsHistory(entityId, statsResult));
+			const historyStates = getHistoryStatesForEntity$1(histResult, entityId, this._seriesSettings?.map((seriesSetting) => seriesSetting.entity_id).filter(Boolean) ?? []);
+			return mergeNumericHistoryWithStatistics(entityId.split(".")[0] === "binary_sensor" ? normalizeBinaryHistory(entityId, historyStates) : normalizeNumericHistory(entityId, historyStates), normalizeStatisticsHistory(entityId, statsResult));
 		}
 		/** Build binary state spans from a state list. */
 		_buildBinaryStateSpans(stateList, t0, t1) {
@@ -12109,7 +12150,8 @@
 			const content = buildAnomalyTooltipContent(regions);
 			const entityId = regions[0]?.relatedEntityId ?? null;
 			return {
-				message: content ? `${content.description}\n${content.alert}` : "",
+				annotation: content ? `${content.description}\n${content.alert}` : "",
+				message: content ? content.title : "",
 				icon: "mdi:alert-circle",
 				linkedTarget: entityId ? { entity_id: [entityId] } : null
 			};
@@ -12645,6 +12687,7 @@
 			const autoAdjustHoveredComparisonAxis = comparisonPreviewActive && !!hoveredComparisonWindowId && !this._zoomRange && !this._chartZoomDragging;
 			const hoveringDifferentComparison = !!hoveredComparisonWindowId && !!selectedComparisonWindowId && hoveredComparisonWindowId !== selectedComparisonWindowId;
 			const hasSelectedComparisonWindow = !!selectedComparisonWindowId;
+			const entityLabelMap = disambiguateEntityNames(this._hass, seriesSettings.map((s) => s.entity_id));
 			seriesSettings.forEach((seriesSetting, i) => {
 				const entityId = seriesSetting.entity_id;
 				if (entityId.split(".")[0] === "binary_sensor") {
@@ -12652,7 +12695,7 @@
 					const spans = this._buildBinaryStateSpans(stateList, t0, t1);
 					if (spans.length) binaryBackgrounds.push({
 						entityId,
-						label: entityName(this._hass, entityId) || entityId,
+						label: entityLabelMap.get(entityId) || entityId,
 						color: seriesSetting.color || COLORS[i % COLORS.length],
 						onLabel: this._binaryOnLabel(entityId),
 						offLabel: this._binaryOffLabel(entityId),
@@ -12686,7 +12729,7 @@
 				if (pts.length) series.push({
 					entityId,
 					legendEntityId: entityId,
-					label: entityName(this._hass, entityId) || entityId,
+					label: entityLabelMap.get(entityId) || entityId,
 					unit,
 					pts,
 					color: seriesSetting.color || COLORS[i % COLORS.length],
@@ -12815,7 +12858,7 @@
 				if (!points.length) continue;
 				selectedComparisonSeriesMap.set(entityId, {
 					entityId,
-					label: entityName(this._hass, entityId) || entityId,
+					label: entityLabelMap.get(entityId) || entityId,
 					unit,
 					color: seriesSetting.color || COLORS[index % COLORS.length],
 					pts: points
@@ -12930,6 +12973,7 @@
 				chartStage.style.height = `${availableHeight}px`;
 			}
 			if (scrollViewport) scrollViewport.style.overflowY = "";
+			wrap.style.height = "";
 			const { w, h } = setupCanvas(canvas, chartStage || wrap, availableHeight, canvasWidth);
 			const renderer = new ChartRenderer(canvas, w, h);
 			renderer.labelColor = resolveChartLabelColor(this);
@@ -13836,14 +13880,20 @@
 		async _drawSplitChart({ visibleSeries, binaryBackgrounds, events, renderT0, renderT1, canvasWidth, availableHeight, chartStage, canvas, wrap, options, drawableComparisonResults, selectedComparisonWindowId, hoveredComparisonWindowId, comparisonPreviewActive, hoveringDifferentComparison, analysisResult, analysisMap, hasSelectedComparisonWindow }) {
 			if (canvas) canvas.style.display = "none";
 			const N = visibleSeries.length;
-			const rowHeight = Math.max(140, Math.floor(availableHeight / N));
+			const rowHeight = Math.max(200, Math.floor(availableHeight / N));
 			const totalHeight = rowHeight * N;
 			if (chartStage) {
 				chartStage.style.width = `${canvasWidth}px`;
 				chartStage.style.height = `${totalHeight}px`;
 			}
 			const splitScrollViewport = this.querySelector("#chart-scroll-viewport");
-			if (splitScrollViewport) splitScrollViewport.style.overflowY = totalHeight > availableHeight ? "auto" : "hidden";
+			if (totalHeight > availableHeight) {
+				wrap.style.height = `${totalHeight}px`;
+				if (splitScrollViewport) splitScrollViewport.style.overflowY = "hidden";
+			} else {
+				wrap.style.height = "";
+				if (splitScrollViewport) splitScrollViewport.style.overflowY = "hidden";
+			}
 			this._setChartLoading(!!options.loading);
 			this._setChartMessage("");
 			const iconOverlay = this.querySelector("#chart-icon-overlay");
@@ -20689,6 +20739,7 @@
                 class="history-target-color"
                 .value=${this.color}
                 aria-label="Line color for ${this._entityId}"
+                @input=${this._onColorChange}
                 @change=${this._onColorChange}
               />
               <span class="history-target-color-icon" aria-hidden="true">
@@ -26030,7 +26081,8 @@
     flex-direction: column;
     min-width: 0;
     min-height: 0;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: var(--dp-panes-first-overflow-y, hidden);
   }
 
   .pane-second {
@@ -26547,6 +26599,7 @@
   .content > ::slotted(*[is-panes]) {
     flex: 1 1 0;
     min-height: 0;
+    --dp-panes-first-overflow-y: auto;
   }
 
   .control-date {
