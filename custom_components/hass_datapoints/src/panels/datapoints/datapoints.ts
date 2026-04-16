@@ -37,6 +37,13 @@ import {
   updateSeriesRowVisibility,
 } from "@/lib/domain/series-rows";
 import {
+  applyDateWindowShortcut,
+  getActiveComparisonWindow,
+  getComparisonPreviewOverlay,
+  getPreloadComparisonWindows,
+  getPreviewComparisonWindows,
+} from "@/lib/domain/comparison-windows";
+import {
   buildHistoryPagePreferencesPayload,
   buildHistoryPageSessionState,
   type HistoryPageSessionState,
@@ -88,7 +95,6 @@ import "@/panels/datapoints/components/range-toolbar/range-toolbar";
 import { createHistoryPageContext } from "@/panels/datapoints/context/create-history-page-context";
 import type {
   HistoryPageContext,
-  HistoryComparisonWindowState,
   HistoryTargetRowState,
 } from "@/panels/datapoints/context/types";
 import {
@@ -1921,103 +1927,35 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
   }
 
   _getComparisonPreviewOverlay() {
-    const comparisonWindow = this._getActiveComparisonWindow();
-    if (!comparisonWindow || !this._startTime || !this._endTime) {
-      return null;
-    }
-    const windowStart = parseDateValue(comparisonWindow.start_time);
-    const windowEnd = parseDateValue(comparisonWindow.end_time);
-    if (!windowStart || !windowEnd) {
-      return null;
-    }
-    const actualSpanMs = this._endTime.getTime() - this._startTime.getTime();
-    if (!Number.isFinite(actualSpanMs) || actualSpanMs <= 0) {
-      return null;
-    }
-    const actualStart = new Date(windowStart.getTime());
-    const actualEnd = new Date(windowStart.getTime() + actualSpanMs);
-    const windowRangeLabel = this._formatComparisonLabel(
-      windowStart,
-      windowEnd
+    return getComparisonPreviewOverlay(
+      this._getActiveComparisonWindow(),
+      this._startTime,
+      this._endTime
     );
-    const actualRangeLabel = this._formatComparisonLabel(
-      actualStart,
-      actualEnd
-    );
-    if (windowRangeLabel === actualRangeLabel) {
-      return null;
-    }
-    return {
-      label: comparisonWindow.label || "Preview",
-      window_range_label: windowRangeLabel,
-      actual_range_label: actualRangeLabel,
-    };
   }
 
   _getPreviewComparisonWindows() {
-    const comparisonIds = [];
-    if (this._selectedComparisonWindowId) {
-      comparisonIds.push(this._selectedComparisonWindowId);
-    }
-    if (
-      this._hoveredComparisonWindowId &&
-      !comparisonIds.includes(this._hoveredComparisonWindowId)
-    ) {
-      comparisonIds.push(this._hoveredComparisonWindowId);
-    }
-    if (!comparisonIds.length) {
-      return [];
-    }
-    if (!this._startTime || !this._endTime) {
-      return [];
-    }
-    const startTime = this._startTime!;
-    const previewWindows = comparisonIds
-      .map(
-        (id: string) => this._comparisonWindows.find((w) => w.id === id) ?? null
-      )
-      .filter((w): w is HistoryComparisonWindowState => w !== null)
-      .map((window) => ({
-        ...window,
-        time_offset_ms:
-          new Date(window.start_time).getTime() - startTime.getTime(),
-      }));
-    return previewWindows;
+    return getPreviewComparisonWindows(
+      this._comparisonWindows,
+      this._selectedComparisonWindowId,
+      this._hoveredComparisonWindowId,
+      this._startTime
+    );
   }
 
   _getPreloadComparisonWindows() {
-    if (!this._startTime || !this._endTime) {
-      return [];
-    }
-    const startTime = this._startTime!;
-    const preloadWindows = this._comparisonWindows
-      .map((window) => ({
-        ...window,
-        time_offset_ms:
-          new Date(window.start_time).getTime() - startTime.getTime(),
-      }))
-      .filter((window) => Number.isFinite(window.time_offset_ms));
-    return preloadWindows;
+    return getPreloadComparisonWindows(
+      this._comparisonWindows,
+      this._startTime
+    );
   }
 
   _getActiveComparisonWindow() {
-    if (this._hoveredComparisonWindowId) {
-      return (
-        this._comparisonWindows.find(
-          (window: NormalizedHistoryDateWindow) =>
-            window.id === this._hoveredComparisonWindowId
-        ) || null
-      );
-    }
-    if (this._selectedComparisonWindowId) {
-      return (
-        this._comparisonWindows.find(
-          (window: NormalizedHistoryDateWindow) =>
-            window.id === this._selectedComparisonWindowId
-        ) || null
-      );
-    }
-    return null;
+    return getActiveComparisonWindow(
+      this._comparisonWindows,
+      this._hoveredComparisonWindowId,
+      this._selectedComparisonWindowId
+    );
   }
 
   _formatDateWindowInputValue(date: Nullable<Date>) {
@@ -2073,32 +2011,17 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
   }
 
   _applyDateWindowShortcut(direction: number) {
-    if (this._editingDateWindowId) {
-      return;
-    }
-    const start = this._dateWindowDialogDraftRange?.start;
-    const end = this._dateWindowDialogDraftRange?.end;
-    if (!(start instanceof Date) || !(end instanceof Date) || !(start < end)) {
-      return;
-    }
-    const roundedUnit = this._getRoundedDateWindowUnit(start, end);
-    let nextStart;
-    let nextEnd;
-    if (roundedUnit) {
-      nextStart = startOfUnit(
-        this._shiftDateWindowByUnit(start, roundedUnit, direction),
-        roundedUnit
-      );
-      nextEnd = endOfUnit(nextStart, roundedUnit);
-    } else {
-      const spanMs = end.getTime() - start.getTime();
-      nextStart = new Date(start.getTime() + direction * spanMs);
-      nextEnd = new Date(end.getTime() + direction * spanMs);
-    }
-    this._dateWindowDialogDraftRange = {
-      start: nextStart,
-      end: nextEnd,
-    };
+    if (this._editingDateWindowId) return;
+    const result = applyDateWindowShortcut(
+      this._dateWindowDialogDraftRange,
+      direction,
+      (s, e) => this._getRoundedDateWindowUnit(s, e),
+      (d, u, a) => this._shiftDateWindowByUnit(d, u as RangeUnit, a),
+      (d, u) => startOfUnit(d, u as RangeUnit),
+      (d, u) => endOfUnit(d, u as RangeUnit)
+    );
+    if (!result) return;
+    this._dateWindowDialogDraftRange = result;
     this._syncDateWindowDialogInputs();
   }
 

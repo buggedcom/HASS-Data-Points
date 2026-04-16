@@ -20460,6 +20460,77 @@
 		return rows.filter((_row, i) => i !== index);
 	}
 	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/domain/comparison-windows.ts
+	function getActiveComparisonWindow(windows, hoveredId, selectedId) {
+		if (hoveredId) return windows.find((w) => w.id === hoveredId) || null;
+		if (selectedId) return windows.find((w) => w.id === selectedId) || null;
+		return null;
+	}
+	function getComparisonPreviewOverlay(activeWindow, startTime, endTime) {
+		if (!activeWindow || !startTime || !endTime) return null;
+		const windowStart = parseDateValue(activeWindow.start_time);
+		const windowEnd = parseDateValue(activeWindow.end_time);
+		if (!windowStart || !windowEnd) return null;
+		const actualSpanMs = endTime.getTime() - startTime.getTime();
+		if (!Number.isFinite(actualSpanMs) || actualSpanMs <= 0) return null;
+		const actualStart = new Date(windowStart.getTime());
+		const actualEnd = new Date(windowStart.getTime() + actualSpanMs);
+		const windowRangeLabel = formatComparisonLabel(windowStart, windowEnd);
+		const actualRangeLabel = formatComparisonLabel(actualStart, actualEnd);
+		if (windowRangeLabel === actualRangeLabel) return null;
+		return {
+			label: activeWindow.label || "Preview",
+			window_range_label: windowRangeLabel,
+			actual_range_label: actualRangeLabel
+		};
+	}
+	function getPreviewComparisonWindows(windows, selectedId, hoveredId, startTime) {
+		if (!startTime) return [];
+		const ids = [];
+		if (selectedId) ids.push(selectedId);
+		if (hoveredId && !ids.includes(hoveredId)) ids.push(hoveredId);
+		if (!ids.length) return [];
+		const startMs = startTime.getTime();
+		return ids.map((id) => windows.find((w) => w.id === id) ?? null).filter((w) => w !== null).map((w) => ({
+			...w,
+			time_offset_ms: new Date(w.start_time).getTime() - startMs
+		}));
+	}
+	function getPreloadComparisonWindows(windows, startTime) {
+		if (!startTime) return [];
+		const startMs = startTime.getTime();
+		return windows.map((w) => ({
+			...w,
+			time_offset_ms: new Date(w.start_time).getTime() - startMs
+		})).filter((w) => Number.isFinite(w.time_offset_ms));
+	}
+	/**
+	* Compute the next draft range after applying a shortcut shift.
+	*
+	* If the range aligns to a unit boundary, shifts by one unit in `direction`.
+	* Otherwise, shifts by the raw span duration.
+	*
+	* Returns `null` if the input range is invalid.
+	*/
+	function applyDateWindowShortcut(draftRange, direction, getRoundedUnit, shiftByUnit, startOfUnitFn, endOfUnitFn) {
+		if (!draftRange) return null;
+		const { start, end } = draftRange;
+		if (!(start instanceof Date) || !(end instanceof Date) || !(start < end)) return null;
+		const roundedUnit = getRoundedUnit(start, end);
+		if (roundedUnit) {
+			const nextStart = startOfUnitFn(shiftByUnit(start, roundedUnit, direction), roundedUnit);
+			return {
+				start: nextStart,
+				end: endOfUnitFn(nextStart, roundedUnit)
+			};
+		}
+		const spanMs = end.getTime() - start.getTime();
+		return {
+			start: new Date(start.getTime() + direction * spanMs),
+			end: new Date(end.getTime() + direction * spanMs)
+		};
+	}
+	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/target-row.styles.ts
 	var styles$35 = i$5`
   :host {
@@ -33883,48 +33954,16 @@
 			return formatComparisonLabel(start, end);
 		}
 		_getComparisonPreviewOverlay() {
-			const comparisonWindow = this._getActiveComparisonWindow();
-			if (!comparisonWindow || !this._startTime || !this._endTime) return null;
-			const windowStart = parseDateValue(comparisonWindow.start_time);
-			const windowEnd = parseDateValue(comparisonWindow.end_time);
-			if (!windowStart || !windowEnd) return null;
-			const actualSpanMs = this._endTime.getTime() - this._startTime.getTime();
-			if (!Number.isFinite(actualSpanMs) || actualSpanMs <= 0) return null;
-			const actualStart = new Date(windowStart.getTime());
-			const actualEnd = new Date(windowStart.getTime() + actualSpanMs);
-			const windowRangeLabel = this._formatComparisonLabel(windowStart, windowEnd);
-			const actualRangeLabel = this._formatComparisonLabel(actualStart, actualEnd);
-			if (windowRangeLabel === actualRangeLabel) return null;
-			return {
-				label: comparisonWindow.label || "Preview",
-				window_range_label: windowRangeLabel,
-				actual_range_label: actualRangeLabel
-			};
+			return getComparisonPreviewOverlay(this._getActiveComparisonWindow(), this._startTime, this._endTime);
 		}
 		_getPreviewComparisonWindows() {
-			const comparisonIds = [];
-			if (this._selectedComparisonWindowId) comparisonIds.push(this._selectedComparisonWindowId);
-			if (this._hoveredComparisonWindowId && !comparisonIds.includes(this._hoveredComparisonWindowId)) comparisonIds.push(this._hoveredComparisonWindowId);
-			if (!comparisonIds.length) return [];
-			if (!this._startTime || !this._endTime) return [];
-			const startTime = this._startTime;
-			return comparisonIds.map((id) => this._comparisonWindows.find((w) => w.id === id) ?? null).filter((w) => w !== null).map((window) => ({
-				...window,
-				time_offset_ms: new Date(window.start_time).getTime() - startTime.getTime()
-			}));
+			return getPreviewComparisonWindows(this._comparisonWindows, this._selectedComparisonWindowId, this._hoveredComparisonWindowId, this._startTime);
 		}
 		_getPreloadComparisonWindows() {
-			if (!this._startTime || !this._endTime) return [];
-			const startTime = this._startTime;
-			return this._comparisonWindows.map((window) => ({
-				...window,
-				time_offset_ms: new Date(window.start_time).getTime() - startTime.getTime()
-			})).filter((window) => Number.isFinite(window.time_offset_ms));
+			return getPreloadComparisonWindows(this._comparisonWindows, this._startTime);
 		}
 		_getActiveComparisonWindow() {
-			if (this._hoveredComparisonWindowId) return this._comparisonWindows.find((window) => window.id === this._hoveredComparisonWindowId) || null;
-			if (this._selectedComparisonWindowId) return this._comparisonWindows.find((window) => window.id === this._selectedComparisonWindowId) || null;
-			return null;
+			return getActiveComparisonWindow(this._comparisonWindows, this._hoveredComparisonWindowId, this._selectedComparisonWindowId);
 		}
 		_formatDateWindowInputValue(date) {
 			return formatDateWindowInputValue(date);
@@ -33963,24 +34002,9 @@
 		}
 		_applyDateWindowShortcut(direction) {
 			if (this._editingDateWindowId) return;
-			const start = this._dateWindowDialogDraftRange?.start;
-			const end = this._dateWindowDialogDraftRange?.end;
-			if (!(start instanceof Date) || !(end instanceof Date) || !(start < end)) return;
-			const roundedUnit = this._getRoundedDateWindowUnit(start, end);
-			let nextStart;
-			let nextEnd;
-			if (roundedUnit) {
-				nextStart = startOfUnit(this._shiftDateWindowByUnit(start, roundedUnit, direction), roundedUnit);
-				nextEnd = endOfUnit(nextStart, roundedUnit);
-			} else {
-				const spanMs = end.getTime() - start.getTime();
-				nextStart = new Date(start.getTime() + direction * spanMs);
-				nextEnd = new Date(end.getTime() + direction * spanMs);
-			}
-			this._dateWindowDialogDraftRange = {
-				start: nextStart,
-				end: nextEnd
-			};
+			const result = applyDateWindowShortcut(this._dateWindowDialogDraftRange, direction, (s, e) => this._getRoundedDateWindowUnit(s, e), (d, u, a) => this._shiftDateWindowByUnit(d, u, a), (d, u) => startOfUnit(d, u), (d, u) => endOfUnit(d, u));
+			if (!result) return;
+			this._dateWindowDialogDraftRange = result;
 			this._syncDateWindowDialogInputs();
 		}
 		_ensureDateWindowDialog() {
