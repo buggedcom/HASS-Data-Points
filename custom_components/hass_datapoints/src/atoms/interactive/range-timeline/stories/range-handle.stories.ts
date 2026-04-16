@@ -14,7 +14,7 @@ import "../range-handle";
  * @fires dp-handle-blur       - lost focus
  */
 export default {
-  title: "Atoms/Interactive/Range Handle",
+  title: "Atoms/Interactive/Range Timeline/Range Handle",
   component: "range-handle",
   parameters: {
     actions: {

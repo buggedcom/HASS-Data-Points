@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  computeSelectionJumpVisibility,
   computeScrollPositionForRange,
+  computeSelectionJumpVisibility,
 } from "../range-scroll-math";
 
 describe("computeSelectionJumpVisibility", () => {

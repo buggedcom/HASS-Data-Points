@@ -24,11 +24,16 @@ export class RangeHandle extends LitElement {
 
   @property({ type: Boolean }) accessor live: boolean = false;
 
+  @property({ type: Number }) accessor zIndex: number = 3;
+
   static styles = styles;
 
   updated(changed: Map<string, unknown>) {
     if (changed.has("position")) {
       this.style.left = `${this.position}%`;
+    }
+    if (changed.has("zIndex")) {
+      this.style.zIndex = `${this.zIndex}`;
     }
   }
 
@@ -54,7 +59,9 @@ export class RangeHandle extends LitElement {
       "Home",
       "End",
     ];
-    if (!navKeys.includes(e.key)) return;
+    if (!navKeys.includes(e.key)) {
+      return;
+    }
     e.preventDefault();
     this.dispatchEvent(
       new CustomEvent("dp-handle-keydown", {

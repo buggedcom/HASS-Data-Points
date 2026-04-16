@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
-  timestampFromClientPosition,
-  computeSelectionDragDelta,
-  computeDraftRangeForHandle,
-  computeShiftedDraftRange,
-  computeIntervalSelectionRange,
   computeAutoScrollDelta,
+  computeDraftRangeForHandle,
+  computeIntervalSelectionRange,
+  computeSelectionDragDelta,
+  computeShiftedDraftRange,
   resolveCloserHandle,
+  timestampFromClientPosition,
 } from "../range-pointer-math";
 
 describe("timestampFromClientPosition", () => {

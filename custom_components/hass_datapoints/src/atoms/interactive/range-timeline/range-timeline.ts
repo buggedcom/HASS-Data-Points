@@ -1,48 +1,45 @@
-import { LitElement, html } from "lit";
-import { property } from "lit/decorators.js";
-import { localized, msg } from "@/lib/i18n/localize";
+import { html, LitElement } from "lit";
+import { property, query, state } from "lit/decorators.js";
+import type { I18nMap } from "@/lib/i18n/i18n-prop";
+import { createDefaultI18n, t } from "@/lib/i18n/i18n-prop";
 
 import { styles } from "./range-timeline.styles";
 import type { RangeBounds } from "./types";
 import {
-  computeRangeLabelStride,
-  estimateRangeLabelWidth,
-  getRangeUnitAnchorMs,
-} from "./range-scale-math";
-import {
-  timestampFromClientPosition,
-  computeSelectionDragDelta,
-  computeDraftRangeForHandle,
-  computeShiftedDraftRange,
-  computeIntervalSelectionRange,
   computeAutoScrollDelta,
+  computeDraftRangeForHandle,
+  computeIntervalSelectionRange,
+  computeSelectionDragDelta,
+  computeShiftedDraftRange,
   resolveCloserHandle,
-} from "./range-pointer-math";
+  timestampFromClientPosition,
+} from "./lib/range-pointer-math";
 import {
-  computeSelectionJumpVisibility,
   computeScrollPositionForRange,
-} from "./range-scroll-math";
-import "@/atoms/interactive/range-handle/range-handle";
+  computeSelectionJumpVisibility,
+} from "./lib/range-scroll-math";
+import "./range-handle";
+import "./range-scale";
+import "./range-tooltip";
+import "./range-track";
+import type { RangeUnit, RangeZoomConfig } from "@/lib/timeline/timeline-scale";
 import {
-  RANGE_ZOOM_CONFIGS,
-  RANGE_LABEL_MIN_GAP_PX,
-  RANGE_CONTEXT_LABEL_MIN_GAP_PX,
-  SECOND_MS,
   addUnit,
-  startOfUnit,
-  endOfUnit,
   clampNumber,
-  snapDateToUnit,
+  endOfUnit,
   formatRangeDateTime,
-  formatScaleLabel,
-  formatContextLabel,
-  formatPeriodSelectionLabel,
+  RANGE_ZOOM_CONFIGS,
+  SECOND_MS,
+  snapDateToUnit,
+  startOfUnit,
 } from "@/lib/timeline/timeline-scale";
-import type {
-  RangeUnit,
-  RangeZoomConfig,
-  ZoomLevel,
-} from "@/lib/timeline/timeline-scale";
+
+const DEFAULT_I18N = createDefaultI18n([
+  "Updates with new data",
+  "Scroll to selected range",
+  "Start date and time",
+  "End date and time",
+]);
 
 /**
  * `range-timeline` is a scrollable, interactive time range slider atom.
@@ -62,7 +59,6 @@ import type {
  * @fires dp-range-period-leave  - `{}` period button left
  * @fires dp-range-scroll        - `{}` timeline scrolled
  */
-@localized()
 export class RangeTimeline extends LitElement {
   @property({ type: Object }) accessor startTime: Nullable<Date> = null;
 
@@ -79,7 +75,13 @@ export class RangeTimeline extends LitElement {
 
   @property({ type: String }) accessor locale: string = "";
 
+  @property({ attribute: false }) accessor i18n: I18nMap = DEFAULT_I18N;
+
   static styles = styles;
+
+  private _t(key: string, ...values: Array<string | number>): string {
+    return t(this.i18n, key, ...values);
+  }
 
   // --- Internal drag state ---
   _draftStartTime: Nullable<Date> = null;
@@ -102,9 +104,45 @@ export class RangeTimeline extends LitElement {
 
   _rangeInteractionActive = false;
 
-  _rangeContentWidth = 0;
+  @state() accessor _rangeContentWidth: number = 0;
 
   _rangeCommitTimer: Nullable<number> = null;
+
+  // Reactive tooltip state
+  @state() accessor _startTooltipVisible: boolean = false;
+
+  @state() accessor _startTooltipLeftPx: number = 0;
+
+  @state() accessor _startTooltipContent: string = "";
+
+  @state() accessor _endTooltipVisible: boolean = false;
+
+  @state() accessor _endTooltipLeftPx: number = 0;
+
+  @state() accessor _endTooltipContent: string = "";
+
+  @state() accessor _endTooltipIsLive: boolean = false;
+
+  @state() accessor _endTooltipLiveHint: string = "";
+
+  // Reactive layout state
+  @state() accessor _selectionLeftPct: number = 0;
+
+  @state() accessor _selectionWidthPct: number = 0;
+
+  @state() accessor _scrollbarVisible: boolean = false;
+
+  @state() accessor _viewportDragging: boolean = false;
+
+  @state() accessor _selectionDragging: boolean = false;
+
+  @state() accessor _startHandlePosition: number = 0;
+
+  @state() accessor _endHandlePosition: number = 0;
+
+  @state() accessor _startHandleZIndex: number = 3;
+
+  @state() accessor _endHandleZIndex: number = 4;
 
   // Scrollbar visibility state
   _isProgrammaticScroll = false;
@@ -133,32 +171,23 @@ export class RangeTimeline extends LitElement {
 
   _timelineTrackClickPending = false;
 
-  // Cached DOM refs (set in firstUpdated)
-  _rangeScrollViewportEl: Nullable<HTMLElement> = null;
+  // DOM refs via @query (resolved from shadow DOM)
+  @query("#range-scroll-viewport")
+  accessor _rangeScrollViewportEl: Nullable<HTMLElement> = null;
 
-  _rangeTimelineEl: Nullable<HTMLElement> = null;
+  @query("#range-track") accessor _rangeTrackEl: Nullable<HTMLElement> = null;
 
-  _rangeTrackEl: Nullable<HTMLElement> = null;
+  @query("#range-start-handle")
+  accessor _rangeStartHandleEl: Nullable<HTMLElement> = null;
 
-  _rangeTickLayerEl: Nullable<HTMLElement> = null;
+  @query("#range-end-handle")
+  accessor _rangeEndHandleEl: Nullable<HTMLElement> = null;
 
-  _rangeLabelLayerEl: Nullable<HTMLElement> = null;
+  @query("#range-jump-left")
+  accessor _rangeJumpLeftEl: Nullable<HTMLElement> = null;
 
-  _rangeContextLayerEl: Nullable<HTMLElement> = null;
-
-  _rangeSelectionEl: Nullable<HTMLElement> = null;
-
-  _rangeStartHandleEl: Nullable<HTMLElement> = null;
-
-  _rangeEndHandleEl: Nullable<HTMLElement> = null;
-
-  _rangeStartTooltipEl: Nullable<HTMLElement> = null;
-
-  _rangeEndTooltipEl: Nullable<HTMLElement> = null;
-
-  _rangeJumpLeftEl: Nullable<HTMLElement> = null;
-
-  _rangeJumpRightEl: Nullable<HTMLElement> = null;
+  @query("#range-jump-right")
+  accessor _rangeJumpRightEl: Nullable<HTMLElement> = null;
 
   _resizeObserver: Nullable<ResizeObserver> = null;
 
@@ -186,7 +215,6 @@ export class RangeTimeline extends LitElement {
       this._finishTimelinePointerInteraction(ev);
     this._onRangeScroll = () => {
       this._updateSelectionJumpControls();
-      this._syncVisibleRangeLabels();
       this._updateRangeTooltip();
       this.dispatchEvent(
         new CustomEvent("dp-range-scroll", { bubbles: true, composed: true })
@@ -199,12 +227,6 @@ export class RangeTimeline extends LitElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    if (this._rangeScrollViewportEl) {
-      this._rangeScrollViewportEl.removeEventListener(
-        "scroll",
-        this._onRangeScroll
-      );
-    }
     this._detachRangePointerListeners();
     this._detachTimelinePointerListeners();
     if (this._rangeCommitTimer) {
@@ -222,32 +244,10 @@ export class RangeTimeline extends LitElement {
   }
 
   firstUpdated() {
-    const sr = this.shadowRoot!;
-    this._rangeScrollViewportEl = sr.getElementById("range-scroll-viewport");
-    this._rangeTimelineEl = sr.getElementById("range-timeline");
-    this._rangeTrackEl = sr.getElementById("range-track");
-    this._rangeTickLayerEl = sr.getElementById("range-tick-layer");
-    this._rangeLabelLayerEl = sr.getElementById("range-label-layer");
-    this._rangeContextLayerEl = sr.getElementById("range-context-layer");
-    this._rangeSelectionEl = sr.getElementById("range-selection");
-    this._rangeStartHandleEl = sr.getElementById("range-start-handle");
-    this._rangeEndHandleEl = sr.getElementById("range-end-handle");
-    this._rangeStartTooltipEl = sr.getElementById("range-tooltip-start");
-    this._rangeEndTooltipEl = sr.getElementById("range-tooltip-end");
-
-    this._rangeJumpLeftEl = sr.getElementById("range-jump-left");
-    this._rangeJumpRightEl = sr.getElementById("range-jump-right");
-
-    this._rangeScrollViewportEl?.addEventListener(
-      "scroll",
-      this._onRangeScroll
-    );
-
     if (typeof ResizeObserver !== "undefined") {
       this._resizeObserver = new ResizeObserver(() => {
         this._syncTimelineWidth();
         this._updateSelectionJumpControls();
-        this._syncVisibleRangeLabels();
         this._revealSelectionInTimeline("auto");
       });
       if (this._rangeScrollViewportEl) {
@@ -271,21 +271,12 @@ export class RangeTimeline extends LitElement {
     }
   }
 
-  _pctForTime(time: Nullable<Date>): number {
-    if (!time || !this.rangeBounds) return 0;
-    const { min, max } = this.rangeBounds;
-    return Math.max(
-      0,
-      Math.min(100, ((time.getTime() - min) / (max - min)) * 100)
-    );
-  }
-
   render() {
     return html`
       <ha-icon-button
         id="range-jump-left"
         class="range-selection-jump left"
-        .label=${msg("Scroll to selected range")}
+        .label=${this._t("Scroll to selected range")}
         hidden
         @click=${() => this._revealSelectionInTimeline("smooth")}
       >
@@ -294,7 +285,7 @@ export class RangeTimeline extends LitElement {
       <ha-icon-button
         id="range-jump-right"
         class="range-selection-jump right"
-        .label=${msg("Scroll to selected range")}
+        .label=${this._t("Scroll to selected range")}
         hidden
         @click=${() => this._revealSelectionInTimeline("smooth")}
       >
@@ -302,24 +293,44 @@ export class RangeTimeline extends LitElement {
       </ha-icon-button>
       <div
         id="range-scroll-viewport"
-        class="range-scroll-viewport"
+        class="range-scroll-viewport ${this._scrollbarVisible
+          ? "scrollbar-visible"
+          : ""} ${this._viewportDragging ? "dragging" : ""}"
+        @scroll=${this._onRangeScroll}
         @pointerdown=${this._handleTimelinePointerDown}
         @pointermove=${this._handleRangeViewportPointerMove}
         @pointerleave=${this._handleRangeViewportPointerLeave}
       >
-        <div id="range-timeline" class="range-timeline">
+        <div
+          id="range-timeline"
+          class="range-timeline"
+          style="width:${this._rangeContentWidth}px"
+        >
           <slot name="timeline-overlays"></slot>
-          <div id="range-context-layer" class="range-context-layer"></div>
-          <div id="range-tick-layer" class="range-tick-layer"></div>
-          <div id="range-track" class="range-track">
-            <slot name="track-overlays"></slot>
-            <div id="range-selection" class="range-selection"></div>
-          </div>
-          <div id="range-label-layer" class="range-label-layer"></div>
+          <range-scale
+            .rangeBounds=${this.rangeBounds}
+            .zoomLevel=${this.zoomLevel}
+            .contentWidth=${this._rangeContentWidth}
+            .locale=${this.locale}
+            .i18n=${this.i18n}
+            @dp-scale-period-select=${this._handleScalePeriodSelect}
+            @dp-scale-period-hover=${this._handleScalePeriodHover}
+            @dp-scale-period-leave=${this._handleScalePeriodLeave}
+          ></range-scale>
+          <range-track
+            id="range-track"
+            .selectionLeftPct=${this._selectionLeftPct}
+            .selectionWidthPct=${this._selectionWidthPct}
+            .selectionDragging=${this._selectionDragging}
+          >
+            <slot name="track-overlays" slot="track-overlays"></slot>
+          </range-track>
           <range-handle
             id="range-start-handle"
-            .label=${msg("Start date and time")}
-            .position=${this._pctForTime(this.startTime)}
+            .label=${this._t("Start date and time")}
+            .position=${this._startHandlePosition}
+            .zIndex=${this._startHandleZIndex}
+            .i18n=${this.i18n}
             @dp-handle-drag-start=${(e: CustomEvent) =>
               this._beginRangePointerInteraction(
                 "start",
@@ -336,9 +347,11 @@ export class RangeTimeline extends LitElement {
           ></range-handle>
           <range-handle
             id="range-end-handle"
-            .label=${msg("End date and time")}
-            .position=${this._pctForTime(this.endTime)}
+            .label=${this._t("End date and time")}
+            .position=${this._endHandlePosition}
             .live=${this.isLiveEdge}
+            .zIndex=${this._endHandleZIndex}
+            .i18n=${this.i18n}
             @dp-handle-drag-start=${(e: CustomEvent) =>
               this._beginRangePointerInteraction(
                 "end",
@@ -354,16 +367,20 @@ export class RangeTimeline extends LitElement {
           ></range-handle>
         </div>
       </div>
-      <div
-        id="range-tooltip-start"
-        class="range-tooltip start"
-        aria-hidden="true"
-      ></div>
-      <div
-        id="range-tooltip-end"
-        class="range-tooltip end"
-        aria-hidden="true"
-      ></div>
+      <range-tooltip
+        side="start"
+        .content=${this._startTooltipContent}
+        .visible=${this._startTooltipVisible}
+        .position=${this._startTooltipLeftPx}
+      ></range-tooltip>
+      <range-tooltip
+        side="end"
+        .content=${this._endTooltipContent}
+        .visible=${this._endTooltipVisible}
+        .position=${this._endTooltipLeftPx}
+        .isLive=${this._endTooltipIsLive}
+        .liveHint=${this._endTooltipLiveHint}
+      ></range-tooltip>
     `;
   }
 
@@ -396,13 +413,6 @@ export class RangeTimeline extends LitElement {
     }
   }
 
-  _getScaleLabelZoomLevel(): ZoomLevel {
-    if (this.zoomLevel === "quarterly" || this.zoomLevel === "month_short") {
-      return this.zoomLevel;
-    }
-    return "";
-  }
-
   _getSnapSpanMs(reference: Date = new Date()): number {
     const snapUnit = this._getEffectiveSnapUnit();
     const start = startOfUnit(reference, snapUnit);
@@ -419,13 +429,18 @@ export class RangeTimeline extends LitElement {
       day: 24 * 60 * 60 * SECOND_MS,
       week: 7 * 24 * 60 * 60 * SECOND_MS,
     };
-    if (perMs[unit]) return Math.ceil(totalMs / perMs[unit]);
-    if (unit === "month")
+    if (perMs[unit]) {
+      return Math.ceil(totalMs / perMs[unit]);
+    }
+    if (unit === "month") {
       return Math.ceil(totalMs / (30.44 * 24 * 60 * 60 * SECOND_MS));
-    if (unit === "quarter")
+    }
+    if (unit === "quarter") {
       return Math.ceil(totalMs / (91.3 * 24 * 60 * 60 * SECOND_MS));
-    if (unit === "year")
+    }
+    if (unit === "year") {
       return Math.ceil(totalMs / (365.25 * 24 * 60 * 60 * SECOND_MS));
+    }
     return Math.max(1, Math.ceil(totalMs / (24 * 60 * 60 * SECOND_MS)));
   }
 
@@ -438,21 +453,25 @@ export class RangeTimeline extends LitElement {
       !this._rangeTrackEl ||
       !this._rangeStartHandleEl ||
       !this._rangeEndHandleEl
-    )
+    ) {
       return;
-    if (!this.rangeBounds) return;
+    }
+    if (!this.rangeBounds) {
+      return;
+    }
     this._draftStartTime = this.startTime ? new Date(this.startTime) : null;
     this._draftEndTime = this.endTime ? new Date(this.endTime) : null;
     this._syncTimelineWidth();
     this._updateHandleStacking();
-    this._renderRangeScale();
     this._updateRangePreview();
     this._updateSelectionJumpControls();
     this._revealSelectionInTimeline("auto");
   }
 
   _syncTimelineWidth() {
-    if (!this.rangeBounds || !this._rangeTimelineEl) return;
+    if (!this.rangeBounds) {
+      return;
+    }
     const { config } = this.rangeBounds;
     const viewportWidth = Math.max(
       this._rangeScrollViewportEl?.clientWidth || 0,
@@ -463,259 +482,10 @@ export class RangeTimeline extends LitElement {
       this.rangeBounds.max,
       config.majorUnit
     );
-    const contentWidth = Math.max(
+    this._rangeContentWidth = Math.max(
       viewportWidth,
       unitCount * (config.pixelsPerUnit || 60)
     );
-    this._rangeContentWidth = contentWidth;
-    this._rangeTimelineEl.style.width = `${contentWidth}px`;
-  }
-
-  _renderScaleMarkers(
-    fragment: DocumentFragment,
-    unit: RangeUnit,
-    className: string,
-    total: number,
-    step = 1
-  ) {
-    if (!this.rangeBounds) return;
-    let markerTime = addUnit(
-      startOfUnit(new Date(this.rangeBounds.min), unit),
-      unit,
-      0
-    );
-    if (markerTime.getTime() < this.rangeBounds.min) {
-      markerTime = addUnit(markerTime, unit, step);
-    }
-    while (markerTime.getTime() < this.rangeBounds.max) {
-      const tick = document.createElement("span");
-      tick.className = `range-tick ${className}`;
-      tick.style.left = `${((markerTime.getTime() - this.rangeBounds.min) / total) * 100}%`;
-      fragment.appendChild(tick);
-      markerTime = addUnit(markerTime, unit, step);
-    }
-  }
-
-  _buildRangePeriodButton(
-    className: string,
-    leftValue: number,
-    total: number,
-    text: string,
-    unit: RangeUnit,
-    startTime: Date
-  ): HTMLButtonElement {
-    if (!this.rangeBounds) return document.createElement("button");
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = `range-period-button ${className}`;
-    button.style.left = `${((leftValue - this.rangeBounds.min) / total) * 100}%`;
-    button.textContent = text;
-    const selectionLabel = formatPeriodSelectionLabel(
-      startTime,
-      unit,
-      this.locale || undefined
-    );
-    const selectTitle = `${msg("Select")} ${selectionLabel}`;
-    button.title = selectTitle;
-    button.setAttribute("aria-label", selectTitle);
-    button.addEventListener("click", (ev) =>
-      this._handleRangePeriodSelect(unit, startTime, ev)
-    );
-    button.addEventListener("pointerenter", () =>
-      this._setHoveredPeriodRange(unit, startTime)
-    );
-    button.addEventListener("pointerleave", () =>
-      this._clearHoveredPeriodRange(unit, startTime)
-    );
-    button.addEventListener("focus", () =>
-      this._setHoveredPeriodRange(unit, startTime)
-    );
-    button.addEventListener("blur", () =>
-      this._clearHoveredPeriodRange(unit, startTime)
-    );
-    return button;
-  }
-
-  _getRangeUnitAnchorMs(
-    startTime: Date,
-    unit: RangeUnit,
-    anchor: "auto" | "center" | "start" = "auto"
-  ): number {
-    return getRangeUnitAnchorMs(
-      startTime,
-      unit,
-      this.rangeBounds?.min ?? -Infinity,
-      this.rangeBounds?.max ?? Infinity,
-      anchor
-    );
-  }
-
-  _estimateRangeLabelWidth(
-    text: string,
-    className: string,
-    minGap: number
-  ): number {
-    return estimateRangeLabelWidth(text, className, minGap);
-  }
-
-  _computeRangeLabelStride(
-    unit: RangeUnit,
-    formatter: (d: Date) => string,
-    className: string,
-    minGap: number
-  ): number {
-    if (!this.rangeBounds || !this._rangeContentWidth) return 1;
-    return computeRangeLabelStride(
-      this.rangeBounds.min,
-      this.rangeBounds.max,
-      this._rangeContentWidth,
-      unit,
-      formatter,
-      className,
-      minGap
-    );
-  }
-
-  _syncVisibleRangeLabels() {
-    // Label visibility is currently governed by stride computation in _renderRangeScale.
-    // This is a hook for future overflow-based hiding.
-  }
-
-  _renderRangeScale() {
-    if (
-      !this.rangeBounds ||
-      !this._rangeTickLayerEl ||
-      !this._rangeLabelLayerEl ||
-      !this._rangeContextLayerEl
-    )
-      return;
-    this._rangeTickLayerEl.innerHTML = "";
-    this._rangeLabelLayerEl.innerHTML = "";
-    this._rangeContextLayerEl.innerHTML = "";
-    const total = Math.max(1, this.rangeBounds.max - this.rangeBounds.min);
-    const { config } = this.rangeBounds;
-    const tickFragment = document.createDocumentFragment();
-    const labelFragment = document.createDocumentFragment();
-    const contextFragment = document.createDocumentFragment();
-    const scaleLabelZoomLevel = this._getScaleLabelZoomLevel();
-
-    const scaleLabelStride =
-      config.labelUnit === "month" || config.labelUnit === "day"
-        ? 1
-        : this._computeRangeLabelStride(
-            config.labelUnit,
-            (value) =>
-              formatScaleLabel(
-                value,
-                config.labelUnit,
-                scaleLabelZoomLevel,
-                this.locale || undefined
-              ),
-            "range-scale-label",
-            RANGE_LABEL_MIN_GAP_PX
-          );
-    const contextLabelStride =
-      config.contextUnit === "month" || config.contextUnit === "day"
-        ? 1
-        : this._computeRangeLabelStride(
-            config.contextUnit,
-            (value) =>
-              formatContextLabel(
-                value,
-                config.contextUnit,
-                this.locale || undefined
-              ),
-            "range-context-label",
-            RANGE_CONTEXT_LABEL_MIN_GAP_PX
-          );
-
-    if (
-      config.detailUnit &&
-      config.detailUnit !== config.minorUnit &&
-      config.detailUnit !== config.majorUnit
-    ) {
-      this._renderScaleMarkers(
-        tickFragment,
-        config.detailUnit,
-        "fine",
-        total,
-        config.detailStep || 1
-      );
-    }
-    if (config.minorUnit !== config.majorUnit) {
-      this._renderScaleMarkers(tickFragment, config.minorUnit, "", total);
-    }
-    this._renderScaleMarkers(tickFragment, config.majorUnit, "major", total);
-
-    let labelRef = startOfUnit(
-      new Date(this.rangeBounds.min),
-      config.labelUnit
-    );
-    let labelIndex = 0;
-    while (labelRef.getTime() < this.rangeBounds.max) {
-      if (labelIndex % scaleLabelStride === 0) {
-        const leftValue = this._getRangeUnitAnchorMs(
-          labelRef,
-          config.labelUnit,
-          "auto"
-        );
-        const label = this._buildRangePeriodButton(
-          "range-scale-label",
-          leftValue,
-          total,
-          formatScaleLabel(
-            labelRef,
-            config.labelUnit,
-            scaleLabelZoomLevel,
-            this.locale || undefined
-          ),
-          config.labelUnit,
-          labelRef
-        );
-        labelFragment.appendChild(label);
-      }
-      labelRef = addUnit(labelRef, config.labelUnit, 1);
-      labelIndex += 1;
-    }
-
-    let contextRef = startOfUnit(
-      new Date(this.rangeBounds.min),
-      config.contextUnit
-    );
-    if (contextRef.getTime() < this.rangeBounds.min) {
-      contextRef = addUnit(contextRef, config.contextUnit, 1);
-    }
-    let contextIndex = 0;
-    while (contextRef.getTime() < this.rangeBounds.max) {
-      const left = `${((contextRef.getTime() - this.rangeBounds.min) / total) * 100}%`;
-      const divider = document.createElement("span");
-      divider.className = "range-divider";
-      divider.style.left = left;
-      contextFragment.appendChild(divider);
-
-      if (contextIndex % contextLabelStride === 0) {
-        const label = this._buildRangePeriodButton(
-          "range-context-label",
-          contextRef.getTime(),
-          total,
-          formatContextLabel(
-            contextRef,
-            config.contextUnit,
-            this.locale || undefined
-          ),
-          config.contextUnit,
-          contextRef
-        );
-        contextFragment.appendChild(label);
-      }
-      contextRef = addUnit(contextRef, config.contextUnit, 1);
-      contextIndex += 1;
-    }
-
-    this._rangeTickLayerEl.appendChild(tickFragment);
-    this._rangeLabelLayerEl.appendChild(labelFragment);
-    this._rangeContextLayerEl.appendChild(contextFragment);
-    this._syncVisibleRangeLabels();
   }
 
   // ---------------------------------------------------------------------------
@@ -723,38 +493,23 @@ export class RangeTimeline extends LitElement {
   // ---------------------------------------------------------------------------
 
   _updateHandleStacking(activeHandle = this._activeRangeHandle) {
-    if (!this._rangeStartHandleEl || !this._rangeEndHandleEl) return;
-    this._rangeStartHandleEl.style.zIndex =
-      activeHandle === "start" ? "5" : "3";
-    this._rangeEndHandleEl.style.zIndex = activeHandle === "end" ? "5" : "4";
+    this._startHandleZIndex = activeHandle === "start" ? 5 : 3;
+    this._endHandleZIndex = activeHandle === "end" ? 5 : 4;
   }
 
   _updateRangePreview() {
-    if (!this.rangeBounds || !this._draftStartTime || !this._draftEndTime)
+    if (!this.rangeBounds || !this._draftStartTime || !this._draftEndTime) {
       return;
+    }
     const total = Math.max(1, this.rangeBounds.max - this.rangeBounds.min);
     const startPct =
       ((this._draftStartTime.getTime() - this.rangeBounds.min) / total) * 100;
     const endPct =
       ((this._draftEndTime.getTime() - this.rangeBounds.min) / total) * 100;
-    if (this._rangeSelectionEl) {
-      this._rangeSelectionEl.style.left = `${startPct}%`;
-      this._rangeSelectionEl.style.width = `${Math.max(0, endPct - startPct)}%`;
-    }
-    if (this._rangeStartHandleEl) {
-      this._rangeStartHandleEl.style.left = `${startPct}%`;
-      this._rangeStartHandleEl.setAttribute(
-        "aria-valuetext",
-        formatRangeDateTime(this._draftStartTime, this.locale || undefined)
-      );
-    }
-    if (this._rangeEndHandleEl) {
-      this._rangeEndHandleEl.style.left = `${endPct}%`;
-      this._rangeEndHandleEl.setAttribute(
-        "aria-valuetext",
-        formatRangeDateTime(this._draftEndTime, this.locale || undefined)
-      );
-    }
+    this._selectionLeftPct = startPct;
+    this._selectionWidthPct = Math.max(0, endPct - startPct);
+    this._startHandlePosition = startPct;
+    this._endHandlePosition = endPct;
 
     this._updateRangeTooltip();
   }
@@ -780,8 +535,12 @@ export class RangeTimeline extends LitElement {
   }
 
   _clearRangeTooltipHoverHandle(handle: "start" | "end") {
-    if (this._activeRangeHandle === handle) return;
-    if (this._hoveredRangeHandle === handle) this._hoveredRangeHandle = null;
+    if (this._activeRangeHandle === handle) {
+      return;
+    }
+    if (this._hoveredRangeHandle === handle) {
+      this._hoveredRangeHandle = null;
+    }
     this._updateRangeTooltip();
   }
 
@@ -791,32 +550,39 @@ export class RangeTimeline extends LitElement {
   }
 
   _clearRangeTooltipFocusHandle(handle: "start" | "end") {
-    if (this._activeRangeHandle === handle) return;
-    if (this._focusedRangeHandle === handle) this._focusedRangeHandle = null;
+    if (this._activeRangeHandle === handle) {
+      return;
+    }
+    if (this._focusedRangeHandle === handle) {
+      this._focusedRangeHandle = null;
+    }
     this._updateRangeTooltip();
   }
 
   _updateRangeTooltip() {
-    if (!this.rangeBounds || !this._rangeScrollViewportEl) return;
+    if (!this.rangeBounds || !this._rangeScrollViewportEl) {
+      return;
+    }
     const visibleHandles = new Set(this._getVisibleRangeTooltipHandles());
     this._updateRangeTooltipForHandle("start", visibleHandles.has("start"));
     this._updateRangeTooltipForHandle("end", visibleHandles.has("end"));
   }
 
   _updateRangeTooltipForHandle(handle: "start" | "end", visible: boolean) {
-    const tooltip =
-      handle === "start" ? this._rangeStartTooltipEl : this._rangeEndTooltipEl;
-    if (!tooltip) return;
-    if (!visible) {
-      tooltip.classList.remove("visible");
-      tooltip.setAttribute("aria-hidden", "true");
-      return;
-    }
     const value =
       handle === "start" ? this._draftStartTime : this._draftEndTime;
-    if (!value || !this.rangeBounds || !this._rangeScrollViewportEl) {
-      tooltip.classList.remove("visible");
-      tooltip.setAttribute("aria-hidden", "true");
+    if (
+      !visible ||
+      !value ||
+      !this.rangeBounds ||
+      !this._rangeScrollViewportEl
+    ) {
+      if (handle === "start") {
+        this._startTooltipVisible = false;
+      } else {
+        this._endTooltipVisible = false;
+        this._endTooltipIsLive = false;
+      }
       return;
     }
     const total = Math.max(1, this.rangeBounds.max - this.rangeBounds.min);
@@ -833,28 +599,40 @@ export class RangeTimeline extends LitElement {
       0,
       this._rangeScrollViewportEl.clientWidth
     );
-    if (handle === "end" && this.isLiveEdge) {
-      const dateEl = document.createElement("span");
-      dateEl.textContent = formatRangeDateTime(value, this.locale || undefined);
-      const hintEl = document.createElement("span");
-      hintEl.className = "range-tooltip-live-hint";
-      hintEl.textContent = msg("Updates with new data");
-      tooltip.textContent = "";
-      tooltip.append(dateEl, hintEl);
+    const content = formatRangeDateTime(value, this.locale || undefined);
+    if (handle === "start") {
+      this._startTooltipVisible = true;
+      this._startTooltipLeftPx = clampedX;
+      this._startTooltipContent = content;
     } else {
-      tooltip.textContent = formatRangeDateTime(
-        value,
-        this.locale || undefined
-      );
+      this._endTooltipVisible = true;
+      this._endTooltipLeftPx = clampedX;
+      this._endTooltipContent = content;
+      this._endTooltipIsLive = this.isLiveEdge;
+      this._endTooltipLiveHint = this.isLiveEdge
+        ? this._t("Updates with new data")
+        : "";
     }
-    tooltip.style.left = `${clampedX}px`;
-    tooltip.classList.add("visible");
-    tooltip.setAttribute("aria-hidden", "false");
   }
 
   // ---------------------------------------------------------------------------
   // Period hover
   // ---------------------------------------------------------------------------
+
+  _handleScalePeriodSelect(e: CustomEvent) {
+    const { unit, startTime, originalEvent } = e.detail;
+    this._handleRangePeriodSelect(unit, startTime, originalEvent);
+  }
+
+  _handleScalePeriodHover(e: CustomEvent) {
+    const { unit, startTime } = e.detail;
+    this._setHoveredPeriodRange(unit, startTime);
+  }
+
+  _handleScalePeriodLeave(e: CustomEvent) {
+    const { unit, startTime } = e.detail;
+    this._clearHoveredPeriodRange(unit, startTime);
+  }
 
   _handleRangePeriodSelect(unit: RangeUnit, startTime: Date, ev: MouseEvent) {
     ev.preventDefault();
@@ -896,7 +674,9 @@ export class RangeTimeline extends LitElement {
   }
 
   _clearHoveredPeriodRange(unit: RangeUnit, startTime: Date) {
-    if (!this._hoveredPeriodRange) return;
+    if (!this._hoveredPeriodRange) {
+      return;
+    }
     const start = startOfUnit(new Date(startTime), unit).getTime();
     const end = endOfUnit(new Date(startTime), unit).getTime();
     if (
@@ -925,8 +705,12 @@ export class RangeTimeline extends LitElement {
       !this.startTime ||
       !this.endTime
     ) {
-      if (this._rangeJumpLeftEl) this._rangeJumpLeftEl.hidden = true;
-      if (this._rangeJumpRightEl) this._rangeJumpRightEl.hidden = true;
+      if (this._rangeJumpLeftEl) {
+        this._rangeJumpLeftEl.hidden = true;
+      }
+      if (this._rangeJumpRightEl) {
+        this._rangeJumpRightEl.hidden = true;
+      }
       return;
     }
     const { showLeft, showRight } = computeSelectionJumpVisibility(
@@ -938,8 +722,12 @@ export class RangeTimeline extends LitElement {
       this.rangeBounds.min,
       this.rangeBounds.max
     );
-    if (this._rangeJumpLeftEl) this._rangeJumpLeftEl.hidden = !showLeft;
-    if (this._rangeJumpRightEl) this._rangeJumpRightEl.hidden = !showRight;
+    if (this._rangeJumpLeftEl) {
+      this._rangeJumpLeftEl.hidden = !showLeft;
+    }
+    if (this._rangeJumpRightEl) {
+      this._rangeJumpRightEl.hidden = !showRight;
+    }
   }
 
   _scrollTimelineToRange(
@@ -952,8 +740,9 @@ export class RangeTimeline extends LitElement {
       !this.rangeBounds ||
       !this._rangeContentWidth ||
       !range
-    )
+    ) {
       return;
+    }
     const nextLeft = computeScrollPositionForRange(
       range.start,
       range.end,
@@ -963,7 +752,9 @@ export class RangeTimeline extends LitElement {
       this._rangeScrollViewportEl.clientWidth,
       center
     );
-    if (nextLeft == null) return;
+    if (nextLeft == null) {
+      return;
+    }
     this._rangeScrollViewportEl.scrollTo({ left: nextLeft, behavior });
   }
 
@@ -972,7 +763,9 @@ export class RangeTimeline extends LitElement {
   }
 
   _revealSelectionInTimeline(behavior: ScrollBehavior = "auto") {
-    if (!this.startTime || !this.endTime) return;
+    if (!this.startTime || !this.endTime) {
+      return;
+    }
     this._isProgrammaticScroll = true;
     this._scrollTimelineToRange(
       { start: this.startTime.getTime(), end: this.endTime.getTime() },
@@ -985,12 +778,13 @@ export class RangeTimeline extends LitElement {
   }
 
   _showScrollbar() {
-    if (!this._rangeScrollViewportEl) return;
-    this._rangeScrollViewportEl.classList.add("scrollbar-visible");
-    if (this._scrollbarHideTimer) window.clearTimeout(this._scrollbarHideTimer);
+    this._scrollbarVisible = true;
+    if (this._scrollbarHideTimer) {
+      window.clearTimeout(this._scrollbarHideTimer);
+    }
     this._scrollbarHideTimer = window.setTimeout(() => {
       this._scrollbarHideTimer = null;
-      this._rangeScrollViewportEl?.classList.remove("scrollbar-visible");
+      this._scrollbarVisible = false;
     }, 1500);
   }
 
@@ -999,7 +793,9 @@ export class RangeTimeline extends LitElement {
   // ---------------------------------------------------------------------------
 
   _timestampFromClientX(clientX: number): Nullable<number> {
-    if (!this.rangeBounds || !this._rangeTrackEl) return null;
+    if (!this.rangeBounds || !this._rangeTrackEl) {
+      return null;
+    }
     const rect = this._rangeTrackEl.getBoundingClientRect();
     return timestampFromClientPosition(
       clientX,
@@ -1011,8 +807,9 @@ export class RangeTimeline extends LitElement {
   }
 
   _getTimelineSelectionDragDeltaMs(timestamp: number): number {
-    if (timestamp == null || this._timelinePointerStartTimestamp == null)
+    if (timestamp == null || this._timelinePointerStartTimestamp == null) {
       return 0;
+    }
     return computeSelectionDragDelta(
       timestamp,
       this._timelinePointerStartTimestamp,
@@ -1025,7 +822,9 @@ export class RangeTimeline extends LitElement {
   // ---------------------------------------------------------------------------
 
   _setDraftRangeFromTimestamp(handle: "start" | "end", timestamp: number) {
-    if (!this.rangeBounds) return;
+    if (!this.rangeBounds) {
+      return;
+    }
     const currentStartMs =
       this._draftStartTime?.getTime() ??
       this.startTime?.getTime() ??
@@ -1057,7 +856,9 @@ export class RangeTimeline extends LitElement {
   }
 
   _shiftDraftRangeByDelta(deltaMs: number) {
-    if (!this.rangeBounds) return;
+    if (!this.rangeBounds) {
+      return;
+    }
     const { startMs, endMs } = computeShiftedDraftRange(
       deltaMs,
       this._timelineDragStartRangeMs,
@@ -1076,7 +877,9 @@ export class RangeTimeline extends LitElement {
     startTimestamp: number,
     endTimestamp: number
   ) {
-    if (!this.rangeBounds) return;
+    if (!this.rangeBounds) {
+      return;
+    }
     const unit: RangeUnit =
       this.rangeBounds.config?.labelUnit || this._getEffectiveSnapUnit();
     const result = computeIntervalSelectionRange(
@@ -1086,14 +889,18 @@ export class RangeTimeline extends LitElement {
       this.rangeBounds.min,
       this.rangeBounds.max
     );
-    if (!result) return;
+    if (!result) {
+      return;
+    }
     this._draftStartTime = new Date(result.startMs);
     this._draftEndTime = new Date(result.endMs);
     this._updateRangePreview();
   }
 
   _fireDraftEvent() {
-    if (!this._draftStartTime || !this._draftEndTime) return;
+    if (!this._draftStartTime || !this._draftEndTime) {
+      return;
+    }
     this.dispatchEvent(
       new CustomEvent("dp-range-draft", {
         detail: {
@@ -1111,9 +918,12 @@ export class RangeTimeline extends LitElement {
       this._rangeInteractionActive ||
       this._timelinePointerMode === "selection" ||
       this._timelinePointerMode === "interval_select"
-    )
+    ) {
       return;
-    if (this._rangeCommitTimer) window.clearTimeout(this._rangeCommitTimer);
+    }
+    if (this._rangeCommitTimer) {
+      window.clearTimeout(this._rangeCommitTimer);
+    }
     this._rangeCommitTimer = window.setTimeout(() => {
       this._rangeCommitTimer = null;
       this._commitRangeSelection({ push: false });
@@ -1121,7 +931,9 @@ export class RangeTimeline extends LitElement {
   }
 
   _commitRangeSelection({ push = false }: { push?: boolean } = {}) {
-    if (!this._draftStartTime || !this._draftEndTime) return;
+    if (!this._draftStartTime || !this._draftEndTime) {
+      return;
+    }
     this.dispatchEvent(
       new CustomEvent("dp-range-commit", {
         detail: {
@@ -1144,7 +956,9 @@ export class RangeTimeline extends LitElement {
     pointerId: number,
     clientX: number
   ) {
-    if (!this._rangeTrackEl) return;
+    if (!this._rangeTrackEl) {
+      return;
+    }
     this._rangeInteractionActive = true;
     if (this._rangeCommitTimer) {
       window.clearTimeout(this._rangeCommitTimer);
@@ -1166,17 +980,25 @@ export class RangeTimeline extends LitElement {
   }
 
   _maybeAutoScrollTimelineDuringHandleDrag(clientX: number) {
-    if (!this._rangeScrollViewportEl) return;
+    if (!this._rangeScrollViewportEl) {
+      return;
+    }
     const viewport = this._rangeScrollViewportEl;
     const rect = viewport.getBoundingClientRect();
-    if (!rect.width) return;
+    if (!rect.width) {
+      return;
+    }
     const maxScrollLeft = Math.max(
       0,
       viewport.scrollWidth - viewport.clientWidth
     );
-    if (maxScrollLeft <= 0) return;
+    if (maxScrollLeft <= 0) {
+      return;
+    }
     const delta = computeAutoScrollDelta(clientX, rect.left, rect.right);
-    if (!delta) return;
+    if (!delta) {
+      return;
+    }
     viewport.scrollLeft = clampNumber(
       viewport.scrollLeft + delta,
       0,
@@ -1202,20 +1024,28 @@ export class RangeTimeline extends LitElement {
   }
 
   _handleRangePointerMove(ev: PointerEvent) {
-    if (!this._activeRangeHandle) return;
-    if (this._rangePointerId != null && ev.pointerId !== this._rangePointerId)
+    if (!this._activeRangeHandle) {
       return;
+    }
+    if (this._rangePointerId != null && ev.pointerId !== this._rangePointerId) {
+      return;
+    }
     this._maybeAutoScrollTimelineDuringHandleDrag(ev.clientX);
     const timestamp = this._timestampFromClientX(ev.clientX);
-    if (timestamp == null) return;
+    if (timestamp == null) {
+      return;
+    }
     ev.preventDefault();
     this._setDraftRangeFromTimestamp(this._activeRangeHandle, timestamp);
   }
 
   _finishRangePointerInteraction(ev: PointerEvent) {
-    if (!this._activeRangeHandle) return;
-    if (this._rangePointerId != null && ev.pointerId !== this._rangePointerId)
+    if (!this._activeRangeHandle) {
       return;
+    }
+    if (this._rangePointerId != null && ev.pointerId !== this._rangePointerId) {
+      return;
+    }
     this._detachRangePointerListeners();
     this._focusedRangeHandle = null;
     this._hoveredRangeHandle = null;
@@ -1227,35 +1057,49 @@ export class RangeTimeline extends LitElement {
     handle: "start" | "end",
     detail: { key: string; shiftKey: boolean }
   ) {
-    if (!this.rangeBounds) return;
+    if (!this.rangeBounds) {
+      return;
+    }
     const snapUnit = this._getEffectiveSnapUnit();
     const currentValue =
       handle === "start"
         ? (this._draftStartTime?.getTime() ?? this.startTime?.getTime())
         : (this._draftEndTime?.getTime() ?? this.endTime?.getTime());
-    if (currentValue == null) return;
+    if (currentValue == null) {
+      return;
+    }
 
     const config = this._getZoomConfig();
     let nextValue: Nullable<number> = null;
-    if (detail.key === "ArrowLeft" || detail.key === "ArrowDown")
+    if (detail.key === "ArrowLeft" || detail.key === "ArrowDown") {
       nextValue = addUnit(new Date(currentValue), snapUnit, -1).getTime();
-    if (detail.key === "ArrowRight" || detail.key === "ArrowUp")
+    }
+    if (detail.key === "ArrowRight" || detail.key === "ArrowUp") {
       nextValue = addUnit(new Date(currentValue), snapUnit, 1).getTime();
-    if (detail.key === "PageDown")
+    }
+    if (detail.key === "PageDown") {
       nextValue = addUnit(
         new Date(currentValue),
         config.majorUnit,
         -1
       ).getTime();
-    if (detail.key === "PageUp")
+    }
+    if (detail.key === "PageUp") {
       nextValue = addUnit(
         new Date(currentValue),
         config.majorUnit,
         1
       ).getTime();
-    if (detail.key === "Home") nextValue = this.rangeBounds.min;
-    if (detail.key === "End") nextValue = this.rangeBounds.max;
-    if (nextValue == null) return;
+    }
+    if (detail.key === "Home") {
+      nextValue = this.rangeBounds.min;
+    }
+    if (detail.key === "End") {
+      nextValue = this.rangeBounds.max;
+    }
+    if (nextValue == null) {
+      return;
+    }
 
     this._focusedRangeHandle = handle;
     this._setDraftRangeFromTimestamp(handle, nextValue);
@@ -1266,7 +1110,9 @@ export class RangeTimeline extends LitElement {
   // ---------------------------------------------------------------------------
 
   _handleTimelinePointerDown(ev: PointerEvent) {
-    if (ev.button !== 0) return;
+    if (ev.button !== 0) {
+      return;
+    }
     // Ignore events originating from range-handle
     if (
       ev
@@ -1279,12 +1125,19 @@ export class RangeTimeline extends LitElement {
     ) {
       return;
     }
-    if ((ev.target as Element)?.closest?.(".range-period-button")) return;
-    if (!this._rangeScrollViewportEl) return;
+    if ((ev.target as Element)?.closest?.(".range-period-button")) {
+      return;
+    }
+    if (!this._rangeScrollViewportEl) {
+      return;
+    }
 
-    const isSelectionDrag = !!(ev.target as Element)?.closest?.(
-      ".range-selection"
-    );
+    const isSelectionDrag = ev
+      .composedPath()
+      .some(
+        (el) =>
+          el instanceof Element && el.classList?.contains?.("range-selection")
+      );
     const trackRect = this._rangeTrackEl?.getBoundingClientRect();
     const isTrackRegion =
       !!trackRect &&
@@ -1321,9 +1174,9 @@ export class RangeTimeline extends LitElement {
     this._timelineTrackClickPending =
       !isSelectionDrag &&
       !isIntervalSelect &&
-      !!(ev.target as Element)?.closest?.(".range-track");
-    this._rangeScrollViewportEl.classList.remove("dragging");
-    this._rangeSelectionEl?.classList.toggle("dragging", isSelectionDrag);
+      !!(ev.target as Element)?.closest?.("range-track");
+    this._viewportDragging = false;
+    this._selectionDragging = isSelectionDrag;
 
     window.addEventListener("pointermove", this._onTimelinePointerMove);
     window.addEventListener("pointerup", this._onTimelinePointerUp);
@@ -1334,9 +1187,8 @@ export class RangeTimeline extends LitElement {
     window.removeEventListener("pointermove", this._onTimelinePointerMove);
     window.removeEventListener("pointerup", this._onTimelinePointerUp);
     window.removeEventListener("pointercancel", this._onTimelinePointerUp);
-    if (this._rangeScrollViewportEl)
-      this._rangeScrollViewportEl.classList.remove("dragging");
-    this._rangeSelectionEl?.classList.remove("dragging");
+    this._viewportDragging = false;
+    this._selectionDragging = false;
     this._timelinePointerId = null;
     this._timelinePointerStartTimestamp = null;
     this._timelinePointerMode = null;
@@ -1350,14 +1202,18 @@ export class RangeTimeline extends LitElement {
       this._timelinePointerId == null ||
       ev.pointerId !== this._timelinePointerId ||
       !this._rangeScrollViewportEl
-    )
+    ) {
       return;
+    }
     if (this._timelinePointerMode === "selection") {
       const timestamp = this._timestampFromClientX(ev.clientX);
-      if (timestamp == null || this._timelinePointerStartTimestamp == null)
+      if (timestamp == null || this._timelinePointerStartTimestamp == null) {
         return;
+      }
       const deltaX = ev.clientX - this._timelinePointerStartX;
-      if (!this._timelinePointerMoved && Math.abs(deltaX) < 4) return;
+      if (!this._timelinePointerMoved && Math.abs(deltaX) < 4) {
+        return;
+      }
       this._timelinePointerMoved = true;
       this._shiftDraftRangeByDelta(
         this._getTimelineSelectionDragDeltaMs(timestamp)
@@ -1367,10 +1223,13 @@ export class RangeTimeline extends LitElement {
     }
     if (this._timelinePointerMode === "interval_select") {
       const timestamp = this._timestampFromClientX(ev.clientX);
-      if (timestamp == null || this._timelinePointerStartTimestamp == null)
+      if (timestamp == null || this._timelinePointerStartTimestamp == null) {
         return;
+      }
       const deltaX = ev.clientX - this._timelinePointerStartX;
-      if (!this._timelinePointerMoved && Math.abs(deltaX) < 4) return;
+      if (!this._timelinePointerMoved && Math.abs(deltaX) < 4) {
+        return;
+      }
       this._timelinePointerMoved = true;
       this._setDraftRangeFromIntervalSelection(
         this._timelinePointerStartTimestamp,
@@ -1380,10 +1239,12 @@ export class RangeTimeline extends LitElement {
       return;
     }
     const deltaX = ev.clientX - this._timelinePointerStartX;
-    if (!this._timelinePointerMoved && Math.abs(deltaX) < 4) return;
+    if (!this._timelinePointerMoved && Math.abs(deltaX) < 4) {
+      return;
+    }
     this._timelinePointerMoved = true;
     this._timelineTrackClickPending = false;
-    this._rangeScrollViewportEl.classList.add("dragging");
+    this._viewportDragging = true;
     const maxScrollLeft = Math.max(
       0,
       this._rangeScrollViewportEl.scrollWidth -
@@ -1401,8 +1262,9 @@ export class RangeTimeline extends LitElement {
     if (
       this._timelinePointerId == null ||
       ev.pointerId !== this._timelinePointerId
-    )
+    ) {
       return;
+    }
     const mode = this._timelinePointerMode;
     const didMove = this._timelinePointerMoved;
     const shouldSelectTrack = this._timelineTrackClickPending && !didMove;
@@ -1432,7 +1294,9 @@ export class RangeTimeline extends LitElement {
 
   _handleTrackSelectionAtClientX(clientX: number) {
     const timestamp = this._timestampFromClientX(clientX);
-    if (timestamp == null) return;
+    if (timestamp == null) {
+      return;
+    }
     const startMs =
       this._draftStartTime?.getTime() ??
       this.startTime?.getTime() ??
@@ -1441,31 +1305,53 @@ export class RangeTimeline extends LitElement {
       this._draftEndTime?.getTime() ??
       this.endTime?.getTime() ??
       this.rangeBounds?.max;
-    if (startMs == null || endMs == null) return;
+    if (startMs == null || endMs == null) {
+      return;
+    }
     const handle = resolveCloserHandle(timestamp, startMs, endMs);
     this._setDraftRangeFromTimestamp(handle, timestamp);
   }
 
   _handleRangeViewportPointerMove(ev: PointerEvent) {
-    if (this._timelinePointerId != null || this._rangePointerId != null) return;
+    if (this._timelinePointerId != null || this._rangePointerId != null) {
+      return;
+    }
     if (
       ev
         .composedPath()
         .some((el) => (el as Element).tagName === "DP-RANGE-HANDLE")
-    )
+    ) {
       return;
-    if ((ev.target as Element)?.closest?.(".range-period-button")) return;
-    if ((ev.target as Element)?.closest?.(".range-selection")) return;
+    }
+    if ((ev.target as Element)?.closest?.(".range-period-button")) {
+      return;
+    }
+    if (
+      ev
+        .composedPath()
+        .some(
+          (el) =>
+            el instanceof Element && el.classList?.contains?.("range-selection")
+        )
+    ) {
+      return;
+    }
     const timestamp = this._timestampFromClientX(ev.clientX);
-    if (timestamp == null || !this.rangeBounds) return;
+    if (timestamp == null || !this.rangeBounds) {
+      return;
+    }
     const unit =
       this.rangeBounds.config?.labelUnit || this._getEffectiveSnapUnit();
-    if (!unit) return;
+    if (!unit) {
+      return;
+    }
     this._setHoveredPeriodRange(unit, new Date(timestamp));
   }
 
   _handleRangeViewportPointerLeave() {
-    if (this._timelinePointerId != null || this._rangePointerId != null) return;
+    if (this._timelinePointerId != null || this._rangePointerId != null) {
+      return;
+    }
     if (this._hoveredPeriodRange) {
       this._hoveredPeriodRange = null;
       this.dispatchEvent(
