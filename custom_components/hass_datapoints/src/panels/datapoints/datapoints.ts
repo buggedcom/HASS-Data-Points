@@ -20,6 +20,14 @@ import {
 } from "@/lib/domain/target-selection";
 import { parseDateValue } from "@/lib/domain/chart-zoom";
 import {
+  formatComparisonLabel,
+  formatDateWindowInputValue,
+  getRoundedDateWindowUnit,
+  parseDateWindowInputValue,
+  shiftDateWindowByUnit,
+} from "@/lib/domain/date-window";
+import { mergeSavedSeriesRows } from "@/lib/domain/series-rows";
+import {
   buildHistoryPagePreferencesPayload,
   buildHistoryPageSessionState,
   type HistoryPageSessionState,
@@ -35,7 +43,7 @@ import {
 import {
   addUnit,
   clampNumber,
-  DAY_MS,
+  computeZoomLevelForSpan,
   endOfUnit,
   extractRangeValue,
   HOUR_MS,
@@ -1810,26 +1818,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
   }
 
   _mergeSavedSeriesRows(rows: unknown, savedRows: unknown) {
-    const normalizedRows = normalizeHistorySeriesRows(rows);
-    const normalizedSavedRows = normalizeHistorySeriesRows(savedRows);
-    if (!normalizedSavedRows.length) {
-      return normalizedRows;
-    }
-    const savedRowMap = new Map(
-      normalizedSavedRows.map((row) => [row.entity_id, row])
-    );
-    return normalizedRows.map((row) => {
-      const savedRow = savedRowMap.get(row.entity_id);
-      if (!savedRow) {
-        return row;
-      }
-      return {
-        ...row,
-        color: savedRow.color,
-        visible: savedRow.visible,
-        analysis: savedRow.analysis,
-      };
-    });
+    return mergeSavedSeriesRows(rows, savedRows);
   }
 
   _syncHassBindings() {
@@ -1919,18 +1908,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
   }
 
   _formatComparisonLabel(start: Date, end: Date) {
-    const fmt = (d: Date) =>
-      d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-    const fmtYear = (d: Date) =>
-      d.toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      });
-    const sameYear = start.getFullYear() === end.getFullYear();
-    return sameYear
-      ? `${fmt(start)} – ${fmt(end)}`
-      : `${fmtYear(start)} – ${fmtYear(end)}`;
+    return formatComparisonLabel(start, end);
   }
 
   _getComparisonPreviewOverlay() {
@@ -2034,78 +2012,19 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
   }
 
   _formatDateWindowInputValue(date: Nullable<Date>) {
-    if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
-      return "";
-    }
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
+    return formatDateWindowInputValue(date);
   }
 
   _parseDateWindowInputValue(value: Nullable<string> | undefined) {
-    if (!value || typeof value !== "string") {
-      return null;
-    }
-    const match = value.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/);
-    if (!match) {
-      return null;
-    }
-    const [, year, month, day, hour, minute] = match;
-    const parsed = new Date(
-      Number(year),
-      Number(month) - 1,
-      Number(day),
-      Number(hour),
-      Number(minute),
-      0,
-      0
-    );
-    if (Number.isNaN(parsed.getTime())) {
-      return null;
-    }
-    return parsed;
+    return parseDateWindowInputValue(value);
   }
 
   _shiftDateWindowByUnit(date: Date, unit: RangeUnit, amount: number) {
-    const shifted = new Date(date);
-    if (unit === "day") {
-      shifted.setDate(shifted.getDate() + amount);
-      return shifted;
-    }
-    if (unit === "week") {
-      shifted.setDate(shifted.getDate() + amount * 7);
-      return shifted;
-    }
-    if (unit === "month") {
-      shifted.setMonth(shifted.getMonth() + amount);
-      return shifted;
-    }
-    if (unit === "year") {
-      shifted.setFullYear(shifted.getFullYear() + amount);
-      return shifted;
-    }
-    return shifted;
+    return shiftDateWindowByUnit(date, unit, amount);
   }
 
   _getRoundedDateWindowUnit(start: Date, end: Date): Nullable<RangeUnit> {
-    if (!(start instanceof Date) || !(end instanceof Date) || !(start < end)) {
-      return null;
-    }
-    const supportedUnits: RangeUnit[] = ["day", "week", "month", "year"];
-    for (const unit of supportedUnits) {
-      const roundedStart = startOfUnit(start, unit);
-      const roundedEnd = endOfUnit(start, unit);
-      if (
-        roundedStart?.getTime?.() === start.getTime() &&
-        roundedEnd?.getTime?.() === end.getTime()
-      ) {
-        return unit;
-      }
-    }
-    return null;
+    return getRoundedDateWindowUnit(start, end);
   }
 
   _syncDateWindowDialogInputs() {
@@ -4203,26 +4122,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
   }
 
   _computeZoomLevelForSpan(spanMs: number) {
-    const normalizedSpanMs = Math.max(spanMs, RANGE_SLIDER_MIN_SPAN_MS);
-    if (normalizedSpanMs >= 180 * DAY_MS) {
-      return "quarterly";
-    }
-    if (normalizedSpanMs >= 120 * DAY_MS) {
-      return "month_compressed";
-    }
-    if (normalizedSpanMs >= 60 * DAY_MS) {
-      return "month_short";
-    }
-    if (normalizedSpanMs >= 21 * DAY_MS) {
-      return "month_expanded";
-    }
-    if (normalizedSpanMs >= 7 * DAY_MS) {
-      return "week_compressed";
-    }
-    if (normalizedSpanMs >= 2 * DAY_MS) {
-      return "week_expanded";
-    }
-    return "day";
+    return computeZoomLevelForSpan(spanMs);
   }
 
   _getEffectiveSnapUnit() {

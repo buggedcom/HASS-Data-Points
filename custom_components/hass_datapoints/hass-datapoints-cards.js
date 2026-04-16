@@ -10280,6 +10280,385 @@
 		});
 	}
 	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/domain/chart-zoom.ts
+	/**
+	* Date parsing and zoom state helpers shared by chart/timeline subsystems.
+	*/
+	function parseDateValue(value) {
+		if (!value) return null;
+		if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
+		const parsed = new Date(value);
+		return Number.isNaN(parsed.getTime()) ? null : parsed;
+	}
+	function createChartZoomRange(startValue, endValue) {
+		const startDate = parseDateValue(startValue);
+		const endDate = parseDateValue(endValue);
+		const start = startDate?.getTime();
+		const end = endDate?.getTime();
+		if (typeof start === "number" && Number.isFinite(start) && typeof end === "number" && Number.isFinite(end) && start < end) return {
+			start,
+			end
+		};
+		return null;
+	}
+	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/history-page/history-url-state.ts
+	function makeDateWindowId(label, existingIds = /* @__PURE__ */ new Set()) {
+		const base = slugifySeriesName(label) || "date-window";
+		let candidate = base;
+		let suffix = 2;
+		while (existingIds.has(candidate)) {
+			candidate = `${base}-${suffix}`;
+			suffix += 1;
+		}
+		return candidate;
+	}
+	function normalizeDateWindows(windows) {
+		if (!Array.isArray(windows)) return [];
+		const seen = /* @__PURE__ */ new Set();
+		const normalized = [];
+		windows.forEach((window, index) => {
+			const label = String(window?.label || window?.name || "").trim();
+			const start = parseDateValue(window?.start_time || window?.start);
+			const end = parseDateValue(window?.end_time || window?.end);
+			if (!label || !start || !end || start >= end) return;
+			const id = String(window?.id || "").trim() || makeDateWindowId(`${label}-${index + 1}`, seen);
+			if (seen.has(id)) return;
+			seen.add(id);
+			normalized.push({
+				id,
+				label,
+				start_time: start.toISOString(),
+				end_time: end.toISOString()
+			});
+		});
+		return normalized;
+	}
+	function parseDateWindowsParam(value) {
+		if (!value || typeof value !== "string") return [];
+		return normalizeDateWindows(value.split("|").map((entry) => {
+			const [rawId, rawLabel, rawStart, rawEnd] = String(entry).split("~");
+			return {
+				id: decodeURIComponent(rawId || ""),
+				label: decodeURIComponent(rawLabel || ""),
+				start_time: decodeURIComponent(rawStart || ""),
+				end_time: decodeURIComponent(rawEnd || "")
+			};
+		}));
+	}
+	function serializeDateWindowsParam(windows) {
+		const normalized = normalizeDateWindows(windows);
+		if (!normalized.length) return "";
+		return normalized.map((window) => [
+			encodeURIComponent(window.id),
+			encodeURIComponent(window.label ?? ""),
+			encodeURIComponent(window.start_time),
+			encodeURIComponent(window.end_time)
+		].join("~")).join("|");
+	}
+	function parseHistoryPageStateParam(value) {
+		if (!value || typeof value !== "string") return null;
+		try {
+			const parsed = JSON.parse(value);
+			return parsed && typeof parsed === "object" ? parsed : null;
+		} catch {
+			return null;
+		}
+	}
+	function serializeHistoryPageStateParam(state) {
+		if (!state || typeof state !== "object") return "";
+		try {
+			return JSON.stringify(state);
+		} catch {
+			return "";
+		}
+	}
+	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/ha/navigation.ts
+	function buildDataPointsHistoryPath(target = {}, options = {}) {
+		const normalizedTarget = {
+			entity_id: [...new Set((target.entity_id || []).filter(Boolean))],
+			device_id: [...new Set((target.device_id || []).filter(Boolean))],
+			area_id: [...new Set((target.area_id || []).filter(Boolean))],
+			label_id: [...new Set((target.label_id || []).filter(Boolean))]
+		};
+		const params = new URLSearchParams();
+		if (normalizedTarget.entity_id.length) params.set("entity_id", normalizedTarget.entity_id.join(","));
+		if (normalizedTarget.device_id.length) params.set("device_id", normalizedTarget.device_id.join(","));
+		if (normalizedTarget.area_id.length) params.set("area_id", normalizedTarget.area_id.join(","));
+		if (normalizedTarget.label_id.length) params.set("label_id", normalizedTarget.label_id.join(","));
+		if (options.datapoint_scope === "all") params.set("datapoints_scope", "all");
+		const start = options.start_time ? new Date(options.start_time) : null;
+		const end = options.end_time ? new Date(options.end_time) : null;
+		if (start && end && Number.isFinite(start.getTime()) && Number.isFinite(end.getTime()) && start < end) {
+			params.set("start_time", start.toISOString());
+			params.set("end_time", end.toISOString());
+			params.set("hours_to_show", String(Math.max(1, Math.round((end.getTime() - start.getTime()) / 36e5))));
+		}
+		const zoomStart = options.zoom_start_time ? new Date(options.zoom_start_time) : null;
+		const zoomEnd = options.zoom_end_time ? new Date(options.zoom_end_time) : null;
+		if (zoomStart && zoomEnd && Number.isFinite(zoomStart.getTime()) && Number.isFinite(zoomEnd.getTime()) && zoomStart < zoomEnd) {
+			params.set("zoom_start_time", zoomStart.toISOString());
+			params.set("zoom_end_time", zoomEnd.toISOString());
+		}
+		const pageStateParam = serializeHistoryPageStateParam(options.page_state);
+		if (pageStateParam) params.set("page_state", pageStateParam);
+		return `/${PANEL_URL_PATH}?${params.toString()}`;
+	}
+	function navigateToDataPointsHistory(_card, target = {}, options = {}) {
+		const path = buildDataPointsHistoryPath(target, options);
+		if (window.history && window.history.pushState) {
+			window.history.pushState(null, "", path);
+			window.dispatchEvent(new Event("location-changed"));
+			return;
+		}
+		window.location.assign(path);
+	}
+	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/chart/chart-anomaly-config.ts
+	function buildBackendAnomalyConfig(analysis) {
+		const rawMethods = Array.isArray(analysis.anomaly_methods) ? analysis.anomaly_methods : [];
+		const hasSimilarEntity = rawMethods.includes("similar_entity");
+		const backendMethods = hasSimilarEntity ? [...new Set(rawMethods.map((m) => m === "similar_entity" ? "comparison_window" : m))] : rawMethods;
+		const config = {
+			anomaly_methods: backendMethods.length > 0 ? backendMethods : void 0,
+			anomaly_sensitivity: typeof analysis.anomaly_sensitivity === "string" ? analysis.anomaly_sensitivity : void 0,
+			anomaly_overlap_mode: typeof analysis.anomaly_overlap_mode === "string" ? analysis.anomaly_overlap_mode : void 0,
+			anomaly_rate_window: typeof analysis.anomaly_rate_window === "string" ? analysis.anomaly_rate_window : void 0,
+			anomaly_zscore_window: typeof analysis.anomaly_zscore_window === "string" ? analysis.anomaly_zscore_window : void 0,
+			anomaly_persistence_window: typeof analysis.anomaly_persistence_window === "string" ? analysis.anomaly_persistence_window : void 0,
+			trend_method: (() => {
+				if (typeof analysis.anomaly_trend_method === "string" && analysis.anomaly_trend_method) return analysis.anomaly_trend_method;
+				return typeof analysis.trend_method === "string" ? analysis.trend_method : void 0;
+			})(),
+			trend_window: (() => {
+				if (typeof analysis.anomaly_trend_method === "string" && analysis.anomaly_trend_method && typeof analysis.anomaly_trend_window === "string" && analysis.anomaly_trend_window) return analysis.anomaly_trend_window;
+				return typeof analysis.trend_window === "string" ? analysis.trend_window : void 0;
+			})(),
+			anomaly_use_sampled_data: analysis.anomaly_use_sampled_data !== false,
+			comparison_entity_id: hasSimilarEntity && typeof analysis.anomaly_comparison_entity_id === "string" && analysis.anomaly_comparison_entity_id ? analysis.anomaly_comparison_entity_id : null
+		};
+		if (analysis.anomaly_use_sampled_data !== false) {
+			config.sample_interval = typeof analysis.sample_interval === "string" ? analysis.sample_interval : null;
+			config.sample_aggregate = typeof analysis.sample_aggregate === "string" ? analysis.sample_aggregate : null;
+		}
+		return config;
+	}
+	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/chart/chart-data-prep.ts
+	/**
+	* Pure data preparation utilities extracted from history-chart.ts.
+	*
+	* All functions are stateless data transformations with no DOM dependency.
+	*/
+	function buildBinaryStateSpans(stateList, t0, t1) {
+		const spans = [];
+		if (!stateList.length) return spans;
+		let current = stateList[0];
+		for (let i = 1; i < stateList.length; i++) {
+			const next = stateList[i];
+			const start = Math.max(current.lu * 1e3, t0);
+			const end = Math.min(next.lu * 1e3, t1);
+			if (end > start) spans.push({
+				start,
+				end,
+				state: current.s
+			});
+			current = next;
+		}
+		const lastStart = Math.max(current.lu * 1e3, t0);
+		if (t1 > lastStart) spans.push({
+			start: lastStart,
+			end: t1,
+			state: current.s
+		});
+		return spans;
+	}
+	function buildEntityStateList(entityId, histResult, statsResult, entityIds) {
+		const historyStates = getHistoryStatesForEntity$1(histResult, entityId, entityIds);
+		return mergeNumericHistoryWithStatistics(entityId.split(".")[0] === "binary_sensor" ? normalizeBinaryHistory(entityId, historyStates) : normalizeNumericHistory(entityId, historyStates), normalizeStatisticsHistory(entityId, statsResult));
+	}
+	function filterEvents(events, hiddenEventIds, messageFilter) {
+		const query = String(messageFilter || "").trim().toLowerCase();
+		const visibleEvents = events.filter((event) => !hiddenEventIds.has(event?.id ?? ""));
+		if (!query) return visibleEvents;
+		return visibleEvents.filter((event) => {
+			return [
+				event?.message || "",
+				event?.annotation || "",
+				...(event?.entity_ids || []).filter(Boolean)
+			].join("\n").toLowerCase().includes(query);
+		});
+	}
+	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/chart/chart-comparison.ts
+	function getComparisonWindowLineStyle(isHovered, isSelected, hoveringDifferentComparison) {
+		if (isHovered) return {
+			lineOpacity: 1,
+			dashed: false,
+			hoverOpacity: .85
+		};
+		if (hoveringDifferentComparison && isSelected) return {
+			lineOpacity: .25,
+			lineWidth: 1.25,
+			dashed: false,
+			hoverOpacity: .25
+		};
+		return {
+			lineOpacity: .85,
+			dashed: false,
+			hoverOpacity: .85
+		};
+	}
+	function getComparisonAnomalyCacheKey(windowId, entityId) {
+		return `${windowId}:${entityId}`;
+	}
+	function shiftComparisonAnomalyClusters(clusters, timeOffsetMs) {
+		return (Array.isArray(clusters) ? clusters : []).map((cluster) => ({
+			...cluster,
+			points: Array.isArray(cluster.points) ? cluster.points.map((point) => ({
+				...point,
+				timeMs: Number(point.timeMs) - timeOffsetMs
+			})) : []
+		}));
+	}
+	function filterClustersByCorrelatedSpans(anomalyClusters, correlatedSpans) {
+		if (!Array.isArray(anomalyClusters) || anomalyClusters.length === 0) return [];
+		if (!Array.isArray(correlatedSpans) || correlatedSpans.length === 0) return [];
+		return anomalyClusters.filter((cluster) => {
+			const points = cluster.points;
+			if (!Array.isArray(points) || points.length === 0) return false;
+			const startTime = Number(points[0]?.timeMs);
+			const endTime = Number(points[points.length - 1]?.timeMs);
+			if (!Number.isFinite(startTime) || !Number.isFinite(endTime)) return false;
+			const clusterStart = Math.min(startTime, endTime);
+			const clusterEnd = Math.max(startTime, endTime);
+			return correlatedSpans.some((span) => {
+				const spanStart = Number(span.start);
+				const spanEnd = Number(span.end);
+				if (!Number.isFinite(spanStart) || !Number.isFinite(spanEnd)) return false;
+				return clusterEnd >= spanStart && clusterStart <= spanEnd;
+			});
+		});
+	}
+	function resolveAnomalyClusterDisplay(anomalyClusters, overlapMode, correlatedSpans = []) {
+		const normalClusters = anomalyClusters.filter((c) => !c.isOverlap);
+		const overlapClusters = anomalyClusters.filter((c) => c.isOverlap === true);
+		if (overlapMode === "only") {
+			const overlapOnlyClusters = filterClustersByCorrelatedSpans(anomalyClusters, correlatedSpans);
+			return {
+				baseClusters: overlapOnlyClusters,
+				regionClusters: overlapOnlyClusters,
+				showCorrelatedSpans: true
+			};
+		}
+		return {
+			baseClusters: [...normalClusters, ...overlapClusters],
+			regionClusters: [...normalClusters, ...overlapClusters],
+			showCorrelatedSpans: false
+		};
+	}
+	function buildCorrelatedAnomalySpans(visibleSeries, anomalyClustersMap, analysisMap) {
+		const seriesIntervals = [];
+		for (const seriesItem of visibleSeries) {
+			if (analysisMap.get(seriesItem.entityId)?.show_anomalies !== true) continue;
+			const clusters = anomalyClustersMap.get(seriesItem.entityId) || [];
+			if (!clusters.length) continue;
+			const pts = seriesItem.pts;
+			let tolerance = 6e4;
+			if (Array.isArray(pts) && pts.length >= 2) {
+				const intervals = [];
+				for (let i = 1; i < pts.length; i++) {
+					const diff = pts[i][0] - pts[i - 1][0];
+					if (diff > 0) intervals.push(diff);
+				}
+				if (intervals.length) {
+					intervals.sort((a, b) => a - b);
+					const mid = Math.floor(intervals.length / 2);
+					tolerance = intervals.length % 2 === 0 ? (intervals[mid - 1] + intervals[mid]) / 2 : intervals[mid];
+					tolerance = Math.max(tolerance, 1e3);
+				}
+			}
+			const entityIntervals = [];
+			for (const cluster of clusters) {
+				if (!Array.isArray(cluster.points) || cluster.points.length === 0) continue;
+				const startTime = cluster.points[0]?.timeMs;
+				const endTime = cluster.points[cluster.points.length - 1]?.timeMs;
+				if (!Number.isFinite(startTime) || !Number.isFinite(endTime)) continue;
+				entityIntervals.push({
+					start: Math.min(startTime, endTime) - tolerance,
+					end: Math.max(startTime, endTime) + tolerance
+				});
+			}
+			if (entityIntervals.length) seriesIntervals.push({
+				entityId: seriesItem.entityId,
+				intervals: entityIntervals
+			});
+		}
+		if (seriesIntervals.length < 2) return [];
+		const events = [];
+		for (const { entityId, intervals } of seriesIntervals) for (const { start, end } of intervals) {
+			events.push({
+				time: start,
+				delta: 1,
+				entityId
+			});
+			events.push({
+				time: end,
+				delta: -1,
+				entityId
+			});
+		}
+		events.sort((a, b) => a.time - b.time || a.delta - b.delta);
+		const activeCounts = /* @__PURE__ */ new Map();
+		const spans = [];
+		let spanStart = null;
+		for (const event of events) {
+			const next = (activeCounts.get(event.entityId) || 0) + event.delta;
+			if (next <= 0) activeCounts.delete(event.entityId);
+			else activeCounts.set(event.entityId, next);
+			const activeCount = activeCounts.size;
+			if (spanStart === null && activeCount >= 2) spanStart = event.time;
+			else if (spanStart !== null && activeCount < 2) {
+				spans.push({
+					start: spanStart,
+					end: event.time
+				});
+				spanStart = null;
+			}
+		}
+		if (spanStart !== null && events.length > 0) spans.push({
+			start: spanStart,
+			end: events[events.length - 1].time
+		});
+		return spans;
+	}
+	function filterAnnotatedAnomalyClusters(seriesItem, events) {
+		if (!Array.isArray(seriesItem?.anomalyClusters) || seriesItem.anomalyClusters.length === 0) return [];
+		const visibleEvents = Array.isArray(events) ? events : [];
+		if (visibleEvents.length === 0) return seriesItem.anomalyClusters;
+		const getClusterRange = (cluster) => {
+			if (!Array.isArray(cluster.points) || cluster.points.length === 0) return null;
+			const startTime = cluster.points[0]?.timeMs;
+			const endTime = cluster.points[cluster.points.length - 1]?.timeMs;
+			if (!Number.isFinite(startTime) || !Number.isFinite(endTime)) return null;
+			return {
+				startTime: Math.min(startTime, endTime),
+				endTime: Math.max(startTime, endTime)
+			};
+		};
+		return seriesItem.anomalyClusters.filter((cluster) => {
+			const clusterRange = getClusterRange(cluster);
+			if (!clusterRange) return true;
+			return !visibleEvents.some((event) => {
+				if (!(Array.isArray(event.entity_ids) ? event.entity_ids.filter(Boolean) : []).includes(seriesItem.entityId)) return false;
+				const eventTime = new Date(event.timestamp).getTime();
+				if (!Number.isFinite(eventTime)) return false;
+				return eventTime >= clusterRange.startTime && eventTime <= clusterRange.endTime;
+			});
+		});
+	}
+	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/analysis/windows.ts
 	var HOUR_MS$1 = 3600 * 1e3;
 	function getTrendWindowMs(value) {
@@ -10533,139 +10912,154 @@
 		};
 	}
 	//#endregion
-	//#region custom_components/hass_datapoints/src/lib/domain/chart-zoom.ts
+	//#region custom_components/hass_datapoints/src/lib/chart/chart-analysis.ts
 	/**
-	* Date parsing and zoom state helpers shared by chart/timeline subsystems.
+	* Pure analysis utilities extracted from history-chart.ts.
+	*
+	* All functions are stateless data transformations with no DOM dependency.
 	*/
-	function parseDateValue(value) {
-		if (!value) return null;
-		if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value;
-		const parsed = new Date(value);
-		return Number.isNaN(parsed.getTime()) ? null : parsed;
+	var ANALYSIS_FIELDS = [
+		"show_trend_lines",
+		"trend_method",
+		"trend_window",
+		"show_rate_of_change",
+		"rate_window",
+		"show_delta_analysis",
+		"show_summary_stats",
+		"show_anomalies",
+		"anomaly_methods",
+		"anomaly_sensitivity",
+		"anomaly_overlap_mode",
+		"anomaly_rate_window",
+		"anomaly_zscore_window",
+		"anomaly_persistence_window",
+		"anomaly_comparison_window_id",
+		"anomaly_use_sampled_data",
+		"anomaly_trend_method",
+		"anomaly_trend_window"
+	];
+	function buildAnalysisCacheKey(visibleSeries, selectedComparisonSeriesMap, analysisMap, allComparisonWindowsData, t0, t1) {
+		return `${t0}:${t1}|${visibleSeries.map((s) => {
+			const a = analysisMap.get(s.entityId) || normalizeHistorySeriesAnalysis(null);
+			const first = s.pts[0]?.[0] ?? 0;
+			const last = s.pts[s.pts.length - 1]?.[0] ?? 0;
+			const aKey = ANALYSIS_FIELDS.map((f) => JSON.stringify(a[f])).join(",");
+			return `${s.entityId}:${s.pts.length}:${first}:${last}:${aKey}`;
+		}).join("|")}|${Array.from(selectedComparisonSeriesMap.values()).map((s) => {
+			const first = s.pts[0]?.[0] ?? 0;
+			const last = s.pts[s.pts.length - 1]?.[0] ?? 0;
+			return `${s.entityId}:${s.pts.length}:${first}:${last}`;
+		}).sort().join("|")}|${Object.entries(allComparisonWindowsData).flatMap(([windowId, entities]) => Object.entries(entities).map(([entityId, pts]) => {
+			const first = pts[0]?.[0] ?? 0;
+			const last = pts[pts.length - 1]?.[0] ?? 0;
+			return `${windowId}:${entityId}:${pts.length}:${first}:${last}`;
+		})).sort().join("|")}`;
 	}
-	function createChartZoomRange(startValue, endValue) {
-		const startDate = parseDateValue(startValue);
-		const endDate = parseDateValue(endValue);
-		const start = startDate?.getTime();
-		const end = endDate?.getTime();
-		if (typeof start === "number" && Number.isFinite(start) && typeof end === "number" && Number.isFinite(end) && start < end) return {
-			start,
-			end
-		};
-		return null;
-	}
-	//#endregion
-	//#region custom_components/hass_datapoints/src/lib/history-page/history-url-state.ts
-	function makeDateWindowId(label, existingIds = /* @__PURE__ */ new Set()) {
-		const base = slugifySeriesName(label) || "date-window";
-		let candidate = base;
-		let suffix = 2;
-		while (existingIds.has(candidate)) {
-			candidate = `${base}-${suffix}`;
-			suffix += 1;
-		}
-		return candidate;
-	}
-	function normalizeDateWindows(windows) {
-		if (!Array.isArray(windows)) return [];
-		const seen = /* @__PURE__ */ new Set();
-		const normalized = [];
-		windows.forEach((window, index) => {
-			const label = String(window?.label || window?.name || "").trim();
-			const start = parseDateValue(window?.start_time || window?.start);
-			const end = parseDateValue(window?.end_time || window?.end);
-			if (!label || !start || !end || start >= end) return;
-			const id = String(window?.id || "").trim() || makeDateWindowId(`${label}-${index + 1}`, seen);
-			if (seen.has(id)) return;
-			seen.add(id);
-			normalized.push({
-				id,
-				label,
-				start_time: start.toISOString(),
-				end_time: end.toISOString()
-			});
-		});
-		return normalized;
-	}
-	function parseDateWindowsParam(value) {
-		if (!value || typeof value !== "string") return [];
-		return normalizeDateWindows(value.split("|").map((entry) => {
-			const [rawId, rawLabel, rawStart, rawEnd] = String(entry).split("~");
-			return {
-				id: decodeURIComponent(rawId || ""),
-				label: decodeURIComponent(rawLabel || ""),
-				start_time: decodeURIComponent(rawStart || ""),
-				end_time: decodeURIComponent(rawEnd || "")
-			};
+	function buildHistoryAnalysisPayload(visibleSeries, selectedComparisonSeriesMap, analysisMap, hasSelectedComparisonWindow, allComparisonWindowsData = {}) {
+		const defaultAnalysis = normalizeHistorySeriesAnalysis(null);
+		const series = visibleSeries.map((seriesItem) => ({
+			entityId: seriesItem.entityId,
+			pts: seriesItem.pts,
+			analysis: analysisMap.get(seriesItem.entityId) || defaultAnalysis
 		}));
+		const comparisonSeries = Array.from(selectedComparisonSeriesMap.values()).map((seriesItem) => ({
+			entityId: seriesItem.entityId,
+			pts: seriesItem.pts
+		}));
+		const seriesAnalysisConfigs = {};
+		for (const seriesItem of visibleSeries) seriesAnalysisConfigs[seriesItem.entityId] = analysisMap.get(seriesItem.entityId) || defaultAnalysis;
+		return {
+			series,
+			comparisonSeries,
+			hasSelectedComparisonWindow: hasSelectedComparisonWindow === true,
+			allComparisonWindowsData,
+			seriesAnalysisConfigs
+		};
 	}
-	function serializeDateWindowsParam(windows) {
-		const normalized = normalizeDateWindows(windows);
-		if (!normalized.length) return "";
-		return normalized.map((window) => [
-			encodeURIComponent(window.id),
-			encodeURIComponent(window.label ?? ""),
-			encodeURIComponent(window.start_time),
-			encodeURIComponent(window.end_time)
-		].join("~")).join("|");
-	}
-	function parseHistoryPageStateParam(value) {
-		if (!value || typeof value !== "string") return null;
-		try {
-			const parsed = JSON.parse(value);
-			return parsed && typeof parsed === "object" ? parsed : null;
-		} catch {
-			return null;
+	function buildTrendPoints(pts, method, window) {
+		if (!Array.isArray(pts) || pts.length < 2) return [];
+		const m = method || "rolling_average";
+		const w = window || "24h";
+		switch (m) {
+			case "linear_trend": return buildLinearTrend(pts);
+			case "ema": return buildEmaTrend(pts, getEmaAlpha(w));
+			case "polynomial_trend": return buildPolynomialTrend(pts);
+			case "lowess": return buildLowessTrend(pts, getLowessBandwidth(w, pts));
+			default: return buildRollingAverageTrend(pts, getTrendWindowMs(w));
 		}
 	}
-	function serializeHistoryPageStateParam(state) {
-		if (!state || typeof state !== "object") return "";
-		try {
-			return JSON.stringify(state);
-		} catch {
-			return "";
-		}
+	function buildRateOfChange(pts, window) {
+		if (!Array.isArray(pts) || pts.length < 2) return [];
+		return buildRateOfChangePoints(pts, window || "1h");
+	}
+	function buildDelta(pts, comparisonPts) {
+		return buildDeltaPoints(pts, comparisonPts);
+	}
+	function buildSummary(pts) {
+		return buildSummaryStats(pts) ?? {
+			min: 0,
+			max: 0,
+			mean: 0
+		};
+	}
+	function seriesHasActiveAnalysis(analysis, hasSelectedComparisonWindow = false) {
+		return !!(analysis.show_trend_lines || analysis.show_summary_stats || analysis.show_rate_of_change || analysis.show_threshold_analysis || analysis.show_anomalies || analysis.show_delta_analysis && hasSelectedComparisonWindow);
+	}
+	function seriesShouldHideSource(analysis, hasSelectedComparisonWindow = false) {
+		return analysis.hide_source_series === true && seriesHasActiveAnalysis(analysis, hasSelectedComparisonWindow);
+	}
+	function getTrendRenderOptions(method = "rolling_average", hideRawData = false) {
+		if (method === "linear_trend") return {
+			colorAlpha: hideRawData ? .94 : .88,
+			lineOpacity: hideRawData ? .86 : .74,
+			lineWidth: 2.1,
+			dashed: true,
+			dotted: false
+		};
+		if (method === "ema") return {
+			colorAlpha: hideRawData ? .92 : .84,
+			lineOpacity: hideRawData ? .86 : .65,
+			lineWidth: 2,
+			dashed: false,
+			dotted: true
+		};
+		if (method === "polynomial_trend") return {
+			colorAlpha: hideRawData ? .94 : .86,
+			lineOpacity: hideRawData ? .86 : .72,
+			lineWidth: 2,
+			dashed: true,
+			dotted: false
+		};
+		if (method === "lowess") return {
+			colorAlpha: hideRawData ? .9 : .82,
+			lineOpacity: hideRawData ? .84 : .6,
+			lineWidth: 1.8,
+			dashed: false,
+			dotted: false
+		};
+		return {
+			colorAlpha: hideRawData ? .9 : .82,
+			lineOpacity: hideRawData ? .84 : .62,
+			lineWidth: 2.2,
+			dashed: false,
+			dotted: true
+		};
+	}
+	function buildSeriesAnalysisMap(seriesSettings) {
+		return new Map(seriesSettings.filter((entry) => entry?.entity_id != null).map((entry) => [entry.entity_id, normalizeHistorySeriesAnalysis(entry?.analysis)]));
 	}
 	//#endregion
-	//#region custom_components/hass_datapoints/src/lib/ha/navigation.ts
-	function buildDataPointsHistoryPath(target = {}, options = {}) {
-		const normalizedTarget = {
-			entity_id: [...new Set((target.entity_id || []).filter(Boolean))],
-			device_id: [...new Set((target.device_id || []).filter(Boolean))],
-			area_id: [...new Set((target.area_id || []).filter(Boolean))],
-			label_id: [...new Set((target.label_id || []).filter(Boolean))]
-		};
-		const params = new URLSearchParams();
-		if (normalizedTarget.entity_id.length) params.set("entity_id", normalizedTarget.entity_id.join(","));
-		if (normalizedTarget.device_id.length) params.set("device_id", normalizedTarget.device_id.join(","));
-		if (normalizedTarget.area_id.length) params.set("area_id", normalizedTarget.area_id.join(","));
-		if (normalizedTarget.label_id.length) params.set("label_id", normalizedTarget.label_id.join(","));
-		if (options.datapoint_scope === "all") params.set("datapoints_scope", "all");
-		const start = options.start_time ? new Date(options.start_time) : null;
-		const end = options.end_time ? new Date(options.end_time) : null;
-		if (start && end && Number.isFinite(start.getTime()) && Number.isFinite(end.getTime()) && start < end) {
-			params.set("start_time", start.toISOString());
-			params.set("end_time", end.toISOString());
-			params.set("hours_to_show", String(Math.max(1, Math.round((end.getTime() - start.getTime()) / 36e5))));
-		}
-		const zoomStart = options.zoom_start_time ? new Date(options.zoom_start_time) : null;
-		const zoomEnd = options.zoom_end_time ? new Date(options.zoom_end_time) : null;
-		if (zoomStart && zoomEnd && Number.isFinite(zoomStart.getTime()) && Number.isFinite(zoomEnd.getTime()) && zoomStart < zoomEnd) {
-			params.set("zoom_start_time", zoomStart.toISOString());
-			params.set("zoom_end_time", zoomEnd.toISOString());
-		}
-		const pageStateParam = serializeHistoryPageStateParam(options.page_state);
-		if (pageStateParam) params.set("page_state", pageStateParam);
-		return `/${PANEL_URL_PATH}?${params.toString()}`;
-	}
-	function navigateToDataPointsHistory(_card, target = {}, options = {}) {
-		const path = buildDataPointsHistoryPath(target, options);
-		if (window.history && window.history.pushState) {
-			window.history.pushState(null, "", path);
-			window.dispatchEvent(new Event("location-changed"));
-			return;
-		}
-		window.location.assign(path);
+	//#region custom_components/hass_datapoints/src/lib/chart/chart-scroll.ts
+	/**
+	* Pure scroll position calculation extracted from history-chart.ts.
+	*/
+	function calculateViewportScrollPosition(t0, t1, canvasWidth, viewportWidth, zoomStart, zoomEnd) {
+		const totalMs = Math.max(1, t1 - t0);
+		const spanMs = Math.max(1, zoomEnd - zoomStart);
+		const maxScrollLeft = Math.max(0, Math.max(canvasWidth, viewportWidth) - viewportWidth);
+		const maxStartOffsetMs = Math.max(0, totalMs - spanMs);
+		const clampedStart = clampChartValue(zoomStart, t0, t1 - spanMs);
+		return (maxStartOffsetMs > 0 ? (clampedStart - t0) / maxStartOffsetMs : 0) * maxScrollLeft;
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/history-chart.styles.ts
@@ -11811,61 +12205,15 @@
 			this._queueDrawChart(histResult, statsResult, events, t0, t1, options);
 		}
 		_buildBackendAnomalyConfig(analysis) {
-			const rawMethods = Array.isArray(analysis.anomaly_methods) ? analysis.anomaly_methods : [];
-			const hasSimilarEntity = rawMethods.includes("similar_entity");
-			const backendMethods = hasSimilarEntity ? [...new Set(rawMethods.map((m) => m === "similar_entity" ? "comparison_window" : m))] : rawMethods;
-			const config = {
-				anomaly_methods: backendMethods.length > 0 ? backendMethods : void 0,
-				anomaly_sensitivity: typeof analysis.anomaly_sensitivity === "string" ? analysis.anomaly_sensitivity : void 0,
-				anomaly_overlap_mode: typeof analysis.anomaly_overlap_mode === "string" ? analysis.anomaly_overlap_mode : void 0,
-				anomaly_rate_window: typeof analysis.anomaly_rate_window === "string" ? analysis.anomaly_rate_window : void 0,
-				anomaly_zscore_window: typeof analysis.anomaly_zscore_window === "string" ? analysis.anomaly_zscore_window : void 0,
-				anomaly_persistence_window: typeof analysis.anomaly_persistence_window === "string" ? analysis.anomaly_persistence_window : void 0,
-				trend_method: (() => {
-					if (typeof analysis.anomaly_trend_method === "string" && analysis.anomaly_trend_method) return analysis.anomaly_trend_method;
-					return typeof analysis.trend_method === "string" ? analysis.trend_method : void 0;
-				})(),
-				trend_window: (() => {
-					if (typeof analysis.anomaly_trend_method === "string" && analysis.anomaly_trend_method && typeof analysis.anomaly_trend_window === "string" && analysis.anomaly_trend_window) return analysis.anomaly_trend_window;
-					return typeof analysis.trend_window === "string" ? analysis.trend_window : void 0;
-				})(),
-				anomaly_use_sampled_data: analysis.anomaly_use_sampled_data !== false,
-				comparison_entity_id: hasSimilarEntity && typeof analysis.anomaly_comparison_entity_id === "string" && analysis.anomaly_comparison_entity_id ? analysis.anomaly_comparison_entity_id : null
-			};
-			if (analysis.anomaly_use_sampled_data !== false) {
-				config.sample_interval = typeof analysis.sample_interval === "string" ? analysis.sample_interval : null;
-				config.sample_aggregate = typeof analysis.sample_aggregate === "string" ? analysis.sample_aggregate : null;
-			}
-			return config;
+			return buildBackendAnomalyConfig(analysis);
 		}
 		/** Build normalised state list for an entity from histResult/statsResult. Overridden by parent. */
 		_buildEntityStateList(entityId, histResult, statsResult) {
-			const historyStates = getHistoryStatesForEntity$1(histResult, entityId, this._seriesSettings?.map((seriesSetting) => seriesSetting.entity_id).filter(Boolean) ?? []);
-			return mergeNumericHistoryWithStatistics(entityId.split(".")[0] === "binary_sensor" ? normalizeBinaryHistory(entityId, historyStates) : normalizeNumericHistory(entityId, historyStates), normalizeStatisticsHistory(entityId, statsResult));
+			return buildEntityStateList(entityId, histResult, statsResult, this._seriesSettings?.map((seriesSetting) => seriesSetting.entity_id).filter(Boolean) ?? []);
 		}
 		/** Build binary state spans from a state list. */
 		_buildBinaryStateSpans(stateList, t0, t1) {
-			const spans = [];
-			if (!stateList.length) return spans;
-			let current = stateList[0];
-			for (let i = 1; i < stateList.length; i++) {
-				const next = stateList[i];
-				const start = Math.max(current.lu * 1e3, t0);
-				const end = Math.min(next.lu * 1e3, t1);
-				if (end > start) spans.push({
-					start,
-					end,
-					state: current.s
-				});
-				current = next;
-			}
-			const lastStart = Math.max(current.lu * 1e3, t0);
-			if (t1 > lastStart) spans.push({
-				start: lastStart,
-				end: t1,
-				state: current.s
-			});
-			return spans;
+			return buildBinaryStateSpans(stateList, t0, t1);
 		}
 		/** Return the "on" label for a binary_sensor entity. */
 		_binaryOnLabel(entityId) {
@@ -12075,22 +12423,7 @@
 			return getAxisValueExtent(values);
 		}
 		_getComparisonWindowLineStyle(isHovered, isSelected, hoveringDifferentComparison) {
-			if (isHovered) return {
-				lineOpacity: 1,
-				dashed: false,
-				hoverOpacity: .85
-			};
-			if (hoveringDifferentComparison && isSelected) return {
-				lineOpacity: .25,
-				lineWidth: 1.25,
-				dashed: false,
-				hoverOpacity: .25
-			};
-			return {
-				lineOpacity: .85,
-				dashed: false,
-				hoverOpacity: .85
-			};
+			return getComparisonWindowLineStyle(isHovered, isSelected, hoveringDifferentComparison);
 		}
 		/** Sync chart viewport scroll to the current zoom range. */
 		_syncChartViewportScroll(_t0, _t1, _canvasWidth) {
@@ -12111,13 +12444,7 @@
 				this._skipNextScrollViewportSync = false;
 				return;
 			}
-			const viewportWidth = viewport.clientWidth;
-			const totalMs = Math.max(1, _t1 - _t0);
-			const spanMs = Math.max(1, this._zoomRange.end - this._zoomRange.start);
-			const maxScrollLeft = Math.max(0, Math.max(_canvasWidth, viewportWidth) - viewportWidth);
-			const maxStartOffsetMs = Math.max(0, totalMs - spanMs);
-			const clampedStart = clampChartValue(this._zoomRange.start, _t0, _t1 - spanMs);
-			const nextLeft = (maxStartOffsetMs > 0 ? (clampedStart - _t0) / maxStartOffsetMs : 0) * maxScrollLeft;
+			const nextLeft = calculateViewportScrollPosition(_t0, _t1, _canvasWidth, viewport.clientWidth, this._zoomRange.start, this._zoomRange.end);
 			const currentLeft = viewport.scrollLeft;
 			if (Math.abs(currentLeft - nextLeft) < 2) return;
 			this._scrollSyncSuspended = true;
@@ -12272,122 +12599,15 @@
 		}
 		/** Filter events list by hidden IDs and message filter. */
 		_filterEvents(_events) {
-			const events = _events;
-			const query = String(this._config?.message_filter || "").trim().toLowerCase();
-			const visibleEvents = events.filter((event) => !this._hiddenEventIds.has(event?.id ?? ""));
-			if (!query) return visibleEvents;
-			return visibleEvents.filter((event) => {
-				return [
-					event?.message || "",
-					event?.annotation || "",
-					...(event?.entity_ids || []).filter(Boolean)
-				].join("\n").toLowerCase().includes(query);
-			});
+			return filterEvents(_events, this._hiddenEventIds, String(this._config?.message_filter || ""));
 		}
 		/** Build correlated anomaly spans across series. */
 		_buildCorrelatedAnomalySpans(_visibleSeries, _anomalyClustersMap, _analysisMap) {
-			const visibleSeries = _visibleSeries;
-			const anomalyClustersMap = _anomalyClustersMap;
-			const seriesIntervals = [];
-			for (const seriesItem of visibleSeries) {
-				if (_analysisMap.get(seriesItem.entityId)?.show_anomalies !== true) continue;
-				const clusters = anomalyClustersMap.get(seriesItem.entityId) || [];
-				if (!clusters.length) continue;
-				const pts = seriesItem.pts;
-				let tolerance = 6e4;
-				if (Array.isArray(pts) && pts.length >= 2) {
-					const intervals = [];
-					for (let i = 1; i < pts.length; i++) {
-						const diff = pts[i][0] - pts[i - 1][0];
-						if (diff > 0) intervals.push(diff);
-					}
-					if (intervals.length) {
-						intervals.sort((a, b) => a - b);
-						const mid = Math.floor(intervals.length / 2);
-						tolerance = intervals.length % 2 === 0 ? (intervals[mid - 1] + intervals[mid]) / 2 : intervals[mid];
-						tolerance = Math.max(tolerance, 1e3);
-					}
-				}
-				const entityIntervals = [];
-				for (const cluster of clusters) {
-					if (!Array.isArray(cluster.points) || cluster.points.length === 0) continue;
-					const startTime = cluster.points[0]?.timeMs;
-					const endTime = cluster.points[cluster.points.length - 1]?.timeMs;
-					if (!Number.isFinite(startTime) || !Number.isFinite(endTime)) continue;
-					entityIntervals.push({
-						start: Math.min(startTime, endTime) - tolerance,
-						end: Math.max(startTime, endTime) + tolerance
-					});
-				}
-				if (entityIntervals.length) seriesIntervals.push({
-					entityId: seriesItem.entityId,
-					intervals: entityIntervals
-				});
-			}
-			if (seriesIntervals.length < 2) return [];
-			const events = [];
-			for (const { entityId, intervals } of seriesIntervals) for (const { start, end } of intervals) {
-				events.push({
-					time: start,
-					delta: 1,
-					entityId
-				});
-				events.push({
-					time: end,
-					delta: -1,
-					entityId
-				});
-			}
-			events.sort((a, b) => a.time - b.time || a.delta - b.delta);
-			const activeCounts = /* @__PURE__ */ new Map();
-			const spans = [];
-			let spanStart = null;
-			for (const event of events) {
-				const next = (activeCounts.get(event.entityId) || 0) + event.delta;
-				if (next <= 0) activeCounts.delete(event.entityId);
-				else activeCounts.set(event.entityId, next);
-				const activeCount = activeCounts.size;
-				if (spanStart === null && activeCount >= 2) spanStart = event.time;
-				else if (spanStart !== null && activeCount < 2) {
-					spans.push({
-						start: spanStart,
-						end: event.time
-					});
-					spanStart = null;
-				}
-			}
-			if (spanStart !== null && events.length > 0) spans.push({
-				start: spanStart,
-				end: events[events.length - 1].time
-			});
-			return spans;
+			return buildCorrelatedAnomalySpans(_visibleSeries, _anomalyClustersMap, _analysisMap);
 		}
 		/** Filter out annotated anomaly clusters. */
 		_filterAnnotatedAnomalyClusters(_seriesItem, _events) {
-			const seriesItem = _seriesItem;
-			if (!Array.isArray(seriesItem?.anomalyClusters) || seriesItem.anomalyClusters.length === 0) return [];
-			const visibleEvents = Array.isArray(_events) ? _events : [];
-			if (visibleEvents.length === 0) return seriesItem.anomalyClusters;
-			const getClusterRange = (cluster) => {
-				if (!Array.isArray(cluster.points) || cluster.points.length === 0) return null;
-				const startTime = cluster.points[0]?.timeMs;
-				const endTime = cluster.points[cluster.points.length - 1]?.timeMs;
-				if (!Number.isFinite(startTime) || !Number.isFinite(endTime)) return null;
-				return {
-					startTime: Math.min(startTime, endTime),
-					endTime: Math.max(startTime, endTime)
-				};
-			};
-			return seriesItem.anomalyClusters.filter((cluster) => {
-				const clusterRange = getClusterRange(cluster);
-				if (!clusterRange) return true;
-				return !visibleEvents.some((event) => {
-					if (!(Array.isArray(event.entity_ids) ? event.entity_ids.filter(Boolean) : []).includes(seriesItem.entityId)) return false;
-					const eventTime = new Date(event.timestamp).getTime();
-					if (!Number.isFinite(eventTime)) return false;
-					return eventTime >= clusterRange.startTime && eventTime <= clusterRange.endTime;
-				});
-			});
+			return filterAnnotatedAnomalyClusters(_seriesItem, _events);
 		}
 		_fireComparisonBackendAnomalyRequests(drawableComparisonResults, analysisMap, renderT0, renderT1) {
 			if (!drawableComparisonResults.length || !this._hass) return;
@@ -12496,52 +12716,16 @@
 			return comparisonResults.filter((window) => drawableComparisonWindowIds.has(String(window.id || "")));
 		}
 		_resolveAnomalyClusterDisplay(anomalyClusters, overlapMode, correlatedSpans = []) {
-			const normalClusters = anomalyClusters.filter((c) => !c.isOverlap);
-			const overlapClusters = anomalyClusters.filter((c) => c.isOverlap === true);
-			if (overlapMode === "only") {
-				const overlapOnlyClusters = this._filterClustersByCorrelatedSpans(anomalyClusters, correlatedSpans);
-				return {
-					baseClusters: overlapOnlyClusters,
-					regionClusters: overlapOnlyClusters,
-					showCorrelatedSpans: true
-				};
-			}
-			return {
-				baseClusters: [...normalClusters, ...overlapClusters],
-				regionClusters: [...normalClusters, ...overlapClusters],
-				showCorrelatedSpans: false
-			};
+			return resolveAnomalyClusterDisplay(anomalyClusters, overlapMode, correlatedSpans);
 		}
 		_filterClustersByCorrelatedSpans(anomalyClusters, correlatedSpans) {
-			if (!Array.isArray(anomalyClusters) || anomalyClusters.length === 0) return [];
-			if (!Array.isArray(correlatedSpans) || correlatedSpans.length === 0) return [];
-			return anomalyClusters.filter((cluster) => {
-				const points = cluster.points;
-				if (!Array.isArray(points) || points.length === 0) return false;
-				const startTime = Number(points[0]?.timeMs);
-				const endTime = Number(points[points.length - 1]?.timeMs);
-				if (!Number.isFinite(startTime) || !Number.isFinite(endTime)) return false;
-				const clusterStart = Math.min(startTime, endTime);
-				const clusterEnd = Math.max(startTime, endTime);
-				return correlatedSpans.some((span) => {
-					const spanStart = Number(span.start);
-					const spanEnd = Number(span.end);
-					if (!Number.isFinite(spanStart) || !Number.isFinite(spanEnd)) return false;
-					return clusterEnd >= spanStart && clusterStart <= spanEnd;
-				});
-			});
+			return filterClustersByCorrelatedSpans(anomalyClusters, correlatedSpans);
 		}
 		_getComparisonAnomalyCacheKey(windowId, entityId) {
-			return `${windowId}:${entityId}`;
+			return getComparisonAnomalyCacheKey(windowId, entityId);
 		}
 		_shiftComparisonAnomalyClusters(clusters, timeOffsetMs) {
-			return (Array.isArray(clusters) ? clusters : []).map((cluster) => ({
-				...cluster,
-				points: Array.isArray(cluster.points) ? cluster.points.map((point) => ({
-					...point,
-					timeMs: Number(point.timeMs) - timeOffsetMs
-				})) : []
-			}));
+			return shiftComparisonAnomalyClusters(clusters, timeOffsetMs);
 		}
 		async _resolveComparisonWindowPoints(entityId, comparisonWindow, analysis, renderT0, renderT1) {
 			const stateList = this._buildEntityStateList(entityId, comparisonWindow.histResult, comparisonWindow.statsResult || {});
@@ -13672,66 +13856,14 @@
 		* Ported from _buildAnalysisCacheKey in card-history.js.
 		*/
 		_buildAnalysisCacheKey(visibleSeries, selectedComparisonSeriesMap, analysisMap, allComparisonWindowsData, t0, t1) {
-			const ANALYSIS_FIELDS = [
-				"show_trend_lines",
-				"trend_method",
-				"trend_window",
-				"show_rate_of_change",
-				"rate_window",
-				"show_delta_analysis",
-				"show_summary_stats",
-				"show_anomalies",
-				"anomaly_methods",
-				"anomaly_sensitivity",
-				"anomaly_overlap_mode",
-				"anomaly_rate_window",
-				"anomaly_zscore_window",
-				"anomaly_persistence_window",
-				"anomaly_comparison_window_id",
-				"anomaly_use_sampled_data",
-				"anomaly_trend_method",
-				"anomaly_trend_window"
-			];
-			return `${t0}:${t1}|${visibleSeries.map((s) => {
-				const a = analysisMap.get(s.entityId) || normalizeHistorySeriesAnalysis(null);
-				const first = s.pts[0]?.[0] ?? 0;
-				const last = s.pts[s.pts.length - 1]?.[0] ?? 0;
-				const aKey = ANALYSIS_FIELDS.map((f) => JSON.stringify(a[f])).join(",");
-				return `${s.entityId}:${s.pts.length}:${first}:${last}:${aKey}`;
-			}).join("|")}|${Array.from(selectedComparisonSeriesMap.values()).map((s) => {
-				const first = s.pts[0]?.[0] ?? 0;
-				const last = s.pts[s.pts.length - 1]?.[0] ?? 0;
-				return `${s.entityId}:${s.pts.length}:${first}:${last}`;
-			}).sort().join("|")}|${Object.entries(allComparisonWindowsData).flatMap(([windowId, entities]) => Object.entries(entities).map(([entityId, pts]) => {
-				const first = pts[0]?.[0] ?? 0;
-				const last = pts[pts.length - 1]?.[0] ?? 0;
-				return `${windowId}:${entityId}:${pts.length}:${first}:${last}`;
-			})).sort().join("|")}`;
+			return buildAnalysisCacheKey(visibleSeries, selectedComparisonSeriesMap, analysisMap, allComparisonWindowsData, t0, t1);
 		}
 		/**
 		* Build the serialisable payload sent to the history-analysis worker.
 		* Ported from _buildHistoryAnalysisPayload in card-history.js.
 		*/
 		_buildHistoryAnalysisPayload(visibleSeries, selectedComparisonSeriesMap, analysisMap, hasSelectedComparisonWindow, allComparisonWindowsData = {}) {
-			const defaultAnalysis = normalizeHistorySeriesAnalysis(null);
-			const series = visibleSeries.map((seriesItem) => ({
-				entityId: seriesItem.entityId,
-				pts: seriesItem.pts,
-				analysis: analysisMap.get(seriesItem.entityId) || defaultAnalysis
-			}));
-			const comparisonSeries = Array.from(selectedComparisonSeriesMap.values()).map((seriesItem) => ({
-				entityId: seriesItem.entityId,
-				pts: seriesItem.pts
-			}));
-			const seriesAnalysisConfigs = {};
-			for (const seriesItem of visibleSeries) seriesAnalysisConfigs[seriesItem.entityId] = analysisMap.get(seriesItem.entityId) || defaultAnalysis;
-			return {
-				series,
-				comparisonSeries,
-				hasSelectedComparisonWindow: hasSelectedComparisonWindow === true,
-				allComparisonWindowsData,
-				seriesAnalysisConfigs
-			};
+			return buildHistoryAnalysisPayload(visibleSeries, selectedComparisonSeriesMap, analysisMap, hasSelectedComparisonWindow, allComparisonWindowsData);
 		}
 		/**
 		* Run or cache the history analysis computation.
@@ -13811,41 +13943,26 @@
 		}
 		/** Build trend points from raw series data. */
 		_buildTrendPoints(_pts, _method, _window) {
-			if (!Array.isArray(_pts) || _pts.length < 2) return [];
-			const method = _method || "rolling_average";
-			const window = _window || "24h";
-			switch (method) {
-				case "linear_trend": return buildLinearTrend(_pts);
-				case "ema": return buildEmaTrend(_pts, getEmaAlpha(window));
-				case "polynomial_trend": return buildPolynomialTrend(_pts);
-				case "lowess": return buildLowessTrend(_pts, getLowessBandwidth(window, _pts));
-				default: return buildRollingAverageTrend(_pts, getTrendWindowMs(window));
-			}
+			return buildTrendPoints(_pts, _method, _window);
 		}
 		/** Build rate-of-change points from raw series data. */
 		_buildRateOfChangePoints(_pts, _window) {
-			if (!Array.isArray(_pts) || _pts.length < 2) return [];
-			return buildRateOfChangePoints(_pts, _window || "1h");
+			return buildRateOfChange(_pts, _window);
 		}
 		/** Build delta points (main vs comparison series). */
 		_buildDeltaPoints(_pts, _comparisonPts) {
-			return buildDeltaPoints(_pts, _comparisonPts);
+			return buildDelta(_pts, _comparisonPts);
 		}
 		/** Build summary statistics from raw series data. */
 		_buildSummaryStats(_pts) {
-			return buildSummaryStats(_pts) ?? {
-				min: 0,
-				max: 0,
-				mean: 0
-			};
+			return buildSummary(_pts);
 		}
 		/**
 		* Build a Map of entityId → normalised analysis settings from config.
 		* Ported from _getSeriesAnalysisMap in card-history.js.
 		*/
 		_getSeriesAnalysisMap() {
-			const seriesSettings = Array.isArray(this._config?.series_settings) ? this._config.series_settings : [];
-			return new Map(seriesSettings.filter((entry) => entry?.entity_id != null).map((entry) => [entry.entity_id, normalizeHistorySeriesAnalysis(entry?.analysis)]));
+			return buildSeriesAnalysisMap(Array.isArray(this._config?.series_settings) ? this._config.series_settings : []);
 		}
 		/**
 		* Get the normalised analysis settings for a single entity.
@@ -13859,56 +13976,17 @@
 		* Ported from _seriesHasActiveAnalysis in card-history.js.
 		*/
 		_seriesHasActiveAnalysis(analysis, hasSelectedComparisonWindow = false) {
-			return !!(analysis.show_trend_lines || analysis.show_summary_stats || analysis.show_rate_of_change || analysis.show_threshold_analysis || analysis.show_anomalies || analysis.show_delta_analysis && hasSelectedComparisonWindow);
+			return seriesHasActiveAnalysis(analysis, hasSelectedComparisonWindow);
 		}
-		/**
-		* Returns true if the source series should be hidden (replaced by its
-		* analysis overlay series).
-		* Ported from _seriesShouldHideSource in card-history.js.
-		*/
 		_seriesShouldHideSource(analysis, hasSelectedComparisonWindow = false) {
-			return analysis.hide_source_series === true && this._seriesHasActiveAnalysis(analysis, hasSelectedComparisonWindow);
+			return seriesShouldHideSource(analysis, hasSelectedComparisonWindow);
 		}
 		/**
 		* Return ChartRenderer render options for the active trend method.
 		* Ported from _getTrendRenderOptions in card-history.js.
 		*/
 		_getTrendRenderOptions(method = "rolling_average", hideRawData = false) {
-			if (method === "linear_trend") return {
-				colorAlpha: hideRawData ? .94 : .88,
-				lineOpacity: hideRawData ? .86 : .74,
-				lineWidth: 2.1,
-				dashed: true,
-				dotted: false
-			};
-			if (method === "ema") return {
-				colorAlpha: hideRawData ? .92 : .84,
-				lineOpacity: hideRawData ? .86 : .65,
-				lineWidth: 2,
-				dashed: false,
-				dotted: true
-			};
-			if (method === "polynomial_trend") return {
-				colorAlpha: hideRawData ? .94 : .86,
-				lineOpacity: hideRawData ? .86 : .72,
-				lineWidth: 2,
-				dashed: true,
-				dotted: false
-			};
-			if (method === "lowess") return {
-				colorAlpha: hideRawData ? .9 : .82,
-				lineOpacity: hideRawData ? .84 : .6,
-				lineWidth: 1.8,
-				dashed: false,
-				dotted: false
-			};
-			return {
-				colorAlpha: hideRawData ? .9 : .82,
-				lineOpacity: hideRawData ? .84 : .62,
-				lineWidth: 2.2,
-				dashed: false,
-				dotted: true
-			};
+			return getTrendRenderOptions(method, hideRawData);
 		}
 		async _drawSplitChart({ visibleSeries, binaryBackgrounds, events, renderT0, renderT1, canvasWidth, availableHeight, chartStage, canvas, wrap, options, drawableComparisonResults, selectedComparisonWindowId, hoveredComparisonWindowId, comparisonPreviewActive, hoveringDifferentComparison, analysisResult, analysisMap, hasSelectedComparisonWindow }) {
 			if (canvas) canvas.style.display = "none";
@@ -20129,10 +20207,109 @@
 		}
 		return result;
 	}
+	function computeZoomLevelForSpan(spanMs) {
+		const normalizedSpanMs = Math.max(spanMs, RANGE_SLIDER_MIN_SPAN_MS);
+		if (normalizedSpanMs >= 180 * 864e5) return "quarterly";
+		if (normalizedSpanMs >= 120 * 864e5) return "month_compressed";
+		if (normalizedSpanMs >= 60 * 864e5) return "month_short";
+		if (normalizedSpanMs >= 21 * 864e5) return "month_expanded";
+		if (normalizedSpanMs >= 7 * 864e5) return "week_compressed";
+		if (normalizedSpanMs >= 2 * 864e5) return "week_expanded";
+		return "day";
+	}
 	function snapDateToUnit(value, unit) {
 		const start = startOfUnit(value, unit);
 		const end = endOfUnit(value, unit);
 		return value.getTime() - start.getTime() < end.getTime() - value.getTime() ? start : end;
+	}
+	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/domain/date-window.ts
+	/**
+	* Pure date-window utilities extracted from datapoints.ts.
+	*
+	* All functions are stateless data transformations with no DOM dependency.
+	*/
+	function formatComparisonLabel(start, end) {
+		const fmt = (d) => d.toLocaleDateString(void 0, {
+			month: "short",
+			day: "numeric"
+		});
+		const fmtYear = (d) => d.toLocaleDateString(void 0, {
+			month: "short",
+			day: "numeric",
+			year: "numeric"
+		});
+		return start.getFullYear() === end.getFullYear() ? `${fmt(start)} – ${fmt(end)}` : `${fmtYear(start)} – ${fmtYear(end)}`;
+	}
+	function shiftDateWindowByUnit(date, unit, amount) {
+		const shifted = new Date(date);
+		if (unit === "day") {
+			shifted.setDate(shifted.getDate() + amount);
+			return shifted;
+		}
+		if (unit === "week") {
+			shifted.setDate(shifted.getDate() + amount * 7);
+			return shifted;
+		}
+		if (unit === "month") {
+			shifted.setMonth(shifted.getMonth() + amount);
+			return shifted;
+		}
+		if (unit === "year") {
+			shifted.setFullYear(shifted.getFullYear() + amount);
+			return shifted;
+		}
+		return shifted;
+	}
+	function getRoundedDateWindowUnit(start, end) {
+		if (!(start instanceof Date) || !(end instanceof Date) || !(start < end)) return null;
+		for (const unit of [
+			"day",
+			"week",
+			"month",
+			"year"
+		]) {
+			const roundedStart = startOfUnit(start, unit);
+			const roundedEnd = endOfUnit(start, unit);
+			if (roundedStart?.getTime?.() === start.getTime() && roundedEnd?.getTime?.() === end.getTime()) return unit;
+		}
+		return null;
+	}
+	function formatDateWindowInputValue(date) {
+		if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
+		return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}T${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+	}
+	function parseDateWindowInputValue(value) {
+		if (!value || typeof value !== "string") return null;
+		const match = value.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/);
+		if (!match) return null;
+		const [, year, month, day, hour, minute] = match;
+		const parsed = new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute), 0, 0);
+		if (Number.isNaN(parsed.getTime())) return null;
+		return parsed;
+	}
+	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/domain/series-rows.ts
+	/**
+	* Pure series-row utilities extracted from datapoints.ts.
+	*
+	* All functions are stateless data transformations with no DOM dependency.
+	*/
+	function mergeSavedSeriesRows(rows, savedRows) {
+		const normalizedRows = normalizeHistorySeriesRows(rows);
+		const normalizedSavedRows = normalizeHistorySeriesRows(savedRows);
+		if (!normalizedSavedRows.length) return normalizedRows;
+		const savedRowMap = new Map(normalizedSavedRows.map((row) => [row.entity_id, row]));
+		return normalizedRows.map((row) => {
+			const savedRow = savedRowMap.get(row.entity_id);
+			if (!savedRow) return row;
+			return {
+				...row,
+				color: savedRow.color,
+				visible: savedRow.visible,
+				analysis: savedRow.analysis
+			};
+		});
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/target-row.styles.ts
@@ -33390,20 +33567,7 @@
 			});
 		}
 		_mergeSavedSeriesRows(rows, savedRows) {
-			const normalizedRows = normalizeHistorySeriesRows(rows);
-			const normalizedSavedRows = normalizeHistorySeriesRows(savedRows);
-			if (!normalizedSavedRows.length) return normalizedRows;
-			const savedRowMap = new Map(normalizedSavedRows.map((row) => [row.entity_id, row]));
-			return normalizedRows.map((row) => {
-				const savedRow = savedRowMap.get(row.entity_id);
-				if (!savedRow) return row;
-				return {
-					...row,
-					color: savedRow.color,
-					visible: savedRow.visible,
-					analysis: savedRow.analysis
-				};
-			});
+			return mergeSavedSeriesRows(rows, savedRows);
 		}
 		_syncHassBindings() {
 			if (this._shellEl) {
@@ -33455,16 +33619,7 @@
 			this._refreshCollapsedOptionsPopup();
 		}
 		_formatComparisonLabel(start, end) {
-			const fmt = (d) => d.toLocaleDateString(void 0, {
-				month: "short",
-				day: "numeric"
-			});
-			const fmtYear = (d) => d.toLocaleDateString(void 0, {
-				month: "short",
-				day: "numeric",
-				year: "numeric"
-			});
-			return start.getFullYear() === end.getFullYear() ? `${fmt(start)} – ${fmt(end)}` : `${fmtYear(start)} – ${fmtYear(end)}`;
+			return formatComparisonLabel(start, end);
 		}
 		_getComparisonPreviewOverlay() {
 			const comparisonWindow = this._getActiveComparisonWindow();
@@ -33511,51 +33666,16 @@
 			return null;
 		}
 		_formatDateWindowInputValue(date) {
-			if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "";
-			return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}T${String(date.getHours()).padStart(2, "0")}:${String(date.getMinutes()).padStart(2, "0")}`;
+			return formatDateWindowInputValue(date);
 		}
 		_parseDateWindowInputValue(value) {
-			if (!value || typeof value !== "string") return null;
-			const match = value.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/);
-			if (!match) return null;
-			const [, year, month, day, hour, minute] = match;
-			const parsed = new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute), 0, 0);
-			if (Number.isNaN(parsed.getTime())) return null;
-			return parsed;
+			return parseDateWindowInputValue(value);
 		}
 		_shiftDateWindowByUnit(date, unit, amount) {
-			const shifted = new Date(date);
-			if (unit === "day") {
-				shifted.setDate(shifted.getDate() + amount);
-				return shifted;
-			}
-			if (unit === "week") {
-				shifted.setDate(shifted.getDate() + amount * 7);
-				return shifted;
-			}
-			if (unit === "month") {
-				shifted.setMonth(shifted.getMonth() + amount);
-				return shifted;
-			}
-			if (unit === "year") {
-				shifted.setFullYear(shifted.getFullYear() + amount);
-				return shifted;
-			}
-			return shifted;
+			return shiftDateWindowByUnit(date, unit, amount);
 		}
 		_getRoundedDateWindowUnit(start, end) {
-			if (!(start instanceof Date) || !(end instanceof Date) || !(start < end)) return null;
-			for (const unit of [
-				"day",
-				"week",
-				"month",
-				"year"
-			]) {
-				const roundedStart = startOfUnit(start, unit);
-				const roundedEnd = endOfUnit(start, unit);
-				if (roundedStart?.getTime?.() === start.getTime() && roundedEnd?.getTime?.() === end.getTime()) return unit;
-			}
-			return null;
+			return getRoundedDateWindowUnit(start, end);
 		}
 		_syncDateWindowDialogInputs() {
 			const startVal = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.start || null);
@@ -34809,14 +34929,7 @@
 			return RANGE_ZOOM_CONFIGS[this._getEffectiveZoomLevel()] || RANGE_ZOOM_CONFIGS.month_short;
 		}
 		_computeZoomLevelForSpan(spanMs) {
-			const normalizedSpanMs = Math.max(spanMs, RANGE_SLIDER_MIN_SPAN_MS);
-			if (normalizedSpanMs >= 180 * 864e5) return "quarterly";
-			if (normalizedSpanMs >= 120 * 864e5) return "month_compressed";
-			if (normalizedSpanMs >= 60 * 864e5) return "month_short";
-			if (normalizedSpanMs >= 21 * 864e5) return "month_expanded";
-			if (normalizedSpanMs >= 7 * 864e5) return "week_compressed";
-			if (normalizedSpanMs >= 2 * 864e5) return "week_expanded";
-			return "day";
+			return computeZoomLevelForSpan(spanMs);
 		}
 		_getEffectiveSnapUnit() {
 			if (this._dateSnapping !== "auto") return this._dateSnapping;

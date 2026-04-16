@@ -557,6 +557,29 @@ function addUnit(value: Date, unit: RangeUnit, amount = 1): Date {
   return result;
 }
 
+function computeZoomLevelForSpan(spanMs: number): string {
+  const normalizedSpanMs = Math.max(spanMs, RANGE_SLIDER_MIN_SPAN_MS);
+  if (normalizedSpanMs >= 180 * DAY_MS) {
+    return "quarterly";
+  }
+  if (normalizedSpanMs >= 120 * DAY_MS) {
+    return "month_compressed";
+  }
+  if (normalizedSpanMs >= 60 * DAY_MS) {
+    return "month_short";
+  }
+  if (normalizedSpanMs >= 21 * DAY_MS) {
+    return "month_expanded";
+  }
+  if (normalizedSpanMs >= 7 * DAY_MS) {
+    return "week_compressed";
+  }
+  if (normalizedSpanMs >= 2 * DAY_MS) {
+    return "week_expanded";
+  }
+  return "day";
+}
+
 function snapDateToUnit(value: Date, unit: RangeUnit): Date {
   const start = startOfUnit(value, unit);
   const end = endOfUnit(value, unit);
@@ -567,6 +590,7 @@ function snapDateToUnit(value: Date, unit: RangeUnit): Date {
 
 export {
   addUnit,
+  computeZoomLevelForSpan,
   endOfLocalDay,
   endOfLocalHour,
   endOfLocalMinute,
