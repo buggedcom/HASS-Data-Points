@@ -25494,8 +25494,7 @@
 		return result.monitor;
 	}
 	//#endregion
-	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/anomaly-monitor-wizard.ts
-	var _AnomalyMonitorWizard, _hass_accessor_storage$7, _open_accessor_storage$1, _prefillEntityIds_accessor_storage, _prefillAnalysis_accessor_storage, _editMonitor_accessor_storage$1, _suggestedEntityIds_accessor_storage, _allSeriesEntityIds_accessor_storage, _step_accessor_storage, _target_accessor_storage, _entityIds_accessor_storage, _entityConfigs_accessor_storage, _activeEntityId_accessor_storage, _name_accessor_storage$1, _lookBackHours_accessor_storage, _scanIntervalMinutes_accessor_storage, _monitorType_accessor_storage, _overlapMode_accessor_storage, _error_accessor_storage, _saving_accessor_storage;
+	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/monitor-wizard-logic.ts
 	var LOOK_BACK_OPTIONS = [
 		{
 			value: 6,
@@ -25572,6 +25571,95 @@
 			baseline_time_offset_hours: m.baseline_time_offset_hours ?? 0
 		};
 	}
+	function entityConfigToAnalysis(cfg) {
+		return {
+			show_anomalies: true,
+			anomaly_methods: [...cfg.anomaly_methods],
+			anomaly_sensitivity: cfg.anomaly_sensitivity,
+			anomaly_rate_window: cfg.anomaly_rate_window,
+			anomaly_zscore_window: cfg.anomaly_zscore_window,
+			anomaly_persistence_window: cfg.anomaly_persistence_window,
+			anomaly_trend_method: cfg.anomaly_trend_method,
+			anomaly_trend_window: cfg.anomaly_trend_window,
+			anomaly_use_sampled_data: cfg.anomaly_use_sampled_data,
+			sample_interval: cfg.sample_interval,
+			sample_aggregate: cfg.sample_aggregate,
+			show_trend_lines: false,
+			trend_method: "rolling_average",
+			trend_window: "24h",
+			show_trend_crosshairs: false,
+			show_summary_stats: false,
+			show_summary_stats_shading: false,
+			show_rate_of_change: false,
+			show_rate_crosshairs: false,
+			rate_window: "1h",
+			show_threshold_analysis: false,
+			show_threshold_shading: false,
+			threshold_value: "0",
+			threshold_direction: "above",
+			anomaly_overlap_mode: "all",
+			anomaly_comparison_window_id: null,
+			anomaly_comparison_entity_id: null,
+			show_delta_analysis: false,
+			show_delta_tooltip: false,
+			show_delta_lines: false,
+			hide_source_series: false,
+			stepped_series: false,
+			expanded: true
+		};
+	}
+	function toggleMethod(config, method, checked) {
+		const methods = checked ? [...config.anomaly_methods, method] : config.anomaly_methods.filter((m) => m !== method);
+		return {
+			...config,
+			anomaly_methods: methods
+		};
+	}
+	function buildConfigPayload(config) {
+		const base = {
+			anomaly_methods: config.anomaly_methods,
+			anomaly_sensitivity: config.anomaly_sensitivity,
+			anomaly_rate_window: config.anomaly_rate_window,
+			anomaly_zscore_window: config.anomaly_zscore_window,
+			anomaly_persistence_window: config.anomaly_persistence_window,
+			anomaly_trend_method: config.anomaly_trend_method || "rolling_average",
+			anomaly_trend_window: config.anomaly_trend_window || "24h"
+		};
+		if (config.sample_interval && config.sample_interval !== "raw") {
+			base.sample_interval = config.sample_interval;
+			base.sample_aggregate = config.sample_aggregate;
+			base.anomaly_use_sampled_data = true;
+		}
+		if (config.baseline_entity_id) {
+			base.baseline_entity_id = config.baseline_entity_id;
+			base.baseline_time_offset_hours = config.baseline_time_offset_hours;
+		}
+		return base;
+	}
+	function validateStep1(entityIds) {
+		if (entityIds.length === 0) return {
+			valid: false,
+			error: "Select at least one entity."
+		};
+		return { valid: true };
+	}
+	function validateStep2(entityIds, getConfig) {
+		if (entityIds.some((id) => getConfig(id).anomaly_methods.length === 0)) return {
+			valid: false,
+			error: "Each entity needs at least one detection method."
+		};
+		if (entityIds.some((id) => {
+			const cfg = getConfig(id);
+			return cfg.anomaly_methods.includes("comparison_window") && !cfg.baseline_entity_id;
+		})) return {
+			valid: false,
+			error: "Select a baseline entity for the Comparison method."
+		};
+		return { valid: true };
+	}
+	//#endregion
+	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/anomaly-monitor-wizard.ts
+	var _AnomalyMonitorWizard, _hass_accessor_storage$7, _open_accessor_storage$1, _prefillEntityIds_accessor_storage, _prefillAnalysis_accessor_storage, _editMonitor_accessor_storage$1, _suggestedEntityIds_accessor_storage, _allSeriesEntityIds_accessor_storage, _step_accessor_storage, _target_accessor_storage, _entityIds_accessor_storage, _entityConfigs_accessor_storage, _activeEntityId_accessor_storage, _name_accessor_storage$1, _lookBackHours_accessor_storage, _scanIntervalMinutes_accessor_storage, _monitorType_accessor_storage, _overlapMode_accessor_storage, _error_accessor_storage, _saving_accessor_storage;
 	var AnomalyMonitorWizard = (_hass_accessor_storage$7 = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _prefillEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _prefillAnalysis_accessor_storage = /* @__PURE__ */ new WeakMap(), _editMonitor_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _suggestedEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _allSeriesEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _step_accessor_storage = /* @__PURE__ */ new WeakMap(), _target_accessor_storage = /* @__PURE__ */ new WeakMap(), _entityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _entityConfigs_accessor_storage = /* @__PURE__ */ new WeakMap(), _activeEntityId_accessor_storage = /* @__PURE__ */ new WeakMap(), _name_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _lookBackHours_accessor_storage = /* @__PURE__ */ new WeakMap(), _scanIntervalMinutes_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitorType_accessor_storage = /* @__PURE__ */ new WeakMap(), _overlapMode_accessor_storage = /* @__PURE__ */ new WeakMap(), _error_accessor_storage = /* @__PURE__ */ new WeakMap(), _saving_accessor_storage = /* @__PURE__ */ new WeakMap(), _AnomalyMonitorWizard = class AnomalyMonitorWizard extends i$2 {
 		constructor(..._args) {
 			super(..._args);
@@ -25764,48 +25852,13 @@
 			this._entityConfigs = updated;
 		}
 		_toggleMethod(entityId, method, checked) {
-			const cfg = this._getEntityConfig(entityId);
-			const methods = checked ? [...cfg.anomaly_methods, method] : cfg.anomaly_methods.filter((m) => m !== method);
-			this._updateEntityConfig(entityId, "anomaly_methods", methods);
+			const updated = toggleMethod(this._getEntityConfig(entityId), method, checked);
+			this._updateEntityConfig(entityId, "anomaly_methods", updated.anomaly_methods);
 		}
 		/** Convert the wizard's slim EntityAnalysisConfig into a full NormalizedAnalysis
 		*  so it can be passed directly into analysis-anomaly-group / analysis-sample-group. */
 		_entityConfigToAnalysis(cfg) {
-			return {
-				show_anomalies: true,
-				anomaly_methods: [...cfg.anomaly_methods],
-				anomaly_sensitivity: cfg.anomaly_sensitivity,
-				anomaly_rate_window: cfg.anomaly_rate_window,
-				anomaly_zscore_window: cfg.anomaly_zscore_window,
-				anomaly_persistence_window: cfg.anomaly_persistence_window,
-				anomaly_trend_method: cfg.anomaly_trend_method,
-				anomaly_trend_window: cfg.anomaly_trend_window,
-				anomaly_use_sampled_data: cfg.anomaly_use_sampled_data,
-				sample_interval: cfg.sample_interval,
-				sample_aggregate: cfg.sample_aggregate,
-				show_trend_lines: false,
-				trend_method: "rolling_average",
-				trend_window: "24h",
-				show_trend_crosshairs: false,
-				show_summary_stats: false,
-				show_summary_stats_shading: false,
-				show_rate_of_change: false,
-				show_rate_crosshairs: false,
-				rate_window: "1h",
-				show_threshold_analysis: false,
-				show_threshold_shading: false,
-				threshold_value: "0",
-				threshold_direction: "above",
-				anomaly_overlap_mode: "all",
-				anomaly_comparison_window_id: null,
-				anomaly_comparison_entity_id: null,
-				show_delta_analysis: false,
-				show_delta_tooltip: false,
-				show_delta_lines: false,
-				hide_source_series: false,
-				stepped_series: false,
-				expanded: true
-			};
+			return entityConfigToAnalysis(cfg);
 		}
 		/** Handle dp-group-analysis-change events bubbled from the embedded analysis components. */
 		_onAnalysisGroupChange(entityId, e) {
@@ -25871,8 +25924,9 @@
 		_onNext() {
 			if (this._step === 1) {
 				const resolved = resolveEntityIdsFromTarget(this.hass, this._target);
-				if (resolved.length === 0) {
-					this._error = msg("Select at least one entity.");
+				const v1 = validateStep1(resolved);
+				if (!v1.valid) {
+					this._error = msg(v1.error);
 					return;
 				}
 				const newConfigs = new Map(this._entityConfigs);
@@ -25884,15 +25938,9 @@
 				this._error = "";
 				this._step = 2;
 			} else if (this._step === 2) {
-				if (this._entityIds.some((id) => this._getEntityConfig(id).anomaly_methods.length === 0)) {
-					this._error = msg("Each entity needs at least one detection method.");
-					return;
-				}
-				if (this._entityIds.some((id) => {
-					const cfg = this._getEntityConfig(id);
-					return cfg.anomaly_methods.includes("comparison_window") && !cfg.baseline_entity_id;
-				})) {
-					this._error = msg("Select a baseline entity for the Comparison method.");
+				const v2 = validateStep2(this._entityIds, (id) => this._getEntityConfig(id));
+				if (!v2.valid) {
+					this._error = msg(v2.error);
 					return;
 				}
 				if (!this._name) {
@@ -25905,26 +25953,7 @@
 			}
 		}
 		_configPayload(entityId) {
-			const cfg = this._getEntityConfig(entityId);
-			const base = {
-				anomaly_methods: cfg.anomaly_methods,
-				anomaly_sensitivity: cfg.anomaly_sensitivity,
-				anomaly_rate_window: cfg.anomaly_rate_window,
-				anomaly_zscore_window: cfg.anomaly_zscore_window,
-				anomaly_persistence_window: cfg.anomaly_persistence_window,
-				anomaly_trend_method: cfg.anomaly_trend_method || "rolling_average",
-				anomaly_trend_window: cfg.anomaly_trend_window || "24h"
-			};
-			if (cfg.sample_interval && cfg.sample_interval !== "raw") {
-				base.sample_interval = cfg.sample_interval;
-				base.sample_aggregate = cfg.sample_aggregate;
-				base.anomaly_use_sampled_data = true;
-			}
-			if (cfg.baseline_entity_id) {
-				base.baseline_entity_id = cfg.baseline_entity_id;
-				base.baseline_time_offset_hours = cfg.baseline_time_offset_hours;
-			}
-			return base;
+			return buildConfigPayload(this._getEntityConfig(entityId));
 		}
 		async _onSubmit() {
 			if (!this.hass) return;

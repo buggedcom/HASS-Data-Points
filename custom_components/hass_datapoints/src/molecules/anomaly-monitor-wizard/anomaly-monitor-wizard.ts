@@ -20,91 +20,22 @@ import {
   resolveEntityIdsFromTarget,
 } from "@/lib/domain/target-selection";
 import { disambiguateEntityNames } from "@/lib/ha/entity-name";
+import {
+  LOOK_BACK_OPTIONS,
+  SCAN_INTERVAL_OPTIONS,
+  type EntityAnalysisConfig,
+  defaultEntityConfig,
+  configFromMonitor,
+  entityConfigToAnalysis,
+  toggleMethod,
+  buildConfigPayload,
+  validateStep1,
+  validateStep2,
+} from "./monitor-wizard-logic";
 import "@/atoms/form/inline-select/inline-select";
 import "@/atoms/form/entity-chip/entity-chip";
 import "@/molecules/analysis-anomaly-group/analysis-anomaly-group";
 import "@/molecules/analysis-sample-group/analysis-sample-group";
-
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
-
-const LOOK_BACK_OPTIONS = [
-  { value: 6, label: "6 hours" },
-  { value: 12, label: "12 hours" },
-  { value: 24, label: "24 hours" },
-  { value: 48, label: "48 hours" },
-  { value: 168, label: "7 days" },
-];
-
-const SCAN_INTERVAL_OPTIONS = [
-  { value: 15, label: "15 minutes" },
-  { value: 30, label: "30 minutes" },
-  { value: 60, label: "1 hour" },
-  { value: 120, label: "2 hours" },
-  { value: 360, label: "6 hours" },
-];
-
-// ---------------------------------------------------------------------------
-// Per-entity analysis config
-// ---------------------------------------------------------------------------
-
-interface EntityAnalysisConfig {
-  anomaly_methods: string[];
-  anomaly_sensitivity: string;
-  anomaly_rate_window: string;
-  anomaly_zscore_window: string;
-  anomaly_persistence_window: string;
-  anomaly_trend_method: string;
-  anomaly_trend_window: string;
-  sample_interval: string;
-  sample_aggregate: string;
-  anomaly_use_sampled_data: boolean;
-  baseline_entity_id: string | null;
-  baseline_time_offset_hours: number;
-}
-
-function defaultEntityConfig(
-  prefill?: Partial<NormalizedAnalysis> | null
-): EntityAnalysisConfig {
-  return {
-    anomaly_methods: prefill?.anomaly_methods?.length
-      ? [...prefill.anomaly_methods]
-      : ["trend_residual"],
-    anomaly_sensitivity: prefill?.anomaly_sensitivity ?? "medium",
-    anomaly_rate_window: prefill?.anomaly_rate_window ?? "1h",
-    anomaly_zscore_window: prefill?.anomaly_zscore_window ?? "24h",
-    anomaly_persistence_window: prefill?.anomaly_persistence_window ?? "1h",
-    anomaly_trend_method: prefill?.anomaly_trend_method || "rolling_average",
-    anomaly_trend_window: prefill?.anomaly_trend_window ?? "24h",
-    sample_interval: prefill?.sample_interval ?? "raw",
-    sample_aggregate: prefill?.sample_aggregate ?? "mean",
-    anomaly_use_sampled_data: prefill?.anomaly_use_sampled_data ?? false,
-    baseline_entity_id: null,
-    baseline_time_offset_hours: 0,
-  };
-}
-
-function configFromMonitor(m: AnomalyMonitor): EntityAnalysisConfig {
-  return {
-    anomaly_methods: [...m.anomaly_methods],
-    anomaly_sensitivity: m.anomaly_sensitivity,
-    anomaly_rate_window: m.anomaly_rate_window,
-    anomaly_zscore_window: m.anomaly_zscore_window,
-    anomaly_persistence_window: m.anomaly_persistence_window,
-    anomaly_trend_method: m.anomaly_trend_method,
-    anomaly_trend_window: m.anomaly_trend_window,
-    sample_interval: m.sample_interval ?? "raw",
-    sample_aggregate: m.sample_aggregate ?? "mean",
-    anomaly_use_sampled_data: m.anomaly_use_sampled_data ?? false,
-    baseline_entity_id:
-      ((m as unknown as Record<string, unknown>)
-        .baseline_entity_id as string) ?? null,
-    baseline_time_offset_hours:
-      ((m as unknown as Record<string, unknown>)
-        .baseline_time_offset_hours as number) ?? 0,
-  };
-}
 
 // ---------------------------------------------------------------------------
 // Component
@@ -260,10 +191,12 @@ export class AnomalyMonitorWizard extends LitElement {
 
   private _toggleMethod(entityId: string, method: string, checked: boolean) {
     const cfg = this._getEntityConfig(entityId);
-    const methods = checked
-      ? [...cfg.anomaly_methods, method]
-      : cfg.anomaly_methods.filter((m) => m !== method);
-    this._updateEntityConfig(entityId, "anomaly_methods", methods);
+    const updated = toggleMethod(cfg, method, checked);
+    this._updateEntityConfig(
+      entityId,
+      "anomaly_methods",
+      updated.anomaly_methods
+    );
   }
 
   /** Convert the wizard's slim EntityAnalysisConfig into a full NormalizedAnalysis
@@ -271,42 +204,7 @@ export class AnomalyMonitorWizard extends LitElement {
   private _entityConfigToAnalysis(
     cfg: EntityAnalysisConfig
   ): NormalizedAnalysis {
-    return {
-      show_anomalies: true,
-      anomaly_methods: [...cfg.anomaly_methods],
-      anomaly_sensitivity: cfg.anomaly_sensitivity,
-      anomaly_rate_window: cfg.anomaly_rate_window,
-      anomaly_zscore_window: cfg.anomaly_zscore_window,
-      anomaly_persistence_window: cfg.anomaly_persistence_window,
-      anomaly_trend_method: cfg.anomaly_trend_method,
-      anomaly_trend_window: cfg.anomaly_trend_window,
-      anomaly_use_sampled_data: cfg.anomaly_use_sampled_data,
-      sample_interval: cfg.sample_interval,
-      sample_aggregate: cfg.sample_aggregate,
-      // Defaults for fields not tracked by the wizard
-      show_trend_lines: false,
-      trend_method: "rolling_average",
-      trend_window: "24h",
-      show_trend_crosshairs: false,
-      show_summary_stats: false,
-      show_summary_stats_shading: false,
-      show_rate_of_change: false,
-      show_rate_crosshairs: false,
-      rate_window: "1h",
-      show_threshold_analysis: false,
-      show_threshold_shading: false,
-      threshold_value: "0",
-      threshold_direction: "above",
-      anomaly_overlap_mode: "all",
-      anomaly_comparison_window_id: null,
-      anomaly_comparison_entity_id: null,
-      show_delta_analysis: false,
-      show_delta_tooltip: false,
-      show_delta_lines: false,
-      hide_source_series: false,
-      stepped_series: false,
-      expanded: true,
-    } as NormalizedAnalysis;
+    return entityConfigToAnalysis(cfg) as NormalizedAnalysis;
   }
 
   /** Handle dp-group-analysis-change events bubbled from the embedded analysis components. */
@@ -399,8 +297,9 @@ export class AnomalyMonitorWizard extends LitElement {
   private _onNext() {
     if (this._step === 1) {
       const resolved = resolveEntityIdsFromTarget(this.hass, this._target);
-      if (resolved.length === 0) {
-        this._error = msg("Select at least one entity.");
+      const v1 = validateStep1(resolved);
+      if (!v1.valid) {
+        this._error = msg(v1.error!);
         return;
       }
       // Sync entity configs to the resolved list
@@ -418,24 +317,11 @@ export class AnomalyMonitorWizard extends LitElement {
       this._error = "";
       this._step = 2;
     } else if (this._step === 2) {
-      const anyEmpty = this._entityIds.some(
-        (id) => this._getEntityConfig(id).anomaly_methods.length === 0
+      const v2 = validateStep2(this._entityIds, (id) =>
+        this._getEntityConfig(id)
       );
-      if (anyEmpty) {
-        this._error = msg("Each entity needs at least one detection method.");
-        return;
-      }
-      const anyMissingBaseline = this._entityIds.some((id) => {
-        const cfg = this._getEntityConfig(id);
-        return (
-          cfg.anomaly_methods.includes("comparison_window") &&
-          !cfg.baseline_entity_id
-        );
-      });
-      if (anyMissingBaseline) {
-        this._error = msg(
-          "Select a baseline entity for the Comparison method."
-        );
+      if (!v2.valid) {
+        this._error = msg(v2.error!);
         return;
       }
       // Auto-populate name if blank
@@ -457,26 +343,7 @@ export class AnomalyMonitorWizard extends LitElement {
   // -------------------------------------------------------------------------
 
   private _configPayload(entityId: string) {
-    const cfg = this._getEntityConfig(entityId);
-    const base: Partial<CreateMonitorPayload> = {
-      anomaly_methods: cfg.anomaly_methods,
-      anomaly_sensitivity: cfg.anomaly_sensitivity,
-      anomaly_rate_window: cfg.anomaly_rate_window,
-      anomaly_zscore_window: cfg.anomaly_zscore_window,
-      anomaly_persistence_window: cfg.anomaly_persistence_window,
-      anomaly_trend_method: cfg.anomaly_trend_method || "rolling_average",
-      anomaly_trend_window: cfg.anomaly_trend_window || "24h",
-    };
-    if (cfg.sample_interval && cfg.sample_interval !== "raw") {
-      base.sample_interval = cfg.sample_interval;
-      base.sample_aggregate = cfg.sample_aggregate;
-      base.anomaly_use_sampled_data = true;
-    }
-    if (cfg.baseline_entity_id) {
-      base.baseline_entity_id = cfg.baseline_entity_id;
-      base.baseline_time_offset_hours = cfg.baseline_time_offset_hours;
-    }
-    return base;
+    return buildConfigPayload(this._getEntityConfig(entityId));
   }
 
   private async _onSubmit() {
