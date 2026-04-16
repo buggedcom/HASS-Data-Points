@@ -5406,22 +5406,6 @@
 		set suffix(value) {
 			_classPrivateFieldSet2(_suffix_accessor_storage, this, value);
 		}
-		firstUpdated() {
-			const field = this.shadowRoot.querySelector("ha-textfield");
-			if (field) {
-				field.label = this.label;
-				field.value = this.value;
-				if (this.type) field.type = this.type;
-				if (this.placeholder) field.placeholder = this.placeholder;
-				if (this.suffix) field.suffix = this.suffix;
-			}
-		}
-		updated(changedProps) {
-			const field = this.shadowRoot.querySelector("ha-textfield");
-			if (!field) return;
-			if (changedProps.has("value")) field.value = this.value;
-			if (changedProps.has("label")) field.label = this.label;
-		}
 		_onInput(e) {
 			const rawValue = e.target.value;
 			const value = this.type === "number" ? parseFloat(rawValue) : rawValue;
@@ -5432,7 +5416,14 @@
 			}));
 		}
 		render() {
-			return b`<ha-textfield @input=${this._onInput}></ha-textfield>`;
+			return b`<ha-textfield
+      .label=${this.label}
+      .value=${this.value}
+      .type=${this.type}
+      .placeholder=${this.placeholder}
+      .suffix=${this.suffix}
+      @input=${this._onInput}
+    ></ha-textfield>`;
 		}
 	};
 	_defineProperty(EditorTextField, "styles", styles$67);
@@ -5513,22 +5504,6 @@
 		set tooltip(value) {
 			_classPrivateFieldSet2(_tooltip_accessor_storage, this, value);
 		}
-		firstUpdated() {
-			const ff = this.shadowRoot.querySelector("ha-formfield");
-			if (ff) ff.label = this.label;
-			const sw = this.shadowRoot.querySelector("ha-switch");
-			if (sw) sw.checked = this.checked;
-		}
-		updated(changedProps) {
-			if (changedProps.has("checked")) {
-				const sw = this.shadowRoot.querySelector("ha-switch");
-				if (sw) sw.checked = this.checked;
-			}
-			if (changedProps.has("label")) {
-				const ff = this.shadowRoot.querySelector("ha-formfield");
-				if (ff) ff.label = this.label;
-			}
-		}
 		_onChange(e) {
 			this.dispatchEvent(new CustomEvent("dp-switch-change", {
 				detail: { checked: e.target.checked },
@@ -5539,8 +5514,11 @@
 		render() {
 			return b`
       <div class="switch-row">
-        <ha-formfield>
-          <ha-switch @change=${this._onChange}></ha-switch>
+        <ha-formfield .label=${this.label}>
+          <ha-switch
+            .checked=${this.checked}
+            @change=${this._onChange}
+          ></ha-switch>
         </ha-formfield>
         ${this.tooltip ? b`
               <span class="help-icon">
@@ -5598,20 +5576,6 @@
 		set hass(value) {
 			_classPrivateFieldSet2(_hass_accessor_storage$13, this, value);
 		}
-		firstUpdated() {
-			const el = this.shadowRoot.querySelector("ha-icon-picker");
-			if (el) {
-				el.label = this.label;
-				if (this.hass) el.hass = this.hass;
-				el.value = this.value;
-			}
-		}
-		updated(changedProps) {
-			const el = this.shadowRoot.querySelector("ha-icon-picker");
-			if (!el) return;
-			if (changedProps.has("value")) el.value = this.value;
-			if (changedProps.has("hass") && this.hass) el.hass = this.hass;
-		}
 		_onValueChanged(e) {
 			this.dispatchEvent(new CustomEvent("dp-icon-change", {
 				detail: { value: e.detail.value },
@@ -5621,6 +5585,9 @@
 		}
 		render() {
 			return b`<ha-icon-picker
+      .label=${this.label}
+      .hass=${this.hass}
+      .value=${this.value}
       @value-changed=${this._onValueChanged}
     ></ha-icon-picker>`;
 		}
@@ -5632,15 +5599,33 @@
 	customElements.define("editor-icon-picker", EditorIconPicker);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/editor.ts
+	var _targetPickerEl_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _selectorEls_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var HassDatapointsActionCardEditor = class extends EditorBase {
+		constructor(..._args) {
+			super(..._args);
+			_classPrivateFieldInitSpec(this, _targetPickerEl_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _selectorEls_accessor_storage, void 0);
+		}
+		get _targetPickerEl() {
+			return _classPrivateFieldGet2(_targetPickerEl_accessor_storage, this);
+		}
+		set _targetPickerEl(value) {
+			_classPrivateFieldSet2(_targetPickerEl_accessor_storage, this, value);
+		}
+		get _selectorEls() {
+			return _classPrivateFieldGet2(_selectorEls_accessor_storage, this);
+		}
+		set _selectorEls(value) {
+			_classPrivateFieldSet2(_selectorEls_accessor_storage, this, value);
+		}
 		_configTarget() {
 			return normalizeTargetValue(this._config.target ?? { entity_id: Array.isArray(this._config.entities) && this._config.entities.length ? this._config.entities : this._config.entity }) ?? {};
 		}
 		_syncTargetPicker() {
-			const tp = this.shadowRoot?.querySelector("#target-picker");
-			if (!tp) return;
-			if (this.hass) tp.hass = this.hass;
-			tp.value = this._configTarget();
+			if (!this._targetPickerEl) return;
+			if (this.hass) this._targetPickerEl.hass = this.hass;
+			this._targetPickerEl.value = this._configTarget();
 		}
 		_setTargetConfig(target) {
 			const cfg = { ...this._config };
@@ -5658,9 +5643,8 @@
 		}
 		updated(changedProps) {
 			if (changedProps.has("hass") || changedProps.has("_config")) this._syncTargetPicker();
-			if (changedProps.has("hass") && this.hass) this.shadowRoot?.querySelectorAll("ha-selector").forEach((el) => {
-				const selectorEl = el;
-				selectorEl.hass = this.hass;
+			if (changedProps.has("hass") && this.hass) this._selectorEls?.forEach((el) => {
+				el.hass = this.hass;
 			});
 		}
 		render() {
@@ -5726,6 +5710,8 @@
 		}
 	};
 	_defineProperty(HassDatapointsActionCardEditor, "styles", [EditorBase.styles, styles$70]);
+	__decorate([e$4("#target-picker")], HassDatapointsActionCardEditor.prototype, "_targetPickerEl", null);
+	__decorate([r$1("ha-selector")], HassDatapointsActionCardEditor.prototype, "_selectorEls", null);
 	//#endregion
 	//#region node_modules/.pnpm/@kipk+load-ha-components@1.0.3/node_modules/@kipk/load-ha-components/dist/load-ha-components.js
 	/**
@@ -27785,6 +27771,7 @@
 	var _min_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _max_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _secondHidden_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _splitterEl_accessor_storage = /* @__PURE__ */ new WeakMap();
 	/**
 	* `resizable-panes` is a two-pane layout atom with a draggable splitter.
 	*
@@ -27808,7 +27795,7 @@
 			_classPrivateFieldInitSpec(this, _max_accessor_storage, .75);
 			_classPrivateFieldInitSpec(this, _secondHidden_accessor_storage, false);
 			_defineProperty(this, "_pointerId", null);
-			_defineProperty(this, "_splitterEl", null);
+			_classPrivateFieldInitSpec(this, _splitterEl_accessor_storage, null);
 			_defineProperty(this, "_onPointerDown", (ev) => {
 				if (ev.button !== 0) return;
 				ev.preventDefault();
@@ -27887,8 +27874,13 @@
 		set secondHidden(value) {
 			_classPrivateFieldSet2(_secondHidden_accessor_storage, this, value);
 		}
+		get _splitterEl() {
+			return _classPrivateFieldGet2(_splitterEl_accessor_storage, this);
+		}
+		set _splitterEl(value) {
+			_classPrivateFieldSet2(_splitterEl_accessor_storage, this, value);
+		}
 		firstUpdated() {
-			this._splitterEl = this.shadowRoot?.querySelector(".pane-splitter") ?? null;
 			this._applyRatio();
 		}
 		disconnectedCallback() {
@@ -27939,6 +27931,7 @@
 		attribute: "second-hidden",
 		reflect: true
 	})], ResizablePanes.prototype, "secondHidden", null);
+	__decorate([e$4(".pane-splitter")], ResizablePanes.prototype, "_splitterEl", null);
 	customElements.define("resizable-panes", ResizablePanes);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/history-chart/history-chart.ts
@@ -39414,6 +39407,8 @@
 	var _limit_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _showFullMessage_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _page_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _paginationEl_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _annListEl_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var SensorRecords = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
@@ -39423,6 +39418,8 @@
 			_classPrivateFieldInitSpec(this, _limit_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _showFullMessage_accessor_storage, true);
 			_classPrivateFieldInitSpec(this, _page_accessor_storage, 0);
+			_classPrivateFieldInitSpec(this, _paginationEl_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _annListEl_accessor_storage, null);
 			_defineProperty(this, "_paginationNotifyRaf", null);
 		}
 		get events() {
@@ -39461,6 +39458,18 @@
 		set _page(value) {
 			_classPrivateFieldSet2(_page_accessor_storage, this, value);
 		}
+		get _paginationEl() {
+			return _classPrivateFieldGet2(_paginationEl_accessor_storage, this);
+		}
+		set _paginationEl(value) {
+			_classPrivateFieldSet2(_paginationEl_accessor_storage, this, value);
+		}
+		get _annListEl() {
+			return _classPrivateFieldGet2(_annListEl_accessor_storage, this);
+		}
+		set _annListEl(value) {
+			_classPrivateFieldSet2(_annListEl_accessor_storage, this, value);
+		}
 		updated(changedProps) {
 			if (changedProps.has("events") || changedProps.has("pageSize") || changedProps.has("limit") || changedProps.has("_page")) {
 				const sorted = [...this.events].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
@@ -39469,7 +39478,7 @@
 				if (this._paginationNotifyRaf !== null) window.cancelAnimationFrame(this._paginationNotifyRaf);
 				this._paginationNotifyRaf = window.requestAnimationFrame(() => {
 					this._paginationNotifyRaf = null;
-					const paginationHeight = (this.shadowRoot?.querySelector("pagination-nav"))?.getBoundingClientRect().height ?? 0;
+					const paginationHeight = this._paginationEl?.getBoundingClientRect().height ?? 0;
 					this.dispatchEvent(new CustomEvent("dp-sensor-pagination-visibility-change", {
 						detail: {
 							visible: totalPages > 1,
@@ -39523,7 +39532,7 @@
                 label="records"
                 @dp-page-change=${(e) => {
 				this._page = e.detail.page;
-				this.shadowRoot?.querySelector(".ann-list")?.scrollTo(0, 0);
+				this._annListEl?.scrollTo(0, 0);
 			}}
               ></pagination-nav>
             ` : ""}
@@ -39550,6 +39559,8 @@
 		attribute: "show-full-message"
 	})], SensorRecords.prototype, "showFullMessage", null);
 	__decorate([r$2()], SensorRecords.prototype, "_page", null);
+	__decorate([e$4("pagination-nav")], SensorRecords.prototype, "_paginationEl", null);
+	__decorate([e$4(".ann-list")], SensorRecords.prototype, "_annListEl", null);
 	customElements.define("sensor-records", SensorRecords);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/sensor.ts
@@ -39860,21 +39871,6 @@
 		set hass(value) {
 			_classPrivateFieldSet2(_hass_accessor_storage, this, value);
 		}
-		firstUpdated() {
-			const el = this.shadowRoot.querySelector("ha-selector");
-			if (el) {
-				el.label = this.label;
-				el.selector = { entity: {} };
-				if (this.hass) el.hass = this.hass;
-				el.value = this.value;
-			}
-		}
-		updated(changedProps) {
-			const el = this.shadowRoot.querySelector("ha-selector");
-			if (!el) return;
-			if (changedProps.has("value")) el.value = this.value;
-			if (changedProps.has("hass") && this.hass) el.hass = this.hass;
-		}
 		_onValueChanged(e) {
 			this.dispatchEvent(new CustomEvent("dp-entity-change", {
 				detail: { value: e.detail.value },
@@ -39884,6 +39880,10 @@
 		}
 		render() {
 			return b`<ha-selector
+      .label=${this.label}
+      .selector=${{ entity: {} }}
+      .hass=${this.hass}
+      .value=${this.value}
       @value-changed=${this._onValueChanged}
     ></ha-selector>`;
 		}
@@ -39934,20 +39934,6 @@
 		set options(value) {
 			_classPrivateFieldSet2(_options_accessor_storage, this, value);
 		}
-		firstUpdated() {
-			const el = this.shadowRoot.querySelector("ha-selector");
-			if (el) {
-				el.label = this.label;
-				el.selector = { select: { options: this.options } };
-				el.value = this.value;
-			}
-		}
-		updated(changedProps) {
-			const el = this.shadowRoot.querySelector("ha-selector");
-			if (!el) return;
-			if (changedProps.has("value")) el.value = this.value;
-			if (changedProps.has("options")) el.selector = { select: { options: this.options } };
-		}
 		_onValueChanged(e) {
 			this.dispatchEvent(new CustomEvent("dp-select-change", {
 				detail: { value: e.detail.value },
@@ -39957,6 +39943,9 @@
 		}
 		render() {
 			return b`<ha-selector
+      .label=${this.label}
+      .selector=${{ select: { options: this.options } }}
+      .value=${this.value}
       @value-changed=${this._onValueChanged}
     ></ha-selector>`;
 		}

@@ -1,5 +1,5 @@
 import { html, LitElement } from "lit";
-import { property } from "lit/decorators.js";
+import { property, query } from "lit/decorators.js";
 
 import type { I18nMap } from "@/lib/i18n/i18n-prop";
 import { createDefaultI18n, t } from "@/lib/i18n/i18n-prop";
@@ -47,12 +47,12 @@ export class ResizablePanes extends LitElement {
 
   private _pointerId: Nullable<number> = null;
 
-  private _splitterEl: Nullable<HTMLButtonElement> = null;
+  @query(".pane-splitter")
+  accessor _splitterEl: Nullable<HTMLButtonElement> = null;
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
 
   firstUpdated() {
-    this._splitterEl = this.shadowRoot?.querySelector(".pane-splitter") ?? null;
     this._applyRatio();
   }
 
