@@ -23512,6 +23512,96 @@
 		return unitStart;
 	}
 	//#endregion
+	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-pointer-math.ts
+	/**
+	* Convert a horizontal client coordinate to a timeline timestamp.
+	*
+	* Returns `null` when the track rectangle has no width.
+	*/
+	function timestampFromClientPosition(clientX, rectLeft, rectWidth, boundsMin, boundsMax) {
+		if (!rectWidth) return null;
+		return boundsMin + clampNumber((clientX - rectLeft) / rectWidth, 0, 1) * (boundsMax - boundsMin);
+	}
+	/**
+	* Calculate the snapped time delta for a selection drag.
+	*/
+	function computeSelectionDragDelta(currentTimestamp, startTimestamp, snapUnit) {
+		if (!snapUnit) return currentTimestamp - startTimestamp;
+		const snappedStart = snapDateToUnit(new Date(startTimestamp), snapUnit).getTime();
+		return snapDateToUnit(new Date(currentTimestamp), snapUnit).getTime() - snappedStart;
+	}
+	/**
+	* Compute the new draft range after moving a single handle to `timestamp`.
+	*
+	* The timestamp is snapped and clamped to bounds, and the opposing handle
+	* is preserved with a minimum separation of one snap span.
+	*/
+	function computeDraftRangeForHandle(handle, timestamp, currentStartMs, currentEndMs, boundsMin, boundsMax, snapUnit, snapSpanMs) {
+		let snappedTimestampMs = timestamp;
+		if (snapUnit !== null) snappedTimestampMs = snapDateToUnit(new Date(timestamp), snapUnit).getTime();
+		const snapped = clampNumber(snappedTimestampMs, boundsMin, boundsMax);
+		const minSpan = Math.max(snapSpanMs, SECOND_MS);
+		let startMs = currentStartMs;
+		let endMs = currentEndMs;
+		if (handle === "start") startMs = clampNumber(snapped, boundsMin, endMs - minSpan);
+		else endMs = clampNumber(snapped, startMs + minSpan, boundsMax);
+		return {
+			startMs,
+			endMs
+		};
+	}
+	/**
+	* Shift both handles by `deltaMs`, clamped so neither exceeds bounds.
+	*/
+	function computeShiftedDraftRange(deltaMs, dragStartMs, dragEndMs, boundsMin, boundsMax) {
+		const clamped = clampNumber(deltaMs, boundsMin - dragStartMs, boundsMax - dragEndMs);
+		return {
+			startMs: dragStartMs + clamped,
+			endMs: dragEndMs + clamped
+		};
+	}
+	/**
+	* Compute the draft range from an interval selection (two pointer positions
+	* snapped to unit boundaries).
+	*
+	* Returns `null` when the resulting range is empty.
+	*/
+	function computeIntervalSelectionRange(startTimestamp, endTimestamp, unit, boundsMin, boundsMax) {
+		const startValue = Math.min(startTimestamp, endTimestamp);
+		const endValue = Math.max(startTimestamp, endTimestamp);
+		const rangeStart = clampNumber(startOfUnit(new Date(startValue), unit).getTime(), boundsMin, boundsMax);
+		const rangeEnd = clampNumber(endOfUnit(new Date(endValue), unit).getTime(), boundsMin, boundsMax);
+		if (rangeStart >= rangeEnd) return null;
+		return {
+			startMs: rangeStart,
+			endMs: rangeEnd
+		};
+	}
+	/**
+	* Calculate the scroll delta for edge-proximity auto-scrolling during drag.
+	*
+	* Returns 0 when no scrolling is needed.
+	*/
+	function computeAutoScrollDelta(clientX, viewportLeft, viewportRight) {
+		const leftDistance = clientX - viewportLeft;
+		const rightDistance = viewportRight - clientX;
+		if (leftDistance < 48) {
+			const ratio = clampNumber((48 - leftDistance) / 48, 0, 1);
+			return -Math.max(1, Math.round(ratio * 28));
+		}
+		if (rightDistance < 48) {
+			const ratio = clampNumber((48 - rightDistance) / 48, 0, 1);
+			return Math.max(1, Math.round(ratio * 28));
+		}
+		return 0;
+	}
+	/**
+	* Determine which handle (`"start"` or `"end"`) is closer to the given timestamp.
+	*/
+	function resolveCloserHandle(timestamp, startMs, endMs) {
+		return Math.abs(timestamp - startMs) <= Math.abs(timestamp - endMs) ? "start" : "end";
+	}
+	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/interactive/range-handle/range-handle.styles.ts
 	var styles$27 = i$5`
   :host {
@@ -24273,26 +24363,19 @@
 		_timestampFromClientX(clientX) {
 			if (!this.rangeBounds || !this._rangeTrackEl) return null;
 			const rect = this._rangeTrackEl.getBoundingClientRect();
-			if (!rect.width) return null;
-			const ratio = clampNumber((clientX - rect.left) / rect.width, 0, 1);
-			return this.rangeBounds.min + ratio * (this.rangeBounds.max - this.rangeBounds.min);
+			return timestampFromClientPosition(clientX, rect.left, rect.width, this.rangeBounds.min, this.rangeBounds.max);
 		}
 		_getTimelineSelectionDragDeltaMs(timestamp) {
 			if (timestamp == null || this._timelinePointerStartTimestamp == null) return 0;
-			const snapUnit = this._getEffectiveSnapUnit();
-			if (!snapUnit) return timestamp - this._timelinePointerStartTimestamp;
-			const snappedStart = snapDateToUnit(new Date(this._timelinePointerStartTimestamp), snapUnit).getTime();
-			return snapDateToUnit(new Date(timestamp), snapUnit).getTime() - snappedStart;
+			return computeSelectionDragDelta(timestamp, this._timelinePointerStartTimestamp, this._getEffectiveSnapUnit());
 		}
 		_setDraftRangeFromTimestamp(handle, timestamp) {
 			if (!this.rangeBounds) return;
+			const currentStartMs = this._draftStartTime?.getTime() ?? this.startTime?.getTime() ?? this.rangeBounds.min;
+			const currentEndMs = this._draftEndTime?.getTime() ?? this.endTime?.getTime() ?? this.rangeBounds.max;
 			const snapUnit = this._getEffectiveSnapUnit();
-			let startMs = this._draftStartTime?.getTime() ?? this.startTime?.getTime() ?? this.rangeBounds.min;
-			let endMs = this._draftEndTime?.getTime() ?? this.endTime?.getTime() ?? this.rangeBounds.max;
-			const snapped = clampNumber(snapDateToUnit(new Date(timestamp), snapUnit).getTime(), this.rangeBounds.min, this.rangeBounds.max);
-			const minSpan = Math.max(this._getSnapSpanMs(new Date(snapped)), SECOND_MS);
-			if (handle === "start") startMs = clampNumber(snapped, this.rangeBounds.min, endMs - minSpan);
-			else endMs = clampNumber(snapped, startMs + minSpan, this.rangeBounds.max);
+			const snapSpanMs = this._getSnapSpanMs(new Date(snapDateToUnit(new Date(timestamp), snapUnit).getTime()));
+			const { startMs, endMs } = computeDraftRangeForHandle(handle, timestamp, currentStartMs, currentEndMs, this.rangeBounds.min, this.rangeBounds.max, snapUnit, snapSpanMs);
 			this._draftStartTime = new Date(startMs);
 			this._draftEndTime = new Date(endMs);
 			this._updateHandleStacking(handle);
@@ -24302,25 +24385,19 @@
 		}
 		_shiftDraftRangeByDelta(deltaMs) {
 			if (!this.rangeBounds) return;
-			const startMs = this._timelineDragStartRangeMs;
-			const endMs = this._timelineDragEndRangeMs;
-			const clampedDelta = clampNumber(deltaMs, this.rangeBounds.min - startMs, this.rangeBounds.max - endMs);
-			this._draftStartTime = new Date(startMs + clampedDelta);
-			this._draftEndTime = new Date(endMs + clampedDelta);
+			const { startMs, endMs } = computeShiftedDraftRange(deltaMs, this._timelineDragStartRangeMs, this._timelineDragEndRangeMs, this.rangeBounds.min, this.rangeBounds.max);
+			this._draftStartTime = new Date(startMs);
+			this._draftEndTime = new Date(endMs);
 			this._updateRangePreview();
 			this._fireDraftEvent();
 			this._scheduleRangeCommit();
 		}
 		_setDraftRangeFromIntervalSelection(startTimestamp, endTimestamp) {
 			if (!this.rangeBounds) return;
-			const unit = this.rangeBounds.config?.labelUnit || this._getEffectiveSnapUnit();
-			const startValue = Math.min(startTimestamp, endTimestamp);
-			const endValue = Math.max(startTimestamp, endTimestamp);
-			const rangeStart = clampNumber(startOfUnit(new Date(startValue), unit).getTime(), this.rangeBounds.min, this.rangeBounds.max);
-			const rangeEnd = clampNumber(endOfUnit(new Date(endValue), unit).getTime(), this.rangeBounds.min, this.rangeBounds.max);
-			if (rangeStart >= rangeEnd) return;
-			this._draftStartTime = new Date(rangeStart);
-			this._draftEndTime = new Date(rangeEnd);
+			const result = computeIntervalSelectionRange(startTimestamp, endTimestamp, this.rangeBounds.config?.labelUnit || this._getEffectiveSnapUnit(), this.rangeBounds.min, this.rangeBounds.max);
+			if (!result) return;
+			this._draftStartTime = new Date(result.startMs);
+			this._draftEndTime = new Date(result.endMs);
 			this._updateRangePreview();
 		}
 		_fireDraftEvent() {
@@ -24378,16 +24455,7 @@
 			if (!rect.width) return;
 			const maxScrollLeft = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
 			if (maxScrollLeft <= 0) return;
-			let delta = 0;
-			const leftDistance = clientX - rect.left;
-			const rightDistance = rect.right - clientX;
-			if (leftDistance < 48) {
-				const ratio = clampNumber((48 - leftDistance) / 48, 0, 1);
-				delta = -Math.max(1, Math.round(ratio * 28));
-			} else if (rightDistance < 48) {
-				const ratio = clampNumber((48 - rightDistance) / 48, 0, 1);
-				delta = Math.max(1, Math.round(ratio * 28));
-			}
+			const delta = computeAutoScrollDelta(clientX, rect.left, rect.right);
 			if (!delta) return;
 			viewport.scrollLeft = clampNumber(viewport.scrollLeft + delta, 0, maxScrollLeft);
 		}
@@ -24545,7 +24613,7 @@
 			const startMs = this._draftStartTime?.getTime() ?? this.startTime?.getTime() ?? this.rangeBounds?.min;
 			const endMs = this._draftEndTime?.getTime() ?? this.endTime?.getTime() ?? this.rangeBounds?.max;
 			if (startMs == null || endMs == null) return;
-			const handle = Math.abs(timestamp - startMs) <= Math.abs(timestamp - endMs) ? "start" : "end";
+			const handle = resolveCloserHandle(timestamp, startMs, endMs);
 			this._setDraftRangeFromTimestamp(handle, timestamp);
 		}
 		_handleRangeViewportPointerMove(ev) {

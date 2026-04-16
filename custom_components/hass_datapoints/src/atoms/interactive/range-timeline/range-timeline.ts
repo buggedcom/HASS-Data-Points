@@ -9,13 +9,20 @@ import {
   estimateRangeLabelWidth,
   getRangeUnitAnchorMs,
 } from "./range-scale-math";
+import {
+  timestampFromClientPosition,
+  computeSelectionDragDelta,
+  computeDraftRangeForHandle,
+  computeShiftedDraftRange,
+  computeIntervalSelectionRange,
+  computeAutoScrollDelta,
+  resolveCloserHandle,
+} from "./range-pointer-math";
 import "@/atoms/interactive/range-handle/range-handle";
 import {
   RANGE_ZOOM_CONFIGS,
   RANGE_LABEL_MIN_GAP_PX,
   RANGE_CONTEXT_LABEL_MIN_GAP_PX,
-  RANGE_HANDLE_EDGE_SCROLL_THRESHOLD_PX,
-  RANGE_HANDLE_EDGE_SCROLL_MAX_STEP_PX,
   SECOND_MS,
   addUnit,
   startOfUnit,
@@ -1005,28 +1012,23 @@ export class RangeTimeline extends LitElement {
   _timestampFromClientX(clientX: number): Nullable<number> {
     if (!this.rangeBounds || !this._rangeTrackEl) return null;
     const rect = this._rangeTrackEl.getBoundingClientRect();
-    if (!rect.width) return null;
-    const ratio = clampNumber((clientX - rect.left) / rect.width, 0, 1);
-    return (
-      this.rangeBounds.min +
-      ratio * (this.rangeBounds.max - this.rangeBounds.min)
+    return timestampFromClientPosition(
+      clientX,
+      rect.left,
+      rect.width,
+      this.rangeBounds.min,
+      this.rangeBounds.max
     );
   }
 
   _getTimelineSelectionDragDeltaMs(timestamp: number): number {
     if (timestamp == null || this._timelinePointerStartTimestamp == null)
       return 0;
-    const snapUnit = this._getEffectiveSnapUnit();
-    if (!snapUnit) return timestamp - this._timelinePointerStartTimestamp;
-    const snappedStart = snapDateToUnit(
-      new Date(this._timelinePointerStartTimestamp),
-      snapUnit
-    ).getTime();
-    const snappedCurrent = snapDateToUnit(
-      new Date(timestamp),
-      snapUnit
-    ).getTime();
-    return snappedCurrent - snappedStart;
+    return computeSelectionDragDelta(
+      timestamp,
+      this._timelinePointerStartTimestamp,
+      this._getEffectiveSnapUnit()
+    );
   }
 
   // ---------------------------------------------------------------------------
@@ -1035,26 +1037,28 @@ export class RangeTimeline extends LitElement {
 
   _setDraftRangeFromTimestamp(handle: "start" | "end", timestamp: number) {
     if (!this.rangeBounds) return;
-    const snapUnit = this._getEffectiveSnapUnit();
-    let startMs =
+    const currentStartMs =
       this._draftStartTime?.getTime() ??
       this.startTime?.getTime() ??
       this.rangeBounds.min;
-    let endMs =
+    const currentEndMs =
       this._draftEndTime?.getTime() ??
       this.endTime?.getTime() ??
       this.rangeBounds.max;
-    const snapped = clampNumber(
-      snapDateToUnit(new Date(timestamp), snapUnit).getTime(),
-      this.rangeBounds.min,
-      this.rangeBounds.max
+    const snapUnit = this._getEffectiveSnapUnit();
+    const snapSpanMs = this._getSnapSpanMs(
+      new Date(snapDateToUnit(new Date(timestamp), snapUnit).getTime())
     );
-    const minSpan = Math.max(this._getSnapSpanMs(new Date(snapped)), SECOND_MS);
-    if (handle === "start") {
-      startMs = clampNumber(snapped, this.rangeBounds.min, endMs - minSpan);
-    } else {
-      endMs = clampNumber(snapped, startMs + minSpan, this.rangeBounds.max);
-    }
+    const { startMs, endMs } = computeDraftRangeForHandle(
+      handle,
+      timestamp,
+      currentStartMs,
+      currentEndMs,
+      this.rangeBounds.min,
+      this.rangeBounds.max,
+      snapUnit,
+      snapSpanMs
+    );
     this._draftStartTime = new Date(startMs);
     this._draftEndTime = new Date(endMs);
     this._updateHandleStacking(handle);
@@ -1065,13 +1069,15 @@ export class RangeTimeline extends LitElement {
 
   _shiftDraftRangeByDelta(deltaMs: number) {
     if (!this.rangeBounds) return;
-    const startMs = this._timelineDragStartRangeMs;
-    const endMs = this._timelineDragEndRangeMs;
-    const minDelta = this.rangeBounds.min - startMs;
-    const maxDelta = this.rangeBounds.max - endMs;
-    const clampedDelta = clampNumber(deltaMs, minDelta, maxDelta);
-    this._draftStartTime = new Date(startMs + clampedDelta);
-    this._draftEndTime = new Date(endMs + clampedDelta);
+    const { startMs, endMs } = computeShiftedDraftRange(
+      deltaMs,
+      this._timelineDragStartRangeMs,
+      this._timelineDragEndRangeMs,
+      this.rangeBounds.min,
+      this.rangeBounds.max
+    );
+    this._draftStartTime = new Date(startMs);
+    this._draftEndTime = new Date(endMs);
     this._updateRangePreview();
     this._fireDraftEvent();
     this._scheduleRangeCommit();
@@ -1084,21 +1090,16 @@ export class RangeTimeline extends LitElement {
     if (!this.rangeBounds) return;
     const unit: RangeUnit =
       this.rangeBounds.config?.labelUnit || this._getEffectiveSnapUnit();
-    const startValue = Math.min(startTimestamp, endTimestamp);
-    const endValue = Math.max(startTimestamp, endTimestamp);
-    const rangeStart = clampNumber(
-      startOfUnit(new Date(startValue), unit).getTime(),
+    const result = computeIntervalSelectionRange(
+      startTimestamp,
+      endTimestamp,
+      unit,
       this.rangeBounds.min,
       this.rangeBounds.max
     );
-    const rangeEnd = clampNumber(
-      endOfUnit(new Date(endValue), unit).getTime(),
-      this.rangeBounds.min,
-      this.rangeBounds.max
-    );
-    if (rangeStart >= rangeEnd) return;
-    this._draftStartTime = new Date(rangeStart);
-    this._draftEndTime = new Date(rangeEnd);
+    if (!result) return;
+    this._draftStartTime = new Date(result.startMs);
+    this._draftEndTime = new Date(result.endMs);
     this._updateRangePreview();
   }
 
@@ -1185,33 +1186,7 @@ export class RangeTimeline extends LitElement {
       viewport.scrollWidth - viewport.clientWidth
     );
     if (maxScrollLeft <= 0) return;
-
-    let delta = 0;
-    const leftDistance = clientX - rect.left;
-    const rightDistance = rect.right - clientX;
-    if (leftDistance < RANGE_HANDLE_EDGE_SCROLL_THRESHOLD_PX) {
-      const ratio = clampNumber(
-        (RANGE_HANDLE_EDGE_SCROLL_THRESHOLD_PX - leftDistance) /
-          RANGE_HANDLE_EDGE_SCROLL_THRESHOLD_PX,
-        0,
-        1
-      );
-      delta = -Math.max(
-        1,
-        Math.round(ratio * RANGE_HANDLE_EDGE_SCROLL_MAX_STEP_PX)
-      );
-    } else if (rightDistance < RANGE_HANDLE_EDGE_SCROLL_THRESHOLD_PX) {
-      const ratio = clampNumber(
-        (RANGE_HANDLE_EDGE_SCROLL_THRESHOLD_PX - rightDistance) /
-          RANGE_HANDLE_EDGE_SCROLL_THRESHOLD_PX,
-        0,
-        1
-      );
-      delta = Math.max(
-        1,
-        Math.round(ratio * RANGE_HANDLE_EDGE_SCROLL_MAX_STEP_PX)
-      );
-    }
+    const delta = computeAutoScrollDelta(clientX, rect.left, rect.right);
     if (!delta) return;
     viewport.scrollLeft = clampNumber(
       viewport.scrollLeft + delta,
@@ -1478,10 +1453,7 @@ export class RangeTimeline extends LitElement {
       this.endTime?.getTime() ??
       this.rangeBounds?.max;
     if (startMs == null || endMs == null) return;
-    const handle =
-      Math.abs(timestamp - startMs) <= Math.abs(timestamp - endMs)
-        ? "start"
-        : "end";
+    const handle = resolveCloserHandle(timestamp, startMs, endMs);
     this._setDraftRangeFromTimestamp(handle, timestamp);
   }
 
