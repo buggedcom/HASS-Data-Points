@@ -61,6 +61,18 @@ export interface ComparisonWindowWithOffset extends NormalizedHistoryDateWindow 
   time_offset_ms: number;
 }
 
+function addTimeOffsets(
+  windows: NormalizedHistoryDateWindow[],
+  startMs: number
+): ComparisonWindowWithOffset[] {
+  return windows
+    .map((w) => ({
+      ...w,
+      time_offset_ms: new Date(w.start_time).getTime() - startMs,
+    }))
+    .filter((w) => Number.isFinite(w.time_offset_ms));
+}
+
 export function getPreviewComparisonWindows(
   windows: NormalizedHistoryDateWindow[],
   selectedId: string | null | undefined,
@@ -72,14 +84,10 @@ export function getPreviewComparisonWindows(
   if (selectedId) ids.push(selectedId);
   if (hoveredId && !ids.includes(hoveredId)) ids.push(hoveredId);
   if (!ids.length) return [];
-  const startMs = startTime.getTime();
-  return ids
+  const matched = ids
     .map((id) => windows.find((w) => w.id === id) ?? null)
-    .filter((w): w is NormalizedHistoryDateWindow => w !== null)
-    .map((w) => ({
-      ...w,
-      time_offset_ms: new Date(w.start_time).getTime() - startMs,
-    }));
+    .filter((w): w is NormalizedHistoryDateWindow => w !== null);
+  return addTimeOffsets(matched, startTime.getTime());
 }
 
 // ── Preload comparison windows ────────────────────────────────────────────
@@ -89,13 +97,7 @@ export function getPreloadComparisonWindows(
   startTime: Date | null | undefined
 ): ComparisonWindowWithOffset[] {
   if (!startTime) return [];
-  const startMs = startTime.getTime();
-  return windows
-    .map((w) => ({
-      ...w,
-      time_offset_ms: new Date(w.start_time).getTime() - startMs,
-    }))
-    .filter((w) => Number.isFinite(w.time_offset_ms));
+  return addTimeOffsets(windows, startTime.getTime());
 }
 
 // ── Date window shortcut ──────────────────────────────────────────────────

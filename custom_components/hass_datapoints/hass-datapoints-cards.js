@@ -20333,6 +20333,9 @@
 	* All functions are stateless data transformations with no DOM dependency.
 	*/
 	var HEX_COLOR_RE = /^#[0-9a-f]{6}$/i;
+	function isValidRowIndex(index, length) {
+		return index !== void 0 && Number.isInteger(index) && index >= 0 && index < length;
+	}
 	function mergeSavedSeriesRows(rows, savedRows) {
 		const normalizedRows = normalizeHistorySeriesRows(rows);
 		const normalizedSavedRows = normalizeHistorySeriesRows(savedRows);
@@ -20364,8 +20367,8 @@
 		return [...merged.values()];
 	}
 	function updateSeriesRowColor(rows, index, color) {
-		if (!Number.isInteger(index) || index === void 0 || index < 0 || index >= rows.length) return null;
-		if (!HEX_COLOR_RE.test(color || "")) return null;
+		if (!isValidRowIndex(index, rows.length)) return null;
+		if (typeof color !== "string" || !HEX_COLOR_RE.test(color)) return null;
 		if (rows[index].color === color) return null;
 		return rows.map((row, i) => i === index ? {
 			...row,
@@ -20373,7 +20376,7 @@
 		} : row);
 	}
 	function updateSeriesRowVisibility(rows, index, visible) {
-		if (!Number.isInteger(index) || index === void 0 || index < 0 || index >= rows.length) return null;
+		if (!isValidRowIndex(index, rows.length)) return null;
 		if (rows[index].visible === !!visible) return null;
 		return rows.map((row, i) => i === index ? {
 			...row,
@@ -20443,7 +20446,7 @@
 		return changed ? result : null;
 	}
 	function removeSeriesRow(rows, index) {
-		if (!Number.isInteger(index) || index === void 0 || index < 0 || index >= rows.length) return null;
+		if (!isValidRowIndex(index, rows.length)) return null;
 		return rows.filter((_row, i) => i !== index);
 	}
 	//#endregion
@@ -20471,25 +20474,23 @@
 			actual_range_label: actualRangeLabel
 		};
 	}
+	function addTimeOffsets(windows, startMs) {
+		return windows.map((w) => ({
+			...w,
+			time_offset_ms: new Date(w.start_time).getTime() - startMs
+		})).filter((w) => Number.isFinite(w.time_offset_ms));
+	}
 	function getPreviewComparisonWindows(windows, selectedId, hoveredId, startTime) {
 		if (!startTime) return [];
 		const ids = [];
 		if (selectedId) ids.push(selectedId);
 		if (hoveredId && !ids.includes(hoveredId)) ids.push(hoveredId);
 		if (!ids.length) return [];
-		const startMs = startTime.getTime();
-		return ids.map((id) => windows.find((w) => w.id === id) ?? null).filter((w) => w !== null).map((w) => ({
-			...w,
-			time_offset_ms: new Date(w.start_time).getTime() - startMs
-		}));
+		return addTimeOffsets(ids.map((id) => windows.find((w) => w.id === id) ?? null).filter((w) => w !== null), startTime.getTime());
 	}
 	function getPreloadComparisonWindows(windows, startTime) {
 		if (!startTime) return [];
-		const startMs = startTime.getTime();
-		return windows.map((w) => ({
-			...w,
-			time_offset_ms: new Date(w.start_time).getTime() - startMs
-		})).filter((w) => Number.isFinite(w.time_offset_ms));
+		return addTimeOffsets(windows, startTime.getTime());
 	}
 	/**
 	* Compute the next draft range after applying a shortcut shift.

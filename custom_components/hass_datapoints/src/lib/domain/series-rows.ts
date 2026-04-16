@@ -22,6 +22,18 @@ export interface SeriesRow {
 
 const HEX_COLOR_RE = /^#[0-9a-f]{6}$/i;
 
+function isValidRowIndex(
+  index: number | undefined,
+  length: number
+): index is number {
+  return (
+    index !== undefined &&
+    Number.isInteger(index) &&
+    index >= 0 &&
+    index < length
+  );
+}
+
 // ── Merge saved series rows ────────────────────────────────────────────────
 
 export function mergeSavedSeriesRows(
@@ -83,18 +95,10 @@ export function updateSeriesRowColor(
   index: number | undefined,
   color: string | undefined
 ): SeriesRow[] | null {
-  if (
-    !Number.isInteger(index) ||
-    index === undefined ||
-    index < 0 ||
-    index >= rows.length
-  )
-    return null;
-  if (!HEX_COLOR_RE.test(color || "")) return null;
+  if (!isValidRowIndex(index, rows.length)) return null;
+  if (typeof color !== "string" || !HEX_COLOR_RE.test(color)) return null;
   if (rows[index].color === color) return null;
-  return rows.map((row, i) =>
-    i === index ? { ...row, color: color as string } : row
-  );
+  return rows.map((row, i) => (i === index ? { ...row, color } : row));
 }
 
 // ── Update row visibility ─────────────────────────────────────────────────
@@ -104,13 +108,7 @@ export function updateSeriesRowVisibility(
   index: number | undefined,
   visible: unknown
 ): SeriesRow[] | null {
-  if (
-    !Number.isInteger(index) ||
-    index === undefined ||
-    index < 0 ||
-    index >= rows.length
-  )
-    return null;
+  if (!isValidRowIndex(index, rows.length)) return null;
   if (rows[index].visible === !!visible) return null;
   return rows.map((row, i) =>
     i === index ? { ...row, visible: !!visible } : row
@@ -219,12 +217,6 @@ export function removeSeriesRow(
   rows: SeriesRow[],
   index: number | undefined
 ): SeriesRow[] | null {
-  if (
-    !Number.isInteger(index) ||
-    index === undefined ||
-    index < 0 ||
-    index >= rows.length
-  )
-    return null;
+  if (!isValidRowIndex(index, rows.length)) return null;
   return rows.filter((_row, i) => i !== index);
 }
