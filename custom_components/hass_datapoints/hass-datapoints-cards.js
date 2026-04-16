@@ -23602,6 +23602,45 @@
 		return Math.abs(timestamp - startMs) <= Math.abs(timestamp - endMs) ? "start" : "end";
 	}
 	//#endregion
+	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-scroll-math.ts
+	/**
+	* Pure math functions for range-timeline scroll management.
+	*
+	* All functions are stateless data transformations — no DOM dependency.
+	*/
+	/**
+	* Determine whether the left/right "jump to selection" arrows should be shown.
+	*
+	* The left arrow is shown when the selection end is scrolled off the left edge;
+	* the right arrow when the selection start is scrolled off the right edge.
+	*/
+	function computeSelectionJumpVisibility(scrollLeft, viewportWidth, contentWidth, startTimeMs, endTimeMs, boundsMin, boundsMax) {
+		const total = Math.max(1, boundsMax - boundsMin);
+		const currentRight = scrollLeft + viewportWidth;
+		const startPx = (startTimeMs - boundsMin) / total * contentWidth;
+		return {
+			showLeft: (endTimeMs - boundsMin) / total * contentWidth < scrollLeft,
+			showRight: startPx > currentRight
+		};
+	}
+	/**
+	* Compute the target scrollLeft to bring a time range into view.
+	*
+	* With `center: true`, the midpoint of the range is centered in the viewport.
+	* With `center: false`, the range start is aligned to the viewport start.
+	*
+	* Returns `null` when scrolling is not possible (viewport wider than content).
+	*/
+	function computeScrollPositionForRange(rangeStartMs, rangeEndMs, boundsMin, boundsMax, contentWidth, viewportWidth, center) {
+		if (!viewportWidth || contentWidth <= viewportWidth) return null;
+		const totalMs = Math.max(1, boundsMax - boundsMin);
+		const visibleSpanMs = totalMs * Math.min(1, viewportWidth / contentWidth);
+		const maxScrollLeft = Math.max(0, contentWidth - viewportWidth);
+		const viewportRangeMs = Math.max(0, totalMs - visibleSpanMs);
+		if (viewportRangeMs <= 0) return null;
+		return clampNumber(((center ? clampNumber((rangeStartMs + rangeEndMs) / 2 - visibleSpanMs / 2, boundsMin, boundsMax - visibleSpanMs) : clampNumber(rangeStartMs, boundsMin, boundsMax - visibleSpanMs)) - boundsMin) / viewportRangeMs * maxScrollLeft, 0, maxScrollLeft);
+	}
+	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/interactive/range-handle/range-handle.styles.ts
 	var styles$27 = i$5`
   :host {
@@ -24313,25 +24352,14 @@
 				if (this._rangeJumpRightEl) this._rangeJumpRightEl.hidden = true;
 				return;
 			}
-			const total = Math.max(1, this.rangeBounds.max - this.rangeBounds.min);
-			const viewportWidth = this._rangeScrollViewportEl.clientWidth;
-			const currentLeft = this._rangeScrollViewportEl.scrollLeft;
-			const currentRight = currentLeft + viewportWidth;
-			const startPx = (this.startTime.getTime() - this.rangeBounds.min) / total * this._rangeContentWidth;
-			const endPx = (this.endTime.getTime() - this.rangeBounds.min) / total * this._rangeContentWidth;
-			if (this._rangeJumpLeftEl) this._rangeJumpLeftEl.hidden = !(endPx < currentLeft);
-			if (this._rangeJumpRightEl) this._rangeJumpRightEl.hidden = !(startPx > currentRight);
+			const { showLeft, showRight } = computeSelectionJumpVisibility(this._rangeScrollViewportEl.scrollLeft, this._rangeScrollViewportEl.clientWidth, this._rangeContentWidth, this.startTime.getTime(), this.endTime.getTime(), this.rangeBounds.min, this.rangeBounds.max);
+			if (this._rangeJumpLeftEl) this._rangeJumpLeftEl.hidden = !showLeft;
+			if (this._rangeJumpRightEl) this._rangeJumpRightEl.hidden = !showRight;
 		}
 		_scrollTimelineToRange(range, behavior = "auto", { center = false } = {}) {
 			if (!this._rangeScrollViewportEl || !this.rangeBounds || !this._rangeContentWidth || !range) return;
-			const viewportWidth = this._rangeScrollViewportEl.clientWidth;
-			if (!viewportWidth || this._rangeContentWidth <= viewportWidth) return;
-			const totalMs = Math.max(1, this.rangeBounds.max - this.rangeBounds.min);
-			const visibleSpanMs = totalMs * Math.min(1, viewportWidth / this._rangeContentWidth);
-			const maxScrollLeft = Math.max(0, this._rangeContentWidth - viewportWidth);
-			const viewportRangeMs = Math.max(0, totalMs - visibleSpanMs);
-			if (viewportRangeMs <= 0) return;
-			const nextLeft = clampNumber(((center ? clampNumber((range.start + range.end) / 2 - visibleSpanMs / 2, this.rangeBounds.min, this.rangeBounds.max - visibleSpanMs) : clampNumber(range.start, this.rangeBounds.min, this.rangeBounds.max - visibleSpanMs)) - this.rangeBounds.min) / viewportRangeMs * maxScrollLeft, 0, maxScrollLeft);
+			const nextLeft = computeScrollPositionForRange(range.start, range.end, this.rangeBounds.min, this.rangeBounds.max, this._rangeContentWidth, this._rangeScrollViewportEl.clientWidth, center);
+			if (nextLeft == null) return;
 			this._rangeScrollViewportEl.scrollTo({
 				left: nextLeft,
 				behavior

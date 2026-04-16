@@ -18,6 +18,10 @@ import {
   computeAutoScrollDelta,
   resolveCloserHandle,
 } from "./range-pointer-math";
+import {
+  computeSelectionJumpVisibility,
+  computeScrollPositionForRange,
+} from "./range-scroll-math";
 import "@/atoms/interactive/range-handle/range-handle";
 import {
   RANGE_ZOOM_CONFIGS,
@@ -925,20 +929,17 @@ export class RangeTimeline extends LitElement {
       if (this._rangeJumpRightEl) this._rangeJumpRightEl.hidden = true;
       return;
     }
-    const total = Math.max(1, this.rangeBounds.max - this.rangeBounds.min);
-    const viewportWidth = this._rangeScrollViewportEl.clientWidth;
-    const currentLeft = this._rangeScrollViewportEl.scrollLeft;
-    const currentRight = currentLeft + viewportWidth;
-    const startPx =
-      ((this.startTime.getTime() - this.rangeBounds.min) / total) *
-      this._rangeContentWidth;
-    const endPx =
-      ((this.endTime.getTime() - this.rangeBounds.min) / total) *
-      this._rangeContentWidth;
-    if (this._rangeJumpLeftEl)
-      this._rangeJumpLeftEl.hidden = !(endPx < currentLeft);
-    if (this._rangeJumpRightEl)
-      this._rangeJumpRightEl.hidden = !(startPx > currentRight);
+    const { showLeft, showRight } = computeSelectionJumpVisibility(
+      this._rangeScrollViewportEl.scrollLeft,
+      this._rangeScrollViewportEl.clientWidth,
+      this._rangeContentWidth,
+      this.startTime.getTime(),
+      this.endTime.getTime(),
+      this.rangeBounds.min,
+      this.rangeBounds.max
+    );
+    if (this._rangeJumpLeftEl) this._rangeJumpLeftEl.hidden = !showLeft;
+    if (this._rangeJumpRightEl) this._rangeJumpRightEl.hidden = !showRight;
   }
 
   _scrollTimelineToRange(
@@ -953,28 +954,16 @@ export class RangeTimeline extends LitElement {
       !range
     )
       return;
-    const viewportWidth = this._rangeScrollViewportEl.clientWidth;
-    if (!viewportWidth || this._rangeContentWidth <= viewportWidth) return;
-    const totalMs = Math.max(1, this.rangeBounds.max - this.rangeBounds.min);
-    const visibleSpanMs =
-      totalMs * Math.min(1, viewportWidth / this._rangeContentWidth);
-    const maxScrollLeft = Math.max(0, this._rangeContentWidth - viewportWidth);
-    const viewportRangeMs = Math.max(0, totalMs - visibleSpanMs);
-    if (viewportRangeMs <= 0) return;
-
-    const targetStart = center
-      ? clampNumber(
-          (range.start + range.end) / 2 - visibleSpanMs / 2,
-          this.rangeBounds.min,
-          this.rangeBounds.max - visibleSpanMs
-        )
-      : clampNumber(
-          range.start,
-          this.rangeBounds.min,
-          this.rangeBounds.max - visibleSpanMs
-        );
-    const ratio = (targetStart - this.rangeBounds.min) / viewportRangeMs;
-    const nextLeft = clampNumber(ratio * maxScrollLeft, 0, maxScrollLeft);
+    const nextLeft = computeScrollPositionForRange(
+      range.start,
+      range.end,
+      this.rangeBounds.min,
+      this.rangeBounds.max,
+      this._rangeContentWidth,
+      this._rangeScrollViewportEl.clientWidth,
+      center
+    );
+    if (nextLeft == null) return;
     this._rangeScrollViewportEl.scrollTo({ left: nextLeft, behavior });
   }
 
