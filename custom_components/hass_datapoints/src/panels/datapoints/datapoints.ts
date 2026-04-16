@@ -41,23 +41,23 @@ import {
   normalizeDateWindows,
 } from "@/lib/history-page/history-url-state";
 import {
-  addUnit,
   clampNumber,
   computeZoomLevelForSpan,
+  deriveRangeBounds,
   endOfUnit,
+  getEffectiveSnapUnit,
+  getSnapSpanMs,
   extractRangeValue,
   HOUR_MS,
   MINUTE_MS,
   RANGE_AUTO_ZOOM_DEBOUNCE_MS,
   RANGE_AUTO_ZOOM_SELECTION_PADDING_RATIO,
-  RANGE_FUTURE_BUFFER_YEARS,
   RANGE_SLIDER_MIN_SPAN_MS,
   RANGE_SLIDER_WINDOW_MS,
   RANGE_SNAP_OPTIONS,
   RANGE_ZOOM_CONFIGS,
   RANGE_ZOOM_OPTIONS,
   type RangeUnit,
-  SECOND_MS,
   startOfUnit,
 } from "@/lib/timeline/timeline-scale";
 import { logger } from "@/lib/logger";
@@ -4126,70 +4126,29 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
   }
 
   _getEffectiveSnapUnit() {
-    if (this._dateSnapping !== "auto") {
-      return this._dateSnapping;
-    }
-    switch (this._getEffectiveZoomLevel()) {
-      case "quarterly":
-      case "month_compressed":
-        return "month";
-      case "month_short":
-      case "month_expanded":
-      case "week_compressed":
-        return "week";
-      case "week_expanded":
-        return "day";
-      case "day":
-        return "hour";
-      default:
-        return "day";
-    }
+    return getEffectiveSnapUnit(
+      this._getEffectiveZoomLevel(),
+      this._dateSnapping
+    );
   }
 
   _getSnapSpanMs(reference = this._startTime || new Date()) {
     const snapUnit = this._getEffectiveSnapUnit() as RangeUnit;
-    const start = startOfUnit(reference, snapUnit);
-    const end = endOfUnit(reference, snapUnit);
-    return Math.max(SECOND_MS, end.getTime() - start.getTime());
+    return getSnapSpanMs(snapUnit, reference);
   }
 
   _deriveRangeBounds() {
     const config = this._getZoomConfig();
     const startMs = this._startTime?.getTime() || Date.now() - 24 * HOUR_MS;
     const endMs = this._endTime?.getTime() || Date.now();
-    const historyStartMs = this._historyStartTime?.getTime();
-    const historyEndMs = this._historyEndTime?.getTime();
-    const maxLookAheadMs = addUnit(new Date(), "month", 3).getTime();
-
-    // Anchor left bound to history start (if loaded) or selection start.
-    // Also guarantee enough left context before the selection for centering —
-    // take whichever is earlier: the natural anchor or (startMs - 30% baseline).
-    const anchorMs = historyStartMs ?? startMs;
-    const naturalMin = startOfUnit(
-      new Date(anchorMs),
-      config.boundsUnit
-    ).getTime();
-    const paddedMin = startOfUnit(
-      new Date(startMs - config.baselineMs * 0.3),
-      config.boundsUnit
-    ).getTime();
-    const min = Math.min(naturalMin, paddedMin);
-
-    const futureReference = addUnit(
-      new Date(historyEndMs ?? endMs),
-      "year",
-      RANGE_FUTURE_BUFFER_YEARS
-    ).getTime();
-    const maxReference = Math.min(
-      maxLookAheadMs,
-      Math.max(
-        futureReference,
-        endMs,
-        startMs + this._getSnapSpanMs(this._startTime || new Date())
-      )
+    return deriveRangeBounds(
+      config,
+      startMs,
+      endMs,
+      this._historyStartTime?.getTime(),
+      this._historyEndTime?.getTime(),
+      this._getSnapSpanMs(this._startTime || new Date())
     );
-    const max = endOfUnit(new Date(maxReference), config.boundsUnit).getTime();
-    return { min, max: Math.max(max, min + SECOND_MS), config };
   }
 
   _syncRangeControl() {

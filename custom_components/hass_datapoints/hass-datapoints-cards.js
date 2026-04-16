@@ -20207,6 +20207,38 @@
 		}
 		return result;
 	}
+	function getEffectiveSnapUnit(zoomLevel, dateSnapping) {
+		if (dateSnapping !== "auto") return dateSnapping;
+		switch (zoomLevel) {
+			case "quarterly":
+			case "month_compressed": return "month";
+			case "month_short":
+			case "month_expanded":
+			case "week_compressed": return "week";
+			case "week_expanded": return "day";
+			case "day": return "hour";
+			default: return "day";
+		}
+	}
+	function getSnapSpanMs(snapUnit, reference) {
+		const start = startOfUnit(reference, snapUnit);
+		const end = endOfUnit(reference, snapUnit);
+		return Math.max(SECOND_MS, end.getTime() - start.getTime());
+	}
+	function deriveRangeBounds(config, startMs, endMs, historyStartMs, historyEndMs, snapSpanMs) {
+		const maxLookAheadMs = addUnit(/* @__PURE__ */ new Date(), "month", 3).getTime();
+		const naturalMin = startOfUnit(new Date(historyStartMs ?? startMs), config.boundsUnit).getTime();
+		const paddedMin = startOfUnit(/* @__PURE__ */ new Date(startMs - config.baselineMs * .3), config.boundsUnit).getTime();
+		const min = Math.min(naturalMin, paddedMin);
+		const futureReference = addUnit(new Date(historyEndMs ?? endMs), "year", 1).getTime();
+		const maxReference = Math.min(maxLookAheadMs, Math.max(futureReference, endMs, startMs + snapSpanMs));
+		const max = endOfUnit(new Date(maxReference), config.boundsUnit).getTime();
+		return {
+			min,
+			max: Math.max(max, min + SECOND_MS),
+			config
+		};
+	}
 	function computeZoomLevelForSpan(spanMs) {
 		const normalizedSpanMs = Math.max(spanMs, RANGE_SLIDER_MIN_SPAN_MS);
 		if (normalizedSpanMs >= 180 * 864e5) return "quarterly";
@@ -34932,42 +34964,13 @@
 			return computeZoomLevelForSpan(spanMs);
 		}
 		_getEffectiveSnapUnit() {
-			if (this._dateSnapping !== "auto") return this._dateSnapping;
-			switch (this._getEffectiveZoomLevel()) {
-				case "quarterly":
-				case "month_compressed": return "month";
-				case "month_short":
-				case "month_expanded":
-				case "week_compressed": return "week";
-				case "week_expanded": return "day";
-				case "day": return "hour";
-				default: return "day";
-			}
+			return getEffectiveSnapUnit(this._getEffectiveZoomLevel(), this._dateSnapping);
 		}
 		_getSnapSpanMs(reference = this._startTime || /* @__PURE__ */ new Date()) {
-			const snapUnit = this._getEffectiveSnapUnit();
-			const start = startOfUnit(reference, snapUnit);
-			const end = endOfUnit(reference, snapUnit);
-			return Math.max(SECOND_MS, end.getTime() - start.getTime());
+			return getSnapSpanMs(this._getEffectiveSnapUnit(), reference);
 		}
 		_deriveRangeBounds() {
-			const config = this._getZoomConfig();
-			const startMs = this._startTime?.getTime() || Date.now() - 24 * 36e5;
-			const endMs = this._endTime?.getTime() || Date.now();
-			const historyStartMs = this._historyStartTime?.getTime();
-			const historyEndMs = this._historyEndTime?.getTime();
-			const maxLookAheadMs = addUnit(/* @__PURE__ */ new Date(), "month", 3).getTime();
-			const naturalMin = startOfUnit(new Date(historyStartMs ?? startMs), config.boundsUnit).getTime();
-			const paddedMin = startOfUnit(/* @__PURE__ */ new Date(startMs - config.baselineMs * .3), config.boundsUnit).getTime();
-			const min = Math.min(naturalMin, paddedMin);
-			const futureReference = addUnit(new Date(historyEndMs ?? endMs), "year", 1).getTime();
-			const maxReference = Math.min(maxLookAheadMs, Math.max(futureReference, endMs, startMs + this._getSnapSpanMs(this._startTime || /* @__PURE__ */ new Date())));
-			const max = endOfUnit(new Date(maxReference), config.boundsUnit).getTime();
-			return {
-				min,
-				max: Math.max(max, min + SECOND_MS),
-				config
-			};
+			return deriveRangeBounds(this._getZoomConfig(), this._startTime?.getTime() || Date.now() - 24 * 36e5, this._endTime?.getTime() || Date.now(), this._historyStartTime?.getTime(), this._historyEndTime?.getTime(), this._getSnapSpanMs(this._startTime || /* @__PURE__ */ new Date()));
 		}
 		_syncRangeControl() {
 			if (!this._rangeToolbarComp) return;
