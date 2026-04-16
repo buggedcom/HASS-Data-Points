@@ -1,4 +1,5 @@
 import { html, LitElement } from "lit";
+import { query } from "lit/decorators.js";
 import { localized, msg } from "@/lib/i18n/localize";
 
 import { styles } from "./list.styles";
@@ -46,6 +47,9 @@ export class HassDatapointsListCard extends LitElement {
   declare _editingId: Nullable<string>;
 
   declare _editColor: string;
+
+  @query(".list-scroll")
+  accessor _listScrollEl: Nullable<HTMLElement> = null;
 
   private _pageSize = 15;
 
@@ -200,7 +204,7 @@ export class HassDatapointsListCard extends LitElement {
 
   private _onPageChange(e: CustomEvent<{ page: number }>) {
     this._page = e.detail.page;
-    this.shadowRoot?.querySelector(".list-scroll")?.scrollTo(0, 0);
+    this._listScrollEl?.scrollTo(0, 0);
   }
 
   private _navigateToEventHistory(ev: EventRecordFull) {

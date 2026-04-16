@@ -588,6 +588,113 @@
 	o$1?.({ LitElement: i$2 });
 	(s$1.litElementVersions ??= []).push("4.2.2");
 	//#endregion
+	//#region node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/decorators/property.js
+	/**
+	* @license
+	* Copyright 2017 Google LLC
+	* SPDX-License-Identifier: BSD-3-Clause
+	*/ var o = {
+		attribute: !0,
+		type: String,
+		converter: u$3,
+		reflect: !1,
+		hasChanged: f$2
+	}, r$3 = (t = o, e, r) => {
+		const { kind: n, metadata: i } = r;
+		let s = globalThis.litPropertyMetadata.get(i);
+		if (void 0 === s && globalThis.litPropertyMetadata.set(i, s = /* @__PURE__ */ new Map()), "setter" === n && ((t = Object.create(t)).wrapped = !0), s.set(r.name, t), "accessor" === n) {
+			const { name: o } = r;
+			return {
+				set(r) {
+					const n = e.get.call(this);
+					e.set.call(this, r), this.requestUpdate(o, n, t, !0, r);
+				},
+				init(e) {
+					return void 0 !== e && this.C(o, void 0, t, e), e;
+				}
+			};
+		}
+		if ("setter" === n) {
+			const { name: o } = r;
+			return function(r) {
+				const n = this[o];
+				e.call(this, r), this.requestUpdate(o, n, t, !0, r);
+			};
+		}
+		throw Error("Unsupported decorator location: " + n);
+	};
+	function n$1(t) {
+		return (e, o) => "object" == typeof o ? r$3(t, e, o) : ((t, e, o) => {
+			const r = e.hasOwnProperty(o);
+			return e.constructor.createProperty(o, t), r ? Object.getOwnPropertyDescriptor(e, o) : void 0;
+		})(t, e, o);
+	}
+	//#endregion
+	//#region node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/decorators/state.js
+	/**
+	* @license
+	* Copyright 2017 Google LLC
+	* SPDX-License-Identifier: BSD-3-Clause
+	*/ function r$2(r) {
+		return n$1({
+			...r,
+			state: !0,
+			attribute: !1
+		});
+	}
+	//#endregion
+	//#region node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/decorators/base.js
+	/**
+	* @license
+	* Copyright 2017 Google LLC
+	* SPDX-License-Identifier: BSD-3-Clause
+	*/
+	var e$5 = (e, t, c) => (c.configurable = !0, c.enumerable = !0, Reflect.decorate && "object" != typeof t && Object.defineProperty(e, t, c), c);
+	//#endregion
+	//#region node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/decorators/query.js
+	/**
+	* @license
+	* Copyright 2017 Google LLC
+	* SPDX-License-Identifier: BSD-3-Clause
+	*/ function e$4(e, r) {
+		return (n, s, i) => {
+			const o = (t) => t.renderRoot?.querySelector(e) ?? null;
+			if (r) {
+				const { get: e, set: r } = "object" == typeof s ? n : i ?? (() => {
+					const t = Symbol();
+					return {
+						get() {
+							return this[t];
+						},
+						set(e) {
+							this[t] = e;
+						}
+					};
+				})();
+				return e$5(n, s, { get() {
+					let t = e.call(this);
+					return void 0 === t && (t = o(this), (null !== t || this.hasUpdated) && r.call(this, t)), t;
+				} });
+			}
+			return e$5(n, s, { get() {
+				return o(this);
+			} });
+		};
+	}
+	//#endregion
+	//#region node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/decorators/query-all.js
+	/**
+	* @license
+	* Copyright 2017 Google LLC
+	* SPDX-License-Identifier: BSD-3-Clause
+	*/
+	var e$3;
+	function r$1(r) {
+		return (n, o) => e$5(n, o, { get() {
+			return (this.renderRoot ?? (e$3 ??= document.createDocumentFragment())).querySelectorAll(r);
+		} });
+	}
+	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/action.styles.ts
 	var styles$76 = i$5`
   :host {
@@ -696,113 +803,6 @@
 		"#8b5cf6",
 		"#ec4899"
 	];
-	//#endregion
-	//#region node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/decorators/property.js
-	/**
-	* @license
-	* Copyright 2017 Google LLC
-	* SPDX-License-Identifier: BSD-3-Clause
-	*/ var o = {
-		attribute: !0,
-		type: String,
-		converter: u$3,
-		reflect: !1,
-		hasChanged: f$2
-	}, r$3 = (t = o, e, r) => {
-		const { kind: n, metadata: i } = r;
-		let s = globalThis.litPropertyMetadata.get(i);
-		if (void 0 === s && globalThis.litPropertyMetadata.set(i, s = /* @__PURE__ */ new Map()), "setter" === n && ((t = Object.create(t)).wrapped = !0), s.set(r.name, t), "accessor" === n) {
-			const { name: o } = r;
-			return {
-				set(r) {
-					const n = e.get.call(this);
-					e.set.call(this, r), this.requestUpdate(o, n, t, !0, r);
-				},
-				init(e) {
-					return void 0 !== e && this.C(o, void 0, t, e), e;
-				}
-			};
-		}
-		if ("setter" === n) {
-			const { name: o } = r;
-			return function(r) {
-				const n = this[o];
-				e.call(this, r), this.requestUpdate(o, n, t, !0, r);
-			};
-		}
-		throw Error("Unsupported decorator location: " + n);
-	};
-	function n$1(t) {
-		return (e, o) => "object" == typeof o ? r$3(t, e, o) : ((t, e, o) => {
-			const r = e.hasOwnProperty(o);
-			return e.constructor.createProperty(o, t), r ? Object.getOwnPropertyDescriptor(e, o) : void 0;
-		})(t, e, o);
-	}
-	//#endregion
-	//#region node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/decorators/state.js
-	/**
-	* @license
-	* Copyright 2017 Google LLC
-	* SPDX-License-Identifier: BSD-3-Clause
-	*/ function r$2(r) {
-		return n$1({
-			...r,
-			state: !0,
-			attribute: !1
-		});
-	}
-	//#endregion
-	//#region node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/decorators/base.js
-	/**
-	* @license
-	* Copyright 2017 Google LLC
-	* SPDX-License-Identifier: BSD-3-Clause
-	*/
-	var e$5 = (e, t, c) => (c.configurable = !0, c.enumerable = !0, Reflect.decorate && "object" != typeof t && Object.defineProperty(e, t, c), c);
-	//#endregion
-	//#region node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/decorators/query.js
-	/**
-	* @license
-	* Copyright 2017 Google LLC
-	* SPDX-License-Identifier: BSD-3-Clause
-	*/ function e$4(e, r) {
-		return (n, s, i) => {
-			const o = (t) => t.renderRoot?.querySelector(e) ?? null;
-			if (r) {
-				const { get: e, set: r } = "object" == typeof s ? n : i ?? (() => {
-					const t = Symbol();
-					return {
-						get() {
-							return this[t];
-						},
-						set(e) {
-							this[t] = e;
-						}
-					};
-				})();
-				return e$5(n, s, { get() {
-					let t = e.call(this);
-					return void 0 === t && (t = o(this), (null !== t || this.hasUpdated) && r.call(this, t)), t;
-				} });
-			}
-			return e$5(n, s, { get() {
-				return o(this);
-			} });
-		};
-	}
-	//#endregion
-	//#region node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/decorators/query-all.js
-	/**
-	* @license
-	* Copyright 2017 Google LLC
-	* SPDX-License-Identifier: BSD-3-Clause
-	*/
-	var e$3;
-	function r$1(r) {
-		return (n, o) => e$5(n, o, { get() {
-			return (this.renderRoot ?? (e$3 ??= document.createDocumentFragment())).querySelectorAll(r);
-		} });
-	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/display/color-swatch/color-swatch.styles.ts
 	var styles$75 = i$5`
@@ -1140,7 +1140,7 @@
 	var DEFAULT_I18N$7 = createDefaultI18n(["Remove"]);
 	var _type_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _itemId_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$17 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$18 = /* @__PURE__ */ new WeakMap();
 	var _removable_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _i18n_accessor_storage$8 = /* @__PURE__ */ new WeakMap();
 	var EntityChip = class extends i$2 {
@@ -1148,7 +1148,7 @@
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _type_accessor_storage$2, "entity");
 			_classPrivateFieldInitSpec(this, _itemId_accessor_storage$1, "");
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$17, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$18, null);
 			_classPrivateFieldInitSpec(this, _removable_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _i18n_accessor_storage$8, DEFAULT_I18N$7);
 		}
@@ -1165,10 +1165,10 @@
 			_classPrivateFieldSet2(_itemId_accessor_storage$1, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$17, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$18, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$17, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$18, this, value);
 		}
 		get removable() {
 			return _classPrivateFieldGet2(_removable_accessor_storage$1, this);
@@ -1231,14 +1231,14 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/chip-group/chip-group.ts
 	var _items_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$16 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$17 = /* @__PURE__ */ new WeakMap();
 	var _removable_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _label_accessor_storage$14 = /* @__PURE__ */ new WeakMap();
 	var ChipGroup = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _items_accessor_storage$1, []);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$16, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$17, null);
 			_classPrivateFieldInitSpec(this, _removable_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _label_accessor_storage$14, "");
 		}
@@ -1249,10 +1249,10 @@
 			_classPrivateFieldSet2(_items_accessor_storage$1, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$16, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$17, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$16, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$17, this, value);
 		}
 		get removable() {
 			return _classPrivateFieldGet2(_removable_accessor_storage, this);
@@ -1300,7 +1300,7 @@
 	customElements.define("chip-group", ChipGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/action-targets/action-targets.ts
-	var _hass_accessor_storage$15 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$16 = /* @__PURE__ */ new WeakMap();
 	var _showConfigTargets_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _showTargetPicker_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _configChips_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -1308,17 +1308,17 @@
 	var CardActionTargets = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$15, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$16, null);
 			_classPrivateFieldInitSpec(this, _showConfigTargets_accessor_storage, true);
 			_classPrivateFieldInitSpec(this, _showTargetPicker_accessor_storage, true);
 			_classPrivateFieldInitSpec(this, _configChips_accessor_storage, []);
 			_classPrivateFieldInitSpec(this, _targetValue_accessor_storage, {});
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$15, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$16, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$15, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$16, this, value);
 		}
 		get showConfigTargets() {
 			return _classPrivateFieldGet2(_showConfigTargets_accessor_storage, this);
@@ -1420,6 +1420,12 @@
 	};
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/action.ts
+	var _msgEl_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _btnEl_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _annEl_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _iconPickerEl_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _dateEl_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _targetsEl_accessor_storage = /* @__PURE__ */ new WeakMap();
 	/**
 	* hass-datapoints-action-card – Full form to record a custom event.
 	*
@@ -1429,8 +1435,50 @@
 	*   - On submit both are merged; the selector resets to empty afterwards.
 	*/
 	var HassDatapointsActionCard = class extends i$2 {
+		get _msgEl() {
+			return _classPrivateFieldGet2(_msgEl_accessor_storage$1, this);
+		}
+		set _msgEl(value) {
+			_classPrivateFieldSet2(_msgEl_accessor_storage$1, this, value);
+		}
+		get _btnEl() {
+			return _classPrivateFieldGet2(_btnEl_accessor_storage$1, this);
+		}
+		set _btnEl(value) {
+			_classPrivateFieldSet2(_btnEl_accessor_storage$1, this, value);
+		}
+		get _annEl() {
+			return _classPrivateFieldGet2(_annEl_accessor_storage, this);
+		}
+		set _annEl(value) {
+			_classPrivateFieldSet2(_annEl_accessor_storage, this, value);
+		}
+		get _iconPickerEl() {
+			return _classPrivateFieldGet2(_iconPickerEl_accessor_storage, this);
+		}
+		set _iconPickerEl(value) {
+			_classPrivateFieldSet2(_iconPickerEl_accessor_storage, this, value);
+		}
+		get _dateEl() {
+			return _classPrivateFieldGet2(_dateEl_accessor_storage, this);
+		}
+		set _dateEl(value) {
+			_classPrivateFieldSet2(_dateEl_accessor_storage, this, value);
+		}
+		get _targetsEl() {
+			return _classPrivateFieldGet2(_targetsEl_accessor_storage, this);
+		}
+		set _targetsEl(value) {
+			_classPrivateFieldSet2(_targetsEl_accessor_storage, this, value);
+		}
 		constructor() {
 			super();
+			_classPrivateFieldInitSpec(this, _msgEl_accessor_storage$1, null);
+			_classPrivateFieldInitSpec(this, _btnEl_accessor_storage$1, null);
+			_classPrivateFieldInitSpec(this, _annEl_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _iconPickerEl_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _dateEl_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _targetsEl_accessor_storage, null);
 			_defineProperty(this, "_userTarget", {});
 			this._config = {};
 			this._hass = null;
@@ -1513,23 +1561,20 @@
 			};
 		}
 		async _record() {
-			const msgEl = this.shadowRoot.querySelector("#msg");
+			const msgEl = this._msgEl;
 			const message = (msgEl?.value || "").trim();
 			if (!message) {
 				msgEl?.focus();
 				return;
 			}
-			const btn = this.shadowRoot.querySelector("#btn");
-			if (btn) btn.disabled = true;
+			if (this._btnEl) this._btnEl.disabled = true;
 			const data = { message };
-			const annEl = this.shadowRoot.querySelector("#ann");
-			const ann = (annEl?.value || "").trim();
+			const ann = (this._annEl?.value || "").trim();
 			if (ann) data.annotation = ann;
-			const icon = this.shadowRoot.querySelector("#icon-picker")?.value;
+			const icon = this._iconPickerEl?.value;
 			if (icon) data.icon = icon;
 			data.color = this._color;
-			const dateEl = this.shadowRoot.querySelector("#date");
-			const dateVal = (dateEl?.value || "").trim();
+			const dateVal = (this._dateEl?.value || "").trim();
 			if (dateVal) data.date = dateVal;
 			const merged = this._mergeTargets(this._configTarget(), this._userTarget);
 			if (merged.entity_id.length) data.entity_ids = merged.entity_id;
@@ -1544,12 +1589,11 @@
 					composed: true,
 					detail: { ...data }
 				}));
-				if (msgEl) msgEl.value = "";
-				if (annEl) annEl.value = "";
-				if (dateEl) dateEl.value = this._config.default_date || this._nowStr();
+				if (this._msgEl) this._msgEl.value = "";
+				if (this._annEl) this._annEl.value = "";
+				if (this._dateEl) this._dateEl.value = this._config.default_date || this._nowStr();
 				this._userTarget = {};
-				const targets = this.shadowRoot.querySelector("action-targets");
-				if (targets?.resetSelection) targets.resetSelection();
+				if (this._targetsEl?.resetSelection) this._targetsEl.resetSelection();
 				this._feedbackClass = "ok";
 				this._feedbackText = "Event recorded!";
 				this._feedbackVisible = true;
@@ -1563,7 +1607,7 @@
 				this._feedbackVisible = true;
 				logger$1.error("[hass-datapoints action-card]", e);
 			}
-			if (btn) btn.disabled = false;
+			if (this._btnEl) this._btnEl.disabled = false;
 		}
 		_onColorChange(e) {
 			this._color = e.detail.color;
@@ -1699,6 +1743,12 @@
 		_feedbackVisible: { state: true }
 	});
 	_defineProperty(HassDatapointsActionCard, "styles", styles$76);
+	__decorate([e$4("#msg")], HassDatapointsActionCard.prototype, "_msgEl", null);
+	__decorate([e$4("#btn")], HassDatapointsActionCard.prototype, "_btnEl", null);
+	__decorate([e$4("#ann")], HassDatapointsActionCard.prototype, "_annEl", null);
+	__decorate([e$4("#icon-picker")], HassDatapointsActionCard.prototype, "_iconPickerEl", null);
+	__decorate([e$4("#date")], HassDatapointsActionCard.prototype, "_dateEl", null);
+	__decorate([e$4("action-targets")], HassDatapointsActionCard.prototype, "_targetsEl", null);
 	//#endregion
 	//#region node_modules/.pnpm/@lit+localize@0.12.2/node_modules/@lit/localize/internal/locale-status-event.js
 	/**
@@ -5202,24 +5252,24 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/editor-base/editor-base.ts
-	var _EditorBase, _config_accessor_storage, _hass_accessor_storage$14;
-	var EditorBase = (_config_accessor_storage = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$14 = /* @__PURE__ */ new WeakMap(), _EditorBase = class EditorBase extends i$2 {
+	var _EditorBase, _config_accessor_storage$1, _hass_accessor_storage$15;
+	var EditorBase = (_config_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$15 = /* @__PURE__ */ new WeakMap(), _EditorBase = class EditorBase extends i$2 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _config_accessor_storage, {});
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$14, null);
+			_classPrivateFieldInitSpec(this, _config_accessor_storage$1, {});
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$15, null);
 		}
 		get _config() {
-			return _classPrivateFieldGet2(_config_accessor_storage, this);
+			return _classPrivateFieldGet2(_config_accessor_storage$1, this);
 		}
 		set _config(value) {
-			_classPrivateFieldSet2(_config_accessor_storage, this, value);
+			_classPrivateFieldSet2(_config_accessor_storage$1, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$14, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$15, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$14, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$15, this, value);
 		}
 		setConfig(config) {
 			this._config = { ...config };
@@ -5550,13 +5600,13 @@
 	//#region custom_components/hass_datapoints/src/atoms/form/editor-icon-picker/editor-icon-picker.ts
 	var _label_accessor_storage$11 = /* @__PURE__ */ new WeakMap();
 	var _value_accessor_storage$7 = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$13 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$14 = /* @__PURE__ */ new WeakMap();
 	var EditorIconPicker = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _label_accessor_storage$11, "");
 			_classPrivateFieldInitSpec(this, _value_accessor_storage$7, "mdi:bookmark");
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$13, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$14, null);
 		}
 		get label() {
 			return _classPrivateFieldGet2(_label_accessor_storage$11, this);
@@ -5571,10 +5621,10 @@
 			_classPrivateFieldSet2(_value_accessor_storage$7, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$13, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$14, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$13, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$14, this, value);
 		}
 		_onValueChanged(e) {
 			this.dispatchEvent(new CustomEvent("dp-icon-change", {
@@ -5599,19 +5649,19 @@
 	customElements.define("editor-icon-picker", EditorIconPicker);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/editor.ts
-	var _targetPickerEl_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _targetPickerEl_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _selectorEls_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var HassDatapointsActionCardEditor = class extends EditorBase {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _targetPickerEl_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _targetPickerEl_accessor_storage$2, null);
 			_classPrivateFieldInitSpec(this, _selectorEls_accessor_storage, void 0);
 		}
 		get _targetPickerEl() {
-			return _classPrivateFieldGet2(_targetPickerEl_accessor_storage, this);
+			return _classPrivateFieldGet2(_targetPickerEl_accessor_storage$2, this);
 		}
 		set _targetPickerEl(value) {
-			_classPrivateFieldSet2(_targetPickerEl_accessor_storage, this, value);
+			_classPrivateFieldSet2(_targetPickerEl_accessor_storage$2, this, value);
 		}
 		get _selectorEls() {
 			return _classPrivateFieldGet2(_selectorEls_accessor_storage, this);
@@ -5953,9 +6003,13 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/dev-tool/dev-tool.styles.ts
-	var styles$64 = `
-  :host { display: block; }
-  ha-card { padding: 16px; }
+	var styles$64 = i$5`
+  :host {
+    display: block;
+  }
+  ha-card {
+    padding: 16px;
+  }
   .card-header {
     font-size: 1.1em;
     font-weight: 500;
@@ -5992,7 +6046,7 @@
     display: flex;
     align-items: center;
     padding: 10px 14px;
-    background: var(--secondary-background-color, rgba(0,0,0,0.04));
+    background: var(--secondary-background-color, rgba(0, 0, 0, 0.04));
     border-radius: 8px;
     margin-bottom: 10px;
   }
@@ -6183,7 +6237,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/dev-tool/dev-tool-results/dev-tool-results.ts
-	var _results_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _results_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _isAdmin_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _statusKind_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _statusText_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -6192,7 +6246,7 @@
 	var CardDevToolResults = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _results_accessor_storage, []);
+			_classPrivateFieldInitSpec(this, _results_accessor_storage$1, []);
 			_classPrivateFieldInitSpec(this, _isAdmin_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _statusKind_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _statusText_accessor_storage, "");
@@ -6200,10 +6254,10 @@
 			_classPrivateFieldInitSpec(this, _collapsedWindowIds_accessor_storage, []);
 		}
 		get results() {
-			return _classPrivateFieldGet2(_results_accessor_storage, this);
+			return _classPrivateFieldGet2(_results_accessor_storage$1, this);
 		}
 		set results(value) {
-			_classPrivateFieldSet2(_results_accessor_storage, this, value);
+			_classPrivateFieldSet2(_results_accessor_storage$1, this, value);
 		}
 		get isAdmin() {
 			return _classPrivateFieldGet2(_isAdmin_accessor_storage, this);
@@ -6650,127 +6704,190 @@
 	customElements.define("dev-tool-windows", CardDevToolWindows);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/dev-tool/dev-tool.ts
-	var HassDatapointsDevToolCard = class extends HTMLElement {
-		constructor() {
-			super();
-			_defineProperty(this, "_config", {});
-			_defineProperty(this, "_hass", null);
-			_defineProperty(this, "_rendered", false);
-			_defineProperty(this, "_entities", []);
-			_defineProperty(this, "_suppressEntityChange", false);
-			_defineProperty(this, "_results", []);
-			this.attachShadow({ mode: "open" });
+	var _config_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$13 = /* @__PURE__ */ new WeakMap();
+	var _entities_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _results_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _analyzing_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _deleting_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _devCount_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _analyzeStatusKind_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _analyzeStatusText_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _analyzeStatusVisible_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _deleteStatusKind_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _deleteStatusText_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _deleteStatusVisible_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _resultsStatusKind_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _resultsStatusText_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _resultsStatusVisible_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _windowsEl_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var HassDatapointsDevToolCard = class extends i$2 {
+		constructor(..._args) {
+			super(..._args);
+			_classPrivateFieldInitSpec(this, _config_accessor_storage, {});
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$13, null);
+			_classPrivateFieldInitSpec(this, _entities_accessor_storage, []);
+			_classPrivateFieldInitSpec(this, _results_accessor_storage, []);
+			_classPrivateFieldInitSpec(this, _analyzing_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _deleting_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _devCount_accessor_storage, 0);
+			_classPrivateFieldInitSpec(this, _analyzeStatusKind_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _analyzeStatusText_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _analyzeStatusVisible_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _deleteStatusKind_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _deleteStatusText_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _deleteStatusVisible_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _resultsStatusKind_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _resultsStatusText_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _resultsStatusVisible_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _windowsEl_accessor_storage, null);
+			_defineProperty(this, "_initialized", false);
+		}
+		get _config() {
+			return _classPrivateFieldGet2(_config_accessor_storage, this);
+		}
+		set _config(value) {
+			_classPrivateFieldSet2(_config_accessor_storage, this, value);
+		}
+		get _hass() {
+			return _classPrivateFieldGet2(_hass_accessor_storage$13, this);
+		}
+		set _hass(value) {
+			_classPrivateFieldSet2(_hass_accessor_storage$13, this, value);
+		}
+		get _entities() {
+			return _classPrivateFieldGet2(_entities_accessor_storage, this);
+		}
+		set _entities(value) {
+			_classPrivateFieldSet2(_entities_accessor_storage, this, value);
+		}
+		get _results() {
+			return _classPrivateFieldGet2(_results_accessor_storage, this);
+		}
+		set _results(value) {
+			_classPrivateFieldSet2(_results_accessor_storage, this, value);
+		}
+		get _analyzing() {
+			return _classPrivateFieldGet2(_analyzing_accessor_storage, this);
+		}
+		set _analyzing(value) {
+			_classPrivateFieldSet2(_analyzing_accessor_storage, this, value);
+		}
+		get _deleting() {
+			return _classPrivateFieldGet2(_deleting_accessor_storage, this);
+		}
+		set _deleting(value) {
+			_classPrivateFieldSet2(_deleting_accessor_storage, this, value);
+		}
+		get _devCount() {
+			return _classPrivateFieldGet2(_devCount_accessor_storage, this);
+		}
+		set _devCount(value) {
+			_classPrivateFieldSet2(_devCount_accessor_storage, this, value);
+		}
+		get _analyzeStatusKind() {
+			return _classPrivateFieldGet2(_analyzeStatusKind_accessor_storage, this);
+		}
+		set _analyzeStatusKind(value) {
+			_classPrivateFieldSet2(_analyzeStatusKind_accessor_storage, this, value);
+		}
+		get _analyzeStatusText() {
+			return _classPrivateFieldGet2(_analyzeStatusText_accessor_storage, this);
+		}
+		set _analyzeStatusText(value) {
+			_classPrivateFieldSet2(_analyzeStatusText_accessor_storage, this, value);
+		}
+		get _analyzeStatusVisible() {
+			return _classPrivateFieldGet2(_analyzeStatusVisible_accessor_storage, this);
+		}
+		set _analyzeStatusVisible(value) {
+			_classPrivateFieldSet2(_analyzeStatusVisible_accessor_storage, this, value);
+		}
+		get _deleteStatusKind() {
+			return _classPrivateFieldGet2(_deleteStatusKind_accessor_storage, this);
+		}
+		set _deleteStatusKind(value) {
+			_classPrivateFieldSet2(_deleteStatusKind_accessor_storage, this, value);
+		}
+		get _deleteStatusText() {
+			return _classPrivateFieldGet2(_deleteStatusText_accessor_storage, this);
+		}
+		set _deleteStatusText(value) {
+			_classPrivateFieldSet2(_deleteStatusText_accessor_storage, this, value);
+		}
+		get _deleteStatusVisible() {
+			return _classPrivateFieldGet2(_deleteStatusVisible_accessor_storage, this);
+		}
+		set _deleteStatusVisible(value) {
+			_classPrivateFieldSet2(_deleteStatusVisible_accessor_storage, this, value);
+		}
+		get _resultsStatusKind() {
+			return _classPrivateFieldGet2(_resultsStatusKind_accessor_storage, this);
+		}
+		set _resultsStatusKind(value) {
+			_classPrivateFieldSet2(_resultsStatusKind_accessor_storage, this, value);
+		}
+		get _resultsStatusText() {
+			return _classPrivateFieldGet2(_resultsStatusText_accessor_storage, this);
+		}
+		set _resultsStatusText(value) {
+			_classPrivateFieldSet2(_resultsStatusText_accessor_storage, this, value);
+		}
+		get _resultsStatusVisible() {
+			return _classPrivateFieldGet2(_resultsStatusVisible_accessor_storage, this);
+		}
+		set _resultsStatusVisible(value) {
+			_classPrivateFieldSet2(_resultsStatusVisible_accessor_storage, this, value);
+		}
+		get _windowsEl() {
+			return _classPrivateFieldGet2(_windowsEl_accessor_storage, this);
+		}
+		set _windowsEl(value) {
+			_classPrivateFieldSet2(_windowsEl_accessor_storage, this, value);
 		}
 		setConfig(config) {
 			this._config = config || {};
 		}
 		set hass(hass) {
 			this._hass = hass;
-			if (!this._rendered) {
-				this._render();
+			if (!this._initialized) {
+				this._initialized = true;
 				this._refreshDevCount();
 			}
-			this._updateHassOnChildren();
 		}
-		_updateHassOnChildren() {
-			if (!this.shadowRoot || !this._hass) return;
-			const entityPicker = this.shadowRoot.getElementById("entity-picker");
-			if (!entityPicker) return;
-			this._suppressEntityChange = true;
-			entityPicker.hass = this._hass;
-			entityPicker.value = this._entities;
-			setTimeout(() => {
-				this._suppressEntityChange = false;
-			}, 100);
-			const resultsEl = this.shadowRoot.getElementById("results-container");
-			if (resultsEl) resultsEl.isAdmin = this._hass.user?.is_admin === true;
+		get hass() {
+			return this._hass;
 		}
-		_render() {
-			this._rendered = true;
-			const cfg = this._config;
-			if (!this.shadowRoot.adoptedStyleSheets.length) {
-				const sheet = new CSSStyleSheet();
-				sheet.replaceSync(styles$64);
-				this.shadowRoot.adoptedStyleSheets = [sheet];
-			}
-			D(b`
-        <ha-card>
-          ${cfg.title ? b`<div class="card-header">${cfg.title}</div>` : ""}
-          <div class="section-title">Analyze HA History</div>
-          <div class="form-group">
-            <ha-selector
-              id="entity-picker"
-              label="Entities to analyze"
-            ></ha-selector>
-          </div>
-          <dev-tool-windows id="windows-editor"></dev-tool-windows>
-          <div class="analyze-row">
-            <ha-button id="analyze-btn" class="analyze-btn" raised
-              >Analyze all windows</ha-button
-            >
-          </div>
-          <feedback-banner id="analyze-status"></feedback-banner>
-          <dev-tool-results id="results-container"></dev-tool-results>
-          <hr class="divider" />
-          <div class="dev-section">
-            <div class="section-title">Dev Datapoints</div>
-            <div class="dev-summary">
-              <span class="dev-count-label"
-                >Currently recorded:&nbsp;<span
-                  class="dev-count-num"
-                  id="dev-count"
-                  >—</span
-                >&nbsp;dev data point<span id="dev-count-plural">s</span></span
-              >
-            </div>
-            <ha-button class="delete-btn" id="delete-dev-btn"
-              >Delete all dev datapoints</ha-button
-            >
-            <feedback-banner id="delete-status"></feedback-banner>
-          </div>
-        </ha-card>
-      `, this.shadowRoot);
-			const entityPicker = this.shadowRoot.getElementById("entity-picker");
-			if (entityPicker) {
-				entityPicker.selector = { entity: { multiple: true } };
-				entityPicker.value = [];
-				this._entities = [];
-				this._suppressEntityChange = false;
-				entityPicker.addEventListener("value-changed", (event) => {
-					if (this._suppressEntityChange) return;
-					const value = event.detail.value;
-					if (Array.isArray(value)) this._entities = value;
-					else if (value) this._entities = [value];
-					else this._entities = [];
-				});
-			}
-			this.shadowRoot.getElementById("analyze-btn").addEventListener("click", () => {
-				this._analyzeHistory();
-			});
-			this.shadowRoot.getElementById("delete-dev-btn").addEventListener("click", () => {
-				this._deleteAllDev();
-			});
-			this.shadowRoot.getElementById("results-container").addEventListener("dp-record-selected-request", (event) => {
-				const detail = event.detail;
-				this._recordSelected(detail.items);
-			});
+		get _isAdmin() {
+			return this._hass?.user?.is_admin === true;
+		}
+		_onEntitiesChanged(event) {
+			const value = event.detail.value;
+			if (Array.isArray(value)) this._entities = value;
+			else if (value) this._entities = [value];
+			else this._entities = [];
 		}
 		_readWindowConfigs() {
-			return this.shadowRoot.getElementById("windows-editor").getWindowConfigs().map((windowConfig, index) => ({
+			const windowsEl = this._windowsEl;
+			if (!windowsEl) return [];
+			return windowsEl.getWindowConfigs().map((windowConfig, index) => ({
 				...windowConfig,
 				label: windowConfig.label.trim() || `Window ${index + 1}`
 			}));
 		}
 		async _analyzeHistory() {
 			if (!this._entities.length) {
-				this._showFeedback("analyze-status", "err", "Please select at least one entity.");
+				this._analyzeStatusKind = "err";
+				this._analyzeStatusText = "Please select at least one entity.";
+				this._analyzeStatusVisible = true;
 				return;
 			}
 			const windowConfigs = this._readWindowConfigs();
-			const button = this.shadowRoot.getElementById("analyze-btn");
-			button.disabled = true;
+			this._analyzing = true;
 			this._results = [];
-			this._showFeedback("analyze-status", "ok", `Fetching history for ${windowConfigs.length} window${windowConfigs.length === 1 ? "" : "s"}…`);
+			this._analyzeStatusKind = "ok";
+			this._analyzeStatusText = `Fetching history for ${windowConfigs.length} window${windowConfigs.length === 1 ? "" : "s"}…`;
+			this._analyzeStatusVisible = true;
 			try {
 				const now = /* @__PURE__ */ new Date();
 				this._results = await Promise.all(windowConfigs.map(async (windowConfig) => {
@@ -6795,13 +6912,17 @@
 						selected: changes.map((_, index) => index)
 					};
 				}));
-				this._renderResults();
-				this._hideFeedback("analyze-status");
+				this._resultsStatusKind = "";
+				this._resultsStatusText = "";
+				this._resultsStatusVisible = false;
+				this._analyzeStatusVisible = false;
 			} catch (err) {
-				this._showFeedback("analyze-status", "err", `Error: ${err.message || "Failed to fetch history"}`);
+				this._analyzeStatusKind = "err";
+				this._analyzeStatusText = `Error: ${err.message || "Failed to fetch history"}`;
+				this._analyzeStatusVisible = true;
 				logger$1.error("[hass-datapoints dev-tool]", err);
 			}
-			button.disabled = false;
+			this._analyzing = false;
 		}
 		_detectChanges(histResult) {
 			const changes = [];
@@ -6814,15 +6935,15 @@
 				const friendlyName = entityState?.attributes?.friendly_name || entityId;
 				const unit = entityState?.attributes?.unit_of_measurement || "";
 				for (let i = 0; i < states.length; i += 1) {
-					const state = states[i];
+					const stateEntry = states[i];
 					const previous = i > 0 ? states[i - 1] : null;
-					const currentValue = state.s;
+					const currentValue = stateEntry.s;
 					const previousValue = previous?.s ?? null;
 					if (currentValue === "unavailable" || currentValue === "unknown") continue;
 					if (previous && previousValue === currentValue) {
 						if (domain !== "climate") continue;
 					}
-					const timestampRaw = state.lc ?? state.lu;
+					const timestampRaw = stateEntry.lc ?? stateEntry.lu;
 					const timestamp = timestampRaw != null ? (/* @__PURE__ */ new Date(timestampRaw * 1e3)).toISOString() : (/* @__PURE__ */ new Date()).toISOString();
 					let message;
 					let icon;
@@ -6851,7 +6972,7 @@
 						icon = currentValue === "open" || currentValue === "opening" ? "mdi:garage-open" : "mdi:garage";
 						color = currentValue === "open" ? "#4caf50" : "#795548";
 					} else if (domain === "climate") {
-						const stateAttributes = state.a;
+						const stateAttributes = stateEntry.a;
 						const previousAttributes = previous?.a;
 						const currentTemperature = stateAttributes?.temperature;
 						const previousTemperature = previousAttributes?.temperature;
@@ -6912,8 +7033,8 @@
 			changes.sort((a, b) => a.timestamp < b.timestamp ? -1 : 1);
 			return changes;
 		}
-		_binaryLabel(deviceClass, state) {
-			const on = state === "on";
+		_binaryLabel(deviceClass, value) {
+			const on = value === "on";
 			const pair = {
 				door: ["opened", "closed"],
 				window: ["opened", "closed"],
@@ -6941,19 +7062,19 @@
 			if (pair) return on ? pair[0] : pair[1];
 			return on ? "on" : "off";
 		}
-		_renderResults() {
-			const resultsContainer = this.shadowRoot.getElementById("results-container");
-			resultsContainer.results = [...this._results];
-			resultsContainer.statusKind = "";
-			resultsContainer.statusText = "";
-			resultsContainer.statusVisible = false;
+		_onRecordSelectedRequest(event) {
+			this._recordSelected(event.detail.items);
 		}
 		async _recordSelected(items) {
 			if (!items.length) {
-				this._showResultsStatus("err", "No items selected.");
+				this._resultsStatusKind = "err";
+				this._resultsStatusText = "No items selected.";
+				this._resultsStatusVisible = true;
 				return;
 			}
-			this._showResultsStatus("ok", `Recording ${items.length} data point${items.length === 1 ? "" : "s"}…`);
+			this._resultsStatusKind = "ok";
+			this._resultsStatusText = `Recording ${items.length} data point${items.length === 1 ? "" : "s"}…`;
+			this._resultsStatusVisible = true;
 			const results = await Promise.allSettled(items.map((item) => this._hass.callService(DOMAIN, "record", {
 				message: item.message,
 				entity_ids: [item.entity_id],
@@ -6964,63 +7085,121 @@
 			})));
 			const ok = results.filter((result) => result.status === "fulfilled").length;
 			const fail = results.filter((result) => result.status === "rejected").length;
-			if (fail) this._showResultsStatus("err", `Recorded ${ok}, failed ${fail}.`);
-			else this._showResultsStatus("ok", `Recorded ${ok} dev data point${ok === 1 ? "" : "s"}!`);
+			if (fail) {
+				this._resultsStatusKind = "err";
+				this._resultsStatusText = `Recorded ${ok}, failed ${fail}.`;
+			} else {
+				this._resultsStatusKind = "ok";
+				this._resultsStatusText = `Recorded ${ok} dev data point${ok === 1 ? "" : "s"}!`;
+			}
+			this._resultsStatusVisible = true;
 			await this._refreshDevCount();
 			window.dispatchEvent(new CustomEvent("hass-datapoints-event-recorded"));
 		}
 		async _deleteAllDev() {
-			const devCountEl = this.shadowRoot.getElementById("dev-count");
-			const count = parseInt(devCountEl?.textContent ?? "0", 10) || 0;
-			if (count === 0) {
-				this._showFeedback("delete-status", "err", "No dev datapoints to delete.");
+			if (this._devCount === 0) {
+				this._deleteStatusKind = "err";
+				this._deleteStatusText = "No dev datapoints to delete.";
+				this._deleteStatusVisible = true;
 				return;
 			}
 			if (!await confirmDestructiveAction(this, {
 				title: "Delete dev datapoints",
-				message: `Delete all ${count} dev data point${count === 1 ? "" : "s"}?`,
+				message: `Delete all ${this._devCount} dev data point${this._devCount === 1 ? "" : "s"}?`,
 				confirmLabel: "Delete all"
 			})) return;
-			const button = this.shadowRoot.getElementById("delete-dev-btn");
-			button.disabled = true;
+			this._deleting = true;
 			try {
 				const deleted = (await this._hass.connection.sendMessagePromise({ type: `${DOMAIN}/events/delete_dev` })).deleted;
-				this._showFeedback("delete-status", "ok", `Deleted ${deleted} dev data point${deleted === 1 ? "" : "s"}.`);
+				this._deleteStatusKind = "ok";
+				this._deleteStatusText = `Deleted ${deleted} dev data point${deleted === 1 ? "" : "s"}.`;
+				this._deleteStatusVisible = true;
 				await this._refreshDevCount();
 				window.dispatchEvent(new CustomEvent("hass-datapoints-event-recorded"));
 			} catch (err) {
-				this._showFeedback("delete-status", "err", `Error: ${err.message || "failed"}`);
+				this._deleteStatusKind = "err";
+				this._deleteStatusText = `Error: ${err.message || "failed"}`;
+				this._deleteStatusVisible = true;
 			}
-			button.disabled = false;
+			this._deleting = false;
 		}
 		async _refreshDevCount() {
 			try {
-				const count = ((await this._hass.connection.sendMessagePromise({ type: `hass_datapoints/events` })).events || []).filter((event) => event.dev).length;
-				const countEl = this.shadowRoot.getElementById("dev-count");
-				const pluralEl = this.shadowRoot.getElementById("dev-count-plural");
-				if (countEl) countEl.textContent = String(count);
-				if (pluralEl) pluralEl.textContent = count === 1 ? "" : "s";
+				this._devCount = ((await this._hass.connection.sendMessagePromise({ type: `hass_datapoints/events` })).events || []).filter((event) => event.dev).length;
 			} catch (error) {
 				logger$1.warn("[hass-datapoints dev-tool] refresh dev count failed", error);
 			}
 		}
-		_showFeedback(id, kind, text) {
-			const el = this.shadowRoot.getElementById(id);
-			if (!el) return;
-			el.kind = kind;
-			el.text = text;
-			el.visible = true;
-		}
-		_hideFeedback(id) {
-			const el = this.shadowRoot.getElementById(id);
-			if (!el) return;
-			el.visible = false;
-		}
-		_showResultsStatus(kind, text) {
-			const el = this.shadowRoot.getElementById("results-container");
-			el.statusKind = kind;
-			el.statusText = text;
-			el.statusVisible = true;
+		render() {
+			const cfg = this._config;
+			return b`
+      <ha-card>
+        ${cfg.title ? b`<div class="card-header">${cfg.title}</div>` : ""}
+        <div class="section-title">Analyze HA History</div>
+        <div class="form-group">
+          <ha-selector
+            id="entity-picker"
+            label="Entities to analyze"
+            .hass=${this._hass}
+            .selector=${{ entity: { multiple: true } }}
+            .value=${this._entities}
+            @value-changed=${this._onEntitiesChanged}
+          ></ha-selector>
+        </div>
+        <dev-tool-windows id="windows-editor"></dev-tool-windows>
+        <div class="analyze-row">
+          <ha-button
+            id="analyze-btn"
+            class="analyze-btn"
+            raised
+            .disabled=${this._analyzing}
+            @click=${this._analyzeHistory}
+          >
+            Analyze all windows
+          </ha-button>
+        </div>
+        <feedback-banner
+          id="analyze-status"
+          .kind=${this._analyzeStatusKind}
+          .text=${this._analyzeStatusText}
+          .visible=${this._analyzeStatusVisible}
+        ></feedback-banner>
+        <dev-tool-results
+          id="results-container"
+          .results=${this._results}
+          .isAdmin=${this._isAdmin}
+          .statusKind=${this._resultsStatusKind}
+          .statusText=${this._resultsStatusText}
+          .statusVisible=${this._resultsStatusVisible}
+          @dp-record-selected-request=${this._onRecordSelectedRequest}
+        ></dev-tool-results>
+        <hr class="divider" />
+        <div class="dev-section">
+          <div class="section-title">Dev Datapoints</div>
+          <div class="dev-summary">
+            <span class="dev-count-label"
+              >Currently recorded:&nbsp;<span class="dev-count-num"
+                >${this._devCount}</span
+              >&nbsp;dev data point${this._devCount === 1 ? "" : "s"}</span
+            >
+          </div>
+          <ha-button
+            class="delete-btn"
+            id="delete-dev-btn"
+            .disabled=${this._deleting}
+            @click=${this._deleteAllDev}
+          >
+            Delete all dev datapoints
+          </ha-button>
+          <feedback-banner
+            id="delete-status"
+            .kind=${this._deleteStatusKind}
+            .text=${this._deleteStatusText}
+            .visible=${this._deleteStatusVisible}
+          ></feedback-banner>
+        </div>
+      </ha-card>
+    `;
 		}
 		static getStubConfig() {
 			return { title: "Dev Tool" };
@@ -7029,6 +7208,24 @@
 			return document.createElement("hass-datapoints-dev-tool-card-editor");
 		}
 	};
+	_defineProperty(HassDatapointsDevToolCard, "styles", styles$64);
+	__decorate([r$2()], HassDatapointsDevToolCard.prototype, "_config", null);
+	__decorate([r$2()], HassDatapointsDevToolCard.prototype, "_hass", null);
+	__decorate([r$2()], HassDatapointsDevToolCard.prototype, "_entities", null);
+	__decorate([r$2()], HassDatapointsDevToolCard.prototype, "_results", null);
+	__decorate([r$2()], HassDatapointsDevToolCard.prototype, "_analyzing", null);
+	__decorate([r$2()], HassDatapointsDevToolCard.prototype, "_deleting", null);
+	__decorate([r$2()], HassDatapointsDevToolCard.prototype, "_devCount", null);
+	__decorate([r$2()], HassDatapointsDevToolCard.prototype, "_analyzeStatusKind", null);
+	__decorate([r$2()], HassDatapointsDevToolCard.prototype, "_analyzeStatusText", null);
+	__decorate([r$2()], HassDatapointsDevToolCard.prototype, "_analyzeStatusVisible", null);
+	__decorate([r$2()], HassDatapointsDevToolCard.prototype, "_deleteStatusKind", null);
+	__decorate([r$2()], HassDatapointsDevToolCard.prototype, "_deleteStatusText", null);
+	__decorate([r$2()], HassDatapointsDevToolCard.prototype, "_deleteStatusVisible", null);
+	__decorate([r$2()], HassDatapointsDevToolCard.prototype, "_resultsStatusKind", null);
+	__decorate([r$2()], HassDatapointsDevToolCard.prototype, "_resultsStatusText", null);
+	__decorate([r$2()], HassDatapointsDevToolCard.prototype, "_resultsStatusVisible", null);
+	__decorate([e$4("dev-tool-windows")], HassDatapointsDevToolCard.prototype, "_windowsEl", null);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/charts/base/chart-card-base.ts
 	/**
@@ -20551,34 +20748,6 @@
 			maxHeight: viewportHeight - top - margin * 2
 		};
 	}
-	/**
-	* Attach outside-click and Escape-key dismiss handlers for a popup.
-	*
-	* Returns a cleanup object whose `destroy()` removes all listeners.
-	*
-	* @param popupEl     The popup container element.
-	* @param anchorEl    The element that triggered the popup (excluded from outside-click).
-	* @param onDismiss   Called when the user clicks outside or presses Escape.
-	* @param focusOnEscape  Element to focus after Escape (defaults to anchorEl).
-	*/
-	function attachPopupDismissListeners(popupEl, anchorEl, onDismiss, focusOnEscape) {
-		const outsideClickHandler = (ev) => {
-			const path = ev.composedPath();
-			if (!path.includes(popupEl) && !path.includes(anchorEl)) onDismiss();
-		};
-		const keyHandler = (ev) => {
-			if (ev.key === "Escape") {
-				onDismiss();
-				(focusOnEscape ?? anchorEl).focus();
-			}
-		};
-		document.addEventListener("click", outsideClickHandler, true);
-		document.addEventListener("keydown", keyHandler);
-		return { destroy() {
-			document.removeEventListener("click", outsideClickHandler, true);
-			document.removeEventListener("keydown", keyHandler);
-		} };
-	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/target-row.styles.ts
 	var styles$38 = i$5`
@@ -22927,7 +23096,7 @@
 	var _tabId_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _label_accessor_storage$7 = /* @__PURE__ */ new WeakMap();
 	var _detail_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _active_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _active_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _previewing_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _loading_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _editable_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -22947,7 +23116,7 @@
 			_classPrivateFieldInitSpec(this, _tabId_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _label_accessor_storage$7, "");
 			_classPrivateFieldInitSpec(this, _detail_accessor_storage, "");
-			_classPrivateFieldInitSpec(this, _active_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _active_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _previewing_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _loading_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _editable_accessor_storage, false);
@@ -22971,10 +23140,10 @@
 			_classPrivateFieldSet2(_detail_accessor_storage, this, value);
 		}
 		get active() {
-			return _classPrivateFieldGet2(_active_accessor_storage, this);
+			return _classPrivateFieldGet2(_active_accessor_storage$1, this);
 		}
 		set active(value) {
-			_classPrivateFieldSet2(_active_accessor_storage, this, value);
+			_classPrivateFieldSet2(_active_accessor_storage$1, this, value);
 		}
 		get previewing() {
 			return _classPrivateFieldGet2(_previewing_accessor_storage, this);
@@ -28276,6 +28445,7 @@
   }
 
   .collapsed-target-popup {
+    display: block;
     position: fixed;
     z-index: 9;
     width: 300px;
@@ -28296,6 +28466,7 @@
   }
 
   .collapsed-options-popup {
+    display: block;
     position: fixed;
     z-index: 100;
     background: var(--card-background-color, #fff);
@@ -28441,8 +28612,96 @@
   }
 `;
 	//#endregion
+	//#region custom_components/hass_datapoints/src/atoms/interactive/dp-click-outside/dp-click-outside.ts
+	var _active_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _exclude_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _focusOnEscape_accessor_storage = /* @__PURE__ */ new WeakMap();
+	/**
+	* `dp-click-outside` dispatches `dp-click-outside` when the user interacts
+	* outside the host element (pointerdown) or presses Escape (keydown).
+	*
+	* Intended for popups/menus: set `active=true` when open and listen for the
+	* bubbled event to close.
+	*
+	* @fires dp-click-outside - `{ reason: "outside" | "escape", originalEvent }`
+	*/
+	var DpClickOutside = class extends i$2 {
+		constructor(..._args) {
+			super(..._args);
+			_classPrivateFieldInitSpec(this, _active_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _exclude_accessor_storage, []);
+			_classPrivateFieldInitSpec(this, _focusOnEscape_accessor_storage, null);
+			_defineProperty(this, "_onPointerDown", (e) => {
+				if (!this.active) return;
+				const path = e.composedPath();
+				if (path.includes(this)) return;
+				if (this.exclude.length > 0 && this._pathIncludesAny(path, this.exclude)) return;
+				this._emit("outside", e);
+			});
+			_defineProperty(this, "_onKeyDown", (e) => {
+				if (!this.active) return;
+				if (e.key !== "Escape") return;
+				this._emit("escape", e);
+				if (this.focusOnEscape) this.focusOnEscape.focus();
+			});
+		}
+		get active() {
+			return _classPrivateFieldGet2(_active_accessor_storage, this);
+		}
+		set active(value) {
+			_classPrivateFieldSet2(_active_accessor_storage, this, value);
+		}
+		get exclude() {
+			return _classPrivateFieldGet2(_exclude_accessor_storage, this);
+		}
+		set exclude(value) {
+			_classPrivateFieldSet2(_exclude_accessor_storage, this, value);
+		}
+		get focusOnEscape() {
+			return _classPrivateFieldGet2(_focusOnEscape_accessor_storage, this);
+		}
+		set focusOnEscape(value) {
+			_classPrivateFieldSet2(_focusOnEscape_accessor_storage, this, value);
+		}
+		connectedCallback() {
+			super.connectedCallback();
+			window.addEventListener("pointerdown", this._onPointerDown, true);
+			window.addEventListener("keydown", this._onKeyDown);
+		}
+		disconnectedCallback() {
+			super.disconnectedCallback();
+			window.removeEventListener("pointerdown", this._onPointerDown, true);
+			window.removeEventListener("keydown", this._onKeyDown);
+		}
+		_emit(reason, originalEvent) {
+			this.dispatchEvent(new CustomEvent("dp-click-outside", {
+				detail: {
+					reason,
+					originalEvent
+				},
+				bubbles: true,
+				composed: true
+			}));
+		}
+		_pathIncludesAny(path, nodes) {
+			for (const node of nodes) if (path.includes(node)) return true;
+			return false;
+		}
+		render() {
+			return b`<slot></slot>`;
+		}
+	};
+	__decorate([n$1({
+		type: Boolean,
+		reflect: true
+	})], DpClickOutside.prototype, "active", null);
+	__decorate([n$1({ attribute: false })], DpClickOutside.prototype, "exclude", null);
+	__decorate([n$1({ attribute: false })], DpClickOutside.prototype, "focusOnEscape", null);
+	customElements.define("dp-click-outside", DpClickOutside);
+	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/floating-menu/floating-menu.ts
 	var _open_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _anchorSelector_accessor_storage = /* @__PURE__ */ new WeakMap();
 	/**
 	* `floating-menu` renders a positioned floating overlay panel.
 	*
@@ -28458,9 +28717,10 @@
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _open_accessor_storage, false);
-			_defineProperty(this, "_onPointerDown", (e) => {
-				if (!this.open) return;
-				if (!e.composedPath().some((node) => node === this)) this.dispatchEvent(new CustomEvent("dp-menu-close", {
+			_classPrivateFieldInitSpec(this, _anchorSelector_accessor_storage, "");
+			_defineProperty(this, "_onClickOutside", (e) => {
+				e.stopPropagation();
+				this.dispatchEvent(new CustomEvent("dp-menu-close", {
 					detail: {},
 					bubbles: true,
 					composed: true
@@ -28473,19 +28733,29 @@
 		set open(value) {
 			_classPrivateFieldSet2(_open_accessor_storage, this, value);
 		}
-		connectedCallback() {
-			super.connectedCallback();
-			window.addEventListener("pointerdown", this._onPointerDown, true);
+		get anchorSelector() {
+			return _classPrivateFieldGet2(_anchorSelector_accessor_storage, this);
 		}
-		disconnectedCallback() {
-			super.disconnectedCallback();
-			window.removeEventListener("pointerdown", this._onPointerDown, true);
+		set anchorSelector(value) {
+			_classPrivateFieldSet2(_anchorSelector_accessor_storage, this, value);
+		}
+		_getAnchorEl() {
+			if (!this.anchorSelector) return null;
+			return this.getRootNode().querySelector(this.anchorSelector) ?? null;
 		}
 		render() {
+			const anchorEl = this._getAnchorEl();
 			return b`
-      <div class="floating-menu" role="menu" ?hidden=${!this.open}>
-        <slot></slot>
-      </div>
+      <dp-click-outside
+        .active=${this.open}
+        .exclude=${anchorEl ? [anchorEl] : []}
+        .focusOnEscape=${anchorEl}
+        @dp-click-outside=${this._onClickOutside}
+      >
+        <div class="floating-menu" role="menu" ?hidden=${!this.open}>
+          <slot></slot>
+        </div>
+      </dp-click-outside>
     `;
 		}
 	};
@@ -28494,6 +28764,10 @@
 		type: Boolean,
 		reflect: true
 	})], FloatingMenu.prototype, "open", null);
+	__decorate([n$1({
+		type: String,
+		attribute: "anchor-selector"
+	})], FloatingMenu.prototype, "anchorSelector", null);
 	customElements.define("floating-menu", FloatingMenu);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/interactive/page-menu-item/page-menu-item.styles.ts
@@ -28758,6 +29032,7 @@
             <floating-menu
               id="page-menu"
               .open=${this._pageMenuOpen}
+              anchor-selector="#page-menu-button"
               @dp-menu-close=${this._onPageMenuClose}
             >
               <page-menu-item
@@ -28844,16 +29119,16 @@
           </div>
         </div>
 
-        <div
+        <dp-click-outside
           id="collapsed-target-popup"
           class="collapsed-target-popup"
           hidden
-        ></div>
-        <div
+        ></dp-click-outside>
+        <dp-click-outside
           id="collapsed-options-popup"
           class="collapsed-options-popup"
           hidden
-        ></div>
+        ></dp-click-outside>
       </ha-top-app-bar-fixed>
     `;
 		}
@@ -30554,6 +30829,7 @@
           <floating-menu
             id="range-picker-menu"
             .open=${this._pickerOpen}
+            anchor-selector="#range-picker-button"
             @dp-menu-close=${this._onPickerMenuClose}
           >
             <ha-date-range-picker
@@ -30586,6 +30862,7 @@
           <floating-menu
             id="range-options-menu"
             .open=${this._optionsOpen}
+            anchor-selector="#range-options-button"
             @dp-menu-close=${this._onOptionsMenuClose}
           >
             <div
@@ -31922,6 +32199,7 @@
   /* ── Collapsed-sidebar target popup ──────────────────────────────────── */
 
   .collapsed-target-popup {
+    display: block;
     position: fixed;
     z-index: 9;
     width: 300px;
@@ -31994,6 +32272,7 @@
   /* ── Collapsed-sidebar options popup ────────────────────────────────── */
 
   .collapsed-options-popup {
+    display: block;
     position: fixed;
     z-index: 100;
     background: var(--card-background-color, #fff);
@@ -33884,6 +34163,14 @@
 			this._collapsedPopupAnchorEl = null;
 			this._collapsedPopupOutsideClickHandler = null;
 			this._collapsedPopupKeyHandler = null;
+			this._collapsedTargetPopupWired = false;
+			this._collapsedOptionsPopupWired = false;
+			this._onCollapsedTargetPopupClickOutside = () => {
+				this._hideCollapsedTargetPopup();
+			};
+			this._onCollapsedOptionsPopupClickOutside = () => {
+				this._hideCollapsedOptionsPopup();
+			};
 			this._lastSyncedLocale = "";
 			this._datapointScope = "linked";
 			this._showChartDatapointIcons = true;
@@ -35530,6 +35817,10 @@
 		_showCollapsedTargetPopup(entityId, anchorEl) {
 			const popup = this._shellEl?.getTargetPopupEl();
 			if (!popup) return;
+			if (!this._collapsedTargetPopupWired) {
+				popup.addEventListener("dp-click-outside", this._onCollapsedTargetPopupClickOutside);
+				this._collapsedTargetPopupWired = true;
+			}
 			const index = this._seriesRows.findIndex((r) => r.entity_id === entityId);
 			if (index < 0) {
 				this._hideCollapsedTargetPopup();
@@ -35572,23 +35863,24 @@
 			});
 			popup.appendChild(targetRow);
 			popup.removeAttribute("hidden");
+			popup.active = true;
+			popup.exclude = anchorEl ? [anchorEl] : [];
+			popup.focusOnEscape = anchorEl ?? null;
 			if (!anchorEl) return;
 			const pos = computePopupPosition(anchorEl.getBoundingClientRect(), popup.offsetHeight, window.innerHeight);
 			popup.style.top = `${pos.top}px`;
 			popup.style.left = `${pos.left}px`;
 			popup.style.maxHeight = `${pos.maxHeight}px`;
-			this._collapsedPopupDismiss?.destroy();
-			this._collapsedPopupDismiss = attachPopupDismissListeners(popup, anchorEl, () => this._hideCollapsedTargetPopup());
 		}
 		/** Close the collapsed-sidebar target popup and clean up all listeners. */
 		_hideCollapsedTargetPopup() {
 			const popup = this._shellEl?.getTargetPopupEl();
 			if (popup) {
+				popup.active = false;
+				popup.exclude = [];
 				popup.setAttribute("hidden", "");
 				popup.innerHTML = "";
 			}
-			this._collapsedPopupDismiss?.destroy();
-			this._collapsedPopupDismiss = null;
 			this._collapsedPopupEntityId = null;
 			this._collapsedPopupAnchorEl = null;
 		}
@@ -35614,6 +35906,10 @@
 		_showCollapsedOptionsPopup(anchorEl) {
 			const popup = this._shellEl?.getOptionsPopupEl();
 			if (!popup) return;
+			if (!this._collapsedOptionsPopupWired) {
+				popup.addEventListener("dp-click-outside", this._onCollapsedOptionsPopupClickOutside);
+				this._collapsedOptionsPopupWired = true;
+			}
 			let menu = popup.querySelector("collapsed-options-menu");
 			if (!menu) {
 				menu = document.createElement("collapsed-options-menu");
@@ -35643,18 +35939,21 @@
 			this._collapsedOptionsPopupOpen = true;
 			this._collapsedOptionsAnchorEl = anchorEl;
 			popup.removeAttribute("hidden");
+			popup.active = true;
+			popup.exclude = [anchorEl];
+			popup.focusOnEscape = anchorEl;
 			const pos = computePopupPosition(anchorEl.getBoundingClientRect(), popup.offsetHeight, window.innerHeight);
 			popup.style.top = `${pos.top}px`;
 			popup.style.left = `${pos.left}px`;
-			this._collapsedOptionsDismiss?.destroy();
-			this._collapsedOptionsDismiss = attachPopupDismissListeners(popup, anchorEl, () => this._hideCollapsedOptionsPopup());
 		}
 		/** Close the collapsed-sidebar options popup and clean up all listeners. */
 		_hideCollapsedOptionsPopup() {
 			const popup = this._shellEl?.getOptionsPopupEl();
-			if (popup) popup.setAttribute("hidden", "");
-			this._collapsedOptionsDismiss?.destroy();
-			this._collapsedOptionsDismiss = null;
+			if (popup) {
+				popup.active = false;
+				popup.exclude = [];
+				popup.setAttribute("hidden", "");
+			}
 			this._collapsedOptionsPopupOpen = false;
 			this._collapsedOptionsAnchorEl = null;
 		}
@@ -37505,10 +37804,17 @@
 	customElements.define("list-event-item", CardListEventItem);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/list.ts
-	var _HassDatapointsListCard;
-	var HassDatapointsListCard = (_HassDatapointsListCard = class HassDatapointsListCard extends i$2 {
+	var _HassDatapointsListCard, _listScrollEl_accessor_storage;
+	var HassDatapointsListCard = (_listScrollEl_accessor_storage = /* @__PURE__ */ new WeakMap(), _HassDatapointsListCard = class HassDatapointsListCard extends i$2 {
+		get _listScrollEl() {
+			return _classPrivateFieldGet2(_listScrollEl_accessor_storage, this);
+		}
+		set _listScrollEl(value) {
+			_classPrivateFieldSet2(_listScrollEl_accessor_storage, this, value);
+		}
 		constructor() {
 			super();
+			_classPrivateFieldInitSpec(this, _listScrollEl_accessor_storage, null);
 			_defineProperty(this, "_pageSize", 15);
 			_defineProperty(this, "_configKey", "");
 			_defineProperty(this, "_unsubscribe", null);
@@ -37608,7 +37914,7 @@
 		}
 		_onPageChange(e) {
 			this._page = e.detail.page;
-			this.shadowRoot?.querySelector(".list-scroll")?.scrollTo(0, 0);
+			this._listScrollEl?.scrollTo(0, 0);
 		}
 		_navigateToEventHistory(ev) {
 			const range = this._getNavigationContextForEvent(ev);
@@ -37840,29 +38146,37 @@
 		_editingId: { state: true },
 		_editColor: { state: true }
 	}), _defineProperty(_HassDatapointsListCard, "styles", styles$16), _HassDatapointsListCard);
+	__decorate([e$4(".list-scroll")], HassDatapointsListCard.prototype, "_listScrollEl", null);
 	HassDatapointsListCard = __decorate([localized()], HassDatapointsListCard);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/editor.styles.ts
 	var styles$11 = i$5``;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/editor.ts
+	var _targetPickerEl_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var HassDatapointsListCardEditor = class extends EditorBase {
 		constructor(..._args) {
 			super(..._args);
+			_classPrivateFieldInitSpec(this, _targetPickerEl_accessor_storage$1, null);
 			_defineProperty(this, "_onTargetChanged", (e) => {
 				const val = e.detail.value;
 				const isEmpty = !val || Object.values(val).every((value) => !value?.length);
 				this._setTargetConfig(isEmpty ? void 0 : val);
 			});
 		}
+		get _targetPickerEl() {
+			return _classPrivateFieldGet2(_targetPickerEl_accessor_storage$1, this);
+		}
+		set _targetPickerEl(value) {
+			_classPrivateFieldSet2(_targetPickerEl_accessor_storage$1, this, value);
+		}
 		_configTarget() {
 			return normalizeTargetValue(this._config.target ?? { entity_id: Array.isArray(this._config.entities) && this._config.entities.length ? this._config.entities : this._config.entity }) ?? {};
 		}
 		_syncTargetPicker() {
-			const tp = this.shadowRoot?.querySelector("#target-picker");
-			if (!tp) return;
-			if (this.hass) tp.hass = this.hass;
-			tp.value = this._configTarget();
+			if (!this._targetPickerEl) return;
+			if (this.hass) this._targetPickerEl.hass = this.hass;
+			this._targetPickerEl.value = this._configTarget();
 		}
 		_setTargetConfig(target) {
 			const cfg = { ...this._config };
@@ -37943,6 +38257,7 @@
 		}
 	};
 	_defineProperty(HassDatapointsListCardEditor, "styles", [EditorBase.styles, styles$11]);
+	__decorate([e$4("#target-picker")], HassDatapointsListCardEditor.prototype, "_targetPickerEl", null);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/quick.styles.ts
 	var styles$10 = i$5`
@@ -38096,9 +38411,31 @@
 	customElements.define("quick-annotation", CardQuickAnnotation);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/quick.ts
+	var _msgEl_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _btnEl_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var HassDatapointsQuickCard = class extends i$2 {
+		get _msgEl() {
+			return _classPrivateFieldGet2(_msgEl_accessor_storage, this);
+		}
+		set _msgEl(value) {
+			_classPrivateFieldSet2(_msgEl_accessor_storage, this, value);
+		}
+		get _btnEl() {
+			return _classPrivateFieldGet2(_btnEl_accessor_storage, this);
+		}
+		set _btnEl(value) {
+			_classPrivateFieldSet2(_btnEl_accessor_storage, this, value);
+		}
 		constructor() {
 			super();
+			_classPrivateFieldInitSpec(this, _msgEl_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _btnEl_accessor_storage, null);
+			_defineProperty(this, "_onMsgKeydown", (event) => {
+				if (event.key === "Enter") {
+					event.preventDefault();
+					this._record();
+				}
+			});
 			this._config = {};
 			this._hass = null;
 			this._feedbackClass = "";
@@ -38115,23 +38452,14 @@
 		get hass() {
 			return this._hass;
 		}
-		firstUpdated() {
-			const msgEl = this.shadowRoot?.querySelector("#msg");
-			if (msgEl) msgEl.addEventListener("keydown", (event) => {
-				if (event.key === "Enter") {
-					event.preventDefault();
-					this._record();
-				}
-			});
-		}
 		async _record() {
-			const msgEl = this.shadowRoot?.querySelector("#msg");
+			const msgEl = this._msgEl;
 			const message = (msgEl?.value || "").trim();
 			if (!message) {
 				msgEl?.focus();
 				return;
 			}
-			const btn = this.shadowRoot?.querySelector("#btn");
+			const btn = this._btnEl;
 			if (btn) btn.disabled = true;
 			const cfg = this._config;
 			const data = {
@@ -38152,7 +38480,7 @@
 				if (!hass) return;
 				await hass.callService(DOMAIN, "record", data);
 				window.dispatchEvent(new CustomEvent("hass-datapoints-event-recorded"));
-				if (msgEl) msgEl.value = "";
+				if (this._msgEl) this._msgEl.value = "";
 				this._annotation = "";
 				this._feedbackClass = "ok";
 				this._feedbackText = "Recorded!";
@@ -38167,7 +38495,7 @@
 				this._feedbackVisible = true;
 				logger$1.error("[hass-datapoints quick-card]", e);
 			}
-			if (btn) btn.disabled = false;
+			if (this._btnEl) this._btnEl.disabled = false;
 		}
 		get _isAdmin() {
 			return this._hass?.user?.is_admin === true;
@@ -38187,6 +38515,7 @@
                   <ha-textfield
                     id="msg"
                     .placeholder=${cfg.placeholder || "Note something…"}
+                    @keydown=${this._onMsgKeydown}
                   ></ha-textfield>
                   <ha-button
                     id="btn"
@@ -38270,6 +38599,8 @@
 		}
 	});
 	_defineProperty(HassDatapointsQuickCard, "styles", styles$10);
+	__decorate([e$4("#msg")], HassDatapointsQuickCard.prototype, "_msgEl", null);
+	__decorate([e$4("#btn")], HassDatapointsQuickCard.prototype, "_btnEl", null);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/editor.styles.ts
 	var styles$8 = i$5`
@@ -38280,23 +38611,30 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/editor.ts
+	var _targetPickerEl_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var HassDatapointsQuickCardEditor = class extends EditorBase {
 		constructor(..._args) {
 			super(..._args);
+			_classPrivateFieldInitSpec(this, _targetPickerEl_accessor_storage, null);
 			_defineProperty(this, "_onTargetChanged", (e) => {
 				const val = e.detail.value;
 				const isEmpty = !val || Object.values(val).every((value) => !value?.length);
 				this._setTargetConfig(isEmpty ? void 0 : val);
 			});
 		}
+		get _targetPickerEl() {
+			return _classPrivateFieldGet2(_targetPickerEl_accessor_storage, this);
+		}
+		set _targetPickerEl(value) {
+			_classPrivateFieldSet2(_targetPickerEl_accessor_storage, this, value);
+		}
 		_configTarget() {
 			return normalizeTargetValue(this._config.target ?? { entity_id: Array.isArray(this._config.entities) && this._config.entities.length ? this._config.entities : this._config.entity }) ?? {};
 		}
 		_syncTargetPicker() {
-			const tp = this.shadowRoot?.querySelector("#target-picker");
-			if (!tp) return;
-			if (this.hass) tp.hass = this.hass;
-			tp.value = this._configTarget();
+			if (!this._targetPickerEl) return;
+			if (this.hass) this._targetPickerEl.hass = this.hass;
+			this._targetPickerEl.value = this._configTarget();
 		}
 		_setTargetConfig(target) {
 			const cfg = { ...this._config };
@@ -38363,6 +38701,7 @@
 		}
 	};
 	_defineProperty(HassDatapointsQuickCardEditor, "styles", [EditorBase.styles, styles$8]);
+	__decorate([e$4("#target-picker")], HassDatapointsQuickCardEditor.prototype, "_targetPickerEl", null);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/sensor.styles.ts
 	var styles$7 = i$5`
@@ -39564,13 +39903,29 @@
 	customElements.define("sensor-records", SensorRecords);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/sensor.ts
+	var _cardShellEl_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _sensorChartEl_accessor_storage = /* @__PURE__ */ new WeakMap();
 	/**
 	* hass-datapoints-sensor-card – Sensor card with inline annotation icons.
 	* Canvas rendering is delegated to sensor-chart; annotation list to sensor-records.
 	*/
 	var HassDatapointsSensorCard = class extends i$2 {
+		get _cardShellEl() {
+			return _classPrivateFieldGet2(_cardShellEl_accessor_storage, this);
+		}
+		set _cardShellEl(value) {
+			_classPrivateFieldSet2(_cardShellEl_accessor_storage, this, value);
+		}
+		get _sensorChartEl() {
+			return _classPrivateFieldGet2(_sensorChartEl_accessor_storage, this);
+		}
+		set _sensorChartEl(value) {
+			_classPrivateFieldSet2(_sensorChartEl_accessor_storage, this, value);
+		}
 		constructor() {
 			super();
+			_classPrivateFieldInitSpec(this, _cardShellEl_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _sensorChartEl_accessor_storage, null);
 			_defineProperty(this, "_initialized", false);
 			_defineProperty(this, "_lastHistResult", null);
 			_defineProperty(this, "_lastEvents", []);
@@ -39640,7 +39995,7 @@
 			this._resizeObserver.observe(this);
 		}
 		_applyLayoutSizing() {
-			const shell = this.shadowRoot?.querySelector(".card-shell");
+			const shell = this._cardShellEl;
 			if (!shell) return;
 			const gridRows = this._gridRows();
 			if (!this._config?.show_records) {
@@ -39735,7 +40090,7 @@
 			this._lastT0 = t0;
 			this._lastT1 = t1;
 			this._annEvents = events;
-			const chartEl = this.shadowRoot?.querySelector("sensor-chart");
+			const chartEl = this._sensorChartEl;
 			if (!chartEl) return;
 			chartEl.hass = this.hass;
 			const entityId = this._config.entity;
@@ -39827,6 +40182,8 @@
 		_recordsFooterHeight: { state: true }
 	});
 	_defineProperty(HassDatapointsSensorCard, "styles", styles$7);
+	__decorate([e$4(".card-shell")], HassDatapointsSensorCard.prototype, "_cardShellEl", null);
+	__decorate([e$4("sensor-chart")], HassDatapointsSensorCard.prototype, "_sensorChartEl", null);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/editor.styles.ts
 	var styles$2 = i$5``;

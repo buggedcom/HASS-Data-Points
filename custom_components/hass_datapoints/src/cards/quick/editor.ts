@@ -1,4 +1,5 @@
 import { CSSResultGroup, html, PropertyValues } from "lit";
+import { query } from "lit/decorators.js";
 import { msg } from "@/lib/i18n/localize";
 import { AMBER } from "@/constants";
 import { EditorBase } from "@/molecules/editor-base/editor-base";
@@ -20,6 +21,9 @@ type TargetPickerElement = Element & {
 export class HassDatapointsQuickCardEditor extends EditorBase {
   static styles: CSSResultGroup = [EditorBase.styles, styles];
 
+  @query("#target-picker")
+  accessor _targetPickerEl: Nullable<TargetPickerElement> = null;
+
   private _configTarget(): TargetPickerValue {
     return (
       (normalizeTargetValue(
@@ -34,16 +38,13 @@ export class HassDatapointsQuickCardEditor extends EditorBase {
   }
 
   private _syncTargetPicker(): void {
-    const tp = this.shadowRoot?.querySelector(
-      "#target-picker"
-    ) as Nullable<TargetPickerElement>;
-    if (!tp) {
+    if (!this._targetPickerEl) {
       return;
     }
     if (this.hass) {
-      tp.hass = this.hass;
+      this._targetPickerEl.hass = this.hass;
     }
-    tp.value = this._configTarget();
+    this._targetPickerEl.value = this._configTarget();
   }
 
   private _setTargetConfig(target: TargetPickerValue | undefined): void {
