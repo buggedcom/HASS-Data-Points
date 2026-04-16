@@ -23451,6 +23451,49 @@
   }
 `;
 	//#endregion
+	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-scale-math.ts
+	/**
+	* Pure scale computation utilities extracted from range-timeline.ts.
+	*
+	* All functions are stateless data transformations with no DOM dependency.
+	*/
+	function estimateRangeLabelWidth(text, className, minGap) {
+		const basePadding = className === "range-context-label" ? 20 : 14;
+		const charWidth = className === "range-context-label" ? 8.2 : 7.2;
+		return String(text).length * charWidth + basePadding + minGap;
+	}
+	function computeRangeLabelStride(boundsMin, boundsMax, contentWidth, unit, formatter, className, minGap) {
+		if (!contentWidth) return 1;
+		const total = Math.max(1, boundsMax - boundsMin);
+		let current = startOfUnit(new Date(boundsMin), unit);
+		let previousMs = null;
+		let minSpacingPx = Infinity;
+		let maxLabelWidthPx = 0;
+		let samples = 0;
+		while (current.getTime() < boundsMax && samples < 24) {
+			const currentMs = Math.max(current.getTime(), boundsMin);
+			const text = formatter(current);
+			maxLabelWidthPx = Math.max(maxLabelWidthPx, estimateRangeLabelWidth(text, className, minGap));
+			if (previousMs != null) {
+				const spacingPx = (currentMs - previousMs) / total * contentWidth;
+				if (spacingPx > 0) minSpacingPx = Math.min(minSpacingPx, spacingPx);
+			}
+			previousMs = currentMs;
+			current = addUnit(current, unit, 1);
+			samples += 1;
+		}
+		if (!Number.isFinite(minSpacingPx) || minSpacingPx <= 0) return 1;
+		return Math.max(1, Math.ceil(maxLabelWidthPx / minSpacingPx));
+	}
+	function getRangeUnitAnchorMs(startTime, unit, boundsMin, boundsMax, anchor = "auto") {
+		const unitStart = Math.max(startOfUnit(new Date(startTime), unit).getTime(), boundsMin);
+		const unitEnd = Math.min(endOfUnit(new Date(startTime), unit).getTime(), boundsMax);
+		let resolvedAnchor = anchor;
+		if (resolvedAnchor === "auto") resolvedAnchor = unit === "day" || unit === "week" ? "center" : "start";
+		if (resolvedAnchor === "center") return unitStart + Math.max(0, (unitEnd - unitStart) / 2);
+		return unitStart;
+	}
+	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/interactive/range-handle/range-handle.styles.ts
 	var styles$27 = i$5`
   :host {
@@ -23964,40 +24007,14 @@
 			return button;
 		}
 		_getRangeUnitAnchorMs(startTime, unit, anchor = "auto") {
-			const unitStart = Math.max(startOfUnit(new Date(startTime), unit).getTime(), this.rangeBounds?.min ?? -Infinity);
-			const unitEnd = Math.min(endOfUnit(new Date(startTime), unit).getTime(), this.rangeBounds?.max ?? Infinity);
-			let resolvedAnchor = anchor;
-			if (resolvedAnchor === "auto") resolvedAnchor = unit === "day" || unit === "week" ? "center" : "start";
-			if (resolvedAnchor === "center") return unitStart + Math.max(0, (unitEnd - unitStart) / 2);
-			return unitStart;
+			return getRangeUnitAnchorMs(startTime, unit, this.rangeBounds?.min ?? -Infinity, this.rangeBounds?.max ?? Infinity, anchor);
 		}
 		_estimateRangeLabelWidth(text, className, minGap) {
-			const basePadding = className === "range-context-label" ? 20 : 14;
-			const charWidth = className === "range-context-label" ? 8.2 : 7.2;
-			return String(text).length * charWidth + basePadding + minGap;
+			return estimateRangeLabelWidth(text, className, minGap);
 		}
 		_computeRangeLabelStride(unit, formatter, className, minGap) {
 			if (!this.rangeBounds || !this._rangeContentWidth) return 1;
-			const total = Math.max(1, this.rangeBounds.max - this.rangeBounds.min);
-			let current = startOfUnit(new Date(this.rangeBounds.min), unit);
-			let previousMs = null;
-			let minSpacingPx = Infinity;
-			let maxLabelWidthPx = 0;
-			let samples = 0;
-			while (current.getTime() < this.rangeBounds.max && samples < 24) {
-				const currentMs = Math.max(current.getTime(), this.rangeBounds.min);
-				const text = formatter(current);
-				maxLabelWidthPx = Math.max(maxLabelWidthPx, this._estimateRangeLabelWidth(text, className, minGap));
-				if (previousMs != null) {
-					const spacingPx = (currentMs - previousMs) / total * this._rangeContentWidth;
-					if (spacingPx > 0) minSpacingPx = Math.min(minSpacingPx, spacingPx);
-				}
-				previousMs = currentMs;
-				current = addUnit(current, unit, 1);
-				samples += 1;
-			}
-			if (!Number.isFinite(minSpacingPx) || minSpacingPx <= 0) return 1;
-			return Math.max(1, Math.ceil(maxLabelWidthPx / minSpacingPx));
+			return computeRangeLabelStride(this.rangeBounds.min, this.rangeBounds.max, this._rangeContentWidth, unit, formatter, className, minGap);
 		}
 		_syncVisibleRangeLabels() {}
 		_renderRangeScale() {

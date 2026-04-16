@@ -4,6 +4,11 @@ import { localized, msg } from "@/lib/i18n/localize";
 
 import { styles } from "./range-timeline.styles";
 import type { RangeBounds } from "./types";
+import {
+  computeRangeLabelStride,
+  estimateRangeLabelWidth,
+  getRangeUnitAnchorMs,
+} from "./range-scale-math";
 import "@/atoms/interactive/range-handle/range-handle";
 import {
   RANGE_ZOOM_CONFIGS,
@@ -525,22 +530,13 @@ export class RangeTimeline extends LitElement {
     unit: RangeUnit,
     anchor: "auto" | "center" | "start" = "auto"
   ): number {
-    const unitStart = Math.max(
-      startOfUnit(new Date(startTime), unit).getTime(),
-      this.rangeBounds?.min ?? -Infinity
+    return getRangeUnitAnchorMs(
+      startTime,
+      unit,
+      this.rangeBounds?.min ?? -Infinity,
+      this.rangeBounds?.max ?? Infinity,
+      anchor
     );
-    const unitEnd = Math.min(
-      endOfUnit(new Date(startTime), unit).getTime(),
-      this.rangeBounds?.max ?? Infinity
-    );
-    let resolvedAnchor = anchor;
-    if (resolvedAnchor === "auto") {
-      resolvedAnchor = unit === "day" || unit === "week" ? "center" : "start";
-    }
-    if (resolvedAnchor === "center") {
-      return unitStart + Math.max(0, (unitEnd - unitStart) / 2);
-    }
-    return unitStart;
   }
 
   _estimateRangeLabelWidth(
@@ -548,9 +544,7 @@ export class RangeTimeline extends LitElement {
     className: string,
     minGap: number
   ): number {
-    const basePadding = className === "range-context-label" ? 20 : 14;
-    const charWidth = className === "range-context-label" ? 8.2 : 7.2;
-    return String(text).length * charWidth + basePadding + minGap;
+    return estimateRangeLabelWidth(text, className, minGap);
   }
 
   _computeRangeLabelStride(
@@ -560,32 +554,15 @@ export class RangeTimeline extends LitElement {
     minGap: number
   ): number {
     if (!this.rangeBounds || !this._rangeContentWidth) return 1;
-    const total = Math.max(1, this.rangeBounds.max - this.rangeBounds.min);
-    let current = startOfUnit(new Date(this.rangeBounds.min), unit);
-    let previousMs: Nullable<number> = null;
-    let minSpacingPx = Infinity;
-    let maxLabelWidthPx = 0;
-    let samples = 0;
-
-    while (current.getTime() < this.rangeBounds.max && samples < 24) {
-      const currentMs = Math.max(current.getTime(), this.rangeBounds.min);
-      const text = formatter(current);
-      maxLabelWidthPx = Math.max(
-        maxLabelWidthPx,
-        this._estimateRangeLabelWidth(text, className, minGap)
-      );
-      if (previousMs != null) {
-        const spacingPx =
-          ((currentMs - previousMs) / total) * this._rangeContentWidth;
-        if (spacingPx > 0) minSpacingPx = Math.min(minSpacingPx, spacingPx);
-      }
-      previousMs = currentMs;
-      current = addUnit(current, unit, 1);
-      samples += 1;
-    }
-
-    if (!Number.isFinite(minSpacingPx) || minSpacingPx <= 0) return 1;
-    return Math.max(1, Math.ceil(maxLabelWidthPx / minSpacingPx));
+    return computeRangeLabelStride(
+      this.rangeBounds.min,
+      this.rangeBounds.max,
+      this._rangeContentWidth,
+      unit,
+      formatter,
+      className,
+      minGap
+    );
   }
 
   _syncVisibleRangeLabels() {
