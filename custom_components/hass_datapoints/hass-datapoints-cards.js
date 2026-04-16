@@ -11062,6 +11062,39 @@
 		return (maxStartOffsetMs > 0 ? (clampedStart - t0) / maxStartOffsetMs : 0) * maxScrollLeft;
 	}
 	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/chart/chart-series-gaps.ts
+	function splitSeriesByGaps(pts, gapThresholdMs) {
+		if (pts.length < 2 || !Number.isFinite(gapThresholdMs)) return {
+			segments: [pts],
+			gapBridges: [],
+			boundaryPoints: []
+		};
+		const segments = [];
+		const gapBridges = [];
+		let current = [pts[0]];
+		for (let i = 1; i < pts.length; i++) if (pts[i][0] - pts[i - 1][0] > gapThresholdMs) {
+			segments.push(current);
+			gapBridges.push([pts[i - 1], pts[i]]);
+			current = [pts[i]];
+		} else current.push(pts[i]);
+		segments.push(current);
+		return {
+			segments,
+			gapBridges,
+			boundaryPoints: gapBridges.flatMap(([a, b]) => [a, b])
+		};
+	}
+	function buildGapBridgeColor(color) {
+		return color.startsWith("rgba") ? color.replace(/[\d.]+\)$/, "0.35)") : `${color}59`;
+	}
+	function filterDrawableComparisonResults(comparisonResults, comparisonWindowIds, selectedWindowId, hoveredWindowId) {
+		const drawableIds = new Set(comparisonWindowIds.filter((id) => id.length > 0));
+		if (selectedWindowId) drawableIds.add(selectedWindowId);
+		if (hoveredWindowId) drawableIds.add(hoveredWindowId);
+		if (drawableIds.size === 0) return [];
+		return comparisonResults.filter((window) => drawableIds.has(String(window.id || "")));
+	}
+	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/history-chart.styles.ts
 	var styles$57 = `
   hass-datapoints-history-chart {
@@ -12266,27 +12299,18 @@
 				r.drawLine(pts, color, t0, t1, min, max, opts);
 				return;
 			}
-			const segments = [];
-			const gapBridges = [];
-			let current = [pts[0]];
-			for (let i = 1; i < pts.length; i++) if (pts[i][0] - pts[i - 1][0] > gapThresholdMs) {
-				segments.push(current);
-				gapBridges.push([pts[i - 1], pts[i]]);
-				current = [pts[i]];
-			} else current.push(pts[i]);
-			segments.push(current);
+			const { segments, gapBridges, boundaryPoints } = splitSeriesByGaps(pts, gapThresholdMs);
 			if (segments.length === 1) {
 				r.drawLine(pts, color, t0, t1, min, max, opts);
 				return;
 			}
 			for (const seg of segments) r.drawLine(seg, color, t0, t1, min, max, opts);
-			const gapColor = color.startsWith("rgba") ? color.replace(/[\d.]+\)$/, "0.35)") : `${color}59`;
+			const gapColor = buildGapBridgeColor(color);
 			for (const [lastPt, firstPt] of gapBridges) r.drawLine([lastPt, firstPt], gapColor, t0, t1, min, max, {
 				dashed: true,
 				lineWidth: 1.2,
 				lineOpacity: .5
 			});
-			const boundaryPoints = gapBridges.flatMap(([a, b]) => [a, b]);
 			r.drawGapMarkers(boundaryPoints, color, t0, t1, min, max);
 		}
 		/** Draw event point icons onto the renderer. */
@@ -12707,13 +12731,7 @@
 			return Array.isArray(this._config?.comparison_windows) ? this._config.comparison_windows : [];
 		}
 		_getDrawableComparisonResults(comparisonResults) {
-			const drawableComparisonWindowIds = new Set(this._comparisonWindows.map((window) => String(window?.id || "")).filter((id) => id.length > 0));
-			const selectedComparisonWindowId = String(this._config?.selected_comparison_window_id || "");
-			const hoveredComparisonWindowId = String(this._config?.hovered_comparison_window_id || "");
-			if (selectedComparisonWindowId) drawableComparisonWindowIds.add(selectedComparisonWindowId);
-			if (hoveredComparisonWindowId) drawableComparisonWindowIds.add(hoveredComparisonWindowId);
-			if (drawableComparisonWindowIds.size === 0) return [];
-			return comparisonResults.filter((window) => drawableComparisonWindowIds.has(String(window.id || "")));
+			return filterDrawableComparisonResults(comparisonResults, this._comparisonWindows.map((window) => String(window?.id || "")), String(this._config?.selected_comparison_window_id || ""), String(this._config?.hovered_comparison_window_id || ""));
 		}
 		_resolveAnomalyClusterDisplay(anomalyClusters, overlapMode, correlatedSpans = []) {
 			return resolveAnomalyClusterDisplay(anomalyClusters, overlapMode, correlatedSpans);

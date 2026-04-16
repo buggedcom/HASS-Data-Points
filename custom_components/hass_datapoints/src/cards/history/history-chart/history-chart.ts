@@ -102,6 +102,11 @@ import {
   seriesShouldHideSource,
 } from "@/lib/chart/chart-analysis";
 import { calculateViewportScrollPosition } from "@/lib/chart/chart-scroll";
+import {
+  splitSeriesByGaps,
+  buildGapBridgeColor,
+  filterDrawableComparisonResults,
+} from "@/lib/chart/chart-series-gaps";
 import { styles } from "./history-chart.styles";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -751,22 +756,10 @@ export class HistoryChart extends HTMLElement {
       return;
     }
 
-    // Split pts into continuous segments separated by gaps.
-    const segments: [number, number][][] = [];
-    const gapBridges: [[number, number], [number, number]][] = [];
-    let current: [number, number][] = [pts[0]];
-
-    for (let i = 1; i < pts.length; i++) {
-      const dt = pts[i][0] - pts[i - 1][0];
-      if (dt > gapThresholdMs) {
-        segments.push(current);
-        gapBridges.push([pts[i - 1], pts[i]]);
-        current = [pts[i]];
-      } else {
-        current.push(pts[i]);
-      }
-    }
-    segments.push(current);
+    const { segments, gapBridges, boundaryPoints } = splitSeriesByGaps(
+      pts,
+      gapThresholdMs
+    );
 
     // No gaps found — draw normally.
     if (segments.length === 1) {
@@ -780,9 +773,7 @@ export class HistoryChart extends HTMLElement {
     }
 
     // Draw dashed bridge lines through each gap.
-    const gapColor = color.startsWith("rgba")
-      ? color.replace(/[\d.]+\)$/, "0.35)")
-      : `${color}59`;
+    const gapColor = buildGapBridgeColor(color);
     for (const [lastPt, firstPt] of gapBridges) {
       r.drawLine([lastPt, firstPt], gapColor, t0, t1, min, max, {
         dashed: true,
@@ -792,10 +783,6 @@ export class HistoryChart extends HTMLElement {
     }
 
     // Draw boundary markers at gap edges.
-    const boundaryPoints: [number, number][] = gapBridges.flatMap(([a, b]) => [
-      a,
-      b,
-    ]);
     r.drawGapMarkers(boundaryPoints, color, t0, t1, min, max);
   }
 
@@ -1629,12 +1616,8 @@ export class HistoryChart extends HTMLElement {
     statsResult: unknown;
     label?: string;
   }> {
-    const drawableComparisonWindowIds = new Set(
-      this._comparisonWindows
-        .map((window) =>
-          String((window as Nullable<RecordWithUnknownValues>)?.id || "")
-        )
-        .filter((id) => id.length > 0)
+    const comparisonWindowIds = this._comparisonWindows.map((window) =>
+      String((window as Nullable<RecordWithUnknownValues>)?.id || "")
     );
     const selectedComparisonWindowId = String(
       ((this._config as RecordWithUnknownValues)
@@ -1644,17 +1627,11 @@ export class HistoryChart extends HTMLElement {
       ((this._config as RecordWithUnknownValues)
         ?.hovered_comparison_window_id as string) || ""
     );
-    if (selectedComparisonWindowId) {
-      drawableComparisonWindowIds.add(selectedComparisonWindowId);
-    }
-    if (hoveredComparisonWindowId) {
-      drawableComparisonWindowIds.add(hoveredComparisonWindowId);
-    }
-    if (drawableComparisonWindowIds.size === 0) {
-      return [];
-    }
-    return comparisonResults.filter((window) =>
-      drawableComparisonWindowIds.has(String(window.id || ""))
+    return filterDrawableComparisonResults(
+      comparisonResults,
+      comparisonWindowIds,
+      selectedComparisonWindowId,
+      hoveredComparisonWindowId
     );
   }
 
