@@ -10478,7 +10478,7 @@
 		const historyStates = getHistoryStatesForEntity$1(histResult, entityId, entityIds);
 		return mergeNumericHistoryWithStatistics(entityId.split(".")[0] === "binary_sensor" ? normalizeBinaryHistory(entityId, historyStates) : normalizeNumericHistory(entityId, historyStates), normalizeStatisticsHistory(entityId, statsResult));
 	}
-	function filterEvents(events, hiddenEventIds, messageFilter) {
+	function filterEvents$1(events, hiddenEventIds, messageFilter) {
 		const query = String(messageFilter || "").trim().toLowerCase();
 		const visibleEvents = events.filter((event) => !hiddenEventIds.has(event?.id ?? ""));
 		if (!query) return visibleEvents;
@@ -12623,7 +12623,7 @@
 		}
 		/** Filter events list by hidden IDs and message filter. */
 		_filterEvents(_events) {
-			return filterEvents(_events, this._hiddenEventIds, String(this._config?.message_filter || ""));
+			return filterEvents$1(_events, this._hiddenEventIds, String(this._config?.message_filter || ""));
 		}
 		/** Build correlated anomaly spans across series. */
 		_buildCorrelatedAnomalySpans(_visibleSeries, _anomalyClustersMap, _analysisMap) {
@@ -15799,6 +15799,129 @@
 		}));
 	}
 	//#endregion
+	//#region custom_components/hass_datapoints/src/cards/history/history-config-diff.ts
+	/** Build a stable JSON key for data-affecting config fields. */
+	function buildDataKey(config) {
+		return JSON.stringify({
+			target: config.target || null,
+			entities: config.entities,
+			entity: config.entity,
+			series_entities: Array.isArray(config.series_settings) ? config.series_settings.map((entry) => entry?.entity_id || entry?.entity || entry?.entityId || null) : null,
+			datapoint_scope: config.datapoint_scope,
+			hours_to_show: config.hours_to_show,
+			start_time: config.start_time,
+			end_time: config.end_time
+		});
+	}
+	/** Build a stable JSON key for view/rendering config fields. */
+	function buildViewKey(config) {
+		return JSON.stringify({
+			series_settings: config.series_settings || [],
+			zoom_start_time: config.zoom_start_time,
+			zoom_end_time: config.zoom_end_time,
+			message_filter: config.message_filter || "",
+			hidden_event_ids: config.hidden_event_ids || [],
+			hovered_event_ids: config.hovered_event_ids || [],
+			show_event_markers: config.show_event_markers !== false,
+			show_event_lines: config.show_event_lines !== false,
+			show_tooltips: config.show_tooltips !== false,
+			emphasize_hover_guides: config.emphasize_hover_guides === true,
+			hover_snap_mode: config.hover_snap_mode || "follow_series",
+			show_correlated_anomalies: config.show_correlated_anomalies === true,
+			show_trend_lines: config.show_trend_lines === true,
+			show_summary_stats: config.show_summary_stats === true,
+			show_rate_of_change: config.show_rate_of_change === true,
+			show_threshold_analysis: config.show_threshold_analysis === true,
+			show_threshold_shading: config.show_threshold_shading === true,
+			show_anomalies: config.show_anomalies === true,
+			hide_raw_data: config.hide_raw_data === true,
+			show_trend_crosshairs: config.show_trend_crosshairs === true,
+			trend_method: config.trend_method || "rolling_average",
+			trend_window: config.trend_window || "24h",
+			rate_window: config.rate_window || "1h",
+			anomaly_sensitivity: config.anomaly_sensitivity || "medium",
+			threshold_values: config.threshold_values || {},
+			threshold_directions: config.threshold_directions || {},
+			show_delta_analysis: config.show_delta_analysis === true,
+			show_delta_tooltip: config.show_delta_tooltip !== false,
+			show_delta_lines: config.show_delta_lines === true,
+			hide_delta_source_series: config.hide_delta_source_series === true,
+			delink_y_axis: config.delink_y_axis === true,
+			split_view: config.split_view === true,
+			show_data_gaps: config.show_data_gaps !== false,
+			data_gap_threshold: config.data_gap_threshold || "2h",
+			comparison_hover_active: config.comparison_hover_active === true,
+			selected_comparison_window_id: config.selected_comparison_window_id || null,
+			hovered_comparison_window_id: config.hovered_comparison_window_id || null
+		});
+	}
+	/** Build a stable JSON key for comparison window config fields. */
+	function buildComparisonKey(config) {
+		return JSON.stringify(config.comparison_windows || []);
+	}
+	/** Build a stable JSON key for preload comparison window config. */
+	function buildPreloadComparisonKey(config) {
+		return JSON.stringify(config.preload_comparison_windows || []);
+	}
+	/** Build a stable JSON key for comparison overlay config. */
+	function buildComparisonOverlayKey(config) {
+		return JSON.stringify(config.comparison_preview_overlay || null);
+	}
+	/**
+	* Compare two card configs and return which aspects changed.
+	*/
+	function diffCardConfig(currentConfig, nextConfig) {
+		return {
+			dataChanged: buildDataKey(currentConfig) !== buildDataKey(nextConfig),
+			viewChanged: buildViewKey(currentConfig) !== buildViewKey(nextConfig),
+			comparisonChanged: buildComparisonKey(currentConfig) !== buildComparisonKey(nextConfig),
+			preloadComparisonChanged: buildPreloadComparisonKey(currentConfig) !== buildPreloadComparisonKey(nextConfig),
+			comparisonOverlayChanged: buildComparisonOverlayKey(currentConfig) !== buildComparisonOverlayKey(nextConfig)
+		};
+	}
+	/**
+	* Check if any entity has drawable history or statistics data.
+	*/
+	function hasDrawableHistoryData(entityIds, histResult, statsResult) {
+		return entityIds.some((entityId) => {
+			const histData = histResult[entityId];
+			const statsData = statsResult[entityId];
+			const histPoints = Array.isArray(histData) ? histData.length : 0;
+			const statsPoints = Array.isArray(statsData) ? statsData.length : 0;
+			return histPoints > 0 || statsPoints > 0;
+		});
+	}
+	/**
+	* Compute a quality descriptor for drawable data, used to avoid
+	* downgrading a high-resolution draw with a lower-resolution one.
+	*/
+	function getDrawableHistoryQuality(entityIds, histResult, statsResult) {
+		let totalPoints = 0;
+		for (const entityId of entityIds) {
+			const histData = histResult[entityId];
+			const statsData = statsResult[entityId];
+			totalPoints += Array.isArray(histData) ? histData.length : 0;
+			totalPoints += Array.isArray(statsData) ? statsData.length : 0;
+		}
+		return { totalPoints };
+	}
+	/**
+	* Filter events by visibility and optional message search query.
+	*/
+	function filterEvents(events, hiddenEventIds, messageFilter) {
+		const query = String(messageFilter || "").trim().toLowerCase();
+		const visibleEvents = events.filter((event) => !hiddenEventIds.has(event?.id ?? ""));
+		if (!query) return visibleEvents;
+		return visibleEvents.filter((event) => {
+			const ev = event;
+			return [
+				ev?.message || "",
+				ev?.annotation || "",
+				...(ev?.entity_ids || []).filter(Boolean)
+			].join("\n").toLowerCase().includes(query);
+		});
+	}
+	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/history-page/history-session-state.ts
 	/**
 	* Session and preference ownership helpers for the history page.
@@ -16035,123 +16158,14 @@
 				show_data_gaps: config.show_data_gaps !== false,
 				data_gap_threshold: config.data_gap_threshold || "2h"
 			};
-			const currentConfig = this._config || {};
-			const currentDataKey = JSON.stringify({
-				target: currentConfig.target || null,
-				entities: currentConfig.entities,
-				entity: currentConfig.entity,
-				series_entities: Array.isArray(currentConfig.series_settings) ? currentConfig.series_settings.map((entry) => entry?.entity_id || entry?.entity || entry?.entityId || null) : null,
-				datapoint_scope: currentConfig.datapoint_scope,
-				hours_to_show: currentConfig.hours_to_show,
-				start_time: currentConfig.start_time,
-				end_time: currentConfig.end_time
-			});
-			const nextDataKey = JSON.stringify({
-				target: nextConfig.target || null,
-				entities: nextConfig.entities,
-				entity: nextConfig.entity,
-				series_entities: Array.isArray(nextConfig.series_settings) ? nextConfig.series_settings.map((entry) => entry?.entity_id || entry?.entity || entry?.entityId || null) : null,
-				datapoint_scope: nextConfig.datapoint_scope,
-				hours_to_show: nextConfig.hours_to_show,
-				start_time: nextConfig.start_time,
-				end_time: nextConfig.end_time
-			});
-			const currentViewKey = JSON.stringify({
-				series_settings: currentConfig.series_settings || [],
-				zoom_start_time: currentConfig.zoom_start_time,
-				zoom_end_time: currentConfig.zoom_end_time,
-				message_filter: currentConfig.message_filter || "",
-				hidden_event_ids: currentConfig.hidden_event_ids || [],
-				hovered_event_ids: currentConfig.hovered_event_ids || [],
-				show_event_markers: currentConfig.show_event_markers !== false,
-				show_event_lines: currentConfig.show_event_lines !== false,
-				show_tooltips: currentConfig.show_tooltips !== false,
-				emphasize_hover_guides: currentConfig.emphasize_hover_guides === true,
-				hover_snap_mode: currentConfig.hover_snap_mode || "follow_series",
-				show_correlated_anomalies: currentConfig.show_correlated_anomalies === true,
-				show_trend_lines: currentConfig.show_trend_lines === true,
-				show_summary_stats: currentConfig.show_summary_stats === true,
-				show_rate_of_change: currentConfig.show_rate_of_change === true,
-				show_threshold_analysis: currentConfig.show_threshold_analysis === true,
-				show_threshold_shading: currentConfig.show_threshold_shading === true,
-				show_anomalies: currentConfig.show_anomalies === true,
-				hide_raw_data: currentConfig.hide_raw_data === true,
-				show_trend_crosshairs: currentConfig.show_trend_crosshairs === true,
-				trend_method: currentConfig.trend_method || "rolling_average",
-				trend_window: currentConfig.trend_window || "24h",
-				rate_window: currentConfig.rate_window || "1h",
-				anomaly_sensitivity: currentConfig.anomaly_sensitivity || "medium",
-				threshold_values: currentConfig.threshold_values || {},
-				threshold_directions: currentConfig.threshold_directions || {},
-				show_delta_analysis: currentConfig.show_delta_analysis === true,
-				show_delta_tooltip: currentConfig.show_delta_tooltip !== false,
-				show_delta_lines: currentConfig.show_delta_lines === true,
-				hide_delta_source_series: currentConfig.hide_delta_source_series === true,
-				delink_y_axis: currentConfig.delink_y_axis === true,
-				split_view: currentConfig.split_view === true,
-				show_data_gaps: currentConfig.show_data_gaps !== false,
-				data_gap_threshold: currentConfig.data_gap_threshold || "2h",
-				comparison_hover_active: currentConfig.comparison_hover_active === true,
-				selected_comparison_window_id: currentConfig.selected_comparison_window_id || null,
-				hovered_comparison_window_id: currentConfig.hovered_comparison_window_id || null
-			});
-			const nextViewKey = JSON.stringify({
-				series_settings: nextConfig.series_settings || [],
-				zoom_start_time: nextConfig.zoom_start_time,
-				zoom_end_time: nextConfig.zoom_end_time,
-				message_filter: nextConfig.message_filter || "",
-				hidden_event_ids: nextConfig.hidden_event_ids || [],
-				hovered_event_ids: nextConfig.hovered_event_ids || [],
-				show_event_markers: nextConfig.show_event_markers !== false,
-				show_event_lines: nextConfig.show_event_lines !== false,
-				show_tooltips: nextConfig.show_tooltips !== false,
-				emphasize_hover_guides: nextConfig.emphasize_hover_guides === true,
-				hover_snap_mode: nextConfig.hover_snap_mode || "follow_series",
-				show_correlated_anomalies: nextConfig.show_correlated_anomalies === true,
-				show_trend_lines: nextConfig.show_trend_lines === true,
-				show_summary_stats: nextConfig.show_summary_stats === true,
-				show_rate_of_change: nextConfig.show_rate_of_change === true,
-				show_threshold_analysis: nextConfig.show_threshold_analysis === true,
-				show_threshold_shading: nextConfig.show_threshold_shading === true,
-				show_anomalies: nextConfig.show_anomalies === true,
-				hide_raw_data: nextConfig.hide_raw_data === true,
-				show_trend_crosshairs: nextConfig.show_trend_crosshairs === true,
-				trend_method: nextConfig.trend_method || "rolling_average",
-				trend_window: nextConfig.trend_window || "24h",
-				rate_window: nextConfig.rate_window || "1h",
-				anomaly_sensitivity: nextConfig.anomaly_sensitivity || "medium",
-				threshold_values: nextConfig.threshold_values || {},
-				threshold_directions: nextConfig.threshold_directions || {},
-				show_delta_analysis: nextConfig.show_delta_analysis === true,
-				show_delta_tooltip: nextConfig.show_delta_tooltip !== false,
-				show_delta_lines: nextConfig.show_delta_lines === true,
-				hide_delta_source_series: nextConfig.hide_delta_source_series === true,
-				delink_y_axis: nextConfig.delink_y_axis === true,
-				split_view: nextConfig.split_view === true,
-				show_data_gaps: nextConfig.show_data_gaps !== false,
-				data_gap_threshold: nextConfig.data_gap_threshold || "2h",
-				comparison_hover_active: nextConfig.comparison_hover_active === true,
-				selected_comparison_window_id: nextConfig.selected_comparison_window_id || null,
-				hovered_comparison_window_id: nextConfig.hovered_comparison_window_id || null
-			});
-			const currentComparisonKey = JSON.stringify(currentConfig.comparison_windows || []);
-			const nextComparisonKey = JSON.stringify(nextConfig.comparison_windows || []);
-			const currentPreloadComparisonKey = JSON.stringify(currentConfig.preload_comparison_windows || []);
-			const nextPreloadComparisonKey = JSON.stringify(nextConfig.preload_comparison_windows || []);
-			const currentComparisonOverlayKey = JSON.stringify(currentConfig.comparison_preview_overlay || null);
-			const nextComparisonOverlayKey = JSON.stringify(nextConfig.comparison_preview_overlay || null);
-			const dataChanged = currentDataKey !== nextDataKey;
-			const viewChanged = currentViewKey !== nextViewKey;
-			const comparisonChanged = currentComparisonKey !== nextComparisonKey;
-			const preloadComparisonChanged = currentPreloadComparisonKey !== nextPreloadComparisonKey;
-			const comparisonOverlayChanged = currentComparisonOverlayKey !== nextComparisonOverlayKey;
-			if (!dataChanged && !viewChanged && !comparisonChanged && !preloadComparisonChanged && !comparisonOverlayChanged && this._configKey) return;
+			const diff = diffCardConfig(this._config || {}, nextConfig);
+			if (!diff.dataChanged && !diff.viewChanged && !diff.comparisonChanged && !diff.preloadComparisonChanged && !diff.comparisonOverlayChanged && this._configKey) return;
 			this._config = nextConfig;
 			this._configKey = JSON.stringify(nextConfig);
 			this._hiddenSeries = createHiddenSeriesSet(nextConfig.series_settings);
 			this._hiddenEventIds = createHiddenEventIdSet(nextConfig.hidden_event_ids);
 			this._zoomRange = createChartZoomRange(nextConfig.zoom_start_time, nextConfig.zoom_end_time);
-			if (dataChanged || comparisonChanged || preloadComparisonChanged) {
+			if (diff.dataChanged || diff.comparisonChanged || diff.preloadComparisonChanged) {
 				this._pruneComparisonDataCache(nextConfig);
 				this._lastComparisonResults = null;
 			}
@@ -16163,26 +16177,26 @@
 				chartEl._hiddenEventIds = this._hiddenEventIds;
 				chartEl._zoomRange = this._zoomRange;
 				chartEl._lastComparisonResults = this._getResolvedComparisonResults();
-				if (comparisonOverlayChanged && typeof chartEl._renderComparisonPreviewOverlay === "function") chartEl._renderComparisonPreviewOverlay();
+				if (diff.comparisonOverlayChanged && typeof chartEl._renderComparisonPreviewOverlay === "function") chartEl._renderComparisonPreviewOverlay();
 			}
-			if (dataChanged || !Array.isArray(nextConfig.comparison_windows) || !nextConfig.comparison_windows.length) this._adjustComparisonAxisScale = false;
-			if (this._hass && dataChanged) {
+			if (diff.dataChanged || !Array.isArray(nextConfig.comparison_windows) || !nextConfig.comparison_windows.length) this._adjustComparisonAxisScale = false;
+			if (this._hass && diff.dataChanged) {
 				this._load();
 				return;
 			}
-			if (this._hass && comparisonChanged) {
+			if (this._hass && diff.comparisonChanged) {
 				this._loadComparisonWindows({
 					redraw: true,
 					showLoading: true
 				});
 				return;
 			}
-			if (this._hass && preloadComparisonChanged) this._preloadComparisonWindows().catch(() => {});
-			if (this._hass && comparisonOverlayChanged && this._lastHistResult && this._lastEvents) {
+			if (this._hass && diff.preloadComparisonChanged) this._preloadComparisonWindows().catch(() => {});
+			if (this._hass && diff.comparisonOverlayChanged && this._lastHistResult && this._lastEvents) {
 				this._queueDrawChart(this._lastHistResult, this._lastStatsResult || {}, this._lastEvents, this._lastT0, this._lastT1);
 				return;
 			}
-			if (this._hass && viewChanged && this._lastHistResult && this._lastEvents) this._queueDrawChart(this._lastHistResult, this._lastStatsResult || {}, this._lastEvents, this._lastT0, this._lastT1);
+			if (this._hass && diff.viewChanged && this._lastHistResult && this._lastEvents) this._queueDrawChart(this._lastHistResult, this._lastStatsResult || {}, this._lastEvents, this._lastT0, this._lastT1);
 		}
 		get _entityIds() {
 			if (Array.isArray(this._config.series_settings)) {
@@ -16614,40 +16628,13 @@
 		* in either the history or statistics result.
 		*/
 		_hasDrawableHistoryData(histResult, statsResult) {
-			return this._entityIds.some((entityId) => {
-				const histData = histResult[entityId];
-				const statsData = statsResult[entityId];
-				const histPoints = Array.isArray(histData) ? histData.length : 0;
-				const statsPoints = Array.isArray(statsData) ? statsData.length : 0;
-				return histPoints > 0 || statsPoints > 0;
-			});
+			return hasDrawableHistoryData(this._entityIds, histResult, statsResult);
 		}
-		/**
-		* Returns a quality descriptor for the current drawable data — used to
-		* avoid downgrading a high-resolution draw with a lower-resolution one.
-		*/
 		_getDrawableHistoryQuality(histResult, statsResult) {
-			let totalPoints = 0;
-			for (const entityId of this._entityIds) {
-				const histData = histResult[entityId];
-				const statsData = statsResult[entityId];
-				totalPoints += Array.isArray(histData) ? histData.length : 0;
-				totalPoints += Array.isArray(statsData) ? statsData.length : 0;
-			}
-			return { totalPoints };
+			return getDrawableHistoryQuality(this._entityIds, histResult, statsResult);
 		}
 		_filterEvents(events) {
-			const query = String(this._config?.message_filter || "").trim().toLowerCase();
-			const visibleEvents = events.filter((event) => !this._hiddenEventIds.has(event?.id ?? ""));
-			if (!query) return visibleEvents;
-			return visibleEvents.filter((event) => {
-				const ev = event;
-				return [
-					ev?.message || "",
-					ev?.annotation || "",
-					...(ev?.entity_ids || []).filter(Boolean)
-				].join("\n").toLowerCase().includes(query);
-			});
+			return filterEvents(events, this._hiddenEventIds, String(this._config?.message_filter || ""));
 		}
 		_buildNavigationPageState() {
 			const range = this._getRange();
