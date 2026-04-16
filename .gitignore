@@ -9,6 +9,8 @@ node_modules/
 /build-storybook.log
 dev/
 storybook-static
+site/.vitepress/cache
+site/.vitepress/dist
 
 # Python virtual environment
 .venv/

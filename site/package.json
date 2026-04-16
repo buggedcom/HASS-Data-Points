@@ -1,0 +1,19 @@
+{
+  "name": "hass-datapoints-docs",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Documentation site for hass_datapoints (GitHub Pages).",
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "dev": "vitepress dev .",
+    "build": "vitepress build .",
+    "preview": "vitepress preview ."
+  },
+  "devDependencies": {
+    "vite": "5.4.19",
+    "vitepress": "1.6.3"
+  }
+}

@@ -1,5 +1,6 @@
 packages:
   - .
+  - site
 
 minimumReleaseAge: 1440
 trustPolicy: no-downgrade
