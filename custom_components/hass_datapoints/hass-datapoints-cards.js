@@ -20345,6 +20345,7 @@
 	*
 	* All functions are stateless data transformations with no DOM dependency.
 	*/
+	var HEX_COLOR_RE = /^#[0-9a-f]{6}$/i;
 	function mergeSavedSeriesRows(rows, savedRows) {
 		const normalizedRows = normalizeHistorySeriesRows(rows);
 		const normalizedSavedRows = normalizeHistorySeriesRows(savedRows);
@@ -20360,6 +20361,103 @@
 				analysis: savedRow.analysis
 			};
 		});
+	}
+	function addSeriesRows(existingRows, entityIds, preferredColors) {
+		const merged = new Map(existingRows.map((row) => [row.entity_id, row]));
+		entityIds.forEach((entityId, index) => {
+			if (merged.has(entityId)) return;
+			const preferred = preferredColors?.[entityId];
+			merged.set(entityId, {
+				entity_id: entityId,
+				color: preferred && HEX_COLOR_RE.test(preferred) ? preferred : COLORS[(merged.size + index) % COLORS.length],
+				visible: true,
+				analysis: normalizeHistorySeriesAnalysis(null)
+			});
+		});
+		return [...merged.values()];
+	}
+	function updateSeriesRowColor(rows, index, color) {
+		if (!Number.isInteger(index) || index === void 0 || index < 0 || index >= rows.length) return null;
+		if (!HEX_COLOR_RE.test(color || "")) return null;
+		if (rows[index].color === color) return null;
+		return rows.map((row, i) => i === index ? {
+			...row,
+			color
+		} : row);
+	}
+	function updateSeriesRowVisibility(rows, index, visible) {
+		if (!Number.isInteger(index) || index === void 0 || index < 0 || index >= rows.length) return null;
+		if (rows[index].visible === !!visible) return null;
+		return rows.map((row, i) => i === index ? {
+			...row,
+			visible: !!visible
+		} : row);
+	}
+	function toggleSeriesAnalysisExpanded(rows, entityId) {
+		const index = rows.findIndex((r) => r.entity_id === entityId);
+		if (index === -1) return null;
+		const row = rows[index];
+		const current = normalizeHistorySeriesAnalysis(row.analysis);
+		const next = normalizeHistorySeriesAnalysis({
+			...row.analysis,
+			expanded: !current.expanded
+		});
+		return rows.map((r, i) => i === index ? {
+			...r,
+			analysis: next
+		} : r);
+	}
+	function computeNextAnalysis(currentAnalysis, key, value) {
+		let nextKey = key;
+		let nextValue = value;
+		if (nextKey.startsWith("anomaly_method_toggle_")) {
+			const method = nextKey.slice(22);
+			const currentMethods = currentAnalysis.anomaly_methods;
+			nextKey = "anomaly_methods";
+			nextValue = nextValue === true ? [...new Set([...currentMethods, method])] : currentMethods.filter((m) => m !== method);
+		}
+		const nextSource = {
+			...currentAnalysis,
+			[nextKey]: nextValue
+		};
+		if (nextKey === "show_trend_lines" && nextValue !== true) nextSource.show_trend_crosshairs = false;
+		if (nextKey === "show_threshold_analysis" && nextValue !== true) nextSource.show_threshold_shading = false;
+		if (nextKey === "show_delta_analysis" && nextValue !== true) {
+			nextSource.show_delta_tooltip = true;
+			nextSource.show_delta_lines = false;
+		}
+		if (nextKey === "show_anomalies" && nextValue === true && (!Array.isArray(currentAnalysis.anomaly_methods) || currentAnalysis.anomaly_methods.length === 0)) nextSource.anomaly_methods = ["trend_residual"];
+		const next = normalizeHistorySeriesAnalysis({
+			...nextSource,
+			expanded: true
+		});
+		if (JSON.stringify(next) === JSON.stringify(currentAnalysis)) return null;
+		return next;
+	}
+	function copyAnalysisToAll(rows, sourceEntityId, sourceAnalysis) {
+		if (!sourceEntityId || !sourceAnalysis) return null;
+		let changed = false;
+		const result = rows.map((row) => {
+			if (row.entity_id === sourceEntityId) return row;
+			const current = normalizeHistorySeriesAnalysis(row.analysis);
+			const next = normalizeHistorySeriesAnalysis({
+				...sourceAnalysis,
+				expanded: current.expanded,
+				anomaly_comparison_window_id: current.anomaly_comparison_window_id,
+				anomaly_comparison_entity_id: current.anomaly_comparison_entity_id
+			});
+			if (JSON.stringify(next) === JSON.stringify(current)) return row;
+			changed = true;
+			return {
+				...row,
+				analysis: next
+			};
+		});
+		return changed ? result : null;
+	}
+	function removeSeriesRow(rows, index) {
+		if (!Number.isInteger(index) || index === void 0 || index < 0 || index >= rows.length) return null;
+		return rows.filter((_row, i) => i !== index);
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/target-row.styles.ts
@@ -34635,28 +34733,14 @@
 			this._refreshCollapsedTargetPopup();
 		}
 		_addSeriesRows(entityIds) {
-			const merged = new Map(this._seriesRows.map((row) => [row.entity_id, row]));
-			normalizeEntityIds(entityIds).forEach((entityId, index) => {
-				if (merged.has(entityId)) return;
-				merged.set(entityId, {
-					entity_id: entityId,
-					color: this._preferredSeriesColors?.[entityId] && /^#[0-9a-f]{6}$/i.test(this._preferredSeriesColors[entityId]) ? this._preferredSeriesColors[entityId] : COLORS[(merged.size + index) % COLORS.length],
-					visible: true,
-					analysis: normalizeHistorySeriesAnalysis(null)
-				});
-			});
-			this._seriesRows = [...merged.values()];
+			this._seriesRows = addSeriesRows(this._seriesRows, normalizeEntityIds(entityIds), this._preferredSeriesColors);
 			this._syncSeriesState();
 			this._renderTargetRows();
 		}
 		_updateSeriesRowColor(index, color) {
-			if (!Number.isInteger(index) || index === void 0 || index < 0 || index >= this._seriesRows.length) return;
-			if (!/^#[0-9a-f]{6}$/i.test(color || "")) return;
-			if (this._seriesRows[index].color === color) return;
-			this._seriesRows[index] = {
-				...this._seriesRows[index],
-				color
-			};
+			const next = updateSeriesRowColor(this._seriesRows, index, color);
+			if (!next) return;
+			this._seriesRows = next;
 			this._saveUserPreferences();
 			this._saveSessionState();
 			this._updateUrl({ push: false });
@@ -34664,12 +34748,9 @@
 			this._renderContent();
 		}
 		_updateSeriesRowVisibility(index, visible) {
-			if (!Number.isInteger(index) || index === void 0 || index < 0 || index >= this._seriesRows.length) return;
-			if (this._seriesRows[index].visible === !!visible) return;
-			this._seriesRows[index] = {
-				...this._seriesRows[index],
-				visible: !!visible
-			};
+			const next = updateSeriesRowVisibility(this._seriesRows, index, visible);
+			if (!next) return;
+			this._seriesRows = next;
 			this._saveSessionState();
 			this._updateUrl({ push: false });
 			this._renderTargetRows();
@@ -34883,18 +34964,9 @@
 		_toggleSeriesAnalysisExpanded(entityId) {
 			const normalizedEntityId = String(entityId || "").trim();
 			if (!normalizedEntityId) return;
-			const index = this._seriesRows.findIndex((row) => row.entity_id === normalizedEntityId);
-			if (index === -1) return;
-			const row = this._seriesRows[index];
-			const currentAnalysis = normalizeHistorySeriesAnalysis(row.analysis);
-			const nextAnalysis = normalizeHistorySeriesAnalysis({
-				...row.analysis,
-				expanded: !currentAnalysis.expanded
-			});
-			this._seriesRows[index] = {
-				...row,
-				analysis: nextAnalysis
-			};
+			const next = toggleSeriesAnalysisExpanded(this._seriesRows, normalizedEntityId);
+			if (!next) return;
+			this._seriesRows = next;
 			this._saveSessionState();
 			this._updateUrl({ push: false });
 			this._renderTargetRows();
@@ -34911,32 +34983,8 @@
 			const index = this._seriesRows.findIndex((row) => row.entity_id === normalizedEntityId);
 			if (index === -1) return;
 			const row = this._seriesRows[index];
-			const analysis = normalizeHistorySeriesAnalysis(row.analysis);
-			let nextKey = normalizedKey;
-			let nextValue = value;
-			if (nextKey.startsWith("anomaly_method_toggle_")) {
-				const method = nextKey.slice(22);
-				const currentMethods = analysis.anomaly_methods;
-				const nextMethods = nextValue === true ? [...new Set([...currentMethods, method])] : currentMethods.filter((m) => m !== method);
-				nextKey = "anomaly_methods";
-				nextValue = nextMethods;
-			}
-			const nextSource = {
-				...analysis,
-				[nextKey]: nextValue
-			};
-			if (nextKey === "show_trend_lines" && nextValue !== true) nextSource.show_trend_crosshairs = false;
-			if (nextKey === "show_threshold_analysis" && nextValue !== true) nextSource.show_threshold_shading = false;
-			if (nextKey === "show_delta_analysis" && nextValue !== true) {
-				nextSource.show_delta_tooltip = true;
-				nextSource.show_delta_lines = false;
-			}
-			if (nextKey === "show_anomalies" && nextValue === true && (!Array.isArray(analysis.anomaly_methods) || analysis.anomaly_methods.length === 0)) nextSource.anomaly_methods = ["trend_residual"];
-			const nextAnalysis = normalizeHistorySeriesAnalysis({
-				...nextSource,
-				expanded: true
-			});
-			if (JSON.stringify(nextAnalysis) === JSON.stringify(analysis)) return;
+			const nextAnalysis = computeNextAnalysis(normalizeHistorySeriesAnalysis(row.analysis), normalizedKey, value);
+			if (!nextAnalysis) return;
 			this._seriesRows[index] = {
 				...row,
 				analysis: nextAnalysis
@@ -34949,33 +34997,18 @@
 		}
 		_copyAnalysisToAll(sourceEntityId, sourceAnalysis) {
 			const normalizedEntityId = String(sourceEntityId || "").trim();
-			if (!normalizedEntityId || !sourceAnalysis) return;
-			let changed = false;
-			this._seriesRows = this._seriesRows.map((row) => {
-				if (row.entity_id === normalizedEntityId) return row;
-				const currentAnalysis = normalizeHistorySeriesAnalysis(row.analysis);
-				const nextAnalysis = normalizeHistorySeriesAnalysis({
-					...sourceAnalysis,
-					expanded: currentAnalysis.expanded,
-					anomaly_comparison_window_id: currentAnalysis.anomaly_comparison_window_id,
-					anomaly_comparison_entity_id: currentAnalysis.anomaly_comparison_entity_id
-				});
-				if (JSON.stringify(nextAnalysis) === JSON.stringify(currentAnalysis)) return row;
-				changed = true;
-				return {
-					...row,
-					analysis: nextAnalysis
-				};
-			});
-			if (!changed) return;
+			const next = copyAnalysisToAll(this._seriesRows, normalizedEntityId, sourceAnalysis);
+			if (!next) return;
+			this._seriesRows = next;
 			this._saveSessionState();
 			this._updateUrl({ push: false });
 			this._renderTargetRows();
 			this._renderContent();
 		}
 		_removeSeriesRow(index) {
-			if (!Number.isInteger(index) || index === void 0 || index < 0 || index >= this._seriesRows.length) return;
-			this._seriesRows = this._seriesRows.filter((_row, rowIndex) => rowIndex !== index);
+			const next = removeSeriesRow(this._seriesRows, index);
+			if (!next) return;
+			this._seriesRows = next;
 			this._syncSeriesState();
 			this._saveSessionState();
 			this._renderTargetRows();

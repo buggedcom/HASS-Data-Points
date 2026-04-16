@@ -1,4 +1,4 @@
-import { COLORS, DOMAIN } from "@/constants";
+import { DOMAIN } from "@/constants";
 import { disambiguateEntityNames, entityName } from "@/lib/ha/entity-name";
 import { msg, syncFrontendLocale } from "@/lib/i18n/localize";
 import {
@@ -26,7 +26,16 @@ import {
   parseDateWindowInputValue,
   shiftDateWindowByUnit,
 } from "@/lib/domain/date-window";
-import { mergeSavedSeriesRows } from "@/lib/domain/series-rows";
+import {
+  addSeriesRows,
+  computeNextAnalysis,
+  copyAnalysisToAll,
+  mergeSavedSeriesRows,
+  removeSeriesRow,
+  toggleSeriesAnalysisExpanded,
+  updateSeriesRowColor,
+  updateSeriesRowVisibility,
+} from "@/lib/domain/series-rows";
 import {
   buildHistoryPagePreferencesPayload,
   buildHistoryPageSessionState,
@@ -3344,48 +3353,19 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
   }
 
   _addSeriesRows(entityIds: string[] | string) {
-    const merged = new Map<string, HistoryTargetRowState>(
-      this._seriesRows.map((row) => [row.entity_id, row])
+    this._seriesRows = addSeriesRows(
+      this._seriesRows,
+      normalizeEntityIds(entityIds),
+      this._preferredSeriesColors
     );
-    normalizeEntityIds(entityIds).forEach((entityId, index) => {
-      if (merged.has(entityId)) {
-        return;
-      }
-      merged.set(entityId, {
-        entity_id: entityId,
-        color:
-          this._preferredSeriesColors?.[entityId] &&
-          /^#[0-9a-f]{6}$/i.test(this._preferredSeriesColors[entityId])
-            ? this._preferredSeriesColors[entityId]
-            : COLORS[(merged.size + index) % COLORS.length],
-        visible: true,
-        analysis: normalizeHistorySeriesAnalysis(null),
-      });
-    });
-    this._seriesRows = [...merged.values()];
     this._syncSeriesState();
     this._renderTargetRows();
   }
 
   _updateSeriesRowColor(index: number | undefined, color: string | undefined) {
-    if (
-      !Number.isInteger(index) ||
-      index === undefined ||
-      index < 0 ||
-      index >= this._seriesRows.length
-    ) {
-      return;
-    }
-    if (!/^#[0-9a-f]{6}$/i.test(color || "")) {
-      return;
-    }
-    if (this._seriesRows[index].color === color) {
-      return;
-    }
-    this._seriesRows[index] = {
-      ...this._seriesRows[index],
-      color: color as string,
-    };
+    const next = updateSeriesRowColor(this._seriesRows, index, color);
+    if (!next) return;
+    this._seriesRows = next;
     this._saveUserPreferences();
     this._saveSessionState();
     this._updateUrl({ push: false });
@@ -3394,21 +3374,9 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
   }
 
   _updateSeriesRowVisibility(index: number | undefined, visible: unknown) {
-    if (
-      !Number.isInteger(index) ||
-      index === undefined ||
-      index < 0 ||
-      index >= this._seriesRows.length
-    ) {
-      return;
-    }
-    if (this._seriesRows[index].visible === !!visible) {
-      return;
-    }
-    this._seriesRows[index] = {
-      ...this._seriesRows[index],
-      visible: !!visible,
-    };
+    const next = updateSeriesRowVisibility(this._seriesRows, index, visible);
+    if (!next) return;
+    this._seriesRows = next;
     this._saveSessionState();
     this._updateUrl({ push: false });
     this._renderTargetRows();
@@ -3790,25 +3758,13 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
 
   _toggleSeriesAnalysisExpanded(entityId: unknown) {
     const normalizedEntityId = String(entityId || "").trim();
-    if (!normalizedEntityId) {
-      return;
-    }
-    const index = this._seriesRows.findIndex(
-      (row: { entity_id: string }) => row.entity_id === normalizedEntityId
+    if (!normalizedEntityId) return;
+    const next = toggleSeriesAnalysisExpanded(
+      this._seriesRows,
+      normalizedEntityId
     );
-    if (index === -1) {
-      return;
-    }
-    const row = this._seriesRows[index];
-    const currentAnalysis = normalizeHistorySeriesAnalysis(row.analysis);
-    const nextAnalysis = normalizeHistorySeriesAnalysis({
-      ...row.analysis,
-      expanded: !currentAnalysis.expanded,
-    });
-    this._seriesRows[index] = {
-      ...row,
-      analysis: nextAnalysis,
-    };
+    if (!next) return;
+    this._seriesRows = next;
     this._saveSessionState();
     this._updateUrl({ push: false });
     this._renderTargetRows();
@@ -3817,9 +3773,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
   _setSeriesAnalysisOption(entityId: unknown, key: unknown, value: unknown) {
     const normalizedEntityId = String(entityId || "").trim();
     const normalizedKey = String(key || "").trim();
-    if (!normalizedEntityId || !normalizedKey) {
-      return;
-    }
+    if (!normalizedEntityId || !normalizedKey) return;
     if (
       normalizedKey === "anomaly_comparison_window_id" &&
       value === "__add_new__"
@@ -3831,61 +3785,12 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     const index = this._seriesRows.findIndex(
       (row: { entity_id: string }) => row.entity_id === normalizedEntityId
     );
-    if (index === -1) {
-      return;
-    }
+    if (index === -1) return;
     const row = this._seriesRows[index];
     const analysis = normalizeHistorySeriesAnalysis(row.analysis);
-
-    // Handle method toggle: add/remove a method from anomaly_methods array
-    let nextKey = normalizedKey;
-    let nextValue = value;
-    if (nextKey.startsWith("anomaly_method_toggle_")) {
-      const method = nextKey.slice("anomaly_method_toggle_".length);
-      const currentMethods = analysis.anomaly_methods;
-      const nextMethods =
-        nextValue === true
-          ? [...new Set([...currentMethods, method])]
-          : currentMethods.filter((m) => m !== method);
-      nextKey = "anomaly_methods";
-      nextValue = nextMethods;
-    }
-
-    const nextSource: RecordWithUnknownValues = {
-      ...analysis,
-      [nextKey]: nextValue,
-    };
-    if (nextKey === "show_trend_lines" && nextValue !== true) {
-      nextSource.show_trend_crosshairs = false;
-    }
-    if (nextKey === "show_threshold_analysis" && nextValue !== true) {
-      nextSource.show_threshold_shading = false;
-    }
-    if (nextKey === "show_delta_analysis" && nextValue !== true) {
-      nextSource.show_delta_tooltip = true;
-      nextSource.show_delta_lines = false;
-    }
-    if (
-      nextKey === "show_anomalies" &&
-      nextValue === true &&
-      (!Array.isArray(analysis.anomaly_methods) ||
-        analysis.anomaly_methods.length === 0)
-    ) {
-      // Default to trend_residual so anomalies appear immediately on first enable.
-      nextSource.anomaly_methods = ["trend_residual"];
-    }
-    const nextAnalysis = normalizeHistorySeriesAnalysis({
-      ...nextSource,
-      expanded: true,
-    });
-    const unchanged = JSON.stringify(nextAnalysis) === JSON.stringify(analysis);
-    if (unchanged) {
-      return;
-    }
-    this._seriesRows[index] = {
-      ...row,
-      analysis: nextAnalysis,
-    };
+    const nextAnalysis = computeNextAnalysis(analysis, normalizedKey, value);
+    if (!nextAnalysis) return;
+    this._seriesRows[index] = { ...row, analysis: nextAnalysis };
     this._saveSessionState();
     this._updateUrl({ push: false });
     this._renderTargetRows();
@@ -3895,34 +3800,13 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
 
   _copyAnalysisToAll(sourceEntityId: unknown, sourceAnalysis: unknown) {
     const normalizedEntityId = String(sourceEntityId || "").trim();
-    if (!normalizedEntityId || !sourceAnalysis) {
-      return;
-    }
-    let changed = false;
-    this._seriesRows = this._seriesRows.map((row) => {
-      if (row.entity_id === normalizedEntityId) {
-        return row;
-      }
-      const currentAnalysis = normalizeHistorySeriesAnalysis(row.analysis);
-      const nextAnalysis = normalizeHistorySeriesAnalysis({
-        ...sourceAnalysis,
-        // Preserve per-row state that shouldn't be overwritten
-        expanded: currentAnalysis.expanded,
-        // Don't copy anomaly_comparison_window_id or anomaly_comparison_entity_id — they're entity-specific
-        anomaly_comparison_window_id:
-          currentAnalysis.anomaly_comparison_window_id,
-        anomaly_comparison_entity_id:
-          currentAnalysis.anomaly_comparison_entity_id,
-      });
-      if (JSON.stringify(nextAnalysis) === JSON.stringify(currentAnalysis)) {
-        return row;
-      }
-      changed = true;
-      return { ...row, analysis: nextAnalysis };
-    });
-    if (!changed) {
-      return;
-    }
+    const next = copyAnalysisToAll(
+      this._seriesRows,
+      normalizedEntityId,
+      sourceAnalysis
+    );
+    if (!next) return;
+    this._seriesRows = next;
     this._saveSessionState();
     this._updateUrl({ push: false });
     this._renderTargetRows();
@@ -3930,17 +3814,9 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
   }
 
   _removeSeriesRow(index: number | undefined) {
-    if (
-      !Number.isInteger(index) ||
-      index === undefined ||
-      index < 0 ||
-      index >= this._seriesRows.length
-    ) {
-      return;
-    }
-    this._seriesRows = this._seriesRows.filter(
-      (_row: unknown, rowIndex: number) => rowIndex !== index
-    );
+    const next = removeSeriesRow(this._seriesRows, index);
+    if (!next) return;
+    this._seriesRows = next;
     this._syncSeriesState();
     this._saveSessionState();
     this._renderTargetRows();
