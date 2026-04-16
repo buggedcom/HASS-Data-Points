@@ -15,10 +15,6 @@ import {
   binaryOffLabel,
   binaryOnLabel,
   getAxisValueExtent,
-  getHistoryStatesForEntity,
-  mergeNumericHistoryWithStatistics,
-  normalizeBinaryHistory,
-  normalizeNumericHistory,
   normalizeStatisticsHistory,
   SAMPLE_INTERVAL_MS,
 } from "../history-data";
@@ -74,24 +70,38 @@ import type { ChartAggregate } from "@/lib/workers/chart-data.worker";
 import type {
   ComparisonWindowAnalysis,
   ComputeHistoryAnalysisPayload,
-  WorkerSeriesAnalysis,
 } from "@/lib/workers/history-analysis.worker";
 import { logger } from "@/lib/logger";
 import type { HassLike } from "@/lib/types";
-import {
-  buildDeltaPoints,
-  buildEmaTrend,
-  buildLinearTrend,
-  buildLowessTrend,
-  buildPolynomialTrend,
-  buildRateOfChangePoints,
-  buildRollingAverageTrend,
-  buildSummaryStats,
-  getEmaAlpha,
-  getLowessBandwidth,
-  getTrendWindowMs,
-} from "../analysis";
 import { navigateToDataPointsHistory } from "@/lib/ha/navigation";
+import { buildBackendAnomalyConfig } from "@/lib/chart/chart-anomaly-config";
+import {
+  buildBinaryStateSpans,
+  buildEntityStateList,
+  filterEvents,
+} from "@/lib/chart/chart-data-prep";
+import {
+  filterAnnotatedAnomalyClusters,
+  filterClustersByCorrelatedSpans,
+  buildCorrelatedAnomalySpans,
+  getComparisonAnomalyCacheKey,
+  getComparisonWindowLineStyle,
+  resolveAnomalyClusterDisplay,
+  shiftComparisonAnomalyClusters,
+} from "@/lib/chart/chart-comparison";
+import {
+  buildAnalysisCacheKey,
+  buildDelta,
+  buildHistoryAnalysisPayload,
+  buildRateOfChange,
+  buildSeriesAnalysisMap,
+  buildSummary,
+  buildTrendPoints,
+  getTrendRenderOptions,
+  seriesHasActiveAnalysis,
+  seriesShouldHideSource,
+} from "@/lib/chart/chart-analysis";
+import { calculateViewportScrollPosition } from "@/lib/chart/chart-scroll";
 import { styles } from "./history-chart.styles";
 
 // ── Constants ─────────────────────────────────────────────────────────────────
@@ -602,85 +612,7 @@ export class HistoryChart extends HTMLElement {
   _buildBackendAnomalyConfig(
     analysis: RecordWithUnknownValues
   ): BackendAnomalyConfig {
-    const rawMethods: string[] = Array.isArray(analysis.anomaly_methods)
-      ? (analysis.anomaly_methods as string[])
-      : [];
-    const hasSimilarEntity = rawMethods.includes("similar_entity");
-    // Map similar_entity → comparison_window for the backend, deduplicating
-    const backendMethods = hasSimilarEntity
-      ? [
-          ...new Set(
-            rawMethods.map((m) =>
-              m === "similar_entity" ? "comparison_window" : m
-            )
-          ),
-        ]
-      : rawMethods;
-    const config: BackendAnomalyConfig = {
-      anomaly_methods: backendMethods.length > 0 ? backendMethods : undefined,
-      anomaly_sensitivity:
-        typeof analysis.anomaly_sensitivity === "string"
-          ? analysis.anomaly_sensitivity
-          : undefined,
-      anomaly_overlap_mode:
-        typeof analysis.anomaly_overlap_mode === "string"
-          ? analysis.anomaly_overlap_mode
-          : undefined,
-      anomaly_rate_window:
-        typeof analysis.anomaly_rate_window === "string"
-          ? analysis.anomaly_rate_window
-          : undefined,
-      anomaly_zscore_window:
-        typeof analysis.anomaly_zscore_window === "string"
-          ? analysis.anomaly_zscore_window
-          : undefined,
-      anomaly_persistence_window:
-        typeof analysis.anomaly_persistence_window === "string"
-          ? analysis.anomaly_persistence_window
-          : undefined,
-      trend_method: (() => {
-        if (
-          typeof analysis.anomaly_trend_method === "string" &&
-          analysis.anomaly_trend_method
-        ) {
-          return analysis.anomaly_trend_method;
-        }
-        return typeof analysis.trend_method === "string"
-          ? analysis.trend_method
-          : undefined;
-      })(),
-      trend_window: (() => {
-        if (
-          typeof analysis.anomaly_trend_method === "string" &&
-          analysis.anomaly_trend_method &&
-          typeof analysis.anomaly_trend_window === "string" &&
-          analysis.anomaly_trend_window
-        ) {
-          return analysis.anomaly_trend_window;
-        }
-        return typeof analysis.trend_window === "string"
-          ? analysis.trend_window
-          : undefined;
-      })(),
-      anomaly_use_sampled_data: analysis.anomaly_use_sampled_data !== false,
-      comparison_entity_id:
-        hasSimilarEntity &&
-        typeof analysis.anomaly_comparison_entity_id === "string" &&
-        analysis.anomaly_comparison_entity_id
-          ? analysis.anomaly_comparison_entity_id
-          : null,
-    };
-    if (analysis.anomaly_use_sampled_data !== false) {
-      config.sample_interval =
-        typeof analysis.sample_interval === "string"
-          ? analysis.sample_interval
-          : null;
-      config.sample_aggregate =
-        typeof analysis.sample_aggregate === "string"
-          ? analysis.sample_aggregate
-          : null;
-    }
-    return config;
+    return buildBackendAnomalyConfig(analysis);
   }
 
   // ── Instance method stubs — implemented by the parent card / JS layer ────────
@@ -695,17 +627,7 @@ export class HistoryChart extends HTMLElement {
       this._seriesSettings
         ?.map((seriesSetting: { entity_id: string }) => seriesSetting.entity_id)
         .filter(Boolean) ?? [];
-    const historyStates = getHistoryStatesForEntity(
-      histResult,
-      entityId,
-      entityIds
-    );
-    const isBinary = entityId.split(".")[0] === "binary_sensor";
-    const rawHistory = isBinary
-      ? normalizeBinaryHistory(entityId, historyStates)
-      : normalizeNumericHistory(entityId, historyStates);
-    const statsHistory = normalizeStatisticsHistory(entityId, statsResult);
-    return mergeNumericHistoryWithStatistics(rawHistory, statsHistory);
+    return buildEntityStateList(entityId, histResult, statsResult, entityIds);
   }
 
   /** Build binary state spans from a state list. */
@@ -714,24 +636,7 @@ export class HistoryChart extends HTMLElement {
     t0: number,
     t1: number
   ): Array<{ start: number; end: number; state: string }> {
-    const spans: Array<{ start: number; end: number; state: string }> = [];
-    if (!stateList.length) return spans;
-    let current = stateList[0];
-    for (let i = 1; i < stateList.length; i++) {
-      const next = stateList[i];
-      const start = Math.max(current.lu * 1000, t0);
-      const end = Math.min(next.lu * 1000, t1);
-      if (end > start) {
-        spans.push({ start, end, state: current.s });
-      }
-      current = next;
-    }
-    // Last span extends to t1
-    const lastStart = Math.max(current.lu * 1000, t0);
-    if (t1 > lastStart) {
-      spans.push({ start: lastStart, end: t1, state: current.s });
-    }
-    return spans;
+    return buildBinaryStateSpans(stateList, t0, t1);
   }
 
   /** Return the "on" label for a binary_sensor entity. */
@@ -1156,26 +1061,11 @@ export class HistoryChart extends HTMLElement {
     dashPattern?: number[];
     hoverOpacity: number;
   } {
-    if (isHovered) {
-      return {
-        lineOpacity: 1,
-        dashed: false,
-        hoverOpacity: 0.85,
-      };
-    }
-    if (hoveringDifferentComparison && isSelected) {
-      return {
-        lineOpacity: 0.25,
-        lineWidth: 1.25,
-        dashed: false,
-        hoverOpacity: 0.25,
-      };
-    }
-    return {
-      lineOpacity: 0.85,
-      dashed: false,
-      hoverOpacity: 0.85,
-    };
+    return getComparisonWindowLineStyle(
+      isHovered,
+      isSelected,
+      hoveringDifferentComparison
+    );
   }
 
   /** Sync chart viewport scroll to the current zoom range. */
@@ -1204,28 +1094,14 @@ export class HistoryChart extends HTMLElement {
       this._skipNextScrollViewportSync = false;
       return;
     }
-    const viewportWidth = viewport.clientWidth;
-    const totalMs = Math.max(1, _t1 - _t0);
-    // Use the actual zoom span so the math is consistent with _onChartScroll,
-    // which also uses (totalMs - spanMs) as the effective scroll range.
-    // The canvas-width-based visibleSpanMs approximation diverges when the
-    // canvas is clamped at max zoom (especially on high-DPI displays where
-    // MAX_CANVAS_WIDTH_PX is smaller), causing nextLeft to differ from
-    // scrollLeft by hundreds of pixels and producing a visible jump.
-    const spanMs = Math.max(1, this._zoomRange.end - this._zoomRange.start);
-    const maxScrollLeft = Math.max(
-      0,
-      Math.max(_canvasWidth, viewportWidth) - viewportWidth
-    );
-    const maxStartOffsetMs = Math.max(0, totalMs - spanMs);
-    const clampedStart = clampChartValue(
-      this._zoomRange.start,
+    const nextLeft = calculateViewportScrollPosition(
       _t0,
-      _t1 - spanMs
+      _t1,
+      _canvasWidth,
+      viewport.clientWidth,
+      this._zoomRange.start,
+      this._zoomRange.end
     );
-    const ratio =
-      maxStartOffsetMs > 0 ? (clampedStart - _t0) / maxStartOffsetMs : 0;
-    const nextLeft = ratio * maxScrollLeft;
     const currentLeft = viewport.scrollLeft;
     if (Math.abs(currentLeft - nextLeft) < 2) {
       return;
@@ -1489,33 +1365,16 @@ export class HistoryChart extends HTMLElement {
 
   /** Filter events list by hidden IDs and message filter. */
   _filterEvents(_events: unknown[]): unknown[] {
-    const events = _events as Array<{
-      id?: string;
-      message?: string;
-      annotation?: string;
-      entity_ids?: string[];
-    }>;
-    const query = String(
-      (this._config as RecordWithUnknownValues)?.message_filter || ""
-    )
-      .trim()
-      .toLowerCase();
-    const visibleEvents = events.filter(
-      (event) => !this._hiddenEventIds.has(event?.id ?? "")
+    return filterEvents(
+      _events as Array<{
+        id?: string;
+        message?: string;
+        annotation?: string;
+        entity_ids?: string[];
+      }>,
+      this._hiddenEventIds,
+      String((this._config as RecordWithUnknownValues)?.message_filter || "")
     );
-    if (!query) {
-      return visibleEvents;
-    }
-    return visibleEvents.filter((event) => {
-      const haystack = [
-        event?.message || "",
-        event?.annotation || "",
-        ...(event?.entity_ids || []).filter(Boolean),
-      ]
-        .join("\n")
-        .toLowerCase();
-      return haystack.includes(query);
-    });
   }
 
   /** Build correlated anomaly spans across series. */
@@ -1524,102 +1383,14 @@ export class HistoryChart extends HTMLElement {
     _anomalyClustersMap: Map<string, unknown>,
     _analysisMap: Map<string, unknown>
   ): Array<{ start: number; end: number }> {
-    const visibleSeries = _visibleSeries as Array<{
-      entityId: string;
-      pts: [number, number][];
-    }>;
-    const anomalyClustersMap = _anomalyClustersMap as Map<
-      string,
-      Array<{ points: Array<{ timeMs: number }> }>
-    >;
-
-    const seriesIntervals: Array<{
-      entityId: string;
-      intervals: Array<{ start: number; end: number }>;
-    }> = [];
-    for (const seriesItem of visibleSeries) {
-      const analysis = _analysisMap.get(seriesItem.entityId) as
-        | RecordWithUnknownValues
-        | undefined;
-      if (analysis?.show_anomalies !== true) continue;
-      const clusters = anomalyClustersMap.get(seriesItem.entityId) || [];
-      if (!clusters.length) continue;
-
-      const pts = seriesItem.pts;
-      let tolerance = 60000;
-      if (Array.isArray(pts) && pts.length >= 2) {
-        const intervals: number[] = [];
-        for (let i = 1; i < pts.length; i++) {
-          const diff = pts[i][0] - pts[i - 1][0];
-          if (diff > 0) intervals.push(diff);
-        }
-        if (intervals.length) {
-          intervals.sort((a, b) => a - b);
-          const mid = Math.floor(intervals.length / 2);
-          tolerance =
-            intervals.length % 2 === 0
-              ? (intervals[mid - 1] + intervals[mid]) / 2
-              : intervals[mid];
-          tolerance = Math.max(tolerance, 1000);
-        }
-      }
-
-      const entityIntervals: Array<{ start: number; end: number }> = [];
-      for (const cluster of clusters) {
-        if (!Array.isArray(cluster.points) || cluster.points.length === 0)
-          continue;
-        const startTime = cluster.points[0]?.timeMs;
-        const endTime = cluster.points[cluster.points.length - 1]?.timeMs;
-        if (!Number.isFinite(startTime) || !Number.isFinite(endTime)) continue;
-        entityIntervals.push({
-          start: Math.min(startTime, endTime) - tolerance,
-          end: Math.max(startTime, endTime) + tolerance,
-        });
-      }
-      if (entityIntervals.length) {
-        seriesIntervals.push({
-          entityId: seriesItem.entityId,
-          intervals: entityIntervals,
-        });
-      }
-    }
-
-    if (seriesIntervals.length < 2) return [];
-
-    const events: Array<{ time: number; delta: number; entityId: string }> = [];
-    for (const { entityId, intervals } of seriesIntervals) {
-      for (const { start, end } of intervals) {
-        events.push({ time: start, delta: 1, entityId });
-        events.push({ time: end, delta: -1, entityId });
-      }
-    }
-    events.sort((a, b) => a.time - b.time || a.delta - b.delta);
-
-    const activeCounts = new Map<string, number>();
-    const spans: Array<{ start: number; end: number }> = [];
-    let spanStart: Nullable<number> = null;
-
-    for (const event of events) {
-      const prev = activeCounts.get(event.entityId) || 0;
-      const next = prev + event.delta;
-      if (next <= 0) {
-        activeCounts.delete(event.entityId);
-      } else {
-        activeCounts.set(event.entityId, next);
-      }
-      const activeCount = activeCounts.size;
-      if (spanStart === null && activeCount >= 2) {
-        spanStart = event.time;
-      } else if (spanStart !== null && activeCount < 2) {
-        spans.push({ start: spanStart, end: event.time });
-        spanStart = null;
-      }
-    }
-    if (spanStart !== null && events.length > 0) {
-      spans.push({ start: spanStart, end: events[events.length - 1].time });
-    }
-
-    return spans;
+    return buildCorrelatedAnomalySpans(
+      _visibleSeries as Array<{ entityId: string; pts: [number, number][] }>,
+      _anomalyClustersMap as Map<
+        string,
+        Array<{ points: Array<{ timeMs: number }> }>
+      >,
+      _analysisMap
+    );
   }
 
   /** Filter out annotated anomaly clusters. */
@@ -1627,49 +1398,10 @@ export class HistoryChart extends HTMLElement {
     _seriesItem: unknown,
     _events: AnnotationEvent[]
   ): AnomalyCluster[] {
-    const seriesItem = _seriesItem as {
-      entityId: string;
-      anomalyClusters?: AnomalyCluster[];
-    };
-    if (
-      !Array.isArray(seriesItem?.anomalyClusters) ||
-      seriesItem.anomalyClusters.length === 0
-    ) {
-      return [];
-    }
-    const visibleEvents = Array.isArray(_events) ? _events : [];
-    if (visibleEvents.length === 0) {
-      return seriesItem.anomalyClusters;
-    }
-
-    const getClusterRange = (cluster: AnomalyCluster) => {
-      if (!Array.isArray(cluster.points) || cluster.points.length === 0)
-        return null;
-      const startTime = cluster.points[0]?.timeMs;
-      const endTime = cluster.points[cluster.points.length - 1]?.timeMs;
-      if (!Number.isFinite(startTime) || !Number.isFinite(endTime)) return null;
-      return {
-        startTime: Math.min(startTime, endTime),
-        endTime: Math.max(startTime, endTime),
-      };
-    };
-
-    return seriesItem.anomalyClusters.filter((cluster): boolean => {
-      const clusterRange = getClusterRange(cluster);
-      if (!clusterRange) return true;
-      return !visibleEvents.some((event) => {
-        const eventEntityIds = Array.isArray(event.entity_ids)
-          ? (event.entity_ids as string[]).filter(Boolean)
-          : [];
-        if (!eventEntityIds.includes(seriesItem.entityId)) return false;
-        const eventTime = new Date(event.timestamp).getTime();
-        if (!Number.isFinite(eventTime)) return false;
-        return (
-          eventTime >= clusterRange.startTime &&
-          eventTime <= clusterRange.endTime
-        );
-      });
-    });
+    return filterAnnotatedAnomalyClusters(
+      _seriesItem as { entityId: string; anomalyClusters?: AnomalyCluster[] },
+      _events
+    );
   }
 
   _fireComparisonBackendAnomalyRequests(
@@ -1935,84 +1667,29 @@ export class HistoryChart extends HTMLElement {
     regionClusters: AnomalyCluster[];
     showCorrelatedSpans: boolean;
   } {
-    const normalClusters = anomalyClusters.filter(
-      (c) => !(c as { isOverlap?: boolean }).isOverlap
+    return resolveAnomalyClusterDisplay(
+      anomalyClusters,
+      overlapMode,
+      correlatedSpans
     );
-    const overlapClusters = anomalyClusters.filter(
-      (c) => (c as { isOverlap?: boolean }).isOverlap === true
-    );
-
-    if (overlapMode === "only") {
-      const overlapOnlyClusters = this._filterClustersByCorrelatedSpans(
-        anomalyClusters,
-        correlatedSpans
-      );
-      return {
-        baseClusters: overlapOnlyClusters,
-        regionClusters: overlapOnlyClusters,
-        showCorrelatedSpans: true,
-      };
-    }
-
-    return {
-      baseClusters: [...normalClusters, ...overlapClusters],
-      regionClusters: [...normalClusters, ...overlapClusters],
-      showCorrelatedSpans: false,
-    };
   }
 
   _filterClustersByCorrelatedSpans(
     anomalyClusters: AnomalyCluster[],
     correlatedSpans: Array<{ start: number; end: number }>
   ): AnomalyCluster[] {
-    if (!Array.isArray(anomalyClusters) || anomalyClusters.length === 0) {
-      return [];
-    }
-    if (!Array.isArray(correlatedSpans) || correlatedSpans.length === 0) {
-      return [];
-    }
-
-    return anomalyClusters.filter((cluster) => {
-      const points = (cluster as { points?: Array<{ timeMs: number }> }).points;
-      if (!Array.isArray(points) || points.length === 0) {
-        return false;
-      }
-      const startTime = Number(points[0]?.timeMs);
-      const endTime = Number(points[points.length - 1]?.timeMs);
-      if (!Number.isFinite(startTime) || !Number.isFinite(endTime)) {
-        return false;
-      }
-      const clusterStart = Math.min(startTime, endTime);
-      const clusterEnd = Math.max(startTime, endTime);
-
-      return correlatedSpans.some((span) => {
-        const spanStart = Number(span.start);
-        const spanEnd = Number(span.end);
-        if (!Number.isFinite(spanStart) || !Number.isFinite(spanEnd)) {
-          return false;
-        }
-        return clusterEnd >= spanStart && clusterStart <= spanEnd;
-      });
-    });
+    return filterClustersByCorrelatedSpans(anomalyClusters, correlatedSpans);
   }
 
   _getComparisonAnomalyCacheKey(windowId: string, entityId: string): string {
-    return `${windowId}:${entityId}`;
+    return getComparisonAnomalyCacheKey(windowId, entityId);
   }
 
   _shiftComparisonAnomalyClusters(
     clusters: AnomalyCluster[],
     timeOffsetMs: number
   ): AnomalyCluster[] {
-    return (Array.isArray(clusters) ? clusters : []).map((cluster) => ({
-      ...cluster,
-      points: Array.isArray(cluster.points)
-        ? cluster.points.map((point) => ({
-            ...point,
-            timeMs: Number(point.timeMs) - timeOffsetMs,
-          }))
-        : [],
-    }));
+    return shiftComparisonAnomalyClusters(clusters, timeOffsetMs);
   }
 
   async _resolveComparisonWindowPoints(
@@ -4457,59 +4134,14 @@ export class HistoryChart extends HTMLElement {
     t0: number,
     t1: number
   ): string {
-    const ANALYSIS_FIELDS = [
-      "show_trend_lines",
-      "trend_method",
-      "trend_window",
-      "show_rate_of_change",
-      "rate_window",
-      "show_delta_analysis",
-      "show_summary_stats",
-      "show_anomalies",
-      "anomaly_methods",
-      "anomaly_sensitivity",
-      "anomaly_overlap_mode",
-      "anomaly_rate_window",
-      "anomaly_zscore_window",
-      "anomaly_persistence_window",
-      "anomaly_comparison_window_id",
-      "anomaly_use_sampled_data",
-      "anomaly_trend_method",
-      "anomaly_trend_window",
-    ] as const;
-
-    const seriesPart = visibleSeries
-      .map((s) => {
-        const a =
-          analysisMap.get(s.entityId) || normalizeHistorySeriesAnalysis(null);
-        const first = s.pts[0]?.[0] ?? 0;
-        const last = s.pts[s.pts.length - 1]?.[0] ?? 0;
-        const aKey = ANALYSIS_FIELDS.map((f) => JSON.stringify(a[f])).join(",");
-        return `${s.entityId}:${s.pts.length}:${first}:${last}:${aKey}`;
-      })
-      .join("|");
-
-    const cmpPart = Array.from(selectedComparisonSeriesMap.values())
-      .map((s) => {
-        const first = s.pts[0]?.[0] ?? 0;
-        const last = s.pts[s.pts.length - 1]?.[0] ?? 0;
-        return `${s.entityId}:${s.pts.length}:${first}:${last}`;
-      })
-      .sort()
-      .join("|");
-
-    const allCmpPart = Object.entries(allComparisonWindowsData)
-      .flatMap(([windowId, entities]) =>
-        Object.entries(entities).map(([entityId, pts]) => {
-          const first = pts[0]?.[0] ?? 0;
-          const last = pts[pts.length - 1]?.[0] ?? 0;
-          return `${windowId}:${entityId}:${pts.length}:${first}:${last}`;
-        })
-      )
-      .sort()
-      .join("|");
-
-    return `${t0}:${t1}|${seriesPart}|${cmpPart}|${allCmpPart}`;
+    return buildAnalysisCacheKey(
+      visibleSeries,
+      selectedComparisonSeriesMap,
+      analysisMap,
+      allComparisonWindowsData,
+      t0,
+      t1
+    );
   }
 
   /**
@@ -4526,36 +4158,13 @@ export class HistoryChart extends HTMLElement {
       Record<string, [number, number][]>
     > = {}
   ): ComputeHistoryAnalysisPayload {
-    const defaultAnalysis = normalizeHistorySeriesAnalysis(null);
-    const series: ComputeHistoryAnalysisPayload["series"] = visibleSeries.map(
-      (seriesItem) => ({
-        entityId: seriesItem.entityId,
-        pts: seriesItem.pts,
-        analysis: analysisMap.get(seriesItem.entityId) || defaultAnalysis,
-      })
+    return buildHistoryAnalysisPayload(
+      visibleSeries,
+      selectedComparisonSeriesMap,
+      analysisMap,
+      hasSelectedComparisonWindow,
+      allComparisonWindowsData
     );
-    const comparisonSeries: ComputeHistoryAnalysisPayload["comparisonSeries"] =
-      Array.from(selectedComparisonSeriesMap.values()).map((seriesItem) => ({
-        entityId: seriesItem.entityId,
-        pts: seriesItem.pts,
-      }));
-
-    const seriesAnalysisConfigs: Record<
-      string,
-      Partial<WorkerSeriesAnalysis>
-    > = {};
-    for (const seriesItem of visibleSeries) {
-      seriesAnalysisConfigs[seriesItem.entityId] =
-        analysisMap.get(seriesItem.entityId) || defaultAnalysis;
-    }
-
-    return {
-      series,
-      comparisonSeries,
-      hasSelectedComparisonWindow: hasSelectedComparisonWindow === true,
-      allComparisonWindowsData,
-      seriesAnalysisConfigs,
-    };
   }
 
   /**
@@ -4769,23 +4378,7 @@ export class HistoryChart extends HTMLElement {
     _method?: string,
     _window?: string
   ): [number, number][] {
-    if (!Array.isArray(_pts) || _pts.length < 2) {
-      return [];
-    }
-    const method = _method || "rolling_average";
-    const window = _window || "24h";
-    switch (method) {
-      case "linear_trend":
-        return buildLinearTrend(_pts);
-      case "ema":
-        return buildEmaTrend(_pts, getEmaAlpha(window));
-      case "polynomial_trend":
-        return buildPolynomialTrend(_pts);
-      case "lowess":
-        return buildLowessTrend(_pts, getLowessBandwidth(window, _pts));
-      default:
-        return buildRollingAverageTrend(_pts, getTrendWindowMs(window));
-    }
+    return buildTrendPoints(_pts, _method, _window);
   }
 
   /** Build rate-of-change points from raw series data. */
@@ -4793,10 +4386,7 @@ export class HistoryChart extends HTMLElement {
     _pts: [number, number][],
     _window?: string
   ): [number, number][] {
-    if (!Array.isArray(_pts) || _pts.length < 2) {
-      return [];
-    }
-    return buildRateOfChangePoints(_pts, _window || "1h");
+    return buildRateOfChange(_pts, _window);
   }
 
   /** Build delta points (main vs comparison series). */
@@ -4804,7 +4394,7 @@ export class HistoryChart extends HTMLElement {
     _pts: [number, number][],
     _comparisonPts: [number, number][]
   ): [number, number][] {
-    return buildDeltaPoints(_pts, _comparisonPts);
+    return buildDelta(_pts, _comparisonPts);
   }
 
   /** Build summary statistics from raw series data. */
@@ -4813,7 +4403,7 @@ export class HistoryChart extends HTMLElement {
     max: number;
     mean: number;
   } {
-    return buildSummaryStats(_pts) ?? { min: 0, max: 0, mean: 0 };
+    return buildSummary(_pts);
   }
 
   // ── Series analysis helpers ─────────────────────────────────────────────────
@@ -4829,14 +4419,7 @@ export class HistoryChart extends HTMLElement {
           analysis?: Nullable<PartialHistorySeriesAnalysis>;
         }>)
       : [];
-    return new Map(
-      seriesSettings
-        .filter((entry) => entry?.entity_id != null)
-        .map((entry) => [
-          entry.entity_id as string,
-          normalizeHistorySeriesAnalysis(entry?.analysis),
-        ])
-    );
+    return buildSeriesAnalysisMap(seriesSettings);
   }
 
   /**
@@ -4859,29 +4442,14 @@ export class HistoryChart extends HTMLElement {
     analysis: SeriesAnalysis,
     hasSelectedComparisonWindow = false
   ): boolean {
-    return !!(
-      analysis.show_trend_lines ||
-      analysis.show_summary_stats ||
-      analysis.show_rate_of_change ||
-      analysis.show_threshold_analysis ||
-      analysis.show_anomalies ||
-      (analysis.show_delta_analysis && hasSelectedComparisonWindow)
-    );
+    return seriesHasActiveAnalysis(analysis, hasSelectedComparisonWindow);
   }
 
-  /**
-   * Returns true if the source series should be hidden (replaced by its
-   * analysis overlay series).
-   * Ported from _seriesShouldHideSource in card-history.js.
-   */
   _seriesShouldHideSource(
     analysis: SeriesAnalysis,
     hasSelectedComparisonWindow = false
   ): boolean {
-    return (
-      analysis.hide_source_series === true &&
-      this._seriesHasActiveAnalysis(analysis, hasSelectedComparisonWindow)
-    );
+    return seriesShouldHideSource(analysis, hasSelectedComparisonWindow);
   }
 
   /**
@@ -4898,49 +4466,7 @@ export class HistoryChart extends HTMLElement {
     dashed: boolean;
     dotted: boolean;
   } {
-    if (method === "linear_trend") {
-      return {
-        colorAlpha: hideRawData ? 0.94 : 0.88,
-        lineOpacity: hideRawData ? 0.86 : 0.74,
-        lineWidth: 2.1,
-        dashed: true,
-        dotted: false,
-      };
-    }
-    if (method === "ema") {
-      return {
-        colorAlpha: hideRawData ? 0.92 : 0.84,
-        lineOpacity: hideRawData ? 0.86 : 0.65,
-        lineWidth: 2.0,
-        dashed: false,
-        dotted: true,
-      };
-    }
-    if (method === "polynomial_trend") {
-      return {
-        colorAlpha: hideRawData ? 0.94 : 0.86,
-        lineOpacity: hideRawData ? 0.86 : 0.72,
-        lineWidth: 2.0,
-        dashed: true,
-        dotted: false,
-      };
-    }
-    if (method === "lowess") {
-      return {
-        colorAlpha: hideRawData ? 0.9 : 0.82,
-        lineOpacity: hideRawData ? 0.84 : 0.6,
-        lineWidth: 1.8,
-        dashed: false,
-        dotted: false,
-      };
-    }
-    return {
-      colorAlpha: hideRawData ? 0.9 : 0.82,
-      lineOpacity: hideRawData ? 0.84 : 0.62,
-      lineWidth: 2.2,
-      dashed: false,
-      dotted: true,
-    };
+    return getTrendRenderOptions(method, hideRawData);
   }
 
   // ── Split-view chart rendering ───────────────────────────────────────────────
