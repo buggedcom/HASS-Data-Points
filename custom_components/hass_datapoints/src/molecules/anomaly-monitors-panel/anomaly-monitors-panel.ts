@@ -8,10 +8,17 @@ import {
   updateMonitor,
   deleteMonitor,
   monitorEntityIds,
+  fetchMonitorAnomalies,
+  dismissMonitorAnomaly,
+  undismissMonitorAnomaly,
   type AnomalyMonitor,
+  type CombinedMonitor,
+  type AnomalyCluster,
+  type DismissedWindow,
   type ScanHistoryEntry,
 } from "@/lib/data/monitors-api";
 import type { HassLike } from "@/lib/types";
+import { confirmDestructiveAction } from "@/lib/ha/ha-components";
 import "@/molecules/anomaly-monitor-wizard/anomaly-monitor-wizard";
 import "@/atoms/form/entity-chip/entity-chip";
 
@@ -34,6 +41,15 @@ export class AnomalyMonitorsPanel extends LitElement {
   @state() accessor _editMonitor: AnomalyMonitor | null = null;
 
   @state() accessor _wizardOpen: boolean = false;
+
+  /** Clusters loaded per monitor ID (only for monitors currently showing anomalies). */
+  @state() accessor _monitorClusters: Map<string, AnomalyCluster[]> = new Map();
+
+  /** Monitor IDs currently loading their cluster list. */
+  @state() accessor _loadingClusters: Set<string> = new Set();
+
+  /** Tracks which monitor+cluster is showing the dismiss expiry picker. Key: `${monitorId}:${clusterIndex}` */
+  @state() accessor _dismissPickerKey: string | null = null;
 
   private _pollInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -69,7 +85,8 @@ export class AnomalyMonitorsPanel extends LitElement {
   }
 
   private _onNewMonitor() {
-    this._emit("dp-monitors-panel-new");
+    this._editMonitor = null;
+    this._wizardOpen = true;
   }
 
   private _onClose() {
@@ -104,15 +121,201 @@ export class AnomalyMonitorsPanel extends LitElement {
   private async _onDelete(monitor: AnomalyMonitor) {
     if (!this.hass) return;
 
-    // eslint-disable-next-line no-alert
-    const confirmed = window.confirm(
-      msg(`Delete monitor "${monitor.name}"? This cannot be undone.`)
-    );
+    const confirmed = await confirmDestructiveAction(this, {
+      title: msg(`Delete "${monitor.name}"?`),
+      message: msg(
+        "This cannot be undone. The monitor device and all its sensors will be removed."
+      ),
+      confirmLabel: msg("Delete"),
+    });
     if (!confirmed) {
       return;
     }
     await deleteMonitor(this.hass, monitor.id);
     await this._load();
+  }
+
+  private async _loadClusters(monitorId: string) {
+    if (!this.hass || this._loadingClusters.has(monitorId)) return;
+    this._loadingClusters = new Set([...this._loadingClusters, monitorId]);
+    try {
+      const result = await fetchMonitorAnomalies(this.hass, monitorId);
+      const updated = new Map(this._monitorClusters);
+      updated.set(monitorId, result.anomaly_clusters);
+      this._monitorClusters = updated;
+    } catch {
+      // ignore — UI will fall back to count display
+    } finally {
+      const next = new Set(this._loadingClusters);
+      next.delete(monitorId);
+      this._loadingClusters = next;
+    }
+  }
+
+  private async _onDismiss(
+    monitor: AnomalyMonitor,
+    cluster: AnomalyCluster,
+    expiresAt: string | null | undefined
+  ) {
+    if (!this.hass) return;
+    const times = cluster.points.map((p) => p.timeMs);
+    const startMs = Math.min(...times);
+    const endMs = Math.max(...times);
+    await dismissMonitorAnomaly(
+      this.hass,
+      monitor.id,
+      startMs,
+      endMs,
+      expiresAt
+    );
+    this._dismissPickerKey = null;
+    // Invalidate cluster cache so next render re-fetches
+    const updated = new Map(this._monitorClusters);
+    updated.delete(monitor.id);
+    this._monitorClusters = updated;
+    await this._load();
+  }
+
+  private async _onUndismiss(monitor: AnomalyMonitor, windowId: string) {
+    if (!this.hass) return;
+    await undismissMonitorAnomaly(this.hass, monitor.id, windowId);
+    await this._load();
+  }
+
+  private _formatClusterRange(cluster: AnomalyCluster): string {
+    const times = cluster.points.map((p) => p.timeMs);
+    if (times.length === 0) return "—";
+    const start = new Date(Math.min(...times)).toLocaleString();
+    const end = new Date(Math.max(...times)).toLocaleString();
+    return start === end ? start : `${start} – ${end}`;
+  }
+
+  private _renderDismissExpiry(
+    monitor: AnomalyMonitor,
+    cluster: AnomalyCluster,
+    clusterIndex: number
+  ) {
+    const pickerKey = `${monitor.id}:${clusterIndex}`;
+    const isOpen = this._dismissPickerKey === pickerKey;
+    const lookBackHours = monitor.look_back_hours ?? 24;
+
+    if (!isOpen) {
+      return html`
+        <ha-button
+          class="dismiss-btn"
+          @click=${() => {
+            this._dismissPickerKey = pickerKey;
+          }}
+          >${msg("Dismiss")}</ha-button
+        >
+      `;
+    }
+
+    const autoLabel =
+      lookBackHours < 48
+        ? `${lookBackHours * 2}h`
+        : `${Math.round(lookBackHours / 12)}d`;
+
+    return html`
+      <div class="dismiss-picker">
+        <span class="dismiss-picker-label">${msg("Dismiss until:")}</span>
+        <ha-button @click=${() => this._onDismiss(monitor, cluster, undefined)}>
+          ${msg("Auto")} (${autoLabel})
+        </ha-button>
+        <ha-button
+          @click=${() => {
+            const d = new Date();
+            d.setDate(d.getDate() + 1);
+            this._onDismiss(monitor, cluster, d.toISOString());
+          }}
+          >${msg("1 day")}</ha-button
+        >
+        <ha-button
+          @click=${() => {
+            const d = new Date();
+            d.setDate(d.getDate() + 7);
+            this._onDismiss(monitor, cluster, d.toISOString());
+          }}
+          >${msg("1 week")}</ha-button
+        >
+        <ha-button @click=${() => this._onDismiss(monitor, cluster, null)}>
+          ${msg("Permanent")}
+        </ha-button>
+        <ha-button
+          @click=${() => {
+            this._dismissPickerKey = null;
+          }}
+        >
+          ${msg("Cancel")}
+        </ha-button>
+      </div>
+    `;
+  }
+
+  private _renderClusterList(monitor: AnomalyMonitor) {
+    const clusters = this._monitorClusters.get(monitor.id);
+    const isLoading = this._loadingClusters.has(monitor.id);
+
+    if (isLoading) {
+      return html`<div class="clusters-loading">
+        ${msg("Loading anomaly details…")}
+      </div>`;
+    }
+    if (!clusters) return nothing;
+    if (clusters.length === 0) {
+      return html`<div class="clusters-empty">
+        ${msg("No active anomaly clusters after dismissals.")}
+      </div>`;
+    }
+
+    return html`
+      <div class="cluster-list">
+        ${clusters.map(
+          (cluster, i) => html`
+            <div class="cluster-item">
+              <span class="cluster-method">${cluster.anomalyMethod}</span>
+              <span class="cluster-range"
+                >${this._formatClusterRange(cluster)}</span
+              >
+              ${this._renderDismissExpiry(monitor, cluster, i)}
+            </div>
+          `
+        )}
+      </div>
+    `;
+  }
+
+  private _renderDismissedWindows(monitor: AnomalyMonitor) {
+    const windows: DismissedWindow[] = monitor.dismissed_windows ?? [];
+    if (windows.length === 0) return nothing;
+
+    return html`
+      <details class="dismissed-windows">
+        <summary>${msg("Dismissed")} (${windows.length})</summary>
+        <div class="dismissed-list">
+          ${windows.map((w) => {
+            const start = new Date(w.start_ms).toLocaleString();
+            const end = new Date(w.end_ms).toLocaleString();
+            const expiry = w.expires_at
+              ? new Date(w.expires_at).toLocaleString()
+              : msg("Permanent");
+            return html`
+              <div class="dismissed-item">
+                <span class="dismissed-range">${start} – ${end}</span>
+                <span class="dismissed-expiry"
+                  >${msg("Expires:")} ${expiry}</span
+                >
+                <ha-button
+                  class="undismiss-btn"
+                  @click=${() => this._onUndismiss(monitor, w.id)}
+                  >${msg("Remove")}</ha-button
+                >
+              </div>
+            `;
+          })}
+        </div>
+      </details>
+    `;
   }
 
   private _renderSparkline(history: ScanHistoryEntry[]) {
@@ -146,24 +349,89 @@ export class AnomalyMonitorsPanel extends LitElement {
     </svg>`;
   }
 
-  private _renderMonitorCard(monitor: AnomalyMonitor) {
+  private _renderEntityDisplay(monitor: AnomalyMonitor) {
     const entityIds = monitorEntityIds(monitor);
+
+    if (monitor.type === "individual" || entityIds.length <= 1) {
+      return html`
+        <div class="monitor-entities">
+          ${entityIds.map(
+            (eid) => html`
+              <entity-chip
+                .hass=${this.hass}
+                type="entity"
+                .itemId=${eid}
+              ></entity-chip>
+            `
+          )}
+        </div>
+      `;
+    }
+
+    // Combined monitor — show overlap logic
+    const m = monitor as CombinedMonitor;
+    const mode = m.overlap_mode ?? "all";
+
+    if (mode === "any") {
+      return html`
+        <div class="monitor-overlap-row">
+          ${entityIds.map(
+            (eid, i) => html`
+              ${i > 0 ? html`<span class="overlap-op">OR</span>` : nothing}
+              <entity-chip
+                .hass=${this.hass}
+                type="entity"
+                .itemId=${eid}
+              ></entity-chip>
+            `
+          )}
+        </div>
+      `;
+    }
+
+    const anyMatch =
+      /^any_(\d+)$/.exec(mode) ?? (mode === "any_two_plus" ? ["", "2"] : null);
+    if (anyMatch) {
+      const n = parseInt(anyMatch[1], 10);
+      return html`
+        <div class="monitor-overlap-row">
+          <span class="overlap-prefix"
+            >${msg("AT LEAST")} ${n} ${msg("OF")}</span
+          >
+          ${entityIds.map(
+            (eid) => html`
+              <entity-chip
+                .hass=${this.hass}
+                type="entity"
+                .itemId=${eid}
+              ></entity-chip>
+            `
+          )}
+        </div>
+      `;
+    }
+
+    // Default: "all" — every entity must have an overlapping anomaly
+    return html`
+      <div class="monitor-overlap-row">
+        ${entityIds.map(
+          (eid, i) => html`
+            ${i > 0 ? html`<span class="overlap-op">AND</span>` : nothing}
+            <entity-chip
+              .hass=${this.hass}
+              type="entity"
+              .itemId=${eid}
+            ></entity-chip>
+          `
+        )}
+      </div>
+    `;
+  }
+
+  private _renderMonitorCard(monitor: AnomalyMonitor) {
     const clusterCount = monitor.last_cluster_count ?? 0;
     const isDisabled = !monitor.enabled;
     const hasAnomaly = !isDisabled && clusterCount > 0;
-
-    let statusLabel: string;
-    let statusClass: string;
-    if (isDisabled) {
-      statusLabel = msg("Disabled");
-      statusClass = "disabled";
-    } else if (hasAnomaly) {
-      statusLabel = msg("Anomaly detected");
-      statusClass = "anomaly";
-    } else {
-      statusLabel = msg("Normal");
-      statusClass = "normal";
-    }
 
     // Consecutive anomalous scans
     const history = monitor.scan_history ?? [];
@@ -173,29 +441,36 @@ export class AnomalyMonitorsPanel extends LitElement {
       else break;
     }
 
+    // Lazily load clusters when anomaly is active
+    if (hasAnomaly && !this._monitorClusters.has(monitor.id)) {
+      this._loadClusters(monitor.id);
+    }
+
     return html`
-      <div class="monitor-card">
+      <div class="monitor-card" data-enabled=${monitor.enabled}>
         <div class="monitor-card-header">
           <span class="monitor-name">${monitor.name}</span>
-          <span class="monitor-type-badge">
-            ${monitor.type === "combined" ? "⬡ combined" : "● individual"}
-          </span>
-          <span class="monitor-status-badge ${statusClass}"
-            >${statusLabel}</span
+          ${hasAnomaly
+            ? html`<span class="monitor-anomaly-indicator"
+                >${msg("Anomaly detected")}</span
+              >`
+            : nothing}
+          <button
+            class="monitor-toggle-btn"
+            title=${monitor.enabled
+              ? msg("Disable monitor")
+              : msg("Enable monitor")}
+            @click=${() => this._onToggleEnabled(monitor)}
           >
+            <ha-icon
+              icon=${monitor.enabled
+                ? "mdi:toggle-switch"
+                : "mdi:toggle-switch-off-outline"}
+            ></ha-icon>
+          </button>
         </div>
 
-        <div class="monitor-entities">
-          ${entityIds.map(
-            (eid) => html`
-              <entity-chip
-                .hass=${this.hass}
-                type="entity"
-                itemId=${eid}
-              ></entity-chip>
-            `
-          )}
-        </div>
+        ${this._renderEntityDisplay(monitor)}
 
         <div class="monitor-stats">
           ${this._renderSparkline(history)}
@@ -213,13 +488,13 @@ export class AnomalyMonitorsPanel extends LitElement {
             : nothing}
         </div>
 
+        ${hasAnomaly ? this._renderClusterList(monitor) : nothing}
+        ${this._renderDismissedWindows(monitor)}
+
         <div class="monitor-actions">
-          <ha-button @click=${() => this._onEdit(monitor)}
+          <ha-button class="small-btn" @click=${() => this._onEdit(monitor)}
             >${msg("Edit")}</ha-button
           >
-          <ha-button @click=${() => this._onToggleEnabled(monitor)}>
-            ${monitor.enabled ? msg("Disable") : msg("Enable")}
-          </ha-button>
           ${monitor.device_id
             ? html`<a
                 class="device-link"
@@ -231,7 +506,9 @@ export class AnomalyMonitorsPanel extends LitElement {
               </a>`
             : nothing}
           <div class="monitor-actions-spacer"></div>
-          <ha-button class="delete-btn" @click=${() => this._onDelete(monitor)}
+          <ha-button
+            class="small-btn delete-btn"
+            @click=${() => this._onDelete(monitor)}
             >${msg("Delete")}</ha-button
           >
         </div>

@@ -22,6 +22,29 @@ export interface ScanHistoryEntry {
   count: number;
 }
 
+export interface DismissedWindow {
+  id: string;
+  start_ms: number;
+  end_ms: number;
+  dismissed_at: string;
+  /** ISO datetime string, or null for permanent dismissal. */
+  expires_at: string | null;
+}
+
+export interface AnomalyCluster {
+  points: Array<{ timeMs: number; value: number; [k: string]: unknown }>;
+  maxDeviation: number;
+  anomalyMethod: string;
+  [k: string]: unknown;
+}
+
+export interface MonitorAnomaliesResult {
+  monitor_id: string;
+  anomaly_clusters: AnomalyCluster[];
+  dismissed_windows: DismissedWindow[];
+  cluster_count: number;
+}
+
 interface MonitorBase {
   id: string;
   type: MonitorType;
@@ -48,6 +71,9 @@ interface MonitorBase {
   sample_interval: string | null;
   sample_aggregate: string;
   anomaly_use_sampled_data: boolean;
+  baseline_entity_id: string | null;
+  baseline_time_offset_hours: number;
+  dismissed_windows: DismissedWindow[];
 }
 
 export interface IndividualMonitor extends MonitorBase {
@@ -83,6 +109,8 @@ export interface CreateMonitorPayload {
   sample_interval?: string;
   sample_aggregate?: string;
   anomaly_use_sampled_data?: boolean;
+  baseline_entity_id?: string | null;
+  baseline_time_offset_hours?: number;
 }
 
 export type UpdateMonitorPayload = Partial<
@@ -165,4 +193,61 @@ export async function deleteMonitor(
     type: `${DOMAIN}/monitors/delete`,
     monitor_id: monitorId,
   });
+}
+
+export async function fetchMonitorAnomalies(
+  hass: Pick<HassLike, "connection">,
+  monitorId: string
+): Promise<MonitorAnomaliesResult> {
+  const result = (await hass.connection.sendMessagePromise({
+    type: `${DOMAIN}/monitors/anomalies`,
+    monitor_id: monitorId,
+  })) as MonitorAnomaliesResult;
+  return result;
+}
+
+/**
+ * Dismiss an anomaly cluster window.
+ * @param expiresAt ISO datetime string for expiry, or null for permanent, or
+ *   undefined to use the server default (2× look_back_hours).
+ */
+export async function dismissMonitorAnomaly(
+  hass: Pick<HassLike, "connection">,
+  monitorId: string,
+  startMs: number,
+  endMs: number,
+  expiresAt?: string | null
+): Promise<AnomalyMonitor> {
+  const payload: Record<string, unknown> = {
+    type: `${DOMAIN}/monitors/dismiss`,
+    monitor_id: monitorId,
+    start_ms: startMs,
+    end_ms: endMs,
+  };
+  if (expiresAt !== undefined) {
+    payload.expires_at = expiresAt;
+  }
+  const result = (await hass.connection.sendMessagePromise(
+    payload
+  )) as MonitorResult;
+  if (!result.monitor) {
+    throw new Error("dismissMonitorAnomaly: no monitor in response");
+  }
+  return result.monitor;
+}
+
+export async function undismissMonitorAnomaly(
+  hass: Pick<HassLike, "connection">,
+  monitorId: string,
+  windowId: string
+): Promise<AnomalyMonitor> {
+  const result = (await hass.connection.sendMessagePromise({
+    type: `${DOMAIN}/monitors/undismiss`,
+    monitor_id: monitorId,
+    window_id: windowId,
+  })) as MonitorResult;
+  if (!result.monitor) {
+    throw new Error("undismissMonitorAnomaly: no monitor in response");
+  }
+  return result.monitor;
 }

@@ -121,6 +121,7 @@ type RowListElement = HTMLElement & {
   computingEntityIds: Set<string>;
   analysisProgress: number;
   computingMethodsByEntity: Map<string, unknown>;
+  labelMap: Map<string, string>;
 };
 
 type TargetPickerElement = HTMLElement & {
@@ -1064,11 +1065,20 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
             r.entity_id !== entityId
         )
         .map((r: { entity_id: string }) => r.entity_id);
+      // All non-binary series on the chart (enabled and disabled)
+      const allSeriesIds: string[] = (this._seriesRows ?? [])
+        .filter(
+          (r: { entity_id: string }) =>
+            !r.entity_id.startsWith("binary_sensor.") &&
+            r.entity_id !== entityId
+        )
+        .map((r: { entity_id: string }) => r.entity_id);
       this._openMonitorWizard(
         entityId ? [entityId] : [],
         analysis,
         null,
-        suggestedIds
+        suggestedIds,
+        allSeriesIds
       );
     });
     if (this._rendered && !this._shellBuilt) {
@@ -1680,6 +1690,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       "ha-tooltip",
       "ha-target-picker",
       "ha-date-range-picker",
+      "ha-entity-picker",
     ];
     this._uiReadyPromise = ensureHaComponents(componentTags)
       .then((results) => results)
@@ -3294,10 +3305,12 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       prefillAnalysis: unknown;
       editMonitor: unknown;
       suggestedEntityIds: string[];
+      allSeriesEntityIds: string[];
     };
     wizard.hass = this._hass;
     wizard.open = false;
     wizard.suggestedEntityIds = [];
+    wizard.allSeriesEntityIds = [];
     wizard.addEventListener("dp-monitor-wizard-close", () => {
       wizard.open = false;
     });
@@ -3312,7 +3325,8 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     entityIds: string[],
     analysis: unknown,
     editMonitor: unknown = null,
-    suggestedEntityIds: string[] = []
+    suggestedEntityIds: string[] = [],
+    allSeriesEntityIds: string[] = []
   ) {
     if (!this.shadowRoot) return;
     if (!this._monitorWizardComp) {
@@ -3325,6 +3339,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       prefillAnalysis: unknown;
       editMonitor: unknown;
       suggestedEntityIds: string[];
+      allSeriesEntityIds: string[];
     };
     if (!wizard) return;
     wizard.hass = this._hass;
@@ -3332,6 +3347,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     wizard.prefillEntityIds = entityIds;
     wizard.prefillAnalysis = analysis;
     wizard.suggestedEntityIds = suggestedEntityIds;
+    wizard.allSeriesEntityIds = allSeriesEntityIds;
     wizard.open = true;
   }
 
@@ -3973,9 +3989,11 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
         ...sourceAnalysis,
         // Preserve per-row state that shouldn't be overwritten
         expanded: currentAnalysis.expanded,
-        // Don't copy anomaly_comparison_window_id — it's entity-specific
+        // Don't copy anomaly_comparison_window_id or anomaly_comparison_entity_id — they're entity-specific
         anomaly_comparison_window_id:
           currentAnalysis.anomaly_comparison_window_id,
+        anomaly_comparison_entity_id:
+          currentAnalysis.anomaly_comparison_entity_id,
       });
       if (JSON.stringify(nextAnalysis) === JSON.stringify(currentAnalysis)) {
         return row;

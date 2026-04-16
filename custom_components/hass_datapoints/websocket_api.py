@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import time
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 import voluptuous as vol
 from homeassistant.auth.permissions.const import POLICY_READ
@@ -128,6 +128,9 @@ def async_register_commands(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, ws_monitors_create)
     websocket_api.async_register_command(hass, ws_monitors_update)
     websocket_api.async_register_command(hass, ws_monitors_delete)
+    websocket_api.async_register_command(hass, ws_monitors_anomalies)
+    websocket_api.async_register_command(hass, ws_monitors_dismiss)
+    websocket_api.async_register_command(hass, ws_monitors_undismiss)
 
 
 @websocket_api.websocket_command(
@@ -836,6 +839,8 @@ _MONITOR_ANALYSIS_FIELDS = {
     vol.Optional("sample_interval"): vol.In(_VALID_INTERVALS),
     vol.Optional("sample_aggregate"): vol.In(_VALID_AGGREGATES),
     vol.Optional("anomaly_use_sampled_data"): bool,
+    vol.Optional("baseline_entity_id"): vol.Any(None, cv.entity_id),
+    vol.Optional("baseline_time_offset_hours"): vol.All(int, vol.Range(min=0, max=8760)),
 }
 
 
@@ -903,6 +908,11 @@ async def ws_monitors_create(
     _require_admin(connection, msg)
     from .sensor import DatapointsMonitorSensor  # noqa: PLC0415
 
+    baseline_entity_id = msg.get("baseline_entity_id")
+    if baseline_entity_id and not _can_read_entity(connection.user, baseline_entity_id):
+        connection.send_error(msg["id"], "unauthorized", "Access to baseline entity is not permitted")
+        return
+
     store = hass.data[DOMAIN][KEY_STORE]
     monitor_id = str(uuid.uuid4())
     monitor: dict = {
@@ -928,6 +938,9 @@ async def ws_monitors_create(
         "sample_interval": msg.get("sample_interval"),
         "sample_aggregate": msg.get("sample_aggregate", "mean"),
         "anomaly_use_sampled_data": msg.get("anomaly_use_sampled_data", False),
+        "baseline_entity_id": msg.get("baseline_entity_id"),
+        "baseline_time_offset_hours": msg.get("baseline_time_offset_hours", 0),
+        "dismissed_windows": [],
     }
     if msg["monitor_type"] == "individual":
         monitor["entity_id"] = msg.get("entity_id", "")
@@ -943,6 +956,7 @@ async def ws_monitors_create(
             DatapointsMonitorStalledBinarySensor,
         )
         from .sensor import (  # noqa: PLC0415
+            DatapointsMonitorSensor,
             DatapointsMonitorAnomalyDurationSensor,
             DatapointsMonitorConsecutiveScansSensor,
             DatapointsMonitorDataPointsSensor,
@@ -996,6 +1010,12 @@ async def ws_monitors_update(
 ) -> None:
     """Partially update an anomaly monitor."""
     _require_admin(connection, msg)
+
+    baseline_entity_id = msg.get("baseline_entity_id")
+    if baseline_entity_id and not _can_read_entity(connection.user, baseline_entity_id):
+        connection.send_error(msg["id"], "unauthorized", "Access to baseline entity is not permitted")
+        return
+
     store = hass.data[DOMAIN][KEY_STORE]
     monitor_id: str = msg["monitor_id"]
 
@@ -1016,6 +1036,8 @@ async def ws_monitors_update(
         "sample_interval",
         "sample_aggregate",
         "anomaly_use_sampled_data",
+        "baseline_entity_id",
+        "baseline_time_offset_hours",
     }
     updates = {k: v for k, v in msg.items() if k in _allowed_keys}
     updated = await store.async_update_monitor(monitor_id, updates)
@@ -1074,3 +1096,195 @@ async def ws_monitors_delete(
         dr.async_get(hass).async_remove_device(device.id)
 
     connection.send_result(msg["id"], {"deleted": True})
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/monitors/anomalies",
+        vol.Required("monitor_id"): vol.All(str, _valid_uuid),
+    }
+)
+@websocket_api.async_response
+async def ws_monitors_anomalies(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict,
+) -> None:
+    """Run a live anomaly scan for a monitor and return clusters + dismissed windows."""
+    import operator  # noqa: PLC0415
+
+    from .sensor import _apply_dismissals, _build_detection_config, _run_detection_sync, _run_combined_detection  # noqa: PLC0415
+
+    _require_admin(connection, msg)
+    store = hass.data[DOMAIN][KEY_STORE]
+    monitor_id: str = msg["monitor_id"]
+
+    monitor = store.get_monitor(monitor_id)
+    if monitor is None:
+        connection.send_error(msg["id"], "not_found", "Monitor not found")
+        return
+
+    monitor_type = monitor.get("type", "individual")
+    look_back_hours = monitor.get("look_back_hours", 24)
+    config = _build_detection_config(monitor)
+    now = datetime.now(UTC)
+    start_time = (now - timedelta(hours=look_back_hours)).isoformat()
+    end_time = now.isoformat()
+
+    try:
+        recorder = get_instance(hass)
+
+        if monitor_type == "combined":
+            entity_ids = monitor.get("entity_ids", [])
+            all_pts: dict[str, list] = {}
+            for eid in entity_ids:
+                pts = await recorder.async_add_executor_job(
+                    fetch_entity_pts, hass, eid, start_time, end_time
+                )
+                stats = await recorder.async_add_executor_job(
+                    fetch_entity_statistics_pts, hass, eid, start_time, end_time
+                )
+                if stats:
+                    if pts:
+                        stats = [p for p in stats if p[0] < pts[0][0]]
+                    if stats:
+                        pts = sorted(stats + pts, key=operator.itemgetter(0))
+                sample_interval = monitor.get("sample_interval")
+                if sample_interval and sample_interval != "raw":
+                    pts = downsample_pts(
+                        pts,
+                        parse_interval_seconds(sample_interval),
+                        monitor.get("sample_aggregate", "mean"),
+                    )
+                all_pts[eid] = pts
+            clusters = await hass.async_add_executor_job(
+                _run_combined_detection, all_pts, config, monitor.get("overlap_mode", "all")
+            )
+        else:
+            entity_id = monitor.get("entity_id", "")
+            pts = await recorder.async_add_executor_job(
+                fetch_entity_pts, hass, entity_id, start_time, end_time
+            )
+            stats = await recorder.async_add_executor_job(
+                fetch_entity_statistics_pts, hass, entity_id, start_time, end_time
+            )
+            if stats:
+                if pts:
+                    stats = [p for p in stats if p[0] < pts[0][0]]
+                if stats:
+                    pts = sorted(stats + pts, key=operator.itemgetter(0))
+            sample_interval = monitor.get("sample_interval")
+            if sample_interval and sample_interval != "raw":
+                pts = downsample_pts(
+                    pts,
+                    parse_interval_seconds(sample_interval),
+                    monitor.get("sample_aggregate", "mean"),
+                )
+            clusters: list = []
+            if len(pts) >= 3:
+                comparison_pts: list | None = None
+                baseline_entity_id = monitor.get("baseline_entity_id")
+                if baseline_entity_id and "comparison_window" in config.get("anomaly_methods", []):
+                    comparison_pts = await recorder.async_add_executor_job(
+                        fetch_entity_pts, hass, baseline_entity_id, start_time, end_time
+                    )
+                clusters = await hass.async_add_executor_job(
+                    _run_detection_sync, pts, config, comparison_pts
+                )
+
+    except Exception as err:  # noqa: BLE001
+        _LOGGER.error("ws_monitors_anomalies failed for %s: %s", monitor_id, err)
+        connection.send_error(msg["id"], "scan_failed", str(err))
+        return
+
+    from .store import DatapointsStore  # noqa: PLC0415
+
+    monitor_fresh = store.get_monitor(monitor_id) or monitor
+    DatapointsStore.prune_dismissed_windows(monitor_fresh, now)
+    clusters = _apply_dismissals(clusters, monitor_fresh.get("dismissed_windows", []))
+
+    connection.send_result(msg["id"], {
+        "monitor_id": monitor_id,
+        "anomaly_clusters": clusters,
+        "dismissed_windows": monitor_fresh.get("dismissed_windows", []),
+        "cluster_count": len(clusters),
+    })
+
+
+def _validate_iso_datetime(value: str) -> str:
+    """Voluptuous validator — raises Invalid if value is not a parseable ISO datetime."""
+    try:
+        datetime.fromisoformat(value)
+    except ValueError as err:
+        raise vol.Invalid(f"Invalid ISO datetime: {value}") from err
+    return value
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/monitors/dismiss",
+        vol.Required("monitor_id"): vol.All(str, _valid_uuid),
+        vol.Required("start_ms"): vol.All(int, vol.Range(min=0)),
+        vol.Required("end_ms"): vol.All(int, vol.Range(min=0)),
+        vol.Optional("expires_at"): vol.Any(None, vol.All(str, _validate_iso_datetime)),
+    }
+)
+@websocket_api.async_response
+async def ws_monitors_dismiss(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict,
+) -> None:
+    """Add a dismissal window to a monitor."""
+    _require_admin(connection, msg)
+    store = hass.data[DOMAIN][KEY_STORE]
+    monitor_id: str = msg["monitor_id"]
+    start_ms: int = msg["start_ms"]
+    end_ms: int = msg["end_ms"]
+
+    if end_ms < start_ms:
+        connection.send_error(msg["id"], "invalid_input", "end_ms must be >= start_ms")
+        return
+
+    monitor = store.get_monitor(monitor_id)
+    if monitor is None:
+        connection.send_error(msg["id"], "not_found", "Monitor not found")
+        return
+
+    # Compute default expires_at if not provided: now + look_back_hours * 2
+    # "expires_at" key absent → use default; key present with None → permanent
+    if "expires_at" not in msg:
+        look_back_hours = monitor.get("look_back_hours", 24)
+        expires_at: str | None = (datetime.now(UTC) + timedelta(hours=look_back_hours * 2)).isoformat()
+    else:
+        expires_at = msg["expires_at"]
+
+    updated = await store.async_dismiss_window(monitor_id, start_ms, end_ms, expires_at)
+    connection.send_result(msg["id"], {"dismissed": True, "monitor": updated})
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/monitors/undismiss",
+        vol.Required("monitor_id"): vol.All(str, _valid_uuid),
+        vol.Required("window_id"): vol.All(str, _valid_uuid),
+    }
+)
+@websocket_api.async_response
+async def ws_monitors_undismiss(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict,
+) -> None:
+    """Remove a dismissal window from a monitor by ID."""
+    _require_admin(connection, msg)
+    store = hass.data[DOMAIN][KEY_STORE]
+    monitor_id: str = msg["monitor_id"]
+    window_id: str = msg["window_id"]
+
+    updated = await store.async_undismiss_window(monitor_id, window_id)
+    if updated is None:
+        connection.send_error(msg["id"], "not_found", "Monitor not found")
+        return
+
+    connection.send_result(msg["id"], {"removed": True, "monitor": updated})

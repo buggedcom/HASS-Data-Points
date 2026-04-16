@@ -9,15 +9,21 @@ from homeassistant.exceptions import Unauthorized
 
 from custom_components.hass_datapoints.const import (
     DOMAIN,
+    KEY_ADD_BINARY_SENSOR_ENTITIES,
     KEY_ADD_SENSOR_ENTITIES,
+    KEY_ADD_SWITCH_ENTITIES,
+    KEY_MONITOR_BINARY_SENSORS,
     KEY_MONITOR_SENSORS,
+    KEY_MONITOR_SWITCHES,
     KEY_STORE,
 )
 from custom_components.hass_datapoints.websocket_api import (
     _require_admin,
     ws_monitors_create,
     ws_monitors_delete,
+    ws_monitors_dismiss,
     ws_monitors_list,
+    ws_monitors_undismiss,
     ws_monitors_update,
 )
 
@@ -40,6 +46,12 @@ def _make_store(monitors=None):
         )
     )
     store.async_delete_monitor = AsyncMock(return_value=True)
+    store.async_dismiss_window = AsyncMock(side_effect=lambda mid, s, e, exp: next(
+        (m for m in (monitors or []) if m["id"] == mid), None
+    ))
+    store.async_undismiss_window = AsyncMock(side_effect=lambda mid, wid: next(
+        (m for m in (monitors or []) if m["id"] == mid), None
+    ))
     return store
 
 
@@ -49,7 +61,11 @@ def _make_hass(store, sensors=None, add_entities=None):
         DOMAIN: {
             KEY_STORE: store,
             KEY_MONITOR_SENSORS: sensors if sensors is not None else {},
+            KEY_MONITOR_BINARY_SENSORS: {},
+            KEY_MONITOR_SWITCHES: {},
             KEY_ADD_SENSOR_ENTITIES: add_entities or MagicMock(),
+            KEY_ADD_BINARY_SENSOR_ENTITIES: MagicMock(),
+            KEY_ADD_SWITCH_ENTITIES: MagicMock(),
         }
     }
     hass.config_entries.async_entries.return_value = [MagicMock()]
@@ -126,11 +142,7 @@ class DescribeWsMonitorsCreate:
             "anomaly_trend_window": "24h",
         }
 
-        with patch(
-            "custom_components.hass_datapoints.sensor.DatapointsMonitorSensor"
-        ) as mock_sensor_cls:
-            mock_sensor_cls.return_value = MagicMock()
-            await ws_monitors_create(hass, connection, msg)
+        await ws_monitors_create(hass, connection, msg)
 
         store.async_create_monitor.assert_awaited_once()
         created_monitor = store.async_create_monitor.call_args[0][0]
@@ -282,3 +294,212 @@ class DescribeWsMonitorsDelete:
 
         with pytest.raises(Unauthorized):
             await ws_monitors_delete(hass, connection, msg)
+
+
+# ---------------------------------------------------------------------------
+# ws_monitors_create — dismissed_windows initialised
+# ---------------------------------------------------------------------------
+
+
+class DescribeWsMonitorsCreateDismissedWindows:
+    async def test_GIVEN_valid_payload_WHEN_created_THEN_dismissed_windows_empty(self):
+        store = _make_store()
+        # Return empty config entries so entity-registration code is skipped
+        hass = _make_hass(store)
+        hass.config_entries.async_entries.return_value = []
+        connection = _make_connection()
+        msg = {
+            "id": 1,
+            "type": f"{DOMAIN}/monitors/create",
+            "monitor_type": "individual",
+            "name": "M",
+            "entity_id": "sensor.temp",
+            "look_back_hours": 24,
+            "scan_interval_minutes": 30,
+        }
+        await ws_monitors_create(hass, connection, msg)
+
+        created = store.async_create_monitor.call_args[0][0]
+        assert created["dismissed_windows"] == []
+
+
+# ---------------------------------------------------------------------------
+# ws_monitors_dismiss
+# ---------------------------------------------------------------------------
+
+
+class DescribeWsMonitorsDismiss:
+    async def test_GIVEN_valid_params_WHEN_called_THEN_dismisses_window(self):
+        import uuid as _uuid
+
+        monitor_id = str(_uuid.uuid4())
+        monitors = [{"id": monitor_id, "name": "M", "look_back_hours": 24, "dismissed_windows": []}]
+        store = _make_store(monitors)
+        store.async_dismiss_window = AsyncMock(return_value=monitors[0])
+        hass = _make_hass(store)
+        connection = _make_connection()
+        msg = {
+            "id": 1,
+            "type": f"{DOMAIN}/monitors/dismiss",
+            "monitor_id": monitor_id,
+            "start_ms": 1000,
+            "end_ms": 2000,
+        }
+
+        await ws_monitors_dismiss(hass, connection, msg)
+
+        store.async_dismiss_window.assert_awaited_once()
+        call_args = store.async_dismiss_window.call_args[0]
+        assert call_args[0] == monitor_id
+        assert call_args[1] == 1000
+        assert call_args[2] == 2000
+        # expires_at should be a non-None default (auto-computed)
+        assert call_args[3] is not None
+        connection.send_result.assert_called_once()
+        result = connection.send_result.call_args[0][1]
+        assert result["dismissed"] is True
+
+    async def test_GIVEN_end_before_start_WHEN_called_THEN_sends_error(self):
+        import uuid as _uuid
+
+        monitor_id = str(_uuid.uuid4())
+        monitors = [{"id": monitor_id, "look_back_hours": 24}]
+        store = _make_store(monitors)
+        hass = _make_hass(store)
+        connection = _make_connection()
+        msg = {
+            "id": 1,
+            "type": f"{DOMAIN}/monitors/dismiss",
+            "monitor_id": monitor_id,
+            "start_ms": 5000,
+            "end_ms": 1000,
+        }
+
+        await ws_monitors_dismiss(hass, connection, msg)
+
+        connection.send_error.assert_called_once()
+        assert connection.send_error.call_args[0][1] == "invalid_input"
+
+    async def test_GIVEN_monitor_not_found_WHEN_called_THEN_sends_error(self):
+        import uuid as _uuid
+
+        store = _make_store()
+        hass = _make_hass(store)
+        connection = _make_connection()
+        msg = {
+            "id": 1,
+            "type": f"{DOMAIN}/monitors/dismiss",
+            "monitor_id": str(_uuid.uuid4()),
+            "start_ms": 0,
+            "end_ms": 1000,
+        }
+
+        await ws_monitors_dismiss(hass, connection, msg)
+
+        connection.send_error.assert_called_once()
+        assert connection.send_error.call_args[0][1] == "not_found"
+
+    async def test_GIVEN_permanent_dismissal_WHEN_called_THEN_expires_at_is_none(self):
+        import uuid as _uuid
+
+        monitor_id = str(_uuid.uuid4())
+        monitors = [{"id": monitor_id, "look_back_hours": 24, "dismissed_windows": []}]
+        store = _make_store(monitors)
+        store.async_dismiss_window = AsyncMock(return_value=monitors[0])
+        hass = _make_hass(store)
+        connection = _make_connection()
+        msg = {
+            "id": 1,
+            "type": f"{DOMAIN}/monitors/dismiss",
+            "monitor_id": monitor_id,
+            "start_ms": 0,
+            "end_ms": 1000,
+            "expires_at": None,
+        }
+
+        await ws_monitors_dismiss(hass, connection, msg)
+
+        call_args = store.async_dismiss_window.call_args[0]
+        assert call_args[3] is None  # permanent
+
+    async def test_GIVEN_non_admin_WHEN_called_THEN_raises_unauthorized(self):
+        import uuid as _uuid
+
+        store = _make_store()
+        hass = _make_hass(store)
+        connection = _make_connection(is_admin=False)
+        msg = {
+            "id": 1,
+            "type": f"{DOMAIN}/monitors/dismiss",
+            "monitor_id": str(_uuid.uuid4()),
+            "start_ms": 0,
+            "end_ms": 1000,
+        }
+
+        with pytest.raises(Unauthorized):
+            await ws_monitors_dismiss(hass, connection, msg)
+
+
+# ---------------------------------------------------------------------------
+# ws_monitors_undismiss
+# ---------------------------------------------------------------------------
+
+
+class DescribeWsMonitorsUndismiss:
+    async def test_GIVEN_valid_params_WHEN_called_THEN_removes_window(self):
+        import uuid as _uuid
+
+        monitor_id = str(_uuid.uuid4())
+        window_id = str(_uuid.uuid4())
+        monitors = [{"id": monitor_id, "dismissed_windows": [{"id": window_id}]}]
+        store = _make_store(monitors)
+        store.async_undismiss_window = AsyncMock(return_value=monitors[0])
+        hass = _make_hass(store)
+        connection = _make_connection()
+        msg = {
+            "id": 1,
+            "type": f"{DOMAIN}/monitors/undismiss",
+            "monitor_id": monitor_id,
+            "window_id": window_id,
+        }
+
+        await ws_monitors_undismiss(hass, connection, msg)
+
+        store.async_undismiss_window.assert_awaited_once_with(monitor_id, window_id)
+        result = connection.send_result.call_args[0][1]
+        assert result["removed"] is True
+
+    async def test_GIVEN_monitor_not_found_WHEN_called_THEN_sends_error(self):
+        import uuid as _uuid
+
+        store = _make_store()
+        store.async_undismiss_window = AsyncMock(return_value=None)
+        hass = _make_hass(store)
+        connection = _make_connection()
+        msg = {
+            "id": 1,
+            "type": f"{DOMAIN}/monitors/undismiss",
+            "monitor_id": str(_uuid.uuid4()),
+            "window_id": str(_uuid.uuid4()),
+        }
+
+        await ws_monitors_undismiss(hass, connection, msg)
+
+        connection.send_error.assert_called_once()
+        assert connection.send_error.call_args[0][1] == "not_found"
+
+    async def test_GIVEN_non_admin_WHEN_called_THEN_raises_unauthorized(self):
+        import uuid as _uuid
+
+        store = _make_store()
+        hass = _make_hass(store)
+        connection = _make_connection(is_admin=False)
+        msg = {
+            "id": 1,
+            "type": f"{DOMAIN}/monitors/undismiss",
+            "monitor_id": str(_uuid.uuid4()),
+            "window_id": str(_uuid.uuid4()),
+        }
+
+        with pytest.raises(Unauthorized):
+            await ws_monitors_undismiss(hass, connection, msg)

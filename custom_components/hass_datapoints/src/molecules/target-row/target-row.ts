@@ -381,6 +381,7 @@ export class TargetRow extends LitElement {
                   <analysis-anomaly-group
                     .analysis=${a}
                     .entityId=${this._entityId}
+                    .hass=${this.hass}
                     .comparisonWindows=${this.comparisonWindows}
                     .computing=${this.computing}
                     .computingProgress=${this.computingProgress}

@@ -340,12 +340,15 @@ def _build_detection_config(monitor: dict[str, Any]) -> dict[str, Any]:
         "trend_window": monitor.get("anomaly_trend_window", "24h"),
         "sample_interval": monitor.get("sample_interval"),
         "sample_aggregate": monitor.get("sample_aggregate", "mean"),
+        "comparison_time_offset_ms": monitor.get("baseline_time_offset_hours", 0) * 3600 * 1000,
     }
 
 
-def _run_detection_sync(pts: list, config: dict[str, Any]) -> list:
+def _run_detection_sync(
+    pts: list, config: dict[str, Any], comparison_pts: list | None = None
+) -> list:
     """Blocking wrapper: run anomaly detection and return clusters."""
-    return run_anomaly_detection(pts, config)
+    return run_anomaly_detection(pts, config, comparison_pts)
 
 
 def _overlap_threshold(mode: str, entity_count: int) -> int:
@@ -368,15 +371,35 @@ def _overlap_threshold(mode: str, entity_count: int) -> int:
     return 1  # safe fallback
 
 
+def _apply_dismissals(clusters: list, dismissed_windows: list) -> list:
+    """Remove clusters whose time range overlaps any active dismissed window."""
+    if not dismissed_windows:
+        return clusters
+    result = []
+    for cluster in clusters:
+        times = [p["timeMs"] for p in cluster.get("points", [])]
+        if not times:
+            result.append(cluster)
+            continue
+        cluster_start, cluster_end = min(times), max(times)
+        overlaps = any(
+            w["start_ms"] <= cluster_end and w["end_ms"] >= cluster_start
+            for w in dismissed_windows
+        )
+        if not overlaps:
+            result.append(cluster)
+    return result
+
+
 def _run_combined_detection(
     all_entity_pts: dict[str, list],
     config: dict[str, Any],
     overlap_mode: str,
-) -> int:
-    """Run detection per entity and count time windows where entities overlap."""
+) -> list[dict[str, Any]]:
+    """Run detection per entity; return overlap windows as cluster-like dicts."""
     entity_ids = list(all_entity_pts.keys())
     if len(entity_ids) < 2:
-        return 0
+        return []
 
     # Build cluster time-windows per entity: list of (min_ms, max_ms) tuples
     entity_windows: list[list[tuple[int, int]]] = []
@@ -388,18 +411,20 @@ def _run_combined_detection(
         clusters = run_anomaly_detection(pts, config)
         windows: list[tuple[int, int]] = []
         for cluster in clusters:
-            pts_in_cluster = cluster.get("pts", [])
+            pts_in_cluster = cluster.get("points", [])
             if pts_in_cluster:
-                times = [p[0] for p in pts_in_cluster]
+                times = [p["timeMs"] for p in pts_in_cluster]
                 windows.append((min(times), max(times)))
         entity_windows.append(windows)
 
-    # Count qualifying overlap events
+    # Collect qualifying overlap windows as cluster-like dicts
     required = _overlap_threshold(overlap_mode, len(entity_ids))
-    count = 0
-    # Use all cluster start times as candidate check points
+    overlap_clusters: list[dict[str, Any]] = []
+    seen: set[tuple[int, int]] = set()
     for i, windows_i in enumerate(entity_windows):
         for win_start, win_end in windows_i:
+            if (win_start, win_end) in seen:
+                continue
             check_time = (win_start + win_end) // 2
             hits = sum(
                 1
@@ -408,8 +433,16 @@ def _run_combined_detection(
                 and any(s <= check_time <= e for s, e in windows_j)
             )
             if hits + 1 >= required:
-                count += 1
-    return count
+                seen.add((win_start, win_end))
+                overlap_clusters.append({
+                    "points": [
+                        {"timeMs": win_start, "value": 0.0},
+                        {"timeMs": win_end, "value": 0.0},
+                    ],
+                    "anomalyMethod": "combined_overlap",
+                    "maxDeviation": 0.0,
+                })
+    return overlap_clusters
 
 
 # ---------------------------------------------------------------------------
@@ -528,7 +561,7 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
 
                 data_point_count = sum(len(v) for v in all_pts.values())
                 overlap_mode = monitor.get("overlap_mode", "all")
-                cluster_count = await self._hass.async_add_executor_job(
+                clusters = await self._hass.async_add_executor_job(
                     _run_combined_detection, all_pts, config, overlap_mode
                 )
             else:
@@ -558,13 +591,30 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
                     )
 
                 data_point_count = len(pts)
-                if len(pts) < 3:
-                    cluster_count = 0
-                else:
+                clusters: list = []
+                if len(pts) >= 3:
+                    comparison_pts: list | None = None
+                    baseline_entity_id = monitor.get("baseline_entity_id")
+                    if baseline_entity_id and "comparison_window" in config.get(
+                        "anomaly_methods", []
+                    ):
+                        comparison_pts = await recorder.async_add_executor_job(
+                            fetch_entity_pts,
+                            self._hass,
+                            baseline_entity_id,
+                            start_time,
+                            end_time,
+                        )
                     clusters = await self._hass.async_add_executor_job(
-                        _run_detection_sync, pts, config
+                        _run_detection_sync, pts, config, comparison_pts
                     )
-                    cluster_count = len(clusters)
+
+            # Apply dismissals (prune expired first, then filter clusters)
+            monitor_copy = self._store.get_monitor(self._monitor_id)
+            if monitor_copy is None:
+                return  # deleted while scan was running
+            DatapointsStore.prune_dismissed_windows(monitor_copy, now)
+            clusters = _apply_dismissals(clusters, monitor_copy.get("dismissed_windows", []))
 
         except Exception as err:  # noqa: BLE001
             _LOGGER.error(
@@ -574,11 +624,8 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
             )
             return
 
+        cluster_count = len(clusters)
         scan_time = now.isoformat()
-        monitor_copy = self._store.get_monitor(self._monitor_id)
-        if monitor_copy is None:
-            return  # deleted while scan was running
-
         prev_count: int = monitor_copy.get("last_cluster_count", 0)
 
         DatapointsStore.append_scan_history(monitor_copy, scan_time, cluster_count)
@@ -587,6 +634,7 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
             "last_cluster_count": cluster_count,
             "scan_history": monitor_copy["scan_history"],
             "last_scan_data_points": data_point_count,
+            "dismissed_windows": monitor_copy.get("dismissed_windows", []),
         }
         if prev_count == 0 and cluster_count > 0:
             scan_updates["last_anomaly_at"] = scan_time

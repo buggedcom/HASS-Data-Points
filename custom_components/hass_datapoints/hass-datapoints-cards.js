@@ -873,12 +873,12 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/display/color-swatch/color-swatch.ts
 	var _color_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
-	var _label_accessor_storage$14 = /* @__PURE__ */ new WeakMap();
+	var _label_accessor_storage$15 = /* @__PURE__ */ new WeakMap();
 	var ColorSwatch = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _color_accessor_storage$2, "#ff9800");
-			_classPrivateFieldInitSpec(this, _label_accessor_storage$14, "");
+			_classPrivateFieldInitSpec(this, _label_accessor_storage$15, "");
 		}
 		get color() {
 			return _classPrivateFieldGet2(_color_accessor_storage$2, this);
@@ -887,10 +887,10 @@
 			_classPrivateFieldSet2(_color_accessor_storage$2, this, value);
 		}
 		get label() {
-			return _classPrivateFieldGet2(_label_accessor_storage$14, this);
+			return _classPrivateFieldGet2(_label_accessor_storage$15, this);
 		}
 		set label(value) {
-			_classPrivateFieldSet2(_label_accessor_storage$14, this, value);
+			_classPrivateFieldSet2(_label_accessor_storage$15, this, value);
 		}
 		_onInput(e) {
 			const newColor = e.target.value;
@@ -1067,14 +1067,14 @@
 	//#region custom_components/hass_datapoints/src/atoms/form/entity-chip/entity-chip.ts
 	var _type_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _itemId_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$16 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$17 = /* @__PURE__ */ new WeakMap();
 	var _removable_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var EntityChip = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _type_accessor_storage$2, "entity");
 			_classPrivateFieldInitSpec(this, _itemId_accessor_storage$1, "");
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$16, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$17, null);
 			_classPrivateFieldInitSpec(this, _removable_accessor_storage$1, false);
 		}
 		get type() {
@@ -1090,10 +1090,10 @@
 			_classPrivateFieldSet2(_itemId_accessor_storage$1, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$16, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$17, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$16, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$17, this, value);
 		}
 		get removable() {
 			return _classPrivateFieldGet2(_removable_accessor_storage$1, this);
@@ -1146,16 +1146,16 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/chip-group/chip-group.ts
 	var _items_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$15 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$16 = /* @__PURE__ */ new WeakMap();
 	var _removable_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _label_accessor_storage$13 = /* @__PURE__ */ new WeakMap();
+	var _label_accessor_storage$14 = /* @__PURE__ */ new WeakMap();
 	var ChipGroup = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _items_accessor_storage$1, []);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$15, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$16, null);
 			_classPrivateFieldInitSpec(this, _removable_accessor_storage, false);
-			_classPrivateFieldInitSpec(this, _label_accessor_storage$13, "");
+			_classPrivateFieldInitSpec(this, _label_accessor_storage$14, "");
 		}
 		get items() {
 			return _classPrivateFieldGet2(_items_accessor_storage$1, this);
@@ -1164,10 +1164,10 @@
 			_classPrivateFieldSet2(_items_accessor_storage$1, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$15, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$16, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$15, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$16, this, value);
 		}
 		get removable() {
 			return _classPrivateFieldGet2(_removable_accessor_storage, this);
@@ -1176,10 +1176,10 @@
 			_classPrivateFieldSet2(_removable_accessor_storage, this, value);
 		}
 		get label() {
-			return _classPrivateFieldGet2(_label_accessor_storage$13, this);
+			return _classPrivateFieldGet2(_label_accessor_storage$14, this);
 		}
 		set label(value) {
-			_classPrivateFieldSet2(_label_accessor_storage$13, this, value);
+			_classPrivateFieldSet2(_label_accessor_storage$14, this, value);
 		}
 		_onRemove(e) {
 			const { type, itemId } = e.detail;
@@ -1215,7 +1215,7 @@
 	customElements.define("chip-group", ChipGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/action-targets/action-targets.ts
-	var _hass_accessor_storage$14 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$15 = /* @__PURE__ */ new WeakMap();
 	var _showConfigTargets_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _showTargetPicker_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _configChips_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -1223,17 +1223,17 @@
 	var CardActionTargets = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$14, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$15, null);
 			_classPrivateFieldInitSpec(this, _showConfigTargets_accessor_storage, true);
 			_classPrivateFieldInitSpec(this, _showTargetPicker_accessor_storage, true);
 			_classPrivateFieldInitSpec(this, _configChips_accessor_storage, []);
 			_classPrivateFieldInitSpec(this, _targetValue_accessor_storage, {});
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$14, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$15, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$14, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$15, this, value);
 		}
 		get showConfigTargets() {
 			return _classPrivateFieldGet2(_showConfigTargets_accessor_storage, this);
@@ -5207,12 +5207,12 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/editor-base/editor-base.ts
-	var _EditorBase, _config_accessor_storage, _hass_accessor_storage$13;
-	var EditorBase = (_config_accessor_storage = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$13 = /* @__PURE__ */ new WeakMap(), _EditorBase = class EditorBase extends i$2 {
+	var _EditorBase, _config_accessor_storage, _hass_accessor_storage$14;
+	var EditorBase = (_config_accessor_storage = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$14 = /* @__PURE__ */ new WeakMap(), _EditorBase = class EditorBase extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _config_accessor_storage, {});
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$13, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$14, null);
 		}
 		get _config() {
 			return _classPrivateFieldGet2(_config_accessor_storage, this);
@@ -5221,10 +5221,10 @@
 			_classPrivateFieldSet2(_config_accessor_storage, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$13, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$14, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$13, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$14, this, value);
 		}
 		setConfig(config) {
 			this._config = { ...config };
@@ -5298,6 +5298,7 @@
 		const target = normalizeTargetSelection(targetValue);
 		const resolved = new Set(normalizeEntityIds(target.entity_id));
 		const entityRegistry = hass?.entities || {};
+		const deviceRegistry = hass?.devices || {};
 		const selectedDevices = new Set(normalizeEntityIds(target.device_id));
 		const selectedAreas = new Set(normalizeEntityIds(target.area_id));
 		const selectedLabels = new Set(normalizeEntityIds(target.label_id));
@@ -5305,7 +5306,9 @@
 			const entityEntry = entry;
 			if (!entityEntry || typeof entityEntry !== "object") return;
 			const deviceId = entityEntry.device_id || entityEntry.deviceId || null;
-			const areaId = entityEntry.area_id || entityEntry.areaId || null;
+			const entityAreaId = entityEntry.area_id || entityEntry.areaId || null;
+			const deviceAreaId = !entityAreaId && deviceId ? deviceRegistry[deviceId]?.area_id ?? null : null;
+			const areaId = entityAreaId || deviceAreaId;
 			const labels = [...Array.isArray(entityEntry.labels) ? entityEntry.labels : [], ...Array.isArray(entityEntry.label_ids) ? entityEntry.label_ids : []];
 			if (deviceId && selectedDevices.has(deviceId) || areaId && selectedAreas.has(areaId) || labels.some((labelId) => selectedLabels.has(labelId))) resolved.add(entityId);
 		});
@@ -5364,7 +5367,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/editor-text-field/editor-text-field.ts
-	var _label_accessor_storage$12 = /* @__PURE__ */ new WeakMap();
+	var _label_accessor_storage$13 = /* @__PURE__ */ new WeakMap();
 	var _value_accessor_storage$8 = /* @__PURE__ */ new WeakMap();
 	var _type_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _placeholder_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
@@ -5372,17 +5375,17 @@
 	var EditorTextField = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _label_accessor_storage$12, "");
+			_classPrivateFieldInitSpec(this, _label_accessor_storage$13, "");
 			_classPrivateFieldInitSpec(this, _value_accessor_storage$8, "");
 			_classPrivateFieldInitSpec(this, _type_accessor_storage$1, "text");
 			_classPrivateFieldInitSpec(this, _placeholder_accessor_storage$2, "");
 			_classPrivateFieldInitSpec(this, _suffix_accessor_storage, "");
 		}
 		get label() {
-			return _classPrivateFieldGet2(_label_accessor_storage$12, this);
+			return _classPrivateFieldGet2(_label_accessor_storage$13, this);
 		}
 		set label(value) {
-			_classPrivateFieldSet2(_label_accessor_storage$12, this, value);
+			_classPrivateFieldSet2(_label_accessor_storage$13, this, value);
 		}
 		get value() {
 			return _classPrivateFieldGet2(_value_accessor_storage$8, this);
@@ -5487,21 +5490,21 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/editor-switch/editor-switch.ts
-	var _label_accessor_storage$11 = /* @__PURE__ */ new WeakMap();
+	var _label_accessor_storage$12 = /* @__PURE__ */ new WeakMap();
 	var _checked_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _tooltip_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var EditorSwitch = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _label_accessor_storage$11, "");
+			_classPrivateFieldInitSpec(this, _label_accessor_storage$12, "");
 			_classPrivateFieldInitSpec(this, _checked_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _tooltip_accessor_storage, "");
 		}
 		get label() {
-			return _classPrivateFieldGet2(_label_accessor_storage$11, this);
+			return _classPrivateFieldGet2(_label_accessor_storage$12, this);
 		}
 		set label(value) {
-			_classPrivateFieldSet2(_label_accessor_storage$11, this, value);
+			_classPrivateFieldSet2(_label_accessor_storage$12, this, value);
 		}
 		get checked() {
 			return _classPrivateFieldGet2(_checked_accessor_storage$1, this);
@@ -5572,21 +5575,21 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/editor-icon-picker/editor-icon-picker.ts
-	var _label_accessor_storage$10 = /* @__PURE__ */ new WeakMap();
+	var _label_accessor_storage$11 = /* @__PURE__ */ new WeakMap();
 	var _value_accessor_storage$7 = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$12 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$13 = /* @__PURE__ */ new WeakMap();
 	var EditorIconPicker = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _label_accessor_storage$10, "");
+			_classPrivateFieldInitSpec(this, _label_accessor_storage$11, "");
 			_classPrivateFieldInitSpec(this, _value_accessor_storage$7, "mdi:bookmark");
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$12, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$13, null);
 		}
 		get label() {
-			return _classPrivateFieldGet2(_label_accessor_storage$10, this);
+			return _classPrivateFieldGet2(_label_accessor_storage$11, this);
 		}
 		set label(value) {
-			_classPrivateFieldSet2(_label_accessor_storage$10, this, value);
+			_classPrivateFieldSet2(_label_accessor_storage$11, this, value);
 		}
 		get value() {
 			return _classPrivateFieldGet2(_value_accessor_storage$7, this);
@@ -5595,10 +5598,10 @@
 			_classPrivateFieldSet2(_value_accessor_storage$7, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$12, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$13, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$12, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$13, this, value);
 		}
 		firstUpdated() {
 			const el = this.shadowRoot.querySelector("ha-icon-picker");
@@ -8088,7 +8091,7 @@
 			}
 			return null;
 		}
-		_interpolateValue(seriesPoints, t) {
+		_interpolateValue(seriesPoints, t, stepped = false) {
 			const len = seriesPoints.length;
 			if (!len) return null;
 			if (t < seriesPoints[0][0]) return null;
@@ -8103,6 +8106,7 @@
 			const [t0, v0] = seriesPoints[lo];
 			const [t1, v1] = seriesPoints[hi];
 			if (t0 === t1) return v0;
+			if (stepped) return v0;
 			return v0 + (v1 - v0) * ((t - t0) / (t1 - t0));
 		}
 		/**
@@ -8647,8 +8651,8 @@
 			const name = labels.get(entityId);
 			if ((nameCounts.get(name) ?? 0) <= 1) continue;
 			const entry = hass?.entities?.[entityId];
-			const areaId = entry?.area_id || entry?.areaId;
 			const deviceId = entry?.device_id || entry?.deviceId;
+			const areaId = entry?.area_id || entry?.areaId || (deviceId ? hass?.devices?.[deviceId]?.area_id : null);
 			let qualifier;
 			if (areaId) qualifier = areaName(hass, areaId);
 			else if (deviceId) qualifier = deviceName(hass, deviceId);
@@ -8715,6 +8719,14 @@
 			comparison_window: msg("Comparison window")
 		};
 	}
+	var ANOMALY_METHOD_LABELS = {
+		trend_residual: "Trend deviation",
+		rate_of_change: "Sudden change",
+		iqr: "Statistical outlier (IQR)",
+		rolling_zscore: "Rolling Z-score",
+		persistence: "Flat-line / stuck",
+		comparison_window: "Comparison window"
+	};
 	function buildAnomalyMethodSection(region) {
 		if (!region?.cluster?.points?.length) return null;
 		const points = region.cluster.points;
@@ -9427,14 +9439,14 @@
 			const timeMs = resolveLineChartHoverTime(resolvedSeries, t0 + (renderer.cw ? (localX - renderer.pad.left) / renderer.cw : 0) * (t1 - t0), options.hoverSnapMode || "follow_series");
 			const x = renderer.xOf(timeMs, t0, t1);
 			const values = resolvedSeries.map((seriesItem) => {
-				const value = renderer._interpolateValue(seriesItem.pts || [], timeMs);
+				const value = renderer._interpolateValue(seriesItem.pts || [], timeMs, seriesItem.stepped);
 				return buildHoverValueEntry(seriesItem, value, resolveHoverAxis(seriesItem), {}, {
 					includePosition: value != null,
 					x
 				});
 			});
 			const comparisonValues = comparisonSeries.map((seriesItem) => {
-				const value = renderer._interpolateValue(seriesItem.pts || [], timeMs);
+				const value = renderer._interpolateValue(seriesItem.pts || [], timeMs, seriesItem.stepped);
 				return buildHoverValueEntry(seriesItem, value, resolveHoverAxis(seriesItem), { comparison: true }, {
 					includePosition: value != null,
 					x
@@ -9988,7 +10000,8 @@
 		"iqr",
 		"rolling_zscore",
 		"persistence",
-		"comparison_window"
+		"comparison_window",
+		"similar_entity"
 	];
 	var VALID_SAMPLE_INTERVALS = [
 		"raw",
@@ -10054,6 +10067,7 @@
 			anomaly_zscore_window: typeof source.anomaly_zscore_window === "string" && source.anomaly_zscore_window ? source.anomaly_zscore_window : "24h",
 			anomaly_persistence_window: typeof source.anomaly_persistence_window === "string" && source.anomaly_persistence_window ? source.anomaly_persistence_window : "1h",
 			anomaly_comparison_window_id: typeof source.anomaly_comparison_window_id === "string" && source.anomaly_comparison_window_id ? source.anomaly_comparison_window_id : null,
+			anomaly_comparison_entity_id: typeof source.anomaly_comparison_entity_id === "string" && source.anomaly_comparison_entity_id ? source.anomaly_comparison_entity_id : null,
 			anomaly_trend_method: typeof source.anomaly_trend_method === "string" ? source.anomaly_trend_method : "",
 			anomaly_trend_window: typeof source.anomaly_trend_window === "string" && source.anomaly_trend_window ? source.anomaly_trend_window : "24h",
 			show_delta_analysis: source.show_delta_analysis === true,
@@ -11797,8 +11811,11 @@
 			this._queueDrawChart(histResult, statsResult, events, t0, t1, options);
 		}
 		_buildBackendAnomalyConfig(analysis) {
+			const rawMethods = Array.isArray(analysis.anomaly_methods) ? analysis.anomaly_methods : [];
+			const hasSimilarEntity = rawMethods.includes("similar_entity");
+			const backendMethods = hasSimilarEntity ? [...new Set(rawMethods.map((m) => m === "similar_entity" ? "comparison_window" : m))] : rawMethods;
 			const config = {
-				anomaly_methods: Array.isArray(analysis.anomaly_methods) ? analysis.anomaly_methods : void 0,
+				anomaly_methods: backendMethods.length > 0 ? backendMethods : void 0,
 				anomaly_sensitivity: typeof analysis.anomaly_sensitivity === "string" ? analysis.anomaly_sensitivity : void 0,
 				anomaly_overlap_mode: typeof analysis.anomaly_overlap_mode === "string" ? analysis.anomaly_overlap_mode : void 0,
 				anomaly_rate_window: typeof analysis.anomaly_rate_window === "string" ? analysis.anomaly_rate_window : void 0,
@@ -11812,7 +11829,8 @@
 					if (typeof analysis.anomaly_trend_method === "string" && analysis.anomaly_trend_method && typeof analysis.anomaly_trend_window === "string" && analysis.anomaly_trend_window) return analysis.anomaly_trend_window;
 					return typeof analysis.trend_window === "string" ? analysis.trend_window : void 0;
 				})(),
-				anomaly_use_sampled_data: analysis.anomaly_use_sampled_data !== false
+				anomaly_use_sampled_data: analysis.anomaly_use_sampled_data !== false,
+				comparison_entity_id: hasSimilarEntity && typeof analysis.anomaly_comparison_entity_id === "string" && analysis.anomaly_comparison_entity_id ? analysis.anomaly_comparison_entity_id : null
 			};
 			if (analysis.anomaly_use_sampled_data !== false) {
 				config.sample_interval = typeof analysis.sample_interval === "string" ? analysis.sample_interval : null;
@@ -12149,9 +12167,10 @@
 			if (!regions?.length) return {};
 			const content = buildAnomalyTooltipContent(regions);
 			const entityId = regions[0]?.relatedEntityId ?? null;
+			const methods = [...new Set(regions.map((r) => r?.cluster?.anomalyMethod).filter((m) => Boolean(m)))];
 			return {
-				annotation: content ? `${content.description}\n${content.alert}` : "",
-				message: content ? content.title : "",
+				message: methods.length === 1 ? `${ANOMALY_METHOD_LABELS[methods[0]] ?? methods[0]} anomaly` : "Multi-method anomaly",
+				annotation: content ? `${content.description}\n\n${content.alert}` : "",
 				icon: "mdi:alert-circle",
 				linkedTarget: entityId ? { entity_id: [entityId] } : null
 			};
@@ -12726,15 +12745,19 @@
 						axis.values.push(v);
 					}
 				}
-				if (pts.length) series.push({
-					entityId,
-					legendEntityId: entityId,
-					label: entityLabelMap.get(entityId) || entityId,
-					unit,
-					pts,
-					color: seriesSetting.color || COLORS[i % COLORS.length],
-					axisKey
-				});
+				if (pts.length) {
+					const seriesAnalysis = analysisMap.get(entityId) || normalizeHistorySeriesAnalysis(null);
+					series.push({
+						entityId,
+						legendEntityId: entityId,
+						label: entityLabelMap.get(entityId) || entityId,
+						unit,
+						pts,
+						color: seriesSetting.color || COLORS[i % COLORS.length],
+						axisKey,
+						stepped: seriesAnalysis.stepped_series === true
+					});
+				}
 			});
 			const _startIso = new Date(t0).toISOString();
 			const _endIso = new Date(t1).toISOString();
@@ -12972,7 +12995,17 @@
 				chartStage.style.width = `${canvasWidth}px`;
 				chartStage.style.height = `${availableHeight}px`;
 			}
-			if (scrollViewport) scrollViewport.style.overflowY = "";
+			if (scrollViewport) {
+				scrollViewport.style.overflowY = "";
+				scrollViewport.style.minHeight = "";
+			}
+			this.style.height = "";
+			this.style.minHeight = "";
+			const _haCard = this.closest("ha-card");
+			if (_haCard) {
+				_haCard.style.height = "";
+				_haCard.style.minHeight = "";
+			}
 			wrap.style.height = "";
 			const { w, h } = setupCanvas(canvas, chartStage || wrap, availableHeight, canvasWidth);
 			const renderer = new ChartRenderer(canvas, w, h);
@@ -13880,7 +13913,9 @@
 		async _drawSplitChart({ visibleSeries, binaryBackgrounds, events, renderT0, renderT1, canvasWidth, availableHeight, chartStage, canvas, wrap, options, drawableComparisonResults, selectedComparisonWindowId, hoveredComparisonWindowId, comparisonPreviewActive, hoveringDifferentComparison, analysisResult, analysisMap, hasSelectedComparisonWindow }) {
 			if (canvas) canvas.style.display = "none";
 			const N = visibleSeries.length;
-			const rowHeight = Math.max(200, Math.floor(availableHeight / N));
+			const MIN_ROW_HEIGHT = 200;
+			const usePageScroll = MIN_ROW_HEIGHT * N > availableHeight;
+			const rowHeight = usePageScroll ? MIN_ROW_HEIGHT : Math.max(MIN_ROW_HEIGHT, Math.floor(availableHeight / N));
 			const totalHeight = rowHeight * N;
 			if (chartStage) {
 				chartStage.style.width = `${canvasWidth}px`;
@@ -13893,6 +13928,22 @@
 			} else {
 				wrap.style.height = "";
 				if (splitScrollViewport) splitScrollViewport.style.overflowY = "hidden";
+			}
+			const haCard = this.closest("ha-card");
+			if (usePageScroll) {
+				this.style.height = "auto";
+				this.style.minHeight = "100%";
+				if (haCard) {
+					haCard.style.height = "auto";
+					haCard.style.minHeight = "100%";
+				}
+			} else {
+				this.style.height = "";
+				this.style.minHeight = "";
+				if (haCard) {
+					haCard.style.height = "";
+					haCard.style.minHeight = "";
+				}
 			}
 			this._setChartLoading(!!options.loading);
 			this._setChartMessage("");
@@ -14243,7 +14294,7 @@
 				const x = primaryRenderer.xOf(timeMs, t0, t1);
 				const values = tracks.map((trackItem) => {
 					const { renderer: trackRenderer, series, axis, rowOffset } = trackItem;
-					const value = trackRenderer._interpolateValue(series.pts, timeMs);
+					const value = trackRenderer._interpolateValue(series.pts, timeMs, !!series.stepped);
 					if (value == null) return {
 						entityId: String(series.entityId || ""),
 						label: String(series.label || ""),
@@ -15043,7 +15094,7 @@
 	var _name_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
 	var _secondaryText_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _stateObj_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$11 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$12 = /* @__PURE__ */ new WeakMap();
 	var AnnotationChip = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
@@ -15053,7 +15104,7 @@
 			_classPrivateFieldInitSpec(this, _name_accessor_storage$4, "");
 			_classPrivateFieldInitSpec(this, _secondaryText_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _stateObj_accessor_storage$2, null);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$11, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$12, null);
 		}
 		get type() {
 			return _classPrivateFieldGet2(_type_accessor_storage, this);
@@ -15092,10 +15143,10 @@
 			_classPrivateFieldSet2(_stateObj_accessor_storage$2, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$11, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$12, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$11, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$12, this, value);
 		}
 		_onRemove() {
 			this.dispatchEvent(new CustomEvent("dp-chip-remove", {
@@ -15156,8 +15207,8 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/annotation-chip-row/annotation-chip-row.ts
 	var _chips_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$10 = /* @__PURE__ */ new WeakMap();
-	var _label_accessor_storage$9 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$11 = /* @__PURE__ */ new WeakMap();
+	var _label_accessor_storage$10 = /* @__PURE__ */ new WeakMap();
 	var _helpText_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _emptyText_accessor_storage = /* @__PURE__ */ new WeakMap();
 	/**
@@ -15171,8 +15222,8 @@
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _chips_accessor_storage, []);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$10, null);
-			_classPrivateFieldInitSpec(this, _label_accessor_storage$9, "Linked targets");
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$11, null);
+			_classPrivateFieldInitSpec(this, _label_accessor_storage$10, "Linked targets");
 			_classPrivateFieldInitSpec(this, _helpText_accessor_storage, "These targets will be associated with the new data point by default. Remove any that should not be linked.");
 			_classPrivateFieldInitSpec(this, _emptyText_accessor_storage, "No linked targets will be associated with this data point.");
 		}
@@ -15183,16 +15234,16 @@
 			_classPrivateFieldSet2(_chips_accessor_storage, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$10, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$11, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$10, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$11, this, value);
 		}
 		get label() {
-			return _classPrivateFieldGet2(_label_accessor_storage$9, this);
+			return _classPrivateFieldGet2(_label_accessor_storage$10, this);
 		}
 		set label(value) {
-			_classPrivateFieldSet2(_label_accessor_storage$9, this, value);
+			_classPrivateFieldSet2(_label_accessor_storage$10, this, value);
 		}
 		get helpText() {
 			return _classPrivateFieldGet2(_helpText_accessor_storage, this);
@@ -16792,23 +16843,23 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/analysis/analysis-group/analysis-group.ts
-	var _label_accessor_storage$8 = /* @__PURE__ */ new WeakMap();
+	var _label_accessor_storage$9 = /* @__PURE__ */ new WeakMap();
 	var _checked_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _disabled_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _alignTop_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var AnalysisGroup = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _label_accessor_storage$8, "");
+			_classPrivateFieldInitSpec(this, _label_accessor_storage$9, "");
 			_classPrivateFieldInitSpec(this, _checked_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _disabled_accessor_storage$2, false);
 			_classPrivateFieldInitSpec(this, _alignTop_accessor_storage, false);
 		}
 		get label() {
-			return _classPrivateFieldGet2(_label_accessor_storage$8, this);
+			return _classPrivateFieldGet2(_label_accessor_storage$9, this);
 		}
 		set label(value) {
-			_classPrivateFieldSet2(_label_accessor_storage$8, this, value);
+			_classPrivateFieldSet2(_label_accessor_storage$9, this, value);
 		}
 		get checked() {
 			return _classPrivateFieldGet2(_checked_accessor_storage, this);
@@ -17677,8 +17728,20 @@
     outline-offset: 2px;
   }
 
+  .entity-picker-wrap {
+    overflow: hidden;
+    height: 32px;
+    border-radius: 6px;
+  }
+
+  ha-entity-picker {
+    display: block;
+    margin-top: -14px;
+  }
+
   .save-monitor-btn {
     display: inline-flex;
+    align-self: flex-start;
     align-items: center;
     gap: 4px;
     padding: 4px 8px;
@@ -17737,7 +17800,7 @@
 	customElements.define("analysis-method-subopts", AnalysisMethodSubopts);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/analysis-anomaly-group.ts
-	var _AnalysisAnomalyGroup, _analysis_accessor_storage$2, _entityId_accessor_storage$2, _comparisonWindows_accessor_storage$3, _computing_accessor_storage$1, _computingProgress_accessor_storage$1, _computingMethods_accessor_storage$1;
+	var _AnalysisAnomalyGroup, _analysis_accessor_storage$2, _entityId_accessor_storage$2, _comparisonWindows_accessor_storage$3, _hass_accessor_storage$10, _computing_accessor_storage$1, _computingProgress_accessor_storage$1, _computingMethods_accessor_storage$1;
 	var ANALYSIS_ANOMALY_SENSITIVITY_OPTIONS = [
 		{
 			value: "low",
@@ -17782,6 +17845,11 @@
 			value: "comparison_window",
 			label: "Comparison window deviation",
 			help: "Compares the current period to a reference date window. Highlights differences from an expected historical pattern, such as last week or the same day last year."
+		},
+		{
+			value: "similar_entity",
+			label: "Similar entity deviation",
+			help: "Compares the current entity against another HA entity over the same period. Highlights readings that diverge from what a reference sensor is reporting."
 		}
 	];
 	var ANALYSIS_ANOMALY_RATE_WINDOW_OPTIONS = [
@@ -17869,12 +17937,13 @@
 		value: "only",
 		label: "Overlaps only"
 	}];
-	var AnalysisAnomalyGroup = (_analysis_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _entityId_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _computing_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingProgress_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingMethods_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _AnalysisAnomalyGroup = class AnalysisAnomalyGroup extends i$2 {
+	var AnalysisAnomalyGroup = (_analysis_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _entityId_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$10 = /* @__PURE__ */ new WeakMap(), _computing_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingProgress_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingMethods_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _AnalysisAnomalyGroup = class AnalysisAnomalyGroup extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _analysis_accessor_storage$2, {});
 			_classPrivateFieldInitSpec(this, _entityId_accessor_storage$2, "");
 			_classPrivateFieldInitSpec(this, _comparisonWindows_accessor_storage$3, []);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$10, null);
 			_classPrivateFieldInitSpec(this, _computing_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _computingProgress_accessor_storage$1, 0);
 			_classPrivateFieldInitSpec(this, _computingMethods_accessor_storage$1, /* @__PURE__ */ new Set());
@@ -17897,6 +17966,12 @@
 		set comparisonWindows(value) {
 			_classPrivateFieldSet2(_comparisonWindows_accessor_storage$3, this, value);
 		}
+		get hass() {
+			return _classPrivateFieldGet2(_hass_accessor_storage$10, this);
+		}
+		set hass(value) {
+			_classPrivateFieldSet2(_hass_accessor_storage$10, this, value);
+		}
 		get computing() {
 			return _classPrivateFieldGet2(_computing_accessor_storage$1, this);
 		}
@@ -17914,6 +17989,26 @@
 		}
 		set computingMethods(value) {
 			_classPrivateFieldSet2(_computingMethods_accessor_storage$1, this, value);
+		}
+		/**
+		* Build an entity filter for the comparison entity picker that matches the
+		* current entity's device class, then unit of measurement, then domain.
+		*/
+		_buildEntityFilter() {
+			if (!this.hass || !this.entityId) return void 0;
+			const sourceState = this.hass.states[this.entityId];
+			if (!sourceState) return void 0;
+			const attrs = sourceState.attributes;
+			const deviceClass = attrs.device_class;
+			const unit = attrs.unit_of_measurement;
+			const domain = this.entityId.split(".")[0];
+			return (state) => {
+				if (state.entity_id === this.entityId) return false;
+				const a = state.attributes;
+				if (deviceClass) return a.device_class === deviceClass;
+				if (unit) return a.unit_of_measurement === unit;
+				return state.entity_id.split(".")[0] === domain;
+			};
 		}
 		_emit(key, value) {
 			this.dispatchEvent(new CustomEvent("dp-group-analysis-change", {
@@ -18032,6 +18127,25 @@
         </analysis-method-subopts>
       `;
 			}
+			if (opt.value === "similar_entity") {
+				const entityFilter = this._buildEntityFilter();
+				return b`
+        <analysis-method-subopts>
+          <label class="field">
+            <span class="field-label">${msg("Compare to entity")}</span>
+            <div class="entity-picker-wrap">
+              <ha-entity-picker
+                .hass=${this.hass}
+                .value=${a.anomaly_comparison_entity_id ?? ""}
+                .entityFilter=${entityFilter}
+                allow-custom-entity
+                @value-changed=${(e) => this._emit("anomaly_comparison_entity_id", e.detail.value || null)}
+              ></ha-entity-picker>
+            </div>
+          </label>
+        </analysis-method-subopts>
+      `;
+			}
 			return A;
 		}
 		render() {
@@ -18127,7 +18241,7 @@
         ${a.show_anomalies && Array.isArray(a.anomaly_methods) && a.anomaly_methods.length > 0 ? b`
               <button class="save-monitor-btn" @click=${this._onSaveAsMonitor}>
                 <ha-icon icon="mdi:bell-plus-outline"></ha-icon>
-                ${msg("Save as monitor")}
+                ${msg("Save as anomaly monitor")}
               </button>
             ` : A}
       </analysis-group>
@@ -18153,6 +18267,10 @@
 		type: Array,
 		attribute: "comparison-windows"
 	})], AnalysisAnomalyGroup.prototype, "comparisonWindows", null);
+	__decorate([n$1({
+		type: Object,
+		attribute: false
+	})], AnalysisAnomalyGroup.prototype, "hass", null);
 	__decorate([n$1({
 		type: Boolean,
 		attribute: false
@@ -20512,7 +20630,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/target-row.ts
-	var _TargetRow, _color_accessor_storage$1, _visible_accessor_storage, _analysis_accessor_storage, _index_accessor_storage, _entityId_accessor_storage, _canShowDeltaAnalysis_accessor_storage$2, _stateObj_accessor_storage$1, _hass_accessor_storage$9, _comparisonWindows_accessor_storage$2, _computing_accessor_storage, _computingProgress_accessor_storage, _computingMethods_accessor_storage, _rowCount_accessor_storage, _allAnalysisSame_accessor_storage, _hideDragHandle_accessor_storage;
+	var _TargetRow, _color_accessor_storage$1, _visible_accessor_storage, _analysis_accessor_storage, _index_accessor_storage, _entityId_accessor_storage, _canShowDeltaAnalysis_accessor_storage$2, _stateObj_accessor_storage$1, _hass_accessor_storage$9, _comparisonWindows_accessor_storage$2, _computing_accessor_storage, _computingProgress_accessor_storage, _computingMethods_accessor_storage, _rowCount_accessor_storage, _allAnalysisSame_accessor_storage, _hideDragHandle_accessor_storage, _label_accessor_storage$8;
 	function deriveSwatchIconColor(color) {
 		const hex = String(color || "").trim();
 		const normalizedHex = /^#([0-9a-f]{6})$/i.test(hex) ? hex : null;
@@ -20536,7 +20654,7 @@
 	function _hasActiveAnalysis(a, hasComparisonWindow) {
 		return a.show_trend_lines || a.show_summary_stats || a.show_rate_of_change || a.show_threshold_analysis || a.show_anomalies || a.show_delta_analysis && hasComparisonWindow;
 	}
-	var TargetRow = (_color_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _visible_accessor_storage = /* @__PURE__ */ new WeakMap(), _analysis_accessor_storage = /* @__PURE__ */ new WeakMap(), _index_accessor_storage = /* @__PURE__ */ new WeakMap(), _entityId_accessor_storage = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _stateObj_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$9 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _computing_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingProgress_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingMethods_accessor_storage = /* @__PURE__ */ new WeakMap(), _rowCount_accessor_storage = /* @__PURE__ */ new WeakMap(), _allAnalysisSame_accessor_storage = /* @__PURE__ */ new WeakMap(), _hideDragHandle_accessor_storage = /* @__PURE__ */ new WeakMap(), _TargetRow = class TargetRow extends i$2 {
+	var TargetRow = (_color_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _visible_accessor_storage = /* @__PURE__ */ new WeakMap(), _analysis_accessor_storage = /* @__PURE__ */ new WeakMap(), _index_accessor_storage = /* @__PURE__ */ new WeakMap(), _entityId_accessor_storage = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _stateObj_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$9 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _computing_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingProgress_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingMethods_accessor_storage = /* @__PURE__ */ new WeakMap(), _rowCount_accessor_storage = /* @__PURE__ */ new WeakMap(), _allAnalysisSame_accessor_storage = /* @__PURE__ */ new WeakMap(), _hideDragHandle_accessor_storage = /* @__PURE__ */ new WeakMap(), _label_accessor_storage$8 = /* @__PURE__ */ new WeakMap(), _TargetRow = class TargetRow extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _color_accessor_storage$1, "#03a9f4");
@@ -20554,6 +20672,7 @@
 			_classPrivateFieldInitSpec(this, _rowCount_accessor_storage, 1);
 			_classPrivateFieldInitSpec(this, _allAnalysisSame_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _hideDragHandle_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _label_accessor_storage$8, null);
 		}
 		get color() {
 			return _classPrivateFieldGet2(_color_accessor_storage$1, this);
@@ -20645,12 +20764,19 @@
 		set hideDragHandle(value) {
 			_classPrivateFieldSet2(_hideDragHandle_accessor_storage, this, value);
 		}
+		get label() {
+			return _classPrivateFieldGet2(_label_accessor_storage$8, this);
+		}
+		set label(value) {
+			_classPrivateFieldSet2(_label_accessor_storage$8, this, value);
+		}
 		/** Entity ID — from HA state when available, else from the config prop. */
 		get _entityId() {
 			return this.stateObj?.entity_id ?? this.entityId ?? "";
 		}
-		/** Display name derived from the HA state object, falling back to the entity ID. */
+		/** Display name: uses the explicit label override when provided, otherwise derives from the HA state object. */
 		get _entityName() {
+			if (this.label) return this.label;
 			return (this.stateObj?.attributes)?.friendly_name ?? this._entityId;
 		}
 		/** Unit of measurement derived from the HA state object. */
@@ -20836,6 +20962,7 @@
                   <analysis-anomaly-group
                     .analysis=${a}
                     .entityId=${this._entityId}
+                    .hass=${this.hass}
                     .comparisonWindows=${this.comparisonWindows}
                     .computing=${this.computing}
                     .computingProgress=${this.computingProgress}
@@ -20928,6 +21055,10 @@
 		type: Boolean,
 		attribute: "hide-drag-handle"
 	})], TargetRow.prototype, "hideDragHandle", null);
+	__decorate([n$1({
+		type: String,
+		attribute: false
+	})], TargetRow.prototype, "label", null);
 	TargetRow = __decorate([localized()], TargetRow);
 	customElements.define("target-row", TargetRow);
 	//#endregion
@@ -21006,7 +21137,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/target-row-list.ts
-	var _TargetRowList, _rows_accessor_storage$1, _states_accessor_storage$1, _hass_accessor_storage$8, _canShowDeltaAnalysis_accessor_storage$1, _comparisonWindows_accessor_storage$1, _computingEntityIds_accessor_storage, _analysisProgress_accessor_storage, _computingMethodsByEn_accessor_storage;
+	var _TargetRowList, _rows_accessor_storage$1, _states_accessor_storage$1, _hass_accessor_storage$8, _canShowDeltaAnalysis_accessor_storage$1, _comparisonWindows_accessor_storage$1, _computingEntityIds_accessor_storage, _analysisProgress_accessor_storage, _computingMethodsByEn_accessor_storage, _labelMap_accessor_storage;
 	var _DURATION_SECONDS = {
 		raw: 0,
 		"5s": 5,
@@ -21088,7 +21219,7 @@
 		}
 		return updates;
 	}
-	var TargetRowList = (_rows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _states_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$8 = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _analysisProgress_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingMethodsByEn_accessor_storage = /* @__PURE__ */ new WeakMap(), _TargetRowList = class TargetRowList extends i$2 {
+	var TargetRowList = (_rows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _states_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$8 = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _analysisProgress_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingMethodsByEn_accessor_storage = /* @__PURE__ */ new WeakMap(), _labelMap_accessor_storage = /* @__PURE__ */ new WeakMap(), _TargetRowList = class TargetRowList extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _rows_accessor_storage$1, []);
@@ -21099,6 +21230,7 @@
 			_classPrivateFieldInitSpec(this, _computingEntityIds_accessor_storage, /* @__PURE__ */ new Set());
 			_classPrivateFieldInitSpec(this, _analysisProgress_accessor_storage, 0);
 			_classPrivateFieldInitSpec(this, _computingMethodsByEn_accessor_storage, /* @__PURE__ */ new Map());
+			_classPrivateFieldInitSpec(this, _labelMap_accessor_storage, /* @__PURE__ */ new Map());
 			_defineProperty(
 				this,
 				/** Index of the row currently being dragged, or null when not dragging. */
@@ -21226,6 +21358,12 @@
 		set computingMethodsByEntity(value) {
 			_classPrivateFieldSet2(_computingMethodsByEn_accessor_storage, this, value);
 		}
+		get labelMap() {
+			return _classPrivateFieldGet2(_labelMap_accessor_storage, this);
+		}
+		set labelMap(value) {
+			_classPrivateFieldSet2(_labelMap_accessor_storage, this, value);
+		}
 		render() {
 			if (!this.rows.length) return b``;
 			const firstAnalysis = JSON.stringify(this.rows[0]?.analysis ?? {});
@@ -21250,6 +21388,7 @@
                 entity-id=${row.entity_id}
                 .canShowDeltaAnalysis=${this.canShowDeltaAnalysis}
                 .stateObj=${this.states?.[row.entity_id] ?? null}
+                .label=${this.labelMap.get(row.entity_id) ?? null}
                 .hass=${this.hass ?? null}
                 .comparisonWindows=${this.comparisonWindows}
                 .computing=${this.computingEntityIds?.has(row.entity_id) ?? false}
@@ -21368,6 +21507,10 @@
 		type: Object,
 		attribute: false
 	})], TargetRowList.prototype, "computingMethodsByEntity", null);
+	__decorate([n$1({
+		type: Object,
+		attribute: false
+	})], TargetRowList.prototype, "labelMap", null);
 	TargetRowList = __decorate([localized()], TargetRowList);
 	customElements.define("target-row-list", TargetRowList);
 	//#endregion
@@ -24573,44 +24716,82 @@
 
   .entity-tabs {
     display: flex;
-    gap: 6px;
+    gap: 0;
     overflow-x: auto;
-    padding-bottom: 6px;
     flex-wrap: nowrap;
     scrollbar-width: thin;
+    border-bottom: 2px solid var(--divider-color, rgba(0, 0, 0, 0.12));
   }
 
   .entity-tab {
     display: inline-flex;
     align-items: center;
-    padding: 4px 10px;
-    border: 1.5px solid var(--divider-color, rgba(0, 0, 0, 0.12));
-    border-radius: 12px;
+    padding: 8px 14px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    border-radius: 6px 6px 0 0;
     background: transparent;
     color: var(--secondary-text-color);
     font: inherit;
-    font-size: 0.82rem;
+    font-size: 0.85rem;
     white-space: nowrap;
     cursor: pointer;
     flex-shrink: 0;
     transition:
-      border-color 120ms ease,
       color 120ms ease,
+      border-color 120ms ease,
       background 120ms ease;
     appearance: none;
     -webkit-appearance: none;
   }
 
   .entity-tab:hover {
-    border-color: var(--primary-color);
     color: var(--primary-color);
+    background: color-mix(in srgb, var(--primary-color) 5%, transparent);
   }
 
   .entity-tab.active {
-    border-color: var(--primary-color);
     color: var(--primary-color);
-    background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+    border-bottom-color: var(--primary-color);
     font-weight: 500;
+  }
+
+  .entity-tab-panel {
+    border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  /* ---- Step 1 header row ---- */
+
+  .wizard-section-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 20px;
+  }
+
+  .text-link-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    font-size: 0.82rem;
+    color: var(--primary-color, #03a9f4);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  .text-link-btn:hover {
+    opacity: 0.8;
   }
 
   /* ---- Step 2: Analysis sections ---- */
@@ -24700,6 +24881,17 @@
     color: var(--secondary-text-color);
   }
 
+  .wizard-notice-info {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--info-color, #2196f3);
+    background: color-mix(in srgb, var(--info-color, #2196f3) 8%, transparent);
+    font-size: 0.84rem;
+    color: var(--primary-text-color);
+    line-height: 1.5;
+    margin: 0;
+  }
+
   /* ---- Error ---- */
 
   .wizard-error {
@@ -24760,9 +24952,41 @@
 			monitor_id: monitorId
 		});
 	}
+	async function fetchMonitorAnomalies(hass, monitorId) {
+		return await hass.connection.sendMessagePromise({
+			type: `${DOMAIN}/monitors/anomalies`,
+			monitor_id: monitorId
+		});
+	}
+	/**
+	* Dismiss an anomaly cluster window.
+	* @param expiresAt ISO datetime string for expiry, or null for permanent, or
+	*   undefined to use the server default (2× look_back_hours).
+	*/
+	async function dismissMonitorAnomaly(hass, monitorId, startMs, endMs, expiresAt) {
+		const payload = {
+			type: `${DOMAIN}/monitors/dismiss`,
+			monitor_id: monitorId,
+			start_ms: startMs,
+			end_ms: endMs
+		};
+		if (expiresAt !== void 0) payload.expires_at = expiresAt;
+		const result = await hass.connection.sendMessagePromise(payload);
+		if (!result.monitor) throw new Error("dismissMonitorAnomaly: no monitor in response");
+		return result.monitor;
+	}
+	async function undismissMonitorAnomaly(hass, monitorId, windowId) {
+		const result = await hass.connection.sendMessagePromise({
+			type: `${DOMAIN}/monitors/undismiss`,
+			monitor_id: monitorId,
+			window_id: windowId
+		});
+		if (!result.monitor) throw new Error("undismissMonitorAnomaly: no monitor in response");
+		return result.monitor;
+	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/anomaly-monitor-wizard.ts
-	var _AnomalyMonitorWizard, _hass_accessor_storage$7, _open_accessor_storage$1, _prefillEntityIds_accessor_storage, _prefillAnalysis_accessor_storage, _editMonitor_accessor_storage$1, _suggestedEntityIds_accessor_storage, _step_accessor_storage, _target_accessor_storage, _entityIds_accessor_storage, _entityConfigs_accessor_storage, _activeEntityId_accessor_storage, _name_accessor_storage$1, _lookBackHours_accessor_storage, _scanIntervalMinutes_accessor_storage, _monitorType_accessor_storage, _overlapMode_accessor_storage, _error_accessor_storage, _saving_accessor_storage;
+	var _AnomalyMonitorWizard, _hass_accessor_storage$7, _open_accessor_storage$1, _prefillEntityIds_accessor_storage, _prefillAnalysis_accessor_storage, _editMonitor_accessor_storage$1, _suggestedEntityIds_accessor_storage, _allSeriesEntityIds_accessor_storage, _step_accessor_storage, _target_accessor_storage, _entityIds_accessor_storage, _entityConfigs_accessor_storage, _activeEntityId_accessor_storage, _name_accessor_storage$1, _lookBackHours_accessor_storage, _scanIntervalMinutes_accessor_storage, _monitorType_accessor_storage, _overlapMode_accessor_storage, _error_accessor_storage, _saving_accessor_storage;
 	var LOOK_BACK_OPTIONS = [
 		{
 			value: 6,
@@ -24818,7 +25042,9 @@
 			anomaly_trend_window: prefill?.anomaly_trend_window ?? "24h",
 			sample_interval: prefill?.sample_interval ?? "raw",
 			sample_aggregate: prefill?.sample_aggregate ?? "mean",
-			anomaly_use_sampled_data: prefill?.anomaly_use_sampled_data ?? false
+			anomaly_use_sampled_data: prefill?.anomaly_use_sampled_data ?? false,
+			baseline_entity_id: null,
+			baseline_time_offset_hours: 0
 		};
 	}
 	function configFromMonitor(m) {
@@ -24832,10 +25058,12 @@
 			anomaly_trend_window: m.anomaly_trend_window,
 			sample_interval: m.sample_interval ?? "raw",
 			sample_aggregate: m.sample_aggregate ?? "mean",
-			anomaly_use_sampled_data: m.anomaly_use_sampled_data ?? false
+			anomaly_use_sampled_data: m.anomaly_use_sampled_data ?? false,
+			baseline_entity_id: m.baseline_entity_id ?? null,
+			baseline_time_offset_hours: m.baseline_time_offset_hours ?? 0
 		};
 	}
-	var AnomalyMonitorWizard = (_hass_accessor_storage$7 = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _prefillEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _prefillAnalysis_accessor_storage = /* @__PURE__ */ new WeakMap(), _editMonitor_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _suggestedEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _step_accessor_storage = /* @__PURE__ */ new WeakMap(), _target_accessor_storage = /* @__PURE__ */ new WeakMap(), _entityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _entityConfigs_accessor_storage = /* @__PURE__ */ new WeakMap(), _activeEntityId_accessor_storage = /* @__PURE__ */ new WeakMap(), _name_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _lookBackHours_accessor_storage = /* @__PURE__ */ new WeakMap(), _scanIntervalMinutes_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitorType_accessor_storage = /* @__PURE__ */ new WeakMap(), _overlapMode_accessor_storage = /* @__PURE__ */ new WeakMap(), _error_accessor_storage = /* @__PURE__ */ new WeakMap(), _saving_accessor_storage = /* @__PURE__ */ new WeakMap(), _AnomalyMonitorWizard = class AnomalyMonitorWizard extends i$2 {
+	var AnomalyMonitorWizard = (_hass_accessor_storage$7 = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _prefillEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _prefillAnalysis_accessor_storage = /* @__PURE__ */ new WeakMap(), _editMonitor_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _suggestedEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _allSeriesEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _step_accessor_storage = /* @__PURE__ */ new WeakMap(), _target_accessor_storage = /* @__PURE__ */ new WeakMap(), _entityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _entityConfigs_accessor_storage = /* @__PURE__ */ new WeakMap(), _activeEntityId_accessor_storage = /* @__PURE__ */ new WeakMap(), _name_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _lookBackHours_accessor_storage = /* @__PURE__ */ new WeakMap(), _scanIntervalMinutes_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitorType_accessor_storage = /* @__PURE__ */ new WeakMap(), _overlapMode_accessor_storage = /* @__PURE__ */ new WeakMap(), _error_accessor_storage = /* @__PURE__ */ new WeakMap(), _saving_accessor_storage = /* @__PURE__ */ new WeakMap(), _AnomalyMonitorWizard = class AnomalyMonitorWizard extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _hass_accessor_storage$7, null);
@@ -24844,6 +25072,7 @@
 			_classPrivateFieldInitSpec(this, _prefillAnalysis_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _editMonitor_accessor_storage$1, null);
 			_classPrivateFieldInitSpec(this, _suggestedEntityIds_accessor_storage, []);
+			_classPrivateFieldInitSpec(this, _allSeriesEntityIds_accessor_storage, []);
 			_classPrivateFieldInitSpec(this, _step_accessor_storage, 1);
 			_classPrivateFieldInitSpec(this, _target_accessor_storage, {});
 			_classPrivateFieldInitSpec(this, _entityIds_accessor_storage, []);
@@ -24892,6 +25121,12 @@
 		}
 		set suggestedEntityIds(value) {
 			_classPrivateFieldSet2(_suggestedEntityIds_accessor_storage, this, value);
+		}
+		get allSeriesEntityIds() {
+			return _classPrivateFieldGet2(_allSeriesEntityIds_accessor_storage, this);
+		}
+		set allSeriesEntityIds(value) {
+			_classPrivateFieldSet2(_allSeriesEntityIds_accessor_storage, this, value);
 		}
 		get _step() {
 			return _classPrivateFieldGet2(_step_accessor_storage, this);
@@ -25024,6 +25259,67 @@
 			const methods = checked ? [...cfg.anomaly_methods, method] : cfg.anomaly_methods.filter((m) => m !== method);
 			this._updateEntityConfig(entityId, "anomaly_methods", methods);
 		}
+		/** Convert the wizard's slim EntityAnalysisConfig into a full NormalizedAnalysis
+		*  so it can be passed directly into analysis-anomaly-group / analysis-sample-group. */
+		_entityConfigToAnalysis(cfg) {
+			return {
+				show_anomalies: true,
+				anomaly_methods: [...cfg.anomaly_methods],
+				anomaly_sensitivity: cfg.anomaly_sensitivity,
+				anomaly_rate_window: cfg.anomaly_rate_window,
+				anomaly_zscore_window: cfg.anomaly_zscore_window,
+				anomaly_persistence_window: cfg.anomaly_persistence_window,
+				anomaly_trend_method: cfg.anomaly_trend_method,
+				anomaly_trend_window: cfg.anomaly_trend_window,
+				anomaly_use_sampled_data: cfg.anomaly_use_sampled_data,
+				sample_interval: cfg.sample_interval,
+				sample_aggregate: cfg.sample_aggregate,
+				show_trend_lines: false,
+				trend_method: "rolling_average",
+				trend_window: "24h",
+				show_trend_crosshairs: false,
+				show_summary_stats: false,
+				show_summary_stats_shading: false,
+				show_rate_of_change: false,
+				show_rate_crosshairs: false,
+				rate_window: "1h",
+				show_threshold_analysis: false,
+				show_threshold_shading: false,
+				threshold_value: "0",
+				threshold_direction: "above",
+				anomaly_overlap_mode: "all",
+				anomaly_comparison_window_id: null,
+				anomaly_comparison_entity_id: null,
+				show_delta_analysis: false,
+				show_delta_tooltip: false,
+				show_delta_lines: false,
+				hide_source_series: false,
+				stepped_series: false,
+				expanded: true
+			};
+		}
+		/** Handle dp-group-analysis-change events bubbled from the embedded analysis components. */
+		_onAnalysisGroupChange(entityId, e) {
+			e.stopPropagation();
+			const { key, value } = e.detail;
+			if (key.startsWith("anomaly_method_toggle_")) {
+				const method = key.replace("anomaly_method_toggle_", "");
+				this._toggleMethod(entityId, method, value);
+				return;
+			}
+			const configKey = {
+				anomaly_sensitivity: "anomaly_sensitivity",
+				anomaly_rate_window: "anomaly_rate_window",
+				anomaly_zscore_window: "anomaly_zscore_window",
+				anomaly_persistence_window: "anomaly_persistence_window",
+				anomaly_trend_method: "anomaly_trend_method",
+				anomaly_trend_window: "anomaly_trend_window",
+				anomaly_use_sampled_data: "anomaly_use_sampled_data",
+				sample_interval: "sample_interval",
+				sample_aggregate: "sample_aggregate"
+			}[key];
+			if (configKey !== void 0) this._updateEntityConfig(entityId, configKey, value);
+		}
 		_onTargetChanged(ev) {
 			this._target = normalizeTargetValue(ev.detail?.value ?? {});
 		}
@@ -25032,6 +25328,14 @@
 			if (!current.includes(entityId)) this._target = {
 				...this._target,
 				entity_id: [...current, entityId]
+			};
+		}
+		_addAllSeriesFromChart() {
+			const current = this._target.entity_id ?? [];
+			const toAdd = this.allSeriesEntityIds.filter((id) => !current.includes(id));
+			if (toAdd.length > 0) this._target = {
+				...this._target,
+				entity_id: [...current, ...toAdd]
 			};
 		}
 		_emit(name, detail = {}) {
@@ -25075,6 +25379,13 @@
 					this._error = msg("Each entity needs at least one detection method.");
 					return;
 				}
+				if (this._entityIds.some((id) => {
+					const cfg = this._getEntityConfig(id);
+					return cfg.anomaly_methods.includes("comparison_window") && !cfg.baseline_entity_id;
+				})) {
+					this._error = msg("Select a baseline entity for the Comparison method.");
+					return;
+				}
 				if (!this._name) {
 					const firstId = this._entityIds[0] ?? "";
 					const baseName = firstId.split(".").pop() ?? firstId;
@@ -25099,6 +25410,10 @@
 				base.sample_interval = cfg.sample_interval;
 				base.sample_aggregate = cfg.sample_aggregate;
 				base.anomaly_use_sampled_data = true;
+			}
+			if (cfg.baseline_entity_id) {
+				base.baseline_entity_id = cfg.baseline_entity_id;
+				base.baseline_time_offset_hours = cfg.baseline_time_offset_hours;
 			}
 			return base;
 		}
@@ -25163,6 +25478,10 @@
 			if (!this.hass) return entityId;
 			return this.hass.states[entityId]?.attributes?.friendly_name ?? entityId.split(".").pop() ?? entityId;
 		}
+		/** Returns disambiguated labels for all current entity IDs. */
+		_entityDisplayNames() {
+			return disambiguateEntityNames(this.hass, this._entityIds);
+		}
 		_overlapOptions() {
 			const n = this._entityIds.length;
 			const opts = [];
@@ -25184,7 +25503,7 @@
 			if (this._saving) return msg("Saving…");
 			if (this.editMonitor) return msg("Save changes");
 			const count = this._monitorType === "combined" || this._entityIds.length <= 1 ? 1 : this._entityIds.length;
-			return count === 1 ? msg("Create 1 sensor") : `${msg("Create")} ${count} ${msg("sensors")}`;
+			return count === 1 ? msg("Create Anomaly Monitor Device") : `${msg("Create")} ${count} ${msg("Anomaly Monitor Devices")}`;
 		}
 		_renderStepBar() {
 			if (!!this.editMonitor) return b`
@@ -25219,6 +25538,18 @@
 			const suggestions = this.suggestedEntityIds.filter((id) => !selectedEntityIds.includes(id));
 			return b`
       <div class="wizard-section">
+        <div class="wizard-section-header-row">
+          <span></span>
+          ${this.allSeriesEntityIds.some((id) => !selectedEntityIds.includes(id)) ? b`
+                <button
+                  class="text-link-btn"
+                  type="button"
+                  @click=${this._addAllSeriesFromChart}
+                >
+                  ${msg("Add all series from chart")}
+                </button>
+              ` : A}
+        </div>
         <ha-target-picker
           .hass=${this.hass}
           .value=${this._target}
@@ -25249,6 +25580,7 @@
 		_renderStep2() {
 			const showTabs = this._entityIds.length > 1;
 			const activeId = this._activeEntityId || this._entityIds[0] || "";
+			const displayNames = this._entityDisplayNames();
 			return b`
       ${showTabs ? b`
             <div class="entity-tabs">
@@ -25259,209 +25591,42 @@
 				this._activeEntityId = id;
 			}}
                   >
-                    ${this._entityName(id)}
+                    ${displayNames.get(id) ?? this._entityName(id)}
                   </button>
                 `)}
             </div>
           ` : A}
-      ${activeId ? this._renderEntityAnalysis(activeId) : A}
+      <div class=${showTabs ? "entity-tab-panel" : ""}>
+        ${activeId ? this._renderEntityAnalysis(activeId) : A}
+      </div>
     `;
 		}
 		_renderEntityAnalysis(entityId) {
 			const cfg = this._getEntityConfig(entityId);
-			const hasSampling = cfg.sample_interval && cfg.sample_interval !== "raw";
+			const analysis = this._entityConfigToAnalysis(cfg);
 			return b`
-      <!-- Downsampling -->
-      <div class="wizard-analysis-section">
-        <div class="wizard-analysis-section-header">
-          <label class="option">
-            <input
-              type="checkbox"
-              .checked=${hasSampling}
-              @change=${(e) => {
-				const on = e.target.checked;
-				this._updateEntityConfig(entityId, "sample_interval", on ? "5m" : "raw");
-			}}
-            />
-            <span>${msg("Downsampling")}</span>
-          </label>
-        </div>
-        ${hasSampling ? b`
-              <div class="wizard-analysis-subopts">
-                <label class="field">
-                  <span class="field-label">${msg("Interval")}</span>
-                  <inline-select
-                    .value=${cfg.sample_interval}
-                    .options=${SAMPLE_INTERVAL_OPTIONS.filter((o) => o.value !== "raw").map((o) => ({
-				...o,
-				label: msg(o.label)
-			}))}
-                    @dp-select-change=${(e) => this._updateEntityConfig(entityId, "sample_interval", e.detail.value)}
-                  ></inline-select>
-                </label>
-                <label class="field">
-                  <span class="field-label">${msg("Aggregate")}</span>
-                  <inline-select
-                    .value=${cfg.sample_aggregate}
-                    .options=${SAMPLE_AGGREGATE_OPTIONS.map((o) => ({
-				...o,
-				label: msg(o.label)
-			}))}
-                    @dp-select-change=${(e) => this._updateEntityConfig(entityId, "sample_aggregate", e.detail.value)}
-                  ></inline-select>
-                </label>
-                <p class="wizard-notice">
-                  ${msg("Detection will run on the downsampled data.")}
-                </p>
-              </div>
-            ` : A}
-      </div>
-
-      <!-- Sensitivity -->
-      <div class="wizard-analysis-section">
-        <label class="field">
-          <span class="field-label">${msg("Sensitivity")}</span>
-          <inline-select
-            .value=${cfg.anomaly_sensitivity}
-            .options=${ANALYSIS_ANOMALY_SENSITIVITY_OPTIONS.map((o) => ({
-				...o,
-				label: msg(o.label)
-			}))}
-            @dp-select-change=${(e) => this._updateEntityConfig(entityId, "anomaly_sensitivity", e.detail.value)}
-          ></inline-select>
-        </label>
-      </div>
-
-      <!-- Detection methods -->
-      <div class="wizard-analysis-section">
-        <p class="wizard-section-label">${msg("Detection methods")}</p>
-        <div class="method-list">
-          ${ANALYSIS_ANOMALY_METHOD_OPTIONS.filter((o) => o.value !== "comparison_window").map((opt) => {
-				const isChecked = cfg.anomaly_methods.includes(opt.value);
-				return b`
-              <div class="method-item">
-                <label class="option">
-                  <input
-                    type="checkbox"
-                    .checked=${isChecked}
-                    @change=${(e) => this._toggleMethod(entityId, opt.value, e.target.checked)}
-                  />
-                  <span>${msg(opt.label)}</span>
-                </label>
-                ${isChecked ? this._renderMethodSubopts(entityId, opt.value, cfg) : A}
-              </div>
-            `;
-			})}
-        </div>
-      </div>
-
-      <!-- Overlap (when 2+ methods selected) -->
-      ${cfg.anomaly_methods.length >= 2 ? b`
-            <div class="wizard-analysis-section">
-              <label class="field">
-                <span class="field-label">${msg("When methods overlap")}</span>
-                <inline-select
-                  .value=${cfg.anomaly_sensitivity}
-                  .options=${[{
-				value: "all",
-				label: msg("Show all anomalies")
-			}, {
-				value: "only",
-				label: msg("Overlaps only")
-			}]}
-                  @dp-select-change=${() => {}}
-                ></inline-select>
-              </label>
-            </div>
-          ` : A}
+      <analysis-sample-group
+        .analysis=${analysis}
+        entity-id=${entityId}
+        @dp-group-analysis-change=${(e) => this._onAnalysisGroupChange(entityId, e)}
+      ></analysis-sample-group>
+      <analysis-anomaly-group
+        .analysis=${analysis}
+        entity-id=${entityId}
+        .hass=${this.hass}
+        @dp-group-analysis-change=${(e) => this._onAnalysisGroupChange(entityId, e)}
+      ></analysis-anomaly-group>
     `;
-		}
-		_renderMethodSubopts(entityId, method, cfg) {
-			if (method === "trend_residual") {
-				const showWindow = [
-					"rolling_average",
-					"ema",
-					"lowess"
-				].includes(cfg.anomaly_trend_method);
-				return b`
-        <div class="wizard-analysis-subopts">
-          <label class="field">
-            <span class="field-label">${msg("Trend method")}</span>
-            <inline-select
-              .value=${cfg.anomaly_trend_method}
-              .options=${ANALYSIS_TREND_METHOD_OPTIONS.map((o) => ({
-					...o,
-					label: msg(o.label)
-				}))}
-              @dp-select-change=${(e) => this._updateEntityConfig(entityId, "anomaly_trend_method", e.detail.value)}
-            ></inline-select>
-          </label>
-          ${showWindow ? b`
-                <label class="field">
-                  <span class="field-label">${msg("Trend window")}</span>
-                  <inline-select
-                    .value=${cfg.anomaly_trend_window}
-                    .options=${ANALYSIS_TREND_WINDOW_OPTIONS.map((o) => ({
-					...o,
-					label: msg(o.label)
-				}))}
-                    @dp-select-change=${(e) => this._updateEntityConfig(entityId, "anomaly_trend_window", e.detail.value)}
-                  ></inline-select>
-                </label>
-              ` : A}
-        </div>
-      `;
-			}
-			if (method === "rate_of_change") return b`
-        <div class="wizard-analysis-subopts">
-          <label class="field">
-            <span class="field-label">${msg("Rate window")}</span>
-            <inline-select
-              .value=${cfg.anomaly_rate_window}
-              .options=${ANALYSIS_ANOMALY_RATE_WINDOW_OPTIONS.map((o) => ({
-				...o,
-				label: msg(o.label)
-			}))}
-              @dp-select-change=${(e) => this._updateEntityConfig(entityId, "anomaly_rate_window", e.detail.value)}
-            ></inline-select>
-          </label>
-        </div>
-      `;
-			if (method === "rolling_zscore") return b`
-        <div class="wizard-analysis-subopts">
-          <label class="field">
-            <span class="field-label">${msg("Rolling window")}</span>
-            <inline-select
-              .value=${cfg.anomaly_zscore_window}
-              .options=${ANALYSIS_ANOMALY_ZSCORE_WINDOW_OPTIONS.map((o) => ({
-				...o,
-				label: msg(o.label)
-			}))}
-              @dp-select-change=${(e) => this._updateEntityConfig(entityId, "anomaly_zscore_window", e.detail.value)}
-            ></inline-select>
-          </label>
-        </div>
-      `;
-			if (method === "persistence") return b`
-        <div class="wizard-analysis-subopts">
-          <label class="field">
-            <span class="field-label">${msg("Min flat duration")}</span>
-            <inline-select
-              .value=${cfg.anomaly_persistence_window}
-              .options=${ANALYSIS_ANOMALY_PERSISTENCE_WINDOW_OPTIONS.map((o) => ({
-				...o,
-				label: msg(o.label)
-			}))}
-              @dp-select-change=${(e) => this._updateEntityConfig(entityId, "anomaly_persistence_window", e.detail.value)}
-            ></inline-select>
-          </label>
-        </div>
-      `;
-			return A;
 		}
 		_renderStep3() {
 			const isMulti = this._entityIds.length > 1;
 			return b`
+      ${!this.editMonitor ? b`
+            <div class="wizard-notice wizard-notice-info">
+              ${msg("Creating a monitor adds a new device to the HASS Datapoints integration. Each device includes sensors and a switch that expose anomaly data and can be used in automations.")}
+            </div>
+          ` : A}
+
       <div class="wizard-section">
         <ha-textfield
           label=${msg("Monitor name")}
@@ -25550,7 +25715,7 @@
         @closed=${this._onDialogClosed}
       >
         <span slot="heading">
-          ${isEdit ? msg("Edit monitor") : msg("Create monitor")}
+          ${isEdit ? msg("Edit Anomaly Monitor") : msg("Create Anomaly Monitor")}
         </span>
 
         <div class="wizard-content">
@@ -25586,6 +25751,7 @@
 	__decorate([n$1({ type: Object })], AnomalyMonitorWizard.prototype, "prefillAnalysis", null);
 	__decorate([n$1({ type: Object })], AnomalyMonitorWizard.prototype, "editMonitor", null);
 	__decorate([n$1({ type: Array })], AnomalyMonitorWizard.prototype, "suggestedEntityIds", null);
+	__decorate([n$1({ type: Array })], AnomalyMonitorWizard.prototype, "allSeriesEntityIds", null);
 	__decorate([r$1()], AnomalyMonitorWizard.prototype, "_step", null);
 	__decorate([r$1()], AnomalyMonitorWizard.prototype, "_target", null);
 	__decorate([r$1()], AnomalyMonitorWizard.prototype, "_entityIds", null);
@@ -25648,6 +25814,16 @@
     box-shadow: var(--ha-card-box-shadow, none);
     display: grid;
     gap: var(--dp-spacing-xs);
+    transition: opacity 200ms ease;
+    opacity: 1;
+  }
+
+  .monitor-card[data-enabled="false"] {
+    opacity: 0.65;
+  }
+
+  .monitor-card[data-enabled="false"]:hover {
+    opacity: 0.85;
   }
 
   .monitor-card-header {
@@ -25662,36 +25838,37 @@
     flex: 1;
   }
 
-  .monitor-type-badge {
-    font-size: 0.8em;
-    padding: 2px 6px;
-    border-radius: 10px;
-    background: var(--divider-color);
-    color: var(--secondary-text-color);
-    white-space: nowrap;
-  }
-
-  .monitor-status-badge {
-    font-size: 0.8em;
+  .monitor-anomaly-indicator {
+    font-size: 0.78em;
     padding: 2px 8px;
     border-radius: 10px;
     font-weight: 500;
     white-space: nowrap;
-  }
-
-  .monitor-status-badge.anomaly {
     background: var(--error-color, #db4437);
     color: white;
   }
 
-  .monitor-status-badge.normal {
-    background: var(--success-color, #43a047);
-    color: white;
+  .monitor-toggle-btn {
+    background: none;
+    border: none;
+    padding: 2px;
+    cursor: pointer;
+    color: var(--secondary-text-color);
+    display: inline-flex;
+    align-items: center;
+    border-radius: 4px;
+    transition: color 120ms ease;
+    --mdc-icon-size: 28px;
+    appearance: none;
+    -webkit-appearance: none;
   }
 
-  .monitor-status-badge.disabled {
-    background: var(--divider-color);
-    color: var(--secondary-text-color);
+  .monitor-card[data-enabled="true"] .monitor-toggle-btn {
+    color: var(--primary-color, #03a9f4);
+  }
+
+  .monitor-toggle-btn:hover {
+    color: var(--primary-color, #03a9f4);
   }
 
   .monitor-entities {
@@ -25700,12 +25877,28 @@
     gap: 4px;
   }
 
-  .monitor-entity-chip {
-    font-size: 0.8em;
-    padding: 1px 6px;
-    background: var(--divider-color);
-    border-radius: 10px;
+  .monitor-overlap-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .overlap-op {
+    font-size: 0.72rem;
+    font-weight: 700;
     color: var(--secondary-text-color);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0 2px;
+  }
+
+  .overlap-prefix {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--secondary-text-color);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
   }
 
   .monitor-stats {
@@ -25753,17 +25946,29 @@
     --mdc-icon-size: 16px;
   }
 
-  /* ---- "New monitor" button — matches save-monitor-btn style ---- */
+  /* ---- Small action buttons (edit/delete) ---- */
+
+  .small-btn {
+    --mdc-button-height: 28px;
+    font-size: 0.78rem;
+    --mdc-layout-grid-margin-desktop: 8px;
+  }
+
+  .delete-btn {
+    --mdc-theme-primary: var(--error-color, #db4437);
+  }
+
+  /* ---- "New monitor" button ---- */
 
   .new-monitor-btn {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px 8px;
+    gap: 6px;
+    padding: 8px 16px;
     border: 0;
     border-radius: 6px;
     font: inherit;
-    font-size: 0.82rem;
+    font-size: 0.9rem;
     color: var(--primary-color, #3b82f6);
     background: color-mix(
       in srgb,
@@ -25771,7 +25976,7 @@
       transparent
     );
     cursor: pointer;
-    --mdc-icon-size: 16px;
+    --mdc-icon-size: 18px;
     appearance: none;
     -webkit-appearance: none;
     transition: background 120ms ease;
@@ -25789,8 +25994,8 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitors-panel/anomaly-monitors-panel.ts
-	var _AnomalyMonitorsPanel, _hass_accessor_storage$6, _monitors_accessor_storage, _loading_accessor_storage, _editMonitor_accessor_storage, _wizardOpen_accessor_storage;
-	var AnomalyMonitorsPanel = (_hass_accessor_storage$6 = /* @__PURE__ */ new WeakMap(), _monitors_accessor_storage = /* @__PURE__ */ new WeakMap(), _loading_accessor_storage = /* @__PURE__ */ new WeakMap(), _editMonitor_accessor_storage = /* @__PURE__ */ new WeakMap(), _wizardOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _AnomalyMonitorsPanel = class AnomalyMonitorsPanel extends i$2 {
+	var _AnomalyMonitorsPanel, _hass_accessor_storage$6, _monitors_accessor_storage, _loading_accessor_storage, _editMonitor_accessor_storage, _wizardOpen_accessor_storage, _monitorClusters_accessor_storage, _loadingClusters_accessor_storage, _dismissPickerKey_accessor_storage;
+	var AnomalyMonitorsPanel = (_hass_accessor_storage$6 = /* @__PURE__ */ new WeakMap(), _monitors_accessor_storage = /* @__PURE__ */ new WeakMap(), _loading_accessor_storage = /* @__PURE__ */ new WeakMap(), _editMonitor_accessor_storage = /* @__PURE__ */ new WeakMap(), _wizardOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitorClusters_accessor_storage = /* @__PURE__ */ new WeakMap(), _loadingClusters_accessor_storage = /* @__PURE__ */ new WeakMap(), _dismissPickerKey_accessor_storage = /* @__PURE__ */ new WeakMap(), _AnomalyMonitorsPanel = class AnomalyMonitorsPanel extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _hass_accessor_storage$6, null);
@@ -25798,6 +26003,9 @@
 			_classPrivateFieldInitSpec(this, _loading_accessor_storage, true);
 			_classPrivateFieldInitSpec(this, _editMonitor_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _wizardOpen_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _monitorClusters_accessor_storage, /* @__PURE__ */ new Map());
+			_classPrivateFieldInitSpec(this, _loadingClusters_accessor_storage, /* @__PURE__ */ new Set());
+			_classPrivateFieldInitSpec(this, _dismissPickerKey_accessor_storage, null);
 			_defineProperty(this, "_pollInterval", null);
 		}
 		get hass() {
@@ -25830,6 +26038,24 @@
 		set _wizardOpen(value) {
 			_classPrivateFieldSet2(_wizardOpen_accessor_storage, this, value);
 		}
+		get _monitorClusters() {
+			return _classPrivateFieldGet2(_monitorClusters_accessor_storage, this);
+		}
+		set _monitorClusters(value) {
+			_classPrivateFieldSet2(_monitorClusters_accessor_storage, this, value);
+		}
+		get _loadingClusters() {
+			return _classPrivateFieldGet2(_loadingClusters_accessor_storage, this);
+		}
+		set _loadingClusters(value) {
+			_classPrivateFieldSet2(_loadingClusters_accessor_storage, this, value);
+		}
+		get _dismissPickerKey() {
+			return _classPrivateFieldGet2(_dismissPickerKey_accessor_storage, this);
+		}
+		set _dismissPickerKey(value) {
+			_classPrivateFieldSet2(_dismissPickerKey_accessor_storage, this, value);
+		}
 		connectedCallback() {
 			super.connectedCallback();
 			this._load();
@@ -25858,7 +26084,8 @@
 			}));
 		}
 		_onNewMonitor() {
-			this._emit("dp-monitors-panel-new");
+			this._editMonitor = null;
+			this._wizardOpen = true;
 		}
 		_onClose() {
 			this._emit("dp-monitors-panel-close");
@@ -25886,9 +26113,152 @@
 		}
 		async _onDelete(monitor) {
 			if (!this.hass) return;
-			if (!window.confirm(msg(`Delete monitor "${monitor.name}"? This cannot be undone.`))) return;
+			if (!await confirmDestructiveAction(this, {
+				title: msg(`Delete "${monitor.name}"?`),
+				message: msg("This cannot be undone. The monitor device and all its sensors will be removed."),
+				confirmLabel: msg("Delete")
+			})) return;
 			await deleteMonitor(this.hass, monitor.id);
 			await this._load();
+		}
+		async _loadClusters(monitorId) {
+			if (!this.hass || this._loadingClusters.has(monitorId)) return;
+			this._loadingClusters = new Set([...this._loadingClusters, monitorId]);
+			try {
+				const result = await fetchMonitorAnomalies(this.hass, monitorId);
+				const updated = new Map(this._monitorClusters);
+				updated.set(monitorId, result.anomaly_clusters);
+				this._monitorClusters = updated;
+			} catch {} finally {
+				const next = new Set(this._loadingClusters);
+				next.delete(monitorId);
+				this._loadingClusters = next;
+			}
+		}
+		async _onDismiss(monitor, cluster, expiresAt) {
+			if (!this.hass) return;
+			const times = cluster.points.map((p) => p.timeMs);
+			const startMs = Math.min(...times);
+			const endMs = Math.max(...times);
+			await dismissMonitorAnomaly(this.hass, monitor.id, startMs, endMs, expiresAt);
+			this._dismissPickerKey = null;
+			const updated = new Map(this._monitorClusters);
+			updated.delete(monitor.id);
+			this._monitorClusters = updated;
+			await this._load();
+		}
+		async _onUndismiss(monitor, windowId) {
+			if (!this.hass) return;
+			await undismissMonitorAnomaly(this.hass, monitor.id, windowId);
+			await this._load();
+		}
+		_formatClusterRange(cluster) {
+			const times = cluster.points.map((p) => p.timeMs);
+			if (times.length === 0) return "—";
+			const start = new Date(Math.min(...times)).toLocaleString();
+			const end = new Date(Math.max(...times)).toLocaleString();
+			return start === end ? start : `${start} – ${end}`;
+		}
+		_renderDismissExpiry(monitor, cluster, clusterIndex) {
+			const pickerKey = `${monitor.id}:${clusterIndex}`;
+			const isOpen = this._dismissPickerKey === pickerKey;
+			const lookBackHours = monitor.look_back_hours ?? 24;
+			if (!isOpen) return b`
+        <ha-button
+          class="dismiss-btn"
+          @click=${() => {
+				this._dismissPickerKey = pickerKey;
+			}}
+          >${msg("Dismiss")}</ha-button
+        >
+      `;
+			const autoLabel = lookBackHours < 48 ? `${lookBackHours * 2}h` : `${Math.round(lookBackHours / 12)}d`;
+			return b`
+      <div class="dismiss-picker">
+        <span class="dismiss-picker-label">${msg("Dismiss until:")}</span>
+        <ha-button @click=${() => this._onDismiss(monitor, cluster, void 0)}>
+          ${msg("Auto")} (${autoLabel})
+        </ha-button>
+        <ha-button
+          @click=${() => {
+				const d = /* @__PURE__ */ new Date();
+				d.setDate(d.getDate() + 1);
+				this._onDismiss(monitor, cluster, d.toISOString());
+			}}
+          >${msg("1 day")}</ha-button
+        >
+        <ha-button
+          @click=${() => {
+				const d = /* @__PURE__ */ new Date();
+				d.setDate(d.getDate() + 7);
+				this._onDismiss(monitor, cluster, d.toISOString());
+			}}
+          >${msg("1 week")}</ha-button
+        >
+        <ha-button @click=${() => this._onDismiss(monitor, cluster, null)}>
+          ${msg("Permanent")}
+        </ha-button>
+        <ha-button
+          @click=${() => {
+				this._dismissPickerKey = null;
+			}}
+        >
+          ${msg("Cancel")}
+        </ha-button>
+      </div>
+    `;
+		}
+		_renderClusterList(monitor) {
+			const clusters = this._monitorClusters.get(monitor.id);
+			if (this._loadingClusters.has(monitor.id)) return b`<div class="clusters-loading">
+        ${msg("Loading anomaly details…")}
+      </div>`;
+			if (!clusters) return A;
+			if (clusters.length === 0) return b`<div class="clusters-empty">
+        ${msg("No active anomaly clusters after dismissals.")}
+      </div>`;
+			return b`
+      <div class="cluster-list">
+        ${clusters.map((cluster, i) => b`
+            <div class="cluster-item">
+              <span class="cluster-method">${cluster.anomalyMethod}</span>
+              <span class="cluster-range"
+                >${this._formatClusterRange(cluster)}</span
+              >
+              ${this._renderDismissExpiry(monitor, cluster, i)}
+            </div>
+          `)}
+      </div>
+    `;
+		}
+		_renderDismissedWindows(monitor) {
+			const windows = monitor.dismissed_windows ?? [];
+			if (windows.length === 0) return A;
+			return b`
+      <details class="dismissed-windows">
+        <summary>${msg("Dismissed")} (${windows.length})</summary>
+        <div class="dismissed-list">
+          ${windows.map((w) => {
+				const start = new Date(w.start_ms).toLocaleString();
+				const end = new Date(w.end_ms).toLocaleString();
+				const expiry = w.expires_at ? new Date(w.expires_at).toLocaleString() : msg("Permanent");
+				return b`
+              <div class="dismissed-item">
+                <span class="dismissed-range">${start} – ${end}</span>
+                <span class="dismissed-expiry"
+                  >${msg("Expires:")} ${expiry}</span
+                >
+                <ha-button
+                  class="undismiss-btn"
+                  @click=${() => this._onUndismiss(monitor, w.id)}
+                  >${msg("Remove")}</ha-button
+                >
+              </div>
+            `;
+			})}
+        </div>
+      </details>
+    `;
 		}
 		_renderSparkline(history) {
 			const W = 120;
@@ -25915,48 +26285,90 @@
       />
     </svg>`;
 		}
-		_renderMonitorCard(monitor) {
+		_renderEntityDisplay(monitor) {
 			const entityIds = monitorEntityIds(monitor);
-			const clusterCount = monitor.last_cluster_count ?? 0;
-			const isDisabled = !monitor.enabled;
-			const hasAnomaly = !isDisabled && clusterCount > 0;
-			let statusLabel;
-			let statusClass;
-			if (isDisabled) {
-				statusLabel = msg("Disabled");
-				statusClass = "disabled";
-			} else if (hasAnomaly) {
-				statusLabel = msg("Anomaly detected");
-				statusClass = "anomaly";
-			} else {
-				statusLabel = msg("Normal");
-				statusClass = "normal";
-			}
-			const history = monitor.scan_history ?? [];
-			let consecutive = 0;
-			for (let i = history.length - 1; i >= 0; i--) if ((history[i].count ?? 0) > 0) consecutive++;
-			else break;
-			return b`
-      <div class="monitor-card">
-        <div class="monitor-card-header">
-          <span class="monitor-name">${monitor.name}</span>
-          <span class="monitor-type-badge">
-            ${monitor.type === "combined" ? "⬡ combined" : "● individual"}
-          </span>
-          <span class="monitor-status-badge ${statusClass}"
-            >${statusLabel}</span
-          >
-        </div>
-
+			if (monitor.type === "individual" || entityIds.length <= 1) return b`
         <div class="monitor-entities">
           ${entityIds.map((eid) => b`
               <entity-chip
                 .hass=${this.hass}
                 type="entity"
-                itemId=${eid}
+                .itemId=${eid}
               ></entity-chip>
             `)}
         </div>
+      `;
+			const mode = monitor.overlap_mode ?? "all";
+			if (mode === "any") return b`
+        <div class="monitor-overlap-row">
+          ${entityIds.map((eid, i) => b`
+              ${i > 0 ? b`<span class="overlap-op">OR</span>` : A}
+              <entity-chip
+                .hass=${this.hass}
+                type="entity"
+                .itemId=${eid}
+              ></entity-chip>
+            `)}
+        </div>
+      `;
+			const anyMatch = /^any_(\d+)$/.exec(mode) ?? (mode === "any_two_plus" ? ["", "2"] : null);
+			if (anyMatch) {
+				const n = parseInt(anyMatch[1], 10);
+				return b`
+        <div class="monitor-overlap-row">
+          <span class="overlap-prefix"
+            >${msg("AT LEAST")} ${n} ${msg("OF")}</span
+          >
+          ${entityIds.map((eid) => b`
+              <entity-chip
+                .hass=${this.hass}
+                type="entity"
+                .itemId=${eid}
+              ></entity-chip>
+            `)}
+        </div>
+      `;
+			}
+			return b`
+      <div class="monitor-overlap-row">
+        ${entityIds.map((eid, i) => b`
+            ${i > 0 ? b`<span class="overlap-op">AND</span>` : A}
+            <entity-chip
+              .hass=${this.hass}
+              type="entity"
+              .itemId=${eid}
+            ></entity-chip>
+          `)}
+      </div>
+    `;
+		}
+		_renderMonitorCard(monitor) {
+			const clusterCount = monitor.last_cluster_count ?? 0;
+			const hasAnomaly = !!monitor.enabled && clusterCount > 0;
+			const history = monitor.scan_history ?? [];
+			let consecutive = 0;
+			for (let i = history.length - 1; i >= 0; i--) if ((history[i].count ?? 0) > 0) consecutive++;
+			else break;
+			if (hasAnomaly && !this._monitorClusters.has(monitor.id)) this._loadClusters(monitor.id);
+			return b`
+      <div class="monitor-card" data-enabled=${monitor.enabled}>
+        <div class="monitor-card-header">
+          <span class="monitor-name">${monitor.name}</span>
+          ${hasAnomaly ? b`<span class="monitor-anomaly-indicator"
+                >${msg("Anomaly detected")}</span
+              >` : A}
+          <button
+            class="monitor-toggle-btn"
+            title=${monitor.enabled ? msg("Disable monitor") : msg("Enable monitor")}
+            @click=${() => this._onToggleEnabled(monitor)}
+          >
+            <ha-icon
+              icon=${monitor.enabled ? "mdi:toggle-switch" : "mdi:toggle-switch-off-outline"}
+            ></ha-icon>
+          </button>
+        </div>
+
+        ${this._renderEntityDisplay(monitor)}
 
         <div class="monitor-stats">
           ${this._renderSparkline(history)}
@@ -25970,13 +26382,13 @@
               >` : A}
         </div>
 
+        ${hasAnomaly ? this._renderClusterList(monitor) : A}
+        ${this._renderDismissedWindows(monitor)}
+
         <div class="monitor-actions">
-          <ha-button @click=${() => this._onEdit(monitor)}
+          <ha-button class="small-btn" @click=${() => this._onEdit(monitor)}
             >${msg("Edit")}</ha-button
           >
-          <ha-button @click=${() => this._onToggleEnabled(monitor)}>
-            ${monitor.enabled ? msg("Disable") : msg("Enable")}
-          </ha-button>
           ${monitor.device_id ? b`<a
                 class="device-link"
                 href=${`/config/devices/device/${monitor.device_id}`}
@@ -25986,7 +26398,9 @@
                 ${msg("Device")}
               </a>` : A}
           <div class="monitor-actions-spacer"></div>
-          <ha-button class="delete-btn" @click=${() => this._onDelete(monitor)}
+          <ha-button
+            class="small-btn delete-btn"
+            @click=${() => this._onDelete(monitor)}
             >${msg("Delete")}</ha-button
           >
         </div>
@@ -26034,6 +26448,9 @@
 	__decorate([r$1()], AnomalyMonitorsPanel.prototype, "_loading", null);
 	__decorate([r$1()], AnomalyMonitorsPanel.prototype, "_editMonitor", null);
 	__decorate([r$1()], AnomalyMonitorsPanel.prototype, "_wizardOpen", null);
+	__decorate([r$1()], AnomalyMonitorsPanel.prototype, "_monitorClusters", null);
+	__decorate([r$1()], AnomalyMonitorsPanel.prototype, "_loadingClusters", null);
+	__decorate([r$1()], AnomalyMonitorsPanel.prototype, "_dismissPickerKey", null);
 	AnomalyMonitorsPanel = __decorate([localized()], AnomalyMonitorsPanel);
 	customElements.define("anomaly-monitors-panel", AnomalyMonitorsPanel);
 	//#endregion
@@ -32471,6 +32888,7 @@
 					if (this._rowListEl) {
 						this._rowListEl.hass = this._hass ?? null;
 						this._rowListEl.states = this._hass?.states ?? {};
+						this._rowListEl.labelMap = disambiguateEntityNames(this._hass, (this._seriesRows ?? []).map((r) => r.entity_id));
 					}
 					if (this._rangeToolbarComp) this._rangeToolbarComp.hass = this._hass ?? null;
 					this.shadowRoot?.querySelectorAll("[data-series-icon-entity-id], [data-series-collapsed-icon-entity-id]").forEach((iconEl) => {
@@ -32560,7 +32978,8 @@
 				const entityId = detail.entityId ?? "";
 				const analysis = detail.analysis ?? null;
 				const suggestedIds = (this._seriesRows ?? []).filter((r) => r.analysis?.show_anomalies === true && Array.isArray(r.analysis.anomaly_methods) && r.analysis.anomaly_methods.length > 0 && !r.entity_id.startsWith("binary_sensor.") && r.entity_id !== entityId).map((r) => r.entity_id);
-				this._openMonitorWizard(entityId ? [entityId] : [], analysis, null, suggestedIds);
+				const allSeriesIds = (this._seriesRows ?? []).filter((r) => !r.entity_id.startsWith("binary_sensor.") && r.entity_id !== entityId).map((r) => r.entity_id);
+				this._openMonitorWizard(entityId ? [entityId] : [], analysis, null, suggestedIds, allSeriesIds);
 			});
 			if (this._rendered && !this._shellBuilt) {
 				logger$1.warn("[dp-lifecycle] connectedCallback: rendered but no shell — building loading shell");
@@ -32900,7 +33319,8 @@
 				"ha-dialog",
 				"ha-tooltip",
 				"ha-target-picker",
-				"ha-date-range-picker"
+				"ha-date-range-picker",
+				"ha-entity-picker"
 			]).then((results) => results).then(() => {
 				if (!this.isConnected || !this._rendered) {
 					logger$1.warn("[dp-lifecycle] _ensureUiComponentsReady: components ready but bailing early", {
@@ -33866,6 +34286,7 @@
 			wizard.hass = this._hass;
 			wizard.open = false;
 			wizard.suggestedEntityIds = [];
+			wizard.allSeriesEntityIds = [];
 			wizard.addEventListener("dp-monitor-wizard-close", () => {
 				wizard.open = false;
 			});
@@ -33875,7 +34296,7 @@
 			this.shadowRoot.appendChild(wizard);
 			this._monitorWizardComp = wizard;
 		}
-		_openMonitorWizard(entityIds, analysis, editMonitor = null, suggestedEntityIds = []) {
+		_openMonitorWizard(entityIds, analysis, editMonitor = null, suggestedEntityIds = [], allSeriesEntityIds = []) {
 			if (!this.shadowRoot) return;
 			if (!this._monitorWizardComp) this._mountMonitorWizard();
 			const wizard = this._monitorWizardComp;
@@ -33885,6 +34306,7 @@
 			wizard.prefillEntityIds = entityIds;
 			wizard.prefillAnalysis = analysis;
 			wizard.suggestedEntityIds = suggestedEntityIds;
+			wizard.allSeriesEntityIds = allSeriesEntityIds;
 			wizard.open = true;
 		}
 		_mountDateWindowDialogControl() {
@@ -33923,6 +34345,7 @@
 				this._rowListEl.rows = this._seriesRows;
 				this._rowListEl.states = this._hass?.states ?? {};
 				this._rowListEl.hass = this._hass ?? null;
+				this._rowListEl.labelMap = disambiguateEntityNames(this._hass, (this._seriesRows ?? []).map((r) => r.entity_id));
 				this._rowListEl.canShowDeltaAnalysis = !!this._selectedComparisonWindowId;
 				this._rowListEl.comparisonWindows = this._comparisonWindows;
 			}
@@ -34251,7 +34674,8 @@
 				const nextAnalysis = normalizeHistorySeriesAnalysis({
 					...sourceAnalysis,
 					expanded: currentAnalysis.expanded,
-					anomaly_comparison_window_id: currentAnalysis.anomaly_comparison_window_id
+					anomaly_comparison_window_id: currentAnalysis.anomaly_comparison_window_id,
+					anomaly_comparison_entity_id: currentAnalysis.anomaly_comparison_entity_id
 				});
 				if (JSON.stringify(nextAnalysis) === JSON.stringify(currentAnalysis)) return row;
 				changed = true;

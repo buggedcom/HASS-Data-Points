@@ -32,6 +32,7 @@ import {
   type AnomalyRegion,
   attachLineChartHover,
   attachLineChartRangeZoom,
+  ANOMALY_METHOD_LABELS,
   buildAnomalyTooltipContent,
   type ChartEventRecord,
   dispatchLineChartHover,
@@ -601,10 +602,22 @@ export class HistoryChart extends HTMLElement {
   _buildBackendAnomalyConfig(
     analysis: RecordWithUnknownValues
   ): BackendAnomalyConfig {
+    const rawMethods: string[] = Array.isArray(analysis.anomaly_methods)
+      ? (analysis.anomaly_methods as string[])
+      : [];
+    const hasSimilarEntity = rawMethods.includes("similar_entity");
+    // Map similar_entity → comparison_window for the backend, deduplicating
+    const backendMethods = hasSimilarEntity
+      ? [
+          ...new Set(
+            rawMethods.map((m) =>
+              m === "similar_entity" ? "comparison_window" : m
+            )
+          ),
+        ]
+      : rawMethods;
     const config: BackendAnomalyConfig = {
-      anomaly_methods: Array.isArray(analysis.anomaly_methods)
-        ? (analysis.anomaly_methods as string[])
-        : undefined,
+      anomaly_methods: backendMethods.length > 0 ? backendMethods : undefined,
       anomaly_sensitivity:
         typeof analysis.anomaly_sensitivity === "string"
           ? analysis.anomaly_sensitivity
@@ -650,6 +663,12 @@ export class HistoryChart extends HTMLElement {
           : undefined;
       })(),
       anomaly_use_sampled_data: analysis.anomaly_use_sampled_data !== false,
+      comparison_entity_id:
+        hasSimilarEntity &&
+        typeof analysis.anomaly_comparison_entity_id === "string" &&
+        analysis.anomaly_comparison_entity_id
+          ? analysis.anomaly_comparison_entity_id
+          : null,
     };
     if (analysis.anomaly_use_sampled_data !== false) {
       config.sample_interval =
@@ -1304,9 +1323,28 @@ export class HistoryChart extends HTMLElement {
     const content = buildAnomalyTooltipContent(regions);
     const firstRegion = regions[0];
     const entityId = firstRegion?.relatedEntityId ?? null;
+
+    // Short message: method label for a single method, generic label for multi
+    const methods = [
+      ...new Set(
+        regions
+          .map((r) => r?.cluster?.anomalyMethod)
+          .filter((m): m is string => Boolean(m))
+      ),
+    ];
+    const message =
+      methods.length === 1
+        ? `${ANOMALY_METHOD_LABELS[methods[0] as keyof typeof ANOMALY_METHOD_LABELS] ?? methods[0]} anomaly`
+        : "Multi-method anomaly";
+
+    // Full detail goes in the annotation field
+    const annotation = content
+      ? `${content.description}\n\n${content.alert}`
+      : "";
+
     return {
-      annotation: content ? `${content.description}\n${content.alert}` : "",
-      message: content ? content.title : "",
+      message,
+      annotation,
       icon: "mdi:alert-circle",
       linkedTarget: entityId ? { entity_id: [entityId] } : null,
     };
@@ -3066,6 +3104,14 @@ export class HistoryChart extends HTMLElement {
     // Restore defaults in non-split mode (split mode may have overridden these).
     if (scrollViewport) {
       scrollViewport.style.overflowY = "";
+      scrollViewport.style.minHeight = "";
+    }
+    this.style.height = "";
+    this.style.minHeight = "";
+    const _haCard = this.closest("ha-card") as HTMLElement | null;
+    if (_haCard) {
+      _haCard.style.height = "";
+      _haCard.style.minHeight = "";
     }
     // Reset chart element height so the pane's height: 100% takes over again.
     wrap.style.height = "";
@@ -4947,7 +4993,14 @@ export class HistoryChart extends HTMLElement {
 
     const N = (visibleSeries as unknown[]).length;
     const MIN_ROW_HEIGHT = 200;
-    const rowHeight = Math.max(MIN_ROW_HEIGHT, Math.floor(availableHeight / N));
+    const minTotalHeight = MIN_ROW_HEIGHT * N;
+    // When the minimum required height exceeds the available space, use the
+    // minimum per-series height and let the page scroll rather than clipping
+    // rows into an internal scrollable area.
+    const usePageScroll = minTotalHeight > availableHeight;
+    const rowHeight = usePageScroll
+      ? MIN_ROW_HEIGHT
+      : Math.max(MIN_ROW_HEIGHT, Math.floor(availableHeight / N));
     const totalHeight = rowHeight * N;
 
     if (chartStage) {
@@ -4969,6 +5022,25 @@ export class HistoryChart extends HTMLElement {
       wrap.style.height = "";
       if (splitScrollViewport) {
         (splitScrollViewport as HTMLElement).style.overflowY = "hidden";
+      }
+    }
+
+    // When page-scroll is needed, release the height constraints on the card
+    // so the layout can grow taller than the viewport.
+    const haCard = this.closest("ha-card") as HTMLElement | null;
+    if (usePageScroll) {
+      this.style.height = "auto";
+      this.style.minHeight = "100%";
+      if (haCard) {
+        haCard.style.height = "auto";
+        haCard.style.minHeight = "100%";
+      }
+    } else {
+      this.style.height = "";
+      this.style.minHeight = "";
+      if (haCard) {
+        haCard.style.height = "";
+        haCard.style.minHeight = "";
       }
     }
 

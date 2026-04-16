@@ -77,8 +77,20 @@ export const styles = css`
     outline-offset: 2px;
   }
 
+  .entity-picker-wrap {
+    overflow: hidden;
+    height: 32px;
+    border-radius: 6px;
+  }
+
+  ha-entity-picker {
+    display: block;
+    margin-top: -14px;
+  }
+
   .save-monitor-btn {
     display: inline-flex;
+    align-self: flex-start;
     align-items: center;
     gap: 4px;
     padding: 4px 8px;

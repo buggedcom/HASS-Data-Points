@@ -4,38 +4,26 @@ import { localized, msg } from "@/lib/i18n/localize";
 
 import { styles } from "./anomaly-monitor-wizard.styles";
 import {
-  ANALYSIS_ANOMALY_METHOD_OPTIONS,
-  ANALYSIS_ANOMALY_SENSITIVITY_OPTIONS,
-  ANALYSIS_ANOMALY_RATE_WINDOW_OPTIONS,
-  ANALYSIS_ANOMALY_ZSCORE_WINDOW_OPTIONS,
-  ANALYSIS_ANOMALY_PERSISTENCE_WINDOW_OPTIONS,
-} from "@/molecules/analysis-anomaly-group/analysis-anomaly-group";
-import {
-  ANALYSIS_TREND_METHOD_OPTIONS,
-  ANALYSIS_TREND_WINDOW_OPTIONS,
-} from "@/molecules/analysis-trend-group/analysis-trend-group";
-import {
-  SAMPLE_INTERVAL_OPTIONS,
-  SAMPLE_AGGREGATE_OPTIONS,
-} from "@/molecules/analysis-sample-group/analysis-sample-group";
-import {
-  createMonitor,
-  updateMonitor,
   type AnomalyMonitor,
   type CombinedMonitor,
-  type IndividualMonitor,
+  createMonitor,
   type CreateMonitorPayload,
+  type IndividualMonitor,
   type MonitorType,
+  updateMonitor,
 } from "@/lib/data/monitors-api";
 import type { NormalizedAnalysis } from "@/molecules/target-row/types";
 import type { HassLike } from "@/lib/types";
 import {
+  type NormalizedTargetSelection,
   normalizeTargetValue,
   resolveEntityIdsFromTarget,
-  type NormalizedTargetSelection,
 } from "@/lib/domain/target-selection";
+import { disambiguateEntityNames } from "@/lib/ha/entity-name";
 import "@/atoms/form/inline-select/inline-select";
 import "@/atoms/form/entity-chip/entity-chip";
+import "@/molecules/analysis-anomaly-group/analysis-anomaly-group";
+import "@/molecules/analysis-sample-group/analysis-sample-group";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -72,6 +60,8 @@ interface EntityAnalysisConfig {
   sample_interval: string;
   sample_aggregate: string;
   anomaly_use_sampled_data: boolean;
+  baseline_entity_id: string | null;
+  baseline_time_offset_hours: number;
 }
 
 function defaultEntityConfig(
@@ -90,6 +80,8 @@ function defaultEntityConfig(
     sample_interval: prefill?.sample_interval ?? "raw",
     sample_aggregate: prefill?.sample_aggregate ?? "mean",
     anomaly_use_sampled_data: prefill?.anomaly_use_sampled_data ?? false,
+    baseline_entity_id: null,
+    baseline_time_offset_hours: 0,
   };
 }
 
@@ -105,6 +97,12 @@ function configFromMonitor(m: AnomalyMonitor): EntityAnalysisConfig {
     sample_interval: m.sample_interval ?? "raw",
     sample_aggregate: m.sample_aggregate ?? "mean",
     anomaly_use_sampled_data: m.anomaly_use_sampled_data ?? false,
+    baseline_entity_id:
+      ((m as unknown as Record<string, unknown>)
+        .baseline_entity_id as string) ?? null,
+    baseline_time_offset_hours:
+      ((m as unknown as Record<string, unknown>)
+        .baseline_time_offset_hours as number) ?? 0,
   };
 }
 
@@ -143,6 +141,12 @@ export class AnomalyMonitorWizard extends LitElement {
    * (non-binary, with at least one method). Shown as quick-add chips in step 1.
    */
   @property({ type: Array }) accessor suggestedEntityIds: string[] = [];
+
+  /**
+   * All entity IDs currently on the chart (visible and hidden, excluding binary sensors).
+   * Used by the "Add all series from chart" shortcut button in step 1.
+   */
+  @property({ type: Array }) accessor allSeriesEntityIds: string[] = [];
 
   // ---- wizard state --------------------------------------------------------
 
@@ -262,6 +266,80 @@ export class AnomalyMonitorWizard extends LitElement {
     this._updateEntityConfig(entityId, "anomaly_methods", methods);
   }
 
+  /** Convert the wizard's slim EntityAnalysisConfig into a full NormalizedAnalysis
+   *  so it can be passed directly into analysis-anomaly-group / analysis-sample-group. */
+  private _entityConfigToAnalysis(
+    cfg: EntityAnalysisConfig
+  ): NormalizedAnalysis {
+    return {
+      show_anomalies: true,
+      anomaly_methods: [...cfg.anomaly_methods],
+      anomaly_sensitivity: cfg.anomaly_sensitivity,
+      anomaly_rate_window: cfg.anomaly_rate_window,
+      anomaly_zscore_window: cfg.anomaly_zscore_window,
+      anomaly_persistence_window: cfg.anomaly_persistence_window,
+      anomaly_trend_method: cfg.anomaly_trend_method,
+      anomaly_trend_window: cfg.anomaly_trend_window,
+      anomaly_use_sampled_data: cfg.anomaly_use_sampled_data,
+      sample_interval: cfg.sample_interval,
+      sample_aggregate: cfg.sample_aggregate,
+      // Defaults for fields not tracked by the wizard
+      show_trend_lines: false,
+      trend_method: "rolling_average",
+      trend_window: "24h",
+      show_trend_crosshairs: false,
+      show_summary_stats: false,
+      show_summary_stats_shading: false,
+      show_rate_of_change: false,
+      show_rate_crosshairs: false,
+      rate_window: "1h",
+      show_threshold_analysis: false,
+      show_threshold_shading: false,
+      threshold_value: "0",
+      threshold_direction: "above",
+      anomaly_overlap_mode: "all",
+      anomaly_comparison_window_id: null,
+      anomaly_comparison_entity_id: null,
+      show_delta_analysis: false,
+      show_delta_tooltip: false,
+      show_delta_lines: false,
+      hide_source_series: false,
+      stepped_series: false,
+      expanded: true,
+    } as NormalizedAnalysis;
+  }
+
+  /** Handle dp-group-analysis-change events bubbled from the embedded analysis components. */
+  private _onAnalysisGroupChange(entityId: string, e: Event) {
+    e.stopPropagation();
+    const detail = (e as CustomEvent<{ key: string; value: unknown }>).detail;
+    const { key, value } = detail;
+
+    // Method toggle events emitted as "anomaly_method_toggle_<name>"
+    if (key.startsWith("anomaly_method_toggle_")) {
+      const method = key.replace("anomaly_method_toggle_", "");
+      this._toggleMethod(entityId, method, value as boolean);
+      return;
+    }
+
+    const keyMap: Partial<Record<string, keyof EntityAnalysisConfig>> = {
+      anomaly_sensitivity: "anomaly_sensitivity",
+      anomaly_rate_window: "anomaly_rate_window",
+      anomaly_zscore_window: "anomaly_zscore_window",
+      anomaly_persistence_window: "anomaly_persistence_window",
+      anomaly_trend_method: "anomaly_trend_method",
+      anomaly_trend_window: "anomaly_trend_window",
+      anomaly_use_sampled_data: "anomaly_use_sampled_data",
+      sample_interval: "sample_interval",
+      sample_aggregate: "sample_aggregate",
+    };
+
+    const configKey = keyMap[key];
+    if (configKey !== undefined) {
+      this._updateEntityConfig(entityId, configKey, value);
+    }
+  }
+
   // -------------------------------------------------------------------------
   // Entity add / remove
   // -------------------------------------------------------------------------
@@ -276,6 +354,14 @@ export class AnomalyMonitorWizard extends LitElement {
     const current = this._target.entity_id ?? [];
     if (!current.includes(entityId)) {
       this._target = { ...this._target, entity_id: [...current, entityId] };
+    }
+  }
+
+  private _addAllSeriesFromChart() {
+    const current = this._target.entity_id ?? [];
+    const toAdd = this.allSeriesEntityIds.filter((id) => !current.includes(id));
+    if (toAdd.length > 0) {
+      this._target = { ...this._target, entity_id: [...current, ...toAdd] };
     }
   }
 
@@ -339,6 +425,19 @@ export class AnomalyMonitorWizard extends LitElement {
         this._error = msg("Each entity needs at least one detection method.");
         return;
       }
+      const anyMissingBaseline = this._entityIds.some((id) => {
+        const cfg = this._getEntityConfig(id);
+        return (
+          cfg.anomaly_methods.includes("comparison_window") &&
+          !cfg.baseline_entity_id
+        );
+      });
+      if (anyMissingBaseline) {
+        this._error = msg(
+          "Select a baseline entity for the Comparison method."
+        );
+        return;
+      }
       // Auto-populate name if blank
       if (!this._name) {
         const firstId = this._entityIds[0] ?? "";
@@ -372,6 +471,10 @@ export class AnomalyMonitorWizard extends LitElement {
       base.sample_interval = cfg.sample_interval;
       base.sample_aggregate = cfg.sample_aggregate;
       base.anomaly_use_sampled_data = true;
+    }
+    if (cfg.baseline_entity_id) {
+      base.baseline_entity_id = cfg.baseline_entity_id;
+      base.baseline_time_offset_hours = cfg.baseline_time_offset_hours;
     }
     return base;
   }
@@ -456,10 +559,17 @@ export class AnomalyMonitorWizard extends LitElement {
   private _entityName(entityId: string): string {
     if (!this.hass) return entityId;
     return (
-      this.hass.states[entityId]?.attributes?.friendly_name ??
+      (this.hass.states[entityId]?.attributes?.friendly_name as
+        | string
+        | undefined) ??
       entityId.split(".").pop() ??
       entityId
     );
+  }
+
+  /** Returns disambiguated labels for all current entity IDs. */
+  private _entityDisplayNames(): Map<string, string> {
+    return disambiguateEntityNames(this.hass, this._entityIds);
   }
 
   private _overlapOptions() {
@@ -492,8 +602,8 @@ export class AnomalyMonitorWizard extends LitElement {
         ? 1
         : this._entityIds.length;
     return count === 1
-      ? msg("Create 1 sensor")
-      : `${msg("Create")} ${count} ${msg("sensors")}`;
+      ? msg("Create Anomaly Monitor Device")
+      : `${msg("Create")} ${count} ${msg("Anomaly Monitor Devices")}`;
   }
 
   // -------------------------------------------------------------------------
@@ -541,8 +651,25 @@ export class AnomalyMonitorWizard extends LitElement {
     const suggestions = this.suggestedEntityIds.filter(
       (id) => !selectedEntityIds.includes(id)
     );
+    const hasUnaddedSeries = this.allSeriesEntityIds.some(
+      (id) => !selectedEntityIds.includes(id)
+    );
     return html`
       <div class="wizard-section">
+        <div class="wizard-section-header-row">
+          <span></span>
+          ${hasUnaddedSeries
+            ? html`
+                <button
+                  class="text-link-btn"
+                  type="button"
+                  @click=${this._addAllSeriesFromChart}
+                >
+                  ${msg("Add all series from chart")}
+                </button>
+              `
+            : nothing}
+        </div>
         <ha-target-picker
           .hass=${this.hass}
           .value=${this._target}
@@ -582,6 +709,7 @@ export class AnomalyMonitorWizard extends LitElement {
   private _renderStep2() {
     const showTabs = this._entityIds.length > 1;
     const activeId = this._activeEntityId || this._entityIds[0] || "";
+    const displayNames = this._entityDisplayNames();
 
     return html`
       ${showTabs
@@ -595,274 +723,38 @@ export class AnomalyMonitorWizard extends LitElement {
                       this._activeEntityId = id;
                     }}
                   >
-                    ${this._entityName(id)}
+                    ${displayNames.get(id) ?? this._entityName(id)}
                   </button>
                 `
               )}
             </div>
           `
         : nothing}
-      ${activeId ? this._renderEntityAnalysis(activeId) : nothing}
+      <div class=${showTabs ? "entity-tab-panel" : ""}>
+        ${activeId ? this._renderEntityAnalysis(activeId) : nothing}
+      </div>
     `;
   }
 
   private _renderEntityAnalysis(entityId: string) {
     const cfg = this._getEntityConfig(entityId);
-    const hasSampling = cfg.sample_interval && cfg.sample_interval !== "raw";
+    const analysis = this._entityConfigToAnalysis(cfg);
 
     return html`
-      <!-- Downsampling -->
-      <div class="wizard-analysis-section">
-        <div class="wizard-analysis-section-header">
-          <label class="option">
-            <input
-              type="checkbox"
-              .checked=${hasSampling}
-              @change=${(e: Event) => {
-                const on = (e.target as HTMLInputElement).checked;
-                this._updateEntityConfig(
-                  entityId,
-                  "sample_interval",
-                  on ? "5m" : "raw"
-                );
-              }}
-            />
-            <span>${msg("Downsampling")}</span>
-          </label>
-        </div>
-        ${hasSampling
-          ? html`
-              <div class="wizard-analysis-subopts">
-                <label class="field">
-                  <span class="field-label">${msg("Interval")}</span>
-                  <inline-select
-                    .value=${cfg.sample_interval}
-                    .options=${SAMPLE_INTERVAL_OPTIONS.filter(
-                      (o) => o.value !== "raw"
-                    ).map((o) => ({ ...o, label: msg(o.label) }))}
-                    @dp-select-change=${(e: Event) =>
-                      this._updateEntityConfig(
-                        entityId,
-                        "sample_interval",
-                        (e as CustomEvent<{ value: string }>).detail.value
-                      )}
-                  ></inline-select>
-                </label>
-                <label class="field">
-                  <span class="field-label">${msg("Aggregate")}</span>
-                  <inline-select
-                    .value=${cfg.sample_aggregate}
-                    .options=${SAMPLE_AGGREGATE_OPTIONS.map((o) => ({
-                      ...o,
-                      label: msg(o.label),
-                    }))}
-                    @dp-select-change=${(e: Event) =>
-                      this._updateEntityConfig(
-                        entityId,
-                        "sample_aggregate",
-                        (e as CustomEvent<{ value: string }>).detail.value
-                      )}
-                  ></inline-select>
-                </label>
-                <p class="wizard-notice">
-                  ${msg("Detection will run on the downsampled data.")}
-                </p>
-              </div>
-            `
-          : nothing}
-      </div>
-
-      <!-- Sensitivity -->
-      <div class="wizard-analysis-section">
-        <label class="field">
-          <span class="field-label">${msg("Sensitivity")}</span>
-          <inline-select
-            .value=${cfg.anomaly_sensitivity}
-            .options=${ANALYSIS_ANOMALY_SENSITIVITY_OPTIONS.map((o) => ({
-              ...o,
-              label: msg(o.label),
-            }))}
-            @dp-select-change=${(e: Event) =>
-              this._updateEntityConfig(
-                entityId,
-                "anomaly_sensitivity",
-                (e as CustomEvent<{ value: string }>).detail.value
-              )}
-          ></inline-select>
-        </label>
-      </div>
-
-      <!-- Detection methods -->
-      <div class="wizard-analysis-section">
-        <p class="wizard-section-label">${msg("Detection methods")}</p>
-        <div class="method-list">
-          ${ANALYSIS_ANOMALY_METHOD_OPTIONS.filter(
-            (o) => o.value !== "comparison_window"
-          ).map((opt) => {
-            const isChecked = cfg.anomaly_methods.includes(opt.value);
-            return html`
-              <div class="method-item">
-                <label class="option">
-                  <input
-                    type="checkbox"
-                    .checked=${isChecked}
-                    @change=${(e: Event) =>
-                      this._toggleMethod(
-                        entityId,
-                        opt.value,
-                        (e.target as HTMLInputElement).checked
-                      )}
-                  />
-                  <span>${msg(opt.label)}</span>
-                </label>
-                ${isChecked
-                  ? this._renderMethodSubopts(entityId, opt.value, cfg)
-                  : nothing}
-              </div>
-            `;
-          })}
-        </div>
-      </div>
-
-      <!-- Overlap (when 2+ methods selected) -->
-      ${cfg.anomaly_methods.length >= 2
-        ? html`
-            <div class="wizard-analysis-section">
-              <label class="field">
-                <span class="field-label">${msg("When methods overlap")}</span>
-                <inline-select
-                  .value=${cfg.anomaly_sensitivity}
-                  .options=${[
-                    { value: "all", label: msg("Show all anomalies") },
-                    { value: "only", label: msg("Overlaps only") },
-                  ]}
-                  @dp-select-change=${() => {
-                    /* anomaly_overlap_mode is intra-method, not stored per monitor */
-                  }}
-                ></inline-select>
-              </label>
-            </div>
-          `
-        : nothing}
+      <analysis-sample-group
+        .analysis=${analysis}
+        entity-id=${entityId}
+        @dp-group-analysis-change=${(e: Event) =>
+          this._onAnalysisGroupChange(entityId, e)}
+      ></analysis-sample-group>
+      <analysis-anomaly-group
+        .analysis=${analysis}
+        entity-id=${entityId}
+        .hass=${this.hass}
+        @dp-group-analysis-change=${(e: Event) =>
+          this._onAnalysisGroupChange(entityId, e)}
+      ></analysis-anomaly-group>
     `;
-  }
-
-  private _renderMethodSubopts(
-    entityId: string,
-    method: string,
-    cfg: EntityAnalysisConfig
-  ) {
-    if (method === "trend_residual") {
-      const showWindow = ["rolling_average", "ema", "lowess"].includes(
-        cfg.anomaly_trend_method
-      );
-      return html`
-        <div class="wizard-analysis-subopts">
-          <label class="field">
-            <span class="field-label">${msg("Trend method")}</span>
-            <inline-select
-              .value=${cfg.anomaly_trend_method}
-              .options=${ANALYSIS_TREND_METHOD_OPTIONS.map((o) => ({
-                ...o,
-                label: msg(o.label),
-              }))}
-              @dp-select-change=${(e: Event) =>
-                this._updateEntityConfig(
-                  entityId,
-                  "anomaly_trend_method",
-                  (e as CustomEvent<{ value: string }>).detail.value
-                )}
-            ></inline-select>
-          </label>
-          ${showWindow
-            ? html`
-                <label class="field">
-                  <span class="field-label">${msg("Trend window")}</span>
-                  <inline-select
-                    .value=${cfg.anomaly_trend_window}
-                    .options=${ANALYSIS_TREND_WINDOW_OPTIONS.map((o) => ({
-                      ...o,
-                      label: msg(o.label),
-                    }))}
-                    @dp-select-change=${(e: Event) =>
-                      this._updateEntityConfig(
-                        entityId,
-                        "anomaly_trend_window",
-                        (e as CustomEvent<{ value: string }>).detail.value
-                      )}
-                  ></inline-select>
-                </label>
-              `
-            : nothing}
-        </div>
-      `;
-    }
-    if (method === "rate_of_change") {
-      return html`
-        <div class="wizard-analysis-subopts">
-          <label class="field">
-            <span class="field-label">${msg("Rate window")}</span>
-            <inline-select
-              .value=${cfg.anomaly_rate_window}
-              .options=${ANALYSIS_ANOMALY_RATE_WINDOW_OPTIONS.map((o) => ({
-                ...o,
-                label: msg(o.label),
-              }))}
-              @dp-select-change=${(e: Event) =>
-                this._updateEntityConfig(
-                  entityId,
-                  "anomaly_rate_window",
-                  (e as CustomEvent<{ value: string }>).detail.value
-                )}
-            ></inline-select>
-          </label>
-        </div>
-      `;
-    }
-    if (method === "rolling_zscore") {
-      return html`
-        <div class="wizard-analysis-subopts">
-          <label class="field">
-            <span class="field-label">${msg("Rolling window")}</span>
-            <inline-select
-              .value=${cfg.anomaly_zscore_window}
-              .options=${ANALYSIS_ANOMALY_ZSCORE_WINDOW_OPTIONS.map((o) => ({
-                ...o,
-                label: msg(o.label),
-              }))}
-              @dp-select-change=${(e: Event) =>
-                this._updateEntityConfig(
-                  entityId,
-                  "anomaly_zscore_window",
-                  (e as CustomEvent<{ value: string }>).detail.value
-                )}
-            ></inline-select>
-          </label>
-        </div>
-      `;
-    }
-    if (method === "persistence") {
-      return html`
-        <div class="wizard-analysis-subopts">
-          <label class="field">
-            <span class="field-label">${msg("Min flat duration")}</span>
-            <inline-select
-              .value=${cfg.anomaly_persistence_window}
-              .options=${ANALYSIS_ANOMALY_PERSISTENCE_WINDOW_OPTIONS.map(
-                (o) => ({ ...o, label: msg(o.label) })
-              )}
-              @dp-select-change=${(e: Event) =>
-                this._updateEntityConfig(
-                  entityId,
-                  "anomaly_persistence_window",
-                  (e as CustomEvent<{ value: string }>).detail.value
-                )}
-            ></inline-select>
-          </label>
-        </div>
-      `;
-    }
-    return nothing;
   }
 
   // -------------------------------------------------------------------------
@@ -874,6 +766,16 @@ export class AnomalyMonitorWizard extends LitElement {
     const isMulti = entityCount > 1;
 
     return html`
+      ${!this.editMonitor
+        ? html`
+            <div class="wizard-notice wizard-notice-info">
+              ${msg(
+                "Creating a monitor adds a new device to the HASS Datapoints integration. Each device includes sensors and a switch that expose anomaly data and can be used in automations."
+              )}
+            </div>
+          `
+        : nothing}
+
       <div class="wizard-section">
         <ha-textfield
           label=${msg("Monitor name")}
@@ -975,7 +877,9 @@ export class AnomalyMonitorWizard extends LitElement {
         @closed=${this._onDialogClosed}
       >
         <span slot="heading">
-          ${isEdit ? msg("Edit monitor") : msg("Create monitor")}
+          ${isEdit
+            ? msg("Edit Anomaly Monitor")
+            : msg("Create Anomaly Monitor")}
         </span>
 
         <div class="wizard-content">

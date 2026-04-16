@@ -175,11 +175,19 @@ def test_schedule_timer_cancels_previous():
 # ---------------------------------------------------------------------------
 
 
+def _make_cluster(start_ms: int, end_ms: int) -> dict:
+    """Create a cluster dict in the new format (points with timeMs)."""
+    return {
+        "points": [{"timeMs": start_ms, "value": 0.0}, {"timeMs": end_ms, "value": 0.0}],
+        "anomalyMethod": "trend_residual",
+        "maxDeviation": 1.0,
+    }
+
+
 def test_run_combined_detection_all_mode_overlap():
-    """Two entities each have a cluster at overlapping times → count = 1."""
+    """Two entities each have a cluster at overlapping times → returns ≥1 cluster."""
     from custom_components.hass_datapoints.sensor import _run_combined_detection
 
-    # Both entities have clusters at time 100–200
     pts_a = [[t, float(t)] for t in range(100, 200, 5)]
     pts_b = [[t, float(t)] for t in range(100, 200, 5)]
 
@@ -187,19 +195,23 @@ def test_run_combined_detection_all_mode_overlap():
         "custom_components.hass_datapoints.sensor.run_anomaly_detection"
     ) as mock_det:
         mock_det.side_effect = [
-            [{"pts": [[150, 1.0]]}],
-            [{"pts": [[150, 1.0]]}],
+            [_make_cluster(100, 200)],
+            [_make_cluster(100, 200)],
         ]
-        count = _run_combined_detection(
+        clusters = _run_combined_detection(
             {"a": pts_a, "b": pts_b},
             {},
             "all",
         )
-    assert count >= 1
+    assert isinstance(clusters, list)
+    assert len(clusters) >= 1
+    # Cluster should have the correct structure
+    assert "points" in clusters[0]
+    assert clusters[0]["anomalyMethod"] == "combined_overlap"
 
 
 def test_run_combined_detection_no_overlap():
-    """Clusters at different times → count = 0 in 'all' mode."""
+    """Clusters at different times → empty list in 'all' mode."""
     from custom_components.hass_datapoints.sensor import _run_combined_detection
 
     pts_a = [[t, 1.0] for t in range(100, 200, 5)]
@@ -209,19 +221,19 @@ def test_run_combined_detection_no_overlap():
         "custom_components.hass_datapoints.sensor.run_anomaly_detection"
     ) as mock_det:
         mock_det.side_effect = [
-            [{"pts": [[150, 1.0]]}],
-            [{"pts": [[550, 1.0]]}],
+            [_make_cluster(100, 200)],
+            [_make_cluster(500, 600)],
         ]
-        count = _run_combined_detection(
+        clusters = _run_combined_detection(
             {"a": pts_a, "b": pts_b},
             {},
             "all",
         )
-    assert count == 0
+    assert clusters == []
 
 
 def test_run_combined_detection_any_two_plus():
-    """any_two_plus mode: count events where >= 2 entities overlap."""
+    """any_two_plus mode: returns clusters where >= 2 entities overlap."""
     from custom_components.hass_datapoints.sensor import _run_combined_detection
 
     pts = {
@@ -234,21 +246,81 @@ def test_run_combined_detection_any_two_plus():
         "custom_components.hass_datapoints.sensor.run_anomaly_detection"
     ) as mock_det:
         mock_det.side_effect = [
-            [{"pts": [[150, 1.0]]}],
-            [{"pts": [[150, 1.0]]}],
-            [{"pts": [[550, 1.0]]}],
+            [_make_cluster(100, 200)],
+            [_make_cluster(100, 200)],
+            [_make_cluster(500, 600)],
         ]
-        count = _run_combined_detection(pts, {}, "any_two_plus")
-    # a and b overlap at 150, so at minimum 1
-    assert count >= 1
+        clusters = _run_combined_detection(pts, {}, "any_two_plus")
+    assert isinstance(clusters, list)
+    assert len(clusters) >= 1
 
 
 def test_run_combined_detection_too_few_entities():
-    """Single entity → returns 0 immediately."""
+    """Single entity → returns empty list immediately."""
     from custom_components.hass_datapoints.sensor import _run_combined_detection
 
-    count = _run_combined_detection({"a": [[1, 1.0], [2, 2.0]]}, {}, "all")
-    assert count == 0
+    clusters = _run_combined_detection({"a": [[1, 1.0], [2, 2.0]]}, {}, "all")
+    assert clusters == []
+
+
+# ---------------------------------------------------------------------------
+# _apply_dismissals
+# ---------------------------------------------------------------------------
+
+
+def test_apply_dismissals_no_dismissed_windows():
+    from custom_components.hass_datapoints.sensor import _apply_dismissals
+
+    clusters = [_make_cluster(1000, 2000)]
+    assert _apply_dismissals(clusters, []) == clusters
+
+
+def test_apply_dismissals_filters_overlapping_cluster():
+    from custom_components.hass_datapoints.sensor import _apply_dismissals
+
+    clusters = [_make_cluster(1000, 2000)]
+    dismissed = [{"start_ms": 1500, "end_ms": 2500}]
+    result = _apply_dismissals(clusters, dismissed)
+    assert result == []
+
+
+def test_apply_dismissals_keeps_non_overlapping_cluster():
+    from custom_components.hass_datapoints.sensor import _apply_dismissals
+
+    clusters = [_make_cluster(5000, 6000)]
+    dismissed = [{"start_ms": 1000, "end_ms": 2000}]
+    result = _apply_dismissals(clusters, dismissed)
+    assert len(result) == 1
+
+
+def test_apply_dismissals_partial_overlap_filters():
+    from custom_components.hass_datapoints.sensor import _apply_dismissals
+
+    # Cluster at 1000-2000, dismissed window starts in the middle
+    clusters = [_make_cluster(1000, 2000)]
+    dismissed = [{"start_ms": 1500, "end_ms": 3000}]
+    result = _apply_dismissals(clusters, dismissed)
+    assert result == []
+
+
+def test_apply_dismissals_cluster_without_points_is_kept():
+    from custom_components.hass_datapoints.sensor import _apply_dismissals
+
+    # Clusters with no points are always kept (safe fallback)
+    clusters = [{"anomalyMethod": "x", "maxDeviation": 0.0}]
+    dismissed = [{"start_ms": 0, "end_ms": 9999}]
+    result = _apply_dismissals(clusters, dismissed)
+    assert len(result) == 1
+
+
+def test_apply_dismissals_multiple_clusters_filtered_selectively():
+    from custom_components.hass_datapoints.sensor import _apply_dismissals
+
+    clusters = [_make_cluster(1000, 2000), _make_cluster(5000, 6000)]
+    dismissed = [{"start_ms": 900, "end_ms": 2100}]
+    result = _apply_dismissals(clusters, dismissed)
+    assert len(result) == 1
+    assert result[0]["points"][0]["timeMs"] == 5000
 
 
 # ---------------------------------------------------------------------------
@@ -414,3 +486,106 @@ async def test_run_scan_no_event_zero_to_zero():
         await sensor._run_scan()
 
     hass.bus.async_fire.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# _run_scan — baseline entity fetch
+# ---------------------------------------------------------------------------
+
+
+async def test_run_scan_fetches_comparison_entity_when_baseline_set():
+    """When baseline_entity_id is set and comparison_window is in methods,
+    fetch_entity_pts is called a second time for the baseline entity."""
+    monitor = {
+        "id": "m1", "name": "M", "type": "individual",
+        "entity_id": "sensor.temp", "enabled": True,
+        "look_back_hours": 24, "scan_interval_minutes": 30,
+        "last_cluster_count": 0, "scan_history": [],
+        "anomaly_methods": ["comparison_window"],
+        "baseline_entity_id": "sensor.outdoor_temp",
+        "dismissed_windows": [],
+    }
+    sensor, hass = _make_scan_sensor(monitor)
+
+    fetch_calls = []
+
+    def fake_fetch(hass_ref, entity_id, *args):
+        fetch_calls.append(entity_id)
+        return _MANY_PTS
+
+    with patch(_RECORDER_PATCH, return_value=_recorder_mock()), \
+         patch(_FETCH_PTS_PATCH, side_effect=fake_fetch), \
+         patch(_FETCH_STATS_PATCH, return_value=[]), \
+         patch(_DETECT_PATCH, return_value=[]):
+        await sensor._run_scan()
+
+    assert "sensor.temp" in fetch_calls
+    assert "sensor.outdoor_temp" in fetch_calls
+
+
+async def test_run_scan_no_comparison_fetch_without_baseline():
+    """If baseline_entity_id is absent, only the primary entity is fetched."""
+    monitor = {
+        "id": "m1", "name": "M", "type": "individual",
+        "entity_id": "sensor.temp", "enabled": True,
+        "look_back_hours": 24, "scan_interval_minutes": 30,
+        "last_cluster_count": 0, "scan_history": [],
+        "anomaly_methods": ["trend_residual"],
+        "dismissed_windows": [],
+    }
+    sensor, hass = _make_scan_sensor(monitor)
+
+    fetch_calls = []
+
+    def fake_fetch(hass_ref, entity_id, *args):
+        fetch_calls.append(entity_id)
+        return _MANY_PTS
+
+    with patch(_RECORDER_PATCH, return_value=_recorder_mock()), \
+         patch(_FETCH_PTS_PATCH, side_effect=fake_fetch), \
+         patch(_FETCH_STATS_PATCH, return_value=[]), \
+         patch(_DETECT_PATCH, return_value=[]):
+        await sensor._run_scan()
+
+    assert fetch_calls == ["sensor.temp"]
+
+
+# ---------------------------------------------------------------------------
+# _run_scan — dismissals applied
+# ---------------------------------------------------------------------------
+
+
+async def test_run_scan_applies_dismissals_to_clusters():
+    """Clusters overlapping a dismissed window are filtered out before counting."""
+    from datetime import UTC, datetime, timedelta
+
+    expires_far_future = (datetime.now(UTC) + timedelta(days=365)).isoformat()
+    monitor = {
+        "id": "m1", "name": "M", "type": "individual",
+        "entity_id": "sensor.temp", "enabled": True,
+        "look_back_hours": 24, "scan_interval_minutes": 30,
+        "last_cluster_count": 0, "scan_history": [],
+        "anomaly_methods": ["trend_residual"],
+        "dismissed_windows": [
+            {"id": "w1", "start_ms": 1000, "end_ms": 3000, "dismissed_at": "2024-01-01T00:00:00+00:00", "expires_at": expires_far_future},
+        ],
+    }
+    sensor, hass = _make_scan_sensor(monitor)
+
+    # Return 2 clusters: one overlapping the dismissed window, one outside
+    detected_clusters = [
+        {"points": [{"timeMs": 2000, "value": 1.0}], "anomalyMethod": "trend_residual", "maxDeviation": 1.0},
+        {"points": [{"timeMs": 9000, "value": 1.0}], "anomalyMethod": "trend_residual", "maxDeviation": 1.0},
+    ]
+
+    with patch(_RECORDER_PATCH, return_value=_recorder_mock()), \
+         patch(_FETCH_PTS_PATCH, return_value=_MANY_PTS), \
+         patch(_FETCH_STATS_PATCH, return_value=[]), \
+         patch(_DETECT_PATCH, return_value=detected_clusters):
+        await sensor._run_scan()
+
+    # Only 1 cluster (the non-dismissed one) should be counted
+    update_call = sensor._store.async_update_monitor.call_args
+    assert update_call is not None
+    updates = update_call[0][1]
+    assert updates["last_cluster_count"] == 1

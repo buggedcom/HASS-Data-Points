@@ -46,6 +46,16 @@ export const styles = css`
     box-shadow: var(--ha-card-box-shadow, none);
     display: grid;
     gap: var(--dp-spacing-xs);
+    transition: opacity 200ms ease;
+    opacity: 1;
+  }
+
+  .monitor-card[data-enabled="false"] {
+    opacity: 0.65;
+  }
+
+  .monitor-card[data-enabled="false"]:hover {
+    opacity: 0.85;
   }
 
   .monitor-card-header {
@@ -60,36 +70,37 @@ export const styles = css`
     flex: 1;
   }
 
-  .monitor-type-badge {
-    font-size: 0.8em;
-    padding: 2px 6px;
-    border-radius: 10px;
-    background: var(--divider-color);
-    color: var(--secondary-text-color);
-    white-space: nowrap;
-  }
-
-  .monitor-status-badge {
-    font-size: 0.8em;
+  .monitor-anomaly-indicator {
+    font-size: 0.78em;
     padding: 2px 8px;
     border-radius: 10px;
     font-weight: 500;
     white-space: nowrap;
-  }
-
-  .monitor-status-badge.anomaly {
     background: var(--error-color, #db4437);
     color: white;
   }
 
-  .monitor-status-badge.normal {
-    background: var(--success-color, #43a047);
-    color: white;
+  .monitor-toggle-btn {
+    background: none;
+    border: none;
+    padding: 2px;
+    cursor: pointer;
+    color: var(--secondary-text-color);
+    display: inline-flex;
+    align-items: center;
+    border-radius: 4px;
+    transition: color 120ms ease;
+    --mdc-icon-size: 28px;
+    appearance: none;
+    -webkit-appearance: none;
   }
 
-  .monitor-status-badge.disabled {
-    background: var(--divider-color);
-    color: var(--secondary-text-color);
+  .monitor-card[data-enabled="true"] .monitor-toggle-btn {
+    color: var(--primary-color, #03a9f4);
+  }
+
+  .monitor-toggle-btn:hover {
+    color: var(--primary-color, #03a9f4);
   }
 
   .monitor-entities {
@@ -98,12 +109,28 @@ export const styles = css`
     gap: 4px;
   }
 
-  .monitor-entity-chip {
-    font-size: 0.8em;
-    padding: 1px 6px;
-    background: var(--divider-color);
-    border-radius: 10px;
+  .monitor-overlap-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .overlap-op {
+    font-size: 0.72rem;
+    font-weight: 700;
     color: var(--secondary-text-color);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0 2px;
+  }
+
+  .overlap-prefix {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--secondary-text-color);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
   }
 
   .monitor-stats {
@@ -151,17 +178,29 @@ export const styles = css`
     --mdc-icon-size: 16px;
   }
 
-  /* ---- "New monitor" button — matches save-monitor-btn style ---- */
+  /* ---- Small action buttons (edit/delete) ---- */
+
+  .small-btn {
+    --mdc-button-height: 28px;
+    font-size: 0.78rem;
+    --mdc-layout-grid-margin-desktop: 8px;
+  }
+
+  .delete-btn {
+    --mdc-theme-primary: var(--error-color, #db4437);
+  }
+
+  /* ---- "New monitor" button ---- */
 
   .new-monitor-btn {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px 8px;
+    gap: 6px;
+    padding: 8px 16px;
     border: 0;
     border-radius: 6px;
     font: inherit;
-    font-size: 0.82rem;
+    font-size: 0.9rem;
     color: var(--primary-color, #3b82f6);
     background: color-mix(
       in srgb,
@@ -169,7 +208,7 @@ export const styles = css`
       transparent
     );
     cursor: pointer;
-    --mdc-icon-size: 16px;
+    --mdc-icon-size: 18px;
     appearance: none;
     -webkit-appearance: none;
     transition: background 120ms ease;

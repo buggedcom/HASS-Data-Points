@@ -45,6 +45,12 @@ class DatapointsStore:
             # Migrate: add monitors key if absent (v1 → v2)
             if "monitors" not in self._data:
                 self._data["monitors"] = []
+            # Migrate: add baseline and dismissal fields to existing monitors
+            for m in self._data.get("monitors", []):
+                if "baseline_entity_id" not in m:
+                    m["baseline_entity_id"] = None
+                if "dismissed_windows" not in m:
+                    m["dismissed_windows"] = []
 
     async def async_record(
         self,
@@ -296,6 +302,71 @@ class DatapointsStore:
             self._notify_listeners()
             return True
         return False
+
+    @staticmethod
+    def prune_dismissed_windows(monitor: dict[str, Any], now: datetime) -> None:
+        """Remove expired dismissed windows from *monitor* (mutates in-place)."""
+        kept = []
+        for w in monitor.get("dismissed_windows", []):
+            expires_at = w.get("expires_at")
+            if expires_at is None:
+                kept.append(w)  # permanent — never expires
+                continue
+            try:
+                exp_dt = datetime.fromisoformat(expires_at)
+            except ValueError:
+                continue  # malformed — drop it
+            if exp_dt.tzinfo is None:
+                exp_dt = exp_dt.replace(tzinfo=UTC)
+            if now < exp_dt:
+                kept.append(w)
+        monitor["dismissed_windows"] = kept
+
+    async def async_dismiss_window(
+        self,
+        monitor_id: str,
+        start_ms: int,
+        end_ms: int,
+        expires_at: str | None,
+    ) -> dict[str, Any] | None:
+        """Add a dismissal window to a monitor.
+
+        *expires_at* is an ISO datetime string, or None for a permanent dismissal.
+        Returns the updated monitor record, or None if the monitor was not found.
+        """
+        for m in self._data.get("monitors", []):
+            if m.get("id") == monitor_id:
+                window: dict[str, Any] = {
+                    "id": str(uuid.uuid4()),
+                    "start_ms": start_ms,
+                    "end_ms": end_ms,
+                    "dismissed_at": datetime.now(UTC).isoformat(),
+                    "expires_at": expires_at,
+                }
+                m.setdefault("dismissed_windows", []).append(window)
+                await self._store.async_save(self._data)
+                self._notify_listeners()
+                return m
+        return None
+
+    async def async_undismiss_window(
+        self, monitor_id: str, window_id: str
+    ) -> dict[str, Any] | None:
+        """Remove a dismissal window by ID from a monitor.
+
+        Returns the updated monitor record, or None if the monitor was not found.
+        """
+        for m in self._data.get("monitors", []):
+            if m.get("id") == monitor_id:
+                original_len = len(m.get("dismissed_windows", []))
+                m["dismissed_windows"] = [
+                    w for w in m.get("dismissed_windows", []) if w.get("id") != window_id
+                ]
+                if len(m["dismissed_windows"]) < original_len:
+                    await self._store.async_save(self._data)
+                    self._notify_listeners()
+                return m
+        return None
 
     @staticmethod
     def append_scan_history(

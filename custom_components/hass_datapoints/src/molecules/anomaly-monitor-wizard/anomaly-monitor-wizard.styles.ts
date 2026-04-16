@@ -84,44 +84,82 @@ export const styles = css`
 
   .entity-tabs {
     display: flex;
-    gap: 6px;
+    gap: 0;
     overflow-x: auto;
-    padding-bottom: 6px;
     flex-wrap: nowrap;
     scrollbar-width: thin;
+    border-bottom: 2px solid var(--divider-color, rgba(0, 0, 0, 0.12));
   }
 
   .entity-tab {
     display: inline-flex;
     align-items: center;
-    padding: 4px 10px;
-    border: 1.5px solid var(--divider-color, rgba(0, 0, 0, 0.12));
-    border-radius: 12px;
+    padding: 8px 14px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -2px;
+    border-radius: 6px 6px 0 0;
     background: transparent;
     color: var(--secondary-text-color);
     font: inherit;
-    font-size: 0.82rem;
+    font-size: 0.85rem;
     white-space: nowrap;
     cursor: pointer;
     flex-shrink: 0;
     transition:
-      border-color 120ms ease,
       color 120ms ease,
+      border-color 120ms ease,
       background 120ms ease;
     appearance: none;
     -webkit-appearance: none;
   }
 
   .entity-tab:hover {
-    border-color: var(--primary-color);
     color: var(--primary-color);
+    background: color-mix(in srgb, var(--primary-color) 5%, transparent);
   }
 
   .entity-tab.active {
-    border-color: var(--primary-color);
     color: var(--primary-color);
-    background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+    border-bottom-color: var(--primary-color);
     font-weight: 500;
+  }
+
+  .entity-tab-panel {
+    border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  /* ---- Step 1 header row ---- */
+
+  .wizard-section-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 20px;
+  }
+
+  .text-link-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    font-size: 0.82rem;
+    color: var(--primary-color, #03a9f4);
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  .text-link-btn:hover {
+    opacity: 0.8;
   }
 
   /* ---- Step 2: Analysis sections ---- */
@@ -209,6 +247,17 @@ export const styles = css`
     margin: 4px 0 0;
     font-size: 0.8rem;
     color: var(--secondary-text-color);
+  }
+
+  .wizard-notice-info {
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--info-color, #2196f3);
+    background: color-mix(in srgb, var(--info-color, #2196f3) 8%, transparent);
+    font-size: 0.84rem;
+    color: var(--primary-text-color);
+    line-height: 1.5;
+    margin: 0;
   }
 
   /* ---- Error ---- */

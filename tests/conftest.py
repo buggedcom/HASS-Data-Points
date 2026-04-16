@@ -177,6 +177,62 @@ _ha_sensor.SensorEntity = _FakeSensorEntity
 _ha_sensor.SensorDeviceClass = _SensorDeviceClass
 _stub("homeassistant.components.sensor", _ha_sensor)
 
+# -- homeassistant.components.binary_sensor -----------------------------------
+class _FakeBinarySensorEntity:
+    """Minimal BinarySensorEntity stub."""
+
+    _attr_has_entity_name: bool = False
+    _attr_unique_id: str | None = None
+    _attr_name: str | None = None
+    _attr_is_on: bool = False
+
+    def __init_subclass__(cls, **kwargs) -> None:
+        super().__init_subclass__(**kwargs)
+
+    def __new__(cls, *args, **kwargs):
+        obj = super().__new__(cls)
+        obj.async_write_ha_state = MagicMock()
+        return obj
+
+    def async_on_remove(self, callback) -> None:
+        pass
+
+    async def async_added_to_hass(self) -> None:
+        pass
+
+
+_ha_binary_sensor = MagicMock()
+_ha_binary_sensor.BinarySensorEntity = _FakeBinarySensorEntity
+_stub("homeassistant.components.binary_sensor", _ha_binary_sensor)
+
+# -- homeassistant.components.switch ------------------------------------------
+class _FakeSwitchEntity:
+    """Minimal SwitchEntity stub."""
+
+    _attr_has_entity_name: bool = False
+    _attr_unique_id: str | None = None
+    _attr_name: str | None = None
+    _attr_is_on: bool = False
+
+    def __init_subclass__(cls, **kwargs) -> None:
+        super().__init_subclass__(**kwargs)
+
+    def __new__(cls, *args, **kwargs):
+        obj = super().__new__(cls)
+        obj.async_write_ha_state = MagicMock()
+        return obj
+
+    def async_on_remove(self, callback) -> None:
+        pass
+
+    async def async_added_to_hass(self) -> None:
+        pass
+
+
+_ha_switch = MagicMock()
+_ha_switch.SwitchEntity = _FakeSwitchEntity
+_stub("homeassistant.components.switch", _ha_switch)
+
 # -- homeassistant.helpers.entity / entity_platform ---------------------------
 _ha_entity = MagicMock()
 _ha_entity.DeviceInfo = dict  # DeviceInfo is essentially a typed dict
