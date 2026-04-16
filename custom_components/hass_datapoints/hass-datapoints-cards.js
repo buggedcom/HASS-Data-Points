@@ -18,7 +18,7 @@
 	* Copyright 2019 Google LLC
 	* SPDX-License-Identifier: BSD-3-Clause
 	*/
-	var t$5 = globalThis, e$7 = t$5.ShadowRoot && (void 0 === t$5.ShadyCSS || t$5.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, s$3 = Symbol(), o$4 = /* @__PURE__ */ new WeakMap();
+	var t$5 = globalThis, e$8 = t$5.ShadowRoot && (void 0 === t$5.ShadyCSS || t$5.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, s$3 = Symbol(), o$4 = /* @__PURE__ */ new WeakMap();
 	var n$4 = class {
 		constructor(t, e, o) {
 			if (this._$cssResult$ = !0, o !== s$3) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
@@ -27,7 +27,7 @@
 		get styleSheet() {
 			let t = this.o;
 			const s = this.t;
-			if (e$7 && void 0 === t) {
+			if (e$8 && void 0 === t) {
 				const e = void 0 !== s && 1 === s.length;
 				e && (t = o$4.get(s)), void 0 === t && ((this.o = t = new CSSStyleSheet()).replaceSync(this.cssText), e && o$4.set(s, t));
 			}
@@ -37,22 +37,22 @@
 			return this.cssText;
 		}
 	};
-	var r$5 = (t) => new n$4("string" == typeof t ? t : t + "", void 0, s$3), i$5 = (t, ...e) => {
+	var r$6 = (t) => new n$4("string" == typeof t ? t : t + "", void 0, s$3), i$5 = (t, ...e) => {
 		return new n$4(1 === t.length ? t[0] : e.reduce((e, s, o) => e + ((t) => {
 			if (!0 === t._$cssResult$) return t.cssText;
 			if ("number" == typeof t) return t;
 			throw Error("Value passed to 'css' function must be a 'css' function result: " + t + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
 		})(s) + t[o + 1], t[0]), t, s$3);
 	}, S$1 = (s, o) => {
-		if (e$7) s.adoptedStyleSheets = o.map((t) => t instanceof CSSStyleSheet ? t : t.styleSheet);
+		if (e$8) s.adoptedStyleSheets = o.map((t) => t instanceof CSSStyleSheet ? t : t.styleSheet);
 		else for (const e of o) {
 			const o = document.createElement("style"), n = t$5.litNonce;
 			void 0 !== n && o.setAttribute("nonce", n), o.textContent = e.cssText, s.appendChild(o);
 		}
-	}, c$4 = e$7 ? (t) => t : (t) => t instanceof CSSStyleSheet ? ((t) => {
+	}, c$4 = e$8 ? (t) => t : (t) => t instanceof CSSStyleSheet ? ((t) => {
 		let e = "";
 		for (const s of t.cssRules) e += s.cssText;
-		return r$5(e);
+		return r$6(e);
 	})(t) : t;
 	//#endregion
 	//#region node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/reactive-element.js
@@ -60,7 +60,7 @@
 	* @license
 	* Copyright 2017 Google LLC
 	* SPDX-License-Identifier: BSD-3-Clause
-	*/ var { is: i$4, defineProperty: e$6, getOwnPropertyDescriptor: h$2, getOwnPropertyNames: r$4, getOwnPropertySymbols: o$3, getPrototypeOf: n$3 } = Object, a$1 = globalThis, c$3 = a$1.trustedTypes, l$2 = c$3 ? c$3.emptyScript : "", p$2 = a$1.reactiveElementPolyfillSupport, d$2 = (t, s) => t, u$3 = {
+	*/ var { is: i$4, defineProperty: e$7, getOwnPropertyDescriptor: h$2, getOwnPropertyNames: r$5, getOwnPropertySymbols: o$3, getPrototypeOf: n$3 } = Object, a$1 = globalThis, c$3 = a$1.trustedTypes, l$2 = c$3 ? c$3.emptyScript : "", p$2 = a$1.reactiveElementPolyfillSupport, d$2 = (t, s) => t, u$3 = {
 		toAttribute(t, s) {
 			switch (s) {
 				case Boolean:
@@ -108,7 +108,7 @@
 		static createProperty(t, s = b$1) {
 			if (s.state && (s.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(t) && ((s = Object.create(s)).wrapped = !0), this.elementProperties.set(t, s), !s.noAccessor) {
 				const i = Symbol(), h = this.getPropertyDescriptor(t, i, s);
-				void 0 !== h && e$6(this.prototype, t, h);
+				void 0 !== h && e$7(this.prototype, t, h);
 			}
 		}
 		static getPropertyDescriptor(t, s, i) {
@@ -141,7 +141,7 @@
 		static finalize() {
 			if (this.hasOwnProperty(d$2("finalized"))) return;
 			if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(d$2("properties"))) {
-				const t = this.properties, s = [...r$4(t), ...o$3(t)];
+				const t = this.properties, s = [...r$5(t), ...o$3(t)];
 				for (const i of s) this.createProperty(i, t[i]);
 			}
 			const t = this[Symbol.metadata];
@@ -291,7 +291,7 @@
 	* Copyright 2017 Google LLC
 	* SPDX-License-Identifier: BSD-3-Clause
 	*/
-	var t$4 = globalThis, i$3 = (t) => t, s$2 = t$4.trustedTypes, e$5 = s$2 ? s$2.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, h$1 = "$lit$", o$2 = `lit$${Math.random().toFixed(9).slice(2)}$`, n$2 = "?" + o$2, r$3 = `<${n$2}>`, l$1 = document, c$2 = () => l$1.createComment(""), a = (t) => null === t || "object" != typeof t && "function" != typeof t, u$2 = Array.isArray, d$1 = (t) => u$2(t) || "function" == typeof t?.[Symbol.iterator], f$1 = "[ 	\n\f\r]", v$1 = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, _ = /-->/g, m$1 = />/g, p$1 = RegExp(`>|${f$1}(?:([^\\s"'>=/]+)(${f$1}*=${f$1}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`, "g"), g = /'/g, $ = /"/g, y = /^(?:script|style|textarea|title)$/i, x = (t) => (i, ...s) => ({
+	var t$4 = globalThis, i$3 = (t) => t, s$2 = t$4.trustedTypes, e$6 = s$2 ? s$2.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, h$1 = "$lit$", o$2 = `lit$${Math.random().toFixed(9).slice(2)}$`, n$2 = "?" + o$2, r$4 = `<${n$2}>`, l$1 = document, c$2 = () => l$1.createComment(""), a = (t) => null === t || "object" != typeof t && "function" != typeof t, u$2 = Array.isArray, d$1 = (t) => u$2(t) || "function" == typeof t?.[Symbol.iterator], f$1 = "[ 	\n\f\r]", v$1 = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, _ = /-->/g, m$1 = />/g, p$1 = RegExp(`>|${f$1}(?:([^\\s"'>=/]+)(${f$1}*=${f$1}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`, "g"), g = /'/g, $ = /"/g, y = /^(?:script|style|textarea|title)$/i, x = (t) => (i, ...s) => ({
 		_$litType$: t,
 		strings: i,
 		values: s
@@ -301,7 +301,7 @@
 	var E = Symbol.for("lit-noChange"), A = Symbol.for("lit-nothing"), C = /* @__PURE__ */ new WeakMap(), P = l$1.createTreeWalker(l$1, 129);
 	function V(t, i) {
 		if (!u$2(t) || !t.hasOwnProperty("raw")) throw Error("invalid template strings array");
-		return void 0 !== e$5 ? e$5.createHTML(i) : i;
+		return void 0 !== e$6 ? e$6.createHTML(i) : i;
 	}
 	var N = (t, i) => {
 		const s = t.length - 1, e = [];
@@ -311,7 +311,7 @@
 			let a, u, d = -1, f = 0;
 			for (; f < s.length && (c.lastIndex = f, u = c.exec(s), null !== u);) f = c.lastIndex, c === v$1 ? "!--" === u[1] ? c = _ : void 0 !== u[1] ? c = m$1 : void 0 !== u[2] ? (y.test(u[2]) && (n = RegExp("</" + u[2], "g")), c = p$1) : void 0 !== u[3] && (c = p$1) : c === p$1 ? ">" === u[0] ? (c = n ?? v$1, d = -1) : void 0 === u[1] ? d = -2 : (d = c.lastIndex - u[2].length, a = u[1], c = void 0 === u[3] ? p$1 : "\"" === u[3] ? $ : g) : c === $ || c === g ? c = p$1 : c === _ || c === m$1 ? c = v$1 : (c = p$1, n = void 0);
 			const x = c === p$1 && t[i + 1].startsWith("/>") ? " " : "";
-			l += c === v$1 ? s + r$3 : d >= 0 ? (e.push(a), s.slice(0, d) + h$1 + s.slice(d) + o$2 + x) : s + o$2 + (-2 === d ? i : x);
+			l += c === v$1 ? s + r$4 : d >= 0 ? (e.push(a), s.slice(0, d) + h$1 + s.slice(d) + o$2 + x) : s + o$2 + (-2 === d ? i : x);
 		}
 		return [V(t, l + (t[s] || "<?>") + (2 === i ? "</svg>" : 3 === i ? "</math>" : "")), e];
 	};
@@ -708,7 +708,7 @@
 		converter: u$3,
 		reflect: !1,
 		hasChanged: f$2
-	}, r$2 = (t = o, e, r) => {
+	}, r$3 = (t = o, e, r) => {
 		const { kind: n, metadata: i } = r;
 		let s = globalThis.litPropertyMetadata.get(i);
 		if (void 0 === s && globalThis.litPropertyMetadata.set(i, s = /* @__PURE__ */ new Map()), "setter" === n && ((t = Object.create(t)).wrapped = !0), s.set(r.name, t), "accessor" === n) {
@@ -733,7 +733,7 @@
 		throw Error("Unsupported decorator location: " + n);
 	};
 	function n$1(t) {
-		return (e, o) => "object" == typeof o ? r$2(t, e, o) : ((t, e, o) => {
+		return (e, o) => "object" == typeof o ? r$3(t, e, o) : ((t, e, o) => {
 			const r = e.hasOwnProperty(o);
 			return e.constructor.createProperty(o, t), r ? Object.getOwnPropertyDescriptor(e, o) : void 0;
 		})(t, e, o);
@@ -744,7 +744,7 @@
 	* @license
 	* Copyright 2017 Google LLC
 	* SPDX-License-Identifier: BSD-3-Clause
-	*/ function r$1(r) {
+	*/ function r$2(r) {
 		return n$1({
 			...r,
 			state: !0,
@@ -758,14 +758,14 @@
 	* Copyright 2017 Google LLC
 	* SPDX-License-Identifier: BSD-3-Clause
 	*/
-	var e$4 = (e, t, c) => (c.configurable = !0, c.enumerable = !0, Reflect.decorate && "object" != typeof t && Object.defineProperty(e, t, c), c);
+	var e$5 = (e, t, c) => (c.configurable = !0, c.enumerable = !0, Reflect.decorate && "object" != typeof t && Object.defineProperty(e, t, c), c);
 	//#endregion
 	//#region node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/decorators/query.js
 	/**
 	* @license
 	* Copyright 2017 Google LLC
 	* SPDX-License-Identifier: BSD-3-Clause
-	*/ function e$3(e, r) {
+	*/ function e$4(e, r) {
 		return (n, s, i) => {
 			const o = (t) => t.renderRoot?.querySelector(e) ?? null;
 			if (r) {
@@ -780,15 +780,28 @@
 						}
 					};
 				})();
-				return e$4(n, s, { get() {
+				return e$5(n, s, { get() {
 					let t = e.call(this);
 					return void 0 === t && (t = o(this), (null !== t || this.hasUpdated) && r.call(this, t)), t;
 				} });
 			}
-			return e$4(n, s, { get() {
+			return e$5(n, s, { get() {
 				return o(this);
 			} });
 		};
+	}
+	//#endregion
+	//#region node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/decorators/query-all.js
+	/**
+	* @license
+	* Copyright 2017 Google LLC
+	* SPDX-License-Identifier: BSD-3-Clause
+	*/
+	var e$3;
+	function r$1(r) {
+		return (n, o) => e$5(n, o, { get() {
+			return (this.renderRoot ?? (e$3 ??= document.createDocumentFragment())).querySelectorAll(r);
+		} });
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/display/color-swatch/color-swatch.styles.ts
@@ -1377,7 +1390,7 @@
 		attribute: "show-target-picker"
 	})], CardActionTargets.prototype, "showTargetPicker", null);
 	__decorate([n$1({ attribute: false })], CardActionTargets.prototype, "configChips", null);
-	__decorate([r$1()], CardActionTargets.prototype, "_targetValue", null);
+	__decorate([r$2()], CardActionTargets.prototype, "_targetValue", null);
 	customElements.define("action-targets", CardActionTargets);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/logger.ts
@@ -5226,7 +5239,7 @@
 			this._fire(cfg);
 		}
 	}, _defineProperty(_EditorBase, "styles", styles$69), _EditorBase);
-	__decorate([r$1()], EditorBase.prototype, "_config", null);
+	__decorate([r$2()], EditorBase.prototype, "_config", null);
 	__decorate([n$1({ type: Object })], EditorBase.prototype, "hass", null);
 	EditorBase = __decorate([localized()], EditorBase);
 	customElements.define("editor-base", EditorBase);
@@ -6398,7 +6411,7 @@
 	__decorate([n$1({ type: String })], CardDevToolResults.prototype, "statusKind", null);
 	__decorate([n$1({ type: String })], CardDevToolResults.prototype, "statusText", null);
 	__decorate([n$1({ type: Boolean })], CardDevToolResults.prototype, "statusVisible", null);
-	__decorate([r$1()], CardDevToolResults.prototype, "_collapsedWindowIds", null);
+	__decorate([r$2()], CardDevToolResults.prototype, "_collapsedWindowIds", null);
 	customElements.define("dev-tool-results", CardDevToolResults);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/dev-tool/dev-tool-windows/dev-tool-windows.styles.ts
@@ -6647,7 +6660,7 @@
 	};
 	_defineProperty(CardDevToolWindows, "styles", styles$62);
 	__decorate([n$1({ attribute: false })], CardDevToolWindows.prototype, "windows", null);
-	__decorate([r$1()], CardDevToolWindows.prototype, "_nextWindowId", null);
+	__decorate([r$2()], CardDevToolWindows.prototype, "_nextWindowId", null);
 	customElements.define("dev-tool-windows", CardDevToolWindows);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/dev-tool/dev-tool.ts
@@ -21583,7 +21596,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/target-row-list.ts
-	var _TargetRowList, _rows_accessor_storage$1, _states_accessor_storage$1, _hass_accessor_storage$8, _canShowDeltaAnalysis_accessor_storage$1, _comparisonWindows_accessor_storage$1, _computingEntityIds_accessor_storage, _analysisProgress_accessor_storage, _computingMethodsByEn_accessor_storage, _labelMap_accessor_storage;
+	var _TargetRowList, _rows_accessor_storage$1, _states_accessor_storage$1, _hass_accessor_storage$8, _canShowDeltaAnalysis_accessor_storage$1, _comparisonWindows_accessor_storage$1, _computingEntityIds_accessor_storage, _analysisProgress_accessor_storage, _computingMethodsByEn_accessor_storage, _labelMap_accessor_storage, _targetRows_accessor_storage;
 	var _DURATION_SECONDS = {
 		raw: 0,
 		"5s": 5,
@@ -21665,7 +21678,7 @@
 		}
 		return updates;
 	}
-	var TargetRowList = (_rows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _states_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$8 = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _analysisProgress_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingMethodsByEn_accessor_storage = /* @__PURE__ */ new WeakMap(), _labelMap_accessor_storage = /* @__PURE__ */ new WeakMap(), _TargetRowList = class TargetRowList extends i$2 {
+	var TargetRowList = (_rows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _states_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$8 = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _analysisProgress_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingMethodsByEn_accessor_storage = /* @__PURE__ */ new WeakMap(), _labelMap_accessor_storage = /* @__PURE__ */ new WeakMap(), _targetRows_accessor_storage = /* @__PURE__ */ new WeakMap(), _TargetRowList = class TargetRowList extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _rows_accessor_storage$1, []);
@@ -21677,6 +21690,7 @@
 			_classPrivateFieldInitSpec(this, _analysisProgress_accessor_storage, 0);
 			_classPrivateFieldInitSpec(this, _computingMethodsByEn_accessor_storage, /* @__PURE__ */ new Map());
 			_classPrivateFieldInitSpec(this, _labelMap_accessor_storage, /* @__PURE__ */ new Map());
+			_classPrivateFieldInitSpec(this, _targetRows_accessor_storage, void 0);
 			_defineProperty(
 				this,
 				/** Index of the row currently being dragged, or null when not dragging. */
@@ -21810,6 +21824,12 @@
 		set labelMap(value) {
 			_classPrivateFieldSet2(_labelMap_accessor_storage, this, value);
 		}
+		get _targetRows() {
+			return _classPrivateFieldGet2(_targetRows_accessor_storage, this);
+		}
+		set _targetRows(value) {
+			_classPrivateFieldSet2(_targetRows_accessor_storage, this, value);
+		}
 		render() {
 			if (!this.rows.length) return b``;
 			const firstAnalysis = JSON.stringify(this.rows[0]?.analysis ?? {});
@@ -21919,7 +21939,7 @@
 			return null;
 		}
 		_clearDropIndicators() {
-			this.shadowRoot?.querySelectorAll("target-row").forEach((r) => {
+			this._targetRows?.forEach((r) => {
 				r.classList.remove("is-drag-over-before", "is-drag-over-after");
 			});
 		}
@@ -21957,6 +21977,7 @@
 		type: Object,
 		attribute: false
 	})], TargetRowList.prototype, "labelMap", null);
+	__decorate([r$1("target-row")], TargetRowList.prototype, "_targetRows", null);
 	TargetRowList = __decorate([localized()], TargetRowList);
 	customElements.define("target-row-list", TargetRowList);
 	//#endregion
@@ -22222,7 +22243,7 @@
 		type: Boolean,
 		attribute: false
 	})], SidebarOptions.prototype, "anyAnomaliesEnabled", null);
-	__decorate([r$1()], SidebarOptions.prototype, "targetsOpen", null);
+	__decorate([r$2()], SidebarOptions.prototype, "targetsOpen", null);
 	__decorate([n$1({
 		type: Boolean,
 		attribute: "datapoints-open"
@@ -22575,7 +22596,7 @@
 	__decorate([n$1({ type: String })], CollapsedOptionsMenu.prototype, "hoverSnapMode", null);
 	__decorate([n$1({ type: String })], CollapsedOptionsMenu.prototype, "anomalyOverlapMode", null);
 	__decorate([n$1({ type: Boolean })], CollapsedOptionsMenu.prototype, "anyAnomaliesEnabled", null);
-	__decorate([r$1()], CollapsedOptionsMenu.prototype, "activeSection", null);
+	__decorate([r$2()], CollapsedOptionsMenu.prototype, "activeSection", null);
 	customElements.define("collapsed-options-menu", CollapsedOptionsMenu);
 	//#endregion
 	//#region node_modules/.pnpm/lit-html@3.3.2/node_modules/lit-html/directives/class-map.js
@@ -23090,14 +23111,16 @@
 	customElements.define("comparison-tab", ComparisonTab);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab-rail/comparison-tab-rail.ts
-	var _ComparisonTabRail, _tabs_accessor_storage, _loadingIds_accessor_storage, _hoveredId_accessor_storage, _overflowing_accessor_storage;
-	var ComparisonTabRail = (_tabs_accessor_storage = /* @__PURE__ */ new WeakMap(), _loadingIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _hoveredId_accessor_storage = /* @__PURE__ */ new WeakMap(), _overflowing_accessor_storage = /* @__PURE__ */ new WeakMap(), _ComparisonTabRail = class ComparisonTabRail extends i$2 {
+	var _ComparisonTabRail, _tabs_accessor_storage, _loadingIds_accessor_storage, _hoveredId_accessor_storage, _overflowing_accessor_storage, _shellEl_accessor_storage, _railEl_accessor_storage;
+	var ComparisonTabRail = (_tabs_accessor_storage = /* @__PURE__ */ new WeakMap(), _loadingIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _hoveredId_accessor_storage = /* @__PURE__ */ new WeakMap(), _overflowing_accessor_storage = /* @__PURE__ */ new WeakMap(), _shellEl_accessor_storage = /* @__PURE__ */ new WeakMap(), _railEl_accessor_storage = /* @__PURE__ */ new WeakMap(), _ComparisonTabRail = class ComparisonTabRail extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _tabs_accessor_storage, []);
 			_classPrivateFieldInitSpec(this, _loadingIds_accessor_storage, []);
 			_classPrivateFieldInitSpec(this, _hoveredId_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _overflowing_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _shellEl_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _railEl_accessor_storage, null);
 			_defineProperty(this, "_resizeObserver", void 0);
 		}
 		get tabs() {
@@ -23124,14 +23147,25 @@
 		set overflowing(value) {
 			_classPrivateFieldSet2(_overflowing_accessor_storage, this, value);
 		}
+		get _shellEl() {
+			return _classPrivateFieldGet2(_shellEl_accessor_storage, this);
+		}
+		set _shellEl(value) {
+			_classPrivateFieldSet2(_shellEl_accessor_storage, this, value);
+		}
+		get _railEl() {
+			return _classPrivateFieldGet2(_railEl_accessor_storage, this);
+		}
+		set _railEl(value) {
+			_classPrivateFieldSet2(_railEl_accessor_storage, this, value);
+		}
 		connectedCallback() {
 			super.connectedCallback();
 			if (this._resizeObserver) return;
 			this._resizeObserver = new ResizeObserver(() => this._checkOverflow());
 			this.updateComplete.then(() => {
 				if (!this.isConnected || !this._resizeObserver) return;
-				const shell = this.shadowRoot?.querySelector(".chart-tabs-shell");
-				if (shell) this._resizeObserver.observe(shell);
+				if (this._shellEl) this._resizeObserver.observe(this._shellEl);
 			});
 		}
 		disconnectedCallback() {
@@ -23140,11 +23174,8 @@
 			this._resizeObserver = void 0;
 		}
 		_checkOverflow() {
-			const shell = this.shadowRoot?.querySelector(".chart-tabs-shell");
-			if (!shell) return;
-			const rail = shell.querySelector(".chart-tabs-rail");
-			if (!rail) return;
-			this.overflowing = rail.scrollWidth > rail.clientWidth;
+			if (!this._railEl) return;
+			this.overflowing = this._railEl.scrollWidth > this._railEl.clientWidth;
 		}
 		_onAddClick() {
 			this.dispatchEvent(new CustomEvent("dp-tab-add", {
@@ -23192,6 +23223,8 @@
 		attribute: "hovered-id"
 	})], ComparisonTabRail.prototype, "hoveredId", null);
 	__decorate([n$1({ type: Boolean })], ComparisonTabRail.prototype, "overflowing", null);
+	__decorate([e$4(".chart-tabs-shell")], ComparisonTabRail.prototype, "_shellEl", null);
+	__decorate([e$4(".chart-tabs-rail")], ComparisonTabRail.prototype, "_railEl", null);
 	ComparisonTabRail = __decorate([localized()], ComparisonTabRail);
 	customElements.define("comparison-tab-rail", ComparisonTabRail);
 	//#endregion
@@ -25404,35 +25437,35 @@
 	__decorate([n$1({ type: Boolean })], RangeTimeline.prototype, "isLiveEdge", null);
 	__decorate([n$1({ type: String })], RangeTimeline.prototype, "locale", null);
 	__decorate([n$1({ attribute: false })], RangeTimeline.prototype, "i18n", null);
-	__decorate([r$1()], RangeTimeline.prototype, "_rangeContentWidth", null);
-	__decorate([r$1()], RangeTimeline.prototype, "_startTooltipVisible", null);
-	__decorate([r$1()], RangeTimeline.prototype, "_startTooltipLeftPx", null);
-	__decorate([r$1()], RangeTimeline.prototype, "_startTooltipContent", null);
-	__decorate([r$1()], RangeTimeline.prototype, "_endTooltipVisible", null);
-	__decorate([r$1()], RangeTimeline.prototype, "_endTooltipLeftPx", null);
-	__decorate([r$1()], RangeTimeline.prototype, "_endTooltipContent", null);
-	__decorate([r$1()], RangeTimeline.prototype, "_endTooltipIsLive", null);
-	__decorate([r$1()], RangeTimeline.prototype, "_endTooltipLiveHint", null);
-	__decorate([r$1()], RangeTimeline.prototype, "_selectionLeftPct", null);
-	__decorate([r$1()], RangeTimeline.prototype, "_selectionWidthPct", null);
-	__decorate([r$1()], RangeTimeline.prototype, "_scrollbarVisible", null);
-	__decorate([r$1()], RangeTimeline.prototype, "_viewportDragging", null);
-	__decorate([r$1()], RangeTimeline.prototype, "_selectionDragging", null);
-	__decorate([r$1()], RangeTimeline.prototype, "_startHandlePosition", null);
-	__decorate([r$1()], RangeTimeline.prototype, "_endHandlePosition", null);
-	__decorate([r$1()], RangeTimeline.prototype, "_startHandleZIndex", null);
-	__decorate([r$1()], RangeTimeline.prototype, "_endHandleZIndex", null);
-	__decorate([e$3("#range-scroll-viewport")], RangeTimeline.prototype, "_rangeScrollViewportEl", null);
-	__decorate([e$3("#range-track")], RangeTimeline.prototype, "_rangeTrackEl", null);
-	__decorate([e$3("#range-start-handle")], RangeTimeline.prototype, "_rangeStartHandleEl", null);
-	__decorate([e$3("#range-end-handle")], RangeTimeline.prototype, "_rangeEndHandleEl", null);
-	__decorate([e$3("#range-jump-left")], RangeTimeline.prototype, "_rangeJumpLeftEl", null);
-	__decorate([e$3("#range-jump-right")], RangeTimeline.prototype, "_rangeJumpRightEl", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_rangeContentWidth", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_startTooltipVisible", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_startTooltipLeftPx", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_startTooltipContent", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_endTooltipVisible", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_endTooltipLeftPx", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_endTooltipContent", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_endTooltipIsLive", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_endTooltipLiveHint", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_selectionLeftPct", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_selectionWidthPct", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_scrollbarVisible", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_viewportDragging", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_selectionDragging", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_startHandlePosition", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_endHandlePosition", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_startHandleZIndex", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_endHandleZIndex", null);
+	__decorate([e$4("#range-scroll-viewport")], RangeTimeline.prototype, "_rangeScrollViewportEl", null);
+	__decorate([e$4("#range-track")], RangeTimeline.prototype, "_rangeTrackEl", null);
+	__decorate([e$4("#range-start-handle")], RangeTimeline.prototype, "_rangeStartHandleEl", null);
+	__decorate([e$4("#range-end-handle")], RangeTimeline.prototype, "_rangeEndHandleEl", null);
+	__decorate([e$4("#range-jump-left")], RangeTimeline.prototype, "_rangeJumpLeftEl", null);
+	__decorate([e$4("#range-jump-right")], RangeTimeline.prototype, "_rangeJumpRightEl", null);
 	customElements.define("range-timeline", RangeTimeline);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/date-window-dialog.ts
-	var _DateWindowDialog, _open_accessor_storage$2, _heading_accessor_storage, _name_accessor_storage$2, _startValue_accessor_storage, _endValue_accessor_storage, _showDelete_accessor_storage, _showShortcuts_accessor_storage, _submitLabel_accessor_storage, _rangeBounds_accessor_storage$2, _zoomLevel_accessor_storage$2, _dateSnapping_accessor_storage$2;
-	var DateWindowDialog = (_open_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _heading_accessor_storage = /* @__PURE__ */ new WeakMap(), _name_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _startValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _endValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _showDelete_accessor_storage = /* @__PURE__ */ new WeakMap(), _showShortcuts_accessor_storage = /* @__PURE__ */ new WeakMap(), _submitLabel_accessor_storage = /* @__PURE__ */ new WeakMap(), _rangeBounds_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _zoomLevel_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _dateSnapping_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _DateWindowDialog = class DateWindowDialog extends i$2 {
+	var _DateWindowDialog, _open_accessor_storage$2, _heading_accessor_storage, _name_accessor_storage$2, _startValue_accessor_storage, _endValue_accessor_storage, _showDelete_accessor_storage, _showShortcuts_accessor_storage, _submitLabel_accessor_storage, _rangeBounds_accessor_storage$2, _zoomLevel_accessor_storage$2, _dateSnapping_accessor_storage$2, _dialogEl_accessor_storage, _nameInput_accessor_storage, _startInput_accessor_storage, _endInput_accessor_storage, _shaking_accessor_storage;
+	var DateWindowDialog = (_open_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _heading_accessor_storage = /* @__PURE__ */ new WeakMap(), _name_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _startValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _endValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _showDelete_accessor_storage = /* @__PURE__ */ new WeakMap(), _showShortcuts_accessor_storage = /* @__PURE__ */ new WeakMap(), _submitLabel_accessor_storage = /* @__PURE__ */ new WeakMap(), _rangeBounds_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _zoomLevel_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _dateSnapping_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _dialogEl_accessor_storage = /* @__PURE__ */ new WeakMap(), _nameInput_accessor_storage = /* @__PURE__ */ new WeakMap(), _startInput_accessor_storage = /* @__PURE__ */ new WeakMap(), _endInput_accessor_storage = /* @__PURE__ */ new WeakMap(), _shaking_accessor_storage = /* @__PURE__ */ new WeakMap(), _DateWindowDialog = class DateWindowDialog extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _open_accessor_storage$2, false);
@@ -25446,6 +25479,11 @@
 			_classPrivateFieldInitSpec(this, _rangeBounds_accessor_storage$2, null);
 			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage$2, "auto");
 			_classPrivateFieldInitSpec(this, _dateSnapping_accessor_storage$2, "hour");
+			_classPrivateFieldInitSpec(this, _dialogEl_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _nameInput_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _startInput_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _endInput_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _shaking_accessor_storage, false);
 		}
 		get open() {
 			return _classPrivateFieldGet2(_open_accessor_storage$2, this);
@@ -25513,14 +25551,45 @@
 		set dateSnapping(value) {
 			_classPrivateFieldSet2(_dateSnapping_accessor_storage$2, this, value);
 		}
+		get _dialogEl() {
+			return _classPrivateFieldGet2(_dialogEl_accessor_storage, this);
+		}
+		set _dialogEl(value) {
+			_classPrivateFieldSet2(_dialogEl_accessor_storage, this, value);
+		}
+		get _nameInput() {
+			return _classPrivateFieldGet2(_nameInput_accessor_storage, this);
+		}
+		set _nameInput(value) {
+			_classPrivateFieldSet2(_nameInput_accessor_storage, this, value);
+		}
+		get _startInput() {
+			return _classPrivateFieldGet2(_startInput_accessor_storage, this);
+		}
+		set _startInput(value) {
+			_classPrivateFieldSet2(_startInput_accessor_storage, this, value);
+		}
+		get _endInput() {
+			return _classPrivateFieldGet2(_endInput_accessor_storage, this);
+		}
+		set _endInput(value) {
+			_classPrivateFieldSet2(_endInput_accessor_storage, this, value);
+		}
+		get _shaking() {
+			return _classPrivateFieldGet2(_shaking_accessor_storage, this);
+		}
+		set _shaking(value) {
+			_classPrivateFieldSet2(_shaking_accessor_storage, this, value);
+		}
 		/** Shake the dialog — call this when the parent detects a validation error. */
 		shake() {
-			const dialog = this.shadowRoot?.querySelector("ha-dialog");
-			if (!dialog) return;
-			dialog.classList.remove("dp-shaking");
-			dialog.offsetWidth;
-			dialog.classList.add("dp-shaking");
-			dialog.addEventListener("animationend", () => dialog.classList.remove("dp-shaking"), { once: true });
+			if (!this._dialogEl) return;
+			this._shaking = false;
+			this._dialogEl.offsetWidth;
+			this._shaking = true;
+		}
+		_onShakeEnd() {
+			this._shaking = false;
 		}
 		_emit(name, detail = {}) {
 			this.dispatchEvent(new CustomEvent(name, {
@@ -25536,14 +25605,11 @@
 			this._emit("dp-window-close");
 		}
 		_onSubmit() {
-			const nameInput = this.shadowRoot?.querySelector("#date-window-name");
-			const startInput = this.shadowRoot?.querySelector("#date-window-start");
-			const endInput = this.shadowRoot?.querySelector("#date-window-end");
-			const nameVal = nameInput?.value ?? this.name;
+			const nameVal = this._nameInput?.value ?? this.name;
 			this._emit("dp-window-submit", {
 				name: String(nameVal ?? "").trim(),
-				start: startInput?.value ?? this.startValue,
-				end: endInput?.value ?? this.endValue
+				start: this._startInput?.value ?? this.startValue,
+				end: this._endInput?.value ?? this.endValue
 			});
 		}
 		_onDelete() {
@@ -25556,11 +25622,9 @@
 			this._emit("dp-window-shortcut", { direction: 1 });
 		}
 		_onDateChange() {
-			const startInput = this.shadowRoot?.querySelector("#date-window-start");
-			const endInput = this.shadowRoot?.querySelector("#date-window-end");
 			this._emit("dp-window-date-change", {
-				start: startInput?.value ?? "",
-				end: endInput?.value ?? ""
+				start: this._startInput?.value ?? "",
+				end: this._endInput?.value ?? ""
 			});
 		}
 		_onRangeCommit(ev) {
@@ -25573,10 +25637,8 @@
 			};
 			const startStr = fmt(start);
 			const endStr = fmt(end);
-			const startInput = this.shadowRoot?.querySelector("#date-window-start");
-			const endInput = this.shadowRoot?.querySelector("#date-window-end");
-			if (startInput) startInput.value = startStr;
-			if (endInput) endInput.value = endStr;
+			if (this._startInput) this._startInput.value = startStr;
+			if (this._endInput) this._endInput.value = endStr;
 			this._emit("dp-window-date-change", {
 				start: startStr,
 				end: endStr
@@ -25591,11 +25653,13 @@
 		render() {
 			return b`
       <ha-dialog
+        class=${e({ "dp-shaking": this._shaking })}
         ?open=${this.open}
         hideActions
         .scrimClickAction=${"close"}
         .escapeKeyAction=${"close"}
         @closed=${this._onDialogClosed}
+        @animationend=${this._onShakeEnd}
       >
         <span slot="heading">${this.heading}</span>
         <div class="date-window-dialog-content">
@@ -25722,6 +25786,11 @@
 		type: String,
 		attribute: "date-snapping"
 	})], DateWindowDialog.prototype, "dateSnapping", null);
+	__decorate([e$4("ha-dialog")], DateWindowDialog.prototype, "_dialogEl", null);
+	__decorate([e$4("#date-window-name")], DateWindowDialog.prototype, "_nameInput", null);
+	__decorate([e$4("#date-window-start")], DateWindowDialog.prototype, "_startInput", null);
+	__decorate([e$4("#date-window-end")], DateWindowDialog.prototype, "_endInput", null);
+	__decorate([r$2()], DateWindowDialog.prototype, "_shaking", null);
 	DateWindowDialog = __decorate([localized()], DateWindowDialog);
 	customElements.define("date-window-dialog", DateWindowDialog);
 	//#endregion
@@ -26875,18 +26944,18 @@
 	__decorate([n$1({ type: Object })], AnomalyMonitorWizard.prototype, "editMonitor", null);
 	__decorate([n$1({ type: Array })], AnomalyMonitorWizard.prototype, "suggestedEntityIds", null);
 	__decorate([n$1({ type: Array })], AnomalyMonitorWizard.prototype, "allSeriesEntityIds", null);
-	__decorate([r$1()], AnomalyMonitorWizard.prototype, "_step", null);
-	__decorate([r$1()], AnomalyMonitorWizard.prototype, "_target", null);
-	__decorate([r$1()], AnomalyMonitorWizard.prototype, "_entityIds", null);
-	__decorate([r$1()], AnomalyMonitorWizard.prototype, "_entityConfigs", null);
-	__decorate([r$1()], AnomalyMonitorWizard.prototype, "_activeEntityId", null);
-	__decorate([r$1()], AnomalyMonitorWizard.prototype, "_name", null);
-	__decorate([r$1()], AnomalyMonitorWizard.prototype, "_lookBackHours", null);
-	__decorate([r$1()], AnomalyMonitorWizard.prototype, "_scanIntervalMinutes", null);
-	__decorate([r$1()], AnomalyMonitorWizard.prototype, "_monitorType", null);
-	__decorate([r$1()], AnomalyMonitorWizard.prototype, "_overlapMode", null);
-	__decorate([r$1()], AnomalyMonitorWizard.prototype, "_error", null);
-	__decorate([r$1()], AnomalyMonitorWizard.prototype, "_saving", null);
+	__decorate([r$2()], AnomalyMonitorWizard.prototype, "_step", null);
+	__decorate([r$2()], AnomalyMonitorWizard.prototype, "_target", null);
+	__decorate([r$2()], AnomalyMonitorWizard.prototype, "_entityIds", null);
+	__decorate([r$2()], AnomalyMonitorWizard.prototype, "_entityConfigs", null);
+	__decorate([r$2()], AnomalyMonitorWizard.prototype, "_activeEntityId", null);
+	__decorate([r$2()], AnomalyMonitorWizard.prototype, "_name", null);
+	__decorate([r$2()], AnomalyMonitorWizard.prototype, "_lookBackHours", null);
+	__decorate([r$2()], AnomalyMonitorWizard.prototype, "_scanIntervalMinutes", null);
+	__decorate([r$2()], AnomalyMonitorWizard.prototype, "_monitorType", null);
+	__decorate([r$2()], AnomalyMonitorWizard.prototype, "_overlapMode", null);
+	__decorate([r$2()], AnomalyMonitorWizard.prototype, "_error", null);
+	__decorate([r$2()], AnomalyMonitorWizard.prototype, "_saving", null);
 	AnomalyMonitorWizard = __decorate([localized()], AnomalyMonitorWizard);
 	customElements.define("anomaly-monitor-wizard", AnomalyMonitorWizard);
 	//#endregion
@@ -27567,13 +27636,13 @@
 		}
 	}, _defineProperty(_AnomalyMonitorsPanel, "styles", styles$25), _AnomalyMonitorsPanel);
 	__decorate([n$1({ type: Object })], AnomalyMonitorsPanel.prototype, "hass", null);
-	__decorate([r$1()], AnomalyMonitorsPanel.prototype, "_monitors", null);
-	__decorate([r$1()], AnomalyMonitorsPanel.prototype, "_loading", null);
-	__decorate([r$1()], AnomalyMonitorsPanel.prototype, "_editMonitor", null);
-	__decorate([r$1()], AnomalyMonitorsPanel.prototype, "_wizardOpen", null);
-	__decorate([r$1()], AnomalyMonitorsPanel.prototype, "_monitorClusters", null);
-	__decorate([r$1()], AnomalyMonitorsPanel.prototype, "_loadingClusters", null);
-	__decorate([r$1()], AnomalyMonitorsPanel.prototype, "_dismissPickerKey", null);
+	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_monitors", null);
+	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_loading", null);
+	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_editMonitor", null);
+	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_wizardOpen", null);
+	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_monitorClusters", null);
+	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_loadingClusters", null);
+	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_dismissPickerKey", null);
 	AnomalyMonitorsPanel = __decorate([localized()], AnomalyMonitorsPanel);
 	customElements.define("anomaly-monitors-panel", AnomalyMonitorsPanel);
 	//#endregion
@@ -28396,6 +28465,14 @@
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _open_accessor_storage, false);
+			_defineProperty(this, "_onPointerDown", (e) => {
+				if (!this.open) return;
+				if (!e.composedPath().some((node) => node === this)) this.dispatchEvent(new CustomEvent("dp-menu-close", {
+					detail: {},
+					bubbles: true,
+					composed: true
+				}));
+			});
 		}
 		get open() {
 			return _classPrivateFieldGet2(_open_accessor_storage, this);
@@ -28405,20 +28482,11 @@
 		}
 		connectedCallback() {
 			super.connectedCallback();
-			this._onPointerDown = this._onPointerDown.bind(this);
 			window.addEventListener("pointerdown", this._onPointerDown, true);
 		}
 		disconnectedCallback() {
 			super.disconnectedCallback();
 			window.removeEventListener("pointerdown", this._onPointerDown, true);
-		}
-		_onPointerDown(e) {
-			if (!this.open) return;
-			if (!e.composedPath().some((node) => node === this)) this.dispatchEvent(new CustomEvent("dp-menu-close", {
-				detail: {},
-				bubbles: true,
-				composed: true
-			}));
 		}
 		render() {
 			return b`
@@ -28811,7 +28879,7 @@
 		type: String,
 		attribute: "layout-mode"
 	})], PanelShell.prototype, "layoutMode", null);
-	__decorate([r$1()], PanelShell.prototype, "_pageMenuOpen", null);
+	__decorate([r$2()], PanelShell.prototype, "_pageMenuOpen", null);
 	PanelShell = __decorate([localized()], PanelShell);
 	customElements.define("panel-shell", PanelShell);
 	//#endregion
@@ -29202,7 +29270,7 @@
 		attribute: "sidebar-collapsed",
 		reflect: true
 	})], HistoryTargets.prototype, "sidebarCollapsed", null);
-	__decorate([r$1()], HistoryTargets.prototype, "_collapsedSummaryKey", null);
+	__decorate([r$2()], HistoryTargets.prototype, "_collapsedSummaryKey", null);
 	HistoryTargets = __decorate([localized()], HistoryTargets);
 	customElements.define("history-targets", HistoryTargets);
 	//#endregion
@@ -29667,6 +29735,14 @@
 	var _chartHoverTimeMs_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _chartHoverWindowTime_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _events_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _rangeHoverPreviewEl_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _rangeComparisonPrevi_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _rangeZoomHighlightEl_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _rangeZoomWindowHighl_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _rangeChartHoverLineE_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _rangeChartHoverWindo_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _rangeEventLayerEl_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _rangeTimelineEl_accessor_storage = /* @__PURE__ */ new WeakMap();
 	/**
 	* `panel-timeline` is a panel-history-specific wrapper around `range-timeline`.
 	*
@@ -29700,13 +29776,14 @@
 			_classPrivateFieldInitSpec(this, _chartHoverTimeMs_accessor_storage$1, null);
 			_classPrivateFieldInitSpec(this, _chartHoverWindowTime_accessor_storage$1, null);
 			_classPrivateFieldInitSpec(this, _events_accessor_storage$1, []);
-			_defineProperty(this, "_rangeHoverPreviewEl", null);
-			_defineProperty(this, "_rangeComparisonPreviewEl", null);
-			_defineProperty(this, "_rangeZoomHighlightEl", null);
-			_defineProperty(this, "_rangeZoomWindowHighlightEl", null);
-			_defineProperty(this, "_rangeChartHoverLineEl", null);
-			_defineProperty(this, "_rangeChartHoverWindowLineEl", null);
-			_defineProperty(this, "_rangeEventLayerEl", null);
+			_classPrivateFieldInitSpec(this, _rangeHoverPreviewEl_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _rangeComparisonPrevi_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _rangeZoomHighlightEl_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _rangeZoomWindowHighl_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _rangeChartHoverLineE_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _rangeChartHoverWindo_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _rangeEventLayerEl_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _rangeTimelineEl_accessor_storage, null);
 			_defineProperty(this, "_liveZoomRange", void 0);
 			_defineProperty(this, "_liveZoomWindowRange", void 0);
 		}
@@ -29794,15 +29871,55 @@
 		set events(value) {
 			_classPrivateFieldSet2(_events_accessor_storage$1, this, value);
 		}
+		get _rangeHoverPreviewEl() {
+			return _classPrivateFieldGet2(_rangeHoverPreviewEl_accessor_storage, this);
+		}
+		set _rangeHoverPreviewEl(value) {
+			_classPrivateFieldSet2(_rangeHoverPreviewEl_accessor_storage, this, value);
+		}
+		get _rangeComparisonPreviewEl() {
+			return _classPrivateFieldGet2(_rangeComparisonPrevi_accessor_storage, this);
+		}
+		set _rangeComparisonPreviewEl(value) {
+			_classPrivateFieldSet2(_rangeComparisonPrevi_accessor_storage, this, value);
+		}
+		get _rangeZoomHighlightEl() {
+			return _classPrivateFieldGet2(_rangeZoomHighlightEl_accessor_storage, this);
+		}
+		set _rangeZoomHighlightEl(value) {
+			_classPrivateFieldSet2(_rangeZoomHighlightEl_accessor_storage, this, value);
+		}
+		get _rangeZoomWindowHighlightEl() {
+			return _classPrivateFieldGet2(_rangeZoomWindowHighl_accessor_storage, this);
+		}
+		set _rangeZoomWindowHighlightEl(value) {
+			_classPrivateFieldSet2(_rangeZoomWindowHighl_accessor_storage, this, value);
+		}
+		get _rangeChartHoverLineEl() {
+			return _classPrivateFieldGet2(_rangeChartHoverLineE_accessor_storage, this);
+		}
+		set _rangeChartHoverLineEl(value) {
+			_classPrivateFieldSet2(_rangeChartHoverLineE_accessor_storage, this, value);
+		}
+		get _rangeChartHoverWindowLineEl() {
+			return _classPrivateFieldGet2(_rangeChartHoverWindo_accessor_storage, this);
+		}
+		set _rangeChartHoverWindowLineEl(value) {
+			_classPrivateFieldSet2(_rangeChartHoverWindo_accessor_storage, this, value);
+		}
+		get _rangeEventLayerEl() {
+			return _classPrivateFieldGet2(_rangeEventLayerEl_accessor_storage, this);
+		}
+		set _rangeEventLayerEl(value) {
+			_classPrivateFieldSet2(_rangeEventLayerEl_accessor_storage, this, value);
+		}
+		get _rangeTimelineEl() {
+			return _classPrivateFieldGet2(_rangeTimelineEl_accessor_storage, this);
+		}
+		set _rangeTimelineEl(value) {
+			_classPrivateFieldSet2(_rangeTimelineEl_accessor_storage, this, value);
+		}
 		firstUpdated() {
-			const sr = this.shadowRoot;
-			this._rangeHoverPreviewEl = sr.getElementById("range-hover-preview");
-			this._rangeComparisonPreviewEl = sr.getElementById("range-comparison-preview");
-			this._rangeZoomHighlightEl = sr.getElementById("range-zoom-highlight");
-			this._rangeZoomWindowHighlightEl = sr.getElementById("range-zoom-window-highlight");
-			this._rangeChartHoverLineEl = sr.getElementById("range-chart-hover-line");
-			this._rangeChartHoverWindowLineEl = sr.getElementById("range-chart-hover-window-line");
-			this._rangeEventLayerEl = sr.getElementById("range-event-layer");
 			this._syncAllOverlays();
 		}
 		updated(changed) {
@@ -29887,7 +30004,7 @@
 			return (ms - this.rangeBounds.min) / total * 100;
 		}
 		revealSelection() {
-			(this.shadowRoot?.querySelector("range-timeline"))?.revealSelection?.();
+			this._rangeTimelineEl?.revealSelection?.();
 		}
 		syncZoomHighlights(zoomRange, zoomWindowRange) {
 			this._liveZoomRange = zoomRange ? { ...zoomRange } : null;
@@ -29972,13 +30089,21 @@
 	__decorate([n$1({ type: String })], PanelTimeline.prototype, "dateSnapping", null);
 	__decorate([n$1({ type: Boolean })], PanelTimeline.prototype, "isLiveEdge", null);
 	__decorate([n$1({ type: String })], PanelTimeline.prototype, "locale", null);
-	__decorate([r$1()], PanelTimeline.prototype, "hoveredPeriodRange", null);
+	__decorate([r$2()], PanelTimeline.prototype, "hoveredPeriodRange", null);
 	__decorate([n$1({ type: Object })], PanelTimeline.prototype, "comparisonPreview", null);
 	__decorate([n$1({ type: Object })], PanelTimeline.prototype, "zoomRange", null);
 	__decorate([n$1({ type: Object })], PanelTimeline.prototype, "zoomWindowRange", null);
 	__decorate([n$1({ type: Number })], PanelTimeline.prototype, "chartHoverTimeMs", null);
 	__decorate([n$1({ type: Number })], PanelTimeline.prototype, "chartHoverWindowTimeMs", null);
 	__decorate([n$1({ type: Array })], PanelTimeline.prototype, "events", null);
+	__decorate([e$4("#range-hover-preview")], PanelTimeline.prototype, "_rangeHoverPreviewEl", null);
+	__decorate([e$4("#range-comparison-preview")], PanelTimeline.prototype, "_rangeComparisonPreviewEl", null);
+	__decorate([e$4("#range-zoom-highlight")], PanelTimeline.prototype, "_rangeZoomHighlightEl", null);
+	__decorate([e$4("#range-zoom-window-highlight")], PanelTimeline.prototype, "_rangeZoomWindowHighlightEl", null);
+	__decorate([e$4("#range-chart-hover-line")], PanelTimeline.prototype, "_rangeChartHoverLineEl", null);
+	__decorate([e$4("#range-chart-hover-window-line")], PanelTimeline.prototype, "_rangeChartHoverWindowLineEl", null);
+	__decorate([e$4("#range-event-layer")], PanelTimeline.prototype, "_rangeEventLayerEl", null);
+	__decorate([e$4("range-timeline")], PanelTimeline.prototype, "_rangeTimelineEl", null);
 	customElements.define("panel-timeline", PanelTimeline);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/date-time-input/date-time-input.styles.ts
@@ -30592,9 +30717,9 @@
 		type: Number,
 		attribute: false
 	})], RangeToolbar.prototype, "chartHoverWindowTimeMs", null);
-	__decorate([r$1()], RangeToolbar.prototype, "_optionsView", null);
-	__decorate([r$1()], RangeToolbar.prototype, "_optionsOpen", null);
-	__decorate([r$1()], RangeToolbar.prototype, "_pickerOpen", null);
+	__decorate([r$2()], RangeToolbar.prototype, "_optionsView", null);
+	__decorate([r$2()], RangeToolbar.prototype, "_optionsOpen", null);
+	__decorate([r$2()], RangeToolbar.prototype, "_pickerOpen", null);
 	RangeToolbar = __decorate([localized()], RangeToolbar);
 	customElements.define("range-toolbar", RangeToolbar);
 	//#endregion
@@ -37110,9 +37235,9 @@
 	__decorate([n$1({ attribute: false })], CardListEditForm.prototype, "hass", null);
 	__decorate([n$1({ type: String })], CardListEditForm.prototype, "color", null);
 	__decorate([n$1({ attribute: false })], CardListEditForm.prototype, "language", null);
-	__decorate([r$1()], CardListEditForm.prototype, "_message", null);
-	__decorate([r$1()], CardListEditForm.prototype, "_annotation", null);
-	__decorate([r$1()], CardListEditForm.prototype, "_icon", null);
+	__decorate([r$2()], CardListEditForm.prototype, "_message", null);
+	__decorate([r$2()], CardListEditForm.prototype, "_annotation", null);
+	__decorate([r$2()], CardListEditForm.prototype, "_icon", null);
 	customElements.define("list-edit-form", CardListEditForm);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/list-event-item/list-event-item.ts
@@ -37383,7 +37508,7 @@
 	_defineProperty(CardListEventItem, "styles", styles$13);
 	__decorate([n$1({ attribute: false })], CardListEventItem.prototype, "eventRecord", null);
 	__decorate([n$1({ attribute: false })], CardListEventItem.prototype, "context", null);
-	__decorate([r$1()], CardListEventItem.prototype, "_annotationExpanded", null);
+	__decorate([r$2()], CardListEventItem.prototype, "_annotationExpanded", null);
 	customElements.define("list-event-item", CardListEventItem);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/list.ts
@@ -39279,7 +39404,7 @@
 		type: Boolean,
 		attribute: "show-full-message"
 	})], SensorRecordItem.prototype, "showFullMessage", null);
-	__decorate([r$1()], SensorRecordItem.prototype, "_noteExpanded", null);
+	__decorate([r$2()], SensorRecordItem.prototype, "_noteExpanded", null);
 	customElements.define("sensor-record-item", SensorRecordItem);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/sensor-records/sensor-records.ts
@@ -39424,7 +39549,7 @@
 		type: Boolean,
 		attribute: "show-full-message"
 	})], SensorRecords.prototype, "showFullMessage", null);
-	__decorate([r$1()], SensorRecords.prototype, "_page", null);
+	__decorate([r$2()], SensorRecords.prototype, "_page", null);
 	customElements.define("sensor-records", SensorRecords);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/sensor.ts

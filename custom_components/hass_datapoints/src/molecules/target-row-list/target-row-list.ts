@@ -1,5 +1,5 @@
 import { html, LitElement } from "lit";
-import { property } from "lit/decorators.js";
+import { property, queryAll } from "lit/decorators.js";
 import { localized } from "@/lib/i18n/localize";
 
 import { styles } from "./target-row-list.styles";
@@ -142,6 +142,9 @@ export class TargetRowList extends LitElement {
    */
   @property({ type: Object, attribute: false })
   accessor labelMap: Map<string, string> = new Map();
+
+  @queryAll("target-row")
+  accessor _targetRows!: NodeListOf<Element>;
 
   /** Index of the row currently being dragged, or null when not dragging. */
   private _dragSourceIndex: Nullable<number> = null;
@@ -402,7 +405,7 @@ export class TargetRowList extends LitElement {
   }
 
   private _clearDropIndicators() {
-    this.shadowRoot?.querySelectorAll("target-row").forEach((r) => {
+    this._targetRows?.forEach((r) => {
       r.classList.remove("is-drag-over-before", "is-drag-over-after");
     });
   }
