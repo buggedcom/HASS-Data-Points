@@ -20531,6 +20531,50 @@
 		};
 	}
 	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/util/popup.ts
+	/**
+	* Compute absolute position for a popup anchored to the right of an element.
+	*
+	* Keeps the popup within the viewport with 8px margin on all sides.
+	*/
+	function computePopupPosition(anchorRect, popupHeight, viewportHeight, gap = 8) {
+		const margin = gap;
+		const top = Math.max(margin, Math.min(anchorRect.top, viewportHeight - popupHeight - margin * 2));
+		return {
+			top,
+			left: anchorRect.right + gap,
+			maxHeight: viewportHeight - top - margin * 2
+		};
+	}
+	/**
+	* Attach outside-click and Escape-key dismiss handlers for a popup.
+	*
+	* Returns a cleanup object whose `destroy()` removes all listeners.
+	*
+	* @param popupEl     The popup container element.
+	* @param anchorEl    The element that triggered the popup (excluded from outside-click).
+	* @param onDismiss   Called when the user clicks outside or presses Escape.
+	* @param focusOnEscape  Element to focus after Escape (defaults to anchorEl).
+	*/
+	function attachPopupDismissListeners(popupEl, anchorEl, onDismiss, focusOnEscape) {
+		const outsideClickHandler = (ev) => {
+			const path = ev.composedPath();
+			if (!path.includes(popupEl) && !path.includes(anchorEl)) onDismiss();
+		};
+		const keyHandler = (ev) => {
+			if (ev.key === "Escape") {
+				onDismiss();
+				(focusOnEscape ?? anchorEl).focus();
+			}
+		};
+		document.addEventListener("click", outsideClickHandler, true);
+		document.addEventListener("keydown", keyHandler);
+		return { destroy() {
+			document.removeEventListener("click", outsideClickHandler, true);
+			document.removeEventListener("keydown", keyHandler);
+		} };
+	}
+	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/target-row.styles.ts
 	var styles$35 = i$5`
   :host {
@@ -34857,26 +34901,12 @@
 			popup.appendChild(targetRow);
 			popup.removeAttribute("hidden");
 			if (!anchorEl) return;
-			const anchorRect = anchorEl.getBoundingClientRect();
-			const popupHeight = popup.offsetHeight;
-			const top = Math.max(8, Math.min(anchorRect.top, window.innerHeight - popupHeight - 16));
-			popup.style.top = `${top}px`;
-			popup.style.left = `${anchorRect.right + 8}px`;
-			popup.style.maxHeight = `${window.innerHeight - top - 16}px`;
-			if (this._collapsedPopupOutsideClickHandler) document.removeEventListener("click", this._collapsedPopupOutsideClickHandler, true);
-			this._collapsedPopupOutsideClickHandler = (ev) => {
-				const path = ev.composedPath();
-				if (!path.includes(popup) && !path.includes(anchorEl)) this._hideCollapsedTargetPopup();
-			};
-			document.addEventListener("click", this._collapsedPopupOutsideClickHandler, true);
-			if (this._collapsedPopupKeyHandler) document.removeEventListener("keydown", this._collapsedPopupKeyHandler);
-			this._collapsedPopupKeyHandler = (ev) => {
-				if (ev.key === "Escape") {
-					this._hideCollapsedTargetPopup();
-					anchorEl.focus();
-				}
-			};
-			document.addEventListener("keydown", this._collapsedPopupKeyHandler);
+			const pos = computePopupPosition(anchorEl.getBoundingClientRect(), popup.offsetHeight, window.innerHeight);
+			popup.style.top = `${pos.top}px`;
+			popup.style.left = `${pos.left}px`;
+			popup.style.maxHeight = `${pos.maxHeight}px`;
+			this._collapsedPopupDismiss?.destroy();
+			this._collapsedPopupDismiss = attachPopupDismissListeners(popup, anchorEl, () => this._hideCollapsedTargetPopup());
 		}
 		/** Close the collapsed-sidebar target popup and clean up all listeners. */
 		_hideCollapsedTargetPopup() {
@@ -34885,14 +34915,8 @@
 				popup.setAttribute("hidden", "");
 				popup.innerHTML = "";
 			}
-			if (this._collapsedPopupOutsideClickHandler) {
-				document.removeEventListener("click", this._collapsedPopupOutsideClickHandler, true);
-				this._collapsedPopupOutsideClickHandler = null;
-			}
-			if (this._collapsedPopupKeyHandler) {
-				document.removeEventListener("keydown", this._collapsedPopupKeyHandler);
-				this._collapsedPopupKeyHandler = null;
-			}
+			this._collapsedPopupDismiss?.destroy();
+			this._collapsedPopupDismiss = null;
 			this._collapsedPopupEntityId = null;
 			this._collapsedPopupAnchorEl = null;
 		}
@@ -34947,38 +34971,18 @@
 			this._collapsedOptionsPopupOpen = true;
 			this._collapsedOptionsAnchorEl = anchorEl;
 			popup.removeAttribute("hidden");
-			const anchorRect = anchorEl.getBoundingClientRect();
-			const popupHeight = popup.offsetHeight;
-			const top = Math.max(8, Math.min(anchorRect.top, window.innerHeight - popupHeight - 16));
-			popup.style.top = `${top}px`;
-			popup.style.left = `${anchorRect.right + 8}px`;
-			if (this._collapsedOptionsOutsideClickHandler) document.removeEventListener("click", this._collapsedOptionsOutsideClickHandler, true);
-			this._collapsedOptionsOutsideClickHandler = (ev) => {
-				const path = ev.composedPath();
-				if (!path.includes(popup) && !path.includes(anchorEl)) this._hideCollapsedOptionsPopup();
-			};
-			document.addEventListener("click", this._collapsedOptionsOutsideClickHandler, true);
-			if (this._collapsedOptionsKeyHandler) document.removeEventListener("keydown", this._collapsedOptionsKeyHandler);
-			this._collapsedOptionsKeyHandler = (ev) => {
-				if (ev.key === "Escape") {
-					this._hideCollapsedOptionsPopup();
-					anchorEl.focus();
-				}
-			};
-			document.addEventListener("keydown", this._collapsedOptionsKeyHandler);
+			const pos = computePopupPosition(anchorEl.getBoundingClientRect(), popup.offsetHeight, window.innerHeight);
+			popup.style.top = `${pos.top}px`;
+			popup.style.left = `${pos.left}px`;
+			this._collapsedOptionsDismiss?.destroy();
+			this._collapsedOptionsDismiss = attachPopupDismissListeners(popup, anchorEl, () => this._hideCollapsedOptionsPopup());
 		}
 		/** Close the collapsed-sidebar options popup and clean up all listeners. */
 		_hideCollapsedOptionsPopup() {
 			const popup = this._shellEl?.getOptionsPopupEl();
 			if (popup) popup.setAttribute("hidden", "");
-			if (this._collapsedOptionsOutsideClickHandler) {
-				document.removeEventListener("click", this._collapsedOptionsOutsideClickHandler, true);
-				this._collapsedOptionsOutsideClickHandler = null;
-			}
-			if (this._collapsedOptionsKeyHandler) {
-				document.removeEventListener("keydown", this._collapsedOptionsKeyHandler);
-				this._collapsedOptionsKeyHandler = null;
-			}
+			this._collapsedOptionsDismiss?.destroy();
+			this._collapsedOptionsDismiss = null;
 			this._collapsedOptionsPopupOpen = false;
 			this._collapsedOptionsAnchorEl = null;
 		}

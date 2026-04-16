@@ -76,6 +76,11 @@ import {
   type RangeUnit,
   startOfUnit,
 } from "@/lib/timeline/timeline-scale";
+import {
+  attachPopupDismissListeners,
+  computePopupPosition,
+  type DismissCleanup,
+} from "@/lib/util/popup";
 import { logger } from "@/lib/logger";
 import type { HassLike } from "@/lib/types";
 
@@ -520,13 +525,9 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
 
   declare _collapsedPopupAnchorEl: Nullable<HTMLElement>;
 
-  declare _collapsedPopupOutsideClickHandler: Nullable<EventListener>;
+  declare _collapsedPopupDismiss: Nullable<DismissCleanup>;
 
-  declare _collapsedPopupKeyHandler: Nullable<(ev: KeyboardEvent) => void>;
-
-  declare _collapsedOptionsOutsideClickHandler: Nullable<EventListener>;
-
-  declare _collapsedOptionsKeyHandler: Nullable<(ev: KeyboardEvent) => void>;
+  declare _collapsedOptionsDismiss: Nullable<DismissCleanup>;
 
   declare _collapsedOptionsPopupOpen: boolean;
 
@@ -3391,54 +3392,26 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     );
     popup.appendChild(targetRow);
 
-    // Position the popup to the right of the anchor button.
-    // max-height is set dynamically so the popup never extends below the viewport,
-    // and overflow-y: auto allows scrolling if content exceeds the available space.
     popup.removeAttribute("hidden");
     if (!anchorEl) {
       return;
     }
     const anchorRect = anchorEl.getBoundingClientRect();
-    const popupHeight = popup.offsetHeight;
-    const top = Math.max(
-      8,
-      Math.min(anchorRect.top, window.innerHeight - popupHeight - 16)
+    const pos = computePopupPosition(
+      anchorRect,
+      popup.offsetHeight,
+      window.innerHeight
     );
-    popup.style.top = `${top}px`;
-    popup.style.left = `${anchorRect.right + 8}px`;
-    popup.style.maxHeight = `${window.innerHeight - top - 16}px`;
+    popup.style.top = `${pos.top}px`;
+    popup.style.left = `${pos.left}px`;
+    popup.style.maxHeight = `${pos.maxHeight}px`;
 
-    // Dismiss on outside click (uses composedPath to handle shadow DOM)
-    if (this._collapsedPopupOutsideClickHandler) {
-      document.removeEventListener(
-        "click",
-        this._collapsedPopupOutsideClickHandler,
-        true
-      );
-    }
-    this._collapsedPopupOutsideClickHandler = (ev: Event) => {
-      const path = ev.composedPath();
-      if (!path.includes(popup) && !path.includes(anchorEl)) {
-        this._hideCollapsedTargetPopup();
-      }
-    };
-    document.addEventListener(
-      "click",
-      this._collapsedPopupOutsideClickHandler,
-      true
+    this._collapsedPopupDismiss?.destroy();
+    this._collapsedPopupDismiss = attachPopupDismissListeners(
+      popup,
+      anchorEl,
+      () => this._hideCollapsedTargetPopup()
     );
-
-    // Dismiss on Escape key
-    if (this._collapsedPopupKeyHandler) {
-      document.removeEventListener("keydown", this._collapsedPopupKeyHandler);
-    }
-    this._collapsedPopupKeyHandler = (ev: KeyboardEvent) => {
-      if (ev.key === "Escape") {
-        this._hideCollapsedTargetPopup();
-        anchorEl.focus();
-      }
-    };
-    document.addEventListener("keydown", this._collapsedPopupKeyHandler);
   }
 
   /** Close the collapsed-sidebar target popup and clean up all listeners. */
@@ -3448,18 +3421,8 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       popup.setAttribute("hidden", "");
       popup.innerHTML = "";
     }
-    if (this._collapsedPopupOutsideClickHandler) {
-      document.removeEventListener(
-        "click",
-        this._collapsedPopupOutsideClickHandler,
-        true
-      );
-      this._collapsedPopupOutsideClickHandler = null;
-    }
-    if (this._collapsedPopupKeyHandler) {
-      document.removeEventListener("keydown", this._collapsedPopupKeyHandler);
-      this._collapsedPopupKeyHandler = null;
-    }
+    this._collapsedPopupDismiss?.destroy();
+    this._collapsedPopupDismiss = null;
     this._collapsedPopupEntityId = null;
     this._collapsedPopupAnchorEl = null;
   }
@@ -3563,43 +3526,20 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
 
     popup.removeAttribute("hidden");
     const anchorRect = anchorEl.getBoundingClientRect();
-    const popupHeight = popup.offsetHeight;
-    const top = Math.max(
-      8,
-      Math.min(anchorRect.top, window.innerHeight - popupHeight - 16)
+    const pos = computePopupPosition(
+      anchorRect,
+      popup.offsetHeight,
+      window.innerHeight
     );
-    popup.style.top = `${top}px`;
-    popup.style.left = `${anchorRect.right + 8}px`;
+    popup.style.top = `${pos.top}px`;
+    popup.style.left = `${pos.left}px`;
 
-    if (this._collapsedOptionsOutsideClickHandler) {
-      document.removeEventListener(
-        "click",
-        this._collapsedOptionsOutsideClickHandler,
-        true
-      );
-    }
-    this._collapsedOptionsOutsideClickHandler = (ev: Event) => {
-      const path = ev.composedPath();
-      if (!path.includes(popup) && !path.includes(anchorEl)) {
-        this._hideCollapsedOptionsPopup();
-      }
-    };
-    document.addEventListener(
-      "click",
-      this._collapsedOptionsOutsideClickHandler,
-      true
+    this._collapsedOptionsDismiss?.destroy();
+    this._collapsedOptionsDismiss = attachPopupDismissListeners(
+      popup,
+      anchorEl,
+      () => this._hideCollapsedOptionsPopup()
     );
-
-    if (this._collapsedOptionsKeyHandler) {
-      document.removeEventListener("keydown", this._collapsedOptionsKeyHandler);
-    }
-    this._collapsedOptionsKeyHandler = (ev: KeyboardEvent) => {
-      if (ev.key === "Escape") {
-        this._hideCollapsedOptionsPopup();
-        anchorEl.focus();
-      }
-    };
-    document.addEventListener("keydown", this._collapsedOptionsKeyHandler);
   }
 
   /** Close the collapsed-sidebar options popup and clean up all listeners. */
@@ -3608,18 +3548,8 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     if (popup) {
       popup.setAttribute("hidden", "");
     }
-    if (this._collapsedOptionsOutsideClickHandler) {
-      document.removeEventListener(
-        "click",
-        this._collapsedOptionsOutsideClickHandler,
-        true
-      );
-      this._collapsedOptionsOutsideClickHandler = null;
-    }
-    if (this._collapsedOptionsKeyHandler) {
-      document.removeEventListener("keydown", this._collapsedOptionsKeyHandler);
-      this._collapsedOptionsKeyHandler = null;
-    }
+    this._collapsedOptionsDismiss?.destroy();
+    this._collapsedOptionsDismiss = null;
     this._collapsedOptionsPopupOpen = false;
     this._collapsedOptionsAnchorEl = null;
   }
