@@ -24,5 +24,7 @@ export default {
     "subject-case": [0],
     // Allow long body lines for detailed commit descriptions
     "body-max-line-length": [0],
+    // Allow long footer lines (e.g. issue refs, BREAKING CHANGE blocks, links)
+    "footer-max-line-length": [0],
   },
 };
