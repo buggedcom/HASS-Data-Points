@@ -21,7 +21,7 @@ import { logger } from "@/lib/logger";
  *   - A ha-selector (target schema) lets the user add extra items per recording.
  *   - On submit both are merged; the selector resets to empty afterwards.
  */
-export class HassRecordsActionCard extends LitElement {
+export class HassDatapointsActionCard extends LitElement {
   static properties = {
     _config: { state: true },
     _hass: { state: true },

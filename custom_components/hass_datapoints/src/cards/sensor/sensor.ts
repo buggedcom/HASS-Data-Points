@@ -16,7 +16,7 @@ import "./sensor-records/sensor-records";
  * hass-datapoints-sensor-card – Sensor card with inline annotation icons.
  * Canvas rendering is delegated to sensor-chart; annotation list to sensor-records.
  */
-export class HassRecordsSensorCard extends LitElement {
+export class HassDatapointsSensorCard extends LitElement {
   static properties = {
     _config: { state: true },
     _hass: { state: true },

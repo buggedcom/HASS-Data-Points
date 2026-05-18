@@ -22,7 +22,7 @@ import { logger } from "@/lib/logger";
  * hass-datapoints-list-card – Activity-style datagrid with search, pagination, edit/delete.
  */
 @localized()
-export class HassRecordsListCard extends LitElement {
+export class HassDatapointsListCard extends LitElement {
   static properties = {
     _config: { state: true },
     _hass: { state: true },

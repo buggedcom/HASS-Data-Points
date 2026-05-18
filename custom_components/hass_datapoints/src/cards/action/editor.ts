@@ -16,7 +16,7 @@ type TargetPickerElement = Element & {
   value?: TargetPickerValue;
 };
 
-export class HassRecordsActionCardEditor extends EditorBase {
+export class HassDatapointsActionCardEditor extends EditorBase {
   static styles: CSSResultGroup = [EditorBase.styles, styles];
 
   private _configTarget(): TargetPickerValue {
