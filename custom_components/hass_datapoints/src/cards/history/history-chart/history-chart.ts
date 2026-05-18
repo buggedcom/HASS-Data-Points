@@ -440,7 +440,6 @@ export class HistoryChart extends HTMLElement {
     const scrollViewport = this._el(
       "chart-scroll-viewport"
     ) as Nullable<HTMLElement>;
-    const wrap = this as HTMLElement;
 
     const cardHeight = card?.clientHeight || 0;
     const occupiedHeight =
@@ -451,12 +450,17 @@ export class HistoryChart extends HTMLElement {
       ? Math.max(0, cardHeight - occupiedHeight)
       : 0;
     const viewportHeight = scrollViewport?.clientHeight || 0;
-    const wrapHeight = wrap?.clientHeight || 0;
 
-    return Math.max(
-      minChartHeight,
-      cardDerivedHeight || viewportHeight || wrapHeight || 0
-    );
+    // Avoid using the host element height as a fallback. The host height can
+    // include previous chart sizing + padding, causing a feedback loop:
+    // ResizeObserver -> redraw -> measure host height -> grow -> resize -> …
+    if (cardDerivedHeight) {
+      return Math.max(minChartHeight, cardDerivedHeight);
+    }
+    if (viewportHeight) {
+      return Math.max(minChartHeight, viewportHeight);
+    }
+    return minChartHeight;
   }
 
   _syncTopSlotOffset(): void {

@@ -69,7 +69,7 @@ interface PartialLoadState {
 
 // ── Card ──────────────────────────────────────────────────────────────────────
 
-export class HassRecordsHistoryCard extends ChartCardBase {
+export class HassDatapointsHistoryCard extends ChartCardBase {
   static styles = styles;
 
   // ── State ──────────────────────────────────────────────────────────────────
@@ -1641,4 +1641,7 @@ export class HassRecordsHistoryCard extends ChartCardBase {
   }
 }
 
-customElements.define("hass-datapoints-history-card", HassRecordsHistoryCard);
+customElements.define(
+  "hass-datapoints-history-card",
+  HassDatapointsHistoryCard
+);

@@ -15,6 +15,22 @@ Data Points ships six Lovelace cards and a dedicated history panel. All cards in
 | `hass-datapoints-history-card`  | Multi-series analysis chart with target rows, anomaly overlays, date windows, zoom, timeline slider, and chart-created datapoints. |
 | `hass-datapoints-sensor-card`   | Sensor-focused chart with inline datapoint markers.                                                                                |
 
+### Deprecated card types
+
+Older installations may still reference `hass-records-*` card types. These are supported as aliases and can be replaced directly in YAML:
+
+| Deprecated type                | Replacement                     |
+| ------------------------------ | ------------------------------- |
+| `hass-records-action-card`     | `hass-datapoints-action-card`   |
+| `hass-records-quick-card`      | `hass-datapoints-quick-card`    |
+| `hass-records-history-card`    | `hass-datapoints-history-card`  |
+| `hass-records-sensor-card`     | `hass-datapoints-sensor-card`   |
+| `hass-records-list-card`       | `hass-datapoints-list-card`     |
+| `hass-records-dev-tool-card`   | `hass-datapoints-dev-tool-card` |
+| `hass-records-statistics-card` | `hass-datapoints-history-card`  |
+
+The old `hass-datapoints-statistics-card` is no longer shipped. If present in a dashboard, it renders a migration hint.
+
 ### Visual editors
 
 All bundled cards include Lovelace visual editors. The dev-tool editor is intentionally minimal because the card itself does not expose configurable options.

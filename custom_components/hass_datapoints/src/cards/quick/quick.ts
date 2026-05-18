@@ -7,7 +7,7 @@ import type { HassLike } from "@/lib/types";
 import "@/atoms/display/feedback-banner/feedback-banner";
 import "@/cards/quick/quick-annotation/quick-annotation";
 
-export class HassRecordsQuickCard extends LitElement {
+export class HassDatapointsQuickCard extends LitElement {
   static properties = {
     _config: { type: Object, state: true },
     _hass: { type: Object, state: true },

@@ -256,7 +256,7 @@ type ResizablePanesElement = HTMLElement & {
 
 // Shared timeline, domain, and history-page helpers now live in dedicated subsystem files.
 
-export class HassRecordsHistoryPanel extends HTMLElement {
+export class HassDatapointsHistoryPanel extends HTMLElement {
   [key: string]: unknown;
 
   // Explicit declarations take precedence over the index signature so TypeScript

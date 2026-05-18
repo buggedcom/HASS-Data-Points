@@ -9,12 +9,12 @@ import type {
   WindowConfig,
   WindowResult,
 } from "@/cards/dev-tool/types";
-import { HassRecordsDevToolCardEditor } from "./editor";
+import { HassDatapointsDevToolCardEditor } from "./editor";
 import "@/atoms/display/feedback-banner/feedback-banner";
 import "@/cards/dev-tool/dev-tool-results/dev-tool-results";
 import "@/cards/dev-tool/dev-tool-windows/dev-tool-windows";
 
-export class HassRecordsDevToolCard extends HTMLElement {
+export class HassDatapointsDevToolCard extends HTMLElement {
   _config: RecordWithUnknownValues = {};
 
   _hass: Nullable<HassLike> = null;
@@ -625,4 +625,4 @@ export class HassRecordsDevToolCard extends HTMLElement {
   }
 }
 
-export { HassRecordsDevToolCardEditor };
+export { HassDatapointsDevToolCardEditor };
