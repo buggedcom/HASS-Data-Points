@@ -2588,6 +2588,7 @@
 			"Add all series from chart": "Lisää kaikki sarjat kaaviosta",
 			"Add from current chart": "Lisää nykyisestä kaaviosta",
 			"Create anomaly monitor": "Luo poikkeamamonitori",
+			"Unable to save anomaly monitor.": "Poikkeamamonitoria ei voitu tallentaa.",
 			"anomaly monitors": "poikkeamamonitoria"
 		};
 	}));
@@ -3196,6 +3197,7 @@
 			"Add all series from chart": "Ajouter toutes les séries du graphique",
 			"Add from current chart": "Ajouter depuis le graphique actuel",
 			"Create anomaly monitor": "Créer un moniteur d'anomalies",
+			"Unable to save anomaly monitor.": "Impossible d'enregistrer le moniteur d'anomalies.",
 			"anomaly monitors": "moniteurs d'anomalies"
 		};
 	}));
@@ -3805,6 +3807,7 @@
 			"Add all series from chart": "Alle Reihen aus dem Diagramm hinzufügen",
 			"Add from current chart": "Aus aktuellem Diagramm hinzufügen",
 			"Create anomaly monitor": "Anomaliemonitor erstellen",
+			"Unable to save anomaly monitor.": "Anomaliemonitor konnte nicht gespeichert werden.",
 			"anomaly monitors": "Anomaliemonitore"
 		};
 	}));
@@ -4413,6 +4416,7 @@
 			"Add all series from chart": "Añadir todas las series del gráfico",
 			"Add from current chart": "Añadir desde el gráfico actual",
 			"Create anomaly monitor": "Crear monitor de anomalías",
+			"Unable to save anomaly monitor.": "No se pudo guardar el monitor de anomalías.",
 			"anomaly monitors": "monitores de anomalías"
 		};
 	}));
@@ -5021,6 +5025,7 @@
 			"Add all series from chart": "Adicionar todas as séries do gráfico",
 			"Add from current chart": "Adicionar do gráfico atual",
 			"Create anomaly monitor": "Criar monitor de anomalias",
+			"Unable to save anomaly monitor.": "Não foi possível guardar o monitor de anomalias.",
 			"anomaly monitors": "monitores de anomalias"
 		};
 	}));
@@ -5629,6 +5634,7 @@
 			"Add all series from chart": "添加图表中的所有序列",
 			"Add from current chart": "从当前图表添加",
 			"Create anomaly monitor": "创建异常监视器",
+			"Unable to save anomaly monitor.": "无法保存异常监视器。",
 			"anomaly monitors": "异常监视器"
 		};
 	}));
@@ -10746,6 +10752,25 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/data/history-api.ts
 	var MAX_DOWNSAMPLED_HISTORY_RANGE_MS = 2160 * 60 * 60 * 1e3;
+	function createRequestId() {
+		const cryptoApi = globalThis.crypto;
+		if (typeof cryptoApi?.randomUUID === "function") return cryptoApi.randomUUID();
+		if (typeof cryptoApi?.getRandomValues === "function") {
+			const bytes = new Uint8Array(16);
+			cryptoApi.getRandomValues(bytes);
+			bytes[6] = bytes[6] % 16 + 64;
+			bytes[8] = bytes[8] % 64 + 128;
+			const hex = [...bytes].map((byte) => byte.toString(16).padStart(2, "0"));
+			return [
+				hex.slice(0, 4).join(""),
+				hex.slice(4, 6).join(""),
+				hex.slice(6, 8).join(""),
+				hex.slice(8, 10).join(""),
+				hex.slice(10, 16).join("")
+			].join("-");
+		}
+		return `req-${Date.now().toString(16)}-${Math.random().toString(16).slice(2, 10)}`;
+	}
 	function parseIsoTimeMs(value) {
 		const timeMs = Date.parse(value);
 		if (!Number.isFinite(timeMs)) return null;
@@ -10782,7 +10807,7 @@
 		});
 		const slotKey = `history:${entityId}:${startTime}:${endTime}:${interval}:${aggregate}`;
 		cancelPending(hass, slotKey);
-		const requestId = crypto.randomUUID();
+		const requestId = createRequestId();
 		trackRequest(slotKey, requestId);
 		return withStableRangeCache(cacheKey, endTime, async () => {
 			try {
@@ -10809,7 +10834,7 @@
 	function fetchAnomaliesFromBackend(hass, entityId, startTime, endTime, config) {
 		const slotKey = `anomalies:${entityId}:${startTime}:${endTime}`;
 		cancelPending(hass, slotKey);
-		const requestId = crypto.randomUUID();
+		const requestId = createRequestId();
 		trackRequest(slotKey, requestId);
 		return hass.connection.sendMessagePromise({
 			type: "hass_datapoints/anomalies",
@@ -18195,17 +18220,17 @@
 
   .group {
     display: grid;
-    gap: var(--dp-spacing-sm);
+    gap: calc(var(--dp-spacing-sm) * 0.75);
     border-radius: 6px;
   }
 
   .group-body {
     display: grid;
-    gap: var(--dp-spacing-sm);
-    padding: var(--dp-spacing-sm);
+    gap: calc(var(--dp-spacing-sm) * 0.75);
+    padding: calc(var(--dp-spacing-sm) * 0.75);
     border-left: 3px solid var(--primary-color);
     margin-left: 5px;
-    padding-left: var(--dp-spacing-md);
+    padding-left: calc(var(--dp-spacing-md) - 2px);
   }
 
   .option {
@@ -19085,12 +19110,12 @@
 
   .method-list {
     display: grid;
-    gap: var(--dp-spacing-sm, 8px);
+    gap: calc(var(--dp-spacing-sm, 8px) * 0.75);
   }
 
   .method-item {
     display: grid;
-    gap: var(--dp-spacing-sm, 8px);
+    gap: 6px;
   }
 
   ha-tooltip {
@@ -19138,13 +19163,12 @@
   }
 
   .save-monitor-btn {
-    display: inline-flex;
-    align-self: flex-start;
-    align-items: center;
+    display: inline-block;
+    width: fit-content;
     gap: 4px;
     padding: 4px 8px;
     border: 0;
-    border-radius: 6px;
+    border-radius: var(--wa-form-control-border-radius);
     font: inherit;
     font-size: 0.82rem;
     color: var(--primary-color, #3b82f6);
@@ -19158,6 +19182,21 @@
     appearance: none;
     -webkit-appearance: none;
     transition: background 120ms ease;
+  }
+
+  .field {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .field-label {
+    min-width: 112px;
+    padding-top: 4px;
+  }
+
+  .option {
+    align-items: center;
+    gap: 8px;
   }
 
   .save-monitor-btn:hover,
@@ -19179,12 +19218,12 @@
   }
 
   .subopts {
-    padding-left: calc(var(--spacing, 8px) * 1.5);
+    padding-left: calc(var(--spacing, 8px) * 1.25);
+    padding-top: 2px;
     display: grid;
-    gap: var(--dp-spacing-sm);
+    gap: calc(var(--dp-spacing-sm) * 0.75);
     justify-items: start;
-    border-left: 3px solid var(--primary-color);
-    margin-left: 5px;
+    margin-left: 1px;
   }
 `;
 	//#endregion
@@ -19198,7 +19237,7 @@
 	customElements.define("analysis-method-subopts", AnalysisMethodSubopts);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/analysis-anomaly-group.ts
-	var _AnalysisAnomalyGroup, _analysis_accessor_storage$2, _entityId_accessor_storage$2, _comparisonWindows_accessor_storage$3, _hass_accessor_storage$10, _computing_accessor_storage$1, _computingProgress_accessor_storage$1, _computingMethods_accessor_storage$1;
+	var _AnalysisAnomalyGroup, _analysis_accessor_storage$2, _entityId_accessor_storage$2, _comparisonWindows_accessor_storage$3, _hass_accessor_storage$10, _computing_accessor_storage$1, _computingProgress_accessor_storage$1, _computingMethods_accessor_storage$1, _hideSaveMonitorCta_accessor_storage;
 	var ANALYSIS_ANOMALY_SENSITIVITY_OPTIONS = [
 		{
 			value: "low",
@@ -19335,7 +19374,7 @@
 		value: "only",
 		label: "Overlaps only"
 	}];
-	var AnalysisAnomalyGroup = (_analysis_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _entityId_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$10 = /* @__PURE__ */ new WeakMap(), _computing_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingProgress_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingMethods_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _AnalysisAnomalyGroup = class AnalysisAnomalyGroup extends i$2 {
+	var AnalysisAnomalyGroup = (_analysis_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _entityId_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$10 = /* @__PURE__ */ new WeakMap(), _computing_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingProgress_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingMethods_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hideSaveMonitorCta_accessor_storage = /* @__PURE__ */ new WeakMap(), _AnalysisAnomalyGroup = class AnalysisAnomalyGroup extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _analysis_accessor_storage$2, {});
@@ -19345,6 +19384,7 @@
 			_classPrivateFieldInitSpec(this, _computing_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _computingProgress_accessor_storage$1, 0);
 			_classPrivateFieldInitSpec(this, _computingMethods_accessor_storage$1, /* @__PURE__ */ new Set());
+			_classPrivateFieldInitSpec(this, _hideSaveMonitorCta_accessor_storage, false);
 		}
 		get analysis() {
 			return _classPrivateFieldGet2(_analysis_accessor_storage$2, this);
@@ -19387,6 +19427,12 @@
 		}
 		set computingMethods(value) {
 			_classPrivateFieldSet2(_computingMethods_accessor_storage$1, this, value);
+		}
+		get hideSaveMonitorCta() {
+			return _classPrivateFieldGet2(_hideSaveMonitorCta_accessor_storage, this);
+		}
+		set hideSaveMonitorCta(value) {
+			_classPrivateFieldSet2(_hideSaveMonitorCta_accessor_storage, this, value);
 		}
 		/**
 		* Build an entity filter for the comparison entity picker that matches the
@@ -19636,7 +19682,7 @@
                 ></inline-select>
               </label>
             ` : A}
-        ${a.show_anomalies && Array.isArray(a.anomaly_methods) && a.anomaly_methods.length > 0 ? b`
+        ${a.show_anomalies && Array.isArray(a.anomaly_methods) && a.anomaly_methods.length > 0 && !this.hideSaveMonitorCta ? b`
               <button class="save-monitor-btn" @click=${this._onSaveAsMonitor}>
                 <ha-icon icon="mdi:bell-plus-outline"></ha-icon>
                 ${msg("Save as anomaly monitor")}
@@ -19681,6 +19727,10 @@
 		type: Object,
 		attribute: false
 	})], AnalysisAnomalyGroup.prototype, "computingMethods", null);
+	__decorate([n$1({
+		type: Boolean,
+		attribute: "hide-save-monitor-cta"
+	})], AnalysisAnomalyGroup.prototype, "hideSaveMonitorCta", null);
 	AnalysisAnomalyGroup = __decorate([localized()], AnalysisAnomalyGroup);
 	customElements.define("analysis-anomaly-group", AnalysisAnomalyGroup);
 	//#endregion
@@ -27105,14 +27155,26 @@
 	var styles$27 = i$5`
   /* ---- Dialog content wrapper ---- */
 
+  .wizard-shell {
+    display: flex;
+    flex-direction: column;
+    min-width: min(480px, 90vw);
+    max-height: 70vh;
+  }
+
+  .wizard-header {
+    flex: 0 0 auto;
+    background: var(--card-background-color, #fff);
+    padding: 0 2px;
+  }
+
   .wizard-content {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    min-width: min(480px, 90vw);
-    max-height: 70vh;
+    gap: 14px;
+    flex: 1 1 auto;
     overflow-y: auto;
-    padding: 0 2px 4px;
+    padding: 0 2px 6px;
   }
 
   /* ---- Step indicator bar ---- */
@@ -27121,9 +27183,12 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    padding-bottom: 8px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 0 0 10px;
     border-bottom: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
-    margin-bottom: 4px;
+    background: var(--card-background-color, #fff);
   }
 
   .step {
@@ -27168,18 +27233,42 @@
   .wizard-entity-chips {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 8px;
     align-items: center;
   }
 
-  .suggestion-chip {
+  .quick-add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 34px;
+    padding: 8px 14px;
+    border: 0;
+    border-radius: 999px;
+    background: color-mix(
+      in srgb,
+      var(--primary-color, #3b82f6) 18%,
+      transparent
+    );
+    color: var(--primary-color, #3b82f6);
+    font: inherit;
+    font-size: 0.84rem;
+    font-weight: 500;
     cursor: pointer;
-    opacity: 0.75;
-    transition: opacity 120ms ease;
+    --mdc-icon-size: 16px;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: background 120ms ease;
   }
 
-  .suggestion-chip:hover {
-    opacity: 1;
+  .quick-add-btn:hover,
+  .quick-add-btn:focus-visible {
+    background: color-mix(
+      in srgb,
+      var(--primary-color, #3b82f6) 26%,
+      transparent
+    );
+    outline: none;
   }
 
   /* ---- Step 2: Entity tabs ---- */
@@ -27235,33 +27324,6 @@
     display: flex;
     flex-direction: column;
     gap: 4px;
-  }
-
-  /* ---- Step 1 header row ---- */
-
-  .wizard-section-header-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    min-height: 20px;
-  }
-
-  .text-link-btn {
-    background: none;
-    border: none;
-    padding: 0;
-    font: inherit;
-    font-size: 0.82rem;
-    color: var(--primary-color, #03a9f4);
-    cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-    appearance: none;
-    -webkit-appearance: none;
-  }
-
-  .text-link-btn:hover {
-    opacity: 0.8;
   }
 
   /* ---- Step 2: Analysis sections ---- */
@@ -27376,9 +27438,10 @@
     display: flex;
     align-items: center;
     gap: 4px;
+    flex: 0 0 auto;
     padding-top: 8px;
     border-top: 1px solid var(--divider-color, rgba(0, 0, 0, 0.08));
-    margin-top: 4px;
+    margin-top: 6px;
   }
 
   .dialog-spacer {
@@ -27434,10 +27497,13 @@
 	function defaultEntityConfig(prefill) {
 		return {
 			anomaly_methods: prefill?.anomaly_methods?.length ? [...prefill.anomaly_methods] : ["trend_residual"],
+			anomaly_overlap_mode: prefill?.anomaly_overlap_mode ?? "all",
 			anomaly_sensitivity: prefill?.anomaly_sensitivity ?? "medium",
 			anomaly_rate_window: prefill?.anomaly_rate_window ?? "1h",
 			anomaly_zscore_window: prefill?.anomaly_zscore_window ?? "24h",
 			anomaly_persistence_window: prefill?.anomaly_persistence_window ?? "1h",
+			anomaly_comparison_window_id: prefill?.anomaly_comparison_window_id ?? null,
+			anomaly_comparison_entity_id: prefill?.anomaly_comparison_entity_id ?? null,
 			anomaly_trend_method: prefill?.anomaly_trend_method || "rolling_average",
 			anomaly_trend_window: prefill?.anomaly_trend_window ?? "24h",
 			sample_interval: prefill?.sample_interval ?? "raw",
@@ -27448,18 +27514,25 @@
 		};
 	}
 	function configFromMonitor(m) {
+		const baselineEntityId = m.baseline_entity_id ?? null;
 		return {
-			anomaly_methods: [...m.anomaly_methods],
+			anomaly_methods: [...m.anomaly_methods].map((method) => {
+				if (method === "comparison_window" && baselineEntityId) return "similar_entity";
+				return method;
+			}),
+			anomaly_overlap_mode: m.anomaly_overlap_mode ?? "all",
 			anomaly_sensitivity: m.anomaly_sensitivity,
 			anomaly_rate_window: m.anomaly_rate_window,
 			anomaly_zscore_window: m.anomaly_zscore_window,
 			anomaly_persistence_window: m.anomaly_persistence_window,
+			anomaly_comparison_window_id: null,
+			anomaly_comparison_entity_id: baselineEntityId,
 			anomaly_trend_method: m.anomaly_trend_method,
 			anomaly_trend_window: m.anomaly_trend_window,
 			sample_interval: m.sample_interval ?? "raw",
 			sample_aggregate: m.sample_aggregate ?? "mean",
 			anomaly_use_sampled_data: m.anomaly_use_sampled_data ?? false,
-			baseline_entity_id: m.baseline_entity_id ?? null,
+			baseline_entity_id: baselineEntityId,
 			baseline_time_offset_hours: m.baseline_time_offset_hours ?? 0
 		};
 	}
@@ -27467,10 +27540,13 @@
 		return {
 			show_anomalies: true,
 			anomaly_methods: [...cfg.anomaly_methods],
+			anomaly_overlap_mode: cfg.anomaly_overlap_mode,
 			anomaly_sensitivity: cfg.anomaly_sensitivity,
 			anomaly_rate_window: cfg.anomaly_rate_window,
 			anomaly_zscore_window: cfg.anomaly_zscore_window,
 			anomaly_persistence_window: cfg.anomaly_persistence_window,
+			anomaly_comparison_window_id: cfg.anomaly_comparison_window_id,
+			anomaly_comparison_entity_id: cfg.anomaly_comparison_entity_id,
 			anomaly_trend_method: cfg.anomaly_trend_method,
 			anomaly_trend_window: cfg.anomaly_trend_window,
 			anomaly_use_sampled_data: cfg.anomaly_use_sampled_data,
@@ -27489,9 +27565,6 @@
 			show_threshold_shading: false,
 			threshold_value: "0",
 			threshold_direction: "above",
-			anomaly_overlap_mode: "all",
-			anomaly_comparison_window_id: null,
-			anomaly_comparison_entity_id: null,
 			show_delta_analysis: false,
 			show_delta_tooltip: false,
 			show_delta_lines: false,
@@ -27508,8 +27581,11 @@
 		};
 	}
 	function buildConfigPayload(config) {
+		const backendMethods = config.anomaly_methods.includes("similar_entity") ? [...new Set(config.anomaly_methods.map((method) => method === "similar_entity" ? "comparison_window" : method))] : [...config.anomaly_methods];
+		const baselineEntityId = config.anomaly_comparison_entity_id ?? config.baseline_entity_id;
 		const base = {
-			anomaly_methods: config.anomaly_methods,
+			anomaly_methods: backendMethods,
+			anomaly_overlap_mode: config.anomaly_overlap_mode,
 			anomaly_sensitivity: config.anomaly_sensitivity,
 			anomaly_rate_window: config.anomaly_rate_window,
 			anomaly_zscore_window: config.anomaly_zscore_window,
@@ -27522,8 +27598,8 @@
 			base.sample_aggregate = config.sample_aggregate;
 			base.anomaly_use_sampled_data = true;
 		}
-		if (config.baseline_entity_id) {
-			base.baseline_entity_id = config.baseline_entity_id;
+		if (baselineEntityId) {
+			base.baseline_entity_id = baselineEntityId;
 			base.baseline_time_offset_hours = config.baseline_time_offset_hours;
 		}
 		return base;
@@ -27542,10 +27618,10 @@
 		};
 		if (entityIds.some((id) => {
 			const cfg = getConfig(id);
-			return cfg.anomaly_methods.includes("comparison_window") && !cfg.baseline_entity_id;
+			return cfg.anomaly_methods.includes("similar_entity") && !cfg.anomaly_comparison_entity_id;
 		})) return {
 			valid: false,
-			error: "Select a baseline entity for the Comparison method."
+			error: "Select a comparison entity for the Similar entity method."
 		};
 		return { valid: true };
 	}
@@ -27762,10 +27838,13 @@
 				return;
 			}
 			const configKey = {
+				anomaly_overlap_mode: "anomaly_overlap_mode",
 				anomaly_sensitivity: "anomaly_sensitivity",
 				anomaly_rate_window: "anomaly_rate_window",
 				anomaly_zscore_window: "anomaly_zscore_window",
 				anomaly_persistence_window: "anomaly_persistence_window",
+				anomaly_comparison_window_id: "anomaly_comparison_window_id",
+				anomaly_comparison_entity_id: "anomaly_comparison_entity_id",
 				anomaly_trend_method: "anomaly_trend_method",
 				anomaly_trend_window: "anomaly_trend_window",
 				anomaly_use_sampled_data: "anomaly_use_sampled_data",
@@ -27851,6 +27930,17 @@
 		_configPayload(entityId) {
 			return buildConfigPayload(this._getEntityConfig(entityId));
 		}
+		_extractErrorMessage(err) {
+			if (typeof err === "string" && err.trim()) return err;
+			if (err instanceof Error && err.message.trim()) return err.message;
+			if (typeof err === "object" && err !== null) {
+				const nestedError = err.error;
+				if (nestedError && typeof nestedError.message === "string" && nestedError.message.trim()) return nestedError.message;
+				const directMessage = err.message;
+				if (typeof directMessage === "string" && directMessage.trim()) return directMessage;
+			}
+			return msg("Unable to save anomaly monitor.");
+		}
 		async _onSubmit() {
 			if (!this.hass) return;
 			if (!this._name.trim()) {
@@ -27903,7 +27993,7 @@
 				}
 				this._emit("dp-monitor-wizard-saved", { monitors: saved });
 			} catch (err) {
-				this._error = String(err);
+				this._error = this._extractErrorMessage(err);
 			} finally {
 				this._saving = false;
 			}
@@ -27970,20 +28060,10 @@
 		_renderStep1() {
 			const selectedEntityIds = this._resolvedTargetEntityIds();
 			const suggestions = this.suggestedEntityIds.filter((id) => !selectedEntityIds.includes(id));
+			const hasUnaddedSeries = this.allSeriesEntityIds.some((id) => !selectedEntityIds.includes(id));
+			const hasQuickAddOptions = suggestions.length > 0 || hasUnaddedSeries;
 			return b`
       <div class="wizard-section">
-        <div class="wizard-section-header-row">
-          <span></span>
-          ${this.allSeriesEntityIds.some((id) => !selectedEntityIds.includes(id)) ? b`
-                <button
-                  class="text-link-btn"
-                  type="button"
-                  @click=${this._addAllSeriesFromChart}
-                >
-                  ${msg("Add all series from chart")}
-                </button>
-              ` : A}
-        </div>
         <ha-target-picker
           .hass=${this.hass}
           .value=${this._target}
@@ -27991,19 +28071,30 @@
         ></ha-target-picker>
       </div>
 
-      ${suggestions.length > 0 ? b`
+      ${hasQuickAddOptions ? b`
             <div class="wizard-section">
               <p class="wizard-section-label">
                 ${msg("Add from current chart")}
               </p>
               <div class="wizard-entity-chips">
+                ${hasUnaddedSeries ? b`
+                      <button
+                        class="quick-add-btn"
+                        type="button"
+                        @click=${this._addAllSeriesFromChart}
+                      >
+                        <ha-icon icon="mdi:plus"></ha-icon>
+                        <span>${msg("Add all series from chart")}</span>
+                      </button>
+                    ` : A}
                 ${suggestions.map((id) => b`
                     <button
-                      class="suggestion-chip"
+                      class="quick-add-btn"
                       type="button"
                       @click=${() => this._addSuggestedEntity(id)}
                     >
-                      ${this._entityName(id)}
+                      <ha-icon icon="mdi:plus"></ha-icon>
+                      <span>${this._entityName(id)}</span>
                     </button>
                   `)}
               </div>
@@ -28048,6 +28139,7 @@
         .analysis=${analysis}
         entity-id=${entityId}
         .hass=${this.hass}
+        .hideSaveMonitorCta=${true}
         @dp-group-analysis-change=${(e) => this._onAnalysisGroupChange(entityId, e)}
       ></analysis-anomaly-group>
     `;
@@ -28152,13 +28244,14 @@
           ${isEdit ? msg("Edit Anomaly Monitor") : msg("Create Anomaly Monitor")}
         </span>
 
-        <div class="wizard-content">
-          ${this._renderStepBar()}
-          ${this._step === 1 ? this._renderStep1() : A}
-          ${this._step === 2 ? this._renderStep2() : A}
-          ${this._step === 3 ? this._renderStep3() : A}
-          ${this._error ? b`<div class="wizard-error">${this._error}</div>` : A}
-
+        <div class="wizard-shell">
+          <div class="wizard-header">${this._renderStepBar()}</div>
+          <div class="wizard-content">
+            ${this._step === 1 ? this._renderStep1() : A}
+            ${this._step === 2 ? this._renderStep2() : A}
+            ${this._step === 3 ? this._renderStep3() : A}
+            ${this._error ? b`<div class="wizard-error">${this._error}</div>` : A}
+          </div>
           <div class="dialog-actions">
             <ha-button @click=${this._onClose}>${msg("Cancel")}</ha-button>
             <span class="dialog-spacer"></span>
@@ -28441,6 +28534,8 @@
 			_classPrivateFieldInitSpec(this, _loadingClusters_accessor_storage, /* @__PURE__ */ new Set());
 			_classPrivateFieldInitSpec(this, _dismissPickerKey_accessor_storage, null);
 			_defineProperty(this, "_pollInterval", null);
+			_defineProperty(this, "_monitorsEventUnsubscribe", null);
+			_defineProperty(this, "_monitorsSubscriptionToken", 0);
 		}
 		get hass() {
 			return _classPrivateFieldGet2(_hass_accessor_storage$6, this);
@@ -28492,7 +28587,10 @@
 		}
 		connectedCallback() {
 			super.connectedCallback();
-			this._load();
+			if (this.hasUpdated) {
+				this._scheduleLoad();
+				this._scheduleMonitorSubscription();
+			}
 			this._pollInterval = setInterval(() => this._load(), 3e4);
 		}
 		disconnectedCallback() {
@@ -28500,6 +28598,41 @@
 			if (this._pollInterval !== null) {
 				clearInterval(this._pollInterval);
 				this._pollInterval = null;
+			}
+			this._teardownMonitorSubscription();
+		}
+		updated(changedProperties) {
+			if (changedProperties.has("hass")) {
+				this._teardownMonitorSubscription();
+				this._scheduleMonitorSubscription();
+				this._scheduleLoad();
+			}
+		}
+		_scheduleLoad() {
+			this._load().catch(() => {});
+		}
+		_scheduleMonitorSubscription() {
+			this._ensureMonitorSubscription().catch(() => {});
+		}
+		async _ensureMonitorSubscription() {
+			if (!this.hass?.connection || this._monitorsEventUnsubscribe) return;
+			const token = ++this._monitorsSubscriptionToken;
+			try {
+				const unsubscribe = await this.hass.connection.subscribeEvents(() => {
+					this._scheduleLoad();
+				}, `${DOMAIN}_monitors_updated`);
+				if (!this.isConnected || token !== this._monitorsSubscriptionToken) {
+					unsubscribe();
+					return;
+				}
+				this._monitorsEventUnsubscribe = unsubscribe;
+			} catch {}
+		}
+		_teardownMonitorSubscription() {
+			this._monitorsSubscriptionToken += 1;
+			if (this._monitorsEventUnsubscribe) {
+				this._monitorsEventUnsubscribe();
+				this._monitorsEventUnsubscribe = null;
 			}
 		}
 		async _load() {

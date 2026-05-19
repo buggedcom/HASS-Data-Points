@@ -8,6 +8,53 @@ import {
 } from "@/lib/data/history-api";
 
 describe("history-api", () => {
+  describe("GIVEN randomUUID is unavailable in the runtime", () => {
+    describe("WHEN fetchAnomaliesFromBackend is called", () => {
+      it("THEN it falls back to a generated request id instead of throwing", async () => {
+        expect.assertions(2);
+
+        const originalCrypto = globalThis.crypto;
+        Object.defineProperty(globalThis, "crypto", {
+          configurable: true,
+          value: {
+            getRandomValues: (array: Uint8Array) => {
+              array.set([
+                0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70, 0x80, 0x90, 0xa0,
+                0xb0, 0xc0, 0xd0, 0xe0, 0xf0, 0x01,
+              ]);
+              return array;
+            },
+          },
+        });
+
+        try {
+          const sendMessagePromise = vi.fn(async () => ({
+            anomaly_clusters: [],
+          }));
+          const hass = {
+            connection: { sendMessagePromise, sendMessage: vi.fn() },
+          };
+
+          await expect(
+            fetchAnomaliesFromBackend(hass, "sensor.a", "start", "end", {
+              anomaly_methods: ["iqr"],
+            })
+          ).resolves.toEqual([]);
+          expect(sendMessagePromise).toHaveBeenCalledWith(
+            expect.objectContaining({
+              request_id: "10203040-5060-4080-90a0-b0c0d0e0f001",
+            })
+          );
+        } finally {
+          Object.defineProperty(globalThis, "crypto", {
+            configurable: true,
+            value: originalCrypto,
+          });
+        }
+      });
+    });
+  });
+
   describe("GIVEN a downsample request", () => {
     describe("WHEN fetchDownsampledHistory is called", () => {
       it("THEN it sends the expected websocket payload", async () => {
