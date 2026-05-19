@@ -1,3 +1,8 @@
+import {
+  cancelPending,
+  clearRequest,
+  trackRequest,
+} from "@/lib/data/cancel-api";
 import { normalizeCacheIdList, withStableRangeCache } from "@/lib/data/cache";
 import type { HassLike } from "@/lib/types";
 
@@ -98,40 +103,50 @@ export function fetchDownsampledHistory<TPoint = unknown>(
     aggregate,
   });
 
+  const slotKey = `history:${entityId}:${startTime}:${endTime}:${interval}:${aggregate}`;
+  cancelPending(hass, slotKey);
+  const requestId = crypto.randomUUID();
+  trackRequest(slotKey, requestId);
+
   return withStableRangeCache(cacheKey, endTime, async () => {
-    const chunks = buildDownsampledHistoryChunks(startTime, endTime);
-    const responses = await Promise.all(
-      chunks.map(async (chunk) =>
-        hass.connection.sendMessagePromise({
-          type: "hass_datapoints/history",
-          entity_id: entityId,
-          start_time: chunk.startTime,
-          end_time: chunk.endTime,
-          interval,
-          aggregate,
-        })
-      )
-    );
+    try {
+      const chunks = buildDownsampledHistoryChunks(startTime, endTime);
+      const responses = await Promise.all(
+        chunks.map(async (chunk) =>
+          hass.connection.sendMessagePromise({
+            type: "hass_datapoints/history",
+            entity_id: entityId,
+            start_time: chunk.startTime,
+            end_time: chunk.endTime,
+            interval,
+            aggregate,
+            request_id: requestId,
+          })
+        )
+      );
 
-    const mergedPoints = responses.flatMap(
-      (result) =>
-        ((result as DownsampledHistoryResult<TPoint>).pts || []) as TPoint[]
-    );
+      const mergedPoints = responses.flatMap(
+        (result) =>
+          ((result as DownsampledHistoryResult<TPoint>).pts || []) as TPoint[]
+      );
 
-    if (!mergedPoints.length) {
-      return [];
-    }
-
-    const dedupedPoints = new Map<string, TPoint>();
-    for (const point of mergedPoints) {
-      if (Array.isArray(point) && point.length > 0) {
-        dedupedPoints.set(String(point[0]), point);
-      } else {
-        dedupedPoints.set(JSON.stringify(point), point);
+      if (!mergedPoints.length) {
+        return [];
       }
-    }
 
-    return [...dedupedPoints.values()];
+      const dedupedPoints = new Map<string, TPoint>();
+      for (const point of mergedPoints) {
+        if (Array.isArray(point) && point.length > 0) {
+          dedupedPoints.set(String(point[0]), point);
+        } else {
+          dedupedPoints.set(JSON.stringify(point), point);
+        }
+      }
+
+      return [...dedupedPoints.values()];
+    } finally {
+      clearRequest(slotKey);
+    }
   });
 }
 
@@ -142,6 +157,11 @@ export function fetchAnomaliesFromBackend<TCluster = unknown>(
   endTime: string,
   config: BackendAnomalyConfig
 ): Promise<TCluster[]> {
+  const slotKey = `anomalies:${entityId}:${startTime}:${endTime}`;
+  cancelPending(hass, slotKey);
+  const requestId = crypto.randomUUID();
+  trackRequest(slotKey, requestId);
+
   return hass.connection
     .sendMessagePromise({
       type: "hass_datapoints/anomalies",
@@ -156,6 +176,7 @@ export function fetchAnomaliesFromBackend<TCluster = unknown>(
       anomaly_persistence_window: config.anomaly_persistence_window || "1h",
       trend_method: config.trend_method || "rolling_average",
       trend_window: config.trend_window || "24h",
+      request_id: requestId,
       ...(config.anomaly_use_sampled_data !== false &&
       config.sample_interval &&
       config.sample_interval !== "raw"
@@ -174,10 +195,63 @@ export function fetchAnomaliesFromBackend<TCluster = unknown>(
         : {}),
     })
     .then(
-      (result) =>
-        ((result as BackendAnomalyResult<TCluster>).anomaly_clusters ||
-          []) as TCluster[]
+      (result) => {
+        clearRequest(slotKey);
+        return ((result as BackendAnomalyResult<TCluster>).anomaly_clusters ||
+          []) as TCluster[];
+      },
+      (err) => {
+        clearRequest(slotKey);
+        throw err;
+      }
     );
+}
+
+/**
+ * Progressive variant: fires chunks sequentially and calls onChunk as each arrives.
+ * Allows the chart to start rendering before all chunks resolve.
+ */
+export async function fetchDownsampledHistoryProgressive<TPoint = unknown>(
+  hass: Pick<HassLike, "connection">,
+  entityId: string,
+  startTime: string,
+  endTime: string,
+  interval: string,
+  aggregate: string,
+  onChunk: (pts: TPoint[], isLast: boolean) => void,
+  signal?: AbortSignal
+): Promise<void> {
+  const chunks = buildDownsampledHistoryChunks(startTime, endTime);
+  const requestId = crypto.randomUUID();
+
+  for (let i = 0; i < chunks.length; i++) {
+    if (signal?.aborted) break;
+    const chunk = chunks[i];
+    const isLast = i === chunks.length - 1;
+    try {
+      const resultPromise = hass.connection.sendMessagePromise({
+        type: "hass_datapoints/history",
+        entity_id: entityId,
+        start_time: chunk.startTime,
+        end_time: chunk.endTime,
+        interval,
+        aggregate,
+        request_id: requestId,
+      });
+      resultPromise
+        .then((result) => {
+          const pts = ((result as DownsampledHistoryResult<TPoint>).pts ||
+            []) as TPoint[];
+          onChunk(pts, isLast);
+        })
+        .catch(() => {
+          onChunk([], true);
+        });
+    } catch {
+      onChunk([], true);
+      break;
+    }
+  }
 }
 
 export async function fetchHistoryDuringPeriod<TResponse = unknown>(

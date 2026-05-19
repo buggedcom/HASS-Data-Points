@@ -231,7 +231,9 @@ def test_schedule_timer_creates_interval_when_enabled():
     sensor = DatapointsMonitorSensor(_make_entry(), store, hass, "m1")
     sensor.async_on_remove = MagicMock()
     sensor._schedule_timer()
-    assert sensor._unsub_timer is not None
+    # With stagger, _unsub_timer is set when the stagger delay fires (_start callback).
+    # After _schedule_timer(), the stagger is pending and _unsub_stagger is set.
+    assert sensor._unsub_stagger is not None
 
 
 def test_schedule_timer_cancels_previous():
@@ -573,6 +575,8 @@ _DETECT_PATCH = "custom_components.hass_datapoints.sensor._run_detection_sync"
 
 def _make_scan_sensor(monitor_dict):
     """Create a DatapointsMonitorSensor wired for _run_scan() tests."""
+    import asyncio as _asyncio
+
     from custom_components.hass_datapoints.sensor import DatapointsMonitorSensor
 
     store = _make_store(monitors=[monitor_dict])
@@ -588,11 +592,23 @@ def _make_scan_sensor(monitor_dict):
 
     hass = MagicMock()
     hass.bus = MagicMock()
+    # Provide a scan semaphore so _run_scan uses the normal path
+    hass.data = {
+        "hass_datapoints": {"scan_semaphore": _asyncio.Semaphore(2), "executor": None}
+    }
 
     async def fake_executor(fn, *args):
         return fn(*args)
 
     hass.async_add_executor_job = fake_executor
+
+    def fake_run_in_executor(pool, fn, *args):
+        result = fn(*args)
+        fut: _asyncio.Future = _asyncio.get_event_loop().create_future()
+        fut.set_result(result)
+        return fut
+
+    hass.loop.run_in_executor = fake_run_in_executor
 
     sensor = DatapointsMonitorSensor(_make_entry(), store, hass, monitor_dict["id"])
     sensor.async_write_ha_state = MagicMock()
@@ -867,3 +883,266 @@ async def test_run_scan_applies_dismissals_to_clusters():
     assert update_call is not None
     updates = update_call[0][1]
     assert updates["last_cluster_count"] == 1
+
+
+# ---------------------------------------------------------------------------
+# _schedule_timer — stagger determinism and double-call safety
+# ---------------------------------------------------------------------------
+
+
+def test_schedule_timer_stagger_is_deterministic():
+    """Same monitor_id always produces the same stagger offset."""
+    import uuid
+
+    from custom_components.hass_datapoints.sensor import DatapointsMonitorSensor
+
+    monitor_id = str(uuid.uuid4())
+    expected_stagger = uuid.UUID(monitor_id).int % 30
+
+    stagger_calls: list[float] = []
+
+    def fake_call_later(hass_ref, delay, callback):
+        stagger_calls.append(delay)
+        unsub = MagicMock()
+        return unsub
+
+    monitor = {
+        "id": monitor_id,
+        "name": "Stagger Test",
+        "type": "individual",
+        "entity_id": "sensor.x",
+        "enabled": True,
+        "look_back_hours": 24,
+        "scan_interval_minutes": 30,
+        "last_cluster_count": 0,
+        "scan_history": [],
+        "anomaly_methods": ["trend_residual"],
+    }
+    store = _make_store(monitors=[monitor])
+    hass = MagicMock()
+
+    sensor = DatapointsMonitorSensor(_make_entry(), store, hass, monitor_id)
+
+    with patch(
+        "custom_components.hass_datapoints.sensor.async_call_later",
+        side_effect=fake_call_later,
+    ):
+        sensor._schedule_timer()
+
+    assert len(stagger_calls) == 1
+    assert stagger_calls[0] == expected_stagger
+
+
+def test_schedule_timer_double_call_cancels_first_stagger():
+    """Second _schedule_timer call cancels the pending stagger from the first."""
+    import uuid
+
+    from custom_components.hass_datapoints.sensor import DatapointsMonitorSensor
+
+    monitor_id = str(uuid.uuid4())
+    monitor = {
+        "id": monitor_id,
+        "name": "Double Stagger",
+        "type": "individual",
+        "entity_id": "sensor.y",
+        "enabled": True,
+        "look_back_hours": 24,
+        "scan_interval_minutes": 30,
+        "last_cluster_count": 0,
+        "scan_history": [],
+        "anomaly_methods": ["trend_residual"],
+    }
+    store = _make_store(monitors=[monitor])
+    hass = MagicMock()
+
+    sensor = DatapointsMonitorSensor(_make_entry(), store, hass, monitor_id)
+
+    first_unsub = MagicMock()
+    second_unsub = MagicMock()
+    call_count = 0
+
+    def fake_call_later(hass_ref, delay, callback):
+        nonlocal call_count
+        call_count += 1
+        return first_unsub if call_count == 1 else second_unsub
+
+    with patch(
+        "custom_components.hass_datapoints.sensor.async_call_later",
+        side_effect=fake_call_later,
+    ):
+        sensor._schedule_timer()  # first call — registers first_unsub
+        sensor._schedule_timer()  # second call — must cancel first_unsub
+
+    first_unsub.assert_called_once()  # first stagger was cancelled
+    second_unsub.assert_not_called()  # second stagger still pending
+
+
+# ---------------------------------------------------------------------------
+# async_warm_cache — verifies cache.set is called with detection results
+# ---------------------------------------------------------------------------
+
+
+async def test_async_warm_cache_populates_cache():
+    """async_warm_cache must call cache.set with non-None clusters for each entity."""
+
+    from custom_components.hass_datapoints.sensor import async_warm_cache
+
+    monitor_id = "warm-monitor-1"
+    monitor = {
+        "id": monitor_id,
+        "name": "Warm Test",
+        "type": "individual",
+        "entity_id": "sensor.warm",
+        "enabled": True,
+        "look_back_hours": 24,
+        "scan_interval_minutes": 30,
+        "last_cluster_count": 0,
+        "scan_history": [],
+        "anomaly_methods": ["trend_residual"],
+    }
+    store = _make_store(monitors=[monitor])
+
+    fake_clusters = [{"points": [{"timeMs": 1000, "value": 1.0}]}]
+    fake_pts = [[1000, 1.0], [2000, 2.0], [3000, 3.0]]
+
+    cache_set_calls: list[tuple] = []
+
+    class FakeCache:
+        def set(self, cache_key, entity_id, end_ts, clusters):
+            cache_set_calls.append((cache_key, entity_id, end_ts, clusters))
+
+    hass = MagicMock()
+    hass.data = {"hass_datapoints": {"anomaly_cache": FakeCache()}}
+
+    recorder = MagicMock()
+
+    async def fake_executor(fn, *args):
+        return fn(*args)
+
+    recorder.async_add_executor_job = fake_executor
+
+    pool = MagicMock()
+    in_flight: dict = {}
+
+    import asyncio
+
+    from custom_components.hass_datapoints.sensor import _run_detection_sync
+
+    def fake_run_in_executor(pool_arg, fn, *args):
+        # Return fake_clusters for detection; call through for everything else (cache.set)
+        result = fake_clusters if fn is _run_detection_sync else fn(*args)
+        fut: asyncio.Future = asyncio.get_event_loop().create_future()
+        fut.set_result(result)
+        return fut
+
+    hass.loop = MagicMock()
+    hass.loop.run_in_executor = fake_run_in_executor
+
+    with (
+        patch("homeassistant.components.recorder.get_instance", return_value=recorder),
+        patch(
+            "custom_components.hass_datapoints.sensor.fetch_entity_pts",
+            return_value=fake_pts,
+        ),
+    ):
+        await async_warm_cache(hass, store, pool, in_flight)
+
+    assert len(cache_set_calls) == 1
+    _cache_key, entity_id, end_ts, clusters = cache_set_calls[0]
+    assert entity_id == "sensor.warm"
+    assert clusters == fake_clusters
+    assert isinstance(end_ts, float)
+
+
+async def test_async_warm_cache_loops_all_combined_entity_ids():
+    """Combined monitors must warm all entity_ids, not just entity_ids[0]."""
+    from custom_components.hass_datapoints.sensor import async_warm_cache
+
+    monitor = {
+        "id": "warm-combined",
+        "name": "Combined Warm",
+        "type": "combined",
+        "entity_ids": ["sensor.a", "sensor.b", "sensor.c"],
+        "enabled": True,
+        "look_back_hours": 24,
+        "scan_interval_minutes": 30,
+        "last_cluster_count": 0,
+        "scan_history": [],
+        "anomaly_methods": ["trend_residual"],
+    }
+    store = _make_store(monitors=[monitor])
+
+    class FakeCache:
+        def __init__(self):
+            self.set_calls: list[str] = []
+
+        def set(self, cache_key, entity_id, end_ts, clusters):
+            self.set_calls.append(entity_id)
+
+    fake_cache = FakeCache()
+    hass = MagicMock()
+    hass.data = {"hass_datapoints": {"anomaly_cache": fake_cache}}
+
+    recorder = MagicMock()
+
+    async def fake_executor(fn, *args):
+        return fn(*args)
+
+    recorder.async_add_executor_job = fake_executor
+
+    import asyncio
+
+    from custom_components.hass_datapoints.sensor import _run_detection_sync
+
+    fake_clusters = [{"points": [{"timeMs": 1000, "value": 1.0}]}]
+
+    def fake_run_in_executor(pool_arg, fn, *args):
+        result = fake_clusters if fn is _run_detection_sync else fn(*args)
+        fut: asyncio.Future = asyncio.get_event_loop().create_future()
+        fut.set_result(result)
+        return fut
+
+    hass.loop = MagicMock()
+    hass.loop.run_in_executor = fake_run_in_executor
+
+    with (
+        patch("homeassistant.components.recorder.get_instance", return_value=recorder),
+        patch(
+            "custom_components.hass_datapoints.sensor.fetch_entity_pts",
+            return_value=[[1000, 1.0], [2000, 2.0], [3000, 3.0]],
+        ),
+    ):
+        await async_warm_cache(hass, store, {}, {})
+
+    assert set(fake_cache.set_calls) == {"sensor.a", "sensor.b", "sensor.c"}
+
+
+async def test_async_warm_cache_skips_disabled_monitors():
+    """Disabled monitors must not trigger any detection or cache writes."""
+    from custom_components.hass_datapoints.sensor import async_warm_cache
+
+    monitor = {
+        "id": "warm-disabled",
+        "name": "Disabled",
+        "type": "individual",
+        "entity_id": "sensor.disabled",
+        "enabled": False,
+        "look_back_hours": 24,
+        "scan_interval_minutes": 30,
+        "last_cluster_count": 0,
+        "scan_history": [],
+        "anomaly_methods": ["trend_residual"],
+    }
+    store = _make_store(monitors=[monitor])
+
+    hass = MagicMock()
+    hass.data = {"hass_datapoints": {"anomaly_cache": MagicMock()}}
+    pool = MagicMock()
+
+    with patch(
+        "homeassistant.components.recorder.get_instance", return_value=MagicMock()
+    ):
+        await async_warm_cache(hass, store, pool, {})
+
+    # No cache writes for disabled monitors
+    hass.data["hass_datapoints"]["anomaly_cache"].set.assert_not_called()

@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
+import threading
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
@@ -12,7 +14,7 @@ from homeassistant.const import UnitOfTime
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.helpers.event import async_call_later, async_track_time_interval
 from homeassistant.util import dt as dt_util
 
 from .anomaly_detection import run_anomaly_detection
@@ -23,6 +25,7 @@ from .const import (
     KEY_ADD_SENSOR_ENTITIES,
     KEY_MONITOR_SENSORS,
     KEY_STORE,
+    MONITOR_DEFAULT_LOOK_BACK_HOURS,
     PANEL_URL_PATH,
 )
 from .history_utils import (
@@ -350,10 +353,13 @@ def _build_detection_config(monitor: dict[str, Any]) -> dict[str, Any]:
 
 
 def _run_detection_sync(
-    pts: list, config: dict[str, Any], comparison_pts: list | None = None
+    pts: list,
+    config: dict[str, Any],
+    comparison_pts: list | None = None,
+    cancel: threading.Event | None = None,
 ) -> list:
     """Blocking wrapper: run anomaly detection and return clusters."""
-    return run_anomaly_detection(pts, config, comparison_pts)
+    return run_anomaly_detection(pts, config, comparison_pts, cancel=cancel)
 
 
 def _summarize_clusters(
@@ -439,27 +445,37 @@ def _run_combined_detection(
     all_entity_pts: dict[str, list],
     config: dict[str, Any],
     overlap_mode: str,
+    cancel: threading.Event | None = None,
 ) -> list[dict[str, Any]]:
     """Run detection per entity; return overlap windows as cluster-like dicts."""
     entity_ids = list(all_entity_pts.keys())
     if len(entity_ids) < 2:
         return []
 
-    # Build cluster time-windows per entity: list of (min_ms, max_ms) tuples
+    import bisect  # noqa: PLC0415
+
+    # Build cluster time-windows per entity; pass cancel token between detections
     entity_windows: list[list[tuple[int, int]]] = []
     for eid in entity_ids:
+        if cancel and cancel.is_set():
+            return []
         pts = all_entity_pts[eid]
         if len(pts) < 3:
             entity_windows.append([])
             continue
-        clusters = run_anomaly_detection(pts, config)
+        clusters = run_anomaly_detection(pts, config, cancel=cancel)
         windows: list[tuple[int, int]] = []
         for cluster in clusters:
             pts_in_cluster = cluster.get("points", [])
             if pts_in_cluster:
                 times = [p["timeMs"] for p in pts_in_cluster]
                 windows.append((min(times), max(times)))
+        # Keep sorted by start for binary-search overlap check below
+        windows.sort(key=lambda x: x[0])
         entity_windows.append(windows)
+
+    # Pre-compute sorted start lists for O(log w) point-in-interval lookup
+    sorted_starts: list[list[int]] = [[s for s, _ in ws] for ws in entity_windows]
 
     # Collect qualifying overlap windows as cluster-like dicts
     required = _overlap_threshold(overlap_mode, len(entity_ids))
@@ -470,11 +486,14 @@ def _run_combined_detection(
             if (win_start, win_end) in seen:
                 continue
             check_time = (win_start + win_end) // 2
-            hits = sum(
-                1
-                for j, windows_j in enumerate(entity_windows)
-                if j != i and any(s <= check_time <= e for s, e in windows_j)
-            )
+            hits = 0
+            for j, windows_j in enumerate(entity_windows):
+                if j == i or not windows_j:
+                    continue
+                # Binary search: find rightmost start <= check_time
+                idx = bisect.bisect_right(sorted_starts[j], check_time) - 1
+                if idx >= 0 and windows_j[idx][0] <= check_time <= windows_j[idx][1]:
+                    hits += 1
             if hits + 1 >= required:
                 seen.add((win_start, win_end))
                 overlap_clusters.append(
@@ -488,6 +507,69 @@ def _run_combined_detection(
                     }
                 )
     return overlap_clusters
+
+
+async def async_warm_cache(
+    hass: HomeAssistant,
+    store: DatapointsStore,
+    pool,
+    in_flight: dict,
+) -> None:
+    """Pre-populate anomaly cache for all enabled monitors at startup (best-effort)."""
+    import uuid as _uuid  # noqa: PLC0415
+
+    from homeassistant.components.recorder import get_instance  # noqa: PLC0415
+
+    from .anomaly_cache import AnomalyCache, make_cache_key  # noqa: PLC0415
+
+    cache: AnomalyCache = hass.data[DOMAIN]["anomaly_cache"]
+    recorder = get_instance(hass)
+    now = datetime.now(UTC)
+    for monitor in store.get_monitors():
+        if not monitor.get("enabled", True):
+            continue
+        monitor_type = monitor.get("type", "individual")
+        if monitor_type == "combined":
+            entity_ids = monitor.get("entity_ids", [])
+        else:
+            eid = monitor.get("entity_id", "")
+            entity_ids = [eid] if eid else []
+        if not entity_ids:
+            continue
+
+        await asyncio.sleep(0)  # yield between monitors
+        look_back = monitor.get("look_back_hours", MONITOR_DEFAULT_LOOK_BACK_HOURS)
+        start_t = (now - timedelta(hours=look_back)).isoformat()
+        end_t = now.isoformat()
+        config = _build_detection_config(monitor)
+        cancel_ev = threading.Event()
+        req_id = str(_uuid.uuid4())
+        in_flight[req_id] = cancel_ev
+        try:
+            for entity_id in entity_ids:
+                pts = await recorder.async_add_executor_job(
+                    fetch_entity_pts, hass, entity_id, start_t, end_t
+                )
+                if len(pts) < 3:
+                    continue
+                clusters = await asyncio.wait_for(
+                    hass.loop.run_in_executor(
+                        pool, _run_detection_sync, pts, config, None, cancel_ev
+                    ),
+                    timeout=30,
+                )
+                try:
+                    end_ts = datetime.fromisoformat(end_t).timestamp()
+                except ValueError:
+                    continue
+                cache_key = make_cache_key(entity_id, start_t, end_t, config)
+                await hass.loop.run_in_executor(
+                    pool, cache.set, cache_key, entity_id, end_ts, clusters
+                )
+        except (TimeoutError, Exception):  # noqa: BLE001
+            cancel_ev.set()
+        finally:
+            in_flight.pop(req_id, None)
 
 
 # ---------------------------------------------------------------------------
@@ -512,6 +594,7 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
         self._hass = hass
         self._monitor_id = monitor_id
         self._unsub_timer: Any = None
+        self._unsub_stagger: Any = None
 
         monitor = store.get_monitor(monitor_id) or {}
         self._attr_unique_id = f"{entry.entry_id}_monitor_{monitor_id}"
@@ -530,6 +613,13 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
 
     def _schedule_timer(self) -> None:
         """Cancel any existing timer and create a new one if the monitor is enabled."""
+        import uuid as _uuid  # noqa: PLC0415
+
+        # Cancel any pending stagger that hasn't fired yet (guards against double-call).
+        if self._unsub_stagger is not None:
+            self._unsub_stagger()
+            self._unsub_stagger = None
+
         if self._unsub_timer is not None:
             self._unsub_timer()
             self._unsub_timer = None
@@ -541,15 +631,26 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
         interval_minutes = monitor.get("scan_interval_minutes", 30)
         interval = timedelta(minutes=max(1, interval_minutes))
 
-        def _on_remove() -> None:
-            if self._unsub_timer is not None:
-                self._unsub_timer()
-                self._unsub_timer = None
+        # Deterministic 0–29 s stagger per monitor to avoid simultaneous startup bursts.
+        # uuid.UUID(id).int is stable across restarts unlike hash() (PYTHONHASHSEED).
+        try:
+            stagger_secs = _uuid.UUID(self._monitor_id).int % 30
+        except ValueError:
+            stagger_secs = 0
 
-        self._unsub_timer = async_track_time_interval(
-            self._hass, self._handle_scan_tick, interval
+        def _start(_now: Any = None) -> None:
+            self._unsub_stagger = None  # stagger has fired; clear reference
+            self._unsub_timer = async_track_time_interval(
+                self._hass, self._handle_scan_tick, interval
+            )
+            self.async_on_remove(
+                lambda: self._unsub_timer and self._unsub_timer()  # type: ignore[func-returns-value]
+            )
+
+        self._unsub_stagger = async_call_later(self._hass, stagger_secs, _start)
+        self.async_on_remove(
+            lambda: self._unsub_stagger and self._unsub_stagger()  # type: ignore[func-returns-value]
         )
-        self.async_on_remove(_on_remove)
 
     def _handle_scan_tick(self, now: datetime) -> None:
         """Trigger a scan on the next event loop iteration."""
@@ -563,6 +664,30 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
         if not monitor or not monitor.get("enabled", True):
             return
 
+        # Limit concurrent scans across all monitor sensors to avoid saturating
+        # the dedicated executor pool during startup bursts or rapid rescans.
+        semaphore = self._hass.data.get(DOMAIN, {}).get("scan_semaphore")
+        pool = self._hass.data.get(DOMAIN, {}).get("executor")
+        cancel_event = threading.Event()
+
+        if semaphore:
+            async with semaphore:
+                await self._run_scan_inner(
+                    monitor, pool, cancel_event, get_instance(self._hass)
+                )
+        else:
+            await self._run_scan_inner(
+                monitor, pool, cancel_event, get_instance(self._hass)
+            )
+
+    async def _run_scan_inner(
+        self,
+        monitor: dict,
+        pool,
+        cancel_event: threading.Event,
+        recorder,
+    ) -> None:
+        """Inner scan body; called inside the semaphore context."""
         monitor_type = monitor.get("type", "individual")
         look_back_hours = monitor.get("look_back_hours", 24)
         config = _build_detection_config(monitor)
@@ -571,8 +696,6 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
         end_time = now.isoformat()
 
         try:
-            recorder = get_instance(self._hass)
-
             if monitor_type == "combined":
                 entity_ids = monitor.get("entity_ids", [])
                 all_pts: dict[str, list] = {}
@@ -605,9 +728,25 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
 
                 data_point_count = sum(len(v) for v in all_pts.values())
                 overlap_mode = monitor.get("overlap_mode", "all")
-                clusters = await self._hass.async_add_executor_job(
-                    _run_combined_detection, all_pts, config, overlap_mode
-                )
+                try:
+                    clusters = await asyncio.wait_for(
+                        self._hass.loop.run_in_executor(
+                            pool,
+                            _run_combined_detection,
+                            all_pts,
+                            config,
+                            overlap_mode,
+                            cancel_event,
+                        ),
+                        timeout=30.0,
+                    )
+                except TimeoutError:
+                    cancel_event.set()
+                    _LOGGER.warning(
+                        "hass_datapoints: combined detection timed out for monitor %s",
+                        self._monitor_id,
+                    )
+                    clusters = []
             else:
                 entity_id = monitor.get("entity_id", "")
                 pts = await recorder.async_add_executor_job(
@@ -650,9 +789,25 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
                             start_time,
                             end_time,
                         )
-                    clusters = await self._hass.async_add_executor_job(
-                        _run_detection_sync, pts, config, comparison_pts
-                    )
+                    try:
+                        clusters = await asyncio.wait_for(
+                            self._hass.loop.run_in_executor(
+                                pool,
+                                _run_detection_sync,
+                                pts,
+                                config,
+                                comparison_pts,
+                                cancel_event,
+                            ),
+                            timeout=30.0,
+                        )
+                    except TimeoutError:
+                        cancel_event.set()
+                        _LOGGER.warning(
+                            "hass_datapoints: detection timed out for monitor %s",
+                            self._monitor_id,
+                        )
+                        clusters = []
 
             # Apply dismissals (prune expired first, then filter clusters)
             monitor_copy = self._store.get_monitor(self._monitor_id)

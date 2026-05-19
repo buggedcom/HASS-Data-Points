@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
+import threading
 import time
 import uuid
 from datetime import UTC, datetime, timedelta
@@ -21,6 +23,8 @@ from sqlalchemy import text
 from .anomaly_cache import AnomalyCache, make_cache_key
 from .anomaly_detection import run_anomaly_detection
 from .const import (
+    ANOMALY_LIVE_EDGE_SECONDS,
+    ANOMALY_MAX_PTS,
     DOMAIN,
     KEY_ADD_BINARY_SENSOR_ENTITIES,
     KEY_ADD_SENSOR_ENTITIES,
@@ -41,7 +45,6 @@ from .history_utils import (
 
 _LOGGER = logging.getLogger(__name__)
 
-_LIVE_EDGE_SECONDS = 3600  # ranges ending within the last hour are not cached
 
 _VALID_INTERVALS = [
     "raw",
@@ -76,7 +79,16 @@ _VALID_ANOMALY_METHODS = [
 _VALID_ANOMALY_SENSITIVITY = ["low", "medium", "high"]
 _VALID_RATE_WINDOWS = [
     "point_to_point",
-    "30m", "1h", "2h", "3h", "6h", "24h", "7d", "14d", "21d", "28d",
+    "30m",
+    "1h",
+    "2h",
+    "3h",
+    "6h",
+    "24h",
+    "7d",
+    "14d",
+    "21d",
+    "28d",
 ]
 _VALID_ANOMALY_OVERLAP_MODES = ["all", "highlight", "only"]
 _VALID_TREND_METHODS = [
@@ -105,12 +117,28 @@ _RE_DURATION = r"^\d+[smhd]$"
 # long-term statistics it already fetched via HA's native API.  Prevents OOM
 # when a very high-frequency entity is queried over a multi-month window.
 _MAX_HISTORY_RANGE_DAYS = 90
+# For ranges > 7 days with hourly+ interval, switch to statistics (300× fewer rows)
+_AUTO_STATS_THRESHOLD_DAYS = 7
 
-# Maximum number of data points fed into anomaly detection.  The algorithms
-# are O(n) to O(n log n) but still take several seconds for very large inputs;
-# capping prevents executor-thread-pool exhaustion when the user repeatedly
-# changes date ranges without waiting for prior requests to complete.
-_ANOMALY_MAX_PTS = 50_000
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/cancel",
+        vol.Required("request_id"): str,
+    }
+)
+@callback
+def ws_cancel_request(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict,
+) -> None:
+    """Cancel an in-flight async request by request_id."""
+    in_flight: dict = hass.data.get(DOMAIN, {}).get("in_flight", {})
+    event: threading.Event | None = in_flight.get(msg["request_id"])
+    if event:
+        event.set()
+    connection.send_result(msg["id"], {"cancelled": event is not None})
 
 
 @callback
@@ -124,6 +152,7 @@ def async_register_commands(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, ws_get_history)
     websocket_api.async_register_command(hass, ws_get_anomalies)
     websocket_api.async_register_command(hass, ws_clear_cache)
+    websocket_api.async_register_command(hass, ws_cancel_request)
     websocket_api.async_register_command(hass, ws_monitors_list)
     websocket_api.async_register_command(hass, ws_monitors_create)
     websocket_api.async_register_command(hass, ws_monitors_update)
@@ -140,6 +169,8 @@ def async_register_commands(hass: HomeAssistant) -> None:
         vol.Optional("end_time"): str,
         # entity_ids: list of entity IDs to filter by (global events always included)
         vol.Optional("entity_ids"): [str],
+        vol.Optional("limit", default=200): vol.All(int, vol.Range(min=1, max=5000)),
+        vol.Optional("offset", default=0): vol.All(int, vol.Range(min=0)),
     }
 )
 @websocket_api.async_response
@@ -157,10 +188,14 @@ async def ws_get_events(
         entity_ids = [
             eid for eid in entity_ids if _can_read_entity(connection.user, eid)
         ]
+    limit: int = msg.get("limit", 200)
+    offset: int = msg.get("offset", 0)
     events = store.get_events(
         start=msg.get("start_time"),
         end=msg.get("end_time"),
         entity_ids=entity_ids,
+        limit=limit,
+        offset=offset,
     )
     connection.send_result(msg["id"], {"events": events})
 
@@ -489,6 +524,7 @@ async def ws_delete_dev_events(
         vol.Required("end_time"): str,
         vol.Required("interval"): vol.In(_VALID_INTERVALS),
         vol.Required("aggregate"): vol.In(_VALID_AGGREGATES),
+        vol.Optional("request_id"): str,
     }
 )
 @websocket_api.async_response
@@ -524,6 +560,13 @@ async def ws_get_history(
         raw_pts: list = []
         used_statistics_fallback = False
 
+        interval_secs = parse_interval_seconds(interval) if interval != "raw" else 0
+        use_stats_early = (
+            interval != "raw"
+            and interval_secs >= 3600
+            and range_days > _AUTO_STATS_THRESHOLD_DAYS
+        )
+
         if range_days > _MAX_HISTORY_RANGE_DAYS:
             _LOGGER.info(
                 "hass_datapoints/history: using statistics fallback for %s — "
@@ -531,6 +574,18 @@ async def ws_get_history(
                 entity_id,
                 range_days,
                 _MAX_HISTORY_RANGE_DAYS,
+            )
+            used_statistics_fallback = True
+            raw_pts = await get_instance(hass).async_add_executor_job(
+                fetch_entity_statistics_pts, hass, entity_id, start_time, end_time
+            )
+        elif use_stats_early:
+            _LOGGER.info(
+                "hass_datapoints/history: switching to statistics for %s — "
+                "range %.1f days with %s interval",
+                entity_id,
+                range_days,
+                interval,
             )
             used_statistics_fallback = True
             raw_pts = await get_instance(hass).async_add_executor_job(
@@ -576,9 +631,14 @@ async def ws_get_history(
 # ---------------------------------------------------------------------------
 
 
-def _run_detection(pts: list, config: dict, comparison_pts: list | None = None) -> list:
+def _run_detection(
+    pts: list,
+    config: dict,
+    comparison_pts: list | None = None,
+    cancel: threading.Event | None = None,
+) -> list:
     """Blocking helper: run anomaly detection on pre-fetched pts."""
-    clusters = run_anomaly_detection(pts, config, comparison_pts)
+    clusters = run_anomaly_detection(pts, config, comparison_pts, cancel=cancel)
     _LOGGER.info(
         "hass_datapoints: anomaly detection → %d clusters from %d pts (methods=%s)",
         len(clusters),
@@ -586,6 +646,52 @@ def _run_detection(pts: list, config: dict, comparison_pts: list | None = None) 
         config.get("anomaly_methods"),
     )
     return clusters
+
+
+def _register_cancel(hass: HomeAssistant, request_id: str | None) -> threading.Event:
+    """Create a cancel Event, register it under request_id if provided, and return it."""
+    event = threading.Event()
+    if request_id:
+        hass.data[DOMAIN].setdefault("in_flight", {})[request_id] = event
+    return event
+
+
+def _unregister_cancel(hass: HomeAssistant, request_id: str | None) -> None:
+    """Remove a cancel Event from the in-flight registry."""
+    if request_id:
+        hass.data[DOMAIN].get("in_flight", {}).pop(request_id, None)
+
+
+async def _run_detection_with_timeout(
+    hass: HomeAssistant,
+    pool,
+    pts: list,
+    config: dict,
+    comparison_pts: list | None = None,
+    cancel: threading.Event | None = None,
+    timeout: float = 30.0,
+) -> list:
+    """Run anomaly detection in the dedicated pool with a hard timeout.
+
+    If the timeout fires the cancel event is set so the thread can exit
+    cooperatively, then an empty list is returned.
+    """
+    cancel = cancel or threading.Event()
+    try:
+        return await asyncio.wait_for(
+            hass.loop.run_in_executor(
+                pool, _run_detection, pts, config, comparison_pts, cancel
+            ),
+            timeout=timeout,
+        )
+    except TimeoutError:
+        cancel.set()
+        _LOGGER.warning(
+            "hass_datapoints: detection timed out after %.0fs for %d pts",
+            timeout,
+            len(pts),
+        )
+        return []
 
 
 @websocket_api.websocket_command(
@@ -624,6 +730,7 @@ def _run_detection(pts: list, config: dict, comparison_pts: list | None = None) 
         vol.Optional("comparison_time_offset_ms", default=0): vol.All(
             int, vol.Range(min=-315_576_000_000, max=315_576_000_000)
         ),
+        vol.Optional("request_id"): str,
     }
 )
 @websocket_api.async_response
@@ -675,16 +782,21 @@ async def ws_get_anomalies(
             end_ts = datetime.fromisoformat(end_time).timestamp()
         except ValueError:
             end_ts = 0.0
-        is_live = (time.time() - end_ts) < _LIVE_EDGE_SECONDS
+        is_live = (time.time() - end_ts) < ANOMALY_LIVE_EDGE_SECONDS
 
         cache: AnomalyCache | None = hass.data.get(DOMAIN, {}).get("anomaly_cache")
         cache_key = (
             make_cache_key(entity_id, start_time, end_time, config) if cache else None
         )
 
+        pool = hass.data[DOMAIN].get("executor")
+        request_id: str | None = msg.get("request_id")
+        cancel_event = _register_cancel(hass, request_id)
+
         if cache and cache_key and not is_live:
-            cached = await hass.async_add_executor_job(cache.get, cache_key)
+            cached = await hass.loop.run_in_executor(pool, cache.get, cache_key)
             if cached is not None:
+                _unregister_cancel(hass, request_id)
                 connection.send_result(
                     msg["id"],
                     {
@@ -737,15 +849,15 @@ async def ws_get_anomalies(
         # potentially exhausting the thread pool and making HA unresponsive.
         # We keep the most-recent points because they are most relevant to
         # anomaly detection; users with long ranges should enable sample_interval.
-        if len(pts) > _ANOMALY_MAX_PTS:
+        if len(pts) > ANOMALY_MAX_PTS:
             _LOGGER.warning(
                 "hass_datapoints: capping %d pts to %d before anomaly detection for %s "
                 "— consider enabling sample_interval for large date ranges",
                 len(pts),
-                _ANOMALY_MAX_PTS,
+                ANOMALY_MAX_PTS,
                 entity_id,
             )
-            pts = pts[-_ANOMALY_MAX_PTS:]
+            pts = pts[-ANOMALY_MAX_PTS:]
 
         comparison_pts: list | None = None
         comparison_entity_id = config.get("comparison_entity_id")
@@ -760,21 +872,23 @@ async def ws_get_anomalies(
                 comparison_end_time,
             )
 
-        clusters: list = await hass.async_add_executor_job(
-            _run_detection, pts, config, comparison_pts
+        clusters: list = await _run_detection_with_timeout(
+            hass, pool, pts, config, comparison_pts, cancel_event
         )
 
         if cache and cache_key and not is_live and clusters:
-            await hass.async_add_executor_job(
-                cache.set, cache_key, entity_id, end_ts, clusters
+            await hass.loop.run_in_executor(
+                pool, cache.set, cache_key, entity_id, end_ts, clusters
             )
 
+        _unregister_cancel(hass, request_id)
         connection.send_result(
             msg["id"],
             {"entity_id": entity_id, "anomaly_clusters": clusters, "cached": False},
         )
 
     except Exception as err:  # noqa: BLE001
+        _unregister_cancel(hass, request_id)
         _LOGGER.error("hass_datapoints/anomalies failed for %s: %s", entity_id, err)
         connection.send_error(
             msg["id"], "detection_error", "Failed to run anomaly detection"
@@ -805,11 +919,12 @@ async def ws_clear_cache(
         connection.send_result(msg["id"], {"cleared": 0})
         return
 
+    pool = hass.data[DOMAIN].get("executor")
     entity_id: str | None = msg.get("entity_id")
     if entity_id:
-        cleared = await hass.async_add_executor_job(cache.clear_entity, entity_id)
+        cleared = await hass.loop.run_in_executor(pool, cache.clear_entity, entity_id)
     else:
-        cleared = await hass.async_add_executor_job(cache.clear_all)
+        cleared = await hass.loop.run_in_executor(pool, cache.clear_all)
 
     connection.send_result(msg["id"], {"cleared": cleared})
 
@@ -840,7 +955,9 @@ _MONITOR_ANALYSIS_FIELDS = {
     vol.Optional("sample_aggregate"): vol.In(_VALID_AGGREGATES),
     vol.Optional("anomaly_use_sampled_data"): bool,
     vol.Optional("baseline_entity_id"): vol.Any(None, cv.entity_id),
-    vol.Optional("baseline_time_offset_hours"): vol.All(int, vol.Range(min=0, max=8760)),
+    vol.Optional("baseline_time_offset_hours"): vol.All(
+        int, vol.Range(min=0, max=8760)
+    ),
 }
 
 
@@ -887,9 +1004,9 @@ async def ws_monitors_list(
         vol.Optional("entity_id"): cv.entity_id,
         vol.Optional("entity_ids"): [cv.entity_id],
         vol.Required("name"): vol.All(str, vol.Length(min=1, max=100)),
-        vol.Optional("look_back_hours", default=MONITOR_DEFAULT_LOOK_BACK_HOURS): vol.All(
-            int, vol.Range(min=1, max=168)
-        ),
+        vol.Optional(
+            "look_back_hours", default=MONITOR_DEFAULT_LOOK_BACK_HOURS
+        ): vol.All(int, vol.Range(min=1, max=168)),
         vol.Optional(
             "scan_interval_minutes", default=MONITOR_DEFAULT_SCAN_INTERVAL_MINUTES
         ): vol.All(int, vol.Range(min=5, max=1440)),
@@ -910,7 +1027,9 @@ async def ws_monitors_create(
 
     baseline_entity_id = msg.get("baseline_entity_id")
     if baseline_entity_id and not _can_read_entity(connection.user, baseline_entity_id):
-        connection.send_error(msg["id"], "unauthorized", "Access to baseline entity is not permitted")
+        connection.send_error(
+            msg["id"], "unauthorized", "Access to baseline entity is not permitted"
+        )
         return
 
     store = hass.data[DOMAIN][KEY_STORE]
@@ -956,12 +1075,12 @@ async def ws_monitors_create(
             DatapointsMonitorStalledBinarySensor,
         )
         from .sensor import (  # noqa: PLC0415
-            DatapointsMonitorSensor,
             DatapointsMonitorAnomalyDurationSensor,
             DatapointsMonitorConsecutiveScansSensor,
             DatapointsMonitorDataPointsSensor,
             DatapointsMonitorLastAnomalySensor,
             DatapointsMonitorLastScanSensor,
+            DatapointsMonitorSensor,
         )
         from .switch import DatapointsMonitorEnabledSwitch  # noqa: PLC0415
 
@@ -969,14 +1088,16 @@ async def ws_monitors_create(
 
         sensor = DatapointsMonitorSensor(entry, store, hass, monitor_id)
         hass.data[DOMAIN][KEY_MONITOR_SENSORS][monitor_id] = sensor
-        hass.data[DOMAIN][KEY_ADD_SENSOR_ENTITIES]([
-            sensor,
-            DatapointsMonitorConsecutiveScansSensor(entry, store, monitor_id),
-            DatapointsMonitorLastScanSensor(entry, store, monitor_id),
-            DatapointsMonitorLastAnomalySensor(entry, store, monitor_id),
-            DatapointsMonitorAnomalyDurationSensor(entry, store, hass, monitor_id),
-            DatapointsMonitorDataPointsSensor(entry, store, monitor_id),
-        ])
+        hass.data[DOMAIN][KEY_ADD_SENSOR_ENTITIES](
+            [
+                sensor,
+                DatapointsMonitorConsecutiveScansSensor(entry, store, monitor_id),
+                DatapointsMonitorLastScanSensor(entry, store, monitor_id),
+                DatapointsMonitorLastAnomalySensor(entry, store, monitor_id),
+                DatapointsMonitorAnomalyDurationSensor(entry, store, hass, monitor_id),
+                DatapointsMonitorDataPointsSensor(entry, store, monitor_id),
+            ]
+        )
 
         stalled = DatapointsMonitorStalledBinarySensor(entry, store, hass, monitor_id)
         problem = DatapointsMonitorProblemBinarySensor(entry, store, hass, monitor_id)
@@ -1013,7 +1134,9 @@ async def ws_monitors_update(
 
     baseline_entity_id = msg.get("baseline_entity_id")
     if baseline_entity_id and not _can_read_entity(connection.user, baseline_entity_id):
-        connection.send_error(msg["id"], "unauthorized", "Access to baseline entity is not permitted")
+        connection.send_error(
+            msg["id"], "unauthorized", "Access to baseline entity is not permitted"
+        )
         return
 
     store = hass.data[DOMAIN][KEY_STORE]
@@ -1084,7 +1207,9 @@ async def ws_monitors_delete(
     if sensor is not None:
         await sensor.async_remove()
 
-    for binary_sensor in hass.data[DOMAIN].get(KEY_MONITOR_BINARY_SENSORS, {}).pop(monitor_id, ()):
+    for binary_sensor in (
+        hass.data[DOMAIN].get(KEY_MONITOR_BINARY_SENSORS, {}).pop(monitor_id, ())
+    ):
         await binary_sensor.async_remove()
 
     switch = hass.data[DOMAIN].get(KEY_MONITOR_SWITCHES, {}).pop(monitor_id, None)
@@ -1093,6 +1218,7 @@ async def ws_monitors_delete(
 
     if device is not None:
         from homeassistant.helpers import device_registry as dr  # noqa: PLC0415
+
         dr.async_get(hass).async_remove_device(device.id)
 
     connection.send_result(msg["id"], {"deleted": True})
@@ -1102,6 +1228,7 @@ async def ws_monitors_delete(
     {
         vol.Required("type"): f"{DOMAIN}/monitors/anomalies",
         vol.Required("monitor_id"): vol.All(str, _valid_uuid),
+        vol.Optional("request_id"): str,
     }
 )
 @websocket_api.async_response
@@ -1113,7 +1240,11 @@ async def ws_monitors_anomalies(
     """Run a live anomaly scan for a monitor and return clusters + dismissed windows."""
     import operator  # noqa: PLC0415
 
-    from .sensor import _apply_dismissals, _build_detection_config, _run_detection_sync, _run_combined_detection  # noqa: PLC0415
+    from .sensor import (  # noqa: PLC0415
+        _apply_dismissals,
+        _build_detection_config,
+        _run_combined_detection,
+    )
 
     _require_admin(connection, msg)
     store = hass.data[DOMAIN][KEY_STORE]
@@ -1130,6 +1261,10 @@ async def ws_monitors_anomalies(
     now = datetime.now(UTC)
     start_time = (now - timedelta(hours=look_back_hours)).isoformat()
     end_time = now.isoformat()
+
+    pool = hass.data[DOMAIN].get("executor")
+    request_id: str | None = msg.get("request_id")
+    cancel_event = _register_cancel(hass, request_id)
 
     try:
         recorder = get_instance(hass)
@@ -1157,8 +1292,16 @@ async def ws_monitors_anomalies(
                         monitor.get("sample_aggregate", "mean"),
                     )
                 all_pts[eid] = pts
-            clusters = await hass.async_add_executor_job(
-                _run_combined_detection, all_pts, config, monitor.get("overlap_mode", "all")
+            clusters = await asyncio.wait_for(
+                hass.loop.run_in_executor(
+                    pool,
+                    _run_combined_detection,
+                    all_pts,
+                    config,
+                    monitor.get("overlap_mode", "all"),
+                    cancel_event,
+                ),
+                timeout=30.0,
             )
         else:
             entity_id = monitor.get("entity_id", "")
@@ -1184,18 +1327,29 @@ async def ws_monitors_anomalies(
             if len(pts) >= 3:
                 comparison_pts: list | None = None
                 baseline_entity_id = monitor.get("baseline_entity_id")
-                if baseline_entity_id and "comparison_window" in config.get("anomaly_methods", []):
+                if baseline_entity_id and "comparison_window" in config.get(
+                    "anomaly_methods", []
+                ):
                     comparison_pts = await recorder.async_add_executor_job(
                         fetch_entity_pts, hass, baseline_entity_id, start_time, end_time
                     )
-                clusters = await hass.async_add_executor_job(
-                    _run_detection_sync, pts, config, comparison_pts
+                clusters = await _run_detection_with_timeout(
+                    hass, pool, pts, config, comparison_pts, cancel_event
                 )
 
+    except TimeoutError:
+        cancel_event.set()
+        _unregister_cancel(hass, request_id)
+        _LOGGER.warning("ws_monitors_anomalies timed out for %s", monitor_id)
+        connection.send_error(msg["id"], "scan_failed", "Detection timed out")
+        return
     except Exception as err:  # noqa: BLE001
+        _unregister_cancel(hass, request_id)
         _LOGGER.error("ws_monitors_anomalies failed for %s: %s", monitor_id, err)
         connection.send_error(msg["id"], "scan_failed", str(err))
         return
+
+    _unregister_cancel(hass, request_id)
 
     from .store import DatapointsStore  # noqa: PLC0415
 
@@ -1203,12 +1357,15 @@ async def ws_monitors_anomalies(
     DatapointsStore.prune_dismissed_windows(monitor_fresh, now)
     clusters = _apply_dismissals(clusters, monitor_fresh.get("dismissed_windows", []))
 
-    connection.send_result(msg["id"], {
-        "monitor_id": monitor_id,
-        "anomaly_clusters": clusters,
-        "dismissed_windows": monitor_fresh.get("dismissed_windows", []),
-        "cluster_count": len(clusters),
-    })
+    connection.send_result(
+        msg["id"],
+        {
+            "monitor_id": monitor_id,
+            "anomaly_clusters": clusters,
+            "dismissed_windows": monitor_fresh.get("dismissed_windows", []),
+            "cluster_count": len(clusters),
+        },
+    )
 
 
 def _validate_iso_datetime(value: str) -> str:
@@ -1255,7 +1412,9 @@ async def ws_monitors_dismiss(
     # "expires_at" key absent → use default; key present with None → permanent
     if "expires_at" not in msg:
         look_back_hours = monitor.get("look_back_hours", 24)
-        expires_at: str | None = (datetime.now(UTC) + timedelta(hours=look_back_hours * 2)).isoformat()
+        expires_at: str | None = (
+            datetime.now(UTC) + timedelta(hours=look_back_hours * 2)
+        ).isoformat()
     else:
         expires_at = msg["expires_at"]
 

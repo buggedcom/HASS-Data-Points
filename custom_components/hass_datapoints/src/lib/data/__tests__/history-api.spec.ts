@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import {
   fetchAnomaliesFromBackend,
   fetchDownsampledHistory,
+  fetchDownsampledHistoryProgressive,
   fetchHistoryDuringPeriod,
 } from "@/lib/data/history-api";
 
@@ -13,7 +14,8 @@ describe("history-api", () => {
         expect.assertions(2);
 
         const sendMessagePromise = vi.fn(async () => ({ pts: [[1, 2]] }));
-        const hass = { connection: { sendMessagePromise } };
+        const sendMessage = vi.fn();
+        const hass = { connection: { sendMessagePromise, sendMessage } };
 
         await expect(
           fetchDownsampledHistory(
@@ -25,14 +27,17 @@ describe("history-api", () => {
             "mean"
           )
         ).resolves.toEqual([[1, 2]]);
-        expect(sendMessagePromise).toHaveBeenCalledWith({
-          type: "hass_datapoints/history",
-          entity_id: "sensor.a",
-          start_time: "start",
-          end_time: "end",
-          interval: "1m",
-          aggregate: "mean",
-        });
+        expect(sendMessagePromise).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: "hass_datapoints/history",
+            entity_id: "sensor.a",
+            start_time: "start",
+            end_time: "end",
+            interval: "1m",
+            aggregate: "mean",
+            request_id: expect.any(String),
+          })
+        );
       });
 
       it("THEN it batches requests that exceed the backend range limit", async () => {
@@ -42,7 +47,9 @@ describe("history-api", () => {
           .fn()
           .mockResolvedValueOnce({ pts: [[1, 2]] })
           .mockResolvedValueOnce({ pts: [[3, 4]] });
-        const hass = { connection: { sendMessagePromise } };
+        const hass = {
+          connection: { sendMessagePromise, sendMessage: vi.fn() },
+        };
 
         await expect(
           fetchDownsampledHistory(
@@ -92,7 +99,9 @@ describe("history-api", () => {
         const sendMessagePromise = vi.fn(async () => ({
           anomaly_clusters: [{ id: "cluster-1" }],
         }));
-        const hass = { connection: { sendMessagePromise } };
+        const hass = {
+          connection: { sendMessagePromise, sendMessage: vi.fn() },
+        };
 
         await expect(
           fetchAnomaliesFromBackend(hass, "sensor.a", "start", "end", {
@@ -119,7 +128,9 @@ describe("history-api", () => {
         const sendMessagePromise = vi.fn(async () => ({
           anomaly_clusters: [],
         }));
-        const hass = { connection: { sendMessagePromise } };
+        const hass = {
+          connection: { sendMessagePromise, sendMessage: vi.fn() },
+        };
 
         await expect(
           fetchAnomaliesFromBackend(hass, "sensor.a", "start", "end", {
@@ -135,6 +146,128 @@ describe("history-api", () => {
             sample_aggregate: "mean",
           })
         );
+      });
+    });
+  });
+
+  describe("GIVEN a progressive downsample request", () => {
+    describe("WHEN fetchDownsampledHistoryProgressive is called", () => {
+      it("THEN fires chunks sequentially — second call only after first resolves", async () => {
+        expect.assertions(3);
+
+        let resolveFirst!: (v: unknown) => void;
+        const firstPromise = new Promise((res) => {
+          resolveFirst = res;
+        });
+
+        const sendMessagePromise = vi
+          .fn()
+          .mockReturnValueOnce(firstPromise)
+          .mockResolvedValueOnce({ pts: [[3, 4]] });
+        const hass = {
+          connection: { sendMessagePromise, sendMessage: vi.fn() },
+        };
+
+        const onChunk = vi.fn();
+
+        const donePromise = fetchDownsampledHistoryProgressive(
+          hass,
+          "sensor.a",
+          "2026-01-01T00:00:00.000Z",
+          "2026-04-05T00:00:00.000Z",
+          "24h",
+          "mean",
+          onChunk
+        );
+
+        // First chunk not yet resolved → second call not made yet
+        expect(sendMessagePromise).toHaveBeenCalledTimes(1);
+
+        // Resolve first chunk
+        resolveFirst({ pts: [[1, 2]] });
+        await donePromise;
+
+        expect(sendMessagePromise).toHaveBeenCalledTimes(2);
+        expect(onChunk).toHaveBeenCalledTimes(2);
+      });
+
+      it("THEN calls onChunk with correct isLast flag", async () => {
+        expect.assertions(2);
+
+        const sendMessagePromise = vi
+          .fn()
+          .mockResolvedValueOnce({ pts: [[1, 2]] })
+          .mockResolvedValueOnce({ pts: [[3, 4]] });
+        const hass = {
+          connection: { sendMessagePromise, sendMessage: vi.fn() },
+        };
+
+        const chunks: Array<{ pts: unknown[]; isLast: boolean }> = [];
+        await fetchDownsampledHistoryProgressive(
+          hass,
+          "sensor.a",
+          "2026-01-01T00:00:00.000Z",
+          "2026-04-05T00:00:00.000Z",
+          "24h",
+          "mean",
+          (pts, isLast) => chunks.push({ pts, isLast })
+        );
+
+        expect(chunks[0].isLast).toBe(false);
+        expect(chunks[1].isLast).toBe(true);
+      });
+
+      it("THEN calls onChunk with empty array and stops on rejection", async () => {
+        expect.assertions(2);
+
+        const sendMessagePromise = vi
+          .fn()
+          .mockRejectedValueOnce(new Error("network error"))
+          .mockResolvedValueOnce({ pts: [[3, 4]] });
+        const hass = {
+          connection: { sendMessagePromise, sendMessage: vi.fn() },
+        };
+
+        const onChunk = vi.fn();
+        await fetchDownsampledHistoryProgressive(
+          hass,
+          "sensor.a",
+          "2026-01-01T00:00:00.000Z",
+          "2026-04-05T00:00:00.000Z",
+          "24h",
+          "mean",
+          onChunk
+        );
+
+        // Called once with empty pts and isLast=true (broke out after first failure)
+        expect(onChunk).toHaveBeenCalledOnce();
+        expect(onChunk).toHaveBeenCalledWith([], true);
+      });
+
+      it("THEN stops early when AbortSignal is aborted", async () => {
+        expect.assertions(1);
+
+        const sendMessagePromise = vi.fn().mockResolvedValue({ pts: [[1, 2]] });
+        const hass = {
+          connection: { sendMessagePromise, sendMessage: vi.fn() },
+        };
+
+        const controller = new AbortController();
+        controller.abort();
+
+        const onChunk = vi.fn();
+        await fetchDownsampledHistoryProgressive(
+          hass,
+          "sensor.a",
+          "2026-01-01T00:00:00.000Z",
+          "2026-04-05T00:00:00.000Z",
+          "24h",
+          "mean",
+          onChunk,
+          controller.signal
+        );
+
+        expect(sendMessagePromise).not.toHaveBeenCalled();
       });
     });
   });

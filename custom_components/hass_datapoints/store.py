@@ -112,6 +112,8 @@ class DatapointsStore:
         start: str | None = None,
         end: str | None = None,
         entity_ids: list[str] | None = None,
+        limit: int | None = None,
+        offset: int = 0,
     ) -> list[dict[str, Any]]:
         """Return events, optionally filtered by time range and entity list.
 
@@ -121,6 +123,7 @@ class DatapointsStore:
           requested entity_ids list.
         - Results are deduplicated by event id (relevant when multiple entity
           filters would match the same event).
+        - limit/offset provide pagination; limit=None returns all matches.
         """
         events: list[dict[str, Any]] = self._data.get("events", [])
 
@@ -141,6 +144,11 @@ class DatapointsStore:
                     seen_ids.add(event["id"])
                     filtered.append(event)
             events = filtered
+
+        if offset:
+            events = events[offset:]
+        if limit is not None:
+            events = events[:limit]
 
         return events
 
