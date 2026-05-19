@@ -33,6 +33,7 @@ from custom_components.hass_datapoints.websocket_api import (
     ws_delete_dev_events,
     ws_delete_event,
     ws_get_anomalies,
+    ws_get_event_bounds,
     ws_get_events,
     ws_get_history,
     ws_update_event,
@@ -178,6 +179,36 @@ class DescribeWsGetEvents:
             limit=200,
             offset=0,
         )
+
+
+class DescribeWsGetEventBounds:
+    async def test_GIVEN_recorder_executor_result_WHEN_called_THEN_returns_bounds(
+        self,
+    ):
+        store = MagicMock()
+        hass = _make_hass(store)
+        connection = _make_connection()
+        recorder = MagicMock()
+        recorder.async_add_executor_job = AsyncMock(
+            return_value=(
+                "2024-01-01T00:00:00+00:00",
+                "2024-02-01T00:00:00+00:00",
+                "start:states:last_updated_ts;end:states:last_updated_ts",
+            )
+        )
+        msg = {"id": 1, "type": f"{DOMAIN}/events_bounds"}
+
+        from custom_components.hass_datapoints import websocket_api as ws_mod
+
+        original_get_instance = ws_mod.get_instance
+        ws_mod.get_instance = MagicMock(return_value=recorder)
+        try:
+            await ws_get_event_bounds(hass, connection, msg)
+        finally:
+            ws_mod.get_instance = original_get_instance
+
+        recorder.async_add_executor_job.assert_awaited_once()
+        connection.send_result.assert_called_once()
 
     async def test_GIVEN_entity_filter_WHEN_called_THEN_passes_entity_ids_to_store(
         self,

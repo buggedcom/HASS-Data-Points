@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 from homeassistant.exceptions import Unauthorized
@@ -18,7 +18,6 @@ from custom_components.hass_datapoints.const import (
     KEY_STORE,
 )
 from custom_components.hass_datapoints.websocket_api import (
-    _require_admin,
     ws_monitors_create,
     ws_monitors_delete,
     ws_monitors_dismiss,
@@ -26,7 +25,6 @@ from custom_components.hass_datapoints.websocket_api import (
     ws_monitors_undismiss,
     ws_monitors_update,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -46,26 +44,33 @@ def _make_store(monitors=None):
         )
     )
     store.async_delete_monitor = AsyncMock(return_value=True)
-    store.async_dismiss_window = AsyncMock(side_effect=lambda mid, s, e, exp: next(
-        (m for m in (monitors or []) if m["id"] == mid), None
-    ))
-    store.async_undismiss_window = AsyncMock(side_effect=lambda mid, wid: next(
-        (m for m in (monitors or []) if m["id"] == mid), None
-    ))
+    store.async_dismiss_window = AsyncMock(
+        side_effect=lambda mid, s, e, exp: next(
+            (m for m in (monitors or []) if m["id"] == mid), None
+        )
+    )
+    store.async_undismiss_window = AsyncMock(
+        side_effect=lambda mid, wid: next(
+            (m for m in (monitors or []) if m["id"] == mid), None
+        )
+    )
     return store
 
 
 def _make_hass(store, sensors=None, add_entities=None):
     hass = MagicMock()
+    add_sensor_entities = add_entities or MagicMock()
+    add_binary_entities = MagicMock()
+    add_switch_entities = MagicMock()
     hass.data = {
         DOMAIN: {
             KEY_STORE: store,
             KEY_MONITOR_SENSORS: sensors if sensors is not None else {},
             KEY_MONITOR_BINARY_SENSORS: {},
             KEY_MONITOR_SWITCHES: {},
-            KEY_ADD_SENSOR_ENTITIES: add_entities or MagicMock(),
-            KEY_ADD_BINARY_SENSOR_ENTITIES: MagicMock(),
-            KEY_ADD_SWITCH_ENTITIES: MagicMock(),
+            KEY_ADD_SENSOR_ENTITIES: add_sensor_entities,
+            KEY_ADD_BINARY_SENSOR_ENTITIES: add_binary_entities,
+            KEY_ADD_SWITCH_ENTITIES: add_switch_entities,
         }
     }
     hass.config_entries.async_entries.return_value = [MagicMock()]
@@ -116,13 +121,13 @@ class DescribeWsMonitorsList:
 
 
 class DescribeWsMonitorsCreate:
-    async def test_GIVEN_valid_individual_payload_WHEN_called_THEN_creates_monitor(self):
+    async def test_GIVEN_valid_individual_payload_WHEN_called_THEN_creates_monitor(
+        self,
+    ):
         store = _make_store()
         add_entities = MagicMock()
         hass = _make_hass(store, add_entities=add_entities)
         connection = _make_connection()
-
-        import uuid as _uuid
 
         msg = {
             "id": 1,
@@ -150,6 +155,36 @@ class DescribeWsMonitorsCreate:
         assert created_monitor["entity_id"] == "sensor.temp"
         assert created_monitor["type"] == "individual"
         add_entities.assert_called_once()
+        hass.data[DOMAIN][KEY_ADD_BINARY_SENSOR_ENTITIES].assert_called_once()
+        hass.data[DOMAIN][KEY_ADD_SWITCH_ENTITIES].assert_called_once()
+        assert len(hass.data[DOMAIN][KEY_MONITOR_SENSORS]) == 1
+        assert len(hass.data[DOMAIN][KEY_MONITOR_BINARY_SENSORS]) == 1
+        assert len(hass.data[DOMAIN][KEY_MONITOR_SWITCHES]) == 1
+        connection.send_result.assert_called_once()
+
+    async def test_GIVEN_missing_dynamic_callbacks_WHEN_called_THEN_creates_monitor_and_returns_success_without_crashing(
+        self,
+    ):
+        store = _make_store()
+        hass = _make_hass(store)
+        hass.data[DOMAIN].pop(KEY_ADD_SENSOR_ENTITIES)
+        hass.data[DOMAIN].pop(KEY_ADD_BINARY_SENSOR_ENTITIES)
+        hass.data[DOMAIN].pop(KEY_ADD_SWITCH_ENTITIES)
+        connection = _make_connection()
+
+        msg = {
+            "id": 1,
+            "type": f"{DOMAIN}/monitors/create",
+            "monitor_type": "individual",
+            "name": "My Monitor",
+            "entity_id": "sensor.temp",
+            "look_back_hours": 24,
+            "scan_interval_minutes": 30,
+        }
+
+        await ws_monitors_create(hass, connection, msg)
+
+        store.async_create_monitor.assert_awaited_once()
         connection.send_result.assert_called_once()
 
     async def test_GIVEN_non_admin_WHEN_called_THEN_raises_unauthorized(self):
@@ -217,7 +252,9 @@ class DescribeWsMonitorsUpdate:
 
         await ws_monitors_update(hass, connection, msg)
 
-        connection.send_error.assert_called_once_with(1, "not_found", "Monitor not found")
+        connection.send_error.assert_called_once_with(
+            1, "not_found", "Monitor not found"
+        )
 
     async def test_GIVEN_non_admin_WHEN_called_THEN_raises_unauthorized(self):
         import uuid as _uuid
@@ -278,7 +315,9 @@ class DescribeWsMonitorsDelete:
 
         await ws_monitors_delete(hass, connection, msg)
 
-        connection.send_error.assert_called_once_with(1, "not_found", "Monitor not found")
+        connection.send_error.assert_called_once_with(
+            1, "not_found", "Monitor not found"
+        )
 
     async def test_GIVEN_non_admin_WHEN_deleted_THEN_raises_unauthorized(self):
         import uuid as _uuid
@@ -333,7 +372,14 @@ class DescribeWsMonitorsDismiss:
         import uuid as _uuid
 
         monitor_id = str(_uuid.uuid4())
-        monitors = [{"id": monitor_id, "name": "M", "look_back_hours": 24, "dismissed_windows": []}]
+        monitors = [
+            {
+                "id": monitor_id,
+                "name": "M",
+                "look_back_hours": 24,
+                "dismissed_windows": [],
+            }
+        ]
         store = _make_store(monitors)
         store.async_dismiss_window = AsyncMock(return_value=monitors[0])
         hass = _make_hass(store)

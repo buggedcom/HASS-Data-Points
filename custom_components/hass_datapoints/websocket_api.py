@@ -214,8 +214,9 @@ async def ws_get_event_bounds(
     """Return the earliest and latest recorded event timestamps."""
     try:
         store = hass.data[DOMAIN]["store"]
-        start_time, end_time, source = await hass.async_add_executor_job(
-            _get_global_history_bounds, hass
+        recorder = get_instance(hass)
+        start_time, end_time, source = await recorder.async_add_executor_job(
+            _get_global_history_bounds, recorder
         )
         if start_time is None and end_time is None:
             start_time, end_time = store.get_event_bounds()
@@ -230,10 +231,9 @@ async def ws_get_event_bounds(
 
 
 def _get_global_history_bounds(
-    hass: HomeAssistant,
+    recorder,
 ) -> tuple[str | None, str | None, str]:
     """Return earliest/latest recorder timestamps for Home Assistant globally."""
-    recorder = get_instance(hass)
     get_session = getattr(recorder, "get_session", None)
     if get_session is None:
         return None, None, "recorder_session_unavailable"
@@ -279,72 +279,83 @@ def _get_global_history_bounds(
         ("statistics_short_term:start", "statistics_short_term", "start", "start"),
     ]
 
-    start_candidates: list[tuple[datetime, str]] = []
-    end_candidates: list[tuple[datetime, str]] = []
-
     def _quote(identifier: str) -> str:
         return '"' + identifier.replace('"', '""') + '"'
 
-    try:
-        with session_scope(session=get_session()) as session:
-            bind = session.get_bind()
-            if bind is None:
-                return None, None, "recorder_bind_unavailable"
+    def _run_bounds_query() -> tuple[str | None, str | None, str]:
+        start_candidates: list[tuple[datetime, str]] = []
+        end_candidates: list[tuple[datetime, str]] = []
 
-            inspector = sqlalchemy_inspect(bind)
-            available_tables = set(inspector.get_table_names())
-            column_cache: dict[str, set[str]] = {}
+        try:
+            with session_scope(session=get_session()) as session:
+                bind = session.get_bind()
+                if bind is None:
+                    return None, None, "recorder_bind_unavailable"
 
-            def _get_columns(table_name: str) -> set[str]:
-                if table_name not in column_cache:
+                inspector = sqlalchemy_inspect(bind)
+                available_tables = set(inspector.get_table_names())
+                column_cache: dict[str, set[str]] = {}
+
+                def _get_columns(table_name: str) -> set[str]:
+                    if table_name not in column_cache:
+                        try:
+                            column_cache[table_name] = {
+                                column["name"]
+                                for column in inspector.get_columns(table_name)
+                            }
+                        except Exception:
+                            column_cache[table_name] = set()
+                    return column_cache[table_name]
+
+                for label, table_name, start_column, end_column in query_variants:
+                    if table_name not in available_tables:
+                        continue
+                    columns = _get_columns(table_name)
+                    if start_column not in columns:
+                        continue
+                    end_expr = (
+                        f"MAX({_quote(end_column)})"
+                        if end_column in columns
+                        else "NULL"
+                    )
+                    query = text(
+                        f"SELECT MIN({_quote(start_column)}) AS start_ts, "
+                        f"{end_expr} AS end_ts FROM {_quote(table_name)}"
+                    )
                     try:
-                        column_cache[table_name] = {
-                            column["name"]
-                            for column in inspector.get_columns(table_name)
-                        }
+                        row = session.execute(query).one_or_none()
                     except Exception:
-                        column_cache[table_name] = set()
-                return column_cache[table_name]
+                        continue
+                    if not row:
+                        continue
+                    start_time = _normalize_recorder_timestamp(row[0])
+                    end_time = _normalize_recorder_timestamp(row[1])
+                    if start_time:
+                        start_candidates.append(
+                            (datetime.fromisoformat(start_time), label)
+                        )
+                    if end_time:
+                        end_candidates.append((datetime.fromisoformat(end_time), label))
+        except Exception as err:
+            return None, None, f"recorder_query_error:{type(err).__name__}"
 
-            for label, table_name, start_column, end_column in query_variants:
-                if table_name not in available_tables:
-                    continue
-                columns = _get_columns(table_name)
-                if start_column not in columns:
-                    continue
-                end_expr = (
-                    f"MAX({_quote(end_column)})" if end_column in columns else "NULL"
-                )
-                query = text(
-                    f"SELECT MIN({_quote(start_column)}) AS start_ts, "
-                    f"{end_expr} AS end_ts FROM {_quote(table_name)}"
-                )
-                try:
-                    row = session.execute(query).one_or_none()
-                except Exception:
-                    continue
-                if not row:
-                    continue
-                start_time = _normalize_recorder_timestamp(row[0])
-                end_time = _normalize_recorder_timestamp(row[1])
-                if start_time:
-                    start_candidates.append((datetime.fromisoformat(start_time), label))
-                if end_time:
-                    end_candidates.append((datetime.fromisoformat(end_time), label))
-    except Exception as err:
-        return None, None, f"recorder_query_error:{type(err).__name__}"
+        if not start_candidates:
+            return None, None, "no_recorder_start_found"
 
-    if not start_candidates:
-        return None, None, "no_recorder_start_found"
+        min_start, start_source = min(start_candidates, key=lambda item: item[0])
+        if end_candidates:
+            max_end, end_source = max(end_candidates, key=lambda item: item[0])
+            max_end_iso = max_end.isoformat()
+        else:
+            max_end_iso = None
+            end_source = "missing"
+        return (
+            min_start.isoformat(),
+            max_end_iso,
+            f"start:{start_source};end:{end_source}",
+        )
 
-    min_start, start_source = min(start_candidates, key=lambda item: item[0])
-    if end_candidates:
-        max_end, end_source = max(end_candidates, key=lambda item: item[0])
-        max_end_iso = max_end.isoformat()
-    else:
-        max_end_iso = None
-        end_source = "missing"
-    return min_start.isoformat(), max_end_iso, f"start:{start_source};end:{end_source}"
+    return _run_bounds_query()
 
 
 def _normalize_recorder_timestamp(value: object) -> str | None:
@@ -961,6 +972,89 @@ _MONITOR_ANALYSIS_FIELDS = {
 }
 
 
+def _register_monitor_entities(hass: HomeAssistant, monitor_id: str) -> bool:
+    """Best-effort dynamic entity registration for a single monitor.
+
+    Returns True when all three entity platform callbacks are available and
+    monitor entities were added (or were already tracked in the in-memory
+    maps). Returns False when platform callbacks are not ready yet, allowing
+    the caller to keep the monitor record and rely on a later platform setup
+    or reload to materialize the entities.
+    """
+    domain_data = hass.data.get(DOMAIN, {})
+    add_sensor_entities = domain_data.get(KEY_ADD_SENSOR_ENTITIES)
+    add_binary_entities = domain_data.get(KEY_ADD_BINARY_SENSOR_ENTITIES)
+    add_switch_entities = domain_data.get(KEY_ADD_SWITCH_ENTITIES)
+    if (
+        add_sensor_entities is None
+        or add_binary_entities is None
+        or add_switch_entities is None
+    ):
+        _LOGGER.warning(
+            "hass_datapoints: monitor %s was created before dynamic entity "
+            "callbacks were ready; entities will appear after the next "
+            "platform setup or integration reload",
+            monitor_id,
+        )
+        return False
+
+    entries = list(hass.config_entries.async_entries(DOMAIN))
+    if not entries:
+        _LOGGER.warning(
+            "hass_datapoints: monitor %s was created without an active config "
+            "entry; skipping dynamic entity registration",
+            monitor_id,
+        )
+        return False
+
+    from .binary_sensor import (  # noqa: PLC0415
+        DatapointsMonitorProblemBinarySensor,
+        DatapointsMonitorStalledBinarySensor,
+    )
+    from .sensor import (  # noqa: PLC0415
+        DatapointsMonitorAnomalyDurationSensor,
+        DatapointsMonitorConsecutiveScansSensor,
+        DatapointsMonitorDataPointsSensor,
+        DatapointsMonitorLastAnomalySensor,
+        DatapointsMonitorLastScanSensor,
+        DatapointsMonitorSensor,
+    )
+    from .switch import DatapointsMonitorEnabledSwitch  # noqa: PLC0415
+
+    entry = entries[0]
+    store = domain_data[KEY_STORE]
+    monitor_sensors = domain_data.setdefault(KEY_MONITOR_SENSORS, {})
+    monitor_binary_sensors = domain_data.setdefault(KEY_MONITOR_BINARY_SENSORS, {})
+    monitor_switches = domain_data.setdefault(KEY_MONITOR_SWITCHES, {})
+
+    if monitor_id not in monitor_sensors:
+        sensor = DatapointsMonitorSensor(entry, store, hass, monitor_id)
+        monitor_sensors[monitor_id] = sensor
+        add_sensor_entities(
+            [
+                sensor,
+                DatapointsMonitorConsecutiveScansSensor(entry, store, monitor_id),
+                DatapointsMonitorLastScanSensor(entry, store, monitor_id),
+                DatapointsMonitorLastAnomalySensor(entry, store, monitor_id),
+                DatapointsMonitorAnomalyDurationSensor(entry, store, hass, monitor_id),
+                DatapointsMonitorDataPointsSensor(entry, store, monitor_id),
+            ]
+        )
+
+    if monitor_id not in monitor_binary_sensors:
+        stalled = DatapointsMonitorStalledBinarySensor(entry, store, hass, monitor_id)
+        problem = DatapointsMonitorProblemBinarySensor(entry, store, hass, monitor_id)
+        monitor_binary_sensors[monitor_id] = (stalled, problem)
+        add_binary_entities([stalled, problem])
+
+    if monitor_id not in monitor_switches:
+        switch = DatapointsMonitorEnabledSwitch(entry, store, hass, monitor_id)
+        monitor_switches[monitor_id] = switch
+        add_switch_entities([switch])
+
+    return True
+
+
 @websocket_api.websocket_command(
     {
         vol.Required("type"): f"{DOMAIN}/monitors/list",
@@ -1023,7 +1117,6 @@ async def ws_monitors_create(
 ) -> None:
     """Create a new anomaly monitor and register its sensor entity."""
     _require_admin(connection, msg)
-    from .sensor import DatapointsMonitorSensor  # noqa: PLC0415
 
     baseline_entity_id = msg.get("baseline_entity_id")
     if baseline_entity_id and not _can_read_entity(connection.user, baseline_entity_id):
@@ -1068,45 +1161,7 @@ async def ws_monitors_create(
 
     await store.async_create_monitor(monitor)
 
-    entries = list(hass.config_entries.async_entries(DOMAIN))
-    if entries:
-        from .binary_sensor import (  # noqa: PLC0415
-            DatapointsMonitorProblemBinarySensor,
-            DatapointsMonitorStalledBinarySensor,
-        )
-        from .sensor import (  # noqa: PLC0415
-            DatapointsMonitorAnomalyDurationSensor,
-            DatapointsMonitorConsecutiveScansSensor,
-            DatapointsMonitorDataPointsSensor,
-            DatapointsMonitorLastAnomalySensor,
-            DatapointsMonitorLastScanSensor,
-            DatapointsMonitorSensor,
-        )
-        from .switch import DatapointsMonitorEnabledSwitch  # noqa: PLC0415
-
-        entry = entries[0]
-
-        sensor = DatapointsMonitorSensor(entry, store, hass, monitor_id)
-        hass.data[DOMAIN][KEY_MONITOR_SENSORS][monitor_id] = sensor
-        hass.data[DOMAIN][KEY_ADD_SENSOR_ENTITIES](
-            [
-                sensor,
-                DatapointsMonitorConsecutiveScansSensor(entry, store, monitor_id),
-                DatapointsMonitorLastScanSensor(entry, store, monitor_id),
-                DatapointsMonitorLastAnomalySensor(entry, store, monitor_id),
-                DatapointsMonitorAnomalyDurationSensor(entry, store, hass, monitor_id),
-                DatapointsMonitorDataPointsSensor(entry, store, monitor_id),
-            ]
-        )
-
-        stalled = DatapointsMonitorStalledBinarySensor(entry, store, hass, monitor_id)
-        problem = DatapointsMonitorProblemBinarySensor(entry, store, hass, monitor_id)
-        hass.data[DOMAIN][KEY_MONITOR_BINARY_SENSORS][monitor_id] = (stalled, problem)
-        hass.data[DOMAIN][KEY_ADD_BINARY_SENSOR_ENTITIES]([stalled, problem])
-
-        switch = DatapointsMonitorEnabledSwitch(entry, store, hass, monitor_id)
-        hass.data[DOMAIN][KEY_MONITOR_SWITCHES][monitor_id] = switch
-        hass.data[DOMAIN][KEY_ADD_SWITCH_ENTITIES]([switch])
+    _register_monitor_entities(hass, monitor_id)
 
     connection.send_result(msg["id"], {"monitor": monitor})
 
