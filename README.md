@@ -17,6 +17,10 @@
 ![Screenshot.png](images/Screenshot.png)
 ![Screenshot2.png](images/Screenshot2.png)
 ![Screenshot3.png](images/Screenshot3.png)
+![Ai prompt](images/ai-prompt.png)
+![Anomaly monitor device](images/anomaly-monitor-device.png)
+
+See the [v0.6.0 release](https://github.com/buggedcom/HASS-Data-Points/releases/tag/0.6.0) for screenshots of the anomaly monitor wizard and AI query brief.
 
 ---
 
@@ -59,8 +63,10 @@ That makes it much easier to investigate heating behavior, energy usage, sensor 
 - Browse, search, edit, delete, and hide datapoints in a dedicated list card
 - Investigate entity history with target rows, per-target analysis options, and date-window comparisons
 - Create chart annotations directly from the chart while exploring data
-- Backend-powered anomaly detection to highlight suspicious behavior
+- Backend-powered anomaly detection to highlight suspicious behavior, including rate-of-change (`point_to_point`) detection across eight configurable window sizes
+- Anomaly monitors appear as Home Assistant integration devices, enabling automations to trigger when anomalies are detected
 - Compare a current period against saved historical windows to find drift and regressions
+- AI query brief: a structured panel context for AI assistants (MCP-connected or otherwise) containing entity metadata, query inputs, and current anomaly findings — localized into DE, ES, FR, PT, FI, and ZH-Hans
 
 ---
 
@@ -102,8 +108,7 @@ English is the source language. Finnish translations were written by a non-nativ
 
 - **Multiple saved views** — persist more than one named chart-and-panel state for reusable investigation setups.
 - **Automatic historical period matching** — find similar historical periods automatically so the panel can suggest or create date windows.
-- **Chart-driven anomaly automation creation** — turn chart analysis settings into Home Assistant automations for live monitoring.
-- **Automatic anomaly-to-datapoint generation** — generate datapoints when configured anomaly conditions are met.
+- **Automatic anomaly-to-datapoint generation** — generate datapoints when configured anomaly conditions are met. (Anomaly monitors are now HA entities, so automation triggers are already possible — this extends that to automatic datapoint creation.)
 - **Backfilling tools** — create datapoints from recent history and long-term statistics after the fact.
 - **Anomalies summary card** — dedicated card for highlighting current anomalies with deep-links into the history view.
 - **Drop-in replacements for HA sensor and statistics cards** — equivalents that support datapoint overlays and richer contextual controls.
