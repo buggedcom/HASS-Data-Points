@@ -101,6 +101,7 @@ import {
   seriesHasActiveAnalysis,
   seriesShouldHideSource,
 } from "@/lib/chart/chart-analysis";
+import { summarizeAnomalyClusterForAiBrief } from "@/lib/history-page/ai-query-brief";
 import { calculateViewportScrollPosition } from "@/lib/chart/chart-scroll";
 import {
   splitSeriesByGaps,
@@ -138,6 +139,25 @@ interface AnalysisResult {
     string,
     Record<string, ComparisonWindowAnalysis>
   >;
+}
+
+interface AiQueryBriefAnomalySnapshot {
+  available: boolean;
+  current_range_label: string;
+  chart_anomaly_overlap_mode: string;
+  show_correlated_anomalies: boolean;
+  correlated_anomaly_spans: Array<{
+    start_time: string;
+    end_time: string;
+    entity_ids: string[];
+  }>;
+  entity_findings: Array<{
+    entity_id: string;
+    all_detected_clusters: ReturnType<
+      typeof summarizeAnomalyClusterForAiBrief
+    >[];
+    displayed_clusters: ReturnType<typeof summarizeAnomalyClusterForAiBrief>[];
+  }>;
 }
 
 type DrawArgs = [
@@ -248,12 +268,141 @@ export class HistoryChart extends HTMLElement {
   // ── Public API — set by parent card after construction ──────────────────────
   private _hass: Nullable<HassLike> = null;
 
+  private _lastAiQueryBriefAnomalySnapshot: Nullable<AiQueryBriefAnomalySnapshot> =
+    null;
+
   get hass(): Nullable<HassLike> {
     return this._hass;
   }
 
   set hass(value: Nullable<HassLike>) {
     this._hass = value;
+  }
+
+  getAiQueryBriefAnomalySnapshot(): Nullable<AiQueryBriefAnomalySnapshot> {
+    if (!this._lastAiQueryBriefAnomalySnapshot) {
+      return null;
+    }
+    return JSON.parse(JSON.stringify(this._lastAiQueryBriefAnomalySnapshot));
+  }
+
+  private _clusterIntersectsSpan(
+    cluster: Nullable<AnomalyCluster>,
+    span: { start: number; end: number }
+  ): boolean {
+    if (!Array.isArray(cluster?.points) || cluster.points.length === 0) {
+      return false;
+    }
+    const startTime = Number(cluster.points[0]?.timeMs ?? Number.NaN);
+    const endTime = Number(
+      cluster.points[cluster.points.length - 1]?.timeMs ?? Number.NaN
+    );
+    if (!Number.isFinite(startTime) || !Number.isFinite(endTime)) {
+      return false;
+    }
+    const clusterStart = Math.min(startTime, endTime);
+    const clusterEnd = Math.max(startTime, endTime);
+    return clusterEnd >= span.start && clusterStart <= span.end;
+  }
+
+  private _setAiQueryBriefAnomalySnapshot(
+    visibleSeries: SeriesItem[],
+    analysisMap: Map<string, unknown>,
+    anomalyClustersMap: Map<string, unknown[]>,
+    correlatedSpans: Array<{ start: number; end: number }>,
+    renderT0: number,
+    renderT1: number
+  ): void {
+    const entityFindings = visibleSeries
+      .map((seriesItem) => {
+        const analysis =
+          analysisMap.get(seriesItem.entityId) ||
+          normalizeHistorySeriesAnalysis(null);
+        if ((analysis as SeriesAnalysis).show_anomalies !== true) {
+          return null;
+        }
+        const allDetectedClusters =
+          (anomalyClustersMap.get(seriesItem.entityId) as AnomalyCluster[]) ||
+          [];
+        const displayedClusters = this._resolveAnomalyClusterDisplay(
+          allDetectedClusters,
+          (analysis as SeriesAnalysis).anomaly_overlap_mode,
+          correlatedSpans
+        ).baseClusters;
+        return {
+          entity_id: seriesItem.entityId,
+          all_detected_clusters: allDetectedClusters.map((cluster) =>
+            summarizeAnomalyClusterForAiBrief(cluster)
+          ),
+          displayed_clusters: displayedClusters.map((cluster) =>
+            summarizeAnomalyClusterForAiBrief(cluster)
+          ),
+        };
+      })
+      .filter(
+        (
+          finding
+        ): finding is {
+          entity_id: string;
+          all_detected_clusters: ReturnType<
+            typeof summarizeAnomalyClusterForAiBrief
+          >[];
+          displayed_clusters: ReturnType<
+            typeof summarizeAnomalyClusterForAiBrief
+          >[];
+        } => finding != null
+      );
+
+    const correlatedAnomalySpans = correlatedSpans
+      .map((span) => {
+        const entityIds = entityFindings
+          .filter((finding) =>
+            finding.all_detected_clusters.some((cluster) =>
+              this._clusterIntersectsSpan(
+                {
+                  points: cluster.points.map(
+                    (point: { time: string; value: number }) => ({
+                      timeMs: Date.parse(point.time),
+                      value: point.value,
+                    })
+                  ),
+                },
+                span
+              )
+            )
+          )
+          .map((finding) => finding.entity_id);
+        if (entityIds.length < 2) {
+          return null;
+        }
+        return {
+          start_time: new Date(span.start).toISOString(),
+          end_time: new Date(span.end).toISOString(),
+          entity_ids: entityIds,
+        };
+      })
+      .filter(
+        (
+          span
+        ): span is {
+          start_time: string;
+          end_time: string;
+          entity_ids: string[];
+        } => span != null
+      );
+
+    this._lastAiQueryBriefAnomalySnapshot = {
+      available: true,
+      current_range_label: `${new Date(renderT0).toISOString()} -> ${new Date(renderT1).toISOString()}`,
+      chart_anomaly_overlap_mode:
+        ((this._config as RecordWithUnknownValues)
+          ?.anomaly_overlap_mode as string) || "all",
+      show_correlated_anomalies:
+        (this._config as RecordWithUnknownValues)?.show_correlated_anomalies ===
+        true,
+      correlated_anomaly_spans: correlatedAnomalySpans,
+      entity_findings: entityFindings,
+    };
   }
 
   /** True when the current user may create a data point via the chart + button. */
@@ -3116,6 +3265,14 @@ export class HistoryChart extends HTMLElement {
           analysisMap
         )
       : [];
+    this._setAiQueryBriefAnomalySnapshot(
+      visibleSeries,
+      analysisMap,
+      anomalyClustersMap,
+      correlatedSpans,
+      renderT0,
+      renderT1
+    );
     if (shouldDrawCorrelatedSpans) {
       if (correlatedSpans.length) {
         renderer.drawStateBands(

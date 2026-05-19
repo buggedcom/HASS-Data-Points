@@ -248,18 +248,39 @@ export class AnomalyMonitorWizard extends LitElement {
     );
   }
 
+  private _resolvedTargetEntityIds(): string[] {
+    return resolveEntityIdsFromTarget(this.hass, this._target);
+  }
+
+  private _setExplicitTargetEntityIds(entityIds: string[]) {
+    this._target = entityIds.length > 0 ? { entity_id: entityIds } : {};
+  }
+
+  private _mergeResolvedTargetEntityIds(entityIdsToAdd: string[]) {
+    const current = this._resolvedTargetEntityIds();
+    const merged = [...current];
+
+    for (const entityId of entityIdsToAdd) {
+      if (!merged.includes(entityId)) {
+        merged.push(entityId);
+      }
+    }
+
+    this._setExplicitTargetEntityIds(merged);
+  }
+
   private _addSuggestedEntity(entityId: string) {
-    const current = this._target.entity_id ?? [];
+    const current = this._resolvedTargetEntityIds();
     if (!current.includes(entityId)) {
-      this._target = { ...this._target, entity_id: [...current, entityId] };
+      this._mergeResolvedTargetEntityIds([entityId]);
     }
   }
 
   private _addAllSeriesFromChart() {
-    const current = this._target.entity_id ?? [];
+    const current = this._resolvedTargetEntityIds();
     const toAdd = this.allSeriesEntityIds.filter((id) => !current.includes(id));
     if (toAdd.length > 0) {
-      this._target = { ...this._target, entity_id: [...current, ...toAdd] };
+      this._mergeResolvedTargetEntityIds(toAdd);
     }
   }
 
@@ -469,8 +490,8 @@ export class AnomalyMonitorWizard extends LitElement {
         ? 1
         : this._entityIds.length;
     return count === 1
-      ? msg("Create Anomaly Monitor Device")
-      : `${msg("Create")} ${count} ${msg("Anomaly Monitor Devices")}`;
+      ? msg("Create anomaly monitor")
+      : `${msg("Create")} ${count} ${msg("anomaly monitors")}`;
   }
 
   // -------------------------------------------------------------------------
@@ -514,7 +535,7 @@ export class AnomalyMonitorWizard extends LitElement {
   // -------------------------------------------------------------------------
 
   private _renderStep1() {
-    const selectedEntityIds = this._target.entity_id ?? [];
+    const selectedEntityIds = this._resolvedTargetEntityIds();
     const suggestions = this.suggestedEntityIds.filter(
       (id) => !selectedEntityIds.includes(id)
     );

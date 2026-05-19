@@ -1134,6 +1134,18 @@ export class HassDatapointsHistoryCard extends ChartCardBase {
     );
   }
 
+  getAiQueryBriefAnomalySnapshot(): Nullable<RecordWithUnknownValues> {
+    const chartEl = this._chartEl() as Nullable<
+      HTMLElement & {
+        getAiQueryBriefAnomalySnapshot?: () => Nullable<RecordWithUnknownValues>;
+      }
+    >;
+    if (!chartEl?.getAiQueryBriefAnomalySnapshot) {
+      return null;
+    }
+    return chartEl.getAiQueryBriefAnomalySnapshot();
+  }
+
   /**
    * Queue a draw cycle. Delegates to hass-datapoints-history-chart and also records last
    * draw args so the base-class ResizeObserver can replay via _drawChart().

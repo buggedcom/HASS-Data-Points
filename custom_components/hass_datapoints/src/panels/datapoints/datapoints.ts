@@ -52,6 +52,12 @@ import {
   PANEL_HISTORY_PREFERENCES_KEY,
 } from "@/lib/history-page/history-session-state";
 import {
+  buildAiQueryBrief,
+  type AiQueryBriefAnomalySnapshot,
+  type AiQueryBriefMonitorContext,
+} from "@/lib/history-page/ai-query-brief";
+import type { AnomalyMonitor } from "@/lib/data/monitors-api";
+import {
   type NormalizedHistoryDateWindow,
   makeDateWindowId,
   normalizeDateWindows,
@@ -95,6 +101,7 @@ import "@/molecules/anomaly-monitors-panel/anomaly-monitors-panel";
 import "@/atoms/interactive/resizable-panes/resizable-panes";
 import "@/molecules/history-chart/history-chart";
 import "@/panels/datapoints/components/panel-shell/panel-shell";
+import "@/panels/datapoints/components/ai-query-brief-dialog/ai-query-brief-dialog";
 import "@/panels/datapoints/components/history-targets/history-targets";
 import "@/panels/datapoints/components/range-toolbar/range-toolbar";
 import { createHistoryPageContext } from "@/panels/datapoints/context/create-history-page-context";
@@ -251,6 +258,13 @@ type DateWindowDialogElement = HTMLElement & {
   zoomLevel: string;
   dateSnapping: string;
 };
+
+type AiQueryBriefDialogElement = HTMLElement & {
+  open: boolean;
+  heading: string;
+  text: string;
+};
+
 type CollapsedOptionsMenuElement = HTMLElement & {
   datapointScope: string;
   showIcons: boolean;
@@ -270,6 +284,7 @@ type HistoryCardElement = HTMLElement & {
   hass?: unknown;
   setConfig(config: RecordWithUnknownValues): void;
   setExternalZoomRange?(range: Nullable<{ start: number; end: number }>): void;
+  getAiQueryBriefAnomalySnapshot?(): Nullable<AiQueryBriefAnomalySnapshot>;
   _adjustComparisonAxisScale?: boolean;
 };
 
@@ -544,6 +559,9 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
   /** Imperative wizard element appended to the shadow root. */
   declare _monitorWizardComp: Nullable<HTMLElement>;
 
+  /** Imperative AI brief dialog element appended to the shadow root. */
+  declare _aiQueryBriefDialogComp: Nullable<AiQueryBriefDialogElement>;
+
   constructor() {
     super();
     this.attachShadow({ mode: "open" });
@@ -646,6 +664,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     this._orphanRecoveryTimer = null;
     this._showMonitorsPanel = false;
     this._monitorWizardComp = null;
+    this._aiQueryBriefDialogComp = null;
     this._recordsSearchQuery = "";
     this._hiddenEventIds = [];
     this._hoveredEventIds = [];
@@ -1075,35 +1094,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       const detail = (ev as CustomEvent).detail ?? {};
       const entityId: string = detail.entityId ?? "";
       const analysis = detail.analysis ?? null;
-      // Collect other chart entities that have anomaly detection enabled
-      const suggestedIds: string[] = (this._seriesRows ?? [])
-        .filter(
-          (r: {
-            entity_id: string;
-            analysis?: { show_anomalies?: boolean; anomaly_methods?: string[] };
-          }) =>
-            r.analysis?.show_anomalies === true &&
-            Array.isArray(r.analysis.anomaly_methods) &&
-            r.analysis.anomaly_methods.length > 0 &&
-            !r.entity_id.startsWith("binary_sensor.") &&
-            r.entity_id !== entityId
-        )
-        .map((r: { entity_id: string }) => r.entity_id);
-      // All non-binary series on the chart (enabled and disabled)
-      const allSeriesIds: string[] = (this._seriesRows ?? [])
-        .filter(
-          (r: { entity_id: string }) =>
-            !r.entity_id.startsWith("binary_sensor.") &&
-            r.entity_id !== entityId
-        )
-        .map((r: { entity_id: string }) => r.entity_id);
-      this._openMonitorWizard(
-        entityId ? [entityId] : [],
-        analysis,
-        null,
-        suggestedIds,
-        allSeriesIds
-      );
+      this._openMonitorWizardFromChartAnalysis(entityId, analysis);
     });
     if (this._rendered && !this._shellBuilt) {
       logger.warn(
@@ -1623,6 +1614,11 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     shell.addEventListener("dp-shell-menu-download", () =>
       this._downloadSpreadsheet()
     );
+    shell.addEventListener("dp-shell-menu-ai-brief", () => {
+      this._openAiQueryBriefDialog().catch((error: unknown) => {
+        logger.warn("[hass-datapoints] failed to open AI query brief:", error);
+      });
+    });
     shell.addEventListener("dp-shell-menu-save", () => this._savePageState());
     shell.addEventListener("dp-shell-menu-restore", () =>
       this._restorePageState()
@@ -2807,6 +2803,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     this._mountSidebarOptionsControl();
     this._mountDateWindowDialogControl();
     this._mountMonitorWizard();
+    this._mountAiQueryBriefDialogControl();
     this._syncControls();
   }
 
@@ -3173,6 +3170,35 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     this._monitorWizardComp = wizard as HTMLElement;
   }
 
+  _openMonitorWizardFromChartAnalysis(entityId: string, analysis: unknown) {
+    const suggestedIds: string[] = (this._seriesRows ?? [])
+      .filter(
+        (r: {
+          entity_id: string;
+          analysis?: { show_anomalies?: boolean; anomaly_methods?: string[] };
+        }) =>
+          r.analysis?.show_anomalies === true &&
+          Array.isArray(r.analysis.anomaly_methods) &&
+          r.analysis.anomaly_methods.length > 0 &&
+          !r.entity_id.startsWith("binary_sensor.") &&
+          r.entity_id !== entityId
+      )
+      .map((r: { entity_id: string }) => r.entity_id);
+    const allSeriesIds: string[] = (this._seriesRows ?? [])
+      .filter(
+        (r: { entity_id: string }) => !r.entity_id.startsWith("binary_sensor.")
+      )
+      .map((r: { entity_id: string }) => r.entity_id);
+
+    this._openMonitorWizard(
+      entityId ? [entityId] : [],
+      analysis,
+      null,
+      suggestedIds,
+      allSeriesIds
+    );
+  }
+
   _openMonitorWizard(
     entityIds: string[],
     analysis: unknown,
@@ -3243,6 +3269,92 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       this.shadowRoot.appendChild(dialogComp);
       this._dateWindowDialogComp = dialogComp;
     }
+  }
+
+  _mountAiQueryBriefDialogControl() {
+    if (!this.shadowRoot) {
+      return;
+    }
+    const dialogComp = document.createElement(
+      "ai-query-brief-dialog"
+    ) as AiQueryBriefDialogElement;
+    dialogComp.addEventListener("dp-ai-query-brief-close", () => {
+      if (this._aiQueryBriefDialogComp) {
+        this._aiQueryBriefDialogComp.open = false;
+      }
+    });
+    this.shadowRoot.appendChild(dialogComp);
+    this._aiQueryBriefDialogComp = dialogComp;
+  }
+
+  async _resolveAiQueryBriefMonitorContext(): Promise<AiQueryBriefMonitorContext> {
+    if (!this._hass) {
+      return {
+        access: "unavailable",
+        monitors: [],
+        note: "Monitor context could not be included because Home Assistant is not currently available.",
+      };
+    }
+    if (this._hass.user?.is_admin !== true) {
+      return {
+        access: "not_admin",
+        monitors: [],
+        note: "Monitor context could not be included because the current Home Assistant user is not an admin.",
+      };
+    }
+    try {
+      const result = (await this._hass.connection.sendMessagePromise({
+        type: `${DOMAIN}/monitors/list`,
+      })) as {
+        monitors?: AnomalyMonitor[];
+      };
+      const monitors = Array.isArray(result?.monitors) ? result.monitors : [];
+      return {
+        access: "loaded",
+        monitors,
+        note: monitors.length
+          ? ""
+          : "No persisted anomaly monitors are currently configured.",
+      };
+    } catch {
+      return {
+        access: "unavailable",
+        monitors: [],
+        note: "Monitor context could not be included because the monitor list request failed.",
+      };
+    }
+  }
+
+  async _openAiQueryBriefDialog() {
+    if (!this.shadowRoot) {
+      return;
+    }
+    if (!this._aiQueryBriefDialogComp) {
+      this._mountAiQueryBriefDialogControl();
+    }
+    if (!this._aiQueryBriefDialogComp) {
+      return;
+    }
+    const monitorContext = await this._resolveAiQueryBriefMonitorContext();
+    const brief = buildAiQueryBrief({
+      hass: this._hass,
+      entities: [...this._entities],
+      targetSelectionRaw: this._targetSelectionRaw,
+      seriesRows: this._seriesRows,
+      datapointScope: this._datapointScope,
+      startTime: this._startTime,
+      endTime: this._endTime,
+      committedZoomRange: this._chartZoomCommittedRange,
+      comparisonWindows: this._comparisonWindows,
+      selectedComparisonWindowId: this._selectedComparisonWindowId,
+      chartAnomalyOverlapMode: this._chartAnomalyOverlapMode,
+      monitorContext,
+      anomalySnapshot:
+        this._chartEl?.getAiQueryBriefAnomalySnapshot?.() ?? null,
+    });
+    this._aiQueryBriefDialogComp.heading = msg("AI query brief");
+    this._aiQueryBriefDialogComp.text = brief.plainText;
+    this._aiQueryBriefDialogComp.open = true;
   }
 
   _renderTargetRows() {

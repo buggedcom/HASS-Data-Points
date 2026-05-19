@@ -1,17 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "../anomaly-monitor-wizard";
 import * as monitorsApi from "@/lib/data/monitors-api";
+import { createMockHass } from "@/test-support/mock-hass";
 
-function createHass() {
-  return {
-    connection: {
-      sendMessagePromise: vi
-        .fn()
-        .mockResolvedValue({ monitor: { id: "new-id" } }),
-    },
-    states: {},
-  };
-}
+const baseMockHass = createMockHass();
 
 function createElement(props: RecordWithUnknownValues = {}) {
   const el = document.createElement("anomaly-monitor-wizard") as HTMLElement & {
@@ -20,19 +12,30 @@ function createElement(props: RecordWithUnknownValues = {}) {
     prefillEntityIds: string[];
     prefillAnalysis: unknown;
     editMonitor: unknown;
+    suggestedEntityIds: string[];
+    allSeriesEntityIds: string[];
     updateComplete: Promise<boolean>;
     _step: number;
     _entityIds: string[];
     _name: string;
     _entityConfigs: Map<string, { anomaly_methods: string[] }>;
     _saving: boolean;
+    _target: Record<string, unknown>;
   };
   Object.assign(el, {
-    hass: createHass(),
+    hass: createMockHass({
+      connection: {
+        sendMessagePromise: vi
+          .fn()
+          .mockResolvedValue({ monitor: { id: "new-id" } }),
+      },
+    }),
     open: true,
     prefillEntityIds: [],
     prefillAnalysis: null,
     editMonitor: null,
+    suggestedEntityIds: [],
+    allSeriesEntityIds: [],
     ...props,
   });
   document.body.appendChild(el);
@@ -186,6 +189,134 @@ describe("anomaly-monitor-wizard", () => {
       nextBtn?.click();
       await el.updateComplete;
       expect(el._step).toBe(2);
+    });
+  });
+
+  describe("GIVEN the wizard opened from one chart entity", () => {
+    beforeEach(async () => {
+      el = createElement({
+        prefillEntityIds: ["sensor.temperature"],
+        allSeriesEntityIds: [
+          "sensor.temperature",
+          "sensor.humidity",
+          "sensor.co2",
+        ],
+      });
+      await el.updateComplete;
+      el._target = {};
+      await el.updateComplete;
+    });
+
+    describe('WHEN "Add all series from chart" is clicked', () => {
+      it("THEN it restores the original entity along with the other chart entities", async () => {
+        expect.assertions(1);
+        const addAllBtn = Array.from(
+          el.shadowRoot!.querySelectorAll("button")
+        ).find((button) =>
+          button.textContent?.includes("Add all series from chart")
+        ) as HTMLElement;
+
+        addAllBtn.click();
+        await el.updateComplete;
+
+        expect(el._target).toEqual({
+          entity_id: ["sensor.temperature", "sensor.humidity", "sensor.co2"],
+        });
+      });
+    });
+  });
+
+  describe("GIVEN the current target resolves entities from an area selection", () => {
+    beforeEach(async () => {
+      el = createElement({
+        allSeriesEntityIds: ["sensor.temperature", "sensor.humidity"],
+        suggestedEntityIds: ["sensor.temperature", "sensor.humidity"],
+      });
+      await el.updateComplete;
+      el._target = { area_id: ["area_1"] };
+      await el.updateComplete;
+    });
+
+    describe("WHEN step 1 renders quick-add affordances", () => {
+      it("THEN it treats the resolved entities as already selected", async () => {
+        expect.assertions(2);
+        const addAllBtn = Array.from(
+          el.shadowRoot!.querySelectorAll("button")
+        ).find((button) =>
+          button.textContent?.includes("Add all series from chart")
+        );
+        const suggestionButtons = Array.from(
+          el.shadowRoot!.querySelectorAll(".suggestion-chip")
+        );
+
+        expect(addAllBtn).toBeUndefined();
+        expect(suggestionButtons).toHaveLength(0);
+      });
+    });
+  });
+
+  describe("GIVEN the current target resolves entities from an area selection", () => {
+    beforeEach(async () => {
+      el = createElement({
+        hass: createMockHass({
+          states: {
+            ...baseMockHass.states,
+          },
+          entities: {
+            ...baseMockHass.entities,
+            "sensor.temperature": {
+              entity_id: "sensor.temperature",
+              device_id: "device_1",
+              area_id: "area_1",
+              labels: [],
+            },
+            "sensor.co2": {
+              entity_id: "sensor.co2",
+              device_id: "device_3",
+              area_id: "area_3",
+              labels: [],
+            },
+          },
+          devices: {
+            ...baseMockHass.devices,
+            device_1: {
+              id: "device_1",
+              name: "Living Room Sensor",
+              area_id: "area_1",
+            },
+            device_3: {
+              id: "device_3",
+              name: "Office Sensor",
+              area_id: "area_3",
+            },
+          },
+          connection: {
+            sendMessagePromise: vi
+              .fn()
+              .mockResolvedValue({ monitor: { id: "new-id" } }),
+          },
+        }),
+        suggestedEntityIds: ["sensor.co2"],
+      });
+      await el.updateComplete;
+      el._target = { area_id: ["area_1"] };
+      await el.updateComplete;
+    });
+
+    describe("WHEN a suggestion chip is clicked", () => {
+      it("THEN it converts the target into an explicit entity list with the resolved and added entities", async () => {
+        expect.assertions(1);
+        const suggestionBtn = el.shadowRoot!.querySelector(
+          ".suggestion-chip"
+        ) as HTMLElement;
+
+        suggestionBtn.click();
+        await el.updateComplete;
+
+        expect(el._target).toEqual({
+          entity_id: ["sensor.temperature", "sensor.humidity", "sensor.co2"],
+        });
+      });
     });
   });
 

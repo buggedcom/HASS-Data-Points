@@ -20,6 +20,7 @@ import "@/atoms/interactive/page-menu-item/page-menu-item";
  * - `sidebar-options`  — content placed below the sidebar content (e.g. sidebar options panel)
  * - (default)          — main content area
  *
+ * @fires dp-shell-menu-ai-brief  — user clicked "AI query brief"
  * @fires dp-shell-menu-download  — user clicked "Download spreadsheet"
  * @fires dp-shell-menu-save      — user clicked "Save page state"
  * @fires dp-shell-menu-restore   — user clicked "Restore saved page"
@@ -168,6 +169,11 @@ export class PanelShell extends LitElement {
     this._emit("dp-shell-menu-download");
   }
 
+  private _onMenuAiBrief(): void {
+    this._togglePageMenu(false);
+    this._emit("dp-shell-menu-ai-brief");
+  }
+
   private _onMenuSave(): void {
     this._togglePageMenu(false);
     this._emit("dp-shell-menu-save");
@@ -237,6 +243,11 @@ export class PanelShell extends LitElement {
                 icon="mdi:bell-alert-outline"
                 label=${msg("Anomaly monitors")}
                 @dp-menu-action=${this._onMenuMonitors}
+              ></page-menu-item>
+              <page-menu-item
+                icon="mdi:robot-outline"
+                label=${msg("AI query brief")}
+                @dp-menu-action=${this._onMenuAiBrief}
               ></page-menu-item>
               <page-menu-item
                 icon="mdi:file-excel-outline"
