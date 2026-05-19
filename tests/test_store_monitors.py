@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+from unittest.mock import AsyncMock
+
 import pytest
-from unittest.mock import AsyncMock, MagicMock
 
 
 @pytest.fixture()
@@ -29,7 +30,9 @@ async def test_migration_adds_monitors_key(store):
 async def test_migration_preserves_existing_monitors(store):
     """If 'monitors' already present it is not overwritten."""
     existing = [{"id": "abc", "name": "Test"}]
-    store._store.async_load = AsyncMock(return_value={"events": [], "monitors": existing})
+    store._store.async_load = AsyncMock(
+        return_value={"events": [], "monitors": existing}
+    )
     await store.async_load()
     assert store._data["monitors"] == existing
 
@@ -181,7 +184,9 @@ def test_append_scan_history_creates_key():
 async def test_migration_adds_baseline_entity_id_to_existing_monitors(store):
     """Monitors loaded without baseline_entity_id get None injected."""
     existing = [{"id": "m1", "name": "Old monitor"}]
-    store._store.async_load = AsyncMock(return_value={"events": [], "monitors": existing})
+    store._store.async_load = AsyncMock(
+        return_value={"events": [], "monitors": existing}
+    )
     await store.async_load()
     assert store._data["monitors"][0].get("baseline_entity_id") is None
 
@@ -190,17 +195,62 @@ async def test_migration_adds_baseline_entity_id_to_existing_monitors(store):
 async def test_migration_adds_dismissed_windows_to_existing_monitors(store):
     """Monitors loaded without dismissed_windows get an empty list injected."""
     existing = [{"id": "m1", "name": "Old monitor"}]
-    store._store.async_load = AsyncMock(return_value={"events": [], "monitors": existing})
+    store._store.async_load = AsyncMock(
+        return_value={"events": [], "monitors": existing}
+    )
     await store.async_load()
     assert store._data["monitors"][0].get("dismissed_windows") == []
 
 
 @pytest.mark.asyncio
+async def test_migration_adds_active_clusters_summary_to_existing_monitors(store):
+    """Monitors loaded without active_clusters_summary get an empty list injected."""
+    existing = [{"id": "m1", "name": "Old monitor"}]
+    store._store.async_load = AsyncMock(
+        return_value={"events": [], "monitors": existing}
+    )
+    await store.async_load()
+    assert store._data["monitors"][0].get("active_clusters_summary") == []
+
+
+@pytest.mark.asyncio
+async def test_migration_adds_last_resolved_clusters_summary_to_existing_monitors(
+    store,
+):
+    """Monitors loaded without last_resolved_clusters_summary get an empty list injected."""
+    existing = [{"id": "m1", "name": "Old monitor"}]
+    store._store.async_load = AsyncMock(
+        return_value={"events": [], "monitors": existing}
+    )
+    await store.async_load()
+    assert store._data["monitors"][0].get("last_resolved_clusters_summary") == []
+
+
+@pytest.mark.asyncio
+async def test_migration_sets_active_cluster_count_from_last_cluster_count(store):
+    """Monitors loaded without active_cluster_count mirror last_cluster_count."""
+    existing = [{"id": "m1", "name": "Old monitor", "last_cluster_count": 4}]
+    store._store.async_load = AsyncMock(
+        return_value={"events": [], "monitors": existing}
+    )
+    await store.async_load()
+    assert store._data["monitors"][0].get("active_cluster_count") == 4
+
+
+@pytest.mark.asyncio
 async def test_migration_preserves_existing_dismissed_windows(store):
     """If dismissed_windows already present it is not overwritten."""
-    window = {"id": "w1", "start_ms": 1000, "end_ms": 2000, "dismissed_at": "2024-01-01", "expires_at": None}
+    window = {
+        "id": "w1",
+        "start_ms": 1000,
+        "end_ms": 2000,
+        "dismissed_at": "2024-01-01",
+        "expires_at": None,
+    }
     existing = [{"id": "m1", "dismissed_windows": [window]}]
-    store._store.async_load = AsyncMock(return_value={"events": [], "monitors": existing})
+    store._store.async_load = AsyncMock(
+        return_value={"events": [], "monitors": existing}
+    )
     await store.async_load()
     assert store._data["monitors"][0]["dismissed_windows"] == [window]
 
@@ -213,7 +263,9 @@ async def test_migration_preserves_existing_dismissed_windows(store):
 @pytest.mark.asyncio
 async def test_async_dismiss_window_appends_entry(store):
     store._data["monitors"] = [{"id": "m1", "dismissed_windows": []}]
-    result = await store.async_dismiss_window("m1", 1000, 2000, "2099-01-01T00:00:00+00:00")
+    result = await store.async_dismiss_window(
+        "m1", 1000, 2000, "2099-01-01T00:00:00+00:00"
+    )
     assert result is not None
     assert len(result["dismissed_windows"]) == 1
     w = result["dismissed_windows"][0]
@@ -246,10 +298,15 @@ async def test_async_dismiss_window_not_found(store):
 
 @pytest.mark.asyncio
 async def test_async_undismiss_window_removes_entry(store):
-    store._data["monitors"] = [{"id": "m1", "dismissed_windows": [
-        {"id": "w1", "start_ms": 0, "end_ms": 1000},
-        {"id": "w2", "start_ms": 2000, "end_ms": 3000},
-    ]}]
+    store._data["monitors"] = [
+        {
+            "id": "m1",
+            "dismissed_windows": [
+                {"id": "w1", "start_ms": 0, "end_ms": 1000},
+                {"id": "w2", "start_ms": 2000, "end_ms": 3000},
+            ],
+        }
+    ]
     result = await store.async_undismiss_window("m1", "w1")
     assert result is not None
     assert len(result["dismissed_windows"]) == 1
@@ -259,9 +316,14 @@ async def test_async_undismiss_window_removes_entry(store):
 
 @pytest.mark.asyncio
 async def test_async_undismiss_window_noop_when_window_not_found(store):
-    store._data["monitors"] = [{"id": "m1", "dismissed_windows": [
-        {"id": "w1", "start_ms": 0, "end_ms": 1000},
-    ]}]
+    store._data["monitors"] = [
+        {
+            "id": "m1",
+            "dismissed_windows": [
+                {"id": "w1", "start_ms": 0, "end_ms": 1000},
+            ],
+        }
+    ]
     result = await store.async_undismiss_window("m1", "not-a-real-window")
     assert result is not None
     assert len(result["dismissed_windows"]) == 1  # unchanged
@@ -281,12 +343,18 @@ async def test_async_undismiss_window_monitor_not_found(store):
 
 
 def test_prune_dismissed_windows_removes_expired():
-    from custom_components.hass_datapoints.store import DatapointsStore
     from datetime import UTC, datetime
+
+    from custom_components.hass_datapoints.store import DatapointsStore
 
     monitor = {
         "dismissed_windows": [
-            {"id": "w1", "start_ms": 0, "end_ms": 1000, "expires_at": "2000-01-01T00:00:00+00:00"},
+            {
+                "id": "w1",
+                "start_ms": 0,
+                "end_ms": 1000,
+                "expires_at": "2000-01-01T00:00:00+00:00",
+            },
         ]
     }
     DatapointsStore.prune_dismissed_windows(monitor, datetime.now(UTC))
@@ -294,8 +362,9 @@ def test_prune_dismissed_windows_removes_expired():
 
 
 def test_prune_dismissed_windows_keeps_permanent():
-    from custom_components.hass_datapoints.store import DatapointsStore
     from datetime import UTC, datetime
+
+    from custom_components.hass_datapoints.store import DatapointsStore
 
     monitor = {
         "dismissed_windows": [
@@ -307,12 +376,18 @@ def test_prune_dismissed_windows_keeps_permanent():
 
 
 def test_prune_dismissed_windows_keeps_future_expiry():
-    from custom_components.hass_datapoints.store import DatapointsStore
     from datetime import UTC, datetime
+
+    from custom_components.hass_datapoints.store import DatapointsStore
 
     monitor = {
         "dismissed_windows": [
-            {"id": "w1", "start_ms": 0, "end_ms": 1000, "expires_at": "2099-01-01T00:00:00+00:00"},
+            {
+                "id": "w1",
+                "start_ms": 0,
+                "end_ms": 1000,
+                "expires_at": "2099-01-01T00:00:00+00:00",
+            },
         ]
     }
     DatapointsStore.prune_dismissed_windows(monitor, datetime.now(UTC))
@@ -320,8 +395,9 @@ def test_prune_dismissed_windows_keeps_future_expiry():
 
 
 def test_prune_dismissed_windows_drops_malformed():
-    from custom_components.hass_datapoints.store import DatapointsStore
     from datetime import UTC, datetime
+
+    from custom_components.hass_datapoints.store import DatapointsStore
 
     monitor = {
         "dismissed_windows": [

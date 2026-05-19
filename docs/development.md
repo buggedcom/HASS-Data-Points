@@ -246,19 +246,34 @@ pnpm dev:watch
 
 The frontend uses the following WebSocket commands:
 
-| Type                            | Purpose                              |
-| ------------------------------- | ------------------------------------ |
-| `hass_datapoints/events`        | Fetch recorded datapoints/events     |
-| `hass_datapoints/events/update` | Update an existing datapoint (admin) |
-| `hass_datapoints/events/delete` | Delete a datapoint (admin)           |
-| `hass_datapoints/history`       | Fetch history/downsampled chart data |
-| `hass_datapoints/anomalies`     | Fetch backend anomaly results        |
+| Type                                 | Purpose                              |
+| ------------------------------------ | ------------------------------------ |
+| `hass_datapoints/events`             | Fetch recorded datapoints/events     |
+| `hass_datapoints/events_bounds`      | Fetch earliest/latest datapoint time |
+| `hass_datapoints/events/update`      | Update an existing datapoint (admin) |
+| `hass_datapoints/events/delete`      | Delete a datapoint (admin)           |
+| `hass_datapoints/events/delete_dev`  | Delete dev datapoints (admin)        |
+| `hass_datapoints/history`            | Fetch history/downsampled chart data |
+| `hass_datapoints/anomalies`          | Fetch backend anomaly results        |
+| `hass_datapoints/cache/clear`        | Clear anomaly cache entries          |
+| `hass_datapoints/monitors/list`      | List anomaly monitors                |
+| `hass_datapoints/monitors/create`    | Create anomaly monitor               |
+| `hass_datapoints/monitors/update`    | Update anomaly monitor               |
+| `hass_datapoints/monitors/delete`    | Delete anomaly monitor               |
+| `hass_datapoints/monitors/anomalies` | Fetch live monitor anomalies         |
+| `hass_datapoints/monitors/dismiss`   | Dismiss anomaly window               |
+| `hass_datapoints/monitors/undismiss` | Remove dismissal window              |
 
 Events are stored in:
 
 ```text
 .storage/hass_datapoints.events
 ```
+
+Per-monitor Home Assistant sensor entities also expose compact anomaly summaries
+through state attributes for automations and MCP consumers. These summaries are
+restart-safe and intentionally bounded, while the richer websocket cluster
+payloads remain the source of truth for frontend detail views.
 
 ---
 

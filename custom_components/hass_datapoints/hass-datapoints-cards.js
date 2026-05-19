@@ -20748,6 +20748,34 @@
 			maxHeight: viewportHeight - top - margin * 2
 		};
 	}
+	/**
+	* Attach outside-click and Escape-key dismiss handlers for a popup.
+	*
+	* Returns a cleanup object whose `destroy()` removes all listeners.
+	*
+	* @param popupEl     The popup container element.
+	* @param anchorEl    The element that triggered the popup (excluded from outside-click).
+	* @param onDismiss   Called when the user clicks outside or presses Escape.
+	* @param focusOnEscape  Element to focus after Escape (defaults to anchorEl).
+	*/
+	function attachPopupDismissListeners(popupEl, anchorEl, onDismiss, focusOnEscape) {
+		const outsideClickHandler = (ev) => {
+			const path = ev.composedPath();
+			if (!path.includes(popupEl) && !path.includes(anchorEl)) onDismiss();
+		};
+		const keyHandler = (ev) => {
+			if (ev.key === "Escape") {
+				onDismiss();
+				(focusOnEscape ?? anchorEl).focus();
+			}
+		};
+		document.addEventListener("click", outsideClickHandler, true);
+		document.addEventListener("keydown", keyHandler);
+		return { destroy() {
+			document.removeEventListener("click", outsideClickHandler, true);
+			document.removeEventListener("keydown", keyHandler);
+		} };
+	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/target-row.styles.ts
 	var styles$38 = i$5`
@@ -23096,7 +23124,7 @@
 	var _tabId_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _label_accessor_storage$7 = /* @__PURE__ */ new WeakMap();
 	var _detail_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _active_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _active_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _previewing_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _loading_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _editable_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -23116,7 +23144,7 @@
 			_classPrivateFieldInitSpec(this, _tabId_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _label_accessor_storage$7, "");
 			_classPrivateFieldInitSpec(this, _detail_accessor_storage, "");
-			_classPrivateFieldInitSpec(this, _active_accessor_storage$1, false);
+			_classPrivateFieldInitSpec(this, _active_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _previewing_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _loading_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _editable_accessor_storage, false);
@@ -23140,10 +23168,10 @@
 			_classPrivateFieldSet2(_detail_accessor_storage, this, value);
 		}
 		get active() {
-			return _classPrivateFieldGet2(_active_accessor_storage$1, this);
+			return _classPrivateFieldGet2(_active_accessor_storage, this);
 		}
 		set active(value) {
-			_classPrivateFieldSet2(_active_accessor_storage$1, this, value);
+			_classPrivateFieldSet2(_active_accessor_storage, this, value);
 		}
 		get previewing() {
 			return _classPrivateFieldGet2(_previewing_accessor_storage, this);
@@ -28445,7 +28473,6 @@
   }
 
   .collapsed-target-popup {
-    display: block;
     position: fixed;
     z-index: 9;
     width: 300px;
@@ -28466,7 +28493,6 @@
   }
 
   .collapsed-options-popup {
-    display: block;
     position: fixed;
     z-index: 100;
     background: var(--card-background-color, #fff);
@@ -28612,96 +28638,8 @@
   }
 `;
 	//#endregion
-	//#region custom_components/hass_datapoints/src/atoms/interactive/dp-click-outside/dp-click-outside.ts
-	var _active_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _exclude_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _focusOnEscape_accessor_storage = /* @__PURE__ */ new WeakMap();
-	/**
-	* `dp-click-outside` dispatches `dp-click-outside` when the user interacts
-	* outside the host element (pointerdown) or presses Escape (keydown).
-	*
-	* Intended for popups/menus: set `active=true` when open and listen for the
-	* bubbled event to close.
-	*
-	* @fires dp-click-outside - `{ reason: "outside" | "escape", originalEvent }`
-	*/
-	var DpClickOutside = class extends i$2 {
-		constructor(..._args) {
-			super(..._args);
-			_classPrivateFieldInitSpec(this, _active_accessor_storage, false);
-			_classPrivateFieldInitSpec(this, _exclude_accessor_storage, []);
-			_classPrivateFieldInitSpec(this, _focusOnEscape_accessor_storage, null);
-			_defineProperty(this, "_onPointerDown", (e) => {
-				if (!this.active) return;
-				const path = e.composedPath();
-				if (path.includes(this)) return;
-				if (this.exclude.length > 0 && this._pathIncludesAny(path, this.exclude)) return;
-				this._emit("outside", e);
-			});
-			_defineProperty(this, "_onKeyDown", (e) => {
-				if (!this.active) return;
-				if (e.key !== "Escape") return;
-				this._emit("escape", e);
-				if (this.focusOnEscape) this.focusOnEscape.focus();
-			});
-		}
-		get active() {
-			return _classPrivateFieldGet2(_active_accessor_storage, this);
-		}
-		set active(value) {
-			_classPrivateFieldSet2(_active_accessor_storage, this, value);
-		}
-		get exclude() {
-			return _classPrivateFieldGet2(_exclude_accessor_storage, this);
-		}
-		set exclude(value) {
-			_classPrivateFieldSet2(_exclude_accessor_storage, this, value);
-		}
-		get focusOnEscape() {
-			return _classPrivateFieldGet2(_focusOnEscape_accessor_storage, this);
-		}
-		set focusOnEscape(value) {
-			_classPrivateFieldSet2(_focusOnEscape_accessor_storage, this, value);
-		}
-		connectedCallback() {
-			super.connectedCallback();
-			window.addEventListener("pointerdown", this._onPointerDown, true);
-			window.addEventListener("keydown", this._onKeyDown);
-		}
-		disconnectedCallback() {
-			super.disconnectedCallback();
-			window.removeEventListener("pointerdown", this._onPointerDown, true);
-			window.removeEventListener("keydown", this._onKeyDown);
-		}
-		_emit(reason, originalEvent) {
-			this.dispatchEvent(new CustomEvent("dp-click-outside", {
-				detail: {
-					reason,
-					originalEvent
-				},
-				bubbles: true,
-				composed: true
-			}));
-		}
-		_pathIncludesAny(path, nodes) {
-			for (const node of nodes) if (path.includes(node)) return true;
-			return false;
-		}
-		render() {
-			return b`<slot></slot>`;
-		}
-	};
-	__decorate([n$1({
-		type: Boolean,
-		reflect: true
-	})], DpClickOutside.prototype, "active", null);
-	__decorate([n$1({ attribute: false })], DpClickOutside.prototype, "exclude", null);
-	__decorate([n$1({ attribute: false })], DpClickOutside.prototype, "focusOnEscape", null);
-	customElements.define("dp-click-outside", DpClickOutside);
-	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/floating-menu/floating-menu.ts
 	var _open_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _anchorSelector_accessor_storage = /* @__PURE__ */ new WeakMap();
 	/**
 	* `floating-menu` renders a positioned floating overlay panel.
 	*
@@ -28717,10 +28655,9 @@
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _open_accessor_storage, false);
-			_classPrivateFieldInitSpec(this, _anchorSelector_accessor_storage, "");
-			_defineProperty(this, "_onClickOutside", (e) => {
-				e.stopPropagation();
-				this.dispatchEvent(new CustomEvent("dp-menu-close", {
+			_defineProperty(this, "_onPointerDown", (e) => {
+				if (!this.open) return;
+				if (!e.composedPath().some((node) => node === this)) this.dispatchEvent(new CustomEvent("dp-menu-close", {
 					detail: {},
 					bubbles: true,
 					composed: true
@@ -28733,29 +28670,19 @@
 		set open(value) {
 			_classPrivateFieldSet2(_open_accessor_storage, this, value);
 		}
-		get anchorSelector() {
-			return _classPrivateFieldGet2(_anchorSelector_accessor_storage, this);
+		connectedCallback() {
+			super.connectedCallback();
+			window.addEventListener("pointerdown", this._onPointerDown, true);
 		}
-		set anchorSelector(value) {
-			_classPrivateFieldSet2(_anchorSelector_accessor_storage, this, value);
-		}
-		_getAnchorEl() {
-			if (!this.anchorSelector) return null;
-			return this.getRootNode().querySelector(this.anchorSelector) ?? null;
+		disconnectedCallback() {
+			super.disconnectedCallback();
+			window.removeEventListener("pointerdown", this._onPointerDown, true);
 		}
 		render() {
-			const anchorEl = this._getAnchorEl();
 			return b`
-      <dp-click-outside
-        .active=${this.open}
-        .exclude=${anchorEl ? [anchorEl] : []}
-        .focusOnEscape=${anchorEl}
-        @dp-click-outside=${this._onClickOutside}
-      >
-        <div class="floating-menu" role="menu" ?hidden=${!this.open}>
-          <slot></slot>
-        </div>
-      </dp-click-outside>
+      <div class="floating-menu" role="menu" ?hidden=${!this.open}>
+        <slot></slot>
+      </div>
     `;
 		}
 	};
@@ -28764,10 +28691,6 @@
 		type: Boolean,
 		reflect: true
 	})], FloatingMenu.prototype, "open", null);
-	__decorate([n$1({
-		type: String,
-		attribute: "anchor-selector"
-	})], FloatingMenu.prototype, "anchorSelector", null);
 	customElements.define("floating-menu", FloatingMenu);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/interactive/page-menu-item/page-menu-item.styles.ts
@@ -29032,7 +28955,6 @@
             <floating-menu
               id="page-menu"
               .open=${this._pageMenuOpen}
-              anchor-selector="#page-menu-button"
               @dp-menu-close=${this._onPageMenuClose}
             >
               <page-menu-item
@@ -29119,16 +29041,16 @@
           </div>
         </div>
 
-        <dp-click-outside
+        <div
           id="collapsed-target-popup"
           class="collapsed-target-popup"
           hidden
-        ></dp-click-outside>
-        <dp-click-outside
+        ></div>
+        <div
           id="collapsed-options-popup"
           class="collapsed-options-popup"
           hidden
-        ></dp-click-outside>
+        ></div>
       </ha-top-app-bar-fixed>
     `;
 		}
@@ -30829,7 +30751,6 @@
           <floating-menu
             id="range-picker-menu"
             .open=${this._pickerOpen}
-            anchor-selector="#range-picker-button"
             @dp-menu-close=${this._onPickerMenuClose}
           >
             <ha-date-range-picker
@@ -30862,7 +30783,6 @@
           <floating-menu
             id="range-options-menu"
             .open=${this._optionsOpen}
-            anchor-selector="#range-options-button"
             @dp-menu-close=${this._onOptionsMenuClose}
           >
             <div
@@ -32199,7 +32119,6 @@
   /* ── Collapsed-sidebar target popup ──────────────────────────────────── */
 
   .collapsed-target-popup {
-    display: block;
     position: fixed;
     z-index: 9;
     width: 300px;
@@ -32272,7 +32191,6 @@
   /* ── Collapsed-sidebar options popup ────────────────────────────────── */
 
   .collapsed-options-popup {
-    display: block;
     position: fixed;
     z-index: 100;
     background: var(--card-background-color, #fff);
@@ -34163,14 +34081,6 @@
 			this._collapsedPopupAnchorEl = null;
 			this._collapsedPopupOutsideClickHandler = null;
 			this._collapsedPopupKeyHandler = null;
-			this._collapsedTargetPopupWired = false;
-			this._collapsedOptionsPopupWired = false;
-			this._onCollapsedTargetPopupClickOutside = () => {
-				this._hideCollapsedTargetPopup();
-			};
-			this._onCollapsedOptionsPopupClickOutside = () => {
-				this._hideCollapsedOptionsPopup();
-			};
 			this._lastSyncedLocale = "";
 			this._datapointScope = "linked";
 			this._showChartDatapointIcons = true;
@@ -35817,10 +35727,6 @@
 		_showCollapsedTargetPopup(entityId, anchorEl) {
 			const popup = this._shellEl?.getTargetPopupEl();
 			if (!popup) return;
-			if (!this._collapsedTargetPopupWired) {
-				popup.addEventListener("dp-click-outside", this._onCollapsedTargetPopupClickOutside);
-				this._collapsedTargetPopupWired = true;
-			}
 			const index = this._seriesRows.findIndex((r) => r.entity_id === entityId);
 			if (index < 0) {
 				this._hideCollapsedTargetPopup();
@@ -35863,24 +35769,23 @@
 			});
 			popup.appendChild(targetRow);
 			popup.removeAttribute("hidden");
-			popup.active = true;
-			popup.exclude = anchorEl ? [anchorEl] : [];
-			popup.focusOnEscape = anchorEl ?? null;
 			if (!anchorEl) return;
 			const pos = computePopupPosition(anchorEl.getBoundingClientRect(), popup.offsetHeight, window.innerHeight);
 			popup.style.top = `${pos.top}px`;
 			popup.style.left = `${pos.left}px`;
 			popup.style.maxHeight = `${pos.maxHeight}px`;
+			this._collapsedPopupDismiss?.destroy();
+			this._collapsedPopupDismiss = attachPopupDismissListeners(popup, anchorEl, () => this._hideCollapsedTargetPopup());
 		}
 		/** Close the collapsed-sidebar target popup and clean up all listeners. */
 		_hideCollapsedTargetPopup() {
 			const popup = this._shellEl?.getTargetPopupEl();
 			if (popup) {
-				popup.active = false;
-				popup.exclude = [];
 				popup.setAttribute("hidden", "");
 				popup.innerHTML = "";
 			}
+			this._collapsedPopupDismiss?.destroy();
+			this._collapsedPopupDismiss = null;
 			this._collapsedPopupEntityId = null;
 			this._collapsedPopupAnchorEl = null;
 		}
@@ -35906,10 +35811,6 @@
 		_showCollapsedOptionsPopup(anchorEl) {
 			const popup = this._shellEl?.getOptionsPopupEl();
 			if (!popup) return;
-			if (!this._collapsedOptionsPopupWired) {
-				popup.addEventListener("dp-click-outside", this._onCollapsedOptionsPopupClickOutside);
-				this._collapsedOptionsPopupWired = true;
-			}
 			let menu = popup.querySelector("collapsed-options-menu");
 			if (!menu) {
 				menu = document.createElement("collapsed-options-menu");
@@ -35939,21 +35840,18 @@
 			this._collapsedOptionsPopupOpen = true;
 			this._collapsedOptionsAnchorEl = anchorEl;
 			popup.removeAttribute("hidden");
-			popup.active = true;
-			popup.exclude = [anchorEl];
-			popup.focusOnEscape = anchorEl;
 			const pos = computePopupPosition(anchorEl.getBoundingClientRect(), popup.offsetHeight, window.innerHeight);
 			popup.style.top = `${pos.top}px`;
 			popup.style.left = `${pos.left}px`;
+			this._collapsedOptionsDismiss?.destroy();
+			this._collapsedOptionsDismiss = attachPopupDismissListeners(popup, anchorEl, () => this._hideCollapsedOptionsPopup());
 		}
 		/** Close the collapsed-sidebar options popup and clean up all listeners. */
 		_hideCollapsedOptionsPopup() {
 			const popup = this._shellEl?.getOptionsPopupEl();
-			if (popup) {
-				popup.active = false;
-				popup.exclude = [];
-				popup.setAttribute("hidden", "");
-			}
+			if (popup) popup.setAttribute("hidden", "");
+			this._collapsedOptionsDismiss?.destroy();
+			this._collapsedOptionsDismiss = null;
 			this._collapsedOptionsPopupOpen = false;
 			this._collapsedOptionsAnchorEl = null;
 		}
@@ -40603,7 +40501,7 @@
 	].forEach((card) => {
 		if (!registeredTypes.has(card.type)) window.customCards?.push(card);
 	});
-	console.groupCollapsed(`%c hass-datapoints %c v0.5.1 loaded `, "color:#fff;background:#03a9f4;font-weight:bold;padding:2px 6px;border-radius:3px 0 0 3px", "color:#03a9f4;background:#fff;font-weight:bold;padding:2px 6px;border:1px solid #03a9f4;border-radius:0 3px 3px 0", ...[]);
+	console.groupCollapsed(`%c hass-datapoints %c v0.5.1 loaded%c %c DEV#4257 `, "color:#fff;background:#03a9f4;font-weight:bold;padding:2px 6px;border-radius:3px 0 0 3px", "color:#03a9f4;background:#fff;font-weight:bold;padding:2px 6px;border:1px solid #03a9f4;border-radius:0 3px 3px 0", ...["background:transparent;", "color:#fff;background:#f57c00;font-weight:bold;padding:2px 6px;border-radius:3px"]);
 	console.log("Enable debug logging by setting %cwindow.__HASS_DATAPOINTS_DEV__ = true", "color:#333;background:#eee;border:1px solid #777;padding:2px 6px;border-radius:5px; font-family: Courier");
 	console.groupEnd();
 	//#endregion

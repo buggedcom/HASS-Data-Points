@@ -51,6 +51,12 @@ class DatapointsStore:
                     m["baseline_entity_id"] = None
                 if "dismissed_windows" not in m:
                     m["dismissed_windows"] = []
+                if "active_clusters_summary" not in m:
+                    m["active_clusters_summary"] = []
+                if "active_cluster_count" not in m:
+                    m["active_cluster_count"] = m.get("last_cluster_count", 0)
+                if "last_resolved_clusters_summary" not in m:
+                    m["last_resolved_clusters_summary"] = []
 
     async def async_record(
         self,
@@ -360,7 +366,9 @@ class DatapointsStore:
             if m.get("id") == monitor_id:
                 original_len = len(m.get("dismissed_windows", []))
                 m["dismissed_windows"] = [
-                    w for w in m.get("dismissed_windows", []) if w.get("id") != window_id
+                    w
+                    for w in m.get("dismissed_windows", [])
+                    if w.get("id") != window_id
                 ]
                 if len(m["dismissed_windows"]) < original_len:
                     await self._store.async_save(self._data)

@@ -36,6 +36,7 @@ from .store import DatapointsStore
 _LOGGER = logging.getLogger(__name__)
 
 _UPDATE_INTERVAL = timedelta(minutes=5)
+_MAX_CLUSTER_SUMMARIES = 25
 
 
 async def async_setup_entry(
@@ -69,14 +70,16 @@ async def async_setup_entry(
         mid = monitor["id"]
         s = DatapointsMonitorSensor(entry, store, hass, mid)
         hass.data[DOMAIN][KEY_MONITOR_SENSORS][mid] = s
-        monitor_sensors.extend([
-            s,
-            DatapointsMonitorConsecutiveScansSensor(entry, store, mid),
-            DatapointsMonitorLastScanSensor(entry, store, mid),
-            DatapointsMonitorLastAnomalySensor(entry, store, mid),
-            DatapointsMonitorAnomalyDurationSensor(entry, store, hass, mid),
-            DatapointsMonitorDataPointsSensor(entry, store, mid),
-        ])
+        monitor_sensors.extend(
+            [
+                s,
+                DatapointsMonitorConsecutiveScansSensor(entry, store, mid),
+                DatapointsMonitorLastScanSensor(entry, store, mid),
+                DatapointsMonitorLastAnomalySensor(entry, store, mid),
+                DatapointsMonitorAnomalyDurationSensor(entry, store, hass, mid),
+                DatapointsMonitorDataPointsSensor(entry, store, mid),
+            ]
+        )
     monitor_sensors.append(DatapointsAggregateAnomalyMonitorsSensor(entry, store))
     async_add_entities(monitor_sensors)
 
@@ -340,7 +343,9 @@ def _build_detection_config(monitor: dict[str, Any]) -> dict[str, Any]:
         "trend_window": monitor.get("anomaly_trend_window", "24h"),
         "sample_interval": monitor.get("sample_interval"),
         "sample_aggregate": monitor.get("sample_aggregate", "mean"),
-        "comparison_time_offset_ms": monitor.get("baseline_time_offset_hours", 0) * 3600 * 1000,
+        "comparison_time_offset_ms": monitor.get("baseline_time_offset_hours", 0)
+        * 3600
+        * 1000,
     }
 
 
@@ -349,6 +354,45 @@ def _run_detection_sync(
 ) -> list:
     """Blocking wrapper: run anomaly detection and return clusters."""
     return run_anomaly_detection(pts, config, comparison_pts)
+
+
+def _summarize_clusters(
+    clusters: list[dict[str, Any]], max_entries: int = _MAX_CLUSTER_SUMMARIES
+) -> list[dict[str, Any]]:
+    """Return compact, bounded cluster summaries for entity attrs and events."""
+    summaries: list[dict[str, Any]] = []
+    for cluster in clusters:
+        points = cluster.get("points", [])
+        times = [
+            point.get("timeMs")
+            for point in points
+            if isinstance(point, dict) and isinstance(point.get("timeMs"), (int, float))
+        ]
+        if times:
+            start_ms = int(min(times))
+            end_ms = int(max(times))
+        else:
+            start_ms = 0
+            end_ms = 0
+
+        max_deviation = cluster.get("maxDeviation", 0.0)
+        if not isinstance(max_deviation, (int, float)):
+            max_deviation = 0.0
+
+        summaries.append(
+            {
+                "start_ms": start_ms,
+                "end_ms": end_ms,
+                "anomaly_method": cluster.get("anomalyMethod", "unknown"),
+                "max_deviation": float(max_deviation),
+                "point_count": len(points),
+            }
+        )
+
+    if len(summaries) > max_entries:
+        return summaries[-max_entries:]
+
+    return summaries
 
 
 def _overlap_threshold(mode: str, entity_count: int) -> int:
@@ -429,19 +473,20 @@ def _run_combined_detection(
             hits = sum(
                 1
                 for j, windows_j in enumerate(entity_windows)
-                if j != i
-                and any(s <= check_time <= e for s, e in windows_j)
+                if j != i and any(s <= check_time <= e for s, e in windows_j)
             )
             if hits + 1 >= required:
                 seen.add((win_start, win_end))
-                overlap_clusters.append({
-                    "points": [
-                        {"timeMs": win_start, "value": 0.0},
-                        {"timeMs": win_end, "value": 0.0},
-                    ],
-                    "anomalyMethod": "combined_overlap",
-                    "maxDeviation": 0.0,
-                })
+                overlap_clusters.append(
+                    {
+                        "points": [
+                            {"timeMs": win_start, "value": 0.0},
+                            {"timeMs": win_end, "value": 0.0},
+                        ],
+                        "anomalyMethod": "combined_overlap",
+                        "maxDeviation": 0.0,
+                    }
+                )
     return overlap_clusters
 
 
@@ -493,9 +538,7 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
         if not monitor or not monitor.get("enabled", True):
             return
 
-        interval_minutes = monitor.get(
-            "scan_interval_minutes", 30
-        )
+        interval_minutes = monitor.get("scan_interval_minutes", 30)
         interval = timedelta(minutes=max(1, interval_minutes))
 
         def _on_remove() -> None:
@@ -550,6 +593,7 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
                             stats = [p for p in stats if p[0] < first_ms]
                         if stats:
                             import operator  # noqa: PLC0415
+
                             pts = sorted(stats + pts, key=operator.itemgetter(0))
                     sample_interval = monitor.get("sample_interval")
                     if sample_interval and sample_interval != "raw":
@@ -582,6 +626,7 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
                         stats = [p for p in stats if p[0] < first_ms]
                     if stats:
                         import operator  # noqa: PLC0415
+
                         pts = sorted(stats + pts, key=operator.itemgetter(0))
                 sample_interval = monitor.get("sample_interval")
                 if sample_interval and sample_interval != "raw":
@@ -614,7 +659,9 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
             if monitor_copy is None:
                 return  # deleted while scan was running
             DatapointsStore.prune_dismissed_windows(monitor_copy, now)
-            clusters = _apply_dismissals(clusters, monitor_copy.get("dismissed_windows", []))
+            clusters = _apply_dismissals(
+                clusters, monitor_copy.get("dismissed_windows", [])
+            )
 
         except Exception as err:  # noqa: BLE001
             _LOGGER.error(
@@ -625,19 +672,25 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
             return
 
         cluster_count = len(clusters)
+        cluster_summaries = _summarize_clusters(clusters)
         scan_time = now.isoformat()
         prev_count: int = monitor_copy.get("last_cluster_count", 0)
+        prev_cluster_summaries = monitor_copy.get("active_clusters_summary", [])
 
         DatapointsStore.append_scan_history(monitor_copy, scan_time, cluster_count)
         scan_updates: dict[str, Any] = {
             "last_scan_at": scan_time,
             "last_cluster_count": cluster_count,
+            "active_cluster_count": cluster_count,
+            "active_clusters_summary": cluster_summaries,
             "scan_history": monitor_copy["scan_history"],
             "last_scan_data_points": data_point_count,
             "dismissed_windows": monitor_copy.get("dismissed_windows", []),
         }
         if prev_count == 0 and cluster_count > 0:
             scan_updates["last_anomaly_at"] = scan_time
+        if prev_count > 0 and cluster_count == 0:
+            scan_updates["last_resolved_clusters_summary"] = prev_cluster_summaries
         await self._store.async_update_monitor(self._monitor_id, scan_updates)
         self._attr_native_value = cluster_count
         self.async_write_ha_state()
@@ -662,7 +715,13 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
                 base["entity_id"] = monitor.get("entity_id", "")
             self._hass.bus.async_fire(
                 EVENT_ANOMALY_DETECTED,
-                {**base, "cluster_count": cluster_count, "consecutive_anomalous_scans": consecutive},
+                {
+                    **base,
+                    "cluster_count": cluster_count,
+                    "active_cluster_count": cluster_count,
+                    "active_clusters": cluster_summaries,
+                    "consecutive_anomalous_scans": consecutive,
+                },
             )
         elif prev_count > 0 and cluster_count == 0:
             base = {
@@ -675,7 +734,15 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
                 base["entity_ids"] = monitor.get("entity_ids", [])
             else:
                 base["entity_id"] = monitor.get("entity_id", "")
-            self._hass.bus.async_fire(EVENT_ANOMALY_RESOLVED, base)
+            self._hass.bus.async_fire(
+                EVENT_ANOMALY_RESOLVED,
+                {
+                    **base,
+                    "active_cluster_count": 0,
+                    "active_clusters": [],
+                    "resolved_clusters": prev_cluster_summaries,
+                },
+            )
 
     async def _handle_entity_unavailable(self, entity_id: str) -> None:
         """Disable the monitor and fire a persistent notification."""
@@ -712,6 +779,14 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
             "scan_interval_minutes": monitor.get("scan_interval_minutes", 30),
             "anomaly_methods": monitor.get("anomaly_methods", []),
             "sensitivity": monitor.get("anomaly_sensitivity", "medium"),
+            "active_cluster_count": monitor.get(
+                "active_cluster_count", monitor.get("last_cluster_count", 0)
+            ),
+            "active_clusters": monitor.get("active_clusters_summary", []),
+            "last_scan_data_points": monitor.get("last_scan_data_points"),
+            "last_scan_at": monitor.get("last_scan_at"),
+            "last_anomaly_at": monitor.get("last_anomaly_at"),
+            "dismissed_windows": monitor.get("dismissed_windows", []),
         }
         if monitor.get("type") == "combined":
             attrs["entity_ids"] = monitor.get("entity_ids", [])
@@ -767,7 +842,9 @@ class DatapointsMonitorConsecutiveScansSensor(_DatapointsSensorBase):
     ) -> None:
         super().__init__(entry, store)
         self._monitor_id = monitor_id
-        self._attr_unique_id = f"{entry.entry_id}_monitor_{monitor_id}_consecutive_scans"
+        self._attr_unique_id = (
+            f"{entry.entry_id}_monitor_{monitor_id}_consecutive_scans"
+        )
         self._attr_name = "Consecutive anomalous scans"
         self._attr_native_value = self._compute()
 
