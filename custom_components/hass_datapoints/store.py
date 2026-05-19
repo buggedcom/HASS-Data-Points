@@ -10,13 +10,19 @@ from typing import Any
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.storage import Store
 
-from .const import MONITOR_SCAN_HISTORY_MAX, STORAGE_KEY, STORAGE_VERSION
+from .const import (
+    EVENT_MONITORS_UPDATED,
+    MONITOR_SCAN_HISTORY_MAX,
+    STORAGE_KEY,
+    STORAGE_VERSION,
+)
 
 
 class DatapointsStore:
     """Manages persistent storage of recorded data points."""
 
     def __init__(self, hass: HomeAssistant) -> None:
+        self._hass = hass
         self._store: Store = Store(hass, STORAGE_VERSION, STORAGE_KEY)
         self._data: dict[str, Any] = {"events": [], "monitors": []}
         self._listeners: list[Callable[[], None]] = []
@@ -188,6 +194,16 @@ class DatapointsStore:
         for listener in list(self._listeners):
             listener()
 
+    def _fire_monitors_updated(self, action: str, monitor_id: str | None) -> None:
+        """Notify HA clients that monitor records changed."""
+        self._hass.bus.async_fire(
+            EVENT_MONITORS_UPDATED,
+            {
+                "action": action,
+                "monitor_id": monitor_id,
+            },
+        )
+
     async def async_update_event(
         self,
         event_id: str,
@@ -285,6 +301,7 @@ class DatapointsStore:
         self._data["monitors"].append(monitor)
         await self._store.async_save(self._data)
         self._notify_listeners()
+        self._fire_monitors_updated("created", monitor.get("id"))
         return monitor
 
     async def async_update_monitor(
@@ -299,6 +316,7 @@ class DatapointsStore:
                 m.update(updates)
                 await self._store.async_save(self._data)
                 self._notify_listeners()
+                self._fire_monitors_updated("updated", monitor_id)
                 return m
         return None
 
@@ -314,6 +332,7 @@ class DatapointsStore:
         if len(self._data["monitors"]) < original_len:
             await self._store.async_save(self._data)
             self._notify_listeners()
+            self._fire_monitors_updated("deleted", monitor_id)
             return True
         return False
 
@@ -360,6 +379,7 @@ class DatapointsStore:
                 m.setdefault("dismissed_windows", []).append(window)
                 await self._store.async_save(self._data)
                 self._notify_listeners()
+                self._fire_monitors_updated("dismissed", monitor_id)
                 return m
         return None
 
@@ -381,6 +401,7 @@ class DatapointsStore:
                 if len(m["dismissed_windows"]) < original_len:
                     await self._store.async_save(self._data)
                     self._notify_listeners()
+                    self._fire_monitors_updated("undismissed", monitor_id)
                 return m
         return None
 

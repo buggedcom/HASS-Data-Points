@@ -6,6 +6,8 @@ from unittest.mock import AsyncMock
 
 import pytest
 
+from custom_components.hass_datapoints.const import EVENT_MONITORS_UPDATED
+
 
 @pytest.fixture()
 def store(mock_store):
@@ -113,6 +115,18 @@ async def test_update_monitor_notifies_listeners(store):
     store.async_add_listener(lambda: called.append(1))
     await store.async_update_monitor("m1", {"x": 1})
     assert len(called) == 1
+
+
+@pytest.mark.asyncio
+async def test_update_monitor_fires_monitor_updated_event(store):
+    store._data["monitors"] = [{"id": "m1", "enabled": True}]
+
+    await store.async_update_monitor("m1", {"enabled": False})
+
+    store._hass.bus.async_fire.assert_called_once_with(
+        EVENT_MONITORS_UPDATED,
+        {"action": "updated", "monitor_id": "m1"},
+    )
 
 
 @pytest.mark.asyncio
