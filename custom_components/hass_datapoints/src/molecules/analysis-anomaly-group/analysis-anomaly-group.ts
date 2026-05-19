@@ -119,6 +119,9 @@ export class AnalysisAnomalyGroup extends LitElement {
   @property({ type: Object, attribute: false })
   accessor computingMethods: Set<string> = new Set();
 
+  @property({ type: Boolean, attribute: "hide-save-monitor-cta" })
+  accessor hideSaveMonitorCta: boolean = false;
+
   static styles = [sharedStyles, styles];
 
   /**
@@ -469,7 +472,8 @@ export class AnalysisAnomalyGroup extends LitElement {
           : nothing}
         ${a.show_anomalies &&
         Array.isArray(a.anomaly_methods) &&
-        a.anomaly_methods.length > 0
+        a.anomaly_methods.length > 0 &&
+        !this.hideSaveMonitorCta
           ? html`
               <button class="save-monitor-btn" @click=${this._onSaveAsMonitor}>
                 <ha-icon icon="mdi:bell-plus-outline"></ha-icon>

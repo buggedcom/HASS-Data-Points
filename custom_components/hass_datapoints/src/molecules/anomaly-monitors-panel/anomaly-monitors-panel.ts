@@ -1,5 +1,7 @@
 import { html, LitElement, nothing } from "lit";
 import { property, state } from "lit/decorators.js";
+import type { PropertyValues } from "lit";
+import { DOMAIN } from "@/constants";
 import { localized, msg } from "@/lib/i18n/localize";
 
 import { styles } from "./anomaly-monitors-panel.styles";
@@ -53,9 +55,16 @@ export class AnomalyMonitorsPanel extends LitElement {
 
   private _pollInterval: ReturnType<typeof setInterval> | null = null;
 
+  private _monitorsEventUnsubscribe: Nullable<() => void> = null;
+
+  private _monitorsSubscriptionToken = 0;
+
   connectedCallback() {
     super.connectedCallback();
-    this._load();
+    if (this.hasUpdated) {
+      this._scheduleLoad();
+      this._scheduleMonitorSubscription();
+    }
     this._pollInterval = setInterval(() => this._load(), 30_000);
   }
 
@@ -65,10 +74,57 @@ export class AnomalyMonitorsPanel extends LitElement {
       clearInterval(this._pollInterval);
       this._pollInterval = null;
     }
+    this._teardownMonitorSubscription();
+  }
+
+  protected updated(changedProperties: PropertyValues<this>) {
+    if (changedProperties.has("hass")) {
+      this._teardownMonitorSubscription();
+      this._scheduleMonitorSubscription();
+      this._scheduleLoad();
+    }
+  }
+
+  private _scheduleLoad() {
+    this._load().catch(() => {});
+  }
+
+  private _scheduleMonitorSubscription() {
+    this._ensureMonitorSubscription().catch(() => {});
+  }
+
+  private async _ensureMonitorSubscription() {
+    if (!this.hass?.connection || this._monitorsEventUnsubscribe) {
+      return;
+    }
+
+    const token = ++this._monitorsSubscriptionToken;
+    try {
+      const unsubscribe = await this.hass.connection.subscribeEvents(() => {
+        this._scheduleLoad();
+      }, `${DOMAIN}_monitors_updated`);
+      if (!this.isConnected || token !== this._monitorsSubscriptionToken) {
+        unsubscribe();
+        return;
+      }
+      this._monitorsEventUnsubscribe = unsubscribe;
+    } catch {
+      // ignore
+    }
+  }
+
+  private _teardownMonitorSubscription() {
+    this._monitorsSubscriptionToken += 1;
+    if (this._monitorsEventUnsubscribe) {
+      this._monitorsEventUnsubscribe();
+      this._monitorsEventUnsubscribe = null;
+    }
   }
 
   private async _load() {
-    if (!this.hass) return;
+    if (!this.hass) {
+      return;
+    }
     try {
       this._monitors = await fetchMonitors(this.hass);
     } catch {

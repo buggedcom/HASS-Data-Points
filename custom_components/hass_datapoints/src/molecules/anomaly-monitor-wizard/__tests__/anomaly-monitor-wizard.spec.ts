@@ -18,7 +18,15 @@ function createElement(props: RecordWithUnknownValues = {}) {
     _step: number;
     _entityIds: string[];
     _name: string;
-    _entityConfigs: Map<string, { anomaly_methods: string[] }>;
+    _entityConfigs: Map<
+      string,
+      {
+        anomaly_methods: string[];
+        anomaly_overlap_mode: string;
+        anomaly_comparison_window_id: string | null;
+        anomaly_comparison_entity_id: string | null;
+      }
+    >;
     _saving: boolean;
     _target: Record<string, unknown>;
   };
@@ -255,6 +263,40 @@ describe("anomaly-monitor-wizard", () => {
     });
   });
 
+  describe("GIVEN chart suggestions are available", () => {
+    beforeEach(async () => {
+      el = createElement({
+        suggestedEntityIds: ["sensor.humidity"],
+        allSeriesEntityIds: ["sensor.temperature", "sensor.humidity"],
+        prefillEntityIds: ["sensor.temperature"],
+      });
+      await el.updateComplete;
+    });
+
+    describe("WHEN step 1 renders quick-add controls", () => {
+      it("THEN it renders the add-all CTA inside the current-chart section with add-button styling", () => {
+        expect.assertions(4);
+        const label = Array.from(
+          el.shadowRoot!.querySelectorAll(".wizard-section-label")
+        ).find((node) => node.textContent?.includes("Add from current chart"));
+        const addAllBtn = Array.from(
+          el.shadowRoot!.querySelectorAll(".quick-add-btn")
+        ).find((button) =>
+          button.textContent?.includes("Add all series from chart")
+        );
+
+        expect(label).toBeTruthy();
+        expect(addAllBtn).toBeTruthy();
+        expect(addAllBtn?.querySelector("ha-icon")?.getAttribute("icon")).toBe(
+          "mdi:plus"
+        );
+        expect(addAllBtn?.closest(".wizard-section")?.textContent).toContain(
+          "Add from current chart"
+        );
+      });
+    });
+  });
+
   describe("GIVEN the current target resolves entities from an area selection", () => {
     beforeEach(async () => {
       el = createElement({
@@ -307,7 +349,7 @@ describe("anomaly-monitor-wizard", () => {
       it("THEN it converts the target into an explicit entity list with the resolved and added entities", async () => {
         expect.assertions(1);
         const suggestionBtn = el.shadowRoot!.querySelector(
-          ".suggestion-chip"
+          ".quick-add-btn"
         ) as HTMLElement;
 
         suggestionBtn.click();
@@ -393,6 +435,145 @@ describe("anomaly-monitor-wizard", () => {
         setTimeout(r, 10);
       });
       expect(saved).toHaveLength(1);
+    });
+  });
+
+  describe("GIVEN similar entity analysis is configured", () => {
+    let createMonitorSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(async () => {
+      createMonitorSpy = vi
+        .spyOn(monitorsApi, "createMonitor")
+        .mockRejectedValue({
+          error: {
+            message:
+              "value must be one of ['comparison_window', 'iqr'] @ data['anomaly_methods'][0]",
+          },
+        });
+
+      el = createElement({ prefillEntityIds: ["sensor.a"] });
+      await el.updateComplete;
+      el._step = 3 as 1 | 2 | 3;
+      el._name = "New Monitor";
+      el._entityIds = ["sensor.a"];
+      el._entityConfigs = new Map([
+        [
+          "sensor.a",
+          {
+            anomaly_methods: ["similar_entity", "comparison_window"],
+            anomaly_overlap_mode: "only",
+            anomaly_comparison_window_id: "window-1",
+            anomaly_comparison_entity_id: "sensor.reference",
+          },
+        ],
+      ]);
+      await el.updateComplete;
+    });
+
+    afterEach(() => createMonitorSpy.mockRestore());
+
+    describe("WHEN Save is clicked", () => {
+      it("THEN it normalizes the payload and renders the backend error message", async () => {
+        expect.assertions(4);
+        const saveBtn = el.shadowRoot!.querySelector(
+          "ha-button[raised]"
+        ) as HTMLElement;
+
+        saveBtn.click();
+        await new Promise<void>((r) => {
+          setTimeout(r, 10);
+        });
+
+        expect(createMonitorSpy).toHaveBeenCalledOnce();
+        expect(createMonitorSpy.mock.calls[0][1]).toMatchObject({
+          anomaly_methods: ["comparison_window"],
+          baseline_entity_id: "sensor.reference",
+        });
+        expect(createMonitorSpy.mock.calls[0][1]).toMatchObject({
+          anomaly_overlap_mode: "only",
+        });
+        expect(el.shadowRoot!.textContent).toContain("value must be one of");
+      });
+    });
+  });
+
+  describe("GIVEN analysis group updates are emitted", () => {
+    beforeEach(async () => {
+      el = createElement({ prefillEntityIds: ["sensor.a"] });
+      await el.updateComplete;
+      el._step = 2 as 1 | 2 | 3;
+      el._entityIds = ["sensor.a"];
+      await el.updateComplete;
+    });
+
+    describe("WHEN comparison and overlap settings change", () => {
+      it("THEN the wizard stores them in the per-entity config", async () => {
+        expect.assertions(3);
+        const group = el.shadowRoot!.querySelector(
+          "analysis-anomaly-group"
+        ) as HTMLElement;
+
+        group.dispatchEvent(
+          new CustomEvent("dp-group-analysis-change", {
+            detail: { key: "anomaly_overlap_mode", value: "only" },
+            bubbles: true,
+            composed: true,
+          })
+        );
+        group.dispatchEvent(
+          new CustomEvent("dp-group-analysis-change", {
+            detail: {
+              key: "anomaly_comparison_window_id",
+              value: "window-2",
+            },
+            bubbles: true,
+            composed: true,
+          })
+        );
+        group.dispatchEvent(
+          new CustomEvent("dp-group-analysis-change", {
+            detail: {
+              key: "anomaly_comparison_entity_id",
+              value: "sensor.reference",
+            },
+            bubbles: true,
+            composed: true,
+          })
+        );
+        await el.updateComplete;
+
+        const config = el._entityConfigs.get("sensor.a");
+        expect(config?.anomaly_overlap_mode).toBe("only");
+        expect(config?.anomaly_comparison_window_id).toBe("window-2");
+        expect(config?.anomaly_comparison_entity_id).toBe("sensor.reference");
+      });
+    });
+  });
+
+  describe("GIVEN the wizard renders the analysis step", () => {
+    beforeEach(async () => {
+      el = createElement({ prefillEntityIds: ["sensor.a"] });
+      await el.updateComplete;
+      el._step = 2 as 1 | 2 | 3;
+      el._entityIds = ["sensor.a"];
+      await el.updateComplete;
+    });
+
+    describe("WHEN the shell renders", () => {
+      it("THEN it keeps the header separate from the scrollable body and hides the embedded save CTA", () => {
+        expect.assertions(4);
+        const shell = el.shadowRoot!.querySelector(".wizard-shell");
+        const header = el.shadowRoot!.querySelector(".wizard-header");
+        const body = el.shadowRoot!.querySelector(".wizard-content");
+        const anomalyGroup = el.shadowRoot!.querySelector(
+          "analysis-anomaly-group"
+        ) as HTMLElement & { hideSaveMonitorCta: boolean };
+
+        expect(shell).toBeTruthy();
+        expect(header).toBeTruthy();
+        expect(body).toBeTruthy();
+        expect(anomalyGroup.hideSaveMonitorCta).toBe(true);
+      });
     });
   });
 

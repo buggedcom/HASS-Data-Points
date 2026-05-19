@@ -38,10 +38,13 @@ describe("monitor-wizard-logic", () => {
       it("THEN returns sensible defaults", () => {
         const cfg = defaultEntityConfig();
         expect(cfg.anomaly_methods).toEqual(["trend_residual"]);
+        expect(cfg.anomaly_overlap_mode).toBe("all");
         expect(cfg.anomaly_sensitivity).toBe("medium");
         expect(cfg.anomaly_rate_window).toBe("1h");
         expect(cfg.anomaly_zscore_window).toBe("24h");
         expect(cfg.anomaly_persistence_window).toBe("1h");
+        expect(cfg.anomaly_comparison_window_id).toBeNull();
+        expect(cfg.anomaly_comparison_entity_id).toBeNull();
         expect(cfg.anomaly_trend_method).toBe("rolling_average");
         expect(cfg.anomaly_trend_window).toBe("24h");
         expect(cfg.sample_interval).toBe("raw");
@@ -56,11 +59,15 @@ describe("monitor-wizard-logic", () => {
       it("THEN merges prefilled values", () => {
         const cfg = defaultEntityConfig({
           anomaly_methods: ["zscore"],
+          anomaly_overlap_mode: "only",
           anomaly_sensitivity: "high",
+          anomaly_comparison_entity_id: "sensor.reference",
           sample_interval: "5m",
         });
         expect(cfg.anomaly_methods).toEqual(["zscore"]);
+        expect(cfg.anomaly_overlap_mode).toBe("only");
         expect(cfg.anomaly_sensitivity).toBe("high");
+        expect(cfg.anomaly_comparison_entity_id).toBe("sensor.reference");
         expect(cfg.sample_interval).toBe("5m");
         // Non-prefilled fields use defaults
         expect(cfg.anomaly_rate_window).toBe("1h");
@@ -117,6 +124,7 @@ describe("monitor-wizard-logic", () => {
         const m = makeMonitor();
         const cfg = configFromMonitor(m);
         expect(cfg.anomaly_methods).toEqual(["trend_residual"]);
+        expect(cfg.anomaly_overlap_mode).toBe("all");
         expect(cfg.anomaly_sensitivity).toBe("medium");
         expect(cfg.sample_interval).toBe("5m");
         expect(cfg.anomaly_use_sampled_data).toBe(true);
@@ -134,10 +142,13 @@ describe("monitor-wizard-logic", () => {
     describe("WHEN monitor has baseline fields", () => {
       it("THEN extracts them", () => {
         const m = makeMonitor({
+          anomaly_methods: ["comparison_window"],
           baseline_entity_id: "sensor.baseline",
           baseline_time_offset_hours: 24,
         } as Partial<AnomalyMonitor>);
         const cfg = configFromMonitor(m);
+        expect(cfg.anomaly_methods).toEqual(["similar_entity"]);
+        expect(cfg.anomaly_comparison_entity_id).toBe("sensor.baseline");
         expect(cfg.baseline_entity_id).toBe("sensor.baseline");
         expect(cfg.baseline_time_offset_hours).toBe(24);
       });
@@ -153,6 +164,8 @@ describe("monitor-wizard-logic", () => {
         const analysis = entityConfigToAnalysis(cfg);
         expect(analysis.show_anomalies).toBe(true);
         expect(analysis.anomaly_methods).toEqual(["trend_residual"]);
+        expect(analysis.anomaly_overlap_mode).toBe("all");
+        expect(analysis.anomaly_comparison_entity_id).toBeNull();
         expect(analysis.show_trend_lines).toBe(false);
         expect(analysis.show_summary_stats).toBe(false);
         expect(analysis.expanded).toBe(true);
@@ -162,9 +175,17 @@ describe("monitor-wizard-logic", () => {
 
     describe("WHEN config has custom values", () => {
       it("THEN carries them through", () => {
-        const cfg = defaultEntityConfig({ anomaly_sensitivity: "high" });
+        const cfg = defaultEntityConfig({
+          anomaly_overlap_mode: "only",
+          anomaly_sensitivity: "high",
+          anomaly_comparison_window_id: "window-1",
+          anomaly_comparison_entity_id: "sensor.reference",
+        });
         const analysis = entityConfigToAnalysis(cfg);
+        expect(analysis.anomaly_overlap_mode).toBe("only");
         expect(analysis.anomaly_sensitivity).toBe("high");
+        expect(analysis.anomaly_comparison_window_id).toBe("window-1");
+        expect(analysis.anomaly_comparison_entity_id).toBe("sensor.reference");
       });
     });
   });
@@ -232,6 +253,19 @@ describe("monitor-wizard-logic", () => {
       });
     });
 
+    describe("WHEN similar_entity is set", () => {
+      it("THEN maps it to comparison_window and uses the comparison entity as the baseline entity", () => {
+        const cfg = {
+          ...defaultEntityConfig(),
+          anomaly_methods: ["similar_entity", "comparison_window"],
+          anomaly_comparison_entity_id: "sensor.reference",
+        };
+        const payload = buildConfigPayload(cfg);
+        expect(payload.anomaly_methods).toEqual(["comparison_window"]);
+        expect(payload.baseline_entity_id).toBe("sensor.reference");
+      });
+    });
+
     describe("WHEN baseline_entity_id is null", () => {
       it("THEN does not include baseline fields", () => {
         const cfg = defaultEntityConfig();
@@ -292,24 +326,24 @@ describe("monitor-wizard-logic", () => {
       });
     });
 
-    describe("WHEN comparison_window method is used without baseline", () => {
+    describe("WHEN similar_entity method is used without a comparison entity", () => {
       it("THEN returns invalid", () => {
         const result = validateStep2(["sensor.temp"], () => ({
           ...defaultEntityConfig(),
-          anomaly_methods: ["comparison_window"],
-          baseline_entity_id: null,
+          anomaly_methods: ["similar_entity"],
+          anomaly_comparison_entity_id: null,
         }));
         expect(result.valid).toBe(false);
-        expect(result.error).toContain("baseline");
+        expect(result.error).toContain("comparison entity");
       });
     });
 
-    describe("WHEN comparison_window method has a baseline", () => {
+    describe("WHEN similar_entity method has a comparison entity", () => {
       it("THEN returns valid", () => {
         const result = validateStep2(["sensor.temp"], () => ({
           ...defaultEntityConfig(),
-          anomaly_methods: ["comparison_window"],
-          baseline_entity_id: "sensor.ref",
+          anomaly_methods: ["similar_entity"],
+          anomaly_comparison_entity_id: "sensor.ref",
         }));
         expect(result.valid).toBe(true);
       });

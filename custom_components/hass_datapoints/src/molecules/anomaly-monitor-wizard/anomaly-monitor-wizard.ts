@@ -221,10 +221,13 @@ export class AnomalyMonitorWizard extends LitElement {
     }
 
     const keyMap: Partial<Record<string, keyof EntityAnalysisConfig>> = {
+      anomaly_overlap_mode: "anomaly_overlap_mode",
       anomaly_sensitivity: "anomaly_sensitivity",
       anomaly_rate_window: "anomaly_rate_window",
       anomaly_zscore_window: "anomaly_zscore_window",
       anomaly_persistence_window: "anomaly_persistence_window",
+      anomaly_comparison_window_id: "anomaly_comparison_window_id",
+      anomaly_comparison_entity_id: "anomaly_comparison_entity_id",
       anomaly_trend_method: "anomaly_trend_method",
       anomaly_trend_window: "anomaly_trend_window",
       anomaly_use_sampled_data: "anomaly_use_sampled_data",
@@ -367,6 +370,30 @@ export class AnomalyMonitorWizard extends LitElement {
     return buildConfigPayload(this._getEntityConfig(entityId));
   }
 
+  private _extractErrorMessage(err: unknown): string {
+    if (typeof err === "string" && err.trim()) {
+      return err;
+    }
+    if (err instanceof Error && err.message.trim()) {
+      return err.message;
+    }
+    if (typeof err === "object" && err !== null) {
+      const nestedError = (err as { error?: { message?: unknown } }).error;
+      if (
+        nestedError &&
+        typeof nestedError.message === "string" &&
+        nestedError.message.trim()
+      ) {
+        return nestedError.message;
+      }
+      const directMessage = (err as { message?: unknown }).message;
+      if (typeof directMessage === "string" && directMessage.trim()) {
+        return directMessage;
+      }
+    }
+    return msg("Unable to save anomaly monitor.");
+  }
+
   private async _onSubmit() {
     if (!this.hass) return;
     if (!this._name.trim()) {
@@ -434,7 +461,7 @@ export class AnomalyMonitorWizard extends LitElement {
 
       this._emit("dp-monitor-wizard-saved", { monitors: saved });
     } catch (err) {
-      this._error = String(err);
+      this._error = this._extractErrorMessage(err);
     } finally {
       this._saving = false;
     }
@@ -542,22 +569,9 @@ export class AnomalyMonitorWizard extends LitElement {
     const hasUnaddedSeries = this.allSeriesEntityIds.some(
       (id) => !selectedEntityIds.includes(id)
     );
+    const hasQuickAddOptions = suggestions.length > 0 || hasUnaddedSeries;
     return html`
       <div class="wizard-section">
-        <div class="wizard-section-header-row">
-          <span></span>
-          ${hasUnaddedSeries
-            ? html`
-                <button
-                  class="text-link-btn"
-                  type="button"
-                  @click=${this._addAllSeriesFromChart}
-                >
-                  ${msg("Add all series from chart")}
-                </button>
-              `
-            : nothing}
-        </div>
         <ha-target-picker
           .hass=${this.hass}
           .value=${this._target}
@@ -565,21 +579,34 @@ export class AnomalyMonitorWizard extends LitElement {
         ></ha-target-picker>
       </div>
 
-      ${suggestions.length > 0
+      ${hasQuickAddOptions
         ? html`
             <div class="wizard-section">
               <p class="wizard-section-label">
                 ${msg("Add from current chart")}
               </p>
               <div class="wizard-entity-chips">
+                ${hasUnaddedSeries
+                  ? html`
+                      <button
+                        class="quick-add-btn"
+                        type="button"
+                        @click=${this._addAllSeriesFromChart}
+                      >
+                        <ha-icon icon="mdi:plus"></ha-icon>
+                        <span>${msg("Add all series from chart")}</span>
+                      </button>
+                    `
+                  : nothing}
                 ${suggestions.map(
                   (id) => html`
                     <button
-                      class="suggestion-chip"
+                      class="quick-add-btn"
                       type="button"
                       @click=${() => this._addSuggestedEntity(id)}
                     >
-                      ${this._entityName(id)}
+                      <ha-icon icon="mdi:plus"></ha-icon>
+                      <span>${this._entityName(id)}</span>
                     </button>
                   `
                 )}
@@ -639,6 +666,7 @@ export class AnomalyMonitorWizard extends LitElement {
         .analysis=${analysis}
         entity-id=${entityId}
         .hass=${this.hass}
+        .hideSaveMonitorCta=${true}
         @dp-group-analysis-change=${(e: Event) =>
           this._onAnalysisGroupChange(entityId, e)}
       ></analysis-anomaly-group>
@@ -770,15 +798,16 @@ export class AnomalyMonitorWizard extends LitElement {
             : msg("Create Anomaly Monitor")}
         </span>
 
-        <div class="wizard-content">
-          ${this._renderStepBar()}
-          ${this._step === 1 ? this._renderStep1() : nothing}
-          ${this._step === 2 ? this._renderStep2() : nothing}
-          ${this._step === 3 ? this._renderStep3() : nothing}
-          ${this._error
-            ? html`<div class="wizard-error">${this._error}</div>`
-            : nothing}
-
+        <div class="wizard-shell">
+          <div class="wizard-header">${this._renderStepBar()}</div>
+          <div class="wizard-content">
+            ${this._step === 1 ? this._renderStep1() : nothing}
+            ${this._step === 2 ? this._renderStep2() : nothing}
+            ${this._step === 3 ? this._renderStep3() : nothing}
+            ${this._error
+              ? html`<div class="wizard-error">${this._error}</div>`
+              : nothing}
+          </div>
           <div class="dialog-actions">
             <ha-button @click=${this._onClose}>${msg("Cancel")}</ha-button>
             <span class="dialog-spacer"></span>

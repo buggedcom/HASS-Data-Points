@@ -31,10 +31,13 @@ export const SCAN_INTERVAL_OPTIONS = [
 
 export interface EntityAnalysisConfig {
   anomaly_methods: string[];
+  anomaly_overlap_mode: string;
   anomaly_sensitivity: string;
   anomaly_rate_window: string;
   anomaly_zscore_window: string;
   anomaly_persistence_window: string;
+  anomaly_comparison_window_id: string | null;
+  anomaly_comparison_entity_id: string | null;
   anomaly_trend_method: string;
   anomaly_trend_window: string;
   sample_interval: string;
@@ -86,10 +89,13 @@ export interface WizardNormalizedAnalysis {
 
 interface PartialPrefill {
   anomaly_methods?: string[];
+  anomaly_overlap_mode?: string;
   anomaly_sensitivity?: string;
   anomaly_rate_window?: string;
   anomaly_zscore_window?: string;
   anomaly_persistence_window?: string;
+  anomaly_comparison_window_id?: string | null;
+  anomaly_comparison_entity_id?: string | null;
   anomaly_trend_method?: string;
   anomaly_trend_window?: string;
   sample_interval?: string;
@@ -104,10 +110,13 @@ export function defaultEntityConfig(
     anomaly_methods: prefill?.anomaly_methods?.length
       ? [...prefill.anomaly_methods]
       : ["trend_residual"],
+    anomaly_overlap_mode: prefill?.anomaly_overlap_mode ?? "all",
     anomaly_sensitivity: prefill?.anomaly_sensitivity ?? "medium",
     anomaly_rate_window: prefill?.anomaly_rate_window ?? "1h",
     anomaly_zscore_window: prefill?.anomaly_zscore_window ?? "24h",
     anomaly_persistence_window: prefill?.anomaly_persistence_window ?? "1h",
+    anomaly_comparison_window_id: prefill?.anomaly_comparison_window_id ?? null,
+    anomaly_comparison_entity_id: prefill?.anomaly_comparison_entity_id ?? null,
     anomaly_trend_method: prefill?.anomaly_trend_method || "rolling_average",
     anomaly_trend_window: prefill?.anomaly_trend_window ?? "24h",
     sample_interval: prefill?.sample_interval ?? "raw",
@@ -121,20 +130,32 @@ export function defaultEntityConfig(
 // ── Factory: config from existing monitor ─────────────────────────────────
 
 export function configFromMonitor(m: AnomalyMonitor): EntityAnalysisConfig {
+  const baselineEntityId =
+    ((m as unknown as Record<string, unknown>).baseline_entity_id as string) ??
+    null;
+  const rawMethods = [...m.anomaly_methods];
+  const frontendMethods = rawMethods.map((method) => {
+    if (method === "comparison_window" && baselineEntityId) {
+      return "similar_entity";
+    }
+    return method;
+  });
+
   return {
-    anomaly_methods: [...m.anomaly_methods],
+    anomaly_methods: frontendMethods,
+    anomaly_overlap_mode: m.anomaly_overlap_mode ?? "all",
     anomaly_sensitivity: m.anomaly_sensitivity,
     anomaly_rate_window: m.anomaly_rate_window,
     anomaly_zscore_window: m.anomaly_zscore_window,
     anomaly_persistence_window: m.anomaly_persistence_window,
+    anomaly_comparison_window_id: null,
+    anomaly_comparison_entity_id: baselineEntityId,
     anomaly_trend_method: m.anomaly_trend_method,
     anomaly_trend_window: m.anomaly_trend_window,
     sample_interval: m.sample_interval ?? "raw",
     sample_aggregate: m.sample_aggregate ?? "mean",
     anomaly_use_sampled_data: m.anomaly_use_sampled_data ?? false,
-    baseline_entity_id:
-      ((m as unknown as Record<string, unknown>)
-        .baseline_entity_id as string) ?? null,
+    baseline_entity_id: baselineEntityId,
     baseline_time_offset_hours:
       ((m as unknown as Record<string, unknown>)
         .baseline_time_offset_hours as number) ?? 0,
@@ -149,10 +170,13 @@ export function entityConfigToAnalysis(
   return {
     show_anomalies: true,
     anomaly_methods: [...cfg.anomaly_methods],
+    anomaly_overlap_mode: cfg.anomaly_overlap_mode,
     anomaly_sensitivity: cfg.anomaly_sensitivity,
     anomaly_rate_window: cfg.anomaly_rate_window,
     anomaly_zscore_window: cfg.anomaly_zscore_window,
     anomaly_persistence_window: cfg.anomaly_persistence_window,
+    anomaly_comparison_window_id: cfg.anomaly_comparison_window_id,
+    anomaly_comparison_entity_id: cfg.anomaly_comparison_entity_id,
     anomaly_trend_method: cfg.anomaly_trend_method,
     anomaly_trend_window: cfg.anomaly_trend_window,
     anomaly_use_sampled_data: cfg.anomaly_use_sampled_data,
@@ -171,9 +195,6 @@ export function entityConfigToAnalysis(
     show_threshold_shading: false,
     threshold_value: "0",
     threshold_direction: "above",
-    anomaly_overlap_mode: "all",
-    anomaly_comparison_window_id: null,
-    anomaly_comparison_entity_id: null,
     show_delta_analysis: false,
     show_delta_tooltip: false,
     show_delta_lines: false,
@@ -201,8 +222,21 @@ export function toggleMethod(
 export function buildConfigPayload(
   config: EntityAnalysisConfig
 ): Partial<CreateMonitorPayload> {
+  const hasSimilarEntity = config.anomaly_methods.includes("similar_entity");
+  const backendMethods = hasSimilarEntity
+    ? [
+        ...new Set(
+          config.anomaly_methods.map((method) =>
+            method === "similar_entity" ? "comparison_window" : method
+          )
+        ),
+      ]
+    : [...config.anomaly_methods];
+  const baselineEntityId =
+    config.anomaly_comparison_entity_id ?? config.baseline_entity_id;
   const base: Partial<CreateMonitorPayload> = {
-    anomaly_methods: config.anomaly_methods,
+    anomaly_methods: backendMethods,
+    anomaly_overlap_mode: config.anomaly_overlap_mode,
     anomaly_sensitivity: config.anomaly_sensitivity,
     anomaly_rate_window: config.anomaly_rate_window,
     anomaly_zscore_window: config.anomaly_zscore_window,
@@ -215,8 +249,8 @@ export function buildConfigPayload(
     base.sample_aggregate = config.sample_aggregate;
     base.anomaly_use_sampled_data = true;
   }
-  if (config.baseline_entity_id) {
-    base.baseline_entity_id = config.baseline_entity_id;
+  if (baselineEntityId) {
+    base.baseline_entity_id = baselineEntityId;
     base.baseline_time_offset_hours = config.baseline_time_offset_hours;
   }
   return base;
@@ -249,17 +283,17 @@ export function validateStep2(
       error: "Each entity needs at least one detection method.",
     };
   }
-  const anyMissingBaseline = entityIds.some((id) => {
+  const anyMissingComparisonEntity = entityIds.some((id) => {
     const cfg = getConfig(id);
     return (
-      cfg.anomaly_methods.includes("comparison_window") &&
-      !cfg.baseline_entity_id
+      cfg.anomaly_methods.includes("similar_entity") &&
+      !cfg.anomaly_comparison_entity_id
     );
   });
-  if (anyMissingBaseline) {
+  if (anyMissingComparisonEntity) {
     return {
       valid: false,
-      error: "Select a baseline entity for the Comparison method.",
+      error: "Select a comparison entity for the Similar entity method.",
     };
   }
   return { valid: true };

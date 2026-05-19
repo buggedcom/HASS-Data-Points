@@ -36,12 +36,12 @@ export const styles = css`
 
   .method-list {
     display: grid;
-    gap: var(--dp-spacing-sm, 8px);
+    gap: calc(var(--dp-spacing-sm, 8px) * 0.75);
   }
 
   .method-item {
     display: grid;
-    gap: var(--dp-spacing-sm, 8px);
+    gap: 6px;
   }
 
   ha-tooltip {
@@ -89,13 +89,12 @@ export const styles = css`
   }
 
   .save-monitor-btn {
-    display: inline-flex;
-    align-self: flex-start;
-    align-items: center;
+    display: inline-block;
+    width: fit-content;
     gap: 4px;
     padding: 4px 8px;
     border: 0;
-    border-radius: 6px;
+    border-radius: var(--wa-form-control-border-radius);
     font: inherit;
     font-size: 0.82rem;
     color: var(--primary-color, #3b82f6);
@@ -109,6 +108,21 @@ export const styles = css`
     appearance: none;
     -webkit-appearance: none;
     transition: background 120ms ease;
+  }
+
+  .field {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .field-label {
+    min-width: 112px;
+    padding-top: 4px;
+  }
+
+  .option {
+    align-items: center;
+    gap: 8px;
   }
 
   .save-monitor-btn:hover,

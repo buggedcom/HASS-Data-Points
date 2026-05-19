@@ -3,14 +3,26 @@ import { css } from "lit";
 export const styles = css`
   /* ---- Dialog content wrapper ---- */
 
+  .wizard-shell {
+    display: flex;
+    flex-direction: column;
+    min-width: min(480px, 90vw);
+    max-height: 70vh;
+  }
+
+  .wizard-header {
+    flex: 0 0 auto;
+    background: var(--card-background-color, #fff);
+    padding: 0 2px;
+  }
+
   .wizard-content {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    min-width: min(480px, 90vw);
-    max-height: 70vh;
+    gap: 14px;
+    flex: 1 1 auto;
     overflow-y: auto;
-    padding: 0 2px 4px;
+    padding: 0 2px 6px;
   }
 
   /* ---- Step indicator bar ---- */
@@ -19,9 +31,12 @@ export const styles = css`
     display: flex;
     align-items: center;
     gap: 4px;
-    padding-bottom: 8px;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 0 0 10px;
     border-bottom: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
-    margin-bottom: 4px;
+    background: var(--card-background-color, #fff);
   }
 
   .step {
@@ -66,18 +81,42 @@ export const styles = css`
   .wizard-entity-chips {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 8px;
     align-items: center;
   }
 
-  .suggestion-chip {
+  .quick-add-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 34px;
+    padding: 8px 14px;
+    border: 0;
+    border-radius: 999px;
+    background: color-mix(
+      in srgb,
+      var(--primary-color, #3b82f6) 18%,
+      transparent
+    );
+    color: var(--primary-color, #3b82f6);
+    font: inherit;
+    font-size: 0.84rem;
+    font-weight: 500;
     cursor: pointer;
-    opacity: 0.75;
-    transition: opacity 120ms ease;
+    --mdc-icon-size: 16px;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: background 120ms ease;
   }
 
-  .suggestion-chip:hover {
-    opacity: 1;
+  .quick-add-btn:hover,
+  .quick-add-btn:focus-visible {
+    background: color-mix(
+      in srgb,
+      var(--primary-color, #3b82f6) 26%,
+      transparent
+    );
+    outline: none;
   }
 
   /* ---- Step 2: Entity tabs ---- */
@@ -133,33 +172,6 @@ export const styles = css`
     display: flex;
     flex-direction: column;
     gap: 4px;
-  }
-
-  /* ---- Step 1 header row ---- */
-
-  .wizard-section-header-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    min-height: 20px;
-  }
-
-  .text-link-btn {
-    background: none;
-    border: none;
-    padding: 0;
-    font: inherit;
-    font-size: 0.82rem;
-    color: var(--primary-color, #03a9f4);
-    cursor: pointer;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-    appearance: none;
-    -webkit-appearance: none;
-  }
-
-  .text-link-btn:hover {
-    opacity: 0.8;
   }
 
   /* ---- Step 2: Analysis sections ---- */
@@ -274,9 +286,10 @@ export const styles = css`
     display: flex;
     align-items: center;
     gap: 4px;
+    flex: 0 0 auto;
     padding-top: 8px;
     border-top: 1px solid var(--divider-color, rgba(0, 0, 0, 0.08));
-    margin-top: 4px;
+    margin-top: 6px;
   }
 
   .dialog-spacer {
