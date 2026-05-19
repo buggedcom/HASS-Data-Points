@@ -20,11 +20,11 @@ export async function cancelPending(
 ): Promise<void> {
   const prevId = inFlightRequests.get(slotKey);
   if (prevId) {
+    inFlightRequests.delete(slotKey);
     await hass.connection.sendMessagePromise({
       type: "hass_datapoints/cancel",
       request_id: prevId,
     });
-    inFlightRequests.delete(slotKey);
   }
 }
 

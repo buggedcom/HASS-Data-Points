@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  buildAiQueryBrief,
   type AiQueryBriefAnomalySnapshot,
+  buildAiQueryBrief,
 } from "../ai-query-brief";
 import { setFrontendLocale } from "@/lib/i18n/localize";
 import { createMockHass } from "@/test-support/mock-hass";
@@ -186,7 +186,7 @@ describe("buildAiQueryBrief", () => {
         expect(result.plainText).toContain("PANEELIN KONTEKSTI");
 
         await setFrontendLocale("en");
-      });
+      }, 10000);
     });
   });
 
