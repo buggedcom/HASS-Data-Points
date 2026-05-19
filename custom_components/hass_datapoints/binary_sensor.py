@@ -17,7 +17,6 @@ from .const import (
     KEY_ADD_BINARY_SENSOR_ENTITIES,
     KEY_MONITOR_BINARY_SENSORS,
     KEY_STORE,
-    PANEL_URL_PATH,
 )
 from .store import DatapointsStore
 
@@ -63,7 +62,6 @@ def _monitor_device_info(
         name=monitor.get("name", f"Anomaly monitor {monitor_id[:8]}"),
         manufacturer="buggedcom",
         model="Anomaly Monitor",
-        configuration_url=f"/{PANEL_URL_PATH}",
         via_device=(DOMAIN, entry.entry_id),
     )
 
@@ -209,14 +207,13 @@ class DatapointsMonitorProblemBinarySensor(_MonitorBinarySensorBase):
                 if last_scan.tzinfo is None:
                     last_scan = last_scan.replace(tzinfo=UTC)
                 interval_minutes = monitor.get("scan_interval_minutes", 30)
-                if (datetime.now(UTC) - last_scan) > timedelta(minutes=interval_minutes * 2):
+                if (datetime.now(UTC) - last_scan) > timedelta(
+                    minutes=interval_minutes * 2
+                ):
                     return True
             except ValueError:
                 pass
 
         # Insufficient data check (last scan ran but found too few points)
         data_points = monitor.get("last_scan_data_points")
-        if data_points is not None and data_points < _MIN_DATA_POINTS:
-            return True
-
-        return False
+        return data_points is not None and data_points < _MIN_DATA_POINTS

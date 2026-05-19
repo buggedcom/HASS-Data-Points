@@ -26,7 +26,6 @@ from .const import (
     KEY_MONITOR_SENSORS,
     KEY_STORE,
     MONITOR_DEFAULT_LOOK_BACK_HOURS,
-    PANEL_URL_PATH,
 )
 from .history_utils import (
     downsample_pts,
@@ -965,7 +964,6 @@ def _monitor_device_info(
         name=monitor.get("name", f"Anomaly monitor {monitor_id[:8]}"),
         manufacturer="buggedcom",
         model="Anomaly Monitor",
-        configuration_url=f"/{PANEL_URL_PATH}",
         via_device=(DOMAIN, entry.entry_id),
     )
 

@@ -127,6 +127,17 @@ def test_unique_id_format():
     assert sensor._attr_unique_id == "ent1_monitor_abc123"
 
 
+def test_monitor_device_info_does_not_set_configuration_url():
+    from custom_components.hass_datapoints.sensor import DatapointsMonitorSensor
+
+    store = _make_store(
+        monitors=[{"id": "abc123", "name": "Test Monitor", "last_cluster_count": 0}]
+    )
+    sensor = DatapointsMonitorSensor(_make_entry("ent1"), store, MagicMock(), "abc123")
+
+    assert "configuration_url" not in sensor.device_info
+
+
 def test_compute_reads_last_cluster_count():
     from custom_components.hass_datapoints.sensor import DatapointsMonitorSensor
 
