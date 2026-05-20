@@ -204,6 +204,57 @@ class DescribeWsMonitorsCreate:
         with pytest.raises(Unauthorized):
             await ws_monitors_create(hass, connection, msg)
 
+    async def test_GIVEN_created_monitor_entities_WHEN_switch_toggled_off_THEN_list_reports_disabled(
+        self, mock_store
+    ):
+        from custom_components.hass_datapoints.switch import (
+            DatapointsMonitorEnabledSwitch,
+        )
+
+        store = mock_store
+        hass = _make_hass(store, add_entities=MagicMock())
+        entry = MagicMock()
+        entry.entry_id = "entry-1"
+        hass.config_entries.async_entries.return_value = [entry]
+        connection = _make_connection()
+
+        create_msg = {
+            "id": 1,
+            "type": f"{DOMAIN}/monitors/create",
+            "monitor_type": "individual",
+            "name": "Lifecycle Monitor",
+            "entity_id": "sensor.temp",
+            "look_back_hours": 24,
+            "scan_interval_minutes": 30,
+        }
+
+        await ws_monitors_create(hass, connection, create_msg)
+
+        created_monitor = store.get_monitors()[0]
+        monitor_id = created_monitor["id"]
+        monitor_switch = hass.data[DOMAIN][KEY_MONITOR_SWITCHES][monitor_id]
+        assert isinstance(monitor_switch, DatapointsMonitorEnabledSwitch)
+
+        await monitor_switch.async_added_to_hass()
+        monitor_switch.async_write_ha_state = MagicMock()
+
+        await monitor_switch.async_turn_off()
+
+        assert store.get_monitor(monitor_id)["enabled"] is False
+        assert monitor_switch.is_on is False
+        monitor_switch.async_write_ha_state.assert_called_once()
+
+        list_connection = _make_connection()
+        await ws_monitors_list(
+            hass,
+            list_connection,
+            {"id": 2, "type": f"{DOMAIN}/monitors/list"},
+        )
+
+        listed_monitors = list_connection.send_result.call_args[0][1]["monitors"]
+        assert listed_monitors[0]["id"] == monitor_id
+        assert listed_monitors[0]["enabled"] is False
+
 
 # ---------------------------------------------------------------------------
 # ws_monitors_update

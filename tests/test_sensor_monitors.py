@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -161,6 +162,90 @@ def test_handle_store_update_refreshes_state():
 
     assert sensor._attr_native_value == 5
     assert sensor._attr_name == "New Name"
+
+
+def test_handle_store_update_does_not_reschedule_for_scan_result_fields():
+    from custom_components.hass_datapoints.sensor import DatapointsMonitorSensor
+
+    store = _make_store(
+        monitors=[
+            {
+                "id": "m1",
+                "name": "Monitor",
+                "enabled": True,
+                "scan_interval_minutes": 30,
+                "last_cluster_count": 0,
+            }
+        ]
+    )
+    sensor = DatapointsMonitorSensor(_make_entry(), store, MagicMock(), "m1")
+    sensor._timer_signature = (True, 30)
+    sensor._schedule_timer = MagicMock()
+
+    store._data["monitors"][0]["last_cluster_count"] = 5
+    store._data["monitors"][0]["last_scan_at"] = "2026-05-20T00:00:00+00:00"
+
+    sensor._handle_store_update()
+
+    sensor._schedule_timer.assert_not_called()
+    assert sensor._attr_native_value == 5
+
+
+def test_handle_store_update_reschedules_when_timer_config_changes():
+    from custom_components.hass_datapoints.sensor import DatapointsMonitorSensor
+
+    store = _make_store(
+        monitors=[
+            {
+                "id": "m1",
+                "name": "Monitor",
+                "enabled": True,
+                "scan_interval_minutes": 30,
+                "last_cluster_count": 0,
+            }
+        ]
+    )
+    sensor = DatapointsMonitorSensor(_make_entry(), store, MagicMock(), "m1")
+    sensor._timer_signature = (True, 30)
+    sensor._schedule_timer = MagicMock()
+
+    store._data["monitors"][0]["enabled"] = False
+
+    sensor._handle_store_update()
+
+    sensor._schedule_timer.assert_called_once()
+
+
+def test_handle_scan_tick_closes_coroutine_when_task_scheduling_fails():
+    import asyncio
+
+    from custom_components.hass_datapoints.sensor import DatapointsMonitorSensor
+
+    store = _make_store(
+        monitors=[
+            {
+                "id": "m1",
+                "name": "Monitor",
+                "enabled": True,
+                "scan_interval_minutes": 30,
+                "last_cluster_count": 0,
+            }
+        ]
+    )
+    hass = MagicMock()
+    hass.async_create_task = MagicMock(side_effect=RuntimeError("loop closing"))
+    sensor = DatapointsMonitorSensor(_make_entry(), store, hass, "m1")
+
+    async def fake_run_scan():
+        await asyncio.sleep(0)
+
+    coroutine = fake_run_scan()
+    sensor._run_scan = MagicMock(return_value=coroutine)
+
+    sensor._handle_scan_tick(datetime.now(UTC))
+
+    hass.async_create_task.assert_called_once_with(coroutine)
+    assert coroutine.cr_frame is None
 
 
 def test_extra_state_attributes_expose_compact_cluster_summaries_only():
@@ -381,6 +466,48 @@ async def test_run_scan_resolution_clears_active_clusters_and_emits_resolved_clu
     assert payload["active_cluster_count"] == 0
     assert payload["active_clusters"] == []
     assert payload["resolved_clusters"] == existing_summary
+
+
+@pytest.mark.asyncio
+async def test_monitor_sensor_and_switch_share_store_updates_end_to_end(mock_store):
+    from custom_components.hass_datapoints.sensor import DatapointsMonitorSensor
+    from custom_components.hass_datapoints.switch import DatapointsMonitorEnabledSwitch
+
+    monitor = {
+        "id": "m1",
+        "name": "Monitor 1",
+        "type": "individual",
+        "entity_id": "sensor.temp",
+        "enabled": True,
+        "look_back_hours": 24,
+        "scan_interval_minutes": 30,
+        "anomaly_methods": ["iqr"],
+        "dismissed_windows": [],
+        "scan_history": [],
+        "last_cluster_count": 0,
+    }
+    mock_store._data["monitors"] = [monitor]
+    hass = MagicMock()
+    sensor = DatapointsMonitorSensor(_make_entry(), mock_store, hass, "m1")
+    switch = DatapointsMonitorEnabledSwitch(_make_entry(), mock_store, hass, "m1")
+
+    sensor._timer_signature = (True, 30)
+    sensor._schedule_timer = MagicMock()
+    sensor.async_write_ha_state = MagicMock()
+    switch.async_write_ha_state = MagicMock()
+
+    await sensor.async_added_to_hass()
+    await switch.async_added_to_hass()
+    sensor._schedule_timer.reset_mock()
+    sensor.async_write_ha_state.reset_mock()
+    switch.async_write_ha_state.reset_mock()
+
+    await switch.async_turn_off()
+
+    assert mock_store.get_monitor("m1")["enabled"] is False
+    sensor._schedule_timer.assert_called_once()
+    sensor.async_write_ha_state.assert_called_once()
+    switch.async_write_ha_state.assert_called_once()
 
 
 # ---------------------------------------------------------------------------
