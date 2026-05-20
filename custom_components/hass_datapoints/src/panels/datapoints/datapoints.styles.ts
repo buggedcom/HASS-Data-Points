@@ -1265,7 +1265,8 @@ export const PANEL_HISTORY_STYLE = `
     min-height: 0;
     display: flex;
     width: 100%;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   .chart-card-host > * {

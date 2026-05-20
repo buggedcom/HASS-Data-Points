@@ -13649,6 +13649,10 @@
 		*/
 		_getAvailableChartHeight(minChartHeight = 280) {
 			const card = this.closest("ha-card");
+			if (card?.style.height) {
+				card.style.height = "";
+				card.style.minHeight = "";
+			}
 			const header = card?.querySelector(".card-header");
 			const topSlot = this._el("chart-top-slot");
 			const legend = this._el("legend");
@@ -34531,7 +34535,8 @@
     min-height: 0;
     display: flex;
     width: 100%;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   .chart-card-host > * {

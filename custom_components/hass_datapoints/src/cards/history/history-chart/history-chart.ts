@@ -600,6 +600,20 @@ export class HistoryChart extends HTMLElement {
   _getAvailableChartHeight(minChartHeight = 280): number {
     // Walk up to the ha-card ancestor which may live in the parent's shadow root.
     const card = this.closest("ha-card") as Nullable<HTMLElement>;
+
+    // Clear any inline height we set on ha-card in a previous split-chart draw.
+    // With height:auto, ha-card reports content-driven height (e.g. 1000px for 5
+    // series) instead of the CSS-layout-constrained height (e.g. 600px). Measuring
+    // the inflated value causes usePageScroll to flip false, which clears the inline
+    // style, which shrinks ha-card back, which fires ResizeObserver — an infinite
+    // oscillation. Clearing here ensures every measurement starts from the clean
+    // CSS-determined height. _drawSplitChart will re-apply the correct inline value
+    // immediately after, within the same synchronous draw call.
+    if (card?.style.height) {
+      card.style.height = "";
+      card.style.minHeight = "";
+    }
+
     const header = card?.querySelector(".card-header") as Nullable<HTMLElement>;
     const topSlot = this._el("chart-top-slot") as Nullable<HTMLElement>;
     const legend = this._el("legend") as Nullable<HTMLElement>;
