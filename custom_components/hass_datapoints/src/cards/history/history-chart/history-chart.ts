@@ -1695,6 +1695,18 @@ export class HistoryChart extends HTMLElement {
       `${bottomHeight}px`
     );
 
+    // Move the axis overlay inside chart-stage so it scrolls with the canvas
+    // rows when chart-scroll-viewport overflows vertically. Label positions are
+    // already in stage coordinates (rowOffset + renderer.yOf), so they stay
+    // correct. The overlay is restored to the chart element on non-split draws.
+    const stage = this.querySelector("#chart-stage") as HTMLElement | null;
+    if (stage && leftEl.parentElement !== stage) {
+      stage.appendChild(leftEl);
+    }
+    leftEl.style.top = "0";
+    leftEl.style.bottom = "";
+    leftEl.style.height = "100%";
+
     const labelRight = 10;
     const labelItems: import("lit").TemplateResult[] = [];
     for (const { renderer, axis, rowOffset } of tracks) {
@@ -2825,6 +2837,14 @@ export class HistoryChart extends HTMLElement {
       "#chart-axis-right"
     ) as Nullable<HTMLElement>;
     if (axisLeftEl) {
+      // If a previous split draw moved the axis overlay inside chart-stage,
+      // restore it to the chart element so its CSS top/bottom positioning applies.
+      if (axisLeftEl.parentElement !== this) {
+        this.appendChild(axisLeftEl);
+      }
+      axisLeftEl.style.top = "";
+      axisLeftEl.style.bottom = "";
+      axisLeftEl.style.height = "";
       axisLeftEl.style.display = "";
     }
     if (axisRightEl) {

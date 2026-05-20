@@ -14204,6 +14204,11 @@
 			this.style.setProperty("--dp-chart-axis-left-width", `${leftWidth}px`);
 			this.style.setProperty("--dp-chart-axis-right-width", "0px");
 			this.style.setProperty("--dp-chart-axis-bottom-height", `${bottomHeight}px`);
+			const stage = this.querySelector("#chart-stage");
+			if (stage && leftEl.parentElement !== stage) stage.appendChild(leftEl);
+			leftEl.style.top = "0";
+			leftEl.style.bottom = "";
+			leftEl.style.height = "100%";
 			const labelRight = 10;
 			const labelItems = [];
 			for (const { renderer, axis, rowOffset } of tracks) {
@@ -14658,7 +14663,13 @@
 			chartStage?.querySelector("#chart-split-overlay")?.remove();
 			const axisLeftEl = this.querySelector("#chart-axis-left");
 			const axisRightEl = this.querySelector("#chart-axis-right");
-			if (axisLeftEl) axisLeftEl.style.display = "";
+			if (axisLeftEl) {
+				if (axisLeftEl.parentElement !== this) this.appendChild(axisLeftEl);
+				axisLeftEl.style.top = "";
+				axisLeftEl.style.bottom = "";
+				axisLeftEl.style.height = "";
+				axisLeftEl.style.display = "";
+			}
 			if (axisRightEl) axisRightEl.style.display = "";
 			let minChartHeight;
 			if (series.length) minChartHeight = 280;
