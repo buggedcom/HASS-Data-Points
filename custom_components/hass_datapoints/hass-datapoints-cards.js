@@ -10210,9 +10210,11 @@
 			if (ttSeries) {
 				D(b`${displayRows.map((entry) => b`
             <div
-              class="tt-series-row ${entry.grouped === true && entry.rawVisible === true ? "subordinate" : ""}"
+              class="tt-series-row ${entry.grouped === true && entry.rawVisible === true ? "subordinate" : ""} ${entry.splitActive === true ? "split-active" : ""}"
             >
-              <div class="tt-series-main">
+              <div
+                class="tt-series-main ${entry.splitActive ? "active-row" : ""}"
+              >
                 ${entry.grouped === true && entry.rawVisible === true ? "" : b`<span
                       class="tt-dot"
                       style="background:${entry.color || "#03a9f4"}"
@@ -13058,6 +13060,7 @@
     color: rgba(255, 255, 255, 0.96);
   }
   .tt-dot {
+    position: relative;
     display: inline-block;
     width: 8px; height: 8px;
     border-radius: 50%;
@@ -13081,11 +13084,31 @@
   .tt-series-row.subordinate {
     padding-left: calc(var(--spacing, 8px) * 2.25);
   }
+  .tt-series-row.split-active .tt-series-label {
+    color: rgba(255, 255, 255, 0.96);
+    font-weight: 500;
+  }
+  .tt-series-chevron {
+    flex-shrink: 0;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.9rem;
+    line-height: 1;
+    margin-right: -2px;
+  }
   .tt-series-main {
     min-width: 0;
     display: flex;
     align-items: center;
     gap: calc(var(--spacing, 8px) * 0.75);
+  }
+  .tt-series-main.active-row .tt-dot::before {
+    content: "›";
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    position: absolute;
+    left: -8px;
+    top: -4px;
   }
   .tt-series-label {
     min-width: 0;
@@ -15349,12 +15372,13 @@
 				addButton.dataset.allowAddAnnotation = this._canAddAnnotation ? "true" : "false";
 				if (addButton.dataset.allowAddAnnotation === "false") addButton.hidden = true;
 			}
-			if (visibleSeries.length) {
+			const visibleBinaryBackgrounds = binaryBackgrounds.filter((entry) => !this._hiddenSeries.has(entry.entityId));
+			if (visibleSeries.length || visibleBinaryBackgrounds.length) {
 				this._ensureContextAnnotationDialog();
 				attachLineChartHover(this, canvas, renderer, hoverSeries, enrichedEvents, renderT0, renderT1, 0, 0, activeAxes, {
 					onContextMenu: (hover) => this._handleChartContextMenu(hover),
 					onAddAnnotation: this._canAddAnnotation ? (hover) => this._handleChartAddAnnotation(hover) : void 0,
-					binaryStates: binaryBackgrounds.filter((entry) => !this._hiddenSeries.has(entry.entityId)),
+					binaryStates: visibleBinaryBackgrounds,
 					comparisonSeries: effectiveComparisonHoverSeries,
 					trendSeries: [...trendHoverSeries, ...comparisonTrendHoverSeries],
 					rateSeries: [...rateHoverSeries, ...comparisonRateHoverSeries],
@@ -15894,14 +15918,19 @@
 				const localX = clientX - overlayEl.getBoundingClientRect().left;
 				return localX >= primaryRenderer.pad.left && localX <= primaryRenderer.pad.left + primaryRenderer.cw;
 			};
-			const buildSplitHover = (clientX) => {
+			const buildSplitHover = (clientX, clientY) => {
 				const baseRect = tracks[0].canvas.getBoundingClientRect();
 				if (!baseRect.width || !primaryRenderer.cw) return null;
 				const rawTimeMs = t0 + (clampChartValue(clientX - baseRect.left, primaryRenderer.pad.left, primaryRenderer.pad.left + primaryRenderer.cw) - primaryRenderer.pad.left) / primaryRenderer.cw * (t1 - t0);
 				const hoverSnapMode = this._config.hover_snap_mode === "snap_to_data_points" ? "snap_to_data_points" : "follow_series";
 				const timeMs = resolveLineChartHoverTime(tracks.map((track) => ({ pts: track.series?.pts || [] })), rawTimeMs, hoverSnapMode);
 				const x = primaryRenderer.xOf(timeMs, t0, t1);
-				const values = tracks.map((trackItem) => {
+				const localY = clientY - overlayEl.getBoundingClientRect().top;
+				const firstRowOffset = tracks[0].rowOffset;
+				const rowHeight = tracks.length > 1 ? tracks[1].rowOffset - firstRowOffset : splitSelHeight;
+				const relY = localY - firstRowOffset;
+				const activeTrackIndex = rowHeight > 0 ? Math.min(Math.max(Math.floor(relY / rowHeight), 0), tracks.length - 1) : 0;
+				const values = tracks.map((trackItem, trackIndex) => {
 					const { renderer: trackRenderer, series, axis, rowOffset } = trackItem;
 					const value = trackRenderer._interpolateValue(series.pts, timeMs, !!series.stepped);
 					if (value == null) return {
@@ -15913,7 +15942,8 @@
 						opacity: 1,
 						hasValue: false,
 						axisSide: "left",
-						axisSlot: 0
+						axisSlot: 0,
+						splitActive: trackIndex === activeTrackIndex
 					};
 					return {
 						entityId: String(series.entityId || ""),
@@ -15926,7 +15956,8 @@
 						x,
 						y: rowOffset + trackRenderer.yOf(value, axis.min, axis.max),
 						axisSide: "left",
-						axisSlot: 0
+						axisSlot: 0,
+						splitActive: trackIndex === activeTrackIndex
 					};
 				});
 				const hoveredEvents = [];
@@ -16271,7 +16302,7 @@
 			};
 			const showFromPointer = (clientX, clientY) => {
 				if (this._chartZoomDragging) return;
-				const hover = buildSplitHover(clientX);
+				const hover = buildSplitHover(clientX, clientY);
 				if (!hover) {
 					this._chartLastHover = null;
 					hideLineChartHover(this);
@@ -30638,10 +30669,42 @@
     color: var(--secondary-text-color);
   }
 
+  .history-target-picker-row {
+    display: flex;
+    align-items: baseline;
+    gap: var(--dp-spacing-sm);
+    min-width: 0;
+    margin-bottom: calc(var(--spacing, 8px) * 2);
+  }
+
   .history-target-picker-slot {
+    flex: 1 1 auto;
     min-width: 0;
     margin-top: 0;
-    margin-bottom: calc(var(--spacing, 8px) * 2);
+    margin-bottom: 0;
+  }
+
+  .history-targets-clear-all {
+    flex: 0 0 auto;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: var(--primary-color, #3b82f6);
+    white-space: nowrap;
+    appearance: none;
+    -webkit-appearance: none;
+    line-height: 1;
+    opacity: 0.85;
+  }
+
+  .history-targets-clear-all:hover,
+  .history-targets-clear-all:focus-visible {
+    opacity: 1;
+    text-decoration: underline;
+    outline: none;
   }
 
   .history-targets-collapsed-summary {
@@ -30792,6 +30855,7 @@
   }
 
   :host([sidebar-collapsed]) .history-target-rows,
+  :host([sidebar-collapsed]) .history-target-picker-row,
   :host([sidebar-collapsed]) .history-target-picker-slot,
   :host([sidebar-collapsed]) .sidebar-section-header {
     display: none;
@@ -30885,6 +30949,10 @@
 			ev.stopPropagation();
 			this._emit("dp-targets-add-click", { buttonEl: ev.currentTarget });
 		}
+		_onClearAllTargets(ev) {
+			ev.stopPropagation();
+			this._emit("dp-targets-clear-all");
+		}
 		_onCollapsedEntityClick(ev, entityId) {
 			ev.stopPropagation();
 			this._emit("dp-collapsed-entity-click", {
@@ -30935,8 +31003,17 @@
           ></target-row-list>
         </div>
 
-        <div class="history-target-picker-slot">
-          <slot name="picker"> ${A} </slot>
+        <div class="history-target-picker-row">
+          <div class="history-target-picker-slot">
+            <slot name="picker"> ${A} </slot>
+          </div>
+          ${this.rows.length > 1 ? b`<button
+                type="button"
+                class="history-targets-clear-all"
+                @click=${this._onClearAllTargets}
+              >
+                ${msg("Clear all")}
+              </button>` : A}
         </div>
 
         <div class="history-targets-collapsed-summary">
@@ -37020,6 +37097,9 @@
 				const { buttonEl } = ev.detail || {};
 				this._openTargetPicker(buttonEl ?? void 0);
 			});
+			histTargets.addEventListener("dp-targets-clear-all", () => {
+				this._clearAllSeriesRows();
+			});
 			histTargets.addEventListener("dp-collapsed-entity-click", (ev) => {
 				const { entityId, buttonEl } = ev.detail || {};
 				if (!entityId) return;
@@ -37529,6 +37609,15 @@
 			const next = removeSeriesRow(this._seriesRows, index);
 			if (!next) return;
 			this._seriesRows = next;
+			this._syncSeriesState();
+			this._saveSessionState();
+			this._renderTargetRows();
+			this._syncControls();
+			this._updateUrl({ push: true });
+			this._renderContent();
+		}
+		_clearAllSeriesRows() {
+			this._seriesRows = [];
 			this._syncSeriesState();
 			this._saveSessionState();
 			this._renderTargetRows();

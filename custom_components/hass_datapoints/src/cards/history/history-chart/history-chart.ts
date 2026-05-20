@@ -4173,7 +4173,10 @@ export class HistoryChart extends HTMLElement {
       }
     }
 
-    if (visibleSeries.length) {
+    const visibleBinaryBackgrounds = binaryBackgrounds.filter(
+      (entry) => !this._hiddenSeries.has(entry.entityId)
+    );
+    if (visibleSeries.length || visibleBinaryBackgrounds.length) {
       this._ensureContextAnnotationDialog();
       attachLineChartHover(
         this,
@@ -4192,9 +4195,7 @@ export class HistoryChart extends HTMLElement {
           onAddAnnotation: this._canAddAnnotation
             ? (hover: unknown) => this._handleChartAddAnnotation(hover)
             : undefined,
-          binaryStates: binaryBackgrounds.filter(
-            (entry) => !this._hiddenSeries.has(entry.entityId)
-          ) as HoverSeriesLike[],
+          binaryStates: visibleBinaryBackgrounds as HoverSeriesLike[],
           comparisonSeries: effectiveComparisonHoverSeries as HoverSeriesLike[],
           trendSeries: [
             ...trendHoverSeries,
@@ -5577,7 +5578,7 @@ export class HistoryChart extends HTMLElement {
     };
 
     // ── Hover ──────────────────────────────────────────────────────────────────
-    const buildSplitHover = (clientX: number) => {
+    const buildSplitHover = (clientX: number, clientY: number) => {
       const baseRect = (
         (tracks[0] as RecordWithUnknownValues).canvas as HTMLCanvasElement
       ).getBoundingClientRect();
@@ -5616,8 +5617,27 @@ export class HistoryChart extends HTMLElement {
       );
       const x = primaryRenderer.xOf(timeMs, t0, t1);
 
+      // Determine which row the user's cursor is physically over for the active indicator.
+      const overlayRect = overlayEl.getBoundingClientRect();
+      const localY = clientY - overlayRect.top;
+      const firstRowOffset = (tracks[0] as RecordWithUnknownValues)
+        .rowOffset as number;
+      const rowHeight =
+        tracks.length > 1
+          ? ((tracks[1] as RecordWithUnknownValues).rowOffset as number) -
+            firstRowOffset
+          : splitSelHeight;
+      const relY = localY - firstRowOffset;
+      const activeTrackIndex =
+        rowHeight > 0
+          ? Math.min(
+              Math.max(Math.floor(relY / rowHeight), 0),
+              tracks.length - 1
+            )
+          : 0;
+
       const values: HoverValueEntry[] = (tracks as unknown[]).map(
-        (trackItem: unknown) => {
+        (trackItem: unknown, trackIndex: number) => {
           const {
             renderer: trackRenderer,
             series,
@@ -5644,6 +5664,7 @@ export class HistoryChart extends HTMLElement {
               hasValue: false,
               axisSide: "left",
               axisSlot: 0,
+              splitActive: trackIndex === activeTrackIndex,
             };
           }
           return {
@@ -5666,6 +5687,7 @@ export class HistoryChart extends HTMLElement {
               ),
             axisSide: "left",
             axisSlot: 0,
+            splitActive: trackIndex === activeTrackIndex,
           };
         }
       );
@@ -6269,7 +6291,7 @@ export class HistoryChart extends HTMLElement {
       if (this._chartZoomDragging) {
         return;
       }
-      const hover = buildSplitHover(clientX);
+      const hover = buildSplitHover(clientX, clientY);
       if (!hover) {
         this._chartLastHover = null;
         hideLineChartHover(this);
