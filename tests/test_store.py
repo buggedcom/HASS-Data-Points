@@ -19,7 +19,7 @@ class DescribeAsyncLoad:
     ):
         self.store._store.async_load.return_value = None
         await self.store.async_load()
-        assert self.store._data["events"] == []
+        assert self.store.get_events() == []
         assert "monitors" in self.store._data
 
     async def test_GIVEN_existing_persisted_events_WHEN_loaded_THEN_data_contains_those_events(
@@ -41,8 +41,9 @@ class DescribeAsyncLoad:
         }
         self.store._store.async_load.return_value = {"events": [existing]}
         await self.store.async_load()
-        assert len(self.store._data["events"]) == 1
-        assert self.store._data["events"][0]["id"] == "abc"
+        events = self.store.get_events()
+        assert len(events) == 1
+        assert events[0]["id"] == "abc"
 
     async def test_GIVEN_legacy_event_with_singular_entity_id_WHEN_loaded_THEN_migrates_to_entity_ids_list(
         self,
@@ -54,9 +55,10 @@ class DescribeAsyncLoad:
         }
         self.store._store.async_load.return_value = {"events": [old_event]}
         await self.store.async_load()
-        event = self.store._data["events"][0]
-        assert event["entity_ids"] == ["sensor.old"]
-        assert "entity_id" not in event
+        events = self.store.get_events()
+        assert len(events) == 1
+        assert events[0]["entity_ids"] == ["sensor.old"]
+        assert "entity_id" not in events[0]
 
     async def test_GIVEN_event_missing_dev_flag_WHEN_loaded_THEN_dev_defaults_to_false(
         self,
@@ -64,7 +66,7 @@ class DescribeAsyncLoad:
         event = {"id": "y", "timestamp": "2024-01-01T00:00:00", "entity_ids": []}
         self.store._store.async_load.return_value = {"events": [event]}
         await self.store.async_load()
-        assert self.store._data["events"][0]["dev"] is False
+        assert self.store.get_events()[0]["dev"] is False
 
     async def test_GIVEN_event_missing_automation_id_WHEN_loaded_THEN_automation_id_defaults_to_none(
         self,
@@ -72,7 +74,7 @@ class DescribeAsyncLoad:
         event = {"id": "z", "timestamp": "2024-01-01T00:00:00", "entity_ids": []}
         self.store._store.async_load.return_value = {"events": [event]}
         await self.store.async_load()
-        assert self.store._data["events"][0]["automation_id"] is None
+        assert self.store.get_events()[0]["automation_id"] is None
 
     async def test_GIVEN_event_missing_target_id_fields_WHEN_loaded_THEN_all_default_to_empty_lists(
         self,
@@ -80,7 +82,7 @@ class DescribeAsyncLoad:
         event = {"id": "w", "timestamp": "2024-01-01T00:00:00", "entity_ids": []}
         self.store._store.async_load.return_value = {"events": [event]}
         await self.store.async_load()
-        ev = self.store._data["events"][0]
+        ev = self.store.get_events()[0]
         assert ev["device_ids"] == []
         assert ev["area_ids"] == []
         assert ev["label_ids"] == []
@@ -133,9 +135,10 @@ class DescribeAsyncRecord:
         event = await self.store.async_record("naive date", date="2024-06-15T10:30:00")
         assert "+00:00" in event["timestamp"]
 
-    async def test_GIVEN_new_event_WHEN_recorded_THEN_store_is_persisted(self):
+    async def test_GIVEN_new_event_WHEN_recorded_THEN_event_is_retrievable(self):
         await self.store.async_record("save me")
-        self.store._store.async_save.assert_called_once()
+        assert len(self.store.get_events()) == 1
+        assert self.store.get_events()[0]["message"] == "save me"
 
     async def test_GIVEN_no_optional_fields_WHEN_recorded_THEN_optional_fields_default_to_empty(
         self,
@@ -477,3 +480,75 @@ class DescribeGetAutomationManualCounts:
             await self.store.async_record(f"a{i}", automation_id=f"auto.{i}")
         automation, manual = self.store.get_automation_manual_counts()
         assert automation + manual == self.store.get_event_count()
+
+
+# ---------------------------------------------------------------------------
+# Migration from JSON store to SQLite
+# ---------------------------------------------------------------------------
+
+
+class DescribeMigration:
+    @pytest.fixture(autouse=True)
+    def setup(self, mock_store):
+        self.store = mock_store
+
+    async def test_GIVEN_json_events_in_store_WHEN_loaded_THEN_events_accessible_via_get_events(
+        self,
+    ):
+        legacy = {
+            "id": "migrated-1",
+            "timestamp": "2023-06-01T12:00:00+00:00",
+            "message": "legacy event",
+            "annotation": "legacy event",
+            "entity_ids": ["sensor.x"],
+            "device_ids": [],
+            "area_ids": [],
+            "label_ids": [],
+            "icon": "mdi:bookmark",
+            "color": "#03a9f4",
+            "dev": False,
+            "automation_id": None,
+        }
+        self.store._store.async_load.return_value = {"events": [legacy]}
+        await self.store.async_load()
+        events = self.store.get_events()
+        assert len(events) == 1
+        assert events[0]["id"] == "migrated-1"
+        assert events[0]["message"] == "legacy event"
+        assert events[0]["entity_ids"] == ["sensor.x"]
+
+    async def test_GIVEN_json_events_in_store_WHEN_loaded_THEN_events_key_removed_from_json_store(
+        self,
+    ):
+        legacy = {
+            "id": "migrated-2",
+            "timestamp": "2023-01-01T00:00:00+00:00",
+            "message": "to migrate",
+            "entity_ids": [],
+        }
+        self.store._store.async_load.return_value = {"events": [legacy]}
+        await self.store.async_load()
+        # JSON store should have been re-saved without the events key
+        self.store._store.async_save.assert_called_once()
+        saved_data = self.store._store.async_save.call_args[0][0]
+        assert "events" not in saved_data
+
+    async def test_GIVEN_migration_already_run_WHEN_loaded_again_THEN_events_not_duplicated(
+        self,
+    ):
+        legacy = {
+            "id": "migrated-3",
+            "timestamp": "2023-03-01T00:00:00+00:00",
+            "message": "dedup check",
+            "entity_ids": [],
+        }
+        # First load — migrates the event
+        self.store._store.async_load.return_value = {"events": [legacy]}
+        await self.store.async_load()
+        assert self.store.get_event_count() == 1
+
+        # Second load — JSON store no longer has events (simulates post-migration state)
+        self.store._store.async_load.return_value = {}
+        await self.store.async_load()
+        # Event count must still be 1, not 2
+        assert self.store.get_event_count() == 1

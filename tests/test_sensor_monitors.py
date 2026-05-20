@@ -15,12 +15,12 @@ import pytest
 def _make_store(monitors=None):
     from custom_components.hass_datapoints.store import DatapointsStore
 
-    store = DatapointsStore(MagicMock())
+    store = DatapointsStore(MagicMock(), ":memory:")
     inner = MagicMock()
     inner.async_load = AsyncMock(return_value=None)
     inner.async_save = AsyncMock(return_value=None)
     store._store = inner
-    store._data = {"events": [], "monitors": monitors or []}
+    store._data = {"monitors": monitors or []}
     return store
 
 

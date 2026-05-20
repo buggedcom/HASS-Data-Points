@@ -177,6 +177,7 @@ _ha_sensor.SensorEntity = _FakeSensorEntity
 _ha_sensor.SensorDeviceClass = _SensorDeviceClass
 _stub("homeassistant.components.sensor", _ha_sensor)
 
+
 # -- homeassistant.components.binary_sensor -----------------------------------
 class _FakeBinarySensorEntity:
     """Minimal BinarySensorEntity stub."""
@@ -204,6 +205,7 @@ class _FakeBinarySensorEntity:
 _ha_binary_sensor = MagicMock()
 _ha_binary_sensor.BinarySensorEntity = _FakeBinarySensorEntity
 _stub("homeassistant.components.binary_sensor", _ha_binary_sensor)
+
 
 # -- homeassistant.components.switch ------------------------------------------
 class _FakeSwitchEntity:
@@ -299,11 +301,17 @@ _stub("homeassistant.components.persistent_notification", _ha_pn)
 
 
 @pytest.fixture()
-def mock_store():
-    """Return a DatapointsStore backed by a fully async-mock Store."""
+def mock_store(tmp_path):
+    """Return a DatapointsStore backed by a real SQLite file (isolated per test)."""
     from custom_components.hass_datapoints.store import DatapointsStore  # noqa: PLC0415
 
-    store = DatapointsStore(MagicMock())
+    async def _run_executor(fn, *args):
+        return fn(*args)
+
+    hass_mock = MagicMock()
+    hass_mock.async_add_executor_job = AsyncMock(side_effect=_run_executor)
+
+    store = DatapointsStore(hass_mock, str(tmp_path / "test_events.db"))
 
     inner = MagicMock()
     inner.async_load = AsyncMock(return_value=None)
