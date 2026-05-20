@@ -1703,6 +1703,8 @@ export class HistoryChart extends HTMLElement {
     if (stage && leftEl.parentElement !== stage) {
       stage.appendChild(leftEl);
     }
+    leftEl.style.position = "sticky";
+    leftEl.style.left = "0";
     leftEl.style.top = "0";
     leftEl.style.bottom = "";
     leftEl.style.height = "100%";
@@ -2842,6 +2844,8 @@ export class HistoryChart extends HTMLElement {
       if (axisLeftEl.parentElement !== this) {
         this.appendChild(axisLeftEl);
       }
+      axisLeftEl.style.position = "";
+      axisLeftEl.style.left = "";
       axisLeftEl.style.top = "";
       axisLeftEl.style.bottom = "";
       axisLeftEl.style.height = "";

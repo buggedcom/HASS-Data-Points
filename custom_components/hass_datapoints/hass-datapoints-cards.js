@@ -14206,6 +14206,8 @@
 			this.style.setProperty("--dp-chart-axis-bottom-height", `${bottomHeight}px`);
 			const stage = this.querySelector("#chart-stage");
 			if (stage && leftEl.parentElement !== stage) stage.appendChild(leftEl);
+			leftEl.style.position = "sticky";
+			leftEl.style.left = "0";
 			leftEl.style.top = "0";
 			leftEl.style.bottom = "";
 			leftEl.style.height = "100%";
@@ -14665,6 +14667,8 @@
 			const axisRightEl = this.querySelector("#chart-axis-right");
 			if (axisLeftEl) {
 				if (axisLeftEl.parentElement !== this) this.appendChild(axisLeftEl);
+				axisLeftEl.style.position = "";
+				axisLeftEl.style.left = "";
 				axisLeftEl.style.top = "";
 				axisLeftEl.style.bottom = "";
 				axisLeftEl.style.height = "";
