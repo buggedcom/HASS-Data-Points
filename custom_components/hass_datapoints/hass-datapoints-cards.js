@@ -696,7 +696,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/action.styles.ts
-	var styles$77 = i$5`
+	var styles$78 = i$5`
   :host {
     display: block;
   }
@@ -805,7 +805,7 @@
 	];
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/display/color-swatch/color-swatch.styles.ts
-	var styles$76 = i$5`
+	var styles$77 = i$5`
   :host {
     display: block;
   }
@@ -850,6 +850,19 @@
     pointer-events: none;
   }
 `;
+	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/events.ts
+	/**
+	* Dispatch a `dp-change` event from the given host element.
+	* The event bubbles and is composed so it crosses shadow-DOM boundaries.
+	*/
+	function dispatchChange(host, detail) {
+		host.dispatchEvent(new CustomEvent("dp-change", {
+			detail,
+			bubbles: true,
+			composed: true
+		}));
+	}
 	//#endregion
 	//#region \0@oxc-project+runtime@0.122.0/helpers/decorate.js
 	function __decorate(decorators, target, key, desc) {
@@ -926,6 +939,10 @@
 	//#region custom_components/hass_datapoints/src/atoms/display/color-swatch/color-swatch.ts
 	var _color_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _label_accessor_storage$15 = /* @__PURE__ */ new WeakMap();
+	/**
+	* Compact color swatch button backed by a native color `<input>`.
+	* @fires dp-change - `{ type: "color", color: string }`
+	*/
 	var ColorSwatch = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
@@ -945,12 +962,10 @@
 			_classPrivateFieldSet2(_label_accessor_storage$15, this, value);
 		}
 		_onInput(e) {
-			const newColor = e.target.value;
-			this.dispatchEvent(new CustomEvent("dp-color-change", {
-				detail: { color: newColor },
-				bubbles: true,
-				composed: true
-			}));
+			dispatchChange(this, {
+				type: "color",
+				color: e.target.value
+			});
 		}
 		render() {
 			return b`
@@ -967,13 +982,13 @@
     `;
 		}
 	};
-	_defineProperty(ColorSwatch, "styles", styles$76);
+	_defineProperty(ColorSwatch, "styles", styles$77);
 	__decorate([n$1({ type: String })], ColorSwatch.prototype, "color", null);
 	__decorate([n$1({ type: String })], ColorSwatch.prototype, "label", null);
 	customElements.define("color-swatch", ColorSwatch);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/display/feedback-banner/feedback-banner.styles.ts
-	var styles$75 = i$5`
+	var styles$76 = i$5`
   :host {
     display: block;
   }
@@ -1050,7 +1065,7 @@
     `;
 		}
 	};
-	_defineProperty(FeedbackBanner, "styles", styles$75);
+	_defineProperty(FeedbackBanner, "styles", styles$76);
 	__decorate([n$1({ type: String })], FeedbackBanner.prototype, "kind", null);
 	__decorate([n$1({ type: String })], FeedbackBanner.prototype, "text", null);
 	__decorate([n$1({ type: Boolean })], FeedbackBanner.prototype, "visible", null);
@@ -1058,7 +1073,7 @@
 	customElements.define("feedback-banner", FeedbackBanner);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/action-targets/action-targets.styles.ts
-	var styles$74 = i$5`
+	var styles$75 = i$5`
   :host {
     display: block;
   }
@@ -1070,7 +1085,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/chip-group/chip-group.styles.ts
-	var styles$73 = i$5`
+	var styles$74 = i$5`
   :host {
     display: block;
   }
@@ -1087,7 +1102,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/entity-chip/entity-chip.styles.ts
-	var styles$72 = i$5`
+	var styles$73 = i$5`
   :host {
     display: inline-flex;
   }
@@ -1218,7 +1233,7 @@
     `;
 		}
 	};
-	_defineProperty(EntityChip, "styles", styles$72);
+	_defineProperty(EntityChip, "styles", styles$73);
 	__decorate([n$1({ type: String })], EntityChip.prototype, "type", null);
 	__decorate([n$1({
 		type: String,
@@ -1292,7 +1307,7 @@
     `;
 		}
 	};
-	_defineProperty(ChipGroup, "styles", styles$73);
+	_defineProperty(ChipGroup, "styles", styles$74);
 	__decorate([n$1({ type: Array })], ChipGroup.prototype, "items", null);
 	__decorate([n$1({ type: Object })], ChipGroup.prototype, "hass", null);
 	__decorate([n$1({ type: Boolean })], ChipGroup.prototype, "removable", null);
@@ -1379,7 +1394,7 @@
     `;
 		}
 	};
-	_defineProperty(CardActionTargets, "styles", styles$74);
+	_defineProperty(CardActionTargets, "styles", styles$75);
 	__decorate([n$1({ attribute: false })], CardActionTargets.prototype, "hass", null);
 	__decorate([n$1({
 		type: Boolean,
@@ -1689,7 +1704,7 @@
           <div class="form-group color-col">
             <color-swatch
               .color=${this._color}
-              @dp-color-change=${this._onColorChange}
+              @dp-change=${this._onColorChange}
             ></color-swatch>
           </div>
         </div>
@@ -1742,7 +1757,7 @@
 		_feedbackText: { state: true },
 		_feedbackVisible: { state: true }
 	});
-	_defineProperty(HassDatapointsActionCard, "styles", styles$77);
+	_defineProperty(HassDatapointsActionCard, "styles", styles$78);
 	__decorate([e$4("#msg")], HassDatapointsActionCard.prototype, "_msgEl", null);
 	__decorate([e$4("#btn")], HassDatapointsActionCard.prototype, "_btnEl", null);
 	__decorate([e$4("#ann")], HassDatapointsActionCard.prototype, "_annEl", null);
@@ -6047,7 +6062,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/editor.styles.ts
-	var styles$71 = i$5`
+	var styles$72 = i$5`
   .note {
     font-size: 0.78rem;
     color: var(--secondary-text-color);
@@ -6055,7 +6070,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/editor-base/editor-base.styles.ts
-	var styles$70 = i$5`
+	var styles$71 = i$5`
   :host {
     display: block;
   }
@@ -6104,7 +6119,7 @@
 			this._config = cfg;
 			this._fire(cfg);
 		}
-	}, _defineProperty(_EditorBase, "styles", styles$70), _EditorBase);
+	}, _defineProperty(_EditorBase, "styles", styles$71), _EditorBase);
 	__decorate([r$2()], EditorBase.prototype, "_config", null);
 	__decorate([n$1({ type: Object })], EditorBase.prototype, "hass", null);
 	EditorBase = __decorate([localized()], EditorBase);
@@ -6182,7 +6197,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/display/section-heading/section-heading.styles.ts
-	var styles$69 = i$5`
+	var styles$70 = i$5`
   :host {
     display: block;
   }
@@ -6212,12 +6227,12 @@
 			return b`<div class="heading">${this.text}</div>`;
 		}
 	};
-	_defineProperty(SectionHeading, "styles", styles$69);
+	_defineProperty(SectionHeading, "styles", styles$70);
 	__decorate([n$1({ type: String })], SectionHeading.prototype, "text", null);
 	customElements.define("section-heading", SectionHeading);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/editor-text-field/editor-text-field.styles.ts
-	var styles$68 = i$5`
+	var styles$69 = i$5`
   :host {
     display: block;
   }
@@ -6229,18 +6244,22 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/editor-text-field/editor-text-field.ts
 	var _label_accessor_storage$13 = /* @__PURE__ */ new WeakMap();
-	var _value_accessor_storage$8 = /* @__PURE__ */ new WeakMap();
+	var _value_accessor_storage$9 = /* @__PURE__ */ new WeakMap();
 	var _type_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _placeholder_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
-	var _suffix_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _placeholder_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
+	var _suffix_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	/**
+	* Wraps `ha-textfield` for use in card editors.
+	* @fires dp-change - `{ type: "field", value: string }`
+	*/
 	var EditorTextField = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _label_accessor_storage$13, "");
-			_classPrivateFieldInitSpec(this, _value_accessor_storage$8, "");
+			_classPrivateFieldInitSpec(this, _value_accessor_storage$9, "");
 			_classPrivateFieldInitSpec(this, _type_accessor_storage$1, "text");
-			_classPrivateFieldInitSpec(this, _placeholder_accessor_storage$2, "");
-			_classPrivateFieldInitSpec(this, _suffix_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _placeholder_accessor_storage$3, "");
+			_classPrivateFieldInitSpec(this, _suffix_accessor_storage$1, "");
 		}
 		get label() {
 			return _classPrivateFieldGet2(_label_accessor_storage$13, this);
@@ -6249,10 +6268,10 @@
 			_classPrivateFieldSet2(_label_accessor_storage$13, this, value);
 		}
 		get value() {
-			return _classPrivateFieldGet2(_value_accessor_storage$8, this);
+			return _classPrivateFieldGet2(_value_accessor_storage$9, this);
 		}
 		set value(value) {
-			_classPrivateFieldSet2(_value_accessor_storage$8, this, value);
+			_classPrivateFieldSet2(_value_accessor_storage$9, this, value);
 		}
 		get type() {
 			return _classPrivateFieldGet2(_type_accessor_storage$1, this);
@@ -6261,25 +6280,23 @@
 			_classPrivateFieldSet2(_type_accessor_storage$1, this, value);
 		}
 		get placeholder() {
-			return _classPrivateFieldGet2(_placeholder_accessor_storage$2, this);
+			return _classPrivateFieldGet2(_placeholder_accessor_storage$3, this);
 		}
 		set placeholder(value) {
-			_classPrivateFieldSet2(_placeholder_accessor_storage$2, this, value);
+			_classPrivateFieldSet2(_placeholder_accessor_storage$3, this, value);
 		}
 		get suffix() {
-			return _classPrivateFieldGet2(_suffix_accessor_storage, this);
+			return _classPrivateFieldGet2(_suffix_accessor_storage$1, this);
 		}
 		set suffix(value) {
-			_classPrivateFieldSet2(_suffix_accessor_storage, this, value);
+			_classPrivateFieldSet2(_suffix_accessor_storage$1, this, value);
 		}
 		_onInput(e) {
-			const rawValue = e.target.value;
-			const value = this.type === "number" ? parseFloat(rawValue) : rawValue;
-			this.dispatchEvent(new CustomEvent("dp-field-change", {
-				detail: { value: this.type === "number" && Number.isNaN(value) ? void 0 : value },
-				bubbles: true,
-				composed: true
-			}));
+			const value = e.target.value;
+			dispatchChange(this, {
+				type: "field",
+				value
+			});
 		}
 		render() {
 			return b`<ha-textfield
@@ -6292,7 +6309,7 @@
     ></ha-textfield>`;
 		}
 	};
-	_defineProperty(EditorTextField, "styles", styles$68);
+	_defineProperty(EditorTextField, "styles", styles$69);
 	__decorate([n$1({ type: String })], EditorTextField.prototype, "label", null);
 	__decorate([n$1({ type: String })], EditorTextField.prototype, "value", null);
 	__decorate([n$1({ type: String })], EditorTextField.prototype, "type", null);
@@ -6301,7 +6318,7 @@
 	customElements.define("editor-text-field", EditorTextField);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/editor-switch/editor-switch.styles.ts
-	var styles$67 = i$5`
+	var styles$68 = i$5`
   :host {
     display: block;
   }
@@ -6345,6 +6362,10 @@
 	var _label_accessor_storage$12 = /* @__PURE__ */ new WeakMap();
 	var _checked_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _tooltip_accessor_storage = /* @__PURE__ */ new WeakMap();
+	/**
+	* Labeled toggle switch for use in card editors.
+	* @fires dp-change - `{ type: "switch", checked: boolean }`
+	*/
 	var EditorSwitch = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
@@ -6371,11 +6392,10 @@
 			_classPrivateFieldSet2(_tooltip_accessor_storage, this, value);
 		}
 		_onChange(e) {
-			this.dispatchEvent(new CustomEvent("dp-switch-change", {
-				detail: { checked: e.target.checked },
-				bubbles: true,
-				composed: true
-			}));
+			dispatchChange(this, {
+				type: "switch",
+				checked: e.target.checked
+			});
 		}
 		render() {
 			return b`
@@ -6396,14 +6416,14 @@
     `;
 		}
 	};
-	_defineProperty(EditorSwitch, "styles", styles$67);
+	_defineProperty(EditorSwitch, "styles", styles$68);
 	__decorate([n$1({ type: String })], EditorSwitch.prototype, "label", null);
 	__decorate([n$1({ type: Boolean })], EditorSwitch.prototype, "checked", null);
 	__decorate([n$1({ type: String })], EditorSwitch.prototype, "tooltip", null);
 	customElements.define("editor-switch", EditorSwitch);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/editor-icon-picker/editor-icon-picker.styles.ts
-	var styles$66 = i$5`
+	var styles$67 = i$5`
   :host {
     display: block;
   }
@@ -6415,13 +6435,17 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/editor-icon-picker/editor-icon-picker.ts
 	var _label_accessor_storage$11 = /* @__PURE__ */ new WeakMap();
-	var _value_accessor_storage$7 = /* @__PURE__ */ new WeakMap();
+	var _value_accessor_storage$8 = /* @__PURE__ */ new WeakMap();
 	var _hass_accessor_storage$14 = /* @__PURE__ */ new WeakMap();
+	/**
+	* MDI icon picker backed by `ha-icon-picker`.
+	* @fires dp-change - `{ type: "icon", value: string }` — MDI icon string (e.g. `"mdi:home"`)
+	*/
 	var EditorIconPicker = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _label_accessor_storage$11, "");
-			_classPrivateFieldInitSpec(this, _value_accessor_storage$7, "mdi:bookmark");
+			_classPrivateFieldInitSpec(this, _value_accessor_storage$8, "mdi:bookmark");
 			_classPrivateFieldInitSpec(this, _hass_accessor_storage$14, null);
 		}
 		get label() {
@@ -6431,10 +6455,10 @@
 			_classPrivateFieldSet2(_label_accessor_storage$11, this, value);
 		}
 		get value() {
-			return _classPrivateFieldGet2(_value_accessor_storage$7, this);
+			return _classPrivateFieldGet2(_value_accessor_storage$8, this);
 		}
 		set value(value) {
-			_classPrivateFieldSet2(_value_accessor_storage$7, this, value);
+			_classPrivateFieldSet2(_value_accessor_storage$8, this, value);
 		}
 		get hass() {
 			return _classPrivateFieldGet2(_hass_accessor_storage$14, this);
@@ -6443,11 +6467,10 @@
 			_classPrivateFieldSet2(_hass_accessor_storage$14, this, value);
 		}
 		_onValueChanged(e) {
-			this.dispatchEvent(new CustomEvent("dp-icon-change", {
-				detail: { value: e.detail.value },
-				bubbles: true,
-				composed: true
-			}));
+			dispatchChange(this, {
+				type: "icon",
+				value: e.detail.value
+			});
 		}
 		render() {
 			return b`<ha-icon-picker
@@ -6458,7 +6481,7 @@
     ></ha-icon-picker>`;
 		}
 	};
-	_defineProperty(EditorIconPicker, "styles", styles$66);
+	_defineProperty(EditorIconPicker, "styles", styles$67);
 	__decorate([n$1({ type: String })], EditorIconPicker.prototype, "label", null);
 	__decorate([n$1({ type: String })], EditorIconPicker.prototype, "value", null);
 	__decorate([n$1({ type: Object })], EditorIconPicker.prototype, "hass", null);
@@ -6521,7 +6544,7 @@
         <editor-text-field
           .label=${msg("Card title (optional)")}
           .value=${c.title || ""}
-          @dp-field-change=${(e) => this._set("title", e.detail.value)}
+          @dp-change=${(e) => this._set("title", e.detail.value)}
         ></editor-text-field>
 
         <section-heading .text=${msg("Related items")}></section-heading>
@@ -6539,12 +6562,12 @@
         <editor-switch
           .label=${msg("Show always included targets on card")}
           .checked=${c.show_config_targets !== false}
-          @dp-switch-change=${(e) => this._set("show_config_targets", e.detail.checked ? void 0 : false)}
+          @dp-change=${(e) => this._set("show_config_targets", e.detail.checked ? void 0 : false)}
         ></editor-switch>
         <editor-switch
           .label=${msg("Allow user to add more related items")}
           .checked=${c.show_target_picker !== false}
-          @dp-switch-change=${(e) => this._set("show_target_picker", e.detail.checked ? void 0 : false)}
+          @dp-change=${(e) => this._set("show_target_picker", e.detail.checked ? void 0 : false)}
         ></editor-switch>
 
         <section-heading .text=${msg("Datapoint Appearance")}></section-heading>
@@ -6552,30 +6575,30 @@
           .label=${msg("Default icon")}
           .value=${c.default_icon || "mdi:bookmark"}
           .hass=${this.hass}
-          @dp-icon-change=${(e) => this._set("default_icon", e.detail.value)}
+          @dp-change=${(e) => this._set("default_icon", e.detail.value)}
         ></editor-icon-picker>
         <color-swatch
           .label=${msg("Default colour")}
           .color=${c.default_color || "#03a9f4"}
-          @dp-color-change=${(e) => this._set("default_color", e.detail.color)}
+          @dp-change=${(e) => this._set("default_color", e.detail.color)}
         ></color-swatch>
 
         <section-heading .text=${msg("Form fields")}></section-heading>
         <editor-switch
           .label=${msg("Show date & time field")}
           .checked=${c.show_date !== false}
-          @dp-switch-change=${(e) => this._set("show_date", e.detail.checked ? void 0 : false)}
+          @dp-change=${(e) => this._set("show_date", e.detail.checked ? void 0 : false)}
         ></editor-switch>
         <editor-switch
           .label=${msg("Show annotation field")}
           .checked=${c.show_annotation !== false}
-          @dp-switch-change=${(e) => this._set("show_annotation", e.detail.checked ? void 0 : false)}
+          @dp-change=${(e) => this._set("show_annotation", e.detail.checked ? void 0 : false)}
         ></editor-switch>
       </div>
     `;
 		}
 	};
-	_defineProperty(HassDatapointsActionCardEditor, "styles", [EditorBase.styles, styles$71]);
+	_defineProperty(HassDatapointsActionCardEditor, "styles", [EditorBase.styles, styles$72]);
 	__decorate([e$4("#target-picker")], HassDatapointsActionCardEditor.prototype, "_targetPickerEl", null);
 	__decorate([r$1("ha-selector")], HassDatapointsActionCardEditor.prototype, "_selectorEls", null);
 	//#endregion
@@ -6819,7 +6842,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/dev-tool/dev-tool.styles.ts
-	var styles$65 = i$5`
+	var styles$66 = i$5`
   :host {
     display: block;
   }
@@ -6894,7 +6917,7 @@
 	_defineProperty(HassDatapointsDevToolCardEditor, "styles", [EditorBase.styles]);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/dev-tool/dev-tool-results/dev-tool-results.styles.ts
-	var styles$64 = i$5`
+	var styles$65 = i$5`
   :host {
     display: block;
     margin-top: 18px;
@@ -7261,7 +7284,7 @@
     `;
 		}
 	};
-	_defineProperty(CardDevToolResults, "styles", styles$64);
+	_defineProperty(CardDevToolResults, "styles", styles$65);
 	__decorate([n$1({ attribute: false })], CardDevToolResults.prototype, "results", null);
 	__decorate([n$1({ type: Boolean })], CardDevToolResults.prototype, "isAdmin", null);
 	__decorate([n$1({ type: String })], CardDevToolResults.prototype, "statusKind", null);
@@ -7271,7 +7294,7 @@
 	customElements.define("dev-tool-results", CardDevToolResults);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/dev-tool/dev-tool-windows/dev-tool-windows.styles.ts
-	var styles$63 = i$5`
+	var styles$64 = i$5`
   :host {
     display: block;
   }
@@ -7514,7 +7537,7 @@
     `;
 		}
 	};
-	_defineProperty(CardDevToolWindows, "styles", styles$63);
+	_defineProperty(CardDevToolWindows, "styles", styles$64);
 	__decorate([n$1({ attribute: false })], CardDevToolWindows.prototype, "windows", null);
 	__decorate([r$2()], CardDevToolWindows.prototype, "_nextWindowId", null);
 	customElements.define("dev-tool-windows", CardDevToolWindows);
@@ -8024,7 +8047,7 @@
 			return document.createElement("hass-datapoints-dev-tool-card-editor");
 		}
 	};
-	_defineProperty(HassDatapointsDevToolCard, "styles", styles$65);
+	_defineProperty(HassDatapointsDevToolCard, "styles", styles$66);
 	__decorate([r$2()], HassDatapointsDevToolCard.prototype, "_config", null);
 	__decorate([r$2()], HassDatapointsDevToolCard.prototype, "_hass", null);
 	__decorate([r$2()], HassDatapointsDevToolCard.prototype, "_entities", null);
@@ -8197,7 +8220,7 @@
 	};
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history.styles.ts
-	var styles$62 = i$5`
+	var styles$63 = i$5`
   :host {
     display: block;
     height: 100%;
@@ -12535,7 +12558,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/history-chart.styles.ts
-	var styles$61 = `
+	var styles$62 = `
   hass-datapoints-history-chart {
     position: relative;
     display: flex;
@@ -13437,7 +13460,7 @@
 		connectedCallback() {
 			this.style.cssText = "position:relative;display:flex;flex-direction:column;height:100%;min-height:0;padding:var(--dp-spacing-sm,8px) var(--dp-spacing-md,12px) var(--dp-spacing-md,12px);box-sizing:border-box;overflow:visible;isolation:isolate;z-index:3;";
 			if (this.querySelector("#chart")) return;
-			this.innerHTML = `<style>${styles$61}</style>
+			this.innerHTML = `<style>${styles$62}</style>
       <div class="chart-top-slot" id="chart-top-slot" hidden></div>
       <div class="chart-preview-overlay" id="chart-preview-overlay" hidden></div>
       <div class="chart-scroll-viewport" id="chart-scroll-viewport">
@@ -16576,7 +16599,7 @@
 	});
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/annotation-chip-row/annotation-chip-row.styles.ts
-	var styles$60 = i$5`
+	var styles$61 = i$5`
   :host {
     display: block;
   }
@@ -16607,7 +16630,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/interactive/annotation-chip/annotation-chip.styles.ts
-	var styles$59 = i$5`
+	var styles$60 = i$5`
   :host {
     display: inline-flex;
   }
@@ -16777,7 +16800,7 @@
     `;
 		}
 	};
-	_defineProperty(AnnotationChip, "styles", styles$59);
+	_defineProperty(AnnotationChip, "styles", styles$60);
 	__decorate([n$1({ type: String })], AnnotationChip.prototype, "type", null);
 	__decorate([n$1({
 		type: String,
@@ -16892,7 +16915,7 @@
     `;
 		}
 	};
-	_defineProperty(AnnotationChipRow, "styles", styles$60);
+	_defineProperty(AnnotationChipRow, "styles", styles$61);
 	__decorate([n$1({ type: Array })], AnnotationChipRow.prototype, "chips", null);
 	__decorate([n$1({
 		type: Object,
@@ -18301,11 +18324,88 @@
 			return document.createElement("hass-datapoints-history-card-editor");
 		}
 	};
-	_defineProperty(HassDatapointsHistoryCard, "styles", styles$62);
+	_defineProperty(HassDatapointsHistoryCard, "styles", styles$63);
 	customElements.define("hass-datapoints-history-card", HassDatapointsHistoryCard);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/editor.styles.ts
-	var styles$58 = i$5``;
+	var styles$59 = i$5``;
+	//#endregion
+	//#region custom_components/hass_datapoints/src/molecules/analysis-group-shared/analysis-group.mixin.ts
+	/**
+	* LIT mixin shared by all seven analysis-group molecules.
+	*
+	* Provides the `analysis` and `entityId` reactive properties plus the three
+	* helper methods that were previously copy-pasted into every molecule.
+	*
+	* Usage:
+	* ```ts
+	* @localized()
+	* export class MyAnalysisGroup extends AnalysisGroupMixin(LitElement) {
+	*   private _onGroupChange(e: CustomEvent) {
+	*     this._emit("show_my_analysis", e.detail.checked);
+	*   }
+	* }
+	* ```
+	*/
+	var AnalysisGroupMixin = (Base) => {
+		var _analysis_accessor_storage = /* @__PURE__ */ new WeakMap();
+		var _entityId_accessor_storage = /* @__PURE__ */ new WeakMap();
+		class Mixin extends Base {
+			constructor(..._args) {
+				super(..._args);
+				_classPrivateFieldInitSpec(this, _analysis_accessor_storage, {});
+				_classPrivateFieldInitSpec(this, _entityId_accessor_storage, "");
+			}
+			get analysis() {
+				return _classPrivateFieldGet2(_analysis_accessor_storage, this);
+			}
+			set analysis(value) {
+				_classPrivateFieldSet2(_analysis_accessor_storage, this, value);
+			}
+			get entityId() {
+				return _classPrivateFieldGet2(_entityId_accessor_storage, this);
+			}
+			set entityId(value) {
+				_classPrivateFieldSet2(_entityId_accessor_storage, this, value);
+			}
+			/**
+			* Dispatch `dp-group-analysis-change` with the given key/value pair.
+			* @fires dp-group-analysis-change - Detail: `{ entityId, key, value }`
+			*/
+			_emit(key, value) {
+				this.dispatchEvent(new CustomEvent("dp-group-analysis-change", {
+					detail: {
+						entityId: this.entityId,
+						key,
+						value
+					},
+					bubbles: true,
+					composed: true
+				}));
+			}
+			/** Checkbox change handler — emits the checkbox's checked state for `key`. */
+			_onCheckbox(key, e) {
+				this._emit(key, e.target.checked);
+			}
+			/**
+			* Map `msg()` over an array of options, preserving all other fields.
+			* If an option has a `help` string it is also localized.
+			*/
+			_localizedOptions(opts) {
+				return opts.map((opt) => ({
+					...opt,
+					label: msg(opt.label),
+					...opt.help !== void 0 && { help: msg(opt.help) }
+				}));
+			}
+		}
+		__decorate([n$1({ type: Object })], Mixin.prototype, "analysis", null);
+		__decorate([n$1({
+			type: String,
+			attribute: "entity-id"
+		})], Mixin.prototype, "entityId", null);
+		return Mixin;
+	};
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-group-shared/analysis-group-shared.styles.ts
 	var sharedStyles = i$5`
@@ -18373,10 +18473,10 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-sample-group/analysis-sample-group.styles.ts
-	var styles$57 = i$5``;
+	var styles$58 = i$5``;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/analysis/analysis-group/analysis-group.styles.ts
-	var styles$56 = i$5`
+	var styles$57 = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -18437,6 +18537,10 @@
 	var _checked_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _disabled_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _alignTop_accessor_storage = /* @__PURE__ */ new WeakMap();
+	/**
+	* Toggle-style group container that shows/hides slotted sub-options.
+	* @fires dp-group-change - `{ checked: boolean }` — fired when the toggle checkbox changes
+	*/
 	var AnalysisGroup = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
@@ -18505,7 +18609,7 @@
     `;
 		}
 	};
-	_defineProperty(AnalysisGroup, "styles", styles$56);
+	_defineProperty(AnalysisGroup, "styles", styles$57);
 	__decorate([n$1({ type: String })], AnalysisGroup.prototype, "label", null);
 	__decorate([n$1({ type: Boolean })], AnalysisGroup.prototype, "checked", null);
 	__decorate([n$1({ type: Boolean })], AnalysisGroup.prototype, "disabled", null);
@@ -18516,7 +18620,7 @@
 	customElements.define("analysis-group", AnalysisGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/inline-select/inline-select.styles.ts
-	var styles$55 = i$5`
+	var styles$56 = i$5`
   :host {
     display: inline-block;
   }
@@ -18537,21 +18641,25 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/inline-select/inline-select.ts
-	var _value_accessor_storage$6 = /* @__PURE__ */ new WeakMap();
+	var _value_accessor_storage$7 = /* @__PURE__ */ new WeakMap();
 	var _options_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _disabled_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	/**
+	* Compact native `<select>` for use inside analysis groups and sidebar sections.
+	* @fires dp-change - `{ type: "select", value: string }`
+	*/
 	var InlineSelect = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _value_accessor_storage$6, "");
+			_classPrivateFieldInitSpec(this, _value_accessor_storage$7, "");
 			_classPrivateFieldInitSpec(this, _options_accessor_storage$2, []);
 			_classPrivateFieldInitSpec(this, _disabled_accessor_storage$1, false);
 		}
 		get value() {
-			return _classPrivateFieldGet2(_value_accessor_storage$6, this);
+			return _classPrivateFieldGet2(_value_accessor_storage$7, this);
 		}
 		set value(value) {
-			_classPrivateFieldSet2(_value_accessor_storage$6, this, value);
+			_classPrivateFieldSet2(_value_accessor_storage$7, this, value);
 		}
 		get options() {
 			return _classPrivateFieldGet2(_options_accessor_storage$2, this);
@@ -18566,12 +18674,10 @@
 			_classPrivateFieldSet2(_disabled_accessor_storage$1, this, value);
 		}
 		_onChange(e) {
-			const target = e.target;
-			this.dispatchEvent(new CustomEvent("dp-select-change", {
-				detail: { value: target.value },
-				bubbles: true,
-				composed: true
-			}));
+			dispatchChange(this, {
+				type: "select",
+				value: e.target.value
+			});
 		}
 		render() {
 			return b`
@@ -18593,14 +18699,14 @@
     `;
 		}
 	};
-	_defineProperty(InlineSelect, "styles", styles$55);
+	_defineProperty(InlineSelect, "styles", styles$56);
 	__decorate([n$1({ type: String })], InlineSelect.prototype, "value", null);
 	__decorate([n$1({ type: Array })], InlineSelect.prototype, "options", null);
 	__decorate([n$1({ type: Boolean })], InlineSelect.prototype, "disabled", null);
 	customElements.define("inline-select", InlineSelect);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-sample-group/analysis-sample-group.ts
-	var _AnalysisSampleGroup, _analysis_accessor_storage$7, _entityId_accessor_storage$7;
+	var _AnalysisSampleGroup;
 	var SAMPLE_INTERVAL_OPTIONS = [
 		{
 			value: "raw",
@@ -18701,41 +18807,7 @@
 			label: "Last"
 		}
 	];
-	var AnalysisSampleGroup = (_analysis_accessor_storage$7 = /* @__PURE__ */ new WeakMap(), _entityId_accessor_storage$7 = /* @__PURE__ */ new WeakMap(), _AnalysisSampleGroup = class AnalysisSampleGroup extends i$2 {
-		constructor(..._args) {
-			super(..._args);
-			_classPrivateFieldInitSpec(this, _analysis_accessor_storage$7, {});
-			_classPrivateFieldInitSpec(this, _entityId_accessor_storage$7, "");
-		}
-		get analysis() {
-			return _classPrivateFieldGet2(_analysis_accessor_storage$7, this);
-		}
-		set analysis(value) {
-			_classPrivateFieldSet2(_analysis_accessor_storage$7, this, value);
-		}
-		get entityId() {
-			return _classPrivateFieldGet2(_entityId_accessor_storage$7, this);
-		}
-		set entityId(value) {
-			_classPrivateFieldSet2(_entityId_accessor_storage$7, this, value);
-		}
-		_emit(key, value) {
-			this.dispatchEvent(new CustomEvent("dp-group-analysis-change", {
-				detail: {
-					entityId: this.entityId,
-					key,
-					value
-				},
-				bubbles: true,
-				composed: true
-			}));
-		}
-		_localizedOptions(options) {
-			return options.map((opt) => ({
-				...opt,
-				label: msg(opt.label)
-			}));
-		}
+	var AnalysisSampleGroup = (_AnalysisSampleGroup = class AnalysisSampleGroup extends AnalysisGroupMixin(i$2) {
 		_onGroupChange(e) {
 			const enabled = e.detail.checked;
 			this._emit("sample_interval", enabled ? "5m" : "raw");
@@ -18755,7 +18827,7 @@
           <inline-select
             .value=${interval}
             .options=${this._localizedOptions(SAMPLE_INTERVAL_OPTIONS)}
-            @dp-select-change=${(e) => this._emit("sample_interval", e.detail.value)}
+            @dp-change=${(e) => this._emit("sample_interval", e.detail.value)}
           ></inline-select>
         </label>
         ${isEnabled ? b`
@@ -18764,27 +18836,22 @@
                 <inline-select
                   .value=${a.sample_aggregate ?? "mean"}
                   .options=${this._localizedOptions(SAMPLE_AGGREGATE_OPTIONS)}
-                  @dp-select-change=${(e) => this._emit("sample_aggregate", e.detail.value)}
+                  @dp-change=${(e) => this._emit("sample_aggregate", e.detail.value)}
                 ></inline-select>
               </label>
             ` : A}
       </analysis-group>
     `;
 		}
-	}, _defineProperty(_AnalysisSampleGroup, "styles", [sharedStyles, styles$57]), _AnalysisSampleGroup);
-	__decorate([n$1({ type: Object })], AnalysisSampleGroup.prototype, "analysis", null);
-	__decorate([n$1({
-		type: String,
-		attribute: "entity-id"
-	})], AnalysisSampleGroup.prototype, "entityId", null);
+	}, _defineProperty(_AnalysisSampleGroup, "styles", [sharedStyles, styles$58]), _AnalysisSampleGroup);
 	AnalysisSampleGroup = __decorate([localized()], AnalysisSampleGroup);
 	customElements.define("analysis-sample-group", AnalysisSampleGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/analysis-trend-group.styles.ts
-	var styles$54 = i$5``;
+	var styles$55 = i$5``;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/analysis-trend-group.ts
-	var _AnalysisTrendGroup, _analysis_accessor_storage$6, _entityId_accessor_storage$6;
+	var _AnalysisTrendGroup;
 	var ANALYSIS_TREND_METHOD_OPTIONS = [
 		{
 			value: "rolling_average",
@@ -18849,46 +18916,9 @@
 			label: "28 days"
 		}
 	];
-	var AnalysisTrendGroup = (_analysis_accessor_storage$6 = /* @__PURE__ */ new WeakMap(), _entityId_accessor_storage$6 = /* @__PURE__ */ new WeakMap(), _AnalysisTrendGroup = class AnalysisTrendGroup extends i$2 {
-		constructor(..._args) {
-			super(..._args);
-			_classPrivateFieldInitSpec(this, _analysis_accessor_storage$6, {});
-			_classPrivateFieldInitSpec(this, _entityId_accessor_storage$6, "");
-		}
-		get analysis() {
-			return _classPrivateFieldGet2(_analysis_accessor_storage$6, this);
-		}
-		set analysis(value) {
-			_classPrivateFieldSet2(_analysis_accessor_storage$6, this, value);
-		}
-		get entityId() {
-			return _classPrivateFieldGet2(_entityId_accessor_storage$6, this);
-		}
-		set entityId(value) {
-			_classPrivateFieldSet2(_entityId_accessor_storage$6, this, value);
-		}
-		_emit(key, value) {
-			this.dispatchEvent(new CustomEvent("dp-group-analysis-change", {
-				detail: {
-					entityId: this.entityId,
-					key,
-					value
-				},
-				bubbles: true,
-				composed: true
-			}));
-		}
-		_localizedOptions(options) {
-			return options.map((opt) => ({
-				...opt,
-				label: msg(opt.label)
-			}));
-		}
+	var AnalysisTrendGroup = (_AnalysisTrendGroup = class AnalysisTrendGroup extends AnalysisGroupMixin(i$2) {
 		_onGroupChange(e) {
 			this._emit("show_trend_lines", e.detail.checked);
-		}
-		_onCheckbox(key, e) {
-			this._emit(key, e.target.checked);
 		}
 		render() {
 			const a = this.analysis;
@@ -18911,7 +18941,7 @@
           <inline-select
             .value=${a.trend_method}
             .options=${this._localizedOptions(ANALYSIS_TREND_METHOD_OPTIONS)}
-            @dp-select-change=${(e) => this._emit("trend_method", e.detail.value)}
+            @dp-change=${(e) => this._emit("trend_method", e.detail.value)}
           ></inline-select>
         </label>
         ${[
@@ -18924,61 +18954,25 @@
                 <inline-select
                   .value=${a.trend_window}
                   .options=${this._localizedOptions(ANALYSIS_TREND_WINDOW_OPTIONS)}
-                  @dp-select-change=${(e) => this._emit("trend_window", e.detail.value)}
+                  @dp-change=${(e) => this._emit("trend_window", e.detail.value)}
                 ></inline-select>
               </label>
             ` : A}
       </analysis-group>
     `;
 		}
-	}, _defineProperty(_AnalysisTrendGroup, "styles", [sharedStyles, styles$54]), _AnalysisTrendGroup);
-	__decorate([n$1({ type: Object })], AnalysisTrendGroup.prototype, "analysis", null);
-	__decorate([n$1({
-		type: String,
-		attribute: "entity-id"
-	})], AnalysisTrendGroup.prototype, "entityId", null);
+	}, _defineProperty(_AnalysisTrendGroup, "styles", [sharedStyles, styles$55]), _AnalysisTrendGroup);
 	AnalysisTrendGroup = __decorate([localized()], AnalysisTrendGroup);
 	customElements.define("analysis-trend-group", AnalysisTrendGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/analysis-summary-group.styles.ts
-	var styles$53 = i$5``;
+	var styles$54 = i$5``;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/analysis-summary-group.ts
-	var _AnalysisSummaryGroup, _analysis_accessor_storage$5, _entityId_accessor_storage$5;
-	var AnalysisSummaryGroup = (_analysis_accessor_storage$5 = /* @__PURE__ */ new WeakMap(), _entityId_accessor_storage$5 = /* @__PURE__ */ new WeakMap(), _AnalysisSummaryGroup = class AnalysisSummaryGroup extends i$2 {
-		constructor(..._args) {
-			super(..._args);
-			_classPrivateFieldInitSpec(this, _analysis_accessor_storage$5, {});
-			_classPrivateFieldInitSpec(this, _entityId_accessor_storage$5, "");
-		}
-		get analysis() {
-			return _classPrivateFieldGet2(_analysis_accessor_storage$5, this);
-		}
-		set analysis(value) {
-			_classPrivateFieldSet2(_analysis_accessor_storage$5, this, value);
-		}
-		get entityId() {
-			return _classPrivateFieldGet2(_entityId_accessor_storage$5, this);
-		}
-		set entityId(value) {
-			_classPrivateFieldSet2(_entityId_accessor_storage$5, this, value);
-		}
-		_emit(key, value) {
-			this.dispatchEvent(new CustomEvent("dp-group-analysis-change", {
-				detail: {
-					entityId: this.entityId,
-					key,
-					value
-				},
-				bubbles: true,
-				composed: true
-			}));
-		}
+	var _AnalysisSummaryGroup;
+	var AnalysisSummaryGroup = (_AnalysisSummaryGroup = class AnalysisSummaryGroup extends AnalysisGroupMixin(i$2) {
 		_onGroupChange(e) {
 			this._emit("show_summary_stats", e.detail.checked);
-		}
-		_onCheckbox(key, e) {
-			this._emit(key, e.target.checked);
 		}
 		render() {
 			const a = this.analysis;
@@ -18999,20 +18993,15 @@
       </analysis-group>
     `;
 		}
-	}, _defineProperty(_AnalysisSummaryGroup, "styles", [sharedStyles, styles$53]), _AnalysisSummaryGroup);
-	__decorate([n$1({ type: Object })], AnalysisSummaryGroup.prototype, "analysis", null);
-	__decorate([n$1({
-		type: String,
-		attribute: "entity-id"
-	})], AnalysisSummaryGroup.prototype, "entityId", null);
+	}, _defineProperty(_AnalysisSummaryGroup, "styles", [sharedStyles, styles$54]), _AnalysisSummaryGroup);
 	AnalysisSummaryGroup = __decorate([localized()], AnalysisSummaryGroup);
 	customElements.define("analysis-summary-group", AnalysisSummaryGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/analysis-rate-group.styles.ts
-	var styles$52 = i$5``;
+	var styles$53 = i$5``;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/analysis-rate-group.ts
-	var _AnalysisRateGroup, _analysis_accessor_storage$4, _entityId_accessor_storage$4;
+	var _AnalysisRateGroup;
 	var ANALYSIS_RATE_WINDOW_OPTIONS = [
 		{
 			value: "point_to_point",
@@ -19047,46 +19036,9 @@
 			label: "7 days"
 		}
 	];
-	var AnalysisRateGroup = (_analysis_accessor_storage$4 = /* @__PURE__ */ new WeakMap(), _entityId_accessor_storage$4 = /* @__PURE__ */ new WeakMap(), _AnalysisRateGroup = class AnalysisRateGroup extends i$2 {
-		constructor(..._args) {
-			super(..._args);
-			_classPrivateFieldInitSpec(this, _analysis_accessor_storage$4, {});
-			_classPrivateFieldInitSpec(this, _entityId_accessor_storage$4, "");
-		}
-		get analysis() {
-			return _classPrivateFieldGet2(_analysis_accessor_storage$4, this);
-		}
-		set analysis(value) {
-			_classPrivateFieldSet2(_analysis_accessor_storage$4, this, value);
-		}
-		get entityId() {
-			return _classPrivateFieldGet2(_entityId_accessor_storage$4, this);
-		}
-		set entityId(value) {
-			_classPrivateFieldSet2(_entityId_accessor_storage$4, this, value);
-		}
-		_emit(key, value) {
-			this.dispatchEvent(new CustomEvent("dp-group-analysis-change", {
-				detail: {
-					entityId: this.entityId,
-					key,
-					value
-				},
-				bubbles: true,
-				composed: true
-			}));
-		}
-		_localizedOptions(options) {
-			return options.map((opt) => ({
-				...opt,
-				label: msg(opt.label)
-			}));
-		}
+	var AnalysisRateGroup = (_AnalysisRateGroup = class AnalysisRateGroup extends AnalysisGroupMixin(i$2) {
 		_onGroupChange(e) {
 			this._emit("show_rate_of_change", e.detail.checked);
-		}
-		_onCheckbox(key, e) {
-			this._emit(key, e.target.checked);
 		}
 		render() {
 			const a = this.analysis;
@@ -19109,44 +19061,115 @@
           <inline-select
             .value=${a.rate_window}
             .options=${this._localizedOptions(ANALYSIS_RATE_WINDOW_OPTIONS)}
-            @dp-select-change=${(e) => this._emit("rate_window", e.detail.value)}
+            @dp-change=${(e) => this._emit("rate_window", e.detail.value)}
           ></inline-select>
         </label>
       </analysis-group>
     `;
 		}
-	}, _defineProperty(_AnalysisRateGroup, "styles", [sharedStyles, styles$52]), _AnalysisRateGroup);
-	__decorate([n$1({ type: Object })], AnalysisRateGroup.prototype, "analysis", null);
-	__decorate([n$1({
-		type: String,
-		attribute: "entity-id"
-	})], AnalysisRateGroup.prototype, "entityId", null);
+	}, _defineProperty(_AnalysisRateGroup, "styles", [sharedStyles, styles$53]), _AnalysisRateGroup);
 	AnalysisRateGroup = __decorate([localized()], AnalysisRateGroup);
 	customElements.define("analysis-rate-group", AnalysisRateGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/analysis-threshold-group.styles.ts
-	var styles$51 = i$5``;
+	var styles$52 = i$5``;
 	//#endregion
-	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/analysis-threshold-group.ts
-	var _AnalysisThresholdGroup, _analysis_accessor_storage$3, _entityId_accessor_storage$3, _unit_accessor_storage$1;
-	var AnalysisThresholdGroup = (_analysis_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _entityId_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _unit_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _AnalysisThresholdGroup = class AnalysisThresholdGroup extends i$2 {
+	//#region custom_components/hass_datapoints/src/atoms/form/number-input/number-input.styles.ts
+	var styles$51 = i$5`
+  :host {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+  input {
+    font: inherit;
+    font-size: 0.85rem;
+    padding: 2px 6px;
+    border-radius: 6px;
+    border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
+    background: var(--card-background-color, #fff);
+    color: var(--primary-text-color);
+    width: 5em;
+  }
+  .suffix {
+    font-size: 0.85rem;
+    color: var(--secondary-text-color, #666);
+  }
+`;
+	//#endregion
+	//#region custom_components/hass_datapoints/src/atoms/form/number-input/number-input.ts
+	var _value_accessor_storage$6 = /* @__PURE__ */ new WeakMap();
+	var _placeholder_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
+	var _suffix_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _step_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	/**
+	* Numeric input with optional suffix label.
+	* @fires dp-change - `{ type: "number", value: string }` — raw string from the input element
+	*/
+	var NumberInput = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _analysis_accessor_storage$3, {});
-			_classPrivateFieldInitSpec(this, _entityId_accessor_storage$3, "");
+			_classPrivateFieldInitSpec(this, _value_accessor_storage$6, "");
+			_classPrivateFieldInitSpec(this, _placeholder_accessor_storage$2, "");
+			_classPrivateFieldInitSpec(this, _suffix_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _step_accessor_storage$1, "any");
+		}
+		get value() {
+			return _classPrivateFieldGet2(_value_accessor_storage$6, this);
+		}
+		set value(value) {
+			_classPrivateFieldSet2(_value_accessor_storage$6, this, value);
+		}
+		get placeholder() {
+			return _classPrivateFieldGet2(_placeholder_accessor_storage$2, this);
+		}
+		set placeholder(value) {
+			_classPrivateFieldSet2(_placeholder_accessor_storage$2, this, value);
+		}
+		get suffix() {
+			return _classPrivateFieldGet2(_suffix_accessor_storage, this);
+		}
+		set suffix(value) {
+			_classPrivateFieldSet2(_suffix_accessor_storage, this, value);
+		}
+		get step() {
+			return _classPrivateFieldGet2(_step_accessor_storage$1, this);
+		}
+		set step(value) {
+			_classPrivateFieldSet2(_step_accessor_storage$1, this, value);
+		}
+		_onInput(e) {
+			dispatchChange(this, {
+				type: "number",
+				value: e.target.value
+			});
+		}
+		render() {
+			return b`
+      <input
+        type="number"
+        .value=${this.value}
+        placeholder=${this.placeholder}
+        step=${this.step}
+        @input=${this._onInput}
+      />
+      ${this.suffix ? b`<span class="suffix">${this.suffix}</span>` : A}
+    `;
+		}
+	};
+	_defineProperty(NumberInput, "styles", styles$51);
+	__decorate([n$1({ type: String })], NumberInput.prototype, "value", null);
+	__decorate([n$1({ type: String })], NumberInput.prototype, "placeholder", null);
+	__decorate([n$1({ type: String })], NumberInput.prototype, "suffix", null);
+	__decorate([n$1({ type: String })], NumberInput.prototype, "step", null);
+	customElements.define("number-input", NumberInput);
+	//#endregion
+	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/analysis-threshold-group.ts
+	var _AnalysisThresholdGroup, _unit_accessor_storage$1;
+	var AnalysisThresholdGroup = (_unit_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _AnalysisThresholdGroup = class AnalysisThresholdGroup extends AnalysisGroupMixin(i$2) {
+		constructor(..._args) {
+			super(..._args);
 			_classPrivateFieldInitSpec(this, _unit_accessor_storage$1, "");
-		}
-		get analysis() {
-			return _classPrivateFieldGet2(_analysis_accessor_storage$3, this);
-		}
-		set analysis(value) {
-			_classPrivateFieldSet2(_analysis_accessor_storage$3, this, value);
-		}
-		get entityId() {
-			return _classPrivateFieldGet2(_entityId_accessor_storage$3, this);
-		}
-		set entityId(value) {
-			_classPrivateFieldSet2(_entityId_accessor_storage$3, this, value);
 		}
 		get unit() {
 			return _classPrivateFieldGet2(_unit_accessor_storage$1, this);
@@ -19154,31 +19177,8 @@
 		set unit(value) {
 			_classPrivateFieldSet2(_unit_accessor_storage$1, this, value);
 		}
-		_emit(key, value) {
-			this.dispatchEvent(new CustomEvent("dp-group-analysis-change", {
-				detail: {
-					entityId: this.entityId,
-					key,
-					value
-				},
-				bubbles: true,
-				composed: true
-			}));
-		}
-		_localizedOptions(options) {
-			return options.map((opt) => ({
-				...opt,
-				label: msg(opt.label)
-			}));
-		}
 		_onGroupChange(e) {
 			this._emit("show_threshold_analysis", e.detail.checked);
-		}
-		_onCheckbox(key, e) {
-			this._emit(key, e.target.checked);
-		}
-		_onInput(key, e) {
-			this._emit(key, e.target.value);
 		}
 		render() {
 			const a = this.analysis;
@@ -19198,18 +19198,13 @@
         </label>
         <label class="field">
           <span class="field-label">${msg("Threshold")}</span>
-          <div class="toggle-group">
-            <input
-              class="input"
-              type="number"
-              step="any"
-              inputmode="decimal"
-              .value=${a.threshold_value}
-              placeholder=${msg("Threshold")}
-              @change=${(e) => this._onInput("threshold_value", e)}
-            />
-            ${this.unit ? b`<span>${this.unit}</span>` : A}
-          </div>
+          <number-input
+            .value=${a.threshold_value}
+            .placeholder=${msg("Threshold")}
+            .suffix=${this.unit}
+            step="any"
+            @dp-change=${(e) => this._emit("threshold_value", e.detail.value)}
+          ></number-input>
         </label>
         ${a.show_threshold_shading ? b`
               <label class="field">
@@ -19223,19 +19218,14 @@
 				value: "below",
 				label: "Shade below"
 			}])}
-                  @dp-select-change=${(e) => this._emit("threshold_direction", e.detail.value)}
+                  @dp-change=${(e) => this._emit("threshold_direction", e.detail.value)}
                 ></inline-select>
               </label>
             ` : A}
       </analysis-group>
     `;
 		}
-	}, _defineProperty(_AnalysisThresholdGroup, "styles", [sharedStyles, styles$51]), _AnalysisThresholdGroup);
-	__decorate([n$1({ type: Object })], AnalysisThresholdGroup.prototype, "analysis", null);
-	__decorate([n$1({
-		type: String,
-		attribute: "entity-id"
-	})], AnalysisThresholdGroup.prototype, "entityId", null);
+	}, _defineProperty(_AnalysisThresholdGroup, "styles", [sharedStyles, styles$52]), _AnalysisThresholdGroup);
 	__decorate([n$1({ type: String })], AnalysisThresholdGroup.prototype, "unit", null);
 	AnalysisThresholdGroup = __decorate([localized()], AnalysisThresholdGroup);
 	customElements.define("analysis-threshold-group", AnalysisThresholdGroup);
@@ -19404,7 +19394,7 @@
 	customElements.define("analysis-method-subopts", AnalysisMethodSubopts);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/analysis-anomaly-group.ts
-	var _AnalysisAnomalyGroup, _analysis_accessor_storage$2, _entityId_accessor_storage$2, _comparisonWindows_accessor_storage$3, _hass_accessor_storage$10, _computing_accessor_storage$1, _computingProgress_accessor_storage$1, _computingMethods_accessor_storage$1, _hideSaveMonitorCta_accessor_storage;
+	var _AnalysisAnomalyGroup, _comparisonWindows_accessor_storage$3, _hass_accessor_storage$10, _computing_accessor_storage$1, _computingProgress_accessor_storage$1, _computingMethods_accessor_storage$1, _hideSaveMonitorCta_accessor_storage;
 	var ANALYSIS_ANOMALY_SENSITIVITY_OPTIONS = [
 		{
 			value: "low",
@@ -19541,29 +19531,15 @@
 		value: "only",
 		label: "Overlaps only"
 	}];
-	var AnalysisAnomalyGroup = (_analysis_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _entityId_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$10 = /* @__PURE__ */ new WeakMap(), _computing_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingProgress_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingMethods_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hideSaveMonitorCta_accessor_storage = /* @__PURE__ */ new WeakMap(), _AnalysisAnomalyGroup = class AnalysisAnomalyGroup extends i$2 {
+	var AnalysisAnomalyGroup = (_comparisonWindows_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$10 = /* @__PURE__ */ new WeakMap(), _computing_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingProgress_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingMethods_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hideSaveMonitorCta_accessor_storage = /* @__PURE__ */ new WeakMap(), _AnalysisAnomalyGroup = class AnalysisAnomalyGroup extends AnalysisGroupMixin(i$2) {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _analysis_accessor_storage$2, {});
-			_classPrivateFieldInitSpec(this, _entityId_accessor_storage$2, "");
 			_classPrivateFieldInitSpec(this, _comparisonWindows_accessor_storage$3, []);
 			_classPrivateFieldInitSpec(this, _hass_accessor_storage$10, null);
 			_classPrivateFieldInitSpec(this, _computing_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _computingProgress_accessor_storage$1, 0);
 			_classPrivateFieldInitSpec(this, _computingMethods_accessor_storage$1, /* @__PURE__ */ new Set());
 			_classPrivateFieldInitSpec(this, _hideSaveMonitorCta_accessor_storage, false);
-		}
-		get analysis() {
-			return _classPrivateFieldGet2(_analysis_accessor_storage$2, this);
-		}
-		set analysis(value) {
-			_classPrivateFieldSet2(_analysis_accessor_storage$2, this, value);
-		}
-		get entityId() {
-			return _classPrivateFieldGet2(_entityId_accessor_storage$2, this);
-		}
-		set entityId(value) {
-			_classPrivateFieldSet2(_entityId_accessor_storage$2, this, value);
 		}
 		get comparisonWindows() {
 			return _classPrivateFieldGet2(_comparisonWindows_accessor_storage$3, this);
@@ -19621,26 +19597,8 @@
 				return state.entity_id.split(".")[0] === domain;
 			};
 		}
-		_emit(key, value) {
-			this.dispatchEvent(new CustomEvent("dp-group-analysis-change", {
-				detail: {
-					entityId: this.entityId,
-					key,
-					value
-				},
-				bubbles: true,
-				composed: true
-			}));
-		}
 		_onGroupChange(e) {
 			this._emit("show_anomalies", e.detail.checked);
-		}
-		_localizedOptions(options) {
-			return options.map((option) => ({
-				...option,
-				label: msg(option.label),
-				help: option.help ? msg(option.help) : void 0
-			}));
 		}
 		_renderMethodSubopts(opt, a) {
 			if (opt.value === "trend_residual") {
@@ -19665,7 +19623,7 @@
             <inline-select
               .value=${effectiveMethod}
               .options=${methodOptions}
-              @dp-select-change=${(e) => this._emit("anomaly_trend_method", e.detail.value)}
+              @dp-change=${(e) => this._emit("anomaly_trend_method", e.detail.value)}
             ></inline-select>
           </label>
           ${showWindow ? b`
@@ -19674,7 +19632,7 @@
                   <inline-select
                     .value=${a.anomaly_trend_window}
                     .options=${windowOptions}
-                    @dp-select-change=${(e) => this._emit("anomaly_trend_window", e.detail.value)}
+                    @dp-change=${(e) => this._emit("anomaly_trend_window", e.detail.value)}
                   ></inline-select>
                 </label>
               ` : A}
@@ -19688,7 +19646,7 @@
             <inline-select
               .value=${a.anomaly_rate_window}
               .options=${this._localizedOptions(ANALYSIS_ANOMALY_RATE_WINDOW_OPTIONS)}
-              @dp-select-change=${(e) => this._emit("anomaly_rate_window", e.detail.value)}
+              @dp-change=${(e) => this._emit("anomaly_rate_window", e.detail.value)}
             ></inline-select>
           </label>
         </analysis-method-subopts>
@@ -19700,7 +19658,7 @@
             <inline-select
               .value=${a.anomaly_zscore_window}
               .options=${this._localizedOptions(ANALYSIS_ANOMALY_ZSCORE_WINDOW_OPTIONS)}
-              @dp-select-change=${(e) => this._emit("anomaly_zscore_window", e.detail.value)}
+              @dp-change=${(e) => this._emit("anomaly_zscore_window", e.detail.value)}
             ></inline-select>
           </label>
         </analysis-method-subopts>
@@ -19712,7 +19670,7 @@
             <inline-select
               .value=${a.anomaly_persistence_window}
               .options=${this._localizedOptions(ANALYSIS_ANOMALY_PERSISTENCE_WINDOW_OPTIONS)}
-              @dp-select-change=${(e) => this._emit("anomaly_persistence_window", e.detail.value)}
+              @dp-change=${(e) => this._emit("anomaly_persistence_window", e.detail.value)}
             ></inline-select>
           </label>
         </analysis-method-subopts>
@@ -19732,7 +19690,7 @@
             <inline-select
               .value=${a.anomaly_comparison_window_id ?? ""}
               .options=${comparisonOptions}
-              @dp-select-change=${(e) => this._emit("anomaly_comparison_window_id", e.detail.value)}
+              @dp-change=${(e) => this._emit("anomaly_comparison_window_id", e.detail.value)}
             ></inline-select>
           </label>
         </analysis-method-subopts>
@@ -19775,7 +19733,7 @@
           <inline-select
             .value=${a.anomaly_sensitivity}
             .options=${sensitivityOptions}
-            @dp-select-change=${(e) => this._emit("anomaly_sensitivity", e.detail.value)}
+            @dp-change=${(e) => this._emit("anomaly_sensitivity", e.detail.value)}
           ></inline-select>
         </label>
         ${a.sample_interval && a.sample_interval !== "raw" ? b`
@@ -19845,7 +19803,7 @@
                 <inline-select
                   .value=${a.anomaly_overlap_mode}
                   .options=${overlapOptions}
-                  @dp-select-change=${(e) => this._emit("anomaly_overlap_mode", e.detail.value)}
+                  @dp-change=${(e) => this._emit("anomaly_overlap_mode", e.detail.value)}
                 ></inline-select>
               </label>
             ` : A}
@@ -19869,11 +19827,6 @@
 			}));
 		}
 	}, _defineProperty(_AnalysisAnomalyGroup, "styles", [sharedStyles, styles$50]), _AnalysisAnomalyGroup);
-	__decorate([n$1({ type: Object })], AnalysisAnomalyGroup.prototype, "analysis", null);
-	__decorate([n$1({
-		type: String,
-		attribute: "entity-id"
-	})], AnalysisAnomalyGroup.prototype, "entityId", null);
 	__decorate([n$1({
 		type: Array,
 		attribute: "comparison-windows"
@@ -19912,25 +19865,11 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-delta-group/analysis-delta-group.ts
-	var _AnalysisDeltaGroup, _analysis_accessor_storage$1, _entityId_accessor_storage$1, _canShowDeltaAnalysis_accessor_storage$3;
-	var AnalysisDeltaGroup = (_analysis_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _entityId_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _AnalysisDeltaGroup = class AnalysisDeltaGroup extends i$2 {
+	var _AnalysisDeltaGroup, _canShowDeltaAnalysis_accessor_storage$3;
+	var AnalysisDeltaGroup = (_canShowDeltaAnalysis_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _AnalysisDeltaGroup = class AnalysisDeltaGroup extends AnalysisGroupMixin(i$2) {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _analysis_accessor_storage$1, {});
-			_classPrivateFieldInitSpec(this, _entityId_accessor_storage$1, "");
 			_classPrivateFieldInitSpec(this, _canShowDeltaAnalysis_accessor_storage$3, false);
-		}
-		get analysis() {
-			return _classPrivateFieldGet2(_analysis_accessor_storage$1, this);
-		}
-		set analysis(value) {
-			_classPrivateFieldSet2(_analysis_accessor_storage$1, this, value);
-		}
-		get entityId() {
-			return _classPrivateFieldGet2(_entityId_accessor_storage$1, this);
-		}
-		set entityId(value) {
-			_classPrivateFieldSet2(_entityId_accessor_storage$1, this, value);
 		}
 		get canShowDeltaAnalysis() {
 			return _classPrivateFieldGet2(_canShowDeltaAnalysis_accessor_storage$3, this);
@@ -19938,22 +19877,8 @@
 		set canShowDeltaAnalysis(value) {
 			_classPrivateFieldSet2(_canShowDeltaAnalysis_accessor_storage$3, this, value);
 		}
-		_emit(key, value) {
-			this.dispatchEvent(new CustomEvent("dp-group-analysis-change", {
-				detail: {
-					entityId: this.entityId,
-					key,
-					value
-				},
-				bubbles: true,
-				composed: true
-			}));
-		}
 		_onGroupChange(e) {
 			this._emit("show_delta_analysis", e.detail.checked);
-		}
-		_onCheckbox(key, e) {
-			this._emit(key, e.target.checked);
 		}
 		render() {
 			const a = this.analysis;
@@ -19993,11 +19918,6 @@
     `;
 		}
 	}, _defineProperty(_AnalysisDeltaGroup, "styles", [sharedStyles, styles$48]), _AnalysisDeltaGroup);
-	__decorate([n$1({ type: Object })], AnalysisDeltaGroup.prototype, "analysis", null);
-	__decorate([n$1({
-		type: String,
-		attribute: "entity-id"
-	})], AnalysisDeltaGroup.prototype, "entityId", null);
 	__decorate([n$1({
 		type: Boolean,
 		attribute: "can-show-delta-analysis"
@@ -20301,6 +20221,10 @@
 	var _name_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
 	var _value_accessor_storage$5 = /* @__PURE__ */ new WeakMap();
 	var _options_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	/**
+	* Group of radio buttons rendered from an options array.
+	* @fires dp-change - `{ type: "radio", value: string }`
+	*/
 	var RadioGroup = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
@@ -20327,12 +20251,10 @@
 			_classPrivateFieldSet2(_options_accessor_storage$1, this, value);
 		}
 		_onChange(e) {
-			const input = e.target;
-			this.dispatchEvent(new CustomEvent("dp-radio-change", {
-				detail: { value: input.value },
-				bubbles: true,
-				composed: true
-			}));
+			dispatchChange(this, {
+				type: "radio",
+				value: e.target.value
+			});
 		}
 		render() {
 			return b`
@@ -20427,7 +20349,7 @@
           .name=${"datapoint-scope"}
           .value=${this.datapointScope}
           .options=${this._localizedOptions(DATAPOINT_SCOPE_OPTIONS)}
-          @dp-radio-change=${this._onScopeChange}
+          @dp-change=${this._onScopeChange}
         ></radio-group>
       </sidebar-options-section>
     `;
@@ -20473,6 +20395,11 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/checkbox-list/checkbox-list.ts
 	var _items_accessor_storage = /* @__PURE__ */ new WeakMap();
+	/**
+	* List of labeled checkboxes driven by an items array.
+	* Each checkbox input carries a `name` attribute used as the item identifier.
+	* @fires dp-change - `{ type: "item", value: string, checked: boolean }` — `value` is the item's `name`
+	*/
 	var CheckboxList = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
@@ -20486,14 +20413,11 @@
 		}
 		_onChange(e) {
 			const input = e.target;
-			this.dispatchEvent(new CustomEvent("dp-item-change", {
-				detail: {
-					name: input.name,
-					checked: input.checked
-				},
-				bubbles: true,
-				composed: true
-			}));
+			dispatchChange(this, {
+				type: "item",
+				value: input.name,
+				checked: input.checked
+			});
 		}
 		render() {
 			return b`
@@ -20552,7 +20476,7 @@
 			_classPrivateFieldSet2(_open_accessor_storage$6, this, value);
 		}
 		_onCheckboxChange(e) {
-			const { name, checked } = e.detail;
+			const { value: name, checked } = e.detail;
 			this.dispatchEvent(new CustomEvent("dp-display-change", {
 				detail: {
 					kind: name,
@@ -20580,7 +20504,7 @@
 				label: msg("Show dotted lines"),
 				checked: this.showLines
 			}]}
-          @dp-item-change=${this._onCheckboxChange}
+          @dp-change=${this._onCheckboxChange}
         ></checkbox-list>
       </sidebar-options-section>
     `;
@@ -20695,7 +20619,7 @@
 			this._emitAnalysis("anomaly_overlap_mode", e.detail.value);
 		}
 		_onCheckboxChange(e) {
-			const { name, checked } = e.detail;
+			const { value: name, checked } = e.detail;
 			this.dispatchEvent(new CustomEvent("dp-display-change", {
 				detail: {
 					kind: name,
@@ -20720,13 +20644,13 @@
 				label: msg("Highlight correlated anomalies"),
 				checked: this.showCorrelatedAnomalies
 			}]}
-                @dp-item-change=${this._onCheckboxChange}
+                @dp-change=${this._onCheckboxChange}
               ></checkbox-list>
               <radio-group
                 .name=${"chart-anomaly-overlap-mode"}
                 .value=${this.anomalyOverlapMode}
                 .options=${this._localizedOptions(ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS$1)}
-                @dp-radio-change=${this._onAnomalyOverlapModeChange}
+                @dp-change=${this._onAnomalyOverlapModeChange}
               ></radio-group>
             ` : b`
               <p class="no-anomalies-notice">
@@ -20936,7 +20860,7 @@
 			}));
 		}
 		_onCheckboxChange(e) {
-			const { name, checked } = e.detail;
+			const { value: name, checked } = e.detail;
 			this._emitDisplay(name, checked);
 		}
 		_onGapThresholdChange(e) {
@@ -20974,14 +20898,14 @@
 					checked: this.showDataGaps
 				}
 			]}
-          @dp-item-change=${this._onCheckboxChange}
+          @dp-change=${this._onCheckboxChange}
         ></checkbox-list>
         <div class="is-subopt ${this.showDataGaps ? "" : "is-disabled"}">
           <inline-select
             .value=${this.dataGapThreshold}
             .options=${this._localizedOptions(DATA_GAP_THRESHOLD_OPTIONS$1)}
             .disabled=${!this.showDataGaps}
-            @dp-select-change=${this._onGapThresholdChange}
+            @dp-change=${this._onGapThresholdChange}
           ></inline-select>
           <span>${msg("Gap threshold")}</span>
         </div>
@@ -20990,7 +20914,7 @@
             .name=${"chart-y-axis-mode"}
             .value=${this.yAxisMode}
             .options=${this._localizedOptions(Y_AXIS_MODE_OPTIONS)}
-            @dp-radio-change=${this._onYAxisModeChange}
+            @dp-change=${this._onYAxisModeChange}
           ></radio-group>
         </div>
         <div class="y-axis-group">
@@ -20998,7 +20922,7 @@
             .name=${"chart-hover-snap-mode"}
             .value=${this.hoverSnapMode}
             .options=${this._localizedOptions(HOVER_SNAP_MODE_OPTIONS)}
-            @dp-radio-change=${this._onHoverSnapModeChange}
+            @dp-change=${this._onHoverSnapModeChange}
           ></radio-group>
         </div>
       </sidebar-options-section>
@@ -21244,13 +21168,13 @@
         <editor-text-field
           .label=${msg("Card title (optional)")}
           .value=${c.title || ""}
-          @dp-field-change=${(e) => this._set("title", e.detail.value)}
+          @dp-change=${(e) => this._set("title", e.detail.value)}
         ></editor-text-field>
         <editor-text-field
           .label=${msg("Hours to show")}
           type="number"
           .value=${String(c.hours_to_show ?? 24)}
-          @dp-field-change=${(e) => this._set("hours_to_show", e.detail.value)}
+          @dp-change=${(e) => this._set("hours_to_show", e.detail.value)}
         ></editor-text-field>
 
         <section-heading .text=${msg("Targets")}></section-heading>
@@ -21275,7 +21199,7 @@
         <editor-switch
           .label=${msg("Stepped series")}
           .checked=${analysis.stepped_series === true}
-          @dp-switch-change=${(e) => this._updateGlobalAnalysis((currentAnalysis) => ({
+          @dp-change=${(e) => this._updateGlobalAnalysis((currentAnalysis) => ({
 				...currentAnalysis,
 				stepped_series: e.detail.checked
 			}))}
@@ -21342,20 +21266,20 @@
         <editor-switch
           .label=${msg("Show create datapoint button on chart crosshair")}
           .checked=${c.show_add_annotation_button !== false}
-          @dp-switch-change=${(e) => this._set("show_add_annotation_button", e.detail.checked ? void 0 : false)}
+          @dp-change=${(e) => this._set("show_add_annotation_button", e.detail.checked ? void 0 : false)}
         ></editor-switch>
 
         <section-heading .text=${msg("Series Display")}></section-heading>
         <editor-switch
           .label=${msg("Hide raw data when analysis is enabled")}
           .checked=${c.hide_raw_data === true}
-          @dp-switch-change=${(e) => this._set("hide_raw_data", e.detail.checked ? true : void 0)}
+          @dp-change=${(e) => this._set("hide_raw_data", e.detail.checked ? true : void 0)}
         ></editor-switch>
       </div>
     `;
 		}
 	};
-	_defineProperty(HassDatapointsHistoryCardEditor, "styles", [EditorBase.styles, styles$58]);
+	_defineProperty(HassDatapointsHistoryCardEditor, "styles", [EditorBase.styles, styles$59]);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/data/preferences-api.ts
 	/** HA user-data key for the saved history page. Stored via frontend/set_user_data. */
@@ -22656,6 +22580,10 @@
 			_classPrivateFieldInitSpec(this, _allAnalysisSame_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _hideDragHandle_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _label_accessor_storage$8, null);
+			_defineProperty(this, "_entityId", "");
+			_defineProperty(this, "_entityName", "");
+			_defineProperty(this, "_unit", "");
+			_defineProperty(this, "_supportsAnalysis", false);
 		}
 		get color() {
 			return _classPrivateFieldGet2(_color_accessor_storage$1, this);
@@ -22753,21 +22681,14 @@
 		set label(value) {
 			_classPrivateFieldSet2(_label_accessor_storage$8, this, value);
 		}
-		/** Entity ID — from HA state when available, else from the config prop. */
-		get _entityId() {
-			return this.stateObj?.entity_id ?? this.entityId ?? "";
-		}
-		/** Display name: uses the explicit label override when provided, otherwise derives from the HA state object. */
-		get _entityName() {
-			if (this.label) return this.label;
-			return (this.stateObj?.attributes)?.friendly_name ?? this._entityId;
-		}
-		/** Unit of measurement derived from the HA state object. */
-		get _unit() {
-			return (this.stateObj?.attributes)?.unit_of_measurement ?? "";
-		}
-		get _supportsAnalysis() {
-			return Boolean(this._entityId) && !this._entityId.startsWith("binary_sensor.");
+		willUpdate(changed) {
+			if (changed.has("stateObj") || changed.has("entityId") || changed.has("label")) {
+				this._entityId = this.stateObj?.entity_id ?? this.entityId ?? "";
+				const attrs = this.stateObj?.attributes;
+				this._entityName = this.label ?? attrs?.friendly_name ?? this._entityId;
+				this._unit = attrs?.unit_of_measurement ?? "";
+				this._supportsAnalysis = Boolean(this._entityId) && !this._entityId.startsWith("binary_sensor.");
+			}
 		}
 		_emit(name, detail) {
 			this.dispatchEvent(new CustomEvent(name, {
@@ -28339,7 +28260,7 @@
 				value: String(o.value),
 				label: msg(o.label)
 			}))}
-            @dp-select-change=${(e) => {
+            @dp-change=${(e) => {
 				const val = e.detail?.value;
 				if (val) this._lookBackHours = parseInt(val, 10);
 			}}
@@ -28353,7 +28274,7 @@
 				value: String(o.value),
 				label: msg(o.label)
 			}))}
-            @dp-select-change=${(e) => {
+            @dp-change=${(e) => {
 				const val = e.detail?.value;
 				if (val) this._scanIntervalMinutes = parseInt(val, 10);
 			}}
@@ -28373,7 +28294,7 @@
 				value: "combined",
 				label: msg("Combined sensor")
 			}]}
-                @dp-select-change=${(e) => {
+                @dp-change=${(e) => {
 				const val = e.detail?.value;
 				this._monitorType = val;
 				if (val === "combined") this._overlapMode = "all";
@@ -28387,7 +28308,7 @@
               <inline-select
                 .value=${this._overlapMode}
                 .options=${this._overlapOptions()}
-                @dp-select-change=${(e) => {
+                @dp-change=${(e) => {
 				const val = e.detail?.value;
 				if (val) this._overlapMode = val;
 			}}
@@ -29535,6 +29456,7 @@
 		}
 		_applyConfig() {
 			if (!this._chartEl || !this._config) return;
+			if (typeof this._chartEl.setConfig !== "function") return;
 			const nextKey = JSON.stringify(this._config);
 			if (nextKey !== this._configKey) {
 				this._chartEl.setConfig(this._config);
@@ -31923,6 +31845,10 @@
 	//#region custom_components/hass_datapoints/src/atoms/form/date-time-input/date-time-input.ts
 	var _value_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
 	var _label_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
+	/**
+	* Native `datetime-local` input with an optional label.
+	* @fires dp-change - `{ type: "datetime", value: string }` — ISO datetime string
+	*/
 	var DateTimeInput = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
@@ -31942,11 +31868,10 @@
 			_classPrivateFieldSet2(_label_accessor_storage$4, this, value);
 		}
 		_onChange(e) {
-			this.dispatchEvent(new CustomEvent("dp-datetime-change", {
-				detail: { value: e.target.value },
-				bubbles: true,
-				composed: true
-			}));
+			dispatchChange(this, {
+				type: "datetime",
+				value: e.target.value
+			});
 		}
 		render() {
 			return b`
@@ -32302,12 +32227,12 @@
           <date-time-input
             id="range-mobile-start"
             label=${msg("Start")}
-            @dp-datetime-change=${this._onMobileStartChange}
+            @dp-change=${this._onMobileStartChange}
           ></date-time-input>
           <date-time-input
             id="range-mobile-end"
             label=${msg("End")}
-            @dp-datetime-change=${this._onMobileEndChange}
+            @dp-change=${this._onMobileEndChange}
           ></date-time-input>
         </div>
 
@@ -39761,49 +39686,49 @@
         <editor-text-field
           .label=${msg("Card title (optional)")}
           .value=${c.title || ""}
-          @dp-field-change=${(e) => this._set("title", e.detail.value)}
+          @dp-change=${(e) => this._set("title", e.detail.value)}
         ></editor-text-field>
         <editor-text-field
           .label=${msg("Hours to show (blank = all time)")}
           type="number"
           .value=${c.hours_to_show != null ? String(c.hours_to_show) : ""}
-          @dp-field-change=${(e) => this._set("hours_to_show", e.detail.value)}
+          @dp-change=${(e) => this._set("hours_to_show", e.detail.value)}
         ></editor-text-field>
         <editor-text-field
           .label=${msg("Records per page")}
           type="number"
           .value=${String(c.page_size ?? 15)}
-          @dp-field-change=${(e) => this._set("page_size", e.detail.value)}
+          @dp-change=${(e) => this._set("page_size", e.detail.value)}
         ></editor-text-field>
 
         <section-heading .text=${msg("Filtering")}></section-heading>
         <editor-text-field
           .label=${msg("Default message filter (always applied)")}
           .value=${c.message_filter || ""}
-          @dp-field-change=${(e) => this._set("message_filter", e.detail.value)}
+          @dp-change=${(e) => this._set("message_filter", e.detail.value)}
         ></editor-text-field>
 
         <section-heading .text=${msg("Visibility")}></section-heading>
         <editor-switch
           .label=${msg("Show search bar")}
           .checked=${c.show_search !== false}
-          @dp-switch-change=${(e) => this._set("show_search", e.detail.checked ? void 0 : false)}
+          @dp-change=${(e) => this._set("show_search", e.detail.checked ? void 0 : false)}
         ></editor-switch>
         <editor-switch
           .label=${msg("Show related entities")}
           .checked=${c.show_entities !== false}
-          @dp-switch-change=${(e) => this._set("show_entities", e.detail.checked ? void 0 : false)}
+          @dp-change=${(e) => this._set("show_entities", e.detail.checked ? void 0 : false)}
         ></editor-switch>
         <editor-switch
           .label=${msg("Show edit & delete actions")}
           .checked=${c.show_actions !== false}
-          @dp-switch-change=${(e) => this._set("show_actions", e.detail.checked ? void 0 : false)}
+          @dp-change=${(e) => this._set("show_actions", e.detail.checked ? void 0 : false)}
         ></editor-switch>
         <editor-switch
           .label=${msg("Show full message")}
           .checked=${c.show_full_message !== false}
           .tooltip=${msg("User will be able to expand the row if hidden", { id: "User will be able to expand the row if hidden" })}
-          @dp-switch-change=${(e) => this._set("show_full_message", e.detail.checked ? void 0 : false)}
+          @dp-change=${(e) => this._set("show_full_message", e.detail.checked ? void 0 : false)}
         ></editor-switch>
 
         <section-heading .text=${msg("Target filter")}></section-heading>
@@ -40219,12 +40144,12 @@
         <editor-text-field
           .label=${msg("Card title (optional)")}
           .value=${c.title || ""}
-          @dp-field-change=${(e) => this._set("title", e.detail.value)}
+          @dp-change=${(e) => this._set("title", e.detail.value)}
         ></editor-text-field>
         <editor-text-field
           .label=${msg("Input placeholder text")}
           .value=${c.placeholder || ""}
-          @dp-field-change=${(e) => this._set("placeholder", e.detail.value)}
+          @dp-change=${(e) => this._set("placeholder", e.detail.value)}
         ></editor-text-field>
 
         <section-heading .text=${msg("Icon & colour")}></section-heading>
@@ -40232,12 +40157,12 @@
           .label=${msg("Icon")}
           .value=${c.icon || "mdi:bookmark"}
           .hass=${this.hass}
-          @dp-icon-change=${(e) => this._set("icon", e.detail.value)}
+          @dp-change=${(e) => this._set("icon", e.detail.value)}
         ></editor-icon-picker>
         <color-swatch
           .label=${msg("Colour")}
           .color=${c.color || "#ff9800"}
-          @dp-color-change=${(e) => this._set("color", e.detail.color)}
+          @dp-change=${(e) => this._set("color", e.detail.color)}
         ></color-swatch>
 
         <section-heading .text=${msg("Related items")}></section-heading>
@@ -40257,7 +40182,7 @@
         <editor-switch
           .label=${msg("Show annotation field")}
           .checked=${!!c.show_annotation}
-          @dp-switch-change=${(e) => this._set("show_annotation", e.detail.checked || void 0)}
+          @dp-change=${(e) => this._set("show_annotation", e.detail.checked || void 0)}
         ></editor-switch>
       </div>
     `;
@@ -41766,6 +41691,10 @@
 	var _label_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _value_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _hass_accessor_storage = /* @__PURE__ */ new WeakMap();
+	/**
+	* Single-entity picker wrapping `ha-selector` in entity mode.
+	* @fires dp-change - `{ type: "entity", value: string }`
+	*/
 	var EditorEntityPicker = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
@@ -41792,11 +41721,10 @@
 			_classPrivateFieldSet2(_hass_accessor_storage, this, value);
 		}
 		_onValueChanged(e) {
-			this.dispatchEvent(new CustomEvent("dp-entity-change", {
-				detail: { value: e.detail.value },
-				bubbles: true,
-				composed: true
-			}));
+			dispatchChange(this, {
+				type: "entity",
+				value: e.detail.value
+			});
 		}
 		render() {
 			return b`<ha-selector
@@ -41829,6 +41757,10 @@
 	var _label_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _value_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _options_accessor_storage = /* @__PURE__ */ new WeakMap();
+	/**
+	* Wraps `ha-selector` in select mode for use in card editors.
+	* @fires dp-change - `{ type: "select", value: string }`
+	*/
 	var EditorSelect = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
@@ -41855,11 +41787,10 @@
 			_classPrivateFieldSet2(_options_accessor_storage, this, value);
 		}
 		_onValueChanged(e) {
-			this.dispatchEvent(new CustomEvent("dp-select-change", {
-				detail: { value: e.detail.value },
-				bubbles: true,
-				composed: true
-			}));
+			dispatchChange(this, {
+				type: "select",
+				value: e.detail.value
+			});
 		}
 		render() {
 			return b`<ha-selector
@@ -41888,25 +41819,25 @@
           .label=${msg("Sensor entity *")}
           .value=${c.entity || ""}
           .hass=${this.hass}
-          @dp-entity-change=${(e) => this._set("entity", e.detail.value)}
+          @dp-change=${(e) => this._set("entity", e.detail.value)}
         ></editor-entity-picker>
 
         <section-heading .text=${msg("Display")}></section-heading>
         <editor-text-field
           .label=${msg("Override display name (optional)")}
           .value=${c.name || ""}
-          @dp-field-change=${(e) => this._set("name", e.detail.value)}
+          @dp-change=${(e) => this._set("name", e.detail.value)}
         ></editor-text-field>
         <editor-text-field
           .label=${msg("Hours to show")}
           type="number"
           .value=${String(c.hours_to_show ?? 24)}
-          @dp-field-change=${(e) => this._set("hours_to_show", e.detail.value)}
+          @dp-change=${(e) => this._set("hours_to_show", e.detail.value)}
         ></editor-text-field>
         <color-swatch
           .label=${msg("Graph colour")}
           .color=${c.graph_color || COLORS[0]}
-          @dp-color-change=${(e) => this._set("graph_color", e.detail.color)}
+          @dp-change=${(e) => this._set("graph_color", e.detail.color)}
         ></color-swatch>
         <editor-select
           .label=${msg("Annotation style")}
@@ -41918,37 +41849,37 @@
 				value: "line",
 				label: msg("Dotted vertical line")
 			}]}
-          @dp-select-change=${(e) => this._set("annotation_style", e.detail.value)}
+          @dp-change=${(e) => this._set("annotation_style", e.detail.value)}
         ></editor-select>
         <editor-switch
           .label=${msg("Show annotation tooltips")}
           .checked=${c.show_annotation_tooltips === true}
-          @dp-switch-change=${(e) => this._set("show_annotation_tooltips", e.detail.checked ? true : void 0)}
+          @dp-change=${(e) => this._set("show_annotation_tooltips", e.detail.checked ? true : void 0)}
         ></editor-switch>
 
         <section-heading .text=${msg("Records list")}></section-heading>
         <editor-switch
           .label=${msg("Show records list below graph")}
           .checked=${showRecords}
-          @dp-switch-change=${(e) => this._set("show_records", e.detail.checked || void 0)}
+          @dp-change=${(e) => this._set("show_records", e.detail.checked || void 0)}
         ></editor-switch>
         <editor-text-field
           .label=${msg("Records per page (blank = show all)")}
           type="number"
           .value=${c.records_page_size != null ? String(c.records_page_size) : ""}
-          @dp-field-change=${(e) => this._set("records_page_size", e.detail.value)}
+          @dp-change=${(e) => this._set("records_page_size", e.detail.value)}
         ></editor-text-field>
         <editor-text-field
           .label=${msg("Max records to show (blank = all)")}
           type="number"
           .value=${c.records_limit != null ? String(c.records_limit) : ""}
-          @dp-field-change=${(e) => this._set("records_limit", e.detail.value)}
+          @dp-change=${(e) => this._set("records_limit", e.detail.value)}
         ></editor-text-field>
         <editor-switch
           .label=${msg("Show full message")}
           .checked=${c.records_show_full_message !== false}
           .tooltip=${msg("User will be able to expand the row if hidden", { id: "User will be able to expand the row if hidden" })}
-          @dp-switch-change=${(e) => this._set("records_show_full_message", e.detail.checked ? void 0 : false)}
+          @dp-change=${(e) => this._set("records_show_full_message", e.detail.checked ? void 0 : false)}
         ></editor-switch>
       </div>
     `;
@@ -42166,7 +42097,7 @@
 	].forEach((card) => {
 		if (!registeredTypes.has(card.type)) window.customCards?.push(card);
 	});
-	console.groupCollapsed(`%c hass-datapoints %c v0.5.1 loaded%c %c DEV#5690 `, "color:#fff;background:#03a9f4;font-weight:bold;padding:2px 6px;border-radius:3px 0 0 3px", "color:#03a9f4;background:#fff;font-weight:bold;padding:2px 6px;border:1px solid #03a9f4;border-radius:0 3px 3px 0", ...["background:transparent;", "color:#fff;background:#f57c00;font-weight:bold;padding:2px 6px;border-radius:3px"]);
+	console.groupCollapsed(`%c hass-datapoints %c v0.5.1 loaded `, "color:#fff;background:#03a9f4;font-weight:bold;padding:2px 6px;border-radius:3px 0 0 3px", "color:#03a9f4;background:#fff;font-weight:bold;padding:2px 6px;border:1px solid #03a9f4;border-radius:0 3px 3px 0", ...[]);
 	console.log("Enable debug logging by setting %cwindow.__HASS_DATAPOINTS_DEV__ = true", "color:#333;background:#eee;border:1px solid #777;padding:2px 6px;border-radius:5px; font-family: Courier");
 	console.groupEnd();
 	//#endregion
