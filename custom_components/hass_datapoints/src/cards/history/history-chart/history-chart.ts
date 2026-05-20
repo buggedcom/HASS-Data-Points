@@ -4668,13 +4668,10 @@ export class HistoryChart extends HTMLElement {
     const N = (visibleSeries as unknown[]).length;
     const MIN_ROW_HEIGHT = 200;
     const minTotalHeight = MIN_ROW_HEIGHT * N;
-    // When the minimum required height exceeds the available space, use the
-    // minimum per-series height and let the page scroll rather than clipping
-    // rows into an internal scrollable area.
-    const usePageScroll = minTotalHeight > availableHeight;
-    const rowHeight = usePageScroll
-      ? MIN_ROW_HEIGHT
-      : Math.max(MIN_ROW_HEIGHT, Math.floor(availableHeight / N));
+    const rowHeight =
+      minTotalHeight > availableHeight
+        ? MIN_ROW_HEIGHT
+        : Math.max(MIN_ROW_HEIGHT, Math.floor(availableHeight / N));
     const totalHeight = rowHeight * N;
 
     if (chartStage) {
@@ -4682,40 +4679,28 @@ export class HistoryChart extends HTMLElement {
       chartStage.style.height = `${totalHeight}px`;
     }
 
-    // When the split rows exceed the available height, expand the chart element
-    // itself so the parent pane (.pane-first) can scroll vertically — giving a
-    // natural page-level scroll rather than a small internal viewport scroll.
-    const splitScrollViewport = this.querySelector("#chart-scroll-viewport");
-    if (totalHeight > availableHeight) {
-      wrap.style.height = `${totalHeight}px`;
-      // Keep the viewport non-scrolling vertically; the pane container scrolls.
-      if (splitScrollViewport) {
-        (splitScrollViewport as HTMLElement).style.overflowY = "hidden";
-      }
-    } else {
-      wrap.style.height = "";
-      if (splitScrollViewport) {
-        (splitScrollViewport as HTMLElement).style.overflowY = "hidden";
-      }
+    // When series exceed the available viewport height, scroll vertically inside
+    // chart-scroll-viewport so that chart-top-slot (comparison tabs) and the
+    // legend remain fixed outside the scrollable area.
+    const splitScrollViewport = this.querySelector(
+      "#chart-scroll-viewport"
+    ) as HTMLElement | null;
+    if (splitScrollViewport) {
+      splitScrollViewport.style.overflowY =
+        totalHeight > availableHeight ? "auto" : "hidden";
     }
 
-    // When page-scroll is needed, release the height constraints on the card
-    // so the layout can grow taller than the viewport.
+    // Keep the chart element and ha-card at their CSS-determined heights.
+    // Growing them caused a ResizeObserver feedback loop (the inflated
+    // ha-card.clientHeight flipped usePageScroll, cleared the inline style,
+    // shrank the card, re-fired the observer, and repeated indefinitely).
+    wrap.style.height = "";
+    this.style.height = "";
+    this.style.minHeight = "";
     const haCard = this.closest("ha-card") as HTMLElement | null;
-    if (usePageScroll) {
-      this.style.height = "auto";
-      this.style.minHeight = "100%";
-      if (haCard) {
-        haCard.style.height = "auto";
-        haCard.style.minHeight = "100%";
-      }
-    } else {
-      this.style.height = "";
-      this.style.minHeight = "";
-      if (haCard) {
-        haCard.style.height = "";
-        haCard.style.minHeight = "";
-      }
+    if (haCard) {
+      haCard.style.height = "";
+      haCard.style.minHeight = "";
     }
 
     this._setChartLoading(!!(options as RecordWithUnknownValues).loading);

@@ -15523,36 +15523,21 @@
 			if (canvas) canvas.style.display = "none";
 			const N = visibleSeries.length;
 			const MIN_ROW_HEIGHT = 200;
-			const usePageScroll = MIN_ROW_HEIGHT * N > availableHeight;
-			const rowHeight = usePageScroll ? MIN_ROW_HEIGHT : Math.max(MIN_ROW_HEIGHT, Math.floor(availableHeight / N));
+			const rowHeight = MIN_ROW_HEIGHT * N > availableHeight ? MIN_ROW_HEIGHT : Math.max(MIN_ROW_HEIGHT, Math.floor(availableHeight / N));
 			const totalHeight = rowHeight * N;
 			if (chartStage) {
 				chartStage.style.width = `${canvasWidth}px`;
 				chartStage.style.height = `${totalHeight}px`;
 			}
 			const splitScrollViewport = this.querySelector("#chart-scroll-viewport");
-			if (totalHeight > availableHeight) {
-				wrap.style.height = `${totalHeight}px`;
-				if (splitScrollViewport) splitScrollViewport.style.overflowY = "hidden";
-			} else {
-				wrap.style.height = "";
-				if (splitScrollViewport) splitScrollViewport.style.overflowY = "hidden";
-			}
+			if (splitScrollViewport) splitScrollViewport.style.overflowY = totalHeight > availableHeight ? "auto" : "hidden";
+			wrap.style.height = "";
+			this.style.height = "";
+			this.style.minHeight = "";
 			const haCard = this.closest("ha-card");
-			if (usePageScroll) {
-				this.style.height = "auto";
-				this.style.minHeight = "100%";
-				if (haCard) {
-					haCard.style.height = "auto";
-					haCard.style.minHeight = "100%";
-				}
-			} else {
-				this.style.height = "";
-				this.style.minHeight = "";
-				if (haCard) {
-					haCard.style.height = "";
-					haCard.style.minHeight = "";
-				}
+			if (haCard) {
+				haCard.style.height = "";
+				haCard.style.minHeight = "";
 			}
 			this._setChartLoading(!!options.loading);
 			this._setChartMessage("");
@@ -34535,8 +34520,7 @@
     min-height: 0;
     display: flex;
     width: 100%;
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: hidden;
   }
 
   .chart-card-host > * {
