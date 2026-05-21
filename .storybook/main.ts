@@ -7,7 +7,6 @@ const config: StorybookConfig = {
     "@storybook/addon-a11y",
     "@storybook/addon-vitest",
     "@chromatic-com/storybook",
-    "@storybook/test",
     "@storybook/addon-docs",
     "@storybook/addon-mcp",
   ],

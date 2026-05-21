@@ -296,8 +296,6 @@
 		strings: i,
 		values: s
 	}), b = x(1);
-	x(2);
-	x(3);
 	var E = Symbol.for("lit-noChange"), A = Symbol.for("lit-nothing"), C = /* @__PURE__ */ new WeakMap(), P = l$1.createTreeWalker(l$1, 129);
 	function V(t, i) {
 		if (!u$2(t) || !t.hasOwnProperty("raw")) throw Error("invalid template strings array");
@@ -864,7 +862,7 @@
 		}));
 	}
 	//#endregion
-	//#region \0@oxc-project+runtime@0.122.0/helpers/decorate.js
+	//#region \0@oxc-project+runtime@0.130.0/helpers/decorate.js
 	function __decorate(decorators, target, key, desc) {
 		var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
 		if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -872,33 +870,33 @@
 		return c > 3 && r && Object.defineProperty(target, key, r), r;
 	}
 	//#endregion
-	//#region \0@oxc-project+runtime@0.122.0/helpers/checkPrivateRedeclaration.js
+	//#region \0@oxc-project+runtime@0.130.0/helpers/checkPrivateRedeclaration.js
 	function _checkPrivateRedeclaration(e, t) {
 		if (t.has(e)) throw new TypeError("Cannot initialize the same private elements twice on an object");
 	}
 	//#endregion
-	//#region \0@oxc-project+runtime@0.122.0/helpers/classPrivateFieldInitSpec.js
+	//#region \0@oxc-project+runtime@0.130.0/helpers/classPrivateFieldInitSpec.js
 	function _classPrivateFieldInitSpec(e, t, a) {
 		_checkPrivateRedeclaration(e, t), t.set(e, a);
 	}
 	//#endregion
-	//#region \0@oxc-project+runtime@0.122.0/helpers/assertClassBrand.js
+	//#region \0@oxc-project+runtime@0.130.0/helpers/assertClassBrand.js
 	function _assertClassBrand(e, t, n) {
 		if ("function" == typeof e ? e === t : e.has(t)) return arguments.length < 3 ? t : n;
 		throw new TypeError("Private element is not present on this object");
 	}
 	//#endregion
-	//#region \0@oxc-project+runtime@0.122.0/helpers/classPrivateFieldGet2.js
+	//#region \0@oxc-project+runtime@0.130.0/helpers/classPrivateFieldGet2.js
 	function _classPrivateFieldGet2(s, a) {
 		return s.get(_assertClassBrand(s, a));
 	}
 	//#endregion
-	//#region \0@oxc-project+runtime@0.122.0/helpers/classPrivateFieldSet2.js
+	//#region \0@oxc-project+runtime@0.130.0/helpers/classPrivateFieldSet2.js
 	function _classPrivateFieldSet2(s, a, r) {
 		return s.set(_assertClassBrand(s, a), r), r;
 	}
 	//#endregion
-	//#region \0@oxc-project+runtime@0.122.0/helpers/typeof.js
+	//#region \0@oxc-project+runtime@0.130.0/helpers/typeof.js
 	function _typeof(o) {
 		"@babel/helpers - typeof";
 		return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o) {
@@ -908,7 +906,7 @@
 		}, _typeof(o);
 	}
 	//#endregion
-	//#region \0@oxc-project+runtime@0.122.0/helpers/toPrimitive.js
+	//#region \0@oxc-project+runtime@0.130.0/helpers/toPrimitive.js
 	function toPrimitive(t, r) {
 		if ("object" != _typeof(t) || !t) return t;
 		var e = t[Symbol.toPrimitive];
@@ -920,13 +918,13 @@
 		return ("string" === r ? String : Number)(t);
 	}
 	//#endregion
-	//#region \0@oxc-project+runtime@0.122.0/helpers/toPropertyKey.js
+	//#region \0@oxc-project+runtime@0.130.0/helpers/toPropertyKey.js
 	function toPropertyKey(t) {
 		var i = toPrimitive(t, "string");
 		return "symbol" == _typeof(i) ? i : i + "";
 	}
 	//#endregion
-	//#region \0@oxc-project+runtime@0.122.0/helpers/defineProperty.js
+	//#region \0@oxc-project+runtime@0.130.0/helpers/defineProperty.js
 	function _defineProperty(e, r, t) {
 		return (r = toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
 			value: t,
@@ -1786,6 +1784,11 @@
 	var LOCALE_STATUS_EVENT = "lit-localize-status";
 	//#endregion
 	//#region node_modules/.pnpm/@lit+localize@0.12.2/node_modules/@lit/localize/internal/str-tag.js
+	/**
+	* @license
+	* Copyright 2021 Google LLC
+	* SPDX-License-Identifier: BSD-3-Clause
+	*/
 	var isStrTagged = (val) => typeof val !== "string" && "strTag" in val;
 	/**
 	* Render the result of a `str` tagged template to a string. Note we don't need
@@ -1980,6 +1983,11 @@
 		return hl[v3 >> 8] + hl[v3 & 255] + hl[v2 >> 8] + hl[v2 & 255] + hl[v1 >> 8] + hl[v1 & 255] + hl[v0 >> 8] + hl[v0 & 255];
 	}
 	/**
+	* @license
+	* Copyright 2020 Google LLC
+	* SPDX-License-Identifier: BSD-3-Clause
+	*/
+	/**
 	* Id prefix on html-tagged templates to distinguish e.g. `<b>x</b>` from
 	* html`<b>x</b>`.
 	*/
@@ -2153,6 +2161,13 @@
 		});
 		return loading.promise;
 	};
+	//#endregion
+	//#region node_modules/.pnpm/@lit+localize@0.12.2/node_modules/@lit/localize/lit-localize.js
+	/**
+	* @license
+	* Copyright 2020 Google LLC
+	* SPDX-License-Identifier: BSD-3-Clause
+	*/
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/i18n/supported-locales.json
 	var supported_locales_default = [
@@ -7964,7 +7979,8 @@
 		}
 		async _refreshDevCount() {
 			try {
-				this._devCount = ((await this._hass.connection.sendMessagePromise({ type: `hass_datapoints/events` })).events || []).filter((event) => event.dev).length;
+				const events = (await this._hass.connection.sendMessagePromise({ type: `hass_datapoints/events` })).events || [];
+				this._devCount = events.filter((event) => event.dev).length;
 			} catch (error) {
 				logger$1.warn("[hass-datapoints dev-tool] refresh dev count failed", error);
 			}
@@ -16552,6 +16568,11 @@
 			return this.render(...e);
 		}
 	}, { I: t } = j$1, i = (o) => o, s = () => document.createComment(""), v = (o, n, e) => {
+		/**
+		* @license
+		* Copyright 2020 Google LLC
+		* SPDX-License-Identifier: BSD-3-Clause
+		*/
 		const l = o._$AA.parentNode, d = void 0 === n ? o._$AB : n._$AA;
 		if (void 0 === e) e = new t(l.insertBefore(s(), d), l.insertBefore(s(), d), o, o.options);
 		else {
@@ -20587,7 +20608,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/sidebar-analysis-section.ts
-	var _SidebarAnalysisSection, _anomalyOverlapMode_accessor_storage$2, _showCorrelatedAnomal_accessor_storage$2, _anyAnomaliesEnabled_accessor_storage$2, _collapsible_accessor_storage$1, _open_accessor_storage$5;
+	var _SidebarAnalysisSection, _anomalyOverlapMode_accessor_storage$2, _showCorrelatedAnomalies_accessor_storage$2, _anyAnomaliesEnabled_accessor_storage$2, _collapsible_accessor_storage$1, _open_accessor_storage$5;
 	var ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS$1 = [{
 		value: "all",
 		label: "Show all anomalies"
@@ -20595,11 +20616,11 @@
 		value: "only",
 		label: "Overlaps only"
 	}];
-	var SidebarAnalysisSection = (_anomalyOverlapMode_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showCorrelatedAnomal_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _anyAnomaliesEnabled_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$5 = /* @__PURE__ */ new WeakMap(), _SidebarAnalysisSection = class SidebarAnalysisSection extends i$2 {
+	var SidebarAnalysisSection = (_anomalyOverlapMode_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showCorrelatedAnomalies_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _anyAnomaliesEnabled_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$5 = /* @__PURE__ */ new WeakMap(), _SidebarAnalysisSection = class SidebarAnalysisSection extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _anomalyOverlapMode_accessor_storage$2, "all");
-			_classPrivateFieldInitSpec(this, _showCorrelatedAnomal_accessor_storage$2, false);
+			_classPrivateFieldInitSpec(this, _showCorrelatedAnomalies_accessor_storage$2, false);
 			_classPrivateFieldInitSpec(this, _anyAnomaliesEnabled_accessor_storage$2, false);
 			_classPrivateFieldInitSpec(this, _collapsible_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _open_accessor_storage$5, true);
@@ -20611,10 +20632,10 @@
 			_classPrivateFieldSet2(_anomalyOverlapMode_accessor_storage$2, this, value);
 		}
 		get showCorrelatedAnomalies() {
-			return _classPrivateFieldGet2(_showCorrelatedAnomal_accessor_storage$2, this);
+			return _classPrivateFieldGet2(_showCorrelatedAnomalies_accessor_storage$2, this);
 		}
 		set showCorrelatedAnomalies(value) {
-			_classPrivateFieldSet2(_showCorrelatedAnomal_accessor_storage$2, this, value);
+			_classPrivateFieldSet2(_showCorrelatedAnomalies_accessor_storage$2, this, value);
 		}
 		get anyAnomaliesEnabled() {
 			return _classPrivateFieldGet2(_anyAnomaliesEnabled_accessor_storage$2, this);
@@ -23076,7 +23097,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/target-row-list.ts
-	var _TargetRowList, _rows_accessor_storage$1, _states_accessor_storage$1, _hass_accessor_storage$8, _canShowDeltaAnalysis_accessor_storage$1, _comparisonWindows_accessor_storage$1, _computingEntityIds_accessor_storage, _analysisProgress_accessor_storage, _computingMethodsByEn_accessor_storage, _labelMap_accessor_storage, _targetRows_accessor_storage;
+	var _TargetRowList, _rows_accessor_storage$1, _states_accessor_storage$1, _hass_accessor_storage$8, _canShowDeltaAnalysis_accessor_storage$1, _comparisonWindows_accessor_storage$1, _computingEntityIds_accessor_storage, _analysisProgress_accessor_storage, _computingMethodsByEntity_accessor_storage, _labelMap_accessor_storage, _targetRows_accessor_storage;
 	var _DURATION_SECONDS = {
 		raw: 0,
 		"5s": 5,
@@ -23158,7 +23179,7 @@
 		}
 		return updates;
 	}
-	var TargetRowList = (_rows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _states_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$8 = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _analysisProgress_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingMethodsByEn_accessor_storage = /* @__PURE__ */ new WeakMap(), _labelMap_accessor_storage = /* @__PURE__ */ new WeakMap(), _targetRows_accessor_storage = /* @__PURE__ */ new WeakMap(), _TargetRowList = class TargetRowList extends i$2 {
+	var TargetRowList = (_rows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _states_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$8 = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _analysisProgress_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingMethodsByEntity_accessor_storage = /* @__PURE__ */ new WeakMap(), _labelMap_accessor_storage = /* @__PURE__ */ new WeakMap(), _targetRows_accessor_storage = /* @__PURE__ */ new WeakMap(), _TargetRowList = class TargetRowList extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _rows_accessor_storage$1, []);
@@ -23168,7 +23189,7 @@
 			_classPrivateFieldInitSpec(this, _comparisonWindows_accessor_storage$1, []);
 			_classPrivateFieldInitSpec(this, _computingEntityIds_accessor_storage, /* @__PURE__ */ new Set());
 			_classPrivateFieldInitSpec(this, _analysisProgress_accessor_storage, 0);
-			_classPrivateFieldInitSpec(this, _computingMethodsByEn_accessor_storage, /* @__PURE__ */ new Map());
+			_classPrivateFieldInitSpec(this, _computingMethodsByEntity_accessor_storage, /* @__PURE__ */ new Map());
 			_classPrivateFieldInitSpec(this, _labelMap_accessor_storage, /* @__PURE__ */ new Map());
 			_classPrivateFieldInitSpec(this, _targetRows_accessor_storage, void 0);
 			_defineProperty(
@@ -23293,10 +23314,10 @@
 			_classPrivateFieldSet2(_analysisProgress_accessor_storage, this, value);
 		}
 		get computingMethodsByEntity() {
-			return _classPrivateFieldGet2(_computingMethodsByEn_accessor_storage, this);
+			return _classPrivateFieldGet2(_computingMethodsByEntity_accessor_storage, this);
 		}
 		set computingMethodsByEntity(value) {
-			_classPrivateFieldSet2(_computingMethodsByEn_accessor_storage, this, value);
+			_classPrivateFieldSet2(_computingMethodsByEntity_accessor_storage, this, value);
 		}
 		get labelMap() {
 			return _classPrivateFieldGet2(_labelMap_accessor_storage, this);
@@ -23480,7 +23501,7 @@
 	var _showLines_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _showTooltips_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _showHoverGuides_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _showCorrelatedAnomal_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _showCorrelatedAnomalies_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _showDataGaps_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _dataGapThreshold_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _yAxisMode_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
@@ -23499,7 +23520,7 @@
 			_classPrivateFieldInitSpec(this, _showLines_accessor_storage$1, true);
 			_classPrivateFieldInitSpec(this, _showTooltips_accessor_storage$1, true);
 			_classPrivateFieldInitSpec(this, _showHoverGuides_accessor_storage$1, false);
-			_classPrivateFieldInitSpec(this, _showCorrelatedAnomal_accessor_storage$1, false);
+			_classPrivateFieldInitSpec(this, _showCorrelatedAnomalies_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _showDataGaps_accessor_storage$1, true);
 			_classPrivateFieldInitSpec(this, _dataGapThreshold_accessor_storage$1, "2h");
 			_classPrivateFieldInitSpec(this, _yAxisMode_accessor_storage$1, "combined");
@@ -23542,10 +23563,10 @@
 			_classPrivateFieldSet2(_showHoverGuides_accessor_storage$1, this, value);
 		}
 		get showCorrelatedAnomalies() {
-			return _classPrivateFieldGet2(_showCorrelatedAnomal_accessor_storage$1, this);
+			return _classPrivateFieldGet2(_showCorrelatedAnomalies_accessor_storage$1, this);
 		}
 		set showCorrelatedAnomalies(value) {
-			_classPrivateFieldSet2(_showCorrelatedAnomal_accessor_storage$1, this, value);
+			_classPrivateFieldSet2(_showCorrelatedAnomalies_accessor_storage$1, this, value);
 		}
 		get showDataGaps() {
 			return _classPrivateFieldGet2(_showDataGaps_accessor_storage$1, this);
@@ -23854,7 +23875,7 @@
 	var _showLines_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _showTooltips_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _showHoverGuides_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _showCorrelatedAnomal_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _showCorrelatedAnomalies_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _showDataGaps_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _dataGapThreshold_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _yAxisMode_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -23879,7 +23900,7 @@
 			_classPrivateFieldInitSpec(this, _showLines_accessor_storage, true);
 			_classPrivateFieldInitSpec(this, _showTooltips_accessor_storage, true);
 			_classPrivateFieldInitSpec(this, _showHoverGuides_accessor_storage, false);
-			_classPrivateFieldInitSpec(this, _showCorrelatedAnomal_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _showCorrelatedAnomalies_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _showDataGaps_accessor_storage, true);
 			_classPrivateFieldInitSpec(this, _dataGapThreshold_accessor_storage, "2h");
 			_classPrivateFieldInitSpec(this, _yAxisMode_accessor_storage, "combined");
@@ -23920,10 +23941,10 @@
 			_classPrivateFieldSet2(_showHoverGuides_accessor_storage, this, value);
 		}
 		get showCorrelatedAnomalies() {
-			return _classPrivateFieldGet2(_showCorrelatedAnomal_accessor_storage, this);
+			return _classPrivateFieldGet2(_showCorrelatedAnomalies_accessor_storage, this);
 		}
 		set showCorrelatedAnomalies(value) {
-			_classPrivateFieldSet2(_showCorrelatedAnomal_accessor_storage, this, value);
+			_classPrivateFieldSet2(_showCorrelatedAnomalies_accessor_storage, this, value);
 		}
 		get showDataGaps() {
 			return _classPrivateFieldGet2(_showDataGaps_accessor_storage, this);
@@ -25972,7 +25993,7 @@
 	var _endHandlePosition_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _startHandleZIndex_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _endHandleZIndex_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _rangeScrollViewportE_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _rangeScrollViewportEl_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _rangeTrackEl_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _rangeStartHandleEl_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _rangeEndHandleEl_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -26157,10 +26178,10 @@
 			_classPrivateFieldSet2(_endHandleZIndex_accessor_storage, this, value);
 		}
 		get _rangeScrollViewportEl() {
-			return _classPrivateFieldGet2(_rangeScrollViewportE_accessor_storage, this);
+			return _classPrivateFieldGet2(_rangeScrollViewportEl_accessor_storage, this);
 		}
 		set _rangeScrollViewportEl(value) {
-			_classPrivateFieldSet2(_rangeScrollViewportE_accessor_storage, this, value);
+			_classPrivateFieldSet2(_rangeScrollViewportEl_accessor_storage, this, value);
 		}
 		get _rangeTrackEl() {
 			return _classPrivateFieldGet2(_rangeTrackEl_accessor_storage, this);
@@ -26241,7 +26262,7 @@
 			_defineProperty(this, "_timelineDragStartZoomRange", null);
 			_defineProperty(this, "_timelinePointerMoved", false);
 			_defineProperty(this, "_timelineTrackClickPending", false);
-			_classPrivateFieldInitSpec(this, _rangeScrollViewportE_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _rangeScrollViewportEl_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _rangeTrackEl_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _rangeStartHandleEl_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _rangeEndHandleEl_accessor_storage, null);
@@ -26284,6 +26305,20 @@
 				this._resizeObserver = null;
 			}
 		}
+		willUpdate(changed) {
+			if ([
+				"startTime",
+				"endTime",
+				"rangeBounds",
+				"zoomLevel",
+				"dateSnapping"
+			].some((p) => changed.has(p)) && this.rangeBounds) {
+				this._draftStartTime = this.startTime ? new Date(this.startTime) : null;
+				this._draftEndTime = this.endTime ? new Date(this.endTime) : null;
+				this._updateHandleStacking();
+				this._updateRangePreview();
+			}
+		}
 		firstUpdated() {
 			if (typeof ResizeObserver !== "undefined") {
 				this._resizeObserver = new ResizeObserver(() => {
@@ -26293,7 +26328,7 @@
 				});
 				if (this._rangeScrollViewportEl) this._resizeObserver.observe(this._rangeScrollViewportEl);
 			}
-			this._syncRangeControl();
+			this._scheduleDomSync();
 		}
 		updated(changed) {
 			if ([
@@ -26302,7 +26337,16 @@
 				"rangeBounds",
 				"zoomLevel",
 				"dateSnapping"
-			].some((p) => changed.has(p))) this._syncRangeControl();
+			].some((p) => changed.has(p))) this._scheduleDomSync();
+		}
+		_scheduleDomSync() {
+			this.updateComplete.then(() => {
+				if (this.isConnected && this._rangeTrackEl && this._rangeStartHandleEl && this._rangeEndHandleEl && this.rangeBounds) {
+					this._syncTimelineWidth();
+					this._updateSelectionJumpControls();
+					this._revealSelectionInTimeline("auto");
+				}
+			});
 		}
 		render() {
 			return b`
@@ -27892,9 +27936,9 @@
 			super.connectedCallback();
 			this._initFromProps();
 		}
-		updated(changed) {
+		willUpdate(changed) {
 			if (changed.has("open") && this.open) this._initFromProps();
-			if (changed.has("editMonitor") && this.editMonitor) this._initFromProps();
+			else if (changed.has("editMonitor") && this.editMonitor) this._initFromProps();
 		}
 		_initFromProps() {
 			if (this.editMonitor) {
@@ -31521,14 +31565,14 @@
 	var _zoomRange_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _zoomWindowRange_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _chartHoverTimeMs_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _chartHoverWindowTime_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _chartHoverWindowTimeMs_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _events_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _rangeHoverPreviewEl_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _rangeComparisonPrevi_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _rangeComparisonPreviewEl_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _rangeZoomHighlightEl_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _rangeZoomWindowHighl_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _rangeChartHoverLineE_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _rangeChartHoverWindo_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _rangeZoomWindowHighlightEl_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _rangeChartHoverLineEl_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _rangeChartHoverWindowLineEl_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _rangeEventLayerEl_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _rangeTimelineEl_accessor_storage = /* @__PURE__ */ new WeakMap();
 	/**
@@ -31562,14 +31606,14 @@
 			_classPrivateFieldInitSpec(this, _zoomRange_accessor_storage$1, null);
 			_classPrivateFieldInitSpec(this, _zoomWindowRange_accessor_storage$1, null);
 			_classPrivateFieldInitSpec(this, _chartHoverTimeMs_accessor_storage$1, null);
-			_classPrivateFieldInitSpec(this, _chartHoverWindowTime_accessor_storage$1, null);
+			_classPrivateFieldInitSpec(this, _chartHoverWindowTimeMs_accessor_storage$1, null);
 			_classPrivateFieldInitSpec(this, _events_accessor_storage$1, []);
 			_classPrivateFieldInitSpec(this, _rangeHoverPreviewEl_accessor_storage, null);
-			_classPrivateFieldInitSpec(this, _rangeComparisonPrevi_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _rangeComparisonPreviewEl_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _rangeZoomHighlightEl_accessor_storage, null);
-			_classPrivateFieldInitSpec(this, _rangeZoomWindowHighl_accessor_storage, null);
-			_classPrivateFieldInitSpec(this, _rangeChartHoverLineE_accessor_storage, null);
-			_classPrivateFieldInitSpec(this, _rangeChartHoverWindo_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _rangeZoomWindowHighlightEl_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _rangeChartHoverLineEl_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _rangeChartHoverWindowLineEl_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _rangeEventLayerEl_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _rangeTimelineEl_accessor_storage, null);
 			_defineProperty(this, "_liveZoomRange", void 0);
@@ -31648,10 +31692,10 @@
 			_classPrivateFieldSet2(_chartHoverTimeMs_accessor_storage$1, this, value);
 		}
 		get chartHoverWindowTimeMs() {
-			return _classPrivateFieldGet2(_chartHoverWindowTime_accessor_storage$1, this);
+			return _classPrivateFieldGet2(_chartHoverWindowTimeMs_accessor_storage$1, this);
 		}
 		set chartHoverWindowTimeMs(value) {
-			_classPrivateFieldSet2(_chartHoverWindowTime_accessor_storage$1, this, value);
+			_classPrivateFieldSet2(_chartHoverWindowTimeMs_accessor_storage$1, this, value);
 		}
 		get events() {
 			return _classPrivateFieldGet2(_events_accessor_storage$1, this);
@@ -31666,10 +31710,10 @@
 			_classPrivateFieldSet2(_rangeHoverPreviewEl_accessor_storage, this, value);
 		}
 		get _rangeComparisonPreviewEl() {
-			return _classPrivateFieldGet2(_rangeComparisonPrevi_accessor_storage, this);
+			return _classPrivateFieldGet2(_rangeComparisonPreviewEl_accessor_storage, this);
 		}
 		set _rangeComparisonPreviewEl(value) {
-			_classPrivateFieldSet2(_rangeComparisonPrevi_accessor_storage, this, value);
+			_classPrivateFieldSet2(_rangeComparisonPreviewEl_accessor_storage, this, value);
 		}
 		get _rangeZoomHighlightEl() {
 			return _classPrivateFieldGet2(_rangeZoomHighlightEl_accessor_storage, this);
@@ -31678,22 +31722,22 @@
 			_classPrivateFieldSet2(_rangeZoomHighlightEl_accessor_storage, this, value);
 		}
 		get _rangeZoomWindowHighlightEl() {
-			return _classPrivateFieldGet2(_rangeZoomWindowHighl_accessor_storage, this);
+			return _classPrivateFieldGet2(_rangeZoomWindowHighlightEl_accessor_storage, this);
 		}
 		set _rangeZoomWindowHighlightEl(value) {
-			_classPrivateFieldSet2(_rangeZoomWindowHighl_accessor_storage, this, value);
+			_classPrivateFieldSet2(_rangeZoomWindowHighlightEl_accessor_storage, this, value);
 		}
 		get _rangeChartHoverLineEl() {
-			return _classPrivateFieldGet2(_rangeChartHoverLineE_accessor_storage, this);
+			return _classPrivateFieldGet2(_rangeChartHoverLineEl_accessor_storage, this);
 		}
 		set _rangeChartHoverLineEl(value) {
-			_classPrivateFieldSet2(_rangeChartHoverLineE_accessor_storage, this, value);
+			_classPrivateFieldSet2(_rangeChartHoverLineEl_accessor_storage, this, value);
 		}
 		get _rangeChartHoverWindowLineEl() {
-			return _classPrivateFieldGet2(_rangeChartHoverWindo_accessor_storage, this);
+			return _classPrivateFieldGet2(_rangeChartHoverWindowLineEl_accessor_storage, this);
 		}
 		set _rangeChartHoverWindowLineEl(value) {
-			_classPrivateFieldSet2(_rangeChartHoverWindo_accessor_storage, this, value);
+			_classPrivateFieldSet2(_rangeChartHoverWindowLineEl_accessor_storage, this, value);
 		}
 		get _rangeEventLayerEl() {
 			return _classPrivateFieldGet2(_rangeEventLayerEl_accessor_storage, this);
@@ -31971,8 +32015,8 @@
 	customElements.define("date-time-input", DateTimeInput);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/range-toolbar/range-toolbar.ts
-	var _RangeToolbar, _hass_accessor_storage$3, _startTime_accessor_storage, _endTime_accessor_storage, _rangeBounds_accessor_storage, _zoomLevel_accessor_storage, _dateSnapping_accessor_storage, _sidebarCollapsed_accessor_storage, _isLiveEdge_accessor_storage, _timelineEvents_accessor_storage, _comparisonPreview_accessor_storage, _zoomRange_accessor_storage, _zoomWindowRange_accessor_storage, _chartHoverTimeMs_accessor_storage, _chartHoverWindowTime_accessor_storage, _optionsView_accessor_storage, _optionsOpen_accessor_storage, _pickerOpen_accessor_storage;
-	var RangeToolbar = (_hass_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _startTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _endTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _rangeBounds_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomLevel_accessor_storage = /* @__PURE__ */ new WeakMap(), _dateSnapping_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarCollapsed_accessor_storage = /* @__PURE__ */ new WeakMap(), _isLiveEdge_accessor_storage = /* @__PURE__ */ new WeakMap(), _timelineEvents_accessor_storage = /* @__PURE__ */ new WeakMap(), _comparisonPreview_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomRange_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomWindowRange_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartHoverTimeMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartHoverWindowTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _optionsView_accessor_storage = /* @__PURE__ */ new WeakMap(), _optionsOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _pickerOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _RangeToolbar = class RangeToolbar extends i$2 {
+	var _RangeToolbar, _hass_accessor_storage$3, _startTime_accessor_storage, _endTime_accessor_storage, _rangeBounds_accessor_storage, _zoomLevel_accessor_storage, _dateSnapping_accessor_storage, _sidebarCollapsed_accessor_storage, _isLiveEdge_accessor_storage, _timelineEvents_accessor_storage, _comparisonPreview_accessor_storage, _zoomRange_accessor_storage, _zoomWindowRange_accessor_storage, _chartHoverTimeMs_accessor_storage, _chartHoverWindowTimeMs_accessor_storage, _optionsView_accessor_storage, _optionsOpen_accessor_storage, _pickerOpen_accessor_storage;
+	var RangeToolbar = (_hass_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _startTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _endTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _rangeBounds_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomLevel_accessor_storage = /* @__PURE__ */ new WeakMap(), _dateSnapping_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarCollapsed_accessor_storage = /* @__PURE__ */ new WeakMap(), _isLiveEdge_accessor_storage = /* @__PURE__ */ new WeakMap(), _timelineEvents_accessor_storage = /* @__PURE__ */ new WeakMap(), _comparisonPreview_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomRange_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomWindowRange_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartHoverTimeMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartHoverWindowTimeMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _optionsView_accessor_storage = /* @__PURE__ */ new WeakMap(), _optionsOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _pickerOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _RangeToolbar = class RangeToolbar extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _hass_accessor_storage$3, null);
@@ -31988,7 +32032,7 @@
 			_classPrivateFieldInitSpec(this, _zoomRange_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _zoomWindowRange_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _chartHoverTimeMs_accessor_storage, null);
-			_classPrivateFieldInitSpec(this, _chartHoverWindowTime_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _chartHoverWindowTimeMs_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _optionsView_accessor_storage, "root");
 			_classPrivateFieldInitSpec(this, _optionsOpen_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _pickerOpen_accessor_storage, false);
@@ -32072,10 +32116,10 @@
 			_classPrivateFieldSet2(_chartHoverTimeMs_accessor_storage, this, value);
 		}
 		get chartHoverWindowTimeMs() {
-			return _classPrivateFieldGet2(_chartHoverWindowTime_accessor_storage, this);
+			return _classPrivateFieldGet2(_chartHoverWindowTimeMs_accessor_storage, this);
 		}
 		set chartHoverWindowTimeMs(value) {
-			_classPrivateFieldSet2(_chartHoverWindowTime_accessor_storage, this, value);
+			_classPrivateFieldSet2(_chartHoverWindowTimeMs_accessor_storage, this, value);
 		}
 		get _optionsView() {
 			return _classPrivateFieldGet2(_optionsView_accessor_storage, this);
@@ -36368,7 +36412,7 @@
 				shellBuilt: this._shellBuilt,
 				isConnected: this.isConnected
 			});
-			this._uiReadyPromise = ensureHaComponents([
+			const componentTags = [
 				"ha-top-app-bar-fixed",
 				"ha-menu-button",
 				"ha-icon-button",
@@ -36377,7 +36421,8 @@
 				"ha-target-picker",
 				"ha-date-range-picker",
 				"ha-entity-picker"
-			]).then((results) => results).then(() => {
+			];
+			this._uiReadyPromise = ensureHaComponents(componentTags).then((results) => results).then(() => {
 				if (!this.isConnected || !this._rendered) {
 					logger$1.warn("[dp-lifecycle] _ensureUiComponentsReady: components ready but bailing early", {
 						isConnected: this.isConnected,
@@ -36756,7 +36801,8 @@
 		}
 		_handleComparisonLoading(ev) {
 			const ids = Array.isArray(ev?.detail?.ids) ? ev.detail.ids.filter(Boolean) : [];
-			this._loadingComparisonWindowIds = ev?.detail?.loading === true ? [...new Set([...this._loadingComparisonWindowIds, ...ids])] : this._loadingComparisonWindowIds.filter((id) => !ids.includes(id));
+			const loading = ev?.detail?.loading === true;
+			this._loadingComparisonWindowIds = loading ? [...new Set([...this._loadingComparisonWindowIds, ...ids])] : this._loadingComparisonWindowIds.filter((id) => !ids.includes(id));
 			this._renderComparisonTabs();
 		}
 		_handleAnalysisComputing(ev) {
@@ -39473,7 +39519,8 @@
 				this._allEvents = [];
 				return;
 			}
-			this._allEvents = [...await fetchEvents(hass, startTime, effectiveEndTime, cfg.datapoint_scope === "all" ? void 0 : entityIds)].reverse();
+			const events = await fetchEvents(hass, startTime, effectiveEndTime, cfg.datapoint_scope === "all" ? void 0 : entityIds);
+			this._allEvents = [...events].reverse();
 		}
 		_filtered() {
 			const msgFilter = (this._config.message_filter || "").toLowerCase().trim();
@@ -42017,9 +42064,10 @@
 			this._render();
 		}
 		_render() {
+			const title = this._config?.title || "Statistics card";
 			this.innerHTML = `
       <ha-card>
-        <div class="card-header">${this._config?.title || "Statistics card"}</div>
+        <div class="card-header">${title}</div>
         <div class="card-content">
           <p>
             Datapoints statistics card removed.

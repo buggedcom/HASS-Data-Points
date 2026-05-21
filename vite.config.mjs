@@ -1,9 +1,10 @@
 /// <reference types="vitest/config" />
-import { resolve } from "node:path";
+import path, { resolve } from "node:path";
 import { defineConfig } from "vite";
-import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { storybookTest } from "@storybook/addon-vitest/vitest-plugin";
+import { playwright } from "@vitest/browser-playwright";
+
 const dirname =
   typeof __dirname !== "undefined"
     ? __dirname
@@ -11,8 +12,10 @@ const dirname =
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
-  esbuild: {
-    target: "es2021",
+  optimizeDeps: {
+    // @storybook/addon-docs adds React to optimizeDeps even in non-React projects;
+    // exclude them to suppress "Failed to resolve dependency" warnings.
+    exclude: ["react", "react-dom", "react/jsx-runtime", "react-dom/client"],
   },
   resolve: {
     alias: {
@@ -67,11 +70,11 @@ export default defineConfig({
           browser: {
             enabled: true,
             headless: true,
+            provider: playwright({}),
             api: {
               host: "127.0.0.1",
               port: 63315,
             },
-            provider: "playwright",
             instances: [
               {
                 browser: "chromium",

@@ -117,11 +117,10 @@ export class AnomalyMonitorWizard extends LitElement {
     this._initFromProps();
   }
 
-  updated(changed: Map<string, unknown>) {
+  willUpdate(changed: Map<string, unknown>) {
     if (changed.has("open") && this.open) {
       this._initFromProps();
-    }
-    if (changed.has("editMonitor") && this.editMonitor) {
+    } else if (changed.has("editMonitor") && this.editMonitor) {
       this._initFromProps();
     }
   }

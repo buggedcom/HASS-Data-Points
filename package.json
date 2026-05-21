@@ -47,9 +47,10 @@
     "@storybook/addon-vitest": "10.3.3",
     "@storybook/test": "8.6.15",
     "@storybook/web-components-vite": "10.3.3",
-    "@vitest/browser": "3.2.4",
-    "@vitest/coverage-v8": "3.2.4",
-    "@vitest/ui": "3.2.4",
+    "@vitest/browser": "4.1.6",
+    "@vitest/browser-playwright": "4.1.6",
+    "@vitest/coverage-v8": "4.1.6",
+    "@vitest/ui": "4.1.6",
     "chromatic": "16.0.0",
     "eslint": "10.2.0",
     "eslint-config-airbnb-extended": "3.1.0",
@@ -66,8 +67,8 @@
     "storybook": "10.3.3",
     "typescript": "5.9.3",
     "typescript-eslint": "8.58.1",
-    "vite": "8.0.5",
-    "vitest": "3.2.4"
+    "vite": "8.0.13",
+    "vitest": "4.1.6"
   },
   "pnpm": {
     "overrides": {
