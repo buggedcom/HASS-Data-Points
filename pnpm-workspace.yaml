@@ -1,6 +1,5 @@
 packages:
   - .
-  - site
 
 minimumReleaseAge: 1440
 trustPolicy: no-downgrade
@@ -9,7 +8,3 @@ trustPolicyExclude:
   # Reason: Old version released after higher-trust versions; dependency chain cannot yet be upgraded. Version and repo manually checked.
   # Risk Assessment: Used only as version parser; no runtime execution path; no CVE exposure.
   - semver@6.3.1 || 5.7.2
-  # Package: vite@5.4.21
-  # Reason: Vite team switched publish method from npm trusted-publisher to provenance attestation; pnpm treats this as a trust downgrade. Version manually verified against the official vitejs/vite GitHub repo.
-  # Risk Assessment: Used only in the docs site (vitepress build tool, not shipped runtime code). Fixes CVEs GHSA-93m4-6634-74q7, GHSA-4w7w-66w2-5vf9, GHSA-g4jq-h2w9-997c, GHSA-jqfw-vq24-v9c3.
-  - vite@5.4.21
