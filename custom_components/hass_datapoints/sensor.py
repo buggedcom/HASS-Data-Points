@@ -11,7 +11,7 @@ from typing import Any
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import UnitOfTime
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_call_later, async_track_time_interval
@@ -144,7 +144,8 @@ class _DatapointsPeriodicSensorBase(_DatapointsSensorBase):
                 self._hass, self._handle_time_interval, _UPDATE_INTERVAL
             )
         )
-
+    
+    @callback
     def _handle_time_interval(self, now: datetime) -> None:
         """Refresh state on every timer tick."""
         self._attr_native_value = self._compute()
