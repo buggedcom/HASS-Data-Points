@@ -47,7 +47,7 @@
     "@storybook/addon-vitest": "10.3.3",
     "@storybook/test": "8.6.15",
     "@storybook/web-components-vite": "10.3.3",
-    "@vitest/browser": "4.1.7",
+    "@vitest/browser": "4.1.8",
     "@vitest/browser-playwright": "4.1.7",
     "@vitest/coverage-v8": "4.1.7",
     "@vitest/ui": "4.1.7",
