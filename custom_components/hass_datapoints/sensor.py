@@ -95,6 +95,11 @@ class _DatapointsSensorBase(SensorEntity):
     """Shared base for all Hass Data Points sensor entities."""
 
     _attr_has_entity_name = True
+    # Subclasses whose _compute() performs blocking I/O (SQLite reads) set this
+    # to True so refreshes run in the executor instead of on the event loop.
+    # Sensors that compute from in-memory monitor state leave it False and
+    # refresh inline (offloading those would race with loop-side mutations).
+    _compute_blocks_io = False
 
     def __init__(self, entry: ConfigEntry, store: DatapointsStore) -> None:
         """Initialise with config entry and data store."""
@@ -118,7 +123,19 @@ class _DatapointsSensorBase(SensorEntity):
 
     def _handle_store_update(self) -> None:
         """Refresh state after any store mutation."""
-        self._attr_native_value = self._compute()
+        self._refresh_value()
+
+    def _refresh_value(self) -> None:
+        """Recompute and write state — off the loop when _compute() blocks."""
+        if self._compute_blocks_io:
+            self.hass.async_create_task(self._async_refresh_value())
+        else:
+            self._attr_native_value = self._compute()
+            self.async_write_ha_state()
+
+    async def _async_refresh_value(self) -> None:
+        """Run the blocking _compute() in the executor, then write state."""
+        self._attr_native_value = await self.hass.async_add_executor_job(self._compute)
         self.async_write_ha_state()
 
     def _compute(self) -> Any:
@@ -148,8 +165,7 @@ class _DatapointsPeriodicSensorBase(_DatapointsSensorBase):
     @callback
     def _handle_time_interval(self, now: datetime) -> None:
         """Refresh state on every timer tick."""
-        self._attr_native_value = self._compute()
-        self.async_write_ha_state()
+        self._refresh_value()
 
 
 # ---------------------------------------------------------------------------
@@ -161,6 +177,7 @@ class DatapointsCountSensor(_DatapointsSensorBase):
     """Expose the total number of recorded datapoints."""
 
     _attr_icon = "mdi:counter"
+    _compute_blocks_io = True
 
     def __init__(self, entry: ConfigEntry, store: DatapointsStore) -> None:
         """Initialise the datapoint count sensor."""
@@ -178,6 +195,7 @@ class DatapointsLastTimestampSensor(_DatapointsSensorBase):
 
     _attr_device_class = SensorDeviceClass.TIMESTAMP
     _attr_icon = "mdi:clock-outline"
+    _compute_blocks_io = True
 
     def __init__(self, entry: ConfigEntry, store: DatapointsStore) -> None:
         """Initialise the last recorded timestamp sensor."""
@@ -206,6 +224,7 @@ class DatapointsLastMessageSensor(_DatapointsSensorBase):
     """Expose the message of the most recently recorded datapoint."""
 
     _attr_icon = "mdi:text"
+    _compute_blocks_io = True
 
     def __init__(self, entry: ConfigEntry, store: DatapointsStore) -> None:
         """Initialise the last recorded message sensor."""
@@ -228,6 +247,7 @@ class DatapointsTimeSinceLastSensor(_DatapointsPeriodicSensorBase):
     _attr_native_unit_of_measurement = UnitOfTime.HOURS
     _attr_suggested_display_precision = 1
     _attr_icon = "mdi:timer-outline"
+    _compute_blocks_io = True
 
     def __init__(
         self, entry: ConfigEntry, store: DatapointsStore, hass: HomeAssistant
@@ -259,6 +279,7 @@ class DatapointsTodayCountSensor(_DatapointsPeriodicSensorBase):
     """Expose the count of datapoints recorded since the start of today (local time)."""
 
     _attr_icon = "mdi:calendar-today"
+    _compute_blocks_io = True
 
     def __init__(
         self, entry: ConfigEntry, store: DatapointsStore, hass: HomeAssistant
@@ -278,6 +299,7 @@ class DatapointsWeekCountSensor(_DatapointsPeriodicSensorBase):
     """Expose the count of datapoints recorded since the start of this week (Mon, local time)."""
 
     _attr_icon = "mdi:calendar-week"
+    _compute_blocks_io = True
 
     def __init__(
         self, entry: ConfigEntry, store: DatapointsStore, hass: HomeAssistant
@@ -298,6 +320,7 @@ class DatapointsAutomationCountSensor(_DatapointsSensorBase):
     """Expose the count of automation-triggered datapoints."""
 
     _attr_icon = "mdi:robot"
+    _compute_blocks_io = True
 
     def __init__(self, entry: ConfigEntry, store: DatapointsStore) -> None:
         """Initialise the automation count sensor."""
@@ -315,6 +338,7 @@ class DatapointsManualCountSensor(_DatapointsSensorBase):
     """Expose the count of manually recorded datapoints."""
 
     _attr_icon = "mdi:hand-back-right"
+    _compute_blocks_io = True
 
     def __init__(self, entry: ConfigEntry, store: DatapointsStore) -> None:
         """Initialise the manual count sensor."""
