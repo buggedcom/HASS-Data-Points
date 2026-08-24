@@ -258,7 +258,8 @@ async def async_unload_entry(hass: HomeAssistant, entry: DatapointsConfigEntry) 
     """Unload a config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     hass.services.async_remove(DOMAIN, SERVICE_RECORD)
-    hass.data[DOMAIN].pop("store", None)
+    if store := hass.data[DOMAIN].pop("store", None):
+        await hass.async_add_executor_job(store.close)
     hass.data[DOMAIN].pop("anomaly_cache", None)
     hass.data[DOMAIN].pop("in_flight", None)
     hass.data[DOMAIN].pop("scan_semaphore", None)

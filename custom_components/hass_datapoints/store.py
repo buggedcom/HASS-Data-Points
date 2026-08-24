@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import logging
 import sqlite3
+import threading
 import uuid
 from collections.abc import Callable
 from datetime import UTC, datetime
@@ -89,26 +90,36 @@ def _event_to_params(event: dict[str, Any]) -> tuple:
 
 
 class _EventDb:
-    """Synchronous SQLite backend for event storage."""
+    """Synchronous SQLite backend for event storage.
+
+    Holds a single long-lived connection guarded by a lock rather than opening
+    (and leaking) a fresh connection per operation. ``check_same_thread=False``
+    lets Home Assistant's executor threads reuse it; the lock serialises access
+    so the shared connection is never touched concurrently. All access is
+    blocking and MUST be dispatched from an executor, never the event loop.
+    """
 
     def __init__(self, db_path: str) -> None:
         self._db_path = db_path
+        self._lock = threading.Lock()
+        self._conn = sqlite3.connect(db_path, check_same_thread=False)
+        self._conn.row_factory = sqlite3.Row
         self._init_db()
 
-    def _connect(self) -> sqlite3.Connection:
-        conn = sqlite3.connect(self._db_path, check_same_thread=False)
-        conn.row_factory = sqlite3.Row
-        return conn
-
     def _init_db(self) -> None:
-        with self._connect() as conn:
-            conn.execute("PRAGMA journal_mode=WAL")
-            conn.executescript(_SCHEMA_SQL)
+        with self._lock, self._conn:
+            self._conn.execute("PRAGMA journal_mode=WAL")
+            self._conn.executescript(_SCHEMA_SQL)
+
+    def close(self) -> None:
+        """Close the underlying connection. Called once when the entry unloads."""
+        with self._lock:
+            self._conn.close()
 
     def insert(self, event: dict[str, Any]) -> None:
         """Insert a new event row."""
-        with self._connect() as conn:
-            conn.execute(
+        with self._lock, self._conn:
+            self._conn.execute(
                 """
                 INSERT INTO events
                     (id, timestamp, message, annotation,
@@ -122,8 +133,8 @@ class _EventDb:
     def insert_many(self, events: list[dict[str, Any]]) -> None:
         """Bulk-insert events using INSERT OR IGNORE (idempotent for migration)."""
         params = [_event_to_params(e) for e in events]
-        with self._connect() as conn:
-            conn.executemany(
+        with self._lock, self._conn:
+            self._conn.executemany(
                 """
                 INSERT OR IGNORE INTO events
                     (id, timestamp, message, annotation,
@@ -141,20 +152,20 @@ class _EventDb:
         }
         cols = ", ".join(f"{k}=?" for k in encoded)
         params = list(encoded.values()) + [event_id]
-        with self._connect() as conn:
-            cursor = conn.execute(f"UPDATE events SET {cols} WHERE id=?", params)
+        with self._lock, self._conn:
+            cursor = self._conn.execute(f"UPDATE events SET {cols} WHERE id=?", params)
             return cursor.rowcount > 0
 
     def delete(self, event_id: str) -> bool:
         """Delete an event by ID. Returns True if the row existed."""
-        with self._connect() as conn:
-            cursor = conn.execute("DELETE FROM events WHERE id=?", (event_id,))
+        with self._lock, self._conn:
+            cursor = self._conn.execute("DELETE FROM events WHERE id=?", (event_id,))
             return cursor.rowcount > 0
 
     def delete_dev(self) -> int:
         """Delete all dev-flagged events. Returns the number of rows deleted."""
-        with self._connect() as conn:
-            cursor = conn.execute("DELETE FROM events WHERE dev=1")
+        with self._lock, self._conn:
+            cursor = self._conn.execute("DELETE FROM events WHERE dev=1")
             return cursor.rowcount
 
     def query(
@@ -165,17 +176,26 @@ class _EventDb:
         limit: int | None,
         offset: int,
     ) -> list[dict[str, Any]]:
-        """Return events filtered by time range, then by entity IDs in Python."""
-        with self._connect() as conn:
-            rows = conn.execute(
-                """
-                SELECT * FROM events
-                WHERE (? IS NULL OR timestamp >= ?)
-                AND   (? IS NULL OR timestamp <= ?)
-                ORDER BY timestamp ASC
-                """,
-                (start, start, end, end),
-            ).fetchall()
+        """Return events filtered by time range (and, in Python, by entity IDs).
+
+        With no entity filter, LIMIT/OFFSET are pushed into SQL so the whole
+        table is never materialised. With an entity filter the JSON-array
+        intersection has to run in Python, so pagination is applied after it.
+        """
+        sql = [
+            "SELECT * FROM events",
+            "WHERE (? IS NULL OR timestamp >= ?)",
+            "AND   (? IS NULL OR timestamp <= ?)",
+            "ORDER BY timestamp ASC",
+        ]
+        params: list[Any] = [start, start, end, end]
+        push_pagination = entity_ids is None
+        if push_pagination and (limit is not None or offset):
+            # SQLite uses LIMIT -1 to mean "no limit" when only an offset is set.
+            sql.append("LIMIT ? OFFSET ?")
+            params.extend([limit if limit is not None else -1, offset])
+        with self._lock:
+            rows = self._conn.execute("\n".join(sql), params).fetchall()
 
         events = [_row_to_dict(r) for r in rows]
 
@@ -191,24 +211,23 @@ class _EventDb:
                     seen.add(ev["id"])
                     filtered.append(ev)
             events = filtered
-
-        if offset:
-            events = events[offset:]
-        if limit is not None:
-            events = events[:limit]
+            if offset:
+                events = events[offset:]
+            if limit is not None:
+                events = events[:limit]
 
         return events
 
     def count(self) -> int:
         """Return total event count."""
-        with self._connect() as conn:
-            row = conn.execute("SELECT COUNT(*) FROM events").fetchone()
+        with self._lock:
+            row = self._conn.execute("SELECT COUNT(*) FROM events").fetchone()
             return row[0]
 
     def count_in_range(self, start: str, end: str | None) -> int:
         """Return event count within a time range."""
-        with self._connect() as conn:
-            row = conn.execute(
+        with self._lock:
+            row = self._conn.execute(
                 "SELECT COUNT(*) FROM events WHERE timestamp >= ? AND (? IS NULL OR timestamp <= ?)",
                 (start, end, end),
             ).fetchone()
@@ -216,24 +235,24 @@ class _EventDb:
 
     def bounds(self) -> tuple[str | None, str | None]:
         """Return (earliest_timestamp, latest_timestamp) or (None, None) if empty."""
-        with self._connect() as conn:
-            row = conn.execute(
+        with self._lock:
+            row = self._conn.execute(
                 "SELECT MIN(timestamp), MAX(timestamp) FROM events"
             ).fetchone()
             return row[0], row[1]
 
     def last(self) -> dict[str, Any] | None:
         """Return the most recently timestamped event, or None if empty."""
-        with self._connect() as conn:
-            row = conn.execute(
+        with self._lock:
+            row = self._conn.execute(
                 "SELECT * FROM events ORDER BY timestamp DESC LIMIT 1"
             ).fetchone()
             return _row_to_dict(row) if row else None
 
     def automation_manual_counts(self) -> tuple[int, int]:
         """Return (automation_count, manual_count)."""
-        with self._connect() as conn:
-            row = conn.execute(
+        with self._lock:
+            row = self._conn.execute(
                 """
                 SELECT
                     COUNT(CASE WHEN automation_id IS NOT NULL THEN 1 END),
@@ -245,8 +264,8 @@ class _EventDb:
 
     def get_by_id(self, event_id: str) -> dict[str, Any] | None:
         """Fetch a single event by ID, or None if not found."""
-        with self._connect() as conn:
-            row = conn.execute(
+        with self._lock:
+            row = self._conn.execute(
                 "SELECT * FROM events WHERE id=?", (event_id,)
             ).fetchone()
             return _row_to_dict(row) if row else None
@@ -300,6 +319,10 @@ class DatapointsStore:
                 m["active_cluster_count"] = m.get("last_cluster_count", 0)
             if "last_resolved_clusters_summary" not in m:
                 m["last_resolved_clusters_summary"] = []
+
+    def close(self) -> None:
+        """Release the SQLite connection. Called when the config entry unloads."""
+        self._event_db.close()
 
     async def async_record(
         self,

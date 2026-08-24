@@ -190,12 +190,14 @@ async def ws_get_events(
         ]
     limit: int = msg.get("limit", 200)
     offset: int = msg.get("offset", 0)
-    events = store.get_events(
-        start=msg.get("start_time"),
-        end=msg.get("end_time"),
-        entity_ids=entity_ids,
-        limit=limit,
-        offset=offset,
+    # SQLite reads block, so run them in the executor rather than on the loop.
+    events = await hass.async_add_executor_job(
+        store.get_events,
+        msg.get("start_time"),
+        msg.get("end_time"),
+        entity_ids,
+        limit,
+        offset,
     )
     connection.send_result(msg["id"], {"events": events})
 
@@ -219,7 +221,9 @@ async def ws_get_event_bounds(
             _get_global_history_bounds, recorder
         )
         if start_time is None and end_time is None:
-            start_time, end_time = store.get_event_bounds()
+            start_time, end_time = await hass.async_add_executor_job(
+                store.get_event_bounds
+            )
             source = "datapoints_store_fallback"
         connection.send_result(
             msg["id"],
