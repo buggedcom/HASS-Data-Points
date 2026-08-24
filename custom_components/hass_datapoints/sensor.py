@@ -144,7 +144,7 @@ class _DatapointsPeriodicSensorBase(_DatapointsSensorBase):
                 self._hass, self._handle_time_interval, _UPDATE_INTERVAL
             )
         )
-    
+
     @callback
     def _handle_time_interval(self, now: datetime) -> None:
         """Refresh state on every timer tick."""
