@@ -33392,7 +33392,14 @@
 	var PANEL_HISTORY_STYLE = `
   :host {
     display: block;
-    height: 100%;
+    /* Fill the viewport directly rather than inheriting height:100% from the
+       ha-panel-custom / partial-panel-resolver chain: on HA 2026.8 that chain
+       resolves to height 0 (partial-panel-resolver is display:inline), which
+       collapsed the panel to 0px and rendered it blank. Viewport height equals
+       the old 100% on cores that did size the chain, so this is backward
+       compatible. 100dvh refines it where supported. */
+    height: 100vh;
+    height: 100dvh;
     color: var(--primary-text-color);
     background: var(--primary-background-color);
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -35597,7 +35604,14 @@
 	var PANEL_HISTORY_LOADING_STYLE = `
   :host {
     display: block;
-    height: 100%;
+    /* Fill the viewport directly rather than inheriting height:100% from the
+       ha-panel-custom / partial-panel-resolver chain: on HA 2026.8 that chain
+       resolves to height 0 (partial-panel-resolver is display:inline), which
+       collapsed the panel to 0px and rendered it blank. Viewport height equals
+       the old 100% on cores that did size the chain, so this is backward
+       compatible. 100dvh refines it where supported. */
+    height: 100vh;
+    height: 100dvh;
     color: var(--primary-text-color);
     background: var(--primary-background-color);
   }
@@ -42238,7 +42252,7 @@
 	].forEach((card) => {
 		if (!registeredTypes.has(card.type)) window.customCards?.push(card);
 	});
-	console.groupCollapsed(`%c hass-datapoints %c v0.6.2 loaded `, "color:#fff;background:#03a9f4;font-weight:bold;padding:2px 6px;border-radius:3px 0 0 3px", "color:#03a9f4;background:#fff;font-weight:bold;padding:2px 6px;border:1px solid #03a9f4;border-radius:0 3px 3px 0", ...[]);
+	console.groupCollapsed(`%c hass-datapoints %c v0.6.3 loaded `, "color:#fff;background:#03a9f4;font-weight:bold;padding:2px 6px;border-radius:3px 0 0 3px", "color:#03a9f4;background:#fff;font-weight:bold;padding:2px 6px;border:1px solid #03a9f4;border-radius:0 3px 3px 0", ...[]);
 	console.log("Enable debug logging by setting %cwindow.__HASS_DATAPOINTS_DEV__ = true", "color:#333;background:#eee;border:1px solid #777;padding:2px 6px;border-radius:5px; font-family: Courier");
 	console.groupEnd();
 	//#endregion
