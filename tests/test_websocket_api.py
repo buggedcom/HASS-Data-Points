@@ -100,8 +100,13 @@ class DescribeNormalizeRecorderTimestamp:
 
 
 def _make_hass(store: object) -> MagicMock:
+    async def _run_executor(fn, *args):
+        return fn(*args)
+
     hass = MagicMock()
     hass.data = {DOMAIN: {"store": store}}
+    # ws handlers offload blocking store reads to the executor; run them inline.
+    hass.async_add_executor_job = AsyncMock(side_effect=_run_executor)
     return hass
 
 
@@ -173,11 +178,11 @@ class DescribeWsGetEvents:
         await ws_get_events(hass, connection, msg)
 
         store.get_events.assert_called_once_with(
-            start="2024-01-01T00:00:00+00:00",
-            end="2024-12-31T00:00:00+00:00",
-            entity_ids=None,
-            limit=200,
-            offset=0,
+            "2024-01-01T00:00:00+00:00",
+            "2024-12-31T00:00:00+00:00",
+            None,
+            200,
+            0,
         )
 
 
@@ -222,11 +227,11 @@ class DescribeWsGetEventBounds:
         await ws_get_events(hass, connection, msg)
 
         store.get_events.assert_called_once_with(
-            start=None,
-            end=None,
-            entity_ids=["sensor.a"],
-            limit=200,
-            offset=0,
+            None,
+            None,
+            ["sensor.a"],
+            200,
+            0,
         )
 
 
@@ -661,11 +666,11 @@ class DescribeWsGetEventsPermissions:
         await ws_get_events(hass, connection, msg)
 
         store.get_events.assert_called_once_with(
-            start=None,
-            end=None,
-            entity_ids=["sensor.a", "sensor.b"],
-            limit=200,
-            offset=0,
+            None,
+            None,
+            ["sensor.a", "sensor.b"],
+            200,
+            0,
         )
 
     async def test_GIVEN_non_admin_user_WHEN_entity_ids_include_forbidden_THEN_forbidden_stripped(
@@ -684,9 +689,7 @@ class DescribeWsGetEventsPermissions:
 
         await ws_get_events(hass, connection, msg)
 
-        store.get_events.assert_called_once_with(
-            start=None, end=None, entity_ids=["sensor.a"], limit=200, offset=0
-        )
+        store.get_events.assert_called_once_with(None, None, ["sensor.a"], 200, 0)
 
     async def test_GIVEN_non_admin_user_WHEN_all_entity_ids_forbidden_THEN_empty_filter_passed(
         self,
@@ -703,9 +706,7 @@ class DescribeWsGetEventsPermissions:
 
         await ws_get_events(hass, connection, msg)
 
-        store.get_events.assert_called_once_with(
-            start=None, end=None, entity_ids=[], limit=200, offset=0
-        )
+        store.get_events.assert_called_once_with(None, None, [], 200, 0)
 
     async def test_GIVEN_non_admin_user_WHEN_no_entity_filter_THEN_store_called_with_none(
         self,
@@ -719,9 +720,7 @@ class DescribeWsGetEventsPermissions:
 
         await ws_get_events(hass, connection, msg)
 
-        store.get_events.assert_called_once_with(
-            start=None, end=None, entity_ids=None, limit=200, offset=0
-        )
+        store.get_events.assert_called_once_with(None, None, None, 200, 0)
 
 
 # ---------------------------------------------------------------------------

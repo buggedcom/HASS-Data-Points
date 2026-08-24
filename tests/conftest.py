@@ -9,6 +9,7 @@ and tested in isolation.
 
 from __future__ import annotations
 
+import contextlib
 import sys
 from datetime import UTC
 from datetime import datetime as _datetime
@@ -27,6 +28,25 @@ def _stub(name: str, obj: object | None = None) -> None:
     """Insert *obj* (or a fresh MagicMock) into sys.modules under *name*."""
     if name not in sys.modules:
         sys.modules[name] = obj if obj is not None else MagicMock()
+
+
+def _make_sync_hass() -> MagicMock:
+    """Return a hass mock that runs executor jobs and created tasks inline."""
+
+    async def _run_executor(fn, *args):
+        return fn(*args)
+
+    def _run_task(coro):
+        # The offloaded refresh only awaits the inline executor above, so it
+        # never suspends — a single send() runs the coroutine to completion.
+        with contextlib.suppress(StopIteration):
+            coro.send(None)
+        return MagicMock()
+
+    hass = MagicMock()
+    hass.async_add_executor_job = AsyncMock(side_effect=_run_executor)
+    hass.async_create_task = _run_task
+    return hass
 
 
 # -- voluptuous ---------------------------------------------------------------
@@ -156,6 +176,12 @@ class _FakeSensorEntity:
         # Install per-instance mocks regardless of whether __init__ calls super()
         obj.async_write_ha_state = MagicMock()
         obj._removed_callbacks = []
+        # A hass whose executor runs inline and whose create_task drives the
+        # coroutine to completion synchronously — sensors that offload their
+        # blocking _compute() to the executor thus refresh synchronously under
+        # test (the refresh only awaits the inline executor, which never
+        # suspends).
+        obj.hass = _make_sync_hass()
         return obj
 
     def async_on_remove(self, callback) -> None:
