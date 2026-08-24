@@ -651,6 +651,7 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
         except ValueError:
             stagger_secs = 0
 
+        @callback
         def _start(_now: Any = None) -> None:
             self._unsub_stagger = None  # stagger has fired; clear reference
             self._unsub_timer = async_track_time_interval(
@@ -665,6 +666,7 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
             lambda: self._unsub_stagger and self._unsub_stagger()  # type: ignore[func-returns-value]
         )
 
+    @callback
     def _handle_scan_tick(self, now: datetime) -> None:
         """Trigger a scan on the next event loop iteration."""
         coroutine = self._run_scan()
