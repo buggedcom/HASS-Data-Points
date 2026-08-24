@@ -6711,8 +6711,8 @@
 		const historyTags = tags.filter((tag) => HA_HISTORY_ROUTE_COMPONENT_TAGS.has(tag) && !customElements.get(tag));
 		if (!historyTags.length) return;
 		try {
-			const panels = document.querySelector("home-assistant")?.hass?.panels;
-			if (!panels?.history) {
+			const hass = document.querySelector("home-assistant")?.hass;
+			if (!(hass?.panels)?.history) {
 				logger.warn("[hass-datapoints ha] history panel not available for preload");
 				return;
 			}
@@ -6721,8 +6721,8 @@
 				logger.warn("[hass-datapoints ha] partial-panel-resolver missing _updateRoutes");
 				return;
 			}
-			resolver.hass = { panels };
-			resolver._updateRoutes();
+			resolver.hass = hass;
+			await resolver._updateRoutes();
 			const load = resolver.routerOptions?.routes?.history?.load;
 			if (typeof load !== "function") {
 				logger.warn("[hass-datapoints ha] history route loader missing");
@@ -42238,7 +42238,7 @@
 	].forEach((card) => {
 		if (!registeredTypes.has(card.type)) window.customCards?.push(card);
 	});
-	console.groupCollapsed(`%c hass-datapoints %c v0.6.1 loaded `, "color:#fff;background:#03a9f4;font-weight:bold;padding:2px 6px;border-radius:3px 0 0 3px", "color:#03a9f4;background:#fff;font-weight:bold;padding:2px 6px;border:1px solid #03a9f4;border-radius:0 3px 3px 0", ...[]);
+	console.groupCollapsed(`%c hass-datapoints %c v0.6.2 loaded `, "color:#fff;background:#03a9f4;font-weight:bold;padding:2px 6px;border-radius:3px 0 0 3px", "color:#03a9f4;background:#fff;font-weight:bold;padding:2px 6px;border:1px solid #03a9f4;border-radius:0 3px 3px 0", ...[]);
 	console.log("Enable debug logging by setting %cwindow.__HASS_DATAPOINTS_DEV__ = true", "color:#333;background:#eee;border:1px solid #777;padding:2px 6px;border-radius:5px; font-family: Courier");
 	console.groupEnd();
 	//#endregion
