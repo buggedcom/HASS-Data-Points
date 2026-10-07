@@ -1,3 +1,7 @@
+/**
+ * @deprecated migration-debris: rewrite in #34 (#06.6 dialogs).
+ * Kept running until its control migrates; use datapoints-mounted-* for the behavioural gate (#28).
+ */
 import { describe, expect, it, vi } from "vitest";
 import { HassDatapointsHistoryPanel } from "../datapoints";
 import { createMockHass } from "@/test-support/mock-hass";
