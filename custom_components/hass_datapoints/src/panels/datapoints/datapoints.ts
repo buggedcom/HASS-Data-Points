@@ -1,6 +1,8 @@
+import { LitElement, html, nothing, unsafeCSS, type PropertyValues } from "lit";
+import { property, state as reactiveState } from "lit/decorators.js";
 import { DOMAIN } from "@/constants";
 import { disambiguateEntityNames, entityName } from "@/lib/ha/entity-name";
-import { msg, syncFrontendLocale } from "@/lib/i18n/localize";
+import { localized, msg, syncFrontendLocale } from "@/lib/i18n/localize";
 import {
   confirmDestructiveAction,
   ensureHaComponents,
@@ -306,7 +308,20 @@ type ResizablePanesElement = HTMLElement & {
 
 // Shared timeline, domain, and history-page helpers now live in dedicated subsystem files.
 
-export class HassDatapointsHistoryPanel extends HTMLElement {
+@localized()
+export class HassDatapointsHistoryPanel extends LitElement {
+  static styles = [unsafeCSS(PANEL_HISTORY_STYLE)];
+
+  // HA may reassign the same object after navigation or an in-place update.
+  @property({ attribute: false, hasChanged: () => true })
+  accessor hass: Nullable<HassLike> = null;
+
+  @property({ attribute: false, hasChanged: () => true })
+  accessor panel: Nullable<{ config?: RecordWithUnknownValues }> = null;
+
+  @property({ attribute: false })
+  accessor narrow = false;
+
   [key: string]: unknown;
 
   // Explicit declarations take precedence over the index signature so TypeScript
@@ -348,9 +363,11 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
   declare _onOverlayKeydown: Nullable<(ev: KeyboardEvent) => void>;
 
   // Additional typed property declarations
-  declare _rendered: boolean;
+  @reactiveState()
+  private accessor _rendered = false;
 
-  declare _shellBuilt: boolean;
+  @reactiveState()
+  private accessor _shellBuilt = false;
 
   declare _narrow: boolean;
 
@@ -564,10 +581,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
 
   constructor() {
     super();
-    this.attachShadow({ mode: "open" });
     this._context = createHistoryPageContext();
-    this._rendered = false;
-    this._shellBuilt = false;
     this._entities = [];
     this._seriesRows = [];
     this._targetSelection = {};
@@ -866,10 +880,12 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     this._context.persistence.state.exportBusy = !!value;
   }
 
-  set hass(hass: HassLike) {
+  _applyHass(hass: HassLike) {
     this._hass = hass;
     this._context.hass = hass;
     syncFrontendLocale(this._hass).then((locale) => {
+      const localeChanged = locale !== this._lastSyncedLocale;
+      this._lastSyncedLocale = locale;
       if (!this.isConnected) {
         return;
       }
@@ -880,10 +896,9 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       if (!this._rendered) {
         return;
       }
-      if (locale !== this._lastSyncedLocale) {
+      if (localeChanged) {
         // Locale changed (e.g. user switched language) — full re-render needed
         // to pick up newly translated strings.
-        this._lastSyncedLocale = locale;
         this._renderContent();
       } else {
         // Routine hass update — push hass directly to already-mounted
@@ -1009,7 +1024,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     // handlers.
   }
 
-  set panel(panel: Nullable<{ config?: RecordWithUnknownValues }>) {
+  _applyPanel(panel: Nullable<{ config?: RecordWithUnknownValues }>) {
     this._panel = panel;
     this._initFromContext();
     if (this._rendered) {
@@ -1018,11 +1033,24 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     }
   }
 
-  set narrow(value: boolean) {
-    this._narrow = value;
+  protected willUpdate(changed: PropertyValues<this>) {
+    // Resolve configuration targets against the latest HA registry in this batch.
+    if (changed.has("hass") && this.hass) {
+      this._applyHass(this.hass);
+    }
+    if (changed.has("panel")) {
+      this._applyPanel(this.panel);
+    }
+    if (changed.has("narrow")) {
+      this._narrow = this.narrow;
+      if (this._shellEl) {
+        this._shellEl.narrow = this.narrow;
+      }
+    }
   }
 
   connectedCallback() {
+    super.connectedCallback();
     // Cancel any pending orphan-recovery dispatch from a previous disconnect.
     if (this._orphanRecoveryTimer) {
       window.clearTimeout(this._orphanRecoveryTimer);
@@ -1130,9 +1158,12 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
         shellBuilt: this._shellBuilt,
       });
     }
+    // Keep the loading indicator visible immediately when HA attaches the panel.
+    this.performUpdate();
   }
 
   disconnectedCallback() {
+    super.disconnectedCallback();
     _liveInstances.delete(this);
     this._mqTablet.removeEventListener("change", this._onLayoutChange);
     this._mqMobile.removeEventListener("change", this._onLayoutChange);
@@ -1563,36 +1594,80 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       isConnected: this.isConnected,
     });
     this._shellBuilt = false;
-    const loadingLabel = msg("Loading Datapoints…");
-    const root = this.shadowRoot;
-    if (!root) {
-      return;
-    }
-    root.innerHTML = `
-      <style>${PANEL_HISTORY_LOADING_STYLE}</style>
-      <div class="history-panel-loading">
-        <div class="history-panel-loading-card" role="status" aria-live="polite">
-          <div class="history-panel-loading-spinner" aria-hidden="true"></div>
-          <div class="history-panel-loading-text">${loadingLabel}</div>
-        </div>
-      </div>
-    `;
+    this.requestUpdate();
   }
 
   _buildShell() {
-    logger.warn("[dp-lifecycle] _buildShell called", {
-      rendered: this._rendered,
-      isConnected: this.isConnected,
-      entityCount: this._entities?.length ?? 0,
-    });
     this._shellBuilt = true;
-    const root = this.shadowRoot;
-    if (!root) {
+  }
+
+  protected render() {
+    if (!this._rendered) {
+      return nothing;
+    }
+    if (!this._shellBuilt) {
+      return html`
+        <style>
+          ${PANEL_HISTORY_LOADING_STYLE}
+        </style>
+        <div class="history-panel-loading">
+          <div
+            class="history-panel-loading-card"
+            role="status"
+            aria-live="polite"
+          >
+            <div class="history-panel-loading-spinner" aria-hidden="true"></div>
+            <div class="history-panel-loading-text">
+              ${msg("Loading Datapoints…")}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    return html`
+      <panel-shell
+        @dp-shell-menu-download=${() => this._downloadSpreadsheet()}
+        @dp-shell-menu-ai-brief=${() => {
+          this._openAiQueryBriefDialog().catch((error: unknown) => {
+            logger.warn(
+              "[hass-datapoints] failed to open AI query brief:",
+              error
+            );
+          });
+        }}
+        @dp-shell-menu-save=${() => this._savePageState()}
+        @dp-shell-menu-restore=${() => this._restorePageState()}
+        @dp-shell-menu-clear=${() => this._clearSavedPageState()}
+        @dp-shell-menu-monitors=${() => {
+          this._showMonitorsPanel = true;
+          this._renderContent();
+        }}
+        @dp-shell-sidebar-toggle=${() => this._toggleSidebarCollapsed()}
+        @dp-shell-scrim-click=${() => {
+          if (!this._sidebarCollapsed) {
+            this._toggleSidebarCollapsed();
+          }
+        }}
+        @click=${this._onCollapsedSidebarClick}
+      >
+        <div id="content"></div>
+      </panel-shell>
+    `;
+  }
+
+  protected updated() {
+    if (this._shellBuilt && !this._shellEl) {
+      this._mountShellControls();
+    }
+  }
+
+  private async _mountShellControls() {
+    const shell = this.renderRoot.querySelector("panel-shell");
+    if (!shell) {
       return;
     }
-    root.innerHTML = `<style>${PANEL_HISTORY_STYLE}</style>`;
-
-    const shell = document.createElement("panel-shell");
+    this._shellEl = shell;
+    this._contentHostEl = shell.querySelector("#content");
     if (this._hass) {
       shell.hass = this._hass;
     }
@@ -1600,59 +1675,21 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     shell.sidebarCollapsed = this._sidebarCollapsed;
     shell.hasSavedState = this._hasSavedPage;
     shell.layoutMode = this._layoutMode;
-    root.appendChild(shell);
-    this._shellEl = shell;
-
-    // Unslotted content host — projected into panel-shell's default slot.
-    // _renderContent and _applyContentSplitLayout operate on this element.
-    const contentHost = document.createElement("div");
-    contentHost.id = "content";
-    shell.appendChild(contentHost);
-    this._contentHostEl = contentHost;
-
-    // Wire shell events → panel actions
-    shell.addEventListener("dp-shell-menu-download", () =>
-      this._downloadSpreadsheet()
-    );
-    shell.addEventListener("dp-shell-menu-ai-brief", () => {
-      this._openAiQueryBriefDialog().catch((error: unknown) => {
-        logger.warn("[hass-datapoints] failed to open AI query brief:", error);
-      });
-    });
-    shell.addEventListener("dp-shell-menu-save", () => this._savePageState());
-    shell.addEventListener("dp-shell-menu-restore", () =>
-      this._restorePageState()
-    );
-    shell.addEventListener("dp-shell-menu-clear", () =>
-      this._clearSavedPageState()
-    );
-    shell.addEventListener("dp-shell-menu-monitors", () => {
-      this._showMonitorsPanel = true;
-      this._renderContent();
-    });
-    shell.addEventListener("dp-shell-sidebar-toggle", () =>
-      this._toggleSidebarCollapsed()
-    );
-    shell.addEventListener("dp-shell-scrim-click", () => {
-      if (!this._sidebarCollapsed) {
-        this._toggleSidebarCollapsed();
-      }
-    });
-    shell.addEventListener("click", this._onCollapsedSidebarClick);
-
-    // Defer DOM-access until after Lit's first render completes.
-    shell.updateComplete.then(() => {
-      if (!this.isConnected) {
-        return;
-      }
-      this._sidebarOptionsEl =
-        shell.shadowRoot?.querySelector("#sidebar-options") ?? null;
-      shell.syncLayoutHeight();
-      this._applyContentSplitLayout();
-      this._mountControls();
-      this._renderSidebarOptions();
-      this._ensureUiComponentsReady();
-    });
+    await shell.updateComplete;
+    if (!this.isConnected) {
+      // Let a subsequent connection complete mounting the retained scaffold.
+      this._shellEl = null;
+      this.requestUpdate();
+      return;
+    }
+    this._sidebarOptionsEl =
+      shell.shadowRoot?.querySelector("#sidebar-options") ?? null;
+    shell.syncLayoutHeight();
+    this._applyContentSplitLayout();
+    this._mountControls();
+    this._renderSidebarOptions();
+    this._syncControls();
+    this._bootstrapAfterShellBuilt();
   }
 
   _syncPageLayoutHeight() {
@@ -1760,11 +1797,12 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
                 "[dp-lifecycle] _ensureUiComponentsReady double RAF: calling _buildShell"
               );
               this._buildShell();
-            } else {
-              logger.warn(
-                "[dp-lifecycle] _ensureUiComponentsReady double RAF: shell already built — skipping _buildShell"
-              );
+              return;
             }
+            logger.warn(
+              "[dp-lifecycle] _ensureUiComponentsReady double RAF: shell already built — skipping _buildShell"
+            );
+
             logger.warn(
               "[dp-lifecycle] _ensureUiComponentsReady double RAF: calling syncControls + bootstrapAfterShellBuilt"
             );
