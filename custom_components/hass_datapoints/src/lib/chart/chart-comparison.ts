@@ -82,28 +82,42 @@ export function filterClustersByCorrelatedSpans(
     return [];
   }
 
-  return anomalyClusters.filter((cluster) => {
-    const points = (cluster as { points?: Array<{ timeMs: number }> }).points;
-    if (!Array.isArray(points) || points.length === 0) {
-      return false;
-    }
-    const startTime = Number(points[0]?.timeMs);
-    const endTime = Number(points[points.length - 1]?.timeMs);
-    if (!Number.isFinite(startTime) || !Number.isFinite(endTime)) {
-      return false;
-    }
-    const clusterStart = Math.min(startTime, endTime);
-    const clusterEnd = Math.max(startTime, endTime);
-
-    return correlatedSpans.some((span) => {
+  return anomalyClusters.filter((cluster) =>
+    correlatedSpans.some((span) => {
       const spanStart = Number(span.start);
       const spanEnd = Number(span.end);
       if (!Number.isFinite(spanStart) || !Number.isFinite(spanEnd)) {
         return false;
       }
-      return clusterEnd >= spanStart && clusterStart <= spanEnd;
-    });
-  });
+      return clusterIntersectsSpan(cluster, { start: spanStart, end: spanEnd });
+    })
+  );
+}
+
+// ── Cluster / span intersection ─────────────────────────────────────────────
+
+/**
+ * True when a single anomaly cluster's time range overlaps (or touches) the
+ * given span. Pure companion to {@link filterClustersByCorrelatedSpans}, which
+ * tests a cluster against many spans at once.
+ */
+export function clusterIntersectsSpan(
+  cluster: Nullable<AnomalyCluster>,
+  span: { start: number; end: number }
+): boolean {
+  if (!Array.isArray(cluster?.points) || cluster.points.length === 0) {
+    return false;
+  }
+  const startTime = Number(cluster.points[0]?.timeMs ?? Number.NaN);
+  const endTime = Number(
+    cluster.points[cluster.points.length - 1]?.timeMs ?? Number.NaN
+  );
+  if (!Number.isFinite(startTime) || !Number.isFinite(endTime)) {
+    return false;
+  }
+  const clusterStart = Math.min(startTime, endTime);
+  const clusterEnd = Math.max(startTime, endTime);
+  return clusterEnd >= span.start && clusterStart <= span.end;
 }
 
 // ── Resolve anomaly cluster display mode ────────────────────────────────────

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   type AiQueryBriefAnomalySnapshot,
   buildAiQueryBrief,
+  buildAiQueryBriefAnomalySnapshot,
 } from "../ai-query-brief";
 import { setFrontendLocale } from "@/lib/i18n/localize";
 import { createMockHass } from "@/test-support/mock-hass";
@@ -113,6 +114,97 @@ function createAnomalySnapshot(): AiQueryBriefAnomalySnapshot {
     ],
   };
 }
+
+describe("buildAiQueryBriefAnomalySnapshot", () => {
+  const T0 = Date.parse("2026-05-01T00:00:00.000Z");
+  const T1 = Date.parse("2026-05-02T00:00:00.000Z");
+  const CLUSTER_START = Date.parse("2026-05-01T12:00:00.000Z");
+  const CLUSTER_END = Date.parse("2026-05-01T12:10:00.000Z");
+
+  function createAnalysis(overrides: Record<string, unknown> = {}) {
+    return { show_anomalies: true, anomaly_overlap_mode: "all", ...overrides };
+  }
+
+  function createCluster() {
+    return {
+      points: [
+        { timeMs: CLUSTER_START, value: 20 },
+        { timeMs: CLUSTER_END, value: 23 },
+      ],
+    };
+  }
+
+  describe("GIVEN two anomaly-enabled series sharing a correlated span", () => {
+    describe("WHEN the snapshot is built", () => {
+      it("THEN it assembles range, flags, correlated spans and per-entity findings", () => {
+        expect.assertions(7);
+        const snapshot = buildAiQueryBriefAnomalySnapshot({
+          visibleSeries: [{ entityId: "sensor.a" }, { entityId: "sensor.b" }],
+          analysisMap: new Map<string, unknown>([
+            ["sensor.a", createAnalysis()],
+            ["sensor.b", createAnalysis()],
+          ]),
+          anomalyClustersMap: new Map<string, unknown[]>([
+            ["sensor.a", [createCluster()]],
+            ["sensor.b", [createCluster()]],
+          ]),
+          correlatedSpans: [
+            {
+              start: Date.parse("2026-05-01T11:50:00.000Z"),
+              end: Date.parse("2026-05-01T12:20:00.000Z"),
+            },
+          ],
+          renderT0: T0,
+          renderT1: T1,
+          anomalyOverlapMode: "all",
+          showCorrelatedAnomalies: true,
+        });
+
+        expect(snapshot.available).toBe(true);
+        expect(snapshot.current_range_label).toBe(
+          "2026-05-01T00:00:00.000Z -> 2026-05-02T00:00:00.000Z"
+        );
+        expect(snapshot.chart_anomaly_overlap_mode).toBe("all");
+        expect(snapshot.show_correlated_anomalies).toBe(true);
+        expect(snapshot.entity_findings).toHaveLength(2);
+        expect(snapshot.entity_findings[0].all_detected_clusters).toHaveLength(
+          1
+        );
+        expect(snapshot.correlated_anomaly_spans).toEqual([
+          {
+            start_time: "2026-05-01T11:50:00.000Z",
+            end_time: "2026-05-01T12:20:00.000Z",
+            entity_ids: ["sensor.a", "sensor.b"],
+          },
+        ]);
+      });
+    });
+  });
+
+  describe("GIVEN a series with anomalies disabled", () => {
+    describe("WHEN the snapshot is built", () => {
+      it("THEN that series produces no findings", () => {
+        expect.assertions(1);
+        const snapshot = buildAiQueryBriefAnomalySnapshot({
+          visibleSeries: [{ entityId: "sensor.a" }],
+          analysisMap: new Map<string, unknown>([
+            ["sensor.a", createAnalysis({ show_anomalies: false })],
+          ]),
+          anomalyClustersMap: new Map<string, unknown[]>([
+            ["sensor.a", [createCluster()]],
+          ]),
+          correlatedSpans: [],
+          renderT0: T0,
+          renderT1: T1,
+          anomalyOverlapMode: "all",
+          showCorrelatedAnomalies: false,
+        });
+
+        expect(snapshot.entity_findings).toHaveLength(0);
+      });
+    });
+  });
+});
 
 describe("buildAiQueryBrief", () => {
   describe("GIVEN one selected entity with anomaly analysis enabled", () => {

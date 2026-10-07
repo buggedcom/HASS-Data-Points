@@ -1,6 +1,11 @@
 import { buildBackendAnomalyConfig } from "@/lib/chart/chart-anomaly-config";
+import {
+  clusterIntersectsSpan,
+  resolveAnomalyClusterDisplay,
+} from "@/lib/chart/chart-comparison";
 import type { AnomalyCluster } from "@/lib/chart/chart-renderer";
 import {
+  type HistorySeriesAnalysis,
   type HistorySeriesRow,
   normalizeHistorySeriesAnalysis,
   normalizeHistorySeriesRows,
@@ -510,6 +515,104 @@ export function summarizeAnomalyClusterForAiBrief(
       .filter(
         (point): point is { time: string; value: number } => point != null
       ),
+  };
+}
+
+export interface BuildAiQueryBriefAnomalySnapshotInput {
+  visibleSeries: Array<{ entityId: string }>;
+  analysisMap: Map<string, unknown>;
+  anomalyClustersMap: Map<string, unknown[]>;
+  correlatedSpans: Array<{ start: number; end: number }>;
+  renderT0: number;
+  renderT1: number;
+  anomalyOverlapMode: string;
+  showCorrelatedAnomalies: boolean;
+}
+
+/**
+ * Pure builder for the AI-query-brief anomaly snapshot. Given the visible
+ * series, their analysis/cluster maps, the correlated spans, the render window
+ * and the two chart config flags, it returns the snapshot — it performs no
+ * mutation; the caller assigns the result.
+ */
+export function buildAiQueryBriefAnomalySnapshot(
+  input: BuildAiQueryBriefAnomalySnapshotInput
+): AiQueryBriefAnomalySnapshot {
+  const {
+    visibleSeries,
+    analysisMap,
+    anomalyClustersMap,
+    correlatedSpans,
+    renderT0,
+    renderT1,
+    anomalyOverlapMode,
+    showCorrelatedAnomalies,
+  } = input;
+
+  const entityFindings = visibleSeries
+    .map((seriesItem) => {
+      const analysis =
+        (analysisMap.get(seriesItem.entityId) as HistorySeriesAnalysis) ||
+        normalizeHistorySeriesAnalysis(null);
+      if (analysis.show_anomalies !== true) {
+        return null;
+      }
+      const allDetectedClusters =
+        (anomalyClustersMap.get(seriesItem.entityId) as AnomalyCluster[]) || [];
+      const displayedClusters = resolveAnomalyClusterDisplay(
+        allDetectedClusters,
+        analysis.anomaly_overlap_mode,
+        correlatedSpans
+      ).baseClusters;
+      return {
+        entity_id: seriesItem.entityId,
+        all_detected_clusters: allDetectedClusters.map((cluster) =>
+          summarizeAnomalyClusterForAiBrief(cluster)
+        ),
+        displayed_clusters: displayedClusters.map((cluster) =>
+          summarizeAnomalyClusterForAiBrief(cluster)
+        ),
+      };
+    })
+    .filter(
+      (finding): finding is AiQueryBriefAnomalyEntitySnapshot => finding != null
+    );
+
+  const correlatedAnomalySpans = correlatedSpans
+    .map((span) => {
+      const entityIds = entityFindings
+        .filter((finding) =>
+          finding.all_detected_clusters.some((cluster) =>
+            clusterIntersectsSpan(
+              {
+                points: cluster.points.map((point) => ({
+                  timeMs: Date.parse(point.time),
+                  value: point.value,
+                })),
+              },
+              span
+            )
+          )
+        )
+        .map((finding) => finding.entity_id);
+      if (entityIds.length < 2) {
+        return null;
+      }
+      return {
+        start_time: new Date(span.start).toISOString(),
+        end_time: new Date(span.end).toISOString(),
+        entity_ids: entityIds,
+      };
+    })
+    .filter((span): span is AiQueryBriefCorrelatedSpanSnapshot => span != null);
+
+  return {
+    available: true,
+    current_range_label: `${new Date(renderT0).toISOString()} -> ${new Date(renderT1).toISOString()}`,
+    chart_anomaly_overlap_mode: anomalyOverlapMode || "all",
+    show_correlated_anomalies: showCorrelatedAnomalies === true,
+    correlated_anomaly_spans: correlatedAnomalySpans,
+    entity_findings: entityFindings,
   };
 }
 

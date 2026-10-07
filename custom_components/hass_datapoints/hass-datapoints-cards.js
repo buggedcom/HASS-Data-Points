@@ -11626,21 +11626,28 @@
 	function filterClustersByCorrelatedSpans(anomalyClusters, correlatedSpans) {
 		if (!Array.isArray(anomalyClusters) || anomalyClusters.length === 0) return [];
 		if (!Array.isArray(correlatedSpans) || correlatedSpans.length === 0) return [];
-		return anomalyClusters.filter((cluster) => {
-			const points = cluster.points;
-			if (!Array.isArray(points) || points.length === 0) return false;
-			const startTime = Number(points[0]?.timeMs);
-			const endTime = Number(points[points.length - 1]?.timeMs);
-			if (!Number.isFinite(startTime) || !Number.isFinite(endTime)) return false;
-			const clusterStart = Math.min(startTime, endTime);
-			const clusterEnd = Math.max(startTime, endTime);
-			return correlatedSpans.some((span) => {
-				const spanStart = Number(span.start);
-				const spanEnd = Number(span.end);
-				if (!Number.isFinite(spanStart) || !Number.isFinite(spanEnd)) return false;
-				return clusterEnd >= spanStart && clusterStart <= spanEnd;
+		return anomalyClusters.filter((cluster) => correlatedSpans.some((span) => {
+			const spanStart = Number(span.start);
+			const spanEnd = Number(span.end);
+			if (!Number.isFinite(spanStart) || !Number.isFinite(spanEnd)) return false;
+			return clusterIntersectsSpan(cluster, {
+				start: spanStart,
+				end: spanEnd
 			});
-		});
+		}));
+	}
+	/**
+	* True when a single anomaly cluster's time range overlaps (or touches) the
+	* given span. Pure companion to {@link filterClustersByCorrelatedSpans}, which
+	* tests a cluster against many spans at once.
+	*/
+	function clusterIntersectsSpan(cluster, span) {
+		if (!Array.isArray(cluster?.points) || cluster.points.length === 0) return false;
+		const startTime = Number(cluster.points[0]?.timeMs ?? NaN);
+		const endTime = Number(cluster.points[cluster.points.length - 1]?.timeMs ?? NaN);
+		if (!Number.isFinite(startTime) || !Number.isFinite(endTime)) return false;
+		const clusterStart = Math.min(startTime, endTime);
+		return Math.max(startTime, endTime) >= span.start && clusterStart <= span.end;
 	}
 	function resolveAnomalyClusterDisplay(anomalyClusters, overlapMode, correlatedSpans = []) {
 		const normalClusters = anomalyClusters.filter((c) => !c.isOverlap);
@@ -12429,6 +12436,46 @@
 					value
 				};
 			}).filter((point) => point != null)
+		};
+	}
+	/**
+	* Pure builder for the AI-query-brief anomaly snapshot. Given the visible
+	* series, their analysis/cluster maps, the correlated spans, the render window
+	* and the two chart config flags, it returns the snapshot — it performs no
+	* mutation; the caller assigns the result.
+	*/
+	function buildAiQueryBriefAnomalySnapshot(input) {
+		const { visibleSeries, analysisMap, anomalyClustersMap, correlatedSpans, renderT0, renderT1, anomalyOverlapMode, showCorrelatedAnomalies } = input;
+		const entityFindings = visibleSeries.map((seriesItem) => {
+			const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
+			if (analysis.show_anomalies !== true) return null;
+			const allDetectedClusters = anomalyClustersMap.get(seriesItem.entityId) || [];
+			const displayedClusters = resolveAnomalyClusterDisplay(allDetectedClusters, analysis.anomaly_overlap_mode, correlatedSpans).baseClusters;
+			return {
+				entity_id: seriesItem.entityId,
+				all_detected_clusters: allDetectedClusters.map((cluster) => summarizeAnomalyClusterForAiBrief(cluster)),
+				displayed_clusters: displayedClusters.map((cluster) => summarizeAnomalyClusterForAiBrief(cluster))
+			};
+		}).filter((finding) => finding != null);
+		const correlatedAnomalySpans = correlatedSpans.map((span) => {
+			const entityIds = entityFindings.filter((finding) => finding.all_detected_clusters.some((cluster) => clusterIntersectsSpan({ points: cluster.points.map((point) => ({
+				timeMs: Date.parse(point.time),
+				value: point.value
+			})) }, span))).map((finding) => finding.entity_id);
+			if (entityIds.length < 2) return null;
+			return {
+				start_time: new Date(span.start).toISOString(),
+				end_time: new Date(span.end).toISOString(),
+				entity_ids: entityIds
+			};
+		}).filter((span) => span != null);
+		return {
+			available: true,
+			current_range_label: `${new Date(renderT0).toISOString()} -> ${new Date(renderT1).toISOString()}`,
+			chart_anomaly_overlap_mode: anomalyOverlapMode || "all",
+			show_correlated_anomalies: showCorrelatedAnomalies === true,
+			correlated_anomaly_spans: correlatedAnomalySpans,
+			entity_findings: entityFindings
 		};
 	}
 	function buildAiQueryBrief(context) {
@@ -13579,46 +13626,17 @@
 			if (!this._lastAiQueryBriefAnomalySnapshot) return null;
 			return JSON.parse(JSON.stringify(this._lastAiQueryBriefAnomalySnapshot));
 		}
-		_clusterIntersectsSpan(cluster, span) {
-			if (!Array.isArray(cluster?.points) || cluster.points.length === 0) return false;
-			const startTime = Number(cluster.points[0]?.timeMs ?? NaN);
-			const endTime = Number(cluster.points[cluster.points.length - 1]?.timeMs ?? NaN);
-			if (!Number.isFinite(startTime) || !Number.isFinite(endTime)) return false;
-			const clusterStart = Math.min(startTime, endTime);
-			return Math.max(startTime, endTime) >= span.start && clusterStart <= span.end;
-		}
 		_setAiQueryBriefAnomalySnapshot(visibleSeries, analysisMap, anomalyClustersMap, correlatedSpans, renderT0, renderT1) {
-			const entityFindings = visibleSeries.map((seriesItem) => {
-				const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
-				if (analysis.show_anomalies !== true) return null;
-				const allDetectedClusters = anomalyClustersMap.get(seriesItem.entityId) || [];
-				const displayedClusters = this._resolveAnomalyClusterDisplay(allDetectedClusters, analysis.anomaly_overlap_mode, correlatedSpans).baseClusters;
-				return {
-					entity_id: seriesItem.entityId,
-					all_detected_clusters: allDetectedClusters.map((cluster) => summarizeAnomalyClusterForAiBrief(cluster)),
-					displayed_clusters: displayedClusters.map((cluster) => summarizeAnomalyClusterForAiBrief(cluster))
-				};
-			}).filter((finding) => finding != null);
-			const correlatedAnomalySpans = correlatedSpans.map((span) => {
-				const entityIds = entityFindings.filter((finding) => finding.all_detected_clusters.some((cluster) => this._clusterIntersectsSpan({ points: cluster.points.map((point) => ({
-					timeMs: Date.parse(point.time),
-					value: point.value
-				})) }, span))).map((finding) => finding.entity_id);
-				if (entityIds.length < 2) return null;
-				return {
-					start_time: new Date(span.start).toISOString(),
-					end_time: new Date(span.end).toISOString(),
-					entity_ids: entityIds
-				};
-			}).filter((span) => span != null);
-			this._lastAiQueryBriefAnomalySnapshot = {
-				available: true,
-				current_range_label: `${new Date(renderT0).toISOString()} -> ${new Date(renderT1).toISOString()}`,
-				chart_anomaly_overlap_mode: this._config?.anomaly_overlap_mode || "all",
-				show_correlated_anomalies: this._config?.show_correlated_anomalies === true,
-				correlated_anomaly_spans: correlatedAnomalySpans,
-				entity_findings: entityFindings
-			};
+			this._lastAiQueryBriefAnomalySnapshot = buildAiQueryBriefAnomalySnapshot({
+				visibleSeries,
+				analysisMap,
+				anomalyClustersMap,
+				correlatedSpans,
+				renderT0,
+				renderT1,
+				anomalyOverlapMode: this._config?.anomaly_overlap_mode || "all",
+				showCorrelatedAnomalies: this._config?.show_correlated_anomalies === true
+			});
 		}
 		/** True when the current user may create a data point via the chart + button. */
 		get _canAddAnnotation() {
