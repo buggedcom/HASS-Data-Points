@@ -1,4 +1,11 @@
-import { LitElement, html, nothing, unsafeCSS, type PropertyValues } from "lit";
+import {
+  LitElement,
+  html,
+  nothing,
+  render as renderInto,
+  unsafeCSS,
+  type PropertyValues,
+} from "lit";
 import { property, state as reactiveState } from "lit/decorators.js";
 import type { RangeToolbar } from "@/panels/datapoints/components/range-toolbar/range-toolbar";
 import { DOMAIN } from "@/constants";
@@ -261,6 +268,8 @@ type HistoryCardElement = HTMLElement & {
   hass?: unknown;
   setConfig(config: RecordWithUnknownValues): void;
   setExternalZoomRange?(range: Nullable<{ start: number; end: number }>): void;
+  updateComplete?: Promise<unknown>;
+  getComparisonTabsHost(): Nullable<HTMLElement>;
   getAiQueryBriefAnomalySnapshot?(): Nullable<AiQueryBriefAnomalySnapshot>;
   _adjustComparisonAxisScale?: boolean;
 };
@@ -392,11 +401,10 @@ export class HassDatapointsHistoryPanel extends LitElement {
 
   declare _preferredSeriesColors: RecordWithStringValues;
 
-  declare _loadingComparisonWindowIds: string[];
+  @reactiveState()
+  accessor _loadingComparisonWindowIds: string[] = [];
 
-  declare _comparisonTabsHostEl: Nullable<HTMLElement>;
-
-  declare _comparisonTabRailComp: Nullable<HTMLElement>;
+  private _comparisonTabsRoot: Nullable<HTMLElement> = null;
 
   declare _pendingAnomalyComparisonWindowEntityId: Nullable<string>;
 
@@ -597,9 +605,6 @@ export class HassDatapointsHistoryPanel extends LitElement {
     this._comparisonWindows = [];
     this._selectedComparisonWindowId = null;
     this._hoveredComparisonWindowId = null;
-    this._loadingComparisonWindowIds = [];
-    this._comparisonTabsHostEl = null;
-    this._comparisonTabRailComp = null;
     this._pendingAnomalyComparisonWindowEntityId = null;
     this._dateWindowDialogOpen = false;
     this._editingDateWindowId = null;
@@ -1682,6 +1687,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
   }
 
   protected updated() {
+    this._renderComparisonTabSlot();
     this._rangeToolbarComp = this.renderRoot.querySelector("range-toolbar");
     const toolbar = this._rangeToolbarComp;
     if (toolbar) {
@@ -4368,48 +4374,84 @@ export class HassDatapointsHistoryPanel extends LitElement {
   }
 
   _renderComparisonTabs() {
-    const result = this._context.orchestration.renderComparisonTabs({
-      chartEl: this._chartEl,
-      comparisonWindows: Array.isArray(this._comparisonWindows)
-        ? this._comparisonWindows
-        : [],
-      selectedComparisonWindowId: this._selectedComparisonWindowId,
-      hoveredComparisonWindowId: this._hoveredComparisonWindowId,
-      startTime: this._startTime,
-      endTime: this._endTime,
-      loadingComparisonWindowIds: [...this._loadingComparisonWindowIds],
-      comparisonTabRailComp: this._comparisonTabRailComp,
-      comparisonTabsHostEl: this._comparisonTabsHostEl,
-      formatComparisonLabel: (startTime: Date, endTime: Date) =>
-        this._formatComparisonLabel(startTime, endTime),
-      onActivate: (tabId: Nullable<string>) => {
-        this._handleComparisonTabActivate(tabId);
+    this.requestUpdate();
+  }
+
+  private _comparisonTabsTemplate() {
+    if (!this._startTime || !this._endTime) {
+      return nothing;
+    }
+    const tabs = [
+      {
+        id: "current-range",
+        label: msg("Selected range"),
+        detail: this._formatComparisonLabel(this._startTime, this._endTime),
+        active: this._selectedComparisonWindowId == null,
+        editable: false,
       },
-      onHover: (tabId: Nullable<string>) => {
-        this._handleComparisonTabHover(tabId);
-      },
-      onLeave: (tabId: Nullable<string>) => {
-        this._handleComparisonTabLeave(tabId);
-      },
-      onEdit: (tabId: Nullable<string>) => {
-        const win = this._comparisonWindows.find(
-          (entry: NormalizedHistoryDateWindow) => entry.id === tabId
-        );
-        if (win) {
-          this._openDateWindowDialog(win);
-        }
-      },
-      onDelete: (tabId: Nullable<string>) => {
-        if (tabId) {
-          this._deleteDateWindow(tabId);
-        }
-      },
-      onAdd: () => {
-        this._openDateWindowDialog();
-      },
-    });
-    this._comparisonTabRailComp = result.comparisonTabRailComp;
-    this._comparisonTabsHostEl = result.comparisonTabsHostEl;
+      ...this._comparisonWindows.map((window) => ({
+        ...window,
+        detail: this._formatComparisonLabel(
+          new Date(window.start_time),
+          new Date(window.end_time)
+        ),
+        active: window.id === this._selectedComparisonWindowId,
+        editable: true,
+      })),
+    ];
+    return html`
+      <comparison-tab-rail
+        .tabs=${tabs}
+        .loadingIds=${this._loadingComparisonWindowIds}
+        .hoveredId=${this._hoveredComparisonWindowId || ""}
+        @dp-tab-activate=${(ev: CustomEvent<{ tabId: Nullable<string> }>) =>
+          this._handleComparisonTabActivate(ev.detail.tabId)}
+        @dp-tab-hover=${(ev: CustomEvent<{ tabId: Nullable<string> }>) =>
+          this._handleComparisonTabHover(ev.detail.tabId)}
+        @dp-tab-leave=${(ev: CustomEvent<{ tabId: Nullable<string> }>) =>
+          this._handleComparisonTabLeave(ev.detail.tabId)}
+        @dp-tab-edit=${(ev: CustomEvent<{ tabId: Nullable<string> }>) => {
+          const window = this._comparisonWindows.find(
+            (entry) => entry.id === ev.detail.tabId
+          );
+          if (window) {
+            this._openDateWindowDialog(window);
+          }
+        }}
+        @dp-tab-delete=${(ev: CustomEvent<{ tabId: Nullable<string> }>) => {
+          if (ev.detail.tabId) {
+            this._deleteDateWindow(ev.detail.tabId);
+          }
+        }}
+        @dp-tab-add=${() => this._openDateWindowDialog()}
+      ></comparison-tab-rail>
+    `;
+  }
+
+  private async _renderComparisonTabSlot() {
+    const chart = this._chartEl;
+    if (!chart) {
+      if (this._comparisonTabsRoot) {
+        renderInto(nothing, this._comparisonTabsRoot);
+        this._comparisonTabsRoot = null;
+      }
+      return;
+    }
+    await chart.updateComplete;
+    if (!this.isConnected || chart !== this._chartEl) {
+      return;
+    }
+    const host = chart.getComparisonTabsHost();
+    if (!host) {
+      return;
+    }
+    if (this._comparisonTabsRoot && this._comparisonTabsRoot !== host) {
+      renderInto(nothing, this._comparisonTabsRoot);
+    }
+    this._comparisonTabsRoot = host;
+    host.hidden = !this._startTime || !this._endTime;
+    // The chart remains imperative until #35; Lit owns just this existing slot.
+    renderInto(this._comparisonTabsTemplate(), host);
   }
 
   _updateComparisonTabsOverflow() {
