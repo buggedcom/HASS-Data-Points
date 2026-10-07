@@ -388,8 +388,7 @@ async def test_run_scan_persists_cluster_summaries_and_detected_event_payload():
 
     with (
         patch(_RECORDER_PATCH, return_value=_recorder_mock()),
-        patch(_FETCH_PTS_PATCH, return_value=_MANY_PTS),
-        patch(_FETCH_STATS_PATCH, return_value=[]),
+        _prep_patch(_MANY_PTS),
         patch(_DETECT_PATCH, return_value=detected_clusters),
     ):
         await sensor._run_scan()
@@ -448,8 +447,7 @@ async def test_run_scan_resolution_clears_active_clusters_and_emits_resolved_clu
 
     with (
         patch(_RECORDER_PATCH, return_value=_recorder_mock()),
-        patch(_FETCH_PTS_PATCH, return_value=_MANY_PTS),
-        patch(_FETCH_STATS_PATCH, return_value=[]),
+        _prep_patch(_MANY_PTS),
         patch(_DETECT_PATCH, return_value=[]),
     ):
         await sensor._run_scan()
@@ -705,10 +703,20 @@ def test_aggregate_sensor_compute():
 _MANY_PTS = [[t * 1000, float(t)] for t in range(50)]
 _RECORDER_PATCH = "homeassistant.components.recorder.get_instance"
 _FETCH_PTS_PATCH = "custom_components.hass_datapoints.sensor.fetch_entity_pts"
-_FETCH_STATS_PATCH = (
-    "custom_components.hass_datapoints.sensor.fetch_entity_statistics_pts"
-)
+_PREP_PATCH = "custom_components.hass_datapoints.sensor.async_prepare_entity_series"
 _DETECT_PATCH = "custom_components.hass_datapoints.sensor._run_detection_sync"
+
+
+def _prep_patch(return_value=None, *, side_effect=None):
+    """Patch the async_prepare_entity_series seam the scan/warm paths call.
+
+    The 3 anomaly sites now fetch+merge+sample+cap through this single async
+    seam (history_utils.async_prepare_entity_series), so tests stub it instead
+    of the old fetch_entity_pts / fetch_entity_statistics_pts pair.
+    """
+    if side_effect is not None:
+        return patch(_PREP_PATCH, new_callable=AsyncMock, side_effect=side_effect)
+    return patch(_PREP_PATCH, new_callable=AsyncMock, return_value=return_value)
 
 
 def _make_scan_sensor(monitor_dict):
@@ -782,8 +790,7 @@ async def test_run_scan_fires_detected_zero_to_nonzero():
 
     with (
         patch(_RECORDER_PATCH, return_value=_recorder_mock()),
-        patch(_FETCH_PTS_PATCH, return_value=_MANY_PTS),
-        patch(_FETCH_STATS_PATCH, return_value=[]),
+        _prep_patch(_MANY_PTS),
         patch(
             _DETECT_PATCH, return_value=[{"pts": [[100, 1.0]]}, {"pts": [[200, 1.0]]}]
         ),
@@ -819,8 +826,7 @@ async def test_run_scan_fires_resolved_nonzero_to_zero():
 
     with (
         patch(_RECORDER_PATCH, return_value=_recorder_mock()),
-        patch(_FETCH_PTS_PATCH, return_value=_MANY_PTS),
-        patch(_FETCH_STATS_PATCH, return_value=[]),
+        _prep_patch(_MANY_PTS),
         patch(_DETECT_PATCH, return_value=[]),
     ):
         await sensor._run_scan()
@@ -850,8 +856,7 @@ async def test_run_scan_no_event_nonzero_to_nonzero():
 
     with (
         patch(_RECORDER_PATCH, return_value=_recorder_mock()),
-        patch(_FETCH_PTS_PATCH, return_value=_MANY_PTS),
-        patch(_FETCH_STATS_PATCH, return_value=[]),
+        _prep_patch(_MANY_PTS),
         patch(_DETECT_PATCH, return_value=[{"pts": [[t, 1.0]]} for t in range(4)]),
     ):
         await sensor._run_scan()
@@ -876,8 +881,7 @@ async def test_run_scan_no_event_zero_to_zero():
 
     with (
         patch(_RECORDER_PATCH, return_value=_recorder_mock()),
-        patch(_FETCH_PTS_PATCH, return_value=_MANY_PTS),
-        patch(_FETCH_STATS_PATCH, return_value=[]),
+        _prep_patch(_MANY_PTS),
         patch(_DETECT_PATCH, return_value=[]),
     ):
         await sensor._run_scan()
@@ -911,18 +915,23 @@ async def test_run_scan_fetches_comparison_entity_when_baseline_set():
 
     fetch_calls = []
 
+    async def fake_prep(hass_ref, entity_id, *args, **kwargs):
+        fetch_calls.append(entity_id)
+        return _MANY_PTS
+
     def fake_fetch(hass_ref, entity_id, *args):
         fetch_calls.append(entity_id)
         return _MANY_PTS
 
     with (
         patch(_RECORDER_PATCH, return_value=_recorder_mock()),
+        patch(_PREP_PATCH, side_effect=fake_prep),
         patch(_FETCH_PTS_PATCH, side_effect=fake_fetch),
-        patch(_FETCH_STATS_PATCH, return_value=[]),
         patch(_DETECT_PATCH, return_value=[]),
     ):
         await sensor._run_scan()
 
+    # Primary entity prepared via the seam; comparison entity fetched raw-only.
     assert "sensor.temp" in fetch_calls
     assert "sensor.outdoor_temp" in fetch_calls
 
@@ -946,18 +955,23 @@ async def test_run_scan_no_comparison_fetch_without_baseline():
 
     fetch_calls = []
 
+    async def fake_prep(hass_ref, entity_id, *args, **kwargs):
+        fetch_calls.append(entity_id)
+        return _MANY_PTS
+
     def fake_fetch(hass_ref, entity_id, *args):
         fetch_calls.append(entity_id)
         return _MANY_PTS
 
     with (
         patch(_RECORDER_PATCH, return_value=_recorder_mock()),
+        patch(_PREP_PATCH, side_effect=fake_prep),
         patch(_FETCH_PTS_PATCH, side_effect=fake_fetch),
-        patch(_FETCH_STATS_PATCH, return_value=[]),
         patch(_DETECT_PATCH, return_value=[]),
     ):
         await sensor._run_scan()
 
+    # No baseline → only the primary entity is prepared; no comparison fetch.
     assert fetch_calls == ["sensor.temp"]
 
 
@@ -1010,8 +1024,7 @@ async def test_run_scan_applies_dismissals_to_clusters():
 
     with (
         patch(_RECORDER_PATCH, return_value=_recorder_mock()),
-        patch(_FETCH_PTS_PATCH, return_value=_MANY_PTS),
-        patch(_FETCH_STATS_PATCH, return_value=[]),
+        _prep_patch(_MANY_PTS),
         patch(_DETECT_PATCH, return_value=detected_clusters),
     ):
         await sensor._run_scan()
@@ -1176,13 +1189,7 @@ async def test_async_warm_cache_populates_cache():
     hass.loop = MagicMock()
     hass.loop.run_in_executor = fake_run_in_executor
 
-    with (
-        patch("homeassistant.components.recorder.get_instance", return_value=recorder),
-        patch(
-            "custom_components.hass_datapoints.sensor.fetch_entity_pts",
-            return_value=fake_pts,
-        ),
-    ):
+    with _prep_patch(fake_pts):
         await async_warm_cache(hass, store, pool, in_flight)
 
     assert len(cache_set_calls) == 1
@@ -1243,16 +1250,94 @@ async def test_async_warm_cache_loops_all_combined_entity_ids():
     hass.loop = MagicMock()
     hass.loop.run_in_executor = fake_run_in_executor
 
-    with (
-        patch("homeassistant.components.recorder.get_instance", return_value=recorder),
-        patch(
-            "custom_components.hass_datapoints.sensor.fetch_entity_pts",
-            return_value=[[1000, 1.0], [2000, 2.0], [3000, 3.0]],
-        ),
-    ):
+    with _prep_patch([[1000, 1.0], [2000, 2.0], [3000, 3.0]]):
         await async_warm_cache(hass, store, {}, {})
 
     assert set(fake_cache.set_calls) == {"sensor.a", "sensor.b", "sensor.c"}
+
+
+# ---------------------------------------------------------------------------
+# Combined scan — per-entity cap (behaviour change AC3)
+# ---------------------------------------------------------------------------
+
+_HU_RECORDER_PATCH = "custom_components.hass_datapoints.history_utils.get_instance"
+_HU_FETCH_PTS_PATCH = "custom_components.hass_datapoints.history_utils.fetch_entity_pts"
+_HU_FETCH_STATS_PATCH = (
+    "custom_components.hass_datapoints.history_utils.fetch_entity_statistics_pts"
+)
+
+
+async def test_combined_path_caps_per_entity():
+    """GIVEN a combined monitor whose entity exceeds the cap after merging stats
+    WHEN scanned with NO sample_interval
+    THEN that entity's merged series is capped to the last max_pts, while a small
+    entity stays uncapped — proving the seam caps each entity in the combined
+    branch (previously all_pts[eid] was built uncapped).
+    """
+    # Stats land strictly below the raw boundary, so the merge re-overflows a
+    # series whose raw portion the fetcher already capped. Patch the cap small
+    # so the overflow is expressible without a 50k-point fixture.
+    max_pts = 4
+
+    raw = {
+        "sensor.big": [[10, 1.0], [20, 2.0], [30, 3.0], [40, 4.0]],
+        "sensor.small": [[100, 5.0], [200, 6.0]],
+    }
+    stats = {
+        "sensor.big": [[1, 0.1], [2, 0.2], [3, 0.3]],  # 3 stats < boundary (10)
+        "sensor.small": [],
+    }
+
+    def fake_fetch_pts(hass_ref, entity_id, *args):
+        return list(raw[entity_id])
+
+    def fake_fetch_stats(hass_ref, entity_id, *args):
+        return list(stats[entity_id])
+
+    monitor = {
+        "id": "m-combined",
+        "name": "Combined",
+        "type": "combined",
+        "entity_ids": ["sensor.big", "sensor.small"],
+        "enabled": True,
+        "look_back_hours": 24,
+        "scan_interval_minutes": 30,
+        "last_cluster_count": 0,
+        "scan_history": [],
+        "overlap_mode": "all",
+        "dismissed_windows": [],
+        # No sample_interval — overflow must come purely from the stats merge.
+    }
+    sensor, _hass = _make_scan_sensor(monitor)
+
+    captured: dict = {}
+
+    def fake_combined(all_pts, config, overlap_mode, cancel):
+        captured["all_pts"] = all_pts
+        return []
+
+    with (
+        patch(_RECORDER_PATCH, return_value=_recorder_mock()),
+        patch(_HU_RECORDER_PATCH, return_value=_recorder_mock()),
+        patch(_HU_FETCH_PTS_PATCH, side_effect=fake_fetch_pts),
+        patch(_HU_FETCH_STATS_PATCH, side_effect=fake_fetch_stats),
+        patch(
+            "custom_components.hass_datapoints.sensor.ANOMALY_MAX_PTS",
+            max_pts,
+        ),
+        patch(
+            "custom_components.hass_datapoints.sensor._run_combined_detection",
+            side_effect=fake_combined,
+        ),
+    ):
+        await sensor._run_scan()
+
+    all_pts = captured["all_pts"]
+    # sensor.big merged to 7 pts (3 stats + 4 raw) then capped to the last 4.
+    assert all_pts["sensor.big"] == [[10, 1.0], [20, 2.0], [30, 3.0], [40, 4.0]]
+    assert len(all_pts["sensor.big"]) == max_pts
+    # sensor.small (2 pts, no stats) stays uncapped.
+    assert all_pts["sensor.small"] == [[100, 5.0], [200, 6.0]]
 
 
 async def test_async_warm_cache_skips_disabled_monitors():
