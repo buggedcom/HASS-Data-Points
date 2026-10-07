@@ -2,33 +2,11 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import "../range-toolbar";
 import { setFrontendLocale } from "@/lib/i18n/localize";
 
-type DpRangeToolbar = HTMLElement & {
-  hass: Nullable<unknown>;
-  startTime: Nullable<Date>;
-  endTime: Nullable<Date>;
-  rangeBounds: Nullable<unknown>;
-  zoomLevel: string;
-  dateSnapping: string;
-  sidebarCollapsed: boolean;
-  isLiveEdge: boolean;
-  timelineEvents: unknown[];
-  comparisonPreview: Nullable<{ start: number; end: number }>;
-  zoomRange: Nullable<{ start: number; end: number }>;
-  zoomWindowRange: Nullable<{ start: number; end: number }>;
-  chartHoverTimeMs: Nullable<number>;
-  chartHoverWindowTimeMs: Nullable<number>;
-  updateComplete: Promise<boolean>;
-  closeMenus(): void;
-  syncOptionsLabels(): void;
-  revealSelection(): void;
-  syncZoomHighlights(
-    zoomRange: Nullable<{ start: number; end: number }>,
-    zoomWindowRange: Nullable<{ start: number; end: number }>
-  ): void;
-};
+import type { DateTimeInput } from "@/atoms/form/date-time-input/date-time-input";
+import type { RangeToolbar } from "../range-toolbar";
 
-function createElement(props: Partial<DpRangeToolbar> = {}): DpRangeToolbar {
-  const el = document.createElement("range-toolbar") as DpRangeToolbar;
+function createElement(props: Partial<RangeToolbar> = {}): RangeToolbar {
+  const el = document.createElement("range-toolbar") as RangeToolbar;
   Object.assign(el, {
     hass: null,
     startTime: null,
@@ -51,7 +29,7 @@ function createElement(props: Partial<DpRangeToolbar> = {}): DpRangeToolbar {
 }
 
 describe("range-toolbar", () => {
-  let el: DpRangeToolbar;
+  let el: RangeToolbar;
 
   afterEach(async () => {
     el?.remove();
@@ -161,6 +139,32 @@ describe("range-toolbar", () => {
         expect(startInput?.getAttribute("label")).toBe("Alku");
         expect(pickerButton?.getAttribute("label")).toBe("Valitse aikaväli");
         expect(optionsTitle?.textContent).toContain("Zoomaustaso");
+      });
+    });
+  });
+
+  describe("GIVEN Finnish labels and local mobile dates", () => {
+    describe("WHEN the date properties are rendered and then cleared", () => {
+      it("THEN keeps datetime-local formatting independent of locale", async () => {
+        expect.assertions(4);
+        await setFrontendLocale("fi");
+        el = createElement({
+          startTime: new Date(2025, 0, 8, 9, 30),
+          endTime: new Date(2025, 0, 9, 10, 45),
+        });
+        await el.updateComplete;
+        const start = el.shadowRoot!.querySelector<DateTimeInput>(
+          "#range-mobile-start"
+        )!;
+        const end =
+          el.shadowRoot!.querySelector<DateTimeInput>("#range-mobile-end")!;
+        expect(start.value).toBe("2025-01-08T09:30");
+        expect(end.value).toBe("2025-01-09T10:45");
+        el.startTime = null;
+        el.endTime = null;
+        await el.updateComplete;
+        expect(start.value).toBe("");
+        expect(end.value).toBe("");
       });
     });
   });
