@@ -13782,6 +13782,44 @@
 			overlayEl.hidden = false;
 		}
 		/**
+		* Apply the common, card-owned slice of a view model (hass / config /
+		* comparison results). Each field is applied only when present, so callers
+		* can push just the part they own.
+		*/
+		_applyCommonViewModel(model) {
+			if (model.hass !== void 0) this._hass = model.hass;
+			if (model.config !== void 0) this._config = model.config;
+			if (model.comparisonResults !== void 0) this._lastComparisonResults = model.comparisonResults ?? null;
+		}
+		/**
+		* Seed the chart-owned interaction state (hidden series / hidden events /
+		* zoom range) from the model's *initial* values. Only applied via
+		* {@link applyViewState} (the config path); {@link draw} never calls this, so
+		* the chart keeps whatever the user set by interacting (see AC5 of #20).
+		*/
+		_applyInitialInteractionState(model) {
+			if (model.hiddenSeries !== void 0) this._hiddenSeries = model.hiddenSeries;
+			if (model.hiddenEventIds !== void 0) this._hiddenEventIds = model.hiddenEventIds;
+			if (model.zoomRange !== void 0) this._zoomRange = model.zoomRange;
+		}
+		/**
+		* Push card-owned state onto the chart WITHOUT drawing, seeding the initial
+		* zoom / hidden-series. Used by the card's setConfig and hass paths.
+		*/
+		applyViewState(model) {
+			this._applyCommonViewModel(model);
+			this._applyInitialInteractionState(model);
+		}
+		/**
+		* The typed draw entry: unpack the model's common slice then run the real
+		* (async, drawRequestId-guarded) draw. Live interaction state (zoom / hidden)
+		* is intentionally NOT taken from the model here — the chart owns it.
+		*/
+		draw(model) {
+			this._applyCommonViewModel(model);
+			this._queueDrawChart(model.history, model.stats, model.events ?? [], model.t0 ?? 0, model.t1 ?? 0, model.options ?? {});
+		}
+		/**
 		* Queue an async draw, discarding any in-flight stale requests.
 		* Ported from _queueDrawChart in card-history.js.
 		*/
@@ -17698,7 +17736,7 @@
 			this._hass = hass;
 			this.requestUpdate();
 			const chartEl = this._chartEl();
-			if (chartEl) chartEl.hass = hass;
+			if (chartEl) chartEl.applyViewState({ hass });
 		}
 		get hass() {
 			return this._hass;
@@ -17770,13 +17808,15 @@
 			}
 			const chartEl = this._chartEl();
 			if (chartEl) {
-				chartEl.hass = this._hass;
-				chartEl._config = this._config;
-				chartEl._hiddenSeries = this._hiddenSeries;
-				chartEl._hiddenEventIds = this._hiddenEventIds;
-				chartEl._zoomRange = this._zoomRange;
-				chartEl._lastComparisonResults = this._getResolvedComparisonResults();
-				if (diff.comparisonOverlayChanged && typeof chartEl._renderComparisonPreviewOverlay === "function") chartEl._renderComparisonPreviewOverlay();
+				chartEl.applyViewState({
+					hass: this._hass,
+					config: this._config,
+					hiddenSeries: this._hiddenSeries,
+					hiddenEventIds: this._hiddenEventIds,
+					zoomRange: this._zoomRange,
+					comparisonResults: this._getResolvedComparisonResults()
+				});
+				if (diff.comparisonOverlayChanged) chartEl._renderComparisonPreviewOverlay();
 			}
 			if (diff.dataChanged || !Array.isArray(nextConfig.comparison_windows) || !nextConfig.comparison_windows.length) this._adjustComparisonAxisScale = false;
 			if (this._hass && diff.dataChanged) {
@@ -18163,15 +18203,28 @@
 		/** Delegates to the hass-datapoints-history-chart sub-component for resize-replay. */
 		_drawChart(...args) {
 			const chartEl = this._chartEl();
-			if (chartEl) {
-				chartEl.hass = this._hass;
-				chartEl._config = this._config;
-				chartEl._hiddenSeries = this._hiddenSeries;
-				chartEl._hiddenEventIds = this._hiddenEventIds;
-				chartEl._zoomRange = this._zoomRange;
-				chartEl._lastComparisonResults = this._lastComparisonResults;
-				chartEl._drawChart(...args);
-			}
+			if (!chartEl) return;
+			const [histResult, statsResult, events, t0, t1, options = {}] = args;
+			chartEl.draw(this._buildChartDrawModel(histResult, statsResult, events, t0, t1, options));
+		}
+		/**
+		* Build the chart draw model from a set of draw args. Live zoom / hidden
+		* state is owned by the chart, so it is intentionally NOT included — only
+		* hass / config / comparison plus the data to draw. Both the resize replay
+		* (_drawChart) and the real draw queue (_queueDrawChart) go through here.
+		*/
+		_buildChartDrawModel(histResult, statsResult, events, t0, t1, options) {
+			return {
+				hass: this._hass,
+				config: this._config,
+				comparisonResults: this._lastComparisonResults,
+				history: histResult,
+				stats: statsResult,
+				events,
+				t0,
+				t1,
+				options
+			};
 		}
 		/** Returns the hass-datapoints-history-chart element once it is in the shadow DOM. */
 		_chartEl() {
@@ -18179,7 +18232,7 @@
 		}
 		getAiQueryBriefAnomalySnapshot() {
 			const chartEl = this._chartEl();
-			if (!chartEl?.getAiQueryBriefAnomalySnapshot) return null;
+			if (!chartEl) return null;
 			return chartEl.getAiQueryBriefAnomalySnapshot();
 		}
 		/**
@@ -18206,26 +18259,16 @@
 				}
 			];
 			const chartEl = this._chartEl();
-			if (chartEl) {
-				chartEl.hass = this._hass;
-				chartEl._config = this._config;
-				chartEl._hiddenSeries = this._hiddenSeries;
-				chartEl._hiddenEventIds = this._hiddenEventIds;
-				chartEl._zoomRange = this._zoomRange;
-				chartEl._lastComparisonResults = this._lastComparisonResults;
-				chartEl._queueDrawChart(histResult, statsResult, filteredEvents, t0, t1, {
-					...options,
-					drawRequestId
-				});
-			}
+			if (chartEl) chartEl.draw(this._buildChartDrawModel(histResult, statsResult, filteredEvents, t0, t1, {
+				...options,
+				drawRequestId
+			}));
 		}
 		_setChartLoading(isLoading) {
-			const chartEl = this._chartEl();
-			if (chartEl?._setChartLoading) chartEl._setChartLoading(isLoading);
+			this._chartEl()?._setChartLoading(isLoading);
 		}
 		_setChartMessage(message = "") {
-			const chartEl = this._chartEl();
-			if (chartEl?._setChartMessage) chartEl._setChartMessage(message);
+			this._chartEl()?._setChartMessage(message);
 		}
 		/**
 		* Returns true if there is at least one entity with drawable data points
