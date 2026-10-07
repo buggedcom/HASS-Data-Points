@@ -1,6 +1,8 @@
 import { html } from "lit";
 import { expect } from "@storybook/test";
 import "../panel-shell";
+import type { PanelShell } from "../panel-shell";
+import "@/molecules/collapsed-options-menu/collapsed-options-menu";
 import { setFrontendLocale } from "@/lib/i18n/localize";
 
 /**
@@ -61,6 +63,7 @@ export default {
       .sidebarCollapsed=${args.sidebarCollapsed}
       .hasSavedState=${args.hasSavedState}
       .layoutMode=${args.layoutMode}
+      .collapsedOptionsOpen=${args.collapsedOptionsOpen ?? false}
       style="display: block; height: 100vh;"
     >
       <div
@@ -81,6 +84,7 @@ export default {
       >
         [Sidebar options slot]
       </div>
+      <collapsed-options-menu slot="collapsed-options"></collapsed-options-menu>
       <div style="padding: 24px; color: var(--secondary-text-color);">
         [Main chart content slot]
       </div>
@@ -152,5 +156,19 @@ export const Finnish = {
     expect(sidebarToggle?.getAttribute("label")).toBe(
       "Kutista kohteiden sivupalkki"
     );
+  },
+};
+
+export const CollapsedPreferences = {
+  args: { sidebarCollapsed: true, collapsedOptionsOpen: true },
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const shell = canvasElement.querySelector("panel-shell") as PanelShell;
+    const popup = shell.getOptionsPopupEl()!;
+    const slot = popup.querySelector("slot")!;
+    expect(popup.hidden).toBe(false);
+    expect(slot.assignedElements()[0]?.tagName).toBe("COLLAPSED-OPTIONS-MENU");
+    shell.collapsedOptionsOpen = false;
+    await shell.updateComplete;
+    expect(popup.hidden).toBe(true);
   },
 };
