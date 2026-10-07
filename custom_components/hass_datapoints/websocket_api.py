@@ -16,9 +16,6 @@ from homeassistant.components.recorder import get_instance
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.exceptions import Unauthorized
 from homeassistant.helpers import config_validation as cv
-from homeassistant.helpers.recorder import session_scope
-from sqlalchemy import inspect as sqlalchemy_inspect
-from sqlalchemy import text
 
 from .anomaly_cache import AnomalyCache, make_cache_key
 from .anomaly_detection import run_anomaly_detection
@@ -37,10 +34,15 @@ from .const import (
     MONITOR_DEFAULT_SCAN_INTERVAL_MINUTES,
 )
 from .history_utils import (
+    # _normalize_recorder_timestamp is re-exported (unused here) so existing
+    # imports from this module keep resolving after the recorder-bounds prober
+    # moved to history_utils (see issue #24).
+    _normalize_recorder_timestamp,  # noqa: F401
     async_prepare_entity_series,
     downsample_pts,
     fetch_entity_pts,
     fetch_entity_statistics_pts,
+    get_global_history_bounds,
     parse_interval_seconds,
 )
 from .monitor_entities import monitor_device_identifier
@@ -219,7 +221,7 @@ async def ws_get_event_bounds(
         store = hass.data[DOMAIN]["store"]
         recorder = get_instance(hass)
         start_time, end_time, source = await recorder.async_add_executor_job(
-            _get_global_history_bounds, recorder
+            get_global_history_bounds, recorder
         )
         if start_time is None and end_time is None:
             start_time, end_time = await store.async_get_event_bounds()
@@ -231,159 +233,6 @@ async def ws_get_event_bounds(
     except Exception as err:  # noqa: BLE001
         _LOGGER.error("hass_datapoints/events_bounds failed: %s", err)
         connection.send_error(msg["id"], "bounds_error", "Failed to fetch event bounds")
-
-
-def _get_global_history_bounds(
-    recorder,
-) -> tuple[str | None, str | None, str]:
-    """Return earliest/latest recorder timestamps for Home Assistant globally."""
-    get_session = getattr(recorder, "get_session", None)
-    if get_session is None:
-        return None, None, "recorder_session_unavailable"
-
-    query_variants = [
-        # HA recorder has long exposed recorder_runs as the broadest source of
-        # database coverage. Newer schemas use explicit start/end columns.
-        ("recorder_runs:start_end", "recorder_runs", "start", "end"),
-        # Older recorder schemas used created/closed style columns instead of
-        # start/end, so keep this fallback for older Core installs and upgrades.
-        (
-            "recorder_runs:created_closed",
-            "recorder_runs",
-            "created",
-            "closed_incorrect",
-        ),
-        # Modern recorder tables expose UNIX-second timestamp mirrors for fast
-        # numeric filtering; these appeared after the older datetime columns.
-        ("states:last_updated_ts", "states", "last_updated_ts", "last_updated_ts"),
-        # Older and mid-era HA recorder schemas only had datetime columns on
-        # states, so we still probe them for long-lived upgraded databases.
-        ("states:last_updated", "states", "last_updated", "last_updated"),
-        # Events gained *_ts numeric mirrors in newer HA recorder versions, so
-        # prefer them when available for consistent timestamp normalization.
-        ("events:time_fired_ts", "events", "time_fired_ts", "time_fired_ts"),
-        # Older event tables only expose datetime values, especially on
-        # databases that have been upgraded across many HA releases.
-        ("events:time_fired", "events", "time_fired", "time_fired"),
-        # Long-term statistics in newer HA versions expose start_ts as a numeric
-        # mirror of start, which is the most robust source when present.
-        ("statistics:start_ts", "statistics", "start_ts", "start_ts"),
-        # Older statistics schemas only expose the datetime start column.
-        ("statistics:start", "statistics", "start", "start"),
-        # statistics_short_term followed the same migration path as statistics:
-        # newer HA builds provide numeric *_ts columns for recorder access.
-        (
-            "statistics_short_term:start_ts",
-            "statistics_short_term",
-            "start_ts",
-            "start_ts",
-        ),
-        # Older short-term statistics tables only expose datetime start.
-        ("statistics_short_term:start", "statistics_short_term", "start", "start"),
-    ]
-
-    def _quote(identifier: str) -> str:
-        return '"' + identifier.replace('"', '""') + '"'
-
-    def _run_bounds_query() -> tuple[str | None, str | None, str]:
-        start_candidates: list[tuple[datetime, str]] = []
-        end_candidates: list[tuple[datetime, str]] = []
-
-        try:
-            with session_scope(session=get_session()) as session:
-                bind = session.get_bind()
-                if bind is None:
-                    return None, None, "recorder_bind_unavailable"
-
-                inspector = sqlalchemy_inspect(bind)
-                available_tables = set(inspector.get_table_names())
-                column_cache: dict[str, set[str]] = {}
-
-                def _get_columns(table_name: str) -> set[str]:
-                    if table_name not in column_cache:
-                        try:
-                            column_cache[table_name] = {
-                                column["name"]
-                                for column in inspector.get_columns(table_name)
-                            }
-                        except Exception:
-                            column_cache[table_name] = set()
-                    return column_cache[table_name]
-
-                for label, table_name, start_column, end_column in query_variants:
-                    if table_name not in available_tables:
-                        continue
-                    columns = _get_columns(table_name)
-                    if start_column not in columns:
-                        continue
-                    end_expr = (
-                        f"MAX({_quote(end_column)})"
-                        if end_column in columns
-                        else "NULL"
-                    )
-                    query = text(
-                        f"SELECT MIN({_quote(start_column)}) AS start_ts, "
-                        f"{end_expr} AS end_ts FROM {_quote(table_name)}"
-                    )
-                    try:
-                        row = session.execute(query).one_or_none()
-                    except Exception:
-                        continue
-                    if not row:
-                        continue
-                    start_time = _normalize_recorder_timestamp(row[0])
-                    end_time = _normalize_recorder_timestamp(row[1])
-                    if start_time:
-                        start_candidates.append(
-                            (datetime.fromisoformat(start_time), label)
-                        )
-                    if end_time:
-                        end_candidates.append((datetime.fromisoformat(end_time), label))
-        except Exception as err:
-            return None, None, f"recorder_query_error:{type(err).__name__}"
-
-        if not start_candidates:
-            return None, None, "no_recorder_start_found"
-
-        min_start, start_source = min(start_candidates, key=lambda item: item[0])
-        if end_candidates:
-            max_end, end_source = max(end_candidates, key=lambda item: item[0])
-            max_end_iso = max_end.isoformat()
-        else:
-            max_end_iso = None
-            end_source = "missing"
-        return (
-            min_start.isoformat(),
-            max_end_iso,
-            f"start:{start_source};end:{end_source}",
-        )
-
-    return _run_bounds_query()
-
-
-def _normalize_recorder_timestamp(value: object) -> str | None:
-    """Normalize recorder query results to ISO timestamps."""
-    if value is None:
-        return None
-
-    if isinstance(value, (int, float)):
-        return datetime.fromtimestamp(float(value), tz=UTC).isoformat()
-
-    if isinstance(value, str):
-        try:
-            parsed = datetime.fromisoformat(value)
-        except ValueError:
-            return None
-        if parsed.tzinfo is None:
-            parsed = parsed.replace(tzinfo=UTC)
-        return parsed.isoformat()
-
-    if isinstance(value, datetime):
-        if value.tzinfo is None:
-            value = value.replace(tzinfo=UTC)
-        return value.isoformat()
-
-    return None
 
 
 def _require_admin(connection: websocket_api.ActiveConnection, msg: dict) -> bool:

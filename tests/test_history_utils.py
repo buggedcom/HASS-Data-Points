@@ -12,6 +12,7 @@ from custom_components.hass_datapoints.history_utils import (
     downsample_pts,
     fetch_entity_pts,
     fetch_entity_statistics_pts,
+    get_global_history_bounds,
     parse_interval_seconds,
 )
 
@@ -49,6 +50,23 @@ class DescribeParseDt:
         dt = _parse_dt("2024-01-15T12:00:00+00:00")
         assert dt.tzinfo is not None
         assert (dt.year, dt.month, dt.day, dt.hour) == (2024, 1, 15, 12)
+
+
+# ---------------------------------------------------------------------------
+# get_global_history_bounds
+# ---------------------------------------------------------------------------
+
+class DescribeGetGlobalHistoryBounds:
+    def test_GIVEN_recorder_without_get_session_WHEN_called_THEN_returns_unavailable_sentinel(
+        self,
+    ):
+        recorder = MagicMock(spec=[])  # no get_session attribute
+
+        start, end, source = get_global_history_bounds(recorder)
+
+        assert start is None
+        assert end is None
+        assert source == "recorder_session_unavailable"
 
 
 # ---------------------------------------------------------------------------
