@@ -155,12 +155,25 @@ class DescribeWsMonitorsCreate:
         assert created_monitor["name"] == "My Monitor"
         assert created_monitor["entity_id"] == "sensor.temp"
         assert created_monitor["type"] == "individual"
+        # AC2: each platform group delivered to its own add-callback.
         add_entities.assert_called_once()
         hass.data[DOMAIN][KEY_ADD_BINARY_SENSOR_ENTITIES].assert_called_once()
         hass.data[DOMAIN][KEY_ADD_SWITCH_ENTITIES].assert_called_once()
-        assert len(hass.data[DOMAIN][KEY_MONITOR_SENSORS]) == 1
-        assert len(hass.data[DOMAIN][KEY_MONITOR_BINARY_SENSORS]) == 1
-        assert len(hass.data[DOMAIN][KEY_MONITOR_SWITCHES]) == 1
+        # The sensor callback receives the 6 sensors; binaries 2; switch 1.
+        assert len(add_entities.call_args[0][0]) == 6
+        assert len(hass.data[DOMAIN][KEY_ADD_BINARY_SENSOR_ENTITIES].call_args[0][0]) == 2
+        assert len(hass.data[DOMAIN][KEY_ADD_SWITCH_ENTITIES].call_args[0][0]) == 1
+
+        # AC3: the three tracking maps hold their heterogeneous shapes.
+        monitor_id = created_monitor["id"]
+        from custom_components.hass_datapoints.sensor import DatapointsMonitorSensor
+
+        tracked_sensor = hass.data[DOMAIN][KEY_MONITOR_SENSORS][monitor_id]
+        assert isinstance(tracked_sensor, DatapointsMonitorSensor)
+        tracked_binaries = hass.data[DOMAIN][KEY_MONITOR_BINARY_SENSORS][monitor_id]
+        assert isinstance(tracked_binaries, tuple)
+        assert len(tracked_binaries) == 2
+        assert hass.data[DOMAIN][KEY_MONITOR_SWITCHES][monitor_id] is not None
         connection.send_result.assert_called_once()
 
     async def test_GIVEN_missing_dynamic_callbacks_WHEN_called_THEN_creates_monitor_and_returns_success_without_crashing(
@@ -351,6 +364,45 @@ class DescribeWsMonitorsDelete:
         store.async_delete_monitor.assert_awaited_once_with(monitor_id)
         mock_sensor.async_remove.assert_awaited_once()
         connection.send_result.assert_called_once_with(1, {"deleted": True})
+
+    async def test_GIVEN_populated_maps_WHEN_deleted_THEN_all_cleared_and_removed(self):
+        import uuid as _uuid
+
+        monitor_id = str(_uuid.uuid4())
+        store = _make_store([{"id": monitor_id}])
+
+        main = MagicMock()
+        main.async_remove = AsyncMock()
+        stalled = MagicMock()
+        stalled.async_remove = AsyncMock()
+        problem = MagicMock()
+        problem.async_remove = AsyncMock()
+        switch = MagicMock()
+        switch.async_remove = AsyncMock()
+
+        hass = _make_hass(store, sensors={monitor_id: main})
+        hass.data[DOMAIN][KEY_MONITOR_BINARY_SENSORS] = {
+            monitor_id: (stalled, problem)
+        }
+        hass.data[DOMAIN][KEY_MONITOR_SWITCHES] = {monitor_id: switch}
+        connection = _make_connection()
+        msg = {
+            "id": 1,
+            "type": f"{DOMAIN}/monitors/delete",
+            "monitor_id": monitor_id,
+        }
+
+        await ws_monitors_delete(hass, connection, msg)
+
+        # Main sensor + both binaries + switch all explicitly removed.
+        main.async_remove.assert_awaited_once()
+        stalled.async_remove.assert_awaited_once()
+        problem.async_remove.assert_awaited_once()
+        switch.async_remove.assert_awaited_once()
+        # All three maps cleared of this monitor.
+        assert monitor_id not in hass.data[DOMAIN][KEY_MONITOR_SENSORS]
+        assert monitor_id not in hass.data[DOMAIN][KEY_MONITOR_BINARY_SENSORS]
+        assert monitor_id not in hass.data[DOMAIN][KEY_MONITOR_SWITCHES]
 
     async def test_GIVEN_not_found_WHEN_deleted_THEN_sends_error(self):
         import uuid as _uuid
