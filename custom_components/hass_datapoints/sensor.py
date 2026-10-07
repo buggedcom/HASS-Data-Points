@@ -19,6 +19,7 @@ from homeassistant.util import dt as dt_util
 
 from .anomaly_detection import run_anomaly_detection
 from .const import (
+    ANOMALY_MAX_PTS,
     DOMAIN,
     EVENT_ANOMALY_DETECTED,
     EVENT_ANOMALY_RESOLVED,
@@ -28,10 +29,8 @@ from .const import (
     MONITOR_DEFAULT_LOOK_BACK_HOURS,
 )
 from .history_utils import (
-    downsample_pts,
+    async_prepare_entity_series,
     fetch_entity_pts,
-    fetch_entity_statistics_pts,
-    parse_interval_seconds,
 )
 from .store import DatapointsStore
 
@@ -560,12 +559,9 @@ async def async_warm_cache(
     """Pre-populate anomaly cache for all enabled monitors at startup (best-effort)."""
     import uuid as _uuid  # noqa: PLC0415
 
-    from homeassistant.components.recorder import get_instance  # noqa: PLC0415
-
     from .anomaly_cache import AnomalyCache, make_cache_key  # noqa: PLC0415
 
     cache: AnomalyCache = hass.data[DOMAIN]["anomaly_cache"]
-    recorder = get_instance(hass)
     now = datetime.now(UTC)
     for monitor in store.get_monitors():
         if not monitor.get("enabled", True):
@@ -589,8 +585,19 @@ async def async_warm_cache(
         in_flight[req_id] = cancel_ev
         try:
             for entity_id in entity_ids:
-                pts = await recorder.async_add_executor_job(
-                    fetch_entity_pts, hass, entity_id, start_t, end_t
+                # Prepare the series exactly as ws_get_anomalies does (merge
+                # stats + downsample + cap) so the clusters we warm under this
+                # cache key match what a later ws_get_anomalies read computes.
+                # make_cache_key includes sample_interval, so a raw-only warm
+                # would otherwise write clusters that a sampled read mis-serves.
+                pts = await async_prepare_entity_series(
+                    hass,
+                    entity_id,
+                    start_t,
+                    end_t,
+                    sample_interval=monitor.get("sample_interval"),
+                    sample_aggregate=monitor.get("sample_aggregate", "mean"),
+                    max_pts=ANOMALY_MAX_PTS,
                 )
                 if len(pts) < 3:
                     continue
@@ -765,31 +772,15 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
                 entity_ids = monitor.get("entity_ids", [])
                 all_pts: dict[str, list] = {}
                 for eid in entity_ids:
-                    pts = await recorder.async_add_executor_job(
-                        fetch_entity_pts, self._hass, eid, start_time, end_time
-                    )
-                    stats = await recorder.async_add_executor_job(
-                        fetch_entity_statistics_pts,
+                    all_pts[eid] = await async_prepare_entity_series(
                         self._hass,
                         eid,
                         start_time,
                         end_time,
+                        sample_interval=monitor.get("sample_interval"),
+                        sample_aggregate=monitor.get("sample_aggregate", "mean"),
+                        max_pts=ANOMALY_MAX_PTS,
                     )
-                    if stats:
-                        if pts:
-                            first_ms = pts[0][0]
-                            stats = [p for p in stats if p[0] < first_ms]
-                        if stats:
-                            import operator  # noqa: PLC0415
-
-                            pts = sorted(stats + pts, key=operator.itemgetter(0))
-                    sample_interval = monitor.get("sample_interval")
-                    if sample_interval and sample_interval != "raw":
-                        interval_secs = parse_interval_seconds(sample_interval)
-                        pts = downsample_pts(
-                            pts, interval_secs, monitor.get("sample_aggregate", "mean")
-                        )
-                    all_pts[eid] = pts
 
                 data_point_count = sum(len(v) for v in all_pts.values())
                 overlap_mode = monitor.get("overlap_mode", "all")
@@ -814,30 +805,15 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
                     clusters = []
             else:
                 entity_id = monitor.get("entity_id", "")
-                pts = await recorder.async_add_executor_job(
-                    fetch_entity_pts, self._hass, entity_id, start_time, end_time
-                )
-                stats = await recorder.async_add_executor_job(
-                    fetch_entity_statistics_pts,
+                pts = await async_prepare_entity_series(
                     self._hass,
                     entity_id,
                     start_time,
                     end_time,
+                    sample_interval=monitor.get("sample_interval"),
+                    sample_aggregate=monitor.get("sample_aggregate", "mean"),
+                    max_pts=ANOMALY_MAX_PTS,
                 )
-                if stats:
-                    if pts:
-                        first_ms = pts[0][0]
-                        stats = [p for p in stats if p[0] < first_ms]
-                    if stats:
-                        import operator  # noqa: PLC0415
-
-                        pts = sorted(stats + pts, key=operator.itemgetter(0))
-                sample_interval = monitor.get("sample_interval")
-                if sample_interval and sample_interval != "raw":
-                    interval_secs = parse_interval_seconds(sample_interval)
-                    pts = downsample_pts(
-                        pts, interval_secs, monitor.get("sample_aggregate", "mean")
-                    )
 
                 data_point_count = len(pts)
                 clusters: list = []

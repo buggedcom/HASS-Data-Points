@@ -814,6 +814,7 @@ class DescribeWsGetHistoryPermissions:
 
 def _make_hass_for_anomalies() -> MagicMock:
     """hass mock suitable for ws_get_anomalies (cache absent, executor returns [])."""
+    import custom_components.hass_datapoints.history_utils as hu_mod  # noqa: PLC0415
     import custom_components.hass_datapoints.websocket_api as ws_mod  # noqa: PLC0415
 
     hass = MagicMock()
@@ -821,6 +822,9 @@ def _make_hass_for_anomalies() -> MagicMock:
     recorder_instance = MagicMock()
     recorder_instance.async_add_executor_job = AsyncMock(return_value=[])
     ws_mod.get_instance = MagicMock(return_value=recorder_instance)
+    # The merge/sample/cap seam (async_prepare_entity_series) resolves
+    # get_instance from history_utils, so stub it there too.
+    hu_mod.get_instance = MagicMock(return_value=recorder_instance)
     hass.async_add_executor_job = AsyncMock(return_value=[])
     return hass
 

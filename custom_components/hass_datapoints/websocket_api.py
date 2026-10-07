@@ -37,6 +37,7 @@ from .const import (
     MONITOR_DEFAULT_SCAN_INTERVAL_MINUTES,
 )
 from .history_utils import (
+    async_prepare_entity_series,
     downsample_pts,
     fetch_entity_pts,
     fetch_entity_statistics_pts,
@@ -820,29 +821,20 @@ async def ws_get_anomalies(
                 return
 
         recorder = get_instance(hass)
-        pts: list = await recorder.async_add_executor_job(
-            fetch_entity_pts, hass, entity_id, start_time, end_time
-        )
 
         # Merge long-term statistics for the portion of the range that predates
-        # the recorder window (HA default: ~10 days).  This mirrors the frontend
-        # merge in card-history.js so anomaly detection sees the full date range,
-        # not just the recent recorder data.
-        stats_pts: list = await recorder.async_add_executor_job(
-            fetch_entity_statistics_pts, hass, entity_id, start_time, end_time
+        # the recorder window (HA default: ~10 days), downsample when requested,
+        # and cap to ANOMALY_MAX_PTS — all owned by async_prepare_entity_series so
+        # every anomaly site shares one canonical merge/sample/cap ordering.
+        pts: list = await async_prepare_entity_series(
+            hass,
+            entity_id,
+            start_time,
+            end_time,
+            sample_interval=msg.get("sample_interval"),
+            sample_aggregate=msg.get("sample_aggregate", "mean"),
+            max_pts=ANOMALY_MAX_PTS,
         )
-        if stats_pts:
-            if pts:
-                first_recorder_ms = pts[0][0]
-                stats_pts = [p for p in stats_pts if p[0] < first_recorder_ms]
-            if stats_pts:
-                pts = sorted(stats_pts + pts, key=lambda p: p[0])
-
-        sample_interval: str | None = msg.get("sample_interval")
-        if sample_interval and sample_interval != "raw":
-            sample_aggregate: str = msg.get("sample_aggregate", "mean")
-            interval_secs = parse_interval_seconds(sample_interval)
-            pts = downsample_pts(pts, interval_secs, sample_aggregate)
 
         if len(pts) < 3:
             _LOGGER.info(
@@ -855,21 +847,6 @@ async def ws_get_anomalies(
                 {"entity_id": entity_id, "anomaly_clusters": [], "cached": False},
             )
             return
-
-        # Guard against very large point counts that would cause the detection
-        # worker to occupy an executor thread for an excessive amount of time,
-        # potentially exhausting the thread pool and making HA unresponsive.
-        # We keep the most-recent points because they are most relevant to
-        # anomaly detection; users with long ranges should enable sample_interval.
-        if len(pts) > ANOMALY_MAX_PTS:
-            _LOGGER.warning(
-                "hass_datapoints: capping %d pts to %d before anomaly detection for %s "
-                "— consider enabling sample_interval for large date ranges",
-                len(pts),
-                ANOMALY_MAX_PTS,
-                entity_id,
-            )
-            pts = pts[-ANOMALY_MAX_PTS:]
 
         comparison_pts: list | None = None
         comparison_entity_id = config.get("comparison_entity_id")
@@ -1294,8 +1271,6 @@ async def ws_monitors_anomalies(
     msg: dict,
 ) -> None:
     """Run a live anomaly scan for a monitor and return clusters + dismissed windows."""
-    import operator  # noqa: PLC0415
-
     from .sensor import (  # noqa: PLC0415
         _apply_dismissals,
         _build_detection_config,
@@ -1329,25 +1304,15 @@ async def ws_monitors_anomalies(
             entity_ids = monitor.get("entity_ids", [])
             all_pts: dict[str, list] = {}
             for eid in entity_ids:
-                pts = await recorder.async_add_executor_job(
-                    fetch_entity_pts, hass, eid, start_time, end_time
+                all_pts[eid] = await async_prepare_entity_series(
+                    hass,
+                    eid,
+                    start_time,
+                    end_time,
+                    sample_interval=monitor.get("sample_interval"),
+                    sample_aggregate=monitor.get("sample_aggregate", "mean"),
+                    max_pts=ANOMALY_MAX_PTS,
                 )
-                stats = await recorder.async_add_executor_job(
-                    fetch_entity_statistics_pts, hass, eid, start_time, end_time
-                )
-                if stats:
-                    if pts:
-                        stats = [p for p in stats if p[0] < pts[0][0]]
-                    if stats:
-                        pts = sorted(stats + pts, key=operator.itemgetter(0))
-                sample_interval = monitor.get("sample_interval")
-                if sample_interval and sample_interval != "raw":
-                    pts = downsample_pts(
-                        pts,
-                        parse_interval_seconds(sample_interval),
-                        monitor.get("sample_aggregate", "mean"),
-                    )
-                all_pts[eid] = pts
             clusters = await asyncio.wait_for(
                 hass.loop.run_in_executor(
                     pool,
@@ -1361,24 +1326,15 @@ async def ws_monitors_anomalies(
             )
         else:
             entity_id = monitor.get("entity_id", "")
-            pts = await recorder.async_add_executor_job(
-                fetch_entity_pts, hass, entity_id, start_time, end_time
+            pts = await async_prepare_entity_series(
+                hass,
+                entity_id,
+                start_time,
+                end_time,
+                sample_interval=monitor.get("sample_interval"),
+                sample_aggregate=monitor.get("sample_aggregate", "mean"),
+                max_pts=ANOMALY_MAX_PTS,
             )
-            stats = await recorder.async_add_executor_job(
-                fetch_entity_statistics_pts, hass, entity_id, start_time, end_time
-            )
-            if stats:
-                if pts:
-                    stats = [p for p in stats if p[0] < pts[0][0]]
-                if stats:
-                    pts = sorted(stats + pts, key=operator.itemgetter(0))
-            sample_interval = monitor.get("sample_interval")
-            if sample_interval and sample_interval != "raw":
-                pts = downsample_pts(
-                    pts,
-                    parse_interval_seconds(sample_interval),
-                    monitor.get("sample_aggregate", "mean"),
-                )
             clusters: list = []
             if len(pts) >= 3:
                 comparison_pts: list | None = None
