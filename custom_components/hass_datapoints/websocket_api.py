@@ -43,7 +43,7 @@ from .history_utils import (
     fetch_entity_statistics_pts,
     parse_interval_seconds,
 )
-from .monitor_entities import monitor_device_identifier
+from .monitor_entities import build_monitor_entities, monitor_device_identifier
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -986,50 +986,26 @@ def _register_monitor_entities(hass: HomeAssistant, monitor_id: str) -> bool:
         )
         return False
 
-    from .binary_sensor import (  # noqa: PLC0415
-        DatapointsMonitorProblemBinarySensor,
-        DatapointsMonitorStalledBinarySensor,
-    )
-    from .sensor import (  # noqa: PLC0415
-        DatapointsMonitorAnomalyDurationSensor,
-        DatapointsMonitorConsecutiveScansSensor,
-        DatapointsMonitorDataPointsSensor,
-        DatapointsMonitorLastAnomalySensor,
-        DatapointsMonitorLastScanSensor,
-        DatapointsMonitorSensor,
-    )
-    from .switch import DatapointsMonitorEnabledSwitch  # noqa: PLC0415
-
     entry = entries[0]
     store = domain_data[KEY_STORE]
     monitor_sensors = domain_data.setdefault(KEY_MONITOR_SENSORS, {})
     monitor_binary_sensors = domain_data.setdefault(KEY_MONITOR_BINARY_SENSORS, {})
     monitor_switches = domain_data.setdefault(KEY_MONITOR_SWITCHES, {})
 
+    result = build_monitor_entities(entry, store, hass, monitor_id)
+
     if monitor_id not in monitor_sensors:
-        sensor = DatapointsMonitorSensor(entry, store, hass, monitor_id)
-        monitor_sensors[monitor_id] = sensor
-        add_sensor_entities(
-            [
-                sensor,
-                DatapointsMonitorConsecutiveScansSensor(entry, store, monitor_id),
-                DatapointsMonitorLastScanSensor(entry, store, monitor_id),
-                DatapointsMonitorLastAnomalySensor(entry, store, monitor_id),
-                DatapointsMonitorAnomalyDurationSensor(entry, store, hass, monitor_id),
-                DatapointsMonitorDataPointsSensor(entry, store, monitor_id),
-            ]
-        )
+        # Track only the main sensor (sensors[0]); the rest cascade on delete.
+        monitor_sensors[monitor_id] = result.sensors[0]
+        add_sensor_entities(result.sensors)
 
     if monitor_id not in monitor_binary_sensors:
-        stalled = DatapointsMonitorStalledBinarySensor(entry, store, hass, monitor_id)
-        problem = DatapointsMonitorProblemBinarySensor(entry, store, hass, monitor_id)
-        monitor_binary_sensors[monitor_id] = (stalled, problem)
-        add_binary_entities([stalled, problem])
+        monitor_binary_sensors[monitor_id] = result.binary_sensors
+        add_binary_entities(list(result.binary_sensors))
 
     if monitor_id not in monitor_switches:
-        switch = DatapointsMonitorEnabledSwitch(entry, store, hass, monitor_id)
-        monitor_switches[monitor_id] = switch
-        add_switch_entities([switch])
+        monitor_switches[monitor_id] = result.switch
+        add_switch_entities([result.switch])
 
     return True
 

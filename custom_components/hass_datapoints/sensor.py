@@ -32,7 +32,7 @@ from .history_utils import (
     async_prepare_entity_series,
     fetch_entity_pts,
 )
-from .monitor_entities import monitor_device_info
+from .monitor_entities import build_monitor_entities, monitor_device_info
 from .store import DatapointsStore
 
 _LOGGER = logging.getLogger(__name__)
@@ -70,18 +70,11 @@ async def async_setup_entry(
     monitor_sensors: list[SensorEntity] = []
     for monitor in store.get_monitors():
         mid = monitor["id"]
-        s = DatapointsMonitorSensor(entry, store, hass, mid)
-        hass.data[DOMAIN][KEY_MONITOR_SENSORS][mid] = s
-        monitor_sensors.extend(
-            [
-                s,
-                DatapointsMonitorConsecutiveScansSensor(entry, store, mid),
-                DatapointsMonitorLastScanSensor(entry, store, mid),
-                DatapointsMonitorLastAnomalySensor(entry, store, mid),
-                DatapointsMonitorAnomalyDurationSensor(entry, store, hass, mid),
-                DatapointsMonitorDataPointsSensor(entry, store, mid),
-            ]
-        )
+        result = build_monitor_entities(entry, store, hass, mid)
+        # Only the main sensor is tracked individually (timer reschedule +
+        # async_remove); the other five die via the device-registry cascade.
+        hass.data[DOMAIN][KEY_MONITOR_SENSORS][mid] = result.sensors[0]
+        monitor_sensors.extend(result.sensors)
     monitor_sensors.append(DatapointsAggregateAnomalyMonitorsSensor(entry, store))
     async_add_entities(monitor_sensors)
 

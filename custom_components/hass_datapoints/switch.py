@@ -16,7 +16,7 @@ from .const import (
     KEY_MONITOR_SWITCHES,
     KEY_STORE,
 )
-from .monitor_entities import monitor_device_info
+from .monitor_entities import build_monitor_entities, monitor_device_info
 from .store import DatapointsStore
 
 
@@ -34,9 +34,9 @@ async def async_setup_entry(
     entities: list[SwitchEntity] = []
     for monitor in store.get_monitors():
         mid = monitor["id"]
-        switch = DatapointsMonitorEnabledSwitch(entry, store, hass, mid)
-        hass.data[DOMAIN][KEY_MONITOR_SWITCHES][mid] = switch
-        entities.append(switch)
+        result = build_monitor_entities(entry, store, hass, mid)
+        hass.data[DOMAIN][KEY_MONITOR_SWITCHES][mid] = result.switch
+        entities.append(result.switch)
 
     async_add_entities(entities)
 

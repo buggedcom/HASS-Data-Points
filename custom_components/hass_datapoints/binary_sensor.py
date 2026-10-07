@@ -18,7 +18,7 @@ from .const import (
     KEY_MONITOR_BINARY_SENSORS,
     KEY_STORE,
 )
-from .monitor_entities import monitor_device_info
+from .monitor_entities import build_monitor_entities, monitor_device_info
 from .store import DatapointsStore
 
 _UPDATE_INTERVAL = timedelta(minutes=1)
@@ -41,10 +41,9 @@ async def async_setup_entry(
     entities: list[BinarySensorEntity] = []
     for monitor in store.get_monitors():
         mid = monitor["id"]
-        stalled = DatapointsMonitorStalledBinarySensor(entry, store, hass, mid)
-        problem = DatapointsMonitorProblemBinarySensor(entry, store, hass, mid)
-        hass.data[DOMAIN][KEY_MONITOR_BINARY_SENSORS][mid] = (stalled, problem)
-        entities.extend([stalled, problem])
+        result = build_monitor_entities(entry, store, hass, mid)
+        hass.data[DOMAIN][KEY_MONITOR_BINARY_SENSORS][mid] = result.binary_sensors
+        entities.extend(result.binary_sensors)
 
     async_add_entities(entities)
 
