@@ -2,15 +2,23 @@
  * @deprecated migration-debris: rewrite in #32 (#06.4 menus) and #33 (#06.5 targets).
  * Kept running until its control migrates; use datapoints-mounted-* for the behavioural gate (#28).
  */
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { HassDatapointsHistoryPanel } from "../datapoints";
+import { parseHistoryPageStateParam } from "@/lib/history-page/history-url-state";
 import { normalizeHistorySeriesAnalysis } from "@/lib/domain/history-series";
 
-describe("HassDatapointsHistoryPanel URL sync", () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
+import {
+  control,
+  createHassFixture,
+  emitControlEvent,
+  mountPanel,
+  settlePanel,
+  usePanelFixture,
+} from "./panel-fixture";
 
+usePanelFixture();
+
+describe("HassDatapointsHistoryPanel URL sync", () => {
   describe("GIVEN a page-level chart display option changes", () => {
     describe("WHEN the option is applied", () => {
       it("THEN it updates the URL", () => {
@@ -40,38 +48,23 @@ describe("HassDatapointsHistoryPanel URL sync", () => {
     });
   });
 
-  describe("GIVEN the sidebar collapsed state changes", () => {
-    describe("WHEN toggling the sidebar", () => {
-      it("THEN it updates the URL", () => {
+  describe("GIVEN the mounted range toolbar sidebar toggle", () => {
+    describe("WHEN the sidebar is collapsed", () => {
+      it("THEN updates the toolbar and persisted URL state", async () => {
         expect.assertions(3);
-        const saveSessionState = vi.fn();
-        const updateUrl = vi.fn();
-        const syncSidebarUi = vi.fn();
-        const syncRangeControl = vi.fn();
-        const hideCollapsedTargetPopup = vi.fn();
-        const rafSpy = vi
-          .spyOn(window, "requestAnimationFrame")
-          .mockImplementation((cb: FrameRequestCallback) => {
-            cb(0);
-            return 1;
-          });
-        const panel = {
-          _sidebarCollapsed: false,
-          _saveSessionState: saveSessionState,
-          _updateUrl: updateUrl,
-          _syncSidebarUi: syncSidebarUi,
-          _syncRangeControl: syncRangeControl,
-          _hideCollapsedTargetPopup: hideCollapsedTargetPopup,
-          isConnected: true,
-        };
-
-        HassDatapointsHistoryPanel.prototype._toggleSidebarCollapsed.call(
-          panel
+        const panel = await mountPanel(createHassFixture().hass);
+        const toolbar = control(panel.shadowRoot!, "range-toolbar");
+        emitControlEvent(toolbar, "dp-toolbar-sidebar-toggle");
+        await settlePanel();
+        expect(toolbar.sidebarCollapsed).toBe(true);
+        expect(control(panel.shadowRoot!, "panel-shell").sidebarCollapsed).toBe(
+          true
         );
-
-        expect(panel._sidebarCollapsed).toBe(true);
-        expect(updateUrl).toHaveBeenCalledWith({ push: false });
-        expect(rafSpy).toHaveBeenCalledTimes(1);
+        expect(
+          parseHistoryPageStateParam(
+            new URLSearchParams(window.location.search).get("page_state")
+          )?.sidebar_collapsed
+        ).toBe(true);
       });
     });
   });
