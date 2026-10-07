@@ -10401,7 +10401,8 @@
 		if (horizontal) horizontal.hidden = true;
 		if (addButton) addButton.hidden = true;
 	}
-	function attachLineChartHover(card, canvas, renderer, series, events, t0, t1, vMin, vMax, axes = null, options = {}) {
+	function attachLineChartHover(options) {
+		const { card, canvas, renderer, series, events, t0, t1, vMin, vMax, axes = null } = options;
 		const interactionState = getInteractionState(card);
 		if (!canvas || !renderer) return;
 		if (interactionState._chartHoverCleanup) {
@@ -15409,7 +15410,17 @@
 			const visibleBinaryBackgrounds = binaryBackgrounds.filter((entry) => !this._hiddenSeries.has(entry.entityId));
 			if (visibleSeries.length || visibleBinaryBackgrounds.length) {
 				this._ensureContextAnnotationDialog();
-				attachLineChartHover(this, canvas, renderer, hoverSeries, enrichedEvents, renderT0, renderT1, 0, 0, activeAxes, {
+				attachLineChartHover({
+					card: this,
+					canvas,
+					renderer,
+					series: hoverSeries,
+					events: enrichedEvents,
+					t0: renderT0,
+					t1: renderT1,
+					vMin: 0,
+					vMax: 0,
+					axes: activeAxes,
 					onContextMenu: (hover) => this._handleChartContextMenu(hover),
 					onAddAnnotation: this._canAddAnnotation ? (hover) => this._handleChartAddAnnotation(hover) : void 0,
 					binaryStates: visibleBinaryBackgrounds,
