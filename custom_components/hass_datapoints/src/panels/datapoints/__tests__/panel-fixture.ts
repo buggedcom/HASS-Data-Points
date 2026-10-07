@@ -184,7 +184,19 @@ export function control<K extends keyof HTMLElementTagNameMap>(
   root: ParentNode,
   tag: K
 ): HTMLElementTagNameMap[K] {
-  const element = root.querySelector(tag);
+  let element = root.querySelector(tag);
+  if (!element) {
+    for (const slot of root.querySelectorAll("slot")) {
+      for (const assigned of slot.assignedElements({ flatten: true })) {
+        element = assigned.matches(tag)
+          ? (assigned as HTMLElementTagNameMap[K])
+          : assigned.querySelector(tag);
+        if (element) {
+          return element;
+        }
+      }
+    }
+  }
   if (!element) {
     throw new Error(`Missing mounted control: ${tag}`);
   }

@@ -1,5 +1,6 @@
-import { html, LitElement } from "lit";
+import { html, LitElement, type PropertyValues } from "lit";
 import { property, state } from "lit/decorators.js";
+import { formatDateWindowInputValue } from "@/lib/domain/date-window";
 
 import { styles } from "./range-toolbar.styles";
 import { localized, msg } from "@/lib/i18n/localize";
@@ -95,60 +96,17 @@ export class RangeToolbar extends LitElement {
 
   // ── Public API ─────────────────────────────────────────────────────────────
 
-  /** Sync mobile date inputs to the given start/end values. */
-  syncMobileDates(start: Nullable<Date>, end: Nullable<Date>): void {
-    const fmtInput = (d: Nullable<Date>) => {
-      if (!d) return "";
-      const pad = (n: number) => String(n).padStart(2, "0");
-      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    };
-    const startEl = this.shadowRoot?.querySelector<
-      HTMLElement & { value?: string }
-    >("#range-mobile-start");
-    const endEl = this.shadowRoot?.querySelector<
-      HTMLElement & { value?: string }
-    >("#range-mobile-end");
-    if (startEl) startEl.value = fmtInput(start);
-    if (endEl) endEl.value = fmtInput(end);
-  }
+  @state() private accessor _mobileStartValue = "";
 
-  /** Sync the options menu current-value labels. */
-  syncOptionsLabels(): void {
-    const zoomLabel =
-      RANGE_ZOOM_OPTIONS.find((o) => o.value === this.zoomLevel)?.label ??
-      "Auto";
-    const snapLabel =
-      RANGE_SNAP_OPTIONS.find((o) => o.value === this.dateSnapping)?.label ??
-      "Hour";
-    const zoomCurrent = this.shadowRoot?.querySelector(
-      "[data-options-current='zoom']"
-    );
-    const snapCurrent = this.shadowRoot?.querySelector(
-      "[data-options-current='snap']"
-    );
-    if (zoomCurrent) {
-      zoomCurrent.textContent = msg(zoomLabel);
+  @state() private accessor _mobileEndValue = "";
+
+  protected willUpdate(changed: PropertyValues<this>): void {
+    if (changed.has("startTime")) {
+      this._mobileStartValue = formatDateWindowInputValue(this.startTime);
     }
-    if (snapCurrent) {
-      snapCurrent.textContent = msg(snapLabel);
+    if (changed.has("endTime")) {
+      this._mobileEndValue = formatDateWindowInputValue(this.endTime);
     }
-    // Sync selected state on option buttons
-    this.shadowRoot
-      ?.querySelectorAll("[data-option-group='zoom']")
-      .forEach((btn) => {
-        btn.classList.toggle(
-          "selected",
-          (btn as HTMLElement).dataset.optionValue === this.zoomLevel
-        );
-      });
-    this.shadowRoot
-      ?.querySelectorAll("[data-option-group='snap']")
-      .forEach((btn) => {
-        btn.classList.toggle(
-          "selected",
-          (btn as HTMLElement).dataset.optionValue === this.dateSnapping
-        );
-      });
   }
 
   /** Close all open floating menus. */
@@ -235,7 +193,6 @@ export class RangeToolbar extends LitElement {
         menuEl.style.setProperty("--floating-menu-top", `${top}px`);
       }
     }
-    this.updateComplete.then(() => this.syncOptionsLabels());
   }
 
   private _togglePicker(force?: boolean): void {
@@ -340,39 +297,30 @@ export class RangeToolbar extends LitElement {
   }
 
   private _onMobileStartChange(ev: CustomEvent<{ value: string }>): void {
-    const startEl = this.shadowRoot?.querySelector<
-      HTMLElement & { value?: string }
-    >("#range-mobile-start");
-    if (startEl) startEl.value = ev.detail.value;
+    this._mobileStartValue = ev.detail.value;
     this._commitMobileDates();
   }
 
   private _onMobileEndChange(ev: CustomEvent<{ value: string }>): void {
-    const endEl = this.shadowRoot?.querySelector<
-      HTMLElement & { value?: string }
-    >("#range-mobile-end");
-    if (endEl) endEl.value = ev.detail.value;
+    this._mobileEndValue = ev.detail.value;
     this._commitMobileDates();
   }
 
   private _commitMobileDates(): void {
-    const startEl = this.shadowRoot?.querySelector<
-      HTMLElement & { value?: string }
-    >("#range-mobile-start");
-    const endEl = this.shadowRoot?.querySelector<
-      HTMLElement & { value?: string }
-    >("#range-mobile-end");
-    const startVal = startEl?.value;
-    const endVal = endEl?.value;
-    if (!startVal || !endVal) return;
+    const startVal = this._mobileStartValue;
+    const endVal = this._mobileEndValue;
+    if (!startVal || !endVal) {
+      return;
+    }
     const start = new Date(startVal);
     const end = new Date(endVal);
     if (
       Number.isNaN(start.getTime()) ||
       Number.isNaN(end.getTime()) ||
       start >= end
-    )
+    ) {
       return;
+    }
     this._emit("dp-range-commit", { start, end, push: true });
   }
 
@@ -383,7 +331,7 @@ export class RangeToolbar extends LitElement {
       (option) => html`
         <button
           type="button"
-          class="range-option"
+          class=${`range-option${option.value === this.zoomLevel ? " selected" : ""}`}
           data-option-group="zoom"
           data-option-value=${option.value}
           @click=${() => this._onOptionSelect("zoom", option.value)}
@@ -399,7 +347,7 @@ export class RangeToolbar extends LitElement {
       (option) => html`
         <button
           type="button"
-          class="range-option"
+          class=${`range-option${option.value === this.dateSnapping ? " selected" : ""}`}
           data-option-group="snap"
           data-option-value=${option.value}
           @click=${() => this._onOptionSelect("snap", option.value)}
@@ -429,11 +377,13 @@ export class RangeToolbar extends LitElement {
         <div class="range-mobile-dates">
           <date-time-input
             id="range-mobile-start"
+            .value=${this._mobileStartValue}
             label=${msg("Start")}
             @dp-change=${this._onMobileStartChange}
           ></date-time-input>
           <date-time-input
             id="range-mobile-end"
+            .value=${this._mobileEndValue}
             label=${msg("End")}
             @dp-change=${this._onMobileEndChange}
           ></date-time-input>
@@ -519,10 +469,13 @@ export class RangeToolbar extends LitElement {
                   @click=${() => this._onOptionsSubmenu("zoom")}
                 >
                   <span class="range-option-label">${msg("Zoom level")}</span>
-                  <span
-                    class="range-submenu-meta"
-                    data-options-current="zoom"
-                  ></span>
+                  <span class="range-submenu-meta" data-options-current="zoom"
+                    >${msg(
+                      RANGE_ZOOM_OPTIONS.find(
+                        (option) => option.value === this.zoomLevel
+                      )?.label ?? "Auto"
+                    )}</span
+                  >
                 </button>
                 <button
                   type="button"
@@ -532,10 +485,13 @@ export class RangeToolbar extends LitElement {
                   <span class="range-option-label"
                     >${msg("Date snapping")}</span
                   >
-                  <span
-                    class="range-submenu-meta"
-                    data-options-current="snap"
-                  ></span>
+                  <span class="range-submenu-meta" data-options-current="snap"
+                    >${msg(
+                      RANGE_SNAP_OPTIONS.find(
+                        (option) => option.value === this.dateSnapping
+                      )?.label ?? "Hour"
+                    )}</span
+                  >
                 </button>
               </div>
             </div>
@@ -581,10 +537,6 @@ export class RangeToolbar extends LitElement {
         </div>
       </div>
     `;
-  }
-
-  updated() {
-    this.syncOptionsLabels();
   }
 }
 
