@@ -31,7 +31,18 @@ type ChartInteractionState = {
   _chartZoomDragging?: boolean;
 };
 
-type ChartInteractionHost = HTMLElement;
+/**
+ * The DOM element a chart interaction is attached to (the history-chart host
+ * element). Beyond the standard `HTMLElement` surface it carries the hover/zoom
+ * cleanup handles and transient hover state that the attach helpers write onto
+ * the host. The host's own `_hass` is read through the `ChartInteractionState`
+ * projection rather than declared here, so a host that keeps `_hass` private
+ * (as history-chart does, behind its `hass` accessor) stays assignable.
+ * Declaring these here lets `getInteractionState` be typed honestly instead
+ * of casting through `HTMLElement & ChartInteractionState`.
+ */
+interface ChartInteractionHost
+  extends HTMLElement, Omit<ChartInteractionState, "_hass"> {}
 
 interface TooltipBounds {
   left?: number;
@@ -270,7 +281,7 @@ function getRoot(card: ChartInteractionHost): Document | ShadowRoot {
 function getInteractionState(
   card: ChartInteractionHost
 ): ChartInteractionState {
-  return card as ChartInteractionHost & ChartInteractionState;
+  return card;
 }
 
 function toChartBounds(
