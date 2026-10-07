@@ -85,28 +85,104 @@ def test_factory_covers_all_nine_unique_ids():
 
 
 # ---------------------------------------------------------------------------
-# GIVEN a monitor built on the restart path and the live-create path
-# WHEN both go through the factory
+# GIVEN a monitor materialized on the restart path and the live-create path
+# WHEN each real wiring path runs
 # ---------------------------------------------------------------------------
 
 
-def test_setup_and_live_create_agree():
-    """THEN both paths produce the identical unique-id set."""
-    from custom_components.hass_datapoints.monitor_entities import (
-        build_monitor_entities,
+def _domain_data(store):
+    from custom_components.hass_datapoints.const import (
+        KEY_ADD_BINARY_SENSOR_ENTITIES,
+        KEY_ADD_SENSOR_ENTITIES,
+        KEY_ADD_SWITCH_ENTITIES,
+        KEY_MONITOR_BINARY_SENSORS,
+        KEY_MONITOR_SENSORS,
+        KEY_MONITOR_SWITCHES,
+        KEY_STORE,
+    )
+
+    return {
+        KEY_STORE: store,
+        KEY_MONITOR_SENSORS: {},
+        KEY_MONITOR_BINARY_SENSORS: {},
+        KEY_MONITOR_SWITCHES: {},
+        KEY_ADD_SENSOR_ENTITIES: MagicMock(),
+        KEY_ADD_BINARY_SENSOR_ENTITIES: MagicMock(),
+        KEY_ADD_SWITCH_ENTITIES: MagicMock(),
+    }
+
+
+def _delivered_monitor_unique_ids(domain_data, monitor_id):
+    """Collect unique_ids delivered to the three add-callbacks for a monitor."""
+    from custom_components.hass_datapoints.const import (
+        KEY_ADD_BINARY_SENSOR_ENTITIES,
+        KEY_ADD_SENSOR_ENTITIES,
+        KEY_ADD_SWITCH_ENTITIES,
+    )
+
+    unique_ids: set[str] = set()
+    for key in (
+        KEY_ADD_SENSOR_ENTITIES,
+        KEY_ADD_BINARY_SENSOR_ENTITIES,
+        KEY_ADD_SWITCH_ENTITIES,
+    ):
+        for call in domain_data[key].call_args_list:
+            for entity in call.args[0]:
+                uid = entity._attr_unique_id
+                if uid and f"_monitor_{monitor_id}" in uid:
+                    unique_ids.add(uid)
+    return unique_ids
+
+
+async def test_setup_and_live_create_agree():
+    """THEN the restart platform setups and the live-create path agree.
+
+    Drives the real wiring paths — the three ``async_setup_entry`` callbacks
+    (restart rehydration) and ``_register_monitor_entities`` (live create) —
+    rather than calling the factory directly, and compares the unique-id sets
+    actually delivered to the platform add-callbacks.
+    """
+    from custom_components.hass_datapoints import (
+        binary_sensor,
+        sensor,
+        switch,
+    )
+    from custom_components.hass_datapoints.const import (
+        DOMAIN,
+        KEY_ADD_BINARY_SENSOR_ENTITIES,
+        KEY_ADD_SENSOR_ENTITIES,
+        KEY_ADD_SWITCH_ENTITIES,
+    )
+    from custom_components.hass_datapoints.websocket_api import (
+        _register_monitor_entities,
     )
 
     entry = _make_entry("ent1")
-    store = _store_with_monitor("abc123")
-    hass = MagicMock()
 
-    def _ids(result):
-        return {
-            e._attr_unique_id
-            for e in (*result.sensors, *result.binary_sensors, result.switch)
-        }
+    # --- Restart path: run the three platform setups. ---
+    restart_store = _store_with_monitor("abc123")
+    restart_data = _domain_data(restart_store)
+    restart_hass = MagicMock()
+    restart_hass.data = {DOMAIN: restart_data}
+    await sensor.async_setup_entry(
+        restart_hass, entry, restart_data[KEY_ADD_SENSOR_ENTITIES]
+    )
+    await binary_sensor.async_setup_entry(
+        restart_hass, entry, restart_data[KEY_ADD_BINARY_SENSOR_ENTITIES]
+    )
+    await switch.async_setup_entry(
+        restart_hass, entry, restart_data[KEY_ADD_SWITCH_ENTITIES]
+    )
+    restart_ids = _delivered_monitor_unique_ids(restart_hass.data[DOMAIN], "abc123")
 
-    restart = build_monitor_entities(entry, store, hass, "abc123")
-    live = build_monitor_entities(entry, store, hass, "abc123")
+    # --- Live-create path: run _register_monitor_entities. ---
+    live_store = _store_with_monitor("abc123")
+    live_data = _domain_data(live_store)
+    live_hass = MagicMock()
+    live_hass.data = {DOMAIN: live_data}
+    live_hass.config_entries.async_entries.return_value = [entry]
+    assert _register_monitor_entities(live_hass, "abc123") is True
+    live_ids = _delivered_monitor_unique_ids(live_hass.data[DOMAIN], "abc123")
 
-    assert _ids(restart) == _ids(live)
+    assert restart_ids == live_ids
+    assert len(restart_ids) == 9
