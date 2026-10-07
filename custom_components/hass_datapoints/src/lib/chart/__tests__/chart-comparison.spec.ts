@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildCorrelatedAnomalySpans,
+  clusterIntersectsSpan,
   filterAnnotatedAnomalyClusters,
   filterClustersByCorrelatedSpans,
   getComparisonAnomalyCacheKey,
@@ -128,6 +129,69 @@ describe("chart-comparison", () => {
         expect(
           filterClustersByCorrelatedSpans([], [{ start: 0, end: 100 }])
         ).toEqual([]);
+      });
+    });
+  });
+
+  describe("GIVEN clusterIntersectsSpan", () => {
+    describe("WHEN the cluster overlaps the span", () => {
+      it("THEN it returns true", () => {
+        expect.assertions(1);
+        expect(
+          clusterIntersectsSpan(
+            {
+              points: [
+                { timeMs: 100, value: 1 },
+                { timeMs: 200, value: 2 },
+              ],
+            },
+            { start: 150, end: 300 }
+          )
+        ).toBe(true);
+      });
+    });
+
+    describe("WHEN the cluster only touches the span boundary", () => {
+      it("THEN it returns true", () => {
+        expect.assertions(1);
+        expect(
+          clusterIntersectsSpan(
+            {
+              points: [
+                { timeMs: 100, value: 1 },
+                { timeMs: 200, value: 2 },
+              ],
+            },
+            { start: 200, end: 300 }
+          )
+        ).toBe(true);
+      });
+    });
+
+    describe("WHEN the cluster is disjoint from the span", () => {
+      it("THEN it returns false", () => {
+        expect.assertions(1);
+        expect(
+          clusterIntersectsSpan(
+            {
+              points: [
+                { timeMs: 100, value: 1 },
+                { timeMs: 200, value: 2 },
+              ],
+            },
+            { start: 300, end: 400 }
+          )
+        ).toBe(false);
+      });
+    });
+
+    describe("WHEN the cluster has no points", () => {
+      it("THEN it returns false", () => {
+        expect.assertions(2);
+        expect(
+          clusterIntersectsSpan({ points: [] }, { start: 0, end: 100 })
+        ).toBe(false);
+        expect(clusterIntersectsSpan(null, { start: 0, end: 100 })).toBe(false);
       });
     });
   });
