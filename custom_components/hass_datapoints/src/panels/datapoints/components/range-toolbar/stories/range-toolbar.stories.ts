@@ -148,6 +148,15 @@ export const WeekZoom = {
       "#range-options-menu"
     ) as HTMLElement & { open?: boolean };
     expect(optionsMenu.open).toBe(true);
+    expect(
+      toolbar.shadowRoot.querySelector('[data-options-current="zoom"]')
+        ?.textContent
+    ).toBe("Week Expanded");
+    expect(
+      toolbar.shadowRoot
+        .querySelector('[data-option-group="zoom"].selected')
+        ?.getAttribute("data-option-value")
+    ).toBe("week_expanded");
     const zoomTrigger = toolbar.shadowRoot.querySelector(
       ".range-submenu-trigger"
     ) as HTMLButtonElement;

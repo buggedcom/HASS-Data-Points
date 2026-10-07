@@ -20738,7 +20738,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/sidebar-analysis-section.ts
-	var _SidebarAnalysisSection, _anomalyOverlapMode_accessor_storage$2, _showCorrelatedAnomalies_accessor_storage$2, _anyAnomaliesEnabled_accessor_storage$2, _collapsible_accessor_storage$1, _open_accessor_storage$5;
+	var _SidebarAnalysisSection, _anomalyOverlapMode_accessor_storage$2, _showCorrelatedAnomalies_accessor_storage$3, _anyAnomaliesEnabled_accessor_storage$2, _collapsible_accessor_storage$1, _open_accessor_storage$5;
 	var ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS$1 = [{
 		value: "all",
 		label: "Show all anomalies"
@@ -20746,11 +20746,11 @@
 		value: "only",
 		label: "Overlaps only"
 	}];
-	var SidebarAnalysisSection = (_anomalyOverlapMode_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showCorrelatedAnomalies_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _anyAnomaliesEnabled_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$5 = /* @__PURE__ */ new WeakMap(), _SidebarAnalysisSection = class SidebarAnalysisSection extends i$2 {
+	var SidebarAnalysisSection = (_anomalyOverlapMode_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showCorrelatedAnomalies_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _anyAnomaliesEnabled_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$5 = /* @__PURE__ */ new WeakMap(), _SidebarAnalysisSection = class SidebarAnalysisSection extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _anomalyOverlapMode_accessor_storage$2, "all");
-			_classPrivateFieldInitSpec(this, _showCorrelatedAnomalies_accessor_storage$2, false);
+			_classPrivateFieldInitSpec(this, _showCorrelatedAnomalies_accessor_storage$3, false);
 			_classPrivateFieldInitSpec(this, _anyAnomaliesEnabled_accessor_storage$2, false);
 			_classPrivateFieldInitSpec(this, _collapsible_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _open_accessor_storage$5, true);
@@ -20762,10 +20762,10 @@
 			_classPrivateFieldSet2(_anomalyOverlapMode_accessor_storage$2, this, value);
 		}
 		get showCorrelatedAnomalies() {
-			return _classPrivateFieldGet2(_showCorrelatedAnomalies_accessor_storage$2, this);
+			return _classPrivateFieldGet2(_showCorrelatedAnomalies_accessor_storage$3, this);
 		}
 		set showCorrelatedAnomalies(value) {
-			_classPrivateFieldSet2(_showCorrelatedAnomalies_accessor_storage$2, this, value);
+			_classPrivateFieldSet2(_showCorrelatedAnomalies_accessor_storage$3, this, value);
 		}
 		get anyAnomaliesEnabled() {
 			return _classPrivateFieldGet2(_anyAnomaliesEnabled_accessor_storage$2, this);
@@ -20909,7 +20909,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/sidebar-chart-display-section.ts
-	var _SidebarChartDisplaySection, _showTooltips_accessor_storage$2, _showHoverGuides_accessor_storage$2, _showDataGaps_accessor_storage$2, _dataGapThreshold_accessor_storage$2, _yAxisMode_accessor_storage$2, _hoverSnapMode_accessor_storage$2, _collapsible_accessor_storage, _open_accessor_storage$4;
+	var _SidebarChartDisplaySection, _showTooltips_accessor_storage$2, _showHoverGuides_accessor_storage$2, _showDataGaps_accessor_storage$3, _dataGapThreshold_accessor_storage$3, _yAxisMode_accessor_storage$2, _hoverSnapMode_accessor_storage$2, _collapsible_accessor_storage, _open_accessor_storage$4;
 	var DATA_GAP_THRESHOLD_OPTIONS$1 = [
 		{
 			value: "auto",
@@ -20969,13 +20969,13 @@
 		value: "snap_to_data_points",
 		label: "Snap to data points"
 	}];
-	var SidebarChartDisplaySection = (_showTooltips_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showHoverGuides_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showDataGaps_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _dataGapThreshold_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _yAxisMode_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _hoverSnapMode_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$4 = /* @__PURE__ */ new WeakMap(), _SidebarChartDisplaySection = class SidebarChartDisplaySection extends i$2 {
+	var SidebarChartDisplaySection = (_showTooltips_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showHoverGuides_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showDataGaps_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _dataGapThreshold_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _yAxisMode_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _hoverSnapMode_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$4 = /* @__PURE__ */ new WeakMap(), _SidebarChartDisplaySection = class SidebarChartDisplaySection extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _showTooltips_accessor_storage$2, true);
 			_classPrivateFieldInitSpec(this, _showHoverGuides_accessor_storage$2, false);
-			_classPrivateFieldInitSpec(this, _showDataGaps_accessor_storage$2, true);
-			_classPrivateFieldInitSpec(this, _dataGapThreshold_accessor_storage$2, "2h");
+			_classPrivateFieldInitSpec(this, _showDataGaps_accessor_storage$3, true);
+			_classPrivateFieldInitSpec(this, _dataGapThreshold_accessor_storage$3, "2h");
 			_classPrivateFieldInitSpec(this, _yAxisMode_accessor_storage$2, "combined");
 			_classPrivateFieldInitSpec(this, _hoverSnapMode_accessor_storage$2, "follow_series");
 			_classPrivateFieldInitSpec(this, _collapsible_accessor_storage, false);
@@ -20994,16 +20994,16 @@
 			_classPrivateFieldSet2(_showHoverGuides_accessor_storage$2, this, value);
 		}
 		get showDataGaps() {
-			return _classPrivateFieldGet2(_showDataGaps_accessor_storage$2, this);
+			return _classPrivateFieldGet2(_showDataGaps_accessor_storage$3, this);
 		}
 		set showDataGaps(value) {
-			_classPrivateFieldSet2(_showDataGaps_accessor_storage$2, this, value);
+			_classPrivateFieldSet2(_showDataGaps_accessor_storage$3, this, value);
 		}
 		get dataGapThreshold() {
-			return _classPrivateFieldGet2(_dataGapThreshold_accessor_storage$2, this);
+			return _classPrivateFieldGet2(_dataGapThreshold_accessor_storage$3, this);
 		}
 		set dataGapThreshold(value) {
-			_classPrivateFieldSet2(_dataGapThreshold_accessor_storage$2, this, value);
+			_classPrivateFieldSet2(_dataGapThreshold_accessor_storage$3, this, value);
 		}
 		get yAxisMode() {
 			return _classPrivateFieldGet2(_yAxisMode_accessor_storage$2, this);
@@ -23631,9 +23631,9 @@
 	var _showLines_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _showTooltips_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _showHoverGuides_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _showCorrelatedAnomalies_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _showDataGaps_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _dataGapThreshold_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _showCorrelatedAnomalies_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
+	var _showDataGaps_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
+	var _dataGapThreshold_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _yAxisMode_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _hoverSnapMode_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _anomalyOverlapMode_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
@@ -23650,9 +23650,9 @@
 			_classPrivateFieldInitSpec(this, _showLines_accessor_storage$1, true);
 			_classPrivateFieldInitSpec(this, _showTooltips_accessor_storage$1, true);
 			_classPrivateFieldInitSpec(this, _showHoverGuides_accessor_storage$1, false);
-			_classPrivateFieldInitSpec(this, _showCorrelatedAnomalies_accessor_storage$1, false);
-			_classPrivateFieldInitSpec(this, _showDataGaps_accessor_storage$1, true);
-			_classPrivateFieldInitSpec(this, _dataGapThreshold_accessor_storage$1, "2h");
+			_classPrivateFieldInitSpec(this, _showCorrelatedAnomalies_accessor_storage$2, false);
+			_classPrivateFieldInitSpec(this, _showDataGaps_accessor_storage$2, true);
+			_classPrivateFieldInitSpec(this, _dataGapThreshold_accessor_storage$2, "2h");
 			_classPrivateFieldInitSpec(this, _yAxisMode_accessor_storage$1, "combined");
 			_classPrivateFieldInitSpec(this, _hoverSnapMode_accessor_storage$1, "follow_series");
 			_classPrivateFieldInitSpec(this, _anomalyOverlapMode_accessor_storage$1, "all");
@@ -23693,22 +23693,22 @@
 			_classPrivateFieldSet2(_showHoverGuides_accessor_storage$1, this, value);
 		}
 		get showCorrelatedAnomalies() {
-			return _classPrivateFieldGet2(_showCorrelatedAnomalies_accessor_storage$1, this);
+			return _classPrivateFieldGet2(_showCorrelatedAnomalies_accessor_storage$2, this);
 		}
 		set showCorrelatedAnomalies(value) {
-			_classPrivateFieldSet2(_showCorrelatedAnomalies_accessor_storage$1, this, value);
+			_classPrivateFieldSet2(_showCorrelatedAnomalies_accessor_storage$2, this, value);
 		}
 		get showDataGaps() {
-			return _classPrivateFieldGet2(_showDataGaps_accessor_storage$1, this);
+			return _classPrivateFieldGet2(_showDataGaps_accessor_storage$2, this);
 		}
 		set showDataGaps(value) {
-			_classPrivateFieldSet2(_showDataGaps_accessor_storage$1, this, value);
+			_classPrivateFieldSet2(_showDataGaps_accessor_storage$2, this, value);
 		}
 		get dataGapThreshold() {
-			return _classPrivateFieldGet2(_dataGapThreshold_accessor_storage$1, this);
+			return _classPrivateFieldGet2(_dataGapThreshold_accessor_storage$2, this);
 		}
 		set dataGapThreshold(value) {
-			_classPrivateFieldSet2(_dataGapThreshold_accessor_storage$1, this, value);
+			_classPrivateFieldSet2(_dataGapThreshold_accessor_storage$2, this, value);
 		}
 		get yAxisMode() {
 			return _classPrivateFieldGet2(_yAxisMode_accessor_storage$1, this);
@@ -24005,9 +24005,9 @@
 	var _showLines_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _showTooltips_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _showHoverGuides_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _showCorrelatedAnomalies_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _showDataGaps_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _dataGapThreshold_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _showCorrelatedAnomalies_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _showDataGaps_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _dataGapThreshold_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _yAxisMode_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _hoverSnapMode_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _anomalyOverlapMode_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -24030,9 +24030,9 @@
 			_classPrivateFieldInitSpec(this, _showLines_accessor_storage, true);
 			_classPrivateFieldInitSpec(this, _showTooltips_accessor_storage, true);
 			_classPrivateFieldInitSpec(this, _showHoverGuides_accessor_storage, false);
-			_classPrivateFieldInitSpec(this, _showCorrelatedAnomalies_accessor_storage, false);
-			_classPrivateFieldInitSpec(this, _showDataGaps_accessor_storage, true);
-			_classPrivateFieldInitSpec(this, _dataGapThreshold_accessor_storage, "2h");
+			_classPrivateFieldInitSpec(this, _showCorrelatedAnomalies_accessor_storage$1, false);
+			_classPrivateFieldInitSpec(this, _showDataGaps_accessor_storage$1, true);
+			_classPrivateFieldInitSpec(this, _dataGapThreshold_accessor_storage$1, "2h");
 			_classPrivateFieldInitSpec(this, _yAxisMode_accessor_storage, "combined");
 			_classPrivateFieldInitSpec(this, _hoverSnapMode_accessor_storage, "follow_series");
 			_classPrivateFieldInitSpec(this, _anomalyOverlapMode_accessor_storage, "all");
@@ -24071,22 +24071,22 @@
 			_classPrivateFieldSet2(_showHoverGuides_accessor_storage, this, value);
 		}
 		get showCorrelatedAnomalies() {
-			return _classPrivateFieldGet2(_showCorrelatedAnomalies_accessor_storage, this);
+			return _classPrivateFieldGet2(_showCorrelatedAnomalies_accessor_storage$1, this);
 		}
 		set showCorrelatedAnomalies(value) {
-			_classPrivateFieldSet2(_showCorrelatedAnomalies_accessor_storage, this, value);
+			_classPrivateFieldSet2(_showCorrelatedAnomalies_accessor_storage$1, this, value);
 		}
 		get showDataGaps() {
-			return _classPrivateFieldGet2(_showDataGaps_accessor_storage, this);
+			return _classPrivateFieldGet2(_showDataGaps_accessor_storage$1, this);
 		}
 		set showDataGaps(value) {
-			_classPrivateFieldSet2(_showDataGaps_accessor_storage, this, value);
+			_classPrivateFieldSet2(_showDataGaps_accessor_storage$1, this, value);
 		}
 		get dataGapThreshold() {
-			return _classPrivateFieldGet2(_dataGapThreshold_accessor_storage, this);
+			return _classPrivateFieldGet2(_dataGapThreshold_accessor_storage$1, this);
 		}
 		set dataGapThreshold(value) {
-			_classPrivateFieldSet2(_dataGapThreshold_accessor_storage, this, value);
+			_classPrivateFieldSet2(_dataGapThreshold_accessor_storage$1, this, value);
 		}
 		get yAxisMode() {
 			return _classPrivateFieldGet2(_yAxisMode_accessor_storage, this);
@@ -30278,15 +30278,16 @@
 	customElements.define("page-menu-item", PageMenuItem);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/panel-shell/panel-shell.ts
-	var _PanelShell, _hass_accessor_storage$6, _narrow_accessor_storage$1, _sidebarCollapsed_accessor_storage$2, _hasSavedState_accessor_storage, _layoutMode_accessor_storage, _pageMenuOpen_accessor_storage;
-	var PanelShell = (_hass_accessor_storage$6 = /* @__PURE__ */ new WeakMap(), _narrow_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _sidebarCollapsed_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _hasSavedState_accessor_storage = /* @__PURE__ */ new WeakMap(), _layoutMode_accessor_storage = /* @__PURE__ */ new WeakMap(), _pageMenuOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _PanelShell = class PanelShell extends i$2 {
+	var _PanelShell, _hass_accessor_storage$6, _narrow_accessor_storage$1, _sidebarCollapsed_accessor_storage$2, _hasSavedState_accessor_storage, _layoutMode_accessor_storage$1, _collapsedOptionsOpen_accessor_storage, _pageMenuOpen_accessor_storage;
+	var PanelShell = (_hass_accessor_storage$6 = /* @__PURE__ */ new WeakMap(), _narrow_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _sidebarCollapsed_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _hasSavedState_accessor_storage = /* @__PURE__ */ new WeakMap(), _layoutMode_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _collapsedOptionsOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _pageMenuOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _PanelShell = class PanelShell extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _hass_accessor_storage$6, null);
 			_classPrivateFieldInitSpec(this, _narrow_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _sidebarCollapsed_accessor_storage$2, false);
 			_classPrivateFieldInitSpec(this, _hasSavedState_accessor_storage, false);
-			_classPrivateFieldInitSpec(this, _layoutMode_accessor_storage, "desktop");
+			_classPrivateFieldInitSpec(this, _layoutMode_accessor_storage$1, "desktop");
+			_classPrivateFieldInitSpec(this, _collapsedOptionsOpen_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _pageMenuOpen_accessor_storage, false);
 		}
 		get hass() {
@@ -30314,10 +30315,16 @@
 			_classPrivateFieldSet2(_hasSavedState_accessor_storage, this, value);
 		}
 		get layoutMode() {
-			return _classPrivateFieldGet2(_layoutMode_accessor_storage, this);
+			return _classPrivateFieldGet2(_layoutMode_accessor_storage$1, this);
 		}
 		set layoutMode(value) {
-			_classPrivateFieldSet2(_layoutMode_accessor_storage, this, value);
+			_classPrivateFieldSet2(_layoutMode_accessor_storage$1, this, value);
+		}
+		get collapsedOptionsOpen() {
+			return _classPrivateFieldGet2(_collapsedOptionsOpen_accessor_storage, this);
+		}
+		set collapsedOptionsOpen(value) {
+			_classPrivateFieldSet2(_collapsedOptionsOpen_accessor_storage, this, value);
 		}
 		get _pageMenuOpen() {
 			return _classPrivateFieldGet2(_pageMenuOpen_accessor_storage, this);
@@ -30548,8 +30555,8 @@
         <div
           id="collapsed-options-popup"
           class="collapsed-options-popup"
-          hidden
-        ></div>
+          ?hidden=${!this.collapsedOptionsOpen}
+        ><slot name="collapsed-options"></slot></div>
       </ha-top-app-bar-fixed>
     `;
 		}
@@ -30568,6 +30575,10 @@
 		type: String,
 		attribute: "layout-mode"
 	})], PanelShell.prototype, "layoutMode", null);
+	__decorate([n$1({
+		type: Boolean,
+		attribute: false
+	})], PanelShell.prototype, "collapsedOptionsOpen", null);
 	__decorate([r$2()], PanelShell.prototype, "_pageMenuOpen", null);
 	PanelShell = __decorate([localized()], PanelShell);
 	customElements.define("panel-shell", PanelShell);
@@ -32145,8 +32156,8 @@
 	customElements.define("date-time-input", DateTimeInput);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/range-toolbar/range-toolbar.ts
-	var _RangeToolbar, _hass_accessor_storage$4, _startTime_accessor_storage, _endTime_accessor_storage, _rangeBounds_accessor_storage, _zoomLevel_accessor_storage$1, _dateSnapping_accessor_storage$1, _sidebarCollapsed_accessor_storage, _isLiveEdge_accessor_storage, _timelineEvents_accessor_storage$1, _comparisonPreview_accessor_storage, _zoomRange_accessor_storage, _zoomWindowRange_accessor_storage, _chartHoverTimeMs_accessor_storage$1, _chartHoverWindowTimeMs_accessor_storage, _optionsView_accessor_storage, _optionsOpen_accessor_storage, _pickerOpen_accessor_storage;
-	var RangeToolbar = (_hass_accessor_storage$4 = /* @__PURE__ */ new WeakMap(), _startTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _endTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _rangeBounds_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomLevel_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _dateSnapping_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _sidebarCollapsed_accessor_storage = /* @__PURE__ */ new WeakMap(), _isLiveEdge_accessor_storage = /* @__PURE__ */ new WeakMap(), _timelineEvents_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _comparisonPreview_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomRange_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomWindowRange_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartHoverTimeMs_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _chartHoverWindowTimeMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _optionsView_accessor_storage = /* @__PURE__ */ new WeakMap(), _optionsOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _pickerOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _RangeToolbar = class RangeToolbar extends i$2 {
+	var _RangeToolbar, _hass_accessor_storage$4, _startTime_accessor_storage, _endTime_accessor_storage, _rangeBounds_accessor_storage, _zoomLevel_accessor_storage$1, _dateSnapping_accessor_storage$1, _sidebarCollapsed_accessor_storage, _isLiveEdge_accessor_storage, _timelineEvents_accessor_storage$1, _comparisonPreview_accessor_storage, _zoomRange_accessor_storage, _zoomWindowRange_accessor_storage, _chartHoverTimeMs_accessor_storage$1, _chartHoverWindowTimeMs_accessor_storage, _optionsView_accessor_storage, _optionsOpen_accessor_storage, _pickerOpen_accessor_storage, _mobileStartValue_accessor_storage, _mobileEndValue_accessor_storage;
+	var RangeToolbar = (_hass_accessor_storage$4 = /* @__PURE__ */ new WeakMap(), _startTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _endTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _rangeBounds_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomLevel_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _dateSnapping_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _sidebarCollapsed_accessor_storage = /* @__PURE__ */ new WeakMap(), _isLiveEdge_accessor_storage = /* @__PURE__ */ new WeakMap(), _timelineEvents_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _comparisonPreview_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomRange_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomWindowRange_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartHoverTimeMs_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _chartHoverWindowTimeMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _optionsView_accessor_storage = /* @__PURE__ */ new WeakMap(), _optionsOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _pickerOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _mobileStartValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _mobileEndValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _RangeToolbar = class RangeToolbar extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _hass_accessor_storage$4, null);
@@ -32166,6 +32177,8 @@
 			_classPrivateFieldInitSpec(this, _optionsView_accessor_storage, "root");
 			_classPrivateFieldInitSpec(this, _optionsOpen_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _pickerOpen_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _mobileStartValue_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _mobileEndValue_accessor_storage, "");
 		}
 		get hass() {
 			return _classPrivateFieldGet2(_hass_accessor_storage$4, this);
@@ -32269,32 +32282,21 @@
 		set _pickerOpen(value) {
 			_classPrivateFieldSet2(_pickerOpen_accessor_storage, this, value);
 		}
-		/** Sync mobile date inputs to the given start/end values. */
-		syncMobileDates(start, end) {
-			const fmtInput = (d) => {
-				if (!d) return "";
-				const pad = (n) => String(n).padStart(2, "0");
-				return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-			};
-			const startEl = this.shadowRoot?.querySelector("#range-mobile-start");
-			const endEl = this.shadowRoot?.querySelector("#range-mobile-end");
-			if (startEl) startEl.value = fmtInput(start);
-			if (endEl) endEl.value = fmtInput(end);
+		get _mobileStartValue() {
+			return _classPrivateFieldGet2(_mobileStartValue_accessor_storage, this);
 		}
-		/** Sync the options menu current-value labels. */
-		syncOptionsLabels() {
-			const zoomLabel = RANGE_ZOOM_OPTIONS.find((o) => o.value === this.zoomLevel)?.label ?? "Auto";
-			const snapLabel = RANGE_SNAP_OPTIONS.find((o) => o.value === this.dateSnapping)?.label ?? "Hour";
-			const zoomCurrent = this.shadowRoot?.querySelector("[data-options-current='zoom']");
-			const snapCurrent = this.shadowRoot?.querySelector("[data-options-current='snap']");
-			if (zoomCurrent) zoomCurrent.textContent = msg(zoomLabel);
-			if (snapCurrent) snapCurrent.textContent = msg(snapLabel);
-			this.shadowRoot?.querySelectorAll("[data-option-group='zoom']").forEach((btn) => {
-				btn.classList.toggle("selected", btn.dataset.optionValue === this.zoomLevel);
-			});
-			this.shadowRoot?.querySelectorAll("[data-option-group='snap']").forEach((btn) => {
-				btn.classList.toggle("selected", btn.dataset.optionValue === this.dateSnapping);
-			});
+		set _mobileStartValue(value) {
+			_classPrivateFieldSet2(_mobileStartValue_accessor_storage, this, value);
+		}
+		get _mobileEndValue() {
+			return _classPrivateFieldGet2(_mobileEndValue_accessor_storage, this);
+		}
+		set _mobileEndValue(value) {
+			_classPrivateFieldSet2(_mobileEndValue_accessor_storage, this, value);
+		}
+		willUpdate(changed) {
+			if (changed.has("startTime")) this._mobileStartValue = formatDateWindowInputValue(this.startTime);
+			if (changed.has("endTime")) this._mobileEndValue = formatDateWindowInputValue(this.endTime);
 		}
 		/** Close all open floating menus. */
 		closeMenus() {
@@ -32344,7 +32346,6 @@
 					menuEl.style.setProperty("--floating-menu-top", `${top}px`);
 				}
 			}
-			this.updateComplete.then(() => this.syncOptionsLabels());
 		}
 		_togglePicker(force) {
 			const next = force !== void 0 ? force : !this._pickerOpen;
@@ -32415,20 +32416,16 @@
 			this._toggleOptions(false);
 		}
 		_onMobileStartChange(ev) {
-			const startEl = this.shadowRoot?.querySelector("#range-mobile-start");
-			if (startEl) startEl.value = ev.detail.value;
+			this._mobileStartValue = ev.detail.value;
 			this._commitMobileDates();
 		}
 		_onMobileEndChange(ev) {
-			const endEl = this.shadowRoot?.querySelector("#range-mobile-end");
-			if (endEl) endEl.value = ev.detail.value;
+			this._mobileEndValue = ev.detail.value;
 			this._commitMobileDates();
 		}
 		_commitMobileDates() {
-			const startEl = this.shadowRoot?.querySelector("#range-mobile-start");
-			const endEl = this.shadowRoot?.querySelector("#range-mobile-end");
-			const startVal = startEl?.value;
-			const endVal = endEl?.value;
+			const startVal = this._mobileStartValue;
+			const endVal = this._mobileEndValue;
 			if (!startVal || !endVal) return;
 			const start = new Date(startVal);
 			const end = new Date(endVal);
@@ -32443,7 +32440,7 @@
 			return RANGE_ZOOM_OPTIONS.map((option) => b`
         <button
           type="button"
-          class="range-option"
+          class=${`range-option${option.value === this.zoomLevel ? " selected" : ""}`}
           data-option-group="zoom"
           data-option-value=${option.value}
           @click=${() => this._onOptionSelect("zoom", option.value)}
@@ -32456,7 +32453,7 @@
 			return RANGE_SNAP_OPTIONS.map((option) => b`
         <button
           type="button"
-          class="range-option"
+          class=${`range-option${option.value === this.dateSnapping ? " selected" : ""}`}
           data-option-group="snap"
           data-option-value=${option.value}
           @click=${() => this._onOptionSelect("snap", option.value)}
@@ -32481,11 +32478,13 @@
         <div class="range-mobile-dates">
           <date-time-input
             id="range-mobile-start"
+            .value=${this._mobileStartValue}
             label=${msg("Start")}
             @dp-change=${this._onMobileStartChange}
           ></date-time-input>
           <date-time-input
             id="range-mobile-end"
+            .value=${this._mobileEndValue}
             label=${msg("End")}
             @dp-change=${this._onMobileEndChange}
           ></date-time-input>
@@ -32574,7 +32573,7 @@
                   <span
                     class="range-submenu-meta"
                     data-options-current="zoom"
-                  ></span>
+                  >${msg(RANGE_ZOOM_OPTIONS.find((option) => option.value === this.zoomLevel)?.label ?? "Auto")}</span>
                 </button>
                 <button
                   type="button"
@@ -32587,7 +32586,7 @@
                   <span
                     class="range-submenu-meta"
                     data-options-current="snap"
-                  ></span>
+                  >${msg(RANGE_SNAP_OPTIONS.find((option) => option.value === this.dateSnapping)?.label ?? "Hour")}</span>
                 </button>
               </div>
             </div>
@@ -32633,9 +32632,6 @@
         </div>
       </div>
     `;
-		}
-		updated() {
-			this.syncOptionsLabels();
 		}
 	}, _defineProperty(_RangeToolbar, "styles", styles$19), _RangeToolbar);
 	__decorate([n$1({ attribute: false })], RangeToolbar.prototype, "hass", null);
@@ -32685,6 +32681,8 @@
 	__decorate([r$2()], RangeToolbar.prototype, "_optionsView", null);
 	__decorate([r$2()], RangeToolbar.prototype, "_optionsOpen", null);
 	__decorate([r$2()], RangeToolbar.prototype, "_pickerOpen", null);
+	__decorate([r$2()], RangeToolbar.prototype, "_mobileStartValue", null);
+	__decorate([r$2()], RangeToolbar.prototype, "_mobileEndValue", null);
 	RangeToolbar = __decorate([localized()], RangeToolbar);
 	customElements.define("range-toolbar", RangeToolbar);
 	//#endregion
@@ -35792,7 +35790,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/datapoints.ts
-	var _HassDatapointsHistoryPanel, _hass_accessor_storage$3, _panel_accessor_storage, _narrow_accessor_storage, _rendered_accessor_storage, _shellBuilt_accessor_storage, _datapointScope_accessor_storage, _historyStartTime_accessor_storage, _historyEndTime_accessor_storage, _timelineEvents_accessor_storage, _loadingComparisonWindowIds_accessor_storage, _resolvedAutoZoomLevel_accessor_storage, _chartHoverTimeMs_accessor_storage, _zoomLevel_accessor_storage, _dateSnapping_accessor_storage;
+	var _HassDatapointsHistoryPanel, _hass_accessor_storage$3, _panel_accessor_storage, _narrow_accessor_storage, _rendered_accessor_storage, _shellBuilt_accessor_storage, _layoutMode_accessor_storage, _datapointScope_accessor_storage, _showChartDatapointIcons_accessor_storage, _showChartDatapointLines_accessor_storage, _showChartTooltips_accessor_storage, _showChartEmphasizedHoverGuides_accessor_storage, _chartHoverSnapMode_accessor_storage, _delinkChartYAxis_accessor_storage, _splitChartView_accessor_storage, _showCorrelatedAnomalies_accessor_storage, _chartAnomalyOverlapMode_accessor_storage, _showDataGaps_accessor_storage, _dataGapThreshold_accessor_storage, _historyStartTime_accessor_storage, _historyEndTime_accessor_storage, _timelineEvents_accessor_storage, _loadingComparisonWindowIds_accessor_storage, _sidebarAccordionTargetsOpen_accessor_storage, _sidebarAccordionDatapointsOpen_accessor_storage, _sidebarAccordionAnalysisOpen_accessor_storage, _sidebarAccordionChartOpen_accessor_storage, _resolvedAutoZoomLevel_accessor_storage, _chartHoverTimeMs_accessor_storage, _zoomLevel_accessor_storage, _dateSnapping_accessor_storage, _collapsedOptionsPopupOpen_accessor_storage;
 	/** Module-level set of all currently-connected panel instances.
 	*  Used by the orphan-recovery guard to avoid disrupting a live replacement. */
 	var _liveInstances = /* @__PURE__ */ new Set();
@@ -35841,7 +35839,7 @@
 		value: "only",
 		label: "Overlaps only"
 	}];
-	var HassDatapointsHistoryPanel = (_hass_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _panel_accessor_storage = /* @__PURE__ */ new WeakMap(), _narrow_accessor_storage = /* @__PURE__ */ new WeakMap(), _rendered_accessor_storage = /* @__PURE__ */ new WeakMap(), _shellBuilt_accessor_storage = /* @__PURE__ */ new WeakMap(), _datapointScope_accessor_storage = /* @__PURE__ */ new WeakMap(), _historyStartTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _historyEndTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _timelineEvents_accessor_storage = /* @__PURE__ */ new WeakMap(), _loadingComparisonWindowIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _resolvedAutoZoomLevel_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartHoverTimeMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomLevel_accessor_storage = /* @__PURE__ */ new WeakMap(), _dateSnapping_accessor_storage = /* @__PURE__ */ new WeakMap(), _HassDatapointsHistoryPanel = class HassDatapointsHistoryPanel extends i$2 {
+	var HassDatapointsHistoryPanel = (_hass_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _panel_accessor_storage = /* @__PURE__ */ new WeakMap(), _narrow_accessor_storage = /* @__PURE__ */ new WeakMap(), _rendered_accessor_storage = /* @__PURE__ */ new WeakMap(), _shellBuilt_accessor_storage = /* @__PURE__ */ new WeakMap(), _layoutMode_accessor_storage = /* @__PURE__ */ new WeakMap(), _datapointScope_accessor_storage = /* @__PURE__ */ new WeakMap(), _showChartDatapointIcons_accessor_storage = /* @__PURE__ */ new WeakMap(), _showChartDatapointLines_accessor_storage = /* @__PURE__ */ new WeakMap(), _showChartTooltips_accessor_storage = /* @__PURE__ */ new WeakMap(), _showChartEmphasizedHoverGuides_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartHoverSnapMode_accessor_storage = /* @__PURE__ */ new WeakMap(), _delinkChartYAxis_accessor_storage = /* @__PURE__ */ new WeakMap(), _splitChartView_accessor_storage = /* @__PURE__ */ new WeakMap(), _showCorrelatedAnomalies_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartAnomalyOverlapMode_accessor_storage = /* @__PURE__ */ new WeakMap(), _showDataGaps_accessor_storage = /* @__PURE__ */ new WeakMap(), _dataGapThreshold_accessor_storage = /* @__PURE__ */ new WeakMap(), _historyStartTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _historyEndTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _timelineEvents_accessor_storage = /* @__PURE__ */ new WeakMap(), _loadingComparisonWindowIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarAccordionTargetsOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarAccordionDatapointsOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarAccordionAnalysisOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarAccordionChartOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _resolvedAutoZoomLevel_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartHoverTimeMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomLevel_accessor_storage = /* @__PURE__ */ new WeakMap(), _dateSnapping_accessor_storage = /* @__PURE__ */ new WeakMap(), _collapsedOptionsPopupOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _HassDatapointsHistoryPanel = class HassDatapointsHistoryPanel extends i$2 {
 		get hass() {
 			return _classPrivateFieldGet2(_hass_accessor_storage$3, this);
 		}
@@ -35872,11 +35870,83 @@
 		set _shellBuilt(value) {
 			_classPrivateFieldSet2(_shellBuilt_accessor_storage, this, value);
 		}
+		get _layoutMode() {
+			return _classPrivateFieldGet2(_layoutMode_accessor_storage, this);
+		}
+		set _layoutMode(value) {
+			_classPrivateFieldSet2(_layoutMode_accessor_storage, this, value);
+		}
 		get _datapointScope() {
 			return _classPrivateFieldGet2(_datapointScope_accessor_storage, this);
 		}
 		set _datapointScope(value) {
 			_classPrivateFieldSet2(_datapointScope_accessor_storage, this, value);
+		}
+		get _showChartDatapointIcons() {
+			return _classPrivateFieldGet2(_showChartDatapointIcons_accessor_storage, this);
+		}
+		set _showChartDatapointIcons(value) {
+			_classPrivateFieldSet2(_showChartDatapointIcons_accessor_storage, this, value);
+		}
+		get _showChartDatapointLines() {
+			return _classPrivateFieldGet2(_showChartDatapointLines_accessor_storage, this);
+		}
+		set _showChartDatapointLines(value) {
+			_classPrivateFieldSet2(_showChartDatapointLines_accessor_storage, this, value);
+		}
+		get _showChartTooltips() {
+			return _classPrivateFieldGet2(_showChartTooltips_accessor_storage, this);
+		}
+		set _showChartTooltips(value) {
+			_classPrivateFieldSet2(_showChartTooltips_accessor_storage, this, value);
+		}
+		get _showChartEmphasizedHoverGuides() {
+			return _classPrivateFieldGet2(_showChartEmphasizedHoverGuides_accessor_storage, this);
+		}
+		set _showChartEmphasizedHoverGuides(value) {
+			_classPrivateFieldSet2(_showChartEmphasizedHoverGuides_accessor_storage, this, value);
+		}
+		get _chartHoverSnapMode() {
+			return _classPrivateFieldGet2(_chartHoverSnapMode_accessor_storage, this);
+		}
+		set _chartHoverSnapMode(value) {
+			_classPrivateFieldSet2(_chartHoverSnapMode_accessor_storage, this, value);
+		}
+		get _delinkChartYAxis() {
+			return _classPrivateFieldGet2(_delinkChartYAxis_accessor_storage, this);
+		}
+		set _delinkChartYAxis(value) {
+			_classPrivateFieldSet2(_delinkChartYAxis_accessor_storage, this, value);
+		}
+		get _splitChartView() {
+			return _classPrivateFieldGet2(_splitChartView_accessor_storage, this);
+		}
+		set _splitChartView(value) {
+			_classPrivateFieldSet2(_splitChartView_accessor_storage, this, value);
+		}
+		get _showCorrelatedAnomalies() {
+			return _classPrivateFieldGet2(_showCorrelatedAnomalies_accessor_storage, this);
+		}
+		set _showCorrelatedAnomalies(value) {
+			_classPrivateFieldSet2(_showCorrelatedAnomalies_accessor_storage, this, value);
+		}
+		get _chartAnomalyOverlapMode() {
+			return _classPrivateFieldGet2(_chartAnomalyOverlapMode_accessor_storage, this);
+		}
+		set _chartAnomalyOverlapMode(value) {
+			_classPrivateFieldSet2(_chartAnomalyOverlapMode_accessor_storage, this, value);
+		}
+		get _showDataGaps() {
+			return _classPrivateFieldGet2(_showDataGaps_accessor_storage, this);
+		}
+		set _showDataGaps(value) {
+			_classPrivateFieldSet2(_showDataGaps_accessor_storage, this, value);
+		}
+		get _dataGapThreshold() {
+			return _classPrivateFieldGet2(_dataGapThreshold_accessor_storage, this);
+		}
+		set _dataGapThreshold(value) {
+			_classPrivateFieldSet2(_dataGapThreshold_accessor_storage, this, value);
 		}
 		get _historyStartTime() {
 			return _classPrivateFieldGet2(_historyStartTime_accessor_storage, this);
@@ -35902,6 +35972,30 @@
 		set _loadingComparisonWindowIds(value) {
 			_classPrivateFieldSet2(_loadingComparisonWindowIds_accessor_storage, this, value);
 		}
+		get _sidebarAccordionTargetsOpen() {
+			return _classPrivateFieldGet2(_sidebarAccordionTargetsOpen_accessor_storage, this);
+		}
+		set _sidebarAccordionTargetsOpen(value) {
+			_classPrivateFieldSet2(_sidebarAccordionTargetsOpen_accessor_storage, this, value);
+		}
+		get _sidebarAccordionDatapointsOpen() {
+			return _classPrivateFieldGet2(_sidebarAccordionDatapointsOpen_accessor_storage, this);
+		}
+		set _sidebarAccordionDatapointsOpen(value) {
+			_classPrivateFieldSet2(_sidebarAccordionDatapointsOpen_accessor_storage, this, value);
+		}
+		get _sidebarAccordionAnalysisOpen() {
+			return _classPrivateFieldGet2(_sidebarAccordionAnalysisOpen_accessor_storage, this);
+		}
+		set _sidebarAccordionAnalysisOpen(value) {
+			_classPrivateFieldSet2(_sidebarAccordionAnalysisOpen_accessor_storage, this, value);
+		}
+		get _sidebarAccordionChartOpen() {
+			return _classPrivateFieldGet2(_sidebarAccordionChartOpen_accessor_storage, this);
+		}
+		set _sidebarAccordionChartOpen(value) {
+			_classPrivateFieldSet2(_sidebarAccordionChartOpen_accessor_storage, this, value);
+		}
 		get _resolvedAutoZoomLevel() {
 			return _classPrivateFieldGet2(_resolvedAutoZoomLevel_accessor_storage, this);
 		}
@@ -35926,6 +36020,12 @@
 		set _dateSnapping(value) {
 			_classPrivateFieldSet2(_dateSnapping_accessor_storage, this, value);
 		}
+		get _collapsedOptionsPopupOpen() {
+			return _classPrivateFieldGet2(_collapsedOptionsPopupOpen_accessor_storage, this);
+		}
+		set _collapsedOptionsPopupOpen(value) {
+			_classPrivateFieldSet2(_collapsedOptionsPopupOpen_accessor_storage, this, value);
+		}
 		constructor() {
 			super();
 			_classPrivateFieldInitSpec(this, _hass_accessor_storage$3, null);
@@ -35933,16 +36033,33 @@
 			_classPrivateFieldInitSpec(this, _narrow_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _rendered_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _shellBuilt_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _layoutMode_accessor_storage, "desktop");
 			_classPrivateFieldInitSpec(this, _datapointScope_accessor_storage, "linked");
+			_classPrivateFieldInitSpec(this, _showChartDatapointIcons_accessor_storage, true);
+			_classPrivateFieldInitSpec(this, _showChartDatapointLines_accessor_storage, true);
+			_classPrivateFieldInitSpec(this, _showChartTooltips_accessor_storage, true);
+			_classPrivateFieldInitSpec(this, _showChartEmphasizedHoverGuides_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _chartHoverSnapMode_accessor_storage, "follow_series");
+			_classPrivateFieldInitSpec(this, _delinkChartYAxis_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _splitChartView_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _showCorrelatedAnomalies_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _chartAnomalyOverlapMode_accessor_storage, "all");
+			_classPrivateFieldInitSpec(this, _showDataGaps_accessor_storage, true);
+			_classPrivateFieldInitSpec(this, _dataGapThreshold_accessor_storage, "2h");
 			_classPrivateFieldInitSpec(this, _historyStartTime_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _historyEndTime_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _timelineEvents_accessor_storage, []);
 			_classPrivateFieldInitSpec(this, _loadingComparisonWindowIds_accessor_storage, []);
 			_defineProperty(this, "_comparisonTabsRoot", null);
+			_classPrivateFieldInitSpec(this, _sidebarAccordionTargetsOpen_accessor_storage, true);
+			_classPrivateFieldInitSpec(this, _sidebarAccordionDatapointsOpen_accessor_storage, true);
+			_classPrivateFieldInitSpec(this, _sidebarAccordionAnalysisOpen_accessor_storage, true);
+			_classPrivateFieldInitSpec(this, _sidebarAccordionChartOpen_accessor_storage, true);
 			_classPrivateFieldInitSpec(this, _resolvedAutoZoomLevel_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _chartHoverTimeMs_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage, "auto");
 			_classPrivateFieldInitSpec(this, _dateSnapping_accessor_storage, "auto");
+			_classPrivateFieldInitSpec(this, _collapsedOptionsPopupOpen_accessor_storage, false);
 			this._context = createHistoryPageContext();
 			this._entities = [];
 			this._seriesRows = [];
@@ -35956,7 +36073,6 @@
 			this._contentKey = "";
 			this._contentSplitRatio = .44;
 			this._sidebarCollapsed = false;
-			this._layoutMode = "desktop";
 			this._mqTablet = window.matchMedia("(max-width: 900px)");
 			this._mqMobile = window.matchMedia("(max-width: 720px)");
 			this._onLayoutChange = () => this._updateLayoutMode();
@@ -35965,16 +36081,6 @@
 			this._collapsedPopupOutsideClickHandler = null;
 			this._collapsedPopupKeyHandler = null;
 			this._lastSyncedLocale = "";
-			this._showChartDatapointIcons = true;
-			this._showChartDatapointLines = true;
-			this._showChartTooltips = true;
-			this._showChartEmphasizedHoverGuides = false;
-			this._chartHoverSnapMode = "follow_series";
-			this._delinkChartYAxis = false;
-			this._showCorrelatedAnomalies = false;
-			this._chartAnomalyOverlapMode = "all";
-			this._showDataGaps = true;
-			this._dataGapThreshold = "2h";
 			this._historyBoundsLoaded = false;
 			this._timelineEventsKey = "";
 			this._preferredSeriesColors = {};
@@ -35986,7 +36092,6 @@
 			this._dateWindowDialogOpen = false;
 			this._editingDateWindowId = null;
 			this._dateWindowDialogComp = null;
-			this._splitChartView = false;
 			this._dateWindowDialogNameEl = null;
 			this._dateWindowDialogStartEl = null;
 			this._dateWindowDialogEndEl = null;
@@ -36006,12 +36111,6 @@
 			this._targetRowsEl = null;
 			this._rowListEl = null;
 			this._targetRowsRenderKey = "";
-			this._sidebarOptionsEl = null;
-			this._sidebarOptionsComp = null;
-			this._sidebarAccordionTargetsOpen = true;
-			this._sidebarAccordionDatapointsOpen = true;
-			this._sidebarAccordionAnalysisOpen = true;
-			this._sidebarAccordionChartOpen = true;
 			this._rangeBounds = null;
 			this._autoZoomTimer = null;
 			this._hoveredPeriodRange = null;
@@ -36033,7 +36132,6 @@
 			this._restoredFromSession = false;
 			this._savedPageLoaded = false;
 			this._hasSavedPage = false;
-			this._pageMenuOpen = false;
 			this._onChartHover = (ev) => this._handleChartHover(ev);
 			this._onChartZoom = (ev) => this._handleChartZoom(ev);
 			this._onRecordsSearch = (ev) => this._handleRecordsSearch(ev);
@@ -36198,7 +36296,6 @@
 				if (!this._rendered) return;
 				if (localeChanged) this._renderContent();
 				else {
-					if (this._shellEl && this._hass) this._shellEl.hass = this._hass;
 					if (this._chartEl) this._chartEl.hass = this._hass;
 					if (this._listEl) this._listEl.hass = this._hass;
 					if (this._targetControl && this._hass) this._targetControl.hass = this._hass;
@@ -36256,10 +36353,7 @@
 		willUpdate(changed) {
 			if (changed.has("hass") && this.hass) this._applyHass(this.hass);
 			if (changed.has("panel")) this._applyPanel(this.panel);
-			if (changed.has("narrow")) {
-				this._narrow = this.narrow;
-				if (this._shellEl) this._shellEl.narrow = this.narrow;
-			}
+			if (changed.has("narrow")) this._narrow = this.narrow;
 			if (this._rendered) {
 				this._rangeBounds = this._deriveRangeBounds();
 				this._ensureTimelineEvents();
@@ -36573,6 +36667,12 @@
       `;
 			return b`
       <panel-shell
+        .hass=${this._hass ?? null}
+        .narrow=${this._narrow}
+        .sidebarCollapsed=${this._sidebarCollapsed}
+        .hasSavedState=${this._hasSavedPage}
+        .layoutMode=${this._layoutMode}
+        .collapsedOptionsOpen=${this._collapsedOptionsPopupOpen}
         @dp-shell-menu-download=${() => this._downloadSpreadsheet()}
         @dp-shell-menu-ai-brief=${() => {
 				this._openAiQueryBriefDialog().catch((error) => {
@@ -36637,17 +36737,53 @@
 			}}
           @dp-date-picker-change=${(ev) => this._handleDatePickerChange(ev)}
         ></range-toolbar>
+        <sidebar-options slot="sidebar-options"
+          .datapointScope=${this._datapointScope}
+          .showIcons=${this._showChartDatapointIcons}
+          .showLines=${this._showChartDatapointLines}
+          .showTooltips=${this._showChartTooltips}
+          .showHoverGuides=${this._showChartEmphasizedHoverGuides}
+          .hoverSnapMode=${this._chartHoverSnapMode}
+          .showCorrelatedAnomalies=${this._showCorrelatedAnomalies}
+          .showDataGaps=${this._showDataGaps}
+          .dataGapThreshold=${this._dataGapThreshold}
+          .yAxisMode=${this._sidebarYAxisMode}
+          .anomalyOverlapMode=${this._chartAnomalyOverlapMode}
+          .anyAnomaliesEnabled=${(this._seriesRows ?? []).some((row) => row.analysis?.show_anomalies === true)}
+          @dp-scope-change=${this._handlePreferenceScope}
+          @dp-display-change=${this._handlePreferenceDisplay}
+          @dp-analysis-change=${this._handlePreferenceAnalysis}
+          .targetsOpen=${this._sidebarAccordionTargetsOpen}
+          .datapointsOpen=${this._sidebarAccordionDatapointsOpen}
+          .analysisOpen=${this._sidebarAccordionAnalysisOpen}
+          .chartOpen=${this._sidebarAccordionChartOpen}
+          @dp-accordion-change=${this._handlePreferenceAccordion}
+        ></sidebar-options>
+        <collapsed-options-menu slot="collapsed-options"
+          .datapointScope=${this._datapointScope}
+          .showIcons=${this._showChartDatapointIcons}
+          .showLines=${this._showChartDatapointLines}
+          .showTooltips=${this._showChartTooltips}
+          .showHoverGuides=${this._showChartEmphasizedHoverGuides}
+          .hoverSnapMode=${this._chartHoverSnapMode}
+          .showCorrelatedAnomalies=${this._showCorrelatedAnomalies}
+          .showDataGaps=${this._showDataGaps}
+          .dataGapThreshold=${this._dataGapThreshold}
+          .yAxisMode=${this._sidebarYAxisMode}
+          .anomalyOverlapMode=${this._chartAnomalyOverlapMode}
+          .anyAnomaliesEnabled=${(this._seriesRows ?? []).some((row) => row.analysis?.show_anomalies === true)}
+          @dp-scope-change=${this._handlePreferenceScope}
+          @dp-display-change=${this._handlePreferenceDisplay}
+          @dp-analysis-change=${this._handlePreferenceAnalysis}
+        ></collapsed-options-menu>
         <div id="content"></div>
       </panel-shell>
     `;
 		}
 		updated() {
 			this._renderComparisonTabSlot();
+			this._positionCollapsedOptionsPopup();
 			this._rangeToolbarComp = this.renderRoot.querySelector("range-toolbar");
-			const toolbar = this._rangeToolbarComp;
-			if (toolbar) toolbar.updateComplete.then(() => {
-				if (this.isConnected && this._rangeToolbarComp === toolbar) toolbar.syncMobileDates(this._startTime, this._endTime);
-			});
 			if (this._shellBuilt && !this._shellEl) this._mountShellControls();
 		}
 		async _mountShellControls() {
@@ -36655,18 +36791,12 @@
 			if (!shell) return;
 			this._shellEl = shell;
 			this._contentHostEl = shell.querySelector("#content");
-			if (this._hass) shell.hass = this._hass;
-			shell.narrow = this._narrow;
-			shell.sidebarCollapsed = this._sidebarCollapsed;
-			shell.hasSavedState = this._hasSavedPage;
-			shell.layoutMode = this._layoutMode;
 			await shell.updateComplete;
 			if (!this.isConnected) {
 				this._shellEl = null;
 				this.requestUpdate();
 				return;
 			}
-			this._sidebarOptionsEl = shell.shadowRoot?.querySelector("#sidebar-options") ?? null;
 			shell.syncLayoutHeight();
 			this._applyContentSplitLayout();
 			this._mountControls();
@@ -36795,11 +36925,6 @@
 			return mergeSavedSeriesRows(rows, savedRows);
 		}
 		_syncHassBindings() {
-			if (this._shellEl) {
-				if (this._hass) this._shellEl.hass = this._hass;
-				this._shellEl.narrow = this._narrow;
-			}
-			this._syncSidebarUi();
 			if (this._targetControl) {
 				if (this._hass) this._targetControl.hass = this._hass;
 				this._targetControl.value = {};
@@ -36814,28 +36939,12 @@
 			});
 		}
 		_renderSidebarOptions() {
-			if (!this._sidebarOptionsComp) return;
-			let yAxisMode;
-			if (this._splitChartView) yAxisMode = "split";
-			else if (this._delinkChartYAxis) yAxisMode = "unique";
-			else yAxisMode = "combined";
-			this._sidebarOptionsComp.datapointScope = this._datapointScope;
-			this._sidebarOptionsComp.showIcons = this._showChartDatapointIcons;
-			this._sidebarOptionsComp.showLines = this._showChartDatapointLines;
-			this._sidebarOptionsComp.showTooltips = this._showChartTooltips;
-			this._sidebarOptionsComp.showHoverGuides = this._showChartEmphasizedHoverGuides;
-			this._sidebarOptionsComp.hoverSnapMode = this._chartHoverSnapMode;
-			this._sidebarOptionsComp.showCorrelatedAnomalies = this._showCorrelatedAnomalies;
-			this._sidebarOptionsComp.showDataGaps = this._showDataGaps;
-			this._sidebarOptionsComp.dataGapThreshold = this._dataGapThreshold;
-			this._sidebarOptionsComp.yAxisMode = yAxisMode;
-			this._sidebarOptionsComp.anomalyOverlapMode = this._chartAnomalyOverlapMode;
-			this._sidebarOptionsComp.anyAnomaliesEnabled = (this._seriesRows ?? []).some((r) => r.analysis?.show_anomalies === true);
-			this._sidebarOptionsComp.targetsOpen = this._sidebarAccordionTargetsOpen;
-			this._sidebarOptionsComp.datapointsOpen = this._sidebarAccordionDatapointsOpen;
-			this._sidebarOptionsComp.analysisOpen = this._sidebarAccordionAnalysisOpen;
-			this._sidebarOptionsComp.chartOpen = this._sidebarAccordionChartOpen;
-			this._refreshCollapsedOptionsPopup();
+			this.requestUpdate();
+		}
+		get _sidebarYAxisMode() {
+			if (this._splitChartView) return "split";
+			if (this._delinkChartYAxis) return "unique";
+			return "combined";
 		}
 		_formatComparisonLabel(start, end) {
 			return formatComparisonLabel(start, end);
@@ -37181,23 +37290,12 @@
 				}
 			});
 		}
-		_syncSidebarUi() {
-			if (this._shellEl) this._shellEl.sidebarCollapsed = this._sidebarCollapsed;
-			if (this._historyTargetsComp) this._historyTargetsComp.sidebarCollapsed = this._sidebarCollapsed;
-		}
 		_updateLayoutMode() {
 			const prev = this._layoutMode;
 			if (this._mqMobile.matches) this._layoutMode = "mobile";
 			else if (this._mqTablet.matches) this._layoutMode = "tablet";
 			else this._layoutMode = "desktop";
-			if (prev !== this._layoutMode) {
-				if (this._shellEl) this._shellEl.layoutMode = this._layoutMode;
-				this._syncSidebarUi();
-				this._syncMobileDateInputs();
-			}
-		}
-		_syncMobileDateInputs() {
-			this._rangeToolbarComp?.syncMobileDates(this._startTime, this._endTime);
+			if (prev !== this._layoutMode) this._renderTargetRows();
 		}
 		_applyContentSplitLayout() {
 			const content = this._contentHostEl;
@@ -37215,7 +37313,7 @@
 			if (!this._sidebarCollapsed) this._hideCollapsedTargetPopup();
 			this._saveSessionState();
 			this._updateUrl({ push: false });
-			this._syncSidebarUi();
+			this._renderTargetRows();
 		}
 		_handleCollapsedSidebarClick() {
 			if (!this._sidebarCollapsed) {}
@@ -37369,7 +37467,6 @@
 			if (!this._shellEl) return;
 			const histTargets = this._mountHistoryTargetsControl();
 			this._mountTargetPickerControl(histTargets);
-			this._mountSidebarOptionsControl();
 			this._mountDateWindowDialogControl();
 			this._mountMonitorWizard();
 			this._mountAiQueryBriefDialogControl();
@@ -37470,42 +37567,33 @@
 				targetControl.value = {};
 			});
 		}
-		_mountSidebarOptionsControl() {
-			if (this._sidebarOptionsEl) {
-				const sidebarComp = document.createElement("sidebar-options");
-				sidebarComp.addEventListener("dp-scope-change", (ev) => {
-					const { value } = ev.detail || {};
-					if (value) this._setDatapointScope(value);
-				});
-				sidebarComp.addEventListener("dp-display-change", (ev) => {
-					const { kind, value } = ev.detail || {};
-					if (!kind) return;
-					if (kind === "y_axis_mode") this._setChartYAxisMode(String(value || ""));
-					else this._setChartDatapointDisplayOption(kind, value);
-				});
-				sidebarComp.addEventListener("dp-analysis-change", (ev) => {
-					const { kind, value } = ev.detail || {};
-					if (kind === "anomaly_overlap_mode" && ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS.some((o) => o.value === value)) {
-						if (this._chartAnomalyOverlapMode === value) return;
-						this._chartAnomalyOverlapMode = value;
-						this._saveSessionState();
-						this._updateUrl({ push: false });
-						this._renderSidebarOptions();
-						this._renderContent();
-					}
-				});
-				sidebarComp.addEventListener("dp-accordion-change", (ev) => {
-					const { targetsOpen, datapointsOpen, analysisOpen, chartOpen } = ev.detail || {};
-					if (typeof targetsOpen === "boolean") this._sidebarAccordionTargetsOpen = targetsOpen;
-					if (typeof datapointsOpen === "boolean") this._sidebarAccordionDatapointsOpen = datapointsOpen;
-					if (typeof analysisOpen === "boolean") this._sidebarAccordionAnalysisOpen = analysisOpen;
-					if (typeof chartOpen === "boolean") this._sidebarAccordionChartOpen = chartOpen;
-					this._saveSessionState();
-					this._updateUrl({ push: false });
-				});
-				this._sidebarOptionsEl.appendChild(sidebarComp);
-				this._sidebarOptionsComp = sidebarComp;
+		_handlePreferenceScope(ev) {
+			const { value } = ev.detail || {};
+			if (value) this._setDatapointScope(value);
+		}
+		_handlePreferenceDisplay(ev) {
+			const { kind, value } = ev.detail || {};
+			if (!kind) return;
+			if (kind === "y_axis_mode") this._setChartYAxisMode(String(value || ""));
+			else this._setChartDatapointDisplayOption(kind, value);
+		}
+		_handlePreferenceAnalysis(ev) {
+			const { kind, value } = ev.detail || {};
+			if (kind === "anomaly_overlap_mode" && ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS.some((option) => option.value === value) && value !== this._chartAnomalyOverlapMode) {
+				this._chartAnomalyOverlapMode = value;
+				this._saveSessionState();
+				this._updateUrl({ push: false });
+				this._renderContent();
 			}
+		}
+		_handlePreferenceAccordion(ev) {
+			const { targetsOpen, datapointsOpen, analysisOpen, chartOpen } = ev.detail || {};
+			if (typeof targetsOpen === "boolean") this._sidebarAccordionTargetsOpen = targetsOpen;
+			if (typeof datapointsOpen === "boolean") this._sidebarAccordionDatapointsOpen = datapointsOpen;
+			if (typeof analysisOpen === "boolean") this._sidebarAccordionAnalysisOpen = analysisOpen;
+			if (typeof chartOpen === "boolean") this._sidebarAccordionChartOpen = chartOpen;
+			this._saveSessionState();
+			this._updateUrl({ push: false });
 		}
 		_mountMonitorWizard() {
 			if (!this.shadowRoot || this._monitorWizardComp) return;
@@ -37627,6 +37715,7 @@
 		}
 		_renderTargetRows() {
 			if (!this._historyTargetsComp) return;
+			this._historyTargetsComp.sidebarCollapsed = this._sidebarCollapsed;
 			this._historyTargetsComp.rows = this._seriesRows;
 			this._historyTargetsComp.states = this._hass?.states ?? {};
 			this._historyTargetsComp.hass = this._hass ?? null;
@@ -37756,74 +37845,31 @@
 		_showCollapsedOptionsPopup(anchorEl) {
 			const popup = this._shellEl?.getOptionsPopupEl();
 			if (!popup) return;
-			let menu = popup.querySelector("collapsed-options-menu");
-			if (!menu) {
-				menu = document.createElement("collapsed-options-menu");
-				menu.addEventListener("dp-scope-change", (ev) => {
-					const { value } = ev.detail || {};
-					if (value) this._setDatapointScope(value);
-				});
-				menu.addEventListener("dp-display-change", (ev) => {
-					const { kind, value } = ev.detail || {};
-					if (!kind) return;
-					if (kind === "y_axis_mode") this._setChartYAxisMode(String(value || ""));
-					else this._setChartDatapointDisplayOption(kind, value);
-				});
-				menu.addEventListener("dp-analysis-change", (ev) => {
-					const { kind, value } = ev.detail || {};
-					if (kind === "anomaly_overlap_mode" && value !== this._chartAnomalyOverlapMode) {
-						this._chartAnomalyOverlapMode = value;
-						this._saveSessionState();
-						this._updateUrl({ push: false });
-						this._renderSidebarOptions();
-						this._renderContent();
-					}
-				});
-				popup.appendChild(menu);
-			}
-			this._syncCollapsedOptionsMenu(menu);
-			this._collapsedOptionsPopupOpen = true;
 			this._collapsedOptionsAnchorEl = anchorEl;
-			popup.removeAttribute("hidden");
-			const pos = computePopupPosition(anchorEl.getBoundingClientRect(), popup.offsetHeight, window.innerHeight);
-			popup.style.top = `${pos.top}px`;
-			popup.style.left = `${pos.left}px`;
+			this._collapsedOptionsPopupOpen = true;
+			this.requestUpdate();
 			this._collapsedOptionsDismiss?.destroy();
 			this._collapsedOptionsDismiss = attachPopupDismissListeners(popup, anchorEl, () => this._hideCollapsedOptionsPopup());
 		}
 		/** Close the collapsed-sidebar options popup and clean up all listeners. */
 		_hideCollapsedOptionsPopup() {
-			const popup = this._shellEl?.getOptionsPopupEl();
-			if (popup) popup.setAttribute("hidden", "");
 			this._collapsedOptionsDismiss?.destroy();
 			this._collapsedOptionsDismiss = null;
 			this._collapsedOptionsPopupOpen = false;
 			this._collapsedOptionsAnchorEl = null;
 		}
-		/** Sync option props on the menu element — called from _renderSidebarOptions. */
-		_refreshCollapsedOptionsPopup() {
-			if (!this._collapsedOptionsPopupOpen) return;
-			const menu = (this._shellEl?.getOptionsPopupEl())?.querySelector("collapsed-options-menu");
-			if (menu) this._syncCollapsedOptionsMenu(menu);
-		}
-		/** Write all current option values onto a collapsed-options-menu element. */
-		_syncCollapsedOptionsMenu(menu) {
-			let yAxisMode;
-			if (this._splitChartView) yAxisMode = "split";
-			else if (this._delinkChartYAxis) yAxisMode = "unique";
-			else yAxisMode = "combined";
-			menu.datapointScope = this._datapointScope;
-			menu.showIcons = this._showChartDatapointIcons;
-			menu.showLines = this._showChartDatapointLines;
-			menu.showTooltips = this._showChartTooltips;
-			menu.showHoverGuides = this._showChartEmphasizedHoverGuides;
-			menu.hoverSnapMode = this._chartHoverSnapMode;
-			menu.showCorrelatedAnomalies = this._showCorrelatedAnomalies;
-			menu.showDataGaps = this._showDataGaps;
-			menu.dataGapThreshold = this._dataGapThreshold;
-			menu.yAxisMode = yAxisMode;
-			menu.anomalyOverlapMode = this._chartAnomalyOverlapMode;
-			menu.anyAnomaliesEnabled = (this._seriesRows ?? []).some((r) => r.analysis?.show_anomalies === true);
+		async _positionCollapsedOptionsPopup() {
+			const shell = this._shellEl;
+			const anchor = this._collapsedOptionsAnchorEl;
+			if (!shell || !anchor || !this._collapsedOptionsPopupOpen) return;
+			await shell.updateComplete;
+			await this.renderRoot.querySelector("collapsed-options-menu")?.updateComplete;
+			if (!this.isConnected || this._shellEl !== shell || this._collapsedOptionsAnchorEl !== anchor || !this._collapsedOptionsPopupOpen) return;
+			const popup = shell.getOptionsPopupEl();
+			if (!popup) return;
+			const pos = computePopupPosition(anchor.getBoundingClientRect(), popup.offsetHeight, window.innerHeight);
+			popup.style.top = `${pos.top}px`;
+			popup.style.left = `${pos.left}px`;
 		}
 		_updateSeriesRowVisibilityByEntityId(entityId, visible) {
 			const normalizedEntityId = String(entityId || "").trim();
@@ -37905,10 +37951,6 @@
 		_toggleDatePickerMenu(force = false) {
 			if (!force) this._rangeToolbarComp?.closeMenus();
 		}
-		_togglePageMenu(force = !this._pageMenuOpen) {
-			this._pageMenuOpen = !!force;
-			if (!force) this._shellEl?.closePageMenu();
-		}
 		_handleWindowPointerDown() {}
 		_handleDatePickerChange(ev) {
 			const { start, end } = extractRangeValue(ev);
@@ -37918,7 +37960,7 @@
 		}
 		async _downloadSpreadsheet() {
 			if (this._exportBusy || !this._hass || !this._startTime || !this._endTime) return;
-			this._togglePageMenu(false);
+			this._shellEl?.closePageMenu();
 			await this._context.persistence.downloadSpreadsheet({
 				entityIds: this._entities,
 				startTime: this._startTime,
@@ -37940,11 +37982,11 @@
 			});
 		}
 		_syncSavedPageMenuItems() {
-			if (this._shellEl) this._shellEl.hasSavedState = this._hasSavedPage;
+			this.requestUpdate();
 		}
 		async _savePageState() {
 			if (this._savePageBusy || !this._hass) return;
-			this._togglePageMenu(false);
+			this._shellEl?.closePageMenu();
 			await this._context.persistence.savePageState({
 				savedPageKey: PANEL_HISTORY_SAVED_PAGE_KEY,
 				state: buildHistoryPageSessionState(this),
@@ -37959,7 +38001,7 @@
 		}
 		async _restorePageState() {
 			if (!this._hass) return;
-			this._togglePageMenu(false);
+			this._shellEl?.closePageMenu();
 			await this._context.persistence.restorePageState({
 				savedPageKey: PANEL_HISTORY_SAVED_PAGE_KEY,
 				fallbackValue: null,
@@ -37978,7 +38020,7 @@
 		}
 		async _clearSavedPageState() {
 			if (!this._hass) return;
-			this._togglePageMenu(false);
+			this._shellEl?.closePageMenu();
 			await this._context.persistence.clearSavedPageState({
 				savedPageKey: PANEL_HISTORY_SAVED_PAGE_KEY,
 				onSuccess: () => {
@@ -38567,15 +38609,32 @@
 	__decorate([n$1({ attribute: false })], HassDatapointsHistoryPanel.prototype, "narrow", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_rendered", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_shellBuilt", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_layoutMode", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_datapointScope", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_showChartDatapointIcons", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_showChartDatapointLines", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_showChartTooltips", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_showChartEmphasizedHoverGuides", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_chartHoverSnapMode", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_delinkChartYAxis", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_splitChartView", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_showCorrelatedAnomalies", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_chartAnomalyOverlapMode", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_showDataGaps", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_dataGapThreshold", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_historyStartTime", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_historyEndTime", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_timelineEvents", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_loadingComparisonWindowIds", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_sidebarAccordionTargetsOpen", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_sidebarAccordionDatapointsOpen", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_sidebarAccordionAnalysisOpen", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_sidebarAccordionChartOpen", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_resolvedAutoZoomLevel", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_chartHoverTimeMs", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_zoomLevel", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_dateSnapping", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_collapsedOptionsPopupOpen", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_startTime", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_endTime", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_sidebarCollapsed", null);
@@ -38584,6 +38643,7 @@
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_hoveredComparisonWindowId", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_chartZoomRange", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_chartZoomCommittedRange", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_hasSavedPage", null);
 	HassDatapointsHistoryPanel = __decorate([localized()], HassDatapointsHistoryPanel);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/list.styles.ts
