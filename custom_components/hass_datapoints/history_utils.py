@@ -8,6 +8,8 @@ import math
 import statistics
 from datetime import UTC, datetime
 
+from homeassistant.components.recorder import get_instance
+
 from .const import ANOMALY_MAX_PTS
 
 _LOGGER = logging.getLogger(__name__)
@@ -274,3 +276,71 @@ def downsample_pts(pts: list, interval_seconds: int, aggregate: str) -> list:
         result.append([rep_time, agg])
 
     return result
+
+
+def prepare_series(
+    pts: list,
+    stats: list,
+    *,
+    sample_interval: str | None = None,
+    sample_aggregate: str | None = None,
+    max_pts: int = ANOMALY_MAX_PTS,
+) -> list:
+    """Merge long-term statistics with raw recorder points, sample, and cap.
+
+    Owns the canonical ordering (verbatim from the anomaly websocket site):
+
+    1. Drop statistics points that overlap the raw recorder window — i.e. keep
+       only those strictly before ``pts[0][0]``. When ``pts`` is empty, ALL
+       statistics are retained (never touch ``pts[0][0]``).
+    2. Merge the surviving statistics into ``pts`` and sort by timestamp.
+    3. Downsample when ``sample_interval`` is set and not ``"raw"`` — BEFORE the
+       cap, so long ranges collapse into buckets first.
+    4. Cap to the most-recent ``max_pts`` points.
+    """
+    if stats:
+        if pts:
+            first_recorder_ms = pts[0][0]
+            stats = [p for p in stats if p[0] < first_recorder_ms]
+        if stats:
+            pts = sorted(stats + pts, key=lambda p: p[0])
+
+    if sample_interval and sample_interval != "raw":
+        interval_secs = parse_interval_seconds(sample_interval)
+        pts = downsample_pts(pts, interval_secs, sample_aggregate or "mean")
+
+    if len(pts) > max_pts:
+        pts = pts[-max_pts:]
+
+    return pts
+
+
+async def async_prepare_entity_series(
+    hass,
+    entity_id: str,
+    start: str,
+    end: str,
+    *,
+    sample_interval: str | None = None,
+    sample_aggregate: str | None = None,
+    max_pts: int = ANOMALY_MAX_PTS,
+) -> list:
+    """Fetch raw + statistics points for an entity and prepare the merged series.
+
+    Thin async shell over :func:`prepare_series`: the caller needs no knowledge
+    of the merge / sample / cap ordering.
+    """
+    recorder = get_instance(hass)
+    pts: list = await recorder.async_add_executor_job(
+        fetch_entity_pts, hass, entity_id, start, end
+    )
+    stats: list = await recorder.async_add_executor_job(
+        fetch_entity_statistics_pts, hass, entity_id, start, end
+    )
+    return prepare_series(
+        pts,
+        stats,
+        sample_interval=sample_interval,
+        sample_aggregate=sample_aggregate,
+        max_pts=max_pts,
+    )
