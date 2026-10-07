@@ -16,6 +16,7 @@ from .const import (
     KEY_MONITOR_SWITCHES,
     KEY_STORE,
 )
+from .monitor_entities import monitor_device_info
 from .store import DatapointsStore
 
 
@@ -38,24 +39,6 @@ async def async_setup_entry(
         entities.append(switch)
 
     async_add_entities(entities)
-
-
-# ---------------------------------------------------------------------------
-# Helper
-# ---------------------------------------------------------------------------
-
-
-def _monitor_device_info(
-    entry: ConfigEntry, store: DatapointsStore, monitor_id: str
-) -> DeviceInfo:
-    monitor = store.get_monitor(monitor_id) or {}
-    return DeviceInfo(
-        identifiers={(DOMAIN, f"{entry.entry_id}_monitor_{monitor_id}")},
-        name=monitor.get("name", f"Anomaly monitor {monitor_id[:8]}"),
-        manufacturer="buggedcom",
-        model="Anomaly Monitor",
-        via_device=(DOMAIN, entry.entry_id),
-    )
 
 
 # ---------------------------------------------------------------------------
@@ -87,7 +70,11 @@ class DatapointsMonitorEnabledSwitch(SwitchEntity):
 
     @property
     def device_info(self) -> DeviceInfo:
-        return _monitor_device_info(self._entry, self._store, self._monitor_id)
+        return monitor_device_info(
+            self._entry.entry_id,
+            self._monitor_id,
+            self._store.get_monitor(self._monitor_id),
+        )
 
     @property
     def is_on(self) -> bool:

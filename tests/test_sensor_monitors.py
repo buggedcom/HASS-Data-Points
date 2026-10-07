@@ -1369,3 +1369,87 @@ async def test_async_warm_cache_skips_disabled_monitors():
 
     # No cache writes for disabled monitors
     hass.data["hass_datapoints"]["anomaly_cache"].set.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# Monitor entity roster: unique-id stability + single device identity
+# ---------------------------------------------------------------------------
+
+
+def _construct_all_monitor_entities(entry, store, monitor_id):
+    """Construct all 9 per-monitor entities and return them as a list.
+
+    Handles the two constructor arg-shapes: five classes take ``hass`` and
+    four do not. The main sensor is always first.
+    """
+    from custom_components.hass_datapoints.binary_sensor import (
+        DatapointsMonitorProblemBinarySensor,
+        DatapointsMonitorStalledBinarySensor,
+    )
+    from custom_components.hass_datapoints.sensor import (
+        DatapointsMonitorAnomalyDurationSensor,
+        DatapointsMonitorConsecutiveScansSensor,
+        DatapointsMonitorDataPointsSensor,
+        DatapointsMonitorLastAnomalySensor,
+        DatapointsMonitorLastScanSensor,
+        DatapointsMonitorSensor,
+    )
+    from custom_components.hass_datapoints.switch import (
+        DatapointsMonitorEnabledSwitch,
+    )
+
+    hass = MagicMock()
+    return [
+        DatapointsMonitorSensor(entry, store, hass, monitor_id),
+        DatapointsMonitorConsecutiveScansSensor(entry, store, monitor_id),
+        DatapointsMonitorLastScanSensor(entry, store, monitor_id),
+        DatapointsMonitorLastAnomalySensor(entry, store, monitor_id),
+        DatapointsMonitorAnomalyDurationSensor(entry, store, hass, monitor_id),
+        DatapointsMonitorDataPointsSensor(entry, store, monitor_id),
+        DatapointsMonitorStalledBinarySensor(entry, store, hass, monitor_id),
+        DatapointsMonitorProblemBinarySensor(entry, store, hass, monitor_id),
+        DatapointsMonitorEnabledSwitch(entry, store, hass, monitor_id),
+    ]
+
+
+def test_all_monitor_unique_ids_stable():
+    """All 9 monitor entities keep their pinned unique_ids for a fixed id pair."""
+    entry = _make_entry("ent1")
+    store = _make_store(
+        monitors=[{"id": "abc123", "name": "Test Monitor", "last_cluster_count": 0}]
+    )
+
+    entities = _construct_all_monitor_entities(entry, store, "abc123")
+    unique_ids = {e._attr_unique_id for e in entities}
+
+    assert unique_ids == {
+        "ent1_monitor_abc123",  # main sensor: suffix-less, equals device identifier string
+        "ent1_monitor_abc123_consecutive_scans",
+        "ent1_monitor_abc123_last_scan_at",
+        "ent1_monitor_abc123_last_anomaly_at",
+        "ent1_monitor_abc123_anomaly_duration",
+        "ent1_monitor_abc123_data_points",
+        "ent1_monitor_abc123_stalled",
+        "ent1_monitor_abc123_problem",
+        "ent1_monitor_abc123_enabled",
+    }
+
+
+def test_single_device_identity():
+    """All 9 monitor entities share one device identifier from the helper."""
+    from custom_components.hass_datapoints.monitor_entities import (
+        monitor_device_identifier,
+    )
+
+    entry = _make_entry("ent1")
+    store = _make_store(
+        monitors=[{"id": "abc123", "name": "Test Monitor", "last_cluster_count": 0}]
+    )
+
+    entities = _construct_all_monitor_entities(entry, store, "abc123")
+    identifiers = {
+        frozenset(e.device_info["identifiers"]) for e in entities
+    }
+
+    expected = frozenset({monitor_device_identifier("ent1", "abc123")})
+    assert identifiers == {expected}
