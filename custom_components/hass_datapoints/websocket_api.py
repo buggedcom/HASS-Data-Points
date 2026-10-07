@@ -43,6 +43,7 @@ from .history_utils import (
     fetch_entity_statistics_pts,
     parse_interval_seconds,
 )
+from .monitor_entities import monitor_device_identifier
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -427,7 +428,7 @@ def _get_monitor_device(hass: HomeAssistant, monitor_id: str):
     entry_id = entries[0].entry_id
     device_reg = dr.async_get(hass)
     return device_reg.async_get_device(
-        identifiers={(DOMAIN, f"{entry_id}_monitor_{monitor_id}")}
+        identifiers={monitor_device_identifier(entry_id, monitor_id)}
     )
 
 
@@ -1059,7 +1060,7 @@ async def ws_monitors_list(
         m = dict(monitor)
         if entry_id:
             device = device_reg.async_get_device(
-                identifiers={(DOMAIN, f"{entry_id}_monitor_{monitor['id']}")}
+                identifiers={monitor_device_identifier(entry_id, monitor["id"])}
             )
             m["device_id"] = device.id if device else None
         else:

@@ -32,6 +32,7 @@ from .history_utils import (
     async_prepare_entity_series,
     fetch_entity_pts,
 )
+from .monitor_entities import monitor_device_info
 from .store import DatapointsStore
 
 _LOGGER = logging.getLogger(__name__)
@@ -664,7 +665,11 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
     @property
     def device_info(self) -> DeviceInfo:
         """Each monitor is its own device, nested under the main integration device."""
-        return _monitor_device_info(self._entry, self._store, self._monitor_id)
+        return monitor_device_info(
+            self._entry.entry_id,
+            self._monitor_id,
+            self._store.get_monitor(self._monitor_id),
+        )
 
     async def async_added_to_hass(self) -> None:
         """Register store listener and schedule the scan timer."""
@@ -998,20 +1003,6 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
 # ---------------------------------------------------------------------------
 
 
-def _monitor_device_info(
-    entry: ConfigEntry, store: DatapointsStore, monitor_id: str
-) -> DeviceInfo:
-    """Return DeviceInfo pointing to the per-monitor device."""
-    monitor = store.get_monitor(monitor_id) or {}
-    return DeviceInfo(
-        identifiers={(DOMAIN, f"{entry.entry_id}_monitor_{monitor_id}")},
-        name=monitor.get("name", f"Anomaly monitor {monitor_id[:8]}"),
-        manufacturer="buggedcom",
-        model="Anomaly Monitor",
-        via_device=(DOMAIN, entry.entry_id),
-    )
-
-
 def _consecutive_anomalous_scans(scan_history: list[dict[str, Any]]) -> int:
     """Return the trailing streak of scans with cluster_count > 0."""
     consecutive = 0
@@ -1047,7 +1038,11 @@ class DatapointsMonitorConsecutiveScansSensor(_DatapointsSensorBase):
 
     @property
     def device_info(self) -> DeviceInfo:
-        return _monitor_device_info(self._entry, self._store, self._monitor_id)
+        return monitor_device_info(
+            self._entry.entry_id,
+            self._monitor_id,
+            self._store.get_monitor(self._monitor_id),
+        )
 
     def _compute(self) -> int:
         monitor = self._store.get_monitor(self._monitor_id)
@@ -1074,7 +1069,11 @@ class DatapointsMonitorLastScanSensor(_DatapointsSensorBase):
 
     @property
     def device_info(self) -> DeviceInfo:
-        return _monitor_device_info(self._entry, self._store, self._monitor_id)
+        return monitor_device_info(
+            self._entry.entry_id,
+            self._monitor_id,
+            self._store.get_monitor(self._monitor_id),
+        )
 
     def _compute(self) -> datetime | None:
         monitor = self._store.get_monitor(self._monitor_id)
@@ -1107,7 +1106,11 @@ class DatapointsMonitorLastAnomalySensor(_DatapointsSensorBase):
 
     @property
     def device_info(self) -> DeviceInfo:
-        return _monitor_device_info(self._entry, self._store, self._monitor_id)
+        return monitor_device_info(
+            self._entry.entry_id,
+            self._monitor_id,
+            self._store.get_monitor(self._monitor_id),
+        )
 
     def _compute(self) -> datetime | None:
         monitor = self._store.get_monitor(self._monitor_id)
@@ -1150,7 +1153,11 @@ class DatapointsMonitorAnomalyDurationSensor(
 
     @property
     def device_info(self) -> DeviceInfo:
-        return _monitor_device_info(self._entry, self._store, self._monitor_id)
+        return monitor_device_info(
+            self._entry.entry_id,
+            self._monitor_id,
+            self._store.get_monitor(self._monitor_id),
+        )
 
     def _compute(self) -> int:
         monitor = self._store.get_monitor(self._monitor_id)
@@ -1178,7 +1185,11 @@ class DatapointsMonitorDataPointsSensor(_DatapointsSensorBase):
 
     @property
     def device_info(self) -> DeviceInfo:
-        return _monitor_device_info(self._entry, self._store, self._monitor_id)
+        return monitor_device_info(
+            self._entry.entry_id,
+            self._monitor_id,
+            self._store.get_monitor(self._monitor_id),
+        )
 
     def _compute(self) -> int:
         monitor = self._store.get_monitor(self._monitor_id)
