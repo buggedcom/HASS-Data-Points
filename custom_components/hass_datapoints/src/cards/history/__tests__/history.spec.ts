@@ -335,7 +335,7 @@ describe("history", () => {
           entity: "sensor.example",
           hidden_event_ids: ["evt-1"],
         });
-        const chartQueueSpy = vi.fn();
+        const chartDrawSpy = vi.fn();
         (
           el as unknown as {
             _hiddenEventIds: Set<string>;
@@ -347,7 +347,7 @@ describe("history", () => {
           },
           "_chartEl"
         ).mockReturnValue({
-          _queueDrawChart: chartQueueSpy,
+          draw: chartDrawSpy,
         });
 
         (
@@ -376,7 +376,10 @@ describe("history", () => {
         expect(
           (el as unknown as { _lastEvents: unknown[] })._lastEvents
         ).toHaveLength(1);
-        expect(chartQueueSpy.mock.calls[0][2]).toEqual([]);
+        // The chart is handed a single model; its events are the visible subset.
+        expect(
+          (chartDrawSpy.mock.calls[0][0] as { events: unknown[] }).events
+        ).toEqual([]);
       });
     });
   });
@@ -479,6 +482,7 @@ describe("history", () => {
         expect.assertions(2);
         const el = createCard({ entity: "sensor.example" });
         const chartTag = {
+          applyViewState: vi.fn(),
           _renderComparisonPreviewOverlay: vi.fn(),
         } as unknown as HTMLElement & RecordWithUnknownValues;
         vi.spyOn(
@@ -515,6 +519,7 @@ describe("history", () => {
           end_time: "2026-03-30T00:00:00.000Z",
         });
         const chartTag = {
+          applyViewState: vi.fn(),
           _renderComparisonPreviewOverlay: vi.fn(),
         } as unknown as HTMLElement & RecordWithUnknownValues;
         vi.spyOn(
@@ -562,10 +567,11 @@ describe("history", () => {
         expect(chartTag._renderComparisonPreviewOverlay).toHaveBeenCalledTimes(
           1
         );
-        expect(Array.isArray((chartTag as any)._lastComparisonResults)).toBe(
-          true
-        );
-        expect((chartTag as any)._lastComparisonResults).toHaveLength(1);
+        // The resolved comparison result is passed via the view-state model.
+        const model = (chartTag.applyViewState as ReturnType<typeof vi.fn>).mock
+          .calls[0][0] as { comparisonResults: unknown[] };
+        expect(Array.isArray(model.comparisonResults)).toBe(true);
+        expect(model.comparisonResults).toHaveLength(1);
       });
     });
 

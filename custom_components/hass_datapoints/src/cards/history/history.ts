@@ -3,6 +3,10 @@ import { ChartCardBase } from "@/charts/base/chart-card-base";
 import { styles } from "./history.styles";
 // Side-effect import: registers the hass-datapoints-history-chart custom element.
 import "./history-chart/history-chart";
+import type {
+  HistoryChart,
+  HistoryChartViewModel,
+} from "./history-chart/history-chart";
 import { createChartZoomRange } from "@/lib/domain/chart-zoom";
 import {
   createHiddenEventIdSet,
@@ -178,7 +182,7 @@ export class HassDatapointsHistoryCard extends ChartCardBase {
     // Push updated hass to the sub-component without triggering a redraw.
     const chartEl = this._chartEl();
     if (chartEl) {
-      chartEl.hass = hass;
+      chartEl.applyViewState({ hass });
     }
     // Initial load is triggered by updated() in the base class (not here).
   }
@@ -340,17 +344,18 @@ export class HassDatapointsHistoryCard extends ChartCardBase {
     }
     const chartEl = this._chartEl();
     if (chartEl) {
-      chartEl.hass = this._hass;
-      chartEl._config = this._config;
-      chartEl._hiddenSeries = this._hiddenSeries;
-      chartEl._hiddenEventIds = this._hiddenEventIds;
-      chartEl._zoomRange = this._zoomRange;
-      chartEl._lastComparisonResults = this._getResolvedComparisonResults();
-      if (
-        diff.comparisonOverlayChanged &&
-        typeof chartEl._renderComparisonPreviewOverlay === "function"
-      ) {
-        (chartEl._renderComparisonPreviewOverlay as () => void)();
+      // Config change: seed the chart's initial view state (incl. zoom / hidden)
+      // without drawing. Draws happen below via _load / _queueDrawChart.
+      chartEl.applyViewState({
+        hass: this._hass,
+        config: this._config,
+        hiddenSeries: this._hiddenSeries,
+        hiddenEventIds: this._hiddenEventIds,
+        zoomRange: this._zoomRange,
+        comparisonResults: this._getResolvedComparisonResults(),
+      });
+      if (diff.comparisonOverlayChanged) {
+        chartEl._renderComparisonPreviewOverlay();
       }
     }
 
@@ -1114,36 +1119,73 @@ export class HassDatapointsHistoryCard extends ChartCardBase {
   /** Delegates to the hass-datapoints-history-chart sub-component for resize-replay. */
   protected override _drawChart(...args: unknown[]): void {
     const chartEl = this._chartEl();
-    if (chartEl) {
-      chartEl.hass = this._hass;
-      chartEl._config = this._config;
-      chartEl._hiddenSeries = this._hiddenSeries;
-      chartEl._hiddenEventIds = this._hiddenEventIds;
-      chartEl._zoomRange = this._zoomRange;
-      chartEl._lastComparisonResults = this._lastComparisonResults;
-      (chartEl._drawChart as (...a: unknown[]) => void)(...args);
+    if (!chartEl) {
+      return;
     }
+    // ResizeObserver replays the last draw args ([hist, stats, events, t0, t1,
+    // options]). Reassemble them into a model and go through draw().
+    const [histResult, statsResult, events, t0, t1, options = {}] = args as [
+      RecordWithUnknownValues,
+      RecordWithUnknownValues,
+      unknown[],
+      number,
+      number,
+      RecordWithUnknownValues?,
+    ];
+    chartEl.draw(
+      this._buildChartDrawModel(
+        histResult,
+        statsResult,
+        events,
+        t0,
+        t1,
+        options
+      )
+    );
+  }
+
+  /**
+   * Build the chart draw model from a set of draw args. Live zoom / hidden
+   * state is owned by the chart, so it is intentionally NOT included — only
+   * hass / config / comparison plus the data to draw. Both the resize replay
+   * (_drawChart) and the real draw queue (_queueDrawChart) go through here.
+   */
+  private _buildChartDrawModel(
+    histResult: RecordWithUnknownValues,
+    statsResult: RecordWithUnknownValues,
+    events: unknown[],
+    t0: number,
+    t1: number,
+    options: RecordWithUnknownValues
+  ): HistoryChartViewModel {
+    return {
+      hass: this._hass,
+      config: this._config,
+      comparisonResults: this._lastComparisonResults,
+      history: histResult,
+      stats: statsResult,
+      events,
+      t0,
+      t1,
+      options,
+    };
   }
 
   /** Returns the hass-datapoints-history-chart element once it is in the shadow DOM. */
-  private _chartEl(): Nullable<HTMLElement & RecordWithUnknownValues> {
+  private _chartEl(): Nullable<HistoryChart> {
     return (
       (this.shadowRoot?.querySelector(
         "hass-datapoints-history-chart"
-      ) as HTMLElement & RecordWithUnknownValues) ?? null
+      ) as Nullable<HistoryChart>) ?? null
     );
   }
 
   getAiQueryBriefAnomalySnapshot(): Nullable<RecordWithUnknownValues> {
-    const chartEl = this._chartEl() as Nullable<
-      HTMLElement & {
-        getAiQueryBriefAnomalySnapshot?: () => Nullable<RecordWithUnknownValues>;
-      }
-    >;
-    if (!chartEl?.getAiQueryBriefAnomalySnapshot) {
+    const chartEl = this._chartEl();
+    if (!chartEl) {
       return null;
     }
-    return chartEl.getAiQueryBriefAnomalySnapshot();
+    return chartEl.getAiQueryBriefAnomalySnapshot() as Nullable<RecordWithUnknownValues>;
   }
 
   /**
@@ -1175,22 +1217,21 @@ export class HassDatapointsHistoryCard extends ChartCardBase {
       { ...options, drawRequestId },
     ];
 
-    // Push data and trigger draw on the sub-component
+    // Push data and trigger draw on the sub-component.
     const chartEl = this._chartEl();
     if (chartEl) {
-      chartEl.hass = this._hass;
-      chartEl._config = this._config;
-      chartEl._hiddenSeries = this._hiddenSeries;
-      chartEl._hiddenEventIds = this._hiddenEventIds;
-      chartEl._zoomRange = this._zoomRange;
-      chartEl._lastComparisonResults = this._lastComparisonResults;
-      (chartEl._queueDrawChart as (...a: unknown[]) => void)(
-        histResult,
-        statsResult,
-        filteredEvents,
-        t0,
-        t1,
-        { ...options, drawRequestId }
+      chartEl.draw(
+        this._buildChartDrawModel(
+          histResult,
+          statsResult,
+          filteredEvents,
+          t0,
+          t1,
+          {
+            ...options,
+            drawRequestId,
+          }
+        )
       );
     }
   }
@@ -1198,17 +1239,11 @@ export class HassDatapointsHistoryCard extends ChartCardBase {
   // ── Loading/message UI helpers ─────────────────────────────────────────────
 
   private _setChartLoading(isLoading: boolean): void {
-    const chartEl = this._chartEl();
-    if (chartEl?._setChartLoading) {
-      (chartEl._setChartLoading as (v: boolean) => void)(isLoading);
-    }
+    this._chartEl()?._setChartLoading(isLoading);
   }
 
   private _setChartMessage(message = ""): void {
-    const chartEl = this._chartEl();
-    if (chartEl?._setChartMessage) {
-      (chartEl._setChartMessage as (v: string) => void)(message);
-    }
+    this._chartEl()?._setChartMessage(message);
   }
 
   // ── History data quality helpers ───────────────────────────────────────────
