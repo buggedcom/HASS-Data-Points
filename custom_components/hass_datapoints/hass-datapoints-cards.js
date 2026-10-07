@@ -20401,7 +20401,7 @@
 	customElements.define("radio-group", RadioGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/sidebar-datapoints-section.ts
-	var _SidebarDatapointsSection, _datapointScope_accessor_storage$2, _collapsible_accessor_storage$3, _open_accessor_storage$7;
+	var _SidebarDatapointsSection, _datapointScope_accessor_storage$3, _collapsible_accessor_storage$3, _open_accessor_storage$7;
 	var DATAPOINT_SCOPE_OPTIONS = [
 		{
 			value: "linked",
@@ -20416,18 +20416,18 @@
 			label: "Hide datapoints"
 		}
 	];
-	var SidebarDatapointsSection = (_datapointScope_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$7 = /* @__PURE__ */ new WeakMap(), _SidebarDatapointsSection = class SidebarDatapointsSection extends i$2 {
+	var SidebarDatapointsSection = (_datapointScope_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$7 = /* @__PURE__ */ new WeakMap(), _SidebarDatapointsSection = class SidebarDatapointsSection extends i$2 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _datapointScope_accessor_storage$2, "linked");
+			_classPrivateFieldInitSpec(this, _datapointScope_accessor_storage$3, "linked");
 			_classPrivateFieldInitSpec(this, _collapsible_accessor_storage$3, false);
 			_classPrivateFieldInitSpec(this, _open_accessor_storage$7, true);
 		}
 		get datapointScope() {
-			return _classPrivateFieldGet2(_datapointScope_accessor_storage$2, this);
+			return _classPrivateFieldGet2(_datapointScope_accessor_storage$3, this);
 		}
 		set datapointScope(value) {
-			_classPrivateFieldSet2(_datapointScope_accessor_storage$2, this, value);
+			_classPrivateFieldSet2(_datapointScope_accessor_storage$3, this, value);
 		}
 		get collapsible() {
 			return _classPrivateFieldGet2(_collapsible_accessor_storage$3, this);
@@ -23557,7 +23557,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sidebar-options.ts
-	var _datapointScope_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _datapointScope_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _showIcons_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _showLines_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _showTooltips_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
@@ -23576,7 +23576,7 @@
 	var SidebarOptions = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _datapointScope_accessor_storage$1, "linked");
+			_classPrivateFieldInitSpec(this, _datapointScope_accessor_storage$2, "linked");
 			_classPrivateFieldInitSpec(this, _showIcons_accessor_storage$1, true);
 			_classPrivateFieldInitSpec(this, _showLines_accessor_storage$1, true);
 			_classPrivateFieldInitSpec(this, _showTooltips_accessor_storage$1, true);
@@ -23594,10 +23594,10 @@
 			_classPrivateFieldInitSpec(this, _chartOpen_accessor_storage, true);
 		}
 		get datapointScope() {
-			return _classPrivateFieldGet2(_datapointScope_accessor_storage$1, this);
+			return _classPrivateFieldGet2(_datapointScope_accessor_storage$2, this);
 		}
 		set datapointScope(value) {
-			_classPrivateFieldSet2(_datapointScope_accessor_storage$1, this, value);
+			_classPrivateFieldSet2(_datapointScope_accessor_storage$2, this, value);
 		}
 		get showIcons() {
 			return _classPrivateFieldGet2(_showIcons_accessor_storage$1, this);
@@ -23931,7 +23931,7 @@
 			label: "Chart Display"
 		}
 	];
-	var _datapointScope_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _datapointScope_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _showIcons_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _showLines_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _showTooltips_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -23956,7 +23956,7 @@
 	var CollapsedOptionsMenu = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _datapointScope_accessor_storage, "linked");
+			_classPrivateFieldInitSpec(this, _datapointScope_accessor_storage$1, "linked");
 			_classPrivateFieldInitSpec(this, _showIcons_accessor_storage, true);
 			_classPrivateFieldInitSpec(this, _showLines_accessor_storage, true);
 			_classPrivateFieldInitSpec(this, _showTooltips_accessor_storage, true);
@@ -23972,10 +23972,10 @@
 			_defineProperty(this, "_closeTimer", null);
 		}
 		get datapointScope() {
-			return _classPrivateFieldGet2(_datapointScope_accessor_storage, this);
+			return _classPrivateFieldGet2(_datapointScope_accessor_storage$1, this);
 		}
 		set datapointScope(value) {
-			_classPrivateFieldSet2(_datapointScope_accessor_storage, this, value);
+			_classPrivateFieldSet2(_datapointScope_accessor_storage$1, this, value);
 		}
 		get showIcons() {
 			return _classPrivateFieldGet2(_showIcons_accessor_storage, this);
@@ -25568,7 +25568,7 @@
 	var DEFAULT_I18N$4 = createDefaultI18n(["Select"]);
 	var _i18n_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
 	var _rangeBounds_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
-	var _zoomLevel_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
+	var _zoomLevel_accessor_storage$5 = /* @__PURE__ */ new WeakMap();
 	var _contentWidth_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _locale_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	/**
@@ -25584,7 +25584,7 @@
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _i18n_accessor_storage$4, DEFAULT_I18N$4);
 			_classPrivateFieldInitSpec(this, _rangeBounds_accessor_storage$4, null);
-			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage$4, "day");
+			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage$5, "day");
 			_classPrivateFieldInitSpec(this, _contentWidth_accessor_storage, 0);
 			_classPrivateFieldInitSpec(this, _locale_accessor_storage$2, "");
 		}
@@ -25601,10 +25601,10 @@
 			_classPrivateFieldSet2(_rangeBounds_accessor_storage$4, this, value);
 		}
 		get zoomLevel() {
-			return _classPrivateFieldGet2(_zoomLevel_accessor_storage$4, this);
+			return _classPrivateFieldGet2(_zoomLevel_accessor_storage$5, this);
 		}
 		set zoomLevel(value) {
-			_classPrivateFieldSet2(_zoomLevel_accessor_storage$4, this, value);
+			_classPrivateFieldSet2(_zoomLevel_accessor_storage$5, this, value);
 		}
 		get contentWidth() {
 			return _classPrivateFieldGet2(_contentWidth_accessor_storage, this);
@@ -26031,8 +26031,8 @@
 	var _startTime_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _endTime_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _rangeBounds_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
-	var _zoomLevel_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
-	var _dateSnapping_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
+	var _zoomLevel_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
+	var _dateSnapping_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
 	var _isLiveEdge_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _locale_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _i18n_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
@@ -26098,16 +26098,16 @@
 			_classPrivateFieldSet2(_rangeBounds_accessor_storage$3, this, value);
 		}
 		get zoomLevel() {
-			return _classPrivateFieldGet2(_zoomLevel_accessor_storage$3, this);
+			return _classPrivateFieldGet2(_zoomLevel_accessor_storage$4, this);
 		}
 		set zoomLevel(value) {
-			_classPrivateFieldSet2(_zoomLevel_accessor_storage$3, this, value);
+			_classPrivateFieldSet2(_zoomLevel_accessor_storage$4, this, value);
 		}
 		get dateSnapping() {
-			return _classPrivateFieldGet2(_dateSnapping_accessor_storage$3, this);
+			return _classPrivateFieldGet2(_dateSnapping_accessor_storage$4, this);
 		}
 		set dateSnapping(value) {
-			_classPrivateFieldSet2(_dateSnapping_accessor_storage$3, this, value);
+			_classPrivateFieldSet2(_dateSnapping_accessor_storage$4, this, value);
 		}
 		get isLiveEdge() {
 			return _classPrivateFieldGet2(_isLiveEdge_accessor_storage$2, this);
@@ -26279,8 +26279,8 @@
 			_classPrivateFieldInitSpec(this, _startTime_accessor_storage$2, null);
 			_classPrivateFieldInitSpec(this, _endTime_accessor_storage$2, null);
 			_classPrivateFieldInitSpec(this, _rangeBounds_accessor_storage$3, null);
-			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage$3, "day");
-			_classPrivateFieldInitSpec(this, _dateSnapping_accessor_storage$3, "auto");
+			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage$4, "day");
+			_classPrivateFieldInitSpec(this, _dateSnapping_accessor_storage$4, "auto");
 			_classPrivateFieldInitSpec(this, _isLiveEdge_accessor_storage$2, false);
 			_classPrivateFieldInitSpec(this, _locale_accessor_storage$1, "");
 			_classPrivateFieldInitSpec(this, _i18n_accessor_storage$3, DEFAULT_I18N$3);
@@ -27049,8 +27049,8 @@
 	customElements.define("range-timeline", RangeTimeline);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/date-window-dialog.ts
-	var _DateWindowDialog, _open_accessor_storage$3, _heading_accessor_storage$1, _name_accessor_storage$2, _startValue_accessor_storage, _endValue_accessor_storage, _showDelete_accessor_storage, _showShortcuts_accessor_storage, _submitLabel_accessor_storage, _rangeBounds_accessor_storage$2, _zoomLevel_accessor_storage$2, _dateSnapping_accessor_storage$2, _dialogEl_accessor_storage, _nameInput_accessor_storage, _startInput_accessor_storage, _endInput_accessor_storage, _shaking_accessor_storage;
-	var DateWindowDialog = (_open_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _heading_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _name_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _startValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _endValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _showDelete_accessor_storage = /* @__PURE__ */ new WeakMap(), _showShortcuts_accessor_storage = /* @__PURE__ */ new WeakMap(), _submitLabel_accessor_storage = /* @__PURE__ */ new WeakMap(), _rangeBounds_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _zoomLevel_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _dateSnapping_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _dialogEl_accessor_storage = /* @__PURE__ */ new WeakMap(), _nameInput_accessor_storage = /* @__PURE__ */ new WeakMap(), _startInput_accessor_storage = /* @__PURE__ */ new WeakMap(), _endInput_accessor_storage = /* @__PURE__ */ new WeakMap(), _shaking_accessor_storage = /* @__PURE__ */ new WeakMap(), _DateWindowDialog = class DateWindowDialog extends i$2 {
+	var _DateWindowDialog, _open_accessor_storage$3, _heading_accessor_storage$1, _name_accessor_storage$2, _startValue_accessor_storage, _endValue_accessor_storage, _showDelete_accessor_storage, _showShortcuts_accessor_storage, _submitLabel_accessor_storage, _rangeBounds_accessor_storage$2, _zoomLevel_accessor_storage$3, _dateSnapping_accessor_storage$3, _dialogEl_accessor_storage, _nameInput_accessor_storage, _startInput_accessor_storage, _endInput_accessor_storage, _shaking_accessor_storage;
+	var DateWindowDialog = (_open_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _heading_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _name_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _startValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _endValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _showDelete_accessor_storage = /* @__PURE__ */ new WeakMap(), _showShortcuts_accessor_storage = /* @__PURE__ */ new WeakMap(), _submitLabel_accessor_storage = /* @__PURE__ */ new WeakMap(), _rangeBounds_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _zoomLevel_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _dateSnapping_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _dialogEl_accessor_storage = /* @__PURE__ */ new WeakMap(), _nameInput_accessor_storage = /* @__PURE__ */ new WeakMap(), _startInput_accessor_storage = /* @__PURE__ */ new WeakMap(), _endInput_accessor_storage = /* @__PURE__ */ new WeakMap(), _shaking_accessor_storage = /* @__PURE__ */ new WeakMap(), _DateWindowDialog = class DateWindowDialog extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _open_accessor_storage$3, false);
@@ -27062,8 +27062,8 @@
 			_classPrivateFieldInitSpec(this, _showShortcuts_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _submitLabel_accessor_storage, "Create date window");
 			_classPrivateFieldInitSpec(this, _rangeBounds_accessor_storage$2, null);
-			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage$2, "auto");
-			_classPrivateFieldInitSpec(this, _dateSnapping_accessor_storage$2, "hour");
+			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage$3, "auto");
+			_classPrivateFieldInitSpec(this, _dateSnapping_accessor_storage$3, "hour");
 			_classPrivateFieldInitSpec(this, _dialogEl_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _nameInput_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _startInput_accessor_storage, null);
@@ -27125,16 +27125,16 @@
 			_classPrivateFieldSet2(_rangeBounds_accessor_storage$2, this, value);
 		}
 		get zoomLevel() {
-			return _classPrivateFieldGet2(_zoomLevel_accessor_storage$2, this);
+			return _classPrivateFieldGet2(_zoomLevel_accessor_storage$3, this);
 		}
 		set zoomLevel(value) {
-			_classPrivateFieldSet2(_zoomLevel_accessor_storage$2, this, value);
+			_classPrivateFieldSet2(_zoomLevel_accessor_storage$3, this, value);
 		}
 		get dateSnapping() {
-			return _classPrivateFieldGet2(_dateSnapping_accessor_storage$2, this);
+			return _classPrivateFieldGet2(_dateSnapping_accessor_storage$3, this);
 		}
 		set dateSnapping(value) {
-			_classPrivateFieldSet2(_dateSnapping_accessor_storage$2, this, value);
+			_classPrivateFieldSet2(_dateSnapping_accessor_storage$3, this, value);
 		}
 		get _dialogEl() {
 			return _classPrivateFieldGet2(_dialogEl_accessor_storage, this);
@@ -31617,15 +31617,15 @@
 	var _startTime_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _endTime_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _rangeBounds_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _zoomLevel_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _dateSnapping_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _zoomLevel_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
+	var _dateSnapping_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _isLiveEdge_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _locale_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _hoveredPeriodRange_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _comparisonPreview_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _zoomRange_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _zoomWindowRange_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _chartHoverTimeMs_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _chartHoverTimeMs_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _chartHoverWindowTimeMs_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _events_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _rangeHoverPreviewEl_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -31658,15 +31658,15 @@
 			_classPrivateFieldInitSpec(this, _startTime_accessor_storage$1, null);
 			_classPrivateFieldInitSpec(this, _endTime_accessor_storage$1, null);
 			_classPrivateFieldInitSpec(this, _rangeBounds_accessor_storage$1, null);
-			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage$1, "day");
-			_classPrivateFieldInitSpec(this, _dateSnapping_accessor_storage$1, "auto");
+			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage$2, "day");
+			_classPrivateFieldInitSpec(this, _dateSnapping_accessor_storage$2, "auto");
 			_classPrivateFieldInitSpec(this, _isLiveEdge_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _locale_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _hoveredPeriodRange_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _comparisonPreview_accessor_storage$1, null);
 			_classPrivateFieldInitSpec(this, _zoomRange_accessor_storage$1, null);
 			_classPrivateFieldInitSpec(this, _zoomWindowRange_accessor_storage$1, null);
-			_classPrivateFieldInitSpec(this, _chartHoverTimeMs_accessor_storage$1, null);
+			_classPrivateFieldInitSpec(this, _chartHoverTimeMs_accessor_storage$2, null);
 			_classPrivateFieldInitSpec(this, _chartHoverWindowTimeMs_accessor_storage$1, null);
 			_classPrivateFieldInitSpec(this, _events_accessor_storage$1, []);
 			_classPrivateFieldInitSpec(this, _rangeHoverPreviewEl_accessor_storage, null);
@@ -31699,16 +31699,16 @@
 			_classPrivateFieldSet2(_rangeBounds_accessor_storage$1, this, value);
 		}
 		get zoomLevel() {
-			return _classPrivateFieldGet2(_zoomLevel_accessor_storage$1, this);
+			return _classPrivateFieldGet2(_zoomLevel_accessor_storage$2, this);
 		}
 		set zoomLevel(value) {
-			_classPrivateFieldSet2(_zoomLevel_accessor_storage$1, this, value);
+			_classPrivateFieldSet2(_zoomLevel_accessor_storage$2, this, value);
 		}
 		get dateSnapping() {
-			return _classPrivateFieldGet2(_dateSnapping_accessor_storage$1, this);
+			return _classPrivateFieldGet2(_dateSnapping_accessor_storage$2, this);
 		}
 		set dateSnapping(value) {
-			_classPrivateFieldSet2(_dateSnapping_accessor_storage$1, this, value);
+			_classPrivateFieldSet2(_dateSnapping_accessor_storage$2, this, value);
 		}
 		get isLiveEdge() {
 			return _classPrivateFieldGet2(_isLiveEdge_accessor_storage$1, this);
@@ -31747,10 +31747,10 @@
 			_classPrivateFieldSet2(_zoomWindowRange_accessor_storage$1, this, value);
 		}
 		get chartHoverTimeMs() {
-			return _classPrivateFieldGet2(_chartHoverTimeMs_accessor_storage$1, this);
+			return _classPrivateFieldGet2(_chartHoverTimeMs_accessor_storage$2, this);
 		}
 		set chartHoverTimeMs(value) {
-			_classPrivateFieldSet2(_chartHoverTimeMs_accessor_storage$1, this, value);
+			_classPrivateFieldSet2(_chartHoverTimeMs_accessor_storage$2, this, value);
 		}
 		get chartHoverWindowTimeMs() {
 			return _classPrivateFieldGet2(_chartHoverWindowTimeMs_accessor_storage$1, this);
@@ -32076,23 +32076,23 @@
 	customElements.define("date-time-input", DateTimeInput);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/range-toolbar/range-toolbar.ts
-	var _RangeToolbar, _hass_accessor_storage$4, _startTime_accessor_storage, _endTime_accessor_storage, _rangeBounds_accessor_storage, _zoomLevel_accessor_storage, _dateSnapping_accessor_storage, _sidebarCollapsed_accessor_storage, _isLiveEdge_accessor_storage, _timelineEvents_accessor_storage, _comparisonPreview_accessor_storage, _zoomRange_accessor_storage, _zoomWindowRange_accessor_storage, _chartHoverTimeMs_accessor_storage, _chartHoverWindowTimeMs_accessor_storage, _optionsView_accessor_storage, _optionsOpen_accessor_storage, _pickerOpen_accessor_storage;
-	var RangeToolbar = (_hass_accessor_storage$4 = /* @__PURE__ */ new WeakMap(), _startTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _endTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _rangeBounds_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomLevel_accessor_storage = /* @__PURE__ */ new WeakMap(), _dateSnapping_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarCollapsed_accessor_storage = /* @__PURE__ */ new WeakMap(), _isLiveEdge_accessor_storage = /* @__PURE__ */ new WeakMap(), _timelineEvents_accessor_storage = /* @__PURE__ */ new WeakMap(), _comparisonPreview_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomRange_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomWindowRange_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartHoverTimeMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartHoverWindowTimeMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _optionsView_accessor_storage = /* @__PURE__ */ new WeakMap(), _optionsOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _pickerOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _RangeToolbar = class RangeToolbar extends i$2 {
+	var _RangeToolbar, _hass_accessor_storage$4, _startTime_accessor_storage, _endTime_accessor_storage, _rangeBounds_accessor_storage, _zoomLevel_accessor_storage$1, _dateSnapping_accessor_storage$1, _sidebarCollapsed_accessor_storage, _isLiveEdge_accessor_storage, _timelineEvents_accessor_storage$1, _comparisonPreview_accessor_storage, _zoomRange_accessor_storage, _zoomWindowRange_accessor_storage, _chartHoverTimeMs_accessor_storage$1, _chartHoverWindowTimeMs_accessor_storage, _optionsView_accessor_storage, _optionsOpen_accessor_storage, _pickerOpen_accessor_storage;
+	var RangeToolbar = (_hass_accessor_storage$4 = /* @__PURE__ */ new WeakMap(), _startTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _endTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _rangeBounds_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomLevel_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _dateSnapping_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _sidebarCollapsed_accessor_storage = /* @__PURE__ */ new WeakMap(), _isLiveEdge_accessor_storage = /* @__PURE__ */ new WeakMap(), _timelineEvents_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _comparisonPreview_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomRange_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomWindowRange_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartHoverTimeMs_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _chartHoverWindowTimeMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _optionsView_accessor_storage = /* @__PURE__ */ new WeakMap(), _optionsOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _pickerOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _RangeToolbar = class RangeToolbar extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _hass_accessor_storage$4, null);
 			_classPrivateFieldInitSpec(this, _startTime_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _endTime_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _rangeBounds_accessor_storage, null);
-			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage, "auto");
-			_classPrivateFieldInitSpec(this, _dateSnapping_accessor_storage, "hour");
+			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage$1, "auto");
+			_classPrivateFieldInitSpec(this, _dateSnapping_accessor_storage$1, "hour");
 			_classPrivateFieldInitSpec(this, _sidebarCollapsed_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _isLiveEdge_accessor_storage, false);
-			_classPrivateFieldInitSpec(this, _timelineEvents_accessor_storage, []);
+			_classPrivateFieldInitSpec(this, _timelineEvents_accessor_storage$1, []);
 			_classPrivateFieldInitSpec(this, _comparisonPreview_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _zoomRange_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _zoomWindowRange_accessor_storage, null);
-			_classPrivateFieldInitSpec(this, _chartHoverTimeMs_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _chartHoverTimeMs_accessor_storage$1, null);
 			_classPrivateFieldInitSpec(this, _chartHoverWindowTimeMs_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _optionsView_accessor_storage, "root");
 			_classPrivateFieldInitSpec(this, _optionsOpen_accessor_storage, false);
@@ -32123,16 +32123,16 @@
 			_classPrivateFieldSet2(_rangeBounds_accessor_storage, this, value);
 		}
 		get zoomLevel() {
-			return _classPrivateFieldGet2(_zoomLevel_accessor_storage, this);
+			return _classPrivateFieldGet2(_zoomLevel_accessor_storage$1, this);
 		}
 		set zoomLevel(value) {
-			_classPrivateFieldSet2(_zoomLevel_accessor_storage, this, value);
+			_classPrivateFieldSet2(_zoomLevel_accessor_storage$1, this, value);
 		}
 		get dateSnapping() {
-			return _classPrivateFieldGet2(_dateSnapping_accessor_storage, this);
+			return _classPrivateFieldGet2(_dateSnapping_accessor_storage$1, this);
 		}
 		set dateSnapping(value) {
-			_classPrivateFieldSet2(_dateSnapping_accessor_storage, this, value);
+			_classPrivateFieldSet2(_dateSnapping_accessor_storage$1, this, value);
 		}
 		get sidebarCollapsed() {
 			return _classPrivateFieldGet2(_sidebarCollapsed_accessor_storage, this);
@@ -32147,10 +32147,10 @@
 			_classPrivateFieldSet2(_isLiveEdge_accessor_storage, this, value);
 		}
 		get timelineEvents() {
-			return _classPrivateFieldGet2(_timelineEvents_accessor_storage, this);
+			return _classPrivateFieldGet2(_timelineEvents_accessor_storage$1, this);
 		}
 		set timelineEvents(value) {
-			_classPrivateFieldSet2(_timelineEvents_accessor_storage, this, value);
+			_classPrivateFieldSet2(_timelineEvents_accessor_storage$1, this, value);
 		}
 		get comparisonPreview() {
 			return _classPrivateFieldGet2(_comparisonPreview_accessor_storage, this);
@@ -32171,10 +32171,10 @@
 			_classPrivateFieldSet2(_zoomWindowRange_accessor_storage, this, value);
 		}
 		get chartHoverTimeMs() {
-			return _classPrivateFieldGet2(_chartHoverTimeMs_accessor_storage, this);
+			return _classPrivateFieldGet2(_chartHoverTimeMs_accessor_storage$1, this);
 		}
 		set chartHoverTimeMs(value) {
-			_classPrivateFieldSet2(_chartHoverTimeMs_accessor_storage, this, value);
+			_classPrivateFieldSet2(_chartHoverTimeMs_accessor_storage$1, this, value);
 		}
 		get chartHoverWindowTimeMs() {
 			return _classPrivateFieldGet2(_chartHoverWindowTimeMs_accessor_storage, this);
@@ -35723,7 +35723,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/datapoints.ts
-	var _HassDatapointsHistoryPanel, _hass_accessor_storage$3, _panel_accessor_storage, _narrow_accessor_storage, _rendered_accessor_storage, _shellBuilt_accessor_storage;
+	var _HassDatapointsHistoryPanel, _hass_accessor_storage$3, _panel_accessor_storage, _narrow_accessor_storage, _rendered_accessor_storage, _shellBuilt_accessor_storage, _datapointScope_accessor_storage, _historyStartTime_accessor_storage, _historyEndTime_accessor_storage, _timelineEvents_accessor_storage, _resolvedAutoZoomLevel_accessor_storage, _chartHoverTimeMs_accessor_storage, _zoomLevel_accessor_storage, _dateSnapping_accessor_storage;
 	/** Module-level set of all currently-connected panel instances.
 	*  Used by the orphan-recovery guard to avoid disrupting a live replacement. */
 	var _liveInstances = /* @__PURE__ */ new Set();
@@ -35772,7 +35772,7 @@
 		value: "only",
 		label: "Overlaps only"
 	}];
-	var HassDatapointsHistoryPanel = (_hass_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _panel_accessor_storage = /* @__PURE__ */ new WeakMap(), _narrow_accessor_storage = /* @__PURE__ */ new WeakMap(), _rendered_accessor_storage = /* @__PURE__ */ new WeakMap(), _shellBuilt_accessor_storage = /* @__PURE__ */ new WeakMap(), _HassDatapointsHistoryPanel = class HassDatapointsHistoryPanel extends i$2 {
+	var HassDatapointsHistoryPanel = (_hass_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _panel_accessor_storage = /* @__PURE__ */ new WeakMap(), _narrow_accessor_storage = /* @__PURE__ */ new WeakMap(), _rendered_accessor_storage = /* @__PURE__ */ new WeakMap(), _shellBuilt_accessor_storage = /* @__PURE__ */ new WeakMap(), _datapointScope_accessor_storage = /* @__PURE__ */ new WeakMap(), _historyStartTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _historyEndTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _timelineEvents_accessor_storage = /* @__PURE__ */ new WeakMap(), _resolvedAutoZoomLevel_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartHoverTimeMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomLevel_accessor_storage = /* @__PURE__ */ new WeakMap(), _dateSnapping_accessor_storage = /* @__PURE__ */ new WeakMap(), _HassDatapointsHistoryPanel = class HassDatapointsHistoryPanel extends i$2 {
 		get hass() {
 			return _classPrivateFieldGet2(_hass_accessor_storage$3, this);
 		}
@@ -35803,6 +35803,54 @@
 		set _shellBuilt(value) {
 			_classPrivateFieldSet2(_shellBuilt_accessor_storage, this, value);
 		}
+		get _datapointScope() {
+			return _classPrivateFieldGet2(_datapointScope_accessor_storage, this);
+		}
+		set _datapointScope(value) {
+			_classPrivateFieldSet2(_datapointScope_accessor_storage, this, value);
+		}
+		get _historyStartTime() {
+			return _classPrivateFieldGet2(_historyStartTime_accessor_storage, this);
+		}
+		set _historyStartTime(value) {
+			_classPrivateFieldSet2(_historyStartTime_accessor_storage, this, value);
+		}
+		get _historyEndTime() {
+			return _classPrivateFieldGet2(_historyEndTime_accessor_storage, this);
+		}
+		set _historyEndTime(value) {
+			_classPrivateFieldSet2(_historyEndTime_accessor_storage, this, value);
+		}
+		get _timelineEvents() {
+			return _classPrivateFieldGet2(_timelineEvents_accessor_storage, this);
+		}
+		set _timelineEvents(value) {
+			_classPrivateFieldSet2(_timelineEvents_accessor_storage, this, value);
+		}
+		get _resolvedAutoZoomLevel() {
+			return _classPrivateFieldGet2(_resolvedAutoZoomLevel_accessor_storage, this);
+		}
+		set _resolvedAutoZoomLevel(value) {
+			_classPrivateFieldSet2(_resolvedAutoZoomLevel_accessor_storage, this, value);
+		}
+		get _chartHoverTimeMs() {
+			return _classPrivateFieldGet2(_chartHoverTimeMs_accessor_storage, this);
+		}
+		set _chartHoverTimeMs(value) {
+			_classPrivateFieldSet2(_chartHoverTimeMs_accessor_storage, this, value);
+		}
+		get _zoomLevel() {
+			return _classPrivateFieldGet2(_zoomLevel_accessor_storage, this);
+		}
+		set _zoomLevel(value) {
+			_classPrivateFieldSet2(_zoomLevel_accessor_storage, this, value);
+		}
+		get _dateSnapping() {
+			return _classPrivateFieldGet2(_dateSnapping_accessor_storage, this);
+		}
+		set _dateSnapping(value) {
+			_classPrivateFieldSet2(_dateSnapping_accessor_storage, this, value);
+		}
 		constructor() {
 			super();
 			_classPrivateFieldInitSpec(this, _hass_accessor_storage$3, null);
@@ -35810,6 +35858,14 @@
 			_classPrivateFieldInitSpec(this, _narrow_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _rendered_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _shellBuilt_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _datapointScope_accessor_storage, "linked");
+			_classPrivateFieldInitSpec(this, _historyStartTime_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _historyEndTime_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _timelineEvents_accessor_storage, []);
+			_classPrivateFieldInitSpec(this, _resolvedAutoZoomLevel_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _chartHoverTimeMs_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage, "auto");
+			_classPrivateFieldInitSpec(this, _dateSnapping_accessor_storage, "auto");
 			this._context = createHistoryPageContext();
 			this._entities = [];
 			this._seriesRows = [];
@@ -35832,7 +35888,6 @@
 			this._collapsedPopupOutsideClickHandler = null;
 			this._collapsedPopupKeyHandler = null;
 			this._lastSyncedLocale = "";
-			this._datapointScope = "linked";
 			this._showChartDatapointIcons = true;
 			this._showChartDatapointLines = true;
 			this._showChartTooltips = true;
@@ -35843,10 +35898,7 @@
 			this._chartAnomalyOverlapMode = "all";
 			this._showDataGaps = true;
 			this._dataGapThreshold = "2h";
-			this._historyStartTime = null;
-			this._historyEndTime = null;
 			this._historyBoundsLoaded = false;
-			this._timelineEvents = [];
 			this._timelineEventsKey = "";
 			this._preferredSeriesColors = {};
 			this._preferencesLoaded = false;
@@ -35886,19 +35938,12 @@
 			this._sidebarAccordionDatapointsOpen = true;
 			this._sidebarAccordionAnalysisOpen = true;
 			this._sidebarAccordionChartOpen = true;
-			this._dateControl = null;
-			this._dateRangePickerEl = null;
-			this._panelTimelineEl = null;
 			this._rangeBounds = null;
 			this._autoZoomTimer = null;
-			this._resolvedAutoZoomLevel = null;
 			this._hoveredPeriodRange = null;
-			this._chartHoverTimeMs = null;
 			this._chartZoomRange = null;
 			this._chartZoomCommittedRange = null;
 			this._chartZoomStateCommitTimer = null;
-			this._zoomLevel = "auto";
-			this._dateSnapping = "auto";
 			this._hasTargetInUrl = false;
 			this._hasRangeInUrl = false;
 			this._hasPageStateInUrl = false;
@@ -35933,7 +35978,7 @@
 					this._syncPageLayoutHeight();
 					this._applyContentSplitLayout();
 					this._requestChartResizeRedraw();
-					this._syncRangeControl();
+					this.requestUpdate();
 				}
 			};
 			this._onCollapsedSidebarClick = (_ev) => this._handleCollapsedSidebarClick();
@@ -36092,7 +36137,6 @@
 						this._rowListEl.states = this._hass?.states ?? {};
 						this._rowListEl.labelMap = disambiguateEntityNames(this._hass, (this._seriesRows ?? []).map((r) => r.entity_id));
 					}
-					if (this._rangeToolbarComp) this._rangeToolbarComp.hass = this._hass ?? null;
 					this.shadowRoot?.querySelectorAll("[data-series-icon-entity-id], [data-series-collapsed-icon-entity-id]").forEach((iconEl) => {
 						const icon = iconEl;
 						const entityId = icon.dataset.seriesIconEntityId || icon.dataset.seriesCollapsedIconEntityId;
@@ -36141,6 +36185,10 @@
 			if (changed.has("narrow")) {
 				this._narrow = this.narrow;
 				if (this._shellEl) this._shellEl.narrow = this.narrow;
+			}
+			if (this._rendered) {
+				this._rangeBounds = this._deriveRangeBounds();
+				this._ensureTimelineEvents();
 			}
 		}
 		connectedCallback() {
@@ -36470,11 +36518,61 @@
 			}}
         @click=${this._onCollapsedSidebarClick}
       >
+        <range-toolbar
+          slot="controls"
+          .hass=${this.hass}
+          .startTime=${this._startTime ? new Date(this._startTime) : null}
+          .endTime=${this._endTime ? new Date(this._endTime) : null}
+          .rangeBounds=${this._rangeBounds}
+          .zoomLevel=${this._getEffectiveZoomLevel()}
+          .dateSnapping=${this._dateSnapping}
+          .sidebarCollapsed=${this._sidebarCollapsed}
+          .isLiveEdge=${this._isOnLiveEdge()}
+          .timelineEvents=${this._timelineEvents}
+          .comparisonPreview=${this._getComparisonRangePreview()}
+          .zoomRange=${this._getChartZoomHighlightRange()}
+          .zoomWindowRange=${this._getZoomWindowHighlightRange()}
+          .chartHoverTimeMs=${this._rangeBounds ? this._chartHoverTimeMs : null}
+          .chartHoverWindowTimeMs=${this._getChartHoverWindowTimeMs()}
+          @dp-range-commit=${(ev) => {
+				this._applyCommittedRange(ev.detail?.start, ev.detail?.end, { push: ev.detail?.push ?? false });
+			}}
+          @dp-range-draft=${(ev) => {
+				this._scheduleAutoZoomUpdate(ev.detail?.start, ev.detail?.end);
+			}}
+          @dp-toolbar-sidebar-toggle=${() => this._toggleSidebarCollapsed()}
+          @dp-zoom-level-change=${(ev) => {
+				const { value } = ev.detail || {};
+				if (value && value !== this._zoomLevel) {
+					this._zoomLevel = value;
+					this._clearAutoZoomTimer();
+					this._resolvedAutoZoomLevel = value === "auto" ? null : this._resolvedAutoZoomLevel;
+					this._saveSessionState();
+					this._updateUrl({ push: false });
+					this._saveUserPreferences();
+				}
+			}}
+          @dp-snap-change=${(ev) => {
+				const { value } = ev.detail || {};
+				if (value && value !== this._dateSnapping) {
+					this._dateSnapping = value;
+					this._saveSessionState();
+					this._updateUrl({ push: false });
+					this._saveUserPreferences();
+				}
+			}}
+          @dp-date-picker-change=${(ev) => this._handleDatePickerChange(ev)}
+        ></range-toolbar>
         <div id="content"></div>
       </panel-shell>
     `;
 		}
 		updated() {
+			this._rangeToolbarComp = this.renderRoot.querySelector("range-toolbar");
+			const toolbar = this._rangeToolbarComp;
+			if (toolbar) toolbar.updateComplete.then(() => {
+				if (this.isConnected && this._rangeToolbarComp === toolbar) toolbar.syncMobileDates(this._startTime, this._endTime);
+			});
 			if (this._shellBuilt && !this._shellEl) this._mountShellControls();
 		}
 		async _mountShellControls() {
@@ -36591,7 +36689,7 @@
 		_syncControls() {
 			this._syncPageLayoutHeight();
 			this._syncHassBindings();
-			this._syncRangeUi();
+			this.requestUpdate();
 			this._renderSidebarOptions();
 		}
 		_syncSeriesState() {
@@ -36639,12 +36737,6 @@
 				icon.stateObj = this._hass?.states?.[entityId];
 				icon.hass = this._hass;
 			});
-			if (this._rangeToolbarComp) this._rangeToolbarComp.hass = this._hass ?? null;
-		}
-		_syncRangeUi() {
-			if (!this._dateControl) return;
-			this._syncOptionsMenu();
-			this._syncRangeControl();
 		}
 		_renderSidebarOptions() {
 			if (!this._sidebarOptionsComp) return;
@@ -37017,7 +37109,6 @@
 		_syncSidebarUi() {
 			if (this._shellEl) this._shellEl.sidebarCollapsed = this._sidebarCollapsed;
 			if (this._historyTargetsComp) this._historyTargetsComp.sidebarCollapsed = this._sidebarCollapsed;
-			if (this._rangeToolbarComp) this._rangeToolbarComp.sidebarCollapsed = this._sidebarCollapsed;
 		}
 		_updateLayoutMode() {
 			const prev = this._layoutMode;
@@ -37050,10 +37141,6 @@
 			this._saveSessionState();
 			this._updateUrl({ push: false });
 			this._syncSidebarUi();
-			window.requestAnimationFrame(() => {
-				if (!this.isConnected) return;
-				this._syncRangeControl();
-			});
 		}
 		_handleCollapsedSidebarClick() {
 			if (!this._sidebarCollapsed) {}
@@ -37147,7 +37234,6 @@
 			if (this._datapointScope === "hidden" || this._datapointScope === "linked" && this._entities.length === 0) {
 				this._timelineEvents = [];
 				this._context.fetch.resetTimelineEvents();
-				if (this._rendered && this._rangeToolbarComp) this._rangeToolbarComp.timelineEvents = [];
 				return;
 			}
 			const startIso = new Date(this._rangeBounds.min).toISOString();
@@ -37160,7 +37246,6 @@
 				onSuccess: (events, key) => {
 					this._timelineEvents = events;
 					this._timelineEventsKey = key;
-					if (this._rendered && this._rangeToolbarComp) this._rangeToolbarComp.timelineEvents = this._timelineEvents;
 				},
 				onError: (err) => {
 					logger$1.warn("[hass-datapoints] failed to load timeline events:", err);
@@ -37209,7 +37294,6 @@
 			if (!this._shellEl) return;
 			const histTargets = this._mountHistoryTargetsControl();
 			this._mountTargetPickerControl(histTargets);
-			this._mountRangeToolbarControl();
 			this._mountSidebarOptionsControl();
 			this._mountDateWindowDialogControl();
 			this._mountMonitorWizard();
@@ -37310,68 +37394,6 @@
 				if (this._hass) targetControl.hass = this._hass;
 				targetControl.value = {};
 			});
-		}
-		_mountRangeToolbarControl() {
-			const rangeToolbar = document.createElement("range-toolbar");
-			rangeToolbar.slot = "controls";
-			rangeToolbar.startTime = this._startTime;
-			rangeToolbar.endTime = this._endTime;
-			rangeToolbar.rangeBounds = this._rangeBounds;
-			rangeToolbar.zoomLevel = this._zoomLevel;
-			rangeToolbar.dateSnapping = this._dateSnapping;
-			rangeToolbar.sidebarCollapsed = this._sidebarCollapsed;
-			rangeToolbar.hass = this._hass ?? null;
-			rangeToolbar.isLiveEdge = this._isOnLiveEdge();
-			rangeToolbar.timelineEvents = this._timelineEvents || [];
-			rangeToolbar.comparisonPreview = null;
-			rangeToolbar.zoomRange = this._chartZoomCommittedRange ? {
-				start: +this._chartZoomCommittedRange.start,
-				end: +this._chartZoomCommittedRange.end
-			} : null;
-			rangeToolbar.zoomWindowRange = null;
-			rangeToolbar.chartHoverTimeMs = null;
-			rangeToolbar.chartHoverWindowTimeMs = null;
-			rangeToolbar.addEventListener("dp-range-commit", (ev) => {
-				this._applyCommittedRange(ev.detail?.start, ev.detail?.end, { push: ev.detail?.push ?? false });
-			});
-			rangeToolbar.addEventListener("dp-range-draft", (ev) => {
-				this._scheduleAutoZoomUpdate(ev.detail?.start, ev.detail?.end);
-			});
-			rangeToolbar.addEventListener("dp-toolbar-sidebar-toggle", () => this._toggleSidebarCollapsed());
-			rangeToolbar.addEventListener("dp-zoom-level-change", (ev) => {
-				const { value } = ev.detail || {};
-				if (value && value !== this._zoomLevel) {
-					this._zoomLevel = value;
-					this._clearAutoZoomTimer();
-					this._resolvedAutoZoomLevel = value === "auto" ? null : this._resolvedAutoZoomLevel;
-					this._saveSessionState();
-					this._updateUrl({ push: false });
-					this._syncRangeControl();
-					this._saveUserPreferences();
-				}
-			});
-			rangeToolbar.addEventListener("dp-snap-change", (ev) => {
-				const { value } = ev.detail || {};
-				if (value && value !== this._dateSnapping) {
-					this._dateSnapping = value;
-					this._saveSessionState();
-					this._updateUrl({ push: false });
-					this._syncRangeControl();
-					this._saveUserPreferences();
-				}
-			});
-			rangeToolbar.addEventListener("dp-date-picker-change", (ev) => {
-				this._handleDatePickerChange(ev);
-			});
-			this._shellEl.appendChild(rangeToolbar);
-			this._rangeToolbarComp = rangeToolbar;
-			this._dateControl = rangeToolbar;
-			rangeToolbar.updateComplete.then(() => {
-				if (!this.isConnected || this._rangeToolbarComp !== rangeToolbar) return;
-				this._syncControls();
-				this._renderContent();
-			});
-			this._syncSidebarUi();
 		}
 		_mountSidebarOptionsControl() {
 			if (this._sidebarOptionsEl) {
@@ -37813,9 +37835,6 @@
 			if (!force) this._shellEl?.closePageMenu();
 		}
 		_handleWindowPointerDown() {}
-		_syncOptionsMenu() {
-			this._rangeToolbarComp?.syncOptionsLabels();
-		}
 		_handleDatePickerChange(ev) {
 			const { start, end } = extractRangeValue(ev);
 			if (!start || !end || start >= end) return;
@@ -37919,42 +37938,19 @@
 		_deriveRangeBounds() {
 			return deriveRangeBounds(this._getZoomConfig(), this._startTime?.getTime() || Date.now() - 24 * 36e5, this._endTime?.getTime() || Date.now(), this._historyStartTime?.getTime(), this._historyEndTime?.getTime(), this._getSnapSpanMs(this._startTime || /* @__PURE__ */ new Date()));
 		}
-		_syncRangeControl() {
-			if (!this._rangeToolbarComp) return;
-			this._rangeBounds = this._deriveRangeBounds();
-			this._ensureTimelineEvents();
-			this._rangeToolbarComp.startTime = this._startTime ? new Date(this._startTime) : null;
-			this._rangeToolbarComp.endTime = this._endTime ? new Date(this._endTime) : null;
-			this._rangeToolbarComp.rangeBounds = this._rangeBounds;
-			this._rangeToolbarComp.zoomLevel = this._getEffectiveZoomLevel();
-			this._rangeToolbarComp.dateSnapping = this._dateSnapping;
-			this._rangeToolbarComp.isLiveEdge = this._isOnLiveEdge();
-			this._rangeToolbarComp.timelineEvents = this._timelineEvents || [];
-			this._updateComparisonRangePreview();
-			this._updateChartHoverIndicator();
-			this._updateChartZoomHighlight();
-			this._syncMobileDateInputs();
-		}
 		_updateComparisonRangePreview() {
-			if (!this._rangeToolbarComp) return;
+			this.requestUpdate();
+		}
+		_getComparisonRangePreview() {
 			const comparisonWindow = this._getActiveComparisonWindow();
-			if (!this._rangeBounds || !comparisonWindow) {
-				this._rangeToolbarComp.comparisonPreview = null;
-				this._updateZoomWindowHighlight();
-				return;
-			}
-			const startMs = new Date(comparisonWindow.start_time).getTime();
-			const endMs = new Date(comparisonWindow.end_time).getTime();
-			if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || startMs >= endMs) {
-				this._rangeToolbarComp.comparisonPreview = null;
-				this._updateZoomWindowHighlight();
-				return;
-			}
-			this._rangeToolbarComp.comparisonPreview = {
-				start: startMs,
-				end: endMs
+			if (!this._rangeBounds || !comparisonWindow) return null;
+			const start = new Date(comparisonWindow.start_time).getTime();
+			const end = new Date(comparisonWindow.end_time).getTime();
+			if (!Number.isFinite(start) || !Number.isFinite(end) || start >= end) return null;
+			return {
+				start,
+				end
 			};
-			this._updateZoomWindowHighlight();
 		}
 		_handleChartHover(ev) {
 			this._chartHoverTimeMs = ev?.detail?.timeMs ?? null;
@@ -38057,35 +38053,23 @@
 			this._renderContent();
 		}
 		_updateChartHoverIndicator() {
-			if (!this._rangeToolbarComp) return;
-			if (!this._rangeBounds || this._chartHoverTimeMs == null) {
-				this._rangeToolbarComp.chartHoverTimeMs = null;
-				this._rangeToolbarComp.chartHoverWindowTimeMs = null;
-				return;
-			}
-			this._rangeToolbarComp.chartHoverTimeMs = this._chartHoverTimeMs;
+			this.requestUpdate();
+		}
+		_getChartHoverWindowTimeMs() {
+			if (!this._rangeBounds || this._chartHoverTimeMs == null || !this._startTime) return null;
 			const activeWindow = this._getActiveComparisonWindow();
-			if (activeWindow && this._startTime) {
-				const timeOffsetMs = new Date(activeWindow.start_time).getTime() - this._startTime.getTime();
-				this._rangeToolbarComp.chartHoverWindowTimeMs = this._chartHoverTimeMs + timeOffsetMs;
-			} else this._rangeToolbarComp.chartHoverWindowTimeMs = null;
+			if (!activeWindow) return null;
+			return this._chartHoverTimeMs + new Date(activeWindow.start_time).getTime() - this._startTime.getTime();
 		}
 		_updateChartZoomHighlight() {
-			if (!this._rangeToolbarComp) return;
+			this.requestUpdate();
+		}
+		_getChartZoomHighlightRange() {
 			const highlightRange = this._chartZoomRange || this._chartZoomCommittedRange;
-			const nextZoomRange = this._rangeBounds && highlightRange ? {
+			return this._rangeBounds && highlightRange ? {
 				start: +highlightRange.start,
 				end: +highlightRange.end
 			} : null;
-			const nextZoomWindowRange = this._getZoomWindowHighlightRange();
-			this._rangeToolbarComp.syncZoomHighlights(nextZoomRange, nextZoomWindowRange);
-		}
-		_updateZoomWindowHighlight() {
-			if (!this._rangeToolbarComp) return;
-			this._rangeToolbarComp.syncZoomHighlights(this._rangeBounds && (this._chartZoomRange || this._chartZoomCommittedRange) ? {
-				start: +(this._chartZoomRange || this._chartZoomCommittedRange).start,
-				end: +(this._chartZoomRange || this._chartZoomCommittedRange).end
-			} : null, this._getZoomWindowHighlightRange());
 		}
 		_getZoomWindowHighlightRange() {
 			const activeWindow = this._getActiveComparisonWindow();
@@ -38129,7 +38113,7 @@
 				const latestCandidateLevel = this._computeZoomLevelForSpan(latestPaddedSelectionSpanMs);
 				if (latestCandidateLevel === latestLevel) return;
 				this._resolvedAutoZoomLevel = latestCandidateLevel;
-				this._syncRangeControl();
+				this.requestUpdate();
 			}, RANGE_AUTO_ZOOM_DEBOUNCE_MS);
 		}
 		/** Returns true when the committed end time is at or very near "now",
@@ -38141,7 +38125,7 @@
 		/** Toggle the live-edge indicator on the end handle. */
 		_syncLiveEdgeHandle() {
 			if (!this._rangeToolbarComp) return;
-			this._rangeToolbarComp.isLiveEdge = this._isOnLiveEdge();
+			this.requestUpdate();
 		}
 		/** Called whenever a new annotation is recorded (HA event or window event).
 		*  If the current range is on the live edge, advance the end time to now
@@ -38392,7 +38376,7 @@
 						this._requestChartResizeRedraw();
 						if (ev.detail?.committed) {
 							this._saveSessionState();
-							window.requestAnimationFrame(() => this._syncRangeControl());
+							window.requestAnimationFrame(() => this.requestUpdate());
 						}
 					});
 				}
@@ -38490,6 +38474,22 @@
 	__decorate([n$1({ attribute: false })], HassDatapointsHistoryPanel.prototype, "narrow", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_rendered", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_shellBuilt", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_datapointScope", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_historyStartTime", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_historyEndTime", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_timelineEvents", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_resolvedAutoZoomLevel", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_chartHoverTimeMs", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_zoomLevel", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_dateSnapping", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_startTime", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_endTime", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_sidebarCollapsed", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_comparisonWindows", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_selectedComparisonWindowId", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_hoveredComparisonWindowId", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_chartZoomRange", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_chartZoomCommittedRange", null);
 	HassDatapointsHistoryPanel = __decorate([localized()], HassDatapointsHistoryPanel);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/list.styles.ts
