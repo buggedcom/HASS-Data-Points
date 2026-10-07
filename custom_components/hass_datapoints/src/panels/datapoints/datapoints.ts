@@ -1,5 +1,6 @@
 import { LitElement, html, nothing, unsafeCSS, type PropertyValues } from "lit";
 import { property, state as reactiveState } from "lit/decorators.js";
+import type { RangeToolbar } from "@/panels/datapoints/components/range-toolbar/range-toolbar";
 import { DOMAIN } from "@/constants";
 import { disambiguateEntityNames, entityName } from "@/lib/ha/entity-name";
 import { localized, msg, syncFrontendLocale } from "@/lib/i18n/localize";
@@ -179,32 +180,6 @@ type TargetRowElement = HTMLElement & {
   comparisonWindows: NormalizedHistoryDateWindow[];
 };
 
-type RangeToolbarElement = HTMLElement & {
-  startTime: Nullable<Date>;
-  endTime: Nullable<Date>;
-  rangeBounds: unknown;
-  zoomLevel: string;
-  dateSnapping: string;
-  sidebarCollapsed: boolean;
-  hass: unknown;
-  isLiveEdge: boolean;
-  timelineEvents: unknown[];
-  comparisonPreview: unknown;
-  zoomRange: Nullable<{ start: number; end: number }>;
-  zoomWindowRange: unknown;
-  chartHoverTimeMs: Nullable<number>;
-  chartHoverWindowTimeMs: Nullable<number>;
-  updateComplete: Promise<void>;
-  syncMobileDates(start: Nullable<Date>, end: Nullable<Date>): void;
-  syncZoomHighlights(
-    zoomRange: Nullable<{ start: number; end: number }>,
-    zoomWindowRange: Nullable<{ start: number; end: number }>
-  ): void;
-  closeMenus(): void;
-  syncOptionsLabels(): void;
-  revealSelection(): void;
-};
-
 type PanelShellElement = HTMLElement & {
   hass: unknown;
   narrow: boolean;
@@ -381,7 +356,8 @@ export class HassDatapointsHistoryPanel extends LitElement {
 
   declare _contentSplitRatio: number;
 
-  declare _datapointScope: string;
+  @reactiveState()
+  accessor _datapointScope: string = "linked";
 
   declare _showChartDatapointIcons: boolean;
 
@@ -405,11 +381,14 @@ export class HassDatapointsHistoryPanel extends LitElement {
 
   declare _dataGapThreshold: string;
 
-  declare _historyStartTime: Nullable<Date>;
+  @reactiveState()
+  accessor _historyStartTime: Nullable<Date> = null;
 
-  declare _historyEndTime: Nullable<Date>;
+  @reactiveState()
+  accessor _historyEndTime: Nullable<Date> = null;
 
-  declare _timelineEvents: unknown[];
+  @reactiveState()
+  accessor _timelineEvents: unknown[] = [];
 
   declare _preferredSeriesColors: RecordWithStringValues;
 
@@ -484,13 +463,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
 
   declare _sidebarAccordionChartOpen: boolean;
 
-  declare _dateControl: Nullable<HTMLElement>;
-
-  declare _dateRangePickerEl: Nullable<HTMLElement>;
-
-  declare _panelTimelineEl: Nullable<RangeToolbarElement>;
-
-  declare _rangeToolbarComp: Nullable<RangeToolbarElement>;
+  declare _rangeToolbarComp: Nullable<RangeToolbar>;
 
   declare _rangeBounds: Nullable<{ min: number; max: number; config: unknown }>;
 
@@ -500,15 +473,19 @@ export class HassDatapointsHistoryPanel extends LitElement {
 
   declare _chartZoomStateCommitTimer: Nullable<number>;
 
-  declare _resolvedAutoZoomLevel: Nullable<string>;
+  @reactiveState()
+  accessor _resolvedAutoZoomLevel: Nullable<string> = null;
 
   declare _hoveredPeriodRange: Nullable<unknown>;
 
-  declare _chartHoverTimeMs: Nullable<number>;
+  @reactiveState()
+  accessor _chartHoverTimeMs: Nullable<number> = null;
 
-  declare _zoomLevel: string;
+  @reactiveState()
+  accessor _zoomLevel: string = "auto";
 
-  declare _dateSnapping: string;
+  @reactiveState()
+  accessor _dateSnapping: string = "auto";
 
   declare _hasTargetInUrl: boolean;
 
@@ -603,7 +580,6 @@ export class HassDatapointsHistoryPanel extends LitElement {
     this._collapsedPopupOutsideClickHandler = null;
     this._collapsedPopupKeyHandler = null;
     this._lastSyncedLocale = "";
-    this._datapointScope = "linked";
     this._showChartDatapointIcons = true;
     this._showChartDatapointLines = true;
     this._showChartTooltips = true;
@@ -614,10 +590,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
     this._chartAnomalyOverlapMode = "all";
     this._showDataGaps = true;
     this._dataGapThreshold = "2h";
-    this._historyStartTime = null;
-    this._historyEndTime = null;
     this._historyBoundsLoaded = false;
-    this._timelineEvents = [];
     this._timelineEventsKey = "";
     this._preferredSeriesColors = {};
     this._preferencesLoaded = false;
@@ -657,19 +630,12 @@ export class HassDatapointsHistoryPanel extends LitElement {
     this._sidebarAccordionDatapointsOpen = true;
     this._sidebarAccordionAnalysisOpen = true;
     this._sidebarAccordionChartOpen = true;
-    this._dateControl = null;
-    this._dateRangePickerEl = null;
-    this._panelTimelineEl = null;
     this._rangeBounds = null;
     this._autoZoomTimer = null;
-    this._resolvedAutoZoomLevel = null;
     this._hoveredPeriodRange = null;
-    this._chartHoverTimeMs = null;
     this._chartZoomRange = null;
     this._chartZoomCommittedRange = null;
     this._chartZoomStateCommitTimer = null;
-    this._zoomLevel = "auto";
-    this._dateSnapping = "auto";
     this._hasTargetInUrl = false;
     this._hasRangeInUrl = false;
     this._hasPageStateInUrl = false;
@@ -709,7 +675,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
         this._syncPageLayoutHeight();
         this._applyContentSplitLayout();
         this._requestChartResizeRedraw();
-        this._syncRangeControl();
+        this.requestUpdate();
       }
     };
     this._onCollapsedSidebarClick = (_ev: Event) =>
@@ -764,6 +730,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
     return this._appState().state.range.startTime;
   }
 
+  @reactiveState()
   set _startTime(value) {
     this._appState().setRange(value || null, this._endTime || null);
   }
@@ -772,6 +739,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
     return this._appState().state.range.endTime;
   }
 
+  @reactiveState()
   set _endTime(value) {
     this._appState().setRange(this._startTime || null, value || null);
   }
@@ -780,6 +748,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
     return this._appState().state.display.sidebarCollapsed;
   }
 
+  @reactiveState()
   set _sidebarCollapsed(value) {
     this._appState().setSidebarCollapsed(!!value);
   }
@@ -788,6 +757,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
     return this._appState().state.comparison.windows;
   }
 
+  @reactiveState()
   set _comparisonWindows(value) {
     this._appState().setComparisonWindows(Array.isArray(value) ? value : []);
   }
@@ -796,6 +766,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
     return this._appState().state.comparison.selectedWindowId;
   }
 
+  @reactiveState()
   set _selectedComparisonWindowId(value) {
     this._appState().setSelectedComparisonWindowId(value || null);
   }
@@ -804,6 +775,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
     return this._appState().state.comparison.hoveredWindowId;
   }
 
+  @reactiveState()
   set _hoveredComparisonWindowId(value) {
     this._appState().setHoveredComparisonWindowId(value || null);
   }
@@ -812,6 +784,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
     return this._appState().state.range.previewZoomRange;
   }
 
+  @reactiveState()
   set _chartZoomRange(value) {
     this._appState().setPreviewZoomRange(value || null);
   }
@@ -820,6 +793,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
     return this._appState().state.range.committedZoomRange;
   }
 
+  @reactiveState()
   set _chartZoomCommittedRange(value) {
     this._appState().setCommittedZoomRange(value || null);
   }
@@ -934,9 +908,6 @@ export class HassDatapointsHistoryPanel extends LitElement {
             )
           );
         }
-        if (this._rangeToolbarComp) {
-          this._rangeToolbarComp.hass = this._hass ?? null;
-        }
         // Inline HA state-icon elements rendered directly into the shadow DOM.
         this.shadowRoot
           ?.querySelectorAll(
@@ -1046,6 +1017,10 @@ export class HassDatapointsHistoryPanel extends LitElement {
       if (this._shellEl) {
         this._shellEl.narrow = this.narrow;
       }
+    }
+    if (this._rendered) {
+      this._rangeBounds = this._deriveRangeBounds();
+      this._ensureTimelineEvents();
     }
   }
 
@@ -1650,12 +1625,73 @@ export class HassDatapointsHistoryPanel extends LitElement {
         }}
         @click=${this._onCollapsedSidebarClick}
       >
+        <range-toolbar
+          slot="controls"
+          .hass=${this.hass}
+          .startTime=${this._startTime ? new Date(this._startTime) : null}
+          .endTime=${this._endTime ? new Date(this._endTime) : null}
+          .rangeBounds=${this._rangeBounds}
+          .zoomLevel=${this._getEffectiveZoomLevel()}
+          .dateSnapping=${this._dateSnapping}
+          .sidebarCollapsed=${this._sidebarCollapsed}
+          .isLiveEdge=${this._isOnLiveEdge()}
+          .timelineEvents=${this._timelineEvents}
+          .comparisonPreview=${this._getComparisonRangePreview()}
+          .zoomRange=${this._getChartZoomHighlightRange()}
+          .zoomWindowRange=${this._getZoomWindowHighlightRange()}
+          .chartHoverTimeMs=${this._rangeBounds ? this._chartHoverTimeMs : null}
+          .chartHoverWindowTimeMs=${this._getChartHoverWindowTimeMs()}
+          @dp-range-commit=${(
+            ev: DetailEvent<{ start?: Date; end?: Date; push?: boolean }>
+          ) => {
+            this._applyCommittedRange(ev.detail?.start, ev.detail?.end, {
+              push: ev.detail?.push ?? false,
+            });
+          }}
+          @dp-range-draft=${(ev: DetailEvent<{ start?: Date; end?: Date }>) => {
+            this._scheduleAutoZoomUpdate(ev.detail?.start, ev.detail?.end);
+          }}
+          @dp-toolbar-sidebar-toggle=${() => this._toggleSidebarCollapsed()}
+          @dp-zoom-level-change=${(ev: DetailEvent<{ value?: string }>) => {
+            const { value } = ev.detail || {};
+            if (value && value !== this._zoomLevel) {
+              this._zoomLevel = value;
+              this._clearAutoZoomTimer();
+              this._resolvedAutoZoomLevel =
+                value === "auto" ? null : this._resolvedAutoZoomLevel;
+              this._saveSessionState();
+              this._updateUrl({ push: false });
+              this._saveUserPreferences();
+            }
+          }}
+          @dp-snap-change=${(ev: DetailEvent<{ value?: string }>) => {
+            const { value } = ev.detail || {};
+            if (value && value !== this._dateSnapping) {
+              this._dateSnapping = value;
+              this._saveSessionState();
+              this._updateUrl({ push: false });
+              this._saveUserPreferences();
+            }
+          }}
+          @dp-date-picker-change=${(ev: Event) =>
+            this._handleDatePickerChange(ev)}
+        ></range-toolbar>
         <div id="content"></div>
       </panel-shell>
     `;
   }
 
   protected updated() {
+    this._rangeToolbarComp = this.renderRoot.querySelector("range-toolbar");
+    const toolbar = this._rangeToolbarComp;
+    if (toolbar) {
+      toolbar.updateComplete.then(() => {
+        if (this.isConnected && this._rangeToolbarComp === toolbar) {
+          // Retain the mobile input DOM synchronization until measured-DOM migration.
+          toolbar.syncMobileDates(this._startTime, this._endTime);
+        }
+      });
+    }
     if (this._shellBuilt && !this._shellEl) {
       this._mountShellControls();
     }
@@ -1825,7 +1861,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
   _syncControls() {
     this._syncPageLayoutHeight();
     this._syncHassBindings();
-    this._syncRangeUi();
+    this.requestUpdate();
     this._renderSidebarOptions();
   }
 
@@ -1905,17 +1941,6 @@ export class HassDatapointsHistoryPanel extends LitElement {
         icon.stateObj = this._hass?.states?.[entityId];
         icon.hass = this._hass;
       });
-    if (this._rangeToolbarComp) {
-      this._rangeToolbarComp.hass = this._hass ?? null;
-    }
-  }
-
-  _syncRangeUi() {
-    if (!this._dateControl) {
-      return;
-    }
-    this._syncOptionsMenu();
-    this._syncRangeControl();
   }
 
   _renderSidebarOptions() {
@@ -2531,9 +2556,6 @@ export class HassDatapointsHistoryPanel extends LitElement {
     if (this._historyTargetsComp) {
       this._historyTargetsComp.sidebarCollapsed = this._sidebarCollapsed;
     }
-    if (this._rangeToolbarComp) {
-      this._rangeToolbarComp.sidebarCollapsed = this._sidebarCollapsed;
-    }
   }
 
   _updateLayoutMode() {
@@ -2590,12 +2612,6 @@ export class HassDatapointsHistoryPanel extends LitElement {
     this._saveSessionState();
     this._updateUrl({ push: false });
     this._syncSidebarUi();
-    window.requestAnimationFrame(() => {
-      if (!this.isConnected) {
-        return;
-      }
-      this._syncRangeControl();
-    });
   }
 
   _handleCollapsedSidebarClick() {
@@ -2751,9 +2767,6 @@ export class HassDatapointsHistoryPanel extends LitElement {
     ) {
       this._timelineEvents = [];
       this._context.fetch.resetTimelineEvents();
-      if (this._rendered && this._rangeToolbarComp) {
-        this._rangeToolbarComp.timelineEvents = [];
-      }
       return;
     }
     const startIso = new Date(this._rangeBounds!.min).toISOString();
@@ -2766,9 +2779,6 @@ export class HassDatapointsHistoryPanel extends LitElement {
       onSuccess: (events: unknown[], key: string) => {
         this._timelineEvents = events;
         this._timelineEventsKey = key;
-        if (this._rendered && this._rangeToolbarComp) {
-          this._rangeToolbarComp.timelineEvents = this._timelineEvents;
-        }
       },
       onError: (err: unknown) => {
         logger.warn("[hass-datapoints] failed to load timeline events:", err);
@@ -2837,7 +2847,6 @@ export class HassDatapointsHistoryPanel extends LitElement {
 
     const histTargets = this._mountHistoryTargetsControl();
     this._mountTargetPickerControl(histTargets);
-    this._mountRangeToolbarControl();
     this._mountSidebarOptionsControl();
     this._mountDateWindowDialogControl();
     this._mountMonitorWizard();
@@ -3006,97 +3015,6 @@ export class HassDatapointsHistoryPanel extends LitElement {
       }
       targetControl.value = {};
     });
-  }
-
-  _mountRangeToolbarControl() {
-    const rangeToolbar = document.createElement(
-      "range-toolbar"
-    ) as unknown as RangeToolbarElement;
-    rangeToolbar.slot = "controls";
-    rangeToolbar.startTime = this._startTime;
-    rangeToolbar.endTime = this._endTime;
-    rangeToolbar.rangeBounds = this._rangeBounds;
-    rangeToolbar.zoomLevel = this._zoomLevel;
-    rangeToolbar.dateSnapping = this._dateSnapping;
-    rangeToolbar.sidebarCollapsed = this._sidebarCollapsed;
-    rangeToolbar.hass = this._hass ?? null;
-    rangeToolbar.isLiveEdge = this._isOnLiveEdge();
-    rangeToolbar.timelineEvents = this._timelineEvents || [];
-    rangeToolbar.comparisonPreview = null;
-    rangeToolbar.zoomRange = this._chartZoomCommittedRange
-      ? {
-          start: +this._chartZoomCommittedRange.start,
-          end: +this._chartZoomCommittedRange.end,
-        }
-      : null;
-    rangeToolbar.zoomWindowRange = null;
-    rangeToolbar.chartHoverTimeMs = null;
-    rangeToolbar.chartHoverWindowTimeMs = null;
-    rangeToolbar.addEventListener(
-      "dp-range-commit",
-      (ev: DetailEvent<{ start?: Date; end?: Date; push?: boolean }>) => {
-        this._applyCommittedRange(ev.detail?.start, ev.detail?.end, {
-          push: ev.detail?.push ?? false,
-        });
-      }
-    );
-    rangeToolbar.addEventListener(
-      "dp-range-draft",
-      (ev: DetailEvent<{ start?: Date; end?: Date }>) => {
-        this._scheduleAutoZoomUpdate(ev.detail?.start, ev.detail?.end);
-      }
-    );
-    rangeToolbar.addEventListener("dp-toolbar-sidebar-toggle", () =>
-      this._toggleSidebarCollapsed()
-    );
-    rangeToolbar.addEventListener(
-      "dp-zoom-level-change",
-      (ev: DetailEvent<{ value?: string }>) => {
-        const { value } = ev.detail || {};
-        if (value && value !== this._zoomLevel) {
-          this._zoomLevel = value;
-          this._clearAutoZoomTimer();
-          this._resolvedAutoZoomLevel =
-            value === "auto" ? null : this._resolvedAutoZoomLevel;
-          this._saveSessionState();
-          this._updateUrl({ push: false });
-          this._syncRangeControl();
-          this._saveUserPreferences();
-        }
-      }
-    );
-    rangeToolbar.addEventListener(
-      "dp-snap-change",
-      (ev: DetailEvent<{ value?: string }>) => {
-        const { value } = ev.detail || {};
-        if (value && value !== this._dateSnapping) {
-          this._dateSnapping = value;
-          this._saveSessionState();
-          this._updateUrl({ push: false });
-          this._syncRangeControl();
-          this._saveUserPreferences();
-        }
-      }
-    );
-    rangeToolbar.addEventListener("dp-date-picker-change", (ev) => {
-      this._handleDatePickerChange(ev);
-    });
-    this._shellEl!.appendChild(rangeToolbar);
-    this._rangeToolbarComp = rangeToolbar;
-
-    this._dateControl = rangeToolbar;
-
-    // Once the range toolbar renders, sync controls so the forwarded props receive initial data.
-    rangeToolbar.updateComplete.then(() => {
-      if (!this.isConnected || this._rangeToolbarComp !== rangeToolbar) {
-        return;
-      }
-      this._syncControls();
-      this._renderContent();
-    });
-
-    // Sync initial sidebar UI for toolbar toggle icon direction
-    this._syncSidebarUi();
   }
 
   _mountSidebarOptionsControl() {
@@ -3866,10 +3784,6 @@ export class HassDatapointsHistoryPanel extends LitElement {
     // by floating-menu via dp-menu-close events.
   }
 
-  _syncOptionsMenu() {
-    this._rangeToolbarComp?.syncOptionsLabels();
-  }
-
   _handleDatePickerChange(ev: Event) {
     const { start, end } = extractRangeValue(
       ev as Parameters<typeof extractRangeValue>[0]
@@ -4043,52 +3957,21 @@ export class HassDatapointsHistoryPanel extends LitElement {
     );
   }
 
-  _syncRangeControl() {
-    if (!this._rangeToolbarComp) {
-      return;
-    }
-    this._rangeBounds = this._deriveRangeBounds();
-    this._ensureTimelineEvents();
-    this._rangeToolbarComp.startTime = this._startTime
-      ? new Date(this._startTime)
-      : null;
-    this._rangeToolbarComp.endTime = this._endTime
-      ? new Date(this._endTime)
-      : null;
-    this._rangeToolbarComp.rangeBounds = this._rangeBounds;
-    this._rangeToolbarComp.zoomLevel = this._getEffectiveZoomLevel();
-    this._rangeToolbarComp.dateSnapping = this._dateSnapping;
-    this._rangeToolbarComp.isLiveEdge = this._isOnLiveEdge();
-    this._rangeToolbarComp.timelineEvents = this._timelineEvents || [];
-    this._updateComparisonRangePreview();
-    this._updateChartHoverIndicator();
-    this._updateChartZoomHighlight();
-    this._syncMobileDateInputs();
+  _updateComparisonRangePreview() {
+    this.requestUpdate();
   }
 
-  _updateComparisonRangePreview() {
-    if (!this._rangeToolbarComp) {
-      return;
-    }
+  _getComparisonRangePreview() {
     const comparisonWindow = this._getActiveComparisonWindow();
     if (!this._rangeBounds || !comparisonWindow) {
-      this._rangeToolbarComp.comparisonPreview = null;
-      this._updateZoomWindowHighlight();
-      return;
+      return null;
     }
-    const startMs = new Date(comparisonWindow.start_time).getTime();
-    const endMs = new Date(comparisonWindow.end_time).getTime();
-    if (
-      !Number.isFinite(startMs) ||
-      !Number.isFinite(endMs) ||
-      startMs >= endMs
-    ) {
-      this._rangeToolbarComp.comparisonPreview = null;
-      this._updateZoomWindowHighlight();
-      return;
+    const start = new Date(comparisonWindow.start_time).getTime();
+    const end = new Date(comparisonWindow.end_time).getTime();
+    if (!Number.isFinite(start) || !Number.isFinite(end) || start >= end) {
+      return null;
     }
-    this._rangeToolbarComp.comparisonPreview = { start: startMs, end: endMs };
-    this._updateZoomWindowHighlight();
+    return { start, end };
   }
 
   _handleChartHover(ev: DetailEvent<{ timeMs?: Nullable<number> }>) {
@@ -4251,61 +4134,38 @@ export class HassDatapointsHistoryPanel extends LitElement {
   }
 
   _updateChartHoverIndicator() {
-    if (!this._rangeToolbarComp) {
-      return;
+    this.requestUpdate();
+  }
+
+  _getChartHoverWindowTimeMs() {
+    if (
+      !this._rangeBounds ||
+      this._chartHoverTimeMs == null ||
+      !this._startTime
+    ) {
+      return null;
     }
-    if (!this._rangeBounds || this._chartHoverTimeMs == null) {
-      this._rangeToolbarComp.chartHoverTimeMs = null;
-      this._rangeToolbarComp.chartHoverWindowTimeMs = null;
-      return;
-    }
-    this._rangeToolbarComp.chartHoverTimeMs = this._chartHoverTimeMs;
     const activeWindow = this._getActiveComparisonWindow();
-    if (activeWindow && this._startTime) {
-      const timeOffsetMs =
-        new Date(activeWindow.start_time).getTime() - this._startTime.getTime();
-      this._rangeToolbarComp.chartHoverWindowTimeMs =
-        this._chartHoverTimeMs + timeOffsetMs;
-    } else {
-      this._rangeToolbarComp.chartHoverWindowTimeMs = null;
+    if (!activeWindow) {
+      return null;
     }
+    return (
+      this._chartHoverTimeMs +
+      new Date(activeWindow.start_time).getTime() -
+      this._startTime.getTime()
+    );
   }
 
   _updateChartZoomHighlight() {
-    if (!this._rangeToolbarComp) {
-      return;
-    }
-    const highlightRange =
-      this._chartZoomRange || this._chartZoomCommittedRange;
-    const nextZoomRange =
-      this._rangeBounds && highlightRange
-        ? {
-            start: +highlightRange.start,
-            end: +highlightRange.end,
-          }
-        : null;
-    const nextZoomWindowRange = this._getZoomWindowHighlightRange();
-    this._rangeToolbarComp.syncZoomHighlights(
-      nextZoomRange,
-      nextZoomWindowRange
-    );
+    this.requestUpdate();
   }
 
-  _updateZoomWindowHighlight() {
-    if (!this._rangeToolbarComp) {
-      return;
-    }
-    this._rangeToolbarComp.syncZoomHighlights(
-      this._rangeBounds &&
-        (this._chartZoomRange || this._chartZoomCommittedRange)
-        ? {
-            start: +(this._chartZoomRange || this._chartZoomCommittedRange)!
-              .start,
-            end: +(this._chartZoomRange || this._chartZoomCommittedRange)!.end,
-          }
-        : null,
-      this._getZoomWindowHighlightRange()
-    );
+  _getChartZoomHighlightRange() {
+    const highlightRange =
+      this._chartZoomRange || this._chartZoomCommittedRange;
+    return this._rangeBounds && highlightRange
+      ? { start: +highlightRange.start, end: +highlightRange.end }
+      : null;
   }
 
   _getZoomWindowHighlightRange() {
@@ -4401,7 +4261,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
         return;
       }
       this._resolvedAutoZoomLevel = latestCandidateLevel;
-      this._syncRangeControl();
+      this.requestUpdate();
     }, RANGE_AUTO_ZOOM_DEBOUNCE_MS);
   }
 
@@ -4424,7 +4284,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
     if (!this._rangeToolbarComp) {
       return;
     }
-    this._rangeToolbarComp.isLiveEdge = this._isOnLiveEdge();
+    this.requestUpdate();
   }
 
   /** Called whenever a new annotation is recorded (HA event or window event).
@@ -4785,7 +4645,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
             this._requestChartResizeRedraw();
             if (ev.detail?.committed) {
               this._saveSessionState();
-              window.requestAnimationFrame(() => this._syncRangeControl());
+              window.requestAnimationFrame(() => this.requestUpdate());
             }
           }
         );
