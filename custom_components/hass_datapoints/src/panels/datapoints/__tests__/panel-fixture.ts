@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, vi } from "vitest";
+import type { LitElement } from "lit";
 import type { HassLike } from "@/lib/types";
 import { PANEL_HISTORY_PREFERENCES_KEY } from "@/lib/history-page/history-session-state";
 import { PANEL_HISTORY_SAVED_PAGE_KEY } from "@/lib/data/preferences-api";
@@ -139,11 +140,26 @@ export function createPanel(
   return panel;
 }
 
-// Advance browser scheduling, never invoke a panel lifecycle/private method.
+async function awaitRenderedControls(root: ParentNode): Promise<void> {
+  await Promise.all(
+    Array.from(root.querySelectorAll("*")).map(async (element) => {
+      await (element as Partial<LitElement>).updateComplete;
+      if (element.shadowRoot) {
+        await awaitRenderedControls(element.shadowRoot);
+      }
+    })
+  );
+}
+
+// Await browser frames and public Lit completion promises, never invoke a
+// panel lifecycle/private method or rely on an arbitrary initialization delay.
 export async function settlePanel(): Promise<void> {
   await new Promise<void>((resolve) => {
-    window.setTimeout(resolve, 300);
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => resolve());
+    });
   });
+  await awaitRenderedControls(document.body);
 }
 
 export async function mountPanel(
@@ -152,6 +168,10 @@ export async function mountPanel(
 ) {
   const panel = createPanel(hass, config);
   document.body.appendChild(panel);
+  await vi.waitFor(() => control(panel.shadowRoot!, "range-toolbar"), {
+    timeout: 2000,
+    interval: 10,
+  });
   await settlePanel();
   // HA keeps feeding properties after connection. Complete the first locale
   // synchronization before exercising subsequent routine hass updates.

@@ -53,6 +53,7 @@ describe("GIVEN the mounted range toolbar", () => {
       const panel = await mountPanel(hass);
       const toolbar = control(panel.shadowRoot!, "range-toolbar");
       emitControlEvent(toolbar, "dp-zoom-level-change", { value: "day" });
+      await settlePanel();
       emitControlEvent(toolbar, "dp-snap-change", { value: "day" });
       await settlePanel();
       expect(toolbar.zoomLevel).toBe("day");

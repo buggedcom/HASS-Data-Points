@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   control,
   createHassFixture,
@@ -22,6 +22,10 @@ describe("GIVEN a panel with a Home Assistant fixture", () => {
       expect(
         panel.shadowRoot!.querySelector('[role="status"]')?.textContent
       ).toContain("Loading Datapoints");
+      await vi.waitFor(() => control(panel.shadowRoot!, "range-toolbar"), {
+        timeout: 2000,
+        interval: 10,
+      });
       await settlePanel();
       const shell = control(panel.shadowRoot!, "panel-shell");
       expect(shell.hass).toBe(hass);
