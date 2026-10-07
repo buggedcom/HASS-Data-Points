@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { html, render } from "lit";
 
 import {
+  attachLineChartHover,
   buildTooltipRelatedChips,
   dispatchLineChartHover,
   hideTooltip,
@@ -484,6 +485,99 @@ describe("chart-interaction", () => {
         expect(ttValue.style.display).toBe("none");
         expect(ttSeries.style.display).toBe("grid");
         expect(ttSeries.innerHTML).toContain("Date window: Temperature");
+      });
+    });
+  });
+
+  describe("GIVEN a chart hover attached via the options object", () => {
+    function createHoverCanvas() {
+      const canvas = document.createElement("canvas");
+      Object.defineProperty(canvas, "getBoundingClientRect", {
+        value: () => ({
+          left: 0,
+          top: 0,
+          right: 400,
+          bottom: 200,
+          width: 400,
+          height: 200,
+        }),
+        configurable: true,
+      });
+      return canvas;
+    }
+
+    function createRenderer() {
+      return {
+        cw: 360,
+        ch: 160,
+        pad: { left: 20, top: 20 },
+        xOf: () => 100,
+        yOf: () => 80,
+        _interpolateValue: () => 10,
+      };
+    }
+
+    describe("WHEN attachLineChartHover receives a single options object", () => {
+      it("THEN it wires the context-menu, add-annotation and anomaly-click handlers", () => {
+        expect.assertions(3);
+
+        const card = createCard();
+        const canvas = createHoverCanvas();
+        const renderer = createRenderer();
+        const onContextMenu = vi.fn();
+        const onAddAnnotation = vi.fn();
+        const onAnomalyClick = vi.fn();
+
+        attachLineChartHover({
+          card,
+          canvas,
+          renderer,
+          series: [
+            {
+              entityId: "sensor.alpha",
+              label: "Alpha",
+              pts: [
+                [0, 10],
+                [100, 10],
+              ],
+            },
+          ],
+          events: [],
+          t0: 0,
+          t1: 100,
+          vMin: 0,
+          vMax: 100,
+          axes: null,
+          anomalyRegions: [
+            {
+              centerX: 100,
+              centerY: 80,
+              radiusX: 20,
+              radiusY: 20,
+            },
+          ],
+          onContextMenu,
+          onAddAnnotation,
+          onAnomalyClick,
+        });
+
+        // Context menu builds + stores the hover state.
+        canvas.dispatchEvent(
+          new MouseEvent("contextmenu", { clientX: 100, clientY: 80 })
+        );
+        expect(onContextMenu).toHaveBeenCalledTimes(1);
+
+        // The add-annotation button consumes the stored hover state.
+        card.shadowRoot
+          .getElementById("chart-add-annotation")
+          ?.dispatchEvent(new MouseEvent("click"));
+        expect(onAddAnnotation).toHaveBeenCalledTimes(1);
+
+        // A click inside an anomaly region reports the hit regions.
+        canvas.dispatchEvent(
+          new MouseEvent("click", { clientX: 100, clientY: 80 })
+        );
+        expect(onAnomalyClick).toHaveBeenCalledTimes(1);
       });
     });
   });

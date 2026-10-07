@@ -4086,68 +4086,65 @@ export class HistoryChart extends HTMLElement {
     );
     if (visibleSeries.length || visibleBinaryBackgrounds.length) {
       this._ensureContextAnnotationDialog();
-      attachLineChartHover(
-        this,
-        canvas!,
+      attachLineChartHover({
+        card: this,
+        canvas: canvas!,
         renderer,
-        hoverSeries as HoverSeriesLike[],
-        enrichedEvents as ChartEventRecord[],
-        renderT0,
-        renderT1,
-        0,
-        0,
-        activeAxes as unknown as null,
-        {
-          onContextMenu: (hover: unknown) =>
-            this._handleChartContextMenu(hover),
-          onAddAnnotation: this._canAddAnnotation
-            ? (hover: unknown) => this._handleChartAddAnnotation(hover)
-            : undefined,
-          binaryStates: visibleBinaryBackgrounds as HoverSeriesLike[],
-          comparisonSeries: effectiveComparisonHoverSeries as HoverSeriesLike[],
-          trendSeries: [
-            ...trendHoverSeries,
-            ...comparisonTrendHoverSeries,
-          ] as HoverSeriesLike[],
-          rateSeries: [
-            ...rateHoverSeries,
-            ...comparisonRateHoverSeries,
-          ] as HoverSeriesLike[],
-          deltaSeries: deltaHoverSeries as HoverSeriesLike[],
-          summarySeries: [
-            ...summaryHoverSeries,
-            ...comparisonSummaryHoverSeries,
-          ] as HoverSeriesLike[],
-          thresholdSeries: [
-            ...thresholdHoverSeries,
-            ...comparisonThresholdHoverSeries,
-          ] as HoverSeriesLike[],
-          anomalyRegions: Array.isArray(this._lastAnomalyRegions)
-            ? this._lastAnomalyRegions
-            : [],
-          hoverSurfaceEl: this.querySelector(
-            "#chart-icon-overlay"
-          ) as Nullable<HTMLElement>,
-          showTooltip:
-            (this._config as RecordWithUnknownValues).show_tooltips !== false,
-          emphasizeHoverGuides:
-            (this._config as RecordWithUnknownValues).emphasize_hover_guides ===
-            true,
-          hoverSnapMode:
-            (this._config as RecordWithUnknownValues).hover_snap_mode ===
-            "snap_to_data_points"
-              ? "snap_to_data_points"
-              : "follow_series",
-          showTrendCrosshairs: anyTrendCrosshairs,
-          showRateCrosshairs: anyRateCrosshairs,
-          hideRawData:
-            hiddenSourceEntityIds.size === visibleSeries.length &&
-            visibleSeries.length > 0,
-          showDeltaTooltip: deltaHoverSeries.length > 0,
-          onAnomalyClick: (regions: unknown) =>
-            this._handleAnomalyAddAnnotation(regions),
-        }
-      );
+        series: hoverSeries as HoverSeriesLike[],
+        events: enrichedEvents as ChartEventRecord[],
+        t0: renderT0,
+        t1: renderT1,
+        vMin: 0,
+        vMax: 0,
+        axes: activeAxes as unknown as null,
+        onContextMenu: (hover: unknown) => this._handleChartContextMenu(hover),
+        onAddAnnotation: this._canAddAnnotation
+          ? (hover: unknown) => this._handleChartAddAnnotation(hover)
+          : undefined,
+        binaryStates: visibleBinaryBackgrounds as HoverSeriesLike[],
+        comparisonSeries: effectiveComparisonHoverSeries as HoverSeriesLike[],
+        trendSeries: [
+          ...trendHoverSeries,
+          ...comparisonTrendHoverSeries,
+        ] as HoverSeriesLike[],
+        rateSeries: [
+          ...rateHoverSeries,
+          ...comparisonRateHoverSeries,
+        ] as HoverSeriesLike[],
+        deltaSeries: deltaHoverSeries as HoverSeriesLike[],
+        summarySeries: [
+          ...summaryHoverSeries,
+          ...comparisonSummaryHoverSeries,
+        ] as HoverSeriesLike[],
+        thresholdSeries: [
+          ...thresholdHoverSeries,
+          ...comparisonThresholdHoverSeries,
+        ] as HoverSeriesLike[],
+        anomalyRegions: Array.isArray(this._lastAnomalyRegions)
+          ? this._lastAnomalyRegions
+          : [],
+        hoverSurfaceEl: this.querySelector(
+          "#chart-icon-overlay"
+        ) as Nullable<HTMLElement>,
+        showTooltip:
+          (this._config as RecordWithUnknownValues).show_tooltips !== false,
+        emphasizeHoverGuides:
+          (this._config as RecordWithUnknownValues).emphasize_hover_guides ===
+          true,
+        hoverSnapMode:
+          (this._config as RecordWithUnknownValues).hover_snap_mode ===
+          "snap_to_data_points"
+            ? "snap_to_data_points"
+            : "follow_series",
+        showTrendCrosshairs: anyTrendCrosshairs,
+        showRateCrosshairs: anyRateCrosshairs,
+        hideRawData:
+          hiddenSourceEntityIds.size === visibleSeries.length &&
+          visibleSeries.length > 0,
+        showDeltaTooltip: deltaHoverSeries.length > 0,
+        onAnomalyClick: (regions: unknown) =>
+          this._handleAnomalyAddAnnotation(regions),
+      });
       attachLineChartRangeZoom(this, canvas!, renderer, renderT0, renderT1, {
         onPreview: (range: unknown) => this._dispatchZoomPreview(range),
         onZoom: ({
