@@ -2,7 +2,7 @@ import { LitElement, html, nothing, unsafeCSS, type PropertyValues } from "lit";
 import { property, state as reactiveState } from "lit/decorators.js";
 import { DOMAIN } from "@/constants";
 import { disambiguateEntityNames, entityName } from "@/lib/ha/entity-name";
-import { msg, syncFrontendLocale } from "@/lib/i18n/localize";
+import { localized, msg, syncFrontendLocale } from "@/lib/i18n/localize";
 import {
   confirmDestructiveAction,
   ensureHaComponents,
@@ -308,6 +308,7 @@ type ResizablePanesElement = HTMLElement & {
 
 // Shared timeline, domain, and history-page helpers now live in dedicated subsystem files.
 
+@localized()
 export class HassDatapointsHistoryPanel extends LitElement {
   static styles = [unsafeCSS(PANEL_HISTORY_STYLE)];
 
@@ -1033,6 +1034,10 @@ export class HassDatapointsHistoryPanel extends LitElement {
   }
 
   protected willUpdate(changed: PropertyValues<this>) {
+    // Resolve configuration targets against the latest HA registry in this batch.
+    if (changed.has("hass") && this.hass) {
+      this._applyHass(this.hass);
+    }
     if (changed.has("panel")) {
       this._applyPanel(this.panel);
     }
@@ -1041,9 +1046,6 @@ export class HassDatapointsHistoryPanel extends LitElement {
       if (this._shellEl) {
         this._shellEl.narrow = this.narrow;
       }
-    }
-    if (changed.has("hass") && this.hass) {
-      this._applyHass(this.hass);
     }
   }
 

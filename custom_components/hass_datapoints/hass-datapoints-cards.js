@@ -35723,6 +35723,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/datapoints.ts
+	var _HassDatapointsHistoryPanel, _hass_accessor_storage$3, _panel_accessor_storage, _narrow_accessor_storage, _rendered_accessor_storage, _shellBuilt_accessor_storage;
 	/** Module-level set of all currently-connected panel instances.
 	*  Used by the orphan-recovery guard to avoid disrupting a live replacement. */
 	var _liveInstances = /* @__PURE__ */ new Set();
@@ -35771,15 +35772,7 @@
 		value: "only",
 		label: "Overlaps only"
 	}];
-	var _hass_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
-	var _panel_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _narrow_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _rendered_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _shellBuilt_accessor_storage = /* @__PURE__ */ new WeakMap();
-	/**
-	* hass-datapoints-history-panel – Sidebar panel for annotated history exploration.
-	*/
-	var HassDatapointsHistoryPanel = class extends i$2 {
+	var HassDatapointsHistoryPanel = (_hass_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _panel_accessor_storage = /* @__PURE__ */ new WeakMap(), _narrow_accessor_storage = /* @__PURE__ */ new WeakMap(), _rendered_accessor_storage = /* @__PURE__ */ new WeakMap(), _shellBuilt_accessor_storage = /* @__PURE__ */ new WeakMap(), _HassDatapointsHistoryPanel = class HassDatapointsHistoryPanel extends i$2 {
 		get hass() {
 			return _classPrivateFieldGet2(_hass_accessor_storage$3, this);
 		}
@@ -36143,12 +36136,12 @@
 			}
 		}
 		willUpdate(changed) {
+			if (changed.has("hass") && this.hass) this._applyHass(this.hass);
 			if (changed.has("panel")) this._applyPanel(this.panel);
 			if (changed.has("narrow")) {
 				this._narrow = this.narrow;
 				if (this._shellEl) this._shellEl.narrow = this.narrow;
 			}
-			if (changed.has("hass") && this.hass) this._applyHass(this.hass);
 		}
 		connectedCallback() {
 			super.connectedCallback();
@@ -38485,8 +38478,7 @@
 			if (this._chartEl) this._chartEl.hass = this._hass;
 			this._chartEl?.setExternalZoomRange?.(this._chartZoomCommittedRange);
 		}
-	};
-	_defineProperty(HassDatapointsHistoryPanel, "styles", [r$6(PANEL_HISTORY_STYLE)]);
+	}, _defineProperty(_HassDatapointsHistoryPanel, "styles", [r$6(PANEL_HISTORY_STYLE)]), _HassDatapointsHistoryPanel);
 	__decorate([n$1({
 		attribute: false,
 		hasChanged: () => true
@@ -38498,6 +38490,7 @@
 	__decorate([n$1({ attribute: false })], HassDatapointsHistoryPanel.prototype, "narrow", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_rendered", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_shellBuilt", null);
+	HassDatapointsHistoryPanel = __decorate([localized()], HassDatapointsHistoryPanel);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/list.styles.ts
 	var styles$16 = i$5`

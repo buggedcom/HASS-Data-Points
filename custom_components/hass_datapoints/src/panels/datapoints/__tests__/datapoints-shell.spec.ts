@@ -77,3 +77,43 @@ describe("GIVEN the panel's loading style phase", () => {
     });
   });
 });
+
+describe("GIVEN a device with one registered sensor", () => {
+  describe("WHEN HA adds another sensor and selects the device in the same update", () => {
+    it("THEN resolves all device sensors from the latest HA registry", async () => {
+      expect.assertions(1);
+      const { hass } = createHassFixture();
+      hass.entities = {
+        "sensor.temperature": {
+          entity_id: "sensor.temperature",
+          device_id: "device-one",
+          area_id: null,
+          labels: [],
+        },
+      };
+      const panel = await mountPanel(hass);
+      window.sessionStorage.clear();
+      window.history.replaceState(null, "", "/datapoints");
+      panel.hass = {
+        ...hass,
+        entities: {
+          ...hass.entities,
+          "sensor.humidity": {
+            entity_id: "sensor.humidity",
+            device_id: "device-one",
+            area_id: null,
+            labels: [],
+          },
+        },
+      };
+      panel.panel = { config: { target: { device_id: ["device-one"] } } };
+      await panel.updateComplete;
+      await settlePanel();
+      expect(
+        control(panel.shadowRoot!, "history-targets").rows.map(
+          (row) => row.entity_id
+        )
+      ).toEqual(["sensor.temperature", "sensor.humidity"]);
+    });
+  });
+});
