@@ -203,6 +203,16 @@ interface TooltipRelatedEvent {
 }
 
 interface AttachLineChartHoverOptions {
+  card: ChartInteractionHost;
+  canvas: Nullable<HTMLCanvasElement>;
+  renderer: Nullable<ChartRenderer>;
+  series?: Nullable<HoverSeriesLike[]>;
+  events?: Nullable<ChartEventRecord[]>;
+  t0: number;
+  t1: number;
+  vMin: number;
+  vMax: number;
+  axes?: Nullable<ResolvedAxis[]>;
   binaryStates?: HoverSeriesLike[];
   comparisonSeries?: HoverSeriesLike[];
   trendSeries?: HoverSeriesLike[];
@@ -1544,18 +1554,20 @@ export function hideLineChartHover(card: ChartInteractionHost): void {
 }
 
 export function attachLineChartHover(
-  card: ChartInteractionHost,
-  canvas: Nullable<HTMLCanvasElement>,
-  renderer: Nullable<ChartRenderer>,
-  series: Nullable<HoverSeriesLike[]> | undefined,
-  events: Nullable<ChartEventRecord[]> | undefined,
-  t0: number,
-  t1: number,
-  vMin: number,
-  vMax: number,
-  axes: Nullable<ResolvedAxis[]> = null,
-  options: AttachLineChartHoverOptions = {}
+  options: AttachLineChartHoverOptions
 ): void {
+  const {
+    card,
+    canvas,
+    renderer,
+    series,
+    events,
+    t0,
+    t1,
+    vMin,
+    vMax,
+    axes = null,
+  } = options;
   const interactionState = getInteractionState(card);
   if (!canvas || !renderer) {
     return;
