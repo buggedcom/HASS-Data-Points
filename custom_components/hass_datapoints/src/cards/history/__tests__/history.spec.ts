@@ -615,3 +615,23 @@ describe("history", () => {
     });
   });
 });
+
+describe("GIVEN a history card's comparison tab host API", () => {
+  describe("WHEN the card has not rendered", () => {
+    it("THEN reports that the host is not ready", () => {
+      expect.assertions(1);
+      expect(createCard().getComparisonTabsHost()).toBeNull();
+    });
+  });
+  describe("WHEN the chart shell has rendered", () => {
+    it("THEN exposes the chart-owned top slot for panel content", async () => {
+      expect.assertions(2);
+      const card = createCard();
+      document.body.appendChild(card);
+      await card.updateComplete;
+      const host = card.getComparisonTabsHost();
+      expect(host?.id).toBe("chart-top-slot");
+      expect(card.shadowRoot!.contains(host)).toBe(true);
+    });
+  });
+});
