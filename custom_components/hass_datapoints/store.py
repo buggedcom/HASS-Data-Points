@@ -9,6 +9,7 @@ import threading
 import uuid
 from collections.abc import Callable
 from datetime import UTC, datetime
+from functools import partial
 from typing import Any
 
 from homeassistant.core import HomeAssistant
@@ -373,7 +374,7 @@ class DatapointsStore:
         self._notify_listeners()
         return event
 
-    def get_events(
+    async def async_get_events(
         self,
         start: str | None = None,
         end: str | None = None,
@@ -383,6 +384,9 @@ class DatapointsStore:
     ) -> list[dict[str, Any]]:
         """Return events, optionally filtered by time range and entity list.
 
+        The blocking SQLite query is dispatched to the executor so callers
+        never touch the database on the event loop.
+
         Filter logic:
         - Events with no entity_ids are global and always included.
         - Events with entity_ids are included only if they intersect with the
@@ -391,15 +395,24 @@ class DatapointsStore:
           filters would match the same event).
         - limit/offset provide pagination; limit=None returns all matches.
         """
-        return self._event_db.query(start, end, entity_ids, limit, offset)
+        return await self._hass.async_add_executor_job(
+            partial(
+                self._event_db.query,
+                start,
+                end,
+                entity_ids,
+                limit,
+                offset,
+            )
+        )
 
-    def get_event_bounds(self) -> tuple[str | None, str | None]:
+    async def async_get_event_bounds(self) -> tuple[str | None, str | None]:
         """Return the earliest and latest recorded event timestamps."""
-        return self._event_db.bounds()
+        return await self._hass.async_add_executor_job(self._event_db.bounds)
 
-    def get_event_count(self) -> int:
+    async def async_get_event_count(self) -> int:
         """Return the total number of recorded events."""
-        return self._event_db.count()
+        return await self._hass.async_add_executor_job(self._event_db.count)
 
     def async_add_listener(self, listener: Callable[[], None]) -> Callable[[], None]:
         """Register a callback for store mutations and return an unsubscribe function."""
@@ -458,7 +471,9 @@ class DatapointsStore:
             fields["color"] = color
 
         if not fields:
-            return self._event_db.get_by_id(event_id)
+            return await self._hass.async_add_executor_job(
+                self._event_db.get_by_id, event_id
+            )
 
         found = await self._hass.async_add_executor_job(
             self._event_db.update, event_id, fields
@@ -467,7 +482,9 @@ class DatapointsStore:
             return None
 
         self._notify_listeners()
-        return self._event_db.get_by_id(event_id)
+        return await self._hass.async_add_executor_job(
+            self._event_db.get_by_id, event_id
+        )
 
     async def async_delete_dev_events(self) -> int:
         """Delete all dev-flagged events. Returns count of deleted events."""
@@ -485,17 +502,23 @@ class DatapointsStore:
             self._notify_listeners()
         return deleted
 
-    def get_last_event(self) -> dict[str, Any] | None:
+    async def async_get_last_event(self) -> dict[str, Any] | None:
         """Return the most recently recorded event by timestamp, or None if empty."""
-        return self._event_db.last()
+        return await self._hass.async_add_executor_job(self._event_db.last)
 
-    def get_events_count_in_range(self, start: str, end: str | None = None) -> int:
+    async def async_get_events_count_in_range(
+        self, start: str, end: str | None = None
+    ) -> int:
         """Return the count of events within the given ISO timestamp range."""
-        return self._event_db.count_in_range(start, end)
+        return await self._hass.async_add_executor_job(
+            partial(self._event_db.count_in_range, start, end)
+        )
 
-    def get_automation_manual_counts(self) -> tuple[int, int]:
+    async def async_get_automation_manual_counts(self) -> tuple[int, int]:
         """Return (automation_count, manual_count) for all recorded events."""
-        return self._event_db.automation_manual_counts()
+        return await self._hass.async_add_executor_job(
+            self._event_db.automation_manual_counts
+        )
 
     # ---------------------------------------------------------------------------
     # Monitor CRUD

@@ -19,7 +19,7 @@ class DescribeAsyncLoad:
     ):
         self.store._store.async_load.return_value = None
         await self.store.async_load()
-        assert self.store.get_events() == []
+        assert await self.store.async_get_events() == []
         assert "monitors" in self.store._data
 
     async def test_GIVEN_existing_persisted_events_WHEN_loaded_THEN_data_contains_those_events(
@@ -41,7 +41,7 @@ class DescribeAsyncLoad:
         }
         self.store._store.async_load.return_value = {"events": [existing]}
         await self.store.async_load()
-        events = self.store.get_events()
+        events = await self.store.async_get_events()
         assert len(events) == 1
         assert events[0]["id"] == "abc"
 
@@ -55,7 +55,7 @@ class DescribeAsyncLoad:
         }
         self.store._store.async_load.return_value = {"events": [old_event]}
         await self.store.async_load()
-        events = self.store.get_events()
+        events = await self.store.async_get_events()
         assert len(events) == 1
         assert events[0]["entity_ids"] == ["sensor.old"]
         assert "entity_id" not in events[0]
@@ -66,7 +66,7 @@ class DescribeAsyncLoad:
         event = {"id": "y", "timestamp": "2024-01-01T00:00:00", "entity_ids": []}
         self.store._store.async_load.return_value = {"events": [event]}
         await self.store.async_load()
-        assert self.store.get_events()[0]["dev"] is False
+        assert (await self.store.async_get_events())[0]["dev"] is False
 
     async def test_GIVEN_event_missing_automation_id_WHEN_loaded_THEN_automation_id_defaults_to_none(
         self,
@@ -74,7 +74,7 @@ class DescribeAsyncLoad:
         event = {"id": "z", "timestamp": "2024-01-01T00:00:00", "entity_ids": []}
         self.store._store.async_load.return_value = {"events": [event]}
         await self.store.async_load()
-        assert self.store.get_events()[0]["automation_id"] is None
+        assert (await self.store.async_get_events())[0]["automation_id"] is None
 
     async def test_GIVEN_event_missing_target_id_fields_WHEN_loaded_THEN_all_default_to_empty_lists(
         self,
@@ -82,7 +82,7 @@ class DescribeAsyncLoad:
         event = {"id": "w", "timestamp": "2024-01-01T00:00:00", "entity_ids": []}
         self.store._store.async_load.return_value = {"events": [event]}
         await self.store.async_load()
-        ev = self.store.get_events()[0]
+        ev = (await self.store.async_get_events())[0]
         assert ev["device_ids"] == []
         assert ev["area_ids"] == []
         assert ev["label_ids"] == []
@@ -137,8 +137,8 @@ class DescribeAsyncRecord:
 
     async def test_GIVEN_new_event_WHEN_recorded_THEN_event_is_retrievable(self):
         await self.store.async_record("save me")
-        assert len(self.store.get_events()) == 1
-        assert self.store.get_events()[0]["message"] == "save me"
+        assert len(await self.store.async_get_events()) == 1
+        assert (await self.store.async_get_events())[0]["message"] == "save me"
 
     async def test_GIVEN_no_optional_fields_WHEN_recorded_THEN_optional_fields_default_to_empty(
         self,
@@ -163,23 +163,30 @@ class DescribeGetEventsByTimeRange:
         await self.store.async_record("mid", date="2024-06-01T00:00:00+00:00")
         await self.store.async_record("late", date="2024-12-31T00:00:00+00:00")
 
-    def test_GIVEN_three_events_WHEN_no_filter_applied_THEN_returns_all_three(self):
-        assert len(self.store.get_events()) == 3
+    async def test_GIVEN_three_events_WHEN_no_filter_applied_THEN_returns_all_three(
+        self,
+    ):
+        assert len(await self.store.async_get_events()) == 3
 
-    def test_GIVEN_start_filter_from_mid_year_WHEN_applied_THEN_excludes_early_event(
+    async def test_GIVEN_start_filter_from_mid_year_WHEN_applied_THEN_excludes_early_event(
         self,
     ):
         messages = [
             e["message"]
-            for e in self.store.get_events(start="2024-06-01T00:00:00+00:00")
+            for e in await self.store.async_get_events(
+                start="2024-06-01T00:00:00+00:00"
+            )
         ]
         assert "early" not in messages
         assert "mid" in messages
         assert "late" in messages
 
-    def test_GIVEN_end_filter_at_mid_year_WHEN_applied_THEN_excludes_late_event(self):
+    async def test_GIVEN_end_filter_at_mid_year_WHEN_applied_THEN_excludes_late_event(
+        self,
+    ):
         messages = [
-            e["message"] for e in self.store.get_events(end="2024-06-01T00:00:00+00:00")
+            e["message"]
+            for e in await self.store.async_get_events(end="2024-06-01T00:00:00+00:00")
         ]
         assert "early" in messages
         assert "mid" in messages
@@ -202,7 +209,8 @@ class DescribeGetEventsByEntity:
         await self.store.async_record("tagged", entity_ids=["sensor.a"])
         await self.store.async_record("global")
         messages = [
-            e["message"] for e in self.store.get_events(entity_ids=["sensor.a"])
+            e["message"]
+            for e in await self.store.async_get_events(entity_ids=["sensor.a"])
         ]
         assert "tagged" in messages
         assert "global" in messages
@@ -212,7 +220,8 @@ class DescribeGetEventsByEntity:
     ):
         await self.store.async_record("tagged_b", entity_ids=["sensor.b"])
         messages = [
-            e["message"] for e in self.store.get_events(entity_ids=["sensor.a"])
+            e["message"]
+            for e in await self.store.async_get_events(entity_ids=["sensor.a"])
         ]
         assert "tagged_b" not in messages
 
@@ -220,7 +229,7 @@ class DescribeGetEventsByEntity:
         self,
     ):
         await self.store.async_record("both", entity_ids=["sensor.a", "sensor.b"])
-        events = self.store.get_events(entity_ids=["sensor.a", "sensor.b"])
+        events = await self.store.async_get_events(entity_ids=["sensor.a", "sensor.b"])
         assert len([e for e in events if e["message"] == "both"]) == 1
 
 
@@ -235,7 +244,7 @@ class DescribeGetEventBounds:
         self.store = mock_store
 
     async def test_GIVEN_empty_store_WHEN_called_THEN_returns_none_none(self):
-        earliest, latest = self.store.get_event_bounds()
+        earliest, latest = await self.store.async_get_event_bounds()
         assert earliest is None
         assert latest is None
 
@@ -243,7 +252,7 @@ class DescribeGetEventBounds:
         self,
     ):
         await self.store.async_record("only", date="2024-07-04T12:00:00+00:00")
-        earliest, latest = self.store.get_event_bounds()
+        earliest, latest = await self.store.async_get_event_bounds()
         assert earliest == latest
         assert "2024-07-04" in earliest
 
@@ -253,7 +262,7 @@ class DescribeGetEventBounds:
         await self.store.async_record("a", date="2024-01-01T00:00:00+00:00")
         await self.store.async_record("b", date="2024-06-15T00:00:00+00:00")
         await self.store.async_record("c", date="2024-12-31T00:00:00+00:00")
-        earliest, latest = self.store.get_event_bounds()
+        earliest, latest = await self.store.async_get_event_bounds()
         assert "2024-01-01" in earliest
         assert "2024-12-31" in latest
 
@@ -309,7 +318,7 @@ class DescribeAsyncDeleteEvent:
     ):
         event = await self.store.async_record("to delete")
         assert await self.store.async_delete_event(event["id"]) is True
-        assert self.store.get_events() == []
+        assert await self.store.async_get_events() == []
 
     async def test_GIVEN_nonexistent_id_WHEN_delete_called_THEN_returns_false(self):
         assert await self.store.async_delete_event("ghost-id") is False
@@ -332,7 +341,7 @@ class DescribeAsyncDeleteDevEvents:
         await self.store.async_record("real event", dev=False)
         count = await self.store.async_delete_dev_events()
         assert count == 1
-        remaining = self.store.get_events()
+        remaining = await self.store.async_get_events()
         assert len(remaining) == 1
         assert remaining[0]["message"] == "real event"
 
@@ -346,7 +355,7 @@ class DescribeAsyncDeleteDevEvents:
         for i in range(3):
             await self.store.async_record(f"dev {i}", dev=True)
         assert await self.store.async_delete_dev_events() == 3
-        assert self.store.get_events() == []
+        assert await self.store.async_get_events() == []
 
 
 # ---------------------------------------------------------------------------
@@ -360,11 +369,11 @@ class DescribeGetLastEvent:
         self.store = mock_store
 
     async def test_GIVEN_no_events_WHEN_called_THEN_returns_none(self):
-        assert self.store.get_last_event() is None
+        assert await self.store.async_get_last_event() is None
 
     async def test_GIVEN_one_event_WHEN_called_THEN_returns_that_event(self):
         await self.store.async_record("only", date="2024-06-01T12:00:00+00:00")
-        result = self.store.get_last_event()
+        result = await self.store.async_get_last_event()
         assert result is not None
         assert result["message"] == "only"
 
@@ -374,7 +383,7 @@ class DescribeGetLastEvent:
         await self.store.async_record("early", date="2024-01-01T00:00:00+00:00")
         await self.store.async_record("middle", date="2024-06-01T00:00:00+00:00")
         await self.store.async_record("latest", date="2024-12-31T23:59:59+00:00")
-        result = self.store.get_last_event()
+        result = await self.store.async_get_last_event()
         assert result is not None
         assert result["message"] == "latest"
 
@@ -383,7 +392,7 @@ class DescribeGetLastEvent:
     ):
         await self.store.async_record("later", date="2024-09-01T00:00:00+00:00")
         await self.store.async_record("earlier", date="2024-01-01T00:00:00+00:00")
-        result = self.store.get_last_event()
+        result = await self.store.async_get_last_event()
         assert result is not None
         assert result["message"] == "later"
 
@@ -400,13 +409,18 @@ class DescribeGetEventsCountInRange:
 
     async def test_GIVEN_no_events_WHEN_called_THEN_returns_zero(self):
         assert (
-            self.store.get_events_count_in_range(start="2024-01-01T00:00:00+00:00") == 0
+            await self.store.async_get_events_count_in_range(
+                start="2024-01-01T00:00:00+00:00"
+            )
+            == 0
         )
 
     async def test_GIVEN_events_all_in_range_WHEN_called_THEN_returns_full_count(self):
         await self.store.async_record("a", date="2024-06-01T00:00:00+00:00")
         await self.store.async_record("b", date="2024-06-02T00:00:00+00:00")
-        count = self.store.get_events_count_in_range(start="2024-05-01T00:00:00+00:00")
+        count = await self.store.async_get_events_count_in_range(
+            start="2024-05-01T00:00:00+00:00"
+        )
         assert count == 2
 
     async def test_GIVEN_some_events_before_start_WHEN_called_THEN_excludes_earlier_events(
@@ -414,7 +428,9 @@ class DescribeGetEventsCountInRange:
     ):
         await self.store.async_record("before", date="2024-01-01T00:00:00+00:00")
         await self.store.async_record("after", date="2024-06-01T00:00:00+00:00")
-        count = self.store.get_events_count_in_range(start="2024-03-01T00:00:00+00:00")
+        count = await self.store.async_get_events_count_in_range(
+            start="2024-03-01T00:00:00+00:00"
+        )
         assert count == 1
 
     async def test_GIVEN_start_and_end_provided_WHEN_called_THEN_counts_only_events_in_window(
@@ -423,7 +439,7 @@ class DescribeGetEventsCountInRange:
         await self.store.async_record("jan", date="2024-01-15T00:00:00+00:00")
         await self.store.async_record("jun", date="2024-06-15T00:00:00+00:00")
         await self.store.async_record("dec", date="2024-12-15T00:00:00+00:00")
-        count = self.store.get_events_count_in_range(
+        count = await self.store.async_get_events_count_in_range(
             start="2024-03-01T00:00:00+00:00",
             end="2024-09-01T00:00:00+00:00",
         )
@@ -441,14 +457,14 @@ class DescribeGetAutomationManualCounts:
         self.store = mock_store
 
     async def test_GIVEN_no_events_WHEN_called_THEN_returns_zero_zero(self):
-        assert self.store.get_automation_manual_counts() == (0, 0)
+        assert await self.store.async_get_automation_manual_counts() == (0, 0)
 
     async def test_GIVEN_only_manual_events_WHEN_called_THEN_automation_count_is_zero(
         self,
     ):
         await self.store.async_record("manual a")
         await self.store.async_record("manual b")
-        automation, manual = self.store.get_automation_manual_counts()
+        automation, manual = await self.store.async_get_automation_manual_counts()
         assert automation == 0
         assert manual == 2
 
@@ -457,7 +473,7 @@ class DescribeGetAutomationManualCounts:
     ):
         await self.store.async_record("auto a", automation_id="auto.1")
         await self.store.async_record("auto b", automation_id="auto.2")
-        automation, manual = self.store.get_automation_manual_counts()
+        automation, manual = await self.store.async_get_automation_manual_counts()
         assert automation == 2
         assert manual == 0
 
@@ -467,7 +483,7 @@ class DescribeGetAutomationManualCounts:
         await self.store.async_record("auto", automation_id="auto.1")
         await self.store.async_record("manual a")
         await self.store.async_record("manual b")
-        automation, manual = self.store.get_automation_manual_counts()
+        automation, manual = await self.store.async_get_automation_manual_counts()
         assert automation == 1
         assert manual == 2
 
@@ -478,8 +494,8 @@ class DescribeGetAutomationManualCounts:
             await self.store.async_record(f"m{i}")
         for i in range(3):
             await self.store.async_record(f"a{i}", automation_id=f"auto.{i}")
-        automation, manual = self.store.get_automation_manual_counts()
-        assert automation + manual == self.store.get_event_count()
+        automation, manual = await self.store.async_get_automation_manual_counts()
+        assert automation + manual == await self.store.async_get_event_count()
 
 
 # ---------------------------------------------------------------------------
@@ -511,7 +527,7 @@ class DescribeMigration:
         }
         self.store._store.async_load.return_value = {"events": [legacy]}
         await self.store.async_load()
-        events = self.store.get_events()
+        events = await self.store.async_get_events()
         assert len(events) == 1
         assert events[0]["id"] == "migrated-1"
         assert events[0]["message"] == "legacy event"
@@ -545,10 +561,10 @@ class DescribeMigration:
         # First load — migrates the event
         self.store._store.async_load.return_value = {"events": [legacy]}
         await self.store.async_load()
-        assert self.store.get_event_count() == 1
+        assert await self.store.async_get_event_count() == 1
 
         # Second load — JSON store no longer has events (simulates post-migration state)
         self.store._store.async_load.return_value = {}
         await self.store.async_load()
         # Event count must still be 1, not 2
-        assert self.store.get_event_count() == 1
+        assert await self.store.async_get_event_count() == 1

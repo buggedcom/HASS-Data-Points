@@ -152,7 +152,8 @@ class DescribeRequireAdmin:
 class DescribeWsGetEvents:
     async def test_GIVEN_no_filters_WHEN_called_THEN_sends_all_events(self):
         store = MagicMock()
-        store.get_events.return_value = [{"id": "1"}, {"id": "2"}]
+        store.async_get_events = AsyncMock()
+        store.async_get_events.return_value = [{"id": "1"}, {"id": "2"}]
         hass = _make_hass(store)
         connection = _make_connection()
         msg = {"id": 1, "type": f"{DOMAIN}/events"}
@@ -165,7 +166,8 @@ class DescribeWsGetEvents:
 
     async def test_GIVEN_time_filters_WHEN_called_THEN_passes_filters_to_store(self):
         store = MagicMock()
-        store.get_events.return_value = []
+        store.async_get_events = AsyncMock()
+        store.async_get_events.return_value = []
         hass = _make_hass(store)
         connection = _make_connection()
         msg = {
@@ -177,7 +179,7 @@ class DescribeWsGetEvents:
 
         await ws_get_events(hass, connection, msg)
 
-        store.get_events.assert_called_once_with(
+        store.async_get_events.assert_called_once_with(
             "2024-01-01T00:00:00+00:00",
             "2024-12-31T00:00:00+00:00",
             None,
@@ -219,14 +221,15 @@ class DescribeWsGetEventBounds:
         self,
     ):
         store = MagicMock()
-        store.get_events.return_value = []
+        store.async_get_events = AsyncMock()
+        store.async_get_events.return_value = []
         hass = _make_hass(store)
         connection = _make_connection()
         msg = {"id": 1, "type": f"{DOMAIN}/events", "entity_ids": ["sensor.a"]}
 
         await ws_get_events(hass, connection, msg)
 
-        store.get_events.assert_called_once_with(
+        store.async_get_events.assert_called_once_with(
             None,
             None,
             ["sensor.a"],
@@ -654,7 +657,8 @@ class DescribeWsGetEventsPermissions:
         self,
     ):
         store = MagicMock()
-        store.get_events.return_value = []
+        store.async_get_events = AsyncMock()
+        store.async_get_events.return_value = []
         hass = _make_hass(store)
         connection = _make_connection(is_admin=True)
         msg = {
@@ -665,7 +669,7 @@ class DescribeWsGetEventsPermissions:
 
         await ws_get_events(hass, connection, msg)
 
-        store.get_events.assert_called_once_with(
+        store.async_get_events.assert_called_once_with(
             None,
             None,
             ["sensor.a", "sensor.b"],
@@ -677,7 +681,8 @@ class DescribeWsGetEventsPermissions:
         self,
     ):
         store = MagicMock()
-        store.get_events.return_value = []
+        store.async_get_events = AsyncMock()
+        store.async_get_events.return_value = []
         hass = _make_hass(store)
         # sensor.a is allowed, sensor.secret is not
         connection = _make_connection(is_admin=False, allowed_entities=["sensor.a"])
@@ -689,13 +694,14 @@ class DescribeWsGetEventsPermissions:
 
         await ws_get_events(hass, connection, msg)
 
-        store.get_events.assert_called_once_with(None, None, ["sensor.a"], 200, 0)
+        store.async_get_events.assert_called_once_with(None, None, ["sensor.a"], 200, 0)
 
     async def test_GIVEN_non_admin_user_WHEN_all_entity_ids_forbidden_THEN_empty_filter_passed(
         self,
     ):
         store = MagicMock()
-        store.get_events.return_value = []
+        store.async_get_events = AsyncMock()
+        store.async_get_events.return_value = []
         hass = _make_hass(store)
         connection = _make_connection(is_admin=False, allowed_entities=[])
         msg = {
@@ -706,21 +712,22 @@ class DescribeWsGetEventsPermissions:
 
         await ws_get_events(hass, connection, msg)
 
-        store.get_events.assert_called_once_with(None, None, [], 200, 0)
+        store.async_get_events.assert_called_once_with(None, None, [], 200, 0)
 
     async def test_GIVEN_non_admin_user_WHEN_no_entity_filter_THEN_store_called_with_none(
         self,
     ):
         """No entity_ids in message → pass None to store (no filtering applied)."""
         store = MagicMock()
-        store.get_events.return_value = []
+        store.async_get_events = AsyncMock()
+        store.async_get_events.return_value = []
         hass = _make_hass(store)
         connection = _make_connection(is_admin=False, allowed_entities=[])
         msg = {"id": 1, "type": f"{DOMAIN}/events"}
 
         await ws_get_events(hass, connection, msg)
 
-        store.get_events.assert_called_once_with(None, None, None, 200, 0)
+        store.async_get_events.assert_called_once_with(None, None, None, 200, 0)
 
 
 # ---------------------------------------------------------------------------

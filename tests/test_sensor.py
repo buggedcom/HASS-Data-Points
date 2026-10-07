@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -31,12 +31,20 @@ def _make_entry(entry_id: str = "test_entry_id") -> MagicMock:
 
 
 def _make_store(**kwargs) -> MagicMock:
-    """Return a MagicMock store with sensible defaults that tests can override."""
+    """Return a MagicMock store with sensible defaults that tests can override.
+
+    The event accessors are async (the store dispatches the SQLite read to the
+    executor internally), so they must be AsyncMock.
+    """
     store = MagicMock()
-    store.get_event_count.return_value = kwargs.get("count", 0)
-    store.get_last_event.return_value = kwargs.get("last_event")
-    store.get_events_count_in_range.return_value = kwargs.get("range_count", 0)
-    store.get_automation_manual_counts.return_value = kwargs.get("auto_manual", (0, 0))
+    store.async_get_event_count = AsyncMock(return_value=kwargs.get("count", 0))
+    store.async_get_last_event = AsyncMock(return_value=kwargs.get("last_event"))
+    store.async_get_events_count_in_range = AsyncMock(
+        return_value=kwargs.get("range_count", 0)
+    )
+    store.async_get_automation_manual_counts = AsyncMock(
+        return_value=kwargs.get("auto_manual", (0, 0))
+    )
     store.async_add_listener.return_value = lambda: None
     return store
 
@@ -52,18 +60,20 @@ def _make_hass() -> MagicMock:
 
 class DescribeDatapointsCountSensor:
     class DescribeInit:
-        def test_GIVEN_store_with_no_events_WHEN_sensor_created_THEN_native_value_is_zero(
+        async def test_GIVEN_store_with_no_events_WHEN_sensor_created_THEN_native_value_is_zero(
             self,
         ):
             store = _make_store(count=0)
             sensor = DatapointsCountSensor(_make_entry(), store)
+            await sensor.async_added_to_hass()
             assert sensor._attr_native_value == 0
 
-        def test_GIVEN_store_with_three_events_WHEN_sensor_created_THEN_native_value_is_three(
+        async def test_GIVEN_store_with_three_events_WHEN_sensor_created_THEN_native_value_is_three(
             self,
         ):
             store = _make_store(count=3)
             sensor = DatapointsCountSensor(_make_entry(), store)
+            await sensor.async_added_to_hass()
             assert sensor._attr_native_value == 3
 
         def test_GIVEN_entry_id_WHEN_sensor_created_THEN_unique_id_includes_entry_id(
@@ -108,7 +118,7 @@ class DescribeDatapointsCountSensor:
         ):
             store = _make_store(count=0)
             sensor = DatapointsCountSensor(_make_entry(), store)
-            store.get_event_count.return_value = 5
+            store.async_get_event_count.return_value = 5
             sensor._handle_store_update()
             assert sensor._attr_native_value == 5
 
@@ -135,7 +145,7 @@ class DescribeDatapointsCountSensor:
             sensor = DatapointsCountSensor(_make_entry(), store)
             await sensor.async_added_to_hass()
 
-            store.get_event_count.return_value = 7
+            store.async_get_event_count.return_value = 7
             captured_listener()
             assert sensor._attr_native_value == 7
 
@@ -147,33 +157,39 @@ class DescribeDatapointsCountSensor:
 
 class DescribeDatapointsLastTimestampSensor:
     class DescribeInit:
-        def test_GIVEN_no_last_event_WHEN_created_THEN_native_value_is_none(self):
+        async def test_GIVEN_no_last_event_WHEN_created_THEN_native_value_is_none(self):
             sensor = DatapointsLastTimestampSensor(_make_entry(), _make_store())
+            await sensor.async_added_to_hass()
             assert sensor._attr_native_value is None
 
-        def test_GIVEN_last_event_with_timestamp_WHEN_created_THEN_native_value_is_datetime(
+        async def test_GIVEN_last_event_with_timestamp_WHEN_created_THEN_native_value_is_datetime(
             self,
         ):
             store = _make_store(
                 last_event={"timestamp": "2024-06-01T12:00:00+00:00", "message": "hi"}
             )
             sensor = DatapointsLastTimestampSensor(_make_entry(), store)
+            await sensor.async_added_to_hass()
             assert isinstance(sensor._attr_native_value, datetime)
             assert sensor._attr_native_value == datetime(
                 2024, 6, 1, 12, 0, 0, tzinfo=UTC
             )
 
-        def test_GIVEN_naive_timestamp_WHEN_created_THEN_utc_tzinfo_added(self):
+        async def test_GIVEN_naive_timestamp_WHEN_created_THEN_utc_tzinfo_added(self):
             store = _make_store(
                 last_event={"timestamp": "2024-06-01T12:00:00", "message": "hi"}
             )
             sensor = DatapointsLastTimestampSensor(_make_entry(), store)
+            await sensor.async_added_to_hass()
             assert sensor._attr_native_value is not None
             assert sensor._attr_native_value.tzinfo is not None
 
-        def test_GIVEN_invalid_timestamp_WHEN_created_THEN_native_value_is_none(self):
+        async def test_GIVEN_invalid_timestamp_WHEN_created_THEN_native_value_is_none(
+            self,
+        ):
             store = _make_store(last_event={"timestamp": "not-a-date", "message": "hi"})
             sensor = DatapointsLastTimestampSensor(_make_entry(), store)
+            await sensor.async_added_to_hass()
             assert sensor._attr_native_value is None
 
         def test_GIVEN_entry_id_WHEN_created_THEN_unique_id_correct(self):
@@ -190,7 +206,7 @@ class DescribeDatapointsLastTimestampSensor:
         ):
             store = _make_store()
             sensor = DatapointsLastTimestampSensor(_make_entry(), store)
-            store.get_last_event.return_value = {
+            store.async_get_last_event.return_value = {
                 "timestamp": "2024-09-15T08:30:00+00:00",
                 "message": "new",
             }
@@ -207,11 +223,12 @@ class DescribeDatapointsLastTimestampSensor:
 
 class DescribeDatapointsLastMessageSensor:
     class DescribeInit:
-        def test_GIVEN_no_last_event_WHEN_created_THEN_native_value_is_none(self):
+        async def test_GIVEN_no_last_event_WHEN_created_THEN_native_value_is_none(self):
             sensor = DatapointsLastMessageSensor(_make_entry(), _make_store())
+            await sensor.async_added_to_hass()
             assert sensor._attr_native_value is None
 
-        def test_GIVEN_last_event_WHEN_created_THEN_native_value_is_message_string(
+        async def test_GIVEN_last_event_WHEN_created_THEN_native_value_is_message_string(
             self,
         ):
             store = _make_store(
@@ -221,6 +238,7 @@ class DescribeDatapointsLastMessageSensor:
                 }
             )
             sensor = DatapointsLastMessageSensor(_make_entry(), store)
+            await sensor.async_added_to_hass()
             assert sensor._attr_native_value == "Hello world"
 
         def test_GIVEN_entry_id_WHEN_created_THEN_unique_id_correct(self):
@@ -237,7 +255,7 @@ class DescribeDatapointsLastMessageSensor:
         ):
             store = _make_store()
             sensor = DatapointsLastMessageSensor(_make_entry(), store)
-            store.get_last_event.return_value = {
+            store.async_get_last_event.return_value = {
                 "timestamp": "2024-09-15T08:30:00+00:00",
                 "message": "Updated",
             }
@@ -249,7 +267,7 @@ class DescribeDatapointsLastMessageSensor:
                 last_event={"timestamp": "2024-06-01T00:00:00+00:00", "message": "old"}
             )
             sensor = DatapointsLastMessageSensor(_make_entry(), store)
-            store.get_last_event.return_value = None
+            store.async_get_last_event.return_value = None
             sensor._handle_store_update()
             assert sensor._attr_native_value is None
 
@@ -261,31 +279,37 @@ class DescribeDatapointsLastMessageSensor:
 
 class DescribeDatapointsTimeSinceLastSensor:
     class DescribeInit:
-        def test_GIVEN_no_last_event_WHEN_created_THEN_native_value_is_none(self):
+        async def test_GIVEN_no_last_event_WHEN_created_THEN_native_value_is_none(self):
             sensor = DatapointsTimeSinceLastSensor(
                 _make_entry(), _make_store(), _make_hass()
             )
+            await sensor.async_added_to_hass()
             assert sensor._attr_native_value is None
 
-        def test_GIVEN_last_event_two_hours_ago_WHEN_created_THEN_native_value_is_two(
+        async def test_GIVEN_last_event_two_hours_ago_WHEN_created_THEN_native_value_is_two(
             self,
         ):
             two_hours_ago = (datetime.now(UTC) - timedelta(hours=2)).isoformat()
             store = _make_store(last_event={"timestamp": two_hours_ago, "message": "x"})
             sensor = DatapointsTimeSinceLastSensor(_make_entry(), store, _make_hass())
+            await sensor.async_added_to_hass()
             assert sensor._attr_native_value == pytest.approx(2.0, abs=0.1)
 
-        def test_GIVEN_last_event_in_future_WHEN_created_THEN_native_value_is_negative(
+        async def test_GIVEN_last_event_in_future_WHEN_created_THEN_native_value_is_negative(
             self,
         ):
             future = (datetime.now(UTC) + timedelta(hours=1)).isoformat()
             store = _make_store(last_event={"timestamp": future, "message": "x"})
             sensor = DatapointsTimeSinceLastSensor(_make_entry(), store, _make_hass())
+            await sensor.async_added_to_hass()
             assert sensor._attr_native_value < 0
 
-        def test_GIVEN_invalid_timestamp_WHEN_created_THEN_native_value_is_none(self):
+        async def test_GIVEN_invalid_timestamp_WHEN_created_THEN_native_value_is_none(
+            self,
+        ):
             store = _make_store(last_event={"timestamp": "bad", "message": "x"})
             sensor = DatapointsTimeSinceLastSensor(_make_entry(), store, _make_hass())
+            await sensor.async_added_to_hass()
             assert sensor._attr_native_value is None
 
         def test_GIVEN_entry_id_WHEN_created_THEN_unique_id_correct(self):
@@ -315,6 +339,8 @@ class DescribeDatapointsTimeSinceLastSensor:
             self,
         ):
             from homeassistant.helpers.event import async_track_time_interval
+
+            async_track_time_interval.reset_mock()
 
             store = _make_store()
             hass = _make_hass()
@@ -348,16 +374,22 @@ class DescribeDatapointsTimeSinceLastSensor:
 
 class DescribeDatapointsTodayCountSensor:
     class DescribeInit:
-        def test_GIVEN_no_events_today_WHEN_created_THEN_native_value_is_zero(self):
+        async def test_GIVEN_no_events_today_WHEN_created_THEN_native_value_is_zero(
+            self,
+        ):
             sensor = DatapointsTodayCountSensor(
                 _make_entry(), _make_store(range_count=0), _make_hass()
             )
+            await sensor.async_added_to_hass()
             assert sensor._attr_native_value == 0
 
-        def test_GIVEN_three_events_today_WHEN_created_THEN_native_value_is_three(self):
+        async def test_GIVEN_three_events_today_WHEN_created_THEN_native_value_is_three(
+            self,
+        ):
             sensor = DatapointsTodayCountSensor(
                 _make_entry(), _make_store(range_count=3), _make_hass()
             )
+            await sensor.async_added_to_hass()
             assert sensor._attr_native_value == 3
 
         def test_GIVEN_entry_id_WHEN_created_THEN_unique_id_correct(self):
@@ -372,14 +404,15 @@ class DescribeDatapointsTodayCountSensor:
             )
             assert sensor._attr_name == "Recorded today"
 
-        def test_GIVEN_sensor_WHEN_compute_called_THEN_store_queried_with_start_of_today(
+        async def test_GIVEN_sensor_WHEN_compute_called_THEN_store_queried_with_start_of_today(
             self,
         ):
             store = _make_store(range_count=2)
-            DatapointsTodayCountSensor(_make_entry(), store, _make_hass())
-            store.get_events_count_in_range.assert_called_once()
+            sensor = DatapointsTodayCountSensor(_make_entry(), store, _make_hass())
+            await sensor.async_added_to_hass()
+            store.async_get_events_count_in_range.assert_called_once()
             # The start argument passed should be an ISO string representing today's start
-            call_kwargs = store.get_events_count_in_range.call_args
+            call_kwargs = store.async_get_events_count_in_range.call_args
             start_str = call_kwargs[1].get("start") or call_kwargs[0][0]
             # Must parse as a valid datetime
             dt = datetime.fromisoformat(start_str)
@@ -389,7 +422,7 @@ class DescribeDatapointsTodayCountSensor:
         def test_GIVEN_new_event_today_WHEN_update_called_THEN_count_incremented(self):
             store = _make_store(range_count=0)
             sensor = DatapointsTodayCountSensor(_make_entry(), store, _make_hass())
-            store.get_events_count_in_range.return_value = 1
+            store.async_get_events_count_in_range.return_value = 1
             sensor._handle_store_update()
             assert sensor._attr_native_value == 1
 
@@ -414,18 +447,22 @@ class DescribeDatapointsTodayCountSensor:
 
 class DescribeDatapointsWeekCountSensor:
     class DescribeInit:
-        def test_GIVEN_no_events_this_week_WHEN_created_THEN_native_value_is_zero(self):
+        async def test_GIVEN_no_events_this_week_WHEN_created_THEN_native_value_is_zero(
+            self,
+        ):
             sensor = DatapointsWeekCountSensor(
                 _make_entry(), _make_store(range_count=0), _make_hass()
             )
+            await sensor.async_added_to_hass()
             assert sensor._attr_native_value == 0
 
-        def test_GIVEN_five_events_this_week_WHEN_created_THEN_native_value_is_five(
+        async def test_GIVEN_five_events_this_week_WHEN_created_THEN_native_value_is_five(
             self,
         ):
             sensor = DatapointsWeekCountSensor(
                 _make_entry(), _make_store(range_count=5), _make_hass()
             )
+            await sensor.async_added_to_hass()
             assert sensor._attr_native_value == 5
 
         def test_GIVEN_entry_id_WHEN_created_THEN_unique_id_correct(self):
@@ -440,13 +477,14 @@ class DescribeDatapointsWeekCountSensor:
             )
             assert sensor._attr_name == "Recorded this week"
 
-        def test_GIVEN_sensor_WHEN_compute_called_THEN_store_queried_with_start_of_week_before_today(
+        async def test_GIVEN_sensor_WHEN_compute_called_THEN_store_queried_with_start_of_week_before_today(
             self,
         ):
             store = _make_store(range_count=0)
-            DatapointsWeekCountSensor(_make_entry(), store, _make_hass())
-            store.get_events_count_in_range.assert_called_once()
-            call_kwargs = store.get_events_count_in_range.call_args
+            sensor = DatapointsWeekCountSensor(_make_entry(), store, _make_hass())
+            await sensor.async_added_to_hass()
+            store.async_get_events_count_in_range.assert_called_once()
+            call_kwargs = store.async_get_events_count_in_range.call_args
             start_str = call_kwargs[1].get("start") or call_kwargs[0][0]
             dt = datetime.fromisoformat(start_str)
             assert dt.tzinfo is not None
@@ -464,20 +502,22 @@ class DescribeDatapointsWeekCountSensor:
 
 class DescribeDatapointsAutomationCountSensor:
     class DescribeInit:
-        def test_GIVEN_no_automation_events_WHEN_created_THEN_native_value_is_zero(
+        async def test_GIVEN_no_automation_events_WHEN_created_THEN_native_value_is_zero(
             self,
         ):
             sensor = DatapointsAutomationCountSensor(
                 _make_entry(), _make_store(auto_manual=(0, 3))
             )
+            await sensor.async_added_to_hass()
             assert sensor._attr_native_value == 0
 
-        def test_GIVEN_two_automation_events_WHEN_created_THEN_native_value_is_two(
+        async def test_GIVEN_two_automation_events_WHEN_created_THEN_native_value_is_two(
             self,
         ):
             sensor = DatapointsAutomationCountSensor(
                 _make_entry(), _make_store(auto_manual=(2, 5))
             )
+            await sensor.async_added_to_hass()
             assert sensor._attr_native_value == 2
 
         def test_GIVEN_entry_id_WHEN_created_THEN_unique_id_correct(self):
@@ -494,7 +534,7 @@ class DescribeDatapointsAutomationCountSensor:
         ):
             store = _make_store(auto_manual=(1, 0))
             sensor = DatapointsAutomationCountSensor(_make_entry(), store)
-            store.get_automation_manual_counts.return_value = (3, 0)
+            store.async_get_automation_manual_counts.return_value = (3, 0)
             sensor._handle_store_update()
             assert sensor._attr_native_value == 3
 
@@ -511,16 +551,22 @@ class DescribeDatapointsAutomationCountSensor:
 
 class DescribeDatapointsManualCountSensor:
     class DescribeInit:
-        def test_GIVEN_no_manual_events_WHEN_created_THEN_native_value_is_zero(self):
+        async def test_GIVEN_no_manual_events_WHEN_created_THEN_native_value_is_zero(
+            self,
+        ):
             sensor = DatapointsManualCountSensor(
                 _make_entry(), _make_store(auto_manual=(3, 0))
             )
+            await sensor.async_added_to_hass()
             assert sensor._attr_native_value == 0
 
-        def test_GIVEN_four_manual_events_WHEN_created_THEN_native_value_is_four(self):
+        async def test_GIVEN_four_manual_events_WHEN_created_THEN_native_value_is_four(
+            self,
+        ):
             sensor = DatapointsManualCountSensor(
                 _make_entry(), _make_store(auto_manual=(1, 4))
             )
+            await sensor.async_added_to_hass()
             assert sensor._attr_native_value == 4
 
         def test_GIVEN_entry_id_WHEN_created_THEN_unique_id_correct(self):
@@ -535,7 +581,7 @@ class DescribeDatapointsManualCountSensor:
         def test_GIVEN_new_manual_event_WHEN_update_called_THEN_count_incremented(self):
             store = _make_store(auto_manual=(0, 2))
             sensor = DatapointsManualCountSensor(_make_entry(), store)
-            store.get_automation_manual_counts.return_value = (0, 5)
+            store.async_get_automation_manual_counts.return_value = (0, 5)
             sensor._handle_store_update()
             assert sensor._attr_native_value == 5
 
@@ -545,11 +591,13 @@ class DescribeDatapointsManualCountSensor:
             sensor.async_write_ha_state.assert_called_once()
 
     class DescribeAutomationManualConsistency:
-        def test_GIVEN_mixed_events_WHEN_both_sensors_created_THEN_counts_reflect_store(
+        async def test_GIVEN_mixed_events_WHEN_both_sensors_created_THEN_counts_reflect_store(
             self,
         ):
             store = _make_store(auto_manual=(3, 7))
             auto_sensor = DatapointsAutomationCountSensor(_make_entry(), store)
             manual_sensor = DatapointsManualCountSensor(_make_entry(), store)
+            await auto_sensor.async_added_to_hass()
+            await manual_sensor.async_added_to_hass()
             assert auto_sensor._attr_native_value == 3
             assert manual_sensor._attr_native_value == 7

@@ -92,14 +92,16 @@ async def async_setup_entry(
 
 
 class _DatapointsSensorBase(SensorEntity):
-    """Shared base for all Hass Data Points sensor entities."""
+    """Shared base for all Hass Data Points sensor entities.
+
+    Sensors that compute from in-memory monitor state use the synchronous
+    ``_compute()`` hook and refresh inline (offloading those would race with
+    loop-side mutations). Sensors backed by SQLite event reads subclass
+    ``_DatapointsEventSensorBase`` instead, whose store accessors dispatch the
+    blocking read to the executor.
+    """
 
     _attr_has_entity_name = True
-    # Subclasses whose _compute() performs blocking I/O (SQLite reads) set this
-    # to True so refreshes run in the executor instead of on the event loop.
-    # Sensors that compute from in-memory monitor state leave it False and
-    # refresh inline (offloading those would race with loop-side mutations).
-    _compute_blocks_io = False
 
     def __init__(self, entry: ConfigEntry, store: DatapointsStore) -> None:
         """Initialise with config entry and data store."""
@@ -126,16 +128,8 @@ class _DatapointsSensorBase(SensorEntity):
         self._refresh_value()
 
     def _refresh_value(self) -> None:
-        """Recompute and write state — off the loop when _compute() blocks."""
-        if self._compute_blocks_io:
-            self.hass.async_create_task(self._async_refresh_value())
-        else:
-            self._attr_native_value = self._compute()
-            self.async_write_ha_state()
-
-    async def _async_refresh_value(self) -> None:
-        """Run the blocking _compute() in the executor, then write state."""
-        self._attr_native_value = await self.hass.async_add_executor_job(self._compute)
+        """Recompute from in-memory state and write state inline."""
+        self._attr_native_value = self._compute()
         self.async_write_ha_state()
 
     def _compute(self) -> Any:
@@ -143,8 +137,44 @@ class _DatapointsSensorBase(SensorEntity):
         raise NotImplementedError
 
 
-class _DatapointsPeriodicSensorBase(_DatapointsSensorBase):
-    """Base for sensors that need periodic time-driven refreshes as well as store updates."""
+class _DatapointsEventSensorBase(_DatapointsSensorBase):
+    """Base for sensors whose value comes from the event store (SQLite).
+
+    The store's async accessors dispatch the blocking read to the executor,
+    so these sensors never read on the event loop. The first value is
+    populated in ``async_added_to_hass`` — never in ``__init__`` — and store
+    updates / timer ticks reschedule the async refresh as a task.
+    """
+
+    # No SQLite read happens in __init__; the value stays None until the first
+    # async refresh runs in async_added_to_hass.
+    _attr_native_value = None
+
+    async def async_added_to_hass(self) -> None:
+        """Register store listener and populate the initial value off-loop."""
+        await super().async_added_to_hass()
+        await self._async_refresh_value()
+
+    def _refresh_value(self) -> None:
+        """Schedule an off-loop recompute; the store accessor does the dispatch."""
+        self.hass.async_create_task(self._async_refresh_value())
+
+    async def _async_refresh_value(self) -> None:
+        """Recompute via the async store accessor, then write state."""
+        self._attr_native_value = await self._async_compute()
+        self.async_write_ha_state()
+
+    async def _async_compute(self) -> Any:
+        """Compute the current sensor value asynchronously. Override in subclasses."""
+        raise NotImplementedError
+
+
+class _PeriodicRefreshMixin:
+    """Adds a periodic time-driven refresh on top of any sensor base.
+
+    Mixed in before the sensor base so its ``async_added_to_hass`` runs first
+    and delegates to the base via ``super()``.
+    """
 
     def __init__(
         self, entry: ConfigEntry, store: DatapointsStore, hass: HomeAssistant
@@ -154,7 +184,7 @@ class _DatapointsPeriodicSensorBase(_DatapointsSensorBase):
         self._hass = hass
 
     async def async_added_to_hass(self) -> None:
-        """Register store listener and periodic refresh timer."""
+        """Register the base listeners and a periodic refresh timer."""
         await super().async_added_to_hass()
         self.async_on_remove(
             async_track_time_interval(
@@ -173,39 +203,35 @@ class _DatapointsPeriodicSensorBase(_DatapointsSensorBase):
 # ---------------------------------------------------------------------------
 
 
-class DatapointsCountSensor(_DatapointsSensorBase):
+class DatapointsCountSensor(_DatapointsEventSensorBase):
     """Expose the total number of recorded datapoints."""
 
     _attr_icon = "mdi:counter"
-    _compute_blocks_io = True
 
     def __init__(self, entry: ConfigEntry, store: DatapointsStore) -> None:
         """Initialise the datapoint count sensor."""
         super().__init__(entry, store)
         self._attr_unique_id = f"{entry.entry_id}_datapoint_count"
         self._attr_name = "Datapoint count"
-        self._attr_native_value = self._compute()
 
-    def _compute(self) -> int:
-        return self._store.get_event_count()
+    async def _async_compute(self) -> int:
+        return await self._store.async_get_event_count()
 
 
-class DatapointsLastTimestampSensor(_DatapointsSensorBase):
+class DatapointsLastTimestampSensor(_DatapointsEventSensorBase):
     """Expose the timestamp of the most recently recorded datapoint."""
 
     _attr_device_class = SensorDeviceClass.TIMESTAMP
     _attr_icon = "mdi:clock-outline"
-    _compute_blocks_io = True
 
     def __init__(self, entry: ConfigEntry, store: DatapointsStore) -> None:
         """Initialise the last recorded timestamp sensor."""
         super().__init__(entry, store)
         self._attr_unique_id = f"{entry.entry_id}_last_timestamp"
         self._attr_name = "Last recorded"
-        self._attr_native_value = self._compute()
 
-    def _compute(self) -> datetime | None:
-        event = self._store.get_last_event()
+    async def _async_compute(self) -> datetime | None:
+        event = await self._store.async_get_last_event()
         if event is None:
             return None
         ts = event.get("timestamp")
@@ -220,34 +246,31 @@ class DatapointsLastTimestampSensor(_DatapointsSensorBase):
         return dt
 
 
-class DatapointsLastMessageSensor(_DatapointsSensorBase):
+class DatapointsLastMessageSensor(_DatapointsEventSensorBase):
     """Expose the message of the most recently recorded datapoint."""
 
     _attr_icon = "mdi:text"
-    _compute_blocks_io = True
 
     def __init__(self, entry: ConfigEntry, store: DatapointsStore) -> None:
         """Initialise the last recorded message sensor."""
         super().__init__(entry, store)
         self._attr_unique_id = f"{entry.entry_id}_last_message"
         self._attr_name = "Last message"
-        self._attr_native_value = self._compute()
 
-    def _compute(self) -> str | None:
-        event = self._store.get_last_event()
+    async def _async_compute(self) -> str | None:
+        event = await self._store.async_get_last_event()
         if event is None:
             return None
         return event.get("message")
 
 
-class DatapointsTimeSinceLastSensor(_DatapointsPeriodicSensorBase):
+class DatapointsTimeSinceLastSensor(_PeriodicRefreshMixin, _DatapointsEventSensorBase):
     """Expose the hours elapsed since the most recently recorded datapoint."""
 
     _attr_device_class = SensorDeviceClass.DURATION
     _attr_native_unit_of_measurement = UnitOfTime.HOURS
     _attr_suggested_display_precision = 1
     _attr_icon = "mdi:timer-outline"
-    _compute_blocks_io = True
 
     def __init__(
         self, entry: ConfigEntry, store: DatapointsStore, hass: HomeAssistant
@@ -256,10 +279,9 @@ class DatapointsTimeSinceLastSensor(_DatapointsPeriodicSensorBase):
         super().__init__(entry, store, hass)
         self._attr_unique_id = f"{entry.entry_id}_time_since_last"
         self._attr_name = "Time since last datapoint"
-        self._attr_native_value = self._compute()
 
-    def _compute(self) -> float | None:
-        event = self._store.get_last_event()
+    async def _async_compute(self) -> float | None:
+        event = await self._store.async_get_last_event()
         if event is None:
             return None
         ts = event.get("timestamp")
@@ -275,11 +297,10 @@ class DatapointsTimeSinceLastSensor(_DatapointsPeriodicSensorBase):
         return round(delta.total_seconds() / 3600, 1)
 
 
-class DatapointsTodayCountSensor(_DatapointsPeriodicSensorBase):
+class DatapointsTodayCountSensor(_PeriodicRefreshMixin, _DatapointsEventSensorBase):
     """Expose the count of datapoints recorded since the start of today (local time)."""
 
     _attr_icon = "mdi:calendar-today"
-    _compute_blocks_io = True
 
     def __init__(
         self, entry: ConfigEntry, store: DatapointsStore, hass: HomeAssistant
@@ -288,18 +309,18 @@ class DatapointsTodayCountSensor(_DatapointsPeriodicSensorBase):
         super().__init__(entry, store, hass)
         self._attr_unique_id = f"{entry.entry_id}_today_count"
         self._attr_name = "Recorded today"
-        self._attr_native_value = self._compute()
 
-    def _compute(self) -> int:
+    async def _async_compute(self) -> int:
         today_start = dt_util.as_utc(dt_util.start_of_local_day())
-        return self._store.get_events_count_in_range(start=today_start.isoformat())
+        return await self._store.async_get_events_count_in_range(
+            start=today_start.isoformat()
+        )
 
 
-class DatapointsWeekCountSensor(_DatapointsPeriodicSensorBase):
+class DatapointsWeekCountSensor(_PeriodicRefreshMixin, _DatapointsEventSensorBase):
     """Expose the count of datapoints recorded since the start of this week (Mon, local time)."""
 
     _attr_icon = "mdi:calendar-week"
-    _compute_blocks_io = True
 
     def __init__(
         self, entry: ConfigEntry, store: DatapointsStore, hass: HomeAssistant
@@ -308,47 +329,44 @@ class DatapointsWeekCountSensor(_DatapointsPeriodicSensorBase):
         super().__init__(entry, store, hass)
         self._attr_unique_id = f"{entry.entry_id}_week_count"
         self._attr_name = "Recorded this week"
-        self._attr_native_value = self._compute()
 
-    def _compute(self) -> int:
+    async def _async_compute(self) -> int:
         today_start = dt_util.start_of_local_day()
         week_start = dt_util.as_utc(today_start - timedelta(days=today_start.weekday()))
-        return self._store.get_events_count_in_range(start=week_start.isoformat())
+        return await self._store.async_get_events_count_in_range(
+            start=week_start.isoformat()
+        )
 
 
-class DatapointsAutomationCountSensor(_DatapointsSensorBase):
+class DatapointsAutomationCountSensor(_DatapointsEventSensorBase):
     """Expose the count of automation-triggered datapoints."""
 
     _attr_icon = "mdi:robot"
-    _compute_blocks_io = True
 
     def __init__(self, entry: ConfigEntry, store: DatapointsStore) -> None:
         """Initialise the automation count sensor."""
         super().__init__(entry, store)
         self._attr_unique_id = f"{entry.entry_id}_automation_count"
         self._attr_name = "Automation recorded"
-        self._attr_native_value = self._compute()
 
-    def _compute(self) -> int:
-        automation, _ = self._store.get_automation_manual_counts()
+    async def _async_compute(self) -> int:
+        automation, _ = await self._store.async_get_automation_manual_counts()
         return automation
 
 
-class DatapointsManualCountSensor(_DatapointsSensorBase):
+class DatapointsManualCountSensor(_DatapointsEventSensorBase):
     """Expose the count of manually recorded datapoints."""
 
     _attr_icon = "mdi:hand-back-right"
-    _compute_blocks_io = True
 
     def __init__(self, entry: ConfigEntry, store: DatapointsStore) -> None:
         """Initialise the manual count sensor."""
         super().__init__(entry, store)
         self._attr_unique_id = f"{entry.entry_id}_manual_count"
         self._attr_name = "Manually recorded"
-        self._attr_native_value = self._compute()
 
-    def _compute(self) -> int:
-        _, manual = self._store.get_automation_manual_counts()
+    async def _async_compute(self) -> int:
+        _, manual = await self._store.async_get_automation_manual_counts()
         return manual
 
 
@@ -1129,7 +1147,9 @@ class DatapointsMonitorLastAnomalySensor(_DatapointsSensorBase):
             return None
 
 
-class DatapointsMonitorAnomalyDurationSensor(_DatapointsPeriodicSensorBase):
+class DatapointsMonitorAnomalyDurationSensor(
+    _PeriodicRefreshMixin, _DatapointsSensorBase
+):
     """Reports how many minutes the current anomaly has been active.
 
     Returns 0 when there is no active anomaly. Time-driven so the value
