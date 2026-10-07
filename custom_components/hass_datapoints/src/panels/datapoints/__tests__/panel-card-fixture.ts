@@ -16,6 +16,10 @@ export class PanelCardFixture extends HTMLElement {
       '<hass-datapoints-history-chart><div id="chart-top-slot" hidden></div></hass-datapoints-history-chart>';
   }
 
+  getComparisonTabsHost(): Nullable<HTMLElement> {
+    return this.shadowRoot!.querySelector("#chart-top-slot");
+  }
+
   setConfig(config: CardConfig): void {
     this.config = config;
   }
