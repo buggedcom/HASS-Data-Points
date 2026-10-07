@@ -172,6 +172,51 @@ type DrawArgs = [
   options?: RecordWithUnknownValues,
 ];
 
+/** A comparison-window result as handed down by the card. */
+export interface ComparisonWindowResult {
+  id?: string;
+  time_offset_ms: number;
+  histResult: unknown;
+  statsResult: unknown;
+  label?: string;
+}
+
+/**
+ * The typed card→chart draw contract (issue #20).
+ *
+ * `draw(model)` and `applyViewState(model)` both unpack this single object into
+ * the chart's fields, replacing the card's previous private-field poking. Every
+ * field is optional so a caller can push just the slice it owns (e.g. a bare
+ * `{ hass }` on a hass tick). A field left `undefined` is NOT applied, so a
+ * redraw never overwrites state the chart is currently responsible for.
+ *
+ * Ownership: `hiddenSeries`, `hiddenEventIds` and `zoomRange` are live
+ * interaction state **owned by the chart** — the chart mutates them on legend
+ * clicks, zoom drags and zoom resets and self-redraws. The model supplies them
+ * only as *initial* values via {@link HistoryChart.applyViewState} (the config
+ * path). {@link HistoryChart.draw} deliberately ignores them so an incidental
+ * redraw (new data, resize) cannot clobber a user's zoom or legend toggle.
+ */
+export interface HistoryChartViewModel {
+  hass?: Nullable<HassLike>;
+  config?: RecordWithUnknownValues;
+  /** Maps to the chart's `_lastComparisonResults`. */
+  comparisonResults?: Nullable<ComparisonWindowResult[]>;
+  /** Initial-only (applyViewState); ignored by draw(). Chart owns live value. */
+  hiddenSeries?: Set<string>;
+  /** Initial-only (applyViewState); ignored by draw(). Chart owns live value. */
+  hiddenEventIds?: Set<string>;
+  /** Initial-only (applyViewState); ignored by draw(). Chart owns live value. */
+  zoomRange?: Nullable<{ start: number; end: number }>;
+  /** Draw inputs — present on draw(model), absent on a pure state push. */
+  history?: unknown;
+  stats?: unknown;
+  events?: unknown[];
+  t0?: number;
+  t1?: number;
+  options?: RecordWithUnknownValues;
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export class HistoryChart extends HTMLElement {
@@ -640,6 +685,69 @@ export class HistoryChart extends HTMLElement {
       overlayEl
     );
     overlayEl.hidden = false;
+  }
+
+  // ── Typed card→chart contract (issue #20) ────────────────────────────────
+
+  /**
+   * Apply the common, card-owned slice of a view model (hass / config /
+   * comparison results). Each field is applied only when present, so callers
+   * can push just the part they own.
+   */
+  private _applyCommonViewModel(model: HistoryChartViewModel): void {
+    if (model.hass !== undefined) {
+      this._hass = model.hass;
+    }
+    if (model.config !== undefined) {
+      this._config = model.config;
+    }
+    if (model.comparisonResults !== undefined) {
+      this._lastComparisonResults = model.comparisonResults ?? null;
+    }
+  }
+
+  /**
+   * Seed the chart-owned interaction state (hidden series / hidden events /
+   * zoom range) from the model's *initial* values. Only applied via
+   * {@link applyViewState} (the config path); {@link draw} never calls this, so
+   * the chart keeps whatever the user set by interacting (see AC5 of #20).
+   */
+  private _applyInitialInteractionState(model: HistoryChartViewModel): void {
+    if (model.hiddenSeries !== undefined) {
+      this._hiddenSeries = model.hiddenSeries;
+    }
+    if (model.hiddenEventIds !== undefined) {
+      this._hiddenEventIds = model.hiddenEventIds;
+    }
+    if (model.zoomRange !== undefined) {
+      this._zoomRange = model.zoomRange;
+    }
+  }
+
+  /**
+   * Push card-owned state onto the chart WITHOUT drawing, seeding the initial
+   * zoom / hidden-series. Used by the card's setConfig and hass paths.
+   */
+  applyViewState(model: HistoryChartViewModel): void {
+    this._applyCommonViewModel(model);
+    this._applyInitialInteractionState(model);
+  }
+
+  /**
+   * The typed draw entry: unpack the model's common slice then run the real
+   * (async, drawRequestId-guarded) draw. Live interaction state (zoom / hidden)
+   * is intentionally NOT taken from the model here — the chart owns it.
+   */
+  draw(model: HistoryChartViewModel): void {
+    this._applyCommonViewModel(model);
+    this._queueDrawChart(
+      model.history,
+      model.stats,
+      model.events ?? [],
+      model.t0 ?? 0,
+      model.t1 ?? 0,
+      model.options ?? {}
+    );
   }
 
   // ── Draw queue ──────────────────────────────────────────────────────────────
@@ -2078,15 +2186,7 @@ export class HistoryChart extends HTMLElement {
   }
 
   /** Last comparison results fetched by the card. */
-  _lastComparisonResults: Nullable<
-    Array<{
-      id: string;
-      time_offset_ms: number;
-      histResult: unknown;
-      statsResult: unknown;
-      label?: string;
-    }>
-  > = null;
+  _lastComparisonResults: Nullable<ComparisonWindowResult[]> = null;
 
   /** Series entity IDs that are currently hidden from the chart. */
   _hiddenSeries: Set<string> = new Set();
