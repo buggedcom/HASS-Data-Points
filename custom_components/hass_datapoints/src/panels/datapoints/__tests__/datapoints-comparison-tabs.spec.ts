@@ -1,3 +1,7 @@
+/**
+ * @deprecated migration-debris: rewrite in #31 (#06.3 comparison tabs).
+ * Kept running until its control migrates; use datapoints-mounted-* for the behavioural gate (#28).
+ */
 import { describe, expect, it, vi } from "vitest";
 import { HassDatapointsHistoryPanel } from "../datapoints";
 import { createHistoryPageOrchestrationContext } from "../context/orchestration-context";

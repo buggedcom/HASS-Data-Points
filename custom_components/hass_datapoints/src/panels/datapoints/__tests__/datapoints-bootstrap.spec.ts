@@ -1,3 +1,7 @@
+/**
+ * @deprecated migration-debris: rewrite in #29 (#06.1 shell).
+ * Kept running until its control migrates; use datapoints-mounted-* for the behavioural gate (#28).
+ */
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { HassDatapointsHistoryPanel } from "../datapoints";
 import { normalizeHistorySeriesAnalysis } from "@/lib/domain/history-series";
