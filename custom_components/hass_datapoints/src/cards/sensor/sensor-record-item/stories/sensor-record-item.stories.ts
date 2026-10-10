@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/web-components-vite";
 import { html } from "lit";
+import { STORY_NOW } from "@/test-support/storybook-time";
 import "../sensor-record-item";
 
 type Story = StoryObj;
@@ -17,7 +18,7 @@ const sampleEvent = {
   annotation: "Temperature jumped +4°C in under an hour.",
   icon: "mdi:thermometer-alert",
   color: "#f44336",
-  timestamp: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
+  timestamp: new Date(STORY_NOW - 2 * 3600 * 1000).toISOString(),
   entity_id: "sensor.temperature",
   device_id: null,
   area_id: null,
@@ -31,7 +32,7 @@ const simpleEvent = {
   annotation: null,
   icon: "mdi:window-open",
   color: "#2196f3",
-  timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(),
+  timestamp: new Date(STORY_NOW - 30 * 60 * 1000).toISOString(),
   entity_id: "sensor.temperature",
   device_id: null,
   area_id: null,
@@ -45,7 +46,7 @@ const devEvent = {
   annotation: "Some debug info",
   icon: "mdi:bug",
   color: "#9c27b0",
-  timestamp: new Date(Date.now() - 5 * 60 * 1000).toISOString(),
+  timestamp: new Date(STORY_NOW - 5 * 60 * 1000).toISOString(),
   entity_id: "sensor.temperature",
   device_id: null,
   area_id: null,
