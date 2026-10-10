@@ -73,15 +73,11 @@ describe("HassDatapointsHistoryPanel AI query brief", () => {
     describe("WHEN the AI brief dialog is opened", () => {
       it("THEN it opens the dialog with the latest entity and range state", async () => {
         expect.assertions(4);
-        const dialog = {
-          open: false,
-          heading: "",
-          text: "",
-        };
         const panel = {
           shadowRoot: {} as ShadowRoot,
-          _aiQueryBriefDialogComp: dialog,
-          _mountAiQueryBriefDialogControl: vi.fn(),
+          _aiQueryBriefDialogOpen: false,
+          _aiQueryBriefHeading: "",
+          _aiQueryBriefText: "",
           _resolveAiQueryBriefMonitorContext: vi.fn(() =>
             Promise.resolve({
               access: "loaded",
@@ -147,10 +143,10 @@ describe("HassDatapointsHistoryPanel AI query brief", () => {
           panel
         );
 
-        expect(dialog.open).toBe(true);
-        expect(dialog.heading).toBe("AI query brief");
-        expect(dialog.text).toContain("sensor.temperature");
-        expect(dialog.text).toContain("2026-05-01T00:00:00.000Z");
+        expect(panel._aiQueryBriefDialogOpen).toBe(true);
+        expect(panel._aiQueryBriefHeading).toBe("AI query brief");
+        expect(panel._aiQueryBriefText).toContain("sensor.temperature");
+        expect(panel._aiQueryBriefText).toContain("2026-05-01T00:00:00.000Z");
       });
     });
   });
