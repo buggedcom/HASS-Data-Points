@@ -1182,10 +1182,9 @@ export class HassDatapointsHistoryCard extends ChartCardBase {
 
   /** Rendering host for panel-owned comparison tabs; drawing remains chart-owned. */
   getComparisonTabsHost(): Nullable<HTMLElement> {
-    const chart = this.shadowRoot?.querySelector(
-      "hass-datapoints-history-chart, dp-history-chart, history-chart"
+    return (
+      this._chartEl()?.querySelector<HTMLElement>("#chart-top-slot") ?? null
     );
-    return chart?.querySelector<HTMLElement>("#chart-top-slot") ?? null;
   }
 
   /**
