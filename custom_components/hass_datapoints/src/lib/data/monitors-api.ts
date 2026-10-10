@@ -68,6 +68,13 @@ interface MonitorBase {
   anomaly_persistence_window: string;
   anomaly_trend_method: string;
   anomaly_trend_window: string;
+  // Per-method direction filter (#62). Optional: monitors created before the
+  // feature omit them and default to "both".
+  anomaly_trend_residual_direction?: string;
+  anomaly_rate_of_change_direction?: string;
+  anomaly_iqr_direction?: string;
+  anomaly_rolling_zscore_direction?: string;
+  anomaly_comparison_window_direction?: string;
   sample_interval: string | null;
   sample_aggregate: string;
   anomaly_use_sampled_data: boolean;
@@ -104,6 +111,11 @@ export interface CreateMonitorPayload {
   anomaly_rate_window?: string;
   anomaly_zscore_window?: string;
   anomaly_persistence_window?: string;
+  anomaly_trend_residual_direction?: string;
+  anomaly_rate_of_change_direction?: string;
+  anomaly_iqr_direction?: string;
+  anomaly_rolling_zscore_direction?: string;
+  anomaly_comparison_window_direction?: string;
   anomaly_trend_method?: string;
   anomaly_trend_window?: string;
   sample_interval?: string;

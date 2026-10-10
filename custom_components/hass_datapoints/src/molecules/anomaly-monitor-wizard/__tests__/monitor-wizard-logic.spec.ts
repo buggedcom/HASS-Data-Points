@@ -281,6 +281,97 @@ describe("monitor-wizard-logic", () => {
         expect(payload.anomaly_trend_method).toBe("rolling_average");
       });
     });
+
+    describe("WHEN direction fields are set (#62)", () => {
+      it("THEN the five backend direction fields are emitted", () => {
+        const cfg = {
+          ...defaultEntityConfig(),
+          anomaly_iqr_direction: "up",
+          anomaly_rolling_zscore_direction: "down",
+        };
+        const payload = buildConfigPayload(cfg);
+        expect(payload.anomaly_iqr_direction).toBe("up");
+        expect(payload.anomaly_rolling_zscore_direction).toBe("down");
+        expect(payload.anomaly_trend_residual_direction).toBe("both");
+        expect(payload.anomaly_rate_of_change_direction).toBe("both");
+        expect(payload.anomaly_comparison_window_direction).toBe("both");
+      });
+
+      it("THEN similar_entity direction resolves onto the comparison field", () => {
+        const cfg = {
+          ...defaultEntityConfig(),
+          anomaly_methods: ["similar_entity"],
+          anomaly_comparison_entity_id: "sensor.reference",
+          anomaly_similar_entity_direction: "down",
+          anomaly_comparison_window_direction: "up",
+        };
+        const payload = buildConfigPayload(cfg);
+        expect(payload.anomaly_comparison_window_direction).toBe("down");
+      });
+    });
+  });
+
+  // ── Direction round-trip (#62) ──────────────────────────────────────────
+
+  describe("GIVEN a monitor with a direction set", () => {
+    const makeMonitor = (
+      overrides: Partial<AnomalyMonitor> = {}
+    ): AnomalyMonitor =>
+      ({
+        id: "m1",
+        type: "individual",
+        name: "Test",
+        entity_id: "sensor.temp",
+        enabled: true,
+        look_back_hours: 24,
+        scan_interval_minutes: 30,
+        anomaly_methods: ["iqr"],
+        anomaly_sensitivity: "medium",
+        anomaly_overlap_mode: "all",
+        anomaly_rate_window: "1h",
+        anomaly_zscore_window: "24h",
+        anomaly_persistence_window: "1h",
+        anomaly_trend_method: "rolling_average",
+        anomaly_trend_window: "24h",
+        sample_interval: null,
+        sample_aggregate: "mean",
+        anomaly_use_sampled_data: false,
+        baseline_entity_id: null,
+        baseline_time_offset_hours: 0,
+        ...overrides,
+      }) as unknown as AnomalyMonitor;
+
+    describe("WHEN loaded then re-serialized", () => {
+      it("THEN the direction survives the round-trip", () => {
+        const m = makeMonitor({
+          anomaly_iqr_direction: "up",
+        } as Partial<AnomalyMonitor>);
+        const cfg = configFromMonitor(m);
+        expect(cfg.anomaly_iqr_direction).toBe("up");
+        const payload = buildConfigPayload(cfg);
+        expect(payload.anomaly_iqr_direction).toBe("up");
+      });
+
+      it("THEN an omitted direction defaults to both", () => {
+        const cfg = configFromMonitor(makeMonitor());
+        expect(cfg.anomaly_iqr_direction).toBe("both");
+        expect(cfg.anomaly_comparison_window_direction).toBe("both");
+      });
+
+      it("THEN a baseline monitor's comparison direction maps to similar_entity", () => {
+        const m = makeMonitor({
+          anomaly_methods: ["comparison_window"],
+          baseline_entity_id: "sensor.baseline",
+          anomaly_comparison_window_direction: "down",
+        } as Partial<AnomalyMonitor>);
+        const cfg = configFromMonitor(m);
+        expect(cfg.anomaly_methods).toEqual(["similar_entity"]);
+        expect(cfg.anomaly_similar_entity_direction).toBe("down");
+        // Re-serialising routes it back onto the single comparison field.
+        const payload = buildConfigPayload(cfg);
+        expect(payload.anomaly_comparison_window_direction).toBe("down");
+      });
+    });
   });
 
   // ── validateStep1 ────────────────────────────────────────────────────────
