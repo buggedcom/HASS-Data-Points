@@ -18355,6 +18355,30 @@
 		getComparisonTabsHost() {
 			return (this.shadowRoot?.querySelector("hass-datapoints-history-chart, dp-history-chart, history-chart"))?.querySelector("#chart-top-slot") ?? null;
 		}
+		/**
+		* Public resize-replay seam: redraw the chart with its last draw args.
+		* The panel calls this on container/pane resize instead of reaching through
+		* the card's shadow root into the inner chart.
+		*/
+		requestResizeRedraw() {
+			this._chartEl()?._redrawLastDraw();
+		}
+		/**
+		* Toggle the comparison-tab rail's overflow affordance from measured widths.
+		* Encapsulates the inner chart's `#chart-tabs-shell`/`#chart-tabs-rail` so the
+		* panel orchestration no longer walks this card's shadow DOM.
+		*/
+		updateComparisonTabsOverflow() {
+			const chart = this._chartEl();
+			const shell = chart?.querySelector("#chart-tabs-shell") ?? null;
+			const rail = chart?.querySelector("#chart-tabs-rail") ?? null;
+			if (!shell || !rail) return;
+			shell.classList.toggle("overflowing", rail.scrollWidth > rail.clientWidth + 4);
+		}
+		/** Whether the chart should rescale its axis for comparison overlays. */
+		setAdjustComparisonAxisScale(value) {
+			this._adjustComparisonAxisScale = value;
+		}
 		getAiQueryBriefAnomalySnapshot() {
 			const chartEl = this._chartEl();
 			if (!chartEl) return null;
@@ -33167,13 +33191,6 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/context/orchestration-context.ts
-	function getInnerHistoryChart(chartEl) {
-		if (!chartEl?.shadowRoot) return null;
-		return chartEl.shadowRoot.querySelector?.("hass-datapoints-history-chart") ?? chartEl.shadowRoot.querySelector?.("dp-history-chart") ?? chartEl.shadowRoot.querySelector?.("history-chart") ?? null;
-	}
-	function getComparisonTabsHost(chartEl) {
-		return getInnerHistoryChart(chartEl)?.querySelector?.("#chart-top-slot") ?? null;
-	}
 	function ensureCollapsedPickerAnchor(targetControl, anchorEl) {
 		const assignedSlot = targetControl.assignedSlot ?? null;
 		if (!assignedSlot) return;
@@ -33216,19 +33233,7 @@
 				const rafId = window.requestAnimationFrame(() => {
 					ranSynchronously = true;
 					chartResizeRaf = null;
-					if (!chartEl) return;
-					if (Array.isArray(chartEl._lastDrawArgs) && chartEl._lastDrawArgs.length > 0 && typeof chartEl._drawChart === "function") {
-						chartEl._drawChart(...chartEl._lastDrawArgs);
-						return;
-					}
-					const innerChart = getInnerHistoryChart(chartEl);
-					if (innerChart && Array.isArray(innerChart._lastDrawArgs) && innerChart._lastDrawArgs.length > 0) {
-						if (typeof innerChart._queueDrawChart === "function") {
-							innerChart._queueDrawChart(...innerChart._lastDrawArgs);
-							return;
-						}
-						if (typeof innerChart._drawChart === "function") innerChart._drawChart(...innerChart._lastDrawArgs);
-					}
+					chartEl?.requestResizeRedraw?.();
 				});
 				chartResizeRaf = ranSynchronously ? null : rafId;
 			},
@@ -33250,7 +33255,7 @@
 				if (typeof targetControl.click === "function") targetControl.click();
 			},
 			renderComparisonTabs(options) {
-				const tabsEl = getComparisonTabsHost(options.chartEl);
+				const tabsEl = options.chartEl?.getComparisonTabsHost?.() ?? null;
 				if (!tabsEl || !options.startTime || !options.endTime) return {
 					comparisonTabRailComp: options.comparisonTabRailComp,
 					comparisonTabsHostEl: options.comparisonTabsHostEl
@@ -33295,11 +33300,7 @@
 			},
 			updateComparisonTabsOverflow(chartEl) {
 				window.requestAnimationFrame(() => {
-					const innerChart = getInnerHistoryChart(chartEl);
-					const shell = innerChart?.querySelector?.("#chart-tabs-shell") ?? null;
-					const rail = innerChart?.querySelector?.("#chart-tabs-rail") ?? null;
-					if (!shell || !rail) return;
-					shell.classList.toggle("overflowing", rail.scrollWidth > rail.clientWidth + 4);
+					chartEl?.updateComparisonTabsOverflow?.();
 				});
 			},
 			handleComparisonTabHover(options) {
@@ -37619,7 +37620,7 @@
 					this._renderContent();
 				},
 				setAdjustComparisonAxisScale: (value) => {
-					if (this._chartEl) this._chartEl._adjustComparisonAxisScale = value;
+					this._chartEl?.setAdjustComparisonAxisScale?.(value);
 				}
 			});
 		}
