@@ -2,11 +2,8 @@
  * Pure anomaly config builder extracted from history-chart.ts.
  */
 
+import { coerceAnomalyDirection } from "@/lib/anomaly-direction";
 import type { BackendAnomalyConfig } from "@/lib/data/history-api";
-
-function coerceDirection(value: unknown): "both" | "up" | "down" {
-  return value === "up" || value === "down" ? value : "both";
-}
 
 export function buildBackendAnomalyConfig(
   analysis: RecordWithUnknownValues
@@ -47,14 +44,16 @@ export function buildBackendAnomalyConfig(
       typeof analysis.anomaly_persistence_window === "string"
         ? analysis.anomaly_persistence_window
         : undefined,
-    anomaly_trend_residual_direction: coerceDirection(
+    anomaly_trend_residual_direction: coerceAnomalyDirection(
       analysis.anomaly_trend_residual_direction
     ),
-    anomaly_rate_of_change_direction: coerceDirection(
+    anomaly_rate_of_change_direction: coerceAnomalyDirection(
       analysis.anomaly_rate_of_change_direction
     ),
-    anomaly_iqr_direction: coerceDirection(analysis.anomaly_iqr_direction),
-    anomaly_rolling_zscore_direction: coerceDirection(
+    anomaly_iqr_direction: coerceAnomalyDirection(
+      analysis.anomaly_iqr_direction
+    ),
+    anomaly_rolling_zscore_direction: coerceAnomalyDirection(
       analysis.anomaly_rolling_zscore_direction
     ),
     // The backend exposes a single comparison_window direction field. When
@@ -62,8 +61,8 @@ export function buildBackendAnomalyConfig(
     // comparison_entity_id is sourced), its direction resolves onto it;
     // otherwise the comparison_window direction is used directly.
     anomaly_comparison_window_direction: hasSimilarEntity
-      ? coerceDirection(analysis.anomaly_similar_entity_direction)
-      : coerceDirection(analysis.anomaly_comparison_window_direction),
+      ? coerceAnomalyDirection(analysis.anomaly_similar_entity_direction)
+      : coerceAnomalyDirection(analysis.anomaly_comparison_window_direction),
     trend_method: (() => {
       if (
         typeof analysis.anomaly_trend_method === "string" &&

@@ -1,4 +1,8 @@
 import { COLORS } from "@/constants";
+import {
+  type AnomalyDirection,
+  coerceAnomalyDirection,
+} from "@/lib/anomaly-direction";
 import { normalizeEntityIds } from "@/lib/domain/target-selection";
 
 /**
@@ -36,12 +40,12 @@ export interface HistorySeriesAnalysis {
   anomaly_comparison_entity_id: Nullable<string>;
   anomaly_trend_method: string;
   anomaly_trend_window: string;
-  anomaly_trend_residual_direction: "both" | "up" | "down";
-  anomaly_rate_of_change_direction: "both" | "up" | "down";
-  anomaly_iqr_direction: "both" | "up" | "down";
-  anomaly_rolling_zscore_direction: "both" | "up" | "down";
-  anomaly_comparison_window_direction: "both" | "up" | "down";
-  anomaly_similar_entity_direction: "both" | "up" | "down";
+  anomaly_trend_residual_direction: AnomalyDirection;
+  anomaly_rate_of_change_direction: AnomalyDirection;
+  anomaly_iqr_direction: AnomalyDirection;
+  anomaly_rolling_zscore_direction: AnomalyDirection;
+  anomaly_comparison_window_direction: AnomalyDirection;
+  anomaly_similar_entity_direction: AnomalyDirection;
   show_delta_analysis: boolean;
   show_delta_tooltip: boolean;
   show_delta_lines: boolean;
@@ -103,10 +107,6 @@ const VALID_SAMPLE_AGGREGATES = [
   "first",
   "last",
 ];
-
-function coerceAnomalyDirection(value: unknown): "both" | "up" | "down" {
-  return value === "up" || value === "down" ? value : "both";
-}
 
 export function normalizeHistorySeriesAnalysis(
   analysis: Nullable<PartialHistorySeriesAnalysis> | undefined
