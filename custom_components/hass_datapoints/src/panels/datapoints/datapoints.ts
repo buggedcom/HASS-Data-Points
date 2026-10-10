@@ -116,6 +116,7 @@ import "@/panels/datapoints/components/ai-query-brief-dialog/ai-query-brief-dial
 import "@/panels/datapoints/components/history-targets/history-targets";
 import "@/panels/datapoints/components/range-toolbar/range-toolbar";
 import { createHistoryPageContext } from "@/panels/datapoints/context/create-history-page-context";
+import { HostResizeController } from "@/panels/datapoints/host-resize-controller";
 import type {
   HistoryPageContext,
   HistoryTargetRowState,
@@ -179,34 +180,15 @@ type TargetRowElement = HTMLElement & {
   comparisonWindows: NormalizedHistoryDateWindow[];
 };
 
-type LegacyDialogElement = HTMLElement & {
-  open: boolean;
-  headerTitle: string;
-};
+type DateWindowDraftRange = { start: Date; end: Date };
 
-type DialogInputElement = HTMLElement & {
-  value: string;
-  hass?: unknown;
-};
-
-type DateWindowDialogElement = HTMLElement & {
-  open: boolean;
-  heading: string;
-  submitLabel: string;
-  showDelete: boolean;
-  showShortcuts: boolean;
-  name: string;
-  startValue: string;
-  endValue: string;
-  rangeBounds: unknown;
-  zoomLevel: string;
-  dateSnapping: string;
-};
-
-type AiQueryBriefDialogElement = HTMLElement & {
-  open: boolean;
-  heading: string;
-  text: string;
+/** Open-time payload fed to the `<anomaly-monitor-wizard>`. */
+type MonitorWizardPayload = {
+  prefillEntityIds: string[];
+  prefillAnalysis: unknown;
+  editMonitor: unknown;
+  suggestedEntityIds: string[];
+  allSeriesEntityIds: string[];
 };
 
 type HistoryCardElement = HTMLElement & {
@@ -216,7 +198,9 @@ type HistoryCardElement = HTMLElement & {
   updateComplete?: Promise<unknown>;
   getComparisonTabsHost(): Nullable<HTMLElement>;
   getAiQueryBriefAnomalySnapshot?(): Nullable<AiQueryBriefAnomalySnapshot>;
-  _adjustComparisonAxisScale?: boolean;
+  requestResizeRedraw?(): void;
+  updateComparisonTabsOverflow?(): void;
+  setAdjustComparisonAxisScale?(value: boolean): void;
 };
 
 type ListCardElement = HTMLElement & {
@@ -365,23 +349,22 @@ export class HassDatapointsHistoryPanel extends LitElement {
 
   declare _pendingAnomalyComparisonWindowEntityId: Nullable<string>;
 
-  declare _dateWindowDialogOpen: boolean;
+  @reactiveState()
+  accessor _dateWindowDialogOpen: boolean = false;
 
   declare _editingDateWindowId: Nullable<string>;
 
-  declare _dateWindowDialogComp: Nullable<DateWindowDialogElement>;
+  /** Controlled form values for the declarative `<date-window-dialog>`. */
+  @reactiveState()
+  accessor _dateWindowDialogName: string = "";
 
-  declare _dateWindowDialogEl: Nullable<LegacyDialogElement>;
+  @reactiveState()
+  accessor _dateWindowDialogStartValue: string = "";
 
-  declare _dateWindowDialogNameEl: Nullable<DialogInputElement>;
+  @reactiveState()
+  accessor _dateWindowDialogEndValue: string = "";
 
-  declare _dateWindowDialogStartEl: Nullable<DialogInputElement>;
-
-  declare _dateWindowDialogEndEl: Nullable<DialogInputElement>;
-
-  declare _dateWindowDialogShortcutsEl: Nullable<HTMLElement>;
-
-  declare _dateWindowDialogDraftRange: Nullable<{ start: Date; end: Date }>;
+  declare _dateWindowDialogDraftRange: Nullable<DateWindowDraftRange>;
 
   declare _uiReadyPromise: Nullable<Promise<unknown>>;
 
@@ -476,7 +459,8 @@ export class HassDatapointsHistoryPanel extends LitElement {
 
   declare _onWindowPointerDown: EventListener;
 
-  declare _onWindowResize: () => void;
+  /** Observes the host size for measured layout side effects. */
+  declare _resizeController: HostResizeController;
 
   declare _onCollapsedSidebarClick: EventListener;
 
@@ -515,11 +499,28 @@ export class HassDatapointsHistoryPanel extends LitElement {
   /** Whether the anomaly monitors management panel is currently shown. */
   declare _showMonitorsPanel: boolean;
 
-  /** Imperative wizard element appended to the shadow root. */
-  declare _monitorWizardComp: Nullable<HTMLElement>;
+  /** Declarative open-state + payload for the `<anomaly-monitor-wizard>`. */
+  @reactiveState()
+  accessor _monitorWizardOpen: boolean = false;
 
-  /** Imperative AI brief dialog element appended to the shadow root. */
-  declare _aiQueryBriefDialogComp: Nullable<AiQueryBriefDialogElement>;
+  @reactiveState()
+  accessor _monitorWizardPayload: MonitorWizardPayload = {
+    prefillEntityIds: [],
+    prefillAnalysis: null,
+    editMonitor: null,
+    suggestedEntityIds: [],
+    allSeriesEntityIds: [],
+  };
+
+  /** Declarative open-state + payload for the `<ai-query-brief-dialog>`. */
+  @reactiveState()
+  accessor _aiQueryBriefDialogOpen: boolean = false;
+
+  @reactiveState()
+  accessor _aiQueryBriefHeading: string = "";
+
+  @reactiveState()
+  accessor _aiQueryBriefText: string = "";
 
   constructor() {
     super();
@@ -552,13 +553,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
     this._selectedComparisonWindowId = null;
     this._hoveredComparisonWindowId = null;
     this._pendingAnomalyComparisonWindowEntityId = null;
-    this._dateWindowDialogOpen = false;
     this._editingDateWindowId = null;
-    this._dateWindowDialogComp = null;
-    this._dateWindowDialogNameEl = null;
-    this._dateWindowDialogStartEl = null;
-    this._dateWindowDialogEndEl = null;
-    this._dateWindowDialogShortcutsEl = null;
     this._dateWindowDialogDraftRange = null;
     this._uiReadyPromise = null;
     this._uiReadyApplied = false;
@@ -587,8 +582,6 @@ export class HassDatapointsHistoryPanel extends LitElement {
     this._pendingPreferencesSaveTimer = null;
     this._orphanRecoveryTimer = null;
     this._showMonitorsPanel = false;
-    this._monitorWizardComp = null;
-    this._aiQueryBriefDialogComp = null;
     this._recordsSearchQuery = "";
     this._hiddenEventIds = [];
     this._hoveredEventIds = [];
@@ -613,14 +606,9 @@ export class HassDatapointsHistoryPanel extends LitElement {
     this._onAnalysisMethodResult = (ev: Event) =>
       this._handleAnalysisMethodResult(ev);
     this._onWindowPointerDown = (_ev: Event) => this._handleWindowPointerDown();
-    this._onWindowResize = () => {
-      if (this._rendered) {
-        this._syncPageLayoutHeight();
-        this._applyContentSplitLayout();
-        this._requestChartResizeRedraw();
-        this.requestUpdate();
-      }
-    };
+    this._resizeController = new HostResizeController(this, () =>
+      this._handleHostResize()
+    );
     this._onCollapsedSidebarClick = (_ev: Event) =>
       this._handleCollapsedSidebarClick();
     this._onEventRecorded = () => this._handleEventRecorded();
@@ -916,10 +904,9 @@ export class HassDatapointsHistoryPanel extends LitElement {
     this._loadSavedPageIndicator();
     // _bootstrapAfterShellBuilt() is intentionally NOT called here — it was
     // previously called on every hass update which triggered _renderContent()
-    // and _syncHassBindings() (including DOM querySelectorAll and full target-
-    // row re-renders) multiple times per second.  Those are now handled by the
-    // microtask above (hass push) and by explicit calls from state-change
-    // handlers.
+    // and a full target-picker/target-row refresh multiple times per second.
+    // Those are now handled by the microtask above (hass push) and by explicit
+    // calls from state-change handlers.
   }
 
   _applyPanel(panel: Nullable<{ config?: RecordWithUnknownValues }>) {
@@ -983,7 +970,6 @@ export class HassDatapointsHistoryPanel extends LitElement {
     window.addEventListener("popstate", this._onPopState);
     window.addEventListener("location-changed", this._onLocationChanged);
     window.addEventListener("pointerdown", this._onWindowPointerDown, true);
-    window.addEventListener("resize", this._onWindowResize);
     window.addEventListener(
       "hass-datapoints-event-recorded",
       this._onEventRecorded
@@ -1073,7 +1059,6 @@ export class HassDatapointsHistoryPanel extends LitElement {
     window.removeEventListener("popstate", this._onPopState);
     window.removeEventListener("location-changed", this._onLocationChanged);
     window.removeEventListener("pointerdown", this._onWindowPointerDown, true);
-    window.removeEventListener("resize", this._onWindowResize);
     window.removeEventListener(
       "hass-datapoints-event-recorded",
       this._onEventRecorded
@@ -1750,6 +1735,62 @@ export class HassDatapointsHistoryPanel extends LitElement {
         ></history-targets>
         <div id="content"></div>
       </panel-shell>
+      <date-window-dialog
+        ?open=${this._dateWindowDialogOpen}
+        .heading=${this._editingDateWindowId
+          ? msg("Edit date window")
+          : msg("Add date window")}
+        .submitLabel=${this._editingDateWindowId
+          ? msg("Save date window")
+          : msg("Create date window")}
+        .showDelete=${!!this._editingDateWindowId}
+        .showShortcuts=${!this._editingDateWindowId}
+        .name=${this._dateWindowDialogName}
+        .startValue=${this._dateWindowDialogStartValue}
+        .endValue=${this._dateWindowDialogEndValue}
+        .rangeBounds=${this._rangeBounds ?? null}
+        .zoomLevel=${this._zoomLevel ?? "auto"}
+        .dateSnapping=${this._dateSnapping ?? "hour"}
+        @dp-window-close=${() => this._closeDateWindowDialog()}
+        @dp-window-submit=${(ev: DetailEvent<RecordWithUnknownValues>) =>
+          this._createDateWindowFromDialog(ev.detail || {})}
+        @dp-window-delete=${() => this._deleteEditingDateWindow()}
+        @dp-window-shortcut=${(ev: DetailEvent<{ direction?: number }>) => {
+          if (typeof ev.detail?.direction === "number") {
+            this._applyDateWindowShortcut(ev.detail.direction);
+          }
+        }}
+        @dp-window-date-change=${(
+          ev: DetailEvent<{ start?: string; end?: string }>
+        ) =>
+          this._handleDateWindowDateChange(
+            ev.detail?.start || "",
+            ev.detail?.end || ""
+          )}
+      ></date-window-dialog>
+      <anomaly-monitor-wizard
+        .hass=${this._hass}
+        ?open=${this._monitorWizardOpen}
+        .prefillEntityIds=${this._monitorWizardPayload.prefillEntityIds}
+        .prefillAnalysis=${this._monitorWizardPayload.prefillAnalysis}
+        .editMonitor=${this._monitorWizardPayload.editMonitor}
+        .suggestedEntityIds=${this._monitorWizardPayload.suggestedEntityIds}
+        .allSeriesEntityIds=${this._monitorWizardPayload.allSeriesEntityIds}
+        @dp-monitor-wizard-close=${() => {
+          this._monitorWizardOpen = false;
+        }}
+        @dp-monitor-wizard-saved=${() => {
+          this._monitorWizardOpen = false;
+        }}
+      ></anomaly-monitor-wizard>
+      <ai-query-brief-dialog
+        ?open=${this._aiQueryBriefDialogOpen}
+        .heading=${this._aiQueryBriefHeading}
+        .text=${this._aiQueryBriefText}
+        @dp-ai-query-brief-close=${() => {
+          this._aiQueryBriefDialogOpen = false;
+        }}
+      ></ai-query-brief-dialog>
     `;
   }
 
@@ -1768,6 +1809,21 @@ export class HassDatapointsHistoryPanel extends LitElement {
     if (this._shellBuilt && !this._shellEl) {
       this._mountShellControls();
     }
+    // Push the current zoom window into the list card (keyed, so it is a no-op
+    // unless the config actually changed). Driven here because the reactive
+    // _chartZoomCommittedRange change schedules the render.
+    this._applyListZoomConfig();
+  }
+
+  /** Measured layout side effects, driven by the host ResizeController. */
+  private _handleHostResize(): void {
+    if (!this._rendered) {
+      return;
+    }
+    this._shellEl?.syncLayoutHeight();
+    this._applyContentSplitLayout();
+    this._requestChartResizeRedraw();
+    this.requestUpdate();
   }
 
   private async _mountShellControls() {
@@ -1792,10 +1848,6 @@ export class HassDatapointsHistoryPanel extends LitElement {
     this._bootstrapAfterShellBuilt();
   }
 
-  _syncPageLayoutHeight() {
-    this._shellEl?.syncLayoutHeight();
-  }
-
   _bootstrapAfterShellBuilt() {
     if (!this._shellBuilt) {
       logger.warn(
@@ -1811,7 +1863,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
     this._ensureHistoryBounds();
     this._ensureUserPreferences();
     this._loadSavedPageIndicator();
-    this._syncHassBindings();
+    this._refreshControlsFromHass();
     this._renderContent();
     if (this._restoredFromSession) {
       this._restoredFromSession = false;
@@ -1923,10 +1975,24 @@ export class HassDatapointsHistoryPanel extends LitElement {
   }
 
   _syncControls() {
-    this._syncPageLayoutHeight();
-    this._syncHassBindings();
+    this._shellEl?.syncLayoutHeight();
+    this._refreshControlsFromHass();
     this.requestUpdate();
     this._renderSidebarOptions();
+  }
+
+  /**
+   * Refresh the imperatively-mounted controls that can't bind hass declaratively
+   * (the target picker) and re-render the target rows.
+   */
+  private _refreshControlsFromHass() {
+    if (this._targetControl) {
+      if (this._hass) {
+        this._targetControl.hass = this._hass;
+      }
+      this._targetControl.value = {};
+    }
+    this._renderTargetRows();
   }
 
   _syncSeriesState() {
@@ -1969,35 +2035,6 @@ export class HassDatapointsHistoryPanel extends LitElement {
 
   _mergeSavedSeriesRows(rows: unknown, savedRows: unknown) {
     return mergeSavedSeriesRows(rows, savedRows);
-  }
-
-  _syncHassBindings() {
-    if (this._targetControl) {
-      if (this._hass) {
-        this._targetControl.hass = this._hass;
-      }
-      this._targetControl.value = {};
-    }
-    this._renderTargetRows();
-    this.shadowRoot
-      ?.querySelectorAll(
-        "[data-series-icon-entity-id], [data-series-collapsed-icon-entity-id]"
-      )
-      .forEach((iconEl) => {
-        const icon = iconEl as HTMLElement & {
-          dataset: DOMStringMap;
-          stateObj?: unknown;
-          hass?: unknown;
-        };
-        const entityId =
-          icon.dataset.seriesIconEntityId ||
-          icon.dataset.seriesCollapsedIconEntityId;
-        if (!entityId) {
-          return;
-        }
-        icon.stateObj = this._hass?.states?.[entityId];
-        icon.hass = this._hass;
-      });
   }
 
   _renderSidebarOptions() {
@@ -2067,40 +2104,14 @@ export class HassDatapointsHistoryPanel extends LitElement {
     return getRoundedDateWindowUnit(start, end);
   }
 
+  /** Push the current draft range into the controlled start/end form values. */
   _syncDateWindowDialogInputs() {
-    const startVal = this._formatDateWindowInputValue(
+    this._dateWindowDialogStartValue = this._formatDateWindowInputValue(
       this._dateWindowDialogDraftRange?.start || null
     );
-    const endVal = this._formatDateWindowInputValue(
+    this._dateWindowDialogEndValue = this._formatDateWindowInputValue(
       this._dateWindowDialogDraftRange?.end || null
     );
-    // Update the LitElement component when mounted.
-    if (this._dateWindowDialogComp) {
-      this._dateWindowDialogComp.startValue = startVal;
-      this._dateWindowDialogComp.endValue = endVal;
-      return;
-    }
-    // Legacy ha-dialog fallback.
-    if (this._dateWindowDialogStartEl) {
-      this._dateWindowDialogStartEl.value = startVal;
-    }
-    if (this._dateWindowDialogEndEl) {
-      this._dateWindowDialogEndEl.value = endVal;
-    }
-  }
-
-  _handleDateWindowDialogInputChange() {
-    const start = this._parseDateWindowInputValue(
-      this._dateWindowDialogStartEl?.value || ""
-    );
-    const end = this._parseDateWindowInputValue(
-      this._dateWindowDialogEndEl?.value || ""
-    );
-    if (start && end && start < end) {
-      this._dateWindowDialogDraftRange = { start, end };
-      return;
-    }
-    this._dateWindowDialogDraftRange = null;
   }
 
   _applyDateWindowShortcut(direction: number) {
@@ -2118,104 +2129,9 @@ export class HassDatapointsHistoryPanel extends LitElement {
     this._syncDateWindowDialogInputs();
   }
 
-  _ensureDateWindowDialog() {
-    // The dialog is pre-mounted as a LitElement in _mountControls(); no legacy ha-dialog needed.
-    if (
-      this._dateWindowDialogComp ||
-      this._dateWindowDialogEl ||
-      !this.shadowRoot
-    )
-      return;
-    const dialog = document.createElement("ha-dialog") as HTMLElement & {
-      scrimClickAction?: boolean;
-      escapeKeyAction?: boolean;
-      open?: boolean;
-      headerTitle?: string;
-    };
-    dialog.id = "date-window-dialog";
-    dialog.setAttribute("hideActions", "");
-    dialog.scrimClickAction = true;
-    dialog.escapeKeyAction = true;
-    dialog.open = false;
-    dialog.headerTitle = "Add date window";
-    dialog.style.setProperty(
-      "--dialog-content-padding",
-      `0 var(--dp-spacing-lg) var(--dp-spacing-lg)`
-    );
-    dialog.innerHTML = `
-      <div class="date-window-dialog-content">
-        <div class="date-window-dialog-body">
-          A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later.
-        </div>
-        <div class="date-window-dialog-field name-field">
-          <ha-textfield id="date-window-name" label="Name" placeholder="e.g. Heating season start"></ha-textfield>
-        </div>
-        <div class="date-window-dialog-field">
-          <label>Date range</label>
-          <div class="date-window-dialog-dates">
-            <div class="date-window-dialog-field">
-              <label for="date-window-start">Start</label>
-              <input id="date-window-start" class="date-window-dialog-input" type="datetime-local" step="60">
-            </div>
-            <div class="date-window-dialog-field">
-              <label for="date-window-end">End</label>
-              <input id="date-window-end" class="date-window-dialog-input" type="datetime-local" step="60">
-            </div>
-          </div>
-        </div>
-        <div class="date-window-dialog-shortcuts" id="date-window-shortcuts" hidden>
-          <ha-button id="date-window-previous">Use previous range</ha-button>
-          <ha-button id="date-window-next">Use next range</ha-button>
-        </div>
-        <div class="date-window-dialog-actions">
-          <ha-button class="date-window-dialog-delete" id="date-window-delete" hidden>Delete date window</ha-button>
-          <div class="date-window-dialog-actions-right">
-            <ha-button class="date-window-dialog-cancel" id="date-window-cancel">Cancel</ha-button>
-            <ha-button raised class="date-window-dialog-submit" id="date-window-submit">Create date window</ha-button>
-          </div>
-        </div>
-      </div>
-    `;
-    dialog.addEventListener("closed", () => this._closeDateWindowDialog(true));
-    this.shadowRoot.appendChild(dialog);
-    this._dateWindowDialogEl = dialog as unknown as LegacyDialogElement;
-    this._dateWindowDialogNameEl = dialog.querySelector("#date-window-name");
-    this._dateWindowDialogStartEl = dialog.querySelector("#date-window-start");
-    this._dateWindowDialogEndEl = dialog.querySelector("#date-window-end");
-    this._dateWindowDialogShortcutsEl = dialog.querySelector(
-      "#date-window-shortcuts"
-    );
-    if (this._hass && this._dateWindowDialogNameEl) {
-      this._dateWindowDialogNameEl.hass = this._hass;
-    }
-    dialog
-      .querySelector("#date-window-cancel")
-      ?.addEventListener("click", () => this._closeDateWindowDialog());
-    dialog
-      .querySelector("#date-window-submit")
-      ?.addEventListener("click", () => this._createDateWindowFromDialog());
-    dialog
-      .querySelector("#date-window-delete")
-      ?.addEventListener("click", () => this._deleteEditingDateWindow());
-    this._dateWindowDialogStartEl?.addEventListener("change", () =>
-      this._handleDateWindowDialogInputChange()
-    );
-    this._dateWindowDialogEndEl?.addEventListener("change", () =>
-      this._handleDateWindowDialogInputChange()
-    );
-    dialog
-      .querySelector("#date-window-previous")
-      ?.addEventListener("click", () => this._applyDateWindowShortcut(-1));
-    dialog
-      .querySelector("#date-window-next")
-      ?.addEventListener("click", () => this._applyDateWindowShortcut(1));
-  }
-
   _openDateWindowDialog(
     targetWindow: Nullable<NormalizedHistoryDateWindow> = null
   ) {
-    this._ensureDateWindowDialog();
-    this._dateWindowDialogOpen = true;
     this._editingDateWindowId = targetWindow?.id || null;
     const dialogStart = targetWindow
       ? parseDateValue(targetWindow.start_time)
@@ -2227,85 +2143,24 @@ export class HassDatapointsHistoryPanel extends LitElement {
       dialogStart && dialogEnd && dialogStart < dialogEnd
         ? { start: new Date(dialogStart), end: new Date(dialogEnd) }
         : null;
-
-    // Prefer the new LitElement component if mounted.
-    if (this._dateWindowDialogComp) {
-      this._dateWindowDialogComp.heading = targetWindow
-        ? msg("Edit date window")
-        : msg("Add date window");
-      this._dateWindowDialogComp.submitLabel = targetWindow
-        ? msg("Save date window")
-        : msg("Create date window");
-      this._dateWindowDialogComp.showDelete = !!targetWindow;
-      this._dateWindowDialogComp.showShortcuts = !targetWindow;
-      this._dateWindowDialogComp.name = targetWindow?.label || "";
-      this._dateWindowDialogComp.startValue = this._formatDateWindowInputValue(
-        this._dateWindowDialogDraftRange?.start || null
-      );
-      this._dateWindowDialogComp.endValue = this._formatDateWindowInputValue(
-        this._dateWindowDialogDraftRange?.end || null
-      );
-      this._dateWindowDialogComp.rangeBounds = this._rangeBounds ?? null;
-      this._dateWindowDialogComp.zoomLevel = this._zoomLevel ?? "auto";
-      this._dateWindowDialogComp.dateSnapping = this._dateSnapping ?? "hour";
-      this._dateWindowDialogComp.open = true;
-      return;
-    }
-
-    // Legacy ha-dialog fallback (used when _dateWindowDialogComp is not available).
-    if (this._dateWindowDialogEl) {
-      this._dateWindowDialogEl.open = true;
-      this._dateWindowDialogEl.headerTitle = targetWindow
-        ? msg("Edit date window")
-        : msg("Add date window");
-    }
-    const submitButton = this._dateWindowDialogEl?.querySelector(
-      "#date-window-submit"
-    );
-    if (submitButton) {
-      submitButton.textContent = targetWindow
-        ? msg("Save date window")
-        : msg("Create date window");
-    }
-    const deleteButton = this._dateWindowDialogEl?.querySelector(
-      "#date-window-delete"
-    ) as HTMLElement | null;
-    if (deleteButton) {
-      deleteButton.hidden = !targetWindow;
-      deleteButton.style.display = targetWindow ? "" : "none";
-    }
-    if (this._dateWindowDialogShortcutsEl) {
-      this._dateWindowDialogShortcutsEl.hidden = !!targetWindow;
-    }
-    if (this._dateWindowDialogNameEl) {
-      this._dateWindowDialogNameEl.value = targetWindow?.label || "";
-    }
+    this._dateWindowDialogName = targetWindow?.label || "";
     this._syncDateWindowDialogInputs();
-    window.requestAnimationFrame(() => this._dateWindowDialogNameEl?.focus());
+    // Flipping the reactive open flag renders the declarative <date-window-dialog>.
+    this._dateWindowDialogOpen = true;
   }
 
-  _closeDateWindowDialog(fromClosedEvent = false) {
+  _closeDateWindowDialog() {
     this._dateWindowDialogOpen = false;
     this._editingDateWindowId = null;
     this._dateWindowDialogDraftRange = null;
     this._pendingAnomalyComparisonWindowEntityId = null;
-    if (!fromClosedEvent) {
-      if (this._dateWindowDialogComp) {
-        this._dateWindowDialogComp.open = false;
-      } else if (this._dateWindowDialogEl) {
-        this._dateWindowDialogEl.open = false;
-      }
-    }
   }
 
   _createDateWindowFromDialog(
     overrides: { name?: unknown; start?: unknown; end?: unknown } = {}
   ) {
-    // Accept optional overrides from the LitElement component's dp-window-submit event.
-    const rawName =
-      overrides.name != null
-        ? overrides.name
-        : this._dateWindowDialogNameEl?.value || "";
+    // Values arrive from the date-window-dialog's dp-window-submit event.
+    const rawName = overrides.name != null ? overrides.name : "";
     const label = String(rawName).trim();
     const parsedStart = overrides.start
       ? this._parseDateWindowInputValue(String(overrides.start))
@@ -2577,9 +2432,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
         this._renderContent();
       },
       setAdjustComparisonAxisScale: (value: boolean) => {
-        if (this._chartEl) {
-          this._chartEl._adjustComparisonAxisScale = value;
-        }
+        this._chartEl?.setAdjustComparisonAxisScale?.(value);
       },
     });
   }
@@ -2872,9 +2725,8 @@ export class HassDatapointsHistoryPanel extends LitElement {
     if (histTargets && !this._targetControl) {
       this._mountTargetPickerControl(histTargets);
     }
-    this._mountDateWindowDialogControl();
-    this._mountMonitorWizard();
-    this._mountAiQueryBriefDialogControl();
+    // The date-window dialog, monitor wizard and AI-brief dialog are rendered
+    // declaratively in render() with `?open=` state — no imperative mount.
     this._syncControls();
   }
 
@@ -2988,33 +2840,6 @@ export class HassDatapointsHistoryPanel extends LitElement {
     this._updateUrl({ push: false });
   }
 
-  _mountMonitorWizard() {
-    if (!this.shadowRoot || this._monitorWizardComp) return;
-    const wizard = document.createElement(
-      "anomaly-monitor-wizard"
-    ) as HTMLElement & {
-      hass: unknown;
-      open: boolean;
-      prefillEntityIds: string[];
-      prefillAnalysis: unknown;
-      editMonitor: unknown;
-      suggestedEntityIds: string[];
-      allSeriesEntityIds: string[];
-    };
-    wizard.hass = this._hass;
-    wizard.open = false;
-    wizard.suggestedEntityIds = [];
-    wizard.allSeriesEntityIds = [];
-    wizard.addEventListener("dp-monitor-wizard-close", () => {
-      wizard.open = false;
-    });
-    wizard.addEventListener("dp-monitor-wizard-saved", () => {
-      wizard.open = false;
-    });
-    this.shadowRoot.appendChild(wizard);
-    this._monitorWizardComp = wizard as HTMLElement;
-  }
-
   _openMonitorWizardFromChartAnalysis(entityId: string, analysis: unknown) {
     const suggestedIds: string[] = (this._seriesRows ?? [])
       .filter(
@@ -3051,85 +2876,29 @@ export class HassDatapointsHistoryPanel extends LitElement {
     suggestedEntityIds: string[] = [],
     allSeriesEntityIds: string[] = []
   ) {
-    if (!this.shadowRoot) return;
-    if (!this._monitorWizardComp) {
-      this._mountMonitorWizard();
-    }
-    const wizard = this._monitorWizardComp as HTMLElement & {
-      hass: unknown;
-      open: boolean;
-      prefillEntityIds: string[];
-      prefillAnalysis: unknown;
-      editMonitor: unknown;
-      suggestedEntityIds: string[];
-      allSeriesEntityIds: string[];
+    this._monitorWizardPayload = {
+      prefillEntityIds: entityIds,
+      prefillAnalysis: analysis,
+      editMonitor,
+      suggestedEntityIds,
+      allSeriesEntityIds,
     };
-    if (!wizard) return;
-    wizard.hass = this._hass;
-    wizard.editMonitor = editMonitor;
-    wizard.prefillEntityIds = entityIds;
-    wizard.prefillAnalysis = analysis;
-    wizard.suggestedEntityIds = suggestedEntityIds;
-    wizard.allSeriesEntityIds = allSeriesEntityIds;
-    wizard.open = true;
+    // Flipping the reactive flag renders the declarative <anomaly-monitor-wizard>.
+    this._monitorWizardOpen = true;
   }
 
-  _mountDateWindowDialogControl() {
-    if (this.shadowRoot) {
-      const dialogComp = document.createElement(
-        "date-window-dialog"
-      ) as DateWindowDialogElement;
-      dialogComp.addEventListener("dp-window-close", () =>
-        this._closeDateWindowDialog()
-      );
-      dialogComp.addEventListener(
-        "dp-window-submit",
-        (ev: DetailEvent<RecordWithUnknownValues>) => {
-          this._createDateWindowFromDialog(ev.detail || {});
-        }
-      );
-      dialogComp.addEventListener("dp-window-delete", () =>
-        this._deleteEditingDateWindow()
-      );
-      dialogComp.addEventListener(
-        "dp-window-shortcut",
-        (ev: DetailEvent<{ direction?: number }>) => {
-          if (typeof ev.detail?.direction === "number") {
-            this._applyDateWindowShortcut(ev.detail.direction);
-          }
-        }
-      );
-      dialogComp.addEventListener(
-        "dp-window-date-change",
-        (ev: DetailEvent<{ start?: string; end?: string }>) => {
-          const start = this._parseDateWindowInputValue(ev.detail?.start || "");
-          const end = this._parseDateWindowInputValue(ev.detail?.end || "");
-          if (start && end && start < end) {
-            this._dateWindowDialogDraftRange = { start, end };
-          } else {
-            this._dateWindowDialogDraftRange = null;
-          }
-        }
-      );
-      this.shadowRoot.appendChild(dialogComp);
-      this._dateWindowDialogComp = dialogComp;
-    }
-  }
-
-  _mountAiQueryBriefDialogControl() {
-    if (!this.shadowRoot) {
-      return;
-    }
-    const dialogComp = document.createElement(
-      "ai-query-brief-dialog"
-    ) as AiQueryBriefDialogElement;
-    dialogComp.addEventListener("dp-ai-query-brief-close", () => {
-      if (this._aiQueryBriefDialogComp) {
-        this._aiQueryBriefDialogComp.open = false;
-      }
-    });
-    this.shadowRoot.appendChild(dialogComp);
-    this._aiQueryBriefDialogComp = dialogComp;
+  /**
+   * Date-window-dialog `dp-window-date-change` handler: update the draft range
+   * and keep the controlled start/end value fields in step with the inputs
+   * (the component is fully controlled, so the parent owns these values).
+   */
+  _handleDateWindowDateChange(startStr: string, endStr: string) {
+    this._dateWindowDialogStartValue = startStr;
+    this._dateWindowDialogEndValue = endStr;
+    const start = this._parseDateWindowInputValue(startStr);
+    const end = this._parseDateWindowInputValue(endStr);
+    this._dateWindowDialogDraftRange =
+      start && end && start < end ? { start, end } : null;
   }
 
   async _resolveAiQueryBriefMonitorContext(): Promise<AiQueryBriefMonitorContext> {
@@ -3171,15 +2940,6 @@ export class HassDatapointsHistoryPanel extends LitElement {
   }
 
   async _openAiQueryBriefDialog() {
-    if (!this.shadowRoot) {
-      return;
-    }
-    if (!this._aiQueryBriefDialogComp) {
-      this._mountAiQueryBriefDialogControl();
-    }
-    if (!this._aiQueryBriefDialogComp) {
-      return;
-    }
     const monitorContext = await this._resolveAiQueryBriefMonitorContext();
     const brief = buildAiQueryBrief({
       hass: this._hass,
@@ -3197,9 +2957,10 @@ export class HassDatapointsHistoryPanel extends LitElement {
       anomalySnapshot:
         this._chartEl?.getAiQueryBriefAnomalySnapshot?.() ?? null,
     });
-    this._aiQueryBriefDialogComp.heading = msg("AI query brief");
-    this._aiQueryBriefDialogComp.text = brief.plainText;
-    this._aiQueryBriefDialogComp.open = true;
+    this._aiQueryBriefHeading = msg("AI query brief");
+    this._aiQueryBriefText = brief.plainText;
+    // Flipping the reactive flag renders the declarative <ai-query-brief-dialog>.
+    this._aiQueryBriefDialogOpen = true;
   }
 
   _renderTargetRows() {
@@ -3784,7 +3545,8 @@ export class HassDatapointsHistoryPanel extends LitElement {
       } else {
         this._saveSessionState();
         this._updateUrl({ push: false });
-        this._syncListZoomState();
+        // The list zoom config is pushed from updated() — the reactive
+        // _chartZoomCommittedRange change above schedules that render.
       }
     }
     this._updateChartZoomHighlight();
@@ -3804,11 +3566,11 @@ export class HassDatapointsHistoryPanel extends LitElement {
       this._chartZoomStateCommitTimer = null;
       this._saveSessionState();
       this._updateUrl({ push: false });
-      this._syncListZoomState();
     }, 180);
   }
 
-  _syncListZoomState() {
+  /** Push the current zoom window into the list card (keyed; no-op if unchanged). */
+  private _applyListZoomConfig() {
     if (!this._listEl) {
       return;
     }
@@ -4052,14 +3814,6 @@ export class HassDatapointsHistoryPanel extends LitElement {
     return this._endTime.getTime() >= Date.now() - 2 * MINUTE_MS;
   }
 
-  /** Toggle the live-edge indicator on the end handle. */
-  _syncLiveEdgeHandle() {
-    if (!this._rangeToolbarComp) {
-      return;
-    }
-    this.requestUpdate();
-  }
-
   /** Called whenever a new annotation is recorded (HA event or window event).
    *  If the current range is on the live edge, advance the end time to now
    *  so the chart immediately shows the new data point. */
@@ -4092,8 +3846,9 @@ export class HassDatapointsHistoryPanel extends LitElement {
       1,
       Math.round((nextEnd.getTime() - nextStart.getTime()) / HOUR_MS)
     );
-    this._syncLiveEdgeHandle();
     this._scheduleAutoZoomUpdate(undefined, undefined);
+    // _syncControls() below requests the update that refreshes the live-edge
+    // handle (bound declaratively on <range-toolbar>).
     this._syncControls();
     this._chartEl?.setExternalZoomRange?.(this._chartZoomCommittedRange);
     if (!didChange) {

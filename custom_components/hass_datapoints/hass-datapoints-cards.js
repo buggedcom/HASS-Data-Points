@@ -18342,7 +18342,31 @@
 		}
 		/** Rendering host for panel-owned comparison tabs; drawing remains chart-owned. */
 		getComparisonTabsHost() {
-			return (this.shadowRoot?.querySelector("hass-datapoints-history-chart, dp-history-chart, history-chart"))?.querySelector("#chart-top-slot") ?? null;
+			return this._chartEl()?.querySelector("#chart-top-slot") ?? null;
+		}
+		/**
+		* Public resize-replay seam: redraw the chart with its last draw args.
+		* The panel calls this on container/pane resize instead of reaching through
+		* the card's shadow root into the inner chart.
+		*/
+		requestResizeRedraw() {
+			this._chartEl()?._redrawLastDraw();
+		}
+		/**
+		* Toggle the comparison-tab rail's overflow affordance from measured widths.
+		* Encapsulates the inner chart's `#chart-tabs-shell`/`#chart-tabs-rail` so the
+		* panel orchestration no longer walks this card's shadow DOM.
+		*/
+		updateComparisonTabsOverflow() {
+			const chart = this._chartEl();
+			const shell = chart?.querySelector("#chart-tabs-shell") ?? null;
+			const rail = chart?.querySelector("#chart-tabs-rail") ?? null;
+			if (!shell || !rail) return;
+			shell.classList.toggle("overflowing", rail.scrollWidth > rail.clientWidth + 4);
+		}
+		/** Whether the chart should rescale its axis for comparison overlays. */
+		setAdjustComparisonAxisScale(value) {
+			this._adjustComparisonAxisScale = value;
 		}
 		getAiQueryBriefAnomalySnapshot() {
 			const chartEl = this._chartEl();
@@ -33156,13 +33180,6 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/context/orchestration-context.ts
-	function getInnerHistoryChart(chartEl) {
-		if (!chartEl?.shadowRoot) return null;
-		return chartEl.shadowRoot.querySelector?.("hass-datapoints-history-chart") ?? chartEl.shadowRoot.querySelector?.("dp-history-chart") ?? chartEl.shadowRoot.querySelector?.("history-chart") ?? null;
-	}
-	function getComparisonTabsHost(chartEl) {
-		return getInnerHistoryChart(chartEl)?.querySelector?.("#chart-top-slot") ?? null;
-	}
 	function ensureCollapsedPickerAnchor(targetControl, anchorEl) {
 		const assignedSlot = targetControl.assignedSlot ?? null;
 		if (!assignedSlot) return;
@@ -33205,19 +33222,7 @@
 				const rafId = window.requestAnimationFrame(() => {
 					ranSynchronously = true;
 					chartResizeRaf = null;
-					if (!chartEl) return;
-					if (Array.isArray(chartEl._lastDrawArgs) && chartEl._lastDrawArgs.length > 0 && typeof chartEl._drawChart === "function") {
-						chartEl._drawChart(...chartEl._lastDrawArgs);
-						return;
-					}
-					const innerChart = getInnerHistoryChart(chartEl);
-					if (innerChart && Array.isArray(innerChart._lastDrawArgs) && innerChart._lastDrawArgs.length > 0) {
-						if (typeof innerChart._queueDrawChart === "function") {
-							innerChart._queueDrawChart(...innerChart._lastDrawArgs);
-							return;
-						}
-						if (typeof innerChart._drawChart === "function") innerChart._drawChart(...innerChart._lastDrawArgs);
-					}
+					chartEl?.requestResizeRedraw?.();
 				});
 				chartResizeRaf = ranSynchronously ? null : rafId;
 			},
@@ -33239,7 +33244,7 @@
 				if (typeof targetControl.click === "function") targetControl.click();
 			},
 			renderComparisonTabs(options) {
-				const tabsEl = getComparisonTabsHost(options.chartEl);
+				const tabsEl = options.chartEl?.getComparisonTabsHost?.() ?? null;
 				if (!tabsEl || !options.startTime || !options.endTime) return {
 					comparisonTabRailComp: options.comparisonTabRailComp,
 					comparisonTabsHostEl: options.comparisonTabsHostEl
@@ -33284,11 +33289,7 @@
 			},
 			updateComparisonTabsOverflow(chartEl) {
 				window.requestAnimationFrame(() => {
-					const innerChart = getInnerHistoryChart(chartEl);
-					const shell = innerChart?.querySelector?.("#chart-tabs-shell") ?? null;
-					const rail = innerChart?.querySelector?.("#chart-tabs-rail") ?? null;
-					if (!shell || !rail) return;
-					shell.classList.toggle("overflowing", rail.scrollWidth > rail.clientWidth + 4);
+					chartEl?.updateComparisonTabsOverflow?.();
 				});
 			},
 			handleComparisonTabHover(options) {
@@ -33737,6 +33738,50 @@
 		};
 		return context;
 	}
+	//#endregion
+	//#region custom_components/hass_datapoints/src/panels/datapoints/host-resize-controller.ts
+	/**
+	* Observes the host element's size and runs `onResize` (rAF-debounced) whenever
+	* the host's box changes while it is connected.
+	*
+	* The Datapoints panel uses this for its measured-DOM layout side effects
+	* (shell layout height, content split layout, chart resize redraw) instead of
+	* an ad-hoc `window` "resize" listener, so container-driven size changes — a
+	* collapsing sidebar, a split-pane drag — are picked up too, not just viewport
+	* resizes. Reads/writes are batched into a single animation frame to avoid
+	* layout thrash.
+	*/
+	var HostResizeController = class {
+		constructor(host, onResize) {
+			_defineProperty(this, "_host", void 0);
+			_defineProperty(this, "_onResize", void 0);
+			_defineProperty(this, "_observer", null);
+			_defineProperty(this, "_rafId", null);
+			this._host = host;
+			this._onResize = onResize;
+			host.addController(this);
+		}
+		hostConnected() {
+			if (typeof window.ResizeObserver !== "function") return;
+			this._observer = new ResizeObserver(() => this._schedule());
+			this._observer.observe(this._host);
+		}
+		hostDisconnected() {
+			this._observer?.disconnect();
+			this._observer = null;
+			if (this._rafId != null) {
+				window.cancelAnimationFrame(this._rafId);
+				this._rafId = null;
+			}
+		}
+		_schedule() {
+			if (this._rafId != null) return;
+			this._rafId = window.requestAnimationFrame(() => {
+				this._rafId = null;
+				this._onResize();
+			});
+		}
+	};
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/datapoints.styles.ts
 	var PANEL_HISTORY_STYLE = `
@@ -36035,6 +36080,10 @@
 	var _historyEndTime_accessor_storage;
 	var _timelineEvents_accessor_storage;
 	var _loadingComparisonWindowIds_accessor_storage;
+	var _dateWindowDialogOpen_accessor_storage;
+	var _dateWindowDialogName_accessor_storage;
+	var _dateWindowDialogStartValue_accessor_storage;
+	var _dateWindowDialogEndValue_accessor_storage;
 	var _sidebarAccordionTargetsOpen_accessor_storage;
 	var _sidebarAccordionDatapointsOpen_accessor_storage;
 	var _sidebarAccordionAnalysisOpen_accessor_storage;
@@ -36044,6 +36093,11 @@
 	var _zoomLevel_accessor_storage;
 	var _dateSnapping_accessor_storage;
 	var _collapsedOptionsPopupOpen_accessor_storage;
+	var _monitorWizardOpen_accessor_storage;
+	var _monitorWizardPayload_accessor_storage;
+	var _aiQueryBriefDialogOpen_accessor_storage;
+	var _aiQueryBriefHeading_accessor_storage;
+	var _aiQueryBriefText_accessor_storage;
 	/** Module-level set of all currently-connected panel instances.
 	*  Used by the orphan-recovery guard to avoid disrupting a live replacement. */
 	var _liveInstances = /* @__PURE__ */ new Set();
@@ -36092,7 +36146,7 @@
 		value: "only",
 		label: "Overlaps only"
 	}];
-	var HassDatapointsHistoryPanel = (_hass_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _panel_accessor_storage = /* @__PURE__ */ new WeakMap(), _narrow_accessor_storage = /* @__PURE__ */ new WeakMap(), _rendered_accessor_storage = /* @__PURE__ */ new WeakMap(), _shellBuilt_accessor_storage = /* @__PURE__ */ new WeakMap(), _layoutMode_accessor_storage = /* @__PURE__ */ new WeakMap(), _datapointScope_accessor_storage = /* @__PURE__ */ new WeakMap(), _showChartDatapointIcons_accessor_storage = /* @__PURE__ */ new WeakMap(), _showChartDatapointLines_accessor_storage = /* @__PURE__ */ new WeakMap(), _showChartTooltips_accessor_storage = /* @__PURE__ */ new WeakMap(), _showChartEmphasizedHoverGuides_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartHoverSnapMode_accessor_storage = /* @__PURE__ */ new WeakMap(), _delinkChartYAxis_accessor_storage = /* @__PURE__ */ new WeakMap(), _splitChartView_accessor_storage = /* @__PURE__ */ new WeakMap(), _showCorrelatedAnomalies_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartAnomalyOverlapMode_accessor_storage = /* @__PURE__ */ new WeakMap(), _showDataGaps_accessor_storage = /* @__PURE__ */ new WeakMap(), _dataGapThreshold_accessor_storage = /* @__PURE__ */ new WeakMap(), _historyStartTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _historyEndTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _timelineEvents_accessor_storage = /* @__PURE__ */ new WeakMap(), _loadingComparisonWindowIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarAccordionTargetsOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarAccordionDatapointsOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarAccordionAnalysisOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarAccordionChartOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _resolvedAutoZoomLevel_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartHoverTimeMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomLevel_accessor_storage = /* @__PURE__ */ new WeakMap(), _dateSnapping_accessor_storage = /* @__PURE__ */ new WeakMap(), _collapsedOptionsPopupOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _HassDatapointsHistoryPanel = class HassDatapointsHistoryPanel extends i$2 {
+	var HassDatapointsHistoryPanel = (_hass_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _panel_accessor_storage = /* @__PURE__ */ new WeakMap(), _narrow_accessor_storage = /* @__PURE__ */ new WeakMap(), _rendered_accessor_storage = /* @__PURE__ */ new WeakMap(), _shellBuilt_accessor_storage = /* @__PURE__ */ new WeakMap(), _layoutMode_accessor_storage = /* @__PURE__ */ new WeakMap(), _datapointScope_accessor_storage = /* @__PURE__ */ new WeakMap(), _showChartDatapointIcons_accessor_storage = /* @__PURE__ */ new WeakMap(), _showChartDatapointLines_accessor_storage = /* @__PURE__ */ new WeakMap(), _showChartTooltips_accessor_storage = /* @__PURE__ */ new WeakMap(), _showChartEmphasizedHoverGuides_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartHoverSnapMode_accessor_storage = /* @__PURE__ */ new WeakMap(), _delinkChartYAxis_accessor_storage = /* @__PURE__ */ new WeakMap(), _splitChartView_accessor_storage = /* @__PURE__ */ new WeakMap(), _showCorrelatedAnomalies_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartAnomalyOverlapMode_accessor_storage = /* @__PURE__ */ new WeakMap(), _showDataGaps_accessor_storage = /* @__PURE__ */ new WeakMap(), _dataGapThreshold_accessor_storage = /* @__PURE__ */ new WeakMap(), _historyStartTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _historyEndTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _timelineEvents_accessor_storage = /* @__PURE__ */ new WeakMap(), _loadingComparisonWindowIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _dateWindowDialogOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _dateWindowDialogName_accessor_storage = /* @__PURE__ */ new WeakMap(), _dateWindowDialogStartValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _dateWindowDialogEndValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarAccordionTargetsOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarAccordionDatapointsOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarAccordionAnalysisOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarAccordionChartOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _resolvedAutoZoomLevel_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartHoverTimeMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomLevel_accessor_storage = /* @__PURE__ */ new WeakMap(), _dateSnapping_accessor_storage = /* @__PURE__ */ new WeakMap(), _collapsedOptionsPopupOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitorWizardOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitorWizardPayload_accessor_storage = /* @__PURE__ */ new WeakMap(), _aiQueryBriefDialogOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _aiQueryBriefHeading_accessor_storage = /* @__PURE__ */ new WeakMap(), _aiQueryBriefText_accessor_storage = /* @__PURE__ */ new WeakMap(), _HassDatapointsHistoryPanel = class HassDatapointsHistoryPanel extends i$2 {
 		get hass() {
 			return _classPrivateFieldGet2(_hass_accessor_storage$3, this);
 		}
@@ -36225,6 +36279,30 @@
 		set _loadingComparisonWindowIds(value) {
 			_classPrivateFieldSet2(_loadingComparisonWindowIds_accessor_storage, this, value);
 		}
+		get _dateWindowDialogOpen() {
+			return _classPrivateFieldGet2(_dateWindowDialogOpen_accessor_storage, this);
+		}
+		set _dateWindowDialogOpen(value) {
+			_classPrivateFieldSet2(_dateWindowDialogOpen_accessor_storage, this, value);
+		}
+		get _dateWindowDialogName() {
+			return _classPrivateFieldGet2(_dateWindowDialogName_accessor_storage, this);
+		}
+		set _dateWindowDialogName(value) {
+			_classPrivateFieldSet2(_dateWindowDialogName_accessor_storage, this, value);
+		}
+		get _dateWindowDialogStartValue() {
+			return _classPrivateFieldGet2(_dateWindowDialogStartValue_accessor_storage, this);
+		}
+		set _dateWindowDialogStartValue(value) {
+			_classPrivateFieldSet2(_dateWindowDialogStartValue_accessor_storage, this, value);
+		}
+		get _dateWindowDialogEndValue() {
+			return _classPrivateFieldGet2(_dateWindowDialogEndValue_accessor_storage, this);
+		}
+		set _dateWindowDialogEndValue(value) {
+			_classPrivateFieldSet2(_dateWindowDialogEndValue_accessor_storage, this, value);
+		}
 		get _sidebarAccordionTargetsOpen() {
 			return _classPrivateFieldGet2(_sidebarAccordionTargetsOpen_accessor_storage, this);
 		}
@@ -36279,6 +36357,36 @@
 		set _collapsedOptionsPopupOpen(value) {
 			_classPrivateFieldSet2(_collapsedOptionsPopupOpen_accessor_storage, this, value);
 		}
+		get _monitorWizardOpen() {
+			return _classPrivateFieldGet2(_monitorWizardOpen_accessor_storage, this);
+		}
+		set _monitorWizardOpen(value) {
+			_classPrivateFieldSet2(_monitorWizardOpen_accessor_storage, this, value);
+		}
+		get _monitorWizardPayload() {
+			return _classPrivateFieldGet2(_monitorWizardPayload_accessor_storage, this);
+		}
+		set _monitorWizardPayload(value) {
+			_classPrivateFieldSet2(_monitorWizardPayload_accessor_storage, this, value);
+		}
+		get _aiQueryBriefDialogOpen() {
+			return _classPrivateFieldGet2(_aiQueryBriefDialogOpen_accessor_storage, this);
+		}
+		set _aiQueryBriefDialogOpen(value) {
+			_classPrivateFieldSet2(_aiQueryBriefDialogOpen_accessor_storage, this, value);
+		}
+		get _aiQueryBriefHeading() {
+			return _classPrivateFieldGet2(_aiQueryBriefHeading_accessor_storage, this);
+		}
+		set _aiQueryBriefHeading(value) {
+			_classPrivateFieldSet2(_aiQueryBriefHeading_accessor_storage, this, value);
+		}
+		get _aiQueryBriefText() {
+			return _classPrivateFieldGet2(_aiQueryBriefText_accessor_storage, this);
+		}
+		set _aiQueryBriefText(value) {
+			_classPrivateFieldSet2(_aiQueryBriefText_accessor_storage, this, value);
+		}
 		constructor() {
 			super();
 			_classPrivateFieldInitSpec(this, _hass_accessor_storage$3, null);
@@ -36304,6 +36412,10 @@
 			_classPrivateFieldInitSpec(this, _timelineEvents_accessor_storage, []);
 			_classPrivateFieldInitSpec(this, _loadingComparisonWindowIds_accessor_storage, []);
 			_defineProperty(this, "_comparisonTabsRoot", null);
+			_classPrivateFieldInitSpec(this, _dateWindowDialogOpen_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _dateWindowDialogName_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _dateWindowDialogStartValue_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _dateWindowDialogEndValue_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _sidebarAccordionTargetsOpen_accessor_storage, true);
 			_classPrivateFieldInitSpec(this, _sidebarAccordionDatapointsOpen_accessor_storage, true);
 			_classPrivateFieldInitSpec(this, _sidebarAccordionAnalysisOpen_accessor_storage, true);
@@ -36313,6 +36425,17 @@
 			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage, "auto");
 			_classPrivateFieldInitSpec(this, _dateSnapping_accessor_storage, "auto");
 			_classPrivateFieldInitSpec(this, _collapsedOptionsPopupOpen_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _monitorWizardOpen_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _monitorWizardPayload_accessor_storage, {
+				prefillEntityIds: [],
+				prefillAnalysis: null,
+				editMonitor: null,
+				suggestedEntityIds: [],
+				allSeriesEntityIds: []
+			});
+			_classPrivateFieldInitSpec(this, _aiQueryBriefDialogOpen_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _aiQueryBriefHeading_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _aiQueryBriefText_accessor_storage, "");
 			this._context = createHistoryPageContext();
 			this._entities = [];
 			this._seriesRows = [];
@@ -36342,13 +36465,7 @@
 			this._selectedComparisonWindowId = null;
 			this._hoveredComparisonWindowId = null;
 			this._pendingAnomalyComparisonWindowEntityId = null;
-			this._dateWindowDialogOpen = false;
 			this._editingDateWindowId = null;
-			this._dateWindowDialogComp = null;
-			this._dateWindowDialogNameEl = null;
-			this._dateWindowDialogStartEl = null;
-			this._dateWindowDialogEndEl = null;
-			this._dateWindowDialogShortcutsEl = null;
 			this._dateWindowDialogDraftRange = null;
 			this._uiReadyPromise = null;
 			this._uiReadyApplied = false;
@@ -36377,8 +36494,6 @@
 			this._pendingPreferencesSaveTimer = null;
 			this._orphanRecoveryTimer = null;
 			this._showMonitorsPanel = false;
-			this._monitorWizardComp = null;
-			this._aiQueryBriefDialogComp = null;
 			this._recordsSearchQuery = "";
 			this._hiddenEventIds = [];
 			this._hoveredEventIds = [];
@@ -36398,14 +36513,7 @@
 			this._onAnalysisComputing = (ev) => this._handleAnalysisComputing(ev);
 			this._onAnalysisMethodResult = (ev) => this._handleAnalysisMethodResult(ev);
 			this._onWindowPointerDown = (_ev) => this._handleWindowPointerDown();
-			this._onWindowResize = () => {
-				if (this._rendered) {
-					this._syncPageLayoutHeight();
-					this._applyContentSplitLayout();
-					this._requestChartResizeRedraw();
-					this.requestUpdate();
-				}
-			};
+			this._resizeController = new HostResizeController(this, () => this._handleHostResize());
 			this._onCollapsedSidebarClick = (_ev) => this._handleCollapsedSidebarClick();
 			this._onEventRecorded = () => this._handleEventRecorded();
 			this._haEventUnsubscribe = null;
@@ -36631,7 +36739,6 @@
 			window.addEventListener("popstate", this._onPopState);
 			window.addEventListener("location-changed", this._onLocationChanged);
 			window.addEventListener("pointerdown", this._onWindowPointerDown, true);
-			window.addEventListener("resize", this._onWindowResize);
 			window.addEventListener("hass-datapoints-event-recorded", this._onEventRecorded);
 			this.addEventListener("hass-datapoints-chart-hover", this._onChartHover);
 			this.addEventListener("hass-datapoints-chart-zoom", this._onChartZoom);
@@ -36683,7 +36790,6 @@
 			window.removeEventListener("popstate", this._onPopState);
 			window.removeEventListener("location-changed", this._onLocationChanged);
 			window.removeEventListener("pointerdown", this._onWindowPointerDown, true);
-			window.removeEventListener("resize", this._onWindowResize);
 			window.removeEventListener("hass-datapoints-event-recorded", this._onEventRecorded);
 			if (this._haEventUnsubscribe) {
 				this._haEventUnsubscribe();
@@ -37088,6 +37194,49 @@
         ></history-targets>
         <div id="content"></div>
       </panel-shell>
+      <date-window-dialog
+        ?open=${this._dateWindowDialogOpen}
+        .heading=${this._editingDateWindowId ? msg("Edit date window") : msg("Add date window")}
+        .submitLabel=${this._editingDateWindowId ? msg("Save date window") : msg("Create date window")}
+        .showDelete=${!!this._editingDateWindowId}
+        .showShortcuts=${!this._editingDateWindowId}
+        .name=${this._dateWindowDialogName}
+        .startValue=${this._dateWindowDialogStartValue}
+        .endValue=${this._dateWindowDialogEndValue}
+        .rangeBounds=${this._rangeBounds ?? null}
+        .zoomLevel=${this._zoomLevel ?? "auto"}
+        .dateSnapping=${this._dateSnapping ?? "hour"}
+        @dp-window-close=${() => this._closeDateWindowDialog()}
+        @dp-window-submit=${(ev) => this._createDateWindowFromDialog(ev.detail || {})}
+        @dp-window-delete=${() => this._deleteEditingDateWindow()}
+        @dp-window-shortcut=${(ev) => {
+				if (typeof ev.detail?.direction === "number") this._applyDateWindowShortcut(ev.detail.direction);
+			}}
+        @dp-window-date-change=${(ev) => this._handleDateWindowDateChange(ev.detail?.start || "", ev.detail?.end || "")}
+      ></date-window-dialog>
+      <anomaly-monitor-wizard
+        .hass=${this._hass}
+        ?open=${this._monitorWizardOpen}
+        .prefillEntityIds=${this._monitorWizardPayload.prefillEntityIds}
+        .prefillAnalysis=${this._monitorWizardPayload.prefillAnalysis}
+        .editMonitor=${this._monitorWizardPayload.editMonitor}
+        .suggestedEntityIds=${this._monitorWizardPayload.suggestedEntityIds}
+        .allSeriesEntityIds=${this._monitorWizardPayload.allSeriesEntityIds}
+        @dp-monitor-wizard-close=${() => {
+				this._monitorWizardOpen = false;
+			}}
+        @dp-monitor-wizard-saved=${() => {
+				this._monitorWizardOpen = false;
+			}}
+      ></anomaly-monitor-wizard>
+      <ai-query-brief-dialog
+        ?open=${this._aiQueryBriefDialogOpen}
+        .heading=${this._aiQueryBriefHeading}
+        .text=${this._aiQueryBriefText}
+        @dp-ai-query-brief-close=${() => {
+				this._aiQueryBriefDialogOpen = false;
+			}}
+      ></ai-query-brief-dialog>
     `;
 		}
 		/** Disambiguated entity → display-name map for the current series rows. */
@@ -37099,6 +37248,15 @@
 			this._positionCollapsedOptionsPopup();
 			this._rangeToolbarComp = this.renderRoot.querySelector("range-toolbar");
 			if (this._shellBuilt && !this._shellEl) this._mountShellControls();
+			this._applyListZoomConfig();
+		}
+		/** Measured layout side effects, driven by the host ResizeController. */
+		_handleHostResize() {
+			if (!this._rendered) return;
+			this._shellEl?.syncLayoutHeight();
+			this._applyContentSplitLayout();
+			this._requestChartResizeRedraw();
+			this.requestUpdate();
 		}
 		async _mountShellControls() {
 			const shell = this.renderRoot.querySelector("panel-shell");
@@ -37118,9 +37276,6 @@
 			this._syncControls();
 			this._bootstrapAfterShellBuilt();
 		}
-		_syncPageLayoutHeight() {
-			this._shellEl?.syncLayoutHeight();
-		}
 		_bootstrapAfterShellBuilt() {
 			if (!this._shellBuilt) {
 				logger$1.warn("[dp-lifecycle] _bootstrapAfterShellBuilt: skipped — shell not built");
@@ -37134,7 +37289,7 @@
 			this._ensureHistoryBounds();
 			this._ensureUserPreferences();
 			this._loadSavedPageIndicator();
-			this._syncHassBindings();
+			this._refreshControlsFromHass();
 			this._renderContent();
 			if (this._restoredFromSession) {
 				this._restoredFromSession = false;
@@ -37206,10 +37361,21 @@
 			return this._uiReadyPromise;
 		}
 		_syncControls() {
-			this._syncPageLayoutHeight();
-			this._syncHassBindings();
+			this._shellEl?.syncLayoutHeight();
+			this._refreshControlsFromHass();
 			this.requestUpdate();
 			this._renderSidebarOptions();
+		}
+		/**
+		* Refresh the imperatively-mounted controls that can't bind hass declaratively
+		* (the target picker) and re-render the target rows.
+		*/
+		_refreshControlsFromHass() {
+			if (this._targetControl) {
+				if (this._hass) this._targetControl.hass = this._hass;
+				this._targetControl.value = {};
+			}
+			this._renderTargetRows();
 		}
 		_syncSeriesState() {
 			this._seriesRows = normalizeHistorySeriesRows(this._seriesRows);
@@ -37237,20 +37403,6 @@
 		}
 		_mergeSavedSeriesRows(rows, savedRows) {
 			return mergeSavedSeriesRows(rows, savedRows);
-		}
-		_syncHassBindings() {
-			if (this._targetControl) {
-				if (this._hass) this._targetControl.hass = this._hass;
-				this._targetControl.value = {};
-			}
-			this._renderTargetRows();
-			this.shadowRoot?.querySelectorAll("[data-series-icon-entity-id], [data-series-collapsed-icon-entity-id]").forEach((iconEl) => {
-				const icon = iconEl;
-				const entityId = icon.dataset.seriesIconEntityId || icon.dataset.seriesCollapsedIconEntityId;
-				if (!entityId) return;
-				icon.stateObj = this._hass?.states?.[entityId];
-				icon.hass = this._hass;
-			});
 		}
 		_renderSidebarOptions() {
 			this.requestUpdate();
@@ -37287,28 +37439,10 @@
 		_getRoundedDateWindowUnit(start, end) {
 			return getRoundedDateWindowUnit(start, end);
 		}
+		/** Push the current draft range into the controlled start/end form values. */
 		_syncDateWindowDialogInputs() {
-			const startVal = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.start || null);
-			const endVal = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.end || null);
-			if (this._dateWindowDialogComp) {
-				this._dateWindowDialogComp.startValue = startVal;
-				this._dateWindowDialogComp.endValue = endVal;
-				return;
-			}
-			if (this._dateWindowDialogStartEl) this._dateWindowDialogStartEl.value = startVal;
-			if (this._dateWindowDialogEndEl) this._dateWindowDialogEndEl.value = endVal;
-		}
-		_handleDateWindowDialogInputChange() {
-			const start = this._parseDateWindowInputValue(this._dateWindowDialogStartEl?.value || "");
-			const end = this._parseDateWindowInputValue(this._dateWindowDialogEndEl?.value || "");
-			if (start && end && start < end) {
-				this._dateWindowDialogDraftRange = {
-					start,
-					end
-				};
-				return;
-			}
-			this._dateWindowDialogDraftRange = null;
+			this._dateWindowDialogStartValue = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.start || null);
+			this._dateWindowDialogEndValue = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.end || null);
 		}
 		_applyDateWindowShortcut(direction) {
 			if (this._editingDateWindowId) return;
@@ -37317,69 +37451,7 @@
 			this._dateWindowDialogDraftRange = result;
 			this._syncDateWindowDialogInputs();
 		}
-		_ensureDateWindowDialog() {
-			if (this._dateWindowDialogComp || this._dateWindowDialogEl || !this.shadowRoot) return;
-			const dialog = document.createElement("ha-dialog");
-			dialog.id = "date-window-dialog";
-			dialog.setAttribute("hideActions", "");
-			dialog.scrimClickAction = true;
-			dialog.escapeKeyAction = true;
-			dialog.open = false;
-			dialog.headerTitle = "Add date window";
-			dialog.style.setProperty("--dialog-content-padding", `0 var(--dp-spacing-lg) var(--dp-spacing-lg)`);
-			dialog.innerHTML = `
-      <div class="date-window-dialog-content">
-        <div class="date-window-dialog-body">
-          A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later.
-        </div>
-        <div class="date-window-dialog-field name-field">
-          <ha-textfield id="date-window-name" label="Name" placeholder="e.g. Heating season start"></ha-textfield>
-        </div>
-        <div class="date-window-dialog-field">
-          <label>Date range</label>
-          <div class="date-window-dialog-dates">
-            <div class="date-window-dialog-field">
-              <label for="date-window-start">Start</label>
-              <input id="date-window-start" class="date-window-dialog-input" type="datetime-local" step="60">
-            </div>
-            <div class="date-window-dialog-field">
-              <label for="date-window-end">End</label>
-              <input id="date-window-end" class="date-window-dialog-input" type="datetime-local" step="60">
-            </div>
-          </div>
-        </div>
-        <div class="date-window-dialog-shortcuts" id="date-window-shortcuts" hidden>
-          <ha-button id="date-window-previous">Use previous range</ha-button>
-          <ha-button id="date-window-next">Use next range</ha-button>
-        </div>
-        <div class="date-window-dialog-actions">
-          <ha-button class="date-window-dialog-delete" id="date-window-delete" hidden>Delete date window</ha-button>
-          <div class="date-window-dialog-actions-right">
-            <ha-button class="date-window-dialog-cancel" id="date-window-cancel">Cancel</ha-button>
-            <ha-button raised class="date-window-dialog-submit" id="date-window-submit">Create date window</ha-button>
-          </div>
-        </div>
-      </div>
-    `;
-			dialog.addEventListener("closed", () => this._closeDateWindowDialog(true));
-			this.shadowRoot.appendChild(dialog);
-			this._dateWindowDialogEl = dialog;
-			this._dateWindowDialogNameEl = dialog.querySelector("#date-window-name");
-			this._dateWindowDialogStartEl = dialog.querySelector("#date-window-start");
-			this._dateWindowDialogEndEl = dialog.querySelector("#date-window-end");
-			this._dateWindowDialogShortcutsEl = dialog.querySelector("#date-window-shortcuts");
-			if (this._hass && this._dateWindowDialogNameEl) this._dateWindowDialogNameEl.hass = this._hass;
-			dialog.querySelector("#date-window-cancel")?.addEventListener("click", () => this._closeDateWindowDialog());
-			dialog.querySelector("#date-window-submit")?.addEventListener("click", () => this._createDateWindowFromDialog());
-			dialog.querySelector("#date-window-delete")?.addEventListener("click", () => this._deleteEditingDateWindow());
-			this._dateWindowDialogStartEl?.addEventListener("change", () => this._handleDateWindowDialogInputChange());
-			this._dateWindowDialogEndEl?.addEventListener("change", () => this._handleDateWindowDialogInputChange());
-			dialog.querySelector("#date-window-previous")?.addEventListener("click", () => this._applyDateWindowShortcut(-1));
-			dialog.querySelector("#date-window-next")?.addEventListener("click", () => this._applyDateWindowShortcut(1));
-		}
 		_openDateWindowDialog(targetWindow = null) {
-			this._ensureDateWindowDialog();
-			this._dateWindowDialogOpen = true;
 			this._editingDateWindowId = targetWindow?.id || null;
 			const dialogStart = targetWindow ? parseDateValue(targetWindow.start_time) : this._startTime;
 			const dialogEnd = targetWindow ? parseDateValue(targetWindow.end_time) : this._endTime;
@@ -37387,48 +37459,18 @@
 				start: new Date(dialogStart),
 				end: new Date(dialogEnd)
 			} : null;
-			if (this._dateWindowDialogComp) {
-				this._dateWindowDialogComp.heading = targetWindow ? msg("Edit date window") : msg("Add date window");
-				this._dateWindowDialogComp.submitLabel = targetWindow ? msg("Save date window") : msg("Create date window");
-				this._dateWindowDialogComp.showDelete = !!targetWindow;
-				this._dateWindowDialogComp.showShortcuts = !targetWindow;
-				this._dateWindowDialogComp.name = targetWindow?.label || "";
-				this._dateWindowDialogComp.startValue = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.start || null);
-				this._dateWindowDialogComp.endValue = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.end || null);
-				this._dateWindowDialogComp.rangeBounds = this._rangeBounds ?? null;
-				this._dateWindowDialogComp.zoomLevel = this._zoomLevel ?? "auto";
-				this._dateWindowDialogComp.dateSnapping = this._dateSnapping ?? "hour";
-				this._dateWindowDialogComp.open = true;
-				return;
-			}
-			if (this._dateWindowDialogEl) {
-				this._dateWindowDialogEl.open = true;
-				this._dateWindowDialogEl.headerTitle = targetWindow ? msg("Edit date window") : msg("Add date window");
-			}
-			const submitButton = this._dateWindowDialogEl?.querySelector("#date-window-submit");
-			if (submitButton) submitButton.textContent = targetWindow ? msg("Save date window") : msg("Create date window");
-			const deleteButton = this._dateWindowDialogEl?.querySelector("#date-window-delete");
-			if (deleteButton) {
-				deleteButton.hidden = !targetWindow;
-				deleteButton.style.display = targetWindow ? "" : "none";
-			}
-			if (this._dateWindowDialogShortcutsEl) this._dateWindowDialogShortcutsEl.hidden = !!targetWindow;
-			if (this._dateWindowDialogNameEl) this._dateWindowDialogNameEl.value = targetWindow?.label || "";
+			this._dateWindowDialogName = targetWindow?.label || "";
 			this._syncDateWindowDialogInputs();
-			window.requestAnimationFrame(() => this._dateWindowDialogNameEl?.focus());
+			this._dateWindowDialogOpen = true;
 		}
-		_closeDateWindowDialog(fromClosedEvent = false) {
+		_closeDateWindowDialog() {
 			this._dateWindowDialogOpen = false;
 			this._editingDateWindowId = null;
 			this._dateWindowDialogDraftRange = null;
 			this._pendingAnomalyComparisonWindowEntityId = null;
-			if (!fromClosedEvent) {
-				if (this._dateWindowDialogComp) this._dateWindowDialogComp.open = false;
-				else if (this._dateWindowDialogEl) this._dateWindowDialogEl.open = false;
-			}
 		}
 		_createDateWindowFromDialog(overrides = {}) {
-			const rawName = overrides.name != null ? overrides.name : this._dateWindowDialogNameEl?.value || "";
+			const rawName = overrides.name != null ? overrides.name : "";
 			const label = String(rawName).trim();
 			const parsedStart = overrides.start ? this._parseDateWindowInputValue(String(overrides.start)) : null;
 			const parsedEnd = overrides.end ? this._parseDateWindowInputValue(String(overrides.end)) : null;
@@ -37605,7 +37647,7 @@
 					this._renderContent();
 				},
 				setAdjustComparisonAxisScale: (value) => {
-					if (this._chartEl) this._chartEl._adjustComparisonAxisScale = value;
+					this._chartEl?.setAdjustComparisonAxisScale?.(value);
 				}
 			});
 		}
@@ -37787,9 +37829,6 @@
 			const histTargets = this.renderRoot.querySelector("history-targets");
 			this._historyTargetsComp = histTargets;
 			if (histTargets && !this._targetControl) this._mountTargetPickerControl(histTargets);
-			this._mountDateWindowDialogControl();
-			this._mountMonitorWizard();
-			this._mountAiQueryBriefDialogControl();
 			this._syncControls();
 		}
 		_mountTargetPickerControl(histTargets) {
@@ -37846,72 +37885,35 @@
 			this._saveSessionState();
 			this._updateUrl({ push: false });
 		}
-		_mountMonitorWizard() {
-			if (!this.shadowRoot || this._monitorWizardComp) return;
-			const wizard = document.createElement("anomaly-monitor-wizard");
-			wizard.hass = this._hass;
-			wizard.open = false;
-			wizard.suggestedEntityIds = [];
-			wizard.allSeriesEntityIds = [];
-			wizard.addEventListener("dp-monitor-wizard-close", () => {
-				wizard.open = false;
-			});
-			wizard.addEventListener("dp-monitor-wizard-saved", () => {
-				wizard.open = false;
-			});
-			this.shadowRoot.appendChild(wizard);
-			this._monitorWizardComp = wizard;
-		}
 		_openMonitorWizardFromChartAnalysis(entityId, analysis) {
 			const suggestedIds = (this._seriesRows ?? []).filter((r) => r.analysis?.show_anomalies === true && Array.isArray(r.analysis.anomaly_methods) && r.analysis.anomaly_methods.length > 0 && !r.entity_id.startsWith("binary_sensor.") && r.entity_id !== entityId).map((r) => r.entity_id);
 			const allSeriesIds = (this._seriesRows ?? []).filter((r) => !r.entity_id.startsWith("binary_sensor.")).map((r) => r.entity_id);
 			this._openMonitorWizard(entityId ? [entityId] : [], analysis, null, suggestedIds, allSeriesIds);
 		}
 		_openMonitorWizard(entityIds, analysis, editMonitor = null, suggestedEntityIds = [], allSeriesEntityIds = []) {
-			if (!this.shadowRoot) return;
-			if (!this._monitorWizardComp) this._mountMonitorWizard();
-			const wizard = this._monitorWizardComp;
-			if (!wizard) return;
-			wizard.hass = this._hass;
-			wizard.editMonitor = editMonitor;
-			wizard.prefillEntityIds = entityIds;
-			wizard.prefillAnalysis = analysis;
-			wizard.suggestedEntityIds = suggestedEntityIds;
-			wizard.allSeriesEntityIds = allSeriesEntityIds;
-			wizard.open = true;
+			this._monitorWizardPayload = {
+				prefillEntityIds: entityIds,
+				prefillAnalysis: analysis,
+				editMonitor,
+				suggestedEntityIds,
+				allSeriesEntityIds
+			};
+			this._monitorWizardOpen = true;
 		}
-		_mountDateWindowDialogControl() {
-			if (this.shadowRoot) {
-				const dialogComp = document.createElement("date-window-dialog");
-				dialogComp.addEventListener("dp-window-close", () => this._closeDateWindowDialog());
-				dialogComp.addEventListener("dp-window-submit", (ev) => {
-					this._createDateWindowFromDialog(ev.detail || {});
-				});
-				dialogComp.addEventListener("dp-window-delete", () => this._deleteEditingDateWindow());
-				dialogComp.addEventListener("dp-window-shortcut", (ev) => {
-					if (typeof ev.detail?.direction === "number") this._applyDateWindowShortcut(ev.detail.direction);
-				});
-				dialogComp.addEventListener("dp-window-date-change", (ev) => {
-					const start = this._parseDateWindowInputValue(ev.detail?.start || "");
-					const end = this._parseDateWindowInputValue(ev.detail?.end || "");
-					if (start && end && start < end) this._dateWindowDialogDraftRange = {
-						start,
-						end
-					};
-					else this._dateWindowDialogDraftRange = null;
-				});
-				this.shadowRoot.appendChild(dialogComp);
-				this._dateWindowDialogComp = dialogComp;
-			}
-		}
-		_mountAiQueryBriefDialogControl() {
-			if (!this.shadowRoot) return;
-			const dialogComp = document.createElement("ai-query-brief-dialog");
-			dialogComp.addEventListener("dp-ai-query-brief-close", () => {
-				if (this._aiQueryBriefDialogComp) this._aiQueryBriefDialogComp.open = false;
-			});
-			this.shadowRoot.appendChild(dialogComp);
-			this._aiQueryBriefDialogComp = dialogComp;
+		/**
+		* Date-window-dialog `dp-window-date-change` handler: update the draft range
+		* and keep the controlled start/end value fields in step with the inputs
+		* (the component is fully controlled, so the parent owns these values).
+		*/
+		_handleDateWindowDateChange(startStr, endStr) {
+			this._dateWindowDialogStartValue = startStr;
+			this._dateWindowDialogEndValue = endStr;
+			const start = this._parseDateWindowInputValue(startStr);
+			const end = this._parseDateWindowInputValue(endStr);
+			this._dateWindowDialogDraftRange = start && end && start < end ? {
+				start,
+				end
+			} : null;
 		}
 		async _resolveAiQueryBriefMonitorContext() {
 			if (!this._hass) return {
@@ -37941,9 +37943,6 @@
 			}
 		}
 		async _openAiQueryBriefDialog() {
-			if (!this.shadowRoot) return;
-			if (!this._aiQueryBriefDialogComp) this._mountAiQueryBriefDialogControl();
-			if (!this._aiQueryBriefDialogComp) return;
 			const monitorContext = await this._resolveAiQueryBriefMonitorContext();
 			const brief = buildAiQueryBrief({
 				hass: this._hass,
@@ -37960,9 +37959,9 @@
 				monitorContext,
 				anomalySnapshot: this._chartEl?.getAiQueryBriefAnomalySnapshot?.() ?? null
 			});
-			this._aiQueryBriefDialogComp.heading = msg("AI query brief");
-			this._aiQueryBriefDialogComp.text = brief.plainText;
-			this._aiQueryBriefDialogComp.open = true;
+			this._aiQueryBriefHeading = msg("AI query brief");
+			this._aiQueryBriefText = brief.plainText;
+			this._aiQueryBriefDialogOpen = true;
 		}
 		_renderTargetRows() {
 			this.requestUpdate();
@@ -38328,7 +38327,6 @@
 				else {
 					this._saveSessionState();
 					this._updateUrl({ push: false });
-					this._syncListZoomState();
 				}
 			}
 			this._updateChartZoomHighlight();
@@ -38341,10 +38339,10 @@
 				this._chartZoomStateCommitTimer = null;
 				this._saveSessionState();
 				this._updateUrl({ push: false });
-				this._syncListZoomState();
 			}, 180);
 		}
-		_syncListZoomState() {
+		/** Push the current zoom window into the list card (keyed; no-op if unchanged). */
+		_applyListZoomConfig() {
 			if (!this._listEl) return;
 			const listConfig = {
 				entities: this._entities,
@@ -38475,11 +38473,6 @@
 			if (!this._endTime) return false;
 			return this._endTime.getTime() >= Date.now() - 2 * MINUTE_MS;
 		}
-		/** Toggle the live-edge indicator on the end handle. */
-		_syncLiveEdgeHandle() {
-			if (!this._rangeToolbarComp) return;
-			this.requestUpdate();
-		}
 		/** Called whenever a new annotation is recorded (HA event or window event).
 		*  If the current range is on the live edge, advance the end time to now
 		*  so the chart immediately shows the new data point. */
@@ -38495,7 +38488,6 @@
 			this._startTime = nextStart;
 			this._endTime = nextEnd;
 			this._hours = Math.max(1, Math.round((nextEnd.getTime() - nextStart.getTime()) / HOUR_MS));
-			this._syncLiveEdgeHandle();
 			this._scheduleAutoZoomUpdate(void 0, void 0);
 			this._syncControls();
 			this._chartEl?.setExternalZoomRange?.(this._chartZoomCommittedRange);
@@ -38862,6 +38854,10 @@
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_historyEndTime", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_timelineEvents", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_loadingComparisonWindowIds", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_dateWindowDialogOpen", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_dateWindowDialogName", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_dateWindowDialogStartValue", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_dateWindowDialogEndValue", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_sidebarAccordionTargetsOpen", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_sidebarAccordionDatapointsOpen", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_sidebarAccordionAnalysisOpen", null);
@@ -38871,6 +38867,11 @@
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_zoomLevel", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_dateSnapping", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_collapsedOptionsPopupOpen", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_monitorWizardOpen", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_monitorWizardPayload", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_aiQueryBriefDialogOpen", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_aiQueryBriefHeading", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_aiQueryBriefText", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_startTime", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_endTime", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_sidebarCollapsed", null);

@@ -1182,10 +1182,42 @@ export class HassDatapointsHistoryCard extends ChartCardBase {
 
   /** Rendering host for panel-owned comparison tabs; drawing remains chart-owned. */
   getComparisonTabsHost(): Nullable<HTMLElement> {
-    const chart = this.shadowRoot?.querySelector(
-      "hass-datapoints-history-chart, dp-history-chart, history-chart"
+    return (
+      this._chartEl()?.querySelector<HTMLElement>("#chart-top-slot") ?? null
     );
-    return chart?.querySelector<HTMLElement>("#chart-top-slot") ?? null;
+  }
+
+  /**
+   * Public resize-replay seam: redraw the chart with its last draw args.
+   * The panel calls this on container/pane resize instead of reaching through
+   * the card's shadow root into the inner chart.
+   */
+  requestResizeRedraw(): void {
+    this._chartEl()?._redrawLastDraw();
+  }
+
+  /**
+   * Toggle the comparison-tab rail's overflow affordance from measured widths.
+   * Encapsulates the inner chart's `#chart-tabs-shell`/`#chart-tabs-rail` so the
+   * panel orchestration no longer walks this card's shadow DOM.
+   */
+  updateComparisonTabsOverflow(): void {
+    const chart = this._chartEl();
+    const shell =
+      chart?.querySelector<HTMLElement>("#chart-tabs-shell") ?? null;
+    const rail = chart?.querySelector<HTMLElement>("#chart-tabs-rail") ?? null;
+    if (!shell || !rail) {
+      return;
+    }
+    shell.classList.toggle(
+      "overflowing",
+      rail.scrollWidth > rail.clientWidth + 4
+    );
+  }
+
+  /** Whether the chart should rescale its axis for comparison overlays. */
+  setAdjustComparisonAxisScale(value: boolean): void {
+    this._adjustComparisonAxisScale = value;
   }
 
   getAiQueryBriefAnomalySnapshot(): Nullable<RecordWithUnknownValues> {
