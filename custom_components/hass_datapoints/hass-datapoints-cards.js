@@ -19,7 +19,7 @@
 		return target;
 	};
 	//#endregion
-	//#region node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/css-tag.js
+	//#region ../../../../../../../../Users/ollie/Repos/HASS-Data-Points/node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/css-tag.js
 	/**
 	* @license
 	* Copyright 2019 Google LLC
@@ -68,7 +68,7 @@
 		return r$6(e);
 	})(t) : t;
 	//#endregion
-	//#region node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/reactive-element.js
+	//#region ../../../../../../../../Users/ollie/Repos/HASS-Data-Points/node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/reactive-element.js
 	/**
 	* @license
 	* Copyright 2017 Google LLC
@@ -298,7 +298,7 @@
 	};
 	y$1.elementStyles = [], y$1.shadowRootOptions = { mode: "open" }, y$1[d$2("elementProperties")] = /* @__PURE__ */ new Map(), y$1[d$2("finalized")] = /* @__PURE__ */ new Map(), p$2?.({ ReactiveElement: y$1 }), (a$1.reactiveElementVersions ??= []).push("2.1.2");
 	//#endregion
-	//#region node_modules/.pnpm/lit-html@3.3.2/node_modules/lit-html/lit-html.js
+	//#region ../../../../../../../../Users/ollie/Repos/HASS-Data-Points/node_modules/.pnpm/lit-html@3.3.2/node_modules/lit-html/lit-html.js
 	/**
 	* @license
 	* Copyright 2017 Google LLC
@@ -592,7 +592,7 @@
 		return h._$AI(t), h;
 	};
 	//#endregion
-	//#region node_modules/.pnpm/lit-element@4.2.2/node_modules/lit-element/lit-element.js
+	//#region ../../../../../../../../Users/ollie/Repos/HASS-Data-Points/node_modules/.pnpm/lit-element@4.2.2/node_modules/lit-element/lit-element.js
 	/**
 	* @license
 	* Copyright 2017 Google LLC
@@ -625,7 +625,7 @@
 	o$1?.({ LitElement: i$2 });
 	(s$1.litElementVersions ??= []).push("4.2.2");
 	//#endregion
-	//#region node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/decorators/property.js
+	//#region ../../../../../../../../Users/ollie/Repos/HASS-Data-Points/node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/decorators/property.js
 	/**
 	* @license
 	* Copyright 2017 Google LLC
@@ -668,7 +668,7 @@
 		})(t, e, o);
 	}
 	//#endregion
-	//#region node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/decorators/state.js
+	//#region ../../../../../../../../Users/ollie/Repos/HASS-Data-Points/node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/decorators/state.js
 	/**
 	* @license
 	* Copyright 2017 Google LLC
@@ -681,7 +681,7 @@
 		});
 	}
 	//#endregion
-	//#region node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/decorators/base.js
+	//#region ../../../../../../../../Users/ollie/Repos/HASS-Data-Points/node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/decorators/base.js
 	/**
 	* @license
 	* Copyright 2017 Google LLC
@@ -689,7 +689,7 @@
 	*/
 	var e$5 = (e, t, c) => (c.configurable = !0, c.enumerable = !0, Reflect.decorate && "object" != typeof t && Object.defineProperty(e, t, c), c);
 	//#endregion
-	//#region node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/decorators/query.js
+	//#region ../../../../../../../../Users/ollie/Repos/HASS-Data-Points/node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/decorators/query.js
 	/**
 	* @license
 	* Copyright 2017 Google LLC
@@ -720,7 +720,7 @@
 		};
 	}
 	//#endregion
-	//#region node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/decorators/query-all.js
+	//#region ../../../../../../../../Users/ollie/Repos/HASS-Data-Points/node_modules/.pnpm/@lit+reactive-element@2.1.2/node_modules/@lit/reactive-element/decorators/query-all.js
 	/**
 	* @license
 	* Copyright 2017 Google LLC
@@ -1803,7 +1803,7 @@
 	__decorate([e$4("#date")], HassDatapointsActionCard.prototype, "_dateEl", null);
 	__decorate([e$4("action-targets")], HassDatapointsActionCard.prototype, "_targetsEl", null);
 	//#endregion
-	//#region node_modules/.pnpm/@lit+localize@0.12.2/node_modules/@lit/localize/internal/locale-status-event.js
+	//#region ../../../../../../../../Users/ollie/Repos/HASS-Data-Points/node_modules/.pnpm/@lit+localize@0.12.2/node_modules/@lit/localize/internal/locale-status-event.js
 	/**
 	* @license
 	* Copyright 2021 Google LLC
@@ -1823,7 +1823,7 @@
 	*/
 	var LOCALE_STATUS_EVENT = "lit-localize-status";
 	//#endregion
-	//#region node_modules/.pnpm/@lit+localize@0.12.2/node_modules/@lit/localize/internal/str-tag.js
+	//#region ../../../../../../../../Users/ollie/Repos/HASS-Data-Points/node_modules/.pnpm/@lit+localize@0.12.2/node_modules/@lit/localize/internal/str-tag.js
 	/**
 	* @license
 	* Copyright 2021 Google LLC
@@ -1843,7 +1843,7 @@
 		return concat;
 	};
 	//#endregion
-	//#region node_modules/.pnpm/@lit+localize@0.12.2/node_modules/@lit/localize/internal/default-msg.js
+	//#region ../../../../../../../../Users/ollie/Repos/HASS-Data-Points/node_modules/.pnpm/@lit+localize@0.12.2/node_modules/@lit/localize/internal/default-msg.js
 	/**
 	* @license
 	* Copyright 2021 Google LLC
@@ -1856,7 +1856,7 @@
 	*/
 	var defaultMsg = ((template) => isStrTagged(template) ? joinStringsAndValues(template.strings, template.values) : template);
 	//#endregion
-	//#region node_modules/.pnpm/@lit+localize@0.12.2/node_modules/@lit/localize/init/install.js
+	//#region ../../../../../../../../Users/ollie/Repos/HASS-Data-Points/node_modules/.pnpm/@lit+localize@0.12.2/node_modules/@lit/localize/init/install.js
 	/**
 	* Make a string or lit-html template localizable.
 	*
@@ -1883,7 +1883,7 @@
 		installed = true;
 	}
 	//#endregion
-	//#region node_modules/.pnpm/@lit+localize@0.12.2/node_modules/@lit/localize/internal/localized-controller.js
+	//#region ../../../../../../../../Users/ollie/Repos/HASS-Data-Points/node_modules/.pnpm/@lit+localize@0.12.2/node_modules/@lit/localize/internal/localized-controller.js
 	/**
 	* @license
 	* Copyright 2021 Google LLC
@@ -1930,7 +1930,7 @@
 	var _updateWhenLocaleChanges = (host) => host.addController(new LocalizeController(host));
 	var updateWhenLocaleChanges = _updateWhenLocaleChanges;
 	//#endregion
-	//#region node_modules/.pnpm/@lit+localize@0.12.2/node_modules/@lit/localize/internal/localized-decorator.js
+	//#region ../../../../../../../../Users/ollie/Repos/HASS-Data-Points/node_modules/.pnpm/@lit+localize@0.12.2/node_modules/@lit/localize/internal/localized-decorator.js
 	/**
 	* @license
 	* Copyright 2021 Google LLC
@@ -1965,7 +1965,7 @@
 		return clazz;
 	};
 	//#endregion
-	//#region node_modules/.pnpm/@lit+localize@0.12.2/node_modules/@lit/localize/internal/deferred.js
+	//#region ../../../../../../../../Users/ollie/Repos/HASS-Data-Points/node_modules/.pnpm/@lit+localize@0.12.2/node_modules/@lit/localize/internal/deferred.js
 	/**
 	* @license
 	* Copyright 2020 Google LLC
@@ -1989,7 +1989,7 @@
 		}
 	};
 	//#endregion
-	//#region node_modules/.pnpm/@lit+localize@0.12.2/node_modules/@lit/localize/internal/fnv1a64.js
+	//#region ../../../../../../../../Users/ollie/Repos/HASS-Data-Points/node_modules/.pnpm/@lit+localize@0.12.2/node_modules/@lit/localize/internal/fnv1a64.js
 	/**
 	* @license
 	* Copyright 2014 Travis Webb
@@ -2068,7 +2068,7 @@
 		return (isHtmlTagged ? HTML_PREFIX : STRING_PREFIX) + fnv1a64(typeof strings === "string" ? strings : strings.join(""));
 	}
 	//#endregion
-	//#region node_modules/.pnpm/@lit+localize@0.12.2/node_modules/@lit/localize/internal/runtime-msg.js
+	//#region ../../../../../../../../Users/ollie/Repos/HASS-Data-Points/node_modules/.pnpm/@lit+localize@0.12.2/node_modules/@lit/localize/internal/runtime-msg.js
 	/**
 	* @license
 	* Copyright 2021 Google LLC
@@ -2107,7 +2107,7 @@
 		return id;
 	}
 	//#endregion
-	//#region node_modules/.pnpm/@lit+localize@0.12.2/node_modules/@lit/localize/init/runtime.js
+	//#region ../../../../../../../../Users/ollie/Repos/HASS-Data-Points/node_modules/.pnpm/@lit+localize@0.12.2/node_modules/@lit/localize/init/runtime.js
 	/**
 	* @license
 	* Copyright 2021 Google LLC
@@ -2204,7 +2204,7 @@
 		return loading.promise;
 	};
 	//#endregion
-	//#region node_modules/.pnpm/@lit+localize@0.12.2/node_modules/@lit/localize/lit-localize.js
+	//#region ../../../../../../../../Users/ollie/Repos/HASS-Data-Points/node_modules/.pnpm/@lit+localize@0.12.2/node_modules/@lit/localize/lit-localize.js
 	/**
 	* @license
 	* Copyright 2020 Google LLC
@@ -2505,6 +2505,11 @@
 	var translations$157;
 	var init_fi$18 = __esmMin((() => {
 		translations$157 = {
+			Direction: "Suunta",
+			Both: "Molemmat",
+			Up: "Ylös",
+			Down: "Alas",
+			"\"Up\" means rising faster than the typical rate, \"Down\" means falling faster — not simply whether the value went up or down.": "”Ylös” tarkoittaa tavallista nopeampaa nousua, ”Alas” nopeampaa laskua – ei pelkästään sitä, nousiko vai laskiko arvo.",
 			"Show anomalies": "Näytä poikkeamat",
 			Sensitivity: "Herkkyys",
 			"Use downsampled data for detection": "Käytä alasnäytteistettyä dataa havaitsemiseen",
@@ -3156,6 +3161,11 @@
 	var translations$129;
 	var init_fr$18 = __esmMin((() => {
 		translations$129 = {
+			Direction: "Sens",
+			Both: "Les deux",
+			Up: "Hausse",
+			Down: "Baisse",
+			"\"Up\" means rising faster than the typical rate, \"Down\" means falling faster — not simply whether the value went up or down.": "« Hausse » signifie une augmentation plus rapide que le rythme habituel, « Baisse » une diminution plus rapide — pas simplement si la valeur a monté ou baissé.",
 			"Show anomalies": "Afficher les anomalies",
 			Sensitivity: "Sensibilité",
 			"Use downsampled data for detection": "Utiliser les données rééchantillonnées pour la détection",
@@ -3807,6 +3817,11 @@
 	var translations$101;
 	var init_de$18 = __esmMin((() => {
 		translations$101 = {
+			Direction: "Richtung",
+			Both: "Beide",
+			Up: "Aufwärts",
+			Down: "Abwärts",
+			"\"Up\" means rising faster than the typical rate, \"Down\" means falling faster — not simply whether the value went up or down.": "„Aufwärts“ bedeutet schneller steigend als üblich, „Abwärts“ schneller fallend – nicht einfach, ob der Wert gestiegen oder gefallen ist.",
 			"Show anomalies": "Anomalien anzeigen",
 			Sensitivity: "Empfindlichkeit",
 			"Use downsampled data for detection": "Heruntergesampelte Daten für die Erkennung verwenden",
@@ -4458,6 +4473,11 @@
 	var translations$73;
 	var init_es$18 = __esmMin((() => {
 		translations$73 = {
+			Direction: "Dirección",
+			Both: "Ambos",
+			Up: "Arriba",
+			Down: "Abajo",
+			"\"Up\" means rising faster than the typical rate, \"Down\" means falling faster — not simply whether the value went up or down.": "«Arriba» significa que sube más rápido que la tasa típica, «Abajo» que baja más rápido, no simplemente si el valor subió o bajó.",
 			"Show anomalies": "Mostrar anomalías",
 			Sensitivity: "Sensibilidad",
 			"Use downsampled data for detection": "Usar datos submuestreados para la detección",
@@ -5109,6 +5129,11 @@
 	var translations$45;
 	var init_pt$18 = __esmMin((() => {
 		translations$45 = {
+			Direction: "Direção",
+			Both: "Ambos",
+			Up: "Para cima",
+			Down: "Para baixo",
+			"\"Up\" means rising faster than the typical rate, \"Down\" means falling faster — not simply whether the value went up or down.": "“Para cima” significa subir mais rápido que a taxa típica, “Para baixo” cair mais rápido — não apenas se o valor subiu ou desceu.",
 			"Show anomalies": "Mostrar anomalias",
 			Sensitivity: "Sensibilidade",
 			"Use downsampled data for detection": "Usar dados reamostrados para deteção",
@@ -5760,6 +5785,11 @@
 	var translations$17;
 	var init_zh_hans$18 = __esmMin((() => {
 		translations$17 = {
+			Direction: "方向",
+			Both: "两者",
+			Up: "向上",
+			Down: "向下",
+			"\"Up\" means rising faster than the typical rate, \"Down\" means falling faster — not simply whether the value went up or down.": "“向上”表示上升速度快于通常速率，“向下”表示下降速度更快，而不仅仅是数值升高还是降低。",
 			"Show anomalies": "显示异常",
 			Sensitivity: "灵敏度",
 			"Use downsampled data for detection": "检测时使用降采样数据",
@@ -6715,7 +6745,7 @@
 	__decorate([e$4("#target-picker")], HassDatapointsActionCardEditor.prototype, "_targetPickerEl", null);
 	__decorate([r$1("ha-selector")], HassDatapointsActionCardEditor.prototype, "_selectorEls", null);
 	//#endregion
-	//#region node_modules/.pnpm/@kipk+load-ha-components@1.0.3/node_modules/@kipk/load-ha-components/dist/load-ha-components.js
+	//#region ../../../../../../../../Users/ollie/Repos/HASS-Data-Points/node_modules/.pnpm/@kipk+load-ha-components@1.0.3/node_modules/@kipk/load-ha-components/dist/load-ha-components.js
 	/**
 	* Utility function to asynchronously load Home Assistant form components
 	* if they are not already registered in the custom elements registry.
@@ -11162,6 +11192,11 @@
 			anomaly_rate_window: config.anomaly_rate_window || "1h",
 			anomaly_zscore_window: config.anomaly_zscore_window || "24h",
 			anomaly_persistence_window: config.anomaly_persistence_window || "1h",
+			anomaly_trend_residual_direction: config.anomaly_trend_residual_direction || "both",
+			anomaly_rate_of_change_direction: config.anomaly_rate_of_change_direction || "both",
+			anomaly_iqr_direction: config.anomaly_iqr_direction || "both",
+			anomaly_rolling_zscore_direction: config.anomaly_rolling_zscore_direction || "both",
+			anomaly_comparison_window_direction: config.anomaly_comparison_window_direction || "both",
 			trend_method: config.trend_method || "rolling_average",
 			trend_window: config.trend_window || "24h",
 			request_id: requestId,
@@ -11202,6 +11237,13 @@
 			significant_changes_only: !!options.significant_changes_only,
 			no_attributes: options.no_attributes !== false
 		}));
+	}
+	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/anomaly-direction.ts
+	var DEFAULT_ANOMALY_DIRECTION = "both";
+	/** Narrow an unknown value to a valid direction, defaulting to "both". */
+	function coerceAnomalyDirection(value) {
+		return value === "up" || value === "down" ? value : DEFAULT_ANOMALY_DIRECTION;
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/domain/history-series.ts
@@ -11281,6 +11323,12 @@
 			anomaly_comparison_entity_id: typeof source.anomaly_comparison_entity_id === "string" && source.anomaly_comparison_entity_id ? source.anomaly_comparison_entity_id : null,
 			anomaly_trend_method: typeof source.anomaly_trend_method === "string" ? source.anomaly_trend_method : "",
 			anomaly_trend_window: typeof source.anomaly_trend_window === "string" && source.anomaly_trend_window ? source.anomaly_trend_window : "24h",
+			anomaly_trend_residual_direction: coerceAnomalyDirection(source.anomaly_trend_residual_direction),
+			anomaly_rate_of_change_direction: coerceAnomalyDirection(source.anomaly_rate_of_change_direction),
+			anomaly_iqr_direction: coerceAnomalyDirection(source.anomaly_iqr_direction),
+			anomaly_rolling_zscore_direction: coerceAnomalyDirection(source.anomaly_rolling_zscore_direction),
+			anomaly_comparison_window_direction: coerceAnomalyDirection(source.anomaly_comparison_window_direction),
+			anomaly_similar_entity_direction: coerceAnomalyDirection(source.anomaly_similar_entity_direction),
 			show_delta_analysis: source.show_delta_analysis === true,
 			show_delta_tooltip: source.show_delta_tooltip !== false,
 			show_delta_lines: source.show_delta_lines === true,
@@ -11627,6 +11675,9 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/chart-anomaly-config.ts
+	/**
+	* Pure anomaly config builder extracted from history-chart.ts.
+	*/
 	function buildBackendAnomalyConfig(analysis) {
 		const rawMethods = Array.isArray(analysis.anomaly_methods) ? analysis.anomaly_methods : [];
 		const hasSimilarEntity = rawMethods.includes("similar_entity");
@@ -11638,6 +11689,11 @@
 			anomaly_rate_window: typeof analysis.anomaly_rate_window === "string" ? analysis.anomaly_rate_window : void 0,
 			anomaly_zscore_window: typeof analysis.anomaly_zscore_window === "string" ? analysis.anomaly_zscore_window : void 0,
 			anomaly_persistence_window: typeof analysis.anomaly_persistence_window === "string" ? analysis.anomaly_persistence_window : void 0,
+			anomaly_trend_residual_direction: coerceAnomalyDirection(analysis.anomaly_trend_residual_direction),
+			anomaly_rate_of_change_direction: coerceAnomalyDirection(analysis.anomaly_rate_of_change_direction),
+			anomaly_iqr_direction: coerceAnomalyDirection(analysis.anomaly_iqr_direction),
+			anomaly_rolling_zscore_direction: coerceAnomalyDirection(analysis.anomaly_rolling_zscore_direction),
+			anomaly_comparison_window_direction: hasSimilarEntity ? coerceAnomalyDirection(analysis.anomaly_similar_entity_direction) : coerceAnomalyDirection(analysis.anomaly_comparison_window_direction),
 			trend_method: (() => {
 				if (typeof analysis.anomaly_trend_method === "string" && analysis.anomaly_trend_method) return analysis.anomaly_trend_method;
 				return typeof analysis.trend_method === "string" ? analysis.trend_method : void 0;
@@ -12154,7 +12210,13 @@
 		"anomaly_comparison_window_id",
 		"anomaly_use_sampled_data",
 		"anomaly_trend_method",
-		"anomaly_trend_window"
+		"anomaly_trend_window",
+		"anomaly_trend_residual_direction",
+		"anomaly_rate_of_change_direction",
+		"anomaly_iqr_direction",
+		"anomaly_rolling_zscore_direction",
+		"anomaly_comparison_window_direction",
+		"anomaly_similar_entity_direction"
 	];
 	function buildAnalysisCacheKey(visibleSeries, selectedComparisonSeriesMap, analysisMap, allComparisonWindowsData, t0, t1) {
 		return `${t0}:${t1}|${visibleSeries.map((s) => {
@@ -16712,7 +16774,7 @@
 		return result;
 	}
 	//#endregion
-	//#region node_modules/.pnpm/lit-html@3.3.2/node_modules/lit-html/directive.js
+	//#region ../../../../../../../../Users/ollie/Repos/HASS-Data-Points/node_modules/.pnpm/lit-html@3.3.2/node_modules/lit-html/directive.js
 	/**
 	* @license
 	* Copyright 2017 Google LLC
@@ -16771,7 +16833,7 @@
 		o._$AR(), o._$AA.remove();
 	};
 	//#endregion
-	//#region node_modules/.pnpm/lit-html@3.3.2/node_modules/lit-html/directives/repeat.js
+	//#region ../../../../../../../../Users/ollie/Repos/HASS-Data-Points/node_modules/.pnpm/lit-html@3.3.2/node_modules/lit-html/directives/repeat.js
 	/**
 	* @license
 	* Copyright 2017 Google LLC
@@ -19619,6 +19681,19 @@
     padding-top: 4px;
   }
 
+  .direction-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+  }
+
+  .field-hint {
+    font-size: 11px;
+    line-height: 1.3;
+    color: var(--secondary-text-color, #888);
+  }
+
   .option {
     align-items: center;
     gap: 8px;
@@ -19805,6 +19880,20 @@
 		value: "only",
 		label: "Overlaps only"
 	}];
+	var ANALYSIS_ANOMALY_DIRECTION_OPTIONS = [
+		{
+			value: "both",
+			label: "Both"
+		},
+		{
+			value: "up",
+			label: "Up"
+		},
+		{
+			value: "down",
+			label: "Down"
+		}
+	];
 	var AnalysisAnomalyGroup = (_comparisonWindows_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$11 = /* @__PURE__ */ new WeakMap(), _computing_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingProgress_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingMethods_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hideSaveMonitorCta_accessor_storage = /* @__PURE__ */ new WeakMap(), _AnalysisAnomalyGroup = class AnalysisAnomalyGroup extends AnalysisGroupMixin(i$2) {
 		constructor(..._args) {
 			super(..._args);
@@ -19874,6 +19963,26 @@
 		_onGroupChange(e) {
 			this._emit("show_anomalies", e.detail.checked);
 		}
+		/**
+		* Render the per-method Direction select (Both / Up / Down). Shared by every
+		* method that has a meaningful above/below-baseline notion (i.e. all methods
+		* except persistence). `help` is shown beneath the control when provided.
+		*/
+		_renderDirectionField(field, value, help) {
+			return b`
+      <label class="field">
+        <span class="field-label">${msg("Direction")}</span>
+        <div class="direction-wrap">
+          <inline-select
+            .value=${value || "both"}
+            .options=${this._localizedOptions(ANALYSIS_ANOMALY_DIRECTION_OPTIONS)}
+            @dp-change=${(e) => this._emit(field, e.detail.value)}
+          ></inline-select>
+          ${help ? b`<span class="field-hint">${help}</span>` : A}
+        </div>
+      </label>
+    `;
+		}
 		_renderMethodSubopts(opt, a) {
 			if (opt.value === "trend_residual") {
 				const storedMethod = a.anomaly_trend_method || "";
@@ -19910,6 +20019,7 @@
                   ></inline-select>
                 </label>
               ` : A}
+          ${this._renderDirectionField("anomaly_trend_residual_direction", a.anomaly_trend_residual_direction)}
         </analysis-method-subopts>
       `;
 			}
@@ -19923,6 +20033,12 @@
               @dp-change=${(e) => this._emit("anomaly_rate_window", e.detail.value)}
             ></inline-select>
           </label>
+          ${this._renderDirectionField("anomaly_rate_of_change_direction", a.anomaly_rate_of_change_direction, msg("\"Up\" means rising faster than the typical rate, \"Down\" means falling faster — not simply whether the value went up or down."))}
+        </analysis-method-subopts>
+      `;
+			if (opt.value === "iqr") return b`
+        <analysis-method-subopts>
+          ${this._renderDirectionField("anomaly_iqr_direction", a.anomaly_iqr_direction)}
         </analysis-method-subopts>
       `;
 			if (opt.value === "rolling_zscore") return b`
@@ -19935,6 +20051,7 @@
               @dp-change=${(e) => this._emit("anomaly_zscore_window", e.detail.value)}
             ></inline-select>
           </label>
+          ${this._renderDirectionField("anomaly_rolling_zscore_direction", a.anomaly_rolling_zscore_direction)}
         </analysis-method-subopts>
       `;
 			if (opt.value === "persistence") return b`
@@ -19967,6 +20084,7 @@
               @dp-change=${(e) => this._emit("anomaly_comparison_window_id", e.detail.value)}
             ></inline-select>
           </label>
+          ${this._renderDirectionField("anomaly_comparison_window_direction", a.anomaly_comparison_window_direction)}
         </analysis-method-subopts>
       `;
 			}
@@ -19986,6 +20104,7 @@
               ></ha-entity-picker>
             </div>
           </label>
+          ${this._renderDirectionField("anomaly_similar_entity_direction", a.anomaly_similar_entity_direction)}
         </analysis-method-subopts>
       `;
 			}
@@ -24362,7 +24481,7 @@
 	__decorate([r$2()], CollapsedOptionsMenu.prototype, "activeSection", null);
 	customElements.define("collapsed-options-menu", CollapsedOptionsMenu);
 	//#endregion
-	//#region node_modules/.pnpm/lit-html@3.3.2/node_modules/lit-html/directives/class-map.js
+	//#region ../../../../../../../../Users/ollie/Repos/HASS-Data-Points/node_modules/.pnpm/lit-html@3.3.2/node_modules/lit-html/directives/class-map.js
 	/**
 	* @license
 	* Copyright 2018 Google LLC
@@ -27953,6 +28072,12 @@
 			anomaly_rate_window: prefill?.anomaly_rate_window ?? "1h",
 			anomaly_zscore_window: prefill?.anomaly_zscore_window ?? "24h",
 			anomaly_persistence_window: prefill?.anomaly_persistence_window ?? "1h",
+			anomaly_trend_residual_direction: prefill?.anomaly_trend_residual_direction ?? "both",
+			anomaly_rate_of_change_direction: prefill?.anomaly_rate_of_change_direction ?? "both",
+			anomaly_iqr_direction: prefill?.anomaly_iqr_direction ?? "both",
+			anomaly_rolling_zscore_direction: prefill?.anomaly_rolling_zscore_direction ?? "both",
+			anomaly_comparison_window_direction: prefill?.anomaly_comparison_window_direction ?? "both",
+			anomaly_similar_entity_direction: prefill?.anomaly_similar_entity_direction ?? "both",
 			anomaly_comparison_window_id: prefill?.anomaly_comparison_window_id ?? null,
 			anomaly_comparison_entity_id: prefill?.anomaly_comparison_entity_id ?? null,
 			anomaly_trend_method: prefill?.anomaly_trend_method || "rolling_average",
@@ -27966,16 +28091,24 @@
 	}
 	function configFromMonitor(m) {
 		const baselineEntityId = m.baseline_entity_id ?? null;
+		const frontendMethods = [...m.anomaly_methods].map((method) => {
+			if (method === "comparison_window" && baselineEntityId) return "similar_entity";
+			return method;
+		});
+		const comparisonDir = m.anomaly_comparison_window_direction ?? "both";
 		return {
-			anomaly_methods: [...m.anomaly_methods].map((method) => {
-				if (method === "comparison_window" && baselineEntityId) return "similar_entity";
-				return method;
-			}),
+			anomaly_methods: frontendMethods,
 			anomaly_overlap_mode: m.anomaly_overlap_mode ?? "all",
 			anomaly_sensitivity: m.anomaly_sensitivity,
 			anomaly_rate_window: m.anomaly_rate_window,
 			anomaly_zscore_window: m.anomaly_zscore_window,
 			anomaly_persistence_window: m.anomaly_persistence_window,
+			anomaly_trend_residual_direction: m.anomaly_trend_residual_direction ?? "both",
+			anomaly_rate_of_change_direction: m.anomaly_rate_of_change_direction ?? "both",
+			anomaly_iqr_direction: m.anomaly_iqr_direction ?? "both",
+			anomaly_rolling_zscore_direction: m.anomaly_rolling_zscore_direction ?? "both",
+			anomaly_comparison_window_direction: baselineEntityId ? "both" : comparisonDir,
+			anomaly_similar_entity_direction: baselineEntityId ? comparisonDir : "both",
 			anomaly_comparison_window_id: null,
 			anomaly_comparison_entity_id: baselineEntityId,
 			anomaly_trend_method: m.anomaly_trend_method,
@@ -27996,6 +28129,12 @@
 			anomaly_rate_window: cfg.anomaly_rate_window,
 			anomaly_zscore_window: cfg.anomaly_zscore_window,
 			anomaly_persistence_window: cfg.anomaly_persistence_window,
+			anomaly_trend_residual_direction: cfg.anomaly_trend_residual_direction,
+			anomaly_rate_of_change_direction: cfg.anomaly_rate_of_change_direction,
+			anomaly_iqr_direction: cfg.anomaly_iqr_direction,
+			anomaly_rolling_zscore_direction: cfg.anomaly_rolling_zscore_direction,
+			anomaly_comparison_window_direction: cfg.anomaly_comparison_window_direction,
+			anomaly_similar_entity_direction: cfg.anomaly_similar_entity_direction,
 			anomaly_comparison_window_id: cfg.anomaly_comparison_window_id,
 			anomaly_comparison_entity_id: cfg.anomaly_comparison_entity_id,
 			anomaly_trend_method: cfg.anomaly_trend_method,
@@ -28032,7 +28171,8 @@
 		};
 	}
 	function buildConfigPayload(config) {
-		const backendMethods = config.anomaly_methods.includes("similar_entity") ? [...new Set(config.anomaly_methods.map((method) => method === "similar_entity" ? "comparison_window" : method))] : [...config.anomaly_methods];
+		const hasSimilarEntity = config.anomaly_methods.includes("similar_entity");
+		const backendMethods = hasSimilarEntity ? [...new Set(config.anomaly_methods.map((method) => method === "similar_entity" ? "comparison_window" : method))] : [...config.anomaly_methods];
 		const baselineEntityId = config.anomaly_comparison_entity_id ?? config.baseline_entity_id;
 		const base = {
 			anomaly_methods: backendMethods,
@@ -28041,6 +28181,11 @@
 			anomaly_rate_window: config.anomaly_rate_window,
 			anomaly_zscore_window: config.anomaly_zscore_window,
 			anomaly_persistence_window: config.anomaly_persistence_window,
+			anomaly_trend_residual_direction: config.anomaly_trend_residual_direction,
+			anomaly_rate_of_change_direction: config.anomaly_rate_of_change_direction,
+			anomaly_iqr_direction: config.anomaly_iqr_direction,
+			anomaly_rolling_zscore_direction: config.anomaly_rolling_zscore_direction,
+			anomaly_comparison_window_direction: hasSimilarEntity ? config.anomaly_similar_entity_direction : config.anomaly_comparison_window_direction,
 			anomaly_trend_method: config.anomaly_trend_method || "rolling_average",
 			anomaly_trend_window: config.anomaly_trend_window || "24h"
 		};
@@ -28313,6 +28458,12 @@
 				anomaly_rate_window: "anomaly_rate_window",
 				anomaly_zscore_window: "anomaly_zscore_window",
 				anomaly_persistence_window: "anomaly_persistence_window",
+				anomaly_trend_residual_direction: "anomaly_trend_residual_direction",
+				anomaly_rate_of_change_direction: "anomaly_rate_of_change_direction",
+				anomaly_iqr_direction: "anomaly_iqr_direction",
+				anomaly_rolling_zscore_direction: "anomaly_rolling_zscore_direction",
+				anomaly_comparison_window_direction: "anomaly_comparison_window_direction",
+				anomaly_similar_entity_direction: "anomaly_similar_entity_direction",
 				anomaly_comparison_window_id: "anomaly_comparison_window_id",
 				anomaly_comparison_entity_id: "anomaly_comparison_entity_id",
 				anomaly_trend_method: "anomaly_trend_method",
