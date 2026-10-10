@@ -5,9 +5,11 @@ from __future__ import annotations
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
+import voluptuous as vol
 from homeassistant.exceptions import Unauthorized
 
 from custom_components.hass_datapoints.const import (
+    ANOMALY_DIRECTION_FIELDS,
     DOMAIN,
     KEY_ADD_BINARY_SENSOR_ENTITIES,
     KEY_ADD_SENSOR_ENTITIES,
@@ -18,6 +20,7 @@ from custom_components.hass_datapoints.const import (
     KEY_STORE,
 )
 from custom_components.hass_datapoints.websocket_api import (
+    _MONITOR_ANALYSIS_FIELDS,
     ws_get_anomalies,
     ws_monitors_create,
     ws_monitors_delete,
@@ -923,3 +926,97 @@ class DescribeWsGetAnomaliesWarmCacheConsistency:
         connection.send_result.assert_called_once()
         result = connection.send_result.call_args[0][1]
         assert result["cached"] is False
+
+
+# ---------------------------------------------------------------------------
+# Per-method anomaly direction (#62)
+# ---------------------------------------------------------------------------
+
+
+class DescribeMonitorDirectionSchema:
+    """GIVEN the shared monitor analysis schema fields."""
+
+    def test_GIVEN_valid_directions_WHEN_validated_THEN_accepted(self):
+        schema = vol.Schema(dict(_MONITOR_ANALYSIS_FIELDS))
+        for field in ANOMALY_DIRECTION_FIELDS:
+            for value in ("both", "up", "down"):
+                assert schema({field: value})[field] == value
+
+    def test_GIVEN_invalid_direction_WHEN_validated_THEN_rejected(self):
+        schema = vol.Schema(dict(_MONITOR_ANALYSIS_FIELDS))
+        for field in ANOMALY_DIRECTION_FIELDS:
+            with pytest.raises(vol.Invalid):
+                schema({field: "sideways"})
+
+    def test_GIVEN_omitted_direction_WHEN_validated_THEN_absent_not_defaulted(self):
+        # Monitor schema uses partial-update semantics: omitted fields are not
+        # injected with a default; the stored-monitor construction fills "both".
+        schema = vol.Schema(dict(_MONITOR_ANALYSIS_FIELDS))
+        result = schema({})
+        for field in ANOMALY_DIRECTION_FIELDS:
+            assert field not in result
+
+
+class DescribeWsMonitorsCreateDirection:
+    async def test_GIVEN_direction_set_WHEN_created_THEN_stored_on_monitor(self):
+        store = _make_store()
+        hass = _make_hass(store, add_entities=MagicMock())
+        connection = _make_connection()
+        msg = {
+            "id": 1,
+            "type": f"{DOMAIN}/monitors/create",
+            "monitor_type": "individual",
+            "name": "Freezer",
+            "entity_id": "sensor.freezer",
+            "look_back_hours": 24,
+            "scan_interval_minutes": 30,
+            "anomaly_methods": ["iqr"],
+            "anomaly_iqr_direction": "up",
+        }
+
+        await ws_monitors_create(hass, connection, msg)
+
+        created = store.async_create_monitor.call_args[0][0]
+        assert created["anomaly_iqr_direction"] == "up"
+
+    async def test_GIVEN_no_direction_WHEN_created_THEN_defaults_both(self):
+        store = _make_store()
+        hass = _make_hass(store, add_entities=MagicMock())
+        connection = _make_connection()
+        msg = {
+            "id": 1,
+            "type": f"{DOMAIN}/monitors/create",
+            "monitor_type": "individual",
+            "name": "Plain",
+            "entity_id": "sensor.temp",
+            "look_back_hours": 24,
+            "scan_interval_minutes": 30,
+        }
+
+        await ws_monitors_create(hass, connection, msg)
+
+        created = store.async_create_monitor.call_args[0][0]
+        for field in ANOMALY_DIRECTION_FIELDS:
+            assert created[field] == "both"
+
+
+class DescribeWsMonitorsUpdateDirection:
+    async def test_GIVEN_direction_update_WHEN_called_THEN_passed_through(self):
+        import uuid as _uuid
+
+        monitor_id = str(_uuid.uuid4())
+        monitors = [{"id": monitor_id, "name": "Old", "enabled": True}]
+        store = _make_store(monitors)
+        hass = _make_hass(store)
+        connection = _make_connection()
+        msg = {
+            "id": 1,
+            "type": f"{DOMAIN}/monitors/update",
+            "monitor_id": monitor_id,
+            "anomaly_rate_of_change_direction": "down",
+        }
+
+        await ws_monitors_update(hass, connection, msg)
+
+        updates = store.async_update_monitor.call_args[0][1]
+        assert updates["anomaly_rate_of_change_direction"] == "down"

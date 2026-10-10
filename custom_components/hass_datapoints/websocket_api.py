@@ -20,8 +20,10 @@ from homeassistant.helpers import config_validation as cv
 from .anomaly_cache import AnomalyCache, make_cache_key
 from .anomaly_detection import run_anomaly_detection
 from .const import (
+    ANOMALY_DIRECTION_FIELDS,
     ANOMALY_LIVE_EDGE_SECONDS,
     ANOMALY_MAX_PTS,
+    DEFAULT_ANOMALY_DIRECTION,
     DOMAIN,
     KEY_ADD_BINARY_SENSOR_ENTITIES,
     KEY_ADD_SENSOR_ENTITIES,
@@ -32,6 +34,7 @@ from .const import (
     KEY_STORE,
     MONITOR_DEFAULT_LOOK_BACK_HOURS,
     MONITOR_DEFAULT_SCAN_INTERVAL_MINUTES,
+    VALID_ANOMALY_DIRECTIONS,
 )
 from .history_utils import (
     # _normalize_recorder_timestamp is re-exported (unused here) so existing
@@ -579,6 +582,13 @@ async def _run_detection_with_timeout(
         vol.Optional("anomaly_persistence_window", default="1h"): vol.All(
             str, vol.Length(max=_MAX_LEN_WINDOW), vol.Match(_RE_DURATION)
         ),
+        # Per-method anomaly direction filter (up/down/both), default "both".
+        **{
+            vol.Optional(
+                _field, default=DEFAULT_ANOMALY_DIRECTION
+            ): vol.In(VALID_ANOMALY_DIRECTIONS)
+            for _field in ANOMALY_DIRECTION_FIELDS
+        },
         vol.Optional("trend_method", default="rolling_average"): vol.In(
             _VALID_TREND_METHODS
         ),
@@ -630,6 +640,10 @@ async def ws_get_anomalies(
             "anomaly_rate_window": msg["anomaly_rate_window"],
             "anomaly_zscore_window": msg["anomaly_zscore_window"],
             "anomaly_persistence_window": msg["anomaly_persistence_window"],
+            **{
+                _field: msg.get(_field, DEFAULT_ANOMALY_DIRECTION)
+                for _field in ANOMALY_DIRECTION_FIELDS
+            },
             "trend_method": msg["trend_method"],
             "trend_window": msg["trend_window"],
             "sample_interval": msg.get("sample_interval"),
@@ -786,6 +800,13 @@ _MONITOR_ANALYSIS_FIELDS = {
     vol.Optional("anomaly_persistence_window"): vol.All(
         str, vol.Length(max=_MAX_LEN_WINDOW), vol.Match(_RE_DURATION)
     ),
+    # Per-method anomaly direction filter. No default here: monitor create/update
+    # use partial semantics, and the stored-monitor construction below fills the
+    # default of "both" for any omitted field (non-breaking for existing monitors).
+    **{
+        vol.Optional(_field): vol.In(VALID_ANOMALY_DIRECTIONS)
+        for _field in ANOMALY_DIRECTION_FIELDS
+    },
     vol.Optional("anomaly_trend_method"): vol.In(_VALID_TREND_METHODS),
     vol.Optional("anomaly_trend_window"): vol.All(
         str, vol.Length(max=_MAX_LEN_WINDOW), vol.Match(_RE_DURATION)
@@ -973,6 +994,10 @@ async def ws_monitors_create(
         "anomaly_rate_window": msg.get("anomaly_rate_window", "1h"),
         "anomaly_zscore_window": msg.get("anomaly_zscore_window", "24h"),
         "anomaly_persistence_window": msg.get("anomaly_persistence_window", "1h"),
+        **{
+            _field: msg.get(_field, DEFAULT_ANOMALY_DIRECTION)
+            for _field in ANOMALY_DIRECTION_FIELDS
+        },
         "anomaly_trend_method": msg.get("anomaly_trend_method", "rolling_average"),
         "anomaly_trend_window": msg.get("anomaly_trend_window", "24h"),
         "sample_interval": msg.get("sample_interval"),
@@ -1037,6 +1062,7 @@ async def ws_monitors_update(
         "anomaly_rate_window",
         "anomaly_zscore_window",
         "anomaly_persistence_window",
+        *ANOMALY_DIRECTION_FIELDS,
         "anomaly_trend_method",
         "anomaly_trend_window",
         "sample_interval",
