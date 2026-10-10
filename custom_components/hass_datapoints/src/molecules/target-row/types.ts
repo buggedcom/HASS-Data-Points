@@ -28,6 +28,12 @@ export interface NormalizedAnalysis {
   anomaly_comparison_entity_id: Nullable<string>;
   anomaly_trend_method: string;
   anomaly_trend_window: string;
+  anomaly_trend_residual_direction: "both" | "up" | "down";
+  anomaly_rate_of_change_direction: "both" | "up" | "down";
+  anomaly_iqr_direction: "both" | "up" | "down";
+  anomaly_rolling_zscore_direction: "both" | "up" | "down";
+  anomaly_comparison_window_direction: "both" | "up" | "down";
+  anomaly_similar_entity_direction: "both" | "up" | "down";
   show_delta_analysis: boolean;
   show_delta_tooltip: boolean;
   show_delta_lines: boolean;

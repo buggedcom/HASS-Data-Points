@@ -17,6 +17,11 @@ export interface BackendAnomalyConfig {
   anomaly_rate_window?: string;
   anomaly_zscore_window?: string;
   anomaly_persistence_window?: string;
+  anomaly_trend_residual_direction?: string;
+  anomaly_rate_of_change_direction?: string;
+  anomaly_iqr_direction?: string;
+  anomaly_rolling_zscore_direction?: string;
+  anomaly_comparison_window_direction?: string;
   trend_method?: string;
   trend_window?: string;
   anomaly_use_sampled_data?: boolean;
@@ -198,6 +203,15 @@ export function fetchAnomaliesFromBackend<TCluster = unknown>(
       anomaly_rate_window: config.anomaly_rate_window || "1h",
       anomaly_zscore_window: config.anomaly_zscore_window || "24h",
       anomaly_persistence_window: config.anomaly_persistence_window || "1h",
+      anomaly_trend_residual_direction:
+        config.anomaly_trend_residual_direction || "both",
+      anomaly_rate_of_change_direction:
+        config.anomaly_rate_of_change_direction || "both",
+      anomaly_iqr_direction: config.anomaly_iqr_direction || "both",
+      anomaly_rolling_zscore_direction:
+        config.anomaly_rolling_zscore_direction || "both",
+      anomaly_comparison_window_direction:
+        config.anomaly_comparison_window_direction || "both",
       trend_method: config.trend_method || "rolling_average",
       trend_window: config.trend_window || "24h",
       request_id: requestId,

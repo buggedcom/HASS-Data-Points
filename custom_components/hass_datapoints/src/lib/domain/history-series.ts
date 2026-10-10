@@ -36,6 +36,12 @@ export interface HistorySeriesAnalysis {
   anomaly_comparison_entity_id: Nullable<string>;
   anomaly_trend_method: string;
   anomaly_trend_window: string;
+  anomaly_trend_residual_direction: "both" | "up" | "down";
+  anomaly_rate_of_change_direction: "both" | "up" | "down";
+  anomaly_iqr_direction: "both" | "up" | "down";
+  anomaly_rolling_zscore_direction: "both" | "up" | "down";
+  anomaly_comparison_window_direction: "both" | "up" | "down";
+  anomaly_similar_entity_direction: "both" | "up" | "down";
   show_delta_analysis: boolean;
   show_delta_tooltip: boolean;
   show_delta_lines: boolean;
@@ -97,6 +103,10 @@ const VALID_SAMPLE_AGGREGATES = [
   "first",
   "last",
 ];
+
+function coerceAnomalyDirection(value: unknown): "both" | "up" | "down" {
+  return value === "up" || value === "down" ? value : "both";
+}
 
 export function normalizeHistorySeriesAnalysis(
   analysis: Nullable<PartialHistorySeriesAnalysis> | undefined
@@ -194,6 +204,22 @@ export function normalizeHistorySeriesAnalysis(
       source.anomaly_trend_window
         ? source.anomaly_trend_window
         : "24h",
+    anomaly_trend_residual_direction: coerceAnomalyDirection(
+      source.anomaly_trend_residual_direction
+    ),
+    anomaly_rate_of_change_direction: coerceAnomalyDirection(
+      source.anomaly_rate_of_change_direction
+    ),
+    anomaly_iqr_direction: coerceAnomalyDirection(source.anomaly_iqr_direction),
+    anomaly_rolling_zscore_direction: coerceAnomalyDirection(
+      source.anomaly_rolling_zscore_direction
+    ),
+    anomaly_comparison_window_direction: coerceAnomalyDirection(
+      source.anomaly_comparison_window_direction
+    ),
+    anomaly_similar_entity_direction: coerceAnomalyDirection(
+      source.anomaly_similar_entity_direction
+    ),
     show_delta_analysis: source.show_delta_analysis === true,
     show_delta_tooltip: source.show_delta_tooltip !== false,
     show_delta_lines: source.show_delta_lines === true,

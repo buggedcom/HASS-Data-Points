@@ -54,6 +54,12 @@ const ANALYSIS_FIELDS = [
   "anomaly_use_sampled_data",
   "anomaly_trend_method",
   "anomaly_trend_window",
+  "anomaly_trend_residual_direction",
+  "anomaly_rate_of_change_direction",
+  "anomaly_iqr_direction",
+  "anomaly_rolling_zscore_direction",
+  "anomaly_comparison_window_direction",
+  "anomaly_similar_entity_direction",
 ] as const;
 
 export function buildAnalysisCacheKey(
