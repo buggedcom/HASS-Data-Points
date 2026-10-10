@@ -274,9 +274,8 @@ export const IqrUpDirection = {
     const labels = Array.from(
       el.shadowRoot.querySelectorAll("analysis-method-subopts label.field")
     );
-    const directionLabel = labels.find(
-      (l) =>
-        l.querySelector(".field-label")?.textContent?.trim() === "Direction"
+    const directionLabel = labels.find((l) =>
+      l.querySelector(".field-label")?.textContent?.includes("Direction")
     );
     expect(directionLabel).toBeTruthy();
     const select = directionLabel!.querySelector(

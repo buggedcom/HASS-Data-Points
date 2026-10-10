@@ -87,7 +87,7 @@ function nonDirectionSelects(el: {
   return labels
     .filter(
       (l) =>
-        l.querySelector(".field-label")?.textContent?.trim() !== "Direction"
+        !l.querySelector(".field-label")?.textContent?.includes("Direction")
     )
     .map((l) => l.querySelector("inline-select"))
     .filter((s): s is Element => s !== null);
@@ -416,9 +416,8 @@ describe("analysis-anomaly-group", () => {
     const labels = Array.from(
       root.shadowRoot!.querySelectorAll("analysis-method-subopts label.field")
     );
-    const match = labels.find(
-      (l) =>
-        l.querySelector(".field-label")?.textContent?.trim() === "Direction"
+    const match = labels.find((l) =>
+      l.querySelector(".field-label")?.textContent?.includes("Direction")
     );
     return (
       (match?.querySelector("inline-select") as
@@ -441,6 +440,19 @@ describe("analysis-anomaly-group", () => {
         const select = directionSelect(el);
         expect(select).toBeTruthy();
         expect(select!.value).toBe("both");
+      });
+
+      it("THEN the Direction field has a '?' help tooltip", () => {
+        expect.assertions(3);
+        const helpBtn = el.shadowRoot!.querySelector(
+          "analysis-method-subopts .method-help#direction-help-anomaly_iqr_direction"
+        ) as HTMLElement | null;
+        expect(helpBtn).toBeTruthy();
+        expect(helpBtn!.textContent?.trim()).toBe("?");
+        const tooltip = el.shadowRoot!.querySelector(
+          'ha-tooltip[for="direction-help-anomaly_iqr_direction"]'
+        );
+        expect(tooltip).toBeTruthy();
       });
     });
 
@@ -493,6 +505,29 @@ describe("analysis-anomaly-group", () => {
       expect(handler.mock.calls[0][0].detail.key).toBe(
         "anomaly_comparison_window_direction"
       );
+    });
+  });
+
+  describe("GIVEN the rate_of_change method is checked", () => {
+    beforeEach(async () => {
+      el = createElement({
+        analysis: { show_anomalies: true, anomaly_methods: ["rate_of_change"] },
+      });
+      await el.updateComplete;
+    });
+
+    describe("WHEN rendered", () => {
+      it("THEN the Direction tooltip carries the sudden-change explanation (no inline hint)", () => {
+        expect.assertions(2);
+        const tooltip = el.shadowRoot!.querySelector(
+          'ha-tooltip[for="direction-help-anomaly_rate_of_change_direction"]'
+        );
+        expect(tooltip?.textContent).toContain(
+          "rising faster than the typical rate"
+        );
+        // The explanation moved into the tooltip; no inline hint remains.
+        expect(el.shadowRoot!.querySelector(".field-hint")).toBeNull();
+      });
     });
   });
 

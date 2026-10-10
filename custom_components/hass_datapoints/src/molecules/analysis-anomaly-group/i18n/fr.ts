@@ -5,6 +5,8 @@ export const translations: ComponentTranslations = {
   Both: "Les deux",
   Up: "Hausse",
   Down: "Baisse",
+  "Keep anomalies in both directions, only those above the method's baseline (Up), or only those below it (Down).":
+    "Conserver les anomalies dans les deux sens, uniquement celles au-dessus de la ligne de base de la méthode (Hausse) ou uniquement celles en dessous (Baisse).",
   '"Up" means rising faster than the typical rate, "Down" means falling faster — not simply whether the value went up or down.':
     "« Hausse » signifie une augmentation plus rapide que le rythme habituel, « Baisse » une diminution plus rapide — pas simplement si la valeur a monté ou baissé.",
   "Show anomalies": "Afficher les anomalies",

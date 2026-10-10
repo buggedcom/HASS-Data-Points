@@ -5,6 +5,8 @@ export const translations: ComponentTranslations = {
   Both: "Molemmat",
   Up: "Ylös",
   Down: "Alas",
+  "Keep anomalies in both directions, only those above the method's baseline (Up), or only those below it (Down).":
+    "Säilytä poikkeamat molemmissa suunnissa, vain menetelmän perustason yläpuolella olevat (Ylös) tai vain sen alapuolella olevat (Alas).",
   '"Up" means rising faster than the typical rate, "Down" means falling faster — not simply whether the value went up or down.':
     "”Ylös” tarkoittaa tavallista nopeampaa nousua, ”Alas” nopeampaa laskua – ei pelkästään sitä, nousiko vai laskiko arvo.",
   "Show anomalies": "Näytä poikkeamat",

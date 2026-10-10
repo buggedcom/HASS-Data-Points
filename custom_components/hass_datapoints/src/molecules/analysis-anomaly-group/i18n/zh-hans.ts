@@ -5,6 +5,8 @@ export const translations: ComponentTranslations = {
   Both: "两者",
   Up: "向上",
   Down: "向下",
+  "Keep anomalies in both directions, only those above the method's baseline (Up), or only those below it (Down).":
+    "保留两个方向的异常，仅保留高于该方法基线的（向上），或仅保留低于基线的（向下）。",
   '"Up" means rising faster than the typical rate, "Down" means falling faster — not simply whether the value went up or down.':
     "“向上”表示上升速度快于通常速率，“向下”表示下降速度更快，而不仅仅是数值升高还是降低。",
   "Show anomalies": "显示异常",
