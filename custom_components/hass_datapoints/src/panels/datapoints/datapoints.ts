@@ -155,19 +155,10 @@ type HistoryTargetsElement = HTMLElement & {
   comparisonWindows: NormalizedHistoryDateWindow[];
   canShowDeltaAnalysis: boolean;
   sidebarCollapsed: boolean;
-  getRowListEl(): Nullable<RowListElement>;
-};
-
-type RowListElement = HTMLElement & {
-  rows: unknown[];
-  states: RecordWithUnknownValues;
-  hass: unknown;
-  canShowDeltaAnalysis: boolean;
-  comparisonWindows: NormalizedHistoryDateWindow[];
+  labelMap: Map<string, string>;
   computingEntityIds: Set<string>;
   analysisProgress: number;
-  computingMethodsByEntity: Map<string, unknown>;
-  labelMap: Map<string, string>;
+  computingMethodsByEntity: Map<string, Set<string>>;
 };
 
 type TargetPickerElement = HTMLElement & {
@@ -421,8 +412,6 @@ export class HassDatapointsHistoryPanel extends LitElement {
 
   declare _historyTargetsComp: Nullable<HistoryTargetsElement>;
 
-  declare _rowListEl: Nullable<RowListElement>;
-
   declare _targetRowsRenderKey: string;
 
   @reactiveState()
@@ -440,6 +429,9 @@ export class HassDatapointsHistoryPanel extends LitElement {
   declare _rangeToolbarComp: Nullable<RangeToolbar>;
 
   declare _rangeBounds: Nullable<{ min: number; max: number; config: unknown }>;
+
+  /** Derived in willUpdate: disambiguated entity → display-name map for the rows. */
+  declare _rowLabelMap: Map<string, string>;
 
   declare _autoZoomTimer: Nullable<number>;
 
@@ -580,9 +572,9 @@ export class HassDatapointsHistoryPanel extends LitElement {
     this._contentSplitterEl = null;
     this._targetControl = null;
     this._targetRowsEl = null;
-    this._rowListEl = null;
     this._targetRowsRenderKey = "";
     this._rangeBounds = null;
+    this._rowLabelMap = new Map();
     this._autoZoomTimer = null;
     this._hoveredPeriodRange = null;
     this._chartZoomRange = null;
@@ -840,23 +832,9 @@ export class HassDatapointsHistoryPanel extends LitElement {
         if (this._targetControl && this._hass) {
           this._targetControl.hass = this._hass;
         }
-        // Sidebar: push live states so entity icons/labels stay current.
-        if (this._historyTargetsComp) {
-          this._historyTargetsComp.hass = this._hass ?? null;
-          this._historyTargetsComp.states =
-            (this._hass?.states as RecordWithUnknownValues) ?? {};
-        }
-        if (this._rowListEl) {
-          this._rowListEl.hass = this._hass ?? null;
-          this._rowListEl.states =
-            (this._hass?.states as RecordWithUnknownValues) ?? {};
-          this._rowListEl.labelMap = disambiguateEntityNames(
-            this._hass,
-            (this._seriesRows ?? []).map(
-              (r: { entity_id: string }) => r.entity_id
-            )
-          );
-        }
+        // The sidebar `history-targets` (and its row list) receive hass/states/
+        // labelMap declaratively from render(); the hass property re-renders the
+        // panel on every tick (hasChanged: () => true), so no imperative push here.
         // Inline HA state-icon elements rendered directly into the shadow DOM.
         this.shadowRoot
           ?.querySelectorAll(
@@ -967,6 +945,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
     if (this._rendered) {
       this._rangeBounds = this._deriveRangeBounds();
       this._ensureTimelineEvents();
+      this._rowLabelMap = this._computeRowLabelMap();
     }
   }
 
@@ -1673,9 +1652,113 @@ export class HassDatapointsHistoryPanel extends LitElement {
           @dp-display-change=${this._handlePreferenceDisplay}
           @dp-analysis-change=${this._handlePreferenceAnalysis}
         ></collapsed-options-menu>
+        <history-targets
+          slot="sidebar"
+          .rows=${this._seriesRows}
+          .states=${this._hass?.states ?? {}}
+          .hass=${this._hass ?? null}
+          .labelMap=${this._rowLabelMap}
+          .comparisonWindows=${this._comparisonWindows}
+          .canShowDeltaAnalysis=${!!this._selectedComparisonWindowId}
+          .sidebarCollapsed=${this._sidebarCollapsed}
+          .computingEntityIds=${this._computingEntityIds}
+          .analysisProgress=${this._analysisProgress}
+          .computingMethodsByEntity=${this._computingMethods}
+          @dp-row-color-change=${(
+            ev: DetailEvent<{ index?: number; color?: string }>
+          ) => {
+            const { index, color } = ev.detail || {};
+            this._updateSeriesRowColor(index, color);
+          }}
+          @dp-row-visibility-change=${(
+            ev: DetailEvent<{ entityId?: string; visible?: boolean }>
+          ) => {
+            const { entityId, visible } = ev.detail || {};
+            this._updateSeriesRowVisibilityByEntityId(entityId, visible);
+          }}
+          @dp-row-remove=${(ev: DetailEvent<{ index?: number }>) => {
+            this._removeSeriesRow(ev.detail?.index);
+          }}
+          @dp-row-toggle-analysis=${(
+            ev: DetailEvent<{ entityId?: string }>
+          ) => {
+            this._toggleSeriesAnalysisExpanded(ev.detail?.entityId);
+          }}
+          @dp-row-analysis-change=${(
+            ev: DetailEvent<{
+              entityId?: string;
+              key?: string;
+              value?: unknown;
+            }>
+          ) => {
+            const { entityId, key, value } = ev.detail || {};
+            this._setSeriesAnalysisOption(entityId, key, value);
+          }}
+          @dp-row-copy-analysis-to-all=${(
+            ev: DetailEvent<{ entityId?: string; analysis?: unknown }>
+          ) => {
+            const { entityId, analysis } = ev.detail || {};
+            this._copyAnalysisToAll(entityId, analysis);
+          }}
+          @dp-rows-reorder=${(ev: DetailEvent<{ rows?: unknown[] }>) => {
+            const { rows } = ev.detail || {};
+            if (!Array.isArray(rows)) {
+              return;
+            }
+            this._seriesRows = rows as HistoryTargetRowState[];
+            this._syncSeriesState();
+            this._saveSessionState();
+            this._renderTargetRows();
+            this._syncControls();
+            this._updateUrl({ push: true });
+            this._renderContent();
+          }}
+          @dp-targets-prefs-click=${(ev: Event) => {
+            ev.stopPropagation();
+            const anchor = ev.composedPath()[0] || ev.target;
+            if (!(anchor instanceof HTMLElement)) {
+              return;
+            }
+            if (this._collapsedOptionsPopupOpen) {
+              this._hideCollapsedOptionsPopup();
+            } else {
+              this._showCollapsedOptionsPopup(anchor);
+            }
+          }}
+          @dp-targets-add-click=${(
+            ev: DetailEvent<{ buttonEl?: Nullable<HTMLElement> }>
+          ) => {
+            this._openTargetPicker(ev.detail?.buttonEl ?? undefined);
+          }}
+          @dp-targets-clear-all=${() => this._clearAllSeriesRows()}
+          @dp-collapsed-entity-click=${(
+            ev: DetailEvent<{
+              entityId?: string;
+              buttonEl?: Nullable<HTMLElement>;
+            }>
+          ) => {
+            const { entityId, buttonEl } = ev.detail || {};
+            if (!entityId) {
+              return;
+            }
+            if (this._collapsedPopupEntityId === entityId) {
+              this._hideCollapsedTargetPopup();
+            } else {
+              this._showCollapsedTargetPopup(entityId, buttonEl ?? undefined);
+            }
+          }}
+        ></history-targets>
         <div id="content"></div>
       </panel-shell>
     `;
+  }
+
+  /** Disambiguated entity → display-name map for the current series rows. */
+  _computeRowLabelMap(): Map<string, string> {
+    return disambiguateEntityNames(
+      this._hass,
+      (this._seriesRows ?? []).map((r: { entity_id: string }) => r.entity_id)
+    );
   }
 
   protected updated() {
@@ -2421,7 +2504,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
       logger.log(`[datapoints] analysis complete (${entityIds.join(", ")})`);
     }
     this._analysisProgress = progress;
-    this._pushComputingStateToRowList();
+    this._invalidateComputingState();
   }
 
   _handleAnalysisMethodResult(
@@ -2449,18 +2532,20 @@ export class HassDatapointsHistoryPanel extends LitElement {
     logger.log(
       `[datapoints] method done: ${method} for ${entityId} — remaining: [${remaining.join(", ") || "none"}]`
     );
-    this._pushComputingStateToRowList();
+    this._invalidateComputingState();
   }
 
-  _pushComputingStateToRowList() {
-    if (this._rowListEl) {
-      this._rowListEl.computingEntityIds = new Set(this._computingEntityIds);
-      this._rowListEl.analysisProgress = this._analysisProgress;
-      // Pass a fresh Map so Lit detects the reference change and re-renders.
-      this._rowListEl.computingMethodsByEntity = new Map(
-        this._computingMethods
-      );
-    }
+  /**
+   * Publishes the in-flight anomaly-computation state to the sidebar.  These
+   * collections are plain fields mutated in place, so every mutation site MUST
+   * route through here: it reassigns fresh Set/Map references (so the
+   * declarative `<history-targets>` bindings, and the row list it owns, detect
+   * the change) and requests a re-render.
+   */
+  _invalidateComputingState() {
+    this._computingEntityIds = new Set(this._computingEntityIds);
+    this._computingMethods = new Map(this._computingMethods);
+    this.requestUpdate();
   }
 
   _clearDeltaAnalysisSelectionState() {}
@@ -2778,130 +2863,19 @@ export class HassDatapointsHistoryPanel extends LitElement {
       return;
     }
 
-    const histTargets = this._mountHistoryTargetsControl();
-    this._mountTargetPickerControl(histTargets);
+    // `history-targets` is rendered declaratively in render(); grab the element
+    // and mount the imperative target picker into its `picker` slot once.
+    const histTargets = this.renderRoot.querySelector(
+      "history-targets"
+    ) as Nullable<HistoryTargetsElement>;
+    this._historyTargetsComp = histTargets;
+    if (histTargets && !this._targetControl) {
+      this._mountTargetPickerControl(histTargets);
+    }
     this._mountDateWindowDialogControl();
     this._mountMonitorWizard();
     this._mountAiQueryBriefDialogControl();
     this._syncControls();
-  }
-
-  _mountHistoryTargetsControl() {
-    const histTargets = document.createElement(
-      "history-targets"
-    ) as HistoryTargetsElement;
-    histTargets.slot = "sidebar";
-    histTargets.rows = [];
-    histTargets.states = {};
-    histTargets.hass = this._hass ?? null;
-    histTargets.comparisonWindows = this._comparisonWindows;
-    histTargets.canShowDeltaAnalysis = false;
-    histTargets.sidebarCollapsed = this._sidebarCollapsed;
-    // Bubble row events from history-targets → panel actions
-    histTargets.addEventListener(
-      "dp-row-color-change",
-      (ev: DetailEvent<{ index?: number; color?: string }>) => {
-        const { index, color } = ev.detail || {};
-        this._updateSeriesRowColor(index, color);
-      }
-    );
-    histTargets.addEventListener(
-      "dp-row-visibility-change",
-      (ev: DetailEvent<{ entityId?: string; visible?: boolean }>) => {
-        const { entityId, visible } = ev.detail || {};
-        this._updateSeriesRowVisibilityByEntityId(entityId, visible);
-      }
-    );
-    histTargets.addEventListener(
-      "dp-row-remove",
-      (ev: DetailEvent<{ index?: number }>) => {
-        const { index } = ev.detail || {};
-        this._removeSeriesRow(index);
-      }
-    );
-    histTargets.addEventListener(
-      "dp-row-toggle-analysis",
-      (ev: DetailEvent<{ entityId?: string }>) => {
-        const { entityId } = ev.detail || {};
-        this._toggleSeriesAnalysisExpanded(entityId);
-      }
-    );
-    histTargets.addEventListener(
-      "dp-row-analysis-change",
-      (
-        ev: DetailEvent<{ entityId?: string; key?: string; value?: unknown }>
-      ) => {
-        const { entityId, key, value } = ev.detail || {};
-        this._setSeriesAnalysisOption(entityId, key, value);
-      }
-    );
-    histTargets.addEventListener(
-      "dp-row-copy-analysis-to-all",
-      (ev: DetailEvent<{ entityId?: string; analysis?: unknown }>) => {
-        const { entityId, analysis } = ev.detail || {};
-        this._copyAnalysisToAll(entityId, analysis);
-      }
-    );
-    histTargets.addEventListener(
-      "dp-rows-reorder",
-      (ev: DetailEvent<{ rows?: unknown[] }>) => {
-        const { rows } = ev.detail || {};
-        if (!Array.isArray(rows)) {
-          return;
-        }
-        this._seriesRows = rows as HistoryTargetRowState[];
-        this._syncSeriesState();
-        this._saveSessionState();
-        this._renderTargetRows();
-        this._syncControls();
-        this._updateUrl({ push: true });
-        this._renderContent();
-      }
-    );
-    histTargets.addEventListener("dp-targets-prefs-click", (ev: Event) => {
-      ev.stopPropagation();
-      const anchor = ev.composedPath()[0] || ev.target;
-      if (!(anchor instanceof HTMLElement)) {
-        return;
-      }
-      if (this._collapsedOptionsPopupOpen) {
-        this._hideCollapsedOptionsPopup();
-      } else {
-        this._showCollapsedOptionsPopup(anchor);
-      }
-    });
-    histTargets.addEventListener(
-      "dp-targets-add-click",
-      (ev: DetailEvent<{ buttonEl?: Nullable<HTMLElement> }>) => {
-        const { buttonEl } = ev.detail || {};
-        this._openTargetPicker(buttonEl ?? undefined);
-      }
-    );
-    histTargets.addEventListener("dp-targets-clear-all", () => {
-      this._clearAllSeriesRows();
-    });
-    histTargets.addEventListener(
-      "dp-collapsed-entity-click",
-      (
-        ev: DetailEvent<{ entityId?: string; buttonEl?: Nullable<HTMLElement> }>
-      ) => {
-        const { entityId, buttonEl } = ev.detail || {};
-        if (!entityId) {
-          return;
-        }
-        if (this._collapsedPopupEntityId === entityId) {
-          this._hideCollapsedTargetPopup();
-        } else {
-          this._showCollapsedTargetPopup(entityId, buttonEl ?? undefined);
-        }
-      }
-    );
-    this._shellEl!.appendChild(histTargets);
-    this._historyTargetsComp = histTargets;
-
-    // target-row-list is rendered inside history-targets; keep a ref via its accessor
-    this._rowListEl = null; // will be updated lazily via histTargets.getRowListEl()
-    return histTargets;
   }
 
   _mountTargetPickerControl(histTargets: HTMLElement) {
@@ -3229,34 +3203,10 @@ export class HassDatapointsHistoryPanel extends LitElement {
   }
 
   _renderTargetRows() {
-    if (!this._historyTargetsComp) {
-      return;
-    }
-
-    // Update history-targets properties — the component re-renders reactively.
-    this._historyTargetsComp.sidebarCollapsed = this._sidebarCollapsed;
-    this._historyTargetsComp.rows = this._seriesRows;
-    this._historyTargetsComp.states = this._hass?.states ?? {};
-    this._historyTargetsComp.hass = this._hass ?? null;
-    this._historyTargetsComp.canShowDeltaAnalysis =
-      !!this._selectedComparisonWindowId;
-    this._historyTargetsComp.comparisonWindows = this._comparisonWindows;
-
-    // Keep legacy rowListEl ref in sync (used by _renderCollapsedTargetPopup etc.)
-    if (!this._rowListEl) {
-      this._rowListEl = this._historyTargetsComp.getRowListEl();
-    } else {
-      this._rowListEl.rows = this._seriesRows;
-      this._rowListEl.states = this._hass?.states ?? {};
-      this._rowListEl.hass = this._hass ?? null;
-      this._rowListEl.labelMap = disambiguateEntityNames(
-        this._hass,
-        (this._seriesRows ?? []).map((r: { entity_id: string }) => r.entity_id)
-      );
-      this._rowListEl.canShowDeltaAnalysis = !!this._selectedComparisonWindowId;
-      this._rowListEl.comparisonWindows = this._comparisonWindows;
-    }
-
+    // `history-targets` and its row list are bound declaratively in render()
+    // from `_seriesRows`, `_hass`, `_computeRowLabelMap()` and the computing
+    // state; a re-render pushes the latest values across the shadow boundary.
+    this.requestUpdate();
     this._refreshCollapsedTargetPopup();
   }
 
