@@ -75,6 +75,23 @@ const comparisonWindows: ComparisonWindow[] = [
   { id: "last-month", label: "Last month" },
 ];
 
+/**
+ * Method sub-option inline-selects EXCLUDING the per-method Direction select
+ * (#62), so trend method/window count assertions ignore the Direction control.
+ */
+function methodSelects(el: { shadowRoot: ShadowRoot }): Element[] {
+  const labels = Array.from(
+    el.shadowRoot.querySelectorAll("analysis-method-subopts label.field")
+  );
+  return labels
+    .filter(
+      (l) =>
+        !l.querySelector(".field-label")?.textContent?.includes("Direction")
+    )
+    .map((l) => l.querySelector("inline-select"))
+    .filter((s): s is Element => s !== null);
+}
+
 export const Default = {
   render: () => html`
     <analysis-anomaly-group
@@ -145,10 +162,9 @@ export const TrendDeviationDefaultTrend = {
     const el = canvasElement.querySelector(
       "analysis-anomaly-group"
     ) as HTMLElement & { shadowRoot: ShadowRoot };
-    // Subopts should render with a single method inline-select
-    const inlineSelects = el.shadowRoot.querySelectorAll(
-      "analysis-method-subopts inline-select"
-    );
+    // Subopts should render with a single method inline-select (plus the
+    // Direction select, which methodSelects() excludes).
+    const inlineSelects = methodSelects(el);
     expect(inlineSelects.length).toBe(1);
     const methodSelect = inlineSelects[0] as HTMLElement & {
       value: string;
@@ -179,10 +195,9 @@ export const TrendDeviationOverriddenWithEma = {
     const el = canvasElement.querySelector(
       "analysis-anomaly-group"
     ) as HTMLElement & { shadowRoot: ShadowRoot };
-    // Both method and window inline-selects should be visible
-    const inlineSelects = el.shadowRoot.querySelectorAll(
-      "analysis-method-subopts inline-select"
-    );
+    // Both method and window inline-selects should be visible (Direction
+    // select excluded by methodSelects()).
+    const inlineSelects = methodSelects(el);
     expect(inlineSelects.length).toBe(2);
     expect((inlineSelects[0] as HTMLElement & { value: string }).value).toBe(
       "ema"
@@ -228,9 +243,8 @@ export const TrendDeviationOverriddenWithLinear = {
       "analysis-anomaly-group"
     ) as HTMLElement & { shadowRoot: ShadowRoot };
     // Linear trend has no window — only the method inline-select should render
-    const inlineSelects = el.shadowRoot.querySelectorAll(
-      "analysis-method-subopts inline-select"
-    );
+    // (Direction select excluded by methodSelects()).
+    const inlineSelects = methodSelects(el);
     expect(inlineSelects.length).toBe(1);
   },
 };
