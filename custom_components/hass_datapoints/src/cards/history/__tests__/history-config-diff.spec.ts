@@ -81,6 +81,24 @@ describe("buildViewKey", () => {
       );
     });
   });
+
+  describe("GIVEN a per-series anomaly direction change (#62)", () => {
+    it("THEN produces different keys so the chart recomputes", () => {
+      const a = {
+        series_settings: [
+          { entity_id: "sensor.a", analysis: { anomaly_iqr_direction: "both" } },
+        ],
+      };
+      const b = {
+        series_settings: [
+          { entity_id: "sensor.a", analysis: { anomaly_iqr_direction: "up" } },
+        ],
+      };
+      expect(buildViewKey(a as Partial<CardConfig>)).not.toBe(
+        buildViewKey(b as Partial<CardConfig>)
+      );
+    });
+  });
 });
 
 describe("buildComparisonKey", () => {
