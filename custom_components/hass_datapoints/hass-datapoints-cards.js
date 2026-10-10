@@ -1193,7 +1193,7 @@
 	var DEFAULT_I18N$7 = createDefaultI18n(["Remove"]);
 	var _type_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _itemId_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$18 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$19 = /* @__PURE__ */ new WeakMap();
 	var _removable_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _i18n_accessor_storage$8 = /* @__PURE__ */ new WeakMap();
 	var EntityChip = class extends i$2 {
@@ -1201,7 +1201,7 @@
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _type_accessor_storage$2, "entity");
 			_classPrivateFieldInitSpec(this, _itemId_accessor_storage$1, "");
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$18, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$19, null);
 			_classPrivateFieldInitSpec(this, _removable_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _i18n_accessor_storage$8, DEFAULT_I18N$7);
 		}
@@ -1218,10 +1218,10 @@
 			_classPrivateFieldSet2(_itemId_accessor_storage$1, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$18, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$19, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$18, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$19, this, value);
 		}
 		get removable() {
 			return _classPrivateFieldGet2(_removable_accessor_storage$1, this);
@@ -1284,14 +1284,14 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/chip-group/chip-group.ts
 	var _items_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$17 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$18 = /* @__PURE__ */ new WeakMap();
 	var _removable_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _label_accessor_storage$14 = /* @__PURE__ */ new WeakMap();
 	var ChipGroup = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _items_accessor_storage$1, []);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$17, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$18, null);
 			_classPrivateFieldInitSpec(this, _removable_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _label_accessor_storage$14, "");
 		}
@@ -1302,10 +1302,10 @@
 			_classPrivateFieldSet2(_items_accessor_storage$1, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$17, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$18, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$17, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$18, this, value);
 		}
 		get removable() {
 			return _classPrivateFieldGet2(_removable_accessor_storage, this);
@@ -1353,7 +1353,7 @@
 	customElements.define("chip-group", ChipGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/action-targets/action-targets.ts
-	var _hass_accessor_storage$16 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$17 = /* @__PURE__ */ new WeakMap();
 	var _showConfigTargets_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _showTargetPicker_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _configChips_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -1361,17 +1361,17 @@
 	var CardActionTargets = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$16, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$17, null);
 			_classPrivateFieldInitSpec(this, _showConfigTargets_accessor_storage, true);
 			_classPrivateFieldInitSpec(this, _showTargetPicker_accessor_storage, true);
 			_classPrivateFieldInitSpec(this, _configChips_accessor_storage, []);
 			_classPrivateFieldInitSpec(this, _targetValue_accessor_storage, {});
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$16, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$17, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$16, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$17, this, value);
 		}
 		get showConfigTargets() {
 			return _classPrivateFieldGet2(_showConfigTargets_accessor_storage, this);
@@ -2222,10 +2222,10 @@
 	];
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/i18n/fi.ts
-	var fi_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$161 });
-	var translations$161;
-	var init_fi$27 = __esmMin((() => {
-		translations$161 = {
+	var fi_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$167 });
+	var translations$167;
+	var init_fi$28 = __esmMin((() => {
+		translations$167 = {
 			General: "Yleiset",
 			"Related items": "Liittyvät kohteet",
 			"Datapoint Appearance": "Datapisteen ulkoasu",
@@ -2242,20 +2242,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/i18n/fi.ts
-	var fi_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$160 });
-	var translations$160;
-	var init_fi$26 = __esmMin((() => {
-		translations$160 = {
+	var fi_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$166 });
+	var translations$166;
+	var init_fi$27 = __esmMin((() => {
+		translations$166 = {
 			"Date window:": "Aikaikkuna:",
 			"Actual:": "Todellinen:"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/i18n/fi.ts
-	var fi_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$159 });
-	var translations$159;
-	var init_fi$25 = __esmMin((() => {
-		translations$159 = {
+	var fi_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$165 });
+	var translations$165;
+	var init_fi$26 = __esmMin((() => {
+		translations$165 = {
 			General: "Yleiset",
 			Entity: "Entiteetti",
 			"Multiple entities": "Useita entiteettejä",
@@ -2269,10 +2269,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/i18n/fi.ts
-	var fi_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$158 });
-	var translations$158;
-	var init_fi$24 = __esmMin((() => {
-		translations$158 = {
+	var fi_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$164 });
+	var translations$164;
+	var init_fi$25 = __esmMin((() => {
+		translations$164 = {
 			"Search datapoints…": "Hae datapisteitä…",
 			"Delete record": "Poista tietue",
 			Delete: "Poista",
@@ -2290,10 +2290,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/i18n/fi.ts
-	var fi_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$157 });
-	var translations$157;
-	var init_fi$23 = __esmMin((() => {
-		translations$157 = {
+	var fi_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$163 });
+	var translations$163;
+	var init_fi$24 = __esmMin((() => {
+		translations$163 = {
 			General: "Yleiset",
 			"Icon & colour": "Kuvake ja väri",
 			"Related items": "Liittyvät kohteet",
@@ -2311,10 +2311,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/i18n/fi.ts
-	var fi_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$156 });
-	var translations$156;
-	var init_fi$22 = __esmMin((() => {
-		translations$156 = {
+	var fi_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$162 });
+	var translations$162;
+	var init_fi$23 = __esmMin((() => {
+		translations$162 = {
 			Entity: "Entiteetti",
 			Display: "Näyttö",
 			"Records list": "Tietueiden luettelo",
@@ -2334,10 +2334,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/i18n/fi.ts
-	var fi_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$155 });
-	var translations$155;
-	var init_fi$21 = __esmMin((() => {
-		translations$155 = {
+	var fi_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$161 });
+	var translations$161;
+	var init_fi$22 = __esmMin((() => {
+		translations$161 = {
 			"⚠️ Anomaly Insight": "⚠️ Poikkeavuushavainto",
 			"⚠️ Multi-method Anomaly": "⚠️ Monimenetelmäinen poikkeavuus",
 			"Click the highlighted circle to add an annotation.": "Klikkaa korostettua ympyrää lisätäksesi huomautuksen.",
@@ -2372,10 +2372,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/ha/i18n/fi.ts
-	var fi_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$154 });
-	var translations$154;
-	var init_fi$20 = __esmMin((() => {
-		translations$154 = {
+	var fi_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$160 });
+	var translations$160;
+	var init_fi$21 = __esmMin((() => {
+		translations$160 = {
 			"Confirm delete": "Vahvista poisto",
 			"Are you sure you want to delete this item?": "Oletko varma, että haluat poistaa tämän kohteen?",
 			Cancel: "Peruuta",
@@ -2390,10 +2390,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/history-page/i18n/fi.ts
-	var fi_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$153 });
-	var translations$153;
-	var init_fi$19 = __esmMin((() => {
-		translations$153 = {
+	var fi_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$159 });
+	var translations$159;
+	var init_fi$20 = __esmMin((() => {
+		translations$159 = {
 			"entity_id={0}": "entity_id={0}",
 			"device_id={0}": "device_id={0}",
 			"area_id={0}": "area_id={0}",
@@ -2491,20 +2491,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/timeline/i18n/fi.ts
-	var fi_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$152 });
-	var translations$152;
-	var init_fi$18 = __esmMin((() => {
-		translations$152 = {
+	var fi_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$158 });
+	var translations$158;
+	var init_fi$19 = __esmMin((() => {
+		translations$158 = {
 			Wk: "Vk",
 			"Week of": "Viikko"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/i18n/fi.ts
-	var fi_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$151 });
-	var translations$151;
-	var init_fi$17 = __esmMin((() => {
-		translations$151 = {
+	var fi_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$157 });
+	var translations$157;
+	var init_fi$18 = __esmMin((() => {
+		translations$157 = {
 			"Show anomalies": "Näytä poikkeamat",
 			Sensitivity: "Herkkyys",
 			"Use downsampled data for detection": "Käytä alasnäytteistettyä dataa havaitsemiseen",
@@ -2546,10 +2546,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-delta-group/i18n/fi.ts
-	var fi_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$150 });
-	var translations$150;
-	var init_fi$16 = __esmMin((() => {
-		translations$150 = {
+	var fi_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$156 });
+	var translations$156;
+	var init_fi$17 = __esmMin((() => {
+		translations$156 = {
 			"Show delta vs selected date window": "Näytä delta vs. valittu aikaikkuna",
 			"Select a date window tab to enable delta analysis.": "Valitse aikaikkuna-välilehti ottaaksesi delta-analyysin käyttöön.",
 			"Show delta in tooltip": "Näytä delta työkaluvihjeessä",
@@ -2558,10 +2558,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/i18n/fi.ts
-	var fi_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$149 });
-	var translations$149;
-	var init_fi$15 = __esmMin((() => {
-		translations$149 = {
+	var fi_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$155 });
+	var translations$155;
+	var init_fi$16 = __esmMin((() => {
+		translations$155 = {
 			"Show rate of change": "Näytä muutosnopeus",
 			"Show rate of change crosshairs": "Näytä muutosnopeuden tähtäin",
 			"Rate window": "Muutosikkuna",
@@ -2573,10 +2573,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-sample-group/i18n/fi.ts
-	var fi_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$148 });
-	var translations$148;
-	var init_fi$14 = __esmMin((() => {
-		translations$148 = {
+	var fi_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$154 });
+	var translations$154;
+	var init_fi$15 = __esmMin((() => {
+		translations$154 = {
 			Downsampling: "Alasnäytteistys",
 			Interval: "Väli",
 			Aggregate: "Kooste",
@@ -2608,20 +2608,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/i18n/fi.ts
-	var fi_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$147 });
-	var translations$147;
-	var init_fi$13 = __esmMin((() => {
-		translations$147 = {
+	var fi_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$153 });
+	var translations$153;
+	var init_fi$14 = __esmMin((() => {
+		translations$153 = {
 			"Show min / max / mean": "Näytä min / max / keskiarvo",
 			"Show range shading": "Näytä aluevarjostus"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/i18n/fi.ts
-	var fi_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$146 });
-	var translations$146;
-	var init_fi$12 = __esmMin((() => {
-		translations$146 = {
+	var fi_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$152 });
+	var translations$152;
+	var init_fi$13 = __esmMin((() => {
+		translations$152 = {
 			"Show threshold analysis": "Näytä kynnysanalyysi",
 			"Shade threshold area": "Varjosta kynnysalue",
 			Threshold: "Kynnys",
@@ -2632,10 +2632,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/i18n/fi.ts
-	var fi_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$145 });
-	var translations$145;
-	var init_fi$11 = __esmMin((() => {
-		translations$145 = {
+	var fi_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$151 });
+	var translations$151;
+	var init_fi$12 = __esmMin((() => {
+		translations$151 = {
 			"Show trend lines": "Näytä trendiviivat",
 			"Show trend crosshairs": "Näytä trenditähtäin",
 			"Trend method": "Trendimenetelmä",
@@ -2653,10 +2653,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/i18n/fi.ts
-	var fi_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$144 });
-	var translations$144;
-	var init_fi$10 = __esmMin((() => {
-		translations$144 = {
+	var fi_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$150 });
+	var translations$150;
+	var init_fi$11 = __esmMin((() => {
+		translations$150 = {
 			"Add all series from chart": "Lisää kaikki sarjat kaaviosta",
 			"Add from current chart": "Lisää nykyisestä kaaviosta",
 			"Create anomaly monitor": "Luo poikkeamamonitori",
@@ -2666,17 +2666,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab-rail/i18n/fi.ts
-	var fi_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$143 });
-	var translations$143;
-	var init_fi$9 = __esmMin((() => {
-		translations$143 = { "Add date window": "Lisää aikaikkuna" };
+	var fi_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$149 });
+	var translations$149;
+	var init_fi$10 = __esmMin((() => {
+		translations$149 = { "Add date window": "Lisää aikaikkuna" };
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/i18n/fi.ts
-	var fi_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$142 });
-	var translations$142;
-	var init_fi$8 = __esmMin((() => {
-		translations$142 = {
+	var fi_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$148 });
+	var translations$148;
+	var init_fi$9 = __esmMin((() => {
+		translations$148 = {
 			"A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later.": "Aikaikkuna tallentaa nimetyn päivävälin välilehteksi, jotta voit nopeasti esikatsella sitä suhteessa valittuun alueeseen tai palata kaavion kyseiseen ajanjaksoon.",
 			Name: "Nimi",
 			"e.g. Heating season start": "esim. Lämmityskausi alkaa",
@@ -2691,10 +2691,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/i18n/fi.ts
-	var fi_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$141 });
-	var translations$141;
-	var init_fi$7 = __esmMin((() => {
-		translations$141 = {
+	var fi_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$147 });
+	var translations$147;
+	var init_fi$8 = __esmMin((() => {
+		translations$147 = {
 			Datapoints: "Datapisteet",
 			"Choose which annotation datapoints appear on the chart.": "Valitse, mitkä huomautusten datapisteet näkyvät kaaviossa.",
 			"Linked to selected targets": "Linkitetty valittuihin kohteisiin",
@@ -2704,10 +2704,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/i18n/fi.ts
-	var fi_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$140 });
-	var translations$140;
-	var init_fi$6 = __esmMin((() => {
-		translations$140 = {
+	var fi_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$146 });
+	var translations$146;
+	var init_fi$7 = __esmMin((() => {
+		translations$146 = {
 			"Analysis configured": "Analyysi määritetty",
 			"Configure analysis": "Määritä analyysi",
 			"Stepped series": "Porrastettu sarja",
@@ -2719,17 +2719,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/i18n/fi.ts
-	var fi_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$139 });
-	var translations$139;
-	var init_fi$5 = __esmMin((() => {
-		translations$139 = {};
+	var fi_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$145 });
+	var translations$145;
+	var init_fi$6 = __esmMin((() => {
+		translations$145 = {};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/ai-query-brief-dialog/i18n/fi.ts
-	var fi_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$138 });
-	var translations$138;
-	var init_fi$4 = __esmMin((() => {
-		translations$138 = {
+	var fi_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$144 });
+	var translations$144;
+	var init_fi$5 = __esmMin((() => {
+		translations$144 = {
 			"AI query brief": "AI-kyselytiivistelma",
 			"This brief is intended for another AI to fetch raw Home Assistant history and hass_datapoints anomaly details. Review it, then copy it into your AI tool of choice.": "Tama tiivistelma on tarkoitettu toiselle AI:lle Home Assistantin raakadat historian ja hass_datapointsin poikkeamien lisatietojen hakemista varten. Tarkista se ja kopioi sitten haluamaasi AI-tyokaluun.",
 			"Copy-ready brief": "Kopiointivalmis tiivistelma",
@@ -2741,10 +2741,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/history-targets/i18n/fi.ts
-	var fi_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$137 });
-	var translations$137;
-	var init_fi$3 = __esmMin((() => {
-		translations$137 = {
+	var fi_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$143 });
+	var translations$143;
+	var init_fi$4 = __esmMin((() => {
+		translations$143 = {
 			Targets: "Kohteet",
 			"Each row controls one chart series.": "Jokainen rivi ohjaa yhtä kaaviosarjaa.",
 			"Add target": "Lisää kohde",
@@ -2753,10 +2753,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/panel-shell/i18n/fi.ts
-	var fi_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$136 });
-	var translations$136;
-	var init_fi$2 = __esmMin((() => {
-		translations$136 = {
+	var fi_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$142 });
+	var translations$142;
+	var init_fi$3 = __esmMin((() => {
+		translations$142 = {
 			"Loading Datapoints…": "Ladataan Datapoints…",
 			Datapoints: "Datapoints",
 			"Page options": "Sivun asetukset",
@@ -2771,10 +2771,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/range-toolbar/i18n/fi.ts
-	var fi_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$135 });
-	var translations$135;
-	var init_fi$1 = __esmMin((() => {
-		translations$135 = {
+	var fi_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$141 });
+	var translations$141;
+	var init_fi$2 = __esmMin((() => {
+		translations$141 = {
 			"Toggle sidebar": "Vaihda sivupalkki",
 			Start: "Alku",
 			End: "Loppu",
@@ -2798,10 +2798,18 @@
 		};
 	}));
 	//#endregion
+	//#region custom_components/hass_datapoints/src/panels/datapoints/i18n/fi.ts
+	var fi_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$140 });
+	var translations$140;
+	var init_fi$1 = __esmMin((() => {
+		translations$140 = { "Selected range": "Valittu aikaväli" };
+	}));
+	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/i18n/locales/fi.ts
 	var fi_exports = /* @__PURE__ */ __exportAll({ templates: () => templates$5 });
 	var modules$5, merged$5, templates$5;
 	var init_fi = __esmMin((() => {
+		init_fi$28();
 		init_fi$27();
 		init_fi$26();
 		init_fi$25();
@@ -2830,33 +2838,34 @@
 		init_fi$2();
 		init_fi$1();
 		modules$5 = /* #__PURE__ */ Object.assign({
-			"../../../cards/action/i18n/fi.ts": fi_exports$27,
-			"../../../cards/history/history-chart/i18n/fi.ts": fi_exports$26,
-			"../../../cards/history/i18n/fi.ts": fi_exports$25,
-			"../../../cards/list/i18n/fi.ts": fi_exports$24,
-			"../../../cards/quick/i18n/fi.ts": fi_exports$23,
-			"../../../cards/sensor/i18n/fi.ts": fi_exports$22,
-			"../../chart/i18n/fi.ts": fi_exports$21,
-			"../../ha/i18n/fi.ts": fi_exports$20,
-			"../../history-page/i18n/fi.ts": fi_exports$19,
-			"../../timeline/i18n/fi.ts": fi_exports$18,
-			"../../../molecules/analysis-anomaly-group/i18n/fi.ts": fi_exports$17,
-			"../../../molecules/analysis-delta-group/i18n/fi.ts": fi_exports$16,
-			"../../../molecules/analysis-rate-group/i18n/fi.ts": fi_exports$15,
-			"../../../molecules/analysis-sample-group/i18n/fi.ts": fi_exports$14,
-			"../../../molecules/analysis-summary-group/i18n/fi.ts": fi_exports$13,
-			"../../../molecules/analysis-threshold-group/i18n/fi.ts": fi_exports$12,
-			"../../../molecules/analysis-trend-group/i18n/fi.ts": fi_exports$11,
-			"../../../molecules/anomaly-monitor-wizard/i18n/fi.ts": fi_exports$10,
-			"../../../molecules/comparison-tab-rail/i18n/fi.ts": fi_exports$9,
-			"../../../molecules/date-window-dialog/i18n/fi.ts": fi_exports$8,
-			"../../../molecules/sidebar-options/sections/i18n/fi.ts": fi_exports$7,
-			"../../../molecules/target-row/i18n/fi.ts": fi_exports$6,
-			"../../../molecules/target-row-list/i18n/fi.ts": fi_exports$5,
-			"../../../panels/datapoints/components/ai-query-brief-dialog/i18n/fi.ts": fi_exports$4,
-			"../../../panels/datapoints/components/history-targets/i18n/fi.ts": fi_exports$3,
-			"../../../panels/datapoints/components/panel-shell/i18n/fi.ts": fi_exports$2,
-			"../../../panels/datapoints/components/range-toolbar/i18n/fi.ts": fi_exports$1
+			"../../../cards/action/i18n/fi.ts": fi_exports$28,
+			"../../../cards/history/history-chart/i18n/fi.ts": fi_exports$27,
+			"../../../cards/history/i18n/fi.ts": fi_exports$26,
+			"../../../cards/list/i18n/fi.ts": fi_exports$25,
+			"../../../cards/quick/i18n/fi.ts": fi_exports$24,
+			"../../../cards/sensor/i18n/fi.ts": fi_exports$23,
+			"../../chart/i18n/fi.ts": fi_exports$22,
+			"../../ha/i18n/fi.ts": fi_exports$21,
+			"../../history-page/i18n/fi.ts": fi_exports$20,
+			"../../timeline/i18n/fi.ts": fi_exports$19,
+			"../../../molecules/analysis-anomaly-group/i18n/fi.ts": fi_exports$18,
+			"../../../molecules/analysis-delta-group/i18n/fi.ts": fi_exports$17,
+			"../../../molecules/analysis-rate-group/i18n/fi.ts": fi_exports$16,
+			"../../../molecules/analysis-sample-group/i18n/fi.ts": fi_exports$15,
+			"../../../molecules/analysis-summary-group/i18n/fi.ts": fi_exports$14,
+			"../../../molecules/analysis-threshold-group/i18n/fi.ts": fi_exports$13,
+			"../../../molecules/analysis-trend-group/i18n/fi.ts": fi_exports$12,
+			"../../../molecules/anomaly-monitor-wizard/i18n/fi.ts": fi_exports$11,
+			"../../../molecules/comparison-tab-rail/i18n/fi.ts": fi_exports$10,
+			"../../../molecules/date-window-dialog/i18n/fi.ts": fi_exports$9,
+			"../../../molecules/sidebar-options/sections/i18n/fi.ts": fi_exports$8,
+			"../../../molecules/target-row/i18n/fi.ts": fi_exports$7,
+			"../../../molecules/target-row-list/i18n/fi.ts": fi_exports$6,
+			"../../../panels/datapoints/components/ai-query-brief-dialog/i18n/fi.ts": fi_exports$5,
+			"../../../panels/datapoints/components/history-targets/i18n/fi.ts": fi_exports$4,
+			"../../../panels/datapoints/components/panel-shell/i18n/fi.ts": fi_exports$3,
+			"../../../panels/datapoints/components/range-toolbar/i18n/fi.ts": fi_exports$2,
+			"../../../panels/datapoints/i18n/fi.ts": fi_exports$1
 		});
 		merged$5 = {};
 		for (const mod of Object.values(modules$5)) Object.assign(merged$5, mod.translations);
@@ -2864,10 +2873,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/i18n/fr.ts
-	var fr_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$134 });
-	var translations$134;
-	var init_fr$27 = __esmMin((() => {
-		translations$134 = {
+	var fr_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$139 });
+	var translations$139;
+	var init_fr$28 = __esmMin((() => {
+		translations$139 = {
 			General: "Général",
 			"Related items": "Éléments liés",
 			"Datapoint Appearance": "Apparence du point de données",
@@ -2884,20 +2893,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/i18n/fr.ts
-	var fr_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$133 });
-	var translations$133;
-	var init_fr$26 = __esmMin((() => {
-		translations$133 = {
+	var fr_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$138 });
+	var translations$138;
+	var init_fr$27 = __esmMin((() => {
+		translations$138 = {
 			"Date window:": "Fenêtre de dates :",
 			"Actual:": "Réel :"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/i18n/fr.ts
-	var fr_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$132 });
-	var translations$132;
-	var init_fr$25 = __esmMin((() => {
-		translations$132 = {
+	var fr_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$137 });
+	var translations$137;
+	var init_fr$26 = __esmMin((() => {
+		translations$137 = {
 			General: "Général",
 			Entity: "Entité",
 			"Multiple entities": "Plusieurs entités",
@@ -2911,10 +2920,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/i18n/fr.ts
-	var fr_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$131 });
-	var translations$131;
-	var init_fr$24 = __esmMin((() => {
-		translations$131 = {
+	var fr_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$136 });
+	var translations$136;
+	var init_fr$25 = __esmMin((() => {
+		translations$136 = {
 			"Search datapoints…": "Rechercher des points de données…",
 			"Delete record": "Supprimer l’enregistrement",
 			Delete: "Supprimer",
@@ -2932,10 +2941,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/i18n/fr.ts
-	var fr_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$130 });
-	var translations$130;
-	var init_fr$23 = __esmMin((() => {
-		translations$130 = {
+	var fr_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$135 });
+	var translations$135;
+	var init_fr$24 = __esmMin((() => {
+		translations$135 = {
 			General: "Général",
 			"Icon & colour": "Icône et couleur",
 			"Related items": "Éléments liés",
@@ -2953,10 +2962,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/i18n/fr.ts
-	var fr_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$129 });
-	var translations$129;
-	var init_fr$22 = __esmMin((() => {
-		translations$129 = {
+	var fr_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$134 });
+	var translations$134;
+	var init_fr$23 = __esmMin((() => {
+		translations$134 = {
 			Entity: "Entité",
 			Display: "Affichage",
 			"Records list": "Liste des enregistrements",
@@ -2976,10 +2985,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/i18n/fr.ts
-	var fr_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$128 });
-	var translations$128;
-	var init_fr$21 = __esmMin((() => {
-		translations$128 = {
+	var fr_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$133 });
+	var translations$133;
+	var init_fr$22 = __esmMin((() => {
+		translations$133 = {
 			"⚠️ Anomaly Insight": "⚠️ Analyse d’anomalie",
 			"⚠️ Multi-method Anomaly": "⚠️ Anomalie multi-méthodes",
 			"Click the highlighted circle to add an annotation.": "Cliquez sur le cercle en surbrillance pour ajouter une annotation.",
@@ -3014,10 +3023,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/ha/i18n/fr.ts
-	var fr_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$127 });
-	var translations$127;
-	var init_fr$20 = __esmMin((() => {
-		translations$127 = {
+	var fr_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$132 });
+	var translations$132;
+	var init_fr$21 = __esmMin((() => {
+		translations$132 = {
 			"Confirm delete": "Confirmer la suppression",
 			"Are you sure you want to delete this item?": "Voulez-vous vraiment supprimer cet élément ?",
 			Cancel: "Annuler",
@@ -3032,10 +3041,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/history-page/i18n/fr.ts
-	var fr_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$126 });
-	var translations$126;
-	var init_fr$19 = __esmMin((() => {
-		translations$126 = {
+	var fr_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$131 });
+	var translations$131;
+	var init_fr$20 = __esmMin((() => {
+		translations$131 = {
 			"entity_id={0}": "entity_id={0}",
 			"device_id={0}": "device_id={0}",
 			"area_id={0}": "area_id={0}",
@@ -3133,20 +3142,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/timeline/i18n/fr.ts
-	var fr_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$125 });
-	var translations$125;
-	var init_fr$18 = __esmMin((() => {
-		translations$125 = {
+	var fr_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$130 });
+	var translations$130;
+	var init_fr$19 = __esmMin((() => {
+		translations$130 = {
 			Wk: "Sem.",
 			"Week of": "Semaine du"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/i18n/fr.ts
-	var fr_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$124 });
-	var translations$124;
-	var init_fr$17 = __esmMin((() => {
-		translations$124 = {
+	var fr_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$129 });
+	var translations$129;
+	var init_fr$18 = __esmMin((() => {
+		translations$129 = {
 			"Show anomalies": "Afficher les anomalies",
 			Sensitivity: "Sensibilité",
 			"Use downsampled data for detection": "Utiliser les données rééchantillonnées pour la détection",
@@ -3188,10 +3197,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-delta-group/i18n/fr.ts
-	var fr_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$123 });
-	var translations$123;
-	var init_fr$16 = __esmMin((() => {
-		translations$123 = {
+	var fr_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$128 });
+	var translations$128;
+	var init_fr$17 = __esmMin((() => {
+		translations$128 = {
 			"Show delta vs selected date window": "Afficher le delta par rapport à la fenêtre de dates sélectionnée",
 			"Select a date window tab to enable delta analysis.": "Sélectionnez un onglet de fenêtre de dates pour activer l’analyse delta.",
 			"Show delta in tooltip": "Afficher le delta dans l’infobulle",
@@ -3200,10 +3209,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/i18n/fr.ts
-	var fr_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$122 });
-	var translations$122;
-	var init_fr$15 = __esmMin((() => {
-		translations$122 = {
+	var fr_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$127 });
+	var translations$127;
+	var init_fr$16 = __esmMin((() => {
+		translations$127 = {
 			"Show rate of change": "Afficher le taux de variation",
 			"Show rate of change crosshairs": "Afficher les repères du taux de variation",
 			"Rate window": "Fenêtre de variation",
@@ -3215,10 +3224,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-sample-group/i18n/fr.ts
-	var fr_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$121 });
-	var translations$121;
-	var init_fr$14 = __esmMin((() => {
-		translations$121 = {
+	var fr_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$126 });
+	var translations$126;
+	var init_fr$15 = __esmMin((() => {
+		translations$126 = {
 			Downsampling: "Rééchantillonnage",
 			Interval: "Intervalle",
 			Aggregate: "Agrégat",
@@ -3250,20 +3259,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/i18n/fr.ts
-	var fr_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$120 });
-	var translations$120;
-	var init_fr$13 = __esmMin((() => {
-		translations$120 = {
+	var fr_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$125 });
+	var translations$125;
+	var init_fr$14 = __esmMin((() => {
+		translations$125 = {
 			"Show min / max / mean": "Afficher min / max / moyenne",
 			"Show range shading": "Afficher l’ombrage de la plage"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/i18n/fr.ts
-	var fr_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$119 });
-	var translations$119;
-	var init_fr$12 = __esmMin((() => {
-		translations$119 = {
+	var fr_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$124 });
+	var translations$124;
+	var init_fr$13 = __esmMin((() => {
+		translations$124 = {
 			"Show threshold analysis": "Afficher l’analyse de seuil",
 			"Shade threshold area": "Ombrer la zone du seuil",
 			Threshold: "Seuil",
@@ -3274,10 +3283,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/i18n/fr.ts
-	var fr_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$118 });
-	var translations$118;
-	var init_fr$11 = __esmMin((() => {
-		translations$118 = {
+	var fr_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$123 });
+	var translations$123;
+	var init_fr$12 = __esmMin((() => {
+		translations$123 = {
 			"Show trend lines": "Afficher les lignes de tendance",
 			"Show trend crosshairs": "Afficher les repères de tendance",
 			"Trend method": "Méthode de tendance",
@@ -3295,10 +3304,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/i18n/fr.ts
-	var fr_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$117 });
-	var translations$117;
-	var init_fr$10 = __esmMin((() => {
-		translations$117 = {
+	var fr_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$122 });
+	var translations$122;
+	var init_fr$11 = __esmMin((() => {
+		translations$122 = {
 			"Add all series from chart": "Ajouter toutes les séries du graphique",
 			"Add from current chart": "Ajouter depuis le graphique actuel",
 			"Create anomaly monitor": "Créer un moniteur d'anomalies",
@@ -3308,17 +3317,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab-rail/i18n/fr.ts
-	var fr_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$116 });
-	var translations$116;
-	var init_fr$9 = __esmMin((() => {
-		translations$116 = { "Add date window": "Ajouter une fenêtre de dates" };
+	var fr_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$121 });
+	var translations$121;
+	var init_fr$10 = __esmMin((() => {
+		translations$121 = { "Add date window": "Ajouter une fenêtre de dates" };
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/i18n/fr.ts
-	var fr_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$115 });
-	var translations$115;
-	var init_fr$8 = __esmMin((() => {
-		translations$115 = {
+	var fr_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$120 });
+	var translations$120;
+	var init_fr$9 = __esmMin((() => {
+		translations$120 = {
 			"A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later.": "Une fenêtre de dates enregistre une plage de dates nommée comme onglet afin que vous puissiez la prévisualiser rapidement par rapport à la plage sélectionnée ou y revenir plus tard dans le graphique.",
 			Name: "Nom",
 			"e.g. Heating season start": "ex. Début de la saison de chauffe",
@@ -3333,10 +3342,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/i18n/fr.ts
-	var fr_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$114 });
-	var translations$114;
-	var init_fr$7 = __esmMin((() => {
-		translations$114 = {
+	var fr_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$119 });
+	var translations$119;
+	var init_fr$8 = __esmMin((() => {
+		translations$119 = {
 			Datapoints: "Points de données",
 			"Choose which annotation datapoints appear on the chart.": "Choisissez quels points de données d’annotation apparaissent sur le graphique.",
 			"Linked to selected targets": "Liés aux cibles sélectionnées",
@@ -3346,10 +3355,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/i18n/fr.ts
-	var fr_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$113 });
-	var translations$113;
-	var init_fr$6 = __esmMin((() => {
-		translations$113 = {
+	var fr_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$118 });
+	var translations$118;
+	var init_fr$7 = __esmMin((() => {
+		translations$118 = {
 			"Analysis configured": "Analyse configurée",
 			"Configure analysis": "Configurer l’analyse",
 			"Stepped series": "Série en escalier",
@@ -3361,17 +3370,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/i18n/fr.ts
-	var fr_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$112 });
-	var translations$112;
-	var init_fr$5 = __esmMin((() => {
-		translations$112 = {};
+	var fr_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$117 });
+	var translations$117;
+	var init_fr$6 = __esmMin((() => {
+		translations$117 = {};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/ai-query-brief-dialog/i18n/fr.ts
-	var fr_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$111 });
-	var translations$111;
-	var init_fr$4 = __esmMin((() => {
-		translations$111 = {
+	var fr_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$116 });
+	var translations$116;
+	var init_fr$5 = __esmMin((() => {
+		translations$116 = {
 			"AI query brief": "Brief de requete IA",
 			"This brief is intended for another AI to fetch raw Home Assistant history and hass_datapoints anomaly details. Review it, then copy it into your AI tool of choice.": "Ce brief est destine a une autre IA afin de recuperer l'historique brut de Home Assistant et les details d'anomalie de hass_datapoints. Relisez-le, puis copiez-le dans l'outil IA de votre choix.",
 			"Copy-ready brief": "Brief pret a copier",
@@ -3383,10 +3392,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/history-targets/i18n/fr.ts
-	var fr_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$110 });
-	var translations$110;
-	var init_fr$3 = __esmMin((() => {
-		translations$110 = {
+	var fr_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$115 });
+	var translations$115;
+	var init_fr$4 = __esmMin((() => {
+		translations$115 = {
 			Targets: "Cibles",
 			"Each row controls one chart series.": "Chaque ligne contrôle une série du graphique.",
 			"Add target": "Ajouter une cible",
@@ -3395,10 +3404,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/panel-shell/i18n/fr.ts
-	var fr_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$109 });
-	var translations$109;
-	var init_fr$2 = __esmMin((() => {
-		translations$109 = {
+	var fr_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$114 });
+	var translations$114;
+	var init_fr$3 = __esmMin((() => {
+		translations$114 = {
 			"Loading Datapoints…": "Chargement des points de données…",
 			Datapoints: "Points de données",
 			"Page options": "Options de la page",
@@ -3413,10 +3422,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/range-toolbar/i18n/fr.ts
-	var fr_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$108 });
-	var translations$108;
-	var init_fr$1 = __esmMin((() => {
-		translations$108 = {
+	var fr_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$113 });
+	var translations$113;
+	var init_fr$2 = __esmMin((() => {
+		translations$113 = {
 			"Toggle sidebar": "Basculer la barre latérale",
 			Start: "Début",
 			End: "Fin",
@@ -3440,10 +3449,18 @@
 		};
 	}));
 	//#endregion
+	//#region custom_components/hass_datapoints/src/panels/datapoints/i18n/fr.ts
+	var fr_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$112 });
+	var translations$112;
+	var init_fr$1 = __esmMin((() => {
+		translations$112 = { "Selected range": "Période sélectionnée" };
+	}));
+	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/i18n/locales/fr.ts
 	var fr_exports = /* @__PURE__ */ __exportAll({ templates: () => templates$4 });
 	var modules$4, merged$4, templates$4;
 	var init_fr = __esmMin((() => {
+		init_fr$28();
 		init_fr$27();
 		init_fr$26();
 		init_fr$25();
@@ -3472,33 +3489,34 @@
 		init_fr$2();
 		init_fr$1();
 		modules$4 = /* #__PURE__ */ Object.assign({
-			"../../../cards/action/i18n/fr.ts": fr_exports$27,
-			"../../../cards/history/history-chart/i18n/fr.ts": fr_exports$26,
-			"../../../cards/history/i18n/fr.ts": fr_exports$25,
-			"../../../cards/list/i18n/fr.ts": fr_exports$24,
-			"../../../cards/quick/i18n/fr.ts": fr_exports$23,
-			"../../../cards/sensor/i18n/fr.ts": fr_exports$22,
-			"../../chart/i18n/fr.ts": fr_exports$21,
-			"../../ha/i18n/fr.ts": fr_exports$20,
-			"../../history-page/i18n/fr.ts": fr_exports$19,
-			"../../timeline/i18n/fr.ts": fr_exports$18,
-			"../../../molecules/analysis-anomaly-group/i18n/fr.ts": fr_exports$17,
-			"../../../molecules/analysis-delta-group/i18n/fr.ts": fr_exports$16,
-			"../../../molecules/analysis-rate-group/i18n/fr.ts": fr_exports$15,
-			"../../../molecules/analysis-sample-group/i18n/fr.ts": fr_exports$14,
-			"../../../molecules/analysis-summary-group/i18n/fr.ts": fr_exports$13,
-			"../../../molecules/analysis-threshold-group/i18n/fr.ts": fr_exports$12,
-			"../../../molecules/analysis-trend-group/i18n/fr.ts": fr_exports$11,
-			"../../../molecules/anomaly-monitor-wizard/i18n/fr.ts": fr_exports$10,
-			"../../../molecules/comparison-tab-rail/i18n/fr.ts": fr_exports$9,
-			"../../../molecules/date-window-dialog/i18n/fr.ts": fr_exports$8,
-			"../../../molecules/sidebar-options/sections/i18n/fr.ts": fr_exports$7,
-			"../../../molecules/target-row/i18n/fr.ts": fr_exports$6,
-			"../../../molecules/target-row-list/i18n/fr.ts": fr_exports$5,
-			"../../../panels/datapoints/components/ai-query-brief-dialog/i18n/fr.ts": fr_exports$4,
-			"../../../panels/datapoints/components/history-targets/i18n/fr.ts": fr_exports$3,
-			"../../../panels/datapoints/components/panel-shell/i18n/fr.ts": fr_exports$2,
-			"../../../panels/datapoints/components/range-toolbar/i18n/fr.ts": fr_exports$1
+			"../../../cards/action/i18n/fr.ts": fr_exports$28,
+			"../../../cards/history/history-chart/i18n/fr.ts": fr_exports$27,
+			"../../../cards/history/i18n/fr.ts": fr_exports$26,
+			"../../../cards/list/i18n/fr.ts": fr_exports$25,
+			"../../../cards/quick/i18n/fr.ts": fr_exports$24,
+			"../../../cards/sensor/i18n/fr.ts": fr_exports$23,
+			"../../chart/i18n/fr.ts": fr_exports$22,
+			"../../ha/i18n/fr.ts": fr_exports$21,
+			"../../history-page/i18n/fr.ts": fr_exports$20,
+			"../../timeline/i18n/fr.ts": fr_exports$19,
+			"../../../molecules/analysis-anomaly-group/i18n/fr.ts": fr_exports$18,
+			"../../../molecules/analysis-delta-group/i18n/fr.ts": fr_exports$17,
+			"../../../molecules/analysis-rate-group/i18n/fr.ts": fr_exports$16,
+			"../../../molecules/analysis-sample-group/i18n/fr.ts": fr_exports$15,
+			"../../../molecules/analysis-summary-group/i18n/fr.ts": fr_exports$14,
+			"../../../molecules/analysis-threshold-group/i18n/fr.ts": fr_exports$13,
+			"../../../molecules/analysis-trend-group/i18n/fr.ts": fr_exports$12,
+			"../../../molecules/anomaly-monitor-wizard/i18n/fr.ts": fr_exports$11,
+			"../../../molecules/comparison-tab-rail/i18n/fr.ts": fr_exports$10,
+			"../../../molecules/date-window-dialog/i18n/fr.ts": fr_exports$9,
+			"../../../molecules/sidebar-options/sections/i18n/fr.ts": fr_exports$8,
+			"../../../molecules/target-row/i18n/fr.ts": fr_exports$7,
+			"../../../molecules/target-row-list/i18n/fr.ts": fr_exports$6,
+			"../../../panels/datapoints/components/ai-query-brief-dialog/i18n/fr.ts": fr_exports$5,
+			"../../../panels/datapoints/components/history-targets/i18n/fr.ts": fr_exports$4,
+			"../../../panels/datapoints/components/panel-shell/i18n/fr.ts": fr_exports$3,
+			"../../../panels/datapoints/components/range-toolbar/i18n/fr.ts": fr_exports$2,
+			"../../../panels/datapoints/i18n/fr.ts": fr_exports$1
 		});
 		merged$4 = {};
 		for (const mod of Object.values(modules$4)) Object.assign(merged$4, mod.translations);
@@ -3506,10 +3524,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/i18n/de.ts
-	var de_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$107 });
-	var translations$107;
-	var init_de$27 = __esmMin((() => {
-		translations$107 = {
+	var de_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$111 });
+	var translations$111;
+	var init_de$28 = __esmMin((() => {
+		translations$111 = {
 			General: "Allgemein",
 			"Related items": "Verknüpfte Elemente",
 			"Datapoint Appearance": "Darstellung des Datenpunkts",
@@ -3526,20 +3544,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/i18n/de.ts
-	var de_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$106 });
-	var translations$106;
-	var init_de$26 = __esmMin((() => {
-		translations$106 = {
+	var de_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$110 });
+	var translations$110;
+	var init_de$27 = __esmMin((() => {
+		translations$110 = {
 			"Date window:": "Datumsfenster:",
 			"Actual:": "Tatsächlich:"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/i18n/de.ts
-	var de_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$105 });
-	var translations$105;
-	var init_de$25 = __esmMin((() => {
-		translations$105 = {
+	var de_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$109 });
+	var translations$109;
+	var init_de$26 = __esmMin((() => {
+		translations$109 = {
 			General: "Allgemein",
 			Entity: "Entität",
 			"Multiple entities": "Mehrere Entitäten",
@@ -3553,10 +3571,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/i18n/de.ts
-	var de_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$104 });
-	var translations$104;
-	var init_de$24 = __esmMin((() => {
-		translations$104 = {
+	var de_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$108 });
+	var translations$108;
+	var init_de$25 = __esmMin((() => {
+		translations$108 = {
 			"Search datapoints…": "Datenpunkte suchen…",
 			"Delete record": "Eintrag löschen",
 			Delete: "Löschen",
@@ -3574,10 +3592,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/i18n/de.ts
-	var de_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$103 });
-	var translations$103;
-	var init_de$23 = __esmMin((() => {
-		translations$103 = {
+	var de_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$107 });
+	var translations$107;
+	var init_de$24 = __esmMin((() => {
+		translations$107 = {
 			General: "Allgemein",
 			"Icon & colour": "Symbol und Farbe",
 			"Related items": "Verknüpfte Elemente",
@@ -3595,10 +3613,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/i18n/de.ts
-	var de_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$102 });
-	var translations$102;
-	var init_de$22 = __esmMin((() => {
-		translations$102 = {
+	var de_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$106 });
+	var translations$106;
+	var init_de$23 = __esmMin((() => {
+		translations$106 = {
 			Entity: "Entität",
 			Display: "Anzeige",
 			"Records list": "Eintragsliste",
@@ -3618,10 +3636,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/i18n/de.ts
-	var de_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$101 });
-	var translations$101;
-	var init_de$21 = __esmMin((() => {
-		translations$101 = {
+	var de_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$105 });
+	var translations$105;
+	var init_de$22 = __esmMin((() => {
+		translations$105 = {
 			"⚠️ Anomaly Insight": "⚠️ Anomalie-Einblick",
 			"⚠️ Multi-method Anomaly": "⚠️ Anomalie mit mehreren Methoden",
 			"Click the highlighted circle to add an annotation.": "Klicken Sie auf den hervorgehobenen Kreis, um eine Anmerkung hinzuzufügen.",
@@ -3656,10 +3674,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/ha/i18n/de.ts
-	var de_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$100 });
-	var translations$100;
-	var init_de$20 = __esmMin((() => {
-		translations$100 = {
+	var de_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$104 });
+	var translations$104;
+	var init_de$21 = __esmMin((() => {
+		translations$104 = {
 			"Confirm delete": "Löschen bestätigen",
 			"Are you sure you want to delete this item?": "Möchten Sie dieses Element wirklich löschen?",
 			Cancel: "Abbrechen",
@@ -3674,10 +3692,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/history-page/i18n/de.ts
-	var de_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$99 });
-	var translations$99;
-	var init_de$19 = __esmMin((() => {
-		translations$99 = {
+	var de_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$103 });
+	var translations$103;
+	var init_de$20 = __esmMin((() => {
+		translations$103 = {
 			"entity_id={0}": "entity_id={0}",
 			"device_id={0}": "device_id={0}",
 			"area_id={0}": "area_id={0}",
@@ -3775,20 +3793,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/timeline/i18n/de.ts
-	var de_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$98 });
-	var translations$98;
-	var init_de$18 = __esmMin((() => {
-		translations$98 = {
+	var de_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$102 });
+	var translations$102;
+	var init_de$19 = __esmMin((() => {
+		translations$102 = {
 			Wk: "KW",
 			"Week of": "Woche von"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/i18n/de.ts
-	var de_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$97 });
-	var translations$97;
-	var init_de$17 = __esmMin((() => {
-		translations$97 = {
+	var de_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$101 });
+	var translations$101;
+	var init_de$18 = __esmMin((() => {
+		translations$101 = {
 			"Show anomalies": "Anomalien anzeigen",
 			Sensitivity: "Empfindlichkeit",
 			"Use downsampled data for detection": "Heruntergesampelte Daten für die Erkennung verwenden",
@@ -3830,10 +3848,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-delta-group/i18n/de.ts
-	var de_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$96 });
-	var translations$96;
-	var init_de$16 = __esmMin((() => {
-		translations$96 = {
+	var de_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$100 });
+	var translations$100;
+	var init_de$17 = __esmMin((() => {
+		translations$100 = {
 			"Show delta vs selected date window": "Delta gegenüber dem ausgewählten Datumsfenster anzeigen",
 			"Select a date window tab to enable delta analysis.": "Wählen Sie einen Tab für ein Datumsfenster, um die Delta-Analyse zu aktivieren.",
 			"Show delta in tooltip": "Delta im Tooltip anzeigen",
@@ -3842,10 +3860,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/i18n/de.ts
-	var de_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$95 });
-	var translations$95;
-	var init_de$15 = __esmMin((() => {
-		translations$95 = {
+	var de_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$99 });
+	var translations$99;
+	var init_de$16 = __esmMin((() => {
+		translations$99 = {
 			"Show rate of change": "Änderungsrate anzeigen",
 			"Show rate of change crosshairs": "Fadenkreuz für Änderungsrate anzeigen",
 			"Rate window": "Ratenfenster",
@@ -3857,10 +3875,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-sample-group/i18n/de.ts
-	var de_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$94 });
-	var translations$94;
-	var init_de$14 = __esmMin((() => {
-		translations$94 = {
+	var de_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$98 });
+	var translations$98;
+	var init_de$15 = __esmMin((() => {
+		translations$98 = {
 			Downsampling: "Downsampling",
 			Interval: "Intervall",
 			Aggregate: "Aggregation",
@@ -3892,20 +3910,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/i18n/de.ts
-	var de_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$93 });
-	var translations$93;
-	var init_de$13 = __esmMin((() => {
-		translations$93 = {
+	var de_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$97 });
+	var translations$97;
+	var init_de$14 = __esmMin((() => {
+		translations$97 = {
 			"Show min / max / mean": "Min / Max / Mittelwert anzeigen",
 			"Show range shading": "Bereichsschattierung anzeigen"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/i18n/de.ts
-	var de_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$92 });
-	var translations$92;
-	var init_de$12 = __esmMin((() => {
-		translations$92 = {
+	var de_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$96 });
+	var translations$96;
+	var init_de$13 = __esmMin((() => {
+		translations$96 = {
 			"Show threshold analysis": "Schwellwertanalyse anzeigen",
 			"Shade threshold area": "Schwellwertbereich schattieren",
 			Threshold: "Schwellenwert",
@@ -3916,10 +3934,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/i18n/de.ts
-	var de_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$91 });
-	var translations$91;
-	var init_de$11 = __esmMin((() => {
-		translations$91 = {
+	var de_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$95 });
+	var translations$95;
+	var init_de$12 = __esmMin((() => {
+		translations$95 = {
 			"Show trend lines": "Trendlinien anzeigen",
 			"Show trend crosshairs": "Fadenkreuz für Trend anzeigen",
 			"Trend method": "Trendmethode",
@@ -3937,10 +3955,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/i18n/de.ts
-	var de_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$90 });
-	var translations$90;
-	var init_de$10 = __esmMin((() => {
-		translations$90 = {
+	var de_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$94 });
+	var translations$94;
+	var init_de$11 = __esmMin((() => {
+		translations$94 = {
 			"Add all series from chart": "Alle Reihen aus dem Diagramm hinzufügen",
 			"Add from current chart": "Aus aktuellem Diagramm hinzufügen",
 			"Create anomaly monitor": "Anomaliemonitor erstellen",
@@ -3950,17 +3968,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab-rail/i18n/de.ts
-	var de_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$89 });
-	var translations$89;
-	var init_de$9 = __esmMin((() => {
-		translations$89 = { "Add date window": "Datumsfenster hinzufügen" };
+	var de_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$93 });
+	var translations$93;
+	var init_de$10 = __esmMin((() => {
+		translations$93 = { "Add date window": "Datumsfenster hinzufügen" };
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/i18n/de.ts
-	var de_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$88 });
-	var translations$88;
-	var init_de$8 = __esmMin((() => {
-		translations$88 = {
+	var de_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$92 });
+	var translations$92;
+	var init_de$9 = __esmMin((() => {
+		translations$92 = {
 			"A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later.": "Ein Datumsfenster speichert einen benannten Datumsbereich als Registerkarte, damit Sie ihn schnell mit dem ausgewählten Bereich vergleichen oder später im Diagramm wieder dorthin springen können.",
 			Name: "Name",
 			"e.g. Heating season start": "z. B. Beginn der Heizsaison",
@@ -3975,10 +3993,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/i18n/de.ts
-	var de_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$87 });
-	var translations$87;
-	var init_de$7 = __esmMin((() => {
-		translations$87 = {
+	var de_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$91 });
+	var translations$91;
+	var init_de$8 = __esmMin((() => {
+		translations$91 = {
 			Datapoints: "Datenpunkte",
 			"Choose which annotation datapoints appear on the chart.": "Wählen Sie aus, welche Anmerkungs-Datenpunkte im Diagramm angezeigt werden.",
 			"Linked to selected targets": "Mit ausgewählten Zielen verknüpft",
@@ -3988,10 +4006,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/i18n/de.ts
-	var de_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$86 });
-	var translations$86;
-	var init_de$6 = __esmMin((() => {
-		translations$86 = {
+	var de_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$90 });
+	var translations$90;
+	var init_de$7 = __esmMin((() => {
+		translations$90 = {
 			"Analysis configured": "Analyse konfiguriert",
 			"Configure analysis": "Analyse konfigurieren",
 			"Stepped series": "Stufenserie",
@@ -4003,17 +4021,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/i18n/de.ts
-	var de_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$85 });
-	var translations$85;
-	var init_de$5 = __esmMin((() => {
-		translations$85 = {};
+	var de_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$89 });
+	var translations$89;
+	var init_de$6 = __esmMin((() => {
+		translations$89 = {};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/ai-query-brief-dialog/i18n/de.ts
-	var de_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$84 });
-	var translations$84;
-	var init_de$4 = __esmMin((() => {
-		translations$84 = {
+	var de_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$88 });
+	var translations$88;
+	var init_de$5 = __esmMin((() => {
+		translations$88 = {
 			"AI query brief": "KI-Abfragebriefing",
 			"This brief is intended for another AI to fetch raw Home Assistant history and hass_datapoints anomaly details. Review it, then copy it into your AI tool of choice.": "Dieses Briefing ist fuer eine andere KI gedacht, damit sie rohe Home-Assistant-Verlaeufe und hass_datapoints-Anomaliedetails abrufen kann. Pruefe es und kopiere es dann in dein KI-Werkzeug deiner Wahl.",
 			"Copy-ready brief": "Kopierfertiges Briefing",
@@ -4025,10 +4043,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/history-targets/i18n/de.ts
-	var de_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$83 });
-	var translations$83;
-	var init_de$3 = __esmMin((() => {
-		translations$83 = {
+	var de_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$87 });
+	var translations$87;
+	var init_de$4 = __esmMin((() => {
+		translations$87 = {
 			Targets: "Ziele",
 			"Each row controls one chart series.": "Jede Zeile steuert eine Diagrammserie.",
 			"Add target": "Ziel hinzufügen",
@@ -4037,10 +4055,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/panel-shell/i18n/de.ts
-	var de_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$82 });
-	var translations$82;
-	var init_de$2 = __esmMin((() => {
-		translations$82 = {
+	var de_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$86 });
+	var translations$86;
+	var init_de$3 = __esmMin((() => {
+		translations$86 = {
 			"Loading Datapoints…": "Datenpunkte werden geladen…",
 			Datapoints: "Datenpunkte",
 			"Page options": "Seitenoptionen",
@@ -4055,10 +4073,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/range-toolbar/i18n/de.ts
-	var de_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$81 });
-	var translations$81;
-	var init_de$1 = __esmMin((() => {
-		translations$81 = {
+	var de_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$85 });
+	var translations$85;
+	var init_de$2 = __esmMin((() => {
+		translations$85 = {
 			"Toggle sidebar": "Seitenleiste umschalten",
 			Start: "Start",
 			End: "Ende",
@@ -4082,10 +4100,18 @@
 		};
 	}));
 	//#endregion
+	//#region custom_components/hass_datapoints/src/panels/datapoints/i18n/de.ts
+	var de_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$84 });
+	var translations$84;
+	var init_de$1 = __esmMin((() => {
+		translations$84 = { "Selected range": "Ausgewählter Zeitraum" };
+	}));
+	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/i18n/locales/de.ts
 	var de_exports = /* @__PURE__ */ __exportAll({ templates: () => templates$3 });
 	var modules$3, merged$3, templates$3;
 	var init_de = __esmMin((() => {
+		init_de$28();
 		init_de$27();
 		init_de$26();
 		init_de$25();
@@ -4114,33 +4140,34 @@
 		init_de$2();
 		init_de$1();
 		modules$3 = /* #__PURE__ */ Object.assign({
-			"../../../cards/action/i18n/de.ts": de_exports$27,
-			"../../../cards/history/history-chart/i18n/de.ts": de_exports$26,
-			"../../../cards/history/i18n/de.ts": de_exports$25,
-			"../../../cards/list/i18n/de.ts": de_exports$24,
-			"../../../cards/quick/i18n/de.ts": de_exports$23,
-			"../../../cards/sensor/i18n/de.ts": de_exports$22,
-			"../../chart/i18n/de.ts": de_exports$21,
-			"../../ha/i18n/de.ts": de_exports$20,
-			"../../history-page/i18n/de.ts": de_exports$19,
-			"../../timeline/i18n/de.ts": de_exports$18,
-			"../../../molecules/analysis-anomaly-group/i18n/de.ts": de_exports$17,
-			"../../../molecules/analysis-delta-group/i18n/de.ts": de_exports$16,
-			"../../../molecules/analysis-rate-group/i18n/de.ts": de_exports$15,
-			"../../../molecules/analysis-sample-group/i18n/de.ts": de_exports$14,
-			"../../../molecules/analysis-summary-group/i18n/de.ts": de_exports$13,
-			"../../../molecules/analysis-threshold-group/i18n/de.ts": de_exports$12,
-			"../../../molecules/analysis-trend-group/i18n/de.ts": de_exports$11,
-			"../../../molecules/anomaly-monitor-wizard/i18n/de.ts": de_exports$10,
-			"../../../molecules/comparison-tab-rail/i18n/de.ts": de_exports$9,
-			"../../../molecules/date-window-dialog/i18n/de.ts": de_exports$8,
-			"../../../molecules/sidebar-options/sections/i18n/de.ts": de_exports$7,
-			"../../../molecules/target-row/i18n/de.ts": de_exports$6,
-			"../../../molecules/target-row-list/i18n/de.ts": de_exports$5,
-			"../../../panels/datapoints/components/ai-query-brief-dialog/i18n/de.ts": de_exports$4,
-			"../../../panels/datapoints/components/history-targets/i18n/de.ts": de_exports$3,
-			"../../../panels/datapoints/components/panel-shell/i18n/de.ts": de_exports$2,
-			"../../../panels/datapoints/components/range-toolbar/i18n/de.ts": de_exports$1
+			"../../../cards/action/i18n/de.ts": de_exports$28,
+			"../../../cards/history/history-chart/i18n/de.ts": de_exports$27,
+			"../../../cards/history/i18n/de.ts": de_exports$26,
+			"../../../cards/list/i18n/de.ts": de_exports$25,
+			"../../../cards/quick/i18n/de.ts": de_exports$24,
+			"../../../cards/sensor/i18n/de.ts": de_exports$23,
+			"../../chart/i18n/de.ts": de_exports$22,
+			"../../ha/i18n/de.ts": de_exports$21,
+			"../../history-page/i18n/de.ts": de_exports$20,
+			"../../timeline/i18n/de.ts": de_exports$19,
+			"../../../molecules/analysis-anomaly-group/i18n/de.ts": de_exports$18,
+			"../../../molecules/analysis-delta-group/i18n/de.ts": de_exports$17,
+			"../../../molecules/analysis-rate-group/i18n/de.ts": de_exports$16,
+			"../../../molecules/analysis-sample-group/i18n/de.ts": de_exports$15,
+			"../../../molecules/analysis-summary-group/i18n/de.ts": de_exports$14,
+			"../../../molecules/analysis-threshold-group/i18n/de.ts": de_exports$13,
+			"../../../molecules/analysis-trend-group/i18n/de.ts": de_exports$12,
+			"../../../molecules/anomaly-monitor-wizard/i18n/de.ts": de_exports$11,
+			"../../../molecules/comparison-tab-rail/i18n/de.ts": de_exports$10,
+			"../../../molecules/date-window-dialog/i18n/de.ts": de_exports$9,
+			"../../../molecules/sidebar-options/sections/i18n/de.ts": de_exports$8,
+			"../../../molecules/target-row/i18n/de.ts": de_exports$7,
+			"../../../molecules/target-row-list/i18n/de.ts": de_exports$6,
+			"../../../panels/datapoints/components/ai-query-brief-dialog/i18n/de.ts": de_exports$5,
+			"../../../panels/datapoints/components/history-targets/i18n/de.ts": de_exports$4,
+			"../../../panels/datapoints/components/panel-shell/i18n/de.ts": de_exports$3,
+			"../../../panels/datapoints/components/range-toolbar/i18n/de.ts": de_exports$2,
+			"../../../panels/datapoints/i18n/de.ts": de_exports$1
 		});
 		merged$3 = {};
 		for (const mod of Object.values(modules$3)) Object.assign(merged$3, mod.translations);
@@ -4148,10 +4175,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/i18n/es.ts
-	var es_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$80 });
-	var translations$80;
-	var init_es$27 = __esmMin((() => {
-		translations$80 = {
+	var es_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$83 });
+	var translations$83;
+	var init_es$28 = __esmMin((() => {
+		translations$83 = {
 			General: "General",
 			"Related items": "Elementos relacionados",
 			"Datapoint Appearance": "Apariencia del punto de datos",
@@ -4168,20 +4195,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/i18n/es.ts
-	var es_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$79 });
-	var translations$79;
-	var init_es$26 = __esmMin((() => {
-		translations$79 = {
+	var es_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$82 });
+	var translations$82;
+	var init_es$27 = __esmMin((() => {
+		translations$82 = {
 			"Date window:": "Ventana de fechas:",
 			"Actual:": "Real:"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/i18n/es.ts
-	var es_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$78 });
-	var translations$78;
-	var init_es$25 = __esmMin((() => {
-		translations$78 = {
+	var es_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$81 });
+	var translations$81;
+	var init_es$26 = __esmMin((() => {
+		translations$81 = {
 			General: "General",
 			Entity: "Entidad",
 			"Multiple entities": "Varias entidades",
@@ -4195,10 +4222,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/i18n/es.ts
-	var es_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$77 });
-	var translations$77;
-	var init_es$24 = __esmMin((() => {
-		translations$77 = {
+	var es_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$80 });
+	var translations$80;
+	var init_es$25 = __esmMin((() => {
+		translations$80 = {
 			"Search datapoints…": "Buscar puntos de datos…",
 			"Delete record": "Eliminar registro",
 			Delete: "Eliminar",
@@ -4216,10 +4243,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/i18n/es.ts
-	var es_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$76 });
-	var translations$76;
-	var init_es$23 = __esmMin((() => {
-		translations$76 = {
+	var es_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$79 });
+	var translations$79;
+	var init_es$24 = __esmMin((() => {
+		translations$79 = {
 			General: "General",
 			"Icon & colour": "Icono y color",
 			"Related items": "Elementos relacionados",
@@ -4237,10 +4264,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/i18n/es.ts
-	var es_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$75 });
-	var translations$75;
-	var init_es$22 = __esmMin((() => {
-		translations$75 = {
+	var es_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$78 });
+	var translations$78;
+	var init_es$23 = __esmMin((() => {
+		translations$78 = {
 			Entity: "Entidad",
 			Display: "Visualización",
 			"Records list": "Lista de registros",
@@ -4260,10 +4287,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/i18n/es.ts
-	var es_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$74 });
-	var translations$74;
-	var init_es$21 = __esmMin((() => {
-		translations$74 = {
+	var es_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$77 });
+	var translations$77;
+	var init_es$22 = __esmMin((() => {
+		translations$77 = {
 			"⚠️ Anomaly Insight": "⚠️ Información de anomalía",
 			"⚠️ Multi-method Anomaly": "⚠️ Anomalía multimétodo",
 			"Click the highlighted circle to add an annotation.": "Haz clic en el círculo resaltado para añadir una anotación.",
@@ -4298,10 +4325,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/ha/i18n/es.ts
-	var es_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$73 });
-	var translations$73;
-	var init_es$20 = __esmMin((() => {
-		translations$73 = {
+	var es_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$76 });
+	var translations$76;
+	var init_es$21 = __esmMin((() => {
+		translations$76 = {
 			"Confirm delete": "Confirmar eliminación",
 			"Are you sure you want to delete this item?": "¿Seguro que quieres eliminar este elemento?",
 			Cancel: "Cancelar",
@@ -4316,10 +4343,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/history-page/i18n/es.ts
-	var es_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$72 });
-	var translations$72;
-	var init_es$19 = __esmMin((() => {
-		translations$72 = {
+	var es_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$75 });
+	var translations$75;
+	var init_es$20 = __esmMin((() => {
+		translations$75 = {
 			"entity_id={0}": "entity_id={0}",
 			"device_id={0}": "device_id={0}",
 			"area_id={0}": "area_id={0}",
@@ -4417,20 +4444,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/timeline/i18n/es.ts
-	var es_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$71 });
-	var translations$71;
-	var init_es$18 = __esmMin((() => {
-		translations$71 = {
+	var es_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$74 });
+	var translations$74;
+	var init_es$19 = __esmMin((() => {
+		translations$74 = {
 			Wk: "Sem.",
 			"Week of": "Semana del"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/i18n/es.ts
-	var es_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$70 });
-	var translations$70;
-	var init_es$17 = __esmMin((() => {
-		translations$70 = {
+	var es_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$73 });
+	var translations$73;
+	var init_es$18 = __esmMin((() => {
+		translations$73 = {
 			"Show anomalies": "Mostrar anomalías",
 			Sensitivity: "Sensibilidad",
 			"Use downsampled data for detection": "Usar datos submuestreados para la detección",
@@ -4472,10 +4499,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-delta-group/i18n/es.ts
-	var es_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$69 });
-	var translations$69;
-	var init_es$16 = __esmMin((() => {
-		translations$69 = {
+	var es_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$72 });
+	var translations$72;
+	var init_es$17 = __esmMin((() => {
+		translations$72 = {
 			"Show delta vs selected date window": "Mostrar delta frente a la ventana de fechas seleccionada",
 			"Select a date window tab to enable delta analysis.": "Selecciona una pestaña de ventana de fechas para habilitar el análisis delta.",
 			"Show delta in tooltip": "Mostrar delta en la información sobre herramientas",
@@ -4484,10 +4511,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/i18n/es.ts
-	var es_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$68 });
-	var translations$68;
-	var init_es$15 = __esmMin((() => {
-		translations$68 = {
+	var es_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$71 });
+	var translations$71;
+	var init_es$16 = __esmMin((() => {
+		translations$71 = {
 			"Show rate of change": "Mostrar tasa de cambio",
 			"Show rate of change crosshairs": "Mostrar guías de la tasa de cambio",
 			"Rate window": "Ventana de tasa",
@@ -4499,10 +4526,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-sample-group/i18n/es.ts
-	var es_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$67 });
-	var translations$67;
-	var init_es$14 = __esmMin((() => {
-		translations$67 = {
+	var es_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$70 });
+	var translations$70;
+	var init_es$15 = __esmMin((() => {
+		translations$70 = {
 			Downsampling: "Submuestreo",
 			Interval: "Intervalo",
 			Aggregate: "Agregado",
@@ -4534,20 +4561,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/i18n/es.ts
-	var es_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$66 });
-	var translations$66;
-	var init_es$13 = __esmMin((() => {
-		translations$66 = {
+	var es_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$69 });
+	var translations$69;
+	var init_es$14 = __esmMin((() => {
+		translations$69 = {
 			"Show min / max / mean": "Mostrar mín. / máx. / media",
 			"Show range shading": "Mostrar sombreado del rango"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/i18n/es.ts
-	var es_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$65 });
-	var translations$65;
-	var init_es$12 = __esmMin((() => {
-		translations$65 = {
+	var es_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$68 });
+	var translations$68;
+	var init_es$13 = __esmMin((() => {
+		translations$68 = {
 			"Show threshold analysis": "Mostrar análisis de umbral",
 			"Shade threshold area": "Sombrear área del umbral",
 			Threshold: "Umbral",
@@ -4558,10 +4585,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/i18n/es.ts
-	var es_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$64 });
-	var translations$64;
-	var init_es$11 = __esmMin((() => {
-		translations$64 = {
+	var es_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$67 });
+	var translations$67;
+	var init_es$12 = __esmMin((() => {
+		translations$67 = {
 			"Show trend lines": "Mostrar líneas de tendencia",
 			"Show trend crosshairs": "Mostrar guías de tendencia",
 			"Trend method": "Método de tendencia",
@@ -4579,10 +4606,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/i18n/es.ts
-	var es_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$63 });
-	var translations$63;
-	var init_es$10 = __esmMin((() => {
-		translations$63 = {
+	var es_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$66 });
+	var translations$66;
+	var init_es$11 = __esmMin((() => {
+		translations$66 = {
 			"Add all series from chart": "Añadir todas las series del gráfico",
 			"Add from current chart": "Añadir desde el gráfico actual",
 			"Create anomaly monitor": "Crear monitor de anomalías",
@@ -4592,17 +4619,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab-rail/i18n/es.ts
-	var es_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$62 });
-	var translations$62;
-	var init_es$9 = __esmMin((() => {
-		translations$62 = { "Add date window": "Añadir ventana de fechas" };
+	var es_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$65 });
+	var translations$65;
+	var init_es$10 = __esmMin((() => {
+		translations$65 = { "Add date window": "Añadir ventana de fechas" };
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/i18n/es.ts
-	var es_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$61 });
-	var translations$61;
-	var init_es$8 = __esmMin((() => {
-		translations$61 = {
+	var es_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$64 });
+	var translations$64;
+	var init_es$9 = __esmMin((() => {
+		translations$64 = {
 			"A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later.": "Una ventana de fechas guarda un rango de fechas con nombre como pestaña, para que puedas previsualizarlo rápidamente frente al rango seleccionado o volver más tarde a él en el gráfico.",
 			Name: "Nombre",
 			"e.g. Heating season start": "p. ej., inicio de la temporada de calefacción",
@@ -4617,10 +4644,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/i18n/es.ts
-	var es_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$60 });
-	var translations$60;
-	var init_es$7 = __esmMin((() => {
-		translations$60 = {
+	var es_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$63 });
+	var translations$63;
+	var init_es$8 = __esmMin((() => {
+		translations$63 = {
 			Datapoints: "Puntos de datos",
 			"Choose which annotation datapoints appear on the chart.": "Elige qué puntos de datos de anotación aparecen en el gráfico.",
 			"Linked to selected targets": "Vinculados a los objetivos seleccionados",
@@ -4630,10 +4657,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/i18n/es.ts
-	var es_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$59 });
-	var translations$59;
-	var init_es$6 = __esmMin((() => {
-		translations$59 = {
+	var es_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$62 });
+	var translations$62;
+	var init_es$7 = __esmMin((() => {
+		translations$62 = {
 			"Analysis configured": "Análisis configurado",
 			"Configure analysis": "Configurar análisis",
 			"Stepped series": "Serie escalonada",
@@ -4645,17 +4672,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/i18n/es.ts
-	var es_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$58 });
-	var translations$58;
-	var init_es$5 = __esmMin((() => {
-		translations$58 = {};
+	var es_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$61 });
+	var translations$61;
+	var init_es$6 = __esmMin((() => {
+		translations$61 = {};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/ai-query-brief-dialog/i18n/es.ts
-	var es_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$57 });
-	var translations$57;
-	var init_es$4 = __esmMin((() => {
-		translations$57 = {
+	var es_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$60 });
+	var translations$60;
+	var init_es$5 = __esmMin((() => {
+		translations$60 = {
 			"AI query brief": "Resumen de consulta para IA",
 			"This brief is intended for another AI to fetch raw Home Assistant history and hass_datapoints anomaly details. Review it, then copy it into your AI tool of choice.": "Este resumen esta pensado para que otra IA obtenga el historial sin procesar de Home Assistant y los detalles de anomalias de hass_datapoints. Revisalo y luego copialo en la herramienta de IA que prefieras.",
 			"Copy-ready brief": "Resumen listo para copiar",
@@ -4667,10 +4694,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/history-targets/i18n/es.ts
-	var es_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$56 });
-	var translations$56;
-	var init_es$3 = __esmMin((() => {
-		translations$56 = {
+	var es_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$59 });
+	var translations$59;
+	var init_es$4 = __esmMin((() => {
+		translations$59 = {
 			Targets: "Objetivos",
 			"Each row controls one chart series.": "Cada fila controla una serie del gráfico.",
 			"Add target": "Añadir objetivo",
@@ -4679,10 +4706,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/panel-shell/i18n/es.ts
-	var es_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$55 });
-	var translations$55;
-	var init_es$2 = __esmMin((() => {
-		translations$55 = {
+	var es_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$58 });
+	var translations$58;
+	var init_es$3 = __esmMin((() => {
+		translations$58 = {
 			"Loading Datapoints…": "Cargando puntos de datos…",
 			Datapoints: "Puntos de datos",
 			"Page options": "Opciones de la página",
@@ -4697,10 +4724,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/range-toolbar/i18n/es.ts
-	var es_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$54 });
-	var translations$54;
-	var init_es$1 = __esmMin((() => {
-		translations$54 = {
+	var es_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$57 });
+	var translations$57;
+	var init_es$2 = __esmMin((() => {
+		translations$57 = {
 			"Toggle sidebar": "Alternar barra lateral",
 			Start: "Inicio",
 			End: "Fin",
@@ -4724,10 +4751,18 @@
 		};
 	}));
 	//#endregion
+	//#region custom_components/hass_datapoints/src/panels/datapoints/i18n/es.ts
+	var es_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$56 });
+	var translations$56;
+	var init_es$1 = __esmMin((() => {
+		translations$56 = { "Selected range": "Intervalo seleccionado" };
+	}));
+	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/i18n/locales/es.ts
 	var es_exports = /* @__PURE__ */ __exportAll({ templates: () => templates$2 });
 	var modules$2, merged$2, templates$2;
 	var init_es = __esmMin((() => {
+		init_es$28();
 		init_es$27();
 		init_es$26();
 		init_es$25();
@@ -4756,33 +4791,34 @@
 		init_es$2();
 		init_es$1();
 		modules$2 = /* #__PURE__ */ Object.assign({
-			"../../../cards/action/i18n/es.ts": es_exports$27,
-			"../../../cards/history/history-chart/i18n/es.ts": es_exports$26,
-			"../../../cards/history/i18n/es.ts": es_exports$25,
-			"../../../cards/list/i18n/es.ts": es_exports$24,
-			"../../../cards/quick/i18n/es.ts": es_exports$23,
-			"../../../cards/sensor/i18n/es.ts": es_exports$22,
-			"../../chart/i18n/es.ts": es_exports$21,
-			"../../ha/i18n/es.ts": es_exports$20,
-			"../../history-page/i18n/es.ts": es_exports$19,
-			"../../timeline/i18n/es.ts": es_exports$18,
-			"../../../molecules/analysis-anomaly-group/i18n/es.ts": es_exports$17,
-			"../../../molecules/analysis-delta-group/i18n/es.ts": es_exports$16,
-			"../../../molecules/analysis-rate-group/i18n/es.ts": es_exports$15,
-			"../../../molecules/analysis-sample-group/i18n/es.ts": es_exports$14,
-			"../../../molecules/analysis-summary-group/i18n/es.ts": es_exports$13,
-			"../../../molecules/analysis-threshold-group/i18n/es.ts": es_exports$12,
-			"../../../molecules/analysis-trend-group/i18n/es.ts": es_exports$11,
-			"../../../molecules/anomaly-monitor-wizard/i18n/es.ts": es_exports$10,
-			"../../../molecules/comparison-tab-rail/i18n/es.ts": es_exports$9,
-			"../../../molecules/date-window-dialog/i18n/es.ts": es_exports$8,
-			"../../../molecules/sidebar-options/sections/i18n/es.ts": es_exports$7,
-			"../../../molecules/target-row/i18n/es.ts": es_exports$6,
-			"../../../molecules/target-row-list/i18n/es.ts": es_exports$5,
-			"../../../panels/datapoints/components/ai-query-brief-dialog/i18n/es.ts": es_exports$4,
-			"../../../panels/datapoints/components/history-targets/i18n/es.ts": es_exports$3,
-			"../../../panels/datapoints/components/panel-shell/i18n/es.ts": es_exports$2,
-			"../../../panels/datapoints/components/range-toolbar/i18n/es.ts": es_exports$1
+			"../../../cards/action/i18n/es.ts": es_exports$28,
+			"../../../cards/history/history-chart/i18n/es.ts": es_exports$27,
+			"../../../cards/history/i18n/es.ts": es_exports$26,
+			"../../../cards/list/i18n/es.ts": es_exports$25,
+			"../../../cards/quick/i18n/es.ts": es_exports$24,
+			"../../../cards/sensor/i18n/es.ts": es_exports$23,
+			"../../chart/i18n/es.ts": es_exports$22,
+			"../../ha/i18n/es.ts": es_exports$21,
+			"../../history-page/i18n/es.ts": es_exports$20,
+			"../../timeline/i18n/es.ts": es_exports$19,
+			"../../../molecules/analysis-anomaly-group/i18n/es.ts": es_exports$18,
+			"../../../molecules/analysis-delta-group/i18n/es.ts": es_exports$17,
+			"../../../molecules/analysis-rate-group/i18n/es.ts": es_exports$16,
+			"../../../molecules/analysis-sample-group/i18n/es.ts": es_exports$15,
+			"../../../molecules/analysis-summary-group/i18n/es.ts": es_exports$14,
+			"../../../molecules/analysis-threshold-group/i18n/es.ts": es_exports$13,
+			"../../../molecules/analysis-trend-group/i18n/es.ts": es_exports$12,
+			"../../../molecules/anomaly-monitor-wizard/i18n/es.ts": es_exports$11,
+			"../../../molecules/comparison-tab-rail/i18n/es.ts": es_exports$10,
+			"../../../molecules/date-window-dialog/i18n/es.ts": es_exports$9,
+			"../../../molecules/sidebar-options/sections/i18n/es.ts": es_exports$8,
+			"../../../molecules/target-row/i18n/es.ts": es_exports$7,
+			"../../../molecules/target-row-list/i18n/es.ts": es_exports$6,
+			"../../../panels/datapoints/components/ai-query-brief-dialog/i18n/es.ts": es_exports$5,
+			"../../../panels/datapoints/components/history-targets/i18n/es.ts": es_exports$4,
+			"../../../panels/datapoints/components/panel-shell/i18n/es.ts": es_exports$3,
+			"../../../panels/datapoints/components/range-toolbar/i18n/es.ts": es_exports$2,
+			"../../../panels/datapoints/i18n/es.ts": es_exports$1
 		});
 		merged$2 = {};
 		for (const mod of Object.values(modules$2)) Object.assign(merged$2, mod.translations);
@@ -4790,10 +4826,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/i18n/pt.ts
-	var pt_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$53 });
-	var translations$53;
-	var init_pt$27 = __esmMin((() => {
-		translations$53 = {
+	var pt_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$55 });
+	var translations$55;
+	var init_pt$28 = __esmMin((() => {
+		translations$55 = {
 			General: "Geral",
 			"Related items": "Itens relacionados",
 			"Datapoint Appearance": "Aspeto do ponto de dados",
@@ -4810,20 +4846,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/i18n/pt.ts
-	var pt_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$52 });
-	var translations$52;
-	var init_pt$26 = __esmMin((() => {
-		translations$52 = {
+	var pt_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$54 });
+	var translations$54;
+	var init_pt$27 = __esmMin((() => {
+		translations$54 = {
 			"Date window:": "Janela de datas:",
 			"Actual:": "Real:"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/i18n/pt.ts
-	var pt_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$51 });
-	var translations$51;
-	var init_pt$25 = __esmMin((() => {
-		translations$51 = {
+	var pt_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$53 });
+	var translations$53;
+	var init_pt$26 = __esmMin((() => {
+		translations$53 = {
 			General: "Geral",
 			Entity: "Entidade",
 			"Multiple entities": "Múltiplas entidades",
@@ -4837,10 +4873,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/i18n/pt.ts
-	var pt_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$50 });
-	var translations$50;
-	var init_pt$24 = __esmMin((() => {
-		translations$50 = {
+	var pt_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$52 });
+	var translations$52;
+	var init_pt$25 = __esmMin((() => {
+		translations$52 = {
 			"Search datapoints…": "Pesquisar pontos de dados…",
 			"Delete record": "Eliminar registo",
 			Delete: "Eliminar",
@@ -4858,10 +4894,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/i18n/pt.ts
-	var pt_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$49 });
-	var translations$49;
-	var init_pt$23 = __esmMin((() => {
-		translations$49 = {
+	var pt_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$51 });
+	var translations$51;
+	var init_pt$24 = __esmMin((() => {
+		translations$51 = {
 			General: "Geral",
 			"Icon & colour": "Ícone e cor",
 			"Related items": "Itens relacionados",
@@ -4879,10 +4915,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/i18n/pt.ts
-	var pt_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$48 });
-	var translations$48;
-	var init_pt$22 = __esmMin((() => {
-		translations$48 = {
+	var pt_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$50 });
+	var translations$50;
+	var init_pt$23 = __esmMin((() => {
+		translations$50 = {
 			Entity: "Entidade",
 			Display: "Visualização",
 			"Records list": "Lista de registos",
@@ -4902,10 +4938,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/i18n/pt.ts
-	var pt_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$47 });
-	var translations$47;
-	var init_pt$21 = __esmMin((() => {
-		translations$47 = {
+	var pt_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$49 });
+	var translations$49;
+	var init_pt$22 = __esmMin((() => {
+		translations$49 = {
 			"⚠️ Anomaly Insight": "⚠️ Informação de anomalia",
 			"⚠️ Multi-method Anomaly": "⚠️ Anomalia multimétodo",
 			"Click the highlighted circle to add an annotation.": "Clique no círculo destacado para adicionar uma anotação.",
@@ -4940,10 +4976,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/ha/i18n/pt.ts
-	var pt_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$46 });
-	var translations$46;
-	var init_pt$20 = __esmMin((() => {
-		translations$46 = {
+	var pt_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$48 });
+	var translations$48;
+	var init_pt$21 = __esmMin((() => {
+		translations$48 = {
 			"Confirm delete": "Confirmar eliminação",
 			"Are you sure you want to delete this item?": "Tem a certeza de que pretende eliminar este item?",
 			Cancel: "Cancelar",
@@ -4958,10 +4994,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/history-page/i18n/pt.ts
-	var pt_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$45 });
-	var translations$45;
-	var init_pt$19 = __esmMin((() => {
-		translations$45 = {
+	var pt_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$47 });
+	var translations$47;
+	var init_pt$20 = __esmMin((() => {
+		translations$47 = {
 			"entity_id={0}": "entity_id={0}",
 			"device_id={0}": "device_id={0}",
 			"area_id={0}": "area_id={0}",
@@ -5059,20 +5095,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/timeline/i18n/pt.ts
-	var pt_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$44 });
-	var translations$44;
-	var init_pt$18 = __esmMin((() => {
-		translations$44 = {
+	var pt_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$46 });
+	var translations$46;
+	var init_pt$19 = __esmMin((() => {
+		translations$46 = {
 			Wk: "Sem.",
 			"Week of": "Semana de"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/i18n/pt.ts
-	var pt_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$43 });
-	var translations$43;
-	var init_pt$17 = __esmMin((() => {
-		translations$43 = {
+	var pt_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$45 });
+	var translations$45;
+	var init_pt$18 = __esmMin((() => {
+		translations$45 = {
 			"Show anomalies": "Mostrar anomalias",
 			Sensitivity: "Sensibilidade",
 			"Use downsampled data for detection": "Usar dados reamostrados para deteção",
@@ -5114,10 +5150,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-delta-group/i18n/pt.ts
-	var pt_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$42 });
-	var translations$42;
-	var init_pt$16 = __esmMin((() => {
-		translations$42 = {
+	var pt_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$44 });
+	var translations$44;
+	var init_pt$17 = __esmMin((() => {
+		translations$44 = {
 			"Show delta vs selected date window": "Mostrar delta face à janela de datas selecionada",
 			"Select a date window tab to enable delta analysis.": "Selecione um separador de janela de datas para ativar a análise delta.",
 			"Show delta in tooltip": "Mostrar delta na dica",
@@ -5126,10 +5162,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/i18n/pt.ts
-	var pt_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$41 });
-	var translations$41;
-	var init_pt$15 = __esmMin((() => {
-		translations$41 = {
+	var pt_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$43 });
+	var translations$43;
+	var init_pt$16 = __esmMin((() => {
+		translations$43 = {
 			"Show rate of change": "Mostrar taxa de variação",
 			"Show rate of change crosshairs": "Mostrar guias da taxa de variação",
 			"Rate window": "Janela da taxa",
@@ -5141,10 +5177,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-sample-group/i18n/pt.ts
-	var pt_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$40 });
-	var translations$40;
-	var init_pt$14 = __esmMin((() => {
-		translations$40 = {
+	var pt_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$42 });
+	var translations$42;
+	var init_pt$15 = __esmMin((() => {
+		translations$42 = {
 			Downsampling: "Reamostragem",
 			Interval: "Intervalo",
 			Aggregate: "Agregado",
@@ -5176,20 +5212,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/i18n/pt.ts
-	var pt_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$39 });
-	var translations$39;
-	var init_pt$13 = __esmMin((() => {
-		translations$39 = {
+	var pt_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$41 });
+	var translations$41;
+	var init_pt$14 = __esmMin((() => {
+		translations$41 = {
 			"Show min / max / mean": "Mostrar mín. / máx. / média",
 			"Show range shading": "Mostrar sombreamento do intervalo"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/i18n/pt.ts
-	var pt_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$38 });
-	var translations$38;
-	var init_pt$12 = __esmMin((() => {
-		translations$38 = {
+	var pt_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$40 });
+	var translations$40;
+	var init_pt$13 = __esmMin((() => {
+		translations$40 = {
 			"Show threshold analysis": "Mostrar análise de limiar",
 			"Shade threshold area": "Sombrear área do limiar",
 			Threshold: "Limiar",
@@ -5200,10 +5236,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/i18n/pt.ts
-	var pt_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$37 });
-	var translations$37;
-	var init_pt$11 = __esmMin((() => {
-		translations$37 = {
+	var pt_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$39 });
+	var translations$39;
+	var init_pt$12 = __esmMin((() => {
+		translations$39 = {
 			"Show trend lines": "Mostrar linhas de tendência",
 			"Show trend crosshairs": "Mostrar guias da tendência",
 			"Trend method": "Método de tendência",
@@ -5221,10 +5257,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/i18n/pt.ts
-	var pt_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$36 });
-	var translations$36;
-	var init_pt$10 = __esmMin((() => {
-		translations$36 = {
+	var pt_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$38 });
+	var translations$38;
+	var init_pt$11 = __esmMin((() => {
+		translations$38 = {
 			"Add all series from chart": "Adicionar todas as séries do gráfico",
 			"Add from current chart": "Adicionar do gráfico atual",
 			"Create anomaly monitor": "Criar monitor de anomalias",
@@ -5234,17 +5270,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab-rail/i18n/pt.ts
-	var pt_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$35 });
-	var translations$35;
-	var init_pt$9 = __esmMin((() => {
-		translations$35 = { "Add date window": "Adicionar janela de datas" };
+	var pt_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$37 });
+	var translations$37;
+	var init_pt$10 = __esmMin((() => {
+		translations$37 = { "Add date window": "Adicionar janela de datas" };
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/i18n/pt.ts
-	var pt_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$34 });
-	var translations$34;
-	var init_pt$8 = __esmMin((() => {
-		translations$34 = {
+	var pt_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$36 });
+	var translations$36;
+	var init_pt$9 = __esmMin((() => {
+		translations$36 = {
 			"A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later.": "Uma janela de datas guarda um intervalo de datas com nome como separador, para que possa pré-visualizá-lo rapidamente face ao intervalo selecionado ou regressar mais tarde a ele no gráfico.",
 			Name: "Nome",
 			"e.g. Heating season start": "ex.: início da época de aquecimento",
@@ -5259,10 +5295,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/i18n/pt.ts
-	var pt_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$33 });
-	var translations$33;
-	var init_pt$7 = __esmMin((() => {
-		translations$33 = {
+	var pt_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$35 });
+	var translations$35;
+	var init_pt$8 = __esmMin((() => {
+		translations$35 = {
 			Datapoints: "Pontos de dados",
 			"Choose which annotation datapoints appear on the chart.": "Escolha quais os pontos de dados de anotação que aparecem no gráfico.",
 			"Linked to selected targets": "Ligados aos alvos selecionados",
@@ -5272,10 +5308,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/i18n/pt.ts
-	var pt_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$32 });
-	var translations$32;
-	var init_pt$6 = __esmMin((() => {
-		translations$32 = {
+	var pt_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$34 });
+	var translations$34;
+	var init_pt$7 = __esmMin((() => {
+		translations$34 = {
 			"Analysis configured": "Análise configurada",
 			"Configure analysis": "Configurar análise",
 			"Stepped series": "Série em degraus",
@@ -5287,17 +5323,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/i18n/pt.ts
-	var pt_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$31 });
-	var translations$31;
-	var init_pt$5 = __esmMin((() => {
-		translations$31 = {};
+	var pt_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$33 });
+	var translations$33;
+	var init_pt$6 = __esmMin((() => {
+		translations$33 = {};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/ai-query-brief-dialog/i18n/pt.ts
-	var pt_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$30 });
-	var translations$30;
-	var init_pt$4 = __esmMin((() => {
-		translations$30 = {
+	var pt_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$32 });
+	var translations$32;
+	var init_pt$5 = __esmMin((() => {
+		translations$32 = {
 			"AI query brief": "Resumo de consulta para IA",
 			"This brief is intended for another AI to fetch raw Home Assistant history and hass_datapoints anomaly details. Review it, then copy it into your AI tool of choice.": "Este resumo foi feito para outra IA obter o historico bruto do Home Assistant e os detalhes de anomalias do hass_datapoints. Revise-o e depois copie-o para a ferramenta de IA de sua escolha.",
 			"Copy-ready brief": "Resumo pronto para copiar",
@@ -5309,10 +5345,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/history-targets/i18n/pt.ts
-	var pt_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$29 });
-	var translations$29;
-	var init_pt$3 = __esmMin((() => {
-		translations$29 = {
+	var pt_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$31 });
+	var translations$31;
+	var init_pt$4 = __esmMin((() => {
+		translations$31 = {
 			Targets: "Alvos",
 			"Each row controls one chart series.": "Cada linha controla uma série do gráfico.",
 			"Add target": "Adicionar alvo",
@@ -5321,10 +5357,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/panel-shell/i18n/pt.ts
-	var pt_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$28 });
-	var translations$28;
-	var init_pt$2 = __esmMin((() => {
-		translations$28 = {
+	var pt_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$30 });
+	var translations$30;
+	var init_pt$3 = __esmMin((() => {
+		translations$30 = {
 			"Loading Datapoints…": "A carregar pontos de dados…",
 			Datapoints: "Pontos de dados",
 			"Page options": "Opções da página",
@@ -5339,10 +5375,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/range-toolbar/i18n/pt.ts
-	var pt_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$27 });
-	var translations$27;
-	var init_pt$1 = __esmMin((() => {
-		translations$27 = {
+	var pt_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$29 });
+	var translations$29;
+	var init_pt$2 = __esmMin((() => {
+		translations$29 = {
 			"Toggle sidebar": "Alternar barra lateral",
 			Start: "Início",
 			End: "Fim",
@@ -5366,10 +5402,18 @@
 		};
 	}));
 	//#endregion
+	//#region custom_components/hass_datapoints/src/panels/datapoints/i18n/pt.ts
+	var pt_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$28 });
+	var translations$28;
+	var init_pt$1 = __esmMin((() => {
+		translations$28 = { "Selected range": "Intervalo selecionado" };
+	}));
+	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/i18n/locales/pt.ts
 	var pt_exports = /* @__PURE__ */ __exportAll({ templates: () => templates$1 });
 	var modules$1, merged$1, templates$1;
 	var init_pt = __esmMin((() => {
+		init_pt$28();
 		init_pt$27();
 		init_pt$26();
 		init_pt$25();
@@ -5398,33 +5442,34 @@
 		init_pt$2();
 		init_pt$1();
 		modules$1 = /* #__PURE__ */ Object.assign({
-			"../../../cards/action/i18n/pt.ts": pt_exports$27,
-			"../../../cards/history/history-chart/i18n/pt.ts": pt_exports$26,
-			"../../../cards/history/i18n/pt.ts": pt_exports$25,
-			"../../../cards/list/i18n/pt.ts": pt_exports$24,
-			"../../../cards/quick/i18n/pt.ts": pt_exports$23,
-			"../../../cards/sensor/i18n/pt.ts": pt_exports$22,
-			"../../chart/i18n/pt.ts": pt_exports$21,
-			"../../ha/i18n/pt.ts": pt_exports$20,
-			"../../history-page/i18n/pt.ts": pt_exports$19,
-			"../../timeline/i18n/pt.ts": pt_exports$18,
-			"../../../molecules/analysis-anomaly-group/i18n/pt.ts": pt_exports$17,
-			"../../../molecules/analysis-delta-group/i18n/pt.ts": pt_exports$16,
-			"../../../molecules/analysis-rate-group/i18n/pt.ts": pt_exports$15,
-			"../../../molecules/analysis-sample-group/i18n/pt.ts": pt_exports$14,
-			"../../../molecules/analysis-summary-group/i18n/pt.ts": pt_exports$13,
-			"../../../molecules/analysis-threshold-group/i18n/pt.ts": pt_exports$12,
-			"../../../molecules/analysis-trend-group/i18n/pt.ts": pt_exports$11,
-			"../../../molecules/anomaly-monitor-wizard/i18n/pt.ts": pt_exports$10,
-			"../../../molecules/comparison-tab-rail/i18n/pt.ts": pt_exports$9,
-			"../../../molecules/date-window-dialog/i18n/pt.ts": pt_exports$8,
-			"../../../molecules/sidebar-options/sections/i18n/pt.ts": pt_exports$7,
-			"../../../molecules/target-row/i18n/pt.ts": pt_exports$6,
-			"../../../molecules/target-row-list/i18n/pt.ts": pt_exports$5,
-			"../../../panels/datapoints/components/ai-query-brief-dialog/i18n/pt.ts": pt_exports$4,
-			"../../../panels/datapoints/components/history-targets/i18n/pt.ts": pt_exports$3,
-			"../../../panels/datapoints/components/panel-shell/i18n/pt.ts": pt_exports$2,
-			"../../../panels/datapoints/components/range-toolbar/i18n/pt.ts": pt_exports$1
+			"../../../cards/action/i18n/pt.ts": pt_exports$28,
+			"../../../cards/history/history-chart/i18n/pt.ts": pt_exports$27,
+			"../../../cards/history/i18n/pt.ts": pt_exports$26,
+			"../../../cards/list/i18n/pt.ts": pt_exports$25,
+			"../../../cards/quick/i18n/pt.ts": pt_exports$24,
+			"../../../cards/sensor/i18n/pt.ts": pt_exports$23,
+			"../../chart/i18n/pt.ts": pt_exports$22,
+			"../../ha/i18n/pt.ts": pt_exports$21,
+			"../../history-page/i18n/pt.ts": pt_exports$20,
+			"../../timeline/i18n/pt.ts": pt_exports$19,
+			"../../../molecules/analysis-anomaly-group/i18n/pt.ts": pt_exports$18,
+			"../../../molecules/analysis-delta-group/i18n/pt.ts": pt_exports$17,
+			"../../../molecules/analysis-rate-group/i18n/pt.ts": pt_exports$16,
+			"../../../molecules/analysis-sample-group/i18n/pt.ts": pt_exports$15,
+			"../../../molecules/analysis-summary-group/i18n/pt.ts": pt_exports$14,
+			"../../../molecules/analysis-threshold-group/i18n/pt.ts": pt_exports$13,
+			"../../../molecules/analysis-trend-group/i18n/pt.ts": pt_exports$12,
+			"../../../molecules/anomaly-monitor-wizard/i18n/pt.ts": pt_exports$11,
+			"../../../molecules/comparison-tab-rail/i18n/pt.ts": pt_exports$10,
+			"../../../molecules/date-window-dialog/i18n/pt.ts": pt_exports$9,
+			"../../../molecules/sidebar-options/sections/i18n/pt.ts": pt_exports$8,
+			"../../../molecules/target-row/i18n/pt.ts": pt_exports$7,
+			"../../../molecules/target-row-list/i18n/pt.ts": pt_exports$6,
+			"../../../panels/datapoints/components/ai-query-brief-dialog/i18n/pt.ts": pt_exports$5,
+			"../../../panels/datapoints/components/history-targets/i18n/pt.ts": pt_exports$4,
+			"../../../panels/datapoints/components/panel-shell/i18n/pt.ts": pt_exports$3,
+			"../../../panels/datapoints/components/range-toolbar/i18n/pt.ts": pt_exports$2,
+			"../../../panels/datapoints/i18n/pt.ts": pt_exports$1
 		});
 		merged$1 = {};
 		for (const mod of Object.values(modules$1)) Object.assign(merged$1, mod.translations);
@@ -5432,10 +5477,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/i18n/zh-hans.ts
-	var zh_hans_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$26 });
-	var translations$26;
-	var init_zh_hans$27 = __esmMin((() => {
-		translations$26 = {
+	var zh_hans_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$27 });
+	var translations$27;
+	var init_zh_hans$28 = __esmMin((() => {
+		translations$27 = {
 			General: "常规",
 			"Related items": "关联项",
 			"Datapoint Appearance": "数据点外观",
@@ -5452,20 +5497,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/i18n/zh-hans.ts
-	var zh_hans_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$25 });
-	var translations$25;
-	var init_zh_hans$26 = __esmMin((() => {
-		translations$25 = {
+	var zh_hans_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$26 });
+	var translations$26;
+	var init_zh_hans$27 = __esmMin((() => {
+		translations$26 = {
 			"Date window:": "日期窗口：",
 			"Actual:": "实际："
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/i18n/zh-hans.ts
-	var zh_hans_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$24 });
-	var translations$24;
-	var init_zh_hans$25 = __esmMin((() => {
-		translations$24 = {
+	var zh_hans_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$25 });
+	var translations$25;
+	var init_zh_hans$26 = __esmMin((() => {
+		translations$25 = {
 			General: "常规",
 			Entity: "实体",
 			"Multiple entities": "多个实体",
@@ -5479,10 +5524,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/i18n/zh-hans.ts
-	var zh_hans_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$23 });
-	var translations$23;
-	var init_zh_hans$24 = __esmMin((() => {
-		translations$23 = {
+	var zh_hans_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$24 });
+	var translations$24;
+	var init_zh_hans$25 = __esmMin((() => {
+		translations$24 = {
 			"Search datapoints…": "搜索数据点…",
 			"Delete record": "删除记录",
 			Delete: "删除",
@@ -5500,10 +5545,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/i18n/zh-hans.ts
-	var zh_hans_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$22 });
-	var translations$22;
-	var init_zh_hans$23 = __esmMin((() => {
-		translations$22 = {
+	var zh_hans_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$23 });
+	var translations$23;
+	var init_zh_hans$24 = __esmMin((() => {
+		translations$23 = {
 			General: "常规",
 			"Icon & colour": "图标和颜色",
 			"Related items": "关联项",
@@ -5521,10 +5566,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/i18n/zh-hans.ts
-	var zh_hans_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$21 });
-	var translations$21;
-	var init_zh_hans$22 = __esmMin((() => {
-		translations$21 = {
+	var zh_hans_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$22 });
+	var translations$22;
+	var init_zh_hans$23 = __esmMin((() => {
+		translations$22 = {
 			Entity: "实体",
 			Display: "显示",
 			"Records list": "记录列表",
@@ -5544,10 +5589,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/i18n/zh-hans.ts
-	var zh_hans_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$20 });
-	var translations$20;
-	var init_zh_hans$21 = __esmMin((() => {
-		translations$20 = {
+	var zh_hans_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$21 });
+	var translations$21;
+	var init_zh_hans$22 = __esmMin((() => {
+		translations$21 = {
 			"⚠️ Anomaly Insight": "⚠️ 异常洞察",
 			"⚠️ Multi-method Anomaly": "⚠️ 多方法异常",
 			"Click the highlighted circle to add an annotation.": "点击高亮圆圈以添加注释。",
@@ -5582,10 +5627,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/ha/i18n/zh-hans.ts
-	var zh_hans_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$19 });
-	var translations$19;
-	var init_zh_hans$20 = __esmMin((() => {
-		translations$19 = {
+	var zh_hans_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$20 });
+	var translations$20;
+	var init_zh_hans$21 = __esmMin((() => {
+		translations$20 = {
 			"Confirm delete": "确认删除",
 			"Are you sure you want to delete this item?": "确定要删除此项目吗？",
 			Cancel: "取消",
@@ -5600,10 +5645,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/history-page/i18n/zh-hans.ts
-	var zh_hans_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$18 });
-	var translations$18;
-	var init_zh_hans$19 = __esmMin((() => {
-		translations$18 = {
+	var zh_hans_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$19 });
+	var translations$19;
+	var init_zh_hans$20 = __esmMin((() => {
+		translations$19 = {
 			"entity_id={0}": "entity_id={0}",
 			"device_id={0}": "device_id={0}",
 			"area_id={0}": "area_id={0}",
@@ -5701,20 +5746,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/timeline/i18n/zh-hans.ts
-	var zh_hans_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$17 });
-	var translations$17;
-	var init_zh_hans$18 = __esmMin((() => {
-		translations$17 = {
+	var zh_hans_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$18 });
+	var translations$18;
+	var init_zh_hans$19 = __esmMin((() => {
+		translations$18 = {
 			Wk: "周",
 			"Week of": "所在周"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/i18n/zh-hans.ts
-	var zh_hans_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$16 });
-	var translations$16;
-	var init_zh_hans$17 = __esmMin((() => {
-		translations$16 = {
+	var zh_hans_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$17 });
+	var translations$17;
+	var init_zh_hans$18 = __esmMin((() => {
+		translations$17 = {
 			"Show anomalies": "显示异常",
 			Sensitivity: "灵敏度",
 			"Use downsampled data for detection": "检测时使用降采样数据",
@@ -5756,10 +5801,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-delta-group/i18n/zh-hans.ts
-	var zh_hans_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$15 });
-	var translations$15;
-	var init_zh_hans$16 = __esmMin((() => {
-		translations$15 = {
+	var zh_hans_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$16 });
+	var translations$16;
+	var init_zh_hans$17 = __esmMin((() => {
+		translations$16 = {
 			"Show delta vs selected date window": "显示相对于所选日期窗口的差值",
 			"Select a date window tab to enable delta analysis.": "选择一个日期窗口标签以启用差值分析。",
 			"Show delta in tooltip": "在提示中显示差值",
@@ -5768,10 +5813,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/i18n/zh-hans.ts
-	var zh_hans_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$14 });
-	var translations$14;
-	var init_zh_hans$15 = __esmMin((() => {
-		translations$14 = {
+	var zh_hans_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$15 });
+	var translations$15;
+	var init_zh_hans$16 = __esmMin((() => {
+		translations$15 = {
 			"Show rate of change": "显示变化率",
 			"Show rate of change crosshairs": "显示变化率准星",
 			"Rate window": "变化率窗口",
@@ -5783,10 +5828,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-sample-group/i18n/zh-hans.ts
-	var zh_hans_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$13 });
-	var translations$13;
-	var init_zh_hans$14 = __esmMin((() => {
-		translations$13 = {
+	var zh_hans_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$14 });
+	var translations$14;
+	var init_zh_hans$15 = __esmMin((() => {
+		translations$14 = {
 			Downsampling: "降采样",
 			Interval: "间隔",
 			Aggregate: "聚合",
@@ -5818,20 +5863,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/i18n/zh-hans.ts
-	var zh_hans_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$12 });
-	var translations$12;
-	var init_zh_hans$13 = __esmMin((() => {
-		translations$12 = {
+	var zh_hans_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$13 });
+	var translations$13;
+	var init_zh_hans$14 = __esmMin((() => {
+		translations$13 = {
 			"Show min / max / mean": "显示最小 / 最大 / 平均值",
 			"Show range shading": "显示范围阴影"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/i18n/zh-hans.ts
-	var zh_hans_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$11 });
-	var translations$11;
-	var init_zh_hans$12 = __esmMin((() => {
-		translations$11 = {
+	var zh_hans_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$12 });
+	var translations$12;
+	var init_zh_hans$13 = __esmMin((() => {
+		translations$12 = {
 			"Show threshold analysis": "显示阈值分析",
 			"Shade threshold area": "为阈值区域着色",
 			Threshold: "阈值",
@@ -5842,10 +5887,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/i18n/zh-hans.ts
-	var zh_hans_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$10 });
-	var translations$10;
-	var init_zh_hans$11 = __esmMin((() => {
-		translations$10 = {
+	var zh_hans_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$11 });
+	var translations$11;
+	var init_zh_hans$12 = __esmMin((() => {
+		translations$11 = {
 			"Show trend lines": "显示趋势线",
 			"Show trend crosshairs": "显示趋势准星",
 			"Trend method": "趋势方法",
@@ -5863,10 +5908,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/i18n/zh-hans.ts
-	var zh_hans_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$9 });
-	var translations$9;
-	var init_zh_hans$10 = __esmMin((() => {
-		translations$9 = {
+	var zh_hans_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$10 });
+	var translations$10;
+	var init_zh_hans$11 = __esmMin((() => {
+		translations$10 = {
 			"Add all series from chart": "添加图表中的所有序列",
 			"Add from current chart": "从当前图表添加",
 			"Create anomaly monitor": "创建异常监视器",
@@ -5876,17 +5921,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab-rail/i18n/zh-hans.ts
-	var zh_hans_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$8 });
-	var translations$8;
-	var init_zh_hans$9 = __esmMin((() => {
-		translations$8 = { "Add date window": "添加日期窗口" };
+	var zh_hans_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$9 });
+	var translations$9;
+	var init_zh_hans$10 = __esmMin((() => {
+		translations$9 = { "Add date window": "添加日期窗口" };
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/i18n/zh-hans.ts
-	var zh_hans_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$7 });
-	var translations$7;
-	var init_zh_hans$8 = __esmMin((() => {
-		translations$7 = {
+	var zh_hans_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$8 });
+	var translations$8;
+	var init_zh_hans$9 = __esmMin((() => {
+		translations$8 = {
 			"A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later.": "日期窗口会将一个命名的日期范围保存为标签页，这样你就可以快速将其与所选范围进行预览对比，或稍后在图表中跳回该范围。",
 			Name: "名称",
 			"e.g. Heating season start": "例如：供暖季开始",
@@ -5901,10 +5946,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/i18n/zh-hans.ts
-	var zh_hans_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$6 });
-	var translations$6;
-	var init_zh_hans$7 = __esmMin((() => {
-		translations$6 = {
+	var zh_hans_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$7 });
+	var translations$7;
+	var init_zh_hans$8 = __esmMin((() => {
+		translations$7 = {
 			Datapoints: "数据点",
 			"Choose which annotation datapoints appear on the chart.": "选择哪些注释数据点显示在图表上。",
 			"Linked to selected targets": "关联到所选目标",
@@ -5914,10 +5959,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/i18n/zh-hans.ts
-	var zh_hans_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$5 });
-	var translations$5;
-	var init_zh_hans$6 = __esmMin((() => {
-		translations$5 = {
+	var zh_hans_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$6 });
+	var translations$6;
+	var init_zh_hans$7 = __esmMin((() => {
+		translations$6 = {
 			"Analysis configured": "分析已配置",
 			"Configure analysis": "配置分析",
 			"Stepped series": "阶梯序列",
@@ -5929,17 +5974,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/i18n/zh-hans.ts
-	var zh_hans_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$4 });
-	var translations$4;
-	var init_zh_hans$5 = __esmMin((() => {
-		translations$4 = {};
+	var zh_hans_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$5 });
+	var translations$5;
+	var init_zh_hans$6 = __esmMin((() => {
+		translations$5 = {};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/ai-query-brief-dialog/i18n/zh-hans.ts
-	var zh_hans_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$3 });
-	var translations$3;
-	var init_zh_hans$4 = __esmMin((() => {
-		translations$3 = {
+	var zh_hans_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$4 });
+	var translations$4;
+	var init_zh_hans$5 = __esmMin((() => {
+		translations$4 = {
 			"AI query brief": "AI 查询简报",
 			"This brief is intended for another AI to fetch raw Home Assistant history and hass_datapoints anomaly details. Review it, then copy it into your AI tool of choice.": "此简报用于让另一个 AI 获取 Home Assistant 原始历史数据以及 hass_datapoints 的异常详情。请先检查内容，然后复制到你选择的 AI 工具中。",
 			"Copy-ready brief": "可直接复制的简报",
@@ -5951,10 +5996,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/history-targets/i18n/zh-hans.ts
-	var zh_hans_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$2 });
-	var translations$2;
-	var init_zh_hans$3 = __esmMin((() => {
-		translations$2 = {
+	var zh_hans_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$3 });
+	var translations$3;
+	var init_zh_hans$4 = __esmMin((() => {
+		translations$3 = {
 			Targets: "目标",
 			"Each row controls one chart series.": "每一行控制一条图表序列。",
 			"Add target": "添加目标",
@@ -5963,10 +6008,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/panel-shell/i18n/zh-hans.ts
-	var zh_hans_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$1 });
-	var translations$1;
-	var init_zh_hans$2 = __esmMin((() => {
-		translations$1 = {
+	var zh_hans_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$2 });
+	var translations$2;
+	var init_zh_hans$3 = __esmMin((() => {
+		translations$2 = {
 			"Loading Datapoints…": "正在加载数据点…",
 			Datapoints: "数据点",
 			"Page options": "页面选项",
@@ -5981,10 +6026,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/range-toolbar/i18n/zh-hans.ts
-	var zh_hans_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations });
-	var translations;
-	var init_zh_hans$1 = __esmMin((() => {
-		translations = {
+	var zh_hans_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$1 });
+	var translations$1;
+	var init_zh_hans$2 = __esmMin((() => {
+		translations$1 = {
 			"Toggle sidebar": "切换侧边栏",
 			Start: "开始",
 			End: "结束",
@@ -6008,10 +6053,18 @@
 		};
 	}));
 	//#endregion
+	//#region custom_components/hass_datapoints/src/panels/datapoints/i18n/zh-hans.ts
+	var zh_hans_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations });
+	var translations;
+	var init_zh_hans$1 = __esmMin((() => {
+		translations = { "Selected range": "所选时间范围" };
+	}));
+	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/i18n/locales/zh-hans.ts
 	var zh_hans_exports = /* @__PURE__ */ __exportAll({ templates: () => templates });
 	var modules, merged, templates;
 	var init_zh_hans = __esmMin((() => {
+		init_zh_hans$28();
 		init_zh_hans$27();
 		init_zh_hans$26();
 		init_zh_hans$25();
@@ -6040,33 +6093,34 @@
 		init_zh_hans$2();
 		init_zh_hans$1();
 		modules = /* #__PURE__ */ Object.assign({
-			"../../../cards/action/i18n/zh-hans.ts": zh_hans_exports$27,
-			"../../../cards/history/history-chart/i18n/zh-hans.ts": zh_hans_exports$26,
-			"../../../cards/history/i18n/zh-hans.ts": zh_hans_exports$25,
-			"../../../cards/list/i18n/zh-hans.ts": zh_hans_exports$24,
-			"../../../cards/quick/i18n/zh-hans.ts": zh_hans_exports$23,
-			"../../../cards/sensor/i18n/zh-hans.ts": zh_hans_exports$22,
-			"../../chart/i18n/zh-hans.ts": zh_hans_exports$21,
-			"../../ha/i18n/zh-hans.ts": zh_hans_exports$20,
-			"../../history-page/i18n/zh-hans.ts": zh_hans_exports$19,
-			"../../timeline/i18n/zh-hans.ts": zh_hans_exports$18,
-			"../../../molecules/analysis-anomaly-group/i18n/zh-hans.ts": zh_hans_exports$17,
-			"../../../molecules/analysis-delta-group/i18n/zh-hans.ts": zh_hans_exports$16,
-			"../../../molecules/analysis-rate-group/i18n/zh-hans.ts": zh_hans_exports$15,
-			"../../../molecules/analysis-sample-group/i18n/zh-hans.ts": zh_hans_exports$14,
-			"../../../molecules/analysis-summary-group/i18n/zh-hans.ts": zh_hans_exports$13,
-			"../../../molecules/analysis-threshold-group/i18n/zh-hans.ts": zh_hans_exports$12,
-			"../../../molecules/analysis-trend-group/i18n/zh-hans.ts": zh_hans_exports$11,
-			"../../../molecules/anomaly-monitor-wizard/i18n/zh-hans.ts": zh_hans_exports$10,
-			"../../../molecules/comparison-tab-rail/i18n/zh-hans.ts": zh_hans_exports$9,
-			"../../../molecules/date-window-dialog/i18n/zh-hans.ts": zh_hans_exports$8,
-			"../../../molecules/sidebar-options/sections/i18n/zh-hans.ts": zh_hans_exports$7,
-			"../../../molecules/target-row/i18n/zh-hans.ts": zh_hans_exports$6,
-			"../../../molecules/target-row-list/i18n/zh-hans.ts": zh_hans_exports$5,
-			"../../../panels/datapoints/components/ai-query-brief-dialog/i18n/zh-hans.ts": zh_hans_exports$4,
-			"../../../panels/datapoints/components/history-targets/i18n/zh-hans.ts": zh_hans_exports$3,
-			"../../../panels/datapoints/components/panel-shell/i18n/zh-hans.ts": zh_hans_exports$2,
-			"../../../panels/datapoints/components/range-toolbar/i18n/zh-hans.ts": zh_hans_exports$1
+			"../../../cards/action/i18n/zh-hans.ts": zh_hans_exports$28,
+			"../../../cards/history/history-chart/i18n/zh-hans.ts": zh_hans_exports$27,
+			"../../../cards/history/i18n/zh-hans.ts": zh_hans_exports$26,
+			"../../../cards/list/i18n/zh-hans.ts": zh_hans_exports$25,
+			"../../../cards/quick/i18n/zh-hans.ts": zh_hans_exports$24,
+			"../../../cards/sensor/i18n/zh-hans.ts": zh_hans_exports$23,
+			"../../chart/i18n/zh-hans.ts": zh_hans_exports$22,
+			"../../ha/i18n/zh-hans.ts": zh_hans_exports$21,
+			"../../history-page/i18n/zh-hans.ts": zh_hans_exports$20,
+			"../../timeline/i18n/zh-hans.ts": zh_hans_exports$19,
+			"../../../molecules/analysis-anomaly-group/i18n/zh-hans.ts": zh_hans_exports$18,
+			"../../../molecules/analysis-delta-group/i18n/zh-hans.ts": zh_hans_exports$17,
+			"../../../molecules/analysis-rate-group/i18n/zh-hans.ts": zh_hans_exports$16,
+			"../../../molecules/analysis-sample-group/i18n/zh-hans.ts": zh_hans_exports$15,
+			"../../../molecules/analysis-summary-group/i18n/zh-hans.ts": zh_hans_exports$14,
+			"../../../molecules/analysis-threshold-group/i18n/zh-hans.ts": zh_hans_exports$13,
+			"../../../molecules/analysis-trend-group/i18n/zh-hans.ts": zh_hans_exports$12,
+			"../../../molecules/anomaly-monitor-wizard/i18n/zh-hans.ts": zh_hans_exports$11,
+			"../../../molecules/comparison-tab-rail/i18n/zh-hans.ts": zh_hans_exports$10,
+			"../../../molecules/date-window-dialog/i18n/zh-hans.ts": zh_hans_exports$9,
+			"../../../molecules/sidebar-options/sections/i18n/zh-hans.ts": zh_hans_exports$8,
+			"../../../molecules/target-row/i18n/zh-hans.ts": zh_hans_exports$7,
+			"../../../molecules/target-row-list/i18n/zh-hans.ts": zh_hans_exports$6,
+			"../../../panels/datapoints/components/ai-query-brief-dialog/i18n/zh-hans.ts": zh_hans_exports$5,
+			"../../../panels/datapoints/components/history-targets/i18n/zh-hans.ts": zh_hans_exports$4,
+			"../../../panels/datapoints/components/panel-shell/i18n/zh-hans.ts": zh_hans_exports$3,
+			"../../../panels/datapoints/components/range-toolbar/i18n/zh-hans.ts": zh_hans_exports$2,
+			"../../../panels/datapoints/i18n/zh-hans.ts": zh_hans_exports$1
 		});
 		merged = {};
 		for (const mod of Object.values(modules)) Object.assign(merged, mod.translations);
@@ -6142,12 +6196,12 @@
 	//#region custom_components/hass_datapoints/src/molecules/editor-base/editor-base.ts
 	var _EditorBase;
 	var _config_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$15 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$16 = /* @__PURE__ */ new WeakMap();
 	var EditorBase = (_EditorBase = class EditorBase extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _config_accessor_storage$1, {});
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$15, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$16, null);
 		}
 		get _config() {
 			return _classPrivateFieldGet2(_config_accessor_storage$1, this);
@@ -6156,10 +6210,10 @@
 			_classPrivateFieldSet2(_config_accessor_storage$1, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$15, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$16, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$15, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$16, this, value);
 		}
 		setConfig(config) {
 			this._config = { ...config };
@@ -6495,7 +6549,7 @@
 	//#region custom_components/hass_datapoints/src/atoms/form/editor-icon-picker/editor-icon-picker.ts
 	var _label_accessor_storage$11 = /* @__PURE__ */ new WeakMap();
 	var _value_accessor_storage$8 = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$14 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$15 = /* @__PURE__ */ new WeakMap();
 	/**
 	* MDI icon picker backed by `ha-icon-picker`.
 	* @fires dp-change - `{ type: "icon", value: string }` — MDI icon string (e.g. `"mdi:home"`)
@@ -6505,7 +6559,7 @@
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _label_accessor_storage$11, "");
 			_classPrivateFieldInitSpec(this, _value_accessor_storage$8, "mdi:bookmark");
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$14, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$15, null);
 		}
 		get label() {
 			return _classPrivateFieldGet2(_label_accessor_storage$11, this);
@@ -6520,10 +6574,10 @@
 			_classPrivateFieldSet2(_value_accessor_storage$8, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$14, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$15, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$14, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$15, this, value);
 		}
 		_onValueChanged(e) {
 			dispatchChange(this, {
@@ -7603,7 +7657,7 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/dev-tool/dev-tool.ts
 	var _config_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$13 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$14 = /* @__PURE__ */ new WeakMap();
 	var _entities_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _results_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _analyzing_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -7623,7 +7677,7 @@
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _config_accessor_storage, {});
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$13, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$14, null);
 			_classPrivateFieldInitSpec(this, _entities_accessor_storage, []);
 			_classPrivateFieldInitSpec(this, _results_accessor_storage, []);
 			_classPrivateFieldInitSpec(this, _analyzing_accessor_storage, false);
@@ -7648,10 +7702,10 @@
 			_classPrivateFieldSet2(_config_accessor_storage, this, value);
 		}
 		get _hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$13, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$14, this);
 		}
 		set _hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$13, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$14, this, value);
 		}
 		get _entities() {
 			return _classPrivateFieldGet2(_entities_accessor_storage, this);
@@ -16880,7 +16934,7 @@
 	var _name_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
 	var _secondaryText_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _stateObj_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$12 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$13 = /* @__PURE__ */ new WeakMap();
 	var _i18n_accessor_storage$7 = /* @__PURE__ */ new WeakMap();
 	var AnnotationChip = class extends i$2 {
 		constructor(..._args) {
@@ -16891,7 +16945,7 @@
 			_classPrivateFieldInitSpec(this, _name_accessor_storage$4, "");
 			_classPrivateFieldInitSpec(this, _secondaryText_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _stateObj_accessor_storage$2, null);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$12, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$13, null);
 			_classPrivateFieldInitSpec(this, _i18n_accessor_storage$7, DEFAULT_I18N$6);
 		}
 		get type() {
@@ -16931,10 +16985,10 @@
 			_classPrivateFieldSet2(_stateObj_accessor_storage$2, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$12, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$13, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$12, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$13, this, value);
 		}
 		get i18n() {
 			return _classPrivateFieldGet2(_i18n_accessor_storage$7, this);
@@ -17005,7 +17059,7 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/annotation-chip-row/annotation-chip-row.ts
 	var _chips_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$11 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$12 = /* @__PURE__ */ new WeakMap();
 	var _label_accessor_storage$10 = /* @__PURE__ */ new WeakMap();
 	var _helpText_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _emptyText_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -17020,7 +17074,7 @@
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _chips_accessor_storage, []);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$11, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$12, null);
 			_classPrivateFieldInitSpec(this, _label_accessor_storage$10, "Linked targets");
 			_classPrivateFieldInitSpec(this, _helpText_accessor_storage, "These targets will be associated with the new data point by default. Remove any that should not be linked.");
 			_classPrivateFieldInitSpec(this, _emptyText_accessor_storage, "No linked targets will be associated with this data point.");
@@ -17032,10 +17086,10 @@
 			_classPrivateFieldSet2(_chips_accessor_storage, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$11, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$12, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$11, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$12, this, value);
 		}
 		get label() {
 			return _classPrivateFieldGet2(_label_accessor_storage$10, this);
@@ -18297,6 +18351,34 @@
 		/** Returns the hass-datapoints-history-chart element once it is in the shadow DOM. */
 		_chartEl() {
 			return this.shadowRoot?.querySelector("hass-datapoints-history-chart") ?? null;
+		}
+		/** Rendering host for panel-owned comparison tabs; drawing remains chart-owned. */
+		getComparisonTabsHost() {
+			return this._chartEl()?.querySelector("#chart-top-slot") ?? null;
+		}
+		/**
+		* Public resize-replay seam: redraw the chart with its last draw args.
+		* The panel calls this on container/pane resize instead of reaching through
+		* the card's shadow root into the inner chart.
+		*/
+		requestResizeRedraw() {
+			this._chartEl()?._redrawLastDraw();
+		}
+		/**
+		* Toggle the comparison-tab rail's overflow affordance from measured widths.
+		* Encapsulates the inner chart's `#chart-tabs-shell`/`#chart-tabs-rail` so the
+		* panel orchestration no longer walks this card's shadow DOM.
+		*/
+		updateComparisonTabsOverflow() {
+			const chart = this._chartEl();
+			const shell = chart?.querySelector("#chart-tabs-shell") ?? null;
+			const rail = chart?.querySelector("#chart-tabs-rail") ?? null;
+			if (!shell || !rail) return;
+			shell.classList.toggle("overflowing", rail.scrollWidth > rail.clientWidth + 4);
+		}
+		/** Whether the chart should rescale its axis for comparison overlays. */
+		setAdjustComparisonAxisScale(value) {
+			this._adjustComparisonAxisScale = value;
 		}
 		getAiQueryBriefAnomalySnapshot() {
 			const chartEl = this._chartEl();
@@ -19582,7 +19664,7 @@
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/analysis-anomaly-group.ts
 	var _AnalysisAnomalyGroup;
 	var _comparisonWindows_accessor_storage$3;
-	var _hass_accessor_storage$10;
+	var _hass_accessor_storage$11;
 	var _computing_accessor_storage$1;
 	var _computingProgress_accessor_storage$1;
 	var _computingMethods_accessor_storage$1;
@@ -19723,11 +19805,11 @@
 		value: "only",
 		label: "Overlaps only"
 	}];
-	var AnalysisAnomalyGroup = (_comparisonWindows_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$10 = /* @__PURE__ */ new WeakMap(), _computing_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingProgress_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingMethods_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hideSaveMonitorCta_accessor_storage = /* @__PURE__ */ new WeakMap(), _AnalysisAnomalyGroup = class AnalysisAnomalyGroup extends AnalysisGroupMixin(i$2) {
+	var AnalysisAnomalyGroup = (_comparisonWindows_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$11 = /* @__PURE__ */ new WeakMap(), _computing_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingProgress_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingMethods_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hideSaveMonitorCta_accessor_storage = /* @__PURE__ */ new WeakMap(), _AnalysisAnomalyGroup = class AnalysisAnomalyGroup extends AnalysisGroupMixin(i$2) {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _comparisonWindows_accessor_storage$3, []);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$10, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$11, null);
 			_classPrivateFieldInitSpec(this, _computing_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _computingProgress_accessor_storage$1, 0);
 			_classPrivateFieldInitSpec(this, _computingMethods_accessor_storage$1, /* @__PURE__ */ new Set());
@@ -19740,10 +19822,10 @@
 			_classPrivateFieldSet2(_comparisonWindows_accessor_storage$3, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$10, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$11, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$10, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$11, this, value);
 		}
 		get computing() {
 			return _classPrivateFieldGet2(_computing_accessor_storage$1, this);
@@ -20478,7 +20560,7 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/sidebar-datapoints-section.ts
 	var _SidebarDatapointsSection;
-	var _datapointScope_accessor_storage$2;
+	var _datapointScope_accessor_storage$3;
 	var _collapsible_accessor_storage$3;
 	var _open_accessor_storage$7;
 	var DATAPOINT_SCOPE_OPTIONS = [
@@ -20495,18 +20577,18 @@
 			label: "Hide datapoints"
 		}
 	];
-	var SidebarDatapointsSection = (_datapointScope_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$7 = /* @__PURE__ */ new WeakMap(), _SidebarDatapointsSection = class SidebarDatapointsSection extends i$2 {
+	var SidebarDatapointsSection = (_datapointScope_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$7 = /* @__PURE__ */ new WeakMap(), _SidebarDatapointsSection = class SidebarDatapointsSection extends i$2 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _datapointScope_accessor_storage$2, "linked");
+			_classPrivateFieldInitSpec(this, _datapointScope_accessor_storage$3, "linked");
 			_classPrivateFieldInitSpec(this, _collapsible_accessor_storage$3, false);
 			_classPrivateFieldInitSpec(this, _open_accessor_storage$7, true);
 		}
 		get datapointScope() {
-			return _classPrivateFieldGet2(_datapointScope_accessor_storage$2, this);
+			return _classPrivateFieldGet2(_datapointScope_accessor_storage$3, this);
 		}
 		set datapointScope(value) {
-			_classPrivateFieldSet2(_datapointScope_accessor_storage$2, this, value);
+			_classPrivateFieldSet2(_datapointScope_accessor_storage$3, this, value);
 		}
 		get collapsible() {
 			return _classPrivateFieldGet2(_collapsible_accessor_storage$3, this);
@@ -20754,7 +20836,7 @@
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/sidebar-analysis-section.ts
 	var _SidebarAnalysisSection;
 	var _anomalyOverlapMode_accessor_storage$2;
-	var _showCorrelatedAnomalies_accessor_storage$2;
+	var _showCorrelatedAnomalies_accessor_storage$3;
 	var _anyAnomaliesEnabled_accessor_storage$2;
 	var _collapsible_accessor_storage$1;
 	var _open_accessor_storage$5;
@@ -20765,11 +20847,11 @@
 		value: "only",
 		label: "Overlaps only"
 	}];
-	var SidebarAnalysisSection = (_anomalyOverlapMode_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showCorrelatedAnomalies_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _anyAnomaliesEnabled_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$5 = /* @__PURE__ */ new WeakMap(), _SidebarAnalysisSection = class SidebarAnalysisSection extends i$2 {
+	var SidebarAnalysisSection = (_anomalyOverlapMode_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showCorrelatedAnomalies_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _anyAnomaliesEnabled_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$5 = /* @__PURE__ */ new WeakMap(), _SidebarAnalysisSection = class SidebarAnalysisSection extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _anomalyOverlapMode_accessor_storage$2, "all");
-			_classPrivateFieldInitSpec(this, _showCorrelatedAnomalies_accessor_storage$2, false);
+			_classPrivateFieldInitSpec(this, _showCorrelatedAnomalies_accessor_storage$3, false);
 			_classPrivateFieldInitSpec(this, _anyAnomaliesEnabled_accessor_storage$2, false);
 			_classPrivateFieldInitSpec(this, _collapsible_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _open_accessor_storage$5, true);
@@ -20781,10 +20863,10 @@
 			_classPrivateFieldSet2(_anomalyOverlapMode_accessor_storage$2, this, value);
 		}
 		get showCorrelatedAnomalies() {
-			return _classPrivateFieldGet2(_showCorrelatedAnomalies_accessor_storage$2, this);
+			return _classPrivateFieldGet2(_showCorrelatedAnomalies_accessor_storage$3, this);
 		}
 		set showCorrelatedAnomalies(value) {
-			_classPrivateFieldSet2(_showCorrelatedAnomalies_accessor_storage$2, this, value);
+			_classPrivateFieldSet2(_showCorrelatedAnomalies_accessor_storage$3, this, value);
 		}
 		get anyAnomaliesEnabled() {
 			return _classPrivateFieldGet2(_anyAnomaliesEnabled_accessor_storage$2, this);
@@ -20931,8 +21013,8 @@
 	var _SidebarChartDisplaySection;
 	var _showTooltips_accessor_storage$2;
 	var _showHoverGuides_accessor_storage$2;
-	var _showDataGaps_accessor_storage$2;
-	var _dataGapThreshold_accessor_storage$2;
+	var _showDataGaps_accessor_storage$3;
+	var _dataGapThreshold_accessor_storage$3;
 	var _yAxisMode_accessor_storage$2;
 	var _hoverSnapMode_accessor_storage$2;
 	var _collapsible_accessor_storage;
@@ -20996,13 +21078,13 @@
 		value: "snap_to_data_points",
 		label: "Snap to data points"
 	}];
-	var SidebarChartDisplaySection = (_showTooltips_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showHoverGuides_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showDataGaps_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _dataGapThreshold_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _yAxisMode_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _hoverSnapMode_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$4 = /* @__PURE__ */ new WeakMap(), _SidebarChartDisplaySection = class SidebarChartDisplaySection extends i$2 {
+	var SidebarChartDisplaySection = (_showTooltips_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showHoverGuides_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showDataGaps_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _dataGapThreshold_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _yAxisMode_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _hoverSnapMode_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$4 = /* @__PURE__ */ new WeakMap(), _SidebarChartDisplaySection = class SidebarChartDisplaySection extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _showTooltips_accessor_storage$2, true);
 			_classPrivateFieldInitSpec(this, _showHoverGuides_accessor_storage$2, false);
-			_classPrivateFieldInitSpec(this, _showDataGaps_accessor_storage$2, true);
-			_classPrivateFieldInitSpec(this, _dataGapThreshold_accessor_storage$2, "2h");
+			_classPrivateFieldInitSpec(this, _showDataGaps_accessor_storage$3, true);
+			_classPrivateFieldInitSpec(this, _dataGapThreshold_accessor_storage$3, "2h");
 			_classPrivateFieldInitSpec(this, _yAxisMode_accessor_storage$2, "combined");
 			_classPrivateFieldInitSpec(this, _hoverSnapMode_accessor_storage$2, "follow_series");
 			_classPrivateFieldInitSpec(this, _collapsible_accessor_storage, false);
@@ -21021,16 +21103,16 @@
 			_classPrivateFieldSet2(_showHoverGuides_accessor_storage$2, this, value);
 		}
 		get showDataGaps() {
-			return _classPrivateFieldGet2(_showDataGaps_accessor_storage$2, this);
+			return _classPrivateFieldGet2(_showDataGaps_accessor_storage$3, this);
 		}
 		set showDataGaps(value) {
-			_classPrivateFieldSet2(_showDataGaps_accessor_storage$2, this, value);
+			_classPrivateFieldSet2(_showDataGaps_accessor_storage$3, this, value);
 		}
 		get dataGapThreshold() {
-			return _classPrivateFieldGet2(_dataGapThreshold_accessor_storage$2, this);
+			return _classPrivateFieldGet2(_dataGapThreshold_accessor_storage$3, this);
 		}
 		set dataGapThreshold(value) {
-			_classPrivateFieldSet2(_dataGapThreshold_accessor_storage$2, this, value);
+			_classPrivateFieldSet2(_dataGapThreshold_accessor_storage$3, this, value);
 		}
 		get yAxisMode() {
 			return _classPrivateFieldGet2(_yAxisMode_accessor_storage$2, this);
@@ -22755,7 +22837,7 @@
 	var _entityId_accessor_storage;
 	var _canShowDeltaAnalysis_accessor_storage$2;
 	var _stateObj_accessor_storage$1;
-	var _hass_accessor_storage$9;
+	var _hass_accessor_storage$10;
 	var _comparisonWindows_accessor_storage$2;
 	var _computing_accessor_storage;
 	var _computingProgress_accessor_storage;
@@ -22787,7 +22869,7 @@
 	function _hasActiveAnalysis(a, hasComparisonWindow) {
 		return a.show_trend_lines || a.show_summary_stats || a.show_rate_of_change || a.show_threshold_analysis || a.show_anomalies || a.show_delta_analysis && hasComparisonWindow;
 	}
-	var TargetRow = (_color_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _visible_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _analysis_accessor_storage = /* @__PURE__ */ new WeakMap(), _index_accessor_storage = /* @__PURE__ */ new WeakMap(), _entityId_accessor_storage = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _stateObj_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$9 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _computing_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingProgress_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingMethods_accessor_storage = /* @__PURE__ */ new WeakMap(), _rowCount_accessor_storage = /* @__PURE__ */ new WeakMap(), _allAnalysisSame_accessor_storage = /* @__PURE__ */ new WeakMap(), _hideDragHandle_accessor_storage = /* @__PURE__ */ new WeakMap(), _label_accessor_storage$8 = /* @__PURE__ */ new WeakMap(), _TargetRow = class TargetRow extends i$2 {
+	var TargetRow = (_color_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _visible_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _analysis_accessor_storage = /* @__PURE__ */ new WeakMap(), _index_accessor_storage = /* @__PURE__ */ new WeakMap(), _entityId_accessor_storage = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _stateObj_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$10 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _computing_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingProgress_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingMethods_accessor_storage = /* @__PURE__ */ new WeakMap(), _rowCount_accessor_storage = /* @__PURE__ */ new WeakMap(), _allAnalysisSame_accessor_storage = /* @__PURE__ */ new WeakMap(), _hideDragHandle_accessor_storage = /* @__PURE__ */ new WeakMap(), _label_accessor_storage$8 = /* @__PURE__ */ new WeakMap(), _TargetRow = class TargetRow extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _color_accessor_storage$1, "#03a9f4");
@@ -22797,7 +22879,7 @@
 			_classPrivateFieldInitSpec(this, _entityId_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _canShowDeltaAnalysis_accessor_storage$2, false);
 			_classPrivateFieldInitSpec(this, _stateObj_accessor_storage$1, null);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$9, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$10, null);
 			_classPrivateFieldInitSpec(this, _comparisonWindows_accessor_storage$2, []);
 			_classPrivateFieldInitSpec(this, _computing_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _computingProgress_accessor_storage, 0);
@@ -22854,10 +22936,10 @@
 			_classPrivateFieldSet2(_stateObj_accessor_storage$1, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$9, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$10, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$9, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$10, this, value);
 		}
 		get comparisonWindows() {
 			return _classPrivateFieldGet2(_comparisonWindows_accessor_storage$2, this);
@@ -23270,13 +23352,13 @@
 	var _TargetRowList;
 	var _rows_accessor_storage$1;
 	var _states_accessor_storage$1;
-	var _hass_accessor_storage$8;
+	var _hass_accessor_storage$9;
 	var _canShowDeltaAnalysis_accessor_storage$1;
 	var _comparisonWindows_accessor_storage$1;
-	var _computingEntityIds_accessor_storage;
-	var _analysisProgress_accessor_storage;
-	var _computingMethodsByEntity_accessor_storage;
-	var _labelMap_accessor_storage;
+	var _computingEntityIds_accessor_storage$1;
+	var _analysisProgress_accessor_storage$1;
+	var _computingMethodsByEntity_accessor_storage$1;
+	var _labelMap_accessor_storage$1;
 	var _targetRows_accessor_storage;
 	var _DURATION_SECONDS = {
 		raw: 0,
@@ -23359,18 +23441,18 @@
 		}
 		return updates;
 	}
-	var TargetRowList = (_rows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _states_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$8 = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _analysisProgress_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingMethodsByEntity_accessor_storage = /* @__PURE__ */ new WeakMap(), _labelMap_accessor_storage = /* @__PURE__ */ new WeakMap(), _targetRows_accessor_storage = /* @__PURE__ */ new WeakMap(), _TargetRowList = class TargetRowList extends i$2 {
+	var TargetRowList = (_rows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _states_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$9 = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingEntityIds_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _analysisProgress_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingMethodsByEntity_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _labelMap_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _targetRows_accessor_storage = /* @__PURE__ */ new WeakMap(), _TargetRowList = class TargetRowList extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _rows_accessor_storage$1, []);
 			_classPrivateFieldInitSpec(this, _states_accessor_storage$1, {});
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$8, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$9, null);
 			_classPrivateFieldInitSpec(this, _canShowDeltaAnalysis_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _comparisonWindows_accessor_storage$1, []);
-			_classPrivateFieldInitSpec(this, _computingEntityIds_accessor_storage, /* @__PURE__ */ new Set());
-			_classPrivateFieldInitSpec(this, _analysisProgress_accessor_storage, 0);
-			_classPrivateFieldInitSpec(this, _computingMethodsByEntity_accessor_storage, /* @__PURE__ */ new Map());
-			_classPrivateFieldInitSpec(this, _labelMap_accessor_storage, /* @__PURE__ */ new Map());
+			_classPrivateFieldInitSpec(this, _computingEntityIds_accessor_storage$1, /* @__PURE__ */ new Set());
+			_classPrivateFieldInitSpec(this, _analysisProgress_accessor_storage$1, 0);
+			_classPrivateFieldInitSpec(this, _computingMethodsByEntity_accessor_storage$1, /* @__PURE__ */ new Map());
+			_classPrivateFieldInitSpec(this, _labelMap_accessor_storage$1, /* @__PURE__ */ new Map());
 			_classPrivateFieldInitSpec(this, _targetRows_accessor_storage, void 0);
 			_defineProperty(
 				this,
@@ -23464,10 +23546,10 @@
 			_classPrivateFieldSet2(_states_accessor_storage$1, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$8, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$9, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$8, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$9, this, value);
 		}
 		get canShowDeltaAnalysis() {
 			return _classPrivateFieldGet2(_canShowDeltaAnalysis_accessor_storage$1, this);
@@ -23482,28 +23564,28 @@
 			_classPrivateFieldSet2(_comparisonWindows_accessor_storage$1, this, value);
 		}
 		get computingEntityIds() {
-			return _classPrivateFieldGet2(_computingEntityIds_accessor_storage, this);
+			return _classPrivateFieldGet2(_computingEntityIds_accessor_storage$1, this);
 		}
 		set computingEntityIds(value) {
-			_classPrivateFieldSet2(_computingEntityIds_accessor_storage, this, value);
+			_classPrivateFieldSet2(_computingEntityIds_accessor_storage$1, this, value);
 		}
 		get analysisProgress() {
-			return _classPrivateFieldGet2(_analysisProgress_accessor_storage, this);
+			return _classPrivateFieldGet2(_analysisProgress_accessor_storage$1, this);
 		}
 		set analysisProgress(value) {
-			_classPrivateFieldSet2(_analysisProgress_accessor_storage, this, value);
+			_classPrivateFieldSet2(_analysisProgress_accessor_storage$1, this, value);
 		}
 		get computingMethodsByEntity() {
-			return _classPrivateFieldGet2(_computingMethodsByEntity_accessor_storage, this);
+			return _classPrivateFieldGet2(_computingMethodsByEntity_accessor_storage$1, this);
 		}
 		set computingMethodsByEntity(value) {
-			_classPrivateFieldSet2(_computingMethodsByEntity_accessor_storage, this, value);
+			_classPrivateFieldSet2(_computingMethodsByEntity_accessor_storage$1, this, value);
 		}
 		get labelMap() {
-			return _classPrivateFieldGet2(_labelMap_accessor_storage, this);
+			return _classPrivateFieldGet2(_labelMap_accessor_storage$1, this);
 		}
 		set labelMap(value) {
-			_classPrivateFieldSet2(_labelMap_accessor_storage, this, value);
+			_classPrivateFieldSet2(_labelMap_accessor_storage$1, this, value);
 		}
 		get _targetRows() {
 			return _classPrivateFieldGet2(_targetRows_accessor_storage, this);
@@ -23676,14 +23758,14 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sidebar-options.ts
-	var _datapointScope_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _datapointScope_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _showIcons_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _showLines_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _showTooltips_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _showHoverGuides_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _showCorrelatedAnomalies_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _showDataGaps_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _dataGapThreshold_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _showCorrelatedAnomalies_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
+	var _showDataGaps_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
+	var _dataGapThreshold_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _yAxisMode_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _hoverSnapMode_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _anomalyOverlapMode_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
@@ -23695,14 +23777,14 @@
 	var SidebarOptions = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _datapointScope_accessor_storage$1, "linked");
+			_classPrivateFieldInitSpec(this, _datapointScope_accessor_storage$2, "linked");
 			_classPrivateFieldInitSpec(this, _showIcons_accessor_storage$1, true);
 			_classPrivateFieldInitSpec(this, _showLines_accessor_storage$1, true);
 			_classPrivateFieldInitSpec(this, _showTooltips_accessor_storage$1, true);
 			_classPrivateFieldInitSpec(this, _showHoverGuides_accessor_storage$1, false);
-			_classPrivateFieldInitSpec(this, _showCorrelatedAnomalies_accessor_storage$1, false);
-			_classPrivateFieldInitSpec(this, _showDataGaps_accessor_storage$1, true);
-			_classPrivateFieldInitSpec(this, _dataGapThreshold_accessor_storage$1, "2h");
+			_classPrivateFieldInitSpec(this, _showCorrelatedAnomalies_accessor_storage$2, false);
+			_classPrivateFieldInitSpec(this, _showDataGaps_accessor_storage$2, true);
+			_classPrivateFieldInitSpec(this, _dataGapThreshold_accessor_storage$2, "2h");
 			_classPrivateFieldInitSpec(this, _yAxisMode_accessor_storage$1, "combined");
 			_classPrivateFieldInitSpec(this, _hoverSnapMode_accessor_storage$1, "follow_series");
 			_classPrivateFieldInitSpec(this, _anomalyOverlapMode_accessor_storage$1, "all");
@@ -23713,10 +23795,10 @@
 			_classPrivateFieldInitSpec(this, _chartOpen_accessor_storage, true);
 		}
 		get datapointScope() {
-			return _classPrivateFieldGet2(_datapointScope_accessor_storage$1, this);
+			return _classPrivateFieldGet2(_datapointScope_accessor_storage$2, this);
 		}
 		set datapointScope(value) {
-			_classPrivateFieldSet2(_datapointScope_accessor_storage$1, this, value);
+			_classPrivateFieldSet2(_datapointScope_accessor_storage$2, this, value);
 		}
 		get showIcons() {
 			return _classPrivateFieldGet2(_showIcons_accessor_storage$1, this);
@@ -23743,22 +23825,22 @@
 			_classPrivateFieldSet2(_showHoverGuides_accessor_storage$1, this, value);
 		}
 		get showCorrelatedAnomalies() {
-			return _classPrivateFieldGet2(_showCorrelatedAnomalies_accessor_storage$1, this);
+			return _classPrivateFieldGet2(_showCorrelatedAnomalies_accessor_storage$2, this);
 		}
 		set showCorrelatedAnomalies(value) {
-			_classPrivateFieldSet2(_showCorrelatedAnomalies_accessor_storage$1, this, value);
+			_classPrivateFieldSet2(_showCorrelatedAnomalies_accessor_storage$2, this, value);
 		}
 		get showDataGaps() {
-			return _classPrivateFieldGet2(_showDataGaps_accessor_storage$1, this);
+			return _classPrivateFieldGet2(_showDataGaps_accessor_storage$2, this);
 		}
 		set showDataGaps(value) {
-			_classPrivateFieldSet2(_showDataGaps_accessor_storage$1, this, value);
+			_classPrivateFieldSet2(_showDataGaps_accessor_storage$2, this, value);
 		}
 		get dataGapThreshold() {
-			return _classPrivateFieldGet2(_dataGapThreshold_accessor_storage$1, this);
+			return _classPrivateFieldGet2(_dataGapThreshold_accessor_storage$2, this);
 		}
 		set dataGapThreshold(value) {
-			_classPrivateFieldSet2(_dataGapThreshold_accessor_storage$1, this, value);
+			_classPrivateFieldSet2(_dataGapThreshold_accessor_storage$2, this, value);
 		}
 		get yAxisMode() {
 			return _classPrivateFieldGet2(_yAxisMode_accessor_storage$1, this);
@@ -24050,14 +24132,14 @@
 			label: "Chart Display"
 		}
 	];
-	var _datapointScope_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _datapointScope_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _showIcons_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _showLines_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _showTooltips_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _showHoverGuides_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _showCorrelatedAnomalies_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _showDataGaps_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _dataGapThreshold_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _showCorrelatedAnomalies_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _showDataGaps_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _dataGapThreshold_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _yAxisMode_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _hoverSnapMode_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _anomalyOverlapMode_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -24075,14 +24157,14 @@
 	var CollapsedOptionsMenu = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _datapointScope_accessor_storage, "linked");
+			_classPrivateFieldInitSpec(this, _datapointScope_accessor_storage$1, "linked");
 			_classPrivateFieldInitSpec(this, _showIcons_accessor_storage, true);
 			_classPrivateFieldInitSpec(this, _showLines_accessor_storage, true);
 			_classPrivateFieldInitSpec(this, _showTooltips_accessor_storage, true);
 			_classPrivateFieldInitSpec(this, _showHoverGuides_accessor_storage, false);
-			_classPrivateFieldInitSpec(this, _showCorrelatedAnomalies_accessor_storage, false);
-			_classPrivateFieldInitSpec(this, _showDataGaps_accessor_storage, true);
-			_classPrivateFieldInitSpec(this, _dataGapThreshold_accessor_storage, "2h");
+			_classPrivateFieldInitSpec(this, _showCorrelatedAnomalies_accessor_storage$1, false);
+			_classPrivateFieldInitSpec(this, _showDataGaps_accessor_storage$1, true);
+			_classPrivateFieldInitSpec(this, _dataGapThreshold_accessor_storage$1, "2h");
 			_classPrivateFieldInitSpec(this, _yAxisMode_accessor_storage, "combined");
 			_classPrivateFieldInitSpec(this, _hoverSnapMode_accessor_storage, "follow_series");
 			_classPrivateFieldInitSpec(this, _anomalyOverlapMode_accessor_storage, "all");
@@ -24091,10 +24173,10 @@
 			_defineProperty(this, "_closeTimer", null);
 		}
 		get datapointScope() {
-			return _classPrivateFieldGet2(_datapointScope_accessor_storage, this);
+			return _classPrivateFieldGet2(_datapointScope_accessor_storage$1, this);
 		}
 		set datapointScope(value) {
-			_classPrivateFieldSet2(_datapointScope_accessor_storage, this, value);
+			_classPrivateFieldSet2(_datapointScope_accessor_storage$1, this, value);
 		}
 		get showIcons() {
 			return _classPrivateFieldGet2(_showIcons_accessor_storage, this);
@@ -24121,22 +24203,22 @@
 			_classPrivateFieldSet2(_showHoverGuides_accessor_storage, this, value);
 		}
 		get showCorrelatedAnomalies() {
-			return _classPrivateFieldGet2(_showCorrelatedAnomalies_accessor_storage, this);
+			return _classPrivateFieldGet2(_showCorrelatedAnomalies_accessor_storage$1, this);
 		}
 		set showCorrelatedAnomalies(value) {
-			_classPrivateFieldSet2(_showCorrelatedAnomalies_accessor_storage, this, value);
+			_classPrivateFieldSet2(_showCorrelatedAnomalies_accessor_storage$1, this, value);
 		}
 		get showDataGaps() {
-			return _classPrivateFieldGet2(_showDataGaps_accessor_storage, this);
+			return _classPrivateFieldGet2(_showDataGaps_accessor_storage$1, this);
 		}
 		set showDataGaps(value) {
-			_classPrivateFieldSet2(_showDataGaps_accessor_storage, this, value);
+			_classPrivateFieldSet2(_showDataGaps_accessor_storage$1, this, value);
 		}
 		get dataGapThreshold() {
-			return _classPrivateFieldGet2(_dataGapThreshold_accessor_storage, this);
+			return _classPrivateFieldGet2(_dataGapThreshold_accessor_storage$1, this);
 		}
 		set dataGapThreshold(value) {
-			_classPrivateFieldSet2(_dataGapThreshold_accessor_storage, this, value);
+			_classPrivateFieldSet2(_dataGapThreshold_accessor_storage$1, this, value);
 		}
 		get yAxisMode() {
 			return _classPrivateFieldGet2(_yAxisMode_accessor_storage, this);
@@ -25693,7 +25775,7 @@
 	var DEFAULT_I18N$4 = createDefaultI18n(["Select"]);
 	var _i18n_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
 	var _rangeBounds_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
-	var _zoomLevel_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
+	var _zoomLevel_accessor_storage$5 = /* @__PURE__ */ new WeakMap();
 	var _contentWidth_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _locale_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	/**
@@ -25709,7 +25791,7 @@
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _i18n_accessor_storage$4, DEFAULT_I18N$4);
 			_classPrivateFieldInitSpec(this, _rangeBounds_accessor_storage$4, null);
-			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage$4, "day");
+			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage$5, "day");
 			_classPrivateFieldInitSpec(this, _contentWidth_accessor_storage, 0);
 			_classPrivateFieldInitSpec(this, _locale_accessor_storage$2, "");
 		}
@@ -25726,10 +25808,10 @@
 			_classPrivateFieldSet2(_rangeBounds_accessor_storage$4, this, value);
 		}
 		get zoomLevel() {
-			return _classPrivateFieldGet2(_zoomLevel_accessor_storage$4, this);
+			return _classPrivateFieldGet2(_zoomLevel_accessor_storage$5, this);
 		}
 		set zoomLevel(value) {
-			_classPrivateFieldSet2(_zoomLevel_accessor_storage$4, this, value);
+			_classPrivateFieldSet2(_zoomLevel_accessor_storage$5, this, value);
 		}
 		get contentWidth() {
 			return _classPrivateFieldGet2(_contentWidth_accessor_storage, this);
@@ -26156,8 +26238,8 @@
 	var _startTime_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _endTime_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _rangeBounds_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
-	var _zoomLevel_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
-	var _dateSnapping_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
+	var _zoomLevel_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
+	var _dateSnapping_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
 	var _isLiveEdge_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _locale_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _i18n_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
@@ -26223,16 +26305,16 @@
 			_classPrivateFieldSet2(_rangeBounds_accessor_storage$3, this, value);
 		}
 		get zoomLevel() {
-			return _classPrivateFieldGet2(_zoomLevel_accessor_storage$3, this);
+			return _classPrivateFieldGet2(_zoomLevel_accessor_storage$4, this);
 		}
 		set zoomLevel(value) {
-			_classPrivateFieldSet2(_zoomLevel_accessor_storage$3, this, value);
+			_classPrivateFieldSet2(_zoomLevel_accessor_storage$4, this, value);
 		}
 		get dateSnapping() {
-			return _classPrivateFieldGet2(_dateSnapping_accessor_storage$3, this);
+			return _classPrivateFieldGet2(_dateSnapping_accessor_storage$4, this);
 		}
 		set dateSnapping(value) {
-			_classPrivateFieldSet2(_dateSnapping_accessor_storage$3, this, value);
+			_classPrivateFieldSet2(_dateSnapping_accessor_storage$4, this, value);
 		}
 		get isLiveEdge() {
 			return _classPrivateFieldGet2(_isLiveEdge_accessor_storage$2, this);
@@ -26404,8 +26486,8 @@
 			_classPrivateFieldInitSpec(this, _startTime_accessor_storage$2, null);
 			_classPrivateFieldInitSpec(this, _endTime_accessor_storage$2, null);
 			_classPrivateFieldInitSpec(this, _rangeBounds_accessor_storage$3, null);
-			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage$3, "day");
-			_classPrivateFieldInitSpec(this, _dateSnapping_accessor_storage$3, "auto");
+			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage$4, "day");
+			_classPrivateFieldInitSpec(this, _dateSnapping_accessor_storage$4, "auto");
 			_classPrivateFieldInitSpec(this, _isLiveEdge_accessor_storage$2, false);
 			_classPrivateFieldInitSpec(this, _locale_accessor_storage$1, "");
 			_classPrivateFieldInitSpec(this, _i18n_accessor_storage$3, DEFAULT_I18N$3);
@@ -27184,8 +27266,8 @@
 	var _showShortcuts_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _submitLabel_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _rangeBounds_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
-	var _zoomLevel_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
-	var _dateSnapping_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
+	var _zoomLevel_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
+	var _dateSnapping_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
 	var _dialogEl_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _nameInput_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _startInput_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -27203,8 +27285,8 @@
 			_classPrivateFieldInitSpec(this, _showShortcuts_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _submitLabel_accessor_storage, "Create date window");
 			_classPrivateFieldInitSpec(this, _rangeBounds_accessor_storage$2, null);
-			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage$2, "auto");
-			_classPrivateFieldInitSpec(this, _dateSnapping_accessor_storage$2, "hour");
+			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage$3, "auto");
+			_classPrivateFieldInitSpec(this, _dateSnapping_accessor_storage$3, "hour");
 			_classPrivateFieldInitSpec(this, _dialogEl_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _nameInput_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _startInput_accessor_storage, null);
@@ -27266,16 +27348,16 @@
 			_classPrivateFieldSet2(_rangeBounds_accessor_storage$2, this, value);
 		}
 		get zoomLevel() {
-			return _classPrivateFieldGet2(_zoomLevel_accessor_storage$2, this);
+			return _classPrivateFieldGet2(_zoomLevel_accessor_storage$3, this);
 		}
 		set zoomLevel(value) {
-			_classPrivateFieldSet2(_zoomLevel_accessor_storage$2, this, value);
+			_classPrivateFieldSet2(_zoomLevel_accessor_storage$3, this, value);
 		}
 		get dateSnapping() {
-			return _classPrivateFieldGet2(_dateSnapping_accessor_storage$2, this);
+			return _classPrivateFieldGet2(_dateSnapping_accessor_storage$3, this);
 		}
 		set dateSnapping(value) {
-			_classPrivateFieldSet2(_dateSnapping_accessor_storage$2, this, value);
+			_classPrivateFieldSet2(_dateSnapping_accessor_storage$3, this, value);
 		}
 		get _dialogEl() {
 			return _classPrivateFieldGet2(_dialogEl_accessor_storage, this);
@@ -27997,7 +28079,7 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/anomaly-monitor-wizard.ts
 	var _AnomalyMonitorWizard;
-	var _hass_accessor_storage$7 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$8 = /* @__PURE__ */ new WeakMap();
 	var _open_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _prefillEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _prefillAnalysis_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -28019,7 +28101,7 @@
 	var AnomalyMonitorWizard = (_AnomalyMonitorWizard = class AnomalyMonitorWizard extends i$2 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$7, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$8, null);
 			_classPrivateFieldInitSpec(this, _open_accessor_storage$2, false);
 			_classPrivateFieldInitSpec(this, _prefillEntityIds_accessor_storage, []);
 			_classPrivateFieldInitSpec(this, _prefillAnalysis_accessor_storage, null);
@@ -28040,10 +28122,10 @@
 			_classPrivateFieldInitSpec(this, _saving_accessor_storage, false);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$7, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$8, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$7, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$8, this, value);
 		}
 		get open() {
 			return _classPrivateFieldGet2(_open_accessor_storage$2, this);
@@ -28910,7 +28992,7 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitors-panel/anomaly-monitors-panel.ts
 	var _AnomalyMonitorsPanel;
-	var _hass_accessor_storage$6 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$7 = /* @__PURE__ */ new WeakMap();
 	var _monitors_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _loading_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _editMonitor_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -28921,7 +29003,7 @@
 	var AnomalyMonitorsPanel = (_AnomalyMonitorsPanel = class AnomalyMonitorsPanel extends i$2 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$6, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$7, null);
 			_classPrivateFieldInitSpec(this, _monitors_accessor_storage, []);
 			_classPrivateFieldInitSpec(this, _loading_accessor_storage, true);
 			_classPrivateFieldInitSpec(this, _editMonitor_accessor_storage, null);
@@ -28934,10 +29016,10 @@
 			_defineProperty(this, "_monitorsSubscriptionToken", 0);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$6, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$7, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$6, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$7, this, value);
 		}
 		get _monitors() {
 			return _classPrivateFieldGet2(_monitors_accessor_storage, this);
@@ -30378,33 +30460,35 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/panel-shell/panel-shell.ts
 	var _PanelShell;
-	var _hass_accessor_storage$5 = /* @__PURE__ */ new WeakMap();
-	var _narrow_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$6 = /* @__PURE__ */ new WeakMap();
+	var _narrow_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _sidebarCollapsed_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _hasSavedState_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _layoutMode_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _layoutMode_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _collapsedOptionsOpen_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _pageMenuOpen_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var PanelShell = (_PanelShell = class PanelShell extends i$2 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$5, null);
-			_classPrivateFieldInitSpec(this, _narrow_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$6, null);
+			_classPrivateFieldInitSpec(this, _narrow_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _sidebarCollapsed_accessor_storage$2, false);
 			_classPrivateFieldInitSpec(this, _hasSavedState_accessor_storage, false);
-			_classPrivateFieldInitSpec(this, _layoutMode_accessor_storage, "desktop");
+			_classPrivateFieldInitSpec(this, _layoutMode_accessor_storage$1, "desktop");
+			_classPrivateFieldInitSpec(this, _collapsedOptionsOpen_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _pageMenuOpen_accessor_storage, false);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$5, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$6, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$5, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$6, this, value);
 		}
 		get narrow() {
-			return _classPrivateFieldGet2(_narrow_accessor_storage, this);
+			return _classPrivateFieldGet2(_narrow_accessor_storage$1, this);
 		}
 		set narrow(value) {
-			_classPrivateFieldSet2(_narrow_accessor_storage, this, value);
+			_classPrivateFieldSet2(_narrow_accessor_storage$1, this, value);
 		}
 		get sidebarCollapsed() {
 			return _classPrivateFieldGet2(_sidebarCollapsed_accessor_storage$2, this);
@@ -30419,10 +30503,16 @@
 			_classPrivateFieldSet2(_hasSavedState_accessor_storage, this, value);
 		}
 		get layoutMode() {
-			return _classPrivateFieldGet2(_layoutMode_accessor_storage, this);
+			return _classPrivateFieldGet2(_layoutMode_accessor_storage$1, this);
 		}
 		set layoutMode(value) {
-			_classPrivateFieldSet2(_layoutMode_accessor_storage, this, value);
+			_classPrivateFieldSet2(_layoutMode_accessor_storage$1, this, value);
+		}
+		get collapsedOptionsOpen() {
+			return _classPrivateFieldGet2(_collapsedOptionsOpen_accessor_storage, this);
+		}
+		set collapsedOptionsOpen(value) {
+			_classPrivateFieldSet2(_collapsedOptionsOpen_accessor_storage, this, value);
 		}
 		get _pageMenuOpen() {
 			return _classPrivateFieldGet2(_pageMenuOpen_accessor_storage, this);
@@ -30653,8 +30743,10 @@
         <div
           id="collapsed-options-popup"
           class="collapsed-options-popup"
-          hidden
-        ></div>
+          ?hidden=${!this.collapsedOptionsOpen}
+        >
+          <slot name="collapsed-options"></slot>
+        </div>
       </ha-top-app-bar-fixed>
     `;
 		}
@@ -30673,6 +30765,10 @@
 		type: String,
 		attribute: "layout-mode"
 	})], PanelShell.prototype, "layoutMode", null);
+	__decorate([n$1({
+		type: Boolean,
+		attribute: false
+	})], PanelShell.prototype, "collapsedOptionsOpen", null);
 	__decorate([r$2()], PanelShell.prototype, "_pageMenuOpen", null);
 	PanelShell = __decorate([localized()], PanelShell);
 	customElements.define("panel-shell", PanelShell);
@@ -31159,8 +31255,12 @@
 	var _HistoryTargets;
 	var _rows_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _states_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$5 = /* @__PURE__ */ new WeakMap();
 	var _comparisonWindows_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _labelMap_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _computingEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _analysisProgress_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _computingMethodsByEntity_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _canShowDeltaAnalysis_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _sidebarCollapsed_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _collapsedSummaryKey_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -31169,8 +31269,12 @@
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _rows_accessor_storage, []);
 			_classPrivateFieldInitSpec(this, _states_accessor_storage, {});
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$4, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$5, null);
 			_classPrivateFieldInitSpec(this, _comparisonWindows_accessor_storage, []);
+			_classPrivateFieldInitSpec(this, _labelMap_accessor_storage, /* @__PURE__ */ new Map());
+			_classPrivateFieldInitSpec(this, _computingEntityIds_accessor_storage, /* @__PURE__ */ new Set());
+			_classPrivateFieldInitSpec(this, _analysisProgress_accessor_storage, 0);
+			_classPrivateFieldInitSpec(this, _computingMethodsByEntity_accessor_storage, /* @__PURE__ */ new Map());
 			_classPrivateFieldInitSpec(this, _canShowDeltaAnalysis_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _sidebarCollapsed_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _collapsedSummaryKey_accessor_storage, "");
@@ -31188,16 +31292,40 @@
 			_classPrivateFieldSet2(_states_accessor_storage, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$4, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$5, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$4, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$5, this, value);
 		}
 		get comparisonWindows() {
 			return _classPrivateFieldGet2(_comparisonWindows_accessor_storage, this);
 		}
 		set comparisonWindows(value) {
 			_classPrivateFieldSet2(_comparisonWindows_accessor_storage, this, value);
+		}
+		get labelMap() {
+			return _classPrivateFieldGet2(_labelMap_accessor_storage, this);
+		}
+		set labelMap(value) {
+			_classPrivateFieldSet2(_labelMap_accessor_storage, this, value);
+		}
+		get computingEntityIds() {
+			return _classPrivateFieldGet2(_computingEntityIds_accessor_storage, this);
+		}
+		set computingEntityIds(value) {
+			_classPrivateFieldSet2(_computingEntityIds_accessor_storage, this, value);
+		}
+		get analysisProgress() {
+			return _classPrivateFieldGet2(_analysisProgress_accessor_storage, this);
+		}
+		set analysisProgress(value) {
+			_classPrivateFieldSet2(_analysisProgress_accessor_storage, this, value);
+		}
+		get computingMethodsByEntity() {
+			return _classPrivateFieldGet2(_computingMethodsByEntity_accessor_storage, this);
+		}
+		set computingMethodsByEntity(value) {
+			_classPrivateFieldSet2(_computingMethodsByEntity_accessor_storage, this, value);
 		}
 		get canShowDeltaAnalysis() {
 			return _classPrivateFieldGet2(_canShowDeltaAnalysis_accessor_storage, this);
@@ -31223,10 +31351,6 @@
 				bubbles: true,
 				composed: true
 			}));
-		}
-		/** Returns the `target-row-list` element for direct property access by the parent. */
-		getRowListEl() {
-			return this.shadowRoot?.querySelector("target-row-list") ?? null;
 		}
 		/** Returns the `ha-target-picker` element for direct property access by the parent. */
 		getTargetPickerEl() {
@@ -31289,8 +31413,12 @@
             .rows=${this.rows}
             .states=${this.states}
             .hass=${this.hass}
+            .labelMap=${this.labelMap}
             .canShowDeltaAnalysis=${this.canShowDeltaAnalysis}
             .comparisonWindows=${this.comparisonWindows}
+            .computingEntityIds=${this.computingEntityIds}
+            .analysisProgress=${this.analysisProgress}
+            .computingMethodsByEntity=${this.computingMethodsByEntity}
           ></target-row-list>
         </div>
 
@@ -31340,6 +31468,13 @@
 	__decorate([n$1({ type: Object })], HistoryTargets.prototype, "states", null);
 	__decorate([n$1({ type: Object })], HistoryTargets.prototype, "hass", null);
 	__decorate([n$1({ type: Array })], HistoryTargets.prototype, "comparisonWindows", null);
+	__decorate([n$1({ attribute: false })], HistoryTargets.prototype, "labelMap", null);
+	__decorate([n$1({ attribute: false })], HistoryTargets.prototype, "computingEntityIds", null);
+	__decorate([n$1({
+		type: Number,
+		attribute: false
+	})], HistoryTargets.prototype, "analysisProgress", null);
+	__decorate([n$1({ attribute: false })], HistoryTargets.prototype, "computingMethodsByEntity", null);
 	__decorate([n$1({
 		type: Boolean,
 		attribute: "can-show-delta-analysis"
@@ -31803,15 +31938,15 @@
 	var _startTime_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _endTime_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _rangeBounds_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _zoomLevel_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _dateSnapping_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _zoomLevel_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
+	var _dateSnapping_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _isLiveEdge_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _locale_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _hoveredPeriodRange_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _comparisonPreview_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _zoomRange_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _zoomWindowRange_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _chartHoverTimeMs_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _chartHoverTimeMs_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _chartHoverWindowTimeMs_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _events_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _rangeHoverPreviewEl_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -31844,15 +31979,15 @@
 			_classPrivateFieldInitSpec(this, _startTime_accessor_storage$1, null);
 			_classPrivateFieldInitSpec(this, _endTime_accessor_storage$1, null);
 			_classPrivateFieldInitSpec(this, _rangeBounds_accessor_storage$1, null);
-			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage$1, "day");
-			_classPrivateFieldInitSpec(this, _dateSnapping_accessor_storage$1, "auto");
+			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage$2, "day");
+			_classPrivateFieldInitSpec(this, _dateSnapping_accessor_storage$2, "auto");
 			_classPrivateFieldInitSpec(this, _isLiveEdge_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _locale_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _hoveredPeriodRange_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _comparisonPreview_accessor_storage$1, null);
 			_classPrivateFieldInitSpec(this, _zoomRange_accessor_storage$1, null);
 			_classPrivateFieldInitSpec(this, _zoomWindowRange_accessor_storage$1, null);
-			_classPrivateFieldInitSpec(this, _chartHoverTimeMs_accessor_storage$1, null);
+			_classPrivateFieldInitSpec(this, _chartHoverTimeMs_accessor_storage$2, null);
 			_classPrivateFieldInitSpec(this, _chartHoverWindowTimeMs_accessor_storage$1, null);
 			_classPrivateFieldInitSpec(this, _events_accessor_storage$1, []);
 			_classPrivateFieldInitSpec(this, _rangeHoverPreviewEl_accessor_storage, null);
@@ -31885,16 +32020,16 @@
 			_classPrivateFieldSet2(_rangeBounds_accessor_storage$1, this, value);
 		}
 		get zoomLevel() {
-			return _classPrivateFieldGet2(_zoomLevel_accessor_storage$1, this);
+			return _classPrivateFieldGet2(_zoomLevel_accessor_storage$2, this);
 		}
 		set zoomLevel(value) {
-			_classPrivateFieldSet2(_zoomLevel_accessor_storage$1, this, value);
+			_classPrivateFieldSet2(_zoomLevel_accessor_storage$2, this, value);
 		}
 		get dateSnapping() {
-			return _classPrivateFieldGet2(_dateSnapping_accessor_storage$1, this);
+			return _classPrivateFieldGet2(_dateSnapping_accessor_storage$2, this);
 		}
 		set dateSnapping(value) {
-			_classPrivateFieldSet2(_dateSnapping_accessor_storage$1, this, value);
+			_classPrivateFieldSet2(_dateSnapping_accessor_storage$2, this, value);
 		}
 		get isLiveEdge() {
 			return _classPrivateFieldGet2(_isLiveEdge_accessor_storage$1, this);
@@ -31933,10 +32068,10 @@
 			_classPrivateFieldSet2(_zoomWindowRange_accessor_storage$1, this, value);
 		}
 		get chartHoverTimeMs() {
-			return _classPrivateFieldGet2(_chartHoverTimeMs_accessor_storage$1, this);
+			return _classPrivateFieldGet2(_chartHoverTimeMs_accessor_storage$2, this);
 		}
 		set chartHoverTimeMs(value) {
-			_classPrivateFieldSet2(_chartHoverTimeMs_accessor_storage$1, this, value);
+			_classPrivateFieldSet2(_chartHoverTimeMs_accessor_storage$2, this, value);
 		}
 		get chartHoverWindowTimeMs() {
 			return _classPrivateFieldGet2(_chartHoverWindowTimeMs_accessor_storage$1, this);
@@ -32263,49 +32398,53 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/range-toolbar/range-toolbar.ts
 	var _RangeToolbar;
-	var _hass_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
 	var _startTime_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _endTime_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _rangeBounds_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _zoomLevel_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _dateSnapping_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _zoomLevel_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _dateSnapping_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _sidebarCollapsed_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _isLiveEdge_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _timelineEvents_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _timelineEvents_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _comparisonPreview_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _zoomRange_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _zoomWindowRange_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _chartHoverTimeMs_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _chartHoverTimeMs_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _chartHoverWindowTimeMs_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _optionsView_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _optionsOpen_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _pickerOpen_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _mobileStartValue_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _mobileEndValue_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var RangeToolbar = (_RangeToolbar = class RangeToolbar extends i$2 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$3, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$4, null);
 			_classPrivateFieldInitSpec(this, _startTime_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _endTime_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _rangeBounds_accessor_storage, null);
-			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage, "auto");
-			_classPrivateFieldInitSpec(this, _dateSnapping_accessor_storage, "hour");
+			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage$1, "auto");
+			_classPrivateFieldInitSpec(this, _dateSnapping_accessor_storage$1, "hour");
 			_classPrivateFieldInitSpec(this, _sidebarCollapsed_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _isLiveEdge_accessor_storage, false);
-			_classPrivateFieldInitSpec(this, _timelineEvents_accessor_storage, []);
+			_classPrivateFieldInitSpec(this, _timelineEvents_accessor_storage$1, []);
 			_classPrivateFieldInitSpec(this, _comparisonPreview_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _zoomRange_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _zoomWindowRange_accessor_storage, null);
-			_classPrivateFieldInitSpec(this, _chartHoverTimeMs_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _chartHoverTimeMs_accessor_storage$1, null);
 			_classPrivateFieldInitSpec(this, _chartHoverWindowTimeMs_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _optionsView_accessor_storage, "root");
 			_classPrivateFieldInitSpec(this, _optionsOpen_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _pickerOpen_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _mobileStartValue_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _mobileEndValue_accessor_storage, "");
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$3, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$4, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$3, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$4, this, value);
 		}
 		get startTime() {
 			return _classPrivateFieldGet2(_startTime_accessor_storage, this);
@@ -32326,16 +32465,16 @@
 			_classPrivateFieldSet2(_rangeBounds_accessor_storage, this, value);
 		}
 		get zoomLevel() {
-			return _classPrivateFieldGet2(_zoomLevel_accessor_storage, this);
+			return _classPrivateFieldGet2(_zoomLevel_accessor_storage$1, this);
 		}
 		set zoomLevel(value) {
-			_classPrivateFieldSet2(_zoomLevel_accessor_storage, this, value);
+			_classPrivateFieldSet2(_zoomLevel_accessor_storage$1, this, value);
 		}
 		get dateSnapping() {
-			return _classPrivateFieldGet2(_dateSnapping_accessor_storage, this);
+			return _classPrivateFieldGet2(_dateSnapping_accessor_storage$1, this);
 		}
 		set dateSnapping(value) {
-			_classPrivateFieldSet2(_dateSnapping_accessor_storage, this, value);
+			_classPrivateFieldSet2(_dateSnapping_accessor_storage$1, this, value);
 		}
 		get sidebarCollapsed() {
 			return _classPrivateFieldGet2(_sidebarCollapsed_accessor_storage, this);
@@ -32350,10 +32489,10 @@
 			_classPrivateFieldSet2(_isLiveEdge_accessor_storage, this, value);
 		}
 		get timelineEvents() {
-			return _classPrivateFieldGet2(_timelineEvents_accessor_storage, this);
+			return _classPrivateFieldGet2(_timelineEvents_accessor_storage$1, this);
 		}
 		set timelineEvents(value) {
-			_classPrivateFieldSet2(_timelineEvents_accessor_storage, this, value);
+			_classPrivateFieldSet2(_timelineEvents_accessor_storage$1, this, value);
 		}
 		get comparisonPreview() {
 			return _classPrivateFieldGet2(_comparisonPreview_accessor_storage, this);
@@ -32374,10 +32513,10 @@
 			_classPrivateFieldSet2(_zoomWindowRange_accessor_storage, this, value);
 		}
 		get chartHoverTimeMs() {
-			return _classPrivateFieldGet2(_chartHoverTimeMs_accessor_storage, this);
+			return _classPrivateFieldGet2(_chartHoverTimeMs_accessor_storage$1, this);
 		}
 		set chartHoverTimeMs(value) {
-			_classPrivateFieldSet2(_chartHoverTimeMs_accessor_storage, this, value);
+			_classPrivateFieldSet2(_chartHoverTimeMs_accessor_storage$1, this, value);
 		}
 		get chartHoverWindowTimeMs() {
 			return _classPrivateFieldGet2(_chartHoverWindowTimeMs_accessor_storage, this);
@@ -32403,32 +32542,21 @@
 		set _pickerOpen(value) {
 			_classPrivateFieldSet2(_pickerOpen_accessor_storage, this, value);
 		}
-		/** Sync mobile date inputs to the given start/end values. */
-		syncMobileDates(start, end) {
-			const fmtInput = (d) => {
-				if (!d) return "";
-				const pad = (n) => String(n).padStart(2, "0");
-				return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-			};
-			const startEl = this.shadowRoot?.querySelector("#range-mobile-start");
-			const endEl = this.shadowRoot?.querySelector("#range-mobile-end");
-			if (startEl) startEl.value = fmtInput(start);
-			if (endEl) endEl.value = fmtInput(end);
+		get _mobileStartValue() {
+			return _classPrivateFieldGet2(_mobileStartValue_accessor_storage, this);
 		}
-		/** Sync the options menu current-value labels. */
-		syncOptionsLabels() {
-			const zoomLabel = RANGE_ZOOM_OPTIONS.find((o) => o.value === this.zoomLevel)?.label ?? "Auto";
-			const snapLabel = RANGE_SNAP_OPTIONS.find((o) => o.value === this.dateSnapping)?.label ?? "Hour";
-			const zoomCurrent = this.shadowRoot?.querySelector("[data-options-current='zoom']");
-			const snapCurrent = this.shadowRoot?.querySelector("[data-options-current='snap']");
-			if (zoomCurrent) zoomCurrent.textContent = msg(zoomLabel);
-			if (snapCurrent) snapCurrent.textContent = msg(snapLabel);
-			this.shadowRoot?.querySelectorAll("[data-option-group='zoom']").forEach((btn) => {
-				btn.classList.toggle("selected", btn.dataset.optionValue === this.zoomLevel);
-			});
-			this.shadowRoot?.querySelectorAll("[data-option-group='snap']").forEach((btn) => {
-				btn.classList.toggle("selected", btn.dataset.optionValue === this.dateSnapping);
-			});
+		set _mobileStartValue(value) {
+			_classPrivateFieldSet2(_mobileStartValue_accessor_storage, this, value);
+		}
+		get _mobileEndValue() {
+			return _classPrivateFieldGet2(_mobileEndValue_accessor_storage, this);
+		}
+		set _mobileEndValue(value) {
+			_classPrivateFieldSet2(_mobileEndValue_accessor_storage, this, value);
+		}
+		willUpdate(changed) {
+			if (changed.has("startTime")) this._mobileStartValue = formatDateWindowInputValue(this.startTime);
+			if (changed.has("endTime")) this._mobileEndValue = formatDateWindowInputValue(this.endTime);
 		}
 		/** Close all open floating menus. */
 		closeMenus() {
@@ -32478,7 +32606,6 @@
 					menuEl.style.setProperty("--floating-menu-top", `${top}px`);
 				}
 			}
-			this.updateComplete.then(() => this.syncOptionsLabels());
 		}
 		_togglePicker(force) {
 			const next = force !== void 0 ? force : !this._pickerOpen;
@@ -32549,20 +32676,16 @@
 			this._toggleOptions(false);
 		}
 		_onMobileStartChange(ev) {
-			const startEl = this.shadowRoot?.querySelector("#range-mobile-start");
-			if (startEl) startEl.value = ev.detail.value;
+			this._mobileStartValue = ev.detail.value;
 			this._commitMobileDates();
 		}
 		_onMobileEndChange(ev) {
-			const endEl = this.shadowRoot?.querySelector("#range-mobile-end");
-			if (endEl) endEl.value = ev.detail.value;
+			this._mobileEndValue = ev.detail.value;
 			this._commitMobileDates();
 		}
 		_commitMobileDates() {
-			const startEl = this.shadowRoot?.querySelector("#range-mobile-start");
-			const endEl = this.shadowRoot?.querySelector("#range-mobile-end");
-			const startVal = startEl?.value;
-			const endVal = endEl?.value;
+			const startVal = this._mobileStartValue;
+			const endVal = this._mobileEndValue;
 			if (!startVal || !endVal) return;
 			const start = new Date(startVal);
 			const end = new Date(endVal);
@@ -32577,7 +32700,7 @@
 			return RANGE_ZOOM_OPTIONS.map((option) => b`
         <button
           type="button"
-          class="range-option"
+          class=${`range-option${option.value === this.zoomLevel ? " selected" : ""}`}
           data-option-group="zoom"
           data-option-value=${option.value}
           @click=${() => this._onOptionSelect("zoom", option.value)}
@@ -32590,7 +32713,7 @@
 			return RANGE_SNAP_OPTIONS.map((option) => b`
         <button
           type="button"
-          class="range-option"
+          class=${`range-option${option.value === this.dateSnapping ? " selected" : ""}`}
           data-option-group="snap"
           data-option-value=${option.value}
           @click=${() => this._onOptionSelect("snap", option.value)}
@@ -32615,11 +32738,13 @@
         <div class="range-mobile-dates">
           <date-time-input
             id="range-mobile-start"
+            .value=${this._mobileStartValue}
             label=${msg("Start")}
             @dp-change=${this._onMobileStartChange}
           ></date-time-input>
           <date-time-input
             id="range-mobile-end"
+            .value=${this._mobileEndValue}
             label=${msg("End")}
             @dp-change=${this._onMobileEndChange}
           ></date-time-input>
@@ -32705,10 +32830,9 @@
                   @click=${() => this._onOptionsSubmenu("zoom")}
                 >
                   <span class="range-option-label">${msg("Zoom level")}</span>
-                  <span
-                    class="range-submenu-meta"
-                    data-options-current="zoom"
-                  ></span>
+                  <span class="range-submenu-meta" data-options-current="zoom"
+                    >${msg(RANGE_ZOOM_OPTIONS.find((option) => option.value === this.zoomLevel)?.label ?? "Auto")}</span
+                  >
                 </button>
                 <button
                   type="button"
@@ -32718,10 +32842,9 @@
                   <span class="range-option-label"
                     >${msg("Date snapping")}</span
                   >
-                  <span
-                    class="range-submenu-meta"
-                    data-options-current="snap"
-                  ></span>
+                  <span class="range-submenu-meta" data-options-current="snap"
+                    >${msg(RANGE_SNAP_OPTIONS.find((option) => option.value === this.dateSnapping)?.label ?? "Hour")}</span
+                  >
                 </button>
               </div>
             </div>
@@ -32767,9 +32890,6 @@
         </div>
       </div>
     `;
-		}
-		updated() {
-			this.syncOptionsLabels();
 		}
 	}, _defineProperty(_RangeToolbar, "styles", styles$19), _RangeToolbar);
 	__decorate([n$1({ attribute: false })], RangeToolbar.prototype, "hass", null);
@@ -32819,6 +32939,8 @@
 	__decorate([r$2()], RangeToolbar.prototype, "_optionsView", null);
 	__decorate([r$2()], RangeToolbar.prototype, "_optionsOpen", null);
 	__decorate([r$2()], RangeToolbar.prototype, "_pickerOpen", null);
+	__decorate([r$2()], RangeToolbar.prototype, "_mobileStartValue", null);
+	__decorate([r$2()], RangeToolbar.prototype, "_mobileEndValue", null);
 	RangeToolbar = __decorate([localized()], RangeToolbar);
 	customElements.define("range-toolbar", RangeToolbar);
 	//#endregion
@@ -33070,13 +33192,6 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/context/orchestration-context.ts
-	function getInnerHistoryChart(chartEl) {
-		if (!chartEl?.shadowRoot) return null;
-		return chartEl.shadowRoot.querySelector?.("hass-datapoints-history-chart") ?? chartEl.shadowRoot.querySelector?.("dp-history-chart") ?? chartEl.shadowRoot.querySelector?.("history-chart") ?? null;
-	}
-	function getComparisonTabsHost(chartEl) {
-		return getInnerHistoryChart(chartEl)?.querySelector?.("#chart-top-slot") ?? null;
-	}
 	function ensureCollapsedPickerAnchor(targetControl, anchorEl) {
 		const assignedSlot = targetControl.assignedSlot ?? null;
 		if (!assignedSlot) return;
@@ -33119,19 +33234,7 @@
 				const rafId = window.requestAnimationFrame(() => {
 					ranSynchronously = true;
 					chartResizeRaf = null;
-					if (!chartEl) return;
-					if (Array.isArray(chartEl._lastDrawArgs) && chartEl._lastDrawArgs.length > 0 && typeof chartEl._drawChart === "function") {
-						chartEl._drawChart(...chartEl._lastDrawArgs);
-						return;
-					}
-					const innerChart = getInnerHistoryChart(chartEl);
-					if (innerChart && Array.isArray(innerChart._lastDrawArgs) && innerChart._lastDrawArgs.length > 0) {
-						if (typeof innerChart._queueDrawChart === "function") {
-							innerChart._queueDrawChart(...innerChart._lastDrawArgs);
-							return;
-						}
-						if (typeof innerChart._drawChart === "function") innerChart._drawChart(...innerChart._lastDrawArgs);
-					}
+					chartEl?.requestResizeRedraw?.();
 				});
 				chartResizeRaf = ranSynchronously ? null : rafId;
 			},
@@ -33153,7 +33256,7 @@
 				if (typeof targetControl.click === "function") targetControl.click();
 			},
 			renderComparisonTabs(options) {
-				const tabsEl = getComparisonTabsHost(options.chartEl);
+				const tabsEl = options.chartEl?.getComparisonTabsHost?.() ?? null;
 				if (!tabsEl || !options.startTime || !options.endTime) return {
 					comparisonTabRailComp: options.comparisonTabRailComp,
 					comparisonTabsHostEl: options.comparisonTabsHostEl
@@ -33198,11 +33301,7 @@
 			},
 			updateComparisonTabsOverflow(chartEl) {
 				window.requestAnimationFrame(() => {
-					const innerChart = getInnerHistoryChart(chartEl);
-					const shell = innerChart?.querySelector?.("#chart-tabs-shell") ?? null;
-					const rail = innerChart?.querySelector?.("#chart-tabs-rail") ?? null;
-					if (!shell || !rail) return;
-					shell.classList.toggle("overflowing", rail.scrollWidth > rail.clientWidth + 4);
+					chartEl?.updateComparisonTabsOverflow?.();
 				});
 			},
 			handleComparisonTabHover(options) {
@@ -33651,6 +33750,50 @@
 		};
 		return context;
 	}
+	//#endregion
+	//#region custom_components/hass_datapoints/src/panels/datapoints/host-resize-controller.ts
+	/**
+	* Observes the host element's size and runs `onResize` (rAF-debounced) whenever
+	* the host's box changes while it is connected.
+	*
+	* The Datapoints panel uses this for its measured-DOM layout side effects
+	* (shell layout height, content split layout, chart resize redraw) instead of
+	* an ad-hoc `window` "resize" listener, so container-driven size changes — a
+	* collapsing sidebar, a split-pane drag — are picked up too, not just viewport
+	* resizes. Reads/writes are batched into a single animation frame to avoid
+	* layout thrash.
+	*/
+	var HostResizeController = class {
+		constructor(host, onResize) {
+			_defineProperty(this, "_host", void 0);
+			_defineProperty(this, "_onResize", void 0);
+			_defineProperty(this, "_observer", null);
+			_defineProperty(this, "_rafId", null);
+			this._host = host;
+			this._onResize = onResize;
+			host.addController(this);
+		}
+		hostConnected() {
+			if (typeof window.ResizeObserver !== "function") return;
+			this._observer = new ResizeObserver(() => this._schedule());
+			this._observer.observe(this._host);
+		}
+		hostDisconnected() {
+			this._observer?.disconnect();
+			this._observer = null;
+			if (this._rafId != null) {
+				window.cancelAnimationFrame(this._rafId);
+				this._rafId = null;
+			}
+		}
+		_schedule() {
+			if (this._rafId != null) return;
+			this._rafId = window.requestAnimationFrame(() => {
+				this._rafId = null;
+				this._onResize();
+			});
+		}
+	};
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/datapoints.styles.ts
 	var PANEL_HISTORY_STYLE = `
@@ -35926,6 +36069,47 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/datapoints.ts
+	var _HassDatapointsHistoryPanel;
+	var _hass_accessor_storage$3;
+	var _panel_accessor_storage;
+	var _narrow_accessor_storage;
+	var _rendered_accessor_storage;
+	var _shellBuilt_accessor_storage;
+	var _layoutMode_accessor_storage;
+	var _datapointScope_accessor_storage;
+	var _showChartDatapointIcons_accessor_storage;
+	var _showChartDatapointLines_accessor_storage;
+	var _showChartTooltips_accessor_storage;
+	var _showChartEmphasizedHoverGuides_accessor_storage;
+	var _chartHoverSnapMode_accessor_storage;
+	var _delinkChartYAxis_accessor_storage;
+	var _splitChartView_accessor_storage;
+	var _showCorrelatedAnomalies_accessor_storage;
+	var _chartAnomalyOverlapMode_accessor_storage;
+	var _showDataGaps_accessor_storage;
+	var _dataGapThreshold_accessor_storage;
+	var _historyStartTime_accessor_storage;
+	var _historyEndTime_accessor_storage;
+	var _timelineEvents_accessor_storage;
+	var _loadingComparisonWindowIds_accessor_storage;
+	var _dateWindowDialogOpen_accessor_storage;
+	var _dateWindowDialogName_accessor_storage;
+	var _dateWindowDialogStartValue_accessor_storage;
+	var _dateWindowDialogEndValue_accessor_storage;
+	var _sidebarAccordionTargetsOpen_accessor_storage;
+	var _sidebarAccordionDatapointsOpen_accessor_storage;
+	var _sidebarAccordionAnalysisOpen_accessor_storage;
+	var _sidebarAccordionChartOpen_accessor_storage;
+	var _resolvedAutoZoomLevel_accessor_storage;
+	var _chartHoverTimeMs_accessor_storage;
+	var _zoomLevel_accessor_storage;
+	var _dateSnapping_accessor_storage;
+	var _collapsedOptionsPopupOpen_accessor_storage;
+	var _monitorWizardOpen_accessor_storage;
+	var _monitorWizardPayload_accessor_storage;
+	var _aiQueryBriefDialogOpen_accessor_storage;
+	var _aiQueryBriefHeading_accessor_storage;
+	var _aiQueryBriefText_accessor_storage;
 	/** Module-level set of all currently-connected panel instances.
 	*  Used by the orphan-recovery guard to avoid disrupting a live replacement. */
 	var _liveInstances = /* @__PURE__ */ new Set();
@@ -35974,16 +36158,297 @@
 		value: "only",
 		label: "Overlaps only"
 	}];
-	/**
-	* hass-datapoints-history-panel – Sidebar panel for annotated history exploration.
-	*/
-	var HassDatapointsHistoryPanel = class extends HTMLElement {
+	var HassDatapointsHistoryPanel = (_hass_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _panel_accessor_storage = /* @__PURE__ */ new WeakMap(), _narrow_accessor_storage = /* @__PURE__ */ new WeakMap(), _rendered_accessor_storage = /* @__PURE__ */ new WeakMap(), _shellBuilt_accessor_storage = /* @__PURE__ */ new WeakMap(), _layoutMode_accessor_storage = /* @__PURE__ */ new WeakMap(), _datapointScope_accessor_storage = /* @__PURE__ */ new WeakMap(), _showChartDatapointIcons_accessor_storage = /* @__PURE__ */ new WeakMap(), _showChartDatapointLines_accessor_storage = /* @__PURE__ */ new WeakMap(), _showChartTooltips_accessor_storage = /* @__PURE__ */ new WeakMap(), _showChartEmphasizedHoverGuides_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartHoverSnapMode_accessor_storage = /* @__PURE__ */ new WeakMap(), _delinkChartYAxis_accessor_storage = /* @__PURE__ */ new WeakMap(), _splitChartView_accessor_storage = /* @__PURE__ */ new WeakMap(), _showCorrelatedAnomalies_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartAnomalyOverlapMode_accessor_storage = /* @__PURE__ */ new WeakMap(), _showDataGaps_accessor_storage = /* @__PURE__ */ new WeakMap(), _dataGapThreshold_accessor_storage = /* @__PURE__ */ new WeakMap(), _historyStartTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _historyEndTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _timelineEvents_accessor_storage = /* @__PURE__ */ new WeakMap(), _loadingComparisonWindowIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _dateWindowDialogOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _dateWindowDialogName_accessor_storage = /* @__PURE__ */ new WeakMap(), _dateWindowDialogStartValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _dateWindowDialogEndValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarAccordionTargetsOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarAccordionDatapointsOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarAccordionAnalysisOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarAccordionChartOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _resolvedAutoZoomLevel_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartHoverTimeMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomLevel_accessor_storage = /* @__PURE__ */ new WeakMap(), _dateSnapping_accessor_storage = /* @__PURE__ */ new WeakMap(), _collapsedOptionsPopupOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitorWizardOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitorWizardPayload_accessor_storage = /* @__PURE__ */ new WeakMap(), _aiQueryBriefDialogOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _aiQueryBriefHeading_accessor_storage = /* @__PURE__ */ new WeakMap(), _aiQueryBriefText_accessor_storage = /* @__PURE__ */ new WeakMap(), _HassDatapointsHistoryPanel = class HassDatapointsHistoryPanel extends i$2 {
+		get hass() {
+			return _classPrivateFieldGet2(_hass_accessor_storage$3, this);
+		}
+		set hass(value) {
+			_classPrivateFieldSet2(_hass_accessor_storage$3, this, value);
+		}
+		get panel() {
+			return _classPrivateFieldGet2(_panel_accessor_storage, this);
+		}
+		set panel(value) {
+			_classPrivateFieldSet2(_panel_accessor_storage, this, value);
+		}
+		get narrow() {
+			return _classPrivateFieldGet2(_narrow_accessor_storage, this);
+		}
+		set narrow(value) {
+			_classPrivateFieldSet2(_narrow_accessor_storage, this, value);
+		}
+		get _rendered() {
+			return _classPrivateFieldGet2(_rendered_accessor_storage, this);
+		}
+		set _rendered(value) {
+			_classPrivateFieldSet2(_rendered_accessor_storage, this, value);
+		}
+		get _shellBuilt() {
+			return _classPrivateFieldGet2(_shellBuilt_accessor_storage, this);
+		}
+		set _shellBuilt(value) {
+			_classPrivateFieldSet2(_shellBuilt_accessor_storage, this, value);
+		}
+		get _layoutMode() {
+			return _classPrivateFieldGet2(_layoutMode_accessor_storage, this);
+		}
+		set _layoutMode(value) {
+			_classPrivateFieldSet2(_layoutMode_accessor_storage, this, value);
+		}
+		get _datapointScope() {
+			return _classPrivateFieldGet2(_datapointScope_accessor_storage, this);
+		}
+		set _datapointScope(value) {
+			_classPrivateFieldSet2(_datapointScope_accessor_storage, this, value);
+		}
+		get _showChartDatapointIcons() {
+			return _classPrivateFieldGet2(_showChartDatapointIcons_accessor_storage, this);
+		}
+		set _showChartDatapointIcons(value) {
+			_classPrivateFieldSet2(_showChartDatapointIcons_accessor_storage, this, value);
+		}
+		get _showChartDatapointLines() {
+			return _classPrivateFieldGet2(_showChartDatapointLines_accessor_storage, this);
+		}
+		set _showChartDatapointLines(value) {
+			_classPrivateFieldSet2(_showChartDatapointLines_accessor_storage, this, value);
+		}
+		get _showChartTooltips() {
+			return _classPrivateFieldGet2(_showChartTooltips_accessor_storage, this);
+		}
+		set _showChartTooltips(value) {
+			_classPrivateFieldSet2(_showChartTooltips_accessor_storage, this, value);
+		}
+		get _showChartEmphasizedHoverGuides() {
+			return _classPrivateFieldGet2(_showChartEmphasizedHoverGuides_accessor_storage, this);
+		}
+		set _showChartEmphasizedHoverGuides(value) {
+			_classPrivateFieldSet2(_showChartEmphasizedHoverGuides_accessor_storage, this, value);
+		}
+		get _chartHoverSnapMode() {
+			return _classPrivateFieldGet2(_chartHoverSnapMode_accessor_storage, this);
+		}
+		set _chartHoverSnapMode(value) {
+			_classPrivateFieldSet2(_chartHoverSnapMode_accessor_storage, this, value);
+		}
+		get _delinkChartYAxis() {
+			return _classPrivateFieldGet2(_delinkChartYAxis_accessor_storage, this);
+		}
+		set _delinkChartYAxis(value) {
+			_classPrivateFieldSet2(_delinkChartYAxis_accessor_storage, this, value);
+		}
+		get _splitChartView() {
+			return _classPrivateFieldGet2(_splitChartView_accessor_storage, this);
+		}
+		set _splitChartView(value) {
+			_classPrivateFieldSet2(_splitChartView_accessor_storage, this, value);
+		}
+		get _showCorrelatedAnomalies() {
+			return _classPrivateFieldGet2(_showCorrelatedAnomalies_accessor_storage, this);
+		}
+		set _showCorrelatedAnomalies(value) {
+			_classPrivateFieldSet2(_showCorrelatedAnomalies_accessor_storage, this, value);
+		}
+		get _chartAnomalyOverlapMode() {
+			return _classPrivateFieldGet2(_chartAnomalyOverlapMode_accessor_storage, this);
+		}
+		set _chartAnomalyOverlapMode(value) {
+			_classPrivateFieldSet2(_chartAnomalyOverlapMode_accessor_storage, this, value);
+		}
+		get _showDataGaps() {
+			return _classPrivateFieldGet2(_showDataGaps_accessor_storage, this);
+		}
+		set _showDataGaps(value) {
+			_classPrivateFieldSet2(_showDataGaps_accessor_storage, this, value);
+		}
+		get _dataGapThreshold() {
+			return _classPrivateFieldGet2(_dataGapThreshold_accessor_storage, this);
+		}
+		set _dataGapThreshold(value) {
+			_classPrivateFieldSet2(_dataGapThreshold_accessor_storage, this, value);
+		}
+		get _historyStartTime() {
+			return _classPrivateFieldGet2(_historyStartTime_accessor_storage, this);
+		}
+		set _historyStartTime(value) {
+			_classPrivateFieldSet2(_historyStartTime_accessor_storage, this, value);
+		}
+		get _historyEndTime() {
+			return _classPrivateFieldGet2(_historyEndTime_accessor_storage, this);
+		}
+		set _historyEndTime(value) {
+			_classPrivateFieldSet2(_historyEndTime_accessor_storage, this, value);
+		}
+		get _timelineEvents() {
+			return _classPrivateFieldGet2(_timelineEvents_accessor_storage, this);
+		}
+		set _timelineEvents(value) {
+			_classPrivateFieldSet2(_timelineEvents_accessor_storage, this, value);
+		}
+		get _loadingComparisonWindowIds() {
+			return _classPrivateFieldGet2(_loadingComparisonWindowIds_accessor_storage, this);
+		}
+		set _loadingComparisonWindowIds(value) {
+			_classPrivateFieldSet2(_loadingComparisonWindowIds_accessor_storage, this, value);
+		}
+		get _dateWindowDialogOpen() {
+			return _classPrivateFieldGet2(_dateWindowDialogOpen_accessor_storage, this);
+		}
+		set _dateWindowDialogOpen(value) {
+			_classPrivateFieldSet2(_dateWindowDialogOpen_accessor_storage, this, value);
+		}
+		get _dateWindowDialogName() {
+			return _classPrivateFieldGet2(_dateWindowDialogName_accessor_storage, this);
+		}
+		set _dateWindowDialogName(value) {
+			_classPrivateFieldSet2(_dateWindowDialogName_accessor_storage, this, value);
+		}
+		get _dateWindowDialogStartValue() {
+			return _classPrivateFieldGet2(_dateWindowDialogStartValue_accessor_storage, this);
+		}
+		set _dateWindowDialogStartValue(value) {
+			_classPrivateFieldSet2(_dateWindowDialogStartValue_accessor_storage, this, value);
+		}
+		get _dateWindowDialogEndValue() {
+			return _classPrivateFieldGet2(_dateWindowDialogEndValue_accessor_storage, this);
+		}
+		set _dateWindowDialogEndValue(value) {
+			_classPrivateFieldSet2(_dateWindowDialogEndValue_accessor_storage, this, value);
+		}
+		get _sidebarAccordionTargetsOpen() {
+			return _classPrivateFieldGet2(_sidebarAccordionTargetsOpen_accessor_storage, this);
+		}
+		set _sidebarAccordionTargetsOpen(value) {
+			_classPrivateFieldSet2(_sidebarAccordionTargetsOpen_accessor_storage, this, value);
+		}
+		get _sidebarAccordionDatapointsOpen() {
+			return _classPrivateFieldGet2(_sidebarAccordionDatapointsOpen_accessor_storage, this);
+		}
+		set _sidebarAccordionDatapointsOpen(value) {
+			_classPrivateFieldSet2(_sidebarAccordionDatapointsOpen_accessor_storage, this, value);
+		}
+		get _sidebarAccordionAnalysisOpen() {
+			return _classPrivateFieldGet2(_sidebarAccordionAnalysisOpen_accessor_storage, this);
+		}
+		set _sidebarAccordionAnalysisOpen(value) {
+			_classPrivateFieldSet2(_sidebarAccordionAnalysisOpen_accessor_storage, this, value);
+		}
+		get _sidebarAccordionChartOpen() {
+			return _classPrivateFieldGet2(_sidebarAccordionChartOpen_accessor_storage, this);
+		}
+		set _sidebarAccordionChartOpen(value) {
+			_classPrivateFieldSet2(_sidebarAccordionChartOpen_accessor_storage, this, value);
+		}
+		get _resolvedAutoZoomLevel() {
+			return _classPrivateFieldGet2(_resolvedAutoZoomLevel_accessor_storage, this);
+		}
+		set _resolvedAutoZoomLevel(value) {
+			_classPrivateFieldSet2(_resolvedAutoZoomLevel_accessor_storage, this, value);
+		}
+		get _chartHoverTimeMs() {
+			return _classPrivateFieldGet2(_chartHoverTimeMs_accessor_storage, this);
+		}
+		set _chartHoverTimeMs(value) {
+			_classPrivateFieldSet2(_chartHoverTimeMs_accessor_storage, this, value);
+		}
+		get _zoomLevel() {
+			return _classPrivateFieldGet2(_zoomLevel_accessor_storage, this);
+		}
+		set _zoomLevel(value) {
+			_classPrivateFieldSet2(_zoomLevel_accessor_storage, this, value);
+		}
+		get _dateSnapping() {
+			return _classPrivateFieldGet2(_dateSnapping_accessor_storage, this);
+		}
+		set _dateSnapping(value) {
+			_classPrivateFieldSet2(_dateSnapping_accessor_storage, this, value);
+		}
+		get _collapsedOptionsPopupOpen() {
+			return _classPrivateFieldGet2(_collapsedOptionsPopupOpen_accessor_storage, this);
+		}
+		set _collapsedOptionsPopupOpen(value) {
+			_classPrivateFieldSet2(_collapsedOptionsPopupOpen_accessor_storage, this, value);
+		}
+		get _monitorWizardOpen() {
+			return _classPrivateFieldGet2(_monitorWizardOpen_accessor_storage, this);
+		}
+		set _monitorWizardOpen(value) {
+			_classPrivateFieldSet2(_monitorWizardOpen_accessor_storage, this, value);
+		}
+		get _monitorWizardPayload() {
+			return _classPrivateFieldGet2(_monitorWizardPayload_accessor_storage, this);
+		}
+		set _monitorWizardPayload(value) {
+			_classPrivateFieldSet2(_monitorWizardPayload_accessor_storage, this, value);
+		}
+		get _aiQueryBriefDialogOpen() {
+			return _classPrivateFieldGet2(_aiQueryBriefDialogOpen_accessor_storage, this);
+		}
+		set _aiQueryBriefDialogOpen(value) {
+			_classPrivateFieldSet2(_aiQueryBriefDialogOpen_accessor_storage, this, value);
+		}
+		get _aiQueryBriefHeading() {
+			return _classPrivateFieldGet2(_aiQueryBriefHeading_accessor_storage, this);
+		}
+		set _aiQueryBriefHeading(value) {
+			_classPrivateFieldSet2(_aiQueryBriefHeading_accessor_storage, this, value);
+		}
+		get _aiQueryBriefText() {
+			return _classPrivateFieldGet2(_aiQueryBriefText_accessor_storage, this);
+		}
+		set _aiQueryBriefText(value) {
+			_classPrivateFieldSet2(_aiQueryBriefText_accessor_storage, this, value);
+		}
 		constructor() {
 			super();
-			this.attachShadow({ mode: "open" });
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$3, null);
+			_classPrivateFieldInitSpec(this, _panel_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _narrow_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _rendered_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _shellBuilt_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _layoutMode_accessor_storage, "desktop");
+			_classPrivateFieldInitSpec(this, _datapointScope_accessor_storage, "linked");
+			_classPrivateFieldInitSpec(this, _showChartDatapointIcons_accessor_storage, true);
+			_classPrivateFieldInitSpec(this, _showChartDatapointLines_accessor_storage, true);
+			_classPrivateFieldInitSpec(this, _showChartTooltips_accessor_storage, true);
+			_classPrivateFieldInitSpec(this, _showChartEmphasizedHoverGuides_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _chartHoverSnapMode_accessor_storage, "follow_series");
+			_classPrivateFieldInitSpec(this, _delinkChartYAxis_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _splitChartView_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _showCorrelatedAnomalies_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _chartAnomalyOverlapMode_accessor_storage, "all");
+			_classPrivateFieldInitSpec(this, _showDataGaps_accessor_storage, true);
+			_classPrivateFieldInitSpec(this, _dataGapThreshold_accessor_storage, "2h");
+			_classPrivateFieldInitSpec(this, _historyStartTime_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _historyEndTime_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _timelineEvents_accessor_storage, []);
+			_classPrivateFieldInitSpec(this, _loadingComparisonWindowIds_accessor_storage, []);
+			_defineProperty(this, "_comparisonTabsRoot", null);
+			_classPrivateFieldInitSpec(this, _dateWindowDialogOpen_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _dateWindowDialogName_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _dateWindowDialogStartValue_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _dateWindowDialogEndValue_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _sidebarAccordionTargetsOpen_accessor_storage, true);
+			_classPrivateFieldInitSpec(this, _sidebarAccordionDatapointsOpen_accessor_storage, true);
+			_classPrivateFieldInitSpec(this, _sidebarAccordionAnalysisOpen_accessor_storage, true);
+			_classPrivateFieldInitSpec(this, _sidebarAccordionChartOpen_accessor_storage, true);
+			_classPrivateFieldInitSpec(this, _resolvedAutoZoomLevel_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _chartHoverTimeMs_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage, "auto");
+			_classPrivateFieldInitSpec(this, _dateSnapping_accessor_storage, "auto");
+			_classPrivateFieldInitSpec(this, _collapsedOptionsPopupOpen_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _monitorWizardOpen_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _monitorWizardPayload_accessor_storage, {
+				prefillEntityIds: [],
+				prefillAnalysis: null,
+				editMonitor: null,
+				suggestedEntityIds: [],
+				allSeriesEntityIds: []
+			});
+			_classPrivateFieldInitSpec(this, _aiQueryBriefDialogOpen_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _aiQueryBriefHeading_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _aiQueryBriefText_accessor_storage, "");
 			this._context = createHistoryPageContext();
-			this._rendered = false;
-			this._shellBuilt = false;
 			this._entities = [];
 			this._seriesRows = [];
 			this._targetSelection = {};
@@ -35996,7 +36461,6 @@
 			this._contentKey = "";
 			this._contentSplitRatio = .44;
 			this._sidebarCollapsed = false;
-			this._layoutMode = "desktop";
 			this._mqTablet = window.matchMedia("(max-width: 900px)");
 			this._mqMobile = window.matchMedia("(max-width: 720px)");
 			this._onLayoutChange = () => this._updateLayoutMode();
@@ -36005,39 +36469,15 @@
 			this._collapsedPopupOutsideClickHandler = null;
 			this._collapsedPopupKeyHandler = null;
 			this._lastSyncedLocale = "";
-			this._datapointScope = "linked";
-			this._showChartDatapointIcons = true;
-			this._showChartDatapointLines = true;
-			this._showChartTooltips = true;
-			this._showChartEmphasizedHoverGuides = false;
-			this._chartHoverSnapMode = "follow_series";
-			this._delinkChartYAxis = false;
-			this._showCorrelatedAnomalies = false;
-			this._chartAnomalyOverlapMode = "all";
-			this._showDataGaps = true;
-			this._dataGapThreshold = "2h";
-			this._historyStartTime = null;
-			this._historyEndTime = null;
 			this._historyBoundsLoaded = false;
-			this._timelineEvents = [];
 			this._timelineEventsKey = "";
 			this._preferredSeriesColors = {};
 			this._preferencesLoaded = false;
 			this._comparisonWindows = [];
 			this._selectedComparisonWindowId = null;
 			this._hoveredComparisonWindowId = null;
-			this._loadingComparisonWindowIds = [];
-			this._comparisonTabsHostEl = null;
-			this._comparisonTabRailComp = null;
 			this._pendingAnomalyComparisonWindowEntityId = null;
-			this._dateWindowDialogOpen = false;
 			this._editingDateWindowId = null;
-			this._dateWindowDialogComp = null;
-			this._splitChartView = false;
-			this._dateWindowDialogNameEl = null;
-			this._dateWindowDialogStartEl = null;
-			this._dateWindowDialogEndEl = null;
-			this._dateWindowDialogShortcutsEl = null;
 			this._dateWindowDialogDraftRange = null;
 			this._uiReadyPromise = null;
 			this._uiReadyApplied = false;
@@ -36051,27 +36491,14 @@
 			this._contentSplitterEl = null;
 			this._targetControl = null;
 			this._targetRowsEl = null;
-			this._rowListEl = null;
 			this._targetRowsRenderKey = "";
-			this._sidebarOptionsEl = null;
-			this._sidebarOptionsComp = null;
-			this._sidebarAccordionTargetsOpen = true;
-			this._sidebarAccordionDatapointsOpen = true;
-			this._sidebarAccordionAnalysisOpen = true;
-			this._sidebarAccordionChartOpen = true;
-			this._dateControl = null;
-			this._dateRangePickerEl = null;
-			this._panelTimelineEl = null;
 			this._rangeBounds = null;
+			this._rowLabelMap = /* @__PURE__ */ new Map();
 			this._autoZoomTimer = null;
-			this._resolvedAutoZoomLevel = null;
 			this._hoveredPeriodRange = null;
-			this._chartHoverTimeMs = null;
 			this._chartZoomRange = null;
 			this._chartZoomCommittedRange = null;
 			this._chartZoomStateCommitTimer = null;
-			this._zoomLevel = "auto";
-			this._dateSnapping = "auto";
 			this._hasTargetInUrl = false;
 			this._hasRangeInUrl = false;
 			this._hasPageStateInUrl = false;
@@ -36079,15 +36506,12 @@
 			this._pendingPreferencesSaveTimer = null;
 			this._orphanRecoveryTimer = null;
 			this._showMonitorsPanel = false;
-			this._monitorWizardComp = null;
-			this._aiQueryBriefDialogComp = null;
 			this._recordsSearchQuery = "";
 			this._hiddenEventIds = [];
 			this._hoveredEventIds = [];
 			this._restoredFromSession = false;
 			this._savedPageLoaded = false;
 			this._hasSavedPage = false;
-			this._pageMenuOpen = false;
 			this._onChartHover = (ev) => this._handleChartHover(ev);
 			this._onChartZoom = (ev) => this._handleChartZoom(ev);
 			this._onRecordsSearch = (ev) => this._handleRecordsSearch(ev);
@@ -36101,14 +36525,7 @@
 			this._onAnalysisComputing = (ev) => this._handleAnalysisComputing(ev);
 			this._onAnalysisMethodResult = (ev) => this._handleAnalysisMethodResult(ev);
 			this._onWindowPointerDown = (_ev) => this._handleWindowPointerDown();
-			this._onWindowResize = () => {
-				if (this._rendered) {
-					this._syncPageLayoutHeight();
-					this._applyContentSplitLayout();
-					this._requestChartResizeRedraw();
-					this._syncRangeControl();
-				}
-			};
+			this._resizeController = new HostResizeController(this, () => this._handleHostResize());
 			this._onCollapsedSidebarClick = (_ev) => this._handleCollapsedSidebarClick();
 			this._onEventRecorded = () => this._handleEventRecorded();
 			this._haEventUnsubscribe = null;
@@ -36238,34 +36655,23 @@
 		set _exportBusy(value) {
 			this._context.persistence.state.exportBusy = !!value;
 		}
-		set hass(hass) {
+		_applyHass(hass) {
 			this._hass = hass;
 			this._context.hass = hass;
 			syncFrontendLocale(this._hass).then((locale) => {
+				const localeChanged = locale !== this._lastSyncedLocale;
+				this._lastSyncedLocale = locale;
 				if (!this.isConnected) return;
 				if (!this._shellBuilt && this._rendered) {
 					this._buildLoadingShell();
 					return;
 				}
 				if (!this._rendered) return;
-				if (locale !== this._lastSyncedLocale) {
-					this._lastSyncedLocale = locale;
-					this._renderContent();
-				} else {
-					if (this._shellEl && this._hass) this._shellEl.hass = this._hass;
+				if (localeChanged) this._renderContent();
+				else {
 					if (this._chartEl) this._chartEl.hass = this._hass;
 					if (this._listEl) this._listEl.hass = this._hass;
 					if (this._targetControl && this._hass) this._targetControl.hass = this._hass;
-					if (this._historyTargetsComp) {
-						this._historyTargetsComp.hass = this._hass ?? null;
-						this._historyTargetsComp.states = this._hass?.states ?? {};
-					}
-					if (this._rowListEl) {
-						this._rowListEl.hass = this._hass ?? null;
-						this._rowListEl.states = this._hass?.states ?? {};
-						this._rowListEl.labelMap = disambiguateEntityNames(this._hass, (this._seriesRows ?? []).map((r) => r.entity_id));
-					}
-					if (this._rangeToolbarComp) this._rangeToolbarComp.hass = this._hass ?? null;
 					this.shadowRoot?.querySelectorAll("[data-series-icon-entity-id], [data-series-collapsed-icon-entity-id]").forEach((iconEl) => {
 						const icon = iconEl;
 						const entityId = icon.dataset.seriesIconEntityId || icon.dataset.seriesCollapsedIconEntityId;
@@ -36300,7 +36706,7 @@
 			this._ensureUserPreferences();
 			this._loadSavedPageIndicator();
 		}
-		set panel(panel) {
+		_applyPanel(panel) {
 			this._panel = panel;
 			this._initFromContext();
 			if (this._rendered) {
@@ -36308,10 +36714,18 @@
 				this._renderContent();
 			}
 		}
-		set narrow(value) {
-			this._narrow = value;
+		willUpdate(changed) {
+			if (changed.has("hass") && this.hass) this._applyHass(this.hass);
+			if (changed.has("panel")) this._applyPanel(this.panel);
+			if (changed.has("narrow")) this._narrow = this.narrow;
+			if (this._rendered) {
+				this._rangeBounds = this._deriveRangeBounds();
+				this._ensureTimelineEvents();
+				this._rowLabelMap = this._computeRowLabelMap();
+			}
 		}
 		connectedCallback() {
+			super.connectedCallback();
 			if (this._orphanRecoveryTimer) {
 				window.clearTimeout(this._orphanRecoveryTimer);
 				this._orphanRecoveryTimer = null;
@@ -36337,7 +36751,6 @@
 			window.addEventListener("popstate", this._onPopState);
 			window.addEventListener("location-changed", this._onLocationChanged);
 			window.addEventListener("pointerdown", this._onWindowPointerDown, true);
-			window.addEventListener("resize", this._onWindowResize);
 			window.addEventListener("hass-datapoints-event-recorded", this._onEventRecorded);
 			this.addEventListener("hass-datapoints-chart-hover", this._onChartHover);
 			this.addEventListener("hass-datapoints-chart-zoom", this._onChartZoom);
@@ -36378,8 +36791,10 @@
 				rendered: this._rendered,
 				shellBuilt: this._shellBuilt
 			});
+			this.performUpdate();
 		}
 		disconnectedCallback() {
+			super.disconnectedCallback();
 			_liveInstances.delete(this);
 			this._mqTablet.removeEventListener("change", this._onLayoutChange);
 			this._mqMobile.removeEventListener("change", this._onLayoutChange);
@@ -36387,7 +36802,6 @@
 			window.removeEventListener("popstate", this._onPopState);
 			window.removeEventListener("location-changed", this._onLocationChanged);
 			window.removeEventListener("pointerdown", this._onWindowPointerDown, true);
-			window.removeEventListener("resize", this._onWindowResize);
 			window.removeEventListener("hass-datapoints-event-recorded", this._onEventRecorded);
 			if (this._haEventUnsubscribe) {
 				this._haEventUnsubscribe();
@@ -36590,71 +37004,289 @@
 				isConnected: this.isConnected
 			});
 			this._shellBuilt = false;
-			const loadingLabel = msg("Loading Datapoints…");
-			const root = this.shadowRoot;
-			if (!root) return;
-			root.innerHTML = `
-      <style>${PANEL_HISTORY_LOADING_STYLE}</style>
-      <div class="history-panel-loading">
-        <div class="history-panel-loading-card" role="status" aria-live="polite">
-          <div class="history-panel-loading-spinner" aria-hidden="true"></div>
-          <div class="history-panel-loading-text">${loadingLabel}</div>
-        </div>
-      </div>
-    `;
+			this.requestUpdate();
 		}
 		_buildShell() {
-			logger$1.warn("[dp-lifecycle] _buildShell called", {
-				rendered: this._rendered,
-				isConnected: this.isConnected,
-				entityCount: this._entities?.length ?? 0
-			});
 			this._shellBuilt = true;
-			const root = this.shadowRoot;
-			if (!root) return;
-			root.innerHTML = `<style>${PANEL_HISTORY_STYLE}</style>`;
-			const shell = document.createElement("panel-shell");
-			if (this._hass) shell.hass = this._hass;
-			shell.narrow = this._narrow;
-			shell.sidebarCollapsed = this._sidebarCollapsed;
-			shell.hasSavedState = this._hasSavedPage;
-			shell.layoutMode = this._layoutMode;
-			root.appendChild(shell);
-			this._shellEl = shell;
-			const contentHost = document.createElement("div");
-			contentHost.id = "content";
-			shell.appendChild(contentHost);
-			this._contentHostEl = contentHost;
-			shell.addEventListener("dp-shell-menu-download", () => this._downloadSpreadsheet());
-			shell.addEventListener("dp-shell-menu-ai-brief", () => {
+		}
+		render() {
+			if (!this._rendered) return A;
+			if (!this._shellBuilt) return b`
+        <style>
+          ${PANEL_HISTORY_LOADING_STYLE}
+        </style>
+        <div class="history-panel-loading">
+          <div
+            class="history-panel-loading-card"
+            role="status"
+            aria-live="polite"
+          >
+            <div class="history-panel-loading-spinner" aria-hidden="true"></div>
+            <div class="history-panel-loading-text">
+              ${msg("Loading Datapoints…")}
+            </div>
+          </div>
+        </div>
+      `;
+			return b`
+      <panel-shell
+        .hass=${this._hass ?? null}
+        .narrow=${this._narrow}
+        .sidebarCollapsed=${this._sidebarCollapsed}
+        .hasSavedState=${this._hasSavedPage}
+        .layoutMode=${this._layoutMode}
+        .collapsedOptionsOpen=${this._collapsedOptionsPopupOpen}
+        @dp-shell-menu-download=${() => this._downloadSpreadsheet()}
+        @dp-shell-menu-ai-brief=${() => {
 				this._openAiQueryBriefDialog().catch((error) => {
 					logger$1.warn("[hass-datapoints] failed to open AI query brief:", error);
 				});
-			});
-			shell.addEventListener("dp-shell-menu-save", () => this._savePageState());
-			shell.addEventListener("dp-shell-menu-restore", () => this._restorePageState());
-			shell.addEventListener("dp-shell-menu-clear", () => this._clearSavedPageState());
-			shell.addEventListener("dp-shell-menu-monitors", () => {
+			}}
+        @dp-shell-menu-save=${() => this._savePageState()}
+        @dp-shell-menu-restore=${() => this._restorePageState()}
+        @dp-shell-menu-clear=${() => this._clearSavedPageState()}
+        @dp-shell-menu-monitors=${() => {
 				this._showMonitorsPanel = true;
 				this._renderContent();
-			});
-			shell.addEventListener("dp-shell-sidebar-toggle", () => this._toggleSidebarCollapsed());
-			shell.addEventListener("dp-shell-scrim-click", () => {
+			}}
+        @dp-shell-sidebar-toggle=${() => this._toggleSidebarCollapsed()}
+        @dp-shell-scrim-click=${() => {
 				if (!this._sidebarCollapsed) this._toggleSidebarCollapsed();
-			});
-			shell.addEventListener("click", this._onCollapsedSidebarClick);
-			shell.updateComplete.then(() => {
-				if (!this.isConnected) return;
-				this._sidebarOptionsEl = shell.shadowRoot?.querySelector("#sidebar-options") ?? null;
-				shell.syncLayoutHeight();
-				this._applyContentSplitLayout();
-				this._mountControls();
-				this._renderSidebarOptions();
-				this._ensureUiComponentsReady();
-			});
+			}}
+        @click=${this._onCollapsedSidebarClick}
+      >
+        <range-toolbar
+          slot="controls"
+          .hass=${this.hass}
+          .startTime=${this._startTime ? new Date(this._startTime) : null}
+          .endTime=${this._endTime ? new Date(this._endTime) : null}
+          .rangeBounds=${this._rangeBounds}
+          .zoomLevel=${this._getEffectiveZoomLevel()}
+          .dateSnapping=${this._dateSnapping}
+          .sidebarCollapsed=${this._sidebarCollapsed}
+          .isLiveEdge=${this._isOnLiveEdge()}
+          .timelineEvents=${this._timelineEvents}
+          .comparisonPreview=${this._getComparisonRangePreview()}
+          .zoomRange=${this._getChartZoomHighlightRange()}
+          .zoomWindowRange=${this._getZoomWindowHighlightRange()}
+          .chartHoverTimeMs=${this._rangeBounds ? this._chartHoverTimeMs : null}
+          .chartHoverWindowTimeMs=${this._getChartHoverWindowTimeMs()}
+          @dp-range-commit=${(ev) => {
+				this._applyCommittedRange(ev.detail?.start, ev.detail?.end, { push: ev.detail?.push ?? false });
+			}}
+          @dp-range-draft=${(ev) => {
+				this._scheduleAutoZoomUpdate(ev.detail?.start, ev.detail?.end);
+			}}
+          @dp-toolbar-sidebar-toggle=${() => this._toggleSidebarCollapsed()}
+          @dp-zoom-level-change=${(ev) => {
+				const { value } = ev.detail || {};
+				if (value && value !== this._zoomLevel) {
+					this._zoomLevel = value;
+					this._clearAutoZoomTimer();
+					this._resolvedAutoZoomLevel = value === "auto" ? null : this._resolvedAutoZoomLevel;
+					this._saveSessionState();
+					this._updateUrl({ push: false });
+					this._saveUserPreferences();
+				}
+			}}
+          @dp-snap-change=${(ev) => {
+				const { value } = ev.detail || {};
+				if (value && value !== this._dateSnapping) {
+					this._dateSnapping = value;
+					this._saveSessionState();
+					this._updateUrl({ push: false });
+					this._saveUserPreferences();
+				}
+			}}
+          @dp-date-picker-change=${(ev) => this._handleDatePickerChange(ev)}
+        ></range-toolbar>
+        <sidebar-options
+          slot="sidebar-options"
+          .datapointScope=${this._datapointScope}
+          .showIcons=${this._showChartDatapointIcons}
+          .showLines=${this._showChartDatapointLines}
+          .showTooltips=${this._showChartTooltips}
+          .showHoverGuides=${this._showChartEmphasizedHoverGuides}
+          .hoverSnapMode=${this._chartHoverSnapMode}
+          .showCorrelatedAnomalies=${this._showCorrelatedAnomalies}
+          .showDataGaps=${this._showDataGaps}
+          .dataGapThreshold=${this._dataGapThreshold}
+          .yAxisMode=${this._sidebarYAxisMode}
+          .anomalyOverlapMode=${this._chartAnomalyOverlapMode}
+          .anyAnomaliesEnabled=${(this._seriesRows ?? []).some((row) => row.analysis?.show_anomalies === true)}
+          @dp-scope-change=${this._handlePreferenceScope}
+          @dp-display-change=${this._handlePreferenceDisplay}
+          @dp-analysis-change=${this._handlePreferenceAnalysis}
+          .targetsOpen=${this._sidebarAccordionTargetsOpen}
+          .datapointsOpen=${this._sidebarAccordionDatapointsOpen}
+          .analysisOpen=${this._sidebarAccordionAnalysisOpen}
+          .chartOpen=${this._sidebarAccordionChartOpen}
+          @dp-accordion-change=${this._handlePreferenceAccordion}
+        ></sidebar-options>
+        <collapsed-options-menu
+          slot="collapsed-options"
+          .datapointScope=${this._datapointScope}
+          .showIcons=${this._showChartDatapointIcons}
+          .showLines=${this._showChartDatapointLines}
+          .showTooltips=${this._showChartTooltips}
+          .showHoverGuides=${this._showChartEmphasizedHoverGuides}
+          .hoverSnapMode=${this._chartHoverSnapMode}
+          .showCorrelatedAnomalies=${this._showCorrelatedAnomalies}
+          .showDataGaps=${this._showDataGaps}
+          .dataGapThreshold=${this._dataGapThreshold}
+          .yAxisMode=${this._sidebarYAxisMode}
+          .anomalyOverlapMode=${this._chartAnomalyOverlapMode}
+          .anyAnomaliesEnabled=${(this._seriesRows ?? []).some((row) => row.analysis?.show_anomalies === true)}
+          @dp-scope-change=${this._handlePreferenceScope}
+          @dp-display-change=${this._handlePreferenceDisplay}
+          @dp-analysis-change=${this._handlePreferenceAnalysis}
+        ></collapsed-options-menu>
+        <history-targets
+          slot="sidebar"
+          .rows=${this._seriesRows}
+          .states=${this._hass?.states ?? {}}
+          .hass=${this._hass ?? null}
+          .labelMap=${this._rowLabelMap}
+          .comparisonWindows=${this._comparisonWindows}
+          .canShowDeltaAnalysis=${!!this._selectedComparisonWindowId}
+          .sidebarCollapsed=${this._sidebarCollapsed}
+          .computingEntityIds=${this._computingEntityIds}
+          .analysisProgress=${this._analysisProgress}
+          .computingMethodsByEntity=${this._computingMethods}
+          @dp-row-color-change=${(ev) => {
+				const { index, color } = ev.detail || {};
+				this._updateSeriesRowColor(index, color);
+			}}
+          @dp-row-visibility-change=${(ev) => {
+				const { entityId, visible } = ev.detail || {};
+				this._updateSeriesRowVisibilityByEntityId(entityId, visible);
+			}}
+          @dp-row-remove=${(ev) => {
+				this._removeSeriesRow(ev.detail?.index);
+			}}
+          @dp-row-toggle-analysis=${(ev) => {
+				this._toggleSeriesAnalysisExpanded(ev.detail?.entityId);
+			}}
+          @dp-row-analysis-change=${(ev) => {
+				const { entityId, key, value } = ev.detail || {};
+				this._setSeriesAnalysisOption(entityId, key, value);
+			}}
+          @dp-row-copy-analysis-to-all=${(ev) => {
+				const { entityId, analysis } = ev.detail || {};
+				this._copyAnalysisToAll(entityId, analysis);
+			}}
+          @dp-rows-reorder=${(ev) => {
+				const { rows } = ev.detail || {};
+				if (!Array.isArray(rows)) return;
+				this._seriesRows = rows;
+				this._syncSeriesState();
+				this._saveSessionState();
+				this._renderTargetRows();
+				this._syncControls();
+				this._updateUrl({ push: true });
+				this._renderContent();
+			}}
+          @dp-targets-prefs-click=${(ev) => {
+				ev.stopPropagation();
+				const anchor = ev.composedPath()[0] || ev.target;
+				if (!(anchor instanceof HTMLElement)) return;
+				if (this._collapsedOptionsPopupOpen) this._hideCollapsedOptionsPopup();
+				else this._showCollapsedOptionsPopup(anchor);
+			}}
+          @dp-targets-add-click=${(ev) => {
+				this._openTargetPicker(ev.detail?.buttonEl ?? void 0);
+			}}
+          @dp-targets-clear-all=${() => this._clearAllSeriesRows()}
+          @dp-collapsed-entity-click=${(ev) => {
+				const { entityId, buttonEl } = ev.detail || {};
+				if (!entityId) return;
+				if (this._collapsedPopupEntityId === entityId) this._hideCollapsedTargetPopup();
+				else this._showCollapsedTargetPopup(entityId, buttonEl ?? void 0);
+			}}
+        ></history-targets>
+        <div id="content"></div>
+      </panel-shell>
+      <date-window-dialog
+        ?open=${this._dateWindowDialogOpen}
+        .heading=${this._editingDateWindowId ? msg("Edit date window") : msg("Add date window")}
+        .submitLabel=${this._editingDateWindowId ? msg("Save date window") : msg("Create date window")}
+        .showDelete=${!!this._editingDateWindowId}
+        .showShortcuts=${!this._editingDateWindowId}
+        .name=${this._dateWindowDialogName}
+        .startValue=${this._dateWindowDialogStartValue}
+        .endValue=${this._dateWindowDialogEndValue}
+        .rangeBounds=${this._rangeBounds ?? null}
+        .zoomLevel=${this._zoomLevel ?? "auto"}
+        .dateSnapping=${this._dateSnapping ?? "hour"}
+        @dp-window-close=${() => this._closeDateWindowDialog()}
+        @dp-window-submit=${(ev) => this._createDateWindowFromDialog(ev.detail || {})}
+        @dp-window-delete=${() => this._deleteEditingDateWindow()}
+        @dp-window-shortcut=${(ev) => {
+				if (typeof ev.detail?.direction === "number") this._applyDateWindowShortcut(ev.detail.direction);
+			}}
+        @dp-window-date-change=${(ev) => this._handleDateWindowDateChange(ev.detail?.start || "", ev.detail?.end || "")}
+      ></date-window-dialog>
+      <anomaly-monitor-wizard
+        .hass=${this._hass}
+        ?open=${this._monitorWizardOpen}
+        .prefillEntityIds=${this._monitorWizardPayload.prefillEntityIds}
+        .prefillAnalysis=${this._monitorWizardPayload.prefillAnalysis}
+        .editMonitor=${this._monitorWizardPayload.editMonitor}
+        .suggestedEntityIds=${this._monitorWizardPayload.suggestedEntityIds}
+        .allSeriesEntityIds=${this._monitorWizardPayload.allSeriesEntityIds}
+        @dp-monitor-wizard-close=${() => {
+				this._monitorWizardOpen = false;
+			}}
+        @dp-monitor-wizard-saved=${() => {
+				this._monitorWizardOpen = false;
+			}}
+      ></anomaly-monitor-wizard>
+      <ai-query-brief-dialog
+        ?open=${this._aiQueryBriefDialogOpen}
+        .heading=${this._aiQueryBriefHeading}
+        .text=${this._aiQueryBriefText}
+        @dp-ai-query-brief-close=${() => {
+				this._aiQueryBriefDialogOpen = false;
+			}}
+      ></ai-query-brief-dialog>
+    `;
 		}
-		_syncPageLayoutHeight() {
+		/** Disambiguated entity → display-name map for the current series rows. */
+		_computeRowLabelMap() {
+			return disambiguateEntityNames(this._hass, (this._seriesRows ?? []).map((r) => r.entity_id));
+		}
+		updated() {
+			this._renderComparisonTabSlot();
+			this._positionCollapsedOptionsPopup();
+			this._rangeToolbarComp = this.renderRoot.querySelector("range-toolbar");
+			if (this._shellBuilt && !this._shellEl) this._mountShellControls();
+			this._applyListZoomConfig();
+		}
+		/** Measured layout side effects, driven by the host ResizeController. */
+		_handleHostResize() {
+			if (!this._rendered) return;
 			this._shellEl?.syncLayoutHeight();
+			this._applyContentSplitLayout();
+			this._requestChartResizeRedraw();
+			this.requestUpdate();
+		}
+		async _mountShellControls() {
+			const shell = this.renderRoot.querySelector("panel-shell");
+			if (!shell) return;
+			this._shellEl = shell;
+			this._contentHostEl = shell.querySelector("#content");
+			await shell.updateComplete;
+			if (!this.isConnected) {
+				this._shellEl = null;
+				this.requestUpdate();
+				return;
+			}
+			shell.syncLayoutHeight();
+			this._applyContentSplitLayout();
+			this._mountControls();
+			this._renderSidebarOptions();
+			this._syncControls();
+			this._bootstrapAfterShellBuilt();
 		}
 		_bootstrapAfterShellBuilt() {
 			if (!this._shellBuilt) {
@@ -36669,7 +37301,7 @@
 			this._ensureHistoryBounds();
 			this._ensureUserPreferences();
 			this._loadSavedPageIndicator();
-			this._syncHassBindings();
+			this._refreshControlsFromHass();
 			this._renderContent();
 			if (this._restoredFromSession) {
 				this._restoredFromSession = false;
@@ -36727,7 +37359,9 @@
 						if (!this._shellBuilt) {
 							logger$1.warn("[dp-lifecycle] _ensureUiComponentsReady double RAF: calling _buildShell");
 							this._buildShell();
-						} else logger$1.warn("[dp-lifecycle] _ensureUiComponentsReady double RAF: shell already built — skipping _buildShell");
+							return;
+						}
+						logger$1.warn("[dp-lifecycle] _ensureUiComponentsReady double RAF: shell already built — skipping _buildShell");
 						logger$1.warn("[dp-lifecycle] _ensureUiComponentsReady double RAF: calling syncControls + bootstrapAfterShellBuilt");
 						this._syncControls();
 						this._bootstrapAfterShellBuilt();
@@ -36739,10 +37373,21 @@
 			return this._uiReadyPromise;
 		}
 		_syncControls() {
-			this._syncPageLayoutHeight();
-			this._syncHassBindings();
-			this._syncRangeUi();
+			this._shellEl?.syncLayoutHeight();
+			this._refreshControlsFromHass();
+			this.requestUpdate();
 			this._renderSidebarOptions();
+		}
+		/**
+		* Refresh the imperatively-mounted controls that can't bind hass declaratively
+		* (the target picker) and re-render the target rows.
+		*/
+		_refreshControlsFromHass() {
+			if (this._targetControl) {
+				if (this._hass) this._targetControl.hass = this._hass;
+				this._targetControl.value = {};
+			}
+			this._renderTargetRows();
 		}
 		_syncSeriesState() {
 			this._seriesRows = normalizeHistorySeriesRows(this._seriesRows);
@@ -36771,54 +37416,13 @@
 		_mergeSavedSeriesRows(rows, savedRows) {
 			return mergeSavedSeriesRows(rows, savedRows);
 		}
-		_syncHassBindings() {
-			if (this._shellEl) {
-				if (this._hass) this._shellEl.hass = this._hass;
-				this._shellEl.narrow = this._narrow;
-			}
-			this._syncSidebarUi();
-			if (this._targetControl) {
-				if (this._hass) this._targetControl.hass = this._hass;
-				this._targetControl.value = {};
-			}
-			this._renderTargetRows();
-			this.shadowRoot?.querySelectorAll("[data-series-icon-entity-id], [data-series-collapsed-icon-entity-id]").forEach((iconEl) => {
-				const icon = iconEl;
-				const entityId = icon.dataset.seriesIconEntityId || icon.dataset.seriesCollapsedIconEntityId;
-				if (!entityId) return;
-				icon.stateObj = this._hass?.states?.[entityId];
-				icon.hass = this._hass;
-			});
-			if (this._rangeToolbarComp) this._rangeToolbarComp.hass = this._hass ?? null;
-		}
-		_syncRangeUi() {
-			if (!this._dateControl) return;
-			this._syncOptionsMenu();
-			this._syncRangeControl();
-		}
 		_renderSidebarOptions() {
-			if (!this._sidebarOptionsComp) return;
-			let yAxisMode;
-			if (this._splitChartView) yAxisMode = "split";
-			else if (this._delinkChartYAxis) yAxisMode = "unique";
-			else yAxisMode = "combined";
-			this._sidebarOptionsComp.datapointScope = this._datapointScope;
-			this._sidebarOptionsComp.showIcons = this._showChartDatapointIcons;
-			this._sidebarOptionsComp.showLines = this._showChartDatapointLines;
-			this._sidebarOptionsComp.showTooltips = this._showChartTooltips;
-			this._sidebarOptionsComp.showHoverGuides = this._showChartEmphasizedHoverGuides;
-			this._sidebarOptionsComp.hoverSnapMode = this._chartHoverSnapMode;
-			this._sidebarOptionsComp.showCorrelatedAnomalies = this._showCorrelatedAnomalies;
-			this._sidebarOptionsComp.showDataGaps = this._showDataGaps;
-			this._sidebarOptionsComp.dataGapThreshold = this._dataGapThreshold;
-			this._sidebarOptionsComp.yAxisMode = yAxisMode;
-			this._sidebarOptionsComp.anomalyOverlapMode = this._chartAnomalyOverlapMode;
-			this._sidebarOptionsComp.anyAnomaliesEnabled = (this._seriesRows ?? []).some((r) => r.analysis?.show_anomalies === true);
-			this._sidebarOptionsComp.targetsOpen = this._sidebarAccordionTargetsOpen;
-			this._sidebarOptionsComp.datapointsOpen = this._sidebarAccordionDatapointsOpen;
-			this._sidebarOptionsComp.analysisOpen = this._sidebarAccordionAnalysisOpen;
-			this._sidebarOptionsComp.chartOpen = this._sidebarAccordionChartOpen;
-			this._refreshCollapsedOptionsPopup();
+			this.requestUpdate();
+		}
+		get _sidebarYAxisMode() {
+			if (this._splitChartView) return "split";
+			if (this._delinkChartYAxis) return "unique";
+			return "combined";
 		}
 		_formatComparisonLabel(start, end) {
 			return formatComparisonLabel(start, end);
@@ -36847,28 +37451,10 @@
 		_getRoundedDateWindowUnit(start, end) {
 			return getRoundedDateWindowUnit(start, end);
 		}
+		/** Push the current draft range into the controlled start/end form values. */
 		_syncDateWindowDialogInputs() {
-			const startVal = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.start || null);
-			const endVal = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.end || null);
-			if (this._dateWindowDialogComp) {
-				this._dateWindowDialogComp.startValue = startVal;
-				this._dateWindowDialogComp.endValue = endVal;
-				return;
-			}
-			if (this._dateWindowDialogStartEl) this._dateWindowDialogStartEl.value = startVal;
-			if (this._dateWindowDialogEndEl) this._dateWindowDialogEndEl.value = endVal;
-		}
-		_handleDateWindowDialogInputChange() {
-			const start = this._parseDateWindowInputValue(this._dateWindowDialogStartEl?.value || "");
-			const end = this._parseDateWindowInputValue(this._dateWindowDialogEndEl?.value || "");
-			if (start && end && start < end) {
-				this._dateWindowDialogDraftRange = {
-					start,
-					end
-				};
-				return;
-			}
-			this._dateWindowDialogDraftRange = null;
+			this._dateWindowDialogStartValue = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.start || null);
+			this._dateWindowDialogEndValue = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.end || null);
 		}
 		_applyDateWindowShortcut(direction) {
 			if (this._editingDateWindowId) return;
@@ -36877,69 +37463,7 @@
 			this._dateWindowDialogDraftRange = result;
 			this._syncDateWindowDialogInputs();
 		}
-		_ensureDateWindowDialog() {
-			if (this._dateWindowDialogComp || this._dateWindowDialogEl || !this.shadowRoot) return;
-			const dialog = document.createElement("ha-dialog");
-			dialog.id = "date-window-dialog";
-			dialog.setAttribute("hideActions", "");
-			dialog.scrimClickAction = true;
-			dialog.escapeKeyAction = true;
-			dialog.open = false;
-			dialog.headerTitle = "Add date window";
-			dialog.style.setProperty("--dialog-content-padding", `0 var(--dp-spacing-lg) var(--dp-spacing-lg)`);
-			dialog.innerHTML = `
-      <div class="date-window-dialog-content">
-        <div class="date-window-dialog-body">
-          A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later.
-        </div>
-        <div class="date-window-dialog-field name-field">
-          <ha-textfield id="date-window-name" label="Name" placeholder="e.g. Heating season start"></ha-textfield>
-        </div>
-        <div class="date-window-dialog-field">
-          <label>Date range</label>
-          <div class="date-window-dialog-dates">
-            <div class="date-window-dialog-field">
-              <label for="date-window-start">Start</label>
-              <input id="date-window-start" class="date-window-dialog-input" type="datetime-local" step="60">
-            </div>
-            <div class="date-window-dialog-field">
-              <label for="date-window-end">End</label>
-              <input id="date-window-end" class="date-window-dialog-input" type="datetime-local" step="60">
-            </div>
-          </div>
-        </div>
-        <div class="date-window-dialog-shortcuts" id="date-window-shortcuts" hidden>
-          <ha-button id="date-window-previous">Use previous range</ha-button>
-          <ha-button id="date-window-next">Use next range</ha-button>
-        </div>
-        <div class="date-window-dialog-actions">
-          <ha-button class="date-window-dialog-delete" id="date-window-delete" hidden>Delete date window</ha-button>
-          <div class="date-window-dialog-actions-right">
-            <ha-button class="date-window-dialog-cancel" id="date-window-cancel">Cancel</ha-button>
-            <ha-button raised class="date-window-dialog-submit" id="date-window-submit">Create date window</ha-button>
-          </div>
-        </div>
-      </div>
-    `;
-			dialog.addEventListener("closed", () => this._closeDateWindowDialog(true));
-			this.shadowRoot.appendChild(dialog);
-			this._dateWindowDialogEl = dialog;
-			this._dateWindowDialogNameEl = dialog.querySelector("#date-window-name");
-			this._dateWindowDialogStartEl = dialog.querySelector("#date-window-start");
-			this._dateWindowDialogEndEl = dialog.querySelector("#date-window-end");
-			this._dateWindowDialogShortcutsEl = dialog.querySelector("#date-window-shortcuts");
-			if (this._hass && this._dateWindowDialogNameEl) this._dateWindowDialogNameEl.hass = this._hass;
-			dialog.querySelector("#date-window-cancel")?.addEventListener("click", () => this._closeDateWindowDialog());
-			dialog.querySelector("#date-window-submit")?.addEventListener("click", () => this._createDateWindowFromDialog());
-			dialog.querySelector("#date-window-delete")?.addEventListener("click", () => this._deleteEditingDateWindow());
-			this._dateWindowDialogStartEl?.addEventListener("change", () => this._handleDateWindowDialogInputChange());
-			this._dateWindowDialogEndEl?.addEventListener("change", () => this._handleDateWindowDialogInputChange());
-			dialog.querySelector("#date-window-previous")?.addEventListener("click", () => this._applyDateWindowShortcut(-1));
-			dialog.querySelector("#date-window-next")?.addEventListener("click", () => this._applyDateWindowShortcut(1));
-		}
 		_openDateWindowDialog(targetWindow = null) {
-			this._ensureDateWindowDialog();
-			this._dateWindowDialogOpen = true;
 			this._editingDateWindowId = targetWindow?.id || null;
 			const dialogStart = targetWindow ? parseDateValue(targetWindow.start_time) : this._startTime;
 			const dialogEnd = targetWindow ? parseDateValue(targetWindow.end_time) : this._endTime;
@@ -36947,48 +37471,18 @@
 				start: new Date(dialogStart),
 				end: new Date(dialogEnd)
 			} : null;
-			if (this._dateWindowDialogComp) {
-				this._dateWindowDialogComp.heading = targetWindow ? msg("Edit date window") : msg("Add date window");
-				this._dateWindowDialogComp.submitLabel = targetWindow ? msg("Save date window") : msg("Create date window");
-				this._dateWindowDialogComp.showDelete = !!targetWindow;
-				this._dateWindowDialogComp.showShortcuts = !targetWindow;
-				this._dateWindowDialogComp.name = targetWindow?.label || "";
-				this._dateWindowDialogComp.startValue = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.start || null);
-				this._dateWindowDialogComp.endValue = this._formatDateWindowInputValue(this._dateWindowDialogDraftRange?.end || null);
-				this._dateWindowDialogComp.rangeBounds = this._rangeBounds ?? null;
-				this._dateWindowDialogComp.zoomLevel = this._zoomLevel ?? "auto";
-				this._dateWindowDialogComp.dateSnapping = this._dateSnapping ?? "hour";
-				this._dateWindowDialogComp.open = true;
-				return;
-			}
-			if (this._dateWindowDialogEl) {
-				this._dateWindowDialogEl.open = true;
-				this._dateWindowDialogEl.headerTitle = targetWindow ? msg("Edit date window") : msg("Add date window");
-			}
-			const submitButton = this._dateWindowDialogEl?.querySelector("#date-window-submit");
-			if (submitButton) submitButton.textContent = targetWindow ? msg("Save date window") : msg("Create date window");
-			const deleteButton = this._dateWindowDialogEl?.querySelector("#date-window-delete");
-			if (deleteButton) {
-				deleteButton.hidden = !targetWindow;
-				deleteButton.style.display = targetWindow ? "" : "none";
-			}
-			if (this._dateWindowDialogShortcutsEl) this._dateWindowDialogShortcutsEl.hidden = !!targetWindow;
-			if (this._dateWindowDialogNameEl) this._dateWindowDialogNameEl.value = targetWindow?.label || "";
+			this._dateWindowDialogName = targetWindow?.label || "";
 			this._syncDateWindowDialogInputs();
-			window.requestAnimationFrame(() => this._dateWindowDialogNameEl?.focus());
+			this._dateWindowDialogOpen = true;
 		}
-		_closeDateWindowDialog(fromClosedEvent = false) {
+		_closeDateWindowDialog() {
 			this._dateWindowDialogOpen = false;
 			this._editingDateWindowId = null;
 			this._dateWindowDialogDraftRange = null;
 			this._pendingAnomalyComparisonWindowEntityId = null;
-			if (!fromClosedEvent) {
-				if (this._dateWindowDialogComp) this._dateWindowDialogComp.open = false;
-				else if (this._dateWindowDialogEl) this._dateWindowDialogEl.open = false;
-			}
 		}
 		_createDateWindowFromDialog(overrides = {}) {
-			const rawName = overrides.name != null ? overrides.name : this._dateWindowDialogNameEl?.value || "";
+			const rawName = overrides.name != null ? overrides.name : "";
 			const label = String(rawName).trim();
 			const parsedStart = overrides.start ? this._parseDateWindowInputValue(String(overrides.start)) : null;
 			const parsedEnd = overrides.end ? this._parseDateWindowInputValue(String(overrides.end)) : null;
@@ -37105,7 +37599,7 @@
 				logger$1.log(`[datapoints] analysis complete (${entityIds.join(", ")})`);
 			}
 			this._analysisProgress = progress;
-			this._pushComputingStateToRowList();
+			this._invalidateComputingState();
 		}
 		_handleAnalysisMethodResult(ev) {
 			logger$1.log("[datapoints] _handleAnalysisMethodResult received", ev?.detail);
@@ -37123,14 +37617,19 @@
 			}
 			const remaining = [...this._computingMethods.get(entityId) ?? []];
 			logger$1.log(`[datapoints] method done: ${method} for ${entityId} — remaining: [${remaining.join(", ") || "none"}]`);
-			this._pushComputingStateToRowList();
+			this._invalidateComputingState();
 		}
-		_pushComputingStateToRowList() {
-			if (this._rowListEl) {
-				this._rowListEl.computingEntityIds = new Set(this._computingEntityIds);
-				this._rowListEl.analysisProgress = this._analysisProgress;
-				this._rowListEl.computingMethodsByEntity = new Map(this._computingMethods);
-			}
+		/**
+		* Publishes the in-flight anomaly-computation state to the sidebar.  These
+		* collections are plain fields mutated in place, so every mutation site MUST
+		* route through here: it reassigns fresh Set/Map references (so the
+		* declarative `<history-targets>` bindings, and the row list it owns, detect
+		* the change) and requests a re-render.
+		*/
+		_invalidateComputingState() {
+			this._computingEntityIds = new Set(this._computingEntityIds);
+			this._computingMethods = new Map(this._computingMethods);
+			this.requestUpdate();
 		}
 		_clearDeltaAnalysisSelectionState() {}
 		_handleComparisonTabActivate(id) {
@@ -37160,28 +37659,16 @@
 					this._renderContent();
 				},
 				setAdjustComparisonAxisScale: (value) => {
-					if (this._chartEl) this._chartEl._adjustComparisonAxisScale = value;
+					this._chartEl?.setAdjustComparisonAxisScale?.(value);
 				}
 			});
-		}
-		_syncSidebarUi() {
-			if (this._shellEl) this._shellEl.sidebarCollapsed = this._sidebarCollapsed;
-			if (this._historyTargetsComp) this._historyTargetsComp.sidebarCollapsed = this._sidebarCollapsed;
-			if (this._rangeToolbarComp) this._rangeToolbarComp.sidebarCollapsed = this._sidebarCollapsed;
 		}
 		_updateLayoutMode() {
 			const prev = this._layoutMode;
 			if (this._mqMobile.matches) this._layoutMode = "mobile";
 			else if (this._mqTablet.matches) this._layoutMode = "tablet";
 			else this._layoutMode = "desktop";
-			if (prev !== this._layoutMode) {
-				if (this._shellEl) this._shellEl.layoutMode = this._layoutMode;
-				this._syncSidebarUi();
-				this._syncMobileDateInputs();
-			}
-		}
-		_syncMobileDateInputs() {
-			this._rangeToolbarComp?.syncMobileDates(this._startTime, this._endTime);
+			if (prev !== this._layoutMode) this._renderTargetRows();
 		}
 		_applyContentSplitLayout() {
 			const content = this._contentHostEl;
@@ -37199,11 +37686,7 @@
 			if (!this._sidebarCollapsed) this._hideCollapsedTargetPopup();
 			this._saveSessionState();
 			this._updateUrl({ push: false });
-			this._syncSidebarUi();
-			window.requestAnimationFrame(() => {
-				if (!this.isConnected) return;
-				this._syncRangeControl();
-			});
+			this._renderTargetRows();
 		}
 		_handleCollapsedSidebarClick() {
 			if (!this._sidebarCollapsed) {}
@@ -37297,7 +37780,6 @@
 			if (this._datapointScope === "hidden" || this._datapointScope === "linked" && this._entities.length === 0) {
 				this._timelineEvents = [];
 				this._context.fetch.resetTimelineEvents();
-				if (this._rendered && this._rangeToolbarComp) this._rangeToolbarComp.timelineEvents = [];
 				return;
 			}
 			const startIso = new Date(this._rangeBounds.min).toISOString();
@@ -37310,7 +37792,6 @@
 				onSuccess: (events, key) => {
 					this._timelineEvents = events;
 					this._timelineEventsKey = key;
-					if (this._rendered && this._rangeToolbarComp) this._rangeToolbarComp.timelineEvents = this._timelineEvents;
 				},
 				onError: (err) => {
 					logger$1.warn("[hass-datapoints] failed to load timeline events:", err);
@@ -37357,83 +37838,10 @@
 		}
 		_mountControls() {
 			if (!this._shellEl) return;
-			const histTargets = this._mountHistoryTargetsControl();
-			this._mountTargetPickerControl(histTargets);
-			this._mountRangeToolbarControl();
-			this._mountSidebarOptionsControl();
-			this._mountDateWindowDialogControl();
-			this._mountMonitorWizard();
-			this._mountAiQueryBriefDialogControl();
-			this._syncControls();
-		}
-		_mountHistoryTargetsControl() {
-			const histTargets = document.createElement("history-targets");
-			histTargets.slot = "sidebar";
-			histTargets.rows = [];
-			histTargets.states = {};
-			histTargets.hass = this._hass ?? null;
-			histTargets.comparisonWindows = this._comparisonWindows;
-			histTargets.canShowDeltaAnalysis = false;
-			histTargets.sidebarCollapsed = this._sidebarCollapsed;
-			histTargets.addEventListener("dp-row-color-change", (ev) => {
-				const { index, color } = ev.detail || {};
-				this._updateSeriesRowColor(index, color);
-			});
-			histTargets.addEventListener("dp-row-visibility-change", (ev) => {
-				const { entityId, visible } = ev.detail || {};
-				this._updateSeriesRowVisibilityByEntityId(entityId, visible);
-			});
-			histTargets.addEventListener("dp-row-remove", (ev) => {
-				const { index } = ev.detail || {};
-				this._removeSeriesRow(index);
-			});
-			histTargets.addEventListener("dp-row-toggle-analysis", (ev) => {
-				const { entityId } = ev.detail || {};
-				this._toggleSeriesAnalysisExpanded(entityId);
-			});
-			histTargets.addEventListener("dp-row-analysis-change", (ev) => {
-				const { entityId, key, value } = ev.detail || {};
-				this._setSeriesAnalysisOption(entityId, key, value);
-			});
-			histTargets.addEventListener("dp-row-copy-analysis-to-all", (ev) => {
-				const { entityId, analysis } = ev.detail || {};
-				this._copyAnalysisToAll(entityId, analysis);
-			});
-			histTargets.addEventListener("dp-rows-reorder", (ev) => {
-				const { rows } = ev.detail || {};
-				if (!Array.isArray(rows)) return;
-				this._seriesRows = rows;
-				this._syncSeriesState();
-				this._saveSessionState();
-				this._renderTargetRows();
-				this._syncControls();
-				this._updateUrl({ push: true });
-				this._renderContent();
-			});
-			histTargets.addEventListener("dp-targets-prefs-click", (ev) => {
-				ev.stopPropagation();
-				const anchor = ev.composedPath()[0] || ev.target;
-				if (!(anchor instanceof HTMLElement)) return;
-				if (this._collapsedOptionsPopupOpen) this._hideCollapsedOptionsPopup();
-				else this._showCollapsedOptionsPopup(anchor);
-			});
-			histTargets.addEventListener("dp-targets-add-click", (ev) => {
-				const { buttonEl } = ev.detail || {};
-				this._openTargetPicker(buttonEl ?? void 0);
-			});
-			histTargets.addEventListener("dp-targets-clear-all", () => {
-				this._clearAllSeriesRows();
-			});
-			histTargets.addEventListener("dp-collapsed-entity-click", (ev) => {
-				const { entityId, buttonEl } = ev.detail || {};
-				if (!entityId) return;
-				if (this._collapsedPopupEntityId === entityId) this._hideCollapsedTargetPopup();
-				else this._showCollapsedTargetPopup(entityId, buttonEl ?? void 0);
-			});
-			this._shellEl.appendChild(histTargets);
+			const histTargets = this.renderRoot.querySelector("history-targets");
 			this._historyTargetsComp = histTargets;
-			this._rowListEl = null;
-			return histTargets;
+			if (histTargets && !this._targetControl) this._mountTargetPickerControl(histTargets);
+			this._syncControls();
 		}
 		_mountTargetPickerControl(histTargets) {
 			const targetControl = document.createElement("ha-target-picker");
@@ -37461,120 +37869,33 @@
 				targetControl.value = {};
 			});
 		}
-		_mountRangeToolbarControl() {
-			const rangeToolbar = document.createElement("range-toolbar");
-			rangeToolbar.slot = "controls";
-			rangeToolbar.startTime = this._startTime;
-			rangeToolbar.endTime = this._endTime;
-			rangeToolbar.rangeBounds = this._rangeBounds;
-			rangeToolbar.zoomLevel = this._zoomLevel;
-			rangeToolbar.dateSnapping = this._dateSnapping;
-			rangeToolbar.sidebarCollapsed = this._sidebarCollapsed;
-			rangeToolbar.hass = this._hass ?? null;
-			rangeToolbar.isLiveEdge = this._isOnLiveEdge();
-			rangeToolbar.timelineEvents = this._timelineEvents || [];
-			rangeToolbar.comparisonPreview = null;
-			rangeToolbar.zoomRange = this._chartZoomCommittedRange ? {
-				start: +this._chartZoomCommittedRange.start,
-				end: +this._chartZoomCommittedRange.end
-			} : null;
-			rangeToolbar.zoomWindowRange = null;
-			rangeToolbar.chartHoverTimeMs = null;
-			rangeToolbar.chartHoverWindowTimeMs = null;
-			rangeToolbar.addEventListener("dp-range-commit", (ev) => {
-				this._applyCommittedRange(ev.detail?.start, ev.detail?.end, { push: ev.detail?.push ?? false });
-			});
-			rangeToolbar.addEventListener("dp-range-draft", (ev) => {
-				this._scheduleAutoZoomUpdate(ev.detail?.start, ev.detail?.end);
-			});
-			rangeToolbar.addEventListener("dp-toolbar-sidebar-toggle", () => this._toggleSidebarCollapsed());
-			rangeToolbar.addEventListener("dp-zoom-level-change", (ev) => {
-				const { value } = ev.detail || {};
-				if (value && value !== this._zoomLevel) {
-					this._zoomLevel = value;
-					this._clearAutoZoomTimer();
-					this._resolvedAutoZoomLevel = value === "auto" ? null : this._resolvedAutoZoomLevel;
-					this._saveSessionState();
-					this._updateUrl({ push: false });
-					this._syncRangeControl();
-					this._saveUserPreferences();
-				}
-			});
-			rangeToolbar.addEventListener("dp-snap-change", (ev) => {
-				const { value } = ev.detail || {};
-				if (value && value !== this._dateSnapping) {
-					this._dateSnapping = value;
-					this._saveSessionState();
-					this._updateUrl({ push: false });
-					this._syncRangeControl();
-					this._saveUserPreferences();
-				}
-			});
-			rangeToolbar.addEventListener("dp-date-picker-change", (ev) => {
-				this._handleDatePickerChange(ev);
-			});
-			this._shellEl.appendChild(rangeToolbar);
-			this._rangeToolbarComp = rangeToolbar;
-			this._dateControl = rangeToolbar;
-			rangeToolbar.updateComplete.then(() => {
-				if (!this.isConnected || this._rangeToolbarComp !== rangeToolbar) return;
-				this._syncControls();
-				this._renderContent();
-			});
-			this._syncSidebarUi();
+		_handlePreferenceScope(ev) {
+			const { value } = ev.detail || {};
+			if (value) this._setDatapointScope(value);
 		}
-		_mountSidebarOptionsControl() {
-			if (this._sidebarOptionsEl) {
-				const sidebarComp = document.createElement("sidebar-options");
-				sidebarComp.addEventListener("dp-scope-change", (ev) => {
-					const { value } = ev.detail || {};
-					if (value) this._setDatapointScope(value);
-				});
-				sidebarComp.addEventListener("dp-display-change", (ev) => {
-					const { kind, value } = ev.detail || {};
-					if (!kind) return;
-					if (kind === "y_axis_mode") this._setChartYAxisMode(String(value || ""));
-					else this._setChartDatapointDisplayOption(kind, value);
-				});
-				sidebarComp.addEventListener("dp-analysis-change", (ev) => {
-					const { kind, value } = ev.detail || {};
-					if (kind === "anomaly_overlap_mode" && ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS.some((o) => o.value === value)) {
-						if (this._chartAnomalyOverlapMode === value) return;
-						this._chartAnomalyOverlapMode = value;
-						this._saveSessionState();
-						this._updateUrl({ push: false });
-						this._renderSidebarOptions();
-						this._renderContent();
-					}
-				});
-				sidebarComp.addEventListener("dp-accordion-change", (ev) => {
-					const { targetsOpen, datapointsOpen, analysisOpen, chartOpen } = ev.detail || {};
-					if (typeof targetsOpen === "boolean") this._sidebarAccordionTargetsOpen = targetsOpen;
-					if (typeof datapointsOpen === "boolean") this._sidebarAccordionDatapointsOpen = datapointsOpen;
-					if (typeof analysisOpen === "boolean") this._sidebarAccordionAnalysisOpen = analysisOpen;
-					if (typeof chartOpen === "boolean") this._sidebarAccordionChartOpen = chartOpen;
-					this._saveSessionState();
-					this._updateUrl({ push: false });
-				});
-				this._sidebarOptionsEl.appendChild(sidebarComp);
-				this._sidebarOptionsComp = sidebarComp;
+		_handlePreferenceDisplay(ev) {
+			const { kind, value } = ev.detail || {};
+			if (!kind) return;
+			if (kind === "y_axis_mode") this._setChartYAxisMode(String(value || ""));
+			else this._setChartDatapointDisplayOption(kind, value);
+		}
+		_handlePreferenceAnalysis(ev) {
+			const { kind, value } = ev.detail || {};
+			if (kind === "anomaly_overlap_mode" && ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS.some((option) => option.value === value) && value !== this._chartAnomalyOverlapMode) {
+				this._chartAnomalyOverlapMode = value;
+				this._saveSessionState();
+				this._updateUrl({ push: false });
+				this._renderContent();
 			}
 		}
-		_mountMonitorWizard() {
-			if (!this.shadowRoot || this._monitorWizardComp) return;
-			const wizard = document.createElement("anomaly-monitor-wizard");
-			wizard.hass = this._hass;
-			wizard.open = false;
-			wizard.suggestedEntityIds = [];
-			wizard.allSeriesEntityIds = [];
-			wizard.addEventListener("dp-monitor-wizard-close", () => {
-				wizard.open = false;
-			});
-			wizard.addEventListener("dp-monitor-wizard-saved", () => {
-				wizard.open = false;
-			});
-			this.shadowRoot.appendChild(wizard);
-			this._monitorWizardComp = wizard;
+		_handlePreferenceAccordion(ev) {
+			const { targetsOpen, datapointsOpen, analysisOpen, chartOpen } = ev.detail || {};
+			if (typeof targetsOpen === "boolean") this._sidebarAccordionTargetsOpen = targetsOpen;
+			if (typeof datapointsOpen === "boolean") this._sidebarAccordionDatapointsOpen = datapointsOpen;
+			if (typeof analysisOpen === "boolean") this._sidebarAccordionAnalysisOpen = analysisOpen;
+			if (typeof chartOpen === "boolean") this._sidebarAccordionChartOpen = chartOpen;
+			this._saveSessionState();
+			this._updateUrl({ push: false });
 		}
 		_openMonitorWizardFromChartAnalysis(entityId, analysis) {
 			const suggestedIds = (this._seriesRows ?? []).filter((r) => r.analysis?.show_anomalies === true && Array.isArray(r.analysis.anomaly_methods) && r.analysis.anomaly_methods.length > 0 && !r.entity_id.startsWith("binary_sensor.") && r.entity_id !== entityId).map((r) => r.entity_id);
@@ -37582,50 +37903,29 @@
 			this._openMonitorWizard(entityId ? [entityId] : [], analysis, null, suggestedIds, allSeriesIds);
 		}
 		_openMonitorWizard(entityIds, analysis, editMonitor = null, suggestedEntityIds = [], allSeriesEntityIds = []) {
-			if (!this.shadowRoot) return;
-			if (!this._monitorWizardComp) this._mountMonitorWizard();
-			const wizard = this._monitorWizardComp;
-			if (!wizard) return;
-			wizard.hass = this._hass;
-			wizard.editMonitor = editMonitor;
-			wizard.prefillEntityIds = entityIds;
-			wizard.prefillAnalysis = analysis;
-			wizard.suggestedEntityIds = suggestedEntityIds;
-			wizard.allSeriesEntityIds = allSeriesEntityIds;
-			wizard.open = true;
+			this._monitorWizardPayload = {
+				prefillEntityIds: entityIds,
+				prefillAnalysis: analysis,
+				editMonitor,
+				suggestedEntityIds,
+				allSeriesEntityIds
+			};
+			this._monitorWizardOpen = true;
 		}
-		_mountDateWindowDialogControl() {
-			if (this.shadowRoot) {
-				const dialogComp = document.createElement("date-window-dialog");
-				dialogComp.addEventListener("dp-window-close", () => this._closeDateWindowDialog());
-				dialogComp.addEventListener("dp-window-submit", (ev) => {
-					this._createDateWindowFromDialog(ev.detail || {});
-				});
-				dialogComp.addEventListener("dp-window-delete", () => this._deleteEditingDateWindow());
-				dialogComp.addEventListener("dp-window-shortcut", (ev) => {
-					if (typeof ev.detail?.direction === "number") this._applyDateWindowShortcut(ev.detail.direction);
-				});
-				dialogComp.addEventListener("dp-window-date-change", (ev) => {
-					const start = this._parseDateWindowInputValue(ev.detail?.start || "");
-					const end = this._parseDateWindowInputValue(ev.detail?.end || "");
-					if (start && end && start < end) this._dateWindowDialogDraftRange = {
-						start,
-						end
-					};
-					else this._dateWindowDialogDraftRange = null;
-				});
-				this.shadowRoot.appendChild(dialogComp);
-				this._dateWindowDialogComp = dialogComp;
-			}
-		}
-		_mountAiQueryBriefDialogControl() {
-			if (!this.shadowRoot) return;
-			const dialogComp = document.createElement("ai-query-brief-dialog");
-			dialogComp.addEventListener("dp-ai-query-brief-close", () => {
-				if (this._aiQueryBriefDialogComp) this._aiQueryBriefDialogComp.open = false;
-			});
-			this.shadowRoot.appendChild(dialogComp);
-			this._aiQueryBriefDialogComp = dialogComp;
+		/**
+		* Date-window-dialog `dp-window-date-change` handler: update the draft range
+		* and keep the controlled start/end value fields in step with the inputs
+		* (the component is fully controlled, so the parent owns these values).
+		*/
+		_handleDateWindowDateChange(startStr, endStr) {
+			this._dateWindowDialogStartValue = startStr;
+			this._dateWindowDialogEndValue = endStr;
+			const start = this._parseDateWindowInputValue(startStr);
+			const end = this._parseDateWindowInputValue(endStr);
+			this._dateWindowDialogDraftRange = start && end && start < end ? {
+				start,
+				end
+			} : null;
 		}
 		async _resolveAiQueryBriefMonitorContext() {
 			if (!this._hass) return {
@@ -37655,9 +37955,6 @@
 			}
 		}
 		async _openAiQueryBriefDialog() {
-			if (!this.shadowRoot) return;
-			if (!this._aiQueryBriefDialogComp) this._mountAiQueryBriefDialogControl();
-			if (!this._aiQueryBriefDialogComp) return;
 			const monitorContext = await this._resolveAiQueryBriefMonitorContext();
 			const brief = buildAiQueryBrief({
 				hass: this._hass,
@@ -37674,26 +37971,12 @@
 				monitorContext,
 				anomalySnapshot: this._chartEl?.getAiQueryBriefAnomalySnapshot?.() ?? null
 			});
-			this._aiQueryBriefDialogComp.heading = msg("AI query brief");
-			this._aiQueryBriefDialogComp.text = brief.plainText;
-			this._aiQueryBriefDialogComp.open = true;
+			this._aiQueryBriefHeading = msg("AI query brief");
+			this._aiQueryBriefText = brief.plainText;
+			this._aiQueryBriefDialogOpen = true;
 		}
 		_renderTargetRows() {
-			if (!this._historyTargetsComp) return;
-			this._historyTargetsComp.rows = this._seriesRows;
-			this._historyTargetsComp.states = this._hass?.states ?? {};
-			this._historyTargetsComp.hass = this._hass ?? null;
-			this._historyTargetsComp.canShowDeltaAnalysis = !!this._selectedComparisonWindowId;
-			this._historyTargetsComp.comparisonWindows = this._comparisonWindows;
-			if (!this._rowListEl) this._rowListEl = this._historyTargetsComp.getRowListEl();
-			else {
-				this._rowListEl.rows = this._seriesRows;
-				this._rowListEl.states = this._hass?.states ?? {};
-				this._rowListEl.hass = this._hass ?? null;
-				this._rowListEl.labelMap = disambiguateEntityNames(this._hass, (this._seriesRows ?? []).map((r) => r.entity_id));
-				this._rowListEl.canShowDeltaAnalysis = !!this._selectedComparisonWindowId;
-				this._rowListEl.comparisonWindows = this._comparisonWindows;
-			}
+			this.requestUpdate();
 			this._refreshCollapsedTargetPopup();
 		}
 		_addSeriesRows(entityIds) {
@@ -37809,74 +38092,31 @@
 		_showCollapsedOptionsPopup(anchorEl) {
 			const popup = this._shellEl?.getOptionsPopupEl();
 			if (!popup) return;
-			let menu = popup.querySelector("collapsed-options-menu");
-			if (!menu) {
-				menu = document.createElement("collapsed-options-menu");
-				menu.addEventListener("dp-scope-change", (ev) => {
-					const { value } = ev.detail || {};
-					if (value) this._setDatapointScope(value);
-				});
-				menu.addEventListener("dp-display-change", (ev) => {
-					const { kind, value } = ev.detail || {};
-					if (!kind) return;
-					if (kind === "y_axis_mode") this._setChartYAxisMode(String(value || ""));
-					else this._setChartDatapointDisplayOption(kind, value);
-				});
-				menu.addEventListener("dp-analysis-change", (ev) => {
-					const { kind, value } = ev.detail || {};
-					if (kind === "anomaly_overlap_mode" && value !== this._chartAnomalyOverlapMode) {
-						this._chartAnomalyOverlapMode = value;
-						this._saveSessionState();
-						this._updateUrl({ push: false });
-						this._renderSidebarOptions();
-						this._renderContent();
-					}
-				});
-				popup.appendChild(menu);
-			}
-			this._syncCollapsedOptionsMenu(menu);
-			this._collapsedOptionsPopupOpen = true;
 			this._collapsedOptionsAnchorEl = anchorEl;
-			popup.removeAttribute("hidden");
-			const pos = computePopupPosition(anchorEl.getBoundingClientRect(), popup.offsetHeight, window.innerHeight);
-			popup.style.top = `${pos.top}px`;
-			popup.style.left = `${pos.left}px`;
+			this._collapsedOptionsPopupOpen = true;
+			this.requestUpdate();
 			this._collapsedOptionsDismiss?.destroy();
 			this._collapsedOptionsDismiss = attachPopupDismissListeners(popup, anchorEl, () => this._hideCollapsedOptionsPopup());
 		}
 		/** Close the collapsed-sidebar options popup and clean up all listeners. */
 		_hideCollapsedOptionsPopup() {
-			const popup = this._shellEl?.getOptionsPopupEl();
-			if (popup) popup.setAttribute("hidden", "");
 			this._collapsedOptionsDismiss?.destroy();
 			this._collapsedOptionsDismiss = null;
 			this._collapsedOptionsPopupOpen = false;
 			this._collapsedOptionsAnchorEl = null;
 		}
-		/** Sync option props on the menu element — called from _renderSidebarOptions. */
-		_refreshCollapsedOptionsPopup() {
-			if (!this._collapsedOptionsPopupOpen) return;
-			const menu = (this._shellEl?.getOptionsPopupEl())?.querySelector("collapsed-options-menu");
-			if (menu) this._syncCollapsedOptionsMenu(menu);
-		}
-		/** Write all current option values onto a collapsed-options-menu element. */
-		_syncCollapsedOptionsMenu(menu) {
-			let yAxisMode;
-			if (this._splitChartView) yAxisMode = "split";
-			else if (this._delinkChartYAxis) yAxisMode = "unique";
-			else yAxisMode = "combined";
-			menu.datapointScope = this._datapointScope;
-			menu.showIcons = this._showChartDatapointIcons;
-			menu.showLines = this._showChartDatapointLines;
-			menu.showTooltips = this._showChartTooltips;
-			menu.showHoverGuides = this._showChartEmphasizedHoverGuides;
-			menu.hoverSnapMode = this._chartHoverSnapMode;
-			menu.showCorrelatedAnomalies = this._showCorrelatedAnomalies;
-			menu.showDataGaps = this._showDataGaps;
-			menu.dataGapThreshold = this._dataGapThreshold;
-			menu.yAxisMode = yAxisMode;
-			menu.anomalyOverlapMode = this._chartAnomalyOverlapMode;
-			menu.anyAnomaliesEnabled = (this._seriesRows ?? []).some((r) => r.analysis?.show_anomalies === true);
+		async _positionCollapsedOptionsPopup() {
+			const shell = this._shellEl;
+			const anchor = this._collapsedOptionsAnchorEl;
+			if (!shell || !anchor || !this._collapsedOptionsPopupOpen) return;
+			await shell.updateComplete;
+			await this.renderRoot.querySelector("collapsed-options-menu")?.updateComplete;
+			if (!this.isConnected || this._shellEl !== shell || this._collapsedOptionsAnchorEl !== anchor || !this._collapsedOptionsPopupOpen) return;
+			const popup = shell.getOptionsPopupEl();
+			if (!popup) return;
+			const pos = computePopupPosition(anchor.getBoundingClientRect(), popup.offsetHeight, window.innerHeight);
+			popup.style.top = `${pos.top}px`;
+			popup.style.left = `${pos.left}px`;
 		}
 		_updateSeriesRowVisibilityByEntityId(entityId, visible) {
 			const normalizedEntityId = String(entityId || "").trim();
@@ -37958,14 +38198,7 @@
 		_toggleDatePickerMenu(force = false) {
 			if (!force) this._rangeToolbarComp?.closeMenus();
 		}
-		_togglePageMenu(force = !this._pageMenuOpen) {
-			this._pageMenuOpen = !!force;
-			if (!force) this._shellEl?.closePageMenu();
-		}
 		_handleWindowPointerDown() {}
-		_syncOptionsMenu() {
-			this._rangeToolbarComp?.syncOptionsLabels();
-		}
 		_handleDatePickerChange(ev) {
 			const { start, end } = extractRangeValue(ev);
 			if (!start || !end || start >= end) return;
@@ -37974,7 +38207,7 @@
 		}
 		async _downloadSpreadsheet() {
 			if (this._exportBusy || !this._hass || !this._startTime || !this._endTime) return;
-			this._togglePageMenu(false);
+			this._shellEl?.closePageMenu();
 			await this._context.persistence.downloadSpreadsheet({
 				entityIds: this._entities,
 				startTime: this._startTime,
@@ -37996,11 +38229,11 @@
 			});
 		}
 		_syncSavedPageMenuItems() {
-			if (this._shellEl) this._shellEl.hasSavedState = this._hasSavedPage;
+			this.requestUpdate();
 		}
 		async _savePageState() {
 			if (this._savePageBusy || !this._hass) return;
-			this._togglePageMenu(false);
+			this._shellEl?.closePageMenu();
 			await this._context.persistence.savePageState({
 				savedPageKey: PANEL_HISTORY_SAVED_PAGE_KEY,
 				state: buildHistoryPageSessionState(this),
@@ -38015,7 +38248,7 @@
 		}
 		async _restorePageState() {
 			if (!this._hass) return;
-			this._togglePageMenu(false);
+			this._shellEl?.closePageMenu();
 			await this._context.persistence.restorePageState({
 				savedPageKey: PANEL_HISTORY_SAVED_PAGE_KEY,
 				fallbackValue: null,
@@ -38034,7 +38267,7 @@
 		}
 		async _clearSavedPageState() {
 			if (!this._hass) return;
-			this._togglePageMenu(false);
+			this._shellEl?.closePageMenu();
 			await this._context.persistence.clearSavedPageState({
 				savedPageKey: PANEL_HISTORY_SAVED_PAGE_KEY,
 				onSuccess: () => {
@@ -38069,42 +38302,19 @@
 		_deriveRangeBounds() {
 			return deriveRangeBounds(this._getZoomConfig(), this._startTime?.getTime() || Date.now() - 864e5, this._endTime?.getTime() || Date.now(), this._historyStartTime?.getTime(), this._historyEndTime?.getTime(), this._getSnapSpanMs(this._startTime || /* @__PURE__ */ new Date()));
 		}
-		_syncRangeControl() {
-			if (!this._rangeToolbarComp) return;
-			this._rangeBounds = this._deriveRangeBounds();
-			this._ensureTimelineEvents();
-			this._rangeToolbarComp.startTime = this._startTime ? new Date(this._startTime) : null;
-			this._rangeToolbarComp.endTime = this._endTime ? new Date(this._endTime) : null;
-			this._rangeToolbarComp.rangeBounds = this._rangeBounds;
-			this._rangeToolbarComp.zoomLevel = this._getEffectiveZoomLevel();
-			this._rangeToolbarComp.dateSnapping = this._dateSnapping;
-			this._rangeToolbarComp.isLiveEdge = this._isOnLiveEdge();
-			this._rangeToolbarComp.timelineEvents = this._timelineEvents || [];
-			this._updateComparisonRangePreview();
-			this._updateChartHoverIndicator();
-			this._updateChartZoomHighlight();
-			this._syncMobileDateInputs();
-		}
 		_updateComparisonRangePreview() {
-			if (!this._rangeToolbarComp) return;
+			this.requestUpdate();
+		}
+		_getComparisonRangePreview() {
 			const comparisonWindow = this._getActiveComparisonWindow();
-			if (!this._rangeBounds || !comparisonWindow) {
-				this._rangeToolbarComp.comparisonPreview = null;
-				this._updateZoomWindowHighlight();
-				return;
-			}
-			const startMs = new Date(comparisonWindow.start_time).getTime();
-			const endMs = new Date(comparisonWindow.end_time).getTime();
-			if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || startMs >= endMs) {
-				this._rangeToolbarComp.comparisonPreview = null;
-				this._updateZoomWindowHighlight();
-				return;
-			}
-			this._rangeToolbarComp.comparisonPreview = {
-				start: startMs,
-				end: endMs
+			if (!this._rangeBounds || !comparisonWindow) return null;
+			const start = new Date(comparisonWindow.start_time).getTime();
+			const end = new Date(comparisonWindow.end_time).getTime();
+			if (!Number.isFinite(start) || !Number.isFinite(end) || start >= end) return null;
+			return {
+				start,
+				end
 			};
-			this._updateZoomWindowHighlight();
 		}
 		_handleChartHover(ev) {
 			this._chartHoverTimeMs = ev?.detail?.timeMs ?? null;
@@ -38129,7 +38339,6 @@
 				else {
 					this._saveSessionState();
 					this._updateUrl({ push: false });
-					this._syncListZoomState();
 				}
 			}
 			this._updateChartZoomHighlight();
@@ -38142,10 +38351,10 @@
 				this._chartZoomStateCommitTimer = null;
 				this._saveSessionState();
 				this._updateUrl({ push: false });
-				this._syncListZoomState();
 			}, 180);
 		}
-		_syncListZoomState() {
+		/** Push the current zoom window into the list card (keyed; no-op if unchanged). */
+		_applyListZoomConfig() {
 			if (!this._listEl) return;
 			const listConfig = {
 				entities: this._entities,
@@ -38207,35 +38416,23 @@
 			this._renderContent();
 		}
 		_updateChartHoverIndicator() {
-			if (!this._rangeToolbarComp) return;
-			if (!this._rangeBounds || this._chartHoverTimeMs == null) {
-				this._rangeToolbarComp.chartHoverTimeMs = null;
-				this._rangeToolbarComp.chartHoverWindowTimeMs = null;
-				return;
-			}
-			this._rangeToolbarComp.chartHoverTimeMs = this._chartHoverTimeMs;
+			this.requestUpdate();
+		}
+		_getChartHoverWindowTimeMs() {
+			if (!this._rangeBounds || this._chartHoverTimeMs == null || !this._startTime) return null;
 			const activeWindow = this._getActiveComparisonWindow();
-			if (activeWindow && this._startTime) {
-				const timeOffsetMs = new Date(activeWindow.start_time).getTime() - this._startTime.getTime();
-				this._rangeToolbarComp.chartHoverWindowTimeMs = this._chartHoverTimeMs + timeOffsetMs;
-			} else this._rangeToolbarComp.chartHoverWindowTimeMs = null;
+			if (!activeWindow) return null;
+			return this._chartHoverTimeMs + new Date(activeWindow.start_time).getTime() - this._startTime.getTime();
 		}
 		_updateChartZoomHighlight() {
-			if (!this._rangeToolbarComp) return;
+			this.requestUpdate();
+		}
+		_getChartZoomHighlightRange() {
 			const highlightRange = this._chartZoomRange || this._chartZoomCommittedRange;
-			const nextZoomRange = this._rangeBounds && highlightRange ? {
+			return this._rangeBounds && highlightRange ? {
 				start: +highlightRange.start,
 				end: +highlightRange.end
 			} : null;
-			const nextZoomWindowRange = this._getZoomWindowHighlightRange();
-			this._rangeToolbarComp.syncZoomHighlights(nextZoomRange, nextZoomWindowRange);
-		}
-		_updateZoomWindowHighlight() {
-			if (!this._rangeToolbarComp) return;
-			this._rangeToolbarComp.syncZoomHighlights(this._rangeBounds && (this._chartZoomRange || this._chartZoomCommittedRange) ? {
-				start: +(this._chartZoomRange || this._chartZoomCommittedRange).start,
-				end: +(this._chartZoomRange || this._chartZoomCommittedRange).end
-			} : null, this._getZoomWindowHighlightRange());
 		}
 		_getZoomWindowHighlightRange() {
 			const activeWindow = this._getActiveComparisonWindow();
@@ -38279,7 +38476,7 @@
 				const latestCandidateLevel = this._computeZoomLevelForSpan(latestPaddedSelectionSpanMs);
 				if (latestCandidateLevel === latestLevel) return;
 				this._resolvedAutoZoomLevel = latestCandidateLevel;
-				this._syncRangeControl();
+				this.requestUpdate();
 			}, RANGE_AUTO_ZOOM_DEBOUNCE_MS);
 		}
 		/** Returns true when the committed end time is at or very near "now",
@@ -38287,11 +38484,6 @@
 		_isOnLiveEdge() {
 			if (!this._endTime) return false;
 			return this._endTime.getTime() >= Date.now() - 2 * MINUTE_MS;
-		}
-		/** Toggle the live-edge indicator on the end handle. */
-		_syncLiveEdgeHandle() {
-			if (!this._rangeToolbarComp) return;
-			this._rangeToolbarComp.isLiveEdge = this._isOnLiveEdge();
 		}
 		/** Called whenever a new annotation is recorded (HA event or window event).
 		*  If the current range is on the live edge, advance the end time to now
@@ -38308,7 +38500,6 @@
 			this._startTime = nextStart;
 			this._endTime = nextEnd;
 			this._hours = Math.max(1, Math.round((nextEnd.getTime() - nextStart.getTime()) / HOUR_MS));
-			this._syncLiveEdgeHandle();
 			this._scheduleAutoZoomUpdate(void 0, void 0);
 			this._syncControls();
 			this._chartEl?.setExternalZoomRange?.(this._chartZoomCommittedRange);
@@ -38341,39 +38532,57 @@
 			});
 		}
 		_renderComparisonTabs() {
-			const result = this._context.orchestration.renderComparisonTabs({
-				chartEl: this._chartEl,
-				comparisonWindows: Array.isArray(this._comparisonWindows) ? this._comparisonWindows : [],
-				selectedComparisonWindowId: this._selectedComparisonWindowId,
-				hoveredComparisonWindowId: this._hoveredComparisonWindowId,
-				startTime: this._startTime,
-				endTime: this._endTime,
-				loadingComparisonWindowIds: [...this._loadingComparisonWindowIds],
-				comparisonTabRailComp: this._comparisonTabRailComp,
-				comparisonTabsHostEl: this._comparisonTabsHostEl,
-				formatComparisonLabel: (startTime, endTime) => this._formatComparisonLabel(startTime, endTime),
-				onActivate: (tabId) => {
-					this._handleComparisonTabActivate(tabId);
-				},
-				onHover: (tabId) => {
-					this._handleComparisonTabHover(tabId);
-				},
-				onLeave: (tabId) => {
-					this._handleComparisonTabLeave(tabId);
-				},
-				onEdit: (tabId) => {
-					const win = this._comparisonWindows.find((entry) => entry.id === tabId);
-					if (win) this._openDateWindowDialog(win);
-				},
-				onDelete: (tabId) => {
-					if (tabId) this._deleteDateWindow(tabId);
-				},
-				onAdd: () => {
-					this._openDateWindowDialog();
+			this.requestUpdate();
+		}
+		_comparisonTabsTemplate() {
+			if (!this._startTime || !this._endTime) return A;
+			return b`
+      <comparison-tab-rail
+        .tabs=${[{
+				id: "current-range",
+				label: msg("Selected range"),
+				detail: this._formatComparisonLabel(this._startTime, this._endTime),
+				active: this._selectedComparisonWindowId == null,
+				editable: false
+			}, ...this._comparisonWindows.map((window) => ({
+				...window,
+				detail: this._formatComparisonLabel(new Date(window.start_time), new Date(window.end_time)),
+				active: window.id === this._selectedComparisonWindowId,
+				editable: true
+			}))]}
+        .loadingIds=${this._loadingComparisonWindowIds}
+        .hoveredId=${this._hoveredComparisonWindowId || ""}
+        @dp-tab-activate=${(ev) => this._handleComparisonTabActivate(ev.detail.tabId)}
+        @dp-tab-hover=${(ev) => this._handleComparisonTabHover(ev.detail.tabId)}
+        @dp-tab-leave=${(ev) => this._handleComparisonTabLeave(ev.detail.tabId)}
+        @dp-tab-edit=${(ev) => {
+				const window = this._comparisonWindows.find((entry) => entry.id === ev.detail.tabId);
+				if (window) this._openDateWindowDialog(window);
+			}}
+        @dp-tab-delete=${(ev) => {
+				if (ev.detail.tabId) this._deleteDateWindow(ev.detail.tabId);
+			}}
+        @dp-tab-add=${() => this._openDateWindowDialog()}
+      ></comparison-tab-rail>
+    `;
+		}
+		async _renderComparisonTabSlot() {
+			const chart = this._chartEl;
+			if (!chart) {
+				if (this._comparisonTabsRoot) {
+					D(A, this._comparisonTabsRoot);
+					this._comparisonTabsRoot = null;
 				}
-			});
-			this._comparisonTabRailComp = result.comparisonTabRailComp;
-			this._comparisonTabsHostEl = result.comparisonTabsHostEl;
+				return;
+			}
+			await chart.updateComplete;
+			if (!this.isConnected || chart !== this._chartEl) return;
+			const host = chart.getComparisonTabsHost();
+			if (!host) return;
+			if (this._comparisonTabsRoot && this._comparisonTabsRoot !== host) D(A, this._comparisonTabsRoot);
+			this._comparisonTabsRoot = host;
+			host.hidden = !this._startTime || !this._endTime;
+			D(this._comparisonTabsTemplate(), host);
 		}
 		_updateComparisonTabsOverflow() {
 			this._context.orchestration.updateComparisonTabsOverflow(this._chartEl);
@@ -38542,7 +38751,7 @@
 						this._requestChartResizeRedraw();
 						if (ev.detail?.committed) {
 							this._saveSessionState();
-							window.requestAnimationFrame(() => this._syncRangeControl());
+							window.requestAnimationFrame(() => this.requestUpdate());
 						}
 					});
 				}
@@ -38628,7 +38837,63 @@
 			if (this._chartEl) this._chartEl.hass = this._hass;
 			this._chartEl?.setExternalZoomRange?.(this._chartZoomCommittedRange);
 		}
-	};
+	}, _defineProperty(_HassDatapointsHistoryPanel, "styles", [r$6(PANEL_HISTORY_STYLE)]), _HassDatapointsHistoryPanel);
+	__decorate([n$1({
+		attribute: false,
+		hasChanged: () => true
+	})], HassDatapointsHistoryPanel.prototype, "hass", null);
+	__decorate([n$1({
+		attribute: false,
+		hasChanged: () => true
+	})], HassDatapointsHistoryPanel.prototype, "panel", null);
+	__decorate([n$1({ attribute: false })], HassDatapointsHistoryPanel.prototype, "narrow", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_rendered", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_shellBuilt", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_layoutMode", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_datapointScope", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_showChartDatapointIcons", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_showChartDatapointLines", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_showChartTooltips", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_showChartEmphasizedHoverGuides", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_chartHoverSnapMode", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_delinkChartYAxis", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_splitChartView", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_showCorrelatedAnomalies", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_chartAnomalyOverlapMode", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_showDataGaps", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_dataGapThreshold", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_historyStartTime", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_historyEndTime", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_timelineEvents", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_loadingComparisonWindowIds", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_dateWindowDialogOpen", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_dateWindowDialogName", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_dateWindowDialogStartValue", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_dateWindowDialogEndValue", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_sidebarAccordionTargetsOpen", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_sidebarAccordionDatapointsOpen", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_sidebarAccordionAnalysisOpen", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_sidebarAccordionChartOpen", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_resolvedAutoZoomLevel", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_chartHoverTimeMs", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_zoomLevel", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_dateSnapping", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_collapsedOptionsPopupOpen", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_monitorWizardOpen", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_monitorWizardPayload", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_aiQueryBriefDialogOpen", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_aiQueryBriefHeading", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_aiQueryBriefText", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_startTime", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_endTime", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_sidebarCollapsed", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_comparisonWindows", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_selectedComparisonWindowId", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_hoveredComparisonWindowId", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_chartZoomRange", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_chartZoomCommittedRange", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_hasSavedPage", null);
+	HassDatapointsHistoryPanel = __decorate([localized()], HassDatapointsHistoryPanel);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/list.styles.ts
 	var styles$16 = i$5`

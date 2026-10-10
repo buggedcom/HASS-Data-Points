@@ -1,6 +1,16 @@
+import {
+  LitElement,
+  html,
+  nothing,
+  render as renderInto,
+  unsafeCSS,
+  type PropertyValues,
+} from "lit";
+import { property, state as reactiveState } from "lit/decorators.js";
+import type { RangeToolbar } from "@/panels/datapoints/components/range-toolbar/range-toolbar";
 import { DOMAIN } from "@/constants";
 import { disambiguateEntityNames, entityName } from "@/lib/ha/entity-name";
-import { msg, syncFrontendLocale } from "@/lib/i18n/localize";
+import { localized, msg, syncFrontendLocale } from "@/lib/i18n/localize";
 import {
   confirmDestructiveAction,
   ensureHaComponents,
@@ -101,10 +111,12 @@ import "@/molecules/anomaly-monitors-panel/anomaly-monitors-panel";
 import "@/atoms/interactive/resizable-panes/resizable-panes";
 import "@/molecules/history-chart/history-chart";
 import "@/panels/datapoints/components/panel-shell/panel-shell";
+import type { PanelShell } from "@/panels/datapoints/components/panel-shell/panel-shell";
 import "@/panels/datapoints/components/ai-query-brief-dialog/ai-query-brief-dialog";
 import "@/panels/datapoints/components/history-targets/history-targets";
 import "@/panels/datapoints/components/range-toolbar/range-toolbar";
 import { createHistoryPageContext } from "@/panels/datapoints/context/create-history-page-context";
+import { HostResizeController } from "@/panels/datapoints/host-resize-controller";
 import type {
   HistoryPageContext,
   HistoryTargetRowState,
@@ -144,19 +156,10 @@ type HistoryTargetsElement = HTMLElement & {
   comparisonWindows: NormalizedHistoryDateWindow[];
   canShowDeltaAnalysis: boolean;
   sidebarCollapsed: boolean;
-  getRowListEl(): Nullable<RowListElement>;
-};
-
-type RowListElement = HTMLElement & {
-  rows: unknown[];
-  states: RecordWithUnknownValues;
-  hass: unknown;
-  canShowDeltaAnalysis: boolean;
-  comparisonWindows: NormalizedHistoryDateWindow[];
+  labelMap: Map<string, string>;
   computingEntityIds: Set<string>;
   analysisProgress: number;
-  computingMethodsByEntity: Map<string, unknown>;
-  labelMap: Map<string, string>;
+  computingMethodsByEntity: Map<string, Set<string>>;
 };
 
 type TargetPickerElement = HTMLElement & {
@@ -177,115 +180,27 @@ type TargetRowElement = HTMLElement & {
   comparisonWindows: NormalizedHistoryDateWindow[];
 };
 
-type RangeToolbarElement = HTMLElement & {
-  startTime: Nullable<Date>;
-  endTime: Nullable<Date>;
-  rangeBounds: unknown;
-  zoomLevel: string;
-  dateSnapping: string;
-  sidebarCollapsed: boolean;
-  hass: unknown;
-  isLiveEdge: boolean;
-  timelineEvents: unknown[];
-  comparisonPreview: unknown;
-  zoomRange: Nullable<{ start: number; end: number }>;
-  zoomWindowRange: unknown;
-  chartHoverTimeMs: Nullable<number>;
-  chartHoverWindowTimeMs: Nullable<number>;
-  updateComplete: Promise<void>;
-  syncMobileDates(start: Nullable<Date>, end: Nullable<Date>): void;
-  syncZoomHighlights(
-    zoomRange: Nullable<{ start: number; end: number }>,
-    zoomWindowRange: Nullable<{ start: number; end: number }>
-  ): void;
-  closeMenus(): void;
-  syncOptionsLabels(): void;
-  revealSelection(): void;
-};
+type DateWindowDraftRange = { start: Date; end: Date };
 
-type PanelShellElement = HTMLElement & {
-  hass: unknown;
-  narrow: boolean;
-  sidebarCollapsed: boolean;
-  hasSavedState: boolean;
-  layoutMode: string;
-  updateComplete: Promise<unknown>;
-  syncLayoutHeight(): void;
-  getTargetPopupEl(): Nullable<HTMLElement>;
-  getOptionsPopupEl(): Nullable<HTMLElement>;
-  closePageMenu(): void;
-};
-
-type SidebarOptionsElement = HTMLElement & {
-  datapointScope: string;
-  showIcons: boolean;
-  showLines: boolean;
-  showTooltips: boolean;
-  showHoverGuides: boolean;
-  hoverSnapMode: string;
-  showCorrelatedAnomalies: boolean;
-  showDataGaps: boolean;
-  dataGapThreshold: string;
-  yAxisMode: string;
-  anomalyOverlapMode: string;
-  anyAnomaliesEnabled: boolean;
-  targetsOpen: boolean;
-  datapointsOpen: boolean;
-  analysisOpen: boolean;
-  chartOpen: boolean;
-};
-
-type LegacyDialogElement = HTMLElement & {
-  open: boolean;
-  headerTitle: string;
-};
-
-type DialogInputElement = HTMLElement & {
-  value: string;
-  hass?: unknown;
-};
-
-type DateWindowDialogElement = HTMLElement & {
-  open: boolean;
-  heading: string;
-  submitLabel: string;
-  showDelete: boolean;
-  showShortcuts: boolean;
-  name: string;
-  startValue: string;
-  endValue: string;
-  rangeBounds: unknown;
-  zoomLevel: string;
-  dateSnapping: string;
-};
-
-type AiQueryBriefDialogElement = HTMLElement & {
-  open: boolean;
-  heading: string;
-  text: string;
-};
-
-type CollapsedOptionsMenuElement = HTMLElement & {
-  datapointScope: string;
-  showIcons: boolean;
-  showLines: boolean;
-  showTooltips: boolean;
-  showHoverGuides: boolean;
-  hoverSnapMode: string;
-  showCorrelatedAnomalies: boolean;
-  showDataGaps: boolean;
-  dataGapThreshold: string;
-  yAxisMode: string;
-  anomalyOverlapMode: string;
-  anyAnomaliesEnabled: boolean;
+/** Open-time payload fed to the `<anomaly-monitor-wizard>`. */
+type MonitorWizardPayload = {
+  prefillEntityIds: string[];
+  prefillAnalysis: unknown;
+  editMonitor: unknown;
+  suggestedEntityIds: string[];
+  allSeriesEntityIds: string[];
 };
 
 type HistoryCardElement = HTMLElement & {
   hass?: unknown;
   setConfig(config: RecordWithUnknownValues): void;
   setExternalZoomRange?(range: Nullable<{ start: number; end: number }>): void;
+  updateComplete?: Promise<unknown>;
+  getComparisonTabsHost(): Nullable<HTMLElement>;
   getAiQueryBriefAnomalySnapshot?(): Nullable<AiQueryBriefAnomalySnapshot>;
-  _adjustComparisonAxisScale?: boolean;
+  requestResizeRedraw?(): void;
+  updateComparisonTabsOverflow?(): void;
+  setAdjustComparisonAxisScale?(value: boolean): void;
 };
 
 type ListCardElement = HTMLElement & {
@@ -306,7 +221,20 @@ type ResizablePanesElement = HTMLElement & {
 
 // Shared timeline, domain, and history-page helpers now live in dedicated subsystem files.
 
-export class HassDatapointsHistoryPanel extends HTMLElement {
+@localized()
+export class HassDatapointsHistoryPanel extends LitElement {
+  static styles = [unsafeCSS(PANEL_HISTORY_STYLE)];
+
+  // HA may reassign the same object after navigation or an in-place update.
+  @property({ attribute: false, hasChanged: () => true })
+  accessor hass: Nullable<HassLike> = null;
+
+  @property({ attribute: false, hasChanged: () => true })
+  accessor panel: Nullable<{ config?: RecordWithUnknownValues }> = null;
+
+  @property({ attribute: false })
+  accessor narrow = false;
+
   [key: string]: unknown;
 
   // Explicit declarations take precedence over the index signature so TypeScript
@@ -348,9 +276,11 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
   declare _onOverlayKeydown: Nullable<(ev: KeyboardEvent) => void>;
 
   // Additional typed property declarations
-  declare _rendered: boolean;
+  @reactiveState()
+  private accessor _rendered = false;
 
-  declare _shellBuilt: boolean;
+  @reactiveState()
+  private accessor _shellBuilt = false;
 
   declare _narrow: boolean;
 
@@ -358,69 +288,83 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
 
   declare _panel: Nullable<{ config?: RecordWithUnknownValues }>;
 
-  declare _layoutMode: string;
+  @reactiveState()
+  accessor _layoutMode: string = "desktop";
 
   declare _contentKey: string;
 
   declare _contentSplitRatio: number;
 
-  declare _datapointScope: string;
+  @reactiveState()
+  accessor _datapointScope: string = "linked";
 
-  declare _showChartDatapointIcons: boolean;
+  @reactiveState()
+  accessor _showChartDatapointIcons: boolean = true;
 
-  declare _showChartDatapointLines: boolean;
+  @reactiveState()
+  accessor _showChartDatapointLines: boolean = true;
 
-  declare _showChartTooltips: boolean;
+  @reactiveState()
+  accessor _showChartTooltips: boolean = true;
 
-  declare _showChartEmphasizedHoverGuides: boolean;
+  @reactiveState()
+  accessor _showChartEmphasizedHoverGuides: boolean = false;
 
-  declare _chartHoverSnapMode: string;
+  @reactiveState()
+  accessor _chartHoverSnapMode: string = "follow_series";
 
-  declare _delinkChartYAxis: boolean;
+  @reactiveState()
+  accessor _delinkChartYAxis: boolean = false;
 
-  declare _splitChartView: boolean;
+  @reactiveState()
+  accessor _splitChartView: boolean = false;
 
-  declare _showCorrelatedAnomalies: boolean;
+  @reactiveState()
+  accessor _showCorrelatedAnomalies: boolean = false;
 
-  declare _chartAnomalyOverlapMode: string;
+  @reactiveState()
+  accessor _chartAnomalyOverlapMode: string = "all";
 
-  declare _showDataGaps: boolean;
+  @reactiveState()
+  accessor _showDataGaps: boolean = true;
 
-  declare _dataGapThreshold: string;
+  @reactiveState()
+  accessor _dataGapThreshold: string = "2h";
 
-  declare _historyStartTime: Nullable<Date>;
+  @reactiveState()
+  accessor _historyStartTime: Nullable<Date> = null;
 
-  declare _historyEndTime: Nullable<Date>;
+  @reactiveState()
+  accessor _historyEndTime: Nullable<Date> = null;
 
-  declare _timelineEvents: unknown[];
+  @reactiveState()
+  accessor _timelineEvents: unknown[] = [];
 
   declare _preferredSeriesColors: RecordWithStringValues;
 
-  declare _loadingComparisonWindowIds: string[];
+  @reactiveState()
+  accessor _loadingComparisonWindowIds: string[] = [];
 
-  declare _comparisonTabsHostEl: Nullable<HTMLElement>;
-
-  declare _comparisonTabRailComp: Nullable<HTMLElement>;
+  private _comparisonTabsRoot: Nullable<HTMLElement> = null;
 
   declare _pendingAnomalyComparisonWindowEntityId: Nullable<string>;
 
-  declare _dateWindowDialogOpen: boolean;
+  @reactiveState()
+  accessor _dateWindowDialogOpen: boolean = false;
 
   declare _editingDateWindowId: Nullable<string>;
 
-  declare _dateWindowDialogComp: Nullable<DateWindowDialogElement>;
+  /** Controlled form values for the declarative `<date-window-dialog>`. */
+  @reactiveState()
+  accessor _dateWindowDialogName: string = "";
 
-  declare _dateWindowDialogEl: Nullable<LegacyDialogElement>;
+  @reactiveState()
+  accessor _dateWindowDialogStartValue: string = "";
 
-  declare _dateWindowDialogNameEl: Nullable<DialogInputElement>;
+  @reactiveState()
+  accessor _dateWindowDialogEndValue: string = "";
 
-  declare _dateWindowDialogStartEl: Nullable<DialogInputElement>;
-
-  declare _dateWindowDialogEndEl: Nullable<DialogInputElement>;
-
-  declare _dateWindowDialogShortcutsEl: Nullable<HTMLElement>;
-
-  declare _dateWindowDialogDraftRange: Nullable<{ start: Date; end: Date }>;
+  declare _dateWindowDialogDraftRange: Nullable<DateWindowDraftRange>;
 
   declare _uiReadyPromise: Nullable<Promise<unknown>>;
 
@@ -439,7 +383,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
 
   declare _listConfigKey: string;
 
-  declare _shellEl: Nullable<PanelShellElement>;
+  declare _shellEl: Nullable<PanelShell>;
 
   declare _contentHostEl: Nullable<HTMLElement>;
 
@@ -451,31 +395,26 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
 
   declare _historyTargetsComp: Nullable<HistoryTargetsElement>;
 
-  declare _rowListEl: Nullable<RowListElement>;
-
   declare _targetRowsRenderKey: string;
 
-  declare _sidebarOptionsEl: Nullable<HTMLElement>;
+  @reactiveState()
+  accessor _sidebarAccordionTargetsOpen: boolean = true;
 
-  declare _sidebarOptionsComp: Nullable<SidebarOptionsElement>;
+  @reactiveState()
+  accessor _sidebarAccordionDatapointsOpen: boolean = true;
 
-  declare _sidebarAccordionTargetsOpen: boolean;
+  @reactiveState()
+  accessor _sidebarAccordionAnalysisOpen: boolean = true;
 
-  declare _sidebarAccordionDatapointsOpen: boolean;
+  @reactiveState()
+  accessor _sidebarAccordionChartOpen: boolean = true;
 
-  declare _sidebarAccordionAnalysisOpen: boolean;
-
-  declare _sidebarAccordionChartOpen: boolean;
-
-  declare _dateControl: Nullable<HTMLElement>;
-
-  declare _dateRangePickerEl: Nullable<HTMLElement>;
-
-  declare _panelTimelineEl: Nullable<RangeToolbarElement>;
-
-  declare _rangeToolbarComp: Nullable<RangeToolbarElement>;
+  declare _rangeToolbarComp: Nullable<RangeToolbar>;
 
   declare _rangeBounds: Nullable<{ min: number; max: number; config: unknown }>;
+
+  /** Derived in willUpdate: disambiguated entity → display-name map for the rows. */
+  declare _rowLabelMap: Map<string, string>;
 
   declare _autoZoomTimer: Nullable<number>;
 
@@ -483,15 +422,19 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
 
   declare _chartZoomStateCommitTimer: Nullable<number>;
 
-  declare _resolvedAutoZoomLevel: Nullable<string>;
+  @reactiveState()
+  accessor _resolvedAutoZoomLevel: Nullable<string> = null;
 
   declare _hoveredPeriodRange: Nullable<unknown>;
 
-  declare _chartHoverTimeMs: Nullable<number>;
+  @reactiveState()
+  accessor _chartHoverTimeMs: Nullable<number> = null;
 
-  declare _zoomLevel: string;
+  @reactiveState()
+  accessor _zoomLevel: string = "auto";
 
-  declare _dateSnapping: string;
+  @reactiveState()
+  accessor _dateSnapping: string = "auto";
 
   declare _hasTargetInUrl: boolean;
 
@@ -514,11 +457,10 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
 
   declare _restoredFromSession: boolean;
 
-  declare _pageMenuOpen: boolean;
-
   declare _onWindowPointerDown: EventListener;
 
-  declare _onWindowResize: () => void;
+  /** Observes the host size for measured layout side effects. */
+  declare _resizeController: HostResizeController;
 
   declare _onCollapsedSidebarClick: EventListener;
 
@@ -544,7 +486,8 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
 
   declare _collapsedOptionsDismiss: Nullable<DismissCleanup>;
 
-  declare _collapsedOptionsPopupOpen: boolean;
+  @reactiveState()
+  accessor _collapsedOptionsPopupOpen: boolean = false;
 
   declare _collapsedOptionsAnchorEl: Nullable<HTMLElement>;
 
@@ -556,18 +499,32 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
   /** Whether the anomaly monitors management panel is currently shown. */
   declare _showMonitorsPanel: boolean;
 
-  /** Imperative wizard element appended to the shadow root. */
-  declare _monitorWizardComp: Nullable<HTMLElement>;
+  /** Declarative open-state + payload for the `<anomaly-monitor-wizard>`. */
+  @reactiveState()
+  accessor _monitorWizardOpen: boolean = false;
 
-  /** Imperative AI brief dialog element appended to the shadow root. */
-  declare _aiQueryBriefDialogComp: Nullable<AiQueryBriefDialogElement>;
+  @reactiveState()
+  accessor _monitorWizardPayload: MonitorWizardPayload = {
+    prefillEntityIds: [],
+    prefillAnalysis: null,
+    editMonitor: null,
+    suggestedEntityIds: [],
+    allSeriesEntityIds: [],
+  };
+
+  /** Declarative open-state + payload for the `<ai-query-brief-dialog>`. */
+  @reactiveState()
+  accessor _aiQueryBriefDialogOpen: boolean = false;
+
+  @reactiveState()
+  accessor _aiQueryBriefHeading: string = "";
+
+  @reactiveState()
+  accessor _aiQueryBriefText: string = "";
 
   constructor() {
     super();
-    this.attachShadow({ mode: "open" });
     this._context = createHistoryPageContext();
-    this._rendered = false;
-    this._shellBuilt = false;
     this._entities = [];
     this._seriesRows = [];
     this._targetSelection = {};
@@ -580,7 +537,6 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     this._contentKey = "";
     this._contentSplitRatio = 0.44;
     this._sidebarCollapsed = false;
-    this._layoutMode = "desktop"; // "desktop" | "tablet" | "mobile"
     this._mqTablet = window.matchMedia("(max-width: 900px)");
     this._mqMobile = window.matchMedia("(max-width: 720px)");
     this._onLayoutChange = () => this._updateLayoutMode();
@@ -589,39 +545,15 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     this._collapsedPopupOutsideClickHandler = null;
     this._collapsedPopupKeyHandler = null;
     this._lastSyncedLocale = "";
-    this._datapointScope = "linked";
-    this._showChartDatapointIcons = true;
-    this._showChartDatapointLines = true;
-    this._showChartTooltips = true;
-    this._showChartEmphasizedHoverGuides = false;
-    this._chartHoverSnapMode = "follow_series";
-    this._delinkChartYAxis = false;
-    this._showCorrelatedAnomalies = false;
-    this._chartAnomalyOverlapMode = "all";
-    this._showDataGaps = true;
-    this._dataGapThreshold = "2h";
-    this._historyStartTime = null;
-    this._historyEndTime = null;
     this._historyBoundsLoaded = false;
-    this._timelineEvents = [];
     this._timelineEventsKey = "";
     this._preferredSeriesColors = {};
     this._preferencesLoaded = false;
     this._comparisonWindows = [];
     this._selectedComparisonWindowId = null;
     this._hoveredComparisonWindowId = null;
-    this._loadingComparisonWindowIds = [];
-    this._comparisonTabsHostEl = null;
-    this._comparisonTabRailComp = null;
     this._pendingAnomalyComparisonWindowEntityId = null;
-    this._dateWindowDialogOpen = false;
     this._editingDateWindowId = null;
-    this._dateWindowDialogComp = null;
-    this._splitChartView = false;
-    this._dateWindowDialogNameEl = null;
-    this._dateWindowDialogStartEl = null;
-    this._dateWindowDialogEndEl = null;
-    this._dateWindowDialogShortcutsEl = null;
     this._dateWindowDialogDraftRange = null;
     this._uiReadyPromise = null;
     this._uiReadyApplied = false;
@@ -635,27 +567,14 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     this._contentSplitterEl = null;
     this._targetControl = null;
     this._targetRowsEl = null;
-    this._rowListEl = null;
     this._targetRowsRenderKey = "";
-    this._sidebarOptionsEl = null;
-    this._sidebarOptionsComp = null;
-    this._sidebarAccordionTargetsOpen = true;
-    this._sidebarAccordionDatapointsOpen = true;
-    this._sidebarAccordionAnalysisOpen = true;
-    this._sidebarAccordionChartOpen = true;
-    this._dateControl = null;
-    this._dateRangePickerEl = null;
-    this._panelTimelineEl = null;
     this._rangeBounds = null;
+    this._rowLabelMap = new Map();
     this._autoZoomTimer = null;
-    this._resolvedAutoZoomLevel = null;
     this._hoveredPeriodRange = null;
-    this._chartHoverTimeMs = null;
     this._chartZoomRange = null;
     this._chartZoomCommittedRange = null;
     this._chartZoomStateCommitTimer = null;
-    this._zoomLevel = "auto";
-    this._dateSnapping = "auto";
     this._hasTargetInUrl = false;
     this._hasRangeInUrl = false;
     this._hasPageStateInUrl = false;
@@ -663,15 +582,12 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     this._pendingPreferencesSaveTimer = null;
     this._orphanRecoveryTimer = null;
     this._showMonitorsPanel = false;
-    this._monitorWizardComp = null;
-    this._aiQueryBriefDialogComp = null;
     this._recordsSearchQuery = "";
     this._hiddenEventIds = [];
     this._hoveredEventIds = [];
     this._restoredFromSession = false;
     this._savedPageLoaded = false;
     this._hasSavedPage = false;
-    this._pageMenuOpen = false;
     this._onChartHover = (ev: Event) => this._handleChartHover(ev);
     this._onChartZoom = (ev: Event) => this._handleChartZoom(ev);
     this._onRecordsSearch = (ev: Event) => this._handleRecordsSearch(ev);
@@ -690,14 +606,9 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     this._onAnalysisMethodResult = (ev: Event) =>
       this._handleAnalysisMethodResult(ev);
     this._onWindowPointerDown = (_ev: Event) => this._handleWindowPointerDown();
-    this._onWindowResize = () => {
-      if (this._rendered) {
-        this._syncPageLayoutHeight();
-        this._applyContentSplitLayout();
-        this._requestChartResizeRedraw();
-        this._syncRangeControl();
-      }
-    };
+    this._resizeController = new HostResizeController(this, () =>
+      this._handleHostResize()
+    );
     this._onCollapsedSidebarClick = (_ev: Event) =>
       this._handleCollapsedSidebarClick();
     this._onEventRecorded = () => this._handleEventRecorded();
@@ -750,6 +661,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     return this._appState().state.range.startTime;
   }
 
+  @reactiveState()
   set _startTime(value) {
     this._appState().setRange(value || null, this._endTime || null);
   }
@@ -758,6 +670,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     return this._appState().state.range.endTime;
   }
 
+  @reactiveState()
   set _endTime(value) {
     this._appState().setRange(this._startTime || null, value || null);
   }
@@ -766,6 +679,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     return this._appState().state.display.sidebarCollapsed;
   }
 
+  @reactiveState()
   set _sidebarCollapsed(value) {
     this._appState().setSidebarCollapsed(!!value);
   }
@@ -774,6 +688,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     return this._appState().state.comparison.windows;
   }
 
+  @reactiveState()
   set _comparisonWindows(value) {
     this._appState().setComparisonWindows(Array.isArray(value) ? value : []);
   }
@@ -782,6 +697,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     return this._appState().state.comparison.selectedWindowId;
   }
 
+  @reactiveState()
   set _selectedComparisonWindowId(value) {
     this._appState().setSelectedComparisonWindowId(value || null);
   }
@@ -790,6 +706,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     return this._appState().state.comparison.hoveredWindowId;
   }
 
+  @reactiveState()
   set _hoveredComparisonWindowId(value) {
     this._appState().setHoveredComparisonWindowId(value || null);
   }
@@ -798,6 +715,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     return this._appState().state.range.previewZoomRange;
   }
 
+  @reactiveState()
   set _chartZoomRange(value) {
     this._appState().setPreviewZoomRange(value || null);
   }
@@ -806,6 +724,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     return this._appState().state.range.committedZoomRange;
   }
 
+  @reactiveState()
   set _chartZoomCommittedRange(value) {
     this._appState().setCommittedZoomRange(value || null);
   }
@@ -838,6 +757,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     return this._context.fetch.state.hasSavedPage;
   }
 
+  @reactiveState()
   set _hasSavedPage(value) {
     this._context.fetch.state.hasSavedPage = !!value;
   }
@@ -866,10 +786,12 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     this._context.persistence.state.exportBusy = !!value;
   }
 
-  set hass(hass: HassLike) {
+  _applyHass(hass: HassLike) {
     this._hass = hass;
     this._context.hass = hass;
     syncFrontendLocale(this._hass).then((locale) => {
+      const localeChanged = locale !== this._lastSyncedLocale;
+      this._lastSyncedLocale = locale;
       if (!this.isConnected) {
         return;
       }
@@ -880,19 +802,15 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       if (!this._rendered) {
         return;
       }
-      if (locale !== this._lastSyncedLocale) {
+      if (localeChanged) {
         // Locale changed (e.g. user switched language) — full re-render needed
         // to pick up newly translated strings.
-        this._lastSyncedLocale = locale;
         this._renderContent();
       } else {
         // Routine hass update — push hass directly to already-mounted
         // sub-components without a full re-render.  _renderContent() is
         // called explicitly from every code path that actually changes
         // entity / config state.
-        if (this._shellEl && this._hass) {
-          this._shellEl.hass = this._hass;
-        }
         if (this._chartEl) {
           this._chartEl.hass = this._hass;
         }
@@ -902,26 +820,9 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
         if (this._targetControl && this._hass) {
           this._targetControl.hass = this._hass;
         }
-        // Sidebar: push live states so entity icons/labels stay current.
-        if (this._historyTargetsComp) {
-          this._historyTargetsComp.hass = this._hass ?? null;
-          this._historyTargetsComp.states =
-            (this._hass?.states as RecordWithUnknownValues) ?? {};
-        }
-        if (this._rowListEl) {
-          this._rowListEl.hass = this._hass ?? null;
-          this._rowListEl.states =
-            (this._hass?.states as RecordWithUnknownValues) ?? {};
-          this._rowListEl.labelMap = disambiguateEntityNames(
-            this._hass,
-            (this._seriesRows ?? []).map(
-              (r: { entity_id: string }) => r.entity_id
-            )
-          );
-        }
-        if (this._rangeToolbarComp) {
-          this._rangeToolbarComp.hass = this._hass ?? null;
-        }
+        // The sidebar `history-targets` (and its row list) receive hass/states/
+        // labelMap declaratively from render(); the hass property re-renders the
+        // panel on every tick (hasChanged: () => true), so no imperative push here.
         // Inline HA state-icon elements rendered directly into the shadow DOM.
         this.shadowRoot
           ?.querySelectorAll(
@@ -1003,13 +904,12 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     this._loadSavedPageIndicator();
     // _bootstrapAfterShellBuilt() is intentionally NOT called here — it was
     // previously called on every hass update which triggered _renderContent()
-    // and _syncHassBindings() (including DOM querySelectorAll and full target-
-    // row re-renders) multiple times per second.  Those are now handled by the
-    // microtask above (hass push) and by explicit calls from state-change
-    // handlers.
+    // and a full target-picker/target-row refresh multiple times per second.
+    // Those are now handled by the microtask above (hass push) and by explicit
+    // calls from state-change handlers.
   }
 
-  set panel(panel: Nullable<{ config?: RecordWithUnknownValues }>) {
+  _applyPanel(panel: Nullable<{ config?: RecordWithUnknownValues }>) {
     this._panel = panel;
     this._initFromContext();
     if (this._rendered) {
@@ -1018,11 +918,26 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     }
   }
 
-  set narrow(value: boolean) {
-    this._narrow = value;
+  protected willUpdate(changed: PropertyValues<this>) {
+    // Resolve configuration targets against the latest HA registry in this batch.
+    if (changed.has("hass") && this.hass) {
+      this._applyHass(this.hass);
+    }
+    if (changed.has("panel")) {
+      this._applyPanel(this.panel);
+    }
+    if (changed.has("narrow")) {
+      this._narrow = this.narrow;
+    }
+    if (this._rendered) {
+      this._rangeBounds = this._deriveRangeBounds();
+      this._ensureTimelineEvents();
+      this._rowLabelMap = this._computeRowLabelMap();
+    }
   }
 
   connectedCallback() {
+    super.connectedCallback();
     // Cancel any pending orphan-recovery dispatch from a previous disconnect.
     if (this._orphanRecoveryTimer) {
       window.clearTimeout(this._orphanRecoveryTimer);
@@ -1055,7 +970,6 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     window.addEventListener("popstate", this._onPopState);
     window.addEventListener("location-changed", this._onLocationChanged);
     window.addEventListener("pointerdown", this._onWindowPointerDown, true);
-    window.addEventListener("resize", this._onWindowResize);
     window.addEventListener(
       "hass-datapoints-event-recorded",
       this._onEventRecorded
@@ -1130,9 +1044,12 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
         shellBuilt: this._shellBuilt,
       });
     }
+    // Keep the loading indicator visible immediately when HA attaches the panel.
+    this.performUpdate();
   }
 
   disconnectedCallback() {
+    super.disconnectedCallback();
     _liveInstances.delete(this);
     this._mqTablet.removeEventListener("change", this._onLayoutChange);
     this._mqMobile.removeEventListener("change", this._onLayoutChange);
@@ -1142,7 +1059,6 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     window.removeEventListener("popstate", this._onPopState);
     window.removeEventListener("location-changed", this._onLocationChanged);
     window.removeEventListener("pointerdown", this._onWindowPointerDown, true);
-    window.removeEventListener("resize", this._onWindowResize);
     window.removeEventListener(
       "hass-datapoints-event-recorded",
       this._onEventRecorded
@@ -1563,100 +1479,373 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       isConnected: this.isConnected,
     });
     this._shellBuilt = false;
-    const loadingLabel = msg("Loading Datapoints…");
-    const root = this.shadowRoot;
-    if (!root) {
-      return;
-    }
-    root.innerHTML = `
-      <style>${PANEL_HISTORY_LOADING_STYLE}</style>
-      <div class="history-panel-loading">
-        <div class="history-panel-loading-card" role="status" aria-live="polite">
-          <div class="history-panel-loading-spinner" aria-hidden="true"></div>
-          <div class="history-panel-loading-text">${loadingLabel}</div>
-        </div>
-      </div>
-    `;
+    this.requestUpdate();
   }
 
   _buildShell() {
-    logger.warn("[dp-lifecycle] _buildShell called", {
-      rendered: this._rendered,
-      isConnected: this.isConnected,
-      entityCount: this._entities?.length ?? 0,
-    });
     this._shellBuilt = true;
-    const root = this.shadowRoot;
-    if (!root) {
-      return;
-    }
-    root.innerHTML = `<style>${PANEL_HISTORY_STYLE}</style>`;
-
-    const shell = document.createElement("panel-shell");
-    if (this._hass) {
-      shell.hass = this._hass;
-    }
-    shell.narrow = this._narrow;
-    shell.sidebarCollapsed = this._sidebarCollapsed;
-    shell.hasSavedState = this._hasSavedPage;
-    shell.layoutMode = this._layoutMode;
-    root.appendChild(shell);
-    this._shellEl = shell;
-
-    // Unslotted content host — projected into panel-shell's default slot.
-    // _renderContent and _applyContentSplitLayout operate on this element.
-    const contentHost = document.createElement("div");
-    contentHost.id = "content";
-    shell.appendChild(contentHost);
-    this._contentHostEl = contentHost;
-
-    // Wire shell events → panel actions
-    shell.addEventListener("dp-shell-menu-download", () =>
-      this._downloadSpreadsheet()
-    );
-    shell.addEventListener("dp-shell-menu-ai-brief", () => {
-      this._openAiQueryBriefDialog().catch((error: unknown) => {
-        logger.warn("[hass-datapoints] failed to open AI query brief:", error);
-      });
-    });
-    shell.addEventListener("dp-shell-menu-save", () => this._savePageState());
-    shell.addEventListener("dp-shell-menu-restore", () =>
-      this._restorePageState()
-    );
-    shell.addEventListener("dp-shell-menu-clear", () =>
-      this._clearSavedPageState()
-    );
-    shell.addEventListener("dp-shell-menu-monitors", () => {
-      this._showMonitorsPanel = true;
-      this._renderContent();
-    });
-    shell.addEventListener("dp-shell-sidebar-toggle", () =>
-      this._toggleSidebarCollapsed()
-    );
-    shell.addEventListener("dp-shell-scrim-click", () => {
-      if (!this._sidebarCollapsed) {
-        this._toggleSidebarCollapsed();
-      }
-    });
-    shell.addEventListener("click", this._onCollapsedSidebarClick);
-
-    // Defer DOM-access until after Lit's first render completes.
-    shell.updateComplete.then(() => {
-      if (!this.isConnected) {
-        return;
-      }
-      this._sidebarOptionsEl =
-        shell.shadowRoot?.querySelector("#sidebar-options") ?? null;
-      shell.syncLayoutHeight();
-      this._applyContentSplitLayout();
-      this._mountControls();
-      this._renderSidebarOptions();
-      this._ensureUiComponentsReady();
-    });
   }
 
-  _syncPageLayoutHeight() {
+  protected render() {
+    if (!this._rendered) {
+      return nothing;
+    }
+    if (!this._shellBuilt) {
+      return html`
+        <style>
+          ${PANEL_HISTORY_LOADING_STYLE}
+        </style>
+        <div class="history-panel-loading">
+          <div
+            class="history-panel-loading-card"
+            role="status"
+            aria-live="polite"
+          >
+            <div class="history-panel-loading-spinner" aria-hidden="true"></div>
+            <div class="history-panel-loading-text">
+              ${msg("Loading Datapoints…")}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    return html`
+      <panel-shell
+        .hass=${this._hass ?? null}
+        .narrow=${this._narrow}
+        .sidebarCollapsed=${this._sidebarCollapsed}
+        .hasSavedState=${this._hasSavedPage}
+        .layoutMode=${this._layoutMode}
+        .collapsedOptionsOpen=${this._collapsedOptionsPopupOpen}
+        @dp-shell-menu-download=${() => this._downloadSpreadsheet()}
+        @dp-shell-menu-ai-brief=${() => {
+          this._openAiQueryBriefDialog().catch((error: unknown) => {
+            logger.warn(
+              "[hass-datapoints] failed to open AI query brief:",
+              error
+            );
+          });
+        }}
+        @dp-shell-menu-save=${() => this._savePageState()}
+        @dp-shell-menu-restore=${() => this._restorePageState()}
+        @dp-shell-menu-clear=${() => this._clearSavedPageState()}
+        @dp-shell-menu-monitors=${() => {
+          this._showMonitorsPanel = true;
+          this._renderContent();
+        }}
+        @dp-shell-sidebar-toggle=${() => this._toggleSidebarCollapsed()}
+        @dp-shell-scrim-click=${() => {
+          if (!this._sidebarCollapsed) {
+            this._toggleSidebarCollapsed();
+          }
+        }}
+        @click=${this._onCollapsedSidebarClick}
+      >
+        <range-toolbar
+          slot="controls"
+          .hass=${this.hass}
+          .startTime=${this._startTime ? new Date(this._startTime) : null}
+          .endTime=${this._endTime ? new Date(this._endTime) : null}
+          .rangeBounds=${this._rangeBounds}
+          .zoomLevel=${this._getEffectiveZoomLevel()}
+          .dateSnapping=${this._dateSnapping}
+          .sidebarCollapsed=${this._sidebarCollapsed}
+          .isLiveEdge=${this._isOnLiveEdge()}
+          .timelineEvents=${this._timelineEvents}
+          .comparisonPreview=${this._getComparisonRangePreview()}
+          .zoomRange=${this._getChartZoomHighlightRange()}
+          .zoomWindowRange=${this._getZoomWindowHighlightRange()}
+          .chartHoverTimeMs=${this._rangeBounds ? this._chartHoverTimeMs : null}
+          .chartHoverWindowTimeMs=${this._getChartHoverWindowTimeMs()}
+          @dp-range-commit=${(
+            ev: DetailEvent<{ start?: Date; end?: Date; push?: boolean }>
+          ) => {
+            this._applyCommittedRange(ev.detail?.start, ev.detail?.end, {
+              push: ev.detail?.push ?? false,
+            });
+          }}
+          @dp-range-draft=${(ev: DetailEvent<{ start?: Date; end?: Date }>) => {
+            this._scheduleAutoZoomUpdate(ev.detail?.start, ev.detail?.end);
+          }}
+          @dp-toolbar-sidebar-toggle=${() => this._toggleSidebarCollapsed()}
+          @dp-zoom-level-change=${(ev: DetailEvent<{ value?: string }>) => {
+            const { value } = ev.detail || {};
+            if (value && value !== this._zoomLevel) {
+              this._zoomLevel = value;
+              this._clearAutoZoomTimer();
+              this._resolvedAutoZoomLevel =
+                value === "auto" ? null : this._resolvedAutoZoomLevel;
+              this._saveSessionState();
+              this._updateUrl({ push: false });
+              this._saveUserPreferences();
+            }
+          }}
+          @dp-snap-change=${(ev: DetailEvent<{ value?: string }>) => {
+            const { value } = ev.detail || {};
+            if (value && value !== this._dateSnapping) {
+              this._dateSnapping = value;
+              this._saveSessionState();
+              this._updateUrl({ push: false });
+              this._saveUserPreferences();
+            }
+          }}
+          @dp-date-picker-change=${(ev: Event) =>
+            this._handleDatePickerChange(ev)}
+        ></range-toolbar>
+        <sidebar-options
+          slot="sidebar-options"
+          .datapointScope=${this._datapointScope}
+          .showIcons=${this._showChartDatapointIcons}
+          .showLines=${this._showChartDatapointLines}
+          .showTooltips=${this._showChartTooltips}
+          .showHoverGuides=${this._showChartEmphasizedHoverGuides}
+          .hoverSnapMode=${this._chartHoverSnapMode}
+          .showCorrelatedAnomalies=${this._showCorrelatedAnomalies}
+          .showDataGaps=${this._showDataGaps}
+          .dataGapThreshold=${this._dataGapThreshold}
+          .yAxisMode=${this._sidebarYAxisMode}
+          .anomalyOverlapMode=${this._chartAnomalyOverlapMode}
+          .anyAnomaliesEnabled=${(this._seriesRows ?? []).some(
+            (row) => row.analysis?.show_anomalies === true
+          )}
+          @dp-scope-change=${this._handlePreferenceScope}
+          @dp-display-change=${this._handlePreferenceDisplay}
+          @dp-analysis-change=${this._handlePreferenceAnalysis}
+          .targetsOpen=${this._sidebarAccordionTargetsOpen}
+          .datapointsOpen=${this._sidebarAccordionDatapointsOpen}
+          .analysisOpen=${this._sidebarAccordionAnalysisOpen}
+          .chartOpen=${this._sidebarAccordionChartOpen}
+          @dp-accordion-change=${this._handlePreferenceAccordion}
+        ></sidebar-options>
+        <collapsed-options-menu
+          slot="collapsed-options"
+          .datapointScope=${this._datapointScope}
+          .showIcons=${this._showChartDatapointIcons}
+          .showLines=${this._showChartDatapointLines}
+          .showTooltips=${this._showChartTooltips}
+          .showHoverGuides=${this._showChartEmphasizedHoverGuides}
+          .hoverSnapMode=${this._chartHoverSnapMode}
+          .showCorrelatedAnomalies=${this._showCorrelatedAnomalies}
+          .showDataGaps=${this._showDataGaps}
+          .dataGapThreshold=${this._dataGapThreshold}
+          .yAxisMode=${this._sidebarYAxisMode}
+          .anomalyOverlapMode=${this._chartAnomalyOverlapMode}
+          .anyAnomaliesEnabled=${(this._seriesRows ?? []).some(
+            (row) => row.analysis?.show_anomalies === true
+          )}
+          @dp-scope-change=${this._handlePreferenceScope}
+          @dp-display-change=${this._handlePreferenceDisplay}
+          @dp-analysis-change=${this._handlePreferenceAnalysis}
+        ></collapsed-options-menu>
+        <history-targets
+          slot="sidebar"
+          .rows=${this._seriesRows}
+          .states=${this._hass?.states ?? {}}
+          .hass=${this._hass ?? null}
+          .labelMap=${this._rowLabelMap}
+          .comparisonWindows=${this._comparisonWindows}
+          .canShowDeltaAnalysis=${!!this._selectedComparisonWindowId}
+          .sidebarCollapsed=${this._sidebarCollapsed}
+          .computingEntityIds=${this._computingEntityIds}
+          .analysisProgress=${this._analysisProgress}
+          .computingMethodsByEntity=${this._computingMethods}
+          @dp-row-color-change=${(
+            ev: DetailEvent<{ index?: number; color?: string }>
+          ) => {
+            const { index, color } = ev.detail || {};
+            this._updateSeriesRowColor(index, color);
+          }}
+          @dp-row-visibility-change=${(
+            ev: DetailEvent<{ entityId?: string; visible?: boolean }>
+          ) => {
+            const { entityId, visible } = ev.detail || {};
+            this._updateSeriesRowVisibilityByEntityId(entityId, visible);
+          }}
+          @dp-row-remove=${(ev: DetailEvent<{ index?: number }>) => {
+            this._removeSeriesRow(ev.detail?.index);
+          }}
+          @dp-row-toggle-analysis=${(
+            ev: DetailEvent<{ entityId?: string }>
+          ) => {
+            this._toggleSeriesAnalysisExpanded(ev.detail?.entityId);
+          }}
+          @dp-row-analysis-change=${(
+            ev: DetailEvent<{
+              entityId?: string;
+              key?: string;
+              value?: unknown;
+            }>
+          ) => {
+            const { entityId, key, value } = ev.detail || {};
+            this._setSeriesAnalysisOption(entityId, key, value);
+          }}
+          @dp-row-copy-analysis-to-all=${(
+            ev: DetailEvent<{ entityId?: string; analysis?: unknown }>
+          ) => {
+            const { entityId, analysis } = ev.detail || {};
+            this._copyAnalysisToAll(entityId, analysis);
+          }}
+          @dp-rows-reorder=${(ev: DetailEvent<{ rows?: unknown[] }>) => {
+            const { rows } = ev.detail || {};
+            if (!Array.isArray(rows)) {
+              return;
+            }
+            this._seriesRows = rows as HistoryTargetRowState[];
+            this._syncSeriesState();
+            this._saveSessionState();
+            this._renderTargetRows();
+            this._syncControls();
+            this._updateUrl({ push: true });
+            this._renderContent();
+          }}
+          @dp-targets-prefs-click=${(ev: Event) => {
+            ev.stopPropagation();
+            const anchor = ev.composedPath()[0] || ev.target;
+            if (!(anchor instanceof HTMLElement)) {
+              return;
+            }
+            if (this._collapsedOptionsPopupOpen) {
+              this._hideCollapsedOptionsPopup();
+            } else {
+              this._showCollapsedOptionsPopup(anchor);
+            }
+          }}
+          @dp-targets-add-click=${(
+            ev: DetailEvent<{ buttonEl?: Nullable<HTMLElement> }>
+          ) => {
+            this._openTargetPicker(ev.detail?.buttonEl ?? undefined);
+          }}
+          @dp-targets-clear-all=${() => this._clearAllSeriesRows()}
+          @dp-collapsed-entity-click=${(
+            ev: DetailEvent<{
+              entityId?: string;
+              buttonEl?: Nullable<HTMLElement>;
+            }>
+          ) => {
+            const { entityId, buttonEl } = ev.detail || {};
+            if (!entityId) {
+              return;
+            }
+            if (this._collapsedPopupEntityId === entityId) {
+              this._hideCollapsedTargetPopup();
+            } else {
+              this._showCollapsedTargetPopup(entityId, buttonEl ?? undefined);
+            }
+          }}
+        ></history-targets>
+        <div id="content"></div>
+      </panel-shell>
+      <date-window-dialog
+        ?open=${this._dateWindowDialogOpen}
+        .heading=${this._editingDateWindowId
+          ? msg("Edit date window")
+          : msg("Add date window")}
+        .submitLabel=${this._editingDateWindowId
+          ? msg("Save date window")
+          : msg("Create date window")}
+        .showDelete=${!!this._editingDateWindowId}
+        .showShortcuts=${!this._editingDateWindowId}
+        .name=${this._dateWindowDialogName}
+        .startValue=${this._dateWindowDialogStartValue}
+        .endValue=${this._dateWindowDialogEndValue}
+        .rangeBounds=${this._rangeBounds ?? null}
+        .zoomLevel=${this._zoomLevel ?? "auto"}
+        .dateSnapping=${this._dateSnapping ?? "hour"}
+        @dp-window-close=${() => this._closeDateWindowDialog()}
+        @dp-window-submit=${(ev: DetailEvent<RecordWithUnknownValues>) =>
+          this._createDateWindowFromDialog(ev.detail || {})}
+        @dp-window-delete=${() => this._deleteEditingDateWindow()}
+        @dp-window-shortcut=${(ev: DetailEvent<{ direction?: number }>) => {
+          if (typeof ev.detail?.direction === "number") {
+            this._applyDateWindowShortcut(ev.detail.direction);
+          }
+        }}
+        @dp-window-date-change=${(
+          ev: DetailEvent<{ start?: string; end?: string }>
+        ) =>
+          this._handleDateWindowDateChange(
+            ev.detail?.start || "",
+            ev.detail?.end || ""
+          )}
+      ></date-window-dialog>
+      <anomaly-monitor-wizard
+        .hass=${this._hass}
+        ?open=${this._monitorWizardOpen}
+        .prefillEntityIds=${this._monitorWizardPayload.prefillEntityIds}
+        .prefillAnalysis=${this._monitorWizardPayload.prefillAnalysis}
+        .editMonitor=${this._monitorWizardPayload.editMonitor}
+        .suggestedEntityIds=${this._monitorWizardPayload.suggestedEntityIds}
+        .allSeriesEntityIds=${this._monitorWizardPayload.allSeriesEntityIds}
+        @dp-monitor-wizard-close=${() => {
+          this._monitorWizardOpen = false;
+        }}
+        @dp-monitor-wizard-saved=${() => {
+          this._monitorWizardOpen = false;
+        }}
+      ></anomaly-monitor-wizard>
+      <ai-query-brief-dialog
+        ?open=${this._aiQueryBriefDialogOpen}
+        .heading=${this._aiQueryBriefHeading}
+        .text=${this._aiQueryBriefText}
+        @dp-ai-query-brief-close=${() => {
+          this._aiQueryBriefDialogOpen = false;
+        }}
+      ></ai-query-brief-dialog>
+    `;
+  }
+
+  /** Disambiguated entity → display-name map for the current series rows. */
+  _computeRowLabelMap(): Map<string, string> {
+    return disambiguateEntityNames(
+      this._hass,
+      (this._seriesRows ?? []).map((r: { entity_id: string }) => r.entity_id)
+    );
+  }
+
+  protected updated() {
+    this._renderComparisonTabSlot();
+    this._positionCollapsedOptionsPopup();
+    this._rangeToolbarComp = this.renderRoot.querySelector("range-toolbar");
+    if (this._shellBuilt && !this._shellEl) {
+      this._mountShellControls();
+    }
+    // Push the current zoom window into the list card (keyed, so it is a no-op
+    // unless the config actually changed). Driven here because the reactive
+    // _chartZoomCommittedRange change schedules the render.
+    this._applyListZoomConfig();
+  }
+
+  /** Measured layout side effects, driven by the host ResizeController. */
+  private _handleHostResize(): void {
+    if (!this._rendered) {
+      return;
+    }
     this._shellEl?.syncLayoutHeight();
+    this._applyContentSplitLayout();
+    this._requestChartResizeRedraw();
+    this.requestUpdate();
+  }
+
+  private async _mountShellControls() {
+    const shell = this.renderRoot.querySelector("panel-shell");
+    if (!shell) {
+      return;
+    }
+    this._shellEl = shell;
+    this._contentHostEl = shell.querySelector("#content");
+    await shell.updateComplete;
+    if (!this.isConnected) {
+      // Let a subsequent connection complete mounting the retained scaffold.
+      this._shellEl = null;
+      this.requestUpdate();
+      return;
+    }
+    shell.syncLayoutHeight();
+    this._applyContentSplitLayout();
+    this._mountControls();
+    this._renderSidebarOptions();
+    this._syncControls();
+    this._bootstrapAfterShellBuilt();
   }
 
   _bootstrapAfterShellBuilt() {
@@ -1674,7 +1863,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     this._ensureHistoryBounds();
     this._ensureUserPreferences();
     this._loadSavedPageIndicator();
-    this._syncHassBindings();
+    this._refreshControlsFromHass();
     this._renderContent();
     if (this._restoredFromSession) {
       this._restoredFromSession = false;
@@ -1760,11 +1949,12 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
                 "[dp-lifecycle] _ensureUiComponentsReady double RAF: calling _buildShell"
               );
               this._buildShell();
-            } else {
-              logger.warn(
-                "[dp-lifecycle] _ensureUiComponentsReady double RAF: shell already built — skipping _buildShell"
-              );
+              return;
             }
+            logger.warn(
+              "[dp-lifecycle] _ensureUiComponentsReady double RAF: shell already built — skipping _buildShell"
+            );
+
             logger.warn(
               "[dp-lifecycle] _ensureUiComponentsReady double RAF: calling syncControls + bootstrapAfterShellBuilt"
             );
@@ -1785,10 +1975,24 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
   }
 
   _syncControls() {
-    this._syncPageLayoutHeight();
-    this._syncHassBindings();
-    this._syncRangeUi();
+    this._shellEl?.syncLayoutHeight();
+    this._refreshControlsFromHass();
+    this.requestUpdate();
     this._renderSidebarOptions();
+  }
+
+  /**
+   * Refresh the imperatively-mounted controls that can't bind hass declaratively
+   * (the target picker) and re-render the target rows.
+   */
+  private _refreshControlsFromHass() {
+    if (this._targetControl) {
+      if (this._hass) {
+        this._targetControl.hass = this._hass;
+      }
+      this._targetControl.value = {};
+    }
+    this._renderTargetRows();
   }
 
   _syncSeriesState() {
@@ -1833,90 +2037,19 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     return mergeSavedSeriesRows(rows, savedRows);
   }
 
-  _syncHassBindings() {
-    if (this._shellEl) {
-      if (this._hass) {
-        this._shellEl.hass = this._hass;
-      }
-      this._shellEl.narrow = this._narrow;
-    }
-    this._syncSidebarUi();
-    if (this._targetControl) {
-      if (this._hass) {
-        this._targetControl.hass = this._hass;
-      }
-      this._targetControl.value = {};
-    }
-    this._renderTargetRows();
-    this.shadowRoot
-      ?.querySelectorAll(
-        "[data-series-icon-entity-id], [data-series-collapsed-icon-entity-id]"
-      )
-      .forEach((iconEl) => {
-        const icon = iconEl as HTMLElement & {
-          dataset: DOMStringMap;
-          stateObj?: unknown;
-          hass?: unknown;
-        };
-        const entityId =
-          icon.dataset.seriesIconEntityId ||
-          icon.dataset.seriesCollapsedIconEntityId;
-        if (!entityId) {
-          return;
-        }
-        icon.stateObj = this._hass?.states?.[entityId];
-        icon.hass = this._hass;
-      });
-    if (this._rangeToolbarComp) {
-      this._rangeToolbarComp.hass = this._hass ?? null;
-    }
-  }
-
-  _syncRangeUi() {
-    if (!this._dateControl) {
-      return;
-    }
-    this._syncOptionsMenu();
-    this._syncRangeControl();
-  }
-
   _renderSidebarOptions() {
-    if (!this._sidebarOptionsComp) {
-      return;
-    }
-    let yAxisMode;
+    // Context callbacks may mutate row analysis in place.
+    this.requestUpdate();
+  }
+
+  private get _sidebarYAxisMode(): string {
     if (this._splitChartView) {
-      yAxisMode = "split";
-    } else if (this._delinkChartYAxis) {
-      yAxisMode = "unique";
-    } else {
-      yAxisMode = "combined";
+      return "split";
     }
-    this._sidebarOptionsComp.datapointScope = this._datapointScope;
-    this._sidebarOptionsComp.showIcons = this._showChartDatapointIcons;
-    this._sidebarOptionsComp.showLines = this._showChartDatapointLines;
-    this._sidebarOptionsComp.showTooltips = this._showChartTooltips;
-    this._sidebarOptionsComp.showHoverGuides =
-      this._showChartEmphasizedHoverGuides;
-    this._sidebarOptionsComp.hoverSnapMode = this._chartHoverSnapMode;
-    this._sidebarOptionsComp.showCorrelatedAnomalies =
-      this._showCorrelatedAnomalies;
-    this._sidebarOptionsComp.showDataGaps = this._showDataGaps;
-    this._sidebarOptionsComp.dataGapThreshold = this._dataGapThreshold;
-    this._sidebarOptionsComp.yAxisMode = yAxisMode;
-    this._sidebarOptionsComp.anomalyOverlapMode = this._chartAnomalyOverlapMode;
-    this._sidebarOptionsComp.anyAnomaliesEnabled = (
-      this._seriesRows ?? []
-    ).some(
-      (r: { analysis?: { show_anomalies?: boolean } }) =>
-        r.analysis?.show_anomalies === true
-    );
-    this._sidebarOptionsComp.targetsOpen = this._sidebarAccordionTargetsOpen;
-    this._sidebarOptionsComp.datapointsOpen =
-      this._sidebarAccordionDatapointsOpen;
-    this._sidebarOptionsComp.analysisOpen = this._sidebarAccordionAnalysisOpen;
-    this._sidebarOptionsComp.chartOpen = this._sidebarAccordionChartOpen;
-    this._refreshCollapsedOptionsPopup();
+    if (this._delinkChartYAxis) {
+      return "unique";
+    }
+    return "combined";
   }
 
   _formatComparisonLabel(start: Date, end: Date) {
@@ -1971,40 +2104,14 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     return getRoundedDateWindowUnit(start, end);
   }
 
+  /** Push the current draft range into the controlled start/end form values. */
   _syncDateWindowDialogInputs() {
-    const startVal = this._formatDateWindowInputValue(
+    this._dateWindowDialogStartValue = this._formatDateWindowInputValue(
       this._dateWindowDialogDraftRange?.start || null
     );
-    const endVal = this._formatDateWindowInputValue(
+    this._dateWindowDialogEndValue = this._formatDateWindowInputValue(
       this._dateWindowDialogDraftRange?.end || null
     );
-    // Update the LitElement component when mounted.
-    if (this._dateWindowDialogComp) {
-      this._dateWindowDialogComp.startValue = startVal;
-      this._dateWindowDialogComp.endValue = endVal;
-      return;
-    }
-    // Legacy ha-dialog fallback.
-    if (this._dateWindowDialogStartEl) {
-      this._dateWindowDialogStartEl.value = startVal;
-    }
-    if (this._dateWindowDialogEndEl) {
-      this._dateWindowDialogEndEl.value = endVal;
-    }
-  }
-
-  _handleDateWindowDialogInputChange() {
-    const start = this._parseDateWindowInputValue(
-      this._dateWindowDialogStartEl?.value || ""
-    );
-    const end = this._parseDateWindowInputValue(
-      this._dateWindowDialogEndEl?.value || ""
-    );
-    if (start && end && start < end) {
-      this._dateWindowDialogDraftRange = { start, end };
-      return;
-    }
-    this._dateWindowDialogDraftRange = null;
   }
 
   _applyDateWindowShortcut(direction: number) {
@@ -2022,104 +2129,9 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     this._syncDateWindowDialogInputs();
   }
 
-  _ensureDateWindowDialog() {
-    // The dialog is pre-mounted as a LitElement in _mountControls(); no legacy ha-dialog needed.
-    if (
-      this._dateWindowDialogComp ||
-      this._dateWindowDialogEl ||
-      !this.shadowRoot
-    )
-      return;
-    const dialog = document.createElement("ha-dialog") as HTMLElement & {
-      scrimClickAction?: boolean;
-      escapeKeyAction?: boolean;
-      open?: boolean;
-      headerTitle?: string;
-    };
-    dialog.id = "date-window-dialog";
-    dialog.setAttribute("hideActions", "");
-    dialog.scrimClickAction = true;
-    dialog.escapeKeyAction = true;
-    dialog.open = false;
-    dialog.headerTitle = "Add date window";
-    dialog.style.setProperty(
-      "--dialog-content-padding",
-      `0 var(--dp-spacing-lg) var(--dp-spacing-lg)`
-    );
-    dialog.innerHTML = `
-      <div class="date-window-dialog-content">
-        <div class="date-window-dialog-body">
-          A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later.
-        </div>
-        <div class="date-window-dialog-field name-field">
-          <ha-textfield id="date-window-name" label="Name" placeholder="e.g. Heating season start"></ha-textfield>
-        </div>
-        <div class="date-window-dialog-field">
-          <label>Date range</label>
-          <div class="date-window-dialog-dates">
-            <div class="date-window-dialog-field">
-              <label for="date-window-start">Start</label>
-              <input id="date-window-start" class="date-window-dialog-input" type="datetime-local" step="60">
-            </div>
-            <div class="date-window-dialog-field">
-              <label for="date-window-end">End</label>
-              <input id="date-window-end" class="date-window-dialog-input" type="datetime-local" step="60">
-            </div>
-          </div>
-        </div>
-        <div class="date-window-dialog-shortcuts" id="date-window-shortcuts" hidden>
-          <ha-button id="date-window-previous">Use previous range</ha-button>
-          <ha-button id="date-window-next">Use next range</ha-button>
-        </div>
-        <div class="date-window-dialog-actions">
-          <ha-button class="date-window-dialog-delete" id="date-window-delete" hidden>Delete date window</ha-button>
-          <div class="date-window-dialog-actions-right">
-            <ha-button class="date-window-dialog-cancel" id="date-window-cancel">Cancel</ha-button>
-            <ha-button raised class="date-window-dialog-submit" id="date-window-submit">Create date window</ha-button>
-          </div>
-        </div>
-      </div>
-    `;
-    dialog.addEventListener("closed", () => this._closeDateWindowDialog(true));
-    this.shadowRoot.appendChild(dialog);
-    this._dateWindowDialogEl = dialog as unknown as LegacyDialogElement;
-    this._dateWindowDialogNameEl = dialog.querySelector("#date-window-name");
-    this._dateWindowDialogStartEl = dialog.querySelector("#date-window-start");
-    this._dateWindowDialogEndEl = dialog.querySelector("#date-window-end");
-    this._dateWindowDialogShortcutsEl = dialog.querySelector(
-      "#date-window-shortcuts"
-    );
-    if (this._hass && this._dateWindowDialogNameEl) {
-      this._dateWindowDialogNameEl.hass = this._hass;
-    }
-    dialog
-      .querySelector("#date-window-cancel")
-      ?.addEventListener("click", () => this._closeDateWindowDialog());
-    dialog
-      .querySelector("#date-window-submit")
-      ?.addEventListener("click", () => this._createDateWindowFromDialog());
-    dialog
-      .querySelector("#date-window-delete")
-      ?.addEventListener("click", () => this._deleteEditingDateWindow());
-    this._dateWindowDialogStartEl?.addEventListener("change", () =>
-      this._handleDateWindowDialogInputChange()
-    );
-    this._dateWindowDialogEndEl?.addEventListener("change", () =>
-      this._handleDateWindowDialogInputChange()
-    );
-    dialog
-      .querySelector("#date-window-previous")
-      ?.addEventListener("click", () => this._applyDateWindowShortcut(-1));
-    dialog
-      .querySelector("#date-window-next")
-      ?.addEventListener("click", () => this._applyDateWindowShortcut(1));
-  }
-
   _openDateWindowDialog(
     targetWindow: Nullable<NormalizedHistoryDateWindow> = null
   ) {
-    this._ensureDateWindowDialog();
-    this._dateWindowDialogOpen = true;
     this._editingDateWindowId = targetWindow?.id || null;
     const dialogStart = targetWindow
       ? parseDateValue(targetWindow.start_time)
@@ -2131,85 +2143,24 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       dialogStart && dialogEnd && dialogStart < dialogEnd
         ? { start: new Date(dialogStart), end: new Date(dialogEnd) }
         : null;
-
-    // Prefer the new LitElement component if mounted.
-    if (this._dateWindowDialogComp) {
-      this._dateWindowDialogComp.heading = targetWindow
-        ? msg("Edit date window")
-        : msg("Add date window");
-      this._dateWindowDialogComp.submitLabel = targetWindow
-        ? msg("Save date window")
-        : msg("Create date window");
-      this._dateWindowDialogComp.showDelete = !!targetWindow;
-      this._dateWindowDialogComp.showShortcuts = !targetWindow;
-      this._dateWindowDialogComp.name = targetWindow?.label || "";
-      this._dateWindowDialogComp.startValue = this._formatDateWindowInputValue(
-        this._dateWindowDialogDraftRange?.start || null
-      );
-      this._dateWindowDialogComp.endValue = this._formatDateWindowInputValue(
-        this._dateWindowDialogDraftRange?.end || null
-      );
-      this._dateWindowDialogComp.rangeBounds = this._rangeBounds ?? null;
-      this._dateWindowDialogComp.zoomLevel = this._zoomLevel ?? "auto";
-      this._dateWindowDialogComp.dateSnapping = this._dateSnapping ?? "hour";
-      this._dateWindowDialogComp.open = true;
-      return;
-    }
-
-    // Legacy ha-dialog fallback (used when _dateWindowDialogComp is not available).
-    if (this._dateWindowDialogEl) {
-      this._dateWindowDialogEl.open = true;
-      this._dateWindowDialogEl.headerTitle = targetWindow
-        ? msg("Edit date window")
-        : msg("Add date window");
-    }
-    const submitButton = this._dateWindowDialogEl?.querySelector(
-      "#date-window-submit"
-    );
-    if (submitButton) {
-      submitButton.textContent = targetWindow
-        ? msg("Save date window")
-        : msg("Create date window");
-    }
-    const deleteButton = this._dateWindowDialogEl?.querySelector(
-      "#date-window-delete"
-    ) as HTMLElement | null;
-    if (deleteButton) {
-      deleteButton.hidden = !targetWindow;
-      deleteButton.style.display = targetWindow ? "" : "none";
-    }
-    if (this._dateWindowDialogShortcutsEl) {
-      this._dateWindowDialogShortcutsEl.hidden = !!targetWindow;
-    }
-    if (this._dateWindowDialogNameEl) {
-      this._dateWindowDialogNameEl.value = targetWindow?.label || "";
-    }
+    this._dateWindowDialogName = targetWindow?.label || "";
     this._syncDateWindowDialogInputs();
-    window.requestAnimationFrame(() => this._dateWindowDialogNameEl?.focus());
+    // Flipping the reactive open flag renders the declarative <date-window-dialog>.
+    this._dateWindowDialogOpen = true;
   }
 
-  _closeDateWindowDialog(fromClosedEvent = false) {
+  _closeDateWindowDialog() {
     this._dateWindowDialogOpen = false;
     this._editingDateWindowId = null;
     this._dateWindowDialogDraftRange = null;
     this._pendingAnomalyComparisonWindowEntityId = null;
-    if (!fromClosedEvent) {
-      if (this._dateWindowDialogComp) {
-        this._dateWindowDialogComp.open = false;
-      } else if (this._dateWindowDialogEl) {
-        this._dateWindowDialogEl.open = false;
-      }
-    }
   }
 
   _createDateWindowFromDialog(
     overrides: { name?: unknown; start?: unknown; end?: unknown } = {}
   ) {
-    // Accept optional overrides from the LitElement component's dp-window-submit event.
-    const rawName =
-      overrides.name != null
-        ? overrides.name
-        : this._dateWindowDialogNameEl?.value || "";
+    // Values arrive from the date-window-dialog's dp-window-submit event.
+    const rawName = overrides.name != null ? overrides.name : "";
     const label = String(rawName).trim();
     const parsedStart = overrides.start
       ? this._parseDateWindowInputValue(String(overrides.start))
@@ -2408,7 +2359,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       logger.log(`[datapoints] analysis complete (${entityIds.join(", ")})`);
     }
     this._analysisProgress = progress;
-    this._pushComputingStateToRowList();
+    this._invalidateComputingState();
   }
 
   _handleAnalysisMethodResult(
@@ -2436,18 +2387,20 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     logger.log(
       `[datapoints] method done: ${method} for ${entityId} — remaining: [${remaining.join(", ") || "none"}]`
     );
-    this._pushComputingStateToRowList();
+    this._invalidateComputingState();
   }
 
-  _pushComputingStateToRowList() {
-    if (this._rowListEl) {
-      this._rowListEl.computingEntityIds = new Set(this._computingEntityIds);
-      this._rowListEl.analysisProgress = this._analysisProgress;
-      // Pass a fresh Map so Lit detects the reference change and re-renders.
-      this._rowListEl.computingMethodsByEntity = new Map(
-        this._computingMethods
-      );
-    }
+  /**
+   * Publishes the in-flight anomaly-computation state to the sidebar.  These
+   * collections are plain fields mutated in place, so every mutation site MUST
+   * route through here: it reassigns fresh Set/Map references (so the
+   * declarative `<history-targets>` bindings, and the row list it owns, detect
+   * the change) and requests a re-render.
+   */
+  _invalidateComputingState() {
+    this._computingEntityIds = new Set(this._computingEntityIds);
+    this._computingMethods = new Map(this._computingMethods);
+    this.requestUpdate();
   }
 
   _clearDeltaAnalysisSelectionState() {}
@@ -2479,23 +2432,9 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
         this._renderContent();
       },
       setAdjustComparisonAxisScale: (value: boolean) => {
-        if (this._chartEl) {
-          this._chartEl._adjustComparisonAxisScale = value;
-        }
+        this._chartEl?.setAdjustComparisonAxisScale?.(value);
       },
     });
-  }
-
-  _syncSidebarUi() {
-    if (this._shellEl) {
-      this._shellEl.sidebarCollapsed = this._sidebarCollapsed;
-    }
-    if (this._historyTargetsComp) {
-      this._historyTargetsComp.sidebarCollapsed = this._sidebarCollapsed;
-    }
-    if (this._rangeToolbarComp) {
-      this._rangeToolbarComp.sidebarCollapsed = this._sidebarCollapsed;
-    }
   }
 
   _updateLayoutMode() {
@@ -2508,16 +2447,8 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       this._layoutMode = "desktop";
     }
     if (prev !== this._layoutMode) {
-      if (this._shellEl) {
-        this._shellEl.layoutMode = this._layoutMode;
-      }
-      this._syncSidebarUi();
-      this._syncMobileDateInputs();
+      this._renderTargetRows();
     }
-  }
-
-  _syncMobileDateInputs() {
-    this._rangeToolbarComp?.syncMobileDates(this._startTime, this._endTime);
   }
 
   _applyContentSplitLayout() {
@@ -2551,13 +2482,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     }
     this._saveSessionState();
     this._updateUrl({ push: false });
-    this._syncSidebarUi();
-    window.requestAnimationFrame(() => {
-      if (!this.isConnected) {
-        return;
-      }
-      this._syncRangeControl();
-    });
+    this._renderTargetRows();
   }
 
   _handleCollapsedSidebarClick() {
@@ -2713,9 +2638,6 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     ) {
       this._timelineEvents = [];
       this._context.fetch.resetTimelineEvents();
-      if (this._rendered && this._rangeToolbarComp) {
-        this._rangeToolbarComp.timelineEvents = [];
-      }
       return;
     }
     const startIso = new Date(this._rangeBounds!.min).toISOString();
@@ -2728,9 +2650,6 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       onSuccess: (events: unknown[], key: string) => {
         this._timelineEvents = events;
         this._timelineEventsKey = key;
-        if (this._rendered && this._rangeToolbarComp) {
-          this._rangeToolbarComp.timelineEvents = this._timelineEvents;
-        }
       },
       onError: (err: unknown) => {
         logger.warn("[hass-datapoints] failed to load timeline events:", err);
@@ -2797,132 +2716,18 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       return;
     }
 
-    const histTargets = this._mountHistoryTargetsControl();
-    this._mountTargetPickerControl(histTargets);
-    this._mountRangeToolbarControl();
-    this._mountSidebarOptionsControl();
-    this._mountDateWindowDialogControl();
-    this._mountMonitorWizard();
-    this._mountAiQueryBriefDialogControl();
-    this._syncControls();
-  }
-
-  _mountHistoryTargetsControl() {
-    const histTargets = document.createElement(
+    // `history-targets` is rendered declaratively in render(); grab the element
+    // and mount the imperative target picker into its `picker` slot once.
+    const histTargets = this.renderRoot.querySelector(
       "history-targets"
-    ) as HistoryTargetsElement;
-    histTargets.slot = "sidebar";
-    histTargets.rows = [];
-    histTargets.states = {};
-    histTargets.hass = this._hass ?? null;
-    histTargets.comparisonWindows = this._comparisonWindows;
-    histTargets.canShowDeltaAnalysis = false;
-    histTargets.sidebarCollapsed = this._sidebarCollapsed;
-    // Bubble row events from history-targets → panel actions
-    histTargets.addEventListener(
-      "dp-row-color-change",
-      (ev: DetailEvent<{ index?: number; color?: string }>) => {
-        const { index, color } = ev.detail || {};
-        this._updateSeriesRowColor(index, color);
-      }
-    );
-    histTargets.addEventListener(
-      "dp-row-visibility-change",
-      (ev: DetailEvent<{ entityId?: string; visible?: boolean }>) => {
-        const { entityId, visible } = ev.detail || {};
-        this._updateSeriesRowVisibilityByEntityId(entityId, visible);
-      }
-    );
-    histTargets.addEventListener(
-      "dp-row-remove",
-      (ev: DetailEvent<{ index?: number }>) => {
-        const { index } = ev.detail || {};
-        this._removeSeriesRow(index);
-      }
-    );
-    histTargets.addEventListener(
-      "dp-row-toggle-analysis",
-      (ev: DetailEvent<{ entityId?: string }>) => {
-        const { entityId } = ev.detail || {};
-        this._toggleSeriesAnalysisExpanded(entityId);
-      }
-    );
-    histTargets.addEventListener(
-      "dp-row-analysis-change",
-      (
-        ev: DetailEvent<{ entityId?: string; key?: string; value?: unknown }>
-      ) => {
-        const { entityId, key, value } = ev.detail || {};
-        this._setSeriesAnalysisOption(entityId, key, value);
-      }
-    );
-    histTargets.addEventListener(
-      "dp-row-copy-analysis-to-all",
-      (ev: DetailEvent<{ entityId?: string; analysis?: unknown }>) => {
-        const { entityId, analysis } = ev.detail || {};
-        this._copyAnalysisToAll(entityId, analysis);
-      }
-    );
-    histTargets.addEventListener(
-      "dp-rows-reorder",
-      (ev: DetailEvent<{ rows?: unknown[] }>) => {
-        const { rows } = ev.detail || {};
-        if (!Array.isArray(rows)) {
-          return;
-        }
-        this._seriesRows = rows as HistoryTargetRowState[];
-        this._syncSeriesState();
-        this._saveSessionState();
-        this._renderTargetRows();
-        this._syncControls();
-        this._updateUrl({ push: true });
-        this._renderContent();
-      }
-    );
-    histTargets.addEventListener("dp-targets-prefs-click", (ev: Event) => {
-      ev.stopPropagation();
-      const anchor = ev.composedPath()[0] || ev.target;
-      if (!(anchor instanceof HTMLElement)) {
-        return;
-      }
-      if (this._collapsedOptionsPopupOpen) {
-        this._hideCollapsedOptionsPopup();
-      } else {
-        this._showCollapsedOptionsPopup(anchor);
-      }
-    });
-    histTargets.addEventListener(
-      "dp-targets-add-click",
-      (ev: DetailEvent<{ buttonEl?: Nullable<HTMLElement> }>) => {
-        const { buttonEl } = ev.detail || {};
-        this._openTargetPicker(buttonEl ?? undefined);
-      }
-    );
-    histTargets.addEventListener("dp-targets-clear-all", () => {
-      this._clearAllSeriesRows();
-    });
-    histTargets.addEventListener(
-      "dp-collapsed-entity-click",
-      (
-        ev: DetailEvent<{ entityId?: string; buttonEl?: Nullable<HTMLElement> }>
-      ) => {
-        const { entityId, buttonEl } = ev.detail || {};
-        if (!entityId) {
-          return;
-        }
-        if (this._collapsedPopupEntityId === entityId) {
-          this._hideCollapsedTargetPopup();
-        } else {
-          this._showCollapsedTargetPopup(entityId, buttonEl ?? undefined);
-        }
-      }
-    );
-    this._shellEl!.appendChild(histTargets);
+    ) as Nullable<HistoryTargetsElement>;
     this._historyTargetsComp = histTargets;
-
-    // target-row-list is rendered inside history-targets; keep a ref via its accessor
-    this._rowListEl = null; // will be updated lazily via histTargets.getRowListEl()
-    return histTargets;
+    if (histTargets && !this._targetControl) {
+      this._mountTargetPickerControl(histTargets);
+    }
+    // The date-window dialog, monitor wizard and AI-brief dialog are rendered
+    // declaratively in render() with `?open=` state — no imperative mount.
+    this._syncControls();
   }
 
   _mountTargetPickerControl(histTargets: HTMLElement) {
@@ -2970,207 +2775,69 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     });
   }
 
-  _mountRangeToolbarControl() {
-    const rangeToolbar = document.createElement(
-      "range-toolbar"
-    ) as unknown as RangeToolbarElement;
-    rangeToolbar.slot = "controls";
-    rangeToolbar.startTime = this._startTime;
-    rangeToolbar.endTime = this._endTime;
-    rangeToolbar.rangeBounds = this._rangeBounds;
-    rangeToolbar.zoomLevel = this._zoomLevel;
-    rangeToolbar.dateSnapping = this._dateSnapping;
-    rangeToolbar.sidebarCollapsed = this._sidebarCollapsed;
-    rangeToolbar.hass = this._hass ?? null;
-    rangeToolbar.isLiveEdge = this._isOnLiveEdge();
-    rangeToolbar.timelineEvents = this._timelineEvents || [];
-    rangeToolbar.comparisonPreview = null;
-    rangeToolbar.zoomRange = this._chartZoomCommittedRange
-      ? {
-          start: +this._chartZoomCommittedRange.start,
-          end: +this._chartZoomCommittedRange.end,
-        }
-      : null;
-    rangeToolbar.zoomWindowRange = null;
-    rangeToolbar.chartHoverTimeMs = null;
-    rangeToolbar.chartHoverWindowTimeMs = null;
-    rangeToolbar.addEventListener(
-      "dp-range-commit",
-      (ev: DetailEvent<{ start?: Date; end?: Date; push?: boolean }>) => {
-        this._applyCommittedRange(ev.detail?.start, ev.detail?.end, {
-          push: ev.detail?.push ?? false,
-        });
-      }
-    );
-    rangeToolbar.addEventListener(
-      "dp-range-draft",
-      (ev: DetailEvent<{ start?: Date; end?: Date }>) => {
-        this._scheduleAutoZoomUpdate(ev.detail?.start, ev.detail?.end);
-      }
-    );
-    rangeToolbar.addEventListener("dp-toolbar-sidebar-toggle", () =>
-      this._toggleSidebarCollapsed()
-    );
-    rangeToolbar.addEventListener(
-      "dp-zoom-level-change",
-      (ev: DetailEvent<{ value?: string }>) => {
-        const { value } = ev.detail || {};
-        if (value && value !== this._zoomLevel) {
-          this._zoomLevel = value;
-          this._clearAutoZoomTimer();
-          this._resolvedAutoZoomLevel =
-            value === "auto" ? null : this._resolvedAutoZoomLevel;
-          this._saveSessionState();
-          this._updateUrl({ push: false });
-          this._syncRangeControl();
-          this._saveUserPreferences();
-        }
-      }
-    );
-    rangeToolbar.addEventListener(
-      "dp-snap-change",
-      (ev: DetailEvent<{ value?: string }>) => {
-        const { value } = ev.detail || {};
-        if (value && value !== this._dateSnapping) {
-          this._dateSnapping = value;
-          this._saveSessionState();
-          this._updateUrl({ push: false });
-          this._syncRangeControl();
-          this._saveUserPreferences();
-        }
-      }
-    );
-    rangeToolbar.addEventListener("dp-date-picker-change", (ev) => {
-      this._handleDatePickerChange(ev);
-    });
-    this._shellEl!.appendChild(rangeToolbar);
-    this._rangeToolbarComp = rangeToolbar;
-
-    this._dateControl = rangeToolbar;
-
-    // Once the range toolbar renders, sync controls so the forwarded props receive initial data.
-    rangeToolbar.updateComplete.then(() => {
-      if (!this.isConnected || this._rangeToolbarComp !== rangeToolbar) {
-        return;
-      }
-      this._syncControls();
-      this._renderContent();
-    });
-
-    // Sync initial sidebar UI for toolbar toggle icon direction
-    this._syncSidebarUi();
-  }
-
-  _mountSidebarOptionsControl() {
-    if (this._sidebarOptionsEl) {
-      const sidebarComp = document.createElement(
-        "sidebar-options"
-      ) as SidebarOptionsElement;
-      sidebarComp.addEventListener(
-        "dp-scope-change",
-        (ev: DetailEvent<{ value?: string }>) => {
-          const { value } = ev.detail || {};
-          if (value) {
-            this._setDatapointScope(value);
-          }
-        }
-      );
-      sidebarComp.addEventListener(
-        "dp-display-change",
-        (ev: DetailEvent<{ kind?: string; value?: unknown }>) => {
-          const { kind, value } = ev.detail || {};
-          if (!kind) {
-            return;
-          }
-          if (kind === "y_axis_mode") {
-            this._setChartYAxisMode(String(value || ""));
-          } else {
-            this._setChartDatapointDisplayOption(kind, value);
-          }
-        }
-      );
-      sidebarComp.addEventListener(
-        "dp-analysis-change",
-        (
-          ev: DetailEvent<{
-            kind?: string;
-            value?: string;
-          }>
-        ) => {
-          const { kind, value } = ev.detail || {};
-          if (
-            kind === "anomaly_overlap_mode" &&
-            ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS.some((o) => o.value === value)
-          ) {
-            if (this._chartAnomalyOverlapMode === value) {
-              return;
-            }
-            this._chartAnomalyOverlapMode = value!;
-            this._saveSessionState();
-            this._updateUrl({ push: false });
-            this._renderSidebarOptions();
-            this._renderContent();
-          }
-        }
-      );
-      sidebarComp.addEventListener(
-        "dp-accordion-change",
-        (
-          ev: DetailEvent<{
-            targetsOpen?: boolean;
-            datapointsOpen?: boolean;
-            analysisOpen?: boolean;
-            chartOpen?: boolean;
-          }>
-        ) => {
-          const { targetsOpen, datapointsOpen, analysisOpen, chartOpen } =
-            ev.detail || {};
-          if (typeof targetsOpen === "boolean") {
-            this._sidebarAccordionTargetsOpen = targetsOpen;
-          }
-          if (typeof datapointsOpen === "boolean") {
-            this._sidebarAccordionDatapointsOpen = datapointsOpen;
-          }
-          if (typeof analysisOpen === "boolean") {
-            this._sidebarAccordionAnalysisOpen = analysisOpen;
-          }
-          if (typeof chartOpen === "boolean") {
-            this._sidebarAccordionChartOpen = chartOpen;
-          }
-          this._saveSessionState();
-          this._updateUrl({ push: false });
-        }
-      );
-      this._sidebarOptionsEl.appendChild(sidebarComp);
-      this._sidebarOptionsComp = sidebarComp;
+  private _handlePreferenceScope(ev: DetailEvent<{ value?: string }>) {
+    const { value } = ev.detail || {};
+    if (value) {
+      this._setDatapointScope(value);
     }
   }
 
-  _mountMonitorWizard() {
-    if (!this.shadowRoot || this._monitorWizardComp) return;
-    const wizard = document.createElement(
-      "anomaly-monitor-wizard"
-    ) as HTMLElement & {
-      hass: unknown;
-      open: boolean;
-      prefillEntityIds: string[];
-      prefillAnalysis: unknown;
-      editMonitor: unknown;
-      suggestedEntityIds: string[];
-      allSeriesEntityIds: string[];
-    };
-    wizard.hass = this._hass;
-    wizard.open = false;
-    wizard.suggestedEntityIds = [];
-    wizard.allSeriesEntityIds = [];
-    wizard.addEventListener("dp-monitor-wizard-close", () => {
-      wizard.open = false;
-    });
-    wizard.addEventListener("dp-monitor-wizard-saved", () => {
-      wizard.open = false;
-    });
-    this.shadowRoot.appendChild(wizard);
-    this._monitorWizardComp = wizard as HTMLElement;
+  private _handlePreferenceDisplay(
+    ev: DetailEvent<{ kind?: string; value?: unknown }>
+  ) {
+    const { kind, value } = ev.detail || {};
+    if (!kind) {
+      return;
+    }
+    if (kind === "y_axis_mode") {
+      this._setChartYAxisMode(String(value || ""));
+    } else {
+      this._setChartDatapointDisplayOption(kind, value);
+    }
+  }
+
+  private _handlePreferenceAnalysis(
+    ev: DetailEvent<{ kind?: string; value?: string }>
+  ) {
+    const { kind, value } = ev.detail || {};
+    if (
+      kind === "anomaly_overlap_mode" &&
+      ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS.some(
+        (option) => option.value === value
+      ) &&
+      value !== this._chartAnomalyOverlapMode
+    ) {
+      this._chartAnomalyOverlapMode = value!;
+      this._saveSessionState();
+      this._updateUrl({ push: false });
+      this._renderContent();
+    }
+  }
+
+  private _handlePreferenceAccordion(
+    ev: DetailEvent<{
+      targetsOpen?: boolean;
+      datapointsOpen?: boolean;
+      analysisOpen?: boolean;
+      chartOpen?: boolean;
+    }>
+  ) {
+    const { targetsOpen, datapointsOpen, analysisOpen, chartOpen } =
+      ev.detail || {};
+    if (typeof targetsOpen === "boolean") {
+      this._sidebarAccordionTargetsOpen = targetsOpen;
+    }
+    if (typeof datapointsOpen === "boolean") {
+      this._sidebarAccordionDatapointsOpen = datapointsOpen;
+    }
+    if (typeof analysisOpen === "boolean") {
+      this._sidebarAccordionAnalysisOpen = analysisOpen;
+    }
+    if (typeof chartOpen === "boolean") {
+      this._sidebarAccordionChartOpen = chartOpen;
+    }
+    this._saveSessionState();
+    this._updateUrl({ push: false });
   }
 
   _openMonitorWizardFromChartAnalysis(entityId: string, analysis: unknown) {
@@ -3209,85 +2876,29 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     suggestedEntityIds: string[] = [],
     allSeriesEntityIds: string[] = []
   ) {
-    if (!this.shadowRoot) return;
-    if (!this._monitorWizardComp) {
-      this._mountMonitorWizard();
-    }
-    const wizard = this._monitorWizardComp as HTMLElement & {
-      hass: unknown;
-      open: boolean;
-      prefillEntityIds: string[];
-      prefillAnalysis: unknown;
-      editMonitor: unknown;
-      suggestedEntityIds: string[];
-      allSeriesEntityIds: string[];
+    this._monitorWizardPayload = {
+      prefillEntityIds: entityIds,
+      prefillAnalysis: analysis,
+      editMonitor,
+      suggestedEntityIds,
+      allSeriesEntityIds,
     };
-    if (!wizard) return;
-    wizard.hass = this._hass;
-    wizard.editMonitor = editMonitor;
-    wizard.prefillEntityIds = entityIds;
-    wizard.prefillAnalysis = analysis;
-    wizard.suggestedEntityIds = suggestedEntityIds;
-    wizard.allSeriesEntityIds = allSeriesEntityIds;
-    wizard.open = true;
+    // Flipping the reactive flag renders the declarative <anomaly-monitor-wizard>.
+    this._monitorWizardOpen = true;
   }
 
-  _mountDateWindowDialogControl() {
-    if (this.shadowRoot) {
-      const dialogComp = document.createElement(
-        "date-window-dialog"
-      ) as DateWindowDialogElement;
-      dialogComp.addEventListener("dp-window-close", () =>
-        this._closeDateWindowDialog()
-      );
-      dialogComp.addEventListener(
-        "dp-window-submit",
-        (ev: DetailEvent<RecordWithUnknownValues>) => {
-          this._createDateWindowFromDialog(ev.detail || {});
-        }
-      );
-      dialogComp.addEventListener("dp-window-delete", () =>
-        this._deleteEditingDateWindow()
-      );
-      dialogComp.addEventListener(
-        "dp-window-shortcut",
-        (ev: DetailEvent<{ direction?: number }>) => {
-          if (typeof ev.detail?.direction === "number") {
-            this._applyDateWindowShortcut(ev.detail.direction);
-          }
-        }
-      );
-      dialogComp.addEventListener(
-        "dp-window-date-change",
-        (ev: DetailEvent<{ start?: string; end?: string }>) => {
-          const start = this._parseDateWindowInputValue(ev.detail?.start || "");
-          const end = this._parseDateWindowInputValue(ev.detail?.end || "");
-          if (start && end && start < end) {
-            this._dateWindowDialogDraftRange = { start, end };
-          } else {
-            this._dateWindowDialogDraftRange = null;
-          }
-        }
-      );
-      this.shadowRoot.appendChild(dialogComp);
-      this._dateWindowDialogComp = dialogComp;
-    }
-  }
-
-  _mountAiQueryBriefDialogControl() {
-    if (!this.shadowRoot) {
-      return;
-    }
-    const dialogComp = document.createElement(
-      "ai-query-brief-dialog"
-    ) as AiQueryBriefDialogElement;
-    dialogComp.addEventListener("dp-ai-query-brief-close", () => {
-      if (this._aiQueryBriefDialogComp) {
-        this._aiQueryBriefDialogComp.open = false;
-      }
-    });
-    this.shadowRoot.appendChild(dialogComp);
-    this._aiQueryBriefDialogComp = dialogComp;
+  /**
+   * Date-window-dialog `dp-window-date-change` handler: update the draft range
+   * and keep the controlled start/end value fields in step with the inputs
+   * (the component is fully controlled, so the parent owns these values).
+   */
+  _handleDateWindowDateChange(startStr: string, endStr: string) {
+    this._dateWindowDialogStartValue = startStr;
+    this._dateWindowDialogEndValue = endStr;
+    const start = this._parseDateWindowInputValue(startStr);
+    const end = this._parseDateWindowInputValue(endStr);
+    this._dateWindowDialogDraftRange =
+      start && end && start < end ? { start, end } : null;
   }
 
   async _resolveAiQueryBriefMonitorContext(): Promise<AiQueryBriefMonitorContext> {
@@ -3329,15 +2940,6 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
   }
 
   async _openAiQueryBriefDialog() {
-    if (!this.shadowRoot) {
-      return;
-    }
-    if (!this._aiQueryBriefDialogComp) {
-      this._mountAiQueryBriefDialogControl();
-    }
-    if (!this._aiQueryBriefDialogComp) {
-      return;
-    }
     const monitorContext = await this._resolveAiQueryBriefMonitorContext();
     const brief = buildAiQueryBrief({
       hass: this._hass,
@@ -3355,39 +2957,17 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       anomalySnapshot:
         this._chartEl?.getAiQueryBriefAnomalySnapshot?.() ?? null,
     });
-    this._aiQueryBriefDialogComp.heading = msg("AI query brief");
-    this._aiQueryBriefDialogComp.text = brief.plainText;
-    this._aiQueryBriefDialogComp.open = true;
+    this._aiQueryBriefHeading = msg("AI query brief");
+    this._aiQueryBriefText = brief.plainText;
+    // Flipping the reactive flag renders the declarative <ai-query-brief-dialog>.
+    this._aiQueryBriefDialogOpen = true;
   }
 
   _renderTargetRows() {
-    if (!this._historyTargetsComp) {
-      return;
-    }
-
-    // Update history-targets properties — the component re-renders reactively.
-    this._historyTargetsComp.rows = this._seriesRows;
-    this._historyTargetsComp.states = this._hass?.states ?? {};
-    this._historyTargetsComp.hass = this._hass ?? null;
-    this._historyTargetsComp.canShowDeltaAnalysis =
-      !!this._selectedComparisonWindowId;
-    this._historyTargetsComp.comparisonWindows = this._comparisonWindows;
-
-    // Keep legacy rowListEl ref in sync (used by _renderCollapsedTargetPopup etc.)
-    if (!this._rowListEl) {
-      this._rowListEl = this._historyTargetsComp.getRowListEl();
-    } else {
-      this._rowListEl.rows = this._seriesRows;
-      this._rowListEl.states = this._hass?.states ?? {};
-      this._rowListEl.hass = this._hass ?? null;
-      this._rowListEl.labelMap = disambiguateEntityNames(
-        this._hass,
-        (this._seriesRows ?? []).map((r: { entity_id: string }) => r.entity_id)
-      );
-      this._rowListEl.canShowDeltaAnalysis = !!this._selectedComparisonWindowId;
-      this._rowListEl.comparisonWindows = this._comparisonWindows;
-    }
-
+    // `history-targets` and its row list are bound declaratively in render()
+    // from `_seriesRows`, `_hass`, `_computeRowLabelMap()` and the computing
+    // state; a re-render pushes the latest values across the shadow boundary.
+    this.requestUpdate();
     this._refreshCollapsedTargetPopup();
   }
 
@@ -3579,75 +3159,9 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       return;
     }
 
-    // Build or reuse the collapsed-options-menu element.
-    let menu = popup.querySelector(
-      "collapsed-options-menu"
-    ) as Nullable<CollapsedOptionsMenuElement>;
-    if (!menu) {
-      menu = document.createElement(
-        "collapsed-options-menu"
-      ) as CollapsedOptionsMenuElement;
-      menu.addEventListener(
-        "dp-scope-change",
-        (ev: DetailEvent<{ value?: string }>) => {
-          const { value } = ev.detail || {};
-          if (value) {
-            this._setDatapointScope(value);
-          }
-        }
-      );
-      menu.addEventListener(
-        "dp-display-change",
-        (ev: DetailEvent<{ kind?: string; value?: unknown }>) => {
-          const { kind, value } = ev.detail || {};
-          if (!kind) {
-            return;
-          }
-          if (kind === "y_axis_mode") {
-            this._setChartYAxisMode(String(value || ""));
-          } else {
-            this._setChartDatapointDisplayOption(kind, value);
-          }
-        }
-      );
-      menu.addEventListener(
-        "dp-analysis-change",
-        (
-          ev: DetailEvent<{
-            kind?: string;
-            value?: string;
-          }>
-        ) => {
-          const { kind, value } = ev.detail || {};
-          if (
-            kind === "anomaly_overlap_mode" &&
-            value !== this._chartAnomalyOverlapMode
-          ) {
-            this._chartAnomalyOverlapMode = value!;
-            this._saveSessionState();
-            this._updateUrl({ push: false });
-            this._renderSidebarOptions();
-            this._renderContent();
-          }
-        }
-      );
-      popup.appendChild(menu);
-    }
-
-    this._syncCollapsedOptionsMenu(menu);
-
-    this._collapsedOptionsPopupOpen = true;
     this._collapsedOptionsAnchorEl = anchorEl;
-
-    popup.removeAttribute("hidden");
-    const anchorRect = anchorEl.getBoundingClientRect();
-    const pos = computePopupPosition(
-      anchorRect,
-      popup.offsetHeight,
-      window.innerHeight
-    );
-    popup.style.top = `${pos.top}px`;
-    popup.style.left = `${pos.left}px`;
+    this._collapsedOptionsPopupOpen = true;
+    this.requestUpdate();
 
     this._collapsedOptionsDismiss?.destroy();
     this._collapsedOptionsDismiss = attachPopupDismissListeners(
@@ -3659,55 +3173,40 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
 
   /** Close the collapsed-sidebar options popup and clean up all listeners. */
   _hideCollapsedOptionsPopup() {
-    const popup = this._shellEl?.getOptionsPopupEl();
-    if (popup) {
-      popup.setAttribute("hidden", "");
-    }
     this._collapsedOptionsDismiss?.destroy();
     this._collapsedOptionsDismiss = null;
     this._collapsedOptionsPopupOpen = false;
     this._collapsedOptionsAnchorEl = null;
   }
 
-  /** Sync option props on the menu element — called from _renderSidebarOptions. */
-  _refreshCollapsedOptionsPopup() {
-    if (!this._collapsedOptionsPopupOpen) {
+  private async _positionCollapsedOptionsPopup() {
+    const shell = this._shellEl;
+    const anchor = this._collapsedOptionsAnchorEl;
+    if (!shell || !anchor || !this._collapsedOptionsPopupOpen) {
       return;
     }
-    const popup = this._shellEl?.getOptionsPopupEl();
-    const menu = popup?.querySelector(
-      "collapsed-options-menu"
-    ) as Nullable<CollapsedOptionsMenuElement>;
-    if (menu) {
-      this._syncCollapsedOptionsMenu(menu);
+    await shell.updateComplete;
+    const menu = this.renderRoot.querySelector("collapsed-options-menu");
+    await menu?.updateComplete;
+    if (
+      !this.isConnected ||
+      this._shellEl !== shell ||
+      this._collapsedOptionsAnchorEl !== anchor ||
+      !this._collapsedOptionsPopupOpen
+    ) {
+      return;
     }
-  }
-
-  /** Write all current option values onto a collapsed-options-menu element. */
-  _syncCollapsedOptionsMenu(menu: CollapsedOptionsMenuElement) {
-    let yAxisMode;
-    if (this._splitChartView) {
-      yAxisMode = "split";
-    } else if (this._delinkChartYAxis) {
-      yAxisMode = "unique";
-    } else {
-      yAxisMode = "combined";
+    const popup = shell.getOptionsPopupEl();
+    if (!popup) {
+      return;
     }
-    menu.datapointScope = this._datapointScope;
-    menu.showIcons = this._showChartDatapointIcons;
-    menu.showLines = this._showChartDatapointLines;
-    menu.showTooltips = this._showChartTooltips;
-    menu.showHoverGuides = this._showChartEmphasizedHoverGuides;
-    menu.hoverSnapMode = this._chartHoverSnapMode;
-    menu.showCorrelatedAnomalies = this._showCorrelatedAnomalies;
-    menu.showDataGaps = this._showDataGaps;
-    menu.dataGapThreshold = this._dataGapThreshold;
-    menu.yAxisMode = yAxisMode;
-    menu.anomalyOverlapMode = this._chartAnomalyOverlapMode;
-    menu.anyAnomaliesEnabled = (this._seriesRows ?? []).some(
-      (r: { analysis?: { show_anomalies?: boolean } }) =>
-        r.analysis?.show_anomalies === true
+    const pos = computePopupPosition(
+      anchor.getBoundingClientRect(),
+      popup.offsetHeight,
+      window.innerHeight
     );
+    popup.style.top = `${pos.top}px`;
+    popup.style.left = `${pos.left}px`;
   }
 
   _updateSeriesRowVisibilityByEntityId(entityId: unknown, visible: unknown) {
@@ -3816,20 +3315,9 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     }
   }
 
-  _togglePageMenu(force = !this._pageMenuOpen) {
-    this._pageMenuOpen = !!force;
-    if (!force) {
-      this._shellEl?.closePageMenu();
-    }
-  }
-
   _handleWindowPointerDown() {
     // Outside-click dismissal for all floating menus is now handled internally
     // by floating-menu via dp-menu-close events.
-  }
-
-  _syncOptionsMenu() {
-    this._rangeToolbarComp?.syncOptionsLabels();
   }
 
   _handleDatePickerChange(ev: Event) {
@@ -3849,7 +3337,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     if (this._exportBusy || !this._hass || !this._startTime || !this._endTime) {
       return;
     }
-    this._togglePageMenu(false);
+    this._shellEl?.closePageMenu();
     await this._context.persistence.downloadSpreadsheet({
       entityIds: this._entities,
       startTime: this._startTime,
@@ -3882,16 +3370,14 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
   }
 
   _syncSavedPageMenuItems() {
-    if (this._shellEl) {
-      this._shellEl.hasSavedState = this._hasSavedPage;
-    }
+    this.requestUpdate();
   }
 
   async _savePageState() {
     if (this._savePageBusy || !this._hass) {
       return;
     }
-    this._togglePageMenu(false);
+    this._shellEl?.closePageMenu();
     await this._context.persistence.savePageState({
       savedPageKey: PANEL_HISTORY_SAVED_PAGE_KEY,
       state: buildHistoryPageSessionState(this as unknown as HistoryPageSource),
@@ -3909,7 +3395,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     if (!this._hass) {
       return;
     }
-    this._togglePageMenu(false);
+    this._shellEl?.closePageMenu();
     await this._context.persistence.restorePageState({
       savedPageKey: PANEL_HISTORY_SAVED_PAGE_KEY,
       fallbackValue: null,
@@ -3936,7 +3422,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     if (!this._hass) {
       return;
     }
-    this._togglePageMenu(false);
+    this._shellEl?.closePageMenu();
     await this._context.persistence.clearSavedPageState({
       savedPageKey: PANEL_HISTORY_SAVED_PAGE_KEY,
       onSuccess: () => {
@@ -4005,52 +3491,21 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     );
   }
 
-  _syncRangeControl() {
-    if (!this._rangeToolbarComp) {
-      return;
-    }
-    this._rangeBounds = this._deriveRangeBounds();
-    this._ensureTimelineEvents();
-    this._rangeToolbarComp.startTime = this._startTime
-      ? new Date(this._startTime)
-      : null;
-    this._rangeToolbarComp.endTime = this._endTime
-      ? new Date(this._endTime)
-      : null;
-    this._rangeToolbarComp.rangeBounds = this._rangeBounds;
-    this._rangeToolbarComp.zoomLevel = this._getEffectiveZoomLevel();
-    this._rangeToolbarComp.dateSnapping = this._dateSnapping;
-    this._rangeToolbarComp.isLiveEdge = this._isOnLiveEdge();
-    this._rangeToolbarComp.timelineEvents = this._timelineEvents || [];
-    this._updateComparisonRangePreview();
-    this._updateChartHoverIndicator();
-    this._updateChartZoomHighlight();
-    this._syncMobileDateInputs();
+  _updateComparisonRangePreview() {
+    this.requestUpdate();
   }
 
-  _updateComparisonRangePreview() {
-    if (!this._rangeToolbarComp) {
-      return;
-    }
+  _getComparisonRangePreview() {
     const comparisonWindow = this._getActiveComparisonWindow();
     if (!this._rangeBounds || !comparisonWindow) {
-      this._rangeToolbarComp.comparisonPreview = null;
-      this._updateZoomWindowHighlight();
-      return;
+      return null;
     }
-    const startMs = new Date(comparisonWindow.start_time).getTime();
-    const endMs = new Date(comparisonWindow.end_time).getTime();
-    if (
-      !Number.isFinite(startMs) ||
-      !Number.isFinite(endMs) ||
-      startMs >= endMs
-    ) {
-      this._rangeToolbarComp.comparisonPreview = null;
-      this._updateZoomWindowHighlight();
-      return;
+    const start = new Date(comparisonWindow.start_time).getTime();
+    const end = new Date(comparisonWindow.end_time).getTime();
+    if (!Number.isFinite(start) || !Number.isFinite(end) || start >= end) {
+      return null;
     }
-    this._rangeToolbarComp.comparisonPreview = { start: startMs, end: endMs };
-    this._updateZoomWindowHighlight();
+    return { start, end };
   }
 
   _handleChartHover(ev: DetailEvent<{ timeMs?: Nullable<number> }>) {
@@ -4090,7 +3545,8 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       } else {
         this._saveSessionState();
         this._updateUrl({ push: false });
-        this._syncListZoomState();
+        // The list zoom config is pushed from updated() — the reactive
+        // _chartZoomCommittedRange change above schedules that render.
       }
     }
     this._updateChartZoomHighlight();
@@ -4110,11 +3566,11 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       this._chartZoomStateCommitTimer = null;
       this._saveSessionState();
       this._updateUrl({ push: false });
-      this._syncListZoomState();
     }, 180);
   }
 
-  _syncListZoomState() {
+  /** Push the current zoom window into the list card (keyed; no-op if unchanged). */
+  private _applyListZoomConfig() {
     if (!this._listEl) {
       return;
     }
@@ -4213,61 +3669,38 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
   }
 
   _updateChartHoverIndicator() {
-    if (!this._rangeToolbarComp) {
-      return;
+    this.requestUpdate();
+  }
+
+  _getChartHoverWindowTimeMs() {
+    if (
+      !this._rangeBounds ||
+      this._chartHoverTimeMs == null ||
+      !this._startTime
+    ) {
+      return null;
     }
-    if (!this._rangeBounds || this._chartHoverTimeMs == null) {
-      this._rangeToolbarComp.chartHoverTimeMs = null;
-      this._rangeToolbarComp.chartHoverWindowTimeMs = null;
-      return;
-    }
-    this._rangeToolbarComp.chartHoverTimeMs = this._chartHoverTimeMs;
     const activeWindow = this._getActiveComparisonWindow();
-    if (activeWindow && this._startTime) {
-      const timeOffsetMs =
-        new Date(activeWindow.start_time).getTime() - this._startTime.getTime();
-      this._rangeToolbarComp.chartHoverWindowTimeMs =
-        this._chartHoverTimeMs + timeOffsetMs;
-    } else {
-      this._rangeToolbarComp.chartHoverWindowTimeMs = null;
+    if (!activeWindow) {
+      return null;
     }
+    return (
+      this._chartHoverTimeMs +
+      new Date(activeWindow.start_time).getTime() -
+      this._startTime.getTime()
+    );
   }
 
   _updateChartZoomHighlight() {
-    if (!this._rangeToolbarComp) {
-      return;
-    }
-    const highlightRange =
-      this._chartZoomRange || this._chartZoomCommittedRange;
-    const nextZoomRange =
-      this._rangeBounds && highlightRange
-        ? {
-            start: +highlightRange.start,
-            end: +highlightRange.end,
-          }
-        : null;
-    const nextZoomWindowRange = this._getZoomWindowHighlightRange();
-    this._rangeToolbarComp.syncZoomHighlights(
-      nextZoomRange,
-      nextZoomWindowRange
-    );
+    this.requestUpdate();
   }
 
-  _updateZoomWindowHighlight() {
-    if (!this._rangeToolbarComp) {
-      return;
-    }
-    this._rangeToolbarComp.syncZoomHighlights(
-      this._rangeBounds &&
-        (this._chartZoomRange || this._chartZoomCommittedRange)
-        ? {
-            start: +(this._chartZoomRange || this._chartZoomCommittedRange)!
-              .start,
-            end: +(this._chartZoomRange || this._chartZoomCommittedRange)!.end,
-          }
-        : null,
-      this._getZoomWindowHighlightRange()
-    );
+  _getChartZoomHighlightRange() {
+    const highlightRange =
+      this._chartZoomRange || this._chartZoomCommittedRange;
+    return this._rangeBounds && highlightRange
+      ? { start: +highlightRange.start, end: +highlightRange.end }
+      : null;
   }
 
   _getZoomWindowHighlightRange() {
@@ -4363,7 +3796,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
         return;
       }
       this._resolvedAutoZoomLevel = latestCandidateLevel;
-      this._syncRangeControl();
+      this.requestUpdate();
     }, RANGE_AUTO_ZOOM_DEBOUNCE_MS);
   }
 
@@ -4379,14 +3812,6 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
     }
     // Within 2 minutes of now, or in the future.
     return this._endTime.getTime() >= Date.now() - 2 * MINUTE_MS;
-  }
-
-  /** Toggle the live-edge indicator on the end handle. */
-  _syncLiveEdgeHandle() {
-    if (!this._rangeToolbarComp) {
-      return;
-    }
-    this._rangeToolbarComp.isLiveEdge = this._isOnLiveEdge();
   }
 
   /** Called whenever a new annotation is recorded (HA event or window event).
@@ -4421,8 +3846,9 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
       1,
       Math.round((nextEnd.getTime() - nextStart.getTime()) / HOUR_MS)
     );
-    this._syncLiveEdgeHandle();
     this._scheduleAutoZoomUpdate(undefined, undefined);
+    // _syncControls() below requests the update that refreshes the live-edge
+    // handle (bound declaratively on <range-toolbar>).
     this._syncControls();
     this._chartEl?.setExternalZoomRange?.(this._chartZoomCommittedRange);
     if (!didChange) {
@@ -4470,48 +3896,84 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
   }
 
   _renderComparisonTabs() {
-    const result = this._context.orchestration.renderComparisonTabs({
-      chartEl: this._chartEl,
-      comparisonWindows: Array.isArray(this._comparisonWindows)
-        ? this._comparisonWindows
-        : [],
-      selectedComparisonWindowId: this._selectedComparisonWindowId,
-      hoveredComparisonWindowId: this._hoveredComparisonWindowId,
-      startTime: this._startTime,
-      endTime: this._endTime,
-      loadingComparisonWindowIds: [...this._loadingComparisonWindowIds],
-      comparisonTabRailComp: this._comparisonTabRailComp,
-      comparisonTabsHostEl: this._comparisonTabsHostEl,
-      formatComparisonLabel: (startTime: Date, endTime: Date) =>
-        this._formatComparisonLabel(startTime, endTime),
-      onActivate: (tabId: Nullable<string>) => {
-        this._handleComparisonTabActivate(tabId);
+    this.requestUpdate();
+  }
+
+  private _comparisonTabsTemplate() {
+    if (!this._startTime || !this._endTime) {
+      return nothing;
+    }
+    const tabs = [
+      {
+        id: "current-range",
+        label: msg("Selected range"),
+        detail: this._formatComparisonLabel(this._startTime, this._endTime),
+        active: this._selectedComparisonWindowId == null,
+        editable: false,
       },
-      onHover: (tabId: Nullable<string>) => {
-        this._handleComparisonTabHover(tabId);
-      },
-      onLeave: (tabId: Nullable<string>) => {
-        this._handleComparisonTabLeave(tabId);
-      },
-      onEdit: (tabId: Nullable<string>) => {
-        const win = this._comparisonWindows.find(
-          (entry: NormalizedHistoryDateWindow) => entry.id === tabId
-        );
-        if (win) {
-          this._openDateWindowDialog(win);
-        }
-      },
-      onDelete: (tabId: Nullable<string>) => {
-        if (tabId) {
-          this._deleteDateWindow(tabId);
-        }
-      },
-      onAdd: () => {
-        this._openDateWindowDialog();
-      },
-    });
-    this._comparisonTabRailComp = result.comparisonTabRailComp;
-    this._comparisonTabsHostEl = result.comparisonTabsHostEl;
+      ...this._comparisonWindows.map((window) => ({
+        ...window,
+        detail: this._formatComparisonLabel(
+          new Date(window.start_time),
+          new Date(window.end_time)
+        ),
+        active: window.id === this._selectedComparisonWindowId,
+        editable: true,
+      })),
+    ];
+    return html`
+      <comparison-tab-rail
+        .tabs=${tabs}
+        .loadingIds=${this._loadingComparisonWindowIds}
+        .hoveredId=${this._hoveredComparisonWindowId || ""}
+        @dp-tab-activate=${(ev: CustomEvent<{ tabId: Nullable<string> }>) =>
+          this._handleComparisonTabActivate(ev.detail.tabId)}
+        @dp-tab-hover=${(ev: CustomEvent<{ tabId: Nullable<string> }>) =>
+          this._handleComparisonTabHover(ev.detail.tabId)}
+        @dp-tab-leave=${(ev: CustomEvent<{ tabId: Nullable<string> }>) =>
+          this._handleComparisonTabLeave(ev.detail.tabId)}
+        @dp-tab-edit=${(ev: CustomEvent<{ tabId: Nullable<string> }>) => {
+          const window = this._comparisonWindows.find(
+            (entry) => entry.id === ev.detail.tabId
+          );
+          if (window) {
+            this._openDateWindowDialog(window);
+          }
+        }}
+        @dp-tab-delete=${(ev: CustomEvent<{ tabId: Nullable<string> }>) => {
+          if (ev.detail.tabId) {
+            this._deleteDateWindow(ev.detail.tabId);
+          }
+        }}
+        @dp-tab-add=${() => this._openDateWindowDialog()}
+      ></comparison-tab-rail>
+    `;
+  }
+
+  private async _renderComparisonTabSlot() {
+    const chart = this._chartEl;
+    if (!chart) {
+      if (this._comparisonTabsRoot) {
+        renderInto(nothing, this._comparisonTabsRoot);
+        this._comparisonTabsRoot = null;
+      }
+      return;
+    }
+    await chart.updateComplete;
+    if (!this.isConnected || chart !== this._chartEl) {
+      return;
+    }
+    const host = chart.getComparisonTabsHost();
+    if (!host) {
+      return;
+    }
+    if (this._comparisonTabsRoot && this._comparisonTabsRoot !== host) {
+      renderInto(nothing, this._comparisonTabsRoot);
+    }
+    this._comparisonTabsRoot = host;
+    host.hidden = !this._startTime || !this._endTime;
+    // The chart remains imperative until #35; Lit owns just this existing slot.
+    renderInto(this._comparisonTabsTemplate(), host);
   }
 
   _updateComparisonTabsOverflow() {
@@ -4747,7 +4209,7 @@ export class HassDatapointsHistoryPanel extends HTMLElement {
             this._requestChartResizeRedraw();
             if (ev.detail?.committed) {
               this._saveSessionState();
-              window.requestAnimationFrame(() => this._syncRangeControl());
+              window.requestAnimationFrame(() => this.requestUpdate());
             }
           }
         );

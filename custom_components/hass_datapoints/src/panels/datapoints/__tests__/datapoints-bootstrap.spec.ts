@@ -1,228 +1,143 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
-import { HassDatapointsHistoryPanel } from "../datapoints";
-import { normalizeHistorySeriesAnalysis } from "@/lib/domain/history-series";
+import { describe, expect, it } from "vitest";
+import {
+  PANEL_HISTORY_SESSION_KEY,
+  PANEL_HISTORY_PREFERENCES_KEY,
+} from "@/lib/history-page/history-session-state";
+import {
+  control,
+  createHassFixture,
+  emitControlEvent,
+  mountPanel,
+  settlePanel,
+  START,
+  END,
+  usePanelFixture,
+} from "./panel-fixture";
 
-describe("HassDatapointsHistoryPanel bootstrap", () => {
-  afterEach(() => {
-    vi.restoreAllMocks();
-  });
+usePanelFixture();
 
-  describe("GIVEN the shell has just been built after the initial hass assignment", () => {
-    describe("WHEN bootstrapping post-shell setup", () => {
-      it("THEN it loads preferences and updates the restored URL state", () => {
-        expect.assertions(6);
-        const ensureHistoryBounds = vi.fn();
-        const ensureUserPreferences = vi.fn();
-        const loadSavedPageIndicator = vi.fn();
-        const syncHassBindings = vi.fn();
-        const renderContent = vi.fn();
-        const updateUrl = vi.fn();
-        const panel = {
-          _shellBuilt: true,
-          _restoredFromSession: true,
-          _ensureHistoryBounds: ensureHistoryBounds,
-          _ensureUserPreferences: ensureUserPreferences,
-          _loadSavedPageIndicator: loadSavedPageIndicator,
-          _syncHassBindings: syncHassBindings,
-          _renderContent: renderContent,
-          _updateUrl: updateUrl,
-        };
-
-        HassDatapointsHistoryPanel.prototype._bootstrapAfterShellBuilt.call(
-          panel
-        );
-
-        expect(ensureHistoryBounds).toHaveBeenCalledTimes(1);
-        expect(ensureUserPreferences).toHaveBeenCalledTimes(1);
-        expect(loadSavedPageIndicator).toHaveBeenCalledTimes(1);
-        expect(syncHassBindings).toHaveBeenCalledTimes(1);
-        expect(renderContent).toHaveBeenCalledTimes(1);
-        expect(updateUrl).toHaveBeenCalledWith({ push: false });
+describe("GIVEN restored session state and a saved page", () => {
+  describe("WHEN the shell finishes mounting", () => {
+    it("THEN fetches preferences and bounds, offers restore, and restores URL state", async () => {
+      expect.assertions(4);
+      window.sessionStorage.setItem(
+        PANEL_HISTORY_SESSION_KEY,
+        JSON.stringify({
+          entities: ["sensor.humidity"],
+          start_time: START,
+          end_time: END,
+        })
+      );
+      const { hass, sendMessagePromise } = createHassFixture({
+        savedPage: { entities: ["sensor.temperature"] },
       });
+      const panel = await mountPanel(hass, {});
+      expect(sendMessagePromise).toHaveBeenCalledWith({
+        type: "hass_datapoints/events_bounds",
+      });
+      expect(sendMessagePromise).toHaveBeenCalledWith({
+        type: "frontend/get_user_data",
+        key: PANEL_HISTORY_PREFERENCES_KEY,
+      });
+      expect(control(panel.shadowRoot!, "panel-shell").hasSavedState).toBe(
+        true
+      );
+      expect(new URLSearchParams(window.location.search).get("entity_id")).toBe(
+        "sensor.humidity"
+      );
     });
   });
+});
 
-  describe("GIVEN the URL selects targets but saved page state has row analysis", () => {
-    describe("WHEN applying preference page state", () => {
-      it("THEN it merges saved row settings onto the current target rows", () => {
-        expect.assertions(2);
-        const panel = {
-          _hasTargetInUrl: true,
-          _hasRangeInUrl: true,
-          _hasPageStateInUrl: false,
-          _preferredSeriesColors: {},
-          _targetSelection: { entity_id: ["sensor.temp"] },
-          _targetSelectionRaw: { entity_id: ["sensor.temp"] },
-          _seriesRows: [
-            {
-              entity_id: "sensor.temp",
-              color: "#03a9f4",
-              visible: true,
-              analysis: normalizeHistorySeriesAnalysis(null),
-            },
-          ],
-          _applyPreferredSeriesColors:
-            HassDatapointsHistoryPanel.prototype._applyPreferredSeriesColors,
-          _mergeSavedSeriesRows:
-            HassDatapointsHistoryPanel.prototype._mergeSavedSeriesRows,
-          _syncSeriesState:
-            HassDatapointsHistoryPanel.prototype._syncSeriesState,
-          _seriesColorQueryKey: () => "temperature",
-        };
-
-        HassDatapointsHistoryPanel.prototype._applyPreferencePageState.call(
-          panel,
-          {
+describe("GIVEN URL targets and saved row analysis", () => {
+  describe("WHEN Home Assistant preferences arrive", () => {
+    it("THEN merges saved analysis and color into the selected target", async () => {
+      expect.assertions(2);
+      window.history.replaceState(
+        null,
+        "",
+        "/datapoints?entity_id=sensor.temperature"
+      );
+      const { hass } = createHassFixture({
+        preferences: {
+          page_state: {
             series_rows: [
               {
-                entity_id: "sensor.temp",
+                entity_id: "sensor.temperature",
                 color: "#ff0000",
                 visible: true,
-                analysis: {
-                  sample_interval: "24h",
-                  sample_aggregate: "mean",
-                },
+                analysis: { sample_interval: "24h", sample_aggregate: "mean" },
               },
             ],
-          }
-        );
-
-        expect(panel._seriesRows[0].analysis.sample_interval).toBe("24h");
-        expect(panel._seriesRows[0].color).toBe("#ff0000");
+          },
+        },
       });
+      const panel = await mountPanel(hass);
+      const row = control(panel.shadowRoot!, "history-targets").rows[0];
+      expect(row.analysis.sample_interval).toBe("24h");
+      expect(row.color).toBe("#ff0000");
     });
   });
+});
 
-  describe("GIVEN local page state has already changed before preferences resolve", () => {
-    describe("WHEN user preferences finish loading", () => {
-      it("THEN they do not overwrite the current row visibility", () => {
-        expect.assertions(2);
-        const applyPreferencePageState = vi.fn();
-        const saveUserPreferences = vi.fn();
-        const renderTargetRows = vi.fn();
-        const syncControls = vi.fn();
-        const updateUrl = vi.fn();
-        const renderContent = vi.fn();
-        const panel = {
-          _localPageStateDirty: true,
-          _zoomLevel: "auto",
-          _dateSnapping: "auto",
-          _resolvedAutoZoomLevel: null,
-          _preferredSeriesColors: {},
-          _comparisonWindows: [],
-          _seriesRows: [
-            {
-              entity_id: "sensor.temp",
-              color: "#03a9f4",
-              visible: false,
-              analysis: normalizeHistorySeriesAnalysis(null),
-            },
-          ],
-          _seriesColorQueryKey: () => "temperature",
-          _applyPreferredSeriesColors:
-            HassDatapointsHistoryPanel.prototype._applyPreferredSeriesColors,
-          _applyPreferencePageState: applyPreferencePageState,
-          _saveUserPreferences: saveUserPreferences,
-          _rendered: true,
-          _renderTargetRows: renderTargetRows,
-          _syncControls: syncControls,
-          _updateUrl: updateUrl,
-          _renderContent: renderContent,
-          _context: {
-            fetch: {
-              ensureUserPreferences: ({ onSuccess }) => {
-                onSuccess({
-                  zoomLevel: "auto",
-                  dateSnapping: "hour",
-                  preferredSeriesColors: {},
-                  comparisonWindows: [],
-                  pageState: {
-                    series_rows: [
-                      {
-                        entity_id: "sensor.temp",
-                        visible: true,
-                      },
-                    ],
-                  },
-                  shouldPersistDefaults: false,
-                });
-                return Promise.resolve();
-              },
-            },
-          },
-        };
-
-        return HassDatapointsHistoryPanel.prototype._ensureUserPreferences
-          .call(panel)
-          .then(() => {
-            expect(applyPreferencePageState).not.toHaveBeenCalled();
-            expect(panel._seriesRows[0].visible).toBe(false);
-          });
+describe("GIVEN a user edit while preferences are still loading", () => {
+  describe("WHEN delayed preferences return a visible row", () => {
+    it("THEN preserves the user's hidden row", async () => {
+      expect.assertions(1);
+      const { hass, sendMessagePromise } = createHassFixture();
+      let resolvePreferences!: (value: {
+        value: RecordWithUnknownValues;
+      }) => void;
+      const preferences = new Promise<{ value: RecordWithUnknownValues }>(
+        (resolve) => {
+          resolvePreferences = resolve;
+        }
+      );
+      const respond = sendMessagePromise.getMockImplementation()!;
+      sendMessagePromise.mockImplementation((message) => {
+        if (
+          message.type === "frontend/get_user_data" &&
+          message.key === PANEL_HISTORY_PREFERENCES_KEY
+        ) {
+          return preferences;
+        }
+        return respond(message);
       });
+      const panel = await mountPanel(hass);
+      const targets = control(panel.shadowRoot!, "history-targets");
+      emitControlEvent(
+        control(targets.shadowRoot!, "target-row-list"),
+        "dp-row-visibility-change",
+        { entityId: "sensor.temperature", visible: false }
+      );
+      resolvePreferences({
+        value: {
+          page_state: {
+            series_rows: [{ entity_id: "sensor.temperature", visible: true }],
+          },
+        },
+      });
+      await settlePanel();
+      expect(targets.rows[0].visible).toBe(false);
     });
   });
+});
 
-  describe("GIVEN the panel disconnects after boot work has started", () => {
-    describe("WHEN disconnectedCallback runs", () => {
-      it("THEN it clears pending reconnect-sensitive state", () => {
-        expect.assertions(10);
-        const removeEventListener = vi.spyOn(window, "removeEventListener");
-        const clearTimeout = vi.spyOn(window, "clearTimeout");
-        const hideCollapsedTargetPopup = vi.fn();
-        const hideCollapsedOptionsPopup = vi.fn();
-        const cancelChartResizeRedraw = vi.fn();
-        const tabletMq = { removeEventListener: vi.fn() };
-        const mobileMq = { removeEventListener: vi.fn() };
-        const haEventUnsubscribe = vi.fn();
-        const panel = {
-          _mqTablet: tabletMq,
-          _mqMobile: mobileMq,
-          _onLayoutChange: () => {},
-          _onOverlayKeydown: () => {},
-          _onPopState: () => {},
-          _onLocationChanged: () => {},
-          _onWindowPointerDown: () => {},
-          _onWindowResize: () => {},
-          _onEventRecorded: () => {},
-          _onChartHover: () => {},
-          _onChartZoom: () => {},
-          _onRecordsSearch: () => {},
-          _onToggleEventVisibility: () => {},
-          _onHoverEventRecord: () => {},
-          _onToggleSeriesVisibility: () => {},
-          _onComparisonLoading: () => {},
-          _onAnalysisComputing: () => {},
-          _onAnalysisMethodResult: () => {},
-          removeEventListener: vi.fn(),
-          _haEventUnsubscribe: haEventUnsubscribe,
-          _rangeCommitTimer: 1,
-          _autoZoomTimer: 2,
-          _pendingPreferencesSaveTimer: 3,
-          _chartZoomStateCommitTimer: 4,
-          _hideCollapsedTargetPopup: hideCollapsedTargetPopup,
-          _hideCollapsedOptionsPopup: hideCollapsedOptionsPopup,
-          _uiReadyPromise: Promise.resolve(),
-          _uiReadyApplied: true,
-          _context: {
-            orchestration: {
-              cancelChartResizeRedraw,
-            },
-          },
-        };
-
-        HassDatapointsHistoryPanel.prototype.disconnectedCallback.call(panel);
-
-        expect(tabletMq.removeEventListener).toHaveBeenCalledTimes(1);
-        expect(mobileMq.removeEventListener).toHaveBeenCalledTimes(1);
-        expect(removeEventListener).toHaveBeenCalled();
-        expect(haEventUnsubscribe).toHaveBeenCalledTimes(1);
-        expect(clearTimeout).toHaveBeenCalledTimes(4);
-        expect(hideCollapsedTargetPopup).toHaveBeenCalledTimes(1);
-        expect(hideCollapsedOptionsPopup).toHaveBeenCalledTimes(1);
-        expect(panel._uiReadyPromise).toBeNull();
-        expect(panel._uiReadyApplied).toBe(false);
-        expect(cancelChartResizeRedraw).toHaveBeenCalledTimes(1);
-      });
+describe("GIVEN a panel subscribed to HA events", () => {
+  describe("WHEN it disconnects and reconnects with the same hass object", () => {
+    it("THEN unsubscribes and resumes the subscription without replacing its controls", async () => {
+      expect.assertions(4);
+      const { hass, unsubscribe } = createHassFixture();
+      const panel = await mountPanel(hass);
+      const toolbar = control(panel.shadowRoot!, "range-toolbar");
+      panel.remove();
+      expect(unsubscribe).toHaveBeenCalledTimes(1);
+      document.body.appendChild(panel);
+      panel.hass = hass;
+      await settlePanel();
+      expect(hass.connection!.subscribeEvents).toHaveBeenCalledTimes(2);
+      expect(control(panel.shadowRoot!, "range-toolbar")).toBe(toolbar);
+      expect(control(panel.shadowRoot!, "panel-shell").hass).toBe(hass);
     });
   });
 });

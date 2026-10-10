@@ -18,6 +18,7 @@ import "@/atoms/interactive/page-menu-item/page-menu-item";
  * - `controls`         — content placed inside the controls-section bar (e.g. range toolbar)
  * - `sidebar`          — content placed inside the collapsible page sidebar (e.g. history targets)
  * - `sidebar-options`  — content placed below the sidebar content (e.g. sidebar options panel)
+ * - `collapsed-options` — preferences placed inside the positioned popup
  * - (default)          — main content area
  *
  * @fires dp-shell-menu-ai-brief  — user clicked "AI query brief"
@@ -53,6 +54,9 @@ export class PanelShell extends LitElement {
    */
   @property({ type: String, attribute: "layout-mode" })
   accessor layoutMode: string = "desktop";
+
+  @property({ type: Boolean, attribute: false })
+  accessor collapsedOptionsOpen: boolean = false;
 
   @state() accessor _pageMenuOpen: boolean = false;
 
@@ -338,8 +342,10 @@ export class PanelShell extends LitElement {
         <div
           id="collapsed-options-popup"
           class="collapsed-options-popup"
-          hidden
-        ></div>
+          ?hidden=${!this.collapsedOptionsOpen}
+        >
+          <slot name="collapsed-options"></slot>
+        </div>
       </ha-top-app-bar-fixed>
     `;
   }

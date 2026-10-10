@@ -6,6 +6,22 @@ describe("HassDatapointsHistoryPanel", () => {
     vi.restoreAllMocks();
   });
 
+  describe("GIVEN the measured-DOM sync methods were relocated (#06.8)", () => {
+    describe("WHEN the panel prototype is inspected", () => {
+      it("THEN no ad-hoc measured _sync* methods remain", () => {
+        expect.assertions(4);
+        const proto = HassDatapointsHistoryPanel.prototype as unknown as Record<
+          string,
+          unknown
+        >;
+        expect(proto._syncPageLayoutHeight).toBeUndefined();
+        expect(proto._syncLiveEdgeHandle).toBeUndefined();
+        expect(proto._syncListZoomState).toBeUndefined();
+        expect(proto._syncHassBindings).toBeUndefined();
+      });
+    });
+  });
+
   describe("GIVEN a mounted history chart with previous draw arguments", () => {
     describe("WHEN requesting a chart resize redraw", () => {
       it("THEN it replays the last chart draw on the next animation frame", async () => {

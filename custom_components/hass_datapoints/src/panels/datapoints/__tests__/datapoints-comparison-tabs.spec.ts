@@ -1,101 +1,130 @@
 import { describe, expect, it, vi } from "vitest";
-import { HassDatapointsHistoryPanel } from "../datapoints";
-import { createHistoryPageOrchestrationContext } from "../context/orchestration-context";
+import {
+  COMPARISON,
+  control,
+  createHassFixture,
+  emitControlEvent,
+  mountPanel,
+  PanelCardFixture,
+  settlePanel,
+  usePanelFixture,
+} from "./panel-fixture";
 
-describe("HassDatapointsHistoryPanel comparison tabs", () => {
-  describe("GIVEN the history card wraps an inner namespaced chart element", () => {
-    describe("WHEN rendering comparison tabs", () => {
-      it("THEN it mounts the tab rail into the inner chart top slot", () => {
-        expect.assertions(4);
-        const topSlot = document.createElement("div");
-        topSlot.id = "chart-top-slot";
-        topSlot.hidden = true;
+usePanelFixture();
 
-        const innerChart = document.createElement("div");
-        innerChart.appendChild(topSlot);
-
-        const cardHost = document.createElement("div");
-        const shadowRoot = cardHost.attachShadow({ mode: "open" });
-        const chartHost = document.createElement(
-          "hass-datapoints-history-chart"
-        );
-        chartHost.appendChild(innerChart);
-        shadowRoot.appendChild(chartHost);
-
-        const panel = {
-          _context: {
-            orchestration: createHistoryPageOrchestrationContext(),
-          },
-          _chartEl: cardHost,
-          _comparisonWindows: [],
-          _selectedComparisonWindowId: null,
-          _hoveredComparisonWindowId: null,
-          _startTime: new Date("2025-01-01T00:00:00Z"),
-          _endTime: new Date("2025-01-02T00:00:00Z"),
-          _comparisonTabRailComp: null,
-          _comparisonTabsHostEl: null,
-          _loadingComparisonWindowIds: [],
-          _formatComparisonLabel: vi.fn(() => "Jan 1"),
-          _handleComparisonTabActivate: vi.fn(),
-          _handleComparisonTabHover: vi.fn(),
-          _handleComparisonTabLeave: vi.fn(),
-          _openDateWindowDialog: vi.fn(),
-          _deleteDateWindow: vi.fn(),
-        };
-
-        HassDatapointsHistoryPanel.prototype._renderComparisonTabs.call(panel);
-
-        expect(panel._comparisonTabsHostEl).toBe(topSlot);
-        expect(topSlot.hidden).toBe(false);
-        expect(panel._comparisonTabRailComp).toBeInstanceOf(HTMLElement);
-        expect(topSlot.children).toHaveLength(1);
-      });
+describe("GIVEN a comparison rail whose descriptors no longer match panel state", () => {
+  describe("WHEN the panel renders its comparison windows", () => {
+    it("THEN restores the tab descriptors through bindings in the retained rail", async () => {
+      expect.assertions(2);
+      const panel = await mountPanel(
+        createHassFixture({ preferences: { date_windows: [COMPARISON] } }).hass
+      );
+      const chart = control(
+        panel.shadowRoot!,
+        "hass-datapoints-history-card"
+      ) as PanelCardFixture;
+      const rail = control(chart.shadowRoot!, "comparison-tab-rail");
+      rail.tabs = [];
+      panel.requestUpdate();
+      await panel.updateComplete;
+      await settlePanel();
+      expect(control(chart.shadowRoot!, "comparison-tab-rail")).toBe(rail);
+      expect(rail.tabs.map((tab) => tab.id)).toEqual([
+        "current-range",
+        "previous",
+      ]);
     });
   });
+});
 
-  describe("GIVEN the history card still wraps the legacy dp-history-chart element", () => {
-    describe("WHEN rendering comparison tabs", () => {
-      it("THEN it mounts the tab rail into the legacy chart top slot", () => {
-        expect.assertions(4);
-        const topSlot = document.createElement("div");
-        topSlot.id = "chart-top-slot";
-        topSlot.hidden = true;
-
-        const legacyChart = document.createElement("dp-history-chart");
-        legacyChart.appendChild(topSlot);
-
-        const cardHost = document.createElement("div");
-        const shadowRoot = cardHost.attachShadow({ mode: "open" });
-        shadowRoot.appendChild(legacyChart);
-
-        const panel = {
-          _context: {
-            orchestration: createHistoryPageOrchestrationContext(),
-          },
-          _chartEl: cardHost,
-          _comparisonWindows: [],
-          _selectedComparisonWindowId: null,
-          _hoveredComparisonWindowId: null,
-          _startTime: new Date("2025-01-01T00:00:00Z"),
-          _endTime: new Date("2025-01-02T00:00:00Z"),
-          _comparisonTabRailComp: null,
-          _comparisonTabsHostEl: null,
-          _loadingComparisonWindowIds: [],
-          _formatComparisonLabel: vi.fn(() => "Jan 1"),
-          _handleComparisonTabActivate: vi.fn(),
-          _handleComparisonTabHover: vi.fn(),
-          _handleComparisonTabLeave: vi.fn(),
-          _openDateWindowDialog: vi.fn(),
-          _deleteDateWindow: vi.fn(),
-        };
-
-        HassDatapointsHistoryPanel.prototype._renderComparisonTabs.call(panel);
-
-        expect(panel._comparisonTabsHostEl).toBe(topSlot);
-        expect(topSlot.hidden).toBe(false);
-        expect(panel._comparisonTabRailComp).toBeInstanceOf(HTMLElement);
-        expect(topSlot.children).toHaveLength(1);
+describe("GIVEN comparison tabs rendered in the chart slot", () => {
+  describe("WHEN a comparison tab is clicked", () => {
+    it("THEN emits one activation and updates the selected tab", async () => {
+      expect.assertions(4);
+      const panel = await mountPanel(
+        createHassFixture({ preferences: { date_windows: [COMPARISON] } }).hass
+      );
+      const chart = control(
+        panel.shadowRoot!,
+        "hass-datapoints-history-card"
+      ) as PanelCardFixture;
+      const rail = control(chart.shadowRoot!, "comparison-tab-rail");
+      const activated = vi.fn();
+      rail.addEventListener("dp-tab-activate", activated);
+      const tab = Array.from(
+        rail.shadowRoot!.querySelectorAll("comparison-tab")
+      ).find((item) => item.tabId === COMPARISON.id)!;
+      tab
+        .shadowRoot!.querySelector<HTMLButtonElement>(".chart-tab-trigger")!
+        .click();
+      await settlePanel();
+      expect(activated).toHaveBeenCalledTimes(1);
+      expect(activated.mock.calls[0][0].detail).toEqual({
+        tabId: COMPARISON.id,
       });
+      expect(tab.active).toBe(true);
+      expect(
+        rail.tabs.find((item) => item.id === "current-range")?.active
+      ).toBe(false);
+    });
+  });
+  describe("WHEN the chart reports comparison data loading and completion", () => {
+    it("THEN updates the retained tab's loading state through bindings", async () => {
+      expect.assertions(3);
+      const panel = await mountPanel(
+        createHassFixture({ preferences: { date_windows: [COMPARISON] } }).hass
+      );
+      const chart = control(
+        panel.shadowRoot!,
+        "hass-datapoints-history-card"
+      ) as PanelCardFixture;
+      const rail = control(chart.shadowRoot!, "comparison-tab-rail");
+      const tab = Array.from(
+        rail.shadowRoot!.querySelectorAll("comparison-tab")
+      ).find((item) => item.tabId === COMPARISON.id)!;
+      emitControlEvent(chart, "hass-datapoints-comparison-loading", {
+        ids: [COMPARISON.id],
+        loading: true,
+      });
+      await settlePanel();
+      expect(tab.loading).toBe(true);
+      emitControlEvent(chart, "hass-datapoints-comparison-loading", {
+        ids: [COMPARISON.id],
+        loading: false,
+      });
+      await settlePanel();
+      expect(tab.loading).toBe(false);
+      expect(control(chart.shadowRoot!, "comparison-tab-rail")).toBe(rail);
+    });
+  });
+});
+
+describe("GIVEN comparison windows rendered in the current chart slot", () => {
+  describe("WHEN the chart slot is replaced during rendering", () => {
+    it("THEN renders the same comparison state in the new host and clears the retired host", async () => {
+      expect.assertions(3);
+      const panel = await mountPanel(
+        createHassFixture({ preferences: { date_windows: [COMPARISON] } }).hass
+      );
+      const chart = control(
+        panel.shadowRoot!,
+        "hass-datapoints-history-card"
+      ) as PanelCardFixture;
+      const oldHost = chart.getComparisonTabsHost()!;
+      const legacyChart = document.createElement("dp-history-chart");
+      const newHost = document.createElement("div");
+      newHost.id = "chart-top-slot";
+      newHost.hidden = true;
+      legacyChart.appendChild(newHost);
+      chart.shadowRoot!.replaceChildren(legacyChart);
+      panel.requestUpdate();
+      await panel.updateComplete;
+      await settlePanel();
+      expect(newHost.hidden).toBe(false);
+      expect(
+        control(newHost, "comparison-tab-rail").tabs.map((tab) => tab.id)
+      ).toEqual(["current-range", "previous"]);
+      expect(oldHost.querySelector("comparison-tab-rail")).toBeNull();
     });
   });
 });
