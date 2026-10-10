@@ -94,6 +94,12 @@ export const ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS = [
   { value: "only", label: "Overlaps only" },
 ];
 
+export const ANALYSIS_ANOMALY_DIRECTION_OPTIONS = [
+  { value: "both", label: "Both" },
+  { value: "up", label: "Up" },
+  { value: "down", label: "Down" },
+];
+
 /**
  * @fires dp-group-analysis-change - `{ entityId, key: "show_anomaly_detection" | "anomaly_method" | "anomaly_sensitivity" | ..., value }` — analysis field changed
  */
@@ -151,6 +157,37 @@ export class AnalysisAnomalyGroup extends AnalysisGroupMixin(LitElement) {
 
   private _onGroupChange(e: CustomEvent) {
     this._emit("show_anomalies", e.detail.checked);
+  }
+
+  /**
+   * Render the per-method Direction select (Both / Up / Down). Shared by every
+   * method that has a meaningful above/below-baseline notion (i.e. all methods
+   * except persistence). `help` is shown beneath the control when provided.
+   */
+  private _renderDirectionField(
+    field: string,
+    value: Nullable<string> | undefined,
+    help?: string
+  ): TemplateResult {
+    return html`
+      <label class="field">
+        <span class="field-label">${msg("Direction")}</span>
+        <div class="direction-wrap">
+          <inline-select
+            .value=${value || "both"}
+            .options=${this._localizedOptions(
+              ANALYSIS_ANOMALY_DIRECTION_OPTIONS
+            )}
+            @dp-change=${(e: Event) =>
+              this._emit(
+                field,
+                (e as CustomEvent<{ value: string }>).detail.value
+              )}
+          ></inline-select>
+          ${help ? html`<span class="field-hint">${help}</span>` : nothing}
+        </div>
+      </label>
+    `;
   }
 
   private _renderMethodSubopts(
@@ -211,6 +248,10 @@ export class AnalysisAnomalyGroup extends AnalysisGroupMixin(LitElement) {
                 </label>
               `
             : nothing}
+          ${this._renderDirectionField(
+            "anomaly_trend_residual_direction",
+            a.anomaly_trend_residual_direction
+          )}
         </analysis-method-subopts>
       `;
     }
@@ -231,6 +272,23 @@ export class AnalysisAnomalyGroup extends AnalysisGroupMixin(LitElement) {
                 )}
             ></inline-select>
           </label>
+          ${this._renderDirectionField(
+            "anomaly_rate_of_change_direction",
+            a.anomaly_rate_of_change_direction,
+            msg(
+              '"Up" means rising faster than the typical rate, "Down" means falling faster — not simply whether the value went up or down.'
+            )
+          )}
+        </analysis-method-subopts>
+      `;
+    }
+    if (opt.value === "iqr") {
+      return html`
+        <analysis-method-subopts>
+          ${this._renderDirectionField(
+            "anomaly_iqr_direction",
+            a.anomaly_iqr_direction
+          )}
         </analysis-method-subopts>
       `;
     }
@@ -251,6 +309,10 @@ export class AnalysisAnomalyGroup extends AnalysisGroupMixin(LitElement) {
                 )}
             ></inline-select>
           </label>
+          ${this._renderDirectionField(
+            "anomaly_rolling_zscore_direction",
+            a.anomaly_rolling_zscore_direction
+          )}
         </analysis-method-subopts>
       `;
     }
@@ -296,6 +358,10 @@ export class AnalysisAnomalyGroup extends AnalysisGroupMixin(LitElement) {
                 )}
             ></inline-select>
           </label>
+          ${this._renderDirectionField(
+            "anomaly_comparison_window_direction",
+            a.anomaly_comparison_window_direction
+          )}
         </analysis-method-subopts>
       `;
     }
@@ -319,6 +385,10 @@ export class AnalysisAnomalyGroup extends AnalysisGroupMixin(LitElement) {
               ></ha-entity-picker>
             </div>
           </label>
+          ${this._renderDirectionField(
+            "anomaly_similar_entity_direction",
+            a.anomaly_similar_entity_direction
+          )}
         </analysis-method-subopts>
       `;
     }

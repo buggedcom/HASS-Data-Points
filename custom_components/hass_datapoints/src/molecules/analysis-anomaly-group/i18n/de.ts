@@ -1,6 +1,12 @@
 import type { ComponentTranslations } from "@/lib/i18n/types";
 
 export const translations: ComponentTranslations = {
+  Direction: "Richtung",
+  Both: "Beide",
+  Up: "Aufwärts",
+  Down: "Abwärts",
+  '"Up" means rising faster than the typical rate, "Down" means falling faster — not simply whether the value went up or down.':
+    "„Aufwärts“ bedeutet schneller steigend als üblich, „Abwärts“ schneller fallend – nicht einfach, ob der Wert gestiegen oder gefallen ist.",
   "Show anomalies": "Anomalien anzeigen",
   Sensitivity: "Empfindlichkeit",
   "Use downsampled data for detection":

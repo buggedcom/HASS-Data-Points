@@ -1,6 +1,12 @@
 import type { ComponentTranslations } from "@/lib/i18n/types";
 
 export const translations: ComponentTranslations = {
+  Direction: "Suunta",
+  Both: "Molemmat",
+  Up: "Ylös",
+  Down: "Alas",
+  '"Up" means rising faster than the typical rate, "Down" means falling faster — not simply whether the value went up or down.':
+    "”Ylös” tarkoittaa tavallista nopeampaa nousua, ”Alas” nopeampaa laskua – ei pelkästään sitä, nousiko vai laskiko arvo.",
   "Show anomalies": "Näytä poikkeamat",
   Sensitivity: "Herkkyys",
   "Use downsampled data for detection":
