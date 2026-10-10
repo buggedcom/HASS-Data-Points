@@ -763,9 +763,7 @@ def apply_overlap_mode(
 # ---------------------------------------------------------------------------
 
 
-def _filter_clusters_by_direction(
-    clusters: list[dict], direction: str
-) -> list[dict]:
+def _filter_clusters_by_direction(clusters: list[dict], direction: str) -> list[dict]:
     """Trim each cluster's points to the requested residual direction.
 
     ``both`` (or any unrecognised value) leaves the clusters untouched;
@@ -775,9 +773,11 @@ def _filter_clusters_by_direction(
     "Overlaps only" path), and clusters left with no points are dropped.
     """
     if direction == "up":
+
         def keep(residual: float) -> bool:
             return residual > 0
     elif direction == "down":
+
         def keep(residual: float) -> bool:
             return residual < 0
     else:
@@ -950,9 +950,7 @@ def run_anomaly_detection(
     for method in list(clusters_by_method.keys()):
         if method == "persistence":
             continue
-        direction = config.get(
-            f"anomaly_{method}_direction", DEFAULT_ANOMALY_DIRECTION
-        )
+        direction = config.get(f"anomaly_{method}_direction", DEFAULT_ANOMALY_DIRECTION)
         filtered = _filter_clusters_by_direction(clusters_by_method[method], direction)
         if filtered:
             clusters_by_method[method] = filtered
