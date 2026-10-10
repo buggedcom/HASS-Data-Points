@@ -10,7 +10,13 @@ from __future__ import annotations
 import math
 import statistics
 
-from .const import DEFAULT_ANOMALY_DIRECTION
+try:
+    from .const import DEFAULT_ANOMALY_DIRECTION
+except ImportError:  # pragma: no cover
+    # Loaded as a top-level module (e.g. scripts/trend_consistency.py adds this
+    # package directory to sys.path), where the relative import has no parent
+    # package. const.py is pure stdlib so a flat import is equivalent.
+    from const import DEFAULT_ANOMALY_DIRECTION  # type: ignore[no-redef]
 
 # ---------------------------------------------------------------------------
 # Sensitivity helpers
