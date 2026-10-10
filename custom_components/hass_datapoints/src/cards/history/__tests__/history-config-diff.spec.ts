@@ -86,7 +86,10 @@ describe("buildViewKey", () => {
     it("THEN produces different keys so the chart recomputes", () => {
       const a = {
         series_settings: [
-          { entity_id: "sensor.a", analysis: { anomaly_iqr_direction: "both" } },
+          {
+            entity_id: "sensor.a",
+            analysis: { anomaly_iqr_direction: "both" },
+          },
         ],
       };
       const b = {

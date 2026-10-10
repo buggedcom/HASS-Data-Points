@@ -78,7 +78,9 @@ function createElement(
  * Method sub-option inline-selects EXCLUDING the per-method Direction select
  * (#62). Window/method presence assertions count only these.
  */
-function nonDirectionSelects(el: { shadowRoot: Nullable<ShadowRoot> }): Element[] {
+function nonDirectionSelects(el: {
+  shadowRoot: Nullable<ShadowRoot>;
+}): Element[] {
   const labels = Array.from(
     el.shadowRoot!.querySelectorAll("analysis-method-subopts label.field")
   );
@@ -415,11 +417,14 @@ describe("analysis-anomaly-group", () => {
       root.shadowRoot!.querySelectorAll("analysis-method-subopts label.field")
     );
     const match = labels.find(
-      (l) => l.querySelector(".field-label")?.textContent?.trim() === "Direction"
+      (l) =>
+        l.querySelector(".field-label")?.textContent?.trim() === "Direction"
     );
-    return (match?.querySelector("inline-select") as
-      | (HTMLElement & { value: string })
-      | null) ?? null;
+    return (
+      (match?.querySelector("inline-select") as
+        | (HTMLElement & { value: string })
+        | null) ?? null
+    );
   }
 
   describe("GIVEN the iqr method is checked", () => {
@@ -452,7 +457,9 @@ describe("analysis-anomaly-group", () => {
           })
         );
         expect(handler).toHaveBeenCalledOnce();
-        expect(handler.mock.calls[0][0].detail.key).toBe("anomaly_iqr_direction");
+        expect(handler.mock.calls[0][0].detail.key).toBe(
+          "anomaly_iqr_direction"
+        );
         expect(handler.mock.calls[0][0].detail.value).toBe("up");
       });
     });
