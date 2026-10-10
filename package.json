@@ -47,10 +47,10 @@
     "@storybook/addon-vitest": "10.3.3",
     "@storybook/test": "8.6.15",
     "@storybook/web-components-vite": "10.3.3",
-    "@vitest/browser": "4.1.7",
-    "@vitest/browser-playwright": "4.1.7",
-    "@vitest/coverage-v8": "4.1.7",
-    "@vitest/ui": "4.1.7",
+    "@vitest/browser": "4.1.11",
+    "@vitest/browser-playwright": "4.1.11",
+    "@vitest/coverage-v8": "4.1.11",
+    "@vitest/ui": "4.1.11",
     "chromatic": "16.0.0",
     "eslint": "10.4.0",
     "eslint-config-airbnb-extended": "3.1.0",
@@ -67,16 +67,18 @@
     "storybook": "10.3.3",
     "typescript": "5.9.3",
     "typescript-eslint": "8.58.1",
-    "vite": "8.0.13",
-    "vitest": "4.1.7"
+    "vite": "8.3.3",
+    "vitest": "4.1.11"
   },
   "pnpm": {
     "overrides": {
       "lodash": "4.18.0",
-      "brace-expansion": ">=5.0.6",
-      "ws": ">=8.20.1",
-      "postcss": ">=8.5.10",
-      "esbuild": ">=0.25.0"
+      "brace-expansion": ">=5.0.12",
+      "ws": ">=8.21.0",
+      "postcss": ">=8.5.23",
+      "esbuild": ">=0.28.1",
+      "valibot": ">=1.5.0",
+      "lit-html": "3.3.2"
     }
   },
   "dependencies": {
