@@ -51,6 +51,23 @@ export class HistoryTargets extends LitElement {
   /** Available comparison windows for delta analysis. */
   @property({ type: Array }) accessor comparisonWindows: unknown[] = [];
 
+  /** Disambiguated entity → display-name map, forwarded to the row list. */
+  @property({ attribute: false }) accessor labelMap: Map<string, string> =
+    new Map();
+
+  /** Entity ids with an anomaly analysis in flight, forwarded to the row list. */
+  @property({ attribute: false }) accessor computingEntityIds: Set<string> =
+    new Set();
+
+  /** Progress (0–1) of the in-flight anomaly analysis, forwarded to the row list. */
+  @property({ type: Number, attribute: false }) accessor analysisProgress = 0;
+
+  /** Per-entity set of in-flight anomaly methods, forwarded to the row list. */
+  @property({ attribute: false }) accessor computingMethodsByEntity: Map<
+    string,
+    Set<string>
+  > = new Map();
+
   /** Whether the delta analysis option should be offered in row analysis panels. */
   @property({ type: Boolean, attribute: "can-show-delta-analysis" })
   accessor canShowDeltaAnalysis: boolean = false;
@@ -66,15 +83,6 @@ export class HistoryTargets extends LitElement {
   private _emit(name: string, detail: RecordWithUnknownValues = {}): void {
     this.dispatchEvent(
       new CustomEvent(name, { detail, bubbles: true, composed: true })
-    );
-  }
-
-  /** Returns the `target-row-list` element for direct property access by the parent. */
-  getRowListEl(): Nullable<HTMLElement & RecordWithUnknownValues> {
-    return (
-      this.shadowRoot?.querySelector<HTMLElement & RecordWithUnknownValues>(
-        "target-row-list"
-      ) ?? null
     );
   }
 
@@ -163,8 +171,12 @@ export class HistoryTargets extends LitElement {
             .rows=${this.rows}
             .states=${this.states}
             .hass=${this.hass}
+            .labelMap=${this.labelMap}
             .canShowDeltaAnalysis=${this.canShowDeltaAnalysis}
             .comparisonWindows=${this.comparisonWindows}
+            .computingEntityIds=${this.computingEntityIds}
+            .analysisProgress=${this.analysisProgress}
+            .computingMethodsByEntity=${this.computingMethodsByEntity}
           ></target-row-list>
         </div>
 

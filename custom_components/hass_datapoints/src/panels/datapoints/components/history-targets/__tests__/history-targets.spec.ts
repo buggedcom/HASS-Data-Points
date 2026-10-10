@@ -16,6 +16,10 @@ type DpHistoryTargets = HTMLElement & {
   comparisonWindows: unknown[];
   canShowDeltaAnalysis: boolean;
   sidebarCollapsed: boolean;
+  labelMap: Map<string, string>;
+  computingEntityIds: Set<string>;
+  analysisProgress: number;
+  computingMethodsByEntity: Map<string, Set<string>>;
   updateComplete: Promise<boolean>;
 };
 
@@ -272,6 +276,65 @@ describe("history-targets", () => {
           "target-row-list"
         ) as HTMLElement & { hass: unknown };
         expect(rowList.hass).toBeTruthy();
+      });
+    });
+  });
+
+  // ── Row-list state is forwarded (no external shadow reach-in) ───────────────
+
+  describe("GIVEN label map and analysis-computation state are set as props", () => {
+    const labelMap = new Map([["sensor.temperature", "Temperature"]]);
+    const computingEntityIds = new Set(["sensor.temperature"]);
+    const computingMethodsByEntity = new Map([
+      ["sensor.temperature", new Set(["zscore"])],
+    ]);
+
+    beforeEach(async () => {
+      el = createElement({
+        rows: MOCK_ROWS,
+        hass: createMockHass() as unknown as RecordWithUnknownValues,
+        states: createMockHass().states as unknown as RecordWithUnknownValues,
+        labelMap,
+        computingEntityIds,
+        analysisProgress: 0.42,
+        computingMethodsByEntity,
+      });
+      await el.updateComplete;
+    });
+
+    describe("WHEN rendered", () => {
+      it("THEN forwards labelMap to target-row-list", () => {
+        expect.assertions(1);
+        const rowList = el.shadowRoot!.querySelector(
+          "target-row-list"
+        ) as HTMLElement & { labelMap: Map<string, string> };
+        expect(rowList.labelMap).toBe(labelMap);
+      });
+
+      it("THEN forwards computingEntityIds to target-row-list", () => {
+        expect.assertions(1);
+        const rowList = el.shadowRoot!.querySelector(
+          "target-row-list"
+        ) as HTMLElement & { computingEntityIds: Set<string> };
+        expect(rowList.computingEntityIds).toBe(computingEntityIds);
+      });
+
+      it("THEN forwards analysisProgress to target-row-list", () => {
+        expect.assertions(1);
+        const rowList = el.shadowRoot!.querySelector(
+          "target-row-list"
+        ) as HTMLElement & { analysisProgress: number };
+        expect(rowList.analysisProgress).toBe(0.42);
+      });
+
+      it("THEN forwards computingMethodsByEntity to target-row-list", () => {
+        expect.assertions(1);
+        const rowList = el.shadowRoot!.querySelector(
+          "target-row-list"
+        ) as HTMLElement & {
+          computingMethodsByEntity: Map<string, Set<string>>;
+        };
+        expect(rowList.computingMethodsByEntity).toBe(computingMethodsByEntity);
       });
     });
   });

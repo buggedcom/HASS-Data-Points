@@ -1,7 +1,14 @@
 (function() {
 	//#region \0rolldown/runtime.js
 	var __defProp = Object.defineProperty;
-	var __esmMin = (fn, res) => () => (fn && (res = fn(fn = 0)), res);
+	var __esmMin = (fn, res, err) => () => {
+		if (err) throw err[0];
+		try {
+			return fn && (res = fn(fn = 0)), res;
+		} catch (e) {
+			throw err = [e], e;
+		}
+	};
 	var __exportAll = (all, no_symbols) => {
 		let target = {};
 		for (var name in all) __defProp(target, name, {
@@ -18,7 +25,10 @@
 	* Copyright 2019 Google LLC
 	* SPDX-License-Identifier: BSD-3-Clause
 	*/
-	var t$6 = globalThis, e$8 = t$6.ShadowRoot && (void 0 === t$6.ShadyCSS || t$6.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype, s$3 = Symbol(), o$4 = /* @__PURE__ */ new WeakMap();
+	var t$6 = globalThis;
+	var e$8 = t$6.ShadowRoot && (void 0 === t$6.ShadyCSS || t$6.ShadyCSS.nativeShadow) && "adoptedStyleSheets" in Document.prototype && "replace" in CSSStyleSheet.prototype;
+	var s$3 = Symbol();
+	var o$4 = /* @__PURE__ */ new WeakMap();
 	var n$4 = class {
 		constructor(t, e, o) {
 			if (this._$cssResult$ = !0, o !== s$3) throw Error("CSSResult is not constructable. Use `unsafeCSS` or `css` instead.");
@@ -37,19 +47,22 @@
 			return this.cssText;
 		}
 	};
-	var r$6 = (t) => new n$4("string" == typeof t ? t : t + "", void 0, s$3), i$5 = (t, ...e) => {
+	var r$6 = (t) => new n$4("string" == typeof t ? t : t + "", void 0, s$3);
+	var i$5 = (t, ...e) => {
 		return new n$4(1 === t.length ? t[0] : e.reduce((e, s, o) => e + ((t) => {
 			if (!0 === t._$cssResult$) return t.cssText;
 			if ("number" == typeof t) return t;
 			throw Error("Value passed to 'css' function must be a 'css' function result: " + t + ". Use 'unsafeCSS' to pass non-literal values, but take care to ensure page security.");
 		})(s) + t[o + 1], t[0]), t, s$3);
-	}, S$1 = (s, o) => {
+	};
+	var S$1 = (s, o) => {
 		if (e$8) s.adoptedStyleSheets = o.map((t) => t instanceof CSSStyleSheet ? t : t.styleSheet);
 		else for (const e of o) {
 			const o = document.createElement("style"), n = t$6.litNonce;
 			void 0 !== n && o.setAttribute("nonce", n), o.textContent = e.cssText, s.appendChild(o);
 		}
-	}, c$4 = e$8 ? (t) => t : (t) => t instanceof CSSStyleSheet ? ((t) => {
+	};
+	var c$4 = e$8 ? (t) => t : (t) => t instanceof CSSStyleSheet ? ((t) => {
 		let e = "";
 		for (const s of t.cssRules) e += s.cssText;
 		return r$6(e);
@@ -159,7 +172,7 @@
 		static finalizeStyles(s) {
 			const i = [];
 			if (Array.isArray(s)) {
-				const e = new Set(s.flat(Infinity).reverse());
+				const e = new Set(s.flat(1 / 0).reverse());
 				for (const s of e) i.unshift(c$4(s));
 			} else void 0 !== s && i.push(c$4(s));
 			return i;
@@ -291,12 +304,37 @@
 	* Copyright 2017 Google LLC
 	* SPDX-License-Identifier: BSD-3-Clause
 	*/
-	var t$5 = globalThis, i$3 = (t) => t, s$2 = t$5.trustedTypes, e$6 = s$2 ? s$2.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, h$1 = "$lit$", o$2 = `lit$${Math.random().toFixed(9).slice(2)}$`, n$2 = "?" + o$2, r$4 = `<${n$2}>`, l$1 = document, c$2 = () => l$1.createComment(""), a = (t) => null === t || "object" != typeof t && "function" != typeof t, u$2 = Array.isArray, d$1 = (t) => u$2(t) || "function" == typeof t?.[Symbol.iterator], f$1 = "[ 	\n\f\r]", v$1 = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, _ = /-->/g, m$1 = />/g, p$1 = RegExp(`>|${f$1}(?:([^\\s"'>=/]+)(${f$1}*=${f$1}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`, "g"), g = /'/g, $ = /"/g, y = /^(?:script|style|textarea|title)$/i, x = (t) => (i, ...s) => ({
+	var t$5 = globalThis;
+	var i$3 = (t) => t;
+	var s$2 = t$5.trustedTypes;
+	var e$6 = s$2 ? s$2.createPolicy("lit-html", { createHTML: (t) => t }) : void 0;
+	var h$1 = "$lit$";
+	var o$2 = `lit$${Math.random().toFixed(9).slice(2)}$`;
+	var n$2 = "?" + o$2;
+	var r$4 = `<${n$2}>`;
+	var l$1 = document;
+	var c$2 = () => l$1.createComment("");
+	var a = (t) => null === t || "object" != typeof t && "function" != typeof t;
+	var u$2 = Array.isArray;
+	var d$1 = (t) => u$2(t) || "function" == typeof t?.[Symbol.iterator];
+	var f$1 = "[ 	\n\f\r]";
+	var v$1 = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g;
+	var _ = /-->/g;
+	var m$1 = />/g;
+	var p$1 = RegExp(`>|${f$1}(?:([^\\s"'>=/]+)(${f$1}*=${f$1}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`, "g");
+	var g = /'/g;
+	var $ = /"/g;
+	var y = /^(?:script|style|textarea|title)$/i;
+	var x = (t) => (i, ...s) => ({
 		_$litType$: t,
 		strings: i,
 		values: s
-	}), b = x(1);
-	var E = Symbol.for("lit-noChange"), A = Symbol.for("lit-nothing"), C = /* @__PURE__ */ new WeakMap(), P = l$1.createTreeWalker(l$1, 129);
+	});
+	var b = x(1);
+	var E = Symbol.for("lit-noChange");
+	var A = Symbol.for("lit-nothing");
+	var C = /* @__PURE__ */ new WeakMap();
+	var P = l$1.createTreeWalker(l$1, 129);
 	function V(t, i) {
 		if (!u$2(t) || !t.hasOwnProperty("raw")) throw Error("invalid template strings array");
 		return void 0 !== e$6 ? e$6.createHTML(i) : i;
@@ -541,7 +579,8 @@
 		U: z,
 		B: I,
 		F: Z
-	}, B = t$5.litHtmlPolyfillSupport;
+	};
+	var B = t$5.litHtmlPolyfillSupport;
 	B?.(S, k), (t$5.litHtmlVersions ??= []).push("3.3.2");
 	var D = (t, i, s) => {
 		const e = s?.renderBefore ?? i;
@@ -597,7 +636,8 @@
 		converter: u$3,
 		reflect: !1,
 		hasChanged: f$2
-	}, r$3 = (t = o, e, r) => {
+	};
+	var r$3 = (t = o, e, r) => {
 		const { kind: n, metadata: i } = r;
 		let s = globalThis.litPropertyMetadata.get(i);
 		if (void 0 === s && globalThis.litPropertyMetadata.set(i, s = /* @__PURE__ */ new Map()), "setter" === n && ((t = Object.create(t)).wrapped = !0), s.set(r.name, t), "accessor" === n) {
@@ -862,7 +902,7 @@
 		}));
 	}
 	//#endregion
-	//#region \0@oxc-project+runtime@0.130.0/helpers/decorate.js
+	//#region \0@oxc-project+runtime@0.152.0/helpers/esm/decorate.js
 	function __decorate(decorators, target, key, desc) {
 		var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
 		if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -870,33 +910,33 @@
 		return c > 3 && r && Object.defineProperty(target, key, r), r;
 	}
 	//#endregion
-	//#region \0@oxc-project+runtime@0.130.0/helpers/checkPrivateRedeclaration.js
+	//#region \0@oxc-project+runtime@0.152.0/helpers/esm/checkPrivateRedeclaration.js
 	function _checkPrivateRedeclaration(e, t) {
 		if (t.has(e)) throw new TypeError("Cannot initialize the same private elements twice on an object");
 	}
 	//#endregion
-	//#region \0@oxc-project+runtime@0.130.0/helpers/classPrivateFieldInitSpec.js
+	//#region \0@oxc-project+runtime@0.152.0/helpers/esm/classPrivateFieldInitSpec.js
 	function _classPrivateFieldInitSpec(e, t, a) {
 		_checkPrivateRedeclaration(e, t), t.set(e, a);
 	}
 	//#endregion
-	//#region \0@oxc-project+runtime@0.130.0/helpers/assertClassBrand.js
+	//#region \0@oxc-project+runtime@0.152.0/helpers/esm/assertClassBrand.js
 	function _assertClassBrand(e, t, n) {
 		if ("function" == typeof e ? e === t : e.has(t)) return arguments.length < 3 ? t : n;
 		throw new TypeError("Private element is not present on this object");
 	}
 	//#endregion
-	//#region \0@oxc-project+runtime@0.130.0/helpers/classPrivateFieldGet2.js
+	//#region \0@oxc-project+runtime@0.152.0/helpers/esm/classPrivateFieldGet2.js
 	function _classPrivateFieldGet2(s, a) {
 		return s.get(_assertClassBrand(s, a));
 	}
 	//#endregion
-	//#region \0@oxc-project+runtime@0.130.0/helpers/classPrivateFieldSet2.js
+	//#region \0@oxc-project+runtime@0.152.0/helpers/esm/classPrivateFieldSet2.js
 	function _classPrivateFieldSet2(s, a, r) {
 		return s.set(_assertClassBrand(s, a), r), r;
 	}
 	//#endregion
-	//#region \0@oxc-project+runtime@0.130.0/helpers/typeof.js
+	//#region \0@oxc-project+runtime@0.152.0/helpers/esm/typeof.js
 	function _typeof(o) {
 		"@babel/helpers - typeof";
 		return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function(o) {
@@ -906,7 +946,7 @@
 		}, _typeof(o);
 	}
 	//#endregion
-	//#region \0@oxc-project+runtime@0.130.0/helpers/toPrimitive.js
+	//#region \0@oxc-project+runtime@0.152.0/helpers/esm/toPrimitive.js
 	function toPrimitive(t, r) {
 		if ("object" != _typeof(t) || !t) return t;
 		var e = t[Symbol.toPrimitive];
@@ -918,13 +958,13 @@
 		return ("string" === r ? String : Number)(t);
 	}
 	//#endregion
-	//#region \0@oxc-project+runtime@0.130.0/helpers/toPropertyKey.js
+	//#region \0@oxc-project+runtime@0.152.0/helpers/esm/toPropertyKey.js
 	function toPropertyKey(t) {
 		var i = toPrimitive(t, "string");
 		return "symbol" == _typeof(i) ? i : i + "";
 	}
 	//#endregion
-	//#region \0@oxc-project+runtime@0.130.0/helpers/defineProperty.js
+	//#region \0@oxc-project+runtime@0.152.0/helpers/esm/defineProperty.js
 	function _defineProperty(e, r, t) {
 		return (r = toPropertyKey(r)) in e ? Object.defineProperty(e, r, {
 			value: t,
@@ -1565,7 +1605,7 @@
 				if (Array.isArray(v)) return v;
 				return [v];
 			};
-			const merge = (x, y) => [...new Set([...norm(x), ...norm(y)])];
+			const merge = (x, y) => [.../* @__PURE__ */ new Set([...norm(x), ...norm(y)])];
 			return {
 				entity_id: merge(a.entity_id, b.entity_id),
 				device_id: merge(a.device_id, b.device_id),
@@ -2039,18 +2079,20 @@
 	function runtimeMsg(templates, template, options) {
 		if (templates) {
 			const localized = templates[options?.id ?? generateId(template)];
-			if (localized) if (typeof localized === "string") return localized;
-			else if ("strTag" in localized) return joinStringsAndValues(localized.strings, template.values, localized.values);
-			else {
-				let order = expressionOrders.get(localized);
-				if (order === void 0) {
-					order = localized.values;
-					expressionOrders.set(localized, order);
+			if (localized) {
+				if (typeof localized === "string") return localized;
+				else if ("strTag" in localized) return joinStringsAndValues(localized.strings, template.values, localized.values);
+				else {
+					let order = expressionOrders.get(localized);
+					if (order === void 0) {
+						order = localized.values;
+						expressionOrders.set(localized, order);
+					}
+					return {
+						...localized,
+						values: order.map((i) => template.values[i])
+					};
 				}
-				return {
-					...localized,
-					values: order.map((i) => template.values[i])
-				};
 			}
 		}
 		return defaultMsg(template);
@@ -2795,7 +2837,7 @@
 		init_fi$3();
 		init_fi$2();
 		init_fi$1();
-		modules$5 = /* @__PURE__ */ Object.assign({
+		modules$5 = /* #__PURE__ */ Object.assign({
 			"../../../cards/action/i18n/fi.ts": fi_exports$28,
 			"../../../cards/history/history-chart/i18n/fi.ts": fi_exports$27,
 			"../../../cards/history/i18n/fi.ts": fi_exports$26,
@@ -3446,7 +3488,7 @@
 		init_fr$3();
 		init_fr$2();
 		init_fr$1();
-		modules$4 = /* @__PURE__ */ Object.assign({
+		modules$4 = /* #__PURE__ */ Object.assign({
 			"../../../cards/action/i18n/fr.ts": fr_exports$28,
 			"../../../cards/history/history-chart/i18n/fr.ts": fr_exports$27,
 			"../../../cards/history/i18n/fr.ts": fr_exports$26,
@@ -4097,7 +4139,7 @@
 		init_de$3();
 		init_de$2();
 		init_de$1();
-		modules$3 = /* @__PURE__ */ Object.assign({
+		modules$3 = /* #__PURE__ */ Object.assign({
 			"../../../cards/action/i18n/de.ts": de_exports$28,
 			"../../../cards/history/history-chart/i18n/de.ts": de_exports$27,
 			"../../../cards/history/i18n/de.ts": de_exports$26,
@@ -4748,7 +4790,7 @@
 		init_es$3();
 		init_es$2();
 		init_es$1();
-		modules$2 = /* @__PURE__ */ Object.assign({
+		modules$2 = /* #__PURE__ */ Object.assign({
 			"../../../cards/action/i18n/es.ts": es_exports$28,
 			"../../../cards/history/history-chart/i18n/es.ts": es_exports$27,
 			"../../../cards/history/i18n/es.ts": es_exports$26,
@@ -5399,7 +5441,7 @@
 		init_pt$3();
 		init_pt$2();
 		init_pt$1();
-		modules$1 = /* @__PURE__ */ Object.assign({
+		modules$1 = /* #__PURE__ */ Object.assign({
 			"../../../cards/action/i18n/pt.ts": pt_exports$28,
 			"../../../cards/history/history-chart/i18n/pt.ts": pt_exports$27,
 			"../../../cards/history/i18n/pt.ts": pt_exports$26,
@@ -6050,7 +6092,7 @@
 		init_zh_hans$3();
 		init_zh_hans$2();
 		init_zh_hans$1();
-		modules = /* @__PURE__ */ Object.assign({
+		modules = /* #__PURE__ */ Object.assign({
 			"../../../cards/action/i18n/zh-hans.ts": zh_hans_exports$28,
 			"../../../cards/history/history-chart/i18n/zh-hans.ts": zh_hans_exports$27,
 			"../../../cards/history/i18n/zh-hans.ts": zh_hans_exports$26,
@@ -6152,8 +6194,10 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/editor-base/editor-base.ts
-	var _EditorBase, _config_accessor_storage$1, _hass_accessor_storage$16;
-	var EditorBase = (_config_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$16 = /* @__PURE__ */ new WeakMap(), _EditorBase = class EditorBase extends i$2 {
+	var _EditorBase;
+	var _config_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$16 = /* @__PURE__ */ new WeakMap();
+	var EditorBase = (_EditorBase = class EditorBase extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _config_accessor_storage$1, {});
@@ -6741,7 +6785,7 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/ha/ha-components.ts
 	var HA_COMPONENT_LOAD_TIMEOUT_MS = 6e3;
-	var HA_COMPONENT_LOADER_SUPPORTED_TAGS = new Set([
+	var HA_COMPONENT_LOADER_SUPPORTED_TAGS = /* @__PURE__ */ new Set([
 		"ha-form",
 		"ha-icon",
 		"ha-icon-button",
@@ -6760,7 +6804,7 @@
 		"ha-sankey-chart",
 		"mwc-button"
 	]);
-	var HA_HISTORY_ROUTE_COMPONENT_TAGS = new Set(["ha-target-picker", "ha-date-range-picker"]);
+	var HA_HISTORY_ROUTE_COMPONENT_TAGS = /* @__PURE__ */ new Set(["ha-target-picker", "ha-date-range-picker"]);
 	async function preloadHistoryRouteComponents(tags = []) {
 		const historyTags = tags.filter((tag) => HA_HISTORY_ROUTE_COMPONENT_TAGS.has(tag) && !customElements.get(tag));
 		if (!historyTags.length) return;
@@ -7325,7 +7369,7 @@
                                 type="checkbox"
                                 .checked=${result.selected.includes(index)}
                                 @change=${(event) => {
-					const nextSelected = event.currentTarget.checked ? [...new Set([...result.selected, index])].sort((a, b) => a - b) : result.selected.filter((selectedIndex) => selectedIndex !== index);
+					const nextSelected = event.currentTarget.checked ? [.../* @__PURE__ */ new Set([...result.selected, index])].sort((a, b) => a - b) : result.selected.filter((selectedIndex) => selectedIndex !== index);
 					this._updateSelected(result.id, nextSelected);
 				}}
                               />
@@ -8349,18 +8393,18 @@
 		"15s": 15e3,
 		"30s": 3e4,
 		"1m": 6e4,
-		"2m": 2 * 6e4,
-		"5m": 5 * 6e4,
-		"10m": 10 * 6e4,
-		"15m": 15 * 6e4,
-		"30m": 30 * 6e4,
-		"1h": 60 * 6e4,
-		"2h": 120 * 6e4,
-		"3h": 180 * 6e4,
-		"4h": 240 * 6e4,
-		"6h": 360 * 6e4,
-		"12h": 720 * 6e4,
-		"24h": 1440 * 6e4
+		"2m": 12e4,
+		"5m": 3e5,
+		"10m": 6e5,
+		"15m": 9e5,
+		"30m": 18e5,
+		"1h": 36e5,
+		"2h": 72e5,
+		"3h": 108e5,
+		"4h": 144e5,
+		"6h": 216e5,
+		"12h": 432e5,
+		"24h": 864e5
 	};
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/data/binary-labels.ts
@@ -8506,9 +8550,10 @@
 			if (!Number.isFinite(value)) return null;
 			const rawTimestamp = entry?.start;
 			let timestamp;
-			if (typeof rawTimestamp === "number") if (rawTimestamp > 1e11) timestamp = rawTimestamp;
-			else timestamp = rawTimestamp * 1e3;
-			else timestamp = new Date(rawTimestamp).getTime();
+			if (typeof rawTimestamp === "number") {
+				if (rawTimestamp > 1e11) timestamp = rawTimestamp;
+				else timestamp = rawTimestamp * 1e3;
+			} else timestamp = new Date(rawTimestamp).getTime();
 			if (!Number.isFinite(timestamp)) return null;
 			return {
 				lu: Math.round(timestamp) / 1e3,
@@ -8699,17 +8744,17 @@
 			const end = new Date(t1);
 			const sameDay = start.getFullYear() === end.getFullYear() && start.getMonth() === end.getMonth() && start.getDate() === end.getDate();
 			const sameMonth = start.getFullYear() === end.getFullYear() && start.getMonth() === end.getMonth();
-			if (detailSpanMs <= 7200 * 1e3) return value.toLocaleTimeString([], {
+			if (detailSpanMs <= 72e5) return value.toLocaleTimeString([], {
 				hour: "2-digit",
 				minute: "2-digit"
 			});
-			if (detailSpanMs <= 720 * 60 * 1e3) return value.toLocaleString([], {
+			if (detailSpanMs <= 432e5) return value.toLocaleString([], {
 				month: "short",
 				day: "numeric",
 				hour: "2-digit",
 				minute: "2-digit"
 			});
-			if (detailSpanMs <= 2880 * 60 * 1e3) return value.toLocaleString([], {
+			if (detailSpanMs <= 1728e5) return value.toLocaleString([], {
 				month: "short",
 				day: "numeric",
 				hour: "2-digit"
@@ -8718,23 +8763,23 @@
 				hour: "2-digit",
 				minute: "2-digit"
 			});
-			if (detailSpanMs <= 360 * 60 * 1e3) return value.toLocaleString([], {
+			if (detailSpanMs <= 216e5) return value.toLocaleString([], {
 				month: "short",
 				day: "numeric",
 				hour: "2-digit",
 				minute: "2-digit"
 			});
-			if (detailSpanMs <= 1440 * 60 * 1e3) return value.toLocaleString([], {
+			if (detailSpanMs <= 864e5) return value.toLocaleString([], {
 				month: "short",
 				day: "numeric",
 				hour: "2-digit"
 			});
-			if (sameMonth && spanMs <= 336 * 60 * 60 * 1e3) return value.toLocaleDateString([], { day: "numeric" });
-			if (spanMs >= 2880 * 60 * 1e3) return value.toLocaleDateString([], {
+			if (sameMonth && spanMs <= 12096e5) return value.toLocaleDateString([], { day: "numeric" });
+			if (spanMs >= 1728e5) return value.toLocaleDateString([], {
 				month: "short",
 				day: "numeric"
 			});
-			if (spanMs >= 1440 * 60 * 1e3) return value.toLocaleString([], {
+			if (spanMs >= 864e5) return value.toLocaleString([], {
 				month: "short",
 				day: "numeric",
 				hour: "2-digit",
@@ -8747,11 +8792,12 @@
 			const exponent = Math.floor(Math.log10(value));
 			const fraction = value / 10 ** exponent;
 			let niceFraction;
-			if (round) if (fraction < 1.5) niceFraction = 1;
-			else if (fraction < 3) niceFraction = 2;
-			else if (fraction < 7) niceFraction = 5;
-			else niceFraction = 10;
-			else if (fraction <= 1) niceFraction = 1;
+			if (round) {
+				if (fraction < 1.5) niceFraction = 1;
+				else if (fraction < 3) niceFraction = 2;
+				else if (fraction < 7) niceFraction = 5;
+				else niceFraction = 10;
+			} else if (fraction <= 1) niceFraction = 1;
 			else if (fraction <= 2) niceFraction = 2;
 			else if (fraction <= 5) niceFraction = 5;
 			else niceFraction = 10;
@@ -8789,27 +8835,27 @@
 		}
 		_alignTimeTick(timestamp, stepMs) {
 			const date = new Date(timestamp);
-			if (stepMs < 60 * 1e3) return Math.floor(timestamp / stepMs) * stepMs;
-			if (stepMs < 3600 * 1e3) {
-				const minutes = Math.max(1, Math.round(stepMs / (60 * 1e3)));
+			if (stepMs < 6e4) return Math.floor(timestamp / stepMs) * stepMs;
+			if (stepMs < 36e5) {
+				const minutes = Math.max(1, Math.round(stepMs / 6e4));
 				date.setSeconds(0, 0);
 				date.setMinutes(Math.floor(date.getMinutes() / minutes) * minutes);
 				return date.getTime();
 			}
-			if (stepMs < 1440 * 60 * 1e3) {
-				const hours = Math.max(1, Math.round(stepMs / (3600 * 1e3)));
+			if (stepMs < 864e5) {
+				const hours = Math.max(1, Math.round(stepMs / 36e5));
 				date.setMinutes(0, 0, 0);
 				date.setHours(Math.floor(date.getHours() / hours) * hours);
 				return date.getTime();
 			}
-			if (stepMs < 10080 * 60 * 1e3) {
-				const days = Math.max(1, Math.round(stepMs / (1440 * 60 * 1e3)));
+			if (stepMs < 6048e5) {
+				const days = Math.max(1, Math.round(stepMs / 864e5));
 				date.setHours(0, 0, 0, 0);
 				const dayOfMonth = date.getDate();
 				date.setDate(dayOfMonth - (dayOfMonth - 1) % days);
 				return date.getTime();
 			}
-			if (stepMs < 720 * 60 * 60 * 1e3) {
+			if (stepMs < 2592e6) {
 				date.setHours(0, 0, 0, 0);
 				const offset = (date.getDay() + 6) % 7;
 				date.setDate(date.getDate() - offset);
@@ -8821,20 +8867,20 @@
 		}
 		_getTimeTickStep(targetStepMs) {
 			const candidates = [
-				300 * 1e3,
-				600 * 1e3,
-				900 * 1e3,
-				1800 * 1e3,
-				3600 * 1e3,
-				7200 * 1e3,
-				10800 * 1e3,
-				360 * 60 * 1e3,
-				720 * 60 * 1e3,
-				1440 * 60 * 1e3,
-				2880 * 60 * 1e3,
-				10080 * 60 * 1e3,
-				336 * 60 * 60 * 1e3,
-				720 * 60 * 60 * 1e3
+				3e5,
+				6e5,
+				9e5,
+				18e5,
+				36e5,
+				72e5,
+				108e5,
+				216e5,
+				432e5,
+				864e5,
+				1728e5,
+				6048e5,
+				12096e5,
+				2592e6
 			];
 			return candidates.find((step) => step >= targetStepMs) || candidates[candidates.length - 1];
 		}
@@ -9223,7 +9269,7 @@
 				const r = 10;
 				ctx.save();
 				ctx.beginPath();
-				ctx.arc(x, y, r + 1.5, 0, Math.PI * 2);
+				ctx.arc(x, y, 11.5, 0, Math.PI * 2);
 				ctx.fillStyle = "rgba(255,255,255,0.9)";
 				ctx.fill();
 				ctx.restore();
@@ -9377,7 +9423,7 @@
 				const x = this.xOf(t, t0, t1);
 				const y = this.yOf(v, vMin, vMax);
 				const dir = i % 2 === 0 ? 1 : -1;
-				for (let d = -gap; d <= gap; d += gap * 2) {
+				for (let d = -2; d <= gap; d += 4) {
 					ctx.beginPath();
 					ctx.moveTo(x + d - w * dir, y - h);
 					ctx.lineTo(x + d + w * dir, y + h);
@@ -10526,53 +10572,61 @@
 			if (!rect.width || !rect.height || !renderer.cw || !renderer.ch) return null;
 			const localX = clampChartValue(clientX - rect.left, renderer.pad.left, renderer.pad.left + renderer.cw);
 			const localY = clampChartValue(clientY - rect.top, renderer.pad.top, renderer.pad.top + renderer.ch);
-			const timeMs = resolveLineChartHoverTime(resolvedSeries, t0 + (renderer.cw ? (localX - renderer.pad.left) / renderer.cw : 0) * (t1 - t0), options.hoverSnapMode || "follow_series");
+			const rawTimeMs = t0 + (renderer.cw ? (localX - renderer.pad.left) / renderer.cw : 0) * (t1 - t0);
+			const timeMs = resolveLineChartHoverTime(resolvedSeries, rawTimeMs, options.hoverSnapMode || "follow_series");
 			const x = renderer.xOf(timeMs, t0, t1);
 			const values = resolvedSeries.map((seriesItem) => {
 				const value = renderer._interpolateValue(seriesItem.pts || [], timeMs, seriesItem.stepped);
-				return buildHoverValueEntry(seriesItem, value, resolveHoverAxis(seriesItem), {}, {
+				const axis = resolveHoverAxis(seriesItem);
+				return buildHoverValueEntry(seriesItem, value, axis, {}, {
 					includePosition: value != null,
 					x
 				});
 			});
 			const comparisonValues = comparisonSeries.map((seriesItem) => {
 				const value = renderer._interpolateValue(seriesItem.pts || [], timeMs, seriesItem.stepped);
-				return buildHoverValueEntry(seriesItem, value, resolveHoverAxis(seriesItem), { comparison: true }, {
+				const axis = resolveHoverAxis(seriesItem);
+				return buildHoverValueEntry(seriesItem, value, axis, { comparison: true }, {
 					includePosition: value != null,
 					x
 				});
 			});
 			const trendValues = trendSeries.map((seriesItem) => {
 				const value = renderer._interpolateValue(seriesItem.pts || [], timeMs);
-				return buildHoverValueEntry(seriesItem, value, resolveHoverAxis(seriesItem), { trend: true }, {
+				const axis = resolveHoverAxis(seriesItem);
+				return buildHoverValueEntry(seriesItem, value, axis, { trend: true }, {
 					includePosition: value != null,
 					x
 				});
 			});
 			const rateValues = rateSeries.map((seriesItem) => {
 				const value = renderer._interpolateValue(seriesItem.pts || [], timeMs);
-				return buildHoverValueEntry(seriesItem, value, resolveHoverAxis(seriesItem), { rate: true }, {
+				const axis = resolveHoverAxis(seriesItem);
+				return buildHoverValueEntry(seriesItem, value, axis, { rate: true }, {
 					includePosition: value != null,
 					x
 				});
 			});
 			const deltaValues = deltaSeries.map((seriesItem) => {
 				const value = renderer._interpolateValue(seriesItem.pts || [], timeMs);
-				return buildHoverValueEntry(seriesItem, value, resolveHoverAxis(seriesItem), { delta: true }, {
+				const axis = resolveHoverAxis(seriesItem);
+				return buildHoverValueEntry(seriesItem, value, axis, { delta: true }, {
 					includePosition: value != null,
 					x
 				});
 			});
 			const summaryValues = summarySeries.map((seriesItem) => {
 				const axis = resolveHoverAxis(seriesItem);
-				return buildHoverValueEntry(seriesItem, Number(seriesItem.value), axis, {
+				const value = Number(seriesItem.value);
+				return buildHoverValueEntry(seriesItem, value, axis, {
 					summary: true,
 					summaryType: seriesItem.summaryType || ""
 				});
 			});
 			const thresholdValues = thresholdSeries.map((seriesItem) => {
 				const axis = resolveHoverAxis(seriesItem);
-				return buildHoverValueEntry(seriesItem, Number(seriesItem.value), axis, { threshold: true });
+				const value = Number(seriesItem.value);
+				return buildHoverValueEntry(seriesItem, value, axis, { threshold: true });
 			});
 			const plottedValues = [
 				...values.filter((entry) => entry?.hasValue !== false),
@@ -10962,8 +11016,8 @@
 	/**
 	* Shared cache utilities for history/statistics/event lookups.
 	*/
-	var DATA_RANGE_CACHE_TTL_MS = 600 * 1e3;
-	var DATA_RANGE_CACHE_LIVE_EDGE_MS = 300 * 1e3;
+	var DATA_RANGE_CACHE_TTL_MS = 6e5;
+	var DATA_RANGE_CACHE_LIVE_EDGE_MS = 3e5;
 	var dataRangeCache = /* @__PURE__ */ new Map();
 	function normalizeCacheIdList(values) {
 		return [...new Set((Array.isArray(values) ? values : []).filter(Boolean))].sort();
@@ -11011,12 +11065,12 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/data/history-api.ts
-	var MAX_DOWNSAMPLED_HISTORY_RANGE_MS = 2160 * 60 * 60 * 1e3;
+	var MAX_DOWNSAMPLED_HISTORY_RANGE_MS = 7776e6;
 	function createRequestId() {
 		const cryptoApi = globalThis.crypto;
 		if (typeof cryptoApi?.randomUUID === "function") return cryptoApi.randomUUID();
 		if (typeof cryptoApi?.getRandomValues === "function") {
-			const bytes = new Uint8Array(16);
+			const bytes = /* @__PURE__ */ new Uint8Array(16);
 			cryptoApi.getRandomValues(bytes);
 			bytes[6] = bytes[6] % 16 + 64;
 			bytes[8] = bytes[8] % 64 + 128;
@@ -11288,7 +11342,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/workers/history-analysis.worker.ts?worker&inline
-	var jsContent$1 = "(function() {\n	//#region custom_components/hass_datapoints/src/cards/history/analysis/windows.ts\n	const HOUR_MS = 3600 * 1e3;\n	function getTrendWindowMs(value) {\n		const windows = {\n			\"30m\": 1800 * 1e3,\n			\"1h\": HOUR_MS,\n			\"2h\": 2 * HOUR_MS,\n			\"3h\": 3 * HOUR_MS,\n			\"6h\": 6 * HOUR_MS,\n			\"24h\": 24 * HOUR_MS,\n			\"7d\": 168 * HOUR_MS,\n			\"14d\": 336 * HOUR_MS,\n			\"21d\": 504 * HOUR_MS,\n			\"28d\": 672 * HOUR_MS\n		};\n		return windows[value] ?? windows[\"24h\"];\n	}\n	//#endregion\n	//#region custom_components/hass_datapoints/src/cards/history/analysis/series.ts\n	function getEmaAlpha(window) {\n		return {\n			\"30m\": .97,\n			\"1h\": .92,\n			\"2h\": .88,\n			\"3h\": .84,\n			\"6h\": .75,\n			\"24h\": .5,\n			\"7d\": .25,\n			\"14d\": .15,\n			\"21d\": .1,\n			\"28d\": .07\n		}[window] ?? .5;\n	}\n	function getLowessBandwidth(window, points) {\n		const fraction = {\n			\"30m\": .05,\n			\"1h\": .1,\n			\"2h\": .13,\n			\"3h\": .16,\n			\"6h\": .2,\n			\"24h\": .3,\n			\"7d\": .4,\n			\"14d\": .55,\n			\"21d\": .7,\n			\"28d\": .85\n		}[window] ?? .3;\n		if (points.length < 2) return fraction;\n		const span = points[points.length - 1][0] - points[0][0];\n		return span > 0 ? fraction * span : fraction;\n	}\n	function buildRollingAverageTrend(points, windowMs) {\n		if (!Array.isArray(points) || points.length < 2 || !Number.isFinite(windowMs) || windowMs <= 0) return [];\n		const trendPoints = [];\n		let windowStartIndex = 0;\n		let windowSum = 0;\n		for (let index = 0; index < points.length; index += 1) {\n			const [time, value] = points[index];\n			windowSum += value;\n			while (windowStartIndex < index && time - points[windowStartIndex][0] > windowMs) {\n				windowSum -= points[windowStartIndex][1];\n				windowStartIndex += 1;\n			}\n			const count = index - windowStartIndex + 1;\n			if (count > 0) trendPoints.push([time, windowSum / count]);\n		}\n		return trendPoints;\n	}\n	function buildLinearTrend(points) {\n		if (!Array.isArray(points) || points.length < 2) return [];\n		const origin = points[0][0];\n		let sumX = 0;\n		let sumY = 0;\n		let sumXX = 0;\n		let sumXY = 0;\n		for (const [time, value] of points) {\n			const x = (time - origin) / (3600 * 1e3);\n			sumX += x;\n			sumY += value;\n			sumXX += x * x;\n			sumXY += x * value;\n		}\n		const count = points.length;\n		const denominator = count * sumXX - sumX * sumX;\n		if (!Number.isFinite(denominator) || Math.abs(denominator) < 1e-9) return [];\n		const slope = (count * sumXY - sumX * sumY) / denominator;\n		const intercept = (sumY - slope * sumX) / count;\n		const firstTime = points[0][0];\n		const lastTime = points[points.length - 1][0];\n		const firstX = (firstTime - origin) / (3600 * 1e3);\n		const lastX = (lastTime - origin) / (3600 * 1e3);\n		return [[firstTime, intercept + slope * firstX], [lastTime, intercept + slope * lastX]];\n	}\n	function buildEmaTrend(points, alpha) {\n		if (!Array.isArray(points) || points.length < 2) return [];\n		const a = Math.max(0, Math.min(1, alpha));\n		const result = [[points[0][0], points[0][1]]];\n		for (let i = 1; i < points.length; i += 1) {\n			const ema = a * points[i][1] + (1 - a) * result[i - 1][1];\n			result.push([points[i][0], ema]);\n		}\n		return result;\n	}\n	function buildPolynomialTrend(points) {\n		if (!Array.isArray(points) || points.length < 3) return [];\n		const origin = points[0][0];\n		const scale = points[points.length - 1][0] - origin || 1;\n		let s0 = 0;\n		let s1 = 0;\n		let s2 = 0;\n		let s3 = 0;\n		let s4 = 0;\n		let t0 = 0;\n		let t1 = 0;\n		let t2 = 0;\n		for (const [time, value] of points) {\n			const x = (time - origin) / scale;\n			const x2 = x * x;\n			s0 += 1;\n			s1 += x;\n			s2 += x2;\n			s3 += x2 * x;\n			s4 += x2 * x2;\n			t0 += value;\n			t1 += x * value;\n			t2 += x2 * value;\n		}\n		const det = s0 * (s2 * s4 - s3 * s3) - s1 * (s1 * s4 - s3 * s2) + s2 * (s1 * s3 - s2 * s2);\n		if (!Number.isFinite(det) || Math.abs(det) < 1e-12) return [];\n		const a = (t0 * (s2 * s4 - s3 * s3) - s1 * (t1 * s4 - s3 * t2) + s2 * (t1 * s3 - s2 * t2)) / det;\n		const b = (s0 * (t1 * s4 - s3 * t2) - t0 * (s1 * s4 - s3 * s2) + s2 * (s1 * t2 - t1 * s2)) / det;\n		const c = (s0 * (s2 * t2 - t1 * s3) - s1 * (s1 * t2 - t1 * s2) + t0 * (s1 * s3 - s2 * s2)) / det;\n		return points.map(([time]) => {\n			const x = (time - origin) / scale;\n			return [time, a + b * x + c * x * x];\n		});\n	}\n	function buildLowessTrend(points, bandwidth) {\n		if (!Array.isArray(points) || points.length < 2) return [];\n		const MAX_INPUT = 2e3;\n		const MAX_OUTPUT = 300;\n		const subsample = (n, max) => n <= max ? Array.from({ length: n }, (_, i) => i) : Array.from({ length: max }, (_, i) => Math.round(i / (max - 1) * (n - 1)));\n		const inputIdx = subsample(points.length, MAX_INPUT);\n		const outputIdx = subsample(points.length, MAX_OUTPUT);\n		const result = [];\n		for (const oi of outputIdx) {\n			const xi = points[oi][0];\n			let sumW = 0;\n			let sumWX = 0;\n			let sumWY = 0;\n			let sumWXX = 0;\n			let sumWXY = 0;\n			for (let k = 0; k < inputIdx.length; k += 1) {\n				const d = Math.abs(points[inputIdx[k]][0] - xi);\n				if (d >= bandwidth) continue;\n				const normDist = d / bandwidth;\n				const u = 1 - normDist * normDist * normDist;\n				const w = u * u * u;\n				if (w <= 0) continue;\n				const xj = points[inputIdx[k]][0];\n				const yj = points[inputIdx[k]][1];\n				sumW += w;\n				sumWX += w * xj;\n				sumWY += w * yj;\n				sumWXX += w * xj * xj;\n				sumWXY += w * xj * yj;\n			}\n			const denom = sumW * sumWXX - sumWX * sumWX;\n			if (!Number.isFinite(denom) || Math.abs(denom) < 1e-12) {\n				result.push([xi, sumW > 0 ? sumWY / sumW : points[oi][1]]);\n				continue;\n			}\n			const slope = (sumW * sumWXY - sumWX * sumWY) / denom;\n			const intercept = (sumWY - slope * sumWX) / sumW;\n			result.push([xi, intercept + slope * xi]);\n		}\n		return result;\n	}\n	function interpolateSeriesValue(points, timeMs) {\n		if (!Array.isArray(points) || !points.length) return null;\n		if (timeMs < points[0][0] || timeMs > points[points.length - 1][0]) return null;\n		if (timeMs === points[0][0]) return points[0][1];\n		if (timeMs === points[points.length - 1][0]) return points[points.length - 1][1];\n		for (let index = 0; index < points.length - 1; index += 1) {\n			const [startTime, startValue] = points[index];\n			const [endTime, endValue] = points[index + 1];\n			if (timeMs >= startTime && timeMs <= endTime) return startValue + (timeMs - startTime) / (endTime - startTime) * (endValue - startValue);\n		}\n		return null;\n	}\n	function buildRateOfChangePoints(points, rateWindow = \"1h\") {\n		if (!Array.isArray(points) || points.length < 2) return [];\n		const ratePoints = [];\n		for (let index = 1; index < points.length; index += 1) {\n			const [timeMs, value] = points[index];\n			let comparisonPoint = null;\n			if (rateWindow === \"point_to_point\") comparisonPoint = points[index - 1];\n			else {\n				const windowMs = getTrendWindowMs(rateWindow);\n				if (!Number.isFinite(windowMs) || windowMs <= 0) continue;\n				for (let candidateIndex = index - 1; candidateIndex >= 0; candidateIndex -= 1) {\n					const candidatePoint = points[candidateIndex];\n					if (timeMs - candidatePoint[0] >= windowMs) {\n						comparisonPoint = candidatePoint;\n						break;\n					}\n				}\n				if (!comparisonPoint) comparisonPoint = points[0];\n			}\n			if (!Array.isArray(comparisonPoint) || comparisonPoint.length < 2) continue;\n			const deltaMs = timeMs - comparisonPoint[0];\n			if (!Number.isFinite(deltaMs) || deltaMs <= 0) continue;\n			const deltaHours = deltaMs / (3600 * 1e3);\n			if (!Number.isFinite(deltaHours) || deltaHours <= 0) continue;\n			const rateValue = (value - comparisonPoint[1]) / deltaHours;\n			if (!Number.isFinite(rateValue)) continue;\n			ratePoints.push([timeMs, rateValue]);\n		}\n		return ratePoints;\n	}\n	function buildDeltaPoints(sourcePoints, comparisonPoints) {\n		if (!Array.isArray(sourcePoints) || sourcePoints.length < 2 || !Array.isArray(comparisonPoints) || comparisonPoints.length < 2) return [];\n		const deltaPoints = [];\n		for (const [timeMs, value] of sourcePoints) {\n			const comparisonValue = interpolateSeriesValue(comparisonPoints, timeMs);\n			if (comparisonValue == null) continue;\n			deltaPoints.push([timeMs, value - comparisonValue]);\n		}\n		return deltaPoints;\n	}\n	//#endregion\n	//#region custom_components/hass_datapoints/src/cards/history/analysis/summary.ts\n	function buildSummaryStats(points) {\n		if (!Array.isArray(points) || !points.length) return null;\n		let min = Infinity;\n		let max = -Infinity;\n		let sum = 0;\n		let count = 0;\n		for (const point of points) {\n			const value = Number(point?.[1]);\n			if (!Number.isFinite(value)) continue;\n			if (value < min) min = value;\n			if (value > max) max = value;\n			sum += value;\n			count += 1;\n		}\n		if (!Number.isFinite(min) || !Number.isFinite(max) || count === 0) return null;\n		return {\n			min,\n			max,\n			mean: sum / count\n		};\n	}\n	//#endregion\n	//#region custom_components/hass_datapoints/src/lib/workers/history-analysis.worker.ts\n	function normalizeSeriesAnalysis(analysis) {\n		const source = analysis && typeof analysis === \"object\" ? analysis : {};\n		return {\n			show_trend_lines: source.show_trend_lines === true,\n			trend_method: [\n				\"linear_trend\",\n				\"rolling_average\",\n				\"ema\",\n				\"polynomial_trend\",\n				\"lowess\"\n			].includes(source.trend_method) ? source.trend_method : \"rolling_average\",\n			trend_window: typeof source.trend_window === \"string\" && source.trend_window ? source.trend_window : \"24h\",\n			show_summary_stats: source.show_summary_stats === true,\n			show_rate_of_change: source.show_rate_of_change === true,\n			rate_window: typeof source.rate_window === \"string\" && source.rate_window ? source.rate_window : \"1h\",\n			show_delta_analysis: source.show_delta_analysis === true\n		};\n	}\n	function buildTrendPoints(points, method, trendWindow) {\n		if (!Array.isArray(points) || points.length < 2) return [];\n		switch (method) {\n			case \"linear_trend\": return buildLinearTrend(points);\n			case \"ema\": return buildEmaTrend(points, getEmaAlpha(trendWindow));\n			case \"polynomial_trend\": return buildPolynomialTrend(points);\n			case \"lowess\": return buildLowessTrend(points, getLowessBandwidth(trendWindow, points));\n			default: return buildRollingAverageTrend(points, getTrendWindowMs(trendWindow));\n		}\n	}\n	function computeHistoryAnalysis(payload) {\n		const series = (Array.isArray(payload?.series) ? payload.series : []).map((seriesItem) => ({\n			...seriesItem,\n			analysis: normalizeSeriesAnalysis(seriesItem?.analysis)\n		}));\n		const comparisonSeries = new Map((Array.isArray(payload?.comparisonSeries) ? payload.comparisonSeries : []).filter((entry) => entry?.entityId).map((entry) => [entry.entityId, entry]));\n		const result = {\n			trendSeries: [],\n			rateSeries: [],\n			deltaSeries: [],\n			summaryStats: [],\n			anomalySeries: [],\n			comparisonWindowResults: {}\n		};\n		for (const seriesItem of series) {\n			const points = Array.isArray(seriesItem?.pts) ? seriesItem.pts : [];\n			const analysis = normalizeSeriesAnalysis(seriesItem?.analysis);\n			if (points.length < 2) continue;\n			if (analysis.show_trend_lines === true) {\n				const trendPoints = buildTrendPoints(points, analysis.trend_method, analysis.trend_window);\n				if (trendPoints.length >= 2) result.trendSeries.push({\n					entityId: seriesItem.entityId,\n					pts: trendPoints\n				});\n			}\n			if (analysis.show_rate_of_change === true) {\n				const ratePoints = buildRateOfChangePoints(points, analysis.rate_window);\n				if (ratePoints.length >= 2) result.rateSeries.push({\n					entityId: seriesItem.entityId,\n					pts: ratePoints\n				});\n			}\n			if (analysis.show_summary_stats === true) {\n				const summaryStats = buildSummaryStats(points);\n				if (summaryStats) result.summaryStats.push({\n					entityId: seriesItem.entityId,\n					...summaryStats\n				});\n			}\n			if (analysis.show_delta_analysis === true && payload?.hasSelectedComparisonWindow === true) {\n				const comparisonPoints = comparisonSeries.get(seriesItem.entityId)?.pts ?? [];\n				if (comparisonPoints.length >= 2) {\n					const deltaPoints = buildDeltaPoints(points, comparisonPoints);\n					if (deltaPoints.length >= 2) result.deltaSeries.push({\n						entityId: seriesItem.entityId,\n						pts: deltaPoints\n					});\n				}\n			}\n		}\n		const seriesAnalysisConfigs = typeof payload?.seriesAnalysisConfigs === \"object\" && payload.seriesAnalysisConfigs !== null ? payload.seriesAnalysisConfigs : {};\n		const allComparisonWindowsData = typeof payload?.allComparisonWindowsData === \"object\" && payload.allComparisonWindowsData !== null ? payload.allComparisonWindowsData : {};\n		for (const [windowId, entityPtsMap] of Object.entries(allComparisonWindowsData)) {\n			result.comparisonWindowResults[windowId] = {};\n			for (const [entityId, pts] of Object.entries(entityPtsMap)) {\n				const winAnalysis = normalizeSeriesAnalysis(seriesAnalysisConfigs[entityId]);\n				result.comparisonWindowResults[windowId][entityId] = {\n					trendPts: winAnalysis.show_trend_lines && pts.length >= 2 ? buildTrendPoints(pts, winAnalysis.trend_method, winAnalysis.trend_window) : [],\n					ratePts: winAnalysis.show_rate_of_change && pts.length >= 2 ? buildRateOfChangePoints(pts, winAnalysis.rate_window) : [],\n					summaryStats: winAnalysis.show_summary_stats ? buildSummaryStats(pts) : null\n				};\n			}\n		}\n		return result;\n	}\n	const workerScope = globalThis;\n	workerScope.onmessage = (event) => {\n		const { id, payload } = event.data || {};\n		try {\n			const result = computeHistoryAnalysis(payload);\n			workerScope.postMessage({\n				id,\n				result\n			});\n		} catch (error) {\n			workerScope.postMessage({\n				id,\n				error: error instanceof Error ? error.message : String(error)\n			});\n		}\n	};\n	//#endregion\n})();\n";
+	var jsContent$1 = "(function() {\n	//#region custom_components/hass_datapoints/src/cards/history/analysis/windows.ts\n	const HOUR_MS = 36e5;\n	function getTrendWindowMs(value) {\n		const windows = {\n			\"30m\": 18e5,\n			\"1h\": HOUR_MS,\n			\"2h\": 2 * HOUR_MS,\n			\"3h\": 3 * HOUR_MS,\n			\"6h\": 6 * HOUR_MS,\n			\"24h\": 24 * HOUR_MS,\n			\"7d\": 168 * HOUR_MS,\n			\"14d\": 336 * HOUR_MS,\n			\"21d\": 504 * HOUR_MS,\n			\"28d\": 672 * HOUR_MS\n		};\n		return windows[value] ?? windows[\"24h\"];\n	}\n	//#endregion\n	//#region custom_components/hass_datapoints/src/cards/history/analysis/series.ts\n	function getEmaAlpha(window) {\n		return {\n			\"30m\": .97,\n			\"1h\": .92,\n			\"2h\": .88,\n			\"3h\": .84,\n			\"6h\": .75,\n			\"24h\": .5,\n			\"7d\": .25,\n			\"14d\": .15,\n			\"21d\": .1,\n			\"28d\": .07\n		}[window] ?? .5;\n	}\n	function getLowessBandwidth(window, points) {\n		const fraction = {\n			\"30m\": .05,\n			\"1h\": .1,\n			\"2h\": .13,\n			\"3h\": .16,\n			\"6h\": .2,\n			\"24h\": .3,\n			\"7d\": .4,\n			\"14d\": .55,\n			\"21d\": .7,\n			\"28d\": .85\n		}[window] ?? .3;\n		if (points.length < 2) return fraction;\n		const span = points[points.length - 1][0] - points[0][0];\n		return span > 0 ? fraction * span : fraction;\n	}\n	function buildRollingAverageTrend(points, windowMs) {\n		if (!Array.isArray(points) || points.length < 2 || !Number.isFinite(windowMs) || windowMs <= 0) return [];\n		const trendPoints = [];\n		let windowStartIndex = 0;\n		let windowSum = 0;\n		for (let index = 0; index < points.length; index += 1) {\n			const [time, value] = points[index];\n			windowSum += value;\n			while (windowStartIndex < index && time - points[windowStartIndex][0] > windowMs) {\n				windowSum -= points[windowStartIndex][1];\n				windowStartIndex += 1;\n			}\n			const count = index - windowStartIndex + 1;\n			if (count > 0) trendPoints.push([time, windowSum / count]);\n		}\n		return trendPoints;\n	}\n	function buildLinearTrend(points) {\n		if (!Array.isArray(points) || points.length < 2) return [];\n		const origin = points[0][0];\n		let sumX = 0;\n		let sumY = 0;\n		let sumXX = 0;\n		let sumXY = 0;\n		for (const [time, value] of points) {\n			const x = (time - origin) / 36e5;\n			sumX += x;\n			sumY += value;\n			sumXX += x * x;\n			sumXY += x * value;\n		}\n		const count = points.length;\n		const denominator = count * sumXX - sumX * sumX;\n		if (!Number.isFinite(denominator) || Math.abs(denominator) < 1e-9) return [];\n		const slope = (count * sumXY - sumX * sumY) / denominator;\n		const intercept = (sumY - slope * sumX) / count;\n		const firstTime = points[0][0];\n		const lastTime = points[points.length - 1][0];\n		const firstX = (firstTime - origin) / 36e5;\n		const lastX = (lastTime - origin) / 36e5;\n		return [[firstTime, intercept + slope * firstX], [lastTime, intercept + slope * lastX]];\n	}\n	function buildEmaTrend(points, alpha) {\n		if (!Array.isArray(points) || points.length < 2) return [];\n		const a = Math.max(0, Math.min(1, alpha));\n		const result = [[points[0][0], points[0][1]]];\n		for (let i = 1; i < points.length; i += 1) {\n			const ema = a * points[i][1] + (1 - a) * result[i - 1][1];\n			result.push([points[i][0], ema]);\n		}\n		return result;\n	}\n	function buildPolynomialTrend(points) {\n		if (!Array.isArray(points) || points.length < 3) return [];\n		const origin = points[0][0];\n		const scale = points[points.length - 1][0] - origin || 1;\n		let s0 = 0;\n		let s1 = 0;\n		let s2 = 0;\n		let s3 = 0;\n		let s4 = 0;\n		let t0 = 0;\n		let t1 = 0;\n		let t2 = 0;\n		for (const [time, value] of points) {\n			const x = (time - origin) / scale;\n			const x2 = x * x;\n			s0 += 1;\n			s1 += x;\n			s2 += x2;\n			s3 += x2 * x;\n			s4 += x2 * x2;\n			t0 += value;\n			t1 += x * value;\n			t2 += x2 * value;\n		}\n		const det = s0 * (s2 * s4 - s3 * s3) - s1 * (s1 * s4 - s3 * s2) + s2 * (s1 * s3 - s2 * s2);\n		if (!Number.isFinite(det) || Math.abs(det) < 1e-12) return [];\n		const a = (t0 * (s2 * s4 - s3 * s3) - s1 * (t1 * s4 - s3 * t2) + s2 * (t1 * s3 - s2 * t2)) / det;\n		const b = (s0 * (t1 * s4 - s3 * t2) - t0 * (s1 * s4 - s3 * s2) + s2 * (s1 * t2 - t1 * s2)) / det;\n		const c = (s0 * (s2 * t2 - t1 * s3) - s1 * (s1 * t2 - t1 * s2) + t0 * (s1 * s3 - s2 * s2)) / det;\n		return points.map(([time]) => {\n			const x = (time - origin) / scale;\n			return [time, a + b * x + c * x * x];\n		});\n	}\n	function buildLowessTrend(points, bandwidth) {\n		if (!Array.isArray(points) || points.length < 2) return [];\n		const MAX_INPUT = 2e3;\n		const MAX_OUTPUT = 300;\n		const subsample = (n, max) => n <= max ? Array.from({ length: n }, (_, i) => i) : Array.from({ length: max }, (_, i) => Math.round(i / (max - 1) * (n - 1)));\n		const inputIdx = subsample(points.length, MAX_INPUT);\n		const outputIdx = subsample(points.length, MAX_OUTPUT);\n		const result = [];\n		for (const oi of outputIdx) {\n			const xi = points[oi][0];\n			let sumW = 0;\n			let sumWX = 0;\n			let sumWY = 0;\n			let sumWXX = 0;\n			let sumWXY = 0;\n			for (let k = 0; k < inputIdx.length; k += 1) {\n				const d = Math.abs(points[inputIdx[k]][0] - xi);\n				if (d >= bandwidth) continue;\n				const normDist = d / bandwidth;\n				const u = 1 - normDist * normDist * normDist;\n				const w = u * u * u;\n				if (w <= 0) continue;\n				const xj = points[inputIdx[k]][0];\n				const yj = points[inputIdx[k]][1];\n				sumW += w;\n				sumWX += w * xj;\n				sumWY += w * yj;\n				sumWXX += w * xj * xj;\n				sumWXY += w * xj * yj;\n			}\n			const denom = sumW * sumWXX - sumWX * sumWX;\n			if (!Number.isFinite(denom) || Math.abs(denom) < 1e-12) {\n				result.push([xi, sumW > 0 ? sumWY / sumW : points[oi][1]]);\n				continue;\n			}\n			const slope = (sumW * sumWXY - sumWX * sumWY) / denom;\n			const intercept = (sumWY - slope * sumWX) / sumW;\n			result.push([xi, intercept + slope * xi]);\n		}\n		return result;\n	}\n	function interpolateSeriesValue(points, timeMs) {\n		if (!Array.isArray(points) || !points.length) return null;\n		if (timeMs < points[0][0] || timeMs > points[points.length - 1][0]) return null;\n		if (timeMs === points[0][0]) return points[0][1];\n		if (timeMs === points[points.length - 1][0]) return points[points.length - 1][1];\n		for (let index = 0; index < points.length - 1; index += 1) {\n			const [startTime, startValue] = points[index];\n			const [endTime, endValue] = points[index + 1];\n			if (timeMs >= startTime && timeMs <= endTime) return startValue + (timeMs - startTime) / (endTime - startTime) * (endValue - startValue);\n		}\n		return null;\n	}\n	function buildRateOfChangePoints(points, rateWindow = \"1h\") {\n		if (!Array.isArray(points) || points.length < 2) return [];\n		const ratePoints = [];\n		for (let index = 1; index < points.length; index += 1) {\n			const [timeMs, value] = points[index];\n			let comparisonPoint = null;\n			if (rateWindow === \"point_to_point\") comparisonPoint = points[index - 1];\n			else {\n				const windowMs = getTrendWindowMs(rateWindow);\n				if (!Number.isFinite(windowMs) || windowMs <= 0) continue;\n				for (let candidateIndex = index - 1; candidateIndex >= 0; candidateIndex -= 1) {\n					const candidatePoint = points[candidateIndex];\n					if (timeMs - candidatePoint[0] >= windowMs) {\n						comparisonPoint = candidatePoint;\n						break;\n					}\n				}\n				if (!comparisonPoint) comparisonPoint = points[0];\n			}\n			if (!Array.isArray(comparisonPoint) || comparisonPoint.length < 2) continue;\n			const deltaMs = timeMs - comparisonPoint[0];\n			if (!Number.isFinite(deltaMs) || deltaMs <= 0) continue;\n			const deltaHours = deltaMs / 36e5;\n			if (!Number.isFinite(deltaHours) || deltaHours <= 0) continue;\n			const rateValue = (value - comparisonPoint[1]) / deltaHours;\n			if (!Number.isFinite(rateValue)) continue;\n			ratePoints.push([timeMs, rateValue]);\n		}\n		return ratePoints;\n	}\n	function buildDeltaPoints(sourcePoints, comparisonPoints) {\n		if (!Array.isArray(sourcePoints) || sourcePoints.length < 2 || !Array.isArray(comparisonPoints) || comparisonPoints.length < 2) return [];\n		const deltaPoints = [];\n		for (const [timeMs, value] of sourcePoints) {\n			const comparisonValue = interpolateSeriesValue(comparisonPoints, timeMs);\n			if (comparisonValue == null) continue;\n			deltaPoints.push([timeMs, value - comparisonValue]);\n		}\n		return deltaPoints;\n	}\n	//#endregion\n	//#region custom_components/hass_datapoints/src/cards/history/analysis/summary.ts\n	function buildSummaryStats(points) {\n		if (!Array.isArray(points) || !points.length) return null;\n		let min = Infinity;\n		let max = -Infinity;\n		let sum = 0;\n		let count = 0;\n		for (const point of points) {\n			const value = Number(point?.[1]);\n			if (!Number.isFinite(value)) continue;\n			if (value < min) min = value;\n			if (value > max) max = value;\n			sum += value;\n			count += 1;\n		}\n		if (!Number.isFinite(min) || !Number.isFinite(max) || count === 0) return null;\n		return {\n			min,\n			max,\n			mean: sum / count\n		};\n	}\n	//#endregion\n	//#region custom_components/hass_datapoints/src/lib/workers/history-analysis.worker.ts\n	function normalizeSeriesAnalysis(analysis) {\n		const source = analysis && typeof analysis === \"object\" ? analysis : {};\n		return {\n			show_trend_lines: source.show_trend_lines === true,\n			trend_method: [\n				\"linear_trend\",\n				\"rolling_average\",\n				\"ema\",\n				\"polynomial_trend\",\n				\"lowess\"\n			].includes(source.trend_method) ? source.trend_method : \"rolling_average\",\n			trend_window: typeof source.trend_window === \"string\" && source.trend_window ? source.trend_window : \"24h\",\n			show_summary_stats: source.show_summary_stats === true,\n			show_rate_of_change: source.show_rate_of_change === true,\n			rate_window: typeof source.rate_window === \"string\" && source.rate_window ? source.rate_window : \"1h\",\n			show_delta_analysis: source.show_delta_analysis === true\n		};\n	}\n	function buildTrendPoints(points, method, trendWindow) {\n		if (!Array.isArray(points) || points.length < 2) return [];\n		switch (method) {\n			case \"linear_trend\": return buildLinearTrend(points);\n			case \"ema\": return buildEmaTrend(points, getEmaAlpha(trendWindow));\n			case \"polynomial_trend\": return buildPolynomialTrend(points);\n			case \"lowess\": return buildLowessTrend(points, getLowessBandwidth(trendWindow, points));\n			default: return buildRollingAverageTrend(points, getTrendWindowMs(trendWindow));\n		}\n	}\n	function computeHistoryAnalysis(payload) {\n		const series = (Array.isArray(payload?.series) ? payload.series : []).map((seriesItem) => ({\n			...seriesItem,\n			analysis: normalizeSeriesAnalysis(seriesItem?.analysis)\n		}));\n		const comparisonSeries = new Map((Array.isArray(payload?.comparisonSeries) ? payload.comparisonSeries : []).filter((entry) => entry?.entityId).map((entry) => [entry.entityId, entry]));\n		const result = {\n			trendSeries: [],\n			rateSeries: [],\n			deltaSeries: [],\n			summaryStats: [],\n			anomalySeries: [],\n			comparisonWindowResults: {}\n		};\n		for (const seriesItem of series) {\n			const points = Array.isArray(seriesItem?.pts) ? seriesItem.pts : [];\n			const analysis = normalizeSeriesAnalysis(seriesItem?.analysis);\n			if (points.length < 2) continue;\n			if (analysis.show_trend_lines === true) {\n				const trendPoints = buildTrendPoints(points, analysis.trend_method, analysis.trend_window);\n				if (trendPoints.length >= 2) result.trendSeries.push({\n					entityId: seriesItem.entityId,\n					pts: trendPoints\n				});\n			}\n			if (analysis.show_rate_of_change === true) {\n				const ratePoints = buildRateOfChangePoints(points, analysis.rate_window);\n				if (ratePoints.length >= 2) result.rateSeries.push({\n					entityId: seriesItem.entityId,\n					pts: ratePoints\n				});\n			}\n			if (analysis.show_summary_stats === true) {\n				const summaryStats = buildSummaryStats(points);\n				if (summaryStats) result.summaryStats.push({\n					entityId: seriesItem.entityId,\n					...summaryStats\n				});\n			}\n			if (analysis.show_delta_analysis === true && payload?.hasSelectedComparisonWindow === true) {\n				const comparisonPoints = comparisonSeries.get(seriesItem.entityId)?.pts ?? [];\n				if (comparisonPoints.length >= 2) {\n					const deltaPoints = buildDeltaPoints(points, comparisonPoints);\n					if (deltaPoints.length >= 2) result.deltaSeries.push({\n						entityId: seriesItem.entityId,\n						pts: deltaPoints\n					});\n				}\n			}\n		}\n		const seriesAnalysisConfigs = typeof payload?.seriesAnalysisConfigs === \"object\" && payload.seriesAnalysisConfigs !== null ? payload.seriesAnalysisConfigs : {};\n		const allComparisonWindowsData = typeof payload?.allComparisonWindowsData === \"object\" && payload.allComparisonWindowsData !== null ? payload.allComparisonWindowsData : {};\n		for (const [windowId, entityPtsMap] of Object.entries(allComparisonWindowsData)) {\n			result.comparisonWindowResults[windowId] = {};\n			for (const [entityId, pts] of Object.entries(entityPtsMap)) {\n				const winAnalysis = normalizeSeriesAnalysis(seriesAnalysisConfigs[entityId]);\n				result.comparisonWindowResults[windowId][entityId] = {\n					trendPts: winAnalysis.show_trend_lines && pts.length >= 2 ? buildTrendPoints(pts, winAnalysis.trend_method, winAnalysis.trend_window) : [],\n					ratePts: winAnalysis.show_rate_of_change && pts.length >= 2 ? buildRateOfChangePoints(pts, winAnalysis.rate_window) : [],\n					summaryStats: winAnalysis.show_summary_stats ? buildSummaryStats(pts) : null\n				};\n			}\n		}\n		return result;\n	}\n	const workerScope = globalThis;\n	workerScope.onmessage = (event) => {\n		const { id, payload } = event.data || {};\n		try {\n			const result = computeHistoryAnalysis(payload);\n			workerScope.postMessage({\n				id,\n				result\n			});\n		} catch (error) {\n			workerScope.postMessage({\n				id,\n				error: error instanceof Error ? error.message : String(error)\n			});\n		}\n	};\n	//#endregion\n})();\n";
 	var blob$1 = typeof self !== "undefined" && self.Blob && new Blob(["(self.URL || self.webkitURL).revokeObjectURL(self.location.href);", jsContent$1], { type: "text/javascript;charset=utf-8" });
 	function WorkerWrapper$1(options) {
 		let objURL;
@@ -11823,10 +11877,10 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/analysis/windows.ts
-	var HOUR_MS$1 = 3600 * 1e3;
+	var HOUR_MS$1 = 36e5;
 	function getTrendWindowMs(value) {
 		const windows = {
-			"30m": 1800 * 1e3,
+			"30m": 18e5,
 			"1h": HOUR_MS$1,
 			"2h": 2 * HOUR_MS$1,
 			"3h": 3 * HOUR_MS$1,
@@ -11897,7 +11951,7 @@
 		let sumXX = 0;
 		let sumXY = 0;
 		for (const [time, value] of points) {
-			const x = (time - origin) / (3600 * 1e3);
+			const x = (time - origin) / 36e5;
 			sumX += x;
 			sumY += value;
 			sumXX += x * x;
@@ -11910,8 +11964,8 @@
 		const intercept = (sumY - slope * sumX) / count;
 		const firstTime = points[0][0];
 		const lastTime = points[points.length - 1][0];
-		const firstX = (firstTime - origin) / (3600 * 1e3);
-		const lastX = (lastTime - origin) / (3600 * 1e3);
+		const firstX = (firstTime - origin) / 36e5;
+		const lastX = (lastTime - origin) / 36e5;
 		return [[firstTime, intercept + slope * firstX], [lastTime, intercept + slope * lastX]];
 	}
 	function buildEmaTrend(points, alpha) {
@@ -12033,7 +12087,7 @@
 			if (!Array.isArray(comparisonPoint) || comparisonPoint.length < 2) continue;
 			const deltaMs = timeMs - comparisonPoint[0];
 			if (!Number.isFinite(deltaMs) || deltaMs <= 0) continue;
-			const deltaHours = deltaMs / (3600 * 1e3);
+			const deltaHours = deltaMs / 36e5;
 			if (!Number.isFinite(deltaHours) || deltaHours <= 0) continue;
 			const rateValue = (value - comparisonPoint[1]) / deltaHours;
 			if (!Number.isFinite(rateValue)) continue;
@@ -12314,7 +12368,7 @@
 		const startMs = mainStartIso ? Date.parse(mainStartIso) : NaN;
 		const endMs = mainEndIso ? Date.parse(mainEndIso) : NaN;
 		if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs) return msg("If raw recorder history is incomplete or unavailable, fetch Home Assistant statistics for continuity and call out the retention boundary explicitly.");
-		const spanDays = (endMs - startMs) / (1440 * 60 * 1e3);
+		const spanDays = (endMs - startMs) / 864e5;
 		if (spanDays > 10) return t$2("The requested window spans about {0} days. Short-retention raw history may not fully cover this range, so use Home Assistant statistics for older or missing portions and do not infer 'no anomalies' from retention gaps.", Math.round(spanDays));
 		return msg("Use raw recorder history first for this range. If raw history is incomplete or unavailable, fetch Home Assistant statistics and explain any retention or recorder gaps.");
 	}
@@ -13956,7 +14010,7 @@
 			const r = renderer;
 			const config = this._config;
 			const showGaps = config?.show_data_gaps !== false;
-			const gapThresholdMs = SAMPLE_INTERVAL_MS[config?.data_gap_threshold || "2h"] ?? 120 * 6e4;
+			const gapThresholdMs = SAMPLE_INTERVAL_MS[config?.data_gap_threshold || "2h"] ?? 72e5;
 			if (!showGaps || pts.length < 2 || !Number.isFinite(gapThresholdMs)) {
 				r.drawLine(pts, color, t0, t1, min, max, opts);
 				return;
@@ -16670,7 +16724,8 @@
 		BOOLEAN_ATTRIBUTE: 4,
 		EVENT: 5,
 		ELEMENT: 6
-	}, e$2 = (t) => (...e) => ({
+	};
+	var e$2 = (t) => (...e) => ({
 		_$litDirective$: t,
 		values: e
 	});
@@ -16725,7 +16780,8 @@
 		const r = /* @__PURE__ */ new Map();
 		for (let l = s; l <= t; l++) r.set(e[l], l);
 		return r;
-	}, c = e$2(class extends i$1 {
+	};
+	var c = e$2(class extends i$1 {
 		constructor(e) {
 			if (super(e), e.type !== t$1.CHILD) throw Error("repeat() can only be used in text expressions");
 		}
@@ -19155,8 +19211,7 @@
 	var styles$54 = i$5``;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/analysis-summary-group.ts
-	var _AnalysisSummaryGroup;
-	var AnalysisSummaryGroup = (_AnalysisSummaryGroup = class AnalysisSummaryGroup extends AnalysisGroupMixin(i$2) {
+	var _AnalysisSummaryGroup = class AnalysisSummaryGroup extends AnalysisGroupMixin(i$2) {
 		_onGroupChange(e) {
 			this._emit("show_summary_stats", e.detail.checked);
 		}
@@ -19179,7 +19234,8 @@
       </analysis-group>
     `;
 		}
-	}, _defineProperty(_AnalysisSummaryGroup, "styles", [sharedStyles, styles$54]), _AnalysisSummaryGroup);
+	};
+	var AnalysisSummaryGroup = (_defineProperty(_AnalysisSummaryGroup, "styles", [sharedStyles, styles$54]), _AnalysisSummaryGroup);
 	AnalysisSummaryGroup = __decorate([localized()], AnalysisSummaryGroup);
 	customElements.define("analysis-summary-group", AnalysisSummaryGroup);
 	//#endregion
@@ -19351,8 +19407,9 @@
 	customElements.define("number-input", NumberInput);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/analysis-threshold-group.ts
-	var _AnalysisThresholdGroup, _unit_accessor_storage$1;
-	var AnalysisThresholdGroup = (_unit_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _AnalysisThresholdGroup = class AnalysisThresholdGroup extends AnalysisGroupMixin(i$2) {
+	var _AnalysisThresholdGroup;
+	var _unit_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var AnalysisThresholdGroup = (_AnalysisThresholdGroup = class AnalysisThresholdGroup extends AnalysisGroupMixin(i$2) {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _unit_accessor_storage$1, "");
@@ -19580,7 +19637,13 @@
 	customElements.define("analysis-method-subopts", AnalysisMethodSubopts);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/analysis-anomaly-group.ts
-	var _AnalysisAnomalyGroup, _comparisonWindows_accessor_storage$3, _hass_accessor_storage$11, _computing_accessor_storage$1, _computingProgress_accessor_storage$1, _computingMethods_accessor_storage$1, _hideSaveMonitorCta_accessor_storage;
+	var _AnalysisAnomalyGroup;
+	var _comparisonWindows_accessor_storage$3;
+	var _hass_accessor_storage$11;
+	var _computing_accessor_storage$1;
+	var _computingProgress_accessor_storage$1;
+	var _computingMethods_accessor_storage$1;
+	var _hideSaveMonitorCta_accessor_storage;
 	var ANALYSIS_ANOMALY_SENSITIVITY_OPTIONS = [
 		{
 			value: "low",
@@ -20051,8 +20114,9 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-delta-group/analysis-delta-group.ts
-	var _AnalysisDeltaGroup, _canShowDeltaAnalysis_accessor_storage$3;
-	var AnalysisDeltaGroup = (_canShowDeltaAnalysis_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _AnalysisDeltaGroup = class AnalysisDeltaGroup extends AnalysisGroupMixin(i$2) {
+	var _AnalysisDeltaGroup;
+	var _canShowDeltaAnalysis_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
+	var AnalysisDeltaGroup = (_AnalysisDeltaGroup = class AnalysisDeltaGroup extends AnalysisGroupMixin(i$2) {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _canShowDeltaAnalysis_accessor_storage$3, false);
@@ -20470,7 +20534,10 @@
 	customElements.define("radio-group", RadioGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/sidebar-datapoints-section.ts
-	var _SidebarDatapointsSection, _datapointScope_accessor_storage$3, _collapsible_accessor_storage$3, _open_accessor_storage$7;
+	var _SidebarDatapointsSection;
+	var _datapointScope_accessor_storage$3;
+	var _collapsible_accessor_storage$3;
+	var _open_accessor_storage$7;
 	var DATAPOINT_SCOPE_OPTIONS = [
 		{
 			value: "linked",
@@ -20628,8 +20695,12 @@
 	customElements.define("checkbox-list", CheckboxList);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/sidebar-datapoint-display-section.ts
-	var _SidebarDatapointDisplaySection, _showIcons_accessor_storage$2, _showLines_accessor_storage$2, _collapsible_accessor_storage$2, _open_accessor_storage$6;
-	var SidebarDatapointDisplaySection = (_showIcons_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showLines_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$6 = /* @__PURE__ */ new WeakMap(), _SidebarDatapointDisplaySection = class SidebarDatapointDisplaySection extends i$2 {
+	var _SidebarDatapointDisplaySection;
+	var _showIcons_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
+	var _showLines_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
+	var _collapsible_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
+	var _open_accessor_storage$6 = /* @__PURE__ */ new WeakMap();
+	var SidebarDatapointDisplaySection = (_SidebarDatapointDisplaySection = class SidebarDatapointDisplaySection extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _showIcons_accessor_storage$2, true);
@@ -20738,7 +20809,12 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/sidebar-analysis-section.ts
-	var _SidebarAnalysisSection, _anomalyOverlapMode_accessor_storage$2, _showCorrelatedAnomalies_accessor_storage$3, _anyAnomaliesEnabled_accessor_storage$2, _collapsible_accessor_storage$1, _open_accessor_storage$5;
+	var _SidebarAnalysisSection;
+	var _anomalyOverlapMode_accessor_storage$2;
+	var _showCorrelatedAnomalies_accessor_storage$3;
+	var _anyAnomaliesEnabled_accessor_storage$2;
+	var _collapsible_accessor_storage$1;
+	var _open_accessor_storage$5;
 	var ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS$1 = [{
 		value: "all",
 		label: "Show all anomalies"
@@ -20909,7 +20985,15 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/sidebar-chart-display-section.ts
-	var _SidebarChartDisplaySection, _showTooltips_accessor_storage$2, _showHoverGuides_accessor_storage$2, _showDataGaps_accessor_storage$3, _dataGapThreshold_accessor_storage$3, _yAxisMode_accessor_storage$2, _hoverSnapMode_accessor_storage$2, _collapsible_accessor_storage, _open_accessor_storage$4;
+	var _SidebarChartDisplaySection;
+	var _showTooltips_accessor_storage$2;
+	var _showHoverGuides_accessor_storage$2;
+	var _showDataGaps_accessor_storage$3;
+	var _dataGapThreshold_accessor_storage$3;
+	var _yAxisMode_accessor_storage$2;
+	var _hoverSnapMode_accessor_storage$2;
+	var _collapsible_accessor_storage;
+	var _open_accessor_storage$4;
 	var DATA_GAP_THRESHOLD_OPTIONS$1 = [
 		{
 			value: "auto",
@@ -21162,7 +21246,7 @@
 						const currentMethods = Array.isArray(analysis.anomaly_methods) ? analysis.anomaly_methods : [];
 						return {
 							...analysis,
-							anomaly_methods: value === true ? [...new Set([...currentMethods, method])] : currentMethods.filter((entry) => entry !== method)
+							anomaly_methods: value === true ? [.../* @__PURE__ */ new Set([...currentMethods, method])] : currentMethods.filter((entry) => entry !== method)
 						};
 					}
 					return {
@@ -21502,7 +21586,7 @@
 	var HOUR_MS = 60 * MINUTE_MS;
 	var DAY_MS = 24 * HOUR_MS;
 	7 * DAY_MS;
-	var RANGE_SLIDER_MIN_SPAN_MS = 900 * 1e3;
+	var RANGE_SLIDER_MIN_SPAN_MS = 9e5;
 	30 * DAY_MS;
 	var RANGE_AUTO_ZOOM_DEBOUNCE_MS = 3e3;
 	var RANGE_AUTO_ZOOM_SELECTION_PADDING_RATIO = .6;
@@ -21870,10 +21954,7 @@
 			case "quarter":
 				result.setMonth(result.getMonth() + amount * 3);
 				break;
-			case "year":
-				result.setFullYear(result.getFullYear() + amount);
-				break;
-			default: break;
+			case "year": result.setFullYear(result.getFullYear() + amount);
 		}
 		return result;
 	}
@@ -21911,12 +21992,12 @@
 	}
 	function computeZoomLevelForSpan(spanMs) {
 		const normalizedSpanMs = Math.max(spanMs, RANGE_SLIDER_MIN_SPAN_MS);
-		if (normalizedSpanMs >= 180 * 864e5) return "quarterly";
-		if (normalizedSpanMs >= 120 * 864e5) return "month_compressed";
-		if (normalizedSpanMs >= 60 * 864e5) return "month_short";
-		if (normalizedSpanMs >= 21 * 864e5) return "month_expanded";
-		if (normalizedSpanMs >= 7 * 864e5) return "week_compressed";
-		if (normalizedSpanMs >= 2 * 864e5) return "week_expanded";
+		if (normalizedSpanMs >= 15552e6) return "quarterly";
+		if (normalizedSpanMs >= 10368e6) return "month_compressed";
+		if (normalizedSpanMs >= 5184e6) return "month_short";
+		if (normalizedSpanMs >= 18144e5) return "month_expanded";
+		if (normalizedSpanMs >= 6048e5) return "week_compressed";
+		if (normalizedSpanMs >= 1728e5) return "week_expanded";
 		return "day";
 	}
 	function snapDateToUnit(value, unit) {
@@ -22069,7 +22150,7 @@
 			const method = nextKey.slice(22);
 			const currentMethods = currentAnalysis.anomaly_methods;
 			nextKey = "anomaly_methods";
-			nextValue = nextValue === true ? [...new Set([...currentMethods, method])] : currentMethods.filter((m) => m !== method);
+			nextValue = nextValue === true ? [.../* @__PURE__ */ new Set([...currentMethods, method])] : currentMethods.filter((m) => m !== method);
 		}
 		const nextSource = {
 			...currentAnalysis,
@@ -22723,7 +22804,23 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/target-row.ts
-	var _TargetRow, _color_accessor_storage$1, _visible_accessor_storage$1, _analysis_accessor_storage, _index_accessor_storage, _entityId_accessor_storage, _canShowDeltaAnalysis_accessor_storage$2, _stateObj_accessor_storage$1, _hass_accessor_storage$10, _comparisonWindows_accessor_storage$2, _computing_accessor_storage, _computingProgress_accessor_storage, _computingMethods_accessor_storage, _rowCount_accessor_storage, _allAnalysisSame_accessor_storage, _hideDragHandle_accessor_storage, _label_accessor_storage$8;
+	var _TargetRow;
+	var _color_accessor_storage$1;
+	var _visible_accessor_storage$1;
+	var _analysis_accessor_storage;
+	var _index_accessor_storage;
+	var _entityId_accessor_storage;
+	var _canShowDeltaAnalysis_accessor_storage$2;
+	var _stateObj_accessor_storage$1;
+	var _hass_accessor_storage$10;
+	var _comparisonWindows_accessor_storage$2;
+	var _computing_accessor_storage;
+	var _computingProgress_accessor_storage;
+	var _computingMethods_accessor_storage;
+	var _rowCount_accessor_storage;
+	var _allAnalysisSame_accessor_storage;
+	var _hideDragHandle_accessor_storage;
+	var _label_accessor_storage$8;
 	function deriveSwatchIconColor(color) {
 		const hex = String(color || "").trim();
 		const normalizedHex = /^#([0-9a-f]{6})$/i.test(hex) ? hex : null;
@@ -23227,7 +23324,17 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/target-row-list.ts
-	var _TargetRowList, _rows_accessor_storage$1, _states_accessor_storage$1, _hass_accessor_storage$9, _canShowDeltaAnalysis_accessor_storage$1, _comparisonWindows_accessor_storage$1, _computingEntityIds_accessor_storage, _analysisProgress_accessor_storage, _computingMethodsByEntity_accessor_storage, _labelMap_accessor_storage, _targetRows_accessor_storage;
+	var _TargetRowList;
+	var _rows_accessor_storage$1;
+	var _states_accessor_storage$1;
+	var _hass_accessor_storage$9;
+	var _canShowDeltaAnalysis_accessor_storage$1;
+	var _comparisonWindows_accessor_storage$1;
+	var _computingEntityIds_accessor_storage$1;
+	var _analysisProgress_accessor_storage$1;
+	var _computingMethodsByEntity_accessor_storage$1;
+	var _labelMap_accessor_storage$1;
+	var _targetRows_accessor_storage;
 	var _DURATION_SECONDS = {
 		raw: 0,
 		"5s": 5,
@@ -23309,7 +23416,7 @@
 		}
 		return updates;
 	}
-	var TargetRowList = (_rows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _states_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$9 = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _analysisProgress_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingMethodsByEntity_accessor_storage = /* @__PURE__ */ new WeakMap(), _labelMap_accessor_storage = /* @__PURE__ */ new WeakMap(), _targetRows_accessor_storage = /* @__PURE__ */ new WeakMap(), _TargetRowList = class TargetRowList extends i$2 {
+	var TargetRowList = (_rows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _states_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$9 = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingEntityIds_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _analysisProgress_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingMethodsByEntity_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _labelMap_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _targetRows_accessor_storage = /* @__PURE__ */ new WeakMap(), _TargetRowList = class TargetRowList extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _rows_accessor_storage$1, []);
@@ -23317,10 +23424,10 @@
 			_classPrivateFieldInitSpec(this, _hass_accessor_storage$9, null);
 			_classPrivateFieldInitSpec(this, _canShowDeltaAnalysis_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _comparisonWindows_accessor_storage$1, []);
-			_classPrivateFieldInitSpec(this, _computingEntityIds_accessor_storage, /* @__PURE__ */ new Set());
-			_classPrivateFieldInitSpec(this, _analysisProgress_accessor_storage, 0);
-			_classPrivateFieldInitSpec(this, _computingMethodsByEntity_accessor_storage, /* @__PURE__ */ new Map());
-			_classPrivateFieldInitSpec(this, _labelMap_accessor_storage, /* @__PURE__ */ new Map());
+			_classPrivateFieldInitSpec(this, _computingEntityIds_accessor_storage$1, /* @__PURE__ */ new Set());
+			_classPrivateFieldInitSpec(this, _analysisProgress_accessor_storage$1, 0);
+			_classPrivateFieldInitSpec(this, _computingMethodsByEntity_accessor_storage$1, /* @__PURE__ */ new Map());
+			_classPrivateFieldInitSpec(this, _labelMap_accessor_storage$1, /* @__PURE__ */ new Map());
 			_classPrivateFieldInitSpec(this, _targetRows_accessor_storage, void 0);
 			_defineProperty(
 				this,
@@ -23372,7 +23479,7 @@
 					if (key.startsWith("anomaly_method_toggle_")) {
 						const method = key.slice(22);
 						const currentMethods = Array.isArray(currentAnalysis.anomaly_methods) ? currentAnalysis.anomaly_methods : [];
-						const nextMethods = value === true ? [...new Set([...currentMethods, method])] : currentMethods.filter((m) => m !== method);
+						const nextMethods = value === true ? [.../* @__PURE__ */ new Set([...currentMethods, method])] : currentMethods.filter((m) => m !== method);
 						nextAnalysis = {
 							...currentAnalysis,
 							anomaly_methods: nextMethods
@@ -23432,28 +23539,28 @@
 			_classPrivateFieldSet2(_comparisonWindows_accessor_storage$1, this, value);
 		}
 		get computingEntityIds() {
-			return _classPrivateFieldGet2(_computingEntityIds_accessor_storage, this);
+			return _classPrivateFieldGet2(_computingEntityIds_accessor_storage$1, this);
 		}
 		set computingEntityIds(value) {
-			_classPrivateFieldSet2(_computingEntityIds_accessor_storage, this, value);
+			_classPrivateFieldSet2(_computingEntityIds_accessor_storage$1, this, value);
 		}
 		get analysisProgress() {
-			return _classPrivateFieldGet2(_analysisProgress_accessor_storage, this);
+			return _classPrivateFieldGet2(_analysisProgress_accessor_storage$1, this);
 		}
 		set analysisProgress(value) {
-			_classPrivateFieldSet2(_analysisProgress_accessor_storage, this, value);
+			_classPrivateFieldSet2(_analysisProgress_accessor_storage$1, this, value);
 		}
 		get computingMethodsByEntity() {
-			return _classPrivateFieldGet2(_computingMethodsByEntity_accessor_storage, this);
+			return _classPrivateFieldGet2(_computingMethodsByEntity_accessor_storage$1, this);
 		}
 		set computingMethodsByEntity(value) {
-			_classPrivateFieldSet2(_computingMethodsByEntity_accessor_storage, this, value);
+			_classPrivateFieldSet2(_computingMethodsByEntity_accessor_storage$1, this, value);
 		}
 		get labelMap() {
-			return _classPrivateFieldGet2(_labelMap_accessor_storage, this);
+			return _classPrivateFieldGet2(_labelMap_accessor_storage$1, this);
 		}
 		set labelMap(value) {
-			_classPrivateFieldSet2(_labelMap_accessor_storage, this, value);
+			_classPrivateFieldSet2(_labelMap_accessor_storage$1, this, value);
 		}
 		get _targetRows() {
 			return _classPrivateFieldGet2(_targetRows_accessor_storage, this);
@@ -24742,8 +24849,14 @@
 	customElements.define("comparison-tab", ComparisonTab);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab-rail/comparison-tab-rail.ts
-	var _ComparisonTabRail, _tabs_accessor_storage, _loadingIds_accessor_storage, _hoveredId_accessor_storage, _overflowing_accessor_storage, _shellEl_accessor_storage, _railEl_accessor_storage;
-	var ComparisonTabRail = (_tabs_accessor_storage = /* @__PURE__ */ new WeakMap(), _loadingIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _hoveredId_accessor_storage = /* @__PURE__ */ new WeakMap(), _overflowing_accessor_storage = /* @__PURE__ */ new WeakMap(), _shellEl_accessor_storage = /* @__PURE__ */ new WeakMap(), _railEl_accessor_storage = /* @__PURE__ */ new WeakMap(), _ComparisonTabRail = class ComparisonTabRail extends i$2 {
+	var _ComparisonTabRail;
+	var _tabs_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _loadingIds_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _hoveredId_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _overflowing_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _shellEl_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _railEl_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var ComparisonTabRail = (_ComparisonTabRail = class ComparisonTabRail extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _tabs_accessor_storage, []);
@@ -26603,14 +26716,14 @@
 				second: SECOND_MS,
 				minute: 60 * SECOND_MS,
 				hour: 3600 * SECOND_MS,
-				day: 1440 * 60 * SECOND_MS,
-				week: 10080 * 60 * SECOND_MS
+				day: 86400 * SECOND_MS,
+				week: 604800 * SECOND_MS
 			};
 			if (perMs[unit]) return Math.ceil(totalMs / perMs[unit]);
 			if (unit === "month") return Math.ceil(totalMs / (30.44 * 24 * 60 * 60 * SECOND_MS));
-			if (unit === "quarter") return Math.ceil(totalMs / (91.3 * 24 * 60 * 60 * SECOND_MS));
-			if (unit === "year") return Math.ceil(totalMs / (365.25 * 24 * 60 * 60 * SECOND_MS));
-			return Math.max(1, Math.ceil(totalMs / (1440 * 60 * SECOND_MS)));
+			if (unit === "quarter") return Math.ceil(totalMs / (7888320 * SECOND_MS));
+			if (unit === "year") return Math.ceil(totalMs / (31557600 * SECOND_MS));
+			return Math.max(1, Math.ceil(totalMs / (86400 * SECOND_MS)));
 		}
 		_syncRangeControl() {
 			if (!this._rangeTrackEl || !this._rangeStartHandleEl || !this._rangeEndHandleEl) return;
@@ -27118,8 +27231,24 @@
 	customElements.define("range-timeline", RangeTimeline);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/date-window-dialog.ts
-	var _DateWindowDialog, _open_accessor_storage$3, _heading_accessor_storage$1, _name_accessor_storage$2, _startValue_accessor_storage, _endValue_accessor_storage, _showDelete_accessor_storage, _showShortcuts_accessor_storage, _submitLabel_accessor_storage, _rangeBounds_accessor_storage$2, _zoomLevel_accessor_storage$3, _dateSnapping_accessor_storage$3, _dialogEl_accessor_storage, _nameInput_accessor_storage, _startInput_accessor_storage, _endInput_accessor_storage, _shaking_accessor_storage;
-	var DateWindowDialog = (_open_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _heading_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _name_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _startValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _endValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _showDelete_accessor_storage = /* @__PURE__ */ new WeakMap(), _showShortcuts_accessor_storage = /* @__PURE__ */ new WeakMap(), _submitLabel_accessor_storage = /* @__PURE__ */ new WeakMap(), _rangeBounds_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _zoomLevel_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _dateSnapping_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _dialogEl_accessor_storage = /* @__PURE__ */ new WeakMap(), _nameInput_accessor_storage = /* @__PURE__ */ new WeakMap(), _startInput_accessor_storage = /* @__PURE__ */ new WeakMap(), _endInput_accessor_storage = /* @__PURE__ */ new WeakMap(), _shaking_accessor_storage = /* @__PURE__ */ new WeakMap(), _DateWindowDialog = class DateWindowDialog extends i$2 {
+	var _DateWindowDialog;
+	var _open_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
+	var _heading_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _name_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
+	var _startValue_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _endValue_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _showDelete_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _showShortcuts_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _submitLabel_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _rangeBounds_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
+	var _zoomLevel_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
+	var _dateSnapping_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
+	var _dialogEl_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _nameInput_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _startInput_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _endInput_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _shaking_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var DateWindowDialog = (_DateWindowDialog = class DateWindowDialog extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _open_accessor_storage$3, false);
@@ -27924,8 +28053,27 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/anomaly-monitor-wizard.ts
-	var _AnomalyMonitorWizard, _hass_accessor_storage$8, _open_accessor_storage$2, _prefillEntityIds_accessor_storage, _prefillAnalysis_accessor_storage, _editMonitor_accessor_storage$1, _suggestedEntityIds_accessor_storage, _allSeriesEntityIds_accessor_storage, _step_accessor_storage, _target_accessor_storage, _entityIds_accessor_storage, _entityConfigs_accessor_storage, _activeEntityId_accessor_storage, _name_accessor_storage$1, _lookBackHours_accessor_storage, _scanIntervalMinutes_accessor_storage, _monitorType_accessor_storage, _overlapMode_accessor_storage, _error_accessor_storage, _saving_accessor_storage;
-	var AnomalyMonitorWizard = (_hass_accessor_storage$8 = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _prefillEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _prefillAnalysis_accessor_storage = /* @__PURE__ */ new WeakMap(), _editMonitor_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _suggestedEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _allSeriesEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _step_accessor_storage = /* @__PURE__ */ new WeakMap(), _target_accessor_storage = /* @__PURE__ */ new WeakMap(), _entityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _entityConfigs_accessor_storage = /* @__PURE__ */ new WeakMap(), _activeEntityId_accessor_storage = /* @__PURE__ */ new WeakMap(), _name_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _lookBackHours_accessor_storage = /* @__PURE__ */ new WeakMap(), _scanIntervalMinutes_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitorType_accessor_storage = /* @__PURE__ */ new WeakMap(), _overlapMode_accessor_storage = /* @__PURE__ */ new WeakMap(), _error_accessor_storage = /* @__PURE__ */ new WeakMap(), _saving_accessor_storage = /* @__PURE__ */ new WeakMap(), _AnomalyMonitorWizard = class AnomalyMonitorWizard extends i$2 {
+	var _AnomalyMonitorWizard;
+	var _hass_accessor_storage$8 = /* @__PURE__ */ new WeakMap();
+	var _open_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
+	var _prefillEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _prefillAnalysis_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _editMonitor_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _suggestedEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _allSeriesEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _step_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _target_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _entityIds_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _entityConfigs_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _activeEntityId_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _name_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _lookBackHours_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _scanIntervalMinutes_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _monitorType_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _overlapMode_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _error_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _saving_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var AnomalyMonitorWizard = (_AnomalyMonitorWizard = class AnomalyMonitorWizard extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _hass_accessor_storage$8, null);
@@ -28818,8 +28966,16 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitors-panel/anomaly-monitors-panel.ts
-	var _AnomalyMonitorsPanel, _hass_accessor_storage$7, _monitors_accessor_storage, _loading_accessor_storage, _editMonitor_accessor_storage, _wizardOpen_accessor_storage, _monitorClusters_accessor_storage, _loadingClusters_accessor_storage, _dismissPickerKey_accessor_storage;
-	var AnomalyMonitorsPanel = (_hass_accessor_storage$7 = /* @__PURE__ */ new WeakMap(), _monitors_accessor_storage = /* @__PURE__ */ new WeakMap(), _loading_accessor_storage = /* @__PURE__ */ new WeakMap(), _editMonitor_accessor_storage = /* @__PURE__ */ new WeakMap(), _wizardOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitorClusters_accessor_storage = /* @__PURE__ */ new WeakMap(), _loadingClusters_accessor_storage = /* @__PURE__ */ new WeakMap(), _dismissPickerKey_accessor_storage = /* @__PURE__ */ new WeakMap(), _AnomalyMonitorsPanel = class AnomalyMonitorsPanel extends i$2 {
+	var _AnomalyMonitorsPanel;
+	var _hass_accessor_storage$7 = /* @__PURE__ */ new WeakMap();
+	var _monitors_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _loading_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _editMonitor_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _wizardOpen_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _monitorClusters_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _loadingClusters_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _dismissPickerKey_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var AnomalyMonitorsPanel = (_AnomalyMonitorsPanel = class AnomalyMonitorsPanel extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _hass_accessor_storage$7, null);
@@ -28987,7 +29143,7 @@
 		}
 		async _loadClusters(monitorId) {
 			if (!this.hass || this._loadingClusters.has(monitorId)) return;
-			this._loadingClusters = new Set([...this._loadingClusters, monitorId]);
+			this._loadingClusters = /* @__PURE__ */ new Set([...this._loadingClusters, monitorId]);
 			try {
 				const result = await fetchMonitorAnomalies(this.hass, monitorId);
 				const updated = new Map(this._monitorClusters);
@@ -29139,8 +29295,8 @@
     >
       <polyline
         points=${counts.map((c, i) => {
-				const x = PAD + i / Math.max(counts.length - 1, 1) * (W - PAD * 2);
-				const y = H - PAD - c / max * (H - PAD * 2);
+				const x = PAD + i / Math.max(counts.length - 1, 1) * 116;
+				const y = 26 - c / max * 24;
 				return `${x.toFixed(1)},${y.toFixed(1)}`;
 			}).join(" ")}
         fill="none"
@@ -30278,8 +30434,15 @@
 	customElements.define("page-menu-item", PageMenuItem);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/panel-shell/panel-shell.ts
-	var _PanelShell, _hass_accessor_storage$6, _narrow_accessor_storage$1, _sidebarCollapsed_accessor_storage$2, _hasSavedState_accessor_storage, _layoutMode_accessor_storage$1, _collapsedOptionsOpen_accessor_storage, _pageMenuOpen_accessor_storage;
-	var PanelShell = (_hass_accessor_storage$6 = /* @__PURE__ */ new WeakMap(), _narrow_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _sidebarCollapsed_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _hasSavedState_accessor_storage = /* @__PURE__ */ new WeakMap(), _layoutMode_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _collapsedOptionsOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _pageMenuOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _PanelShell = class PanelShell extends i$2 {
+	var _PanelShell;
+	var _hass_accessor_storage$6 = /* @__PURE__ */ new WeakMap();
+	var _narrow_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _sidebarCollapsed_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
+	var _hasSavedState_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _layoutMode_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _collapsedOptionsOpen_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _pageMenuOpen_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var PanelShell = (_PanelShell = class PanelShell extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _hass_accessor_storage$6, null);
@@ -30556,7 +30719,9 @@
           id="collapsed-options-popup"
           class="collapsed-options-popup"
           ?hidden=${!this.collapsedOptionsOpen}
-        ><slot name="collapsed-options"></slot></div>
+        >
+          <slot name="collapsed-options"></slot>
+        </div>
       </ha-top-app-bar-fixed>
     `;
 		}
@@ -30675,8 +30840,13 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/ai-query-brief-dialog/ai-query-brief-dialog.ts
-	var _AiQueryBriefDialog, _open_accessor_storage, _heading_accessor_storage, _text_accessor_storage, _textareaEl_accessor_storage, _statusMessage_accessor_storage;
-	var AiQueryBriefDialog = (_open_accessor_storage = /* @__PURE__ */ new WeakMap(), _heading_accessor_storage = /* @__PURE__ */ new WeakMap(), _text_accessor_storage = /* @__PURE__ */ new WeakMap(), _textareaEl_accessor_storage = /* @__PURE__ */ new WeakMap(), _statusMessage_accessor_storage = /* @__PURE__ */ new WeakMap(), _AiQueryBriefDialog = class AiQueryBriefDialog extends i$2 {
+	var _AiQueryBriefDialog;
+	var _open_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _heading_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _text_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _textareaEl_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _statusMessage_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var AiQueryBriefDialog = (_AiQueryBriefDialog = class AiQueryBriefDialog extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _open_accessor_storage, false);
@@ -31057,14 +31227,29 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/history-targets/history-targets.ts
-	var _HistoryTargets, _rows_accessor_storage, _states_accessor_storage, _hass_accessor_storage$5, _comparisonWindows_accessor_storage, _canShowDeltaAnalysis_accessor_storage, _sidebarCollapsed_accessor_storage$1, _collapsedSummaryKey_accessor_storage;
-	var HistoryTargets = (_rows_accessor_storage = /* @__PURE__ */ new WeakMap(), _states_accessor_storage = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$5 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarCollapsed_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _collapsedSummaryKey_accessor_storage = /* @__PURE__ */ new WeakMap(), _HistoryTargets = class HistoryTargets extends i$2 {
+	var _HistoryTargets;
+	var _rows_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _states_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$5 = /* @__PURE__ */ new WeakMap();
+	var _comparisonWindows_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _labelMap_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _computingEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _analysisProgress_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _computingMethodsByEntity_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _canShowDeltaAnalysis_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _sidebarCollapsed_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _collapsedSummaryKey_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var HistoryTargets = (_HistoryTargets = class HistoryTargets extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _rows_accessor_storage, []);
 			_classPrivateFieldInitSpec(this, _states_accessor_storage, {});
 			_classPrivateFieldInitSpec(this, _hass_accessor_storage$5, null);
 			_classPrivateFieldInitSpec(this, _comparisonWindows_accessor_storage, []);
+			_classPrivateFieldInitSpec(this, _labelMap_accessor_storage, /* @__PURE__ */ new Map());
+			_classPrivateFieldInitSpec(this, _computingEntityIds_accessor_storage, /* @__PURE__ */ new Set());
+			_classPrivateFieldInitSpec(this, _analysisProgress_accessor_storage, 0);
+			_classPrivateFieldInitSpec(this, _computingMethodsByEntity_accessor_storage, /* @__PURE__ */ new Map());
 			_classPrivateFieldInitSpec(this, _canShowDeltaAnalysis_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _sidebarCollapsed_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _collapsedSummaryKey_accessor_storage, "");
@@ -31093,6 +31278,30 @@
 		set comparisonWindows(value) {
 			_classPrivateFieldSet2(_comparisonWindows_accessor_storage, this, value);
 		}
+		get labelMap() {
+			return _classPrivateFieldGet2(_labelMap_accessor_storage, this);
+		}
+		set labelMap(value) {
+			_classPrivateFieldSet2(_labelMap_accessor_storage, this, value);
+		}
+		get computingEntityIds() {
+			return _classPrivateFieldGet2(_computingEntityIds_accessor_storage, this);
+		}
+		set computingEntityIds(value) {
+			_classPrivateFieldSet2(_computingEntityIds_accessor_storage, this, value);
+		}
+		get analysisProgress() {
+			return _classPrivateFieldGet2(_analysisProgress_accessor_storage, this);
+		}
+		set analysisProgress(value) {
+			_classPrivateFieldSet2(_analysisProgress_accessor_storage, this, value);
+		}
+		get computingMethodsByEntity() {
+			return _classPrivateFieldGet2(_computingMethodsByEntity_accessor_storage, this);
+		}
+		set computingMethodsByEntity(value) {
+			_classPrivateFieldSet2(_computingMethodsByEntity_accessor_storage, this, value);
+		}
 		get canShowDeltaAnalysis() {
 			return _classPrivateFieldGet2(_canShowDeltaAnalysis_accessor_storage, this);
 		}
@@ -31117,10 +31326,6 @@
 				bubbles: true,
 				composed: true
 			}));
-		}
-		/** Returns the `target-row-list` element for direct property access by the parent. */
-		getRowListEl() {
-			return this.shadowRoot?.querySelector("target-row-list") ?? null;
 		}
 		/** Returns the `ha-target-picker` element for direct property access by the parent. */
 		getTargetPickerEl() {
@@ -31183,8 +31388,12 @@
             .rows=${this.rows}
             .states=${this.states}
             .hass=${this.hass}
+            .labelMap=${this.labelMap}
             .canShowDeltaAnalysis=${this.canShowDeltaAnalysis}
             .comparisonWindows=${this.comparisonWindows}
+            .computingEntityIds=${this.computingEntityIds}
+            .analysisProgress=${this.analysisProgress}
+            .computingMethodsByEntity=${this.computingMethodsByEntity}
           ></target-row-list>
         </div>
 
@@ -31234,6 +31443,13 @@
 	__decorate([n$1({ type: Object })], HistoryTargets.prototype, "states", null);
 	__decorate([n$1({ type: Object })], HistoryTargets.prototype, "hass", null);
 	__decorate([n$1({ type: Array })], HistoryTargets.prototype, "comparisonWindows", null);
+	__decorate([n$1({ attribute: false })], HistoryTargets.prototype, "labelMap", null);
+	__decorate([n$1({ attribute: false })], HistoryTargets.prototype, "computingEntityIds", null);
+	__decorate([n$1({
+		type: Number,
+		attribute: false
+	})], HistoryTargets.prototype, "analysisProgress", null);
+	__decorate([n$1({ attribute: false })], HistoryTargets.prototype, "computingMethodsByEntity", null);
 	__decorate([n$1({
 		type: Boolean,
 		attribute: "can-show-delta-analysis"
@@ -32156,8 +32372,27 @@
 	customElements.define("date-time-input", DateTimeInput);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/range-toolbar/range-toolbar.ts
-	var _RangeToolbar, _hass_accessor_storage$4, _startTime_accessor_storage, _endTime_accessor_storage, _rangeBounds_accessor_storage, _zoomLevel_accessor_storage$1, _dateSnapping_accessor_storage$1, _sidebarCollapsed_accessor_storage, _isLiveEdge_accessor_storage, _timelineEvents_accessor_storage$1, _comparisonPreview_accessor_storage, _zoomRange_accessor_storage, _zoomWindowRange_accessor_storage, _chartHoverTimeMs_accessor_storage$1, _chartHoverWindowTimeMs_accessor_storage, _optionsView_accessor_storage, _optionsOpen_accessor_storage, _pickerOpen_accessor_storage, _mobileStartValue_accessor_storage, _mobileEndValue_accessor_storage;
-	var RangeToolbar = (_hass_accessor_storage$4 = /* @__PURE__ */ new WeakMap(), _startTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _endTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _rangeBounds_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomLevel_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _dateSnapping_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _sidebarCollapsed_accessor_storage = /* @__PURE__ */ new WeakMap(), _isLiveEdge_accessor_storage = /* @__PURE__ */ new WeakMap(), _timelineEvents_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _comparisonPreview_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomRange_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomWindowRange_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartHoverTimeMs_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _chartHoverWindowTimeMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _optionsView_accessor_storage = /* @__PURE__ */ new WeakMap(), _optionsOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _pickerOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _mobileStartValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _mobileEndValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _RangeToolbar = class RangeToolbar extends i$2 {
+	var _RangeToolbar;
+	var _hass_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
+	var _startTime_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _endTime_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _rangeBounds_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _zoomLevel_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _dateSnapping_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _sidebarCollapsed_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _isLiveEdge_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _timelineEvents_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _comparisonPreview_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _zoomRange_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _zoomWindowRange_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _chartHoverTimeMs_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _chartHoverWindowTimeMs_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _optionsView_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _optionsOpen_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _pickerOpen_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _mobileStartValue_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _mobileEndValue_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var RangeToolbar = (_RangeToolbar = class RangeToolbar extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _hass_accessor_storage$4, null);
@@ -32570,10 +32805,9 @@
                   @click=${() => this._onOptionsSubmenu("zoom")}
                 >
                   <span class="range-option-label">${msg("Zoom level")}</span>
-                  <span
-                    class="range-submenu-meta"
-                    data-options-current="zoom"
-                  >${msg(RANGE_ZOOM_OPTIONS.find((option) => option.value === this.zoomLevel)?.label ?? "Auto")}</span>
+                  <span class="range-submenu-meta" data-options-current="zoom"
+                    >${msg(RANGE_ZOOM_OPTIONS.find((option) => option.value === this.zoomLevel)?.label ?? "Auto")}</span
+                  >
                 </button>
                 <button
                   type="button"
@@ -32583,10 +32817,9 @@
                   <span class="range-option-label"
                     >${msg("Date snapping")}</span
                   >
-                  <span
-                    class="range-submenu-meta"
-                    data-options-current="snap"
-                  >${msg(RANGE_SNAP_OPTIONS.find((option) => option.value === this.dateSnapping)?.label ?? "Hour")}</span>
+                  <span class="range-submenu-meta" data-options-current="snap"
+                    >${msg(RANGE_SNAP_OPTIONS.find((option) => option.value === this.dateSnapping)?.label ?? "Hour")}</span
+                  >
                 </button>
               </div>
             </div>
@@ -33227,7 +33460,7 @@
 </Types>`;
 	}
 	function createCrc32Table() {
-		const table = new Uint32Array(256);
+		const table = /* @__PURE__ */ new Uint32Array(256);
 		for (let index = 0; index < 256; index += 1) {
 			let value = index;
 			for (let bit = 0; bit < 8; bit += 1) if ((value & 1) === 1) value = 3988292384 ^ value >>> 1;
@@ -33290,7 +33523,7 @@
 			offset += localHeader.length + dataBytes.length;
 		}
 		const centralDirectorySize = centralParts.reduce((sum, part) => sum + part.length, 0);
-		const endRecord = new Uint8Array(22);
+		const endRecord = /* @__PURE__ */ new Uint8Array(22);
 		const endView = new DataView(endRecord.buffer);
 		endView.setUint32(0, 101010256, true);
 		endView.setUint16(4, 0, true);
@@ -35790,7 +36023,38 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/datapoints.ts
-	var _HassDatapointsHistoryPanel, _hass_accessor_storage$3, _panel_accessor_storage, _narrow_accessor_storage, _rendered_accessor_storage, _shellBuilt_accessor_storage, _layoutMode_accessor_storage, _datapointScope_accessor_storage, _showChartDatapointIcons_accessor_storage, _showChartDatapointLines_accessor_storage, _showChartTooltips_accessor_storage, _showChartEmphasizedHoverGuides_accessor_storage, _chartHoverSnapMode_accessor_storage, _delinkChartYAxis_accessor_storage, _splitChartView_accessor_storage, _showCorrelatedAnomalies_accessor_storage, _chartAnomalyOverlapMode_accessor_storage, _showDataGaps_accessor_storage, _dataGapThreshold_accessor_storage, _historyStartTime_accessor_storage, _historyEndTime_accessor_storage, _timelineEvents_accessor_storage, _loadingComparisonWindowIds_accessor_storage, _sidebarAccordionTargetsOpen_accessor_storage, _sidebarAccordionDatapointsOpen_accessor_storage, _sidebarAccordionAnalysisOpen_accessor_storage, _sidebarAccordionChartOpen_accessor_storage, _resolvedAutoZoomLevel_accessor_storage, _chartHoverTimeMs_accessor_storage, _zoomLevel_accessor_storage, _dateSnapping_accessor_storage, _collapsedOptionsPopupOpen_accessor_storage;
+	var _HassDatapointsHistoryPanel;
+	var _hass_accessor_storage$3;
+	var _panel_accessor_storage;
+	var _narrow_accessor_storage;
+	var _rendered_accessor_storage;
+	var _shellBuilt_accessor_storage;
+	var _layoutMode_accessor_storage;
+	var _datapointScope_accessor_storage;
+	var _showChartDatapointIcons_accessor_storage;
+	var _showChartDatapointLines_accessor_storage;
+	var _showChartTooltips_accessor_storage;
+	var _showChartEmphasizedHoverGuides_accessor_storage;
+	var _chartHoverSnapMode_accessor_storage;
+	var _delinkChartYAxis_accessor_storage;
+	var _splitChartView_accessor_storage;
+	var _showCorrelatedAnomalies_accessor_storage;
+	var _chartAnomalyOverlapMode_accessor_storage;
+	var _showDataGaps_accessor_storage;
+	var _dataGapThreshold_accessor_storage;
+	var _historyStartTime_accessor_storage;
+	var _historyEndTime_accessor_storage;
+	var _timelineEvents_accessor_storage;
+	var _loadingComparisonWindowIds_accessor_storage;
+	var _sidebarAccordionTargetsOpen_accessor_storage;
+	var _sidebarAccordionDatapointsOpen_accessor_storage;
+	var _sidebarAccordionAnalysisOpen_accessor_storage;
+	var _sidebarAccordionChartOpen_accessor_storage;
+	var _resolvedAutoZoomLevel_accessor_storage;
+	var _chartHoverTimeMs_accessor_storage;
+	var _zoomLevel_accessor_storage;
+	var _dateSnapping_accessor_storage;
+	var _collapsedOptionsPopupOpen_accessor_storage;
 	/** Module-level set of all currently-connected panel instances.
 	*  Used by the orphan-recovery guard to avoid disrupting a live replacement. */
 	var _liveInstances = /* @__PURE__ */ new Set();
@@ -36109,9 +36373,9 @@
 			this._contentSplitterEl = null;
 			this._targetControl = null;
 			this._targetRowsEl = null;
-			this._rowListEl = null;
 			this._targetRowsRenderKey = "";
 			this._rangeBounds = null;
+			this._rowLabelMap = /* @__PURE__ */ new Map();
 			this._autoZoomTimer = null;
 			this._hoveredPeriodRange = null;
 			this._chartZoomRange = null;
@@ -36299,15 +36563,6 @@
 					if (this._chartEl) this._chartEl.hass = this._hass;
 					if (this._listEl) this._listEl.hass = this._hass;
 					if (this._targetControl && this._hass) this._targetControl.hass = this._hass;
-					if (this._historyTargetsComp) {
-						this._historyTargetsComp.hass = this._hass ?? null;
-						this._historyTargetsComp.states = this._hass?.states ?? {};
-					}
-					if (this._rowListEl) {
-						this._rowListEl.hass = this._hass ?? null;
-						this._rowListEl.states = this._hass?.states ?? {};
-						this._rowListEl.labelMap = disambiguateEntityNames(this._hass, (this._seriesRows ?? []).map((r) => r.entity_id));
-					}
 					this.shadowRoot?.querySelectorAll("[data-series-icon-entity-id], [data-series-collapsed-icon-entity-id]").forEach((iconEl) => {
 						const icon = iconEl;
 						const entityId = icon.dataset.seriesIconEntityId || icon.dataset.seriesCollapsedIconEntityId;
@@ -36357,6 +36612,7 @@
 			if (this._rendered) {
 				this._rangeBounds = this._deriveRangeBounds();
 				this._ensureTimelineEvents();
+				this._rowLabelMap = this._computeRowLabelMap();
 			}
 		}
 		connectedCallback() {
@@ -36737,7 +36993,8 @@
 			}}
           @dp-date-picker-change=${(ev) => this._handleDatePickerChange(ev)}
         ></range-toolbar>
-        <sidebar-options slot="sidebar-options"
+        <sidebar-options
+          slot="sidebar-options"
           .datapointScope=${this._datapointScope}
           .showIcons=${this._showChartDatapointIcons}
           .showLines=${this._showChartDatapointLines}
@@ -36759,7 +37016,8 @@
           .chartOpen=${this._sidebarAccordionChartOpen}
           @dp-accordion-change=${this._handlePreferenceAccordion}
         ></sidebar-options>
-        <collapsed-options-menu slot="collapsed-options"
+        <collapsed-options-menu
+          slot="collapsed-options"
           .datapointScope=${this._datapointScope}
           .showIcons=${this._showChartDatapointIcons}
           .showLines=${this._showChartDatapointLines}
@@ -36776,9 +37034,76 @@
           @dp-display-change=${this._handlePreferenceDisplay}
           @dp-analysis-change=${this._handlePreferenceAnalysis}
         ></collapsed-options-menu>
+        <history-targets
+          slot="sidebar"
+          .rows=${this._seriesRows}
+          .states=${this._hass?.states ?? {}}
+          .hass=${this._hass ?? null}
+          .labelMap=${this._rowLabelMap}
+          .comparisonWindows=${this._comparisonWindows}
+          .canShowDeltaAnalysis=${!!this._selectedComparisonWindowId}
+          .sidebarCollapsed=${this._sidebarCollapsed}
+          .computingEntityIds=${this._computingEntityIds}
+          .analysisProgress=${this._analysisProgress}
+          .computingMethodsByEntity=${this._computingMethods}
+          @dp-row-color-change=${(ev) => {
+				const { index, color } = ev.detail || {};
+				this._updateSeriesRowColor(index, color);
+			}}
+          @dp-row-visibility-change=${(ev) => {
+				const { entityId, visible } = ev.detail || {};
+				this._updateSeriesRowVisibilityByEntityId(entityId, visible);
+			}}
+          @dp-row-remove=${(ev) => {
+				this._removeSeriesRow(ev.detail?.index);
+			}}
+          @dp-row-toggle-analysis=${(ev) => {
+				this._toggleSeriesAnalysisExpanded(ev.detail?.entityId);
+			}}
+          @dp-row-analysis-change=${(ev) => {
+				const { entityId, key, value } = ev.detail || {};
+				this._setSeriesAnalysisOption(entityId, key, value);
+			}}
+          @dp-row-copy-analysis-to-all=${(ev) => {
+				const { entityId, analysis } = ev.detail || {};
+				this._copyAnalysisToAll(entityId, analysis);
+			}}
+          @dp-rows-reorder=${(ev) => {
+				const { rows } = ev.detail || {};
+				if (!Array.isArray(rows)) return;
+				this._seriesRows = rows;
+				this._syncSeriesState();
+				this._saveSessionState();
+				this._renderTargetRows();
+				this._syncControls();
+				this._updateUrl({ push: true });
+				this._renderContent();
+			}}
+          @dp-targets-prefs-click=${(ev) => {
+				ev.stopPropagation();
+				const anchor = ev.composedPath()[0] || ev.target;
+				if (!(anchor instanceof HTMLElement)) return;
+				if (this._collapsedOptionsPopupOpen) this._hideCollapsedOptionsPopup();
+				else this._showCollapsedOptionsPopup(anchor);
+			}}
+          @dp-targets-add-click=${(ev) => {
+				this._openTargetPicker(ev.detail?.buttonEl ?? void 0);
+			}}
+          @dp-targets-clear-all=${() => this._clearAllSeriesRows()}
+          @dp-collapsed-entity-click=${(ev) => {
+				const { entityId, buttonEl } = ev.detail || {};
+				if (!entityId) return;
+				if (this._collapsedPopupEntityId === entityId) this._hideCollapsedTargetPopup();
+				else this._showCollapsedTargetPopup(entityId, buttonEl ?? void 0);
+			}}
+        ></history-targets>
         <div id="content"></div>
       </panel-shell>
     `;
+		}
+		/** Disambiguated entity → display-name map for the current series rows. */
+		_computeRowLabelMap() {
+			return disambiguateEntityNames(this._hass, (this._seriesRows ?? []).map((r) => r.entity_id));
 		}
 		updated() {
 			this._renderComparisonTabSlot();
@@ -37206,7 +37531,7 @@
 		_handleComparisonLoading(ev) {
 			const ids = Array.isArray(ev?.detail?.ids) ? ev.detail.ids.filter(Boolean) : [];
 			const loading = ev?.detail?.loading === true;
-			this._loadingComparisonWindowIds = loading ? [...new Set([...this._loadingComparisonWindowIds, ...ids])] : this._loadingComparisonWindowIds.filter((id) => !ids.includes(id));
+			this._loadingComparisonWindowIds = loading ? [.../* @__PURE__ */ new Set([...this._loadingComparisonWindowIds, ...ids])] : this._loadingComparisonWindowIds.filter((id) => !ids.includes(id));
 			this._renderComparisonTabs();
 		}
 		_handleAnalysisComputing(ev) {
@@ -37231,7 +37556,7 @@
 				logger$1.log(`[datapoints] analysis complete (${entityIds.join(", ")})`);
 			}
 			this._analysisProgress = progress;
-			this._pushComputingStateToRowList();
+			this._invalidateComputingState();
 		}
 		_handleAnalysisMethodResult(ev) {
 			logger$1.log("[datapoints] _handleAnalysisMethodResult received", ev?.detail);
@@ -37249,14 +37574,19 @@
 			}
 			const remaining = [...this._computingMethods.get(entityId) ?? []];
 			logger$1.log(`[datapoints] method done: ${method} for ${entityId} — remaining: [${remaining.join(", ") || "none"}]`);
-			this._pushComputingStateToRowList();
+			this._invalidateComputingState();
 		}
-		_pushComputingStateToRowList() {
-			if (this._rowListEl) {
-				this._rowListEl.computingEntityIds = new Set(this._computingEntityIds);
-				this._rowListEl.analysisProgress = this._analysisProgress;
-				this._rowListEl.computingMethodsByEntity = new Map(this._computingMethods);
-			}
+		/**
+		* Publishes the in-flight anomaly-computation state to the sidebar.  These
+		* collections are plain fields mutated in place, so every mutation site MUST
+		* route through here: it reassigns fresh Set/Map references (so the
+		* declarative `<history-targets>` bindings, and the row list it owns, detect
+		* the change) and requests a re-render.
+		*/
+		_invalidateComputingState() {
+			this._computingEntityIds = new Set(this._computingEntityIds);
+			this._computingMethods = new Map(this._computingMethods);
+			this.requestUpdate();
 		}
 		_clearDeltaAnalysisSelectionState() {}
 		_handleComparisonTabActivate(id) {
@@ -37465,81 +37795,13 @@
 		}
 		_mountControls() {
 			if (!this._shellEl) return;
-			const histTargets = this._mountHistoryTargetsControl();
-			this._mountTargetPickerControl(histTargets);
+			const histTargets = this.renderRoot.querySelector("history-targets");
+			this._historyTargetsComp = histTargets;
+			if (histTargets && !this._targetControl) this._mountTargetPickerControl(histTargets);
 			this._mountDateWindowDialogControl();
 			this._mountMonitorWizard();
 			this._mountAiQueryBriefDialogControl();
 			this._syncControls();
-		}
-		_mountHistoryTargetsControl() {
-			const histTargets = document.createElement("history-targets");
-			histTargets.slot = "sidebar";
-			histTargets.rows = [];
-			histTargets.states = {};
-			histTargets.hass = this._hass ?? null;
-			histTargets.comparisonWindows = this._comparisonWindows;
-			histTargets.canShowDeltaAnalysis = false;
-			histTargets.sidebarCollapsed = this._sidebarCollapsed;
-			histTargets.addEventListener("dp-row-color-change", (ev) => {
-				const { index, color } = ev.detail || {};
-				this._updateSeriesRowColor(index, color);
-			});
-			histTargets.addEventListener("dp-row-visibility-change", (ev) => {
-				const { entityId, visible } = ev.detail || {};
-				this._updateSeriesRowVisibilityByEntityId(entityId, visible);
-			});
-			histTargets.addEventListener("dp-row-remove", (ev) => {
-				const { index } = ev.detail || {};
-				this._removeSeriesRow(index);
-			});
-			histTargets.addEventListener("dp-row-toggle-analysis", (ev) => {
-				const { entityId } = ev.detail || {};
-				this._toggleSeriesAnalysisExpanded(entityId);
-			});
-			histTargets.addEventListener("dp-row-analysis-change", (ev) => {
-				const { entityId, key, value } = ev.detail || {};
-				this._setSeriesAnalysisOption(entityId, key, value);
-			});
-			histTargets.addEventListener("dp-row-copy-analysis-to-all", (ev) => {
-				const { entityId, analysis } = ev.detail || {};
-				this._copyAnalysisToAll(entityId, analysis);
-			});
-			histTargets.addEventListener("dp-rows-reorder", (ev) => {
-				const { rows } = ev.detail || {};
-				if (!Array.isArray(rows)) return;
-				this._seriesRows = rows;
-				this._syncSeriesState();
-				this._saveSessionState();
-				this._renderTargetRows();
-				this._syncControls();
-				this._updateUrl({ push: true });
-				this._renderContent();
-			});
-			histTargets.addEventListener("dp-targets-prefs-click", (ev) => {
-				ev.stopPropagation();
-				const anchor = ev.composedPath()[0] || ev.target;
-				if (!(anchor instanceof HTMLElement)) return;
-				if (this._collapsedOptionsPopupOpen) this._hideCollapsedOptionsPopup();
-				else this._showCollapsedOptionsPopup(anchor);
-			});
-			histTargets.addEventListener("dp-targets-add-click", (ev) => {
-				const { buttonEl } = ev.detail || {};
-				this._openTargetPicker(buttonEl ?? void 0);
-			});
-			histTargets.addEventListener("dp-targets-clear-all", () => {
-				this._clearAllSeriesRows();
-			});
-			histTargets.addEventListener("dp-collapsed-entity-click", (ev) => {
-				const { entityId, buttonEl } = ev.detail || {};
-				if (!entityId) return;
-				if (this._collapsedPopupEntityId === entityId) this._hideCollapsedTargetPopup();
-				else this._showCollapsedTargetPopup(entityId, buttonEl ?? void 0);
-			});
-			this._shellEl.appendChild(histTargets);
-			this._historyTargetsComp = histTargets;
-			this._rowListEl = null;
-			return histTargets;
 		}
 		_mountTargetPickerControl(histTargets) {
 			const targetControl = document.createElement("ha-target-picker");
@@ -37714,22 +37976,7 @@
 			this._aiQueryBriefDialogComp.open = true;
 		}
 		_renderTargetRows() {
-			if (!this._historyTargetsComp) return;
-			this._historyTargetsComp.sidebarCollapsed = this._sidebarCollapsed;
-			this._historyTargetsComp.rows = this._seriesRows;
-			this._historyTargetsComp.states = this._hass?.states ?? {};
-			this._historyTargetsComp.hass = this._hass ?? null;
-			this._historyTargetsComp.canShowDeltaAnalysis = !!this._selectedComparisonWindowId;
-			this._historyTargetsComp.comparisonWindows = this._comparisonWindows;
-			if (!this._rowListEl) this._rowListEl = this._historyTargetsComp.getRowListEl();
-			else {
-				this._rowListEl.rows = this._seriesRows;
-				this._rowListEl.states = this._hass?.states ?? {};
-				this._rowListEl.hass = this._hass ?? null;
-				this._rowListEl.labelMap = disambiguateEntityNames(this._hass, (this._seriesRows ?? []).map((r) => r.entity_id));
-				this._rowListEl.canShowDeltaAnalysis = !!this._selectedComparisonWindowId;
-				this._rowListEl.comparisonWindows = this._comparisonWindows;
-			}
+			this.requestUpdate();
 			this._refreshCollapsedTargetPopup();
 		}
 		_addSeriesRows(entityIds) {
@@ -38053,7 +38300,7 @@
 			return getSnapSpanMs(this._getEffectiveSnapUnit(), reference);
 		}
 		_deriveRangeBounds() {
-			return deriveRangeBounds(this._getZoomConfig(), this._startTime?.getTime() || Date.now() - 24 * 36e5, this._endTime?.getTime() || Date.now(), this._historyStartTime?.getTime(), this._historyEndTime?.getTime(), this._getSnapSpanMs(this._startTime || /* @__PURE__ */ new Date()));
+			return deriveRangeBounds(this._getZoomConfig(), this._startTime?.getTime() || Date.now() - 864e5, this._endTime?.getTime() || Date.now(), this._historyStartTime?.getTime(), this._historyEndTime?.getTime(), this._getSnapSpanMs(this._startTime || /* @__PURE__ */ new Date()));
 		}
 		_updateComparisonRangePreview() {
 			this.requestUpdate();
@@ -39725,8 +39972,9 @@
 	customElements.define("list-event-item", CardListEventItem);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/list.ts
-	var _HassDatapointsListCard, _listScrollEl_accessor_storage;
-	var HassDatapointsListCard = (_listScrollEl_accessor_storage = /* @__PURE__ */ new WeakMap(), _HassDatapointsListCard = class HassDatapointsListCard extends i$2 {
+	var _HassDatapointsListCard;
+	var _listScrollEl_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var HassDatapointsListCard = (_HassDatapointsListCard = class HassDatapointsListCard extends i$2 {
 		get _listScrollEl() {
 			return _classPrivateFieldGet2(_listScrollEl_accessor_storage, this);
 		}
@@ -39867,8 +40115,8 @@
 			};
 			const eventTime = ev?.timestamp ? new Date(ev.timestamp) : null;
 			if (!eventTime || !Number.isFinite(eventTime.getTime())) return null;
-			const start = /* @__PURE__ */ new Date(eventTime.getTime() - 12 * 3600 * 1e3);
-			const end = new Date(eventTime.getTime() + 12 * 3600 * 1e3);
+			const start = /* @__PURE__ */ new Date(eventTime.getTime() - 432e5);
+			const end = new Date(eventTime.getTime() + 432e5);
 			return {
 				start_time: start.toISOString(),
 				end_time: end.toISOString()
@@ -41969,7 +42217,7 @@
 		}
 		_onCardClick(event) {
 			const path = event.composedPath();
-			const interactiveTagNames = new Set([
+			const interactiveTagNames = /* @__PURE__ */ new Set([
 				"BUTTON",
 				"A",
 				"INPUT",
