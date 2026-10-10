@@ -26,6 +26,20 @@ KEY_MONITOR_SWITCHES = "monitor_switches"
 # not written to the anomaly cache (result would change on the next request).
 ANOMALY_LIVE_EDGE_SECONDS = 300
 
+# Per-method anomaly direction filter (#62). Each applicable method (all except
+# persistence) may restrict which cluster points survive by the sign of their
+# residual: "both" keeps all, "up" keeps residual > 0, "down" keeps residual < 0.
+# Defaults to "both" everywhere so missing config is non-breaking.
+VALID_ANOMALY_DIRECTIONS = frozenset({"both", "up", "down"})
+DEFAULT_ANOMALY_DIRECTION = "both"
+ANOMALY_DIRECTION_FIELDS = (
+    "anomaly_trend_residual_direction",
+    "anomaly_rate_of_change_direction",
+    "anomaly_iqr_direction",
+    "anomaly_rolling_zscore_direction",
+    "anomaly_comparison_window_direction",
+)
+
 MONITOR_DEFAULT_LOOK_BACK_HOURS = 24
 MONITOR_DEFAULT_SCAN_INTERVAL_MINUTES = 30
 

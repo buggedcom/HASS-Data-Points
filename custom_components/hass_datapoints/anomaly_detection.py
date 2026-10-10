@@ -10,6 +10,8 @@ from __future__ import annotations
 import math
 import statistics
 
+from .const import DEFAULT_ANOMALY_DIRECTION
+
 # ---------------------------------------------------------------------------
 # Sensitivity helpers
 # ---------------------------------------------------------------------------
@@ -751,6 +753,48 @@ def apply_overlap_mode(
 
 
 # ---------------------------------------------------------------------------
+# Direction filter (#62)
+# ---------------------------------------------------------------------------
+
+
+def _filter_clusters_by_direction(
+    clusters: list[dict], direction: str
+) -> list[dict]:
+    """Trim each cluster's points to the requested residual direction.
+
+    ``both`` (or any unrecognised value) leaves the clusters untouched;
+    ``up`` keeps only points whose ``residual`` is > 0; ``down`` keeps only
+    points whose ``residual`` is < 0. Each surviving cluster has its
+    ``maxDeviation`` recomputed from the kept points (same shape as the
+    "Overlaps only" path), and clusters left with no points are dropped.
+    """
+    if direction == "up":
+        def keep(residual: float) -> bool:
+            return residual > 0
+    elif direction == "down":
+        def keep(residual: float) -> bool:
+            return residual < 0
+    else:
+        return clusters
+
+    filtered: list[dict] = []
+    for cluster in clusters:
+        pts = [p for p in cluster["points"] if keep(p.get("residual", 0))]
+        if not pts:
+            continue
+        filtered.append(
+            {
+                **cluster,
+                "points": pts,
+                "maxDeviation": max(
+                    (abs(p.get("residual", 0)) for p in pts), default=0
+                ),
+            }
+        )
+    return filtered
+
+
+# ---------------------------------------------------------------------------
 # Top-level entry point
 # ---------------------------------------------------------------------------
 
@@ -893,5 +937,20 @@ def run_anomaly_detection(
         )
         if result:
             clusters_by_method["comparison_window"] = result
+
+    # Direction filter (#62): applied centrally after every method's clusters
+    # are collected and BEFORE overlap resolution, so "only"/highlight modes see
+    # the already-filtered points. Persistence is never direction-filtered.
+    for method in list(clusters_by_method.keys()):
+        if method == "persistence":
+            continue
+        direction = config.get(
+            f"anomaly_{method}_direction", DEFAULT_ANOMALY_DIRECTION
+        )
+        filtered = _filter_clusters_by_direction(clusters_by_method[method], direction)
+        if filtered:
+            clusters_by_method[method] = filtered
+        else:
+            del clusters_by_method[method]
 
     return apply_overlap_mode(clusters_by_method, overlap_mode)
