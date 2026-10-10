@@ -162,30 +162,52 @@ export class AnalysisAnomalyGroup extends AnalysisGroupMixin(LitElement) {
   /**
    * Render the per-method Direction select (Both / Up / Down). Shared by every
    * method that has a meaningful above/below-baseline notion (i.e. all methods
-   * except persistence). `help` is shown beneath the control when provided.
+   * except persistence). A `?` tooltip explains the control; `help` overrides
+   * the generic explanation with a method-specific one (e.g. sudden change).
    */
   private _renderDirectionField(
     field: string,
     value: Nullable<string> | undefined,
     help?: string
   ): TemplateResult {
+    const helpId = `direction-help-${field}`;
+    const helpText =
+      help ??
+      msg(
+        "Keep anomalies in both directions, only those above the method's baseline (Up), or only those below it (Down)."
+      );
     return html`
       <label class="field">
-        <span class="field-label">${msg("Direction")}</span>
-        <div class="direction-wrap">
-          <inline-select
-            .value=${value || "both"}
-            .options=${this._localizedOptions(
-              ANALYSIS_ANOMALY_DIRECTION_OPTIONS
+        <span class="field-label"
+          >${msg("Direction")}
+          <button
+            id=${helpId}
+            class="method-help"
+            type="button"
+            aria-label=${`${msg("Direction")} explanation`}
+          >
+            ?
+          </button>
+          <ha-tooltip
+            class="method-tooltip"
+            for=${helpId}
+            placement="right"
+            distance="8"
+            hoist
+            style="--ha-tooltip-padding: var(--dp-spacing-md, calc(var(--spacing, 8px) * 1.5));"
+          >
+            ${helpText}
+          </ha-tooltip></span
+        >
+        <inline-select
+          .value=${value || "both"}
+          .options=${this._localizedOptions(ANALYSIS_ANOMALY_DIRECTION_OPTIONS)}
+          @dp-change=${(e: Event) =>
+            this._emit(
+              field,
+              (e as CustomEvent<{ value: string }>).detail.value
             )}
-            @dp-change=${(e: Event) =>
-              this._emit(
-                field,
-                (e as CustomEvent<{ value: string }>).detail.value
-              )}
-          ></inline-select>
-          ${help ? html`<span class="field-hint">${help}</span>` : nothing}
-        </div>
+        ></inline-select>
       </label>
     `;
   }

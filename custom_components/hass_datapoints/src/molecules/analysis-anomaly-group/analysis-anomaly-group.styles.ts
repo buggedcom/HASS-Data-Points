@@ -120,17 +120,8 @@ export const styles = css`
     padding-top: 4px;
   }
 
-  .direction-wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    flex: 1;
-  }
-
-  .field-hint {
-    font-size: 11px;
-    line-height: 1.3;
-    color: var(--secondary-text-color, #888);
+  .field-label .method-help {
+    margin-left: 4px;
   }
 
   .option {

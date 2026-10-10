@@ -5,6 +5,8 @@ export const translations: ComponentTranslations = {
   Both: "Ambos",
   Up: "Para cima",
   Down: "Para baixo",
+  "Keep anomalies in both directions, only those above the method's baseline (Up), or only those below it (Down).":
+    "Manter anomalias em ambas as direções, apenas as acima da linha de base do método (Para cima) ou apenas as abaixo (Para baixo).",
   '"Up" means rising faster than the typical rate, "Down" means falling faster — not simply whether the value went up or down.':
     "“Para cima” significa subir mais rápido que a taxa típica, “Para baixo” cair mais rápido — não apenas se o valor subiu ou desceu.",
   "Show anomalies": "Mostrar anomalias",
