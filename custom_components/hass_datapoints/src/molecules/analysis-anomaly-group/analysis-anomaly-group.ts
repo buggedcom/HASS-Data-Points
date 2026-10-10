@@ -96,8 +96,8 @@ export const ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS = [
 
 export const ANALYSIS_ANOMALY_DIRECTION_OPTIONS = [
   { value: "both", label: "Both" },
-  { value: "up", label: "Up" },
-  { value: "down", label: "Down" },
+  { value: "up", label: "Above" },
+  { value: "down", label: "Below" },
 ];
 
 /**
@@ -174,7 +174,7 @@ export class AnalysisAnomalyGroup extends AnalysisGroupMixin(LitElement) {
     const helpText =
       help ??
       msg(
-        "Keep anomalies in both directions, only those above the method's baseline (Up), or only those below it (Down)."
+        '"Above" keeps only anomalies above the method\'s baseline, "Below" only those beneath it, and "Both" keeps either.'
       );
     return html`
       <label class="field">
@@ -298,7 +298,7 @@ export class AnalysisAnomalyGroup extends AnalysisGroupMixin(LitElement) {
             "anomaly_rate_of_change_direction",
             a.anomaly_rate_of_change_direction,
             msg(
-              '"Up" means rising faster than the typical rate, "Down" means falling faster — not simply whether the value went up or down.'
+              '"Above" means rising faster than the typical rate, "Below" means falling faster — not simply whether the value went up or down.'
             )
           )}
         </analysis-method-subopts>

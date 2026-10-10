@@ -3,12 +3,12 @@ import type { ComponentTranslations } from "@/lib/i18n/types";
 export const translations: ComponentTranslations = {
   Direction: "Sens",
   Both: "Les deux",
-  Up: "Hausse",
-  Down: "Baisse",
-  "Keep anomalies in both directions, only those above the method's baseline (Up), or only those below it (Down).":
-    "Conserver les anomalies dans les deux sens, uniquement celles au-dessus de la ligne de base de la méthode (Hausse) ou uniquement celles en dessous (Baisse).",
-  '"Up" means rising faster than the typical rate, "Down" means falling faster — not simply whether the value went up or down.':
-    "« Hausse » signifie une augmentation plus rapide que le rythme habituel, « Baisse » une diminution plus rapide — pas simplement si la valeur a monté ou baissé.",
+  Above: "Au-dessus",
+  Below: "En dessous",
+  '"Above" keeps only anomalies above the method\'s baseline, "Below" only those beneath it, and "Both" keeps either.':
+    "« Au-dessus » ne conserve que les anomalies au-dessus de la ligne de base de la méthode, « En dessous » uniquement celles en dessous, et « Les deux » conserve les deux.",
+  '"Above" means rising faster than the typical rate, "Below" means falling faster — not simply whether the value went up or down.':
+    "« Au-dessus » signifie une augmentation plus rapide que le rythme habituel, « En dessous » une diminution plus rapide — pas simplement si la valeur a monté ou baissé.",
   "Show anomalies": "Afficher les anomalies",
   Sensitivity: "Sensibilité",
   "Use downsampled data for detection":

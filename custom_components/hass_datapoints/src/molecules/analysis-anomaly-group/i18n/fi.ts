@@ -3,12 +3,12 @@ import type { ComponentTranslations } from "@/lib/i18n/types";
 export const translations: ComponentTranslations = {
   Direction: "Suunta",
   Both: "Molemmat",
-  Up: "Ylös",
-  Down: "Alas",
-  "Keep anomalies in both directions, only those above the method's baseline (Up), or only those below it (Down).":
-    "Säilytä poikkeamat molemmissa suunnissa, vain menetelmän perustason yläpuolella olevat (Ylös) tai vain sen alapuolella olevat (Alas).",
-  '"Up" means rising faster than the typical rate, "Down" means falling faster — not simply whether the value went up or down.':
-    "”Ylös” tarkoittaa tavallista nopeampaa nousua, ”Alas” nopeampaa laskua – ei pelkästään sitä, nousiko vai laskiko arvo.",
+  Above: "Yläpuolella",
+  Below: "Alapuolella",
+  '"Above" keeps only anomalies above the method\'s baseline, "Below" only those beneath it, and "Both" keeps either.':
+    "”Yläpuolella” säilyttää vain menetelmän perustason yläpuoliset poikkeamat, ”Alapuolella” vain sen alapuoliset ja ”Molemmat” säilyttää molemmat.",
+  '"Above" means rising faster than the typical rate, "Below" means falling faster — not simply whether the value went up or down.':
+    "”Yläpuolella” tarkoittaa tavallista nopeampaa nousua, ”Alapuolella” nopeampaa laskua – ei pelkästään sitä, nousiko vai laskiko arvo.",
   "Show anomalies": "Näytä poikkeamat",
   Sensitivity: "Herkkyys",
   "Use downsampled data for detection":

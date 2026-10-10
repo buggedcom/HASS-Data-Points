@@ -3,12 +3,12 @@ import type { ComponentTranslations } from "@/lib/i18n/types";
 export const translations: ComponentTranslations = {
   Direction: "方向",
   Both: "两者",
-  Up: "向上",
-  Down: "向下",
-  "Keep anomalies in both directions, only those above the method's baseline (Up), or only those below it (Down).":
-    "保留两个方向的异常，仅保留高于该方法基线的（向上），或仅保留低于基线的（向下）。",
-  '"Up" means rising faster than the typical rate, "Down" means falling faster — not simply whether the value went up or down.':
-    "“向上”表示上升速度快于通常速率，“向下”表示下降速度更快，而不仅仅是数值升高还是降低。",
+  Above: "高于",
+  Below: "低于",
+  '"Above" keeps only anomalies above the method\'s baseline, "Below" only those beneath it, and "Both" keeps either.':
+    "“高于”仅保留高于该方法基线的异常，“低于”仅保留低于基线的异常，“两者”则两者都保留。",
+  '"Above" means rising faster than the typical rate, "Below" means falling faster — not simply whether the value went up or down.':
+    "“高于”表示上升速度快于通常速率，“低于”表示下降速度更快，而不仅仅是数值升高还是降低。",
   "Show anomalies": "显示异常",
   Sensitivity: "灵敏度",
   "Use downsampled data for detection": "检测时使用降采样数据",
