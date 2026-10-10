@@ -36,6 +36,12 @@ export interface EntityAnalysisConfig {
   anomaly_rate_window: string;
   anomaly_zscore_window: string;
   anomaly_persistence_window: string;
+  anomaly_trend_residual_direction: string;
+  anomaly_rate_of_change_direction: string;
+  anomaly_iqr_direction: string;
+  anomaly_rolling_zscore_direction: string;
+  anomaly_comparison_window_direction: string;
+  anomaly_similar_entity_direction: string;
   anomaly_comparison_window_id: string | null;
   anomaly_comparison_entity_id: string | null;
   anomaly_trend_method: string;
@@ -56,6 +62,12 @@ export interface WizardNormalizedAnalysis {
   anomaly_rate_window: string;
   anomaly_zscore_window: string;
   anomaly_persistence_window: string;
+  anomaly_trend_residual_direction: string;
+  anomaly_rate_of_change_direction: string;
+  anomaly_iqr_direction: string;
+  anomaly_rolling_zscore_direction: string;
+  anomaly_comparison_window_direction: string;
+  anomaly_similar_entity_direction: string;
   anomaly_trend_method: string;
   anomaly_trend_window: string;
   anomaly_use_sampled_data: boolean;
@@ -94,6 +106,12 @@ interface PartialPrefill {
   anomaly_rate_window?: string;
   anomaly_zscore_window?: string;
   anomaly_persistence_window?: string;
+  anomaly_trend_residual_direction?: string;
+  anomaly_rate_of_change_direction?: string;
+  anomaly_iqr_direction?: string;
+  anomaly_rolling_zscore_direction?: string;
+  anomaly_comparison_window_direction?: string;
+  anomaly_similar_entity_direction?: string;
   anomaly_comparison_window_id?: string | null;
   anomaly_comparison_entity_id?: string | null;
   anomaly_trend_method?: string;
@@ -115,6 +133,17 @@ export function defaultEntityConfig(
     anomaly_rate_window: prefill?.anomaly_rate_window ?? "1h",
     anomaly_zscore_window: prefill?.anomaly_zscore_window ?? "24h",
     anomaly_persistence_window: prefill?.anomaly_persistence_window ?? "1h",
+    anomaly_trend_residual_direction:
+      prefill?.anomaly_trend_residual_direction ?? "both",
+    anomaly_rate_of_change_direction:
+      prefill?.anomaly_rate_of_change_direction ?? "both",
+    anomaly_iqr_direction: prefill?.anomaly_iqr_direction ?? "both",
+    anomaly_rolling_zscore_direction:
+      prefill?.anomaly_rolling_zscore_direction ?? "both",
+    anomaly_comparison_window_direction:
+      prefill?.anomaly_comparison_window_direction ?? "both",
+    anomaly_similar_entity_direction:
+      prefill?.anomaly_similar_entity_direction ?? "both",
     anomaly_comparison_window_id: prefill?.anomaly_comparison_window_id ?? null,
     anomaly_comparison_entity_id: prefill?.anomaly_comparison_entity_id ?? null,
     anomaly_trend_method: prefill?.anomaly_trend_method || "rolling_average",
@@ -141,6 +170,11 @@ export function configFromMonitor(m: AnomalyMonitor): EntityAnalysisConfig {
     return method;
   });
 
+  // The monitor stores a single comparison-method direction. When the monitor
+  // uses a baseline entity it surfaces in the UI as similar_entity, so route
+  // the stored direction onto whichever of the two methods is active.
+  const comparisonDir = m.anomaly_comparison_window_direction ?? "both";
+
   return {
     anomaly_methods: frontendMethods,
     anomaly_overlap_mode: m.anomaly_overlap_mode ?? "all",
@@ -148,6 +182,15 @@ export function configFromMonitor(m: AnomalyMonitor): EntityAnalysisConfig {
     anomaly_rate_window: m.anomaly_rate_window,
     anomaly_zscore_window: m.anomaly_zscore_window,
     anomaly_persistence_window: m.anomaly_persistence_window,
+    anomaly_trend_residual_direction:
+      m.anomaly_trend_residual_direction ?? "both",
+    anomaly_rate_of_change_direction:
+      m.anomaly_rate_of_change_direction ?? "both",
+    anomaly_iqr_direction: m.anomaly_iqr_direction ?? "both",
+    anomaly_rolling_zscore_direction:
+      m.anomaly_rolling_zscore_direction ?? "both",
+    anomaly_comparison_window_direction: baselineEntityId ? "both" : comparisonDir,
+    anomaly_similar_entity_direction: baselineEntityId ? comparisonDir : "both",
     anomaly_comparison_window_id: null,
     anomaly_comparison_entity_id: baselineEntityId,
     anomaly_trend_method: m.anomaly_trend_method,
@@ -175,6 +218,13 @@ export function entityConfigToAnalysis(
     anomaly_rate_window: cfg.anomaly_rate_window,
     anomaly_zscore_window: cfg.anomaly_zscore_window,
     anomaly_persistence_window: cfg.anomaly_persistence_window,
+    anomaly_trend_residual_direction: cfg.anomaly_trend_residual_direction,
+    anomaly_rate_of_change_direction: cfg.anomaly_rate_of_change_direction,
+    anomaly_iqr_direction: cfg.anomaly_iqr_direction,
+    anomaly_rolling_zscore_direction: cfg.anomaly_rolling_zscore_direction,
+    anomaly_comparison_window_direction:
+      cfg.anomaly_comparison_window_direction,
+    anomaly_similar_entity_direction: cfg.anomaly_similar_entity_direction,
     anomaly_comparison_window_id: cfg.anomaly_comparison_window_id,
     anomaly_comparison_entity_id: cfg.anomaly_comparison_entity_id,
     anomaly_trend_method: cfg.anomaly_trend_method,
@@ -241,6 +291,14 @@ export function buildConfigPayload(
     anomaly_rate_window: config.anomaly_rate_window,
     anomaly_zscore_window: config.anomaly_zscore_window,
     anomaly_persistence_window: config.anomaly_persistence_window,
+    anomaly_trend_residual_direction: config.anomaly_trend_residual_direction,
+    anomaly_rate_of_change_direction: config.anomaly_rate_of_change_direction,
+    anomaly_iqr_direction: config.anomaly_iqr_direction,
+    anomaly_rolling_zscore_direction: config.anomaly_rolling_zscore_direction,
+    // similar_entity maps to the single backend comparison direction field.
+    anomaly_comparison_window_direction: hasSimilarEntity
+      ? config.anomaly_similar_entity_direction
+      : config.anomaly_comparison_window_direction,
     anomaly_trend_method: config.anomaly_trend_method || "rolling_average",
     anomaly_trend_window: config.anomaly_trend_window || "24h",
   };
