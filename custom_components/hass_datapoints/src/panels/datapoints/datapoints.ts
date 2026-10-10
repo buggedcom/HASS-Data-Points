@@ -181,6 +181,15 @@ type TargetRowElement = HTMLElement & {
 
 type DateWindowDraftRange = { start: Date; end: Date };
 
+/** Open-time payload fed to the `<anomaly-monitor-wizard>`. */
+type MonitorWizardPayload = {
+  prefillEntityIds: string[];
+  prefillAnalysis: unknown;
+  editMonitor: unknown;
+  suggestedEntityIds: string[];
+  allSeriesEntityIds: string[];
+};
+
 type HistoryCardElement = HTMLElement & {
   hass?: unknown;
   setConfig(config: RecordWithUnknownValues): void;
@@ -491,19 +500,13 @@ export class HassDatapointsHistoryPanel extends LitElement {
   accessor _monitorWizardOpen: boolean = false;
 
   @reactiveState()
-  accessor _monitorWizardPrefillEntityIds: string[] = [];
-
-  @reactiveState()
-  accessor _monitorWizardPrefillAnalysis: unknown = null;
-
-  @reactiveState()
-  accessor _monitorWizardEditMonitor: unknown = null;
-
-  @reactiveState()
-  accessor _monitorWizardSuggestedEntityIds: string[] = [];
-
-  @reactiveState()
-  accessor _monitorWizardAllSeriesEntityIds: string[] = [];
+  accessor _monitorWizardPayload: MonitorWizardPayload = {
+    prefillEntityIds: [],
+    prefillAnalysis: null,
+    editMonitor: null,
+    suggestedEntityIds: [],
+    allSeriesEntityIds: [],
+  };
 
   /** Declarative open-state + payload for the `<ai-query-brief-dialog>`. */
   @reactiveState()
@@ -1772,11 +1775,11 @@ export class HassDatapointsHistoryPanel extends LitElement {
       <anomaly-monitor-wizard
         .hass=${this._hass}
         ?open=${this._monitorWizardOpen}
-        .prefillEntityIds=${this._monitorWizardPrefillEntityIds}
-        .prefillAnalysis=${this._monitorWizardPrefillAnalysis}
-        .editMonitor=${this._monitorWizardEditMonitor}
-        .suggestedEntityIds=${this._monitorWizardSuggestedEntityIds}
-        .allSeriesEntityIds=${this._monitorWizardAllSeriesEntityIds}
+        .prefillEntityIds=${this._monitorWizardPayload.prefillEntityIds}
+        .prefillAnalysis=${this._monitorWizardPayload.prefillAnalysis}
+        .editMonitor=${this._monitorWizardPayload.editMonitor}
+        .suggestedEntityIds=${this._monitorWizardPayload.suggestedEntityIds}
+        .allSeriesEntityIds=${this._monitorWizardPayload.allSeriesEntityIds}
         @dp-monitor-wizard-close=${() => {
           this._monitorWizardOpen = false;
         }}
@@ -2883,17 +2886,25 @@ export class HassDatapointsHistoryPanel extends LitElement {
     suggestedEntityIds: string[] = [],
     allSeriesEntityIds: string[] = []
   ) {
-    this._monitorWizardEditMonitor = editMonitor;
-    this._monitorWizardPrefillEntityIds = entityIds;
-    this._monitorWizardPrefillAnalysis = analysis;
-    this._monitorWizardSuggestedEntityIds = suggestedEntityIds;
-    this._monitorWizardAllSeriesEntityIds = allSeriesEntityIds;
+    this._monitorWizardPayload = {
+      prefillEntityIds: entityIds,
+      prefillAnalysis: analysis,
+      editMonitor,
+      suggestedEntityIds,
+      allSeriesEntityIds,
+    };
     // Flipping the reactive flag renders the declarative <anomaly-monitor-wizard>.
     this._monitorWizardOpen = true;
   }
 
-  /** Date-window-dialog `dp-window-date-change` handler: update the draft range. */
+  /**
+   * Date-window-dialog `dp-window-date-change` handler: update the draft range
+   * and keep the controlled start/end value fields in step with the inputs
+   * (the component is fully controlled, so the parent owns these values).
+   */
   _handleDateWindowDateChange(startStr: string, endStr: string) {
+    this._dateWindowDialogStartValue = startStr;
+    this._dateWindowDialogEndValue = endStr;
     const start = this._parseDateWindowInputValue(startStr);
     const end = this._parseDateWindowInputValue(endStr);
     this._dateWindowDialogDraftRange =

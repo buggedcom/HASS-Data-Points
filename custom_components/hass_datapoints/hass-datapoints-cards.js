@@ -36049,11 +36049,7 @@
 	var _dateSnapping_accessor_storage;
 	var _collapsedOptionsPopupOpen_accessor_storage;
 	var _monitorWizardOpen_accessor_storage;
-	var _monitorWizardPrefillEntityIds_accessor_storage;
-	var _monitorWizardPrefillAnalysis_accessor_storage;
-	var _monitorWizardEditMonitor_accessor_storage;
-	var _monitorWizardSuggestedEntityIds_accessor_storage;
-	var _monitorWizardAllSeriesEntityIds_accessor_storage;
+	var _monitorWizardPayload_accessor_storage;
 	var _aiQueryBriefDialogOpen_accessor_storage;
 	var _aiQueryBriefHeading_accessor_storage;
 	var _aiQueryBriefText_accessor_storage;
@@ -36105,7 +36101,7 @@
 		value: "only",
 		label: "Overlaps only"
 	}];
-	var HassDatapointsHistoryPanel = (_hass_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _panel_accessor_storage = /* @__PURE__ */ new WeakMap(), _narrow_accessor_storage = /* @__PURE__ */ new WeakMap(), _rendered_accessor_storage = /* @__PURE__ */ new WeakMap(), _shellBuilt_accessor_storage = /* @__PURE__ */ new WeakMap(), _layoutMode_accessor_storage = /* @__PURE__ */ new WeakMap(), _datapointScope_accessor_storage = /* @__PURE__ */ new WeakMap(), _showChartDatapointIcons_accessor_storage = /* @__PURE__ */ new WeakMap(), _showChartDatapointLines_accessor_storage = /* @__PURE__ */ new WeakMap(), _showChartTooltips_accessor_storage = /* @__PURE__ */ new WeakMap(), _showChartEmphasizedHoverGuides_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartHoverSnapMode_accessor_storage = /* @__PURE__ */ new WeakMap(), _delinkChartYAxis_accessor_storage = /* @__PURE__ */ new WeakMap(), _splitChartView_accessor_storage = /* @__PURE__ */ new WeakMap(), _showCorrelatedAnomalies_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartAnomalyOverlapMode_accessor_storage = /* @__PURE__ */ new WeakMap(), _showDataGaps_accessor_storage = /* @__PURE__ */ new WeakMap(), _dataGapThreshold_accessor_storage = /* @__PURE__ */ new WeakMap(), _historyStartTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _historyEndTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _timelineEvents_accessor_storage = /* @__PURE__ */ new WeakMap(), _loadingComparisonWindowIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _dateWindowDialogOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _dateWindowDialogName_accessor_storage = /* @__PURE__ */ new WeakMap(), _dateWindowDialogStartValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _dateWindowDialogEndValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarAccordionTargetsOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarAccordionDatapointsOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarAccordionAnalysisOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarAccordionChartOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _resolvedAutoZoomLevel_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartHoverTimeMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomLevel_accessor_storage = /* @__PURE__ */ new WeakMap(), _dateSnapping_accessor_storage = /* @__PURE__ */ new WeakMap(), _collapsedOptionsPopupOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitorWizardOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitorWizardPrefillEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitorWizardPrefillAnalysis_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitorWizardEditMonitor_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitorWizardSuggestedEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitorWizardAllSeriesEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _aiQueryBriefDialogOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _aiQueryBriefHeading_accessor_storage = /* @__PURE__ */ new WeakMap(), _aiQueryBriefText_accessor_storage = /* @__PURE__ */ new WeakMap(), _HassDatapointsHistoryPanel = class HassDatapointsHistoryPanel extends i$2 {
+	var HassDatapointsHistoryPanel = (_hass_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _panel_accessor_storage = /* @__PURE__ */ new WeakMap(), _narrow_accessor_storage = /* @__PURE__ */ new WeakMap(), _rendered_accessor_storage = /* @__PURE__ */ new WeakMap(), _shellBuilt_accessor_storage = /* @__PURE__ */ new WeakMap(), _layoutMode_accessor_storage = /* @__PURE__ */ new WeakMap(), _datapointScope_accessor_storage = /* @__PURE__ */ new WeakMap(), _showChartDatapointIcons_accessor_storage = /* @__PURE__ */ new WeakMap(), _showChartDatapointLines_accessor_storage = /* @__PURE__ */ new WeakMap(), _showChartTooltips_accessor_storage = /* @__PURE__ */ new WeakMap(), _showChartEmphasizedHoverGuides_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartHoverSnapMode_accessor_storage = /* @__PURE__ */ new WeakMap(), _delinkChartYAxis_accessor_storage = /* @__PURE__ */ new WeakMap(), _splitChartView_accessor_storage = /* @__PURE__ */ new WeakMap(), _showCorrelatedAnomalies_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartAnomalyOverlapMode_accessor_storage = /* @__PURE__ */ new WeakMap(), _showDataGaps_accessor_storage = /* @__PURE__ */ new WeakMap(), _dataGapThreshold_accessor_storage = /* @__PURE__ */ new WeakMap(), _historyStartTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _historyEndTime_accessor_storage = /* @__PURE__ */ new WeakMap(), _timelineEvents_accessor_storage = /* @__PURE__ */ new WeakMap(), _loadingComparisonWindowIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _dateWindowDialogOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _dateWindowDialogName_accessor_storage = /* @__PURE__ */ new WeakMap(), _dateWindowDialogStartValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _dateWindowDialogEndValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarAccordionTargetsOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarAccordionDatapointsOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarAccordionAnalysisOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _sidebarAccordionChartOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _resolvedAutoZoomLevel_accessor_storage = /* @__PURE__ */ new WeakMap(), _chartHoverTimeMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _zoomLevel_accessor_storage = /* @__PURE__ */ new WeakMap(), _dateSnapping_accessor_storage = /* @__PURE__ */ new WeakMap(), _collapsedOptionsPopupOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitorWizardOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitorWizardPayload_accessor_storage = /* @__PURE__ */ new WeakMap(), _aiQueryBriefDialogOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _aiQueryBriefHeading_accessor_storage = /* @__PURE__ */ new WeakMap(), _aiQueryBriefText_accessor_storage = /* @__PURE__ */ new WeakMap(), _HassDatapointsHistoryPanel = class HassDatapointsHistoryPanel extends i$2 {
 		get hass() {
 			return _classPrivateFieldGet2(_hass_accessor_storage$3, this);
 		}
@@ -36322,35 +36318,11 @@
 		set _monitorWizardOpen(value) {
 			_classPrivateFieldSet2(_monitorWizardOpen_accessor_storage, this, value);
 		}
-		get _monitorWizardPrefillEntityIds() {
-			return _classPrivateFieldGet2(_monitorWizardPrefillEntityIds_accessor_storage, this);
+		get _monitorWizardPayload() {
+			return _classPrivateFieldGet2(_monitorWizardPayload_accessor_storage, this);
 		}
-		set _monitorWizardPrefillEntityIds(value) {
-			_classPrivateFieldSet2(_monitorWizardPrefillEntityIds_accessor_storage, this, value);
-		}
-		get _monitorWizardPrefillAnalysis() {
-			return _classPrivateFieldGet2(_monitorWizardPrefillAnalysis_accessor_storage, this);
-		}
-		set _monitorWizardPrefillAnalysis(value) {
-			_classPrivateFieldSet2(_monitorWizardPrefillAnalysis_accessor_storage, this, value);
-		}
-		get _monitorWizardEditMonitor() {
-			return _classPrivateFieldGet2(_monitorWizardEditMonitor_accessor_storage, this);
-		}
-		set _monitorWizardEditMonitor(value) {
-			_classPrivateFieldSet2(_monitorWizardEditMonitor_accessor_storage, this, value);
-		}
-		get _monitorWizardSuggestedEntityIds() {
-			return _classPrivateFieldGet2(_monitorWizardSuggestedEntityIds_accessor_storage, this);
-		}
-		set _monitorWizardSuggestedEntityIds(value) {
-			_classPrivateFieldSet2(_monitorWizardSuggestedEntityIds_accessor_storage, this, value);
-		}
-		get _monitorWizardAllSeriesEntityIds() {
-			return _classPrivateFieldGet2(_monitorWizardAllSeriesEntityIds_accessor_storage, this);
-		}
-		set _monitorWizardAllSeriesEntityIds(value) {
-			_classPrivateFieldSet2(_monitorWizardAllSeriesEntityIds_accessor_storage, this, value);
+		set _monitorWizardPayload(value) {
+			_classPrivateFieldSet2(_monitorWizardPayload_accessor_storage, this, value);
 		}
 		get _aiQueryBriefDialogOpen() {
 			return _classPrivateFieldGet2(_aiQueryBriefDialogOpen_accessor_storage, this);
@@ -36409,11 +36381,13 @@
 			_classPrivateFieldInitSpec(this, _dateSnapping_accessor_storage, "auto");
 			_classPrivateFieldInitSpec(this, _collapsedOptionsPopupOpen_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _monitorWizardOpen_accessor_storage, false);
-			_classPrivateFieldInitSpec(this, _monitorWizardPrefillEntityIds_accessor_storage, []);
-			_classPrivateFieldInitSpec(this, _monitorWizardPrefillAnalysis_accessor_storage, null);
-			_classPrivateFieldInitSpec(this, _monitorWizardEditMonitor_accessor_storage, null);
-			_classPrivateFieldInitSpec(this, _monitorWizardSuggestedEntityIds_accessor_storage, []);
-			_classPrivateFieldInitSpec(this, _monitorWizardAllSeriesEntityIds_accessor_storage, []);
+			_classPrivateFieldInitSpec(this, _monitorWizardPayload_accessor_storage, {
+				prefillEntityIds: [],
+				prefillAnalysis: null,
+				editMonitor: null,
+				suggestedEntityIds: [],
+				allSeriesEntityIds: []
+			});
 			_classPrivateFieldInitSpec(this, _aiQueryBriefDialogOpen_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _aiQueryBriefHeading_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _aiQueryBriefText_accessor_storage, "");
@@ -37207,11 +37181,11 @@
       <anomaly-monitor-wizard
         .hass=${this._hass}
         ?open=${this._monitorWizardOpen}
-        .prefillEntityIds=${this._monitorWizardPrefillEntityIds}
-        .prefillAnalysis=${this._monitorWizardPrefillAnalysis}
-        .editMonitor=${this._monitorWizardEditMonitor}
-        .suggestedEntityIds=${this._monitorWizardSuggestedEntityIds}
-        .allSeriesEntityIds=${this._monitorWizardAllSeriesEntityIds}
+        .prefillEntityIds=${this._monitorWizardPayload.prefillEntityIds}
+        .prefillAnalysis=${this._monitorWizardPayload.prefillAnalysis}
+        .editMonitor=${this._monitorWizardPayload.editMonitor}
+        .suggestedEntityIds=${this._monitorWizardPayload.suggestedEntityIds}
+        .allSeriesEntityIds=${this._monitorWizardPayload.allSeriesEntityIds}
         @dp-monitor-wizard-close=${() => {
 				this._monitorWizardOpen = false;
 			}}
@@ -37878,15 +37852,23 @@
 			this._openMonitorWizard(entityId ? [entityId] : [], analysis, null, suggestedIds, allSeriesIds);
 		}
 		_openMonitorWizard(entityIds, analysis, editMonitor = null, suggestedEntityIds = [], allSeriesEntityIds = []) {
-			this._monitorWizardEditMonitor = editMonitor;
-			this._monitorWizardPrefillEntityIds = entityIds;
-			this._monitorWizardPrefillAnalysis = analysis;
-			this._monitorWizardSuggestedEntityIds = suggestedEntityIds;
-			this._monitorWizardAllSeriesEntityIds = allSeriesEntityIds;
+			this._monitorWizardPayload = {
+				prefillEntityIds: entityIds,
+				prefillAnalysis: analysis,
+				editMonitor,
+				suggestedEntityIds,
+				allSeriesEntityIds
+			};
 			this._monitorWizardOpen = true;
 		}
-		/** Date-window-dialog `dp-window-date-change` handler: update the draft range. */
+		/**
+		* Date-window-dialog `dp-window-date-change` handler: update the draft range
+		* and keep the controlled start/end value fields in step with the inputs
+		* (the component is fully controlled, so the parent owns these values).
+		*/
 		_handleDateWindowDateChange(startStr, endStr) {
+			this._dateWindowDialogStartValue = startStr;
+			this._dateWindowDialogEndValue = endStr;
 			const start = this._parseDateWindowInputValue(startStr);
 			const end = this._parseDateWindowInputValue(endStr);
 			this._dateWindowDialogDraftRange = start && end && start < end ? {
@@ -38854,11 +38836,7 @@
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_dateSnapping", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_collapsedOptionsPopupOpen", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_monitorWizardOpen", null);
-	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_monitorWizardPrefillEntityIds", null);
-	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_monitorWizardPrefillAnalysis", null);
-	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_monitorWizardEditMonitor", null);
-	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_monitorWizardSuggestedEntityIds", null);
-	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_monitorWizardAllSeriesEntityIds", null);
+	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_monitorWizardPayload", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_aiQueryBriefDialogOpen", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_aiQueryBriefHeading", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_aiQueryBriefText", null);
