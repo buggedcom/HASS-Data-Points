@@ -2509,6 +2509,7 @@
 			Both: "Molemmat",
 			Up: "Ylös",
 			Down: "Alas",
+			"Keep anomalies in both directions, only those above the method's baseline (Up), or only those below it (Down).": "Säilytä poikkeamat molemmissa suunnissa, vain menetelmän perustason yläpuolella olevat (Ylös) tai vain sen alapuolella olevat (Alas).",
 			"\"Up\" means rising faster than the typical rate, \"Down\" means falling faster — not simply whether the value went up or down.": "”Ylös” tarkoittaa tavallista nopeampaa nousua, ”Alas” nopeampaa laskua – ei pelkästään sitä, nousiko vai laskiko arvo.",
 			"Show anomalies": "Näytä poikkeamat",
 			Sensitivity: "Herkkyys",
@@ -3165,6 +3166,7 @@
 			Both: "Les deux",
 			Up: "Hausse",
 			Down: "Baisse",
+			"Keep anomalies in both directions, only those above the method's baseline (Up), or only those below it (Down).": "Conserver les anomalies dans les deux sens, uniquement celles au-dessus de la ligne de base de la méthode (Hausse) ou uniquement celles en dessous (Baisse).",
 			"\"Up\" means rising faster than the typical rate, \"Down\" means falling faster — not simply whether the value went up or down.": "« Hausse » signifie une augmentation plus rapide que le rythme habituel, « Baisse » une diminution plus rapide — pas simplement si la valeur a monté ou baissé.",
 			"Show anomalies": "Afficher les anomalies",
 			Sensitivity: "Sensibilité",
@@ -3821,6 +3823,7 @@
 			Both: "Beide",
 			Up: "Aufwärts",
 			Down: "Abwärts",
+			"Keep anomalies in both directions, only those above the method's baseline (Up), or only those below it (Down).": "Behalte Anomalien in beiden Richtungen, nur solche über der Basislinie der Methode (Aufwärts) oder nur solche darunter (Abwärts).",
 			"\"Up\" means rising faster than the typical rate, \"Down\" means falling faster — not simply whether the value went up or down.": "„Aufwärts“ bedeutet schneller steigend als üblich, „Abwärts“ schneller fallend – nicht einfach, ob der Wert gestiegen oder gefallen ist.",
 			"Show anomalies": "Anomalien anzeigen",
 			Sensitivity: "Empfindlichkeit",
@@ -4477,6 +4480,7 @@
 			Both: "Ambos",
 			Up: "Arriba",
 			Down: "Abajo",
+			"Keep anomalies in both directions, only those above the method's baseline (Up), or only those below it (Down).": "Conserva las anomalías en ambas direcciones, solo las que están por encima de la línea base del método (Arriba) o solo las que están por debajo (Abajo).",
 			"\"Up\" means rising faster than the typical rate, \"Down\" means falling faster — not simply whether the value went up or down.": "«Arriba» significa que sube más rápido que la tasa típica, «Abajo» que baja más rápido, no simplemente si el valor subió o bajó.",
 			"Show anomalies": "Mostrar anomalías",
 			Sensitivity: "Sensibilidad",
@@ -5133,6 +5137,7 @@
 			Both: "Ambos",
 			Up: "Para cima",
 			Down: "Para baixo",
+			"Keep anomalies in both directions, only those above the method's baseline (Up), or only those below it (Down).": "Manter anomalias em ambas as direções, apenas as acima da linha de base do método (Para cima) ou apenas as abaixo (Para baixo).",
 			"\"Up\" means rising faster than the typical rate, \"Down\" means falling faster — not simply whether the value went up or down.": "“Para cima” significa subir mais rápido que a taxa típica, “Para baixo” cair mais rápido — não apenas se o valor subiu ou desceu.",
 			"Show anomalies": "Mostrar anomalias",
 			Sensitivity: "Sensibilidade",
@@ -5789,6 +5794,7 @@
 			Both: "两者",
 			Up: "向上",
 			Down: "向下",
+			"Keep anomalies in both directions, only those above the method's baseline (Up), or only those below it (Down).": "保留两个方向的异常，仅保留高于该方法基线的（向上），或仅保留低于基线的（向下）。",
 			"\"Up\" means rising faster than the typical rate, \"Down\" means falling faster — not simply whether the value went up or down.": "“向上”表示上升速度快于通常速率，“向下”表示下降速度更快，而不仅仅是数值升高还是降低。",
 			"Show anomalies": "显示异常",
 			Sensitivity: "灵敏度",
@@ -19681,17 +19687,8 @@
     padding-top: 4px;
   }
 
-  .direction-wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    flex: 1;
-  }
-
-  .field-hint {
-    font-size: 11px;
-    line-height: 1.3;
-    color: var(--secondary-text-color, #888);
+  .field-label .method-help {
+    margin-left: 4px;
   }
 
   .option {
@@ -19966,20 +19963,40 @@
 		/**
 		* Render the per-method Direction select (Both / Up / Down). Shared by every
 		* method that has a meaningful above/below-baseline notion (i.e. all methods
-		* except persistence). `help` is shown beneath the control when provided.
+		* except persistence). A `?` tooltip explains the control; `help` overrides
+		* the generic explanation with a method-specific one (e.g. sudden change).
 		*/
 		_renderDirectionField(field, value, help) {
+			const helpId = `direction-help-${field}`;
+			const helpText = help ?? msg("Keep anomalies in both directions, only those above the method's baseline (Up), or only those below it (Down).");
 			return b`
       <label class="field">
-        <span class="field-label">${msg("Direction")}</span>
-        <div class="direction-wrap">
-          <inline-select
-            .value=${value || "both"}
-            .options=${this._localizedOptions(ANALYSIS_ANOMALY_DIRECTION_OPTIONS)}
-            @dp-change=${(e) => this._emit(field, e.detail.value)}
-          ></inline-select>
-          ${help ? b`<span class="field-hint">${help}</span>` : A}
-        </div>
+        <span class="field-label"
+          >${msg("Direction")}
+          <button
+            id=${helpId}
+            class="method-help"
+            type="button"
+            aria-label=${`${msg("Direction")} explanation`}
+          >
+            ?
+          </button>
+          <ha-tooltip
+            class="method-tooltip"
+            for=${helpId}
+            placement="right"
+            distance="8"
+            hoist
+            style="--ha-tooltip-padding: var(--dp-spacing-md, calc(var(--spacing, 8px) * 1.5));"
+          >
+            ${helpText}
+          </ha-tooltip></span
+        >
+        <inline-select
+          .value=${value || "both"}
+          .options=${this._localizedOptions(ANALYSIS_ANOMALY_DIRECTION_OPTIONS)}
+          @dp-change=${(e) => this._emit(field, e.detail.value)}
+        ></inline-select>
       </label>
     `;
 		}
