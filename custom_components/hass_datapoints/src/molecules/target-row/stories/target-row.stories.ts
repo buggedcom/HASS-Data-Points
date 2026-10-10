@@ -60,6 +60,12 @@ const BLANK_ANALYSIS: NormalizedAnalysis = {
   anomaly_use_sampled_data: false,
   anomaly_trend_method: "",
   anomaly_trend_window: "24h",
+  anomaly_trend_residual_direction: "both",
+  anomaly_rate_of_change_direction: "both",
+  anomaly_iqr_direction: "both",
+  anomaly_rolling_zscore_direction: "both",
+  anomaly_comparison_window_direction: "both",
+  anomaly_similar_entity_direction: "both",
 };
 
 const MOCK_STATE_OBJ: HassEntityState = {

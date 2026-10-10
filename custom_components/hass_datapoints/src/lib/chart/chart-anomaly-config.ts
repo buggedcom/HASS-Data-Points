@@ -4,6 +4,10 @@
 
 import type { BackendAnomalyConfig } from "@/lib/data/history-api";
 
+function coerceDirection(value: unknown): "both" | "up" | "down" {
+  return value === "up" || value === "down" ? value : "both";
+}
+
 export function buildBackendAnomalyConfig(
   analysis: RecordWithUnknownValues
 ): BackendAnomalyConfig {
@@ -43,6 +47,23 @@ export function buildBackendAnomalyConfig(
       typeof analysis.anomaly_persistence_window === "string"
         ? analysis.anomaly_persistence_window
         : undefined,
+    anomaly_trend_residual_direction: coerceDirection(
+      analysis.anomaly_trend_residual_direction
+    ),
+    anomaly_rate_of_change_direction: coerceDirection(
+      analysis.anomaly_rate_of_change_direction
+    ),
+    anomaly_iqr_direction: coerceDirection(analysis.anomaly_iqr_direction),
+    anomaly_rolling_zscore_direction: coerceDirection(
+      analysis.anomaly_rolling_zscore_direction
+    ),
+    // The backend exposes a single comparison_window direction field. When
+    // similar_entity is the active comparison method (mirroring how
+    // comparison_entity_id is sourced), its direction resolves onto it;
+    // otherwise the comparison_window direction is used directly.
+    anomaly_comparison_window_direction: hasSimilarEntity
+      ? coerceDirection(analysis.anomaly_similar_entity_direction)
+      : coerceDirection(analysis.anomaly_comparison_window_direction),
     trend_method: (() => {
       if (
         typeof analysis.anomaly_trend_method === "string" &&
