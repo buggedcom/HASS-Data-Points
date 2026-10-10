@@ -584,9 +584,9 @@ async def _run_detection_with_timeout(
         ),
         # Per-method anomaly direction filter (up/down/both), default "both".
         **{
-            vol.Optional(
-                _field, default=DEFAULT_ANOMALY_DIRECTION
-            ): vol.In(VALID_ANOMALY_DIRECTIONS)
+            vol.Optional(_field, default=DEFAULT_ANOMALY_DIRECTION): vol.In(
+                VALID_ANOMALY_DIRECTIONS
+            )
             for _field in ANOMALY_DIRECTION_FIELDS
         },
         vol.Optional("trend_method", default="rolling_average"): vol.In(
