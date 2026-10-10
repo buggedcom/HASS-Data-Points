@@ -189,7 +189,9 @@ export function configFromMonitor(m: AnomalyMonitor): EntityAnalysisConfig {
     anomaly_iqr_direction: m.anomaly_iqr_direction ?? "both",
     anomaly_rolling_zscore_direction:
       m.anomaly_rolling_zscore_direction ?? "both",
-    anomaly_comparison_window_direction: baselineEntityId ? "both" : comparisonDir,
+    anomaly_comparison_window_direction: baselineEntityId
+      ? "both"
+      : comparisonDir,
     anomaly_similar_entity_direction: baselineEntityId ? comparisonDir : "both",
     anomaly_comparison_window_id: null,
     anomaly_comparison_entity_id: baselineEntityId,

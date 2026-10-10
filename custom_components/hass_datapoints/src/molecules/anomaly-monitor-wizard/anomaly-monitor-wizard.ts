@@ -229,7 +229,8 @@ export class AnomalyMonitorWizard extends LitElement {
       anomaly_rate_of_change_direction: "anomaly_rate_of_change_direction",
       anomaly_iqr_direction: "anomaly_iqr_direction",
       anomaly_rolling_zscore_direction: "anomaly_rolling_zscore_direction",
-      anomaly_comparison_window_direction: "anomaly_comparison_window_direction",
+      anomaly_comparison_window_direction:
+        "anomaly_comparison_window_direction",
       anomaly_similar_entity_direction: "anomaly_similar_entity_direction",
       anomaly_comparison_window_id: "anomaly_comparison_window_id",
       anomaly_comparison_entity_id: "anomaly_comparison_entity_id",
