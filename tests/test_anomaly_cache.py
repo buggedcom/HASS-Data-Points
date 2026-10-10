@@ -44,6 +44,52 @@ class DescribeMakeCacheKey:
 
 
 # ---------------------------------------------------------------------------
+# make_cache_key — anomaly direction fields
+# ---------------------------------------------------------------------------
+
+DIRECTION_FIELDS = (
+    "anomaly_trend_residual_direction",
+    "anomaly_rate_of_change_direction",
+    "anomaly_iqr_direction",
+    "anomaly_rolling_zscore_direction",
+    "anomaly_comparison_window_direction",
+)
+
+
+class DescribeMakeCacheKeyDirection:
+    @pytest.mark.parametrize("field", DIRECTION_FIELDS)
+    def test_GIVEN_two_configs_differing_only_by_one_direction_WHEN_called_THEN_returns_different_keys(self, field):
+        cfg_both = {"anomaly_methods": ["iqr"], field: "both"}
+        cfg_up = {"anomaly_methods": ["iqr"], field: "up"}
+        k_both = make_cache_key("sensor.temp", "2024-01-01T00:00:00", "2024-01-02T00:00:00", cfg_both)
+        k_up = make_cache_key("sensor.temp", "2024-01-01T00:00:00", "2024-01-02T00:00:00", cfg_up)
+        assert k_both != k_up
+
+    @pytest.mark.parametrize("field", DIRECTION_FIELDS)
+    def test_GIVEN_identical_direction_fields_WHEN_called_THEN_returns_same_key(self, field):
+        cfg_a = {"anomaly_methods": ["iqr"], field: "down"}
+        cfg_b = {"anomaly_methods": ["iqr"], field: "down"}
+        k_a = make_cache_key("sensor.temp", "2024-01-01T00:00:00", "2024-01-02T00:00:00", cfg_a)
+        k_b = make_cache_key("sensor.temp", "2024-01-01T00:00:00", "2024-01-02T00:00:00", cfg_b)
+        assert k_a == k_b
+
+    @pytest.mark.parametrize("field", DIRECTION_FIELDS)
+    def test_GIVEN_omitted_direction_field_WHEN_called_THEN_keys_identically_to_explicit_both(self, field):
+        cfg_absent = {"anomaly_methods": ["iqr"]}
+        cfg_explicit_both = {"anomaly_methods": ["iqr"], field: "both"}
+        k_absent = make_cache_key("sensor.temp", "2024-01-01T00:00:00", "2024-01-02T00:00:00", cfg_absent)
+        k_both = make_cache_key("sensor.temp", "2024-01-01T00:00:00", "2024-01-02T00:00:00", cfg_explicit_both)
+        assert k_absent == k_both
+
+    def test_GIVEN_up_on_one_method_and_down_on_another_WHEN_called_THEN_returns_different_keys(self):
+        cfg_a = {"anomaly_iqr_direction": "up", "anomaly_rolling_zscore_direction": "down"}
+        cfg_b = {"anomaly_iqr_direction": "down", "anomaly_rolling_zscore_direction": "up"}
+        k_a = make_cache_key("sensor.temp", "2024-01-01T00:00:00", "2024-01-02T00:00:00", cfg_a)
+        k_b = make_cache_key("sensor.temp", "2024-01-01T00:00:00", "2024-01-02T00:00:00", cfg_b)
+        assert k_a != k_b
+
+
+# ---------------------------------------------------------------------------
 # AnomalyCache.get
 # ---------------------------------------------------------------------------
 
