@@ -33750,6 +33750,50 @@
 		return context;
 	}
 	//#endregion
+	//#region custom_components/hass_datapoints/src/panels/datapoints/host-resize-controller.ts
+	/**
+	* Observes the host element's size and runs `onResize` (rAF-debounced) whenever
+	* the host's box changes while it is connected.
+	*
+	* The Datapoints panel uses this for its measured-DOM layout side effects
+	* (shell layout height, content split layout, chart resize redraw) instead of
+	* an ad-hoc `window` "resize" listener, so container-driven size changes — a
+	* collapsing sidebar, a split-pane drag — are picked up too, not just viewport
+	* resizes. Reads/writes are batched into a single animation frame to avoid
+	* layout thrash.
+	*/
+	var HostResizeController = class {
+		constructor(host, onResize) {
+			_defineProperty(this, "_host", void 0);
+			_defineProperty(this, "_onResize", void 0);
+			_defineProperty(this, "_observer", null);
+			_defineProperty(this, "_rafId", null);
+			this._host = host;
+			this._onResize = onResize;
+			host.addController(this);
+		}
+		hostConnected() {
+			if (typeof window.ResizeObserver !== "function") return;
+			this._observer = new ResizeObserver(() => this._schedule());
+			this._observer.observe(this._host);
+		}
+		hostDisconnected() {
+			this._observer?.disconnect();
+			this._observer = null;
+			if (this._rafId != null) {
+				window.cancelAnimationFrame(this._rafId);
+				this._rafId = null;
+			}
+		}
+		_schedule() {
+			if (this._rafId != null) return;
+			this._rafId = window.requestAnimationFrame(() => {
+				this._rafId = null;
+				this._onResize();
+			});
+		}
+	};
+	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/datapoints.styles.ts
 	var PANEL_HISTORY_STYLE = `
   :host {
@@ -36480,14 +36524,7 @@
 			this._onAnalysisComputing = (ev) => this._handleAnalysisComputing(ev);
 			this._onAnalysisMethodResult = (ev) => this._handleAnalysisMethodResult(ev);
 			this._onWindowPointerDown = (_ev) => this._handleWindowPointerDown();
-			this._onWindowResize = () => {
-				if (this._rendered) {
-					this._syncPageLayoutHeight();
-					this._applyContentSplitLayout();
-					this._requestChartResizeRedraw();
-					this.requestUpdate();
-				}
-			};
+			this._resizeController = new HostResizeController(this, () => this._handleHostResize());
 			this._onCollapsedSidebarClick = (_ev) => this._handleCollapsedSidebarClick();
 			this._onEventRecorded = () => this._handleEventRecorded();
 			this._haEventUnsubscribe = null;
@@ -36713,7 +36750,6 @@
 			window.addEventListener("popstate", this._onPopState);
 			window.addEventListener("location-changed", this._onLocationChanged);
 			window.addEventListener("pointerdown", this._onWindowPointerDown, true);
-			window.addEventListener("resize", this._onWindowResize);
 			window.addEventListener("hass-datapoints-event-recorded", this._onEventRecorded);
 			this.addEventListener("hass-datapoints-chart-hover", this._onChartHover);
 			this.addEventListener("hass-datapoints-chart-zoom", this._onChartZoom);
@@ -36765,7 +36801,6 @@
 			window.removeEventListener("popstate", this._onPopState);
 			window.removeEventListener("location-changed", this._onLocationChanged);
 			window.removeEventListener("pointerdown", this._onWindowPointerDown, true);
-			window.removeEventListener("resize", this._onWindowResize);
 			window.removeEventListener("hass-datapoints-event-recorded", this._onEventRecorded);
 			if (this._haEventUnsubscribe) {
 				this._haEventUnsubscribe();
@@ -37224,6 +37259,15 @@
 			this._positionCollapsedOptionsPopup();
 			this._rangeToolbarComp = this.renderRoot.querySelector("range-toolbar");
 			if (this._shellBuilt && !this._shellEl) this._mountShellControls();
+			this._applyListZoomConfig();
+		}
+		/** Measured layout side effects, driven by the host ResizeController. */
+		_handleHostResize() {
+			if (!this._rendered) return;
+			this._shellEl?.syncLayoutHeight();
+			this._applyContentSplitLayout();
+			this._requestChartResizeRedraw();
+			this.requestUpdate();
 		}
 		async _mountShellControls() {
 			const shell = this.renderRoot.querySelector("panel-shell");
@@ -37243,9 +37287,6 @@
 			this._syncControls();
 			this._bootstrapAfterShellBuilt();
 		}
-		_syncPageLayoutHeight() {
-			this._shellEl?.syncLayoutHeight();
-		}
 		_bootstrapAfterShellBuilt() {
 			if (!this._shellBuilt) {
 				logger$1.warn("[dp-lifecycle] _bootstrapAfterShellBuilt: skipped — shell not built");
@@ -37259,7 +37300,7 @@
 			this._ensureHistoryBounds();
 			this._ensureUserPreferences();
 			this._loadSavedPageIndicator();
-			this._syncHassBindings();
+			this._refreshControlsFromHass();
 			this._renderContent();
 			if (this._restoredFromSession) {
 				this._restoredFromSession = false;
@@ -37331,10 +37372,21 @@
 			return this._uiReadyPromise;
 		}
 		_syncControls() {
-			this._syncPageLayoutHeight();
-			this._syncHassBindings();
+			this._shellEl?.syncLayoutHeight();
+			this._refreshControlsFromHass();
 			this.requestUpdate();
 			this._renderSidebarOptions();
+		}
+		/**
+		* Refresh the imperatively-mounted controls that can't bind hass declaratively
+		* (the target picker) and re-render the target rows.
+		*/
+		_refreshControlsFromHass() {
+			if (this._targetControl) {
+				if (this._hass) this._targetControl.hass = this._hass;
+				this._targetControl.value = {};
+			}
+			this._renderTargetRows();
 		}
 		_syncSeriesState() {
 			this._seriesRows = normalizeHistorySeriesRows(this._seriesRows);
@@ -37362,20 +37414,6 @@
 		}
 		_mergeSavedSeriesRows(rows, savedRows) {
 			return mergeSavedSeriesRows(rows, savedRows);
-		}
-		_syncHassBindings() {
-			if (this._targetControl) {
-				if (this._hass) this._targetControl.hass = this._hass;
-				this._targetControl.value = {};
-			}
-			this._renderTargetRows();
-			this.shadowRoot?.querySelectorAll("[data-series-icon-entity-id], [data-series-collapsed-icon-entity-id]").forEach((iconEl) => {
-				const icon = iconEl;
-				const entityId = icon.dataset.seriesIconEntityId || icon.dataset.seriesCollapsedIconEntityId;
-				if (!entityId) return;
-				icon.stateObj = this._hass?.states?.[entityId];
-				icon.hass = this._hass;
-			});
 		}
 		_renderSidebarOptions() {
 			this.requestUpdate();
@@ -38300,7 +38338,6 @@
 				else {
 					this._saveSessionState();
 					this._updateUrl({ push: false });
-					this._syncListZoomState();
 				}
 			}
 			this._updateChartZoomHighlight();
@@ -38313,10 +38350,10 @@
 				this._chartZoomStateCommitTimer = null;
 				this._saveSessionState();
 				this._updateUrl({ push: false });
-				this._syncListZoomState();
 			}, 180);
 		}
-		_syncListZoomState() {
+		/** Push the current zoom window into the list card (keyed; no-op if unchanged). */
+		_applyListZoomConfig() {
 			if (!this._listEl) return;
 			const listConfig = {
 				entities: this._entities,
@@ -38447,11 +38484,6 @@
 			if (!this._endTime) return false;
 			return this._endTime.getTime() >= Date.now() - 2 * MINUTE_MS;
 		}
-		/** Toggle the live-edge indicator on the end handle. */
-		_syncLiveEdgeHandle() {
-			if (!this._rangeToolbarComp) return;
-			this.requestUpdate();
-		}
 		/** Called whenever a new annotation is recorded (HA event or window event).
 		*  If the current range is on the live edge, advance the end time to now
 		*  so the chart immediately shows the new data point. */
@@ -38467,7 +38499,6 @@
 			this._startTime = nextStart;
 			this._endTime = nextEnd;
 			this._hours = Math.max(1, Math.round((nextEnd.getTime() - nextStart.getTime()) / HOUR_MS));
-			this._syncLiveEdgeHandle();
 			this._scheduleAutoZoomUpdate(void 0, void 0);
 			this._syncControls();
 			this._chartEl?.setExternalZoomRange?.(this._chartZoomCommittedRange);
