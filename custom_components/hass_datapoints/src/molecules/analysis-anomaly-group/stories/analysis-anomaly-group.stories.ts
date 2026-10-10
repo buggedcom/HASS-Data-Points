@@ -254,6 +254,37 @@ export const TrendDeviationAlongsideOtherMethods = {
   `,
 };
 
+export const IqrUpDirection = {
+  name: "Statistical outlier — Up direction only",
+  render: () => html`
+    <analysis-anomaly-group
+      .analysis=${makeAnalysis({
+        show_anomalies: true,
+        anomaly_methods: ["iqr"],
+        anomaly_iqr_direction: "up",
+      })}
+      .entityId=${"sensor.freezer"}
+      .comparisonWindows=${comparisonWindows}
+    ></analysis-anomaly-group>
+  `,
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const el = canvasElement.querySelector(
+      "analysis-anomaly-group"
+    ) as HTMLElement & { shadowRoot: ShadowRoot };
+    const labels = Array.from(
+      el.shadowRoot.querySelectorAll("analysis-method-subopts label.field")
+    );
+    const directionLabel = labels.find(
+      (l) => l.querySelector(".field-label")?.textContent?.trim() === "Direction"
+    );
+    expect(directionLabel).toBeTruthy();
+    const select = directionLabel!.querySelector(
+      "inline-select"
+    ) as HTMLElement & { value: string };
+    expect(select.value).toBe("up");
+  },
+};
+
 export const Finnish = {
   loaders: [
     async () => {

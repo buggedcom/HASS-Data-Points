@@ -33,6 +33,12 @@ function makeAnalysis(
     anomaly_comparison_entity_id: null,
     anomaly_trend_method: "",
     anomaly_trend_window: "24h",
+    anomaly_trend_residual_direction: "both",
+    anomaly_rate_of_change_direction: "both",
+    anomaly_iqr_direction: "both",
+    anomaly_rolling_zscore_direction: "both",
+    anomaly_comparison_window_direction: "both",
+    anomaly_similar_entity_direction: "both",
     show_delta_analysis: false,
     show_delta_tooltip: false,
     show_delta_lines: false,
@@ -66,6 +72,23 @@ function createElement(
   el.hideSaveMonitorCta = props.hideSaveMonitorCta ?? false;
   document.body.appendChild(el);
   return el;
+}
+
+/**
+ * Method sub-option inline-selects EXCLUDING the per-method Direction select
+ * (#62). Window/method presence assertions count only these.
+ */
+function nonDirectionSelects(el: { shadowRoot: Nullable<ShadowRoot> }): Element[] {
+  const labels = Array.from(
+    el.shadowRoot!.querySelectorAll("analysis-method-subopts label.field")
+  );
+  return labels
+    .filter(
+      (l) =>
+        l.querySelector(".field-label")?.textContent?.trim() !== "Direction"
+    )
+    .map((l) => l.querySelector("inline-select"))
+    .filter((s): s is Element => s !== null);
 }
 
 describe("analysis-anomaly-group", () => {
@@ -214,10 +237,8 @@ describe("analysis-anomaly-group", () => {
 
       it("THEN the trend window inline-select is NOT shown when method is empty", () => {
         expect.assertions(1);
-        const inlineSelects = el.shadowRoot!.querySelectorAll(
-          "analysis-method-subopts inline-select"
-        );
-        expect(inlineSelects.length).toBe(1);
+        // Method select only (Direction select excluded, window absent).
+        expect(nonDirectionSelects(el).length).toBe(1);
       });
     });
 
@@ -261,9 +282,7 @@ describe("analysis-anomaly-group", () => {
     describe("WHEN rendered", () => {
       it("THEN shows both trend method and trend window inline-selects", () => {
         expect.assertions(2);
-        const inlineSelects = el.shadowRoot!.querySelectorAll(
-          "analysis-method-subopts inline-select"
-        );
+        const inlineSelects = nonDirectionSelects(el);
         expect(inlineSelects.length).toBe(2);
         const windowSelect = inlineSelects[1] as HTMLElement & {
           value: string;
@@ -313,10 +332,8 @@ describe("analysis-anomaly-group", () => {
     describe("WHEN rendered", () => {
       it("THEN does NOT show a trend window inline-select (linear trend has no window)", () => {
         expect.assertions(1);
-        const inlineSelects = el.shadowRoot!.querySelectorAll(
-          "analysis-method-subopts inline-select"
-        );
-        expect(inlineSelects.length).toBe(1);
+        // Method select only (Direction select excluded, window absent).
+        expect(nonDirectionSelects(el).length).toBe(1);
       });
     });
   });
@@ -355,10 +372,8 @@ describe("analysis-anomaly-group", () => {
 
       it("THEN the trend window inline-select IS shown because rolling_average needs a window", () => {
         expect.assertions(1);
-        const inlineSelects = el.shadowRoot!.querySelectorAll(
-          "analysis-method-subopts inline-select"
-        );
-        expect(inlineSelects.length).toBe(2);
+        // Method + window selects (Direction select excluded).
+        expect(nonDirectionSelects(el).length).toBe(2);
       });
     });
   });
@@ -386,6 +401,106 @@ describe("analysis-anomaly-group", () => {
         expect(analysisGroup.label).toBe("Näytä poikkeamat");
         expect(sensitivityLabel?.textContent).toBe("Herkkyys");
         expect(methodLabel?.textContent).toBe("Tilastollinen poikkeama (IQR)");
+      });
+    });
+  });
+
+  // ── Per-method direction (#62) ──────────────────────────────────────────
+
+  /** Return the Direction inline-select within the rendered method subopts. */
+  function directionSelect(
+    root: HTMLElement
+  ): (HTMLElement & { value: string }) | null {
+    const labels = Array.from(
+      root.shadowRoot!.querySelectorAll("analysis-method-subopts label.field")
+    );
+    const match = labels.find(
+      (l) => l.querySelector(".field-label")?.textContent?.trim() === "Direction"
+    );
+    return (match?.querySelector("inline-select") as
+      | (HTMLElement & { value: string })
+      | null) ?? null;
+  }
+
+  describe("GIVEN the iqr method is checked", () => {
+    beforeEach(async () => {
+      el = createElement({
+        analysis: { show_anomalies: true, anomaly_methods: ["iqr"] },
+      });
+      await el.updateComplete;
+    });
+
+    describe("WHEN rendered", () => {
+      it("THEN a Direction select is shown defaulting to 'both'", () => {
+        expect.assertions(2);
+        const select = directionSelect(el);
+        expect(select).toBeTruthy();
+        expect(select!.value).toBe("both");
+      });
+    });
+
+    describe("WHEN the Direction select changes to 'up'", () => {
+      it("THEN dispatches dp-group-analysis-change with key=anomaly_iqr_direction", () => {
+        expect.assertions(3);
+        const handler = vi.fn();
+        el.addEventListener("dp-group-analysis-change", handler);
+        directionSelect(el)!.dispatchEvent(
+          new CustomEvent("dp-change", {
+            detail: { value: "up" },
+            bubbles: true,
+            composed: true,
+          })
+        );
+        expect(handler).toHaveBeenCalledOnce();
+        expect(handler.mock.calls[0][0].detail.key).toBe("anomaly_iqr_direction");
+        expect(handler.mock.calls[0][0].detail.value).toBe("up");
+      });
+    });
+  });
+
+  describe("GIVEN the comparison_window method is checked with a direction set", () => {
+    beforeEach(async () => {
+      el = createElement({
+        analysis: {
+          show_anomalies: true,
+          anomaly_methods: ["comparison_window"],
+          anomaly_comparison_window_direction: "down",
+        },
+      });
+      await el.updateComplete;
+    });
+
+    it("THEN the Direction select reflects 'down' and emits its per-method key", () => {
+      expect.assertions(2);
+      const select = directionSelect(el);
+      expect(select!.value).toBe("down");
+      const handler = vi.fn();
+      el.addEventListener("dp-group-analysis-change", handler);
+      select!.dispatchEvent(
+        new CustomEvent("dp-change", {
+          detail: { value: "both" },
+          bubbles: true,
+          composed: true,
+        })
+      );
+      expect(handler.mock.calls[0][0].detail.key).toBe(
+        "anomaly_comparison_window_direction"
+      );
+    });
+  });
+
+  describe("GIVEN the persistence method is checked", () => {
+    beforeEach(async () => {
+      el = createElement({
+        analysis: { show_anomalies: true, anomaly_methods: ["persistence"] },
+      });
+      await el.updateComplete;
+    });
+
+    describe("WHEN rendered", () => {
+      it("THEN NO Direction select is shown (flat signals have no direction)", () => {
+        expect.assertions(1);
+        expect(directionSelect(el)).toBeNull();
       });
     });
   });
