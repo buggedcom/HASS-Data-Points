@@ -13,6 +13,7 @@
  */
 import type { Meta, StoryObj } from "@storybook/web-components-vite";
 import { html, type TemplateResult } from "lit";
+import { STORY_NOW } from "@/test-support/storybook-time";
 import { HassDatapointsSensorCard } from "../sensor";
 
 if (!customElements.get("hass-datapoints-sensor-card")) {
@@ -82,7 +83,7 @@ function makeHistory(
   baseValue: number,
   amplitude: number
 ) {
-  const now = Date.now();
+  const now = STORY_NOW;
   return {
     [entityId]: Array.from({ length: hours + 1 }, (_, i) => {
       const ts = now - (hours - i) * 3600 * 1000;
@@ -93,7 +94,7 @@ function makeHistory(
 }
 
 function makeEvents(entityId: string, hours: number) {
-  const now = Date.now();
+  const now = STORY_NOW;
   return [
     {
       id: "evt-1",

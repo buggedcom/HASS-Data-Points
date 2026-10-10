@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/web-components-vite";
 import { html } from "lit";
+import { STORY_NOW } from "@/test-support/storybook-time";
 import "../sensor-chart";
 import type { SensorChart } from "../sensor-chart";
 
@@ -18,7 +19,7 @@ function makeHistory(
   baseValue: number,
   amplitude: number
 ) {
-  const now = Date.now();
+  const now = STORY_NOW;
   return {
     [entityId]: Array.from({ length: hours + 1 }, (_, i) => {
       const ts = now - (hours - i) * 3600 * 1000;
@@ -29,7 +30,7 @@ function makeHistory(
 }
 
 function makeEvents(entityId: string, hours: number) {
-  const now = Date.now();
+  const now = STORY_NOW;
   return [
     {
       id: "evt-1",
@@ -71,7 +72,7 @@ export const Default: Story = {
       "sensor-chart"
     ) as SensorChart & { draw: (...args: unknown[]) => void };
     await chartEl.updateComplete;
-    const now = Date.now();
+    const now = STORY_NOW;
     chartEl.draw(
       makeHistory("sensor.temperature", 24, 21.5, 3.0),
       [],
@@ -94,7 +95,7 @@ export const WithAnnotations: Story = {
       "sensor-chart"
     ) as SensorChart & { draw: (...args: unknown[]) => void };
     await chartEl.updateComplete;
-    const now = Date.now();
+    const now = STORY_NOW;
     chartEl.draw(
       makeHistory("sensor.temperature", 24, 21.5, 3.0),
       makeEvents("sensor.temperature", 24),
@@ -117,7 +118,7 @@ export const WithAnnotationLines: Story = {
       "sensor-chart"
     ) as SensorChart & { draw: (...args: unknown[]) => void };
     await chartEl.updateComplete;
-    const now = Date.now();
+    const now = STORY_NOW;
     chartEl.draw(
       makeHistory("sensor.temperature", 24, 21.5, 3.0),
       makeEvents("sensor.temperature", 24),
@@ -140,7 +141,7 @@ export const NoData: Story = {
       "sensor-chart"
     ) as SensorChart & { draw: (...args: unknown[]) => void };
     await chartEl.updateComplete;
-    const now = Date.now();
+    const now = STORY_NOW;
     // Pass empty history — no numeric data
     chartEl.draw(
       { "sensor.temperature": [{ s: "unavailable", lu: now / 1000 }] },

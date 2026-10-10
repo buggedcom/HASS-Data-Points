@@ -1,4 +1,5 @@
 import { html } from "lit";
+import { STORY_NOW } from "@/test-support/storybook-time";
 import "../datapoints";
 import { setFrontendLocale } from "@/lib/i18n/localize";
 
@@ -19,8 +20,8 @@ function makeMockHass() {
         entity_id: "sensor.temperature",
         state: "22.5",
         attributes: { unit_of_measurement: "°C", friendly_name: "Temperature" },
-        last_changed: new Date().toISOString(),
-        last_updated: new Date().toISOString(),
+        last_changed: new Date(STORY_NOW).toISOString(),
+        last_updated: new Date(STORY_NOW).toISOString(),
       },
     },
     entities: {},

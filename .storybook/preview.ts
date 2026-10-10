@@ -1,6 +1,14 @@
 import { html } from "lit";
+import MockDate from "mockdate";
+import { STORY_NOW } from "../custom_components/hass_datapoints/src/test-support/storybook-time";
 import "../custom_components/hass_datapoints/src/test-support/suppress-lit-dev-mode";
 import "../custom_components/hass_datapoints/src/test-support/ha-stubs";
+
+/** Freeze the wall clock, while leaving timers and animation frames running. */
+export const beforeEach = async () => {
+  MockDate.set(STORY_NOW);
+  return () => MockDate.reset();
+};
 
 /**
  * HA dark-theme CSS custom properties.

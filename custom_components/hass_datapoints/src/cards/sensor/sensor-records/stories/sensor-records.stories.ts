@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/web-components-vite";
 import { html } from "lit";
+import { STORY_NOW } from "@/test-support/storybook-time";
 import "../sensor-records";
 
 type Story = StoryObj;
@@ -11,7 +12,7 @@ const meta: Meta = {
 };
 export default meta;
 
-const now = Date.now();
+const now = STORY_NOW;
 
 const sampleEvents = [
   {
