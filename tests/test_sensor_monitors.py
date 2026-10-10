@@ -66,6 +66,61 @@ def test_build_detection_config_custom():
     assert cfg["sample_aggregate"] == "max"
 
 
+def test_build_detection_config_direction_defaults_both():
+    from custom_components.hass_datapoints.const import ANOMALY_DIRECTION_FIELDS
+    from custom_components.hass_datapoints.sensor import _build_detection_config
+
+    cfg = _build_detection_config({})
+    for field in ANOMALY_DIRECTION_FIELDS:
+        assert cfg[field] == "both"
+
+
+def test_build_detection_config_passes_direction():
+    from custom_components.hass_datapoints.sensor import _build_detection_config
+
+    cfg = _build_detection_config(
+        {"anomaly_methods": ["iqr"], "anomaly_iqr_direction": "up"}
+    )
+    assert cfg["anomaly_iqr_direction"] == "up"
+
+
+def _iqr_two_sided_pts() -> list:
+    """Tight baseline around 10 with an isolated up-spike and an isolated
+    down-dip, each surrounded by in-fence points so IQR yields two clusters."""
+    base = [10, 11, 10, 12, 11, 10, 12, 11, 10, 11]
+    values = base + [100] + base + [-100] + base
+    return [[1000 * (i + 1), float(v)] for i, v in enumerate(values)]
+
+
+def test_monitor_direction_recomputes_flagged_state():
+    from custom_components.hass_datapoints.anomaly_detection import (
+        run_anomaly_detection,
+    )
+    from custom_components.hass_datapoints.sensor import _build_detection_config
+
+    pts = _iqr_two_sided_pts()
+
+    both_cfg = _build_detection_config({"anomaly_methods": ["iqr"]})
+    up_cfg = _build_detection_config(
+        {"anomaly_methods": ["iqr"], "anomaly_iqr_direction": "up"}
+    )
+
+    both_clusters = run_anomaly_detection(pts, both_cfg)
+    up_clusters = run_anomaly_detection(pts, up_cfg)
+
+    # Both-direction flags both the up-spike and the down-dip.
+    both_values = [p["value"] for c in both_clusters for p in c["points"]]
+    assert 100.0 in both_values
+    assert -100.0 in both_values
+
+    # Up-only drops the below-baseline dip and keeps only positive residuals.
+    up_values = [p["value"] for c in up_clusters for p in c["points"]]
+    assert 100.0 in up_values
+    assert -100.0 not in up_values
+    assert all(p["residual"] > 0 for c in up_clusters for p in c["points"])
+    assert len(up_clusters) < len(both_clusters)
+
+
 def test_summarize_clusters_returns_compact_shape():
     from custom_components.hass_datapoints.sensor import _summarize_clusters
 
@@ -292,6 +347,33 @@ def test_extra_state_attributes_expose_compact_cluster_summaries_only():
         }
     ]
     assert "points" not in attrs["active_clusters"][0]
+
+
+def test_extra_state_attributes_expose_direction():
+    from custom_components.hass_datapoints.const import ANOMALY_DIRECTION_FIELDS
+    from custom_components.hass_datapoints.sensor import DatapointsMonitorSensor
+
+    store = _make_store(
+        monitors=[
+            {
+                "id": "m1",
+                "name": "M1",
+                "type": "individual",
+                "entity_id": "sensor.temp",
+                "anomaly_methods": ["iqr"],
+                "anomaly_iqr_direction": "up",
+            }
+        ]
+    )
+    sensor = DatapointsMonitorSensor(_make_entry(), store, MagicMock(), "m1")
+
+    attrs = sensor.extra_state_attributes
+
+    assert attrs["anomaly_iqr_direction"] == "up"
+    # Omitted direction fields fall back to "both".
+    for field in ANOMALY_DIRECTION_FIELDS:
+        if field != "anomaly_iqr_direction":
+            assert attrs[field] == "both"
 
 
 def test_schedule_timer_skips_when_disabled():

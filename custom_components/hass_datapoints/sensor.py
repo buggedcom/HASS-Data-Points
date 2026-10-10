@@ -19,7 +19,9 @@ from homeassistant.util import dt as dt_util
 
 from .anomaly_detection import run_anomaly_detection
 from .const import (
+    ANOMALY_DIRECTION_FIELDS,
     ANOMALY_MAX_PTS,
+    DEFAULT_ANOMALY_DIRECTION,
     DOMAIN,
     EVENT_ANOMALY_DETECTED,
     EVENT_ANOMALY_RESOLVED,
@@ -384,6 +386,10 @@ def _build_detection_config(monitor: dict[str, Any]) -> dict[str, Any]:
         "anomaly_rate_window": monitor.get("anomaly_rate_window", "1h"),
         "anomaly_zscore_window": monitor.get("anomaly_zscore_window", "24h"),
         "anomaly_persistence_window": monitor.get("anomaly_persistence_window", "1h"),
+        **{
+            field: monitor.get(field, DEFAULT_ANOMALY_DIRECTION)
+            for field in ANOMALY_DIRECTION_FIELDS
+        },
         "trend_method": monitor.get("anomaly_trend_method", "rolling_average"),
         "trend_window": monitor.get("anomaly_trend_window", "24h"),
         "sample_interval": monitor.get("sample_interval"),
@@ -982,6 +988,10 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
             "scan_interval_minutes": monitor.get("scan_interval_minutes", 30),
             "anomaly_methods": monitor.get("anomaly_methods", []),
             "sensitivity": monitor.get("anomaly_sensitivity", "medium"),
+            **{
+                field: monitor.get(field, DEFAULT_ANOMALY_DIRECTION)
+                for field in ANOMALY_DIRECTION_FIELDS
+            },
             "active_cluster_count": monitor.get(
                 "active_cluster_count", monitor.get("last_cluster_count", 0)
             ),
