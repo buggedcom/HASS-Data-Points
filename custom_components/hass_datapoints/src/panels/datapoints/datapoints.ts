@@ -116,6 +116,7 @@ import "@/panels/datapoints/components/ai-query-brief-dialog/ai-query-brief-dial
 import "@/panels/datapoints/components/history-targets/history-targets";
 import "@/panels/datapoints/components/range-toolbar/range-toolbar";
 import { createHistoryPageContext } from "@/panels/datapoints/context/create-history-page-context";
+import { HostResizeController } from "@/panels/datapoints/host-resize-controller";
 import type {
   HistoryPageContext,
   HistoryTargetRowState,
@@ -458,7 +459,8 @@ export class HassDatapointsHistoryPanel extends LitElement {
 
   declare _onWindowPointerDown: EventListener;
 
-  declare _onWindowResize: () => void;
+  /** Observes the host size for measured layout side effects. */
+  declare _resizeController: HostResizeController;
 
   declare _onCollapsedSidebarClick: EventListener;
 
@@ -604,14 +606,9 @@ export class HassDatapointsHistoryPanel extends LitElement {
     this._onAnalysisMethodResult = (ev: Event) =>
       this._handleAnalysisMethodResult(ev);
     this._onWindowPointerDown = (_ev: Event) => this._handleWindowPointerDown();
-    this._onWindowResize = () => {
-      if (this._rendered) {
-        this._syncPageLayoutHeight();
-        this._applyContentSplitLayout();
-        this._requestChartResizeRedraw();
-        this.requestUpdate();
-      }
-    };
+    this._resizeController = new HostResizeController(this, () =>
+      this._handleHostResize()
+    );
     this._onCollapsedSidebarClick = (_ev: Event) =>
       this._handleCollapsedSidebarClick();
     this._onEventRecorded = () => this._handleEventRecorded();
@@ -907,10 +904,9 @@ export class HassDatapointsHistoryPanel extends LitElement {
     this._loadSavedPageIndicator();
     // _bootstrapAfterShellBuilt() is intentionally NOT called here — it was
     // previously called on every hass update which triggered _renderContent()
-    // and _syncHassBindings() (including DOM querySelectorAll and full target-
-    // row re-renders) multiple times per second.  Those are now handled by the
-    // microtask above (hass push) and by explicit calls from state-change
-    // handlers.
+    // and a full target-picker/target-row refresh multiple times per second.
+    // Those are now handled by the microtask above (hass push) and by explicit
+    // calls from state-change handlers.
   }
 
   _applyPanel(panel: Nullable<{ config?: RecordWithUnknownValues }>) {
@@ -974,7 +970,6 @@ export class HassDatapointsHistoryPanel extends LitElement {
     window.addEventListener("popstate", this._onPopState);
     window.addEventListener("location-changed", this._onLocationChanged);
     window.addEventListener("pointerdown", this._onWindowPointerDown, true);
-    window.addEventListener("resize", this._onWindowResize);
     window.addEventListener(
       "hass-datapoints-event-recorded",
       this._onEventRecorded
@@ -1064,7 +1059,6 @@ export class HassDatapointsHistoryPanel extends LitElement {
     window.removeEventListener("popstate", this._onPopState);
     window.removeEventListener("location-changed", this._onLocationChanged);
     window.removeEventListener("pointerdown", this._onWindowPointerDown, true);
-    window.removeEventListener("resize", this._onWindowResize);
     window.removeEventListener(
       "hass-datapoints-event-recorded",
       this._onEventRecorded
@@ -1815,6 +1809,21 @@ export class HassDatapointsHistoryPanel extends LitElement {
     if (this._shellBuilt && !this._shellEl) {
       this._mountShellControls();
     }
+    // Push the current zoom window into the list card (keyed, so it is a no-op
+    // unless the config actually changed). Driven here because the reactive
+    // _chartZoomCommittedRange change schedules the render.
+    this._applyListZoomConfig();
+  }
+
+  /** Measured layout side effects, driven by the host ResizeController. */
+  private _handleHostResize(): void {
+    if (!this._rendered) {
+      return;
+    }
+    this._shellEl?.syncLayoutHeight();
+    this._applyContentSplitLayout();
+    this._requestChartResizeRedraw();
+    this.requestUpdate();
   }
 
   private async _mountShellControls() {
@@ -1839,10 +1848,6 @@ export class HassDatapointsHistoryPanel extends LitElement {
     this._bootstrapAfterShellBuilt();
   }
 
-  _syncPageLayoutHeight() {
-    this._shellEl?.syncLayoutHeight();
-  }
-
   _bootstrapAfterShellBuilt() {
     if (!this._shellBuilt) {
       logger.warn(
@@ -1858,7 +1863,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
     this._ensureHistoryBounds();
     this._ensureUserPreferences();
     this._loadSavedPageIndicator();
-    this._syncHassBindings();
+    this._refreshControlsFromHass();
     this._renderContent();
     if (this._restoredFromSession) {
       this._restoredFromSession = false;
@@ -1970,10 +1975,24 @@ export class HassDatapointsHistoryPanel extends LitElement {
   }
 
   _syncControls() {
-    this._syncPageLayoutHeight();
-    this._syncHassBindings();
+    this._shellEl?.syncLayoutHeight();
+    this._refreshControlsFromHass();
     this.requestUpdate();
     this._renderSidebarOptions();
+  }
+
+  /**
+   * Refresh the imperatively-mounted controls that can't bind hass declaratively
+   * (the target picker) and re-render the target rows.
+   */
+  private _refreshControlsFromHass() {
+    if (this._targetControl) {
+      if (this._hass) {
+        this._targetControl.hass = this._hass;
+      }
+      this._targetControl.value = {};
+    }
+    this._renderTargetRows();
   }
 
   _syncSeriesState() {
@@ -2016,35 +2035,6 @@ export class HassDatapointsHistoryPanel extends LitElement {
 
   _mergeSavedSeriesRows(rows: unknown, savedRows: unknown) {
     return mergeSavedSeriesRows(rows, savedRows);
-  }
-
-  _syncHassBindings() {
-    if (this._targetControl) {
-      if (this._hass) {
-        this._targetControl.hass = this._hass;
-      }
-      this._targetControl.value = {};
-    }
-    this._renderTargetRows();
-    this.shadowRoot
-      ?.querySelectorAll(
-        "[data-series-icon-entity-id], [data-series-collapsed-icon-entity-id]"
-      )
-      .forEach((iconEl) => {
-        const icon = iconEl as HTMLElement & {
-          dataset: DOMStringMap;
-          stateObj?: unknown;
-          hass?: unknown;
-        };
-        const entityId =
-          icon.dataset.seriesIconEntityId ||
-          icon.dataset.seriesCollapsedIconEntityId;
-        if (!entityId) {
-          return;
-        }
-        icon.stateObj = this._hass?.states?.[entityId];
-        icon.hass = this._hass;
-      });
   }
 
   _renderSidebarOptions() {
@@ -3555,7 +3545,8 @@ export class HassDatapointsHistoryPanel extends LitElement {
       } else {
         this._saveSessionState();
         this._updateUrl({ push: false });
-        this._syncListZoomState();
+        // The list zoom config is pushed from updated() — the reactive
+        // _chartZoomCommittedRange change above schedules that render.
       }
     }
     this._updateChartZoomHighlight();
@@ -3575,11 +3566,11 @@ export class HassDatapointsHistoryPanel extends LitElement {
       this._chartZoomStateCommitTimer = null;
       this._saveSessionState();
       this._updateUrl({ push: false });
-      this._syncListZoomState();
     }, 180);
   }
 
-  _syncListZoomState() {
+  /** Push the current zoom window into the list card (keyed; no-op if unchanged). */
+  private _applyListZoomConfig() {
     if (!this._listEl) {
       return;
     }
@@ -3823,14 +3814,6 @@ export class HassDatapointsHistoryPanel extends LitElement {
     return this._endTime.getTime() >= Date.now() - 2 * MINUTE_MS;
   }
 
-  /** Toggle the live-edge indicator on the end handle. */
-  _syncLiveEdgeHandle() {
-    if (!this._rangeToolbarComp) {
-      return;
-    }
-    this.requestUpdate();
-  }
-
   /** Called whenever a new annotation is recorded (HA event or window event).
    *  If the current range is on the live edge, advance the end time to now
    *  so the chart immediately shows the new data point. */
@@ -3863,8 +3846,9 @@ export class HassDatapointsHistoryPanel extends LitElement {
       1,
       Math.round((nextEnd.getTime() - nextStart.getTime()) / HOUR_MS)
     );
-    this._syncLiveEdgeHandle();
     this._scheduleAutoZoomUpdate(undefined, undefined);
+    // _syncControls() below requests the update that refreshes the live-edge
+    // handle (bound declaratively on <range-toolbar>).
     this._syncControls();
     this._chartEl?.setExternalZoomRange?.(this._chartZoomCommittedRange);
     if (!didChange) {
