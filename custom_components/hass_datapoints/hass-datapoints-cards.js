@@ -37289,8 +37289,7 @@
 			this._ensureHistoryBounds();
 			this._ensureUserPreferences();
 			this._loadSavedPageIndicator();
-			this._refreshTargetPickerHass();
-			this._renderTargetRows();
+			this._refreshControlsFromHass();
 			this._renderContent();
 			if (this._restoredFromSession) {
 				this._restoredFromSession = false;
@@ -37363,16 +37362,20 @@
 		}
 		_syncControls() {
 			this._shellEl?.syncLayoutHeight();
-			this._refreshTargetPickerHass();
-			this._renderTargetRows();
+			this._refreshControlsFromHass();
 			this.requestUpdate();
 			this._renderSidebarOptions();
 		}
-		/** Push the latest hass into the imperatively-mounted target picker. */
-		_refreshTargetPickerHass() {
-			if (!this._targetControl) return;
-			if (this._hass) this._targetControl.hass = this._hass;
-			this._targetControl.value = {};
+		/**
+		* Refresh the imperatively-mounted controls that can't bind hass declaratively
+		* (the target picker) and re-render the target rows.
+		*/
+		_refreshControlsFromHass() {
+			if (this._targetControl) {
+				if (this._hass) this._targetControl.hass = this._hass;
+				this._targetControl.value = {};
+			}
+			this._renderTargetRows();
 		}
 		_syncSeriesState() {
 			this._seriesRows = normalizeHistorySeriesRows(this._seriesRows);

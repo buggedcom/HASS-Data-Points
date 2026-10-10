@@ -1809,8 +1809,9 @@ export class HassDatapointsHistoryPanel extends LitElement {
     if (this._shellBuilt && !this._shellEl) {
       this._mountShellControls();
     }
-    // Measured-DOM side effect: push the current zoom window into the list card
-    // (keyed, so it is a no-op unless the config actually changed).
+    // Push the current zoom window into the list card (keyed, so it is a no-op
+    // unless the config actually changed). Driven here because the reactive
+    // _chartZoomCommittedRange change schedules the render.
     this._applyListZoomConfig();
   }
 
@@ -1862,8 +1863,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
     this._ensureHistoryBounds();
     this._ensureUserPreferences();
     this._loadSavedPageIndicator();
-    this._refreshTargetPickerHass();
-    this._renderTargetRows();
+    this._refreshControlsFromHass();
     this._renderContent();
     if (this._restoredFromSession) {
       this._restoredFromSession = false;
@@ -1976,21 +1976,23 @@ export class HassDatapointsHistoryPanel extends LitElement {
 
   _syncControls() {
     this._shellEl?.syncLayoutHeight();
-    this._refreshTargetPickerHass();
-    this._renderTargetRows();
+    this._refreshControlsFromHass();
     this.requestUpdate();
     this._renderSidebarOptions();
   }
 
-  /** Push the latest hass into the imperatively-mounted target picker. */
-  private _refreshTargetPickerHass() {
-    if (!this._targetControl) {
-      return;
+  /**
+   * Refresh the imperatively-mounted controls that can't bind hass declaratively
+   * (the target picker) and re-render the target rows.
+   */
+  private _refreshControlsFromHass() {
+    if (this._targetControl) {
+      if (this._hass) {
+        this._targetControl.hass = this._hass;
+      }
+      this._targetControl.value = {};
     }
-    if (this._hass) {
-      this._targetControl.hass = this._hass;
-    }
-    this._targetControl.value = {};
+    this._renderTargetRows();
   }
 
   _syncSeriesState() {
