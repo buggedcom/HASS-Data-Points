@@ -410,3 +410,171 @@ class DescribeRunAnomalyDetection:
             "anomaly_zscore_window": "24h",
         })
         assert len(result) >= 1
+
+
+# ---------------------------------------------------------------------------
+# run_anomaly_detection — per-method direction filter (#62)
+# ---------------------------------------------------------------------------
+
+
+def _straddling_iqr_pts() -> list:
+    """Oscillating baseline with an adjacent up-spike then down-spike.
+
+    detect_iqr groups the two consecutive out-of-fence points into ONE
+    cluster whose residuals straddle the baseline: [+998.0, -1002.0]
+    (residual = value - median, median == 2.0).
+    """
+    pts = [[i * 1000, float(i % 5)] for i in range(18)]
+    pts.append([18000, 1000.0])
+    pts.append([19000, -1000.0])
+    return pts
+
+
+def _separate_up_then_down_iqr_pts() -> list:
+    """Up-spike and down-spike split by an in-fence point -> two clusters."""
+    pts = [[i * 1000, float(i % 5)] for i in range(10)]
+    pts.append([10000, 1000.0])   # up -> cluster A (residual +998)
+    pts.append([11000, 2.0])      # in-fence -> flush
+    pts.append([12000, -1000.0])  # down -> cluster B (residual -1002)
+    pts += [[(13 + i) * 1000, float(i % 5)] for i in range(8)]
+    return pts
+
+
+def _only_down_iqr_pts() -> list:
+    """Oscillating baseline with a single down-spike -> one down-only cluster."""
+    pts = [[i * 1000, float(i % 5)] for i in range(18)]
+    pts.append([18000, -1000.0])
+    return pts
+
+
+class DescribeRunAnomalyDetectionDirection:
+    def test_GIVEN_no_direction_field_WHEN_called_THEN_matches_explicit_both(self):
+        pts = _straddling_iqr_pts()
+        absent = run_anomaly_detection(
+            pts, {"anomaly_methods": ["iqr"], "anomaly_sensitivity": "medium"}
+        )
+        both = run_anomaly_detection(
+            pts,
+            {
+                "anomaly_methods": ["iqr"],
+                "anomaly_sensitivity": "medium",
+                "anomaly_iqr_direction": "both",
+            },
+        )
+        assert absent == both
+
+    def test_GIVEN_both_direction_WHEN_called_THEN_keeps_every_point_as_today(self):
+        pts = _straddling_iqr_pts()
+        result = run_anomaly_detection(
+            pts,
+            {
+                "anomaly_methods": ["iqr"],
+                "anomaly_sensitivity": "medium",
+                "anomaly_iqr_direction": "both",
+            },
+        )
+        assert len(result) == 1
+        residuals = [p["residual"] for p in result[0]["points"]]
+        assert residuals == [998.0, -1002.0]
+        assert result[0]["maxDeviation"] == pytest.approx(1002.0)
+
+    def test_GIVEN_up_direction_WHEN_called_THEN_keeps_only_positive_residuals(self):
+        pts = _separate_up_then_down_iqr_pts()
+        result = run_anomaly_detection(
+            pts,
+            {
+                "anomaly_methods": ["iqr"],
+                "anomaly_sensitivity": "medium",
+                "anomaly_iqr_direction": "up",
+            },
+        )
+        kept = [p["residual"] for c in result for p in c["points"]]
+        assert kept
+        assert all(r > 0 for r in kept)
+
+    def test_GIVEN_down_direction_WHEN_called_THEN_keeps_only_negative_residuals(self):
+        pts = _separate_up_then_down_iqr_pts()
+        result = run_anomaly_detection(
+            pts,
+            {
+                "anomaly_methods": ["iqr"],
+                "anomaly_sensitivity": "medium",
+                "anomaly_iqr_direction": "down",
+            },
+        )
+        kept = [p["residual"] for c in result for p in c["points"]]
+        assert kept
+        assert all(r < 0 for r in kept)
+
+    def test_GIVEN_straddling_cluster_WHEN_up_direction_THEN_trims_and_recomputes_max_deviation(self):
+        pts = _straddling_iqr_pts()
+        result = run_anomaly_detection(
+            pts,
+            {
+                "anomaly_methods": ["iqr"],
+                "anomaly_sensitivity": "medium",
+                "anomaly_iqr_direction": "up",
+            },
+        )
+        assert len(result) == 1
+        residuals = [p["residual"] for p in result[0]["points"]]
+        assert residuals == [998.0]
+        assert result[0]["maxDeviation"] == pytest.approx(998.0)
+
+    def test_GIVEN_cluster_with_no_matching_points_WHEN_up_direction_THEN_cluster_dropped(self):
+        pts = _only_down_iqr_pts()
+        result = run_anomaly_detection(
+            pts,
+            {
+                "anomaly_methods": ["iqr"],
+                "anomaly_sensitivity": "medium",
+                "anomaly_iqr_direction": "up",
+            },
+        )
+        assert result == []
+
+    def test_GIVEN_persistence_method_WHEN_any_direction_THEN_clusters_unaffected(self):
+        flat = [[i * 3_600_000, 5.0] for i in range(5)]
+        change = [[5 * 3_600_000 + i * 3_600_000, float(10 + i)] for i in range(10)]
+        pts = flat + change
+        baseline = run_anomaly_detection(
+            pts, {"anomaly_methods": ["persistence"], "anomaly_sensitivity": "medium"}
+        )
+        # Persistence residuals are 0.0; an "up" filter would wipe them out if
+        # the direction step ever touched persistence — it must not.
+        with_direction = run_anomaly_detection(
+            pts,
+            {
+                "anomaly_methods": ["persistence"],
+                "anomaly_sensitivity": "medium",
+                "anomaly_persistence_direction": "up",
+                "anomaly_iqr_direction": "down",
+            },
+        )
+        assert with_direction == baseline
+        assert len(with_direction) == 1
+        assert with_direction[0]["anomalyMethod"] == "persistence"
+
+    def test_GIVEN_overlap_only_mode_WHEN_direction_set_THEN_filter_runs_before_overlap(self):
+        # iqr and rolling_zscore both flag an up-spike (t=600000) and a
+        # down-spike (t=1800000). In "only" mode both overlap, so both survive.
+        pts = [[i * 60_000, float(i % 5)] for i in range(40)]
+        pts[10] = [10 * 60_000, 1000.0]
+        pts[30] = [30 * 60_000, -1000.0]
+        base_cfg = {
+            "anomaly_methods": ["iqr", "rolling_zscore"],
+            "anomaly_overlap_mode": "only",
+            "anomaly_sensitivity": "medium",
+            "anomaly_zscore_window": "1h",
+        }
+        without = run_anomaly_detection(pts, dict(base_cfg))
+        times_without = {p["timeMs"] for c in without for p in c["points"]}
+        assert times_without == {600000, 1800000}
+
+        # Filtering iqr to "up" removes its down point BEFORE overlap, so the
+        # down-spike is no longer a cross-method overlap and drops out.
+        result = run_anomaly_detection(
+            pts, {**base_cfg, "anomaly_iqr_direction": "up"}
+        )
+        times = {p["timeMs"] for c in result for p in c["points"]}
+        assert times == {600000}
