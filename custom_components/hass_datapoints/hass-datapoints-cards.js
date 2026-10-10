@@ -2507,10 +2507,10 @@
 		translations$157 = {
 			Direction: "Suunta",
 			Both: "Molemmat",
-			Up: "Ylös",
-			Down: "Alas",
-			"Keep anomalies in both directions, only those above the method's baseline (Up), or only those below it (Down).": "Säilytä poikkeamat molemmissa suunnissa, vain menetelmän perustason yläpuolella olevat (Ylös) tai vain sen alapuolella olevat (Alas).",
-			"\"Up\" means rising faster than the typical rate, \"Down\" means falling faster — not simply whether the value went up or down.": "”Ylös” tarkoittaa tavallista nopeampaa nousua, ”Alas” nopeampaa laskua – ei pelkästään sitä, nousiko vai laskiko arvo.",
+			Above: "Yläpuolella",
+			Below: "Alapuolella",
+			"\"Above\" keeps only anomalies above the method's baseline, \"Below\" only those beneath it, and \"Both\" keeps either.": "”Yläpuolella” säilyttää vain menetelmän perustason yläpuoliset poikkeamat, ”Alapuolella” vain sen alapuoliset ja ”Molemmat” säilyttää molemmat.",
+			"\"Above\" means rising faster than the typical rate, \"Below\" means falling faster — not simply whether the value went up or down.": "”Yläpuolella” tarkoittaa tavallista nopeampaa nousua, ”Alapuolella” nopeampaa laskua – ei pelkästään sitä, nousiko vai laskiko arvo.",
 			"Show anomalies": "Näytä poikkeamat",
 			Sensitivity: "Herkkyys",
 			"Use downsampled data for detection": "Käytä alasnäytteistettyä dataa havaitsemiseen",
@@ -3164,10 +3164,10 @@
 		translations$129 = {
 			Direction: "Sens",
 			Both: "Les deux",
-			Up: "Hausse",
-			Down: "Baisse",
-			"Keep anomalies in both directions, only those above the method's baseline (Up), or only those below it (Down).": "Conserver les anomalies dans les deux sens, uniquement celles au-dessus de la ligne de base de la méthode (Hausse) ou uniquement celles en dessous (Baisse).",
-			"\"Up\" means rising faster than the typical rate, \"Down\" means falling faster — not simply whether the value went up or down.": "« Hausse » signifie une augmentation plus rapide que le rythme habituel, « Baisse » une diminution plus rapide — pas simplement si la valeur a monté ou baissé.",
+			Above: "Au-dessus",
+			Below: "En dessous",
+			"\"Above\" keeps only anomalies above the method's baseline, \"Below\" only those beneath it, and \"Both\" keeps either.": "« Au-dessus » ne conserve que les anomalies au-dessus de la ligne de base de la méthode, « En dessous » uniquement celles en dessous, et « Les deux » conserve les deux.",
+			"\"Above\" means rising faster than the typical rate, \"Below\" means falling faster — not simply whether the value went up or down.": "« Au-dessus » signifie une augmentation plus rapide que le rythme habituel, « En dessous » une diminution plus rapide — pas simplement si la valeur a monté ou baissé.",
 			"Show anomalies": "Afficher les anomalies",
 			Sensitivity: "Sensibilité",
 			"Use downsampled data for detection": "Utiliser les données rééchantillonnées pour la détection",
@@ -3821,10 +3821,10 @@
 		translations$101 = {
 			Direction: "Richtung",
 			Both: "Beide",
-			Up: "Aufwärts",
-			Down: "Abwärts",
-			"Keep anomalies in both directions, only those above the method's baseline (Up), or only those below it (Down).": "Behalte Anomalien in beiden Richtungen, nur solche über der Basislinie der Methode (Aufwärts) oder nur solche darunter (Abwärts).",
-			"\"Up\" means rising faster than the typical rate, \"Down\" means falling faster — not simply whether the value went up or down.": "„Aufwärts“ bedeutet schneller steigend als üblich, „Abwärts“ schneller fallend – nicht einfach, ob der Wert gestiegen oder gefallen ist.",
+			Above: "Oberhalb",
+			Below: "Unterhalb",
+			"\"Above\" keeps only anomalies above the method's baseline, \"Below\" only those beneath it, and \"Both\" keeps either.": "„Oberhalb“ behält nur Anomalien oberhalb der Basislinie der Methode, „Unterhalb“ nur die darunterliegenden und „Beide“ behält beide.",
+			"\"Above\" means rising faster than the typical rate, \"Below\" means falling faster — not simply whether the value went up or down.": "„Oberhalb“ bedeutet schneller steigend als üblich, „Unterhalb“ schneller fallend – nicht einfach, ob der Wert gestiegen oder gefallen ist.",
 			"Show anomalies": "Anomalien anzeigen",
 			Sensitivity: "Empfindlichkeit",
 			"Use downsampled data for detection": "Heruntergesampelte Daten für die Erkennung verwenden",
@@ -4478,10 +4478,10 @@
 		translations$73 = {
 			Direction: "Dirección",
 			Both: "Ambos",
-			Up: "Arriba",
-			Down: "Abajo",
-			"Keep anomalies in both directions, only those above the method's baseline (Up), or only those below it (Down).": "Conserva las anomalías en ambas direcciones, solo las que están por encima de la línea base del método (Arriba) o solo las que están por debajo (Abajo).",
-			"\"Up\" means rising faster than the typical rate, \"Down\" means falling faster — not simply whether the value went up or down.": "«Arriba» significa que sube más rápido que la tasa típica, «Abajo» que baja más rápido, no simplemente si el valor subió o bajó.",
+			Above: "Por encima",
+			Below: "Por debajo",
+			"\"Above\" keeps only anomalies above the method's baseline, \"Below\" only those beneath it, and \"Both\" keeps either.": "«Por encima» conserva solo las anomalías por encima de la línea base del método, «Por debajo» solo las que están debajo, y «Ambos» conserva ambas.",
+			"\"Above\" means rising faster than the typical rate, \"Below\" means falling faster — not simply whether the value went up or down.": "«Por encima» significa que sube más rápido que la tasa típica, «Por debajo» que baja más rápido, no simplemente si el valor subió o bajó.",
 			"Show anomalies": "Mostrar anomalías",
 			Sensitivity: "Sensibilidad",
 			"Use downsampled data for detection": "Usar datos submuestreados para la detección",
@@ -5135,10 +5135,10 @@
 		translations$45 = {
 			Direction: "Direção",
 			Both: "Ambos",
-			Up: "Para cima",
-			Down: "Para baixo",
-			"Keep anomalies in both directions, only those above the method's baseline (Up), or only those below it (Down).": "Manter anomalias em ambas as direções, apenas as acima da linha de base do método (Para cima) ou apenas as abaixo (Para baixo).",
-			"\"Up\" means rising faster than the typical rate, \"Down\" means falling faster — not simply whether the value went up or down.": "“Para cima” significa subir mais rápido que a taxa típica, “Para baixo” cair mais rápido — não apenas se o valor subiu ou desceu.",
+			Above: "Acima",
+			Below: "Abaixo",
+			"\"Above\" keeps only anomalies above the method's baseline, \"Below\" only those beneath it, and \"Both\" keeps either.": "“Acima” mantém apenas as anomalias acima da linha de base do método, “Abaixo” apenas as abaixo, e “Ambos” mantém as duas.",
+			"\"Above\" means rising faster than the typical rate, \"Below\" means falling faster — not simply whether the value went up or down.": "“Acima” significa subir mais rápido que a taxa típica, “Abaixo” cair mais rápido — não apenas se o valor subiu ou desceu.",
 			"Show anomalies": "Mostrar anomalias",
 			Sensitivity: "Sensibilidade",
 			"Use downsampled data for detection": "Usar dados reamostrados para deteção",
@@ -5792,10 +5792,10 @@
 		translations$17 = {
 			Direction: "方向",
 			Both: "两者",
-			Up: "向上",
-			Down: "向下",
-			"Keep anomalies in both directions, only those above the method's baseline (Up), or only those below it (Down).": "保留两个方向的异常，仅保留高于该方法基线的（向上），或仅保留低于基线的（向下）。",
-			"\"Up\" means rising faster than the typical rate, \"Down\" means falling faster — not simply whether the value went up or down.": "“向上”表示上升速度快于通常速率，“向下”表示下降速度更快，而不仅仅是数值升高还是降低。",
+			Above: "高于",
+			Below: "低于",
+			"\"Above\" keeps only anomalies above the method's baseline, \"Below\" only those beneath it, and \"Both\" keeps either.": "“高于”仅保留高于该方法基线的异常，“低于”仅保留低于基线的异常，“两者”则两者都保留。",
+			"\"Above\" means rising faster than the typical rate, \"Below\" means falling faster — not simply whether the value went up or down.": "“高于”表示上升速度快于通常速率，“低于”表示下降速度更快，而不仅仅是数值升高还是降低。",
 			"Show anomalies": "显示异常",
 			Sensitivity: "灵敏度",
 			"Use downsampled data for detection": "检测时使用降采样数据",
@@ -19884,11 +19884,11 @@
 		},
 		{
 			value: "up",
-			label: "Up"
+			label: "Above"
 		},
 		{
 			value: "down",
-			label: "Down"
+			label: "Below"
 		}
 	];
 	var AnalysisAnomalyGroup = (_comparisonWindows_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$11 = /* @__PURE__ */ new WeakMap(), _computing_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingProgress_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingMethods_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hideSaveMonitorCta_accessor_storage = /* @__PURE__ */ new WeakMap(), _AnalysisAnomalyGroup = class AnalysisAnomalyGroup extends AnalysisGroupMixin(i$2) {
@@ -19968,7 +19968,7 @@
 		*/
 		_renderDirectionField(field, value, help) {
 			const helpId = `direction-help-${field}`;
-			const helpText = help ?? msg("Keep anomalies in both directions, only those above the method's baseline (Up), or only those below it (Down).");
+			const helpText = help ?? msg("\"Above\" keeps only anomalies above the method's baseline, \"Below\" only those beneath it, and \"Both\" keeps either.");
 			return b`
       <label class="field">
         <span class="field-label"
@@ -20050,7 +20050,7 @@
               @dp-change=${(e) => this._emit("anomaly_rate_window", e.detail.value)}
             ></inline-select>
           </label>
-          ${this._renderDirectionField("anomaly_rate_of_change_direction", a.anomaly_rate_of_change_direction, msg("\"Up\" means rising faster than the typical rate, \"Down\" means falling faster — not simply whether the value went up or down."))}
+          ${this._renderDirectionField("anomaly_rate_of_change_direction", a.anomaly_rate_of_change_direction, msg("\"Above\" means rising faster than the typical rate, \"Below\" means falling faster — not simply whether the value went up or down."))}
         </analysis-method-subopts>
       `;
 			if (opt.value === "iqr") return b`
