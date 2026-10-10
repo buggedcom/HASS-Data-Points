@@ -52,25 +52,12 @@ describe("orchestration-context", () => {
   });
 
   describe("GIVEN a chart resize redraw is requested", () => {
-    describe("WHEN an inner chart only supports queued redraws", () => {
-      it("THEN it replays the queued draw call from the last args", () => {
+    describe("WHEN the chart card exposes a resize-replay seam", () => {
+      it("THEN it asks the card to replay its last draw", () => {
         expect.assertions(2);
         const context = createHistoryPageOrchestrationContext();
-        const queueDraw = vi.fn();
-        const innerChart = {
-          _lastDrawArgs: ["a", "b"],
-          _queueDrawChart: queueDraw,
-        };
-        const chartEl = {
-          shadowRoot: {
-            querySelector: vi.fn((selector: string) => {
-              if (selector === "hass-datapoints-history-chart") {
-                return innerChart;
-              }
-              return null;
-            }),
-          },
-        } as unknown as HTMLElement;
+        const requestResizeRedraw = vi.fn();
+        const chartEl = { requestResizeRedraw } as unknown as HTMLElement;
         const rafSpy = vi
           .spyOn(window, "requestAnimationFrame")
           .mockImplementation((callback: FrameRequestCallback) => {
@@ -81,7 +68,7 @@ describe("orchestration-context", () => {
         context.requestChartResizeRedraw(chartEl);
 
         expect(rafSpy).toHaveBeenCalledTimes(1);
-        expect(queueDraw).toHaveBeenCalledWith("a", "b");
+        expect(requestResizeRedraw).toHaveBeenCalledTimes(1);
       });
     });
   });
@@ -94,15 +81,9 @@ describe("orchestration-context", () => {
         const topSlot = document.createElement("div");
         topSlot.id = "chart-top-slot";
         topSlot.hidden = true;
-        const innerChart = document.createElement("div");
-        innerChart.appendChild(topSlot);
-        const chartHost = document.createElement("div");
-        const shadowRoot = chartHost.attachShadow({ mode: "open" });
-        const namespacedChart = document.createElement(
-          "hass-datapoints-history-chart"
-        );
-        namespacedChart.appendChild(innerChart);
-        shadowRoot.appendChild(namespacedChart);
+        const chartHost = Object.assign(document.createElement("div"), {
+          getComparisonTabsHost: () => topSlot,
+        });
 
         const result = context.renderComparisonTabs({
           chartEl: chartHost,

@@ -327,6 +327,54 @@ describe("history", () => {
     });
   });
 
+  // ── Panel-facing seams (replace cross-shadow reach-ins) ────────────────────
+
+  describe("GIVEN the card is connected with an inner chart", () => {
+    describe("WHEN requestResizeRedraw is called", () => {
+      it("THEN it delegates to the inner chart's last-draw replay", async () => {
+        expect.assertions(1);
+        const el = createCard({ entity: "sensor.example" });
+        document.body.appendChild(el);
+        await el.updateComplete;
+        const innerChart = el.shadowRoot?.querySelector(
+          "hass-datapoints-history-chart"
+        ) as unknown as { _redrawLastDraw: () => void };
+        const redrawSpy = vi
+          .spyOn(innerChart, "_redrawLastDraw")
+          .mockImplementation(() => {});
+
+        el.requestResizeRedraw();
+
+        expect(redrawSpy).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe("WHEN updateComparisonTabsOverflow runs without a tab rail", () => {
+      it("THEN it is a no-op and does not throw", async () => {
+        expect.assertions(1);
+        const el = createCard({ entity: "sensor.example" });
+        document.body.appendChild(el);
+        await el.updateComplete;
+
+        expect(() => el.updateComparisonTabsOverflow()).not.toThrow();
+      });
+    });
+
+    describe("WHEN setAdjustComparisonAxisScale is called", () => {
+      it("THEN it records the flag for the next draw", () => {
+        expect.assertions(1);
+        const el = createCard({ entity: "sensor.example" });
+
+        el.setAdjustComparisonAxisScale(true);
+
+        expect(
+          (el as unknown as { _adjustComparisonAxisScale: boolean })
+            ._adjustComparisonAxisScale
+        ).toBe(true);
+      });
+    });
+  });
+
   describe("GIVEN hidden event ids are toggled after data has loaded", () => {
     describe("WHEN queueing a draw while an event is hidden", () => {
       it("THEN it keeps the raw events cached while drawing only the visible events", () => {
