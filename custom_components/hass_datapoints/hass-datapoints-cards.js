@@ -18342,7 +18342,7 @@
 		}
 		/** Rendering host for panel-owned comparison tabs; drawing remains chart-owned. */
 		getComparisonTabsHost() {
-			return (this.shadowRoot?.querySelector("hass-datapoints-history-chart, dp-history-chart, history-chart"))?.querySelector("#chart-top-slot") ?? null;
+			return this._chartEl()?.querySelector("#chart-top-slot") ?? null;
 		}
 		/**
 		* Public resize-replay seam: redraw the chart with its last draw args.
