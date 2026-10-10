@@ -197,7 +197,9 @@ type HistoryCardElement = HTMLElement & {
   updateComplete?: Promise<unknown>;
   getComparisonTabsHost(): Nullable<HTMLElement>;
   getAiQueryBriefAnomalySnapshot?(): Nullable<AiQueryBriefAnomalySnapshot>;
-  _adjustComparisonAxisScale?: boolean;
+  requestResizeRedraw?(): void;
+  updateComparisonTabsOverflow?(): void;
+  setAdjustComparisonAxisScale?(value: boolean): void;
 };
 
 type ListCardElement = HTMLElement & {
@@ -2440,9 +2442,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
         this._renderContent();
       },
       setAdjustComparisonAxisScale: (value: boolean) => {
-        if (this._chartEl) {
-          this._chartEl._adjustComparisonAxisScale = value;
-        }
+        this._chartEl?.setAdjustComparisonAxisScale?.(value);
       },
     });
   }

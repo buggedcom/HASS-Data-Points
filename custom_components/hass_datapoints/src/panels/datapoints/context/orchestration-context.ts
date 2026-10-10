@@ -1,34 +1,16 @@
 import type { HistoryOrchestrationContext } from "./types";
 
-type DrawHost = HTMLElement & {
-  _drawChart?: (...args: unknown[]) => void;
-  _queueDrawChart?: (...args: unknown[]) => void;
-  _lastDrawArgs?: unknown[];
+/**
+ * Public seam the history card exposes so the panel orchestration can drive the
+ * chart without reaching through the card's shadow root into the inner chart.
+ */
+type ChartCardLike = HTMLElement & {
+  requestResizeRedraw?: () => void;
+  getComparisonTabsHost?: () => Nullable<HTMLElement>;
+  updateComparisonTabsOverflow?: () => void;
 };
 
 type PickerLike = Element & { open?: () => void };
-
-function getInnerHistoryChart(
-  chartEl: Nullable<HTMLElement>
-): Nullable<HTMLElement> {
-  if (!chartEl?.shadowRoot) {
-    return null;
-  }
-
-  return (
-    chartEl.shadowRoot.querySelector?.("hass-datapoints-history-chart") ??
-    chartEl.shadowRoot.querySelector?.("dp-history-chart") ??
-    chartEl.shadowRoot.querySelector?.("history-chart") ??
-    null
-  );
-}
-
-function getComparisonTabsHost(
-  chartEl: Nullable<HTMLElement>
-): Nullable<HTMLElement> {
-  const innerChart = getInnerHistoryChart(chartEl);
-  return innerChart?.querySelector?.("#chart-top-slot") ?? null;
-}
 
 function ensureCollapsedPickerAnchor(
   targetControl: HTMLElement,
@@ -108,53 +90,7 @@ export function createHistoryPageOrchestrationContext(): HistoryOrchestrationCon
       const rafId = window.requestAnimationFrame(() => {
         ranSynchronously = true;
         chartResizeRaf = null;
-        if (!chartEl) {
-          return;
-        }
-        if (
-          Array.isArray(
-            (chartEl as { _lastDrawArgs?: unknown[] })._lastDrawArgs
-          ) &&
-          (chartEl as { _lastDrawArgs?: unknown[] })._lastDrawArgs!.length >
-            0 &&
-          typeof (chartEl as { _drawChart?: (...args: unknown[]) => void })
-            ._drawChart === "function"
-        ) {
-          (chartEl as unknown as DrawHost)._drawChart!(
-            ...(chartEl as unknown as DrawHost)._lastDrawArgs!
-          );
-          return;
-        }
-
-        const innerChart = getInnerHistoryChart(chartEl);
-        if (
-          innerChart &&
-          Array.isArray(
-            (innerChart as { _lastDrawArgs?: unknown[] })._lastDrawArgs
-          ) &&
-          (innerChart as { _lastDrawArgs?: unknown[] })._lastDrawArgs!.length >
-            0
-        ) {
-          if (
-            typeof (
-              innerChart as { _queueDrawChart?: (...args: unknown[]) => void }
-            )._queueDrawChart === "function"
-          ) {
-            (innerChart as unknown as DrawHost)._queueDrawChart!(
-              ...(innerChart as unknown as DrawHost)._lastDrawArgs!
-            );
-            return;
-          }
-
-          if (
-            typeof (innerChart as { _drawChart?: (...args: unknown[]) => void })
-              ._drawChart === "function"
-          ) {
-            (innerChart as unknown as DrawHost)._drawChart!(
-              ...(innerChart as unknown as DrawHost)._lastDrawArgs!
-            );
-          }
-        }
+        (chartEl as Nullable<ChartCardLike>)?.requestResizeRedraw?.();
       });
 
       chartResizeRaf = ranSynchronously ? null : rafId;
@@ -198,7 +134,10 @@ export function createHistoryPageOrchestrationContext(): HistoryOrchestrationCon
     },
 
     renderComparisonTabs(options) {
-      const tabsEl = getComparisonTabsHost(options.chartEl);
+      const tabsEl =
+        (
+          options.chartEl as Nullable<ChartCardLike>
+        )?.getComparisonTabsHost?.() ?? null;
       if (!tabsEl || !options.startTime || !options.endTime) {
         return {
           comparisonTabRailComp: options.comparisonTabRailComp,
@@ -292,16 +231,7 @@ export function createHistoryPageOrchestrationContext(): HistoryOrchestrationCon
 
     updateComparisonTabsOverflow(chartEl: Nullable<HTMLElement>): void {
       window.requestAnimationFrame(() => {
-        const innerChart = getInnerHistoryChart(chartEl);
-        const shell = innerChart?.querySelector?.("#chart-tabs-shell") ?? null;
-        const rail = innerChart?.querySelector?.("#chart-tabs-rail") ?? null;
-        if (!shell || !rail) {
-          return;
-        }
-        shell.classList.toggle(
-          "overflowing",
-          rail.scrollWidth > rail.clientWidth + 4
-        );
+        (chartEl as Nullable<ChartCardLike>)?.updateComparisonTabsOverflow?.();
       });
     },
 
