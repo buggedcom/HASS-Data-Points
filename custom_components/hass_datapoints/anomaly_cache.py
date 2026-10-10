@@ -43,6 +43,13 @@ def make_cache_key(entity_id: str, start_time: str, end_time: str, config: dict)
         "anomaly_rate_window": config.get("anomaly_rate_window", "1h"),
         "anomaly_zscore_window": config.get("anomaly_zscore_window", "24h"),
         "anomaly_persistence_window": config.get("anomaly_persistence_window", "1h"),
+        # Per-method anomaly direction filters (up/down/both). Absent == "both"
+        # so stored configs without these fields key identically to before.
+        "anomaly_trend_residual_direction": config.get("anomaly_trend_residual_direction", "both"),
+        "anomaly_rate_of_change_direction": config.get("anomaly_rate_of_change_direction", "both"),
+        "anomaly_iqr_direction": config.get("anomaly_iqr_direction", "both"),
+        "anomaly_rolling_zscore_direction": config.get("anomaly_rolling_zscore_direction", "both"),
+        "anomaly_comparison_window_direction": config.get("anomaly_comparison_window_direction", "both"),
         "comparison_entity_id": config.get("comparison_entity_id"),
         "comparison_start_time": config.get("comparison_start_time"),
         "comparison_end_time": config.get("comparison_end_time"),
