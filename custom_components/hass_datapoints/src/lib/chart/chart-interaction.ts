@@ -143,7 +143,7 @@ export interface HoverSeriesLike {
   comparison?: boolean;
   grouped?: boolean;
   value?: Nullable<number | string>;
-  spans?: Array<{ start: number; end: number }>;
+  spans?: Array<{ start: number; end: number; state?: string }>;
   onLabel?: string;
   offLabel?: string;
   stepped?: boolean;
@@ -200,6 +200,8 @@ export interface HoverState {
   events?: ChartEventRecord[];
   anomalyRegions?: AnomalyRegion[];
   emphasizeGuides?: boolean;
+  /** Extra height for the vertical crosshair guide to span binary row lanes. */
+  verticalExtentPx?: number;
   splitVertical?: { top: number; height: number };
   showTrendCrosshairs?: boolean;
   showRateCrosshairs?: boolean;
@@ -233,6 +235,13 @@ interface AttachLineChartHoverOptions {
   thresholdSeries?: HoverSeriesLike[];
   anomalyRegions?: AnomalyRegion[];
   hoverSurfaceEl?: Nullable<HTMLElement>;
+  /**
+   * Extra pixels the vertical crosshair guide extends below the numeric plot to
+   * cover stacked binary row lanes (so a binary transition lines up with a
+   * numeric value at the same instant). 0/undefined keeps the guide bounded to
+   * the plot, preserving today's behaviour when no row lanes are present.
+   */
+  binaryLaneExtentPx?: number;
   hoverSnapMode?: "follow_series" | "snap_to_data_points";
   showTrendCrosshairs?: boolean;
   showRateCrosshairs?: boolean;
@@ -1422,7 +1431,7 @@ export function showLineChartCrosshair(
     vertical.style.height = `${hover.splitVertical.height}px`;
   } else {
     vertical.style.top = `${renderer.pad.top}px`;
-    vertical.style.height = `${renderer.ch}px`;
+    vertical.style.height = `${renderer.ch + (hover.verticalExtentPx || 0)}px`;
   }
   horizontal.hidden = true;
   const crosshairValues = [
@@ -1884,17 +1893,24 @@ export function attachLineChartHover(
 
     const binaryValues: HoverValueEntry[] = binaryStates
       .map((entry) => {
+        // Report the *actual* state of the span the cursor is inside. Spans may
+        // carry off/unavailable/unknown intervals (row mode supplies the full
+        // on+off strip; background mode supplies on-only windows), so finding a
+        // covering span does NOT imply "on" — only a span whose state is the
+        // literal "on" counts as active (fixes the always-on readout in
+        // #61/#64).
         const activeSpan = (entry.spans || []).find(
           (span) => timeMs >= span.start && timeMs <= span.end
         );
+        const isOn = activeSpan?.state === "on";
         return {
           entityId: entry.entityId || "",
           label: entry.label || entry.entityId || "",
-          value: activeSpan ? entry.onLabel || "on" : entry.offLabel || "off",
+          value: isOn ? entry.onLabel || "on" : entry.offLabel || "off",
           unit: "",
           color: entry.color,
           hasValue: true,
-          active: !!activeSpan,
+          active: isOn,
         };
       })
       .filter((entry) => Boolean(entry.label));
@@ -1959,6 +1975,8 @@ export function attachLineChartHover(
       thresholdValues,
       comparisonValues,
       binaryValues,
+      verticalExtentPx:
+        binaryValues.length > 0 ? options.binaryLaneExtentPx || 0 : 0,
       primary,
       event: normalizedHoveredEvents[0] || null,
       events: normalizedHoveredEvents,
