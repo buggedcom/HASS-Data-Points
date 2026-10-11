@@ -5,6 +5,7 @@
  */
 
 import {
+  type BinaryDisplayMode,
   type HistorySeriesAnalysis,
   normalizeHistorySeriesAnalysis,
   normalizeHistorySeriesRows,
@@ -18,6 +19,7 @@ export interface SeriesRow {
   color: string;
   visible?: boolean;
   analysis?: HistorySeriesAnalysis;
+  binary_display?: BinaryDisplayMode;
 }
 
 const HEX_COLOR_RE = /^#[0-9a-f]{6}$/i;
@@ -53,12 +55,19 @@ export function mergeSavedSeriesRows(
     if (!savedRow) {
       return row;
     }
-    return {
+    const merged: SeriesRow = {
       ...row,
       color: savedRow.color,
       visible: savedRow.visible,
       analysis: savedRow.analysis,
     };
+    const binaryDisplay = savedRow.binary_display ?? row.binary_display;
+    if (binaryDisplay) {
+      merged.binary_display = binaryDisplay;
+    } else {
+      delete merged.binary_display;
+    }
+    return merged;
   });
 }
 

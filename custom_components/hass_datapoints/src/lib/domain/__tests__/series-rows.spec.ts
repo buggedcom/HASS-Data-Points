@@ -70,6 +70,28 @@ describe("series-rows", () => {
         expect(result[0].visible).toBe(false);
       });
     });
+
+    describe("WHEN a saved binary row carries a binary_display choice", () => {
+      it("THEN the saved binary_display value is applied", () => {
+        expect.assertions(1);
+        const rows = [makeRow("binary_sensor.door")];
+        const saved = [
+          { ...makeRow("binary_sensor.door"), binary_display: "row" },
+        ];
+        const result = mergeSavedSeriesRows(rows, saved);
+        expect(result[0].binary_display).toBe("row");
+      });
+    });
+
+    describe("WHEN neither row nor saved row has a binary_display", () => {
+      it("THEN the merged row omits the field", () => {
+        expect.assertions(1);
+        const rows = [makeRow("binary_sensor.door")];
+        const saved = [makeRow("binary_sensor.door", "#00ff00")];
+        const result = mergeSavedSeriesRows(rows, saved);
+        expect("binary_display" in result[0]).toBe(false);
+      });
+    });
   });
 
   describe("GIVEN addSeriesRows", () => {

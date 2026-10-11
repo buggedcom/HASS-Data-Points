@@ -56,11 +56,40 @@ export interface HistorySeriesAnalysis {
   anomaly_use_sampled_data: boolean;
 }
 
+/**
+ * Display style for a binary_sensor series on the history chart.
+ * `"background"` is the default (full-height translucent band); `"row"` renders
+ * a compact stacked on/off strip. Meaningful only for `binary_sensor` entities.
+ */
+export type BinaryDisplayMode = "background" | "row";
+
 export interface HistorySeriesRow {
   entity_id: string;
   color: string;
   visible: boolean;
   analysis: HistorySeriesAnalysis;
+  /**
+   * Optional per-sensor display style. Only set for `binary_sensor` entities
+   * that carry an explicit choice; absence is treated as `"background"` at read
+   * time so existing saved configs stay byte-for-byte unchanged.
+   */
+  binary_display?: BinaryDisplayMode;
+}
+
+/**
+ * Resolves the stored `binary_display` value for a row, returning the validated
+ * mode only when the entity is a `binary_sensor` and the value is one of the
+ * known modes. Returns `undefined` otherwise so the field is never materialized
+ * for other domains or for absent/invalid values.
+ */
+export function resolveStoredBinaryDisplay(
+  entityId: string,
+  value: unknown
+): BinaryDisplayMode | undefined {
+  if (entityId.split(".")[0] !== "binary_sensor") {
+    return undefined;
+  }
+  return value === "background" || value === "row" ? value : undefined;
 }
 
 export type PartialHistorySeriesAnalysis = Partial<
@@ -270,7 +299,11 @@ export function normalizeHistorySeriesRows(rows: unknown): HistorySeriesRow[] {
       return;
     }
     seen.add(entityId);
-    normalized.push({
+    const binaryDisplay = resolveStoredBinaryDisplay(
+      entityId,
+      row?.binary_display
+    );
+    const normalizedRow: HistorySeriesRow = {
       entity_id: entityId,
       color:
         typeof row?.color === "string" && /^#[0-9a-f]{6}$/i.test(row.color)
@@ -278,7 +311,11 @@ export function normalizeHistorySeriesRows(rows: unknown): HistorySeriesRow[] {
           : COLORS[index % COLORS.length],
       visible: row?.visible !== false,
       analysis: normalizeHistorySeriesAnalysis(row?.analysis),
-    });
+    };
+    if (binaryDisplay) {
+      normalizedRow.binary_display = binaryDisplay;
+    }
+    normalized.push(normalizedRow);
   });
   return normalized;
 }

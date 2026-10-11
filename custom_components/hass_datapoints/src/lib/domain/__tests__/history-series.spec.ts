@@ -124,6 +124,87 @@ describe("history-series", () => {
     });
   });
 
+  describe("GIVEN rows carrying a binary_display choice", () => {
+    describe("WHEN the entity is a binary_sensor with binary_display row", () => {
+      it("THEN normalizeHistorySeriesRows preserves the row value", () => {
+        expect.assertions(1);
+        const [row] = normalizeHistorySeriesRows([
+          {
+            entity_id: "binary_sensor.door",
+            color: "#111111",
+            binary_display: "row",
+          },
+        ]);
+        expect(row.binary_display).toBe("row");
+      });
+    });
+
+    describe("WHEN the entity is a binary_sensor with binary_display background", () => {
+      it("THEN normalizeHistorySeriesRows preserves the explicit background value", () => {
+        expect.assertions(1);
+        const [row] = normalizeHistorySeriesRows([
+          {
+            entity_id: "binary_sensor.door",
+            color: "#111111",
+            binary_display: "background",
+          },
+        ]);
+        expect(row.binary_display).toBe("background");
+      });
+    });
+
+    describe("WHEN the entity is a binary_sensor with no binary_display", () => {
+      it("THEN normalizeHistorySeriesRows does not materialize the field", () => {
+        expect.assertions(1);
+        const [row] = normalizeHistorySeriesRows([
+          { entity_id: "binary_sensor.door", color: "#111111" },
+        ]);
+        expect("binary_display" in row).toBe(false);
+      });
+    });
+
+    describe("WHEN binary_display is set to an invalid value", () => {
+      it("THEN normalizeHistorySeriesRows drops the field", () => {
+        expect.assertions(1);
+        const [row] = normalizeHistorySeriesRows([
+          {
+            entity_id: "binary_sensor.door",
+            color: "#111111",
+            binary_display: "nonsense",
+          },
+        ]);
+        expect("binary_display" in row).toBe(false);
+      });
+    });
+
+    describe("WHEN binary_display is set on a non-binary_sensor entity", () => {
+      it("THEN normalizeHistorySeriesRows normalizes the field away", () => {
+        expect.assertions(1);
+        const [row] = normalizeHistorySeriesRows([
+          { entity_id: "sensor.temp", color: "#111111", binary_display: "row" },
+        ]);
+        expect("binary_display" in row).toBe(false);
+      });
+    });
+
+    describe("WHEN buildHistorySeriesRows preserves a previous binary row", () => {
+      it("THEN the binary_display choice survives", () => {
+        expect.assertions(1);
+        const rows = buildHistorySeriesRows(
+          ["binary_sensor.door"],
+          [
+            {
+              entity_id: "binary_sensor.door",
+              color: "#111111",
+              binary_display: "row",
+            },
+          ]
+        );
+        expect(rows[0].binary_display).toBe("row");
+      });
+    });
+  });
+
   describe("GIVEN entity ids and previous rows", () => {
     describe("WHEN buildHistorySeriesRows is called", () => {
       it("THEN it preserves rows and inherits unanimous sampling config", () => {
