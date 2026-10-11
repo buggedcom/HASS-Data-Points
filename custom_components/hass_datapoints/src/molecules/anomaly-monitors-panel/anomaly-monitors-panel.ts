@@ -27,8 +27,12 @@ import "@/atoms/form/entity-chip/entity-chip";
 /**
  * `anomaly-monitors-panel` shows a management view of all anomaly monitors.
  *
- * @fires dp-monitors-panel-close  — user clicked the back/close button
- * @fires dp-monitors-panel-new    — user clicked "New monitor"
+ * @fires dp-monitors-panel-close        — user clicked the back/close button
+ * @fires dp-monitors-panel-new          — user clicked "New monitor"
+ * @fires dp-monitors-panel-open-chart   — user clicked "View series"
+ *   (`{ entityIds: string[]; startMs: number; endMs: number; monitorId: string }`)
+ * @fires dp-monitors-panel-open-entity  — user activated an entity chip
+ *   (`{ entityId: string; monitorId: string }`)
  */
 @localized()
 export class AnomalyMonitorsPanel extends LitElement {
@@ -152,6 +156,24 @@ export class AnomalyMonitorsPanel extends LitElement {
   private _onEdit(monitor: AnomalyMonitor) {
     this._editMonitor = monitor;
     this._wizardOpen = true;
+  }
+
+  private _onOpenEntity(monitor: AnomalyMonitor, entityId: string) {
+    this._emit("dp-monitors-panel-open-entity", {
+      entityId,
+      monitorId: monitor.id,
+    });
+  }
+
+  private _onViewSeries(monitor: AnomalyMonitor) {
+    const endMs = Date.now();
+    const startMs = endMs - (monitor.look_back_hours ?? 24) * 3_600_000;
+    this._emit("dp-monitors-panel-open-chart", {
+      entityIds: monitorEntityIds(monitor),
+      startMs,
+      endMs,
+      monitorId: monitor.id,
+    });
   }
 
   private _onWizardClose() {
@@ -405,6 +427,34 @@ export class AnomalyMonitorsPanel extends LitElement {
     </svg>`;
   }
 
+  /**
+   * Render a single entity chip wrapped in a keyboard-activatable button so a
+   * user can open that entity's series. The `entity-chip` atom stays inert; the
+   * panel owns the click/keyboard affordance (lowest-risk integration seam).
+   */
+  private _renderEntityChip(monitor: AnomalyMonitor, eid: string) {
+    return html`
+      <button
+        class="monitor-entity-chip"
+        type="button"
+        aria-label=${msg(`View series for ${eid}`)}
+        @click=${() => this._onOpenEntity(monitor, eid)}
+        @keydown=${(e: KeyboardEvent) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            this._onOpenEntity(monitor, eid);
+          }
+        }}
+      >
+        <entity-chip
+          .hass=${this.hass}
+          type="entity"
+          .itemId=${eid}
+        ></entity-chip>
+      </button>
+    `;
+  }
+
   private _renderEntityDisplay(monitor: AnomalyMonitor) {
     const entityIds = monitorEntityIds(monitor);
 
@@ -412,13 +462,7 @@ export class AnomalyMonitorsPanel extends LitElement {
       return html`
         <div class="monitor-entities">
           ${entityIds.map(
-            (eid) => html`
-              <entity-chip
-                .hass=${this.hass}
-                type="entity"
-                .itemId=${eid}
-              ></entity-chip>
-            `
+            (eid) => html` ${this._renderEntityChip(monitor, eid)} `
           )}
         </div>
       `;
@@ -434,11 +478,7 @@ export class AnomalyMonitorsPanel extends LitElement {
           ${entityIds.map(
             (eid, i) => html`
               ${i > 0 ? html`<span class="overlap-op">OR</span>` : nothing}
-              <entity-chip
-                .hass=${this.hass}
-                type="entity"
-                .itemId=${eid}
-              ></entity-chip>
+              ${this._renderEntityChip(monitor, eid)}
             `
           )}
         </div>
@@ -455,13 +495,7 @@ export class AnomalyMonitorsPanel extends LitElement {
             >${msg("AT LEAST")} ${n} ${msg("OF")}</span
           >
           ${entityIds.map(
-            (eid) => html`
-              <entity-chip
-                .hass=${this.hass}
-                type="entity"
-                .itemId=${eid}
-              ></entity-chip>
-            `
+            (eid) => html` ${this._renderEntityChip(monitor, eid)} `
           )}
         </div>
       `;
@@ -473,11 +507,7 @@ export class AnomalyMonitorsPanel extends LitElement {
         ${entityIds.map(
           (eid, i) => html`
             ${i > 0 ? html`<span class="overlap-op">AND</span>` : nothing}
-            <entity-chip
-              .hass=${this.hass}
-              type="entity"
-              .itemId=${eid}
-            ></entity-chip>
+            ${this._renderEntityChip(monitor, eid)}
           `
         )}
       </div>
@@ -548,6 +578,11 @@ export class AnomalyMonitorsPanel extends LitElement {
         ${this._renderDismissedWindows(monitor)}
 
         <div class="monitor-actions">
+          <ha-button
+            class="small-btn view-series-btn"
+            @click=${() => this._onViewSeries(monitor)}
+            >${msg("View series")}</ha-button
+          >
           <ha-button class="small-btn" @click=${() => this._onEdit(monitor)}
             >${msg("Edit")}</ha-button
           >
