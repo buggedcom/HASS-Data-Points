@@ -91,6 +91,29 @@ type DrawAnnotationsOptions = {
   showMarkers?: boolean;
 };
 
+/** A binary-sensor lane's pixel rectangle (not the full plot height). */
+export type LaneRect = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+type DrawStateRowOptions = {
+  /** Fill colour for "on" segments (and, by default, the muted track). */
+  color?: string;
+  /** Opacity of the solid "on" segments. */
+  onAlpha?: number;
+  /** Colour of the muted off/unavailable/unknown track; defaults to `color`. */
+  trackColor?: string;
+  /** Opacity of the muted track. */
+  trackAlpha?: number;
+  /** Optional lane label, drawn at the lane's left edge. */
+  label?: string;
+  /** Lane label colour (reuses the {@link ChartRenderer.drawRowLabel} default). */
+  labelColor?: string;
+};
+
 type GradientBandOptions = {
   fillAlpha?: number;
 };
@@ -147,6 +170,24 @@ function createFallbackCanvasContext() {
       return { width: 0 };
     },
   } as unknown as CanvasRenderingContext2D;
+}
+
+/**
+ * Pure lane geometry: the total vertical space that `rowCount` binary lanes
+ * reserve below the numeric plot, so wiring can shrink the plot uniformly
+ * (consistent with `ch = cssH - pad.top - pad.bottom`). Each lane reserves
+ * `laneHeight + gap` (the `gap` sits above the lane, separating it from the
+ * plot or the lane above). Returns `0` when there are no lanes.
+ */
+export function reserveLaneSpace(
+  rowCount: number,
+  laneHeight: number,
+  gap = 0
+): number {
+  if (rowCount <= 0 || laneHeight <= 0) {
+    return 0;
+  }
+  return rowCount * (laneHeight + gap);
 }
 
 /**
@@ -831,6 +872,75 @@ export class ChartRenderer {
       ctx.fillRect(x0, pad.top, Math.max(1, x1 - x0), this.ch);
     }
     ctx.restore();
+  }
+
+  /**
+   * Draws ONE binary sensor's on/off timeline as a compact segmented strip
+   * confined to the lane `rect` (not the full plot height). A muted track is
+   * laid across the whole lane; each `state === "on"` span is then filled as a
+   * solid segment. Off/unavailable/unknown spans leave the muted track showing.
+   *
+   * Time→x mapping reuses {@link xOf} (so the strip lines up with the plot
+   * above), and segment x-ranges are clamped to the lane's horizontal bounds.
+   * An optional `label` is drawn at the lane's left edge using the
+   * {@link drawRowLabel} visual style.
+   */
+  drawStateRow(
+    spans:
+      | Nullable<Array<{ start: number; end: number; state: string }>>
+      | undefined,
+    t0: number,
+    t1: number,
+    rect: LaneRect,
+    options: DrawStateRowOptions = {}
+  ): void {
+    const { x, y, width, height } = rect;
+    if (!(width > 0) || !(height > 0)) {
+      return;
+    }
+    const { ctx } = this;
+    const color = options.color ?? "#03a9f4";
+    const onAlpha = options.onAlpha ?? 0.85;
+    const trackColor = options.trackColor ?? color;
+    const trackAlpha = options.trackAlpha ?? 0.08;
+
+    ctx.save();
+    // Muted track spanning the whole lane (the off/unavailable/unknown base).
+    ctx.fillStyle = hexToRgba(trackColor, trackAlpha);
+    ctx.fillRect(x, y, width, height);
+
+    // Solid "on" segments on top of the track.
+    if (spans?.length) {
+      ctx.fillStyle = hexToRgba(color, onAlpha);
+      const right = x + width;
+      for (const span of spans) {
+        if (span.state !== "on") {
+          continue;
+        }
+        const start = Math.max(t0, span.start);
+        const end = Math.min(t1, span.end);
+        if (!(start < end)) {
+          continue;
+        }
+        const x0 = Math.max(x, Math.min(right, this.xOf(start, t0, t1)));
+        const x1 = Math.max(x, Math.min(right, this.xOf(end, t0, t1)));
+        if (!(x1 > x0)) {
+          continue;
+        }
+        ctx.fillRect(x0, y, Math.max(1, x1 - x0), height);
+      }
+    }
+    ctx.restore();
+
+    if (options.label) {
+      ctx.save();
+      ctx.font = "bold 11px sans-serif";
+      ctx.fillStyle = options.labelColor ?? "rgba(214,218,224,0.85)";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "middle";
+      ctx.fillText(options.label, x + 6, y + height / 2);
+      ctx.restore();
+    }
   }
 
   drawAnnotations(
