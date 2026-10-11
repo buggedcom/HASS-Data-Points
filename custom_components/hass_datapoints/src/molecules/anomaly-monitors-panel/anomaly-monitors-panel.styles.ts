@@ -116,6 +116,24 @@ export const styles = css`
     gap: 4px;
   }
 
+  .monitor-entity-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    border-radius: 999px;
+  }
+
+  .monitor-entity-chip:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+
   .overlap-op {
     font-size: 0.72rem;
     font-weight: 700;

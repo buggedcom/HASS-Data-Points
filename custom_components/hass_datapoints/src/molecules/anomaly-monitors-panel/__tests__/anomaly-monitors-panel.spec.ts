@@ -6,6 +6,17 @@ function flushMicrotasks() {
   return Promise.resolve().then(() => Promise.resolve());
 }
 
+function buildCombinedMonitor() {
+  return {
+    ...buildMonitor(true),
+    id: "monitor-combined",
+    type: "combined",
+    overlap_mode: "all",
+    entity_id: undefined,
+    entity_ids: ["sensor.temperature", "sensor.humidity"],
+  };
+}
+
 function buildMonitor(enabled: boolean) {
   return {
     id: "monitor-1",
@@ -137,6 +148,115 @@ describe("anomaly-monitors-panel", () => {
         el.remove();
 
         expect(unsubscribe).toHaveBeenCalledOnce();
+      });
+    });
+  });
+
+  describe("GIVEN a combined monitor is shown", () => {
+    describe("WHEN a user activates an entity chip", () => {
+      it("THEN it emits dp-monitors-panel-open-entity with the entityId and monitorId", async () => {
+        expect.assertions(1);
+        const hass = createMockHass({
+          connection: {
+            subscribeEvents: vi.fn(() => Promise.resolve(vi.fn())),
+            sendMessagePromise: vi
+              .fn()
+              .mockResolvedValue({ monitors: [buildCombinedMonitor()] }),
+          },
+        });
+        const el = createElement(hass);
+        await el.updateComplete;
+        await flushMicrotasks();
+        await el.updateComplete;
+
+        let detail: unknown = null;
+        el.addEventListener("dp-monitors-panel-open-entity", (e) => {
+          detail = (e as CustomEvent).detail;
+        });
+        const chipButton = el.shadowRoot?.querySelector<HTMLElement>(
+          ".monitor-entity-chip"
+        );
+        chipButton?.click();
+
+        expect(detail).toEqual({
+          entityId: "sensor.temperature",
+          monitorId: "monitor-combined",
+        });
+      });
+    });
+
+    describe("WHEN a chip has keyboard focus and Enter is pressed", () => {
+      it("THEN it emits dp-monitors-panel-open-entity", async () => {
+        expect.assertions(1);
+        const hass = createMockHass({
+          connection: {
+            subscribeEvents: vi.fn(() => Promise.resolve(vi.fn())),
+            sendMessagePromise: vi
+              .fn()
+              .mockResolvedValue({ monitors: [buildCombinedMonitor()] }),
+          },
+        });
+        const el = createElement(hass);
+        await el.updateComplete;
+        await flushMicrotasks();
+        await el.updateComplete;
+
+        let detail: unknown = null;
+        el.addEventListener("dp-monitors-panel-open-entity", (e) => {
+          detail = (e as CustomEvent).detail;
+        });
+        const chipButton = el.shadowRoot?.querySelector<HTMLElement>(
+          ".monitor-entity-chip"
+        );
+        chipButton?.dispatchEvent(
+          new KeyboardEvent("keydown", { key: "Enter", bubbles: true })
+        );
+
+        expect(detail).toEqual({
+          entityId: "sensor.temperature",
+          monitorId: "monitor-combined",
+        });
+      });
+    });
+  });
+
+  describe("GIVEN a monitor with a look-back window", () => {
+    describe("WHEN the View series action is activated", () => {
+      it("THEN it emits dp-monitors-panel-open-chart with the monitor entities and matching range", async () => {
+        expect.assertions(4);
+        const monitor = { ...buildMonitor(true), look_back_hours: 6 };
+        const hass = createMockHass({
+          connection: {
+            subscribeEvents: vi.fn(() => Promise.resolve(vi.fn())),
+            sendMessagePromise: vi
+              .fn()
+              .mockResolvedValue({ monitors: [monitor] }),
+          },
+        });
+        const el = createElement(hass);
+        await el.updateComplete;
+        await flushMicrotasks();
+        await el.updateComplete;
+
+        let detail: {
+          entityIds: string[];
+          startMs: number;
+          endMs: number;
+          monitorId: string;
+        } | null = null;
+        el.addEventListener("dp-monitors-panel-open-chart", (e) => {
+          detail = (e as CustomEvent).detail;
+        });
+        const viewSeriesButton =
+          el.shadowRoot?.querySelector<HTMLElement>(".view-series-btn");
+        const before = Date.now();
+        viewSeriesButton?.click();
+        const after = Date.now();
+
+        expect(detail).not.toBeNull();
+        expect(detail!.entityIds).toEqual(["sensor.temperature"]);
+        expect(detail!.endMs - detail!.startMs).toBe(6 * 3_600_000);
+        expect(detail!.endMs >= before && detail!.endMs <= after).toBe(true);
       });
     });
   });
