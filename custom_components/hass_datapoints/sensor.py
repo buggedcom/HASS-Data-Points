@@ -68,9 +68,12 @@ async def async_setup_entry(
         ]
     )
 
-    # Re-register sensors for monitors that survived a restart
+    # Re-register sensors for monitors that survived a restart. Soft-deleted
+    # (trashed) monitors are skipped so their entities do not resurrect on boot.
     monitor_sensors: list[SensorEntity] = []
     for monitor in store.get_monitors():
+        if monitor.get("deleted_at"):
+            continue
         mid = monitor["id"]
         s = DatapointsMonitorSensor(entry, store, hass, mid)
         hass.data[DOMAIN][KEY_MONITOR_SENSORS][mid] = s

@@ -26,6 +26,9 @@ from custom_components.hass_datapoints.websocket_api import (
     ws_monitors_delete,
     ws_monitors_dismiss,
     ws_monitors_list,
+    ws_monitors_purge,
+    ws_monitors_restore,
+    ws_monitors_trash_list,
     ws_monitors_undismiss,
     ws_monitors_update,
 )
@@ -38,6 +41,12 @@ from custom_components.hass_datapoints.websocket_api import (
 def _make_store(monitors=None):
     store = MagicMock()
     store.get_monitors.return_value = list(monitors or [])
+    store.get_active_monitors.return_value = [
+        m for m in (monitors or []) if not m.get("deleted_at")
+    ]
+    store.get_trashed_monitors.return_value = [
+        m for m in (monitors or []) if m.get("deleted_at")
+    ]
     store.get_monitor.side_effect = lambda mid: next(
         (m for m in (monitors or []) if m["id"] == mid), None
     )
@@ -48,6 +57,13 @@ def _make_store(monitors=None):
         )
     )
     store.async_delete_monitor = AsyncMock(return_value=True)
+    store.async_soft_delete_monitor = AsyncMock(return_value=True)
+    store.async_restore_monitor = AsyncMock(
+        side_effect=lambda mid: next(
+            ({**m, "deleted_at": None} for m in (monitors or []) if m["id"] == mid),
+            None,
+        )
+    )
     store.async_dismiss_window = AsyncMock(
         side_effect=lambda mid, s, e, exp: next(
             (m for m in (monitors or []) if m["id"] == mid), None
@@ -333,7 +349,9 @@ class DescribeWsMonitorsUpdate:
 
 
 class DescribeWsMonitorsDelete:
-    async def test_GIVEN_existing_monitor_WHEN_deleted_THEN_sensor_removed(self):
+    async def test_GIVEN_existing_monitor_WHEN_deleted_THEN_soft_deleted_and_torn_down(
+        self,
+    ):
         import uuid as _uuid
 
         monitor_id = str(_uuid.uuid4())
@@ -351,7 +369,9 @@ class DescribeWsMonitorsDelete:
 
         await ws_monitors_delete(hass, connection, msg)
 
-        store.async_delete_monitor.assert_awaited_once_with(monitor_id)
+        # Soft delete: the record is retained via deleted_at, not hard-removed.
+        store.async_soft_delete_monitor.assert_awaited_once_with(monitor_id)
+        store.async_delete_monitor.assert_not_awaited()
         mock_sensor.async_remove.assert_awaited_once()
         connection.send_result.assert_called_once_with(1, {"deleted": True})
 
@@ -359,7 +379,7 @@ class DescribeWsMonitorsDelete:
         import uuid as _uuid
 
         store = _make_store()
-        store.async_delete_monitor = AsyncMock(return_value=False)
+        store.async_soft_delete_monitor = AsyncMock(return_value=False)
         hass = _make_hass(store)
         connection = _make_connection()
         msg = {
@@ -388,6 +408,193 @@ class DescribeWsMonitorsDelete:
 
         with pytest.raises(Unauthorized):
             await ws_monitors_delete(hass, connection, msg)
+
+
+# ---------------------------------------------------------------------------
+# ws_monitors_list — excludes soft-deleted
+# ---------------------------------------------------------------------------
+
+
+class DescribeWsMonitorsListExcludesTrashed:
+    async def test_GIVEN_mixed_monitors_WHEN_listed_THEN_trashed_excluded(self):
+        monitors = [
+            {"id": "m1", "name": "A", "deleted_at": None},
+            {"id": "m2", "name": "B", "deleted_at": "2024-01-01T00:00:00+00:00"},
+        ]
+        store = _make_store(monitors)
+        hass = _make_hass(store)
+        hass.config_entries.async_entries.return_value = []
+        connection = _make_connection()
+        msg = {"id": 1, "type": f"{DOMAIN}/monitors/list"}
+
+        await ws_monitors_list(hass, connection, msg)
+
+        result = connection.send_result.call_args[0][1]
+        assert [m["id"] for m in result["monitors"]] == ["m1"]
+
+
+# ---------------------------------------------------------------------------
+# ws_monitors_trash_list
+# ---------------------------------------------------------------------------
+
+
+class DescribeWsMonitorsTrashList:
+    async def test_GIVEN_mixed_monitors_WHEN_trash_listed_THEN_only_trashed(self):
+        monitors = [
+            {"id": "m1", "name": "A", "deleted_at": None},
+            {"id": "m2", "name": "B", "deleted_at": "2024-01-01T00:00:00+00:00"},
+        ]
+        store = _make_store(monitors)
+        hass = _make_hass(store)
+        hass.config_entries.async_entries.return_value = []
+        connection = _make_connection()
+        msg = {"id": 1, "type": f"{DOMAIN}/monitors/trash/list"}
+
+        await ws_monitors_trash_list(hass, connection, msg)
+
+        result = connection.send_result.call_args[0][1]
+        assert [m["id"] for m in result["monitors"]] == ["m2"]
+        assert result["monitors"][0]["deleted_at"] == "2024-01-01T00:00:00+00:00"
+
+    async def test_GIVEN_non_admin_WHEN_trash_listed_THEN_raises_unauthorized(self):
+        store = _make_store()
+        hass = _make_hass(store)
+        connection = _make_connection(is_admin=False)
+        msg = {"id": 1, "type": f"{DOMAIN}/monitors/trash/list"}
+
+        with pytest.raises(Unauthorized):
+            await ws_monitors_trash_list(hass, connection, msg)
+
+
+# ---------------------------------------------------------------------------
+# ws_monitors_restore
+# ---------------------------------------------------------------------------
+
+
+class DescribeWsMonitorsRestore:
+    async def test_GIVEN_trashed_monitor_WHEN_restored_THEN_reregistered_and_returned(
+        self,
+    ):
+        import uuid as _uuid
+
+        monitor_id = str(_uuid.uuid4())
+        store = _make_store(
+            [{"id": monitor_id, "deleted_at": "2024-01-01T00:00:00+00:00"}]
+        )
+        hass = _make_hass(store)
+        hass.config_entries.async_entries.return_value = []  # skip real registration
+        connection = _make_connection()
+        msg = {
+            "id": 1,
+            "type": f"{DOMAIN}/monitors/restore",
+            "monitor_id": monitor_id,
+        }
+
+        with patch(
+            "custom_components.hass_datapoints.websocket_api._register_monitor_entities"
+        ) as mock_register:
+            await ws_monitors_restore(hass, connection, msg)
+
+        store.async_restore_monitor.assert_awaited_once_with(monitor_id)
+        mock_register.assert_called_once_with(hass, monitor_id)
+        result = connection.send_result.call_args[0][1]
+        assert result["monitor"]["id"] == monitor_id
+        assert result["monitor"]["deleted_at"] is None
+
+    async def test_GIVEN_not_found_WHEN_restored_THEN_sends_error(self):
+        import uuid as _uuid
+
+        store = _make_store()
+        store.async_restore_monitor = AsyncMock(return_value=None)
+        hass = _make_hass(store)
+        connection = _make_connection()
+        msg = {
+            "id": 1,
+            "type": f"{DOMAIN}/monitors/restore",
+            "monitor_id": str(_uuid.uuid4()),
+        }
+
+        await ws_monitors_restore(hass, connection, msg)
+
+        connection.send_error.assert_called_once_with(
+            1, "not_found", "Monitor not found"
+        )
+
+    async def test_GIVEN_non_admin_WHEN_restored_THEN_raises_unauthorized(self):
+        import uuid as _uuid
+
+        store = _make_store()
+        hass = _make_hass(store)
+        connection = _make_connection(is_admin=False)
+        msg = {
+            "id": 1,
+            "type": f"{DOMAIN}/monitors/restore",
+            "monitor_id": str(_uuid.uuid4()),
+        }
+
+        with pytest.raises(Unauthorized):
+            await ws_monitors_restore(hass, connection, msg)
+
+
+# ---------------------------------------------------------------------------
+# ws_monitors_purge
+# ---------------------------------------------------------------------------
+
+
+class DescribeWsMonitorsPurge:
+    async def test_GIVEN_trashed_monitor_WHEN_purged_THEN_physically_removed(self):
+        import uuid as _uuid
+
+        monitor_id = str(_uuid.uuid4())
+        store = _make_store(
+            [{"id": monitor_id, "deleted_at": "2024-01-01T00:00:00+00:00"}]
+        )
+        hass = _make_hass(store)
+        connection = _make_connection()
+        msg = {
+            "id": 1,
+            "type": f"{DOMAIN}/monitors/purge",
+            "monitor_id": monitor_id,
+        }
+
+        await ws_monitors_purge(hass, connection, msg)
+
+        store.async_delete_monitor.assert_awaited_once_with(monitor_id)
+        connection.send_result.assert_called_once_with(1, {"purged": True})
+
+    async def test_GIVEN_not_found_WHEN_purged_THEN_sends_error(self):
+        import uuid as _uuid
+
+        store = _make_store()
+        store.async_delete_monitor = AsyncMock(return_value=False)
+        hass = _make_hass(store)
+        connection = _make_connection()
+        msg = {
+            "id": 1,
+            "type": f"{DOMAIN}/monitors/purge",
+            "monitor_id": str(_uuid.uuid4()),
+        }
+
+        await ws_monitors_purge(hass, connection, msg)
+
+        connection.send_error.assert_called_once_with(
+            1, "not_found", "Monitor not found"
+        )
+
+    async def test_GIVEN_non_admin_WHEN_purged_THEN_raises_unauthorized(self):
+        import uuid as _uuid
+
+        store = _make_store()
+        hass = _make_hass(store)
+        connection = _make_connection(is_admin=False)
+        msg = {
+            "id": 1,
+            "type": f"{DOMAIN}/monitors/purge",
+            "monitor_id": str(_uuid.uuid4()),
+        }
+
+        with pytest.raises(Unauthorized):
+            await ws_monitors_purge(hass, connection, msg)
 
 
 # ---------------------------------------------------------------------------

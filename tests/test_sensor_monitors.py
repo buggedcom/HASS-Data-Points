@@ -1504,17 +1504,20 @@ def test_all_monitor_unique_ids_stable():
     entities = _construct_all_monitor_entities(entry, store, "abc123")
     unique_ids = {e._attr_unique_id for e in entities}
 
-    assert unique_ids == {
-        "ent1_monitor_abc123",  # main sensor: suffix-less, equals device identifier string
-        "ent1_monitor_abc123_consecutive_scans",
-        "ent1_monitor_abc123_last_scan_at",
-        "ent1_monitor_abc123_last_anomaly_at",
-        "ent1_monitor_abc123_anomaly_duration",
-        "ent1_monitor_abc123_data_points",
-        "ent1_monitor_abc123_stalled",
-        "ent1_monitor_abc123_problem",
-        "ent1_monitor_abc123_enabled",
-    }
+    assert (
+        unique_ids
+        == {
+            "ent1_monitor_abc123",  # main sensor: suffix-less, equals device identifier string
+            "ent1_monitor_abc123_consecutive_scans",
+            "ent1_monitor_abc123_last_scan_at",
+            "ent1_monitor_abc123_last_anomaly_at",
+            "ent1_monitor_abc123_anomaly_duration",
+            "ent1_monitor_abc123_data_points",
+            "ent1_monitor_abc123_stalled",
+            "ent1_monitor_abc123_problem",
+            "ent1_monitor_abc123_enabled",
+        }
+    )
 
 
 def test_single_device_identity():
@@ -1529,9 +1532,49 @@ def test_single_device_identity():
     )
 
     entities = _construct_all_monitor_entities(entry, store, "abc123")
-    identifiers = {
-        frozenset(e.device_info["identifiers"]) for e in entities
-    }
+    identifiers = {frozenset(e.device_info["identifiers"]) for e in entities}
 
     expected = frozenset({monitor_device_identifier("ent1", "abc123")})
     assert identifiers == {expected}
+
+
+# ---------------------------------------------------------------------------
+# async_setup_entry — restart re-registration skips soft-deleted monitors
+# ---------------------------------------------------------------------------
+
+
+class DescribeSetupEntryReRegistration:
+    async def test_GIVEN_soft_deleted_monitor_WHEN_setup_THEN_its_sensor_not_recreated(
+        self,
+    ):
+        from custom_components.hass_datapoints.const import (
+            DOMAIN,
+            KEY_MONITOR_SENSORS,
+            KEY_STORE,
+        )
+        from custom_components.hass_datapoints.sensor import async_setup_entry
+
+        entry = _make_entry("ent1")
+        store = _make_store(
+            monitors=[
+                {"id": "active1", "name": "Active", "deleted_at": None},
+                {
+                    "id": "trashed1",
+                    "name": "Trashed",
+                    "deleted_at": "2024-01-01T00:00:00+00:00",
+                },
+            ]
+        )
+        hass = MagicMock()
+        hass.data = {DOMAIN: {KEY_STORE: store}}
+        added: list = []
+        add_entities = MagicMock(side_effect=lambda ents: added.extend(ents))
+
+        await async_setup_entry(hass, entry, add_entities)
+
+        monitor_sensors = hass.data[DOMAIN][KEY_MONITOR_SENSORS]
+        assert "active1" in monitor_sensors
+        assert "trashed1" not in monitor_sensors
+        added_monitor_ids = {getattr(e, "_monitor_id", None) for e in added}
+        assert "active1" in added_monitor_ids
+        assert "trashed1" not in added_monitor_ids

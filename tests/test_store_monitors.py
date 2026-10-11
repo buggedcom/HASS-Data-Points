@@ -375,6 +375,160 @@ def test_prune_dismissed_windows_removes_expired():
     assert monitor["dismissed_windows"] == []
 
 
+# ---------------------------------------------------------------------------
+# Soft-delete / restore / active + trashed getters
+# ---------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_migration_adds_deleted_at_to_existing_monitors(store):
+    """Monitors loaded without deleted_at get None injected."""
+    store._store.async_load = AsyncMock(
+        return_value={"events": [], "monitors": [{"id": "m1", "name": "A"}]}
+    )
+    await store.async_load()
+    assert store._data["monitors"][0]["deleted_at"] is None
+
+
+def test_get_active_monitors_excludes_trashed(store):
+    store._data["monitors"] = [
+        {"id": "m1", "deleted_at": None},
+        {"id": "m2", "deleted_at": "2024-01-01T00:00:00+00:00"},
+        {"id": "m3"},
+    ]
+    active = store.get_active_monitors()
+    assert [m["id"] for m in active] == ["m1", "m3"]
+
+
+def test_get_trashed_monitors_only_trashed(store):
+    store._data["monitors"] = [
+        {"id": "m1", "deleted_at": None},
+        {"id": "m2", "deleted_at": "2024-01-01T00:00:00+00:00"},
+    ]
+    trashed = store.get_trashed_monitors()
+    assert [m["id"] for m in trashed] == ["m2"]
+
+
+@pytest.mark.asyncio
+async def test_soft_delete_monitor_sets_deleted_at(store):
+    store._data["monitors"] = [{"id": "m1", "deleted_at": None}]
+    result = await store.async_soft_delete_monitor("m1")
+    assert result is True
+    record = store._data["monitors"][0]
+    assert record["id"] == "m1"  # record retained
+    assert record["deleted_at"] is not None
+    from datetime import datetime
+
+    parsed = datetime.fromisoformat(record["deleted_at"])
+    assert parsed.tzinfo is not None  # ISO-8601 UTC string
+    store._store.async_save.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_soft_delete_monitor_fires_deleted_event(store):
+    store._data["monitors"] = [{"id": "m1", "deleted_at": None}]
+    await store.async_soft_delete_monitor("m1")
+    store._hass.bus.async_fire.assert_called_once_with(
+        EVENT_MONITORS_UPDATED,
+        {"action": "deleted", "monitor_id": "m1"},
+    )
+
+
+@pytest.mark.asyncio
+async def test_soft_delete_monitor_not_found(store):
+    store._data["monitors"] = []
+    result = await store.async_soft_delete_monitor("missing")
+    assert result is False
+    store._store.async_save.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_restore_monitor_clears_deleted_at(store):
+    store._data["monitors"] = [{"id": "m1", "deleted_at": "2024-01-01T00:00:00+00:00"}]
+    result = await store.async_restore_monitor("m1")
+    assert result is not None
+    assert result["deleted_at"] is None
+    store._store.async_save.assert_awaited_once()
+
+
+@pytest.mark.asyncio
+async def test_restore_monitor_fires_restored_event(store):
+    store._data["monitors"] = [{"id": "m1", "deleted_at": "2024-01-01T00:00:00+00:00"}]
+    await store.async_restore_monitor("m1")
+    store._hass.bus.async_fire.assert_called_once_with(
+        EVENT_MONITORS_UPDATED,
+        {"action": "restored", "monitor_id": "m1"},
+    )
+
+
+@pytest.mark.asyncio
+async def test_restore_monitor_not_found(store):
+    store._data["monitors"] = []
+    result = await store.async_restore_monitor("missing")
+    assert result is None
+
+
+# ---------------------------------------------------------------------------
+# purge_expired_trash (static, time-injected)
+# ---------------------------------------------------------------------------
+
+
+def _iso(dt):
+    return dt.isoformat()
+
+
+def test_purge_expired_trash_drops_old_keeps_recent_and_active():
+    from datetime import UTC, datetime, timedelta
+
+    from custom_components.hass_datapoints.store import DatapointsStore
+
+    now = datetime(2024, 6, 1, tzinfo=UTC)
+    monitors = [
+        {"id": "active", "deleted_at": None},
+        {"id": "active2"},  # deleted_at absent
+        {"id": "old", "deleted_at": _iso(now - timedelta(days=31))},
+        {"id": "recent", "deleted_at": _iso(now - timedelta(days=5))},
+    ]
+    result = DatapointsStore.purge_expired_trash(monitors, now, 30)
+    assert {m["id"] for m in result} == {"active", "active2", "recent"}
+
+
+def test_purge_expired_trash_boundary_kept():
+    """A record deleted exactly at the retention edge is kept."""
+    from datetime import UTC, datetime, timedelta
+
+    from custom_components.hass_datapoints.store import DatapointsStore
+
+    now = datetime(2024, 6, 1, tzinfo=UTC)
+    monitors = [{"id": "edge", "deleted_at": _iso(now - timedelta(days=30))}]
+    result = DatapointsStore.purge_expired_trash(monitors, now, 30)
+    assert [m["id"] for m in result] == ["edge"]
+
+
+def test_purge_expired_trash_keeps_malformed():
+    """A trashed record with an unparseable deleted_at is kept (non-destructive)."""
+    from datetime import UTC, datetime
+
+    from custom_components.hass_datapoints.store import DatapointsStore
+
+    now = datetime(2024, 6, 1, tzinfo=UTC)
+    monitors = [{"id": "bad", "deleted_at": "not-a-date"}]
+    result = DatapointsStore.purge_expired_trash(monitors, now, 30)
+    assert [m["id"] for m in result] == ["bad"]
+
+
+def test_purge_expired_trash_handles_naive_datetime_string():
+    from datetime import UTC, datetime, timedelta
+
+    from custom_components.hass_datapoints.store import DatapointsStore
+
+    now = datetime(2024, 6, 1, tzinfo=UTC)
+    naive_old = (now - timedelta(days=31)).replace(tzinfo=None).isoformat()
+    monitors = [{"id": "old", "deleted_at": naive_old}]
+    result = DatapointsStore.purge_expired_trash(monitors, now, 30)
+    assert result == []
+
+
 def test_prune_dismissed_windows_keeps_permanent():
     from datetime import UTC, datetime
 
