@@ -1,13 +1,10 @@
 import { DOMAIN } from "@/constants";
+import { logger } from "@/lib/logger";
 import type { HassLike } from "@/lib/types";
 
 /**
  * Anomaly Monitors data access layer.
  */
-
-declare const logger: {
-  warn: (...args: unknown[]) => void;
-};
 
 // ---------------------------------------------------------------------------
 // Types
@@ -47,6 +44,7 @@ export interface MonitorAnomaliesResult {
 
 interface MonitorBase {
   id: string;
+  deleted_at?: string | null;
   type: MonitorType;
   name: string;
   enabled: boolean;
@@ -205,6 +203,44 @@ export async function deleteMonitor(
     type: `${DOMAIN}/monitors/delete`,
     monitor_id: monitorId,
   });
+}
+
+export async function restoreMonitor(
+  hass: Pick<HassLike, "connection">,
+  monitorId: string
+): Promise<AnomalyMonitor> {
+  const result = (await hass.connection.sendMessagePromise({
+    type: `${DOMAIN}/monitors/restore`,
+    monitor_id: monitorId,
+  })) as MonitorResult;
+  if (!result.monitor) {
+    throw new Error("restoreMonitor: no monitor in response");
+  }
+  return result.monitor;
+}
+
+export async function purgeMonitor(
+  hass: Pick<HassLike, "connection">,
+  monitorId: string
+): Promise<void> {
+  await hass.connection.sendMessagePromise({
+    type: `${DOMAIN}/monitors/purge`,
+    monitor_id: monitorId,
+  });
+}
+
+export async function fetchDeletedMonitors(
+  hass: Pick<HassLike, "connection">
+): Promise<AnomalyMonitor[]> {
+  try {
+    const result = (await hass.connection.sendMessagePromise({
+      type: `${DOMAIN}/monitors/trash/list`,
+    })) as MonitorsListResult;
+    return result.monitors ?? [];
+  } catch (err) {
+    logger.warn("[hass-datapoints] fetchDeletedMonitors failed:", err);
+    return [];
+  }
 }
 
 export async function fetchMonitorAnomalies(
