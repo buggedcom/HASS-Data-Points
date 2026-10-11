@@ -35,6 +35,14 @@ export type DpChangeDetail =
   | { type: "radio"; value: string };
 
 /**
+ * Monitors-panel outbound events are plain string `CustomEvent`s (NOT part of
+ * the `DpChangeDetail` form-atom union) emitted via the panel's own `_emit`:
+ * - `dp-monitors-panel-open-chart`:
+ *   `{ entityIds: string[]; startMs: number; endMs: number; monitorId: string }`
+ * - `dp-monitors-panel-open-entity`: `{ entityId: string; monitorId: string }`
+ */
+
+/**
  * Dispatch a `dp-change` event from the given host element.
  * The event bubbles and is composed so it crosses shadow-DOM boundaries.
  */

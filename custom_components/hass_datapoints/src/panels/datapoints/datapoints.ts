@@ -126,6 +126,27 @@ import {
   PANEL_HISTORY_STYLE,
 } from "./datapoints.styles";
 
+/** Detail shape for the `dp-monitors-panel-open-chart` event (monitors panel). */
+interface MonitorsOpenChartDetail {
+  entityIds: string[];
+  startMs: number;
+  endMs: number;
+  monitorId: string;
+}
+
+/** Detail shape for the `dp-monitors-panel-open-entity` event (monitors panel). */
+interface MonitorsOpenEntityDetail {
+  entityId: string;
+  monitorId: string;
+}
+
+/**
+ * Sane default anomaly methods for the monitor "View series" / chip overlay.
+ * The panel's outbound events carry only identity + range (pinned contract), so
+ * the chart enables the overlay with a sensible default method set.
+ */
+const MONITOR_DEFAULT_ANOMALY_METHODS = ["trend_residual"];
+
 /** Module-level set of all currently-connected panel instances.
  *  Used by the orphan-recovery guard to avoid disrupting a live replacement. */
 const _liveInstances = new Set<object>();
@@ -2888,6 +2909,110 @@ export class HassDatapointsHistoryPanel extends LitElement {
   }
 
   /**
+   * Build series rows for a set of entities with the chart anomaly overlay
+   * enabled. Reuses the existing per-series analysis path (history-chart card)
+   * rather than a bespoke overlay — a row with `analysis.show_anomalies === true`
+   * draws the same anomaly clusters the chart already fetches.
+   */
+  _buildMonitorAnomalySeriesRows(entityIds: string[]) {
+    return buildHistorySeriesRows(entityIds).map((row) => ({
+      ...row,
+      analysis: normalizeHistorySeriesAnalysis({
+        ...row.analysis,
+        show_anomalies: true,
+        anomaly_methods: MONITOR_DEFAULT_ANOMALY_METHODS,
+      }),
+    }));
+  }
+
+  /**
+   * `dp-monitors-panel-open-chart` handler: close the monitors overlay, replace
+   * the series with the monitor's entities (anomaly overlay on), and set the
+   * committed range to the monitor's look-back window.
+   */
+  _handleMonitorsOpenChart(detail: Nullable<MonitorsOpenChartDetail>) {
+    const entityIds = Array.isArray(detail?.entityIds)
+      ? detail.entityIds.filter(
+          (id): id is string => typeof id === "string" && id.length > 0
+        )
+      : [];
+    if (!entityIds.length) {
+      return;
+    }
+    this._showMonitorsPanel = false;
+    this._contentKey = "";
+    this._seriesRows = this._buildMonitorAnomalySeriesRows(entityIds);
+    this._syncSeriesState();
+    this._renderTargetRows();
+    const start =
+      typeof detail?.startMs === "number" ? new Date(detail.startMs) : null;
+    const end =
+      typeof detail?.endMs === "number" ? new Date(detail.endMs) : null;
+    this._applyCommittedRange(start, end, { push: true });
+    // _applyCommittedRange only re-renders when the range actually changed; call
+    // explicitly so a re-opened chart (unchanged range) still rebuilds content.
+    this._renderContent();
+  }
+
+  /**
+   * `dp-monitors-panel-open-entity` handler: open an accessible `ha-dialog`
+   * containing a single-entity history card with the anomaly overlay on, so the
+   * same cluster overlay renders for one entity.
+   */
+  _handleMonitorsOpenEntity(detail: Nullable<MonitorsOpenEntityDetail>) {
+    const entityId = detail?.entityId;
+    if (typeof entityId !== "string" || !entityId) {
+      return;
+    }
+    const root = this.shadowRoot;
+    if (!root) {
+      return;
+    }
+
+    const now = Date.now();
+    const start = this._startTime
+      ? new Date(this._startTime)
+      : new Date(now - 24 * HOUR_MS);
+    const end = this._endTime ? new Date(this._endTime) : new Date(now);
+
+    const dialog = document.createElement("ha-dialog") as HTMLElement & {
+      scrimClickAction?: boolean;
+      escapeKeyAction?: boolean;
+      open?: boolean;
+      headerTitle?: string;
+      hass?: unknown;
+    };
+    dialog.scrimClickAction = true;
+    dialog.escapeKeyAction = true;
+    dialog.headerTitle = entityName(this._hass, entityId) || entityId;
+    if (this._hass) {
+      dialog.hass = this._hass;
+    }
+    dialog.addEventListener("closed", () => dialog.remove());
+
+    const chart = document.createElement(
+      "hass-datapoints-history-card"
+    ) as HistoryCardElement;
+    chart.setConfig({
+      entities: [entityId],
+      series_settings: this._buildMonitorAnomalySeriesRows([entityId]),
+      start_time: start.toISOString(),
+      end_time: end.toISOString(),
+      show_correlated_anomalies: this._showCorrelatedAnomalies,
+      anomaly_overlap_mode: this._chartAnomalyOverlapMode,
+    });
+    if (this._hass) {
+      chart.hass = this._hass;
+    }
+    dialog.appendChild(chart);
+    root.appendChild(dialog);
+    dialog.open = true;
+    // Lazily upgrade the native ha-dialog element in the background; the chart
+    // is already mounted so the overlay renders without waiting on the loader.
+    ensureHaComponents(["ha-dialog"]).catch(() => {});
+  }
+
+  /**
    * Date-window-dialog `dp-window-date-change` handler: update the draft range
    * and keep the controlled start/end value fields in step with the inputs
    * (the component is fully controlled, so the parent owns these values).
@@ -4010,6 +4135,16 @@ export class HassDatapointsHistoryPanel extends LitElement {
       });
       panel.addEventListener("dp-monitors-panel-new", () => {
         this._openMonitorWizard([], null);
+      });
+      panel.addEventListener("dp-monitors-panel-open-chart", (event) => {
+        this._handleMonitorsOpenChart(
+          (event as CustomEvent).detail as MonitorsOpenChartDetail
+        );
+      });
+      panel.addEventListener("dp-monitors-panel-open-entity", (event) => {
+        this._handleMonitorsOpenEntity(
+          (event as CustomEvent).detail as MonitorsOpenEntityDetail
+        );
       });
       content.appendChild(panel);
       return;
