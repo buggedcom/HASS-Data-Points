@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { ChartRenderer } from "@/lib/chart/chart-renderer";
+import { ChartRenderer, reserveLaneSpace } from "@/lib/chart/chart-renderer";
 
 function createRenderer() {
   const ctx = {
@@ -126,6 +126,155 @@ describe("chart-renderer", () => {
         );
         expect(ctx.lineJoin).toBe("miter");
         expect(ctx.lineCap).toBe("butt");
+      });
+    });
+  });
+
+  describe("GIVEN a renderer and a binary lane rect", () => {
+    const rect = { x: 12, y: 150, width: 376, height: 20 };
+
+    describe("WHEN drawStateRow is called with on and off spans", () => {
+      it("THEN it fills a muted track across the whole lane rect", () => {
+        expect.assertions(1);
+
+        const { ctx, renderer } = createRenderer();
+
+        renderer.drawStateRow(
+          [
+            { start: 25, end: 50, state: "on" },
+            { start: 50, end: 100, state: "off" },
+          ],
+          0,
+          100,
+          rect,
+          { color: "#83c705" }
+        );
+
+        expect(ctx.fillRect.mock.calls).toContainEqual([12, 150, 376, 20]);
+      });
+
+      it("THEN on-spans fill a segment mapped by xOf within the lane rect", () => {
+        expect.assertions(2);
+
+        const { ctx, renderer } = createRenderer();
+
+        renderer.drawStateRow(
+          [
+            { start: 25, end: 50, state: "on" },
+            { start: 50, end: 100, state: "off" },
+          ],
+          0,
+          100,
+          rect,
+          { color: "#83c705" }
+        );
+
+        // xOf(25,0,100) = 12 + 0.25*376 = 106; xOf(50,...) = 12 + 0.5*376 = 200.
+        expect(ctx.fillRect.mock.calls).toContainEqual([106, 150, 94, 20]);
+        // track + exactly one on-segment (the off span is never filled as "on").
+        expect(ctx.fillRect).toHaveBeenCalledTimes(2);
+      });
+
+      it("THEN off/unknown spans are not drawn as on-segments", () => {
+        expect.assertions(1);
+
+        const { ctx, renderer } = createRenderer();
+
+        renderer.drawStateRow(
+          [
+            { start: 0, end: 50, state: "off" },
+            { start: 50, end: 100, state: "unavailable" },
+          ],
+          0,
+          100,
+          rect,
+          { color: "#83c705" }
+        );
+
+        // only the muted track fill, no on-segment fills.
+        expect(ctx.fillRect).toHaveBeenCalledTimes(1);
+      });
+
+      it("THEN on-segments are clamped to the lane rect horizontal bounds", () => {
+        expect.assertions(1);
+
+        const { ctx, renderer } = createRenderer();
+        const narrow = { x: 100, y: 150, width: 100, height: 20 };
+
+        renderer.drawStateRow(
+          [{ start: 0, end: 100, state: "on" }],
+          0,
+          100,
+          narrow,
+          { color: "#83c705" }
+        );
+
+        // on-span spans the full window but must not exceed [100, 200].
+        expect(ctx.fillRect.mock.calls).toContainEqual([100, 150, 100, 20]);
+      });
+    });
+
+    describe("WHEN drawStateRow is called with an optional label", () => {
+      it("THEN it draws the label text at the lane's left edge", () => {
+        expect.assertions(1);
+
+        const { ctx, renderer } = createRenderer();
+
+        renderer.drawStateRow(
+          [{ start: 25, end: 50, state: "on" }],
+          0,
+          100,
+          rect,
+          { color: "#83c705", label: "Front Door" }
+        );
+
+        expect(ctx.fillText.mock.calls).toContainEqual([
+          "Front Door",
+          18,
+          160,
+        ]);
+      });
+    });
+
+    describe("WHEN drawStateRow is called with a zero-height rect", () => {
+      it("THEN it draws nothing", () => {
+        expect.assertions(1);
+
+        const { ctx, renderer } = createRenderer();
+
+        renderer.drawStateRow(
+          [{ start: 25, end: 50, state: "on" }],
+          0,
+          100,
+          { x: 12, y: 150, width: 376, height: 0 },
+          { color: "#83c705" }
+        );
+
+        expect(ctx.fillRect).not.toHaveBeenCalled();
+      });
+    });
+  });
+
+  describe("GIVEN the lane-geometry helper", () => {
+    describe("WHEN reserveLaneSpace is called with rows, lane height and gap", () => {
+      it("THEN it reserves rowCount * (laneHeight + gap) of bottom space", () => {
+        expect.assertions(1);
+
+        expect(reserveLaneSpace(3, 20, 6)).toBe(78);
+      });
+
+      it("THEN the gap defaults to zero", () => {
+        expect.assertions(1);
+
+        expect(reserveLaneSpace(2, 20)).toBe(40);
+      });
+    });
+
+    describe("WHEN reserveLaneSpace is called with no rows", () => {
+      it("THEN it reserves no space", () => {
+        expect.assertions(1);
+
+        expect(reserveLaneSpace(0, 20, 6)).toBe(0);
       });
     });
   });
