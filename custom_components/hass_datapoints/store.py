@@ -8,7 +8,7 @@ import sqlite3
 import threading
 import uuid
 from collections.abc import Callable
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from functools import partial
 from typing import Any
 
@@ -18,6 +18,7 @@ from homeassistant.helpers.storage import Store
 from .const import (
     EVENT_MONITORS_UPDATED,
     MONITOR_SCAN_HISTORY_MAX,
+    MONITOR_TRASH_RETENTION_DAYS,
     STORAGE_KEY,
     STORAGE_VERSION,
 )
@@ -320,6 +321,13 @@ class DatapointsStore:
                 m["active_cluster_count"] = m.get("last_cluster_count", 0)
             if "last_resolved_clusters_summary" not in m:
                 m["last_resolved_clusters_summary"] = []
+            if "deleted_at" not in m:
+                m["deleted_at"] = None
+
+        # Permanently drop trashed monitors whose retention has elapsed.
+        self._data["monitors"] = self.purge_expired_trash(
+            self._data.get("monitors", []), datetime.now(UTC)
+        )
 
     def close(self) -> None:
         """Release the SQLite connection. Called when the config entry unloads."""
@@ -525,8 +533,16 @@ class DatapointsStore:
     # ---------------------------------------------------------------------------
 
     def get_monitors(self) -> list[dict[str, Any]]:
-        """Return the full list of anomaly monitor records."""
+        """Return the full list of anomaly monitor records (active and trashed)."""
         return list(self._data.get("monitors", []))
+
+    def get_active_monitors(self) -> list[dict[str, Any]]:
+        """Return monitor records that have not been soft-deleted."""
+        return [m for m in self._data.get("monitors", []) if not m.get("deleted_at")]
+
+    def get_trashed_monitors(self) -> list[dict[str, Any]]:
+        """Return monitor records that have been soft-deleted (in the trash)."""
+        return [m for m in self._data.get("monitors", []) if m.get("deleted_at")]
 
     def get_monitor(self, monitor_id: str) -> dict[str, Any] | None:
         """Return a single monitor record by ID, or None if not found."""
@@ -561,8 +577,41 @@ class DatapointsStore:
                 return m
         return None
 
+    async def async_soft_delete_monitor(self, monitor_id: str) -> bool:
+        """Soft-delete a monitor by stamping ``deleted_at`` with the current time.
+
+        The record is retained (so it can be restored) but excluded from the
+        active monitor list. Returns True if the monitor was found.
+        """
+        for m in self._data.get("monitors", []):
+            if m.get("id") == monitor_id:
+                m["deleted_at"] = datetime.now(UTC).isoformat()
+                await self._store.async_save(self._data)
+                self._notify_listeners()
+                self._fire_monitors_updated("deleted", monitor_id)
+                return True
+        return False
+
+    async def async_restore_monitor(self, monitor_id: str) -> dict[str, Any] | None:
+        """Restore a soft-deleted monitor by clearing its ``deleted_at`` stamp.
+
+        Returns the restored record, or None if the monitor was not found.
+        """
+        for m in self._data.get("monitors", []):
+            if m.get("id") == monitor_id:
+                m["deleted_at"] = None
+                await self._store.async_save(self._data)
+                self._notify_listeners()
+                self._fire_monitors_updated("restored", monitor_id)
+                return m
+        return None
+
     async def async_delete_monitor(self, monitor_id: str) -> bool:
-        """Delete the monitor identified by *monitor_id*.
+        """Permanently remove the monitor identified by *monitor_id*.
+
+        This is the physical purge: the record is dropped from the store (used
+        by ``monitors/purge`` to empty the trash). Soft-delete lives in
+        :meth:`async_soft_delete_monitor`.
 
         Returns True if the monitor was found and deleted.
         """
@@ -576,6 +625,38 @@ class DatapointsStore:
             self._fire_monitors_updated("deleted", monitor_id)
             return True
         return False
+
+    @staticmethod
+    def purge_expired_trash(
+        monitors: list[dict[str, Any]],
+        now: datetime,
+        retention_days: int = MONITOR_TRASH_RETENTION_DAYS,
+    ) -> list[dict[str, Any]]:
+        """Return *monitors* with expired soft-deleted records dropped.
+
+        Mirrors :meth:`prune_dismissed_windows`: time is injected via *now* so
+        this is unit-testable without clock mocking. Active records (no
+        ``deleted_at``) are always kept. A soft-deleted record is dropped only
+        when its ``deleted_at`` is older than *retention_days*. A record whose
+        ``deleted_at`` cannot be parsed is kept (non-destructive).
+        """
+        cutoff = now - timedelta(days=retention_days)
+        kept: list[dict[str, Any]] = []
+        for m in monitors:
+            deleted_at = m.get("deleted_at")
+            if not deleted_at:
+                kept.append(m)  # active — never purged
+                continue
+            try:
+                del_dt = datetime.fromisoformat(deleted_at)
+            except (ValueError, TypeError):
+                kept.append(m)  # malformed — keep rather than lose data
+                continue
+            if del_dt.tzinfo is None:
+                del_dt = del_dt.replace(tzinfo=UTC)
+            if del_dt >= cutoff:
+                kept.append(m)
+        return kept
 
     @staticmethod
     def prune_dismissed_windows(monitor: dict[str, Any], now: datetime) -> None:

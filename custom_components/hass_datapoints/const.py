@@ -8,6 +8,10 @@ EVENTS_DB_FILENAME = "hass_datapoints_events.db"
 
 MONITOR_SCAN_HISTORY_MAX = 96
 
+# Soft-deleted ("trashed") monitors older than this many days are permanently
+# purged on store load (and may be purged on scan). See purge_expired_trash.
+MONITOR_TRASH_RETENTION_DAYS = 30
+
 # Maximum data points fed into anomaly detection or returned by history fetch.
 # Shared between websocket_api.py and history_utils.py to avoid circular imports.
 ANOMALY_MAX_PTS = 50_000

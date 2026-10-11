@@ -161,9 +161,12 @@ def async_register_commands(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, ws_clear_cache)
     websocket_api.async_register_command(hass, ws_cancel_request)
     websocket_api.async_register_command(hass, ws_monitors_list)
+    websocket_api.async_register_command(hass, ws_monitors_trash_list)
     websocket_api.async_register_command(hass, ws_monitors_create)
     websocket_api.async_register_command(hass, ws_monitors_update)
     websocket_api.async_register_command(hass, ws_monitors_delete)
+    websocket_api.async_register_command(hass, ws_monitors_restore)
+    websocket_api.async_register_command(hass, ws_monitors_purge)
     websocket_api.async_register_command(hass, ws_monitors_anomalies)
     websocket_api.async_register_command(hass, ws_monitors_dismiss)
     websocket_api.async_register_command(hass, ws_monitors_undismiss)
@@ -904,6 +907,30 @@ def _register_monitor_entities(hass: HomeAssistant, monitor_id: str) -> bool:
     return True
 
 
+def _annotate_monitors_with_device(
+    hass: HomeAssistant, records: list[dict]
+) -> list[dict]:
+    """Return copies of *records* annotated with their HA ``device_id``."""
+    from homeassistant.helpers import device_registry as dr  # noqa: PLC0415
+
+    device_reg = dr.async_get(hass)
+    entries = hass.config_entries.async_entries(DOMAIN)
+    entry_id = entries[0].entry_id if entries else None
+
+    monitors = []
+    for monitor in records:
+        m = dict(monitor)
+        if entry_id:
+            device = device_reg.async_get_device(
+                identifiers={monitor_device_identifier(entry_id, monitor["id"])}
+            )
+            m["device_id"] = device.id if device else None
+        else:
+            m["device_id"] = None
+        monitors.append(m)
+    return monitors
+
+
 @websocket_api.websocket_command(
     {
         vol.Required("type"): f"{DOMAIN}/monitors/list",
@@ -915,28 +942,31 @@ async def ws_monitors_list(
     connection: websocket_api.ActiveConnection,
     msg: dict,
 ) -> None:
-    """Return all anomaly monitor records, each annotated with its HA device_id."""
-    from homeassistant.helpers import device_registry as dr  # noqa: PLC0415
+    """Return active anomaly monitor records, each annotated with its device_id.
 
+    Soft-deleted (trashed) records are excluded; use ``monitors/trash/list``.
+    """
     _require_admin(connection, msg)
     store = hass.data[DOMAIN][KEY_STORE]
+    monitors = _annotate_monitors_with_device(hass, store.get_active_monitors())
+    connection.send_result(msg["id"], {"monitors": monitors})
 
-    device_reg = dr.async_get(hass)
-    entries = hass.config_entries.async_entries(DOMAIN)
-    entry_id = entries[0].entry_id if entries else None
 
-    monitors = []
-    for monitor in store.get_monitors():
-        m = dict(monitor)
-        if entry_id:
-            device = device_reg.async_get_device(
-                identifiers={monitor_device_identifier(entry_id, monitor["id"])}
-            )
-            m["device_id"] = device.id if device else None
-        else:
-            m["device_id"] = None
-        monitors.append(m)
-
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/monitors/trash/list",
+    }
+)
+@websocket_api.async_response
+async def ws_monitors_trash_list(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict,
+) -> None:
+    """Return only soft-deleted monitor records (each carrying ``deleted_at``)."""
+    _require_admin(connection, msg)
+    store = hass.data[DOMAIN][KEY_STORE]
+    monitors = _annotate_monitors_with_device(hass, store.get_trashed_monitors())
     connection.send_result(msg["id"], {"monitors": monitors})
 
 
@@ -1087,28 +1117,14 @@ async def ws_monitors_update(
     connection.send_result(msg["id"], {"monitor": updated})
 
 
-@websocket_api.websocket_command(
-    {
-        vol.Required("type"): f"{DOMAIN}/monitors/delete",
-        vol.Required("monitor_id"): vol.All(str, _valid_uuid),
-    }
-)
-@websocket_api.async_response
-async def ws_monitors_delete(
-    hass: HomeAssistant,
-    connection: websocket_api.ActiveConnection,
-    msg: dict,
-) -> None:
-    """Delete an anomaly monitor and remove its sensor entity."""
-    _require_admin(connection, msg)
-    store = hass.data[DOMAIN][KEY_STORE]
-    monitor_id: str = msg["monitor_id"]
+async def _teardown_monitor_entities(hass: HomeAssistant, monitor_id: str) -> None:
+    """Remove a monitor's HA entities and device.
 
-    deleted = await store.async_delete_monitor(monitor_id)
-    if not deleted:
-        connection.send_error(msg["id"], "not_found", "Monitor not found")
-        return
-
+    Shared by soft-delete (``monitors/delete``): the stored record is retained
+    but its sensor/binary-sensors/switch and device are removed so scanning and
+    notification noise stop. Restore re-creates them via
+    :func:`_register_monitor_entities`.
+    """
     # Look up the device before removing entities (while identifiers still resolve).
     device = _get_monitor_device(hass, monitor_id)
 
@@ -1130,7 +1146,89 @@ async def ws_monitors_delete(
 
         dr.async_get(hass).async_remove_device(device.id)
 
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/monitors/delete",
+        vol.Required("monitor_id"): vol.All(str, _valid_uuid),
+    }
+)
+@websocket_api.async_response
+async def ws_monitors_delete(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict,
+) -> None:
+    """Soft-delete an anomaly monitor and tear down its entities.
+
+    The record is retained with ``deleted_at`` set (so it can be restored); its
+    HA entities and device are removed so scanning stops. Use ``monitors/purge``
+    to permanently remove a trashed record.
+    """
+    _require_admin(connection, msg)
+    store = hass.data[DOMAIN][KEY_STORE]
+    monitor_id: str = msg["monitor_id"]
+
+    deleted = await store.async_soft_delete_monitor(monitor_id)
+    if not deleted:
+        connection.send_error(msg["id"], "not_found", "Monitor not found")
+        return
+
+    await _teardown_monitor_entities(hass, monitor_id)
+
     connection.send_result(msg["id"], {"deleted": True})
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/monitors/restore",
+        vol.Required("monitor_id"): vol.All(str, _valid_uuid),
+    }
+)
+@websocket_api.async_response
+async def ws_monitors_restore(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict,
+) -> None:
+    """Restore a soft-deleted monitor and re-register its entities."""
+    _require_admin(connection, msg)
+    store = hass.data[DOMAIN][KEY_STORE]
+    monitor_id: str = msg["monitor_id"]
+
+    restored = await store.async_restore_monitor(monitor_id)
+    if restored is None:
+        connection.send_error(msg["id"], "not_found", "Monitor not found")
+        return
+
+    _register_monitor_entities(hass, monitor_id)
+
+    connection.send_result(msg["id"], {"monitor": restored})
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/monitors/purge",
+        vol.Required("monitor_id"): vol.All(str, _valid_uuid),
+    }
+)
+@websocket_api.async_response
+async def ws_monitors_purge(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict,
+) -> None:
+    """Permanently remove a soft-deleted monitor record (empty it from trash)."""
+    _require_admin(connection, msg)
+    store = hass.data[DOMAIN][KEY_STORE]
+    monitor_id: str = msg["monitor_id"]
+
+    purged = await store.async_delete_monitor(monitor_id)
+    if not purged:
+        connection.send_error(msg["id"], "not_found", "Monitor not found")
+        return
+
+    connection.send_result(msg["id"], {"purged": True})
 
 
 @websocket_api.websocket_command(
