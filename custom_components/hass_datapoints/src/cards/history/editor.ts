@@ -1,4 +1,4 @@
-import { CSSResultGroup, html, PropertyValues } from "lit";
+import { CSSResultGroup, html, nothing, PropertyValues } from "lit";
 import { msg } from "@/lib/i18n/localize";
 import { EditorBase } from "@/molecules/editor-base/editor-base";
 import { styles } from "./editor.styles";
@@ -7,7 +7,9 @@ import {
   buildHistorySeriesRows,
   normalizeHistorySeriesAnalysis,
   normalizeHistorySeriesRows,
+  type BinaryDisplayMode,
   type HistorySeriesAnalysis,
+  type HistorySeriesRow,
 } from "@/lib/domain/history-series";
 import {
   normalizeTargetValue,
@@ -27,6 +29,7 @@ import "@/molecules/sidebar-options/sections/sidebar-datapoints-section";
 import "@/molecules/sidebar-options/sections/sidebar-datapoint-display-section";
 import "@/molecules/sidebar-options/sections/sidebar-analysis-section";
 import "@/molecules/sidebar-options/sections/sidebar-chart-display-section";
+import "@/atoms/form/inline-select/inline-select";
 
 type TargetPickerValue = Record<string, string[]>;
 type TargetPickerElement = Element & {
@@ -116,6 +119,44 @@ export class HassDatapointsHistoryCardEditor extends EditorBase {
   private _emitConfig(cfg: RecordWithUnknownValues): void {
     this._config = cfg;
     this._fire(cfg);
+  }
+
+  /** Normalized series rows restricted to `binary_sensor` entities. */
+  private _binaryDisplayRows(): HistorySeriesRow[] {
+    return normalizeHistorySeriesRows(this._config.series_settings).filter(
+      (row) => row.entity_id.split(".")[0] === "binary_sensor"
+    );
+  }
+
+  private _entityLabel(entityId: string): string {
+    const friendly = this.hass?.states?.[entityId]?.attributes?.friendly_name;
+    return typeof friendly === "string" && friendly ? friendly : entityId;
+  }
+
+  /**
+   * Persist the per-sensor binary display choice into that series' config.
+   * `"row"` is written explicitly; `"background"` (the default) clears the key
+   * so saved configs that opt out stay byte-for-byte identical to today.
+   */
+  private _setSeriesBinaryDisplay(
+    entityId: string,
+    mode: BinaryDisplayMode
+  ): void {
+    const rows = normalizeHistorySeriesRows(this._config.series_settings).map(
+      (row) => {
+        if (row.entity_id !== entityId) {
+          return row;
+        }
+        const next: HistorySeriesRow = { ...row };
+        if (mode === "row") {
+          next.binary_display = "row";
+        } else {
+          delete next.binary_display;
+        }
+        return next;
+      }
+    );
+    this._emitConfig({ ...this._config, series_settings: rows });
   }
 
   private _targetEntityIds(target: TargetPickerValue | undefined): string[] {
@@ -456,7 +497,42 @@ export class HassDatapointsHistoryCardEditor extends EditorBase {
           @dp-change=${(e: CustomEvent<{ checked: boolean }>) =>
             this._set("hide_raw_data", e.detail.checked ? true : undefined)}
         ></editor-switch>
+
+        ${this._renderBinaryDisplaySection()}
       </div>
+    `;
+  }
+
+  private _renderBinaryDisplaySection() {
+    const binaryRows = this._binaryDisplayRows();
+    if (binaryRows.length === 0) {
+      return nothing;
+    }
+    const options = [
+      { value: "background", label: msg("Background band") },
+      { value: "row", label: msg("Row strip") },
+    ];
+    return html`
+      <section-heading .text=${msg("Binary Sensor Display")}></section-heading>
+      ${binaryRows.map(
+        (row) => html`
+          <div class="binary-display-row">
+            <span class="binary-display-label"
+              >${this._entityLabel(row.entity_id)}</span
+            >
+            <inline-select
+              data-binary-entity=${row.entity_id}
+              .value=${row.binary_display ?? "background"}
+              .options=${options}
+              @dp-change=${(e: CustomEvent<{ value: string }>) =>
+                this._setSeriesBinaryDisplay(
+                  row.entity_id,
+                  e.detail.value === "row" ? "row" : "background"
+                )}
+            ></inline-select>
+          </div>
+        `
+      )}
     `;
   }
 }
