@@ -517,6 +517,130 @@ describe("chart-interaction", () => {
       };
     }
 
+    describe("WHEN the cursor is over a binary sensor's off interval", () => {
+      it("THEN the binary value reports the off label and is inactive", () => {
+        expect.assertions(3);
+
+        const card = createCard() as ReturnType<typeof createCard> & {
+          _chartLastHover?: {
+            binaryValues?: Array<{
+              value: string;
+              active?: boolean;
+              label: string;
+            }>;
+          };
+        };
+        const canvas = createHoverCanvas();
+        const renderer = {
+          cw: 360,
+          ch: 160,
+          pad: { left: 20, top: 20 },
+          xOf: (t: number, a: number, b: number) =>
+            20 + ((t - a) / (b - a)) * 360,
+          yOf: () => 80,
+          _interpolateValue: () => null,
+        };
+
+        attachLineChartHover({
+          card,
+          canvas,
+          renderer,
+          series: [],
+          events: [],
+          t0: 0,
+          t1: 360000,
+          vMin: 0,
+          vMax: 1,
+          axes: null,
+          onContextMenu: vi.fn(),
+          binaryStates: [
+            {
+              entityId: "binary_sensor.door",
+              label: "Door",
+              color: "#03a9f4",
+              onLabel: "open",
+              offLabel: "closed",
+              // Full on+off spans (row-mode semantics): off, on, off.
+              spans: [
+                { start: 0, end: 100000, state: "off" },
+                { start: 100000, end: 200000, state: "on" },
+                { start: 200000, end: 360000, state: "off" },
+              ],
+            },
+          ],
+        });
+
+        // clientX 70 → timeMs ≈ 50000 → inside the first OFF span.
+        canvas.dispatchEvent(
+          new MouseEvent("contextmenu", { clientX: 70, clientY: 100 })
+        );
+
+        const binaryValues = card._chartLastHover?.binaryValues ?? [];
+        expect(binaryValues).toHaveLength(1);
+        expect(binaryValues[0]?.value).toBe("closed");
+        expect(binaryValues[0]?.active).toBe(false);
+      });
+    });
+
+    describe("WHEN the cursor is over a binary sensor's on interval", () => {
+      it("THEN the binary value reports the on label and is active", () => {
+        expect.assertions(2);
+
+        const card = createCard() as ReturnType<typeof createCard> & {
+          _chartLastHover?: {
+            binaryValues?: Array<{ value: string; active?: boolean }>;
+          };
+        };
+        const canvas = createHoverCanvas();
+        const renderer = {
+          cw: 360,
+          ch: 160,
+          pad: { left: 20, top: 20 },
+          xOf: (t: number, a: number, b: number) =>
+            20 + ((t - a) / (b - a)) * 360,
+          yOf: () => 80,
+          _interpolateValue: () => null,
+        };
+
+        attachLineChartHover({
+          card,
+          canvas,
+          renderer,
+          series: [],
+          events: [],
+          t0: 0,
+          t1: 360000,
+          vMin: 0,
+          vMax: 1,
+          axes: null,
+          onContextMenu: vi.fn(),
+          binaryStates: [
+            {
+              entityId: "binary_sensor.door",
+              label: "Door",
+              color: "#03a9f4",
+              onLabel: "open",
+              offLabel: "closed",
+              spans: [
+                { start: 0, end: 100000, state: "off" },
+                { start: 100000, end: 200000, state: "on" },
+                { start: 200000, end: 360000, state: "off" },
+              ],
+            },
+          ],
+        });
+
+        // clientX 170 → timeMs ≈ 150000 → inside the ON span.
+        canvas.dispatchEvent(
+          new MouseEvent("contextmenu", { clientX: 170, clientY: 100 })
+        );
+
+        const binaryValues = card._chartLastHover?.binaryValues ?? [];
+        expect(binaryValues[0]?.value).toBe("open");
+        expect(binaryValues[0]?.active).toBe(true);
+      });
+    });
+
     describe("WHEN attachLineChartHover receives a single options object", () => {
       it("THEN it wires the context-menu, add-annotation and anomaly-click handlers", () => {
         expect.assertions(3);
