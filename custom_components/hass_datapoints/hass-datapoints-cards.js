@@ -29414,6 +29414,8 @@
     --dp-spacing-md: calc(var(--spacing, 8px) * 1.5);
     --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
     display: block;
+    height: 100%;
+    overflow-y: auto;
   }
 
   .monitors-panel {
