@@ -228,11 +228,25 @@ describe("chart-renderer", () => {
           { color: "#83c705", label: "Front Door" }
         );
 
-        expect(ctx.fillText.mock.calls).toContainEqual([
-          "Front Door",
-          18,
-          160,
-        ]);
+        expect(ctx.fillText.mock.calls).toContainEqual(["Front Door", 18, 160]);
+      });
+
+      it("THEN on-segments are offset past the label gutter so they never overlap the label", () => {
+        expect.assertions(1);
+
+        const { ctx, renderer } = createRenderer();
+
+        // measureText (mock) → 24px label; gutter = 6 + 24 + 6 = 36, so the
+        // left-edge on-segment must start at x + 36 = 48 instead of x = 12.
+        renderer.drawStateRow(
+          [{ start: 0, end: 100, state: "on" }],
+          0,
+          100,
+          rect,
+          { color: "#83c705", label: "Front Door" }
+        );
+
+        expect(ctx.fillRect.mock.calls).toContainEqual([48, 150, 340, 20]);
       });
     });
 

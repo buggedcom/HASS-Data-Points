@@ -172,6 +172,13 @@ function createFallbackCanvasContext() {
   } as unknown as CanvasRenderingContext2D;
 }
 
+/** Row/lane label typography, shared by {@link ChartRenderer.drawRowLabel} and
+ * {@link ChartRenderer.drawStateRow} so both paint labels identically. */
+const ROW_LABEL_FONT = "bold 11px sans-serif";
+const ROW_LABEL_COLOR = "rgba(214,218,224,0.85)";
+/** Left inset of a row/lane label from the lane's left edge, in px. */
+const ROW_LABEL_X_OFFSET = 6;
+
 /**
  * Pure lane geometry: the total vertical space that `rowCount` binary lanes
  * reserve below the numeric plot, so wiring can shrink the plot uniformly
@@ -661,17 +668,17 @@ export class ChartRenderer {
     ctx.stroke();
   }
 
-  drawRowLabel(text: string, color = "rgba(214,218,224,0.85)"): void {
+  drawRowLabel(text: string, color = ROW_LABEL_COLOR): void {
     if (!text) {
       return;
     }
     const { ctx, pad } = this;
     ctx.save();
-    ctx.font = "bold 11px sans-serif";
+    ctx.font = ROW_LABEL_FONT;
     ctx.fillStyle = color;
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
-    ctx.fillText(text, pad.left + 6, pad.top + 5);
+    ctx.fillText(text, pad.left + ROW_LABEL_X_OFFSET, pad.top + 5);
     ctx.restore();
   }
 
@@ -904,14 +911,31 @@ export class ChartRenderer {
     const trackColor = options.trackColor ?? color;
     const trackAlpha = options.trackAlpha ?? 0.08;
 
+    // Reserve a left gutter for the optional label so the solid "on" segments
+    // never paint under it. The muted track still spans the whole lane (the
+    // label sits on the translucent base, which stays readable); only the solid
+    // segments are inset to start after the measured label width.
+    let labelGutter = 0;
+    if (options.label) {
+      ctx.save();
+      ctx.font = ROW_LABEL_FONT;
+      const labelWidth = ctx.measureText(options.label).width;
+      ctx.restore();
+      labelGutter = Math.min(
+        width,
+        ROW_LABEL_X_OFFSET + labelWidth + ROW_LABEL_X_OFFSET
+      );
+    }
+
     ctx.save();
     // Muted track spanning the whole lane (the off/unavailable/unknown base).
     ctx.fillStyle = hexToRgba(trackColor, trackAlpha);
     ctx.fillRect(x, y, width, height);
 
-    // Solid "on" segments on top of the track.
+    // Solid "on" segments on top of the track, inset past the label gutter.
     if (spans?.length) {
       ctx.fillStyle = hexToRgba(color, onAlpha);
+      const left = x + labelGutter;
       const right = x + width;
       for (const span of spans) {
         if (span.state !== "on") {
@@ -922,8 +946,8 @@ export class ChartRenderer {
         if (!(start < end)) {
           continue;
         }
-        const x0 = Math.max(x, Math.min(right, this.xOf(start, t0, t1)));
-        const x1 = Math.max(x, Math.min(right, this.xOf(end, t0, t1)));
+        const x0 = Math.max(left, Math.min(right, this.xOf(start, t0, t1)));
+        const x1 = Math.max(left, Math.min(right, this.xOf(end, t0, t1)));
         if (!(x1 > x0)) {
           continue;
         }
@@ -934,11 +958,11 @@ export class ChartRenderer {
 
     if (options.label) {
       ctx.save();
-      ctx.font = "bold 11px sans-serif";
-      ctx.fillStyle = options.labelColor ?? "rgba(214,218,224,0.85)";
+      ctx.font = ROW_LABEL_FONT;
+      ctx.fillStyle = options.labelColor ?? ROW_LABEL_COLOR;
       ctx.textAlign = "left";
       ctx.textBaseline = "middle";
-      ctx.fillText(options.label, x + 6, y + height / 2);
+      ctx.fillText(options.label, x + ROW_LABEL_X_OFFSET, y + height / 2);
       ctx.restore();
     }
   }
