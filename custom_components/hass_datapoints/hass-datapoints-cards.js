@@ -2264,7 +2264,10 @@
 			"Hours to show": "Näytettävät tunnit",
 			"Single entity": "Yksittäinen entiteetti",
 			"Show data gaps": "Näytä tietoaukot",
-			"Highlight missing data ranges with dashed lines and boundary markers": "Korosta puuttuvat tietoalueet katkoviivoilla ja rajamerkeillä"
+			"Highlight missing data ranges with dashed lines and boundary markers": "Korosta puuttuvat tietoalueet katkoviivoilla ja rajamerkeillä",
+			"Binary Sensor Display": "Binäärianturin näyttö",
+			"Background band": "Taustapalkki",
+			"Row strip": "Riviraita"
 		};
 	}));
 	//#endregion
@@ -2921,7 +2924,10 @@
 			"Hours to show": "Heures à afficher",
 			"Single entity": "Entité unique",
 			"Show data gaps": "Afficher les lacunes de données",
-			"Highlight missing data ranges with dashed lines and boundary markers": "Mettre en évidence les plages de données manquantes avec des lignes en pointillés et des marqueurs de bord"
+			"Highlight missing data ranges with dashed lines and boundary markers": "Mettre en évidence les plages de données manquantes avec des lignes en pointillés et des marqueurs de bord",
+			"Binary Sensor Display": "Affichage du capteur binaire",
+			"Background band": "Bande d'arrière-plan",
+			"Row strip": "Bande de ligne"
 		};
 	}));
 	//#endregion
@@ -3578,7 +3584,10 @@
 			"Hours to show": "Anzuzeigende Stunden",
 			"Single entity": "Einzelne Entität",
 			"Show data gaps": "Datenlücken anzeigen",
-			"Highlight missing data ranges with dashed lines and boundary markers": "Fehlende Datenbereiche mit gestrichelten Linien und Randmarkierungen hervorheben"
+			"Highlight missing data ranges with dashed lines and boundary markers": "Fehlende Datenbereiche mit gestrichelten Linien und Randmarkierungen hervorheben",
+			"Binary Sensor Display": "Anzeige von Binärsensoren",
+			"Background band": "Hintergrundband",
+			"Row strip": "Zeilenstreifen"
 		};
 	}));
 	//#endregion
@@ -4235,7 +4244,10 @@
 			"Hours to show": "Horas a mostrar",
 			"Single entity": "Entidad única",
 			"Show data gaps": "Mostrar huecos de datos",
-			"Highlight missing data ranges with dashed lines and boundary markers": "Resaltar los rangos de datos faltantes con líneas discontinuas y marcadores de límite"
+			"Highlight missing data ranges with dashed lines and boundary markers": "Resaltar los rangos de datos faltantes con líneas discontinuas y marcadores de límite",
+			"Binary Sensor Display": "Visualización de sensor binario",
+			"Background band": "Banda de fondo",
+			"Row strip": "Tira de fila"
 		};
 	}));
 	//#endregion
@@ -4892,7 +4904,10 @@
 			"Hours to show": "Horas a mostrar",
 			"Single entity": "Entidade única",
 			"Show data gaps": "Mostrar lacunas de dados",
-			"Highlight missing data ranges with dashed lines and boundary markers": "Realçar intervalos de dados em falta com linhas tracejadas e marcadores de limite"
+			"Highlight missing data ranges with dashed lines and boundary markers": "Realçar intervalos de dados em falta com linhas tracejadas e marcadores de limite",
+			"Binary Sensor Display": "Exibição de sensor binário",
+			"Background band": "Faixa de fundo",
+			"Row strip": "Faixa de linha"
 		};
 	}));
 	//#endregion
@@ -5549,7 +5564,10 @@
 			"Hours to show": "显示小时数",
 			"Single entity": "单个实体",
 			"Show data gaps": "显示数据缺口",
-			"Highlight missing data ranges with dashed lines and boundary markers": "用虚线和边界标记突出显示缺失数据范围"
+			"Highlight missing data ranges with dashed lines and boundary markers": "用虚线和边界标记突出显示缺失数据范围",
+			"Binary Sensor Display": "二元传感器显示",
+			"Background band": "背景条带",
+			"Row strip": "行条带"
 		};
 	}));
 	//#endregion
@@ -8683,6 +8701,23 @@
 			}
 		};
 	}
+	/** Row/lane label typography, shared by {@link ChartRenderer.drawRowLabel} and
+	* {@link ChartRenderer.drawStateRow} so both paint labels identically. */
+	var ROW_LABEL_FONT = "bold 11px sans-serif";
+	var ROW_LABEL_COLOR = "rgba(214,218,224,0.85)";
+	/** Left inset of a row/lane label from the lane's left edge, in px. */
+	var ROW_LABEL_X_OFFSET = 6;
+	/**
+	* Pure lane geometry: the total vertical space that `rowCount` binary lanes
+	* reserve below the numeric plot, so wiring can shrink the plot uniformly
+	* (consistent with `ch = cssH - pad.top - pad.bottom`). Each lane reserves
+	* `laneHeight + gap` (the `gap` sits above the lane, separating it from the
+	* plot or the lane above). Returns `0` when there are no lanes.
+	*/
+	function reserveLaneSpace(rowCount, laneHeight, gap = 0) {
+		if (rowCount <= 0 || laneHeight <= 0) return 0;
+		return rowCount * (laneHeight + gap);
+	}
 	/**
 	* Canvas-based chart renderer – grids, lines, annotations.
 	*/
@@ -9023,15 +9058,15 @@
 			}
 			ctx.stroke();
 		}
-		drawRowLabel(text, color = "rgba(214,218,224,0.85)") {
+		drawRowLabel(text, color = ROW_LABEL_COLOR) {
 			if (!text) return;
 			const { ctx, pad } = this;
 			ctx.save();
-			ctx.font = "bold 11px sans-serif";
+			ctx.font = ROW_LABEL_FONT;
 			ctx.fillStyle = color;
 			ctx.textAlign = "left";
 			ctx.textBaseline = "top";
-			ctx.fillText(text, pad.left + 6, pad.top + 5);
+			ctx.fillText(text, pad.left + ROW_LABEL_X_OFFSET, pad.top + 5);
 			ctx.restore();
 		}
 		/**
@@ -9151,6 +9186,62 @@
 				ctx.fillRect(x0, pad.top, Math.max(1, x1 - x0), this.ch);
 			}
 			ctx.restore();
+		}
+		/**
+		* Draws ONE binary sensor's on/off timeline as a compact segmented strip
+		* confined to the lane `rect` (not the full plot height). A muted track is
+		* laid across the whole lane; each `state === "on"` span is then filled as a
+		* solid segment. Off/unavailable/unknown spans leave the muted track showing.
+		*
+		* Time→x mapping reuses {@link xOf} (so the strip lines up with the plot
+		* above), and segment x-ranges are clamped to the lane's horizontal bounds.
+		* An optional `label` is drawn at the lane's left edge using the
+		* {@link drawRowLabel} visual style.
+		*/
+		drawStateRow(spans, t0, t1, rect, options = {}) {
+			const { x, y, width, height } = rect;
+			if (!(width > 0) || !(height > 0)) return;
+			const { ctx } = this;
+			const color = options.color ?? "#03a9f4";
+			const onAlpha = options.onAlpha ?? .85;
+			const trackColor = options.trackColor ?? color;
+			const trackAlpha = options.trackAlpha ?? .08;
+			let labelGutter = 0;
+			if (options.label) {
+				ctx.save();
+				ctx.font = ROW_LABEL_FONT;
+				const labelWidth = ctx.measureText(options.label).width;
+				ctx.restore();
+				labelGutter = Math.min(width, ROW_LABEL_X_OFFSET + labelWidth + ROW_LABEL_X_OFFSET);
+			}
+			ctx.save();
+			ctx.fillStyle = hexToRgba(trackColor, trackAlpha);
+			ctx.fillRect(x, y, width, height);
+			if (spans?.length) {
+				ctx.fillStyle = hexToRgba(color, onAlpha);
+				const left = x + labelGutter;
+				const right = x + width;
+				for (const span of spans) {
+					if (span.state !== "on") continue;
+					const start = Math.max(t0, span.start);
+					const end = Math.min(t1, span.end);
+					if (!(start < end)) continue;
+					const x0 = Math.max(left, Math.min(right, this.xOf(start, t0, t1)));
+					const x1 = Math.max(left, Math.min(right, this.xOf(end, t0, t1)));
+					if (!(x1 > x0)) continue;
+					ctx.fillRect(x0, y, Math.max(1, x1 - x0), height);
+				}
+			}
+			ctx.restore();
+			if (options.label) {
+				ctx.save();
+				ctx.font = ROW_LABEL_FONT;
+				ctx.fillStyle = options.labelColor ?? ROW_LABEL_COLOR;
+				ctx.textAlign = "left";
+				ctx.textBaseline = "middle";
+				ctx.fillText(options.label, x + ROW_LABEL_X_OFFSET, y + height / 2);
+				ctx.restore();
+			}
 		}
 		drawAnnotations(events, t0, t1, options = {}) {
 			const { ctx, pad } = this;
@@ -10455,7 +10546,7 @@
 			vertical.style.height = `${hover.splitVertical.height}px`;
 		} else {
 			vertical.style.top = `${renderer.pad.top}px`;
-			vertical.style.height = `${renderer.ch}px`;
+			vertical.style.height = `${renderer.ch + (hover.verticalExtentPx || 0)}px`;
 		}
 		horizontal.hidden = true;
 		const crosshairValues = [
@@ -10711,15 +10802,15 @@
 				}
 			}
 			const binaryValues = binaryStates.map((entry) => {
-				const activeSpan = (entry.spans || []).find((span) => timeMs >= span.start && timeMs <= span.end);
+				const isOn = (entry.spans || []).find((span) => timeMs >= span.start && timeMs <= span.end)?.state === "on";
 				return {
 					entityId: entry.entityId || "",
 					label: entry.label || entry.entityId || "",
-					value: activeSpan ? entry.onLabel || "on" : entry.offLabel || "off",
+					value: isOn ? entry.onLabel || "on" : entry.offLabel || "off",
 					unit: "",
 					color: entry.color,
 					hasValue: true,
-					active: !!activeSpan
+					active: isOn
 				};
 			}).filter((entry) => Boolean(entry.label));
 			if (!values.length && !binaryValues.length && !trendValues.length && !rateValues.length && !deltaValues.length && !summaryValues.length && !thresholdValues.length && !comparisonValues.length) return null;
@@ -10758,6 +10849,7 @@
 				thresholdValues,
 				comparisonValues,
 				binaryValues,
+				verticalExtentPx: binaryValues.length > 0 ? options.binaryLaneExtentPx || 0 : 0,
 				primary,
 				event: normalizedHoveredEvents[0] || null,
 				events: normalizedHoveredEvents,
@@ -11253,6 +11345,34 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/domain/history-series.ts
+	/**
+	* True when `entityId` belongs to the `binary_sensor` domain. Single source of
+	* the domain predicate shared by the editor, the chart build pass and the
+	* stored-display resolver.
+	*/
+	function isBinarySensorEntity(entityId) {
+		return typeof entityId === "string" && entityId.split(".")[0] === "binary_sensor";
+	}
+	/**
+	* Coerces any stored/emitted value into a valid {@link BinaryDisplayMode}:
+	* the literal `"row"` stays `"row"`; everything else (including `"background"`,
+	* `undefined` and invalid values) collapses to `"background"`, the default.
+	* Use this wherever a raw `binary_display` value is read so the coercion lives
+	* in one place instead of being re-derived at each call site.
+	*/
+	function resolveBinaryDisplayMode(value) {
+		return value === "row" ? "row" : "background";
+	}
+	/**
+	* Resolves the stored `binary_display` value for a row, returning the validated
+	* mode only when the entity is a `binary_sensor` and the value is one of the
+	* known modes. Returns `undefined` otherwise so the field is never materialized
+	* for other domains or for absent/invalid values.
+	*/
+	function resolveStoredBinaryDisplay(entityId, value) {
+		if (!isBinarySensorEntity(entityId)) return;
+		return value === "background" || value === "row" ? value : void 0;
+	}
 	var VALID_ANOMALY_METHODS = [
 		"trend_residual",
 		"rate_of_change",
@@ -11353,12 +11473,15 @@
 			const entityId = typeof row?.entity_id === "string" ? row.entity_id.trim() : "";
 			if (!entityId || seen.has(entityId)) return;
 			seen.add(entityId);
-			normalized.push({
+			const binaryDisplay = resolveStoredBinaryDisplay(entityId, row?.binary_display);
+			const normalizedRow = {
 				entity_id: entityId,
 				color: typeof row?.color === "string" && /^#[0-9a-f]{6}$/i.test(row.color) ? row.color : COLORS[index % COLORS.length],
 				visible: row?.visible !== false,
 				analysis: normalizeHistorySeriesAnalysis(row?.analysis)
-			});
+			};
+			if (binaryDisplay) normalizedRow.binary_display = binaryDisplay;
+			normalized.push(normalizedRow);
 		});
 		return normalized;
 	}
@@ -11746,6 +11869,53 @@
 			state: current.s
 		});
 		return spans;
+	}
+	/**
+	* Classifies resolved binary sensors into background-mode and row-mode render
+	* models for the given `[t0, t1]` window.
+	*
+	* - Background sensors carry an **on-only** span projection (literal
+	*   `state === "on"`); off/unavailable/unknown windows are never shaded. This
+	*   is the fix for the whole-plot wash reported in #61/#64.
+	* - Row sensors carry the **full** on+off spans plus a deterministic
+	*   `laneIndex` assigned in input order.
+	*
+	* A sensor with no spans in the window (no data) contributes neither a
+	* background nor a lane. A sensor that is present but never "on" is still
+	* represented (with zero on-spans) so a legend entry remains possible.
+	*/
+	function buildBinaryRenderModel(entities, t0, t1) {
+		const backgrounds = [];
+		const rows = [];
+		entities.forEach((entity) => {
+			const spans = buildBinaryStateSpans(entity.stateList, t0, t1);
+			if (!spans.length) return;
+			const { entityId, label, color, onLabel, offLabel } = entity;
+			if (entity.binaryDisplay === "row") {
+				rows.push({
+					entityId,
+					label,
+					color,
+					onLabel,
+					offLabel,
+					spans,
+					laneIndex: rows.length
+				});
+				return;
+			}
+			backgrounds.push({
+				entityId,
+				label,
+				color,
+				onLabel,
+				offLabel,
+				spans: spans.filter((span) => span.state === "on")
+			});
+		});
+		return {
+			backgrounds,
+			rows
+		};
 	}
 	function buildEntityStateList(entityId, histResult, statsResult, entityIds) {
 		const historyStates = getHistoryStatesForEntity$1(histResult, entityId, entityIds);
@@ -13447,6 +13617,8 @@
 	var HISTORY_LEGEND_WRAP_DISABLE_HEIGHT_PX = 440;
 	var HISTORY_CHART_MAX_CANVAS_WIDTH_PX = Math.floor(16383 / (window.devicePixelRatio || 1));
 	var HISTORY_CHART_MAX_ZOOM_MULTIPLIER = 365;
+	var HISTORY_CHART_BINARY_LANE_HEIGHT_PX = 22;
+	var HISTORY_CHART_BINARY_LANE_GAP_PX = 6;
 	var HistoryChart$1 = class extends HTMLElement {
 		constructor(..._args) {
 			super(..._args);
@@ -14047,11 +14219,15 @@
 		_normalizeStatisticsHistory(entityId, statsData) {
 			return normalizeStatisticsHistory(entityId, statsData);
 		}
-		/** Render legend items for the given series and binary backgrounds. */
-		_renderLegend(series, binaryBackgrounds) {
+		/** Render legend items for the given series, binary backgrounds and rows. */
+		_renderLegend(series, binaryBackgrounds, binaryRows = []) {
 			const legendEl = this.querySelector("#legend");
 			if (!legendEl) return;
-			const allItems = [...series, ...binaryBackgrounds];
+			const allItems = [
+				...series,
+				...binaryBackgrounds,
+				...binaryRows
+			];
 			this._updateLegendLayout(legendEl);
 			D(b`${allItems.map((item) => {
 				return b`
@@ -14073,6 +14249,34 @@
           </div>
         `;
 			})}`, legendEl);
+		}
+		/**
+		* Draws the stacked binary row lanes beneath the numeric plot. Lanes occupy
+		* the bottom `laneReserve` px of the canvas (the space reserved via
+		* `reserveLaneSpace` before axis layout), stacked top-to-bottom in the given
+		* (visible) order with a gap above each lane, so a hidden row's lane is
+		* reclaimed on the next draw. Each lane's strip reuses `xOf` so it lines up
+		* with the plot above at any zoom/pan.
+		*/
+		_drawBinaryRowLanes(renderer, visibleRows, t0, t1, laneReserve) {
+			if (!visibleRows.length || laneReserve <= 0) return;
+			const laneHeight = HISTORY_CHART_BINARY_LANE_HEIGHT_PX;
+			const gap = HISTORY_CHART_BINARY_LANE_GAP_PX;
+			const regionTop = renderer.cssH - laneReserve;
+			const x = renderer.pad.left;
+			const width = renderer.cw;
+			visibleRows.forEach((row, index) => {
+				const rect = {
+					x,
+					y: regionTop + index * 28 + gap,
+					width,
+					height: laneHeight
+				};
+				renderer.drawStateRow(row.spans, t0, t1, rect, {
+					color: row.color,
+					label: row.label
+				});
+			});
 		}
 		/** Draw a single series line onto the renderer, with optional data-gap rendering. */
 		_drawSeriesLine(renderer, pts, color, t0, t1, min, max, opts) {
@@ -14688,7 +14892,7 @@
 			const series = [];
 			const axes = [];
 			const axisMap = /* @__PURE__ */ new Map();
-			const binaryBackgrounds = [];
+			const binaryEntities = [];
 			const seriesSettings = this._seriesSettings;
 			const analysisMap = this._getSeriesAnalysisMap();
 			const comparisonResults = Array.isArray(this._lastComparisonResults) ? this._lastComparisonResults : [];
@@ -14705,14 +14909,15 @@
 				const entityId = seriesSetting.entity_id;
 				if (entityId.split(".")[0] === "binary_sensor") {
 					const stateList = this._buildEntityStateList(entityId, histResult, statsResult);
-					const spans = this._buildBinaryStateSpans(stateList, t0, t1);
-					if (spans.length) binaryBackgrounds.push({
+					const binaryDisplay = resolveBinaryDisplayMode(seriesSetting.binary_display);
+					binaryEntities.push({
 						entityId,
 						label: entityLabelMap.get(entityId) || entityId,
 						color: seriesSetting.color || COLORS[i % COLORS.length],
 						onLabel: this._binaryOnLabel(entityId),
 						offLabel: this._binaryOffLabel(entityId),
-						spans
+						binaryDisplay,
+						stateList
 					});
 					return;
 				}
@@ -14753,6 +14958,9 @@
 					});
 				}
 			});
+			const binaryModel = buildBinaryRenderModel(binaryEntities, t0, t1);
+			const binaryBackgrounds = binaryModel.backgrounds;
+			const binaryRows = binaryModel.rows;
 			const _startIso = new Date(t0).toISOString();
 			const _endIso = new Date(t1).toISOString();
 			if (series.length && this._hass) {
@@ -14826,7 +15034,7 @@
 					v: lastPt[1]
 				});
 			}
-			if (!series.length && !binaryBackgrounds.length) {
+			if (!series.length && !binaryBackgrounds.length && !binaryRows.length) {
 				this._setAdjustAxisButtonVisibility(false);
 				this._renderComparisonPreviewOverlay();
 				const sameRangeAsLastDraw = Number.isFinite(this._lastT0) && Number.isFinite(this._lastT1) && this._lastT0 === t0 && this._lastT1 === t1 && Array.isArray(this._lastDrawArgs) && this._lastDrawArgs.length > 0;
@@ -14862,6 +15070,8 @@
 				options
 			];
 			const visibleSeries = series.filter((entry) => !this._hiddenSeries.has(entry.legendEntityId || entry.entityId));
+			const visibleRows = binaryRows.filter((row) => !this._hiddenSeries.has(row.entityId));
+			const binaryLaneReserve = reserveLaneSpace(visibleRows.length, HISTORY_CHART_BINARY_LANE_HEIGHT_PX, HISTORY_CHART_BINARY_LANE_GAP_PX);
 			const selectedComparisonResult = drawableComparisonResults.find((window) => window.id === selectedComparisonWindowId) || null;
 			const selectedComparisonSeriesMap = /* @__PURE__ */ new Map();
 			if (selectedComparisonResult) for (let index = 0; index < seriesSettings.length; index += 1) {
@@ -14934,7 +15144,7 @@
 			}).filter(Boolean);
 			if (options.drawRequestId && options.drawRequestId !== this._drawRequestId) return;
 			if (canvas) canvas.style.display = "";
-			chartStage?.querySelectorAll(".split-series-row").forEach((el) => el.remove());
+			chartStage?.querySelectorAll(".split-series-row, .split-binary-lane-region").forEach((el) => el.remove());
 			chartStage?.querySelector("#chart-split-overlay")?.remove();
 			const axisLeftEl = this.querySelector("#chart-axis-left");
 			const axisRightEl = this.querySelector("#chart-axis-right");
@@ -14950,8 +15160,9 @@
 			if (axisRightEl) axisRightEl.style.display = "";
 			let minChartHeight;
 			if (series.length) minChartHeight = 280;
-			else if (binaryBackgrounds.length) minChartHeight = 100;
+			else if (binaryBackgrounds.length || binaryRows.length) minChartHeight = 100;
 			else minChartHeight = 280;
+			minChartHeight += binaryLaneReserve;
 			const availableHeight = this._getAvailableChartHeight(minChartHeight);
 			const viewportWidth = Math.max(scrollViewport?.clientWidth || wrap?.clientWidth || 360, 360);
 			const totalSpanMs = Math.max(1, t1 - t0);
@@ -14963,10 +15174,12 @@
 					zoomOutButton.hidden = !this._zoomRange;
 					zoomOutButton.onclick = () => this._clearZoomRange();
 				}
-				this._renderLegend(series, binaryBackgrounds);
+				this._renderLegend(series, binaryBackgrounds, binaryRows);
 				await this._drawSplitChart({
 					visibleSeries,
 					binaryBackgrounds,
+					binaryRows,
+					binaryLaneReserve,
 					events,
 					renderT0: t0,
 					renderT1: t1,
@@ -15012,6 +15225,8 @@
 			const { w, h } = setupCanvas(canvas, chartStage || wrap, availableHeight, canvasWidth);
 			const renderer = new ChartRenderer(canvas, w, h);
 			renderer.labelColor = resolveChartLabelColor(this);
+			renderer.basePad.bottom += binaryLaneReserve;
+			renderer.pad.bottom = renderer.basePad.bottom;
 			renderer.clear();
 			const renderT0 = t0;
 			const renderT1 = t1;
@@ -15173,6 +15388,7 @@
 			binaryBackgrounds.forEach((binaryBackground) => {
 				if (binaryBackground?.spans?.length && !this._hiddenSeries.has(binaryBackground.entityId)) renderer.drawStateBands(binaryBackground.spans, renderT0, renderT1, binaryBackground.color, .12);
 			});
+			this._drawBinaryRowLanes(renderer, visibleRows, renderT0, renderT1, binaryLaneReserve);
 			const shouldUseCorrelatedSpans = this._config?.show_correlated_anomalies === true || this._config?.anomaly_overlap_mode === "only";
 			const shouldDrawCorrelatedSpans = this._config?.show_correlated_anomalies === true;
 			const correlatedSpans = shouldUseCorrelatedSpans ? this._buildCorrelatedAnomalySpans(visibleSeries, anomalyClustersMap, analysisMap) : [];
@@ -15607,7 +15823,7 @@
 				showMarkers: this._config.show_event_lines !== false
 			});
 			const eventHits = this._drawRecordedEventPoints(renderer, visibleSeries, chartEvents, renderT0, renderT1, { showIcons: this._config.show_event_markers !== false });
-			this._renderLegend(series, binaryBackgrounds);
+			this._renderLegend(series, binaryBackgrounds, binaryRows);
 			const eventValueMap = new Map(eventHits.map((hit) => [hit.event.id, hit]));
 			const enrichedEvents = chartEvents.map((event) => {
 				const hit = eventValueMap.get(event.id || "");
@@ -15623,7 +15839,8 @@
 				if (addButton.dataset.allowAddAnnotation === "false") addButton.hidden = true;
 			}
 			const visibleBinaryBackgrounds = binaryBackgrounds.filter((entry) => !this._hiddenSeries.has(entry.entityId));
-			if (visibleSeries.length || visibleBinaryBackgrounds.length) {
+			const binaryHoverStates = [...visibleBinaryBackgrounds, ...visibleRows];
+			if (visibleSeries.length || visibleBinaryBackgrounds.length || visibleRows.length) {
 				this._ensureContextAnnotationDialog();
 				attachLineChartHover({
 					card: this,
@@ -15638,7 +15855,8 @@
 					axes: activeAxes,
 					onContextMenu: (hover) => this._handleChartContextMenu(hover),
 					onAddAnnotation: this._canAddAnnotation ? (hover) => this._handleChartAddAnnotation(hover) : void 0,
-					binaryStates: visibleBinaryBackgrounds,
+					binaryStates: binaryHoverStates,
+					binaryLaneExtentPx: binaryLaneReserve > 0 ? renderer.pad.bottom : 0,
 					comparisonSeries: effectiveComparisonHoverSeries,
 					trendSeries: [...trendHoverSeries, ...comparisonTrendHoverSeries],
 					rateSeries: [...rateHoverSeries, ...comparisonRateHoverSeries],
@@ -15818,12 +16036,17 @@
 		_getTrendRenderOptions(method = "rolling_average", hideRawData = false) {
 			return getTrendRenderOptions(method, hideRawData);
 		}
-		async _drawSplitChart({ visibleSeries, binaryBackgrounds, events, renderT0, renderT1, canvasWidth, availableHeight, chartStage, canvas, wrap, options, drawableComparisonResults, selectedComparisonWindowId, hoveredComparisonWindowId, comparisonPreviewActive, hoveringDifferentComparison, analysisResult, analysisMap, hasSelectedComparisonWindow }) {
+		async _drawSplitChart({ visibleSeries, binaryBackgrounds, binaryRows = [], binaryLaneReserve = 0, events, renderT0, renderT1, canvasWidth, availableHeight, chartStage, canvas, wrap, options, drawableComparisonResults, selectedComparisonWindowId, hoveredComparisonWindowId, comparisonPreviewActive, hoveringDifferentComparison, analysisResult, analysisMap, hasSelectedComparisonWindow }) {
 			if (canvas) canvas.style.display = "none";
+			const visibleRows = binaryRows.filter((row) => !this._hiddenSeries.has(row.entityId));
+			const laneReserve = visibleRows.length ? binaryLaneReserve : 0;
 			const N = visibleSeries.length;
 			const MIN_ROW_HEIGHT = 200;
-			const rowHeight = MIN_ROW_HEIGHT * N > availableHeight ? MIN_ROW_HEIGHT : Math.max(MIN_ROW_HEIGHT, Math.floor(availableHeight / N));
-			const totalHeight = rowHeight * N;
+			const minTotalHeight = MIN_ROW_HEIGHT * N;
+			const rowsAvailable = Math.max(MIN_ROW_HEIGHT, availableHeight - laneReserve);
+			const rowHeight = minTotalHeight > rowsAvailable ? MIN_ROW_HEIGHT : Math.max(MIN_ROW_HEIGHT, Math.floor(rowsAvailable / N));
+			const rowsHeight = rowHeight * N;
+			const totalHeight = rowsHeight + laneReserve;
 			if (chartStage) {
 				chartStage.style.width = `${canvasWidth}px`;
 				chartStage.style.height = `${totalHeight}px`;
@@ -16117,6 +16340,27 @@
 					deltaAxis: resolvedDeltaAxis,
 					anomalyRegions: rowAnomalyRegions
 				});
+			}
+			if (visibleRows.length && laneReserve > 0 && chartStage) {
+				const primaryRenderer = tracks.length ? tracks[0].renderer : null;
+				const laneDiv = document.createElement("div");
+				laneDiv.className = "split-binary-lane-region";
+				laneDiv.style.cssText = `position:absolute;left:0;top:${rowsHeight}px;width:${canvasWidth}px;height:${laneReserve}px;pointer-events:none;overflow:hidden;`;
+				const laneCanvas = document.createElement("canvas");
+				laneCanvas.className = "split-binary-lane-canvas";
+				laneDiv.appendChild(laneCanvas);
+				chartStage.appendChild(laneDiv);
+				const { w, h } = setupCanvas(laneCanvas, chartStage || wrap, laneReserve, canvasWidth);
+				const laneRenderer = new ChartRenderer(laneCanvas, w, h);
+				laneRenderer.labelColor = resolveChartLabelColor(this);
+				laneRenderer.pad = {
+					top: 0,
+					bottom: 0,
+					left: primaryRenderer ? primaryRenderer.pad.left : laneRenderer.pad.left,
+					right: primaryRenderer ? primaryRenderer.pad.right : laneRenderer.pad.right
+				};
+				laneRenderer.clear();
+				this._drawBinaryRowLanes(laneRenderer, visibleRows, renderT0, renderT1, laneReserve);
 			}
 			this._renderSplitAxisOverlays(tracks);
 			this._renderComparisonPreviewOverlay(tracks[0] ? tracks[0].renderer : null);
@@ -18663,7 +18907,27 @@
 	customElements.define("hass-datapoints-history-card", HassDatapointsHistoryCard);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/editor.styles.ts
-	var styles$59 = i$5``;
+	var styles$59 = i$5`
+  .binary-display-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 4px 0;
+  }
+
+  .binary-display-label {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .binary-display-row inline-select {
+    flex: 0 0 auto;
+  }
+`;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-group-shared/analysis-group.mixin.ts
 	/**
@@ -21522,6 +21786,32 @@
 			this._config = cfg;
 			this._fire(cfg);
 		}
+		/** Normalized series rows restricted to `binary_sensor` entities. */
+		_binaryDisplayRows() {
+			return normalizeHistorySeriesRows(this._config.series_settings).filter((row) => isBinarySensorEntity(row.entity_id));
+		}
+		_entityLabel(entityId) {
+			const friendly = this.hass?.states?.[entityId]?.attributes?.friendly_name;
+			return typeof friendly === "string" && friendly ? friendly : entityId;
+		}
+		/**
+		* Persist the per-sensor binary display choice into that series' config.
+		* `"row"` is written explicitly; `"background"` (the default) clears the key
+		* so saved configs that opt out stay byte-for-byte identical to today.
+		*/
+		_setSeriesBinaryDisplay(entityId, mode) {
+			const rows = normalizeHistorySeriesRows(this._config.series_settings).map((row) => {
+				if (row.entity_id !== entityId) return row;
+				const next = { ...row };
+				if (mode === "row") next.binary_display = "row";
+				else delete next.binary_display;
+				return next;
+			});
+			this._emitConfig({
+				...this._config,
+				series_settings: rows
+			});
+		}
 		_targetEntityIds(target) {
 			return resolveEntityIdsFromTarget(this.hass, target);
 		}
@@ -21706,7 +21996,36 @@
           .checked=${c.hide_raw_data === true}
           @dp-change=${(e) => this._set("hide_raw_data", e.detail.checked ? true : void 0)}
         ></editor-switch>
+
+        ${this._renderBinaryDisplaySection()}
       </div>
+    `;
+		}
+		_renderBinaryDisplaySection() {
+			const binaryRows = this._binaryDisplayRows();
+			if (binaryRows.length === 0) return A;
+			const options = [{
+				value: "background",
+				label: msg("Background band")
+			}, {
+				value: "row",
+				label: msg("Row strip")
+			}];
+			return b`
+      <section-heading .text=${msg("Binary Sensor Display")}></section-heading>
+      ${binaryRows.map((row) => b`
+          <div class="binary-display-row">
+            <span class="binary-display-label"
+              >${this._entityLabel(row.entity_id)}</span
+            >
+            <inline-select
+              data-binary-entity=${row.entity_id}
+              .value=${row.binary_display ?? "background"}
+              .options=${options}
+              @dp-change=${(e) => this._setSeriesBinaryDisplay(row.entity_id, resolveBinaryDisplayMode(e.detail.value))}
+            ></inline-select>
+          </div>
+        `)}
     `;
 		}
 	};
@@ -22251,12 +22570,16 @@
 		return normalizedRows.map((row) => {
 			const savedRow = savedRowMap.get(row.entity_id);
 			if (!savedRow) return row;
-			return {
+			const merged = {
 				...row,
 				color: savedRow.color,
 				visible: savedRow.visible,
 				analysis: savedRow.analysis
 			};
+			const binaryDisplay = savedRow.binary_display ?? row.binary_display;
+			if (binaryDisplay) merged.binary_display = binaryDisplay;
+			else delete merged.binary_display;
+			return merged;
 		});
 	}
 	function addSeriesRows(existingRows, entityIds, preferredColors) {
