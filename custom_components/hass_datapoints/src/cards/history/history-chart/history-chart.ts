@@ -3375,7 +3375,8 @@ export class HistoryChart extends HTMLElement {
           renderT0,
           renderT1,
           binaryBackground.color,
-          0.12
+          0.12,
+          { markers: true }
         );
       }
     });
@@ -5202,7 +5203,8 @@ export class HistoryChart extends HTMLElement {
             renderT0,
             renderT1,
             bgItem.color as string,
-            0.1
+            0.1,
+            { markers: true }
           );
         }
       });
