@@ -26394,6 +26394,9 @@
 			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage$5, "day");
 			_classPrivateFieldInitSpec(this, _contentWidth_accessor_storage, 0);
 			_classPrivateFieldInitSpec(this, _locale_accessor_storage$2, "");
+			_defineProperty(this, "_scaleCache", null);
+			_defineProperty(this, "_scaleCacheKey", null);
+			_defineProperty(this, "_scaleCacheI18n", null);
 		}
 		get i18n() {
 			return _classPrivateFieldGet2(_i18n_accessor_storage$4, this);
@@ -26428,11 +26431,32 @@
 		_t(key, ...values) {
 			return t$4(this.i18n, key, ...values);
 		}
-		render() {
-			if (!this.rangeBounds) return A;
+		_computeScaleData() {
+			const bounds = this.rangeBounds;
+			if (!bounds) return {
+				ticks: [],
+				labels: [],
+				dividers: [],
+				contextLabels: []
+			};
+			const key = `${bounds.min}|${bounds.max}|${this.contentWidth}|${this.zoomLevel}|${this.locale}|${JSON.stringify(bounds.config)}`;
+			if (this._scaleCache && this._scaleCacheKey === key && this._scaleCacheI18n === this.i18n) return this._scaleCache;
 			const ticks = this._computeTicks();
 			const labels = this._computeLabels();
 			const { dividers, contextLabels } = this._computeContext();
+			this._scaleCache = {
+				ticks,
+				labels,
+				dividers,
+				contextLabels
+			};
+			this._scaleCacheKey = key;
+			this._scaleCacheI18n = this.i18n;
+			return this._scaleCache;
+		}
+		render() {
+			if (!this.rangeBounds) return A;
+			const { ticks, labels, dividers, contextLabels } = this._computeScaleData();
 			return b`
       <div class="range-context-layer">
         ${dividers.map((d) => b`<span class="range-divider" style="left:${d.leftPct}%"></span>`)}
@@ -37081,6 +37105,8 @@
 			_classPrivateFieldInitSpec(this, _aiQueryBriefDialogOpen_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _aiQueryBriefHeading_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _aiQueryBriefText_accessor_storage, "");
+			_defineProperty(this, "_startTimeDateCache", null);
+			_defineProperty(this, "_endTimeDateCache", null);
 			this._context = createHistoryPageContext();
 			this._entities = [];
 			this._seriesRows = [];
@@ -37209,6 +37235,24 @@
 		}
 		set _endTime(value) {
 			this._appState().setRange(this._startTime || null, value || null);
+		}
+		_stableStartTimeDate() {
+			const src = this._startTime;
+			if (!src) {
+				this._startTimeDateCache = null;
+				return null;
+			}
+			if (!this._startTimeDateCache || this._startTimeDateCache.getTime() !== src.getTime()) this._startTimeDateCache = new Date(src);
+			return this._startTimeDateCache;
+		}
+		_stableEndTimeDate() {
+			const src = this._endTime;
+			if (!src) {
+				this._endTimeDateCache = null;
+				return null;
+			}
+			if (!this._endTimeDateCache || this._endTimeDateCache.getTime() !== src.getTime()) this._endTimeDateCache = new Date(src);
+			return this._endTimeDateCache;
 		}
 		get _sidebarCollapsed() {
 			return this._appState().state.display.sidebarCollapsed;
@@ -37691,8 +37735,8 @@
         <range-toolbar
           slot="controls"
           .hass=${this.hass}
-          .startTime=${this._startTime ? new Date(this._startTime) : null}
-          .endTime=${this._endTime ? new Date(this._endTime) : null}
+          .startTime=${this._stableStartTimeDate()}
+          .endTime=${this._stableEndTimeDate()}
           .rangeBounds=${this._rangeBounds}
           .zoomLevel=${this._getEffectiveZoomLevel()}
           .dateSnapping=${this._dateSnapping}
@@ -38969,7 +39013,18 @@
 		}
 		_handleChartHover(ev) {
 			this._chartHoverTimeMs = ev?.detail?.timeMs ?? null;
-			this._updateChartHoverIndicator();
+			this._syncChartHoverIndicator();
+		}
+		/**
+		* Imperatively mirror the current chart-hover state onto the range-toolbar.
+		* Updating the toolbar's reactive properties directly re-renders only the
+		* toolbar subtree, avoiding a full-panel render on every pointer-move frame.
+		*/
+		_syncChartHoverIndicator() {
+			const toolbar = this._rangeToolbarComp;
+			if (!toolbar) return;
+			toolbar.chartHoverTimeMs = this._rangeBounds ? this._chartHoverTimeMs : null;
+			toolbar.chartHoverWindowTimeMs = this._getChartHoverWindowTimeMs();
 		}
 		_handleChartZoom(ev) {
 			const detail = ev.detail;
@@ -39526,7 +39581,6 @@
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_sidebarAccordionAnalysisOpen", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_sidebarAccordionChartOpen", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_resolvedAutoZoomLevel", null);
-	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_chartHoverTimeMs", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_zoomLevel", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_dateSnapping", null);
 	__decorate([r$2()], HassDatapointsHistoryPanel.prototype, "_collapsedOptionsPopupOpen", null);

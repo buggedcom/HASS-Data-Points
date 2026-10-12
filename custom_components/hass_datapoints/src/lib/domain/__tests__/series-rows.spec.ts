@@ -402,9 +402,7 @@ describe("series-rows", () => {
         rows[0].binary_display = "row";
         const next = updateSeriesRowBinaryDisplay(rows, 0, "background");
         expect(next).not.toBeNull();
-        expect(
-          Object.prototype.hasOwnProperty.call(next?.[0], "binary_display")
-        ).toBe(false);
+        expect(Object.hasOwn(next?.[0], "binary_display")).toBe(false);
       });
     });
 

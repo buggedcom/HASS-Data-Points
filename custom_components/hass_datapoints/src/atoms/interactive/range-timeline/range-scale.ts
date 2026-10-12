@@ -66,14 +66,52 @@ export class RangeScale extends LitElement {
     return translate(this.i18n, key, ...values);
   }
 
+  // Reuse scale data when parent updates supply equivalent bounds. Include
+  // locale and translations so language changes invalidate the labels.
+  private _scaleCache: Nullable<{
+    ticks: TickMark[];
+    labels: PeriodButton[];
+    dividers: ContextDivider[];
+    contextLabels: PeriodButton[];
+  }> = null;
+
+  private _scaleCacheKey: Nullable<string> = null;
+
+  private _scaleCacheI18n: Nullable<I18nMap> = null;
+
+  private _computeScaleData(): {
+    ticks: TickMark[];
+    labels: PeriodButton[];
+    dividers: ContextDivider[];
+    contextLabels: PeriodButton[];
+  } {
+    const bounds = this.rangeBounds;
+    if (!bounds) {
+      return { ticks: [], labels: [], dividers: [], contextLabels: [] };
+    }
+    const key = `${bounds.min}|${bounds.max}|${this.contentWidth}|${this.zoomLevel}|${this.locale}|${JSON.stringify(bounds.config)}`;
+    if (
+      this._scaleCache &&
+      this._scaleCacheKey === key &&
+      this._scaleCacheI18n === this.i18n
+    ) {
+      return this._scaleCache;
+    }
+    const ticks = this._computeTicks();
+    const labels = this._computeLabels();
+    const { dividers, contextLabels } = this._computeContext();
+    this._scaleCache = { ticks, labels, dividers, contextLabels };
+    this._scaleCacheKey = key;
+    this._scaleCacheI18n = this.i18n;
+    return this._scaleCache;
+  }
+
   render() {
     if (!this.rangeBounds) {
       return nothing;
     }
 
-    const ticks = this._computeTicks();
-    const labels = this._computeLabels();
-    const { dividers, contextLabels } = this._computeContext();
+    const { ticks, labels, dividers, contextLabels } = this._computeScaleData();
 
     return html`
       <div class="range-context-layer">

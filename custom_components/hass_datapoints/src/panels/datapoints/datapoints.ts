@@ -430,7 +430,8 @@ export class HassDatapointsHistoryPanel extends LitElement {
 
   declare _hoveredPeriodRange: Nullable<unknown>;
 
-  @reactiveState()
+  // Hover updates the toolbar directly; unrelated panel renders still read
+  // this field so their bindings retain the latest marker position.
   accessor _chartHoverTimeMs: Nullable<number> = null;
 
   @reactiveState()
@@ -676,6 +677,42 @@ export class HassDatapointsHistoryPanel extends LitElement {
   @reactiveState()
   set _endTime(value) {
     this._appState().setRange(this._startTime || null, value || null);
+  }
+
+  // Reuse defensive Date clones until their timestamps change so unrelated
+  // panel renders do not invalidate the toolbar's date properties.
+  private _startTimeDateCache: Nullable<Date> = null;
+
+  private _endTimeDateCache: Nullable<Date> = null;
+
+  private _stableStartTimeDate(): Nullable<Date> {
+    const src = this._startTime;
+    if (!src) {
+      this._startTimeDateCache = null;
+      return null;
+    }
+    if (
+      !this._startTimeDateCache ||
+      this._startTimeDateCache.getTime() !== src.getTime()
+    ) {
+      this._startTimeDateCache = new Date(src);
+    }
+    return this._startTimeDateCache;
+  }
+
+  private _stableEndTimeDate(): Nullable<Date> {
+    const src = this._endTime;
+    if (!src) {
+      this._endTimeDateCache = null;
+      return null;
+    }
+    if (
+      !this._endTimeDateCache ||
+      this._endTimeDateCache.getTime() !== src.getTime()
+    ) {
+      this._endTimeDateCache = new Date(src);
+    }
+    return this._endTimeDateCache;
   }
 
   get _sidebarCollapsed() {
@@ -1547,8 +1584,8 @@ export class HassDatapointsHistoryPanel extends LitElement {
         <range-toolbar
           slot="controls"
           .hass=${this.hass}
-          .startTime=${this._startTime ? new Date(this._startTime) : null}
-          .endTime=${this._endTime ? new Date(this._endTime) : null}
+          .startTime=${this._stableStartTimeDate()}
+          .endTime=${this._stableEndTimeDate()}
           .rangeBounds=${this._rangeBounds}
           .zoomLevel=${this._getEffectiveZoomLevel()}
           .dateSnapping=${this._dateSnapping}
@@ -3541,7 +3578,24 @@ export class HassDatapointsHistoryPanel extends LitElement {
 
   _handleChartHover(ev: DetailEvent<{ timeMs?: Nullable<number> }>) {
     this._chartHoverTimeMs = ev?.detail?.timeMs ?? null;
-    this._updateChartHoverIndicator();
+    // Push straight to the toolbar instead of re-rendering the whole panel.
+    this._syncChartHoverIndicator();
+  }
+
+  /**
+   * Imperatively mirror the current chart-hover state onto the range-toolbar.
+   * Updating the toolbar's reactive properties directly re-renders only the
+   * toolbar subtree, avoiding a full-panel render on every pointer-move frame.
+   */
+  private _syncChartHoverIndicator() {
+    const toolbar = this._rangeToolbarComp;
+    if (!toolbar) {
+      return;
+    }
+    toolbar.chartHoverTimeMs = this._rangeBounds
+      ? this._chartHoverTimeMs
+      : null;
+    toolbar.chartHoverWindowTimeMs = this._getChartHoverWindowTimeMs();
   }
 
   _handleChartZoom(

@@ -1,6 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "../range-scale";
+import type { RangeScale } from "../range-scale";
 import type { RangeBounds } from "../types";
+import * as timelineScale from "@/lib/timeline/timeline-scale";
 
 const DAY_CONFIG = {
   baselineMs: 48 * 60 * 60 * 1000,
@@ -22,13 +24,7 @@ const SAMPLE_BOUNDS: RangeBounds = {
 };
 
 function createElement(props: RecordWithUnknownValues = {}) {
-  const el = document.createElement("range-scale") as HTMLElement & {
-    rangeBounds: Nullable<RangeBounds>;
-    zoomLevel: string;
-    contentWidth: number;
-    locale: string;
-    updateComplete: Promise<boolean>;
-  };
+  const el = document.createElement("range-scale") as RangeScale;
   Object.assign(el, {
     rangeBounds: null,
     zoomLevel: "day",
@@ -74,6 +70,52 @@ describe("range-scale", () => {
         contentWidth: 800,
       });
       await el.updateComplete;
+    });
+
+    describe("WHEN equivalent bounds are supplied again", () => {
+      it("THEN retains the labels without formatting them again", async () => {
+        expect.assertions(2);
+        const originalLabels =
+          el.shadowRoot!.querySelector(".range-label-layer")!.textContent;
+        const format = vi.spyOn(timelineScale, "formatScaleLabel");
+        try {
+          el.rangeBounds = { ...SAMPLE_BOUNDS, config: { ...DAY_CONFIG } };
+          await el.updateComplete;
+          expect(
+            el.shadowRoot!.querySelector(".range-label-layer")!.textContent
+          ).toBe(originalLabels);
+          expect(format).not.toHaveBeenCalled();
+        } finally {
+          format.mockRestore();
+        }
+      });
+    });
+
+    describe("WHEN the selected bounds change", () => {
+      it("THEN renders labels for the new dates", async () => {
+        expect.assertions(1);
+        el.rangeBounds = {
+          ...SAMPLE_BOUNDS,
+          min: JAN_13 + 24 * 60 * 60 * 1000,
+        };
+        await el.updateComplete;
+        expect(
+          el.shadowRoot!.querySelector(".range-label-layer")!.textContent
+        ).not.toContain("13");
+      });
+    });
+
+    describe("WHEN translations change", () => {
+      it("THEN refreshes the cached button titles", async () => {
+        expect.assertions(1);
+        el.i18n = { Select: "Valitse" };
+        await el.updateComplete;
+        expect(
+          el.shadowRoot!.querySelector<HTMLButtonElement>(
+            ".range-period-button"
+          )!.title
+        ).toMatch(/^Valitse /);
+      });
     });
 
     describe("WHEN rendered", () => {

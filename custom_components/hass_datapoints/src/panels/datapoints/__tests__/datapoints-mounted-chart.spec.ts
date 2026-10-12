@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   control,
   createHassFixture,
@@ -45,6 +45,22 @@ describe("GIVEN a mounted chart and records list", () => {
     });
   });
   describe("WHEN the chart emits hover time", () => {
+    it("THEN moves the toolbar indicator without rendering the panel", async () => {
+      expect.assertions(2);
+      const panel = await mountPanel(createHassFixture().hass);
+      const render = vi.spyOn(panel, "render");
+      const timeMs = Date.parse("2025-01-06T12:00:00Z");
+      emitControlEvent(
+        control(panel.shadowRoot!, "hass-datapoints-history-card"),
+        "hass-datapoints-chart-hover",
+        { timeMs }
+      );
+      await settlePanel();
+      expect(control(panel.shadowRoot!, "range-toolbar").chartHoverTimeMs).toBe(
+        timeMs
+      );
+      expect(render).not.toHaveBeenCalled();
+    });
     it("THEN forwards that timestamp to the toolbar hover indicator", async () => {
       expect.assertions(1);
       const panel = await mountPanel(createHassFixture().hass);
@@ -58,6 +74,24 @@ describe("GIVEN a mounted chart and records list", () => {
       expect(control(panel.shadowRoot!, "range-toolbar").chartHoverTimeMs).toBe(
         timeMs
       );
+    });
+  });
+  describe("WHEN the chart clears its hover time", () => {
+    it("THEN clears the toolbar indicator without rendering the panel", async () => {
+      expect.assertions(2);
+      const panel = await mountPanel(createHassFixture().hass);
+      const chart = control(panel.shadowRoot!, "hass-datapoints-history-card");
+      emitControlEvent(chart, "hass-datapoints-chart-hover", {
+        timeMs: Date.parse("2025-01-06T12:00:00Z"),
+      });
+      await settlePanel();
+      const render = vi.spyOn(panel, "render");
+      emitControlEvent(chart, "hass-datapoints-chart-hover", { timeMs: null });
+      await settlePanel();
+      expect(
+        control(panel.shadowRoot!, "range-toolbar").chartHoverTimeMs
+      ).toBeNull();
+      expect(render).not.toHaveBeenCalled();
     });
   });
   describe("WHEN the records list emits a search query", () => {
