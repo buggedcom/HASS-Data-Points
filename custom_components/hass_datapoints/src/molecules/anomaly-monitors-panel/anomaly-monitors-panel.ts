@@ -1,4 +1,4 @@
-import { html, LitElement, nothing } from "lit";
+import { html, LitElement, nothing, svg } from "lit";
 import { property, state } from "lit/decorators.js";
 import type { PropertyValues } from "lit";
 import { DOMAIN } from "@/constants";
@@ -399,32 +399,67 @@ export class AnomalyMonitorsPanel extends LitElement {
   private _renderSparkline(history: ScanHistoryEntry[]) {
     const W = 120;
     const H = 28;
-    const PAD = 2;
+    const PAD = 3;
     const counts = history.map((e) => e.count);
     if (counts.length < 2) {
-      return html`<svg width=${W} height=${H}></svg>`;
+      return html`<div class="sparkline-empty">
+        ${msg("Not enough data yet")}
+      </div>`;
     }
     const max = Math.max(...counts, 1);
-    const pts = counts
-      .map((c, i) => {
-        const x = PAD + (i / Math.max(counts.length - 1, 1)) * (W - PAD * 2);
-        const y = H - PAD - (c / max) * (H - PAD * 2);
-        return `${x.toFixed(1)},${y.toFixed(1)}`;
-      })
+    const coords = counts.map((c, i) => ({
+      x: PAD + (i / (counts.length - 1)) * (W - PAD * 2),
+      y: H - PAD - (c / max) * (H - PAD * 2),
+    }));
+    const pts = coords
+      .map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`)
       .join(" ");
-    return html`<svg
-      class="monitor-sparkline"
-      width=${W}
-      height=${H}
-      aria-hidden="true"
-    >
-      <polyline
-        points=${pts}
-        fill="none"
-        stroke="var(--primary-color)"
-        stroke-width="1.5"
-      />
-    </svg>`;
+    const baselineY = (H - PAD).toFixed(1);
+    const latest = counts[counts.length - 1];
+    const prev = counts[counts.length - 2];
+    let trend = msg("steady");
+    if (latest > prev) trend = msg("rising");
+    else if (latest < prev) trend = msg("falling");
+    const label = msg(
+      `Anomaly count over the last ${counts.length} scans: latest ${latest}, ${trend}`
+    );
+    return html`<div class="monitor-sparkline-wrap">
+      <svg
+        class="monitor-sparkline"
+        width=${W}
+        height=${H}
+        role="img"
+        aria-label=${label}
+      >
+        <line
+          class="sparkline-baseline"
+          x1=${PAD}
+          x2=${W - PAD}
+          y1=${baselineY}
+          y2=${baselineY}
+        />
+        <polyline
+          points=${pts}
+          fill="none"
+          stroke="var(--primary-color)"
+          stroke-width="1.5"
+        />
+        ${coords.map((p, i) => {
+          const isLast = i === coords.length - 1;
+          return svg`<circle
+            class=${isLast ? "sparkline-latest" : "sparkline-point"}
+            cx=${p.x.toFixed(1)}
+            cy=${p.y.toFixed(1)}
+            r=${isLast ? 3 : 4}
+          >
+            <title>${msg(`${counts[i]} anomalies at ${history[i].t}`)}</title>
+          </circle>`;
+        })}
+      </svg>
+      <span class="sparkline-caption"
+        >${msg(`anomaly count, last ${counts.length} scans`)}</span
+      >
+    </div>`;
   }
 
   /**
