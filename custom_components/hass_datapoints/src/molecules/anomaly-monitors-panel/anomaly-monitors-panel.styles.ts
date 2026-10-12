@@ -160,8 +160,46 @@ export const styles = css`
     font-size: 0.85em;
   }
 
+  .monitor-sparkline-wrap {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 auto;
+    gap: 2px;
+  }
+
   .monitor-sparkline {
     flex: 0 0 auto;
+    overflow: visible;
+  }
+
+  .sparkline-baseline {
+    stroke: var(--divider-color);
+    stroke-width: 1;
+    stroke-dasharray: 2 2;
+  }
+
+  .sparkline-latest {
+    fill: var(--primary-color);
+  }
+
+  .sparkline-point {
+    fill: transparent;
+  }
+
+  .sparkline-caption,
+  .sparkline-empty {
+    font-size: 0.75em;
+    color: var(--secondary-text-color);
+  }
+
+  .sparkline-empty {
+    flex: 0 0 auto;
+    min-width: 120px;
+    padding: 4px 6px;
+    border: 1px dashed var(--divider-color);
+    border-radius: 4px;
+    text-align: center;
+    font-style: italic;
   }
 
   .monitor-actions {
