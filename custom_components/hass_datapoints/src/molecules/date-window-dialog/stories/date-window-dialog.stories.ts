@@ -1,16 +1,19 @@
 import { html } from "lit";
 import { expect, fn, userEvent, within } from "@storybook/test";
+import { setFrontendLocale } from "@/lib/i18n/localize";
 import "../date-window-dialog";
 
 /**
  * `date-window-dialog` renders the Add / Edit date window dialog.
- * It wraps `ha-dialog` and provides a controlled form for setting a named date range.
+ * It wraps `ha-dialog` and provides a form for setting a named date range.
  *
- * The component is fully controlled — all field values come from props and
- * the parent updates them in response to events.
+ * The dialog owns its name state and validation: the `name` prop seeds the
+ * field on open, start/end values stay parent-controlled, and submit only
+ * fires when the inputs are valid (otherwise the dialog shakes and shows an
+ * inline error).
  *
  * @fires dp-window-close - `{}` fired when Cancel is clicked or the dialog is dismissed
- * @fires dp-window-submit - `{ name: string, start: string, end: string }` fired on submit
+ * @fires dp-window-submit - `{ name: string, start: string, end: string }` fired only on a valid submit
  * @fires dp-window-delete - `{}` fired when the Delete button is clicked
  * @fires dp-window-shortcut - `{ direction: -1 | 1 }` fired when a shortcut button is clicked
  * @fires dp-window-date-change - `{ start: string, end: string }` fired when a date input changes
@@ -18,6 +21,12 @@ import "../date-window-dialog";
 export default {
   title: "Molecules/Date Window Dialog",
   component: "date-window-dialog",
+  loaders: [
+    async () => {
+      await setFrontendLocale("en");
+      return {};
+    },
+  ],
   parameters: {
     actions: {
       handles: [
@@ -144,6 +153,32 @@ export const EmitsSubmit = {
     await expect(detail).toHaveProperty("name");
     await expect(detail).toHaveProperty("start");
     await expect(detail).toHaveProperty("end");
+  },
+};
+
+/**
+ * Invalid submit — clicking Create with an empty name does not emit
+ * dp-window-submit; the dialog shakes and shows an inline error instead.
+ */
+export const InvalidSubmitShowsError = {
+  args: {
+    name: "",
+    startValue: "2025-01-01T00:00",
+    endValue: "2025-01-07T00:00",
+    submitLabel: "Create date window",
+  },
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const host = canvasElement.querySelector(
+      "date-window-dialog"
+    ) as HTMLElement;
+    const handler = fn();
+    host.addEventListener("dp-window-submit", handler);
+    const canvas = within(host.shadowRoot as unknown as HTMLElement);
+    await userEvent.click(canvas.getByText("Create date window"));
+    await expect(handler).not.toHaveBeenCalled();
+    await expect(
+      host.shadowRoot!.querySelector(".date-window-dialog-error")
+    ).not.toBeNull();
   },
 };
 
