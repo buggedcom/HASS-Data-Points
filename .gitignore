@@ -14,3 +14,5 @@ site/.vitepress/dist
 
 # Python virtual environment
 .venv/
+.venv
+.pytest_cache/
