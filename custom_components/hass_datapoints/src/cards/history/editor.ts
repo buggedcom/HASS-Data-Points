@@ -5,8 +5,10 @@ import { styles } from "./editor.styles";
 import type { HassLike } from "@/lib/types";
 import {
   buildHistorySeriesRows,
+  isBinarySensorEntity,
   normalizeHistorySeriesAnalysis,
   normalizeHistorySeriesRows,
+  resolveBinaryDisplayMode,
   type BinaryDisplayMode,
   type HistorySeriesAnalysis,
   type HistorySeriesRow,
@@ -124,7 +126,7 @@ export class HassDatapointsHistoryCardEditor extends EditorBase {
   /** Normalized series rows restricted to `binary_sensor` entities. */
   private _binaryDisplayRows(): HistorySeriesRow[] {
     return normalizeHistorySeriesRows(this._config.series_settings).filter(
-      (row) => row.entity_id.split(".")[0] === "binary_sensor"
+      (row) => isBinarySensorEntity(row.entity_id)
     );
   }
 
@@ -503,6 +505,10 @@ export class HassDatapointsHistoryCardEditor extends EditorBase {
     `;
   }
 
+  // Binary display mode lives in its own section rather than inline per series:
+  // this editor has no inline per-series colour/visibility surface (those live
+  // in the panel's target-row molecule), so a dedicated section is the natural
+  // home for the per-sensor background/row choice.
   private _renderBinaryDisplaySection() {
     const binaryRows = this._binaryDisplayRows();
     if (binaryRows.length === 0) {
@@ -527,7 +533,7 @@ export class HassDatapointsHistoryCardEditor extends EditorBase {
               @dp-change=${(e: CustomEvent<{ value: string }>) =>
                 this._setSeriesBinaryDisplay(
                   row.entity_id,
-                  e.detail.value === "row" ? "row" : "background"
+                  resolveBinaryDisplayMode(e.detail.value)
                 )}
             ></inline-select>
           </div>

@@ -77,6 +77,28 @@ export interface HistorySeriesRow {
 }
 
 /**
+ * True when `entityId` belongs to the `binary_sensor` domain. Single source of
+ * the domain predicate shared by the editor, the chart build pass and the
+ * stored-display resolver.
+ */
+export function isBinarySensorEntity(entityId: unknown): boolean {
+  return (
+    typeof entityId === "string" && entityId.split(".")[0] === "binary_sensor"
+  );
+}
+
+/**
+ * Coerces any stored/emitted value into a valid {@link BinaryDisplayMode}:
+ * the literal `"row"` stays `"row"`; everything else (including `"background"`,
+ * `undefined` and invalid values) collapses to `"background"`, the default.
+ * Use this wherever a raw `binary_display` value is read so the coercion lives
+ * in one place instead of being re-derived at each call site.
+ */
+export function resolveBinaryDisplayMode(value: unknown): BinaryDisplayMode {
+  return value === "row" ? "row" : "background";
+}
+
+/**
  * Resolves the stored `binary_display` value for a row, returning the validated
  * mode only when the entity is a `binary_sensor` and the value is one of the
  * known modes. Returns `undefined` otherwise so the field is never materialized
@@ -86,7 +108,7 @@ export function resolveStoredBinaryDisplay(
   entityId: string,
   value: unknown
 ): BinaryDisplayMode | undefined {
-  if (entityId.split(".")[0] !== "binary_sensor") {
+  if (!isBinarySensorEntity(entityId)) {
     return undefined;
   }
   return value === "background" || value === "row" ? value : undefined;
