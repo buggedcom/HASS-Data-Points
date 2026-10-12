@@ -260,4 +260,60 @@ describe("anomaly-monitors-panel", () => {
       });
     });
   });
+
+  describe("GIVEN a monitor with scan history", () => {
+    async function renderWithHistory(counts: number[]) {
+      const monitor = {
+        ...buildMonitor(true),
+        scan_history: counts.map((count, i) => ({
+          t: `2026-05-19T1${i % 10}:00:00Z`,
+          count,
+        })),
+      };
+      const hass = createMockHass({
+        connection: {
+          subscribeEvents: vi.fn(() => Promise.resolve(vi.fn())),
+          sendMessagePromise: vi
+            .fn()
+            .mockResolvedValue({ monitors: [monitor] }),
+        },
+      });
+      const el = createElement(hass);
+      await el.updateComplete;
+      await flushMicrotasks();
+      await el.updateComplete;
+      return el;
+    }
+
+    describe.each([[[]], [[3]]])("WHEN it has %j scans", (counts) => {
+      it("THEN it shows a not-enough-data state that is not aria-hidden", async () => {
+        expect.assertions(4);
+        const el = await renderWithHistory(counts);
+        const empty = el.shadowRoot?.querySelector(".sparkline-empty");
+        expect(empty).not.toBeNull();
+        expect(empty?.textContent).toContain("Not enough data yet");
+        expect(empty?.hasAttribute("aria-hidden")).toBe(false);
+        expect(el.shadowRoot?.querySelector("polyline")).toBeNull();
+      });
+    });
+
+    describe("WHEN it has many scans", () => {
+      it("THEN it draws a polyline, latest dot, baseline, caption and titles", async () => {
+        expect.assertions(7);
+        const el = await renderWithHistory([0, 2, 5, 1]);
+        const svg = el.shadowRoot?.querySelector(".monitor-sparkline");
+        expect(svg?.querySelector("polyline")).not.toBeNull();
+        expect(svg?.querySelectorAll("circle.sparkline-latest")).toHaveLength(
+          1
+        );
+        expect(svg?.querySelector(".sparkline-baseline")).not.toBeNull();
+        expect(svg?.querySelectorAll("title").length).toBeGreaterThanOrEqual(4);
+        expect(svg?.hasAttribute("aria-hidden")).toBe(false);
+        expect(svg?.getAttribute("aria-label")).toContain("1");
+        expect(
+          el.shadowRoot?.querySelector(".sparkline-caption")?.textContent
+        ).toContain("last 4 scans");
+      });
+    });
+  });
 });
