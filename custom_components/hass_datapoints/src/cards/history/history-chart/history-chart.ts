@@ -54,9 +54,12 @@ import {
   type AnomalyCluster,
   type ChartPoint,
   ChartRenderer,
+  type LaneRect,
+  reserveLaneSpace,
   type ResolvedAxis,
 } from "@/lib/chart/chart-renderer";
 import {
+  type BinaryDisplayMode,
   type HistorySeriesAnalysis,
   normalizeHistorySeriesAnalysis,
   type PartialHistorySeriesAnalysis,
@@ -76,6 +79,9 @@ import type { HassLike } from "@/lib/types";
 import { navigateToDataPointsHistory } from "@/lib/ha/navigation";
 import { buildBackendAnomalyConfig } from "@/lib/chart/chart-anomaly-config";
 import {
+  type BinaryRenderEntity,
+  type BinaryRowModel,
+  buildBinaryRenderModel,
   buildBinaryStateSpans,
   buildEntityStateList,
   filterEvents,
@@ -121,6 +127,11 @@ const HISTORY_CHART_MAX_CANVAS_WIDTH_PX = Math.floor(
   16383 / (window.devicePixelRatio || 1)
 );
 const HISTORY_CHART_MAX_ZOOM_MULTIPLIER = 365;
+// Binary row-strip lane geometry (HA-style compact on/off timeline). Each
+// visible row-mode binary sensor gets a lane of this height stacked below the
+// numeric plot, separated by this gap.
+const HISTORY_CHART_BINARY_LANE_HEIGHT_PX = 22;
+const HISTORY_CHART_BINARY_LANE_GAP_PX = 6;
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -851,13 +862,22 @@ export class HistoryChart extends HTMLElement {
     return normalizeStatisticsHistory(entityId, statsData);
   }
 
-  /** Render legend items for the given series and binary backgrounds. */
-  _renderLegend(series: unknown[], binaryBackgrounds: unknown[]): void {
+  /** Render legend items for the given series, binary backgrounds and rows. */
+  _renderLegend(
+    series: unknown[],
+    binaryBackgrounds: unknown[],
+    binaryRows: unknown[] = []
+  ): void {
     const legendEl = this.querySelector("#legend") as Nullable<HTMLElement>;
     if (!legendEl) return;
     const allItems = [
       ...(series as Array<{ entityId: string; label: string; color: string }>),
       ...(binaryBackgrounds as Array<{
+        entityId: string;
+        label: string;
+        color: string;
+      }>),
+      ...(binaryRows as Array<{
         entityId: string;
         label: string;
         color: string;
@@ -891,6 +911,43 @@ export class HistoryChart extends HTMLElement {
       })}`,
       legendEl
     );
+  }
+
+  /**
+   * Draws the stacked binary row lanes beneath the numeric plot. Lanes occupy
+   * the bottom `laneReserve` px of the canvas (the space reserved via
+   * `reserveLaneSpace` before axis layout), stacked top-to-bottom in the given
+   * (visible) order with a gap above each lane, so a hidden row's lane is
+   * reclaimed on the next draw. Each lane's strip reuses `xOf` so it lines up
+   * with the plot above at any zoom/pan.
+   */
+  _drawBinaryRowLanes(
+    renderer: ChartRenderer,
+    visibleRows: BinaryRowModel[],
+    t0: number,
+    t1: number,
+    laneReserve: number
+  ): void {
+    if (!visibleRows.length || laneReserve <= 0) {
+      return;
+    }
+    const laneHeight = HISTORY_CHART_BINARY_LANE_HEIGHT_PX;
+    const gap = HISTORY_CHART_BINARY_LANE_GAP_PX;
+    const regionTop = renderer.cssH - laneReserve;
+    const x = renderer.pad.left;
+    const width = renderer.cw;
+    visibleRows.forEach((row, index) => {
+      const rect: LaneRect = {
+        x,
+        y: regionTop + index * (laneHeight + gap) + gap,
+        width,
+        height: laneHeight,
+      };
+      renderer.drawStateRow(row.spans, t0, t1, rect, {
+        color: row.color,
+        label: row.label,
+      });
+    });
   }
 
   /** Draw a single series line onto the renderer, with optional data-gap rendering. */
@@ -2331,14 +2388,10 @@ export class HistoryChart extends HTMLElement {
       values: number[];
     }> = [];
     const axisMap = new Map<string, (typeof axes)[0]>();
-    const binaryBackgrounds: Array<{
-      entityId: string;
-      label: string;
-      color: string;
-      onLabel: string;
-      offLabel: string;
-      spans: unknown[];
-    }> = [];
+    // Resolved binary sensors (label/colour/labels/display resolved here against
+    // live hass state) are collected during the series loop, then classified
+    // into background bands and stacked row lanes by the pure render model.
+    const binaryEntities: BinaryRenderEntity[] = [];
     const seriesSettings = this._seriesSettings;
     const analysisMap = this._getSeriesAnalysisMap();
     const comparisonResults = Array.isArray(this._lastComparisonResults)
@@ -2386,17 +2439,18 @@ export class HistoryChart extends HTMLElement {
           histResult,
           statsResult
         );
-        const spans = this._buildBinaryStateSpans(stateList, t0, t1);
-        if (spans.length) {
-          binaryBackgrounds.push({
-            entityId,
-            label: entityLabelMap.get(entityId) || entityId,
-            color: seriesSetting.color || COLORS[i % COLORS.length],
-            onLabel: this._binaryOnLabel(entityId),
-            offLabel: this._binaryOffLabel(entityId),
-            spans,
-          });
-        }
+        const binaryDisplay = (
+          seriesSetting.binary_display === "row" ? "row" : "background"
+        ) as BinaryDisplayMode;
+        binaryEntities.push({
+          entityId,
+          label: entityLabelMap.get(entityId) || entityId,
+          color: seriesSetting.color || COLORS[i % COLORS.length],
+          onLabel: this._binaryOnLabel(entityId),
+          offLabel: this._binaryOffLabel(entityId),
+          binaryDisplay,
+          stateList,
+        });
         return;
       }
       const stateList = this._buildEntityStateList(
@@ -2448,6 +2502,13 @@ export class HistoryChart extends HTMLElement {
         });
       }
     });
+
+    // Classify the resolved binary sensors into background bands (on-only spans)
+    // and stacked row lanes (full on+off strip). Background spans are on-only, so
+    // off/unavailable/unknown windows are no longer shaded (#61/#64).
+    const binaryModel = buildBinaryRenderModel(binaryEntities, t0, t1);
+    const binaryBackgrounds = binaryModel.backgrounds;
+    const binaryRows = binaryModel.rows;
 
     // Fetch backend-downsampled pts for entities with sample_interval !== "raw".
     // This replaces the raw pts built from histResult above.
@@ -2606,7 +2667,7 @@ export class HistoryChart extends HTMLElement {
       });
     }
 
-    if (!series.length && !binaryBackgrounds.length) {
+    if (!series.length && !binaryBackgrounds.length && !binaryRows.length) {
       this._setAdjustAxisButtonVisibility(false);
       this._renderComparisonPreviewOverlay();
       const sameRangeAsLastDraw =
@@ -2655,6 +2716,17 @@ export class HistoryChart extends HTMLElement {
 
     const visibleSeries = series.filter(
       (entry) => !this._hiddenSeries.has(entry.legendEntityId || entry.entityId)
+    );
+    // Row-mode binary sensors that are not toggled off. Hidden rows are dropped
+    // here so their lane is reclaimed on the next draw (legend toggle → relayout).
+    const visibleRows = binaryRows.filter(
+      (row) => !this._hiddenSeries.has(row.entityId)
+    );
+    // Total vertical space the stacked binary row lanes reserve below the plot.
+    const binaryLaneReserve = reserveLaneSpace(
+      visibleRows.length,
+      HISTORY_CHART_BINARY_LANE_HEIGHT_PX,
+      HISTORY_CHART_BINARY_LANE_GAP_PX
     );
     const selectedComparisonResult =
       drawableComparisonResults.find(
@@ -2866,11 +2938,14 @@ export class HistoryChart extends HTMLElement {
     let minChartHeight: number;
     if (series.length) {
       minChartHeight = 280;
-    } else if (binaryBackgrounds.length) {
+    } else if (binaryBackgrounds.length || binaryRows.length) {
       minChartHeight = 100;
     } else {
       minChartHeight = 280;
     }
+    // Row lanes stack below the numeric plot, so the overall chart must grow by
+    // the reserved lane space; the numeric plot itself then shrinks (pad.bottom).
+    minChartHeight += binaryLaneReserve;
     const availableHeight = this._getAvailableChartHeight(minChartHeight);
     const viewportWidth = Math.max(
       (scrollViewport as Nullable<HTMLElement>)?.clientWidth ||
@@ -2903,7 +2978,7 @@ export class HistoryChart extends HTMLElement {
         zoomOutButton.hidden = !this._zoomRange;
         zoomOutButton.onclick = () => this._clearZoomRange();
       }
-      this._renderLegend(series, binaryBackgrounds);
+      this._renderLegend(series, binaryBackgrounds, binaryRows);
       await this._drawSplitChart({
         visibleSeries,
         binaryBackgrounds,
@@ -2974,6 +3049,12 @@ export class HistoryChart extends HTMLElement {
     )(canvas!, (chartStage || wrap)!, availableHeight, canvasWidth);
     const renderer = new ChartRenderer(canvas!, w, h);
     renderer.labelColor = resolveChartLabelColor(this);
+    // Reserve bottom space for the stacked binary row lanes BEFORE axis layout,
+    // so the numeric plot, its axes and gridlines (all derived from
+    // ch = cssH - pad.top - pad.bottom) shrink uniformly and the lanes get a
+    // clear region beneath the time axis. No lanes ⇒ reserve 0 ⇒ unchanged.
+    renderer.basePad.bottom += binaryLaneReserve;
+    renderer.pad.bottom = renderer.basePad.bottom;
     renderer.clear();
     const renderT0 = t0;
     const renderT1 = t1;
@@ -3296,6 +3377,13 @@ export class HistoryChart extends HTMLElement {
         );
       }
     });
+    this._drawBinaryRowLanes(
+      renderer,
+      visibleRows,
+      renderT0,
+      renderT1,
+      binaryLaneReserve
+    );
     const shouldUseCorrelatedSpans =
       (this._config as RecordWithUnknownValues)?.show_correlated_anomalies ===
         true ||
@@ -4155,7 +4243,7 @@ export class HistoryChart extends HTMLElement {
       }
     );
 
-    this._renderLegend(series, binaryBackgrounds);
+    this._renderLegend(series, binaryBackgrounds, binaryRows);
 
     const eventValueMap = new Map(eventHits.map((hit) => [hit.event.id, hit]));
     const enrichedEvents: ChartEventRecord[] = chartEvents.map(
@@ -4184,7 +4272,18 @@ export class HistoryChart extends HTMLElement {
     const visibleBinaryBackgrounds = binaryBackgrounds.filter(
       (entry) => !this._hiddenSeries.has(entry.entityId)
     );
-    if (visibleSeries.length || visibleBinaryBackgrounds.length) {
+    // Background (on-only spans) and row (full on+off spans) binary sensors both
+    // feed the tooltip's binaryStates list; the hover layer reads each span's
+    // real state so the readout is correct regardless of display mode.
+    const binaryHoverStates = [
+      ...visibleBinaryBackgrounds,
+      ...visibleRows,
+    ] as HoverSeriesLike[];
+    if (
+      visibleSeries.length ||
+      visibleBinaryBackgrounds.length ||
+      visibleRows.length
+    ) {
       this._ensureContextAnnotationDialog();
       attachLineChartHover({
         card: this,
@@ -4201,7 +4300,11 @@ export class HistoryChart extends HTMLElement {
         onAddAnnotation: this._canAddAnnotation
           ? (hover: unknown) => this._handleChartAddAnnotation(hover)
           : undefined,
-        binaryStates: visibleBinaryBackgrounds as HoverSeriesLike[],
+        binaryStates: binaryHoverStates,
+        binaryLaneExtentPx:
+          binaryLaneReserve > 0
+            ? (renderer as unknown as { pad: { bottom: number } }).pad.bottom
+            : 0,
         comparisonSeries: effectiveComparisonHoverSeries as HoverSeriesLike[],
         trendSeries: [
           ...trendHoverSeries,
