@@ -229,9 +229,13 @@ export const styles = css`
     gap: calc(var(--spacing, 8px) * 0.75);
   }
 
-  .history-target-binary-display {
+  .history-target-binary-display-option {
+    justify-content: space-between;
+    cursor: default;
+  }
+
+  .history-target-binary-display-option .history-target-binary-display {
     flex: 0 0 auto;
-    font-size: 0.8em;
   }
 
   .history-target-analysis-toggle {
