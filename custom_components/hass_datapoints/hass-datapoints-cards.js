@@ -15084,7 +15084,9 @@
 			];
 			const visibleSeries = series.filter((entry) => !this._hiddenSeries.has(entry.legendEntityId || entry.entityId));
 			const visibleRows = binaryRows.filter((row) => !this._hiddenSeries.has(row.entityId));
-			const binaryLaneReserve = reserveLaneSpace(visibleRows.length, HISTORY_CHART_BINARY_LANE_HEIGHT_PX, HISTORY_CHART_BINARY_LANE_GAP_PX);
+			const laneScrollbarHeight = scrollViewport instanceof HTMLElement ? Math.max(0, scrollViewport.offsetHeight - scrollViewport.clientHeight) : 0;
+			const binaryLaneBottomMargin = visibleRows.length ? Math.max(laneScrollbarHeight, HISTORY_CHART_BINARY_LANE_GAP_PX) : 0;
+			const binaryLaneReserve = reserveLaneSpace(visibleRows.length, HISTORY_CHART_BINARY_LANE_HEIGHT_PX, HISTORY_CHART_BINARY_LANE_GAP_PX) + binaryLaneBottomMargin;
 			const selectedComparisonResult = drawableComparisonResults.find((window) => window.id === selectedComparisonWindowId) || null;
 			const selectedComparisonSeriesMap = /* @__PURE__ */ new Map();
 			if (selectedComparisonResult) for (let index = 0; index < seriesSettings.length; index += 1) {
