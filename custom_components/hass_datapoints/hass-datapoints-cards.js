@@ -331,6 +331,7 @@
 		values: s
 	});
 	var b = x(1);
+	var w = x(2);
 	var E = Symbol.for("lit-noChange");
 	var A = Symbol.for("lit-nothing");
 	var C = /* @__PURE__ */ new WeakMap();
@@ -12515,7 +12516,7 @@
 		try {
 			return (await hass.connection.sendMessagePromise({ type: `hass_datapoints/monitors/list` })).monitors ?? [];
 		} catch (err) {
-			logger.warn("[hass-datapoints] fetchMonitors failed:", err);
+			logger$1.warn("[hass-datapoints] fetchMonitors failed:", err);
 			return [];
 		}
 	}
@@ -12540,6 +12541,28 @@
 			type: `${DOMAIN}/monitors/delete`,
 			monitor_id: monitorId
 		});
+	}
+	async function restoreMonitor(hass, monitorId) {
+		const result = await hass.connection.sendMessagePromise({
+			type: `${DOMAIN}/monitors/restore`,
+			monitor_id: monitorId
+		});
+		if (!result.monitor) throw new Error("restoreMonitor: no monitor in response");
+		return result.monitor;
+	}
+	async function purgeMonitor(hass, monitorId) {
+		await hass.connection.sendMessagePromise({
+			type: `${DOMAIN}/monitors/purge`,
+			monitor_id: monitorId
+		});
+	}
+	async function fetchDeletedMonitors(hass) {
+		try {
+			return (await hass.connection.sendMessagePromise({ type: `hass_datapoints/monitors/trash/list` })).monitors ?? [];
+		} catch (err) {
+			logger$1.warn("[hass-datapoints] fetchDeletedMonitors failed:", err);
+			return [];
+		}
 	}
 	async function fetchMonitorAnomalies(hass, monitorId) {
 		return await hass.connection.sendMessagePromise({
@@ -29500,6 +29523,24 @@
     gap: 4px;
   }
 
+  .monitor-entity-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    border-radius: 999px;
+  }
+
+  .monitor-entity-chip:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+
   .overlap-op {
     font-size: 0.72rem;
     font-weight: 700;
@@ -29526,8 +29567,46 @@
     font-size: 0.85em;
   }
 
+  .monitor-sparkline-wrap {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 auto;
+    gap: 2px;
+  }
+
   .monitor-sparkline {
     flex: 0 0 auto;
+    overflow: visible;
+  }
+
+  .sparkline-baseline {
+    stroke: var(--divider-color);
+    stroke-width: 1;
+    stroke-dasharray: 2 2;
+  }
+
+  .sparkline-latest {
+    fill: var(--primary-color);
+  }
+
+  .sparkline-point {
+    fill: transparent;
+  }
+
+  .sparkline-caption,
+  .sparkline-empty {
+    font-size: 0.75em;
+    color: var(--secondary-text-color);
+  }
+
+  .sparkline-empty {
+    flex: 0 0 auto;
+    min-width: 120px;
+    padding: 4px 6px;
+    border: 1px dashed var(--divider-color);
+    border-radius: 4px;
+    text-align: center;
+    font-style: italic;
   }
 
   .monitor-actions {
@@ -29544,34 +29623,85 @@
     flex: 1;
   }
 
-  a.device-link {
+  /* ---- Compact icon action buttons (view/edit/device/delete/dismiss) ---- */
+
+  .icon-action {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    font-size: 0.85em;
-    color: var(--primary-color);
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--secondary-text-color);
+    cursor: pointer;
+    font: inherit;
     text-decoration: none;
-    padding: 0 4px;
+    appearance: none;
+    -webkit-appearance: none;
+    --mdc-icon-size: 20px;
+    transition:
+      color 120ms ease,
+      background 120ms ease;
   }
 
-  a.device-link:hover {
-    text-decoration: underline;
+  .icon-action:hover {
+    color: var(--primary-color, #03a9f4);
+    background: color-mix(
+      in srgb,
+      var(--primary-color, #03a9f4) 12%,
+      transparent
+    );
   }
 
-  a.device-link ha-icon {
-    --mdc-icon-size: 16px;
+  .icon-action:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
   }
 
-  /* ---- Small action buttons (edit/delete) ---- */
-
-  .small-btn {
-    --mdc-button-height: 28px;
-    font-size: 0.78rem;
-    --mdc-layout-grid-margin-desktop: 8px;
+  a.device-link {
+    color: var(--primary-color);
   }
 
   .delete-btn {
-    --mdc-theme-primary: var(--error-color, #db4437);
+    color: var(--error-color, #db4437);
+  }
+
+  .delete-btn:hover {
+    color: var(--error-color, #db4437);
+    background: color-mix(
+      in srgb,
+      var(--error-color, #db4437) 12%,
+      transparent
+    );
+  }
+
+  /* ---- Compact text action buttons (dismiss-until picker) ---- */
+
+  .text-action {
+    border: 1px solid var(--divider-color);
+    border-radius: 6px;
+    background: none;
+    color: var(--primary-text-color);
+    font: inherit;
+    font-size: 0.78rem;
+    padding: 4px 8px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    transition:
+      color 120ms ease,
+      border-color 120ms ease;
+  }
+
+  .text-action:hover,
+  .text-action:focus-visible {
+    color: var(--primary-color, #03a9f4);
+    border-color: var(--primary-color, #03a9f4);
+    outline: none;
   }
 
   /* ---- "New monitor" button ---- */
@@ -29607,23 +29737,147 @@
     );
     outline: none;
   }
+
+  /* ---- Reviewable dismissed detections ---- */
+
+  .dismissed-windows {
+    display: grid;
+    gap: var(--dp-spacing-xs);
+    margin-top: var(--dp-spacing-xs);
+  }
+
+  .dismissed-heading {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--secondary-text-color);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .dismissed-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 4px;
+  }
+
+  .dismissed-item {
+    display: flex;
+    align-items: center;
+    gap: var(--dp-spacing-sm);
+    flex-wrap: wrap;
+    padding: 4px 6px;
+    border: 1px solid var(--divider-color);
+    border-radius: 6px;
+  }
+
+  .dismissed-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 0.8em;
+    color: var(--secondary-text-color);
+  }
+
+  .dismissed-range {
+    color: var(--primary-text-color);
+  }
+
+  .dismissed-item-actions {
+    display: flex;
+    gap: 2px;
+    flex: 0 0 auto;
+  }
+
+  /* ---- Recently deleted (trash) ---- */
+
+  .trash-section {
+    margin-top: var(--dp-spacing-lg);
+    border-top: 1px solid var(--divider-color);
+    padding-top: var(--dp-spacing-sm);
+    display: grid;
+    gap: var(--dp-spacing-xs);
+  }
+
+  .trash-heading {
+    margin: 0;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--secondary-text-color);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .trash-list {
+    display: grid;
+    gap: 4px;
+  }
+
+  .trash-item {
+    display: flex;
+    align-items: center;
+    gap: var(--dp-spacing-sm);
+    flex-wrap: wrap;
+    padding: 6px 8px;
+    border: 1px solid var(--divider-color);
+    border-radius: 6px;
+    background: var(--card-background-color, var(--secondary-background-color));
+  }
+
+  .trash-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .trash-name {
+    font-weight: 500;
+  }
+
+  .trash-deleted-at {
+    font-size: 0.8em;
+    color: var(--secondary-text-color);
+  }
+
+  .trash-item-actions {
+    display: flex;
+    gap: 2px;
+    flex: 0 0 auto;
+  }
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitors-panel/anomaly-monitors-panel.ts
 	var _AnomalyMonitorsPanel;
-	var _hass_accessor_storage$7 = /* @__PURE__ */ new WeakMap();
-	var _monitors_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _loading_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _editMonitor_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _wizardOpen_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _monitorClusters_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _loadingClusters_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _dismissPickerKey_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var AnomalyMonitorsPanel = (_AnomalyMonitorsPanel = class AnomalyMonitorsPanel extends i$2 {
+	var _hass_accessor_storage$7;
+	var _monitors_accessor_storage;
+	var _deletedMonitors_accessor_storage;
+	var _loading_accessor_storage;
+	var _editMonitor_accessor_storage;
+	var _wizardOpen_accessor_storage;
+	var _monitorClusters_accessor_storage;
+	var _loadingClusters_accessor_storage;
+	var _dismissPickerKey_accessor_storage;
+	/**
+	* Fallback detection methods when a monitor has no configured methods. Mirrors
+	* the chart-side default so the overlay still renders anomalies for a monitor
+	* that somehow stored an empty method list.
+	*/
+	var PANEL_DEFAULT_ANOMALY_METHODS = ["trend_residual"];
+	/** The monitor's detection methods, or the panel default when it has none. */
+	function monitorAnomalyMethods(monitor) {
+		return Array.isArray(monitor.anomaly_methods) && monitor.anomaly_methods.length > 0 ? monitor.anomaly_methods : PANEL_DEFAULT_ANOMALY_METHODS;
+	}
+	var AnomalyMonitorsPanel = (_hass_accessor_storage$7 = /* @__PURE__ */ new WeakMap(), _monitors_accessor_storage = /* @__PURE__ */ new WeakMap(), _deletedMonitors_accessor_storage = /* @__PURE__ */ new WeakMap(), _loading_accessor_storage = /* @__PURE__ */ new WeakMap(), _editMonitor_accessor_storage = /* @__PURE__ */ new WeakMap(), _wizardOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitorClusters_accessor_storage = /* @__PURE__ */ new WeakMap(), _loadingClusters_accessor_storage = /* @__PURE__ */ new WeakMap(), _dismissPickerKey_accessor_storage = /* @__PURE__ */ new WeakMap(), _AnomalyMonitorsPanel = class AnomalyMonitorsPanel extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _hass_accessor_storage$7, null);
 			_classPrivateFieldInitSpec(this, _monitors_accessor_storage, []);
+			_classPrivateFieldInitSpec(this, _deletedMonitors_accessor_storage, []);
 			_classPrivateFieldInitSpec(this, _loading_accessor_storage, true);
 			_classPrivateFieldInitSpec(this, _editMonitor_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _wizardOpen_accessor_storage, false);
@@ -29645,6 +29899,12 @@
 		}
 		set _monitors(value) {
 			_classPrivateFieldSet2(_monitors_accessor_storage, this, value);
+		}
+		get _deletedMonitors() {
+			return _classPrivateFieldGet2(_deletedMonitors_accessor_storage, this);
+		}
+		set _deletedMonitors(value) {
+			_classPrivateFieldSet2(_deletedMonitors_accessor_storage, this, value);
 		}
 		get _loading() {
 			return _classPrivateFieldGet2(_loading_accessor_storage, this);
@@ -29735,7 +29995,9 @@
 		async _load() {
 			if (!this.hass) return;
 			try {
-				this._monitors = await fetchMonitors(this.hass);
+				const [active, deleted] = await Promise.all([fetchMonitors(this.hass), fetchDeletedMonitors(this.hass)]);
+				this._monitors = active;
+				this._deletedMonitors = deleted;
 			} catch {} finally {
 				this._loading = false;
 			}
@@ -29743,6 +30005,21 @@
 		_emit(name, detail = {}) {
 			this.dispatchEvent(new CustomEvent(name, {
 				detail,
+				bubbles: true,
+				composed: true
+			}));
+		}
+		/**
+		* Surface a transient message via HA's global notification snackbar. HA's
+		* frontend listens for `hass-notification` on the DOM and renders its own
+		* toast, with an optional action button when `action` is provided.
+		*/
+		_notify(message, action) {
+			this.dispatchEvent(new CustomEvent("hass-notification", {
+				detail: action ? {
+					message,
+					action
+				} : { message },
 				bubbles: true,
 				composed: true
 			}));
@@ -29757,6 +30034,28 @@
 		_onEdit(monitor) {
 			this._editMonitor = monitor;
 			this._wizardOpen = true;
+		}
+		_onOpenEntity(monitor, entityId) {
+			const detail = {
+				entityId,
+				monitorId: monitor.id,
+				anomalyMethods: monitorAnomalyMethods(monitor),
+				anomalySensitivity: monitor.anomaly_sensitivity
+			};
+			this._emit("dp-monitors-panel-open-entity", detail);
+		}
+		_onViewSeries(monitor) {
+			const endMs = Date.now();
+			const startMs = endMs - (monitor.look_back_hours ?? 24) * HOUR_MS;
+			const detail = {
+				entityIds: monitorEntityIds(monitor),
+				startMs,
+				endMs,
+				monitorId: monitor.id,
+				anomalyMethods: monitorAnomalyMethods(monitor),
+				anomalySensitivity: monitor.anomaly_sensitivity
+			};
+			this._emit("dp-monitors-panel-open-chart", detail);
 		}
 		_onWizardClose() {
 			this._wizardOpen = false;
@@ -29779,11 +30078,59 @@
 			if (!this.hass) return;
 			if (!await confirmDestructiveAction(this, {
 				title: msg(`Delete "${monitor.name}"?`),
-				message: msg("This cannot be undone. The monitor device and all its sensors will be removed."),
+				message: msg("The monitor device and all its sensors will be removed. You can restore it from Recently deleted for a limited time."),
 				confirmLabel: msg("Delete")
 			})) return;
-			await deleteMonitor(this.hass, monitor.id);
+			const id = monitor.id;
+			const name = monitor.name;
+			this._monitors = this._monitors.filter((m) => m.id !== id);
+			try {
+				await deleteMonitor(this.hass, id);
+				this._notify(msg(`Deleted "${name}"`), {
+					text: msg("Undo"),
+					action: () => {
+						if (!this.hass) return;
+						restoreMonitor(this.hass, id).then(() => this._load()).catch(() => this._notify(msg("Could not restore monitor")));
+					}
+				});
+			} catch {
+				this._notify(msg("Could not delete monitor"));
+			}
 			await this._load();
+		}
+		async _onRestore(monitor) {
+			if (!this.hass) return;
+			try {
+				await restoreMonitor(this.hass, monitor.id);
+				await this._load();
+			} catch {
+				this._notify(msg("Could not restore monitor"));
+			}
+		}
+		async _onPurge(monitor) {
+			if (!this.hass) return;
+			if (!await confirmDestructiveAction(this, {
+				title: msg(`Permanently delete "${monitor.name}"?`),
+				message: msg("This permanently removes the monitor and its history. This cannot be undone."),
+				confirmLabel: msg("Delete permanently")
+			})) return;
+			try {
+				await purgeMonitor(this.hass, monitor.id);
+				await this._load();
+			} catch {
+				this._notify(msg("Could not permanently delete monitor"));
+			}
+		}
+		_onViewWindow(monitor, window) {
+			const detail = {
+				entityIds: monitorEntityIds(monitor),
+				startMs: window.start_ms,
+				endMs: window.end_ms,
+				monitorId: monitor.id,
+				anomalyMethods: monitorAnomalyMethods(monitor),
+				anomalySensitivity: monitor.anomaly_sensitivity
+			};
+			this._emit("dp-monitors-panel-open-chart", detail);
 		}
 		async _loadClusters(monitorId) {
 			if (!this.hass || this._loadingClusters.has(monitorId)) return;
@@ -29813,8 +30160,12 @@
 		}
 		async _onUndismiss(monitor, windowId) {
 			if (!this.hass) return;
-			await undismissMonitorAnomaly(this.hass, monitor.id, windowId);
-			await this._load();
+			try {
+				await undismissMonitorAnomaly(this.hass, monitor.id, windowId);
+				await this._load();
+			} catch {
+				this._notify(msg("Could not restore dismissed detection"));
+			}
 		}
 		_formatClusterRange(cluster) {
 			const times = cluster.points.map((p) => p.timeMs);
@@ -29828,47 +30179,67 @@
 			const isOpen = this._dismissPickerKey === pickerKey;
 			const lookBackHours = monitor.look_back_hours ?? 24;
 			if (!isOpen) return b`
-        <ha-button
-          class="dismiss-btn"
+        <button
+          class="icon-action dismiss-btn"
+          type="button"
+          title=${msg("Dismiss")}
+          aria-label=${msg("Dismiss this anomaly")}
           @click=${() => {
 				this._dismissPickerKey = pickerKey;
 			}}
-          >${msg("Dismiss")}</ha-button
         >
+          <ha-icon icon="mdi:bell-off-outline"></ha-icon>
+        </button>
       `;
 			const autoLabel = lookBackHours < 48 ? `${lookBackHours * 2}h` : `${Math.round(lookBackHours / 12)}d`;
 			return b`
       <div class="dismiss-picker">
         <span class="dismiss-picker-label">${msg("Dismiss until:")}</span>
-        <ha-button @click=${() => this._onDismiss(monitor, cluster, void 0)}>
+        <button
+          class="text-action"
+          type="button"
+          @click=${() => this._onDismiss(monitor, cluster, void 0)}
+        >
           ${msg("Auto")} (${autoLabel})
-        </ha-button>
-        <ha-button
+        </button>
+        <button
+          class="text-action"
+          type="button"
           @click=${() => {
 				const d = /* @__PURE__ */ new Date();
 				d.setDate(d.getDate() + 1);
 				this._onDismiss(monitor, cluster, d.toISOString());
 			}}
-          >${msg("1 day")}</ha-button
         >
-        <ha-button
+          ${msg("1 day")}
+        </button>
+        <button
+          class="text-action"
+          type="button"
           @click=${() => {
 				const d = /* @__PURE__ */ new Date();
 				d.setDate(d.getDate() + 7);
 				this._onDismiss(monitor, cluster, d.toISOString());
 			}}
-          >${msg("1 week")}</ha-button
         >
-        <ha-button @click=${() => this._onDismiss(monitor, cluster, null)}>
+          ${msg("1 week")}
+        </button>
+        <button
+          class="text-action"
+          type="button"
+          @click=${() => this._onDismiss(monitor, cluster, null)}
+        >
           ${msg("Permanent")}
-        </ha-button>
-        <ha-button
+        </button>
+        <button
+          class="text-action"
+          type="button"
           @click=${() => {
 				this._dismissPickerKey = null;
 			}}
         >
           ${msg("Cancel")}
-        </ha-button>
+        </button>
       </div>
     `;
 		}
@@ -29899,67 +30270,148 @@
 			const windows = monitor.dismissed_windows ?? [];
 			if (windows.length === 0) return A;
 			return b`
-      <details class="dismissed-windows">
-        <summary>${msg("Dismissed")} (${windows.length})</summary>
-        <div class="dismissed-list">
+      <div
+        class="dismissed-windows"
+        role="group"
+        aria-label=${msg("Dismissed detections")}
+      >
+        <span class="dismissed-heading"
+          >${msg("Dismissed")} (${windows.length})</span
+        >
+        <ul class="dismissed-list">
           ${windows.map((w) => {
 				const start = new Date(w.start_ms).toLocaleString();
 				const end = new Date(w.end_ms).toLocaleString();
+				const dismissedAt = w.dismissed_at ? new Date(w.dismissed_at).toLocaleString() : null;
 				const expiry = w.expires_at ? new Date(w.expires_at).toLocaleString() : msg("Permanent");
 				return b`
-              <div class="dismissed-item">
-                <span class="dismissed-range">${start} – ${end}</span>
-                <span class="dismissed-expiry"
-                  >${msg("Expires:")} ${expiry}</span
-                >
-                <ha-button
-                  class="undismiss-btn"
-                  @click=${() => this._onUndismiss(monitor, w.id)}
-                  >${msg("Remove")}</ha-button
-                >
-              </div>
+              <li class="dismissed-item">
+                <div class="dismissed-meta">
+                  <span class="dismissed-range">${start} – ${end}</span>
+                  ${dismissedAt ? b`<span class="dismissed-at"
+                        >${msg("Dismissed:")} ${dismissedAt}</span
+                      >` : A}
+                  <span class="dismissed-expiry"
+                    >${msg("Expires:")} ${expiry}</span
+                  >
+                </div>
+                <div class="dismissed-item-actions">
+                  <button
+                    class="icon-action view-window-btn"
+                    type="button"
+                    title=${msg("View window on chart")}
+                    aria-label=${msg("View dismissed window on chart")}
+                    @click=${() => this._onViewWindow(monitor, w)}
+                  >
+                    <ha-icon icon="mdi:chart-line"></ha-icon>
+                  </button>
+                  <button
+                    class="icon-action undismiss-btn"
+                    type="button"
+                    title=${msg("Restore detection")}
+                    aria-label=${msg("Restore dismissed detection")}
+                    @click=${() => this._onUndismiss(monitor, w.id)}
+                  >
+                    <ha-icon icon="mdi:bell-ring-outline"></ha-icon>
+                  </button>
+                </div>
+              </li>
             `;
 			})}
-        </div>
-      </details>
+        </ul>
+      </div>
     `;
 		}
 		_renderSparkline(history) {
 			const W = 120;
 			const H = 28;
-			const PAD = 2;
+			const PAD = 3;
 			const counts = history.map((e) => e.count);
-			if (counts.length < 2) return b`<svg width=${W} height=${H}></svg>`;
+			if (counts.length < 2) return b`<div class="sparkline-empty">
+        ${msg("Not enough data yet")}
+      </div>`;
 			const max = Math.max(...counts, 1);
-			return b`<svg
-      class="monitor-sparkline"
-      width=${W}
-      height=${H}
-      aria-hidden="true"
-    >
-      <polyline
-        points=${counts.map((c, i) => {
-				const x = PAD + i / Math.max(counts.length - 1, 1) * 116;
-				const y = 26 - c / max * 24;
-				return `${x.toFixed(1)},${y.toFixed(1)}`;
-			}).join(" ")}
-        fill="none"
-        stroke="var(--primary-color)"
-        stroke-width="1.5"
-      />
-    </svg>`;
+			const coords = counts.map((c, i) => ({
+				x: PAD + i / (counts.length - 1) * 114,
+				y: 25 - c / max * 22
+			}));
+			const pts = coords.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+			const baselineY = 25 .toFixed(1);
+			const latest = counts[counts.length - 1];
+			const prev = counts[counts.length - 2];
+			let trend = msg("steady");
+			if (latest > prev) trend = msg("rising");
+			else if (latest < prev) trend = msg("falling");
+			return b`<div class="monitor-sparkline-wrap">
+      <svg
+        class="monitor-sparkline"
+        width=${W}
+        height=${H}
+        role="img"
+        aria-label=${msg(`Anomaly count over the last ${counts.length} scans: latest ${latest}, ${trend}`)}
+      >
+        <line
+          class="sparkline-baseline"
+          x1=${PAD}
+          x2=${117}
+          y1=${baselineY}
+          y2=${baselineY}
+        />
+        <polyline
+          points=${pts}
+          fill="none"
+          stroke="var(--primary-color)"
+          stroke-width="1.5"
+        />
+        ${coords.map((p, i) => {
+				const isLast = i === coords.length - 1;
+				return w`<circle
+            class=${isLast ? "sparkline-latest" : "sparkline-point"}
+            cx=${p.x.toFixed(1)}
+            cy=${p.y.toFixed(1)}
+            r=${isLast ? 3 : 4}
+          >
+            <title>${msg(`${counts[i]} anomalies at ${history[i].t}`)}</title>
+          </circle>`;
+			})}
+      </svg>
+      <span class="sparkline-caption"
+        >${msg(`anomaly count, last ${counts.length} scans`)}</span
+      >
+    </div>`;
+		}
+		/**
+		* Render a single entity chip wrapped in a keyboard-activatable button so a
+		* user can open that entity's series. The `entity-chip` atom stays inert; the
+		* panel owns the click/keyboard affordance (lowest-risk integration seam).
+		*/
+		_renderEntityChip(monitor, eid) {
+			return b`
+      <button
+        class="monitor-entity-chip"
+        type="button"
+        aria-label=${msg(`View series for ${eid}`)}
+        @click=${() => this._onOpenEntity(monitor, eid)}
+        @keydown=${(e) => {
+				if (e.key === "Enter" || e.key === " ") {
+					e.preventDefault();
+					this._onOpenEntity(monitor, eid);
+				}
+			}}
+      >
+        <entity-chip
+          .hass=${this.hass}
+          type="entity"
+          .itemId=${eid}
+        ></entity-chip>
+      </button>
+    `;
 		}
 		_renderEntityDisplay(monitor) {
 			const entityIds = monitorEntityIds(monitor);
 			if (monitor.type === "individual" || entityIds.length <= 1) return b`
         <div class="monitor-entities">
-          ${entityIds.map((eid) => b`
-              <entity-chip
-                .hass=${this.hass}
-                type="entity"
-                .itemId=${eid}
-              ></entity-chip>
-            `)}
+          ${entityIds.map((eid) => b` ${this._renderEntityChip(monitor, eid)} `)}
         </div>
       `;
 			const mode = monitor.overlap_mode ?? "all";
@@ -29967,11 +30419,7 @@
         <div class="monitor-overlap-row">
           ${entityIds.map((eid, i) => b`
               ${i > 0 ? b`<span class="overlap-op">OR</span>` : A}
-              <entity-chip
-                .hass=${this.hass}
-                type="entity"
-                .itemId=${eid}
-              ></entity-chip>
+              ${this._renderEntityChip(monitor, eid)}
             `)}
         </div>
       `;
@@ -29983,13 +30431,7 @@
           <span class="overlap-prefix"
             >${msg("AT LEAST")} ${n} ${msg("OF")}</span
           >
-          ${entityIds.map((eid) => b`
-              <entity-chip
-                .hass=${this.hass}
-                type="entity"
-                .itemId=${eid}
-              ></entity-chip>
-            `)}
+          ${entityIds.map((eid) => b` ${this._renderEntityChip(monitor, eid)} `)}
         </div>
       `;
 			}
@@ -29997,11 +30439,7 @@
       <div class="monitor-overlap-row">
         ${entityIds.map((eid, i) => b`
             ${i > 0 ? b`<span class="overlap-op">AND</span>` : A}
-            <entity-chip
-              .hass=${this.hass}
-              type="entity"
-              .itemId=${eid}
-            ></entity-chip>
+            ${this._renderEntityChip(monitor, eid)}
           `)}
       </div>
     `;
@@ -30050,25 +30488,90 @@
         ${this._renderDismissedWindows(monitor)}
 
         <div class="monitor-actions">
-          <ha-button class="small-btn" @click=${() => this._onEdit(monitor)}
-            >${msg("Edit")}</ha-button
+          <button
+            class="icon-action view-series-btn"
+            type="button"
+            title=${msg("View series")}
+            aria-label=${msg("View series on chart")}
+            @click=${() => this._onViewSeries(monitor)}
           >
+            <ha-icon icon="mdi:chart-line"></ha-icon>
+          </button>
+          <button
+            class="icon-action edit-btn"
+            type="button"
+            title=${msg("Edit monitor")}
+            aria-label=${msg("Edit monitor")}
+            @click=${() => this._onEdit(monitor)}
+          >
+            <ha-icon icon="mdi:pencil"></ha-icon>
+          </button>
           ${monitor.device_id ? b`<a
-                class="device-link"
+                class="icon-action device-link"
                 href=${`/config/devices/device/${monitor.device_id}`}
                 title=${msg("View device")}
+                aria-label=${msg("View device")}
               >
                 <ha-icon icon="mdi:chip"></ha-icon>
-                ${msg("Device")}
               </a>` : A}
           <div class="monitor-actions-spacer"></div>
-          <ha-button
-            class="small-btn delete-btn"
+          <button
+            class="icon-action delete-btn"
+            type="button"
+            title=${msg("Delete monitor")}
+            aria-label=${msg("Delete monitor")}
             @click=${() => this._onDelete(monitor)}
-            >${msg("Delete")}</ha-button
           >
+            <ha-icon icon="mdi:trash-can-outline"></ha-icon>
+          </button>
         </div>
       </div>
+    `;
+		}
+		_renderTrashItem(monitor) {
+			const deletedAt = monitor.deleted_at ? new Date(monitor.deleted_at).toLocaleString() : null;
+			return b`
+      <div class="trash-item" data-monitor-id=${monitor.id}>
+        <div class="trash-item-info">
+          <span class="trash-name">${monitor.name}</span>
+          ${deletedAt ? b`<span class="trash-deleted-at"
+                >${msg("Deleted:")} ${deletedAt}</span
+              >` : A}
+        </div>
+        <div class="trash-item-actions">
+          <button
+            class="icon-action restore-btn"
+            type="button"
+            title=${msg("Restore monitor")}
+            aria-label=${msg(`Restore "${monitor.name}"`)}
+            @click=${() => this._onRestore(monitor)}
+          >
+            <ha-icon icon="mdi:restore"></ha-icon>
+          </button>
+          <button
+            class="icon-action delete-btn purge-btn"
+            type="button"
+            title=${msg("Delete permanently")}
+            aria-label=${msg(`Permanently delete "${monitor.name}"`)}
+            @click=${() => this._onPurge(monitor)}
+          >
+            <ha-icon icon="mdi:delete-forever"></ha-icon>
+          </button>
+        </div>
+      </div>
+    `;
+		}
+		_renderTrashSection() {
+			if (this._deletedMonitors.length === 0) return A;
+			return b`
+      <section class="trash-section" aria-label=${msg("Recently deleted")}>
+        <h3 class="trash-heading">
+          ${msg("Recently deleted")} (${this._deletedMonitors.length})
+        </h3>
+        <div class="trash-list">
+          ${this._deletedMonitors.map((m) => this._renderTrashItem(m))}
+        </div>
+      </section>
     `;
 		}
 		_renderMonitorList() {
@@ -30094,7 +30597,7 @@
           </button>
         </div>
 
-        ${this._renderMonitorList()}
+        ${this._renderMonitorList()} ${this._renderTrashSection()}
       </div>
 
       <anomaly-monitor-wizard
@@ -30109,6 +30612,7 @@
 	}, _defineProperty(_AnomalyMonitorsPanel, "styles", styles$26), _AnomalyMonitorsPanel);
 	__decorate([n$1({ type: Object })], AnomalyMonitorsPanel.prototype, "hass", null);
 	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_monitors", null);
+	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_deletedMonitors", null);
 	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_loading", null);
 	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_editMonitor", null);
 	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_wizardOpen", null);
@@ -30570,6 +31074,37 @@
     justify-content: flex-end;
     min-width: 48px;
     z-index: 40;
+  }
+
+  .monitors-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    --mdc-icon-size: 24px;
+    --icon-primary-color: var(--secondary-text-color);
+  }
+
+  .monitors-button:hover,
+  .monitors-button:focus-visible {
+    --icon-primary-color: var(--primary-text-color);
+  }
+
+  .monitors-badge {
+    position: absolute;
+    top: 4px;
+    right: 2px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    box-sizing: border-box;
+    border-radius: 8px;
+    background: var(--error-color, #db4437);
+    color: var(--text-primary-color, #fff);
+    font-size: 11px;
+    line-height: 16px;
+    font-weight: 600;
+    text-align: center;
+    pointer-events: none;
   }
 
   .page-menu-wrap {
@@ -31084,6 +31619,7 @@
 	var _sidebarCollapsed_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _hasSavedState_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _layoutMode_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _monitorAnomalyCount_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _collapsedOptionsOpen_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _pageMenuOpen_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var PanelShell = (_PanelShell = class PanelShell extends i$2 {
@@ -31094,6 +31630,7 @@
 			_classPrivateFieldInitSpec(this, _sidebarCollapsed_accessor_storage$2, false);
 			_classPrivateFieldInitSpec(this, _hasSavedState_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _layoutMode_accessor_storage$1, "desktop");
+			_classPrivateFieldInitSpec(this, _monitorAnomalyCount_accessor_storage, 0);
 			_classPrivateFieldInitSpec(this, _collapsedOptionsOpen_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _pageMenuOpen_accessor_storage, false);
 		}
@@ -31126,6 +31663,12 @@
 		}
 		set layoutMode(value) {
 			_classPrivateFieldSet2(_layoutMode_accessor_storage$1, this, value);
+		}
+		get monitorAnomalyCount() {
+			return _classPrivateFieldGet2(_monitorAnomalyCount_accessor_storage, this);
+		}
+		set monitorAnomalyCount(value) {
+			_classPrivateFieldSet2(_monitorAnomalyCount_accessor_storage, this, value);
 		}
 		get collapsedOptionsOpen() {
 			return _classPrivateFieldGet2(_collapsedOptionsOpen_accessor_storage, this);
@@ -31229,6 +31772,9 @@
 			this._togglePageMenu(false);
 			this._emit("dp-shell-menu-monitors");
 		}
+		_onMonitorsButtonClick() {
+			this._emit("dp-shell-menu-monitors");
+		}
 		_onSidebarToggle() {
 			this._emit("dp-shell-sidebar-toggle");
 		}
@@ -31249,6 +31795,18 @@
         <div slot="title">${msg("Datapoints")}</div>
 
         <div slot="actionItems" class="page-header-actions">
+          <div class="monitors-wrap">
+            <ha-icon-button
+              class="monitors-button"
+              label=${msg("Anomaly monitors")}
+              @click=${this._onMonitorsButtonClick}
+            >
+              <ha-icon icon="mdi:bell-alert-outline"></ha-icon>
+            </ha-icon-button>
+            ${this.monitorAnomalyCount > 0 ? b`<span class="monitors-badge" aria-hidden="true"
+                  >${this.monitorAnomalyCount}</span
+                >` : A}
+          </div>
           <div class="page-menu-wrap">
             <ha-icon-button
               id="page-menu-button"
@@ -31384,6 +31942,10 @@
 		type: String,
 		attribute: "layout-mode"
 	})], PanelShell.prototype, "layoutMode", null);
+	__decorate([n$1({
+		type: Number,
+		attribute: false
+	})], PanelShell.prototype, "monitorAnomalyCount", null);
 	__decorate([n$1({
 		type: Boolean,
 		attribute: false
@@ -36730,6 +37292,13 @@
 	var _aiQueryBriefDialogOpen_accessor_storage;
 	var _aiQueryBriefHeading_accessor_storage;
 	var _aiQueryBriefText_accessor_storage;
+	/**
+	* Fallback anomaly methods for the monitor "View series" / chip overlay, used
+	* only when a monitor's open-chart/open-entity event carries no methods (an
+	* empty list). Otherwise the overlay recomputes with the monitor's own
+	* configured methods threaded through the event detail (#68 user story 8).
+	*/
+	var MONITOR_DEFAULT_ANOMALY_METHODS = ["trend_residual"];
 	/** Module-level set of all currently-connected panel instances.
 	*  Used by the orphan-recovery guard to avoid disrupting a live replacement. */
 	var _liveInstances = /* @__PURE__ */ new Set();
@@ -37149,6 +37718,9 @@
 			this._onCollapsedSidebarClick = (_ev) => this._handleCollapsedSidebarClick();
 			this._onEventRecorded = () => this._handleEventRecorded();
 			this._haEventUnsubscribe = null;
+			this._monitorAnomalyCount = 0;
+			this._monitorsEventUnsubscribe = null;
+			this._monitorsSubscribed = false;
 			this._onPopState = () => {
 				this._initFromContext();
 				if (this._rendered) {
@@ -37304,6 +37876,7 @@
 			if (!this._haEventUnsubscribe && this._hass?.connection) this._hass.connection.subscribeEvents(() => this._handleEventRecorded(), `${DOMAIN}_event_recorded`).then((unsub) => {
 				this._haEventUnsubscribe = unsub;
 			}).catch(() => {});
+			this._ensureMonitorSummary();
 			if (!this._rendered) {
 				logger$1.warn("[dp-lifecycle] set hass: first hass — transitioning to rendered", {
 					isConnected: this.isConnected,
@@ -37413,8 +37986,40 @@
 			});
 			this.performUpdate();
 		}
+		_ensureMonitorSummary() {
+			const hass = this._hass;
+			if (!hass?.connection || hass.user?.is_admin !== true || this._monitorsSubscribed) return;
+			this._monitorsSubscribed = true;
+			this._refreshMonitorSummary();
+			hass.connection.subscribeEvents(() => this._refreshMonitorSummary(), `${DOMAIN}_monitors_updated`).then((unsub) => {
+				if (!this.isConnected) {
+					unsub();
+					this._monitorsSubscribed = false;
+					return;
+				}
+				this._monitorsEventUnsubscribe = unsub;
+			}).catch(() => {
+				this._monitorsSubscribed = false;
+			});
+		}
+		_refreshMonitorSummary() {
+			const hass = this._hass;
+			if (!hass?.connection) return;
+			fetchMonitors(hass).then((monitors) => {
+				const count = monitors.filter((m) => m.enabled && (m.last_cluster_count ?? 0) > 0).length;
+				if (count !== this._monitorAnomalyCount) {
+					this._monitorAnomalyCount = count;
+					this.requestUpdate();
+				}
+			}).catch(() => {});
+		}
 		disconnectedCallback() {
 			super.disconnectedCallback();
+			if (this._monitorsEventUnsubscribe) {
+				this._monitorsEventUnsubscribe();
+				this._monitorsEventUnsubscribe = null;
+			}
+			this._monitorsSubscribed = false;
 			_liveInstances.delete(this);
 			this._mqTablet.removeEventListener("change", this._onLayoutChange);
 			this._mqMobile.removeEventListener("change", this._onLayoutChange);
@@ -37655,6 +38260,7 @@
         .sidebarCollapsed=${this._sidebarCollapsed}
         .hasSavedState=${this._hasSavedPage}
         .layoutMode=${this._layoutMode}
+        .monitorAnomalyCount=${this._monitorAnomalyCount}
         .collapsedOptionsOpen=${this._collapsedOptionsPopupOpen}
         @dp-shell-menu-download=${() => this._downloadSpreadsheet()}
         @dp-shell-menu-ai-brief=${() => {
@@ -38536,6 +39142,84 @@
 			this._monitorWizardOpen = true;
 		}
 		/**
+		* Build series rows for a set of entities with the chart anomaly overlay
+		* enabled. Reuses the existing per-series analysis path (history-chart card)
+		* rather than a bespoke overlay — a row with `analysis.show_anomalies === true`
+		* draws the same anomaly clusters the chart already fetches.
+		*/
+		_buildMonitorAnomalySeriesRows(entityIds, options) {
+			const methods = Array.isArray(options?.anomalyMethods) && options.anomalyMethods.length > 0 ? options.anomalyMethods : MONITOR_DEFAULT_ANOMALY_METHODS;
+			const sensitivity = options?.anomalySensitivity;
+			return buildHistorySeriesRows(entityIds).map((row) => ({
+				...row,
+				analysis: normalizeHistorySeriesAnalysis({
+					...row.analysis,
+					show_anomalies: true,
+					anomaly_methods: methods,
+					anomaly_overlap_mode: this._chartAnomalyOverlapMode,
+					...typeof sensitivity === "string" && sensitivity ? { anomaly_sensitivity: sensitivity } : {}
+				})
+			}));
+		}
+		/**
+		* `dp-monitors-panel-open-chart` handler: close the monitors overlay, replace
+		* the series with the monitor's entities (anomaly overlay on), and set the
+		* committed range to the monitor's look-back window.
+		*/
+		_handleMonitorsOpenChart(detail) {
+			const entityIds = Array.isArray(detail?.entityIds) ? detail.entityIds.filter((id) => typeof id === "string" && id.length > 0) : [];
+			if (!entityIds.length) return;
+			this._showMonitorsPanel = false;
+			this._contentKey = "";
+			this._seriesRows = this._buildMonitorAnomalySeriesRows(entityIds, {
+				anomalyMethods: Array.isArray(detail?.anomalyMethods) ? detail.anomalyMethods : [],
+				anomalySensitivity: typeof detail?.anomalySensitivity === "string" ? detail.anomalySensitivity : void 0
+			});
+			this._syncSeriesState();
+			this._renderTargetRows();
+			const start = typeof detail?.startMs === "number" ? new Date(detail.startMs) : null;
+			const end = typeof detail?.endMs === "number" ? new Date(detail.endMs) : null;
+			this._applyCommittedRange(start, end, { push: true });
+			this._renderContent();
+		}
+		/**
+		* `dp-monitors-panel-open-entity` handler: open an accessible `ha-dialog`
+		* containing a single-entity history card with the anomaly overlay on, so the
+		* same cluster overlay renders for one entity.
+		*/
+		_handleMonitorsOpenEntity(detail) {
+			const entityId = detail?.entityId;
+			if (typeof entityId !== "string" || !entityId) return;
+			const root = this.shadowRoot;
+			if (!root) return;
+			const now = Date.now();
+			const start = this._startTime ? new Date(this._startTime) : /* @__PURE__ */ new Date(now - 24 * HOUR_MS);
+			const end = this._endTime ? new Date(this._endTime) : new Date(now);
+			const dialog = document.createElement("ha-dialog");
+			dialog.scrimClickAction = true;
+			dialog.escapeKeyAction = true;
+			dialog.headerTitle = entityName(this._hass, entityId) || entityId;
+			if (this._hass) dialog.hass = this._hass;
+			dialog.addEventListener("closed", () => dialog.remove());
+			const chart = document.createElement("hass-datapoints-history-card");
+			chart.setConfig({
+				entities: [entityId],
+				series_settings: this._buildMonitorAnomalySeriesRows([entityId], {
+					anomalyMethods: Array.isArray(detail?.anomalyMethods) ? detail.anomalyMethods : [],
+					anomalySensitivity: typeof detail?.anomalySensitivity === "string" ? detail.anomalySensitivity : void 0
+				}),
+				start_time: start.toISOString(),
+				end_time: end.toISOString(),
+				show_correlated_anomalies: this._showCorrelatedAnomalies,
+				anomaly_overlap_mode: this._chartAnomalyOverlapMode
+			});
+			if (this._hass) chart.hass = this._hass;
+			dialog.appendChild(chart);
+			root.appendChild(dialog);
+			dialog.open = true;
+			ensureHaComponents(["ha-dialog"]).catch(() => {});
+		}
+		/**
 		* Date-window-dialog `dp-window-date-change` handler: update the draft range
 		* and keep the controlled start/end value fields in step with the inputs
 		* (the component is fully controlled, so the parent owns these values).
@@ -39249,6 +39933,12 @@
 				});
 				panel.addEventListener("dp-monitors-panel-new", () => {
 					this._openMonitorWizard([], null);
+				});
+				panel.addEventListener("dp-monitors-panel-open-chart", (event) => {
+					this._handleMonitorsOpenChart(event.detail);
+				});
+				panel.addEventListener("dp-monitors-panel-open-entity", (event) => {
+					this._handleMonitorsOpenEntity(event.detail);
 				});
 				content.appendChild(panel);
 				return;
