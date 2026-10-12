@@ -9172,7 +9172,7 @@
 			}
 			ctx.restore();
 		}
-		drawStateBands(spans, t0, t1, color = "#03a9f4", alpha = .12) {
+		drawStateBands(spans, t0, t1, color = "#03a9f4", alpha = .12, options = {}) {
 			if (!spans?.length) return;
 			const { ctx, pad } = this;
 			ctx.save();
@@ -9184,6 +9184,31 @@
 				const x0 = this.xOf(start, t0, t1);
 				const x1 = this.xOf(end, t0, t1);
 				ctx.fillRect(x0, pad.top, Math.max(1, x1 - x0), this.ch);
+			}
+			if (options.markers) {
+				const bottom = pad.top + this.ch;
+				const size = 4;
+				ctx.fillStyle = hexToRgba(color, 1);
+				ctx.strokeStyle = hexToRgba("#ffffff", .85);
+				ctx.lineWidth = 1;
+				const drawn = /* @__PURE__ */ new Set();
+				const marker = (t) => {
+					if (!(t > t0 && t < t1)) return;
+					const x = Math.round(this.xOf(t, t0, t1));
+					if (drawn.has(x)) return;
+					drawn.add(x);
+					ctx.beginPath();
+					ctx.moveTo(x, bottom - 8);
+					ctx.lineTo(x + size, bottom);
+					ctx.lineTo(x - size, bottom);
+					ctx.closePath();
+					ctx.fill();
+					ctx.stroke();
+				};
+				for (const span of spans) {
+					marker(span.start);
+					marker(span.end);
+				}
 			}
 			ctx.restore();
 		}
@@ -15386,7 +15411,7 @@
 			renderChartAxisOverlays(this, renderer, activeAxes);
 			this.style.setProperty("--dp-chart-axis-bottom-height", `${Math.max(0, renderer.pad.bottom)}px`);
 			binaryBackgrounds.forEach((binaryBackground) => {
-				if (binaryBackground?.spans?.length && !this._hiddenSeries.has(binaryBackground.entityId)) renderer.drawStateBands(binaryBackground.spans, renderT0, renderT1, binaryBackground.color, .12);
+				if (binaryBackground?.spans?.length && !this._hiddenSeries.has(binaryBackground.entityId)) renderer.drawStateBands(binaryBackground.spans, renderT0, renderT1, binaryBackground.color, .12, { markers: true });
 			});
 			this._drawBinaryRowLanes(renderer, visibleRows, renderT0, renderT1, binaryLaneReserve);
 			const shouldUseCorrelatedSpans = this._config?.show_correlated_anomalies === true || this._config?.anomaly_overlap_mode === "only";
@@ -16206,7 +16231,7 @@
 				}
 				binaryBackgrounds.forEach((bg) => {
 					const bgItem = bg;
-					if (!this._hiddenSeries.has(bgItem.entityId) && bgItem.spans?.length) renderer.drawStateBands(bgItem.spans, renderT0, renderT1, bgItem.color, .1);
+					if (!this._hiddenSeries.has(bgItem.entityId) && bgItem.spans?.length) renderer.drawStateBands(bgItem.spans, renderT0, renderT1, bgItem.color, .1, { markers: true });
 				});
 				if (shouldDrawCorrelatedAnomalySpans && correlatedAnomalySpans.length) renderer.drawStateBands(correlatedAnomalySpans, renderT0, renderT1, "#ef4444", .1);
 				renderer.drawAnnotations(events, renderT0, renderT1, {
