@@ -11,6 +11,22 @@ import {
 
 usePanelFixture();
 
+describe("GIVEN a toolbar showing the committed panel dates", () => {
+  describe("WHEN the panel renders without changing the range", () => {
+    it("THEN retains the toolbar date references", async () => {
+      expect.assertions(2);
+      const panel = await mountPanel(createHassFixture().hass);
+      const toolbar = control(panel.shadowRoot!, "range-toolbar");
+      const start = toolbar.startTime;
+      const end = toolbar.endTime;
+      panel.requestUpdate();
+      await panel.updateComplete;
+      expect(toolbar.startTime).toBe(start);
+      expect(toolbar.endTime).toBe(end);
+    });
+  });
+});
+
 describe("GIVEN a toolbar whose date props no longer match the panel selection", () => {
   describe("WHEN the panel renders its current state", () => {
     it("THEN restores the committed dates through the retained toolbar's bindings", async () => {
