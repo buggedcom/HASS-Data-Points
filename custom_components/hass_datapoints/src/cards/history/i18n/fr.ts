@@ -11,4 +11,7 @@ export const translations: ComponentTranslations = {
   "Show data gaps": "Afficher les lacunes de données",
   "Highlight missing data ranges with dashed lines and boundary markers":
     "Mettre en évidence les plages de données manquantes avec des lignes en pointillés et des marqueurs de bord",
+  "Binary Sensor Display": "Affichage du capteur binaire",
+  "Background band": "Bande d'arrière-plan",
+  "Row strip": "Bande de ligne",
 };

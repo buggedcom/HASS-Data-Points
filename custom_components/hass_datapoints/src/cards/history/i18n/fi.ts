@@ -14,4 +14,7 @@ export const translations: ComponentTranslations = {
   "Show data gaps": "Näytä tietoaukot",
   "Highlight missing data ranges with dashed lines and boundary markers":
     "Korosta puuttuvat tietoalueet katkoviivoilla ja rajamerkeillä",
+  "Binary Sensor Display": "Binäärianturin näyttö",
+  "Background band": "Taustapalkki",
+  "Row strip": "Riviraita",
 };
