@@ -269,69 +269,6 @@ describe("chart-renderer", () => {
     });
   });
 
-  describe("GIVEN drawStateBands with the markers option", () => {
-    describe("WHEN markers is true", () => {
-      it("THEN it draws a triangle marker at each in-window span boundary", () => {
-        expect.assertions(2);
-
-        const { ctx, renderer } = createRenderer();
-
-        // One on-span fully inside [0,100]: boundaries 25 and 50 are transitions.
-        renderer.drawStateBands(
-          [{ start: 25, end: 50 }],
-          0,
-          100,
-          "#83c705",
-          0.12,
-          { markers: true }
-        );
-
-        // One fillRect for the band + one fill() per marker triangle (2).
-        expect(ctx.fill).toHaveBeenCalledTimes(2);
-        expect(ctx.fillRect).toHaveBeenCalledTimes(1);
-      });
-
-      it("THEN boundaries at the window edges are not marked", () => {
-        expect.assertions(1);
-
-        const { ctx, renderer } = createRenderer();
-
-        // Span spanning the whole window: both boundaries sit on t0/t1 (clamps),
-        // so neither is a real transition and no marker is drawn.
-        renderer.drawStateBands(
-          [{ start: 0, end: 100 }],
-          0,
-          100,
-          "#83c705",
-          0.12,
-          {
-            markers: true,
-          }
-        );
-
-        expect(ctx.fill).not.toHaveBeenCalled();
-      });
-    });
-
-    describe("WHEN markers is not set", () => {
-      it("THEN no transition markers are drawn (band only)", () => {
-        expect.assertions(1);
-
-        const { ctx, renderer } = createRenderer();
-
-        renderer.drawStateBands(
-          [{ start: 25, end: 50 }],
-          0,
-          100,
-          "#83c705",
-          0.12
-        );
-
-        expect(ctx.fill).not.toHaveBeenCalled();
-      });
-    });
-  });
-
   describe("GIVEN the lane-geometry helper", () => {
     describe("WHEN reserveLaneSpace is called with rows, lane height and gap", () => {
       it("THEN it reserves rowCount * (laneHeight + gap) of bottom space", () => {

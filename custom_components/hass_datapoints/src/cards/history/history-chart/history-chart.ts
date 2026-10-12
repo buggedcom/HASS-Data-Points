@@ -927,9 +927,10 @@ export class HistoryChart extends HTMLElement {
     t0: number,
     t1: number,
     laneReserve: number
-  ): void {
+  ): Map<string, number> {
+    const laneCenters = new Map<string, number>();
     if (!visibleRows.length || laneReserve <= 0) {
-      return;
+      return laneCenters;
     }
     const laneHeight = HISTORY_CHART_BINARY_LANE_HEIGHT_PX;
     const gap = HISTORY_CHART_BINARY_LANE_GAP_PX;
@@ -947,7 +948,9 @@ export class HistoryChart extends HTMLElement {
         color: row.color,
         label: row.label,
       });
+      laneCenters.set(row.entityId, rect.y + rect.height / 2);
     });
+    return laneCenters;
   }
 
   /** Draw a single series line onto the renderer, with optional data-gap rendering. */
@@ -1082,6 +1085,12 @@ export class HistoryChart extends HTMLElement {
     }> = [];
     const { ctx } = renderer;
     const showIcons = opts.showIcons !== false;
+    // Vertical centre of each row-mode binary sensor's lane, so events linked to
+    // a row-strip binary sensor draw on that strip instead of the plot bottom.
+    const binaryRowLaneCenters =
+      opts.binaryRowLaneCenters instanceof Map
+        ? (opts.binaryRowLaneCenters as Map<string, number>)
+        : null;
     const fallbackHighlightedIds = Array.isArray(
       this._config?.hovered_event_ids
     )
@@ -1134,6 +1143,18 @@ export class HistoryChart extends HTMLElement {
         ? (fallbackSeriesHit?.value ?? null)
         : null;
       if (hasNumericTarget && value == null) continue;
+      // When the event is linked to a row-mode binary sensor (and has no numeric
+      // target), place the marker on that sensor's row strip.
+      let binaryLaneY: Nullable<number> = null;
+      if (!hasNumericTarget && binaryRowLaneCenters) {
+        for (const eid of eventEntityIds) {
+          const center = binaryRowLaneCenters.get(eid);
+          if (center != null) {
+            binaryLaneY = center;
+            break;
+          }
+        }
+      }
       let y;
       if (hasNumericTarget) {
         y = renderer.yOf(
@@ -1141,6 +1162,8 @@ export class HistoryChart extends HTMLElement {
           targetSeries!.axis!.min,
           targetSeries!.axis!.max
         );
+      } else if (binaryLaneY != null) {
+        y = binaryLaneY;
       } else if (linkedToOtherTarget) {
         y = renderer.pad.top + renderer.ch;
       } else {
@@ -3375,12 +3398,11 @@ export class HistoryChart extends HTMLElement {
           renderT0,
           renderT1,
           binaryBackground.color,
-          0.12,
-          { markers: true }
+          0.12
         );
       }
     });
-    this._drawBinaryRowLanes(
+    const binaryRowLaneCenters = this._drawBinaryRowLanes(
       renderer,
       visibleRows,
       renderT0,
@@ -4243,6 +4265,7 @@ export class HistoryChart extends HTMLElement {
         showIcons:
           (this._config as RecordWithUnknownValues).show_event_markers !==
           false,
+        binaryRowLaneCenters,
       }
     );
 
@@ -5203,8 +5226,7 @@ export class HistoryChart extends HTMLElement {
             renderT0,
             renderT1,
             bgItem.color as string,
-            0.1,
-            { markers: true }
+            0.1
           );
         }
       });
