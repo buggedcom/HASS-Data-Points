@@ -188,12 +188,42 @@ export function extractRangeValue(
   };
 }
 
+// ── Cached Intl.DateTimeFormat ──────────────────────────────────────────────
+// `Date.prototype.toLocaleString(options)` / `.toLocaleTimeString(options)`
+// construct a fresh `Intl.DateTimeFormat` on every call — one of the most
+// expensive operations in the browser. The timeline recomputes all of its tick
+// labels on every render, which happens on every pointer-move frame while
+// hovering the chart, so building formatters per call dominated the main thread
+// (hundreds of ms/frame). Cache formatters by locale + options and reuse them.
+const _dateTimeFormatCache = new Map<string, Intl.DateTimeFormat>();
+
+function getDateTimeFormat(
+  locale: string | undefined,
+  options: Intl.DateTimeFormatOptions
+): Intl.DateTimeFormat {
+  const key = `${locale ?? ""}|${JSON.stringify(options)}`;
+  let formatter = _dateTimeFormatCache.get(key);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat(locale ? [locale] : [], options);
+    _dateTimeFormatCache.set(key, formatter);
+  }
+  return formatter;
+}
+
+function formatDateTime(
+  value: Date,
+  locale: string | undefined,
+  options: Intl.DateTimeFormatOptions
+): string {
+  return getDateTimeFormat(locale, options).format(value);
+}
+
 export function formatRangeDateTime(value: Date, locale?: string): string {
   if (!(value instanceof Date) || Number.isNaN(value.getTime())) {
     return "--";
   }
 
-  return value.toLocaleString(locale ? [locale] : [], {
+  return formatDateTime(value, locale, {
     month: "short",
     day: "numeric",
     hour: "2-digit",
@@ -206,7 +236,7 @@ export function formatRangeTick(value: Date, locale?: string): string {
     return "--";
   }
 
-  return value.toLocaleString(locale ? [locale] : [], {
+  return formatDateTime(value, locale, {
     month: "short",
     day: "numeric",
     hour: "2-digit",
@@ -348,11 +378,11 @@ function endOfLocalSecond(value: Date): Date {
 }
 
 function formatMonthLabel(value: Date, locale?: string): string {
-  return value.toLocaleString(locale ? [locale] : [], { month: "short" });
+  return formatDateTime(value, locale, { month: "short" });
 }
 
 function formatYearLabel(value: Date, locale?: string): string {
-  return value.toLocaleString(locale ? [locale] : [], { year: "numeric" });
+  return formatDateTime(value, locale, { year: "numeric" });
 }
 
 function formatRangeSummary(start: Date, end: Date, locale?: string): string {
@@ -369,18 +399,18 @@ function getWeekOfYear(value: Date): number {
 }
 
 function getWeekLabel(value: Date, locale?: string): string {
-  return value.toLocaleString(locale ? [locale] : [], {
+  return formatDateTime(value, locale, {
     month: "short",
     day: "numeric",
   });
 }
 
 function formatDayLabel(value: Date, locale?: string): string {
-  return value.toLocaleString(locale ? [locale] : [], { day: "numeric" });
+  return formatDateTime(value, locale, { day: "numeric" });
 }
 
 function formatHourLabel(value: Date, locale?: string): string {
-  return value.toLocaleTimeString(locale ? [locale] : [], { hour: "2-digit" });
+  return formatDateTime(value, locale, { hour: "2-digit" });
 }
 
 function formatQuarterLabel(
@@ -426,12 +456,12 @@ function formatContextLabel(
     case "year":
       return formatYearLabel(value, locale);
     case "month":
-      return value.toLocaleString(locale ? [locale] : [], {
+      return formatDateTime(value, locale, {
         month: "short",
         year: "numeric",
       });
     case "day":
-      return value.toLocaleString(locale ? [locale] : [], {
+      return formatDateTime(value, locale, {
         month: "short",
         day: "numeric",
       });
@@ -451,20 +481,20 @@ function formatPeriodSelectionLabel(
     case "quarter":
       return `${formatQuarterLabel(value, "", locale)} ${formatYearLabel(value, locale)}`;
     case "month":
-      return value.toLocaleString(locale ? [locale] : [], {
+      return formatDateTime(value, locale, {
         month: "long",
         year: "numeric",
       });
     case "week":
-      return `${msg("Week of")} ${value.toLocaleString(locale ? [locale] : [], { month: "short", day: "numeric", year: "numeric" })}`;
+      return `${msg("Week of")} ${formatDateTime(value, locale, { month: "short", day: "numeric", year: "numeric" })}`;
     case "day":
-      return value.toLocaleString(locale ? [locale] : [], {
+      return formatDateTime(value, locale, {
         month: "short",
         day: "numeric",
         year: "numeric",
       });
     case "hour":
-      return value.toLocaleString(locale ? [locale] : [], {
+      return formatDateTime(value, locale, {
         month: "short",
         day: "numeric",
         year: "numeric",
