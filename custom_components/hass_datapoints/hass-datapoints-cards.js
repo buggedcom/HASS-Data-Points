@@ -22613,6 +22613,26 @@
 			visible: !!visible
 		} : row);
 	}
+	/**
+	* Set a binary_sensor row's display mode. `"row"` is written explicitly;
+	* `"background"` (the default) clears the key so opted-out configs stay
+	* byte-for-byte identical. Returns null (no change) when the index is invalid,
+	* the row is not a binary_sensor, or the mode already matches.
+	*/
+	function updateSeriesRowBinaryDisplay(rows, index, mode) {
+		if (!isValidRowIndex(index, rows.length)) return null;
+		const row = rows[index];
+		if (!isBinarySensorEntity(row.entity_id)) return null;
+		const next = resolveBinaryDisplayMode(mode);
+		if (resolveBinaryDisplayMode(row.binary_display) === next) return null;
+		return rows.map((r, i) => {
+			if (i !== index) return r;
+			const copy = { ...r };
+			if (next === "row") copy.binary_display = "row";
+			else delete copy.binary_display;
+			return copy;
+		});
+	}
 	function toggleSeriesAnalysisExpanded(rows, entityId) {
 		const index = rows.findIndex((r) => r.entity_id === entityId);
 		if (index === -1) return null;
@@ -23023,6 +23043,11 @@
     gap: calc(var(--spacing, 8px) * 0.75);
   }
 
+  .history-target-binary-display {
+    flex: 0 0 auto;
+    font-size: 0.8em;
+  }
+
   .history-target-analysis-toggle {
     display: inline-flex;
     align-items: center;
@@ -23305,6 +23330,8 @@
 	var _allAnalysisSame_accessor_storage;
 	var _hideDragHandle_accessor_storage;
 	var _label_accessor_storage$8;
+	var _binaryDisplay_accessor_storage;
+	var _showBinaryDisplay_accessor_storage$1;
 	function deriveSwatchIconColor(color) {
 		const hex = String(color || "").trim();
 		const normalizedHex = /^#([0-9a-f]{6})$/i.test(hex) ? hex : null;
@@ -23328,7 +23355,7 @@
 	function _hasActiveAnalysis(a, hasComparisonWindow) {
 		return a.show_trend_lines || a.show_summary_stats || a.show_rate_of_change || a.show_threshold_analysis || a.show_anomalies || a.show_delta_analysis && hasComparisonWindow;
 	}
-	var TargetRow = (_color_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _visible_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _analysis_accessor_storage = /* @__PURE__ */ new WeakMap(), _index_accessor_storage = /* @__PURE__ */ new WeakMap(), _entityId_accessor_storage = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _stateObj_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$10 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _computing_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingProgress_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingMethods_accessor_storage = /* @__PURE__ */ new WeakMap(), _rowCount_accessor_storage = /* @__PURE__ */ new WeakMap(), _allAnalysisSame_accessor_storage = /* @__PURE__ */ new WeakMap(), _hideDragHandle_accessor_storage = /* @__PURE__ */ new WeakMap(), _label_accessor_storage$8 = /* @__PURE__ */ new WeakMap(), _TargetRow = class TargetRow extends i$2 {
+	var TargetRow = (_color_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _visible_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _analysis_accessor_storage = /* @__PURE__ */ new WeakMap(), _index_accessor_storage = /* @__PURE__ */ new WeakMap(), _entityId_accessor_storage = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _stateObj_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$10 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _computing_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingProgress_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingMethods_accessor_storage = /* @__PURE__ */ new WeakMap(), _rowCount_accessor_storage = /* @__PURE__ */ new WeakMap(), _allAnalysisSame_accessor_storage = /* @__PURE__ */ new WeakMap(), _hideDragHandle_accessor_storage = /* @__PURE__ */ new WeakMap(), _label_accessor_storage$8 = /* @__PURE__ */ new WeakMap(), _binaryDisplay_accessor_storage = /* @__PURE__ */ new WeakMap(), _showBinaryDisplay_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _TargetRow = class TargetRow extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _color_accessor_storage$1, "#03a9f4");
@@ -23347,10 +23374,13 @@
 			_classPrivateFieldInitSpec(this, _allAnalysisSame_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _hideDragHandle_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _label_accessor_storage$8, null);
+			_classPrivateFieldInitSpec(this, _binaryDisplay_accessor_storage, "background");
+			_classPrivateFieldInitSpec(this, _showBinaryDisplay_accessor_storage$1, false);
 			_defineProperty(this, "_entityId", "");
 			_defineProperty(this, "_entityName", "");
 			_defineProperty(this, "_unit", "");
 			_defineProperty(this, "_supportsAnalysis", false);
+			_defineProperty(this, "_isBinary", false);
 		}
 		get color() {
 			return _classPrivateFieldGet2(_color_accessor_storage$1, this);
@@ -23448,6 +23478,18 @@
 		set label(value) {
 			_classPrivateFieldSet2(_label_accessor_storage$8, this, value);
 		}
+		get binaryDisplay() {
+			return _classPrivateFieldGet2(_binaryDisplay_accessor_storage, this);
+		}
+		set binaryDisplay(value) {
+			_classPrivateFieldSet2(_binaryDisplay_accessor_storage, this, value);
+		}
+		get showBinaryDisplay() {
+			return _classPrivateFieldGet2(_showBinaryDisplay_accessor_storage$1, this);
+		}
+		set showBinaryDisplay(value) {
+			_classPrivateFieldSet2(_showBinaryDisplay_accessor_storage$1, this, value);
+		}
 		willUpdate(changed) {
 			if (changed.has("stateObj") || changed.has("entityId") || changed.has("label")) {
 				this._entityId = this.stateObj?.entity_id ?? this.entityId ?? "";
@@ -23455,6 +23497,7 @@
 				this._entityName = this.label ?? attrs?.friendly_name ?? this._entityId;
 				this._unit = attrs?.unit_of_measurement ?? "";
 				this._supportsAnalysis = Boolean(this._entityId) && !this._entityId.startsWith("binary_sensor.");
+				this._isBinary = isBinarySensorEntity(this._entityId);
 			}
 		}
 		_emit(name, detail) {
@@ -23474,6 +23517,13 @@
 			this._emit("dp-row-visibility-change", {
 				entityId: this._entityId,
 				visible: e.target.checked
+			});
+		}
+		_onBinaryDisplayChange(e) {
+			this._emit("dp-row-binary-display-change", {
+				index: this.index,
+				entityId: this._entityId,
+				mode: resolveBinaryDisplayMode(e.detail?.value)
 			});
 		}
 		_onAnalysisToggle() {
@@ -23568,6 +23618,23 @@
                 >
                   <ha-icon icon="mdi:chevron-down"></ha-icon>
                 </button>
+              ` : A}
+          ${this.showBinaryDisplay && this._isBinary ? b`
+                <inline-select
+                  class="history-target-binary-display"
+                  data-binary-entity=${this._entityId}
+                  .value=${resolveBinaryDisplayMode(this.binaryDisplay)}
+                  .options=${[{
+				value: "background",
+				label: msg("Background band")
+			}, {
+				value: "row",
+				label: msg("Row strip")
+			}]}
+                  aria-label="Chart display style for ${this._entityName}"
+                  @click=${(e) => e.stopPropagation()}
+                  @dp-change=${this._onBinaryDisplayChange}
+                ></inline-select>
               ` : A}
 
           <label
@@ -23730,6 +23797,14 @@
 		type: String,
 		attribute: false
 	})], TargetRow.prototype, "label", null);
+	__decorate([n$1({
+		type: String,
+		attribute: "binary-display"
+	})], TargetRow.prototype, "binaryDisplay", null);
+	__decorate([n$1({
+		type: Boolean,
+		attribute: "show-binary-display"
+	})], TargetRow.prototype, "showBinaryDisplay", null);
 	TargetRow = __decorate([localized()], TargetRow);
 	customElements.define("target-row", TargetRow);
 	//#endregion
@@ -23813,6 +23888,7 @@
 	var _states_accessor_storage$1;
 	var _hass_accessor_storage$9;
 	var _canShowDeltaAnalysis_accessor_storage$1;
+	var _showBinaryDisplay_accessor_storage;
 	var _comparisonWindows_accessor_storage$1;
 	var _computingEntityIds_accessor_storage$1;
 	var _analysisProgress_accessor_storage$1;
@@ -23900,13 +23976,14 @@
 		}
 		return updates;
 	}
-	var TargetRowList = (_rows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _states_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$9 = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingEntityIds_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _analysisProgress_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingMethodsByEntity_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _labelMap_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _targetRows_accessor_storage = /* @__PURE__ */ new WeakMap(), _TargetRowList = class TargetRowList extends i$2 {
+	var TargetRowList = (_rows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _states_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$9 = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _showBinaryDisplay_accessor_storage = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingEntityIds_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _analysisProgress_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingMethodsByEntity_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _labelMap_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _targetRows_accessor_storage = /* @__PURE__ */ new WeakMap(), _TargetRowList = class TargetRowList extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _rows_accessor_storage$1, []);
 			_classPrivateFieldInitSpec(this, _states_accessor_storage$1, {});
 			_classPrivateFieldInitSpec(this, _hass_accessor_storage$9, null);
 			_classPrivateFieldInitSpec(this, _canShowDeltaAnalysis_accessor_storage$1, false);
+			_classPrivateFieldInitSpec(this, _showBinaryDisplay_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _comparisonWindows_accessor_storage$1, []);
 			_classPrivateFieldInitSpec(this, _computingEntityIds_accessor_storage$1, /* @__PURE__ */ new Set());
 			_classPrivateFieldInitSpec(this, _analysisProgress_accessor_storage$1, 0);
@@ -24016,6 +24093,12 @@
 		set canShowDeltaAnalysis(value) {
 			_classPrivateFieldSet2(_canShowDeltaAnalysis_accessor_storage$1, this, value);
 		}
+		get showBinaryDisplay() {
+			return _classPrivateFieldGet2(_showBinaryDisplay_accessor_storage, this);
+		}
+		set showBinaryDisplay(value) {
+			_classPrivateFieldSet2(_showBinaryDisplay_accessor_storage, this, value);
+		}
 		get comparisonWindows() {
 			return _classPrivateFieldGet2(_comparisonWindows_accessor_storage$1, this);
 		}
@@ -24073,6 +24156,8 @@
                 .visible=${row.visible}
                 .analysis=${row.analysis}
                 .index=${index}
+                .binaryDisplay=${row.binary_display ?? "background"}
+                .showBinaryDisplay=${this.showBinaryDisplay}
                 entity-id=${row.entity_id}
                 .canShowDeltaAnalysis=${this.canShowDeltaAnalysis}
                 .stateObj=${this.states?.[row.entity_id] ?? null}
@@ -24179,6 +24264,10 @@
 		type: Boolean,
 		attribute: "can-show-delta-analysis"
 	})], TargetRowList.prototype, "canShowDeltaAnalysis", null);
+	__decorate([n$1({
+		type: Boolean,
+		attribute: "show-binary-display"
+	})], TargetRowList.prototype, "showBinaryDisplay", null);
 	__decorate([n$1({
 		type: Array,
 		attribute: false
@@ -31905,6 +31994,7 @@
             .states=${this.states}
             .hass=${this.hass}
             .labelMap=${this.labelMap}
+            .showBinaryDisplay=${true}
             .canShowDeltaAnalysis=${this.canShowDeltaAnalysis}
             .comparisonWindows=${this.comparisonWindows}
             .computingEntityIds=${this.computingEntityIds}
@@ -37652,6 +37742,9 @@
 				const { entityId, visible } = ev.detail || {};
 				this._updateSeriesRowVisibilityByEntityId(entityId, visible);
 			}}
+          @dp-row-binary-display-change=${(ev) => {
+				this._updateSeriesRowBinaryDisplay(ev.detail?.index, ev.detail?.mode);
+			}}
           @dp-row-remove=${(ev) => {
 				this._removeSeriesRow(ev.detail?.index);
 			}}
@@ -38494,6 +38587,16 @@
 			this._renderTargetRows();
 			this._renderContent();
 		}
+		_updateSeriesRowBinaryDisplay(index, mode) {
+			const next = updateSeriesRowBinaryDisplay(this._seriesRows, index, mode);
+			if (!next) return;
+			this._seriesRows = next;
+			this._saveUserPreferences();
+			this._saveSessionState();
+			this._updateUrl({ push: false });
+			this._renderTargetRows();
+			this._renderContent();
+		}
 		/** Open (or re-render) the collapsed-sidebar target popup for *entityId*,
 		*  anchored to *anchorEl*.  Wires all the same controls as the full sidebar row. */
 		_showCollapsedTargetPopup(entityId, anchorEl) {
@@ -38519,11 +38622,16 @@
 			targetRow.hass = this._hass ?? null;
 			targetRow.canShowDeltaAnalysis = !!this._selectedComparisonWindowId;
 			targetRow.comparisonWindows = this._comparisonWindows || [];
+			targetRow.showBinaryDisplay = true;
+			targetRow.binaryDisplay = row.binary_display ?? "background";
 			targetRow.addEventListener("dp-row-color-change", (ev) => {
 				this._updateSeriesRowColor(ev.detail?.index, ev.detail?.color);
 			});
 			targetRow.addEventListener("dp-row-visibility-change", (ev) => {
 				this._updateSeriesRowVisibilityByEntityId(ev.detail?.entityId, ev.detail?.visible);
+			});
+			targetRow.addEventListener("dp-row-binary-display-change", (ev) => {
+				this._updateSeriesRowBinaryDisplay(ev.detail?.index, ev.detail?.mode);
 			});
 			targetRow.addEventListener("dp-row-toggle-analysis", (ev) => {
 				this._toggleSeriesAnalysisExpanded(ev.detail?.entityId);
