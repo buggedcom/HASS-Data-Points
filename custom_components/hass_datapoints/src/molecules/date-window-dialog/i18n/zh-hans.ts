@@ -11,5 +11,7 @@ export const translations: ComponentTranslations = {
   "Use previous range": "使用上一个范围",
   "Use next range": "使用下一个范围",
   "Delete date window": "删除日期窗口",
+  "Enter a name for this date window.": "请为此日期窗口输入名称。",
+  "The start date must be before the end date.": "开始日期必须早于结束日期。",
   Cancel: "取消",
 };

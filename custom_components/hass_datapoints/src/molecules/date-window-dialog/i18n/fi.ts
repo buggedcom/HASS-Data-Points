@@ -11,5 +11,8 @@ export const translations: ComponentTranslations = {
   "Use previous range": "Käytä edellistä aluetta",
   "Use next range": "Käytä seuraavaa aluetta",
   "Delete date window": "Poista aikaikkuna",
+  "Enter a name for this date window.": "Anna tälle aikaikkunalle nimi.",
+  "The start date must be before the end date.":
+    "Alkupäivän on oltava ennen loppupäivää.",
   Cancel: "Peruuta",
 };

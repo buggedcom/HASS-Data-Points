@@ -8,17 +8,21 @@ export const styles = css`
     --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
   }
 
+  /* --------------------------------------------------------------------------
+   * Layout — the dialog reads as a stack of distinct, well-spaced sections:
+   * intro blurb · name · date-range group (start/end + timeline) · shortcuts ·
+   * actions. Each section owns its own vertical rhythm via the content grid.
+   * ------------------------------------------------------------------------ */
   .date-window-dialog-content {
     display: grid;
-    gap: var(--dp-spacing-sm);
+    gap: var(--dp-spacing-lg);
     padding: var(--dp-spacing-sm) 0 0;
     overflow: visible;
   }
 
   .date-window-dialog-body {
     color: var(--secondary-text-color);
-    line-height: 1.4;
-    margin-bottom: calc(var(--dp-spacing-xs) * -1);
+    line-height: 1.45;
   }
 
   .date-window-dialog-field {
@@ -28,7 +32,7 @@ export const styles = css`
   }
 
   .date-window-dialog-field.name-field {
-    max-width: 320px;
+    max-width: 360px;
   }
 
   .date-window-dialog-field label {
@@ -42,10 +46,33 @@ export const styles = css`
     width: 100%;
   }
 
+  /* The "date range" group binds start/end and the timeline into one unit,
+   * set off from the rest of the form with a subtle surface + border. */
+  .date-range-group {
+    gap: var(--dp-spacing-md);
+    padding: var(--dp-spacing-md);
+    border: 1px solid
+      color-mix(
+        in srgb,
+        var(--divider-color, rgba(0, 0, 0, 0.12)) 80%,
+        transparent
+      );
+    border-radius: 14px;
+    background: color-mix(
+      in srgb,
+      var(--secondary-background-color, #f5f5f5) 45%,
+      transparent
+    );
+  }
+
+  .date-range-group > label {
+    font-size: 0.95rem;
+  }
+
   .date-window-dialog-dates {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--dp-spacing-sm);
+    gap: var(--dp-spacing-md);
   }
 
   .date-window-dialog-input {
@@ -76,15 +103,32 @@ export const styles = css`
     );
   }
 
+  .date-window-dialog-input[aria-invalid="true"] {
+    border-color: color-mix(
+      in srgb,
+      var(--error-color, #db4437) 70%,
+      transparent
+    );
+  }
+
+  /* The range timeline gets real breathing room inside the group. */
   .date-window-dialog-timeline {
-    border-radius: 8px;
+    border-radius: 10px;
     overflow: hidden;
-    margin: calc(var(--dp-spacing-xs) * -1) 0;
+    padding: var(--dp-spacing-xs) 0;
   }
 
   .date-window-dialog-timeline range-timeline {
     display: block;
     height: 64px;
+  }
+
+  /* Inline validation messages, keyed to the offending field. */
+  .date-window-dialog-error {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--error-color, #db4437);
   }
 
   .date-window-dialog-shortcuts {
@@ -93,16 +137,27 @@ export const styles = css`
     gap: var(--dp-spacing-sm);
   }
 
+  /* --------------------------------------------------------------------------
+   * Actions — Delete sits apart on the left (destructive), Cancel + the primary
+   * Create/Save button are grouped on the right. A hairline separates the row.
+   * ------------------------------------------------------------------------ */
   .date-window-dialog-actions {
     display: flex;
+    align-items: center;
     justify-content: space-between;
     gap: var(--dp-spacing-sm);
-    padding-top: 0;
-    margin-top: calc(var(--dp-spacing-xs) * -1);
+    padding-top: var(--dp-spacing-md);
+    border-top: 1px solid
+      color-mix(
+        in srgb,
+        var(--divider-color, rgba(0, 0, 0, 0.12)) 60%,
+        transparent
+      );
   }
 
   .date-window-dialog-actions-right {
     display: flex;
+    align-items: center;
     justify-content: flex-end;
     gap: var(--dp-spacing-sm);
     margin-left: auto;
@@ -149,8 +204,21 @@ export const styles = css`
   }
 
   @media (max-width: 720px) {
+    .date-window-dialog-content {
+      gap: var(--dp-spacing-md);
+    }
+
     .date-window-dialog-dates {
       grid-template-columns: 1fr;
+    }
+
+    .date-window-dialog-actions {
+      flex-wrap: wrap;
+    }
+
+    .date-window-dialog-actions-right {
+      flex: 1 1 100%;
+      justify-content: flex-end;
     }
   }
 `;

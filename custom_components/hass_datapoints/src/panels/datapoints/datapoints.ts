@@ -2284,7 +2284,12 @@ export class HassDatapointsHistoryPanel extends LitElement {
   _createDateWindowFromDialog(
     overrides: { name?: unknown; start?: unknown; end?: unknown } = {}
   ) {
-    // Values arrive from the date-window-dialog's dp-window-submit event.
+    // Values arrive from the date-window-dialog's dp-window-submit event, which
+    // the dialog now only fires with a validated payload (non-empty name and a
+    // start strictly before the end — see date-window-dialog/context.md). The
+    // guard below is therefore a defensive assertion against a malformed event,
+    // not the primary validation path; it no longer provides user feedback
+    // because the dialog owns that (inline error + shake) before emitting.
     const rawName = overrides.name != null ? overrides.name : "";
     const label = String(rawName).trim();
     const parsedStart = overrides.start
