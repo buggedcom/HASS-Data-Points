@@ -8,7 +8,9 @@
  */
 import type { Meta, StoryObj } from "@storybook/web-components-vite";
 import { html } from "lit";
+import { expect } from "storybook/test";
 import { HassDatapointsHistoryCard } from "../history";
+import type { HistoryChart } from "../history-chart/history-chart";
 
 // Self-registers if not already defined (guards against HMR double-registration).
 if (!customElements.get("hass-datapoints-history-card")) {
@@ -127,5 +129,35 @@ export const ExtendedRange: Story = {
       show_trend_lines: true,
     });
     card.hass = mockHass;
+  },
+};
+
+export const RestoredVisibility: Story = {
+  name: "GIVEN disabled entities WHEN refreshing THEN the chart keeps them hidden",
+  render: () => {
+    const card = new HassDatapointsHistoryCard();
+    card.setConfig({
+      title: "Restored visibility",
+      entities: ["sensor.temperature", "sensor.humidity"],
+      series_settings: [
+        { entity_id: "sensor.temperature", visible: true },
+        { entity_id: "sensor.humidity", visible: false },
+      ],
+    });
+    return card;
+  },
+  play: async ({ canvasElement }) => {
+    const card = canvasElement.querySelector<HassDatapointsHistoryCard>(
+      "hass-datapoints-history-card"
+    )!;
+    await card.updateComplete;
+    const chart = card.shadowRoot!.querySelector<HistoryChart>(
+      "hass-datapoints-history-chart"
+    )!;
+    await expect([...chart._hiddenSeries]).toEqual(["sensor.humidity"]);
+    chart._hiddenSeries.delete("sensor.humidity");
+    card.requestUpdate();
+    await card.updateComplete;
+    await expect(chart._hiddenSeries.size).toBe(0);
   },
 };

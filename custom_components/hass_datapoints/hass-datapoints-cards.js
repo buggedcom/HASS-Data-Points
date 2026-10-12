@@ -18235,6 +18235,19 @@
 			this._annotationDialog?.teardown();
 			super.disconnectedCallback();
 		}
+		firstUpdated() {
+			this._syncChartViewState();
+		}
+		_syncChartViewState() {
+			this._chartEl()?.applyViewState({
+				hass: this._hass,
+				config: this._config,
+				hiddenSeries: this._hiddenSeries,
+				hiddenEventIds: this._hiddenEventIds,
+				zoomRange: this._zoomRange,
+				comparisonResults: this._getResolvedComparisonResults()
+			});
+		}
 		setConfig(config) {
 			if (!config.entity && !config.entities && !config.target && !(Array.isArray(config.series_settings) && config.series_settings.length > 0)) throw new Error("hass-datapoints-history-card: define `target`, `entity`, `entities` or `series_settings`");
 			const nextConfig = {
@@ -18284,16 +18297,9 @@
 				this._pruneComparisonDataCache(nextConfig);
 				this._lastComparisonResults = null;
 			}
+			this._syncChartViewState();
 			const chartEl = this._chartEl();
 			if (chartEl) {
-				chartEl.applyViewState({
-					hass: this._hass,
-					config: this._config,
-					hiddenSeries: this._hiddenSeries,
-					hiddenEventIds: this._hiddenEventIds,
-					zoomRange: this._zoomRange,
-					comparisonResults: this._getResolvedComparisonResults()
-				});
 				if (diff.comparisonOverlayChanged) chartEl._renderComparisonPreviewOverlay();
 			}
 			if (diff.dataChanged || !Array.isArray(nextConfig.comparison_windows) || !nextConfig.comparison_windows.length) this._adjustComparisonAxisScale = false;
