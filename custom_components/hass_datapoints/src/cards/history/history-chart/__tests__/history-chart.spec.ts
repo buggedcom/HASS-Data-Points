@@ -382,6 +382,54 @@ describe("hass-datapoints-history-chart", () => {
         expect(hits).toHaveLength(1);
       });
     });
+
+    describe("WHEN an event is linked to a row-mode binary sensor", () => {
+      it("THEN the marker is drawn on that sensor's row-strip lane centre", () => {
+        expect.assertions(2);
+        const arcSpy = vi.fn();
+        const renderer = {
+          ctx: {
+            save: vi.fn(),
+            restore: vi.fn(),
+            beginPath: vi.fn(),
+            arc: arcSpy,
+            fill: vi.fn(),
+            stroke: vi.fn(),
+            fillStyle: "",
+            strokeStyle: "",
+            lineWidth: 0,
+          },
+          xOf: vi.fn(() => 42),
+          yOf: vi.fn(() => 24),
+          pad: { top: 12, left: 8 },
+          ch: 120,
+          _interpolateValue: vi.fn(() => null),
+        };
+
+        const hits = el._drawRecordedEventPoints(
+          renderer as never,
+          // No numeric series matches the event's entity.
+          [],
+          [
+            {
+              id: "evt-door",
+              timestamp: new Date(1_000).toISOString(),
+              entity_ids: ["binary_sensor.door"],
+            },
+          ],
+          0,
+          2_000,
+          {
+            showIcons: false,
+            binaryRowLaneCenters: new Map([["binary_sensor.door", 180]]),
+          }
+        );
+
+        // Marker circles are centred on the lane (y = 180), not the plot bottom.
+        expect(arcSpy.mock.calls.every((call) => call[1] === 180)).toBe(true);
+        expect(hits).toHaveLength(1);
+      });
+    });
   });
 
   describe("GIVEN comparison window line styling", () => {

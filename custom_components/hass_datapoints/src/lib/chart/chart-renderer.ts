@@ -860,8 +860,7 @@ export class ChartRenderer {
     t0: number,
     t1: number,
     color = "#03a9f4",
-    alpha = 0.12,
-    options: { markers?: boolean } = {}
+    alpha = 0.12
   ): void {
     if (!spans?.length) {
       return;
@@ -878,38 +877,6 @@ export class ChartRenderer {
       const x0 = this.xOf(start, t0, t1);
       const x1 = this.xOf(end, t0, t1);
       ctx.fillRect(x0, pad.top, Math.max(1, x1 - x0), this.ch);
-    }
-    // Optional transition markers: a small solid up-triangle at each state
-    // change (every span boundary that falls strictly inside the window), so
-    // the recorded datapoints are visible on the band rather than a flat shade.
-    if (options.markers) {
-      const bottom = pad.top + this.ch;
-      const size = 4;
-      ctx.fillStyle = hexToRgba(color, 1);
-      ctx.strokeStyle = hexToRgba("#ffffff", 0.85);
-      ctx.lineWidth = 1;
-      const drawn = new Set<number>();
-      const marker = (t: number) => {
-        if (!(t > t0 && t < t1)) {
-          return;
-        }
-        const x = Math.round(this.xOf(t, t0, t1));
-        if (drawn.has(x)) {
-          return;
-        }
-        drawn.add(x);
-        ctx.beginPath();
-        ctx.moveTo(x, bottom - size * 2);
-        ctx.lineTo(x + size, bottom);
-        ctx.lineTo(x - size, bottom);
-        ctx.closePath();
-        ctx.fill();
-        ctx.stroke();
-      };
-      for (const span of spans) {
-        marker(span.start);
-        marker(span.end);
-      }
     }
     ctx.restore();
   }
