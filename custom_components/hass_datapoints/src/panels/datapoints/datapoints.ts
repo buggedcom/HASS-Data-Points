@@ -67,7 +67,7 @@ import {
   type AiQueryBriefAnomalySnapshot,
   type AiQueryBriefMonitorContext,
 } from "@/lib/history-page/ai-query-brief";
-import type { AnomalyMonitor } from "@/lib/data/monitors-api";
+import { fetchMonitors, type AnomalyMonitor } from "@/lib/data/monitors-api";
 import {
   type NormalizedHistoryDateWindow,
   makeDateWindowId,
@@ -490,6 +490,13 @@ export class HassDatapointsHistoryPanel extends LitElement {
 
   declare _haEventUnsubscribe: Nullable<() => void>;
 
+  /** Enabled monitors currently firing — feeds the header badge. */
+  declare _monitorAnomalyCount: number;
+
+  declare _monitorsEventUnsubscribe: Nullable<() => void>;
+
+  declare _monitorsSubscribed: boolean;
+
   declare _computingEntityIds: Set<string>;
 
   declare _analysisProgress: number;
@@ -637,6 +644,9 @@ export class HassDatapointsHistoryPanel extends LitElement {
       this._handleCollapsedSidebarClick();
     this._onEventRecorded = () => this._handleEventRecorded();
     this._haEventUnsubscribe = null;
+    this._monitorAnomalyCount = 0;
+    this._monitorsEventUnsubscribe = null;
+    this._monitorsSubscribed = false;
     this._onPopState = () => {
       this._initFromContext();
       if (this._rendered) {
@@ -878,6 +888,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
         })
         .catch(() => {});
     }
+    this._ensureMonitorSummary();
     if (!this._rendered) {
       logger.warn(
         "[dp-lifecycle] set hass: first hass — transitioning to rendered",
@@ -1072,8 +1083,61 @@ export class HassDatapointsHistoryPanel extends LitElement {
     this.performUpdate();
   }
 
+  _ensureMonitorSummary() {
+    const hass = this._hass;
+    // Monitors are an admin-only API; skip entirely for non-admins.
+    if (
+      !hass?.connection ||
+      hass.user?.is_admin !== true ||
+      this._monitorsSubscribed
+    ) {
+      return;
+    }
+    this._monitorsSubscribed = true;
+    this._refreshMonitorSummary();
+    hass.connection
+      .subscribeEvents(
+        () => this._refreshMonitorSummary(),
+        `${DOMAIN}_monitors_updated`
+      )
+      .then((unsub: () => void) => {
+        if (!this.isConnected) {
+          unsub();
+          this._monitorsSubscribed = false;
+          return;
+        }
+        this._monitorsEventUnsubscribe = unsub;
+      })
+      .catch(() => {
+        this._monitorsSubscribed = false;
+      });
+  }
+
+  _refreshMonitorSummary() {
+    const hass = this._hass;
+    if (!hass?.connection) {
+      return;
+    }
+    fetchMonitors(hass)
+      .then((monitors) => {
+        const count = monitors.filter(
+          (m) => m.enabled && (m.last_cluster_count ?? 0) > 0
+        ).length;
+        if (count !== this._monitorAnomalyCount) {
+          this._monitorAnomalyCount = count;
+          this.requestUpdate();
+        }
+      })
+      .catch(() => {});
+  }
+
   disconnectedCallback() {
     super.disconnectedCallback();
+    if (this._monitorsEventUnsubscribe) {
+      this._monitorsEventUnsubscribe();
+      this._monitorsEventUnsubscribe = null;
+    }
+    this._monitorsSubscribed = false;
     _liveInstances.delete(this);
     this._mqTablet.removeEventListener("change", this._onLayoutChange);
     this._mqMobile.removeEventListener("change", this._onLayoutChange);
@@ -1540,6 +1604,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
         .sidebarCollapsed=${this._sidebarCollapsed}
         .hasSavedState=${this._hasSavedPage}
         .layoutMode=${this._layoutMode}
+        .monitorAnomalyCount=${this._monitorAnomalyCount}
         .collapsedOptionsOpen=${this._collapsedOptionsPopupOpen}
         @dp-shell-menu-download=${() => this._downloadSpreadsheet()}
         @dp-shell-menu-ai-brief=${() => {
