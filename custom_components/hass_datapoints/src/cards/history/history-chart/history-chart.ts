@@ -2966,9 +2966,15 @@ export class HistoryChart extends HTMLElement {
     } else {
       minChartHeight = 280;
     }
-    // Row lanes stack below the numeric plot, so the overall chart must grow by
-    // the reserved lane space; the numeric plot itself then shrinks (pad.bottom).
-    minChartHeight += binaryLaneReserve;
+    // Row lanes stack below the numeric plot inside the SAME available height:
+    // the scroll viewport is overflow-y:hidden, so growing the stage past it
+    // would clip the bottom lane. The reserve is taken out of the plot via
+    // pad.bottom (below) rather than added to the chart's total height — but
+    // guarantee enough room for the lanes themselves when the minimum applies.
+    minChartHeight = Math.max(
+      minChartHeight,
+      binaryLaneReserve + HISTORY_CHART_BINARY_LANE_HEIGHT_PX
+    );
     const availableHeight = this._getAvailableChartHeight(minChartHeight);
     const viewportWidth = Math.max(
       (scrollViewport as Nullable<HTMLElement>)?.clientWidth ||
