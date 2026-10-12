@@ -50,39 +50,34 @@ export interface BinaryStateSpan {
 }
 
 /**
- * A binary sensor with its display settings and labels already resolved by the
- * caller (device-class labels and per-series colour are resolved against live
- * `hass` state upstream, so this layer stays pure and canvas-free).
+ * Fields shared by every resolved binary-sensor model: the entity, its legend
+ * label, series colour and device-class on/off wording. Labels and colour are
+ * resolved against live `hass` state upstream, so this layer stays pure and
+ * canvas-free.
  */
-export interface BinaryRenderEntity {
+export interface BinarySensorBase {
   entityId: string;
   label: string;
   color: string;
   onLabel: string;
   offLabel: string;
+}
+
+/** A binary sensor with its display settings and raw state list resolved. */
+export interface BinaryRenderEntity extends BinarySensorBase {
   /** Absence (or any value other than `"row"`) is treated as `"background"`. */
   binaryDisplay?: BinaryDisplayMode;
   stateList: Array<{ lu: number; s: string }>;
 }
 
 /** A background-mode binary sensor: `spans` are the on-only windows to shade. */
-export interface BinaryBackgroundModel {
-  entityId: string;
-  label: string;
-  color: string;
-  onLabel: string;
-  offLabel: string;
+export interface BinaryBackgroundModel extends BinarySensorBase {
   /** On-only projected spans (literal `state === "on"`); may be empty. */
   spans: BinaryStateSpan[];
 }
 
 /** A row-mode binary sensor: `spans` are the full on+off strip for its lane. */
-export interface BinaryRowModel {
-  entityId: string;
-  label: string;
-  color: string;
-  onLabel: string;
-  offLabel: string;
+export interface BinaryRowModel extends BinarySensorBase {
   /** Full on+off spans for the lane strip. */
   spans: BinaryStateSpan[];
   /** Deterministic lane position, assigned in input order (0-based). */
