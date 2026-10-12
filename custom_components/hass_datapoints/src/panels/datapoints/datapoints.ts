@@ -100,6 +100,10 @@ import {
 } from "@/lib/util/popup";
 import { logger } from "@/lib/logger";
 import type { HassLike } from "@/lib/types";
+import type {
+  MonitorsOpenChartDetail,
+  MonitorsOpenEntityDetail,
+} from "@/lib/events";
 
 import "@/molecules/target-row/target-row";
 import "@/molecules/target-row-list/target-row-list";
@@ -127,24 +131,11 @@ import {
   PANEL_HISTORY_STYLE,
 } from "./datapoints.styles";
 
-/** Detail shape for the `dp-monitors-panel-open-chart` event (monitors panel). */
-interface MonitorsOpenChartDetail {
-  entityIds: string[];
-  startMs: number;
-  endMs: number;
-  monitorId: string;
-}
-
-/** Detail shape for the `dp-monitors-panel-open-entity` event (monitors panel). */
-interface MonitorsOpenEntityDetail {
-  entityId: string;
-  monitorId: string;
-}
-
 /**
- * Sane default anomaly methods for the monitor "View series" / chip overlay.
- * The panel's outbound events carry only identity + range (pinned contract), so
- * the chart enables the overlay with a sensible default method set.
+ * Fallback anomaly methods for the monitor "View series" / chip overlay, used
+ * only when a monitor's open-chart/open-entity event carries no methods (an
+ * empty list). Otherwise the overlay recomputes with the monitor's own
+ * configured methods threaded through the event detail (#68 user story 8).
  */
 const MONITOR_DEFAULT_ANOMALY_METHODS = ["trend_residual"];
 
@@ -2990,13 +2981,29 @@ export class HassDatapointsHistoryPanel extends LitElement {
    * rather than a bespoke overlay — a row with `analysis.show_anomalies === true`
    * draws the same anomaly clusters the chart already fetches.
    */
-  _buildMonitorAnomalySeriesRows(entityIds: string[]) {
+  _buildMonitorAnomalySeriesRows(
+    entityIds: string[],
+    options?: { anomalyMethods?: string[]; anomalySensitivity?: string }
+  ) {
+    // Thread the monitor's OWN detection methods through so the overlay plots
+    // the monitor's actual detections, not a hardcoded chart default. Fall back
+    // to the default only when the monitor carried no methods (#68 story 8).
+    const methods =
+      Array.isArray(options?.anomalyMethods) &&
+      options.anomalyMethods.length > 0
+        ? options.anomalyMethods
+        : MONITOR_DEFAULT_ANOMALY_METHODS;
+    const sensitivity = options?.anomalySensitivity;
     return buildHistorySeriesRows(entityIds).map((row) => ({
       ...row,
       analysis: normalizeHistorySeriesAnalysis({
         ...row.analysis,
         show_anomalies: true,
-        anomaly_methods: MONITOR_DEFAULT_ANOMALY_METHODS,
+        anomaly_methods: methods,
+        anomaly_overlap_mode: this._chartAnomalyOverlapMode,
+        ...(typeof sensitivity === "string" && sensitivity
+          ? { anomaly_sensitivity: sensitivity }
+          : {}),
       }),
     }));
   }
@@ -3017,7 +3024,15 @@ export class HassDatapointsHistoryPanel extends LitElement {
     }
     this._showMonitorsPanel = false;
     this._contentKey = "";
-    this._seriesRows = this._buildMonitorAnomalySeriesRows(entityIds);
+    this._seriesRows = this._buildMonitorAnomalySeriesRows(entityIds, {
+      anomalyMethods: Array.isArray(detail?.anomalyMethods)
+        ? detail.anomalyMethods
+        : [],
+      anomalySensitivity:
+        typeof detail?.anomalySensitivity === "string"
+          ? detail.anomalySensitivity
+          : undefined,
+    });
     this._syncSeriesState();
     this._renderTargetRows();
     const start =
@@ -3071,7 +3086,15 @@ export class HassDatapointsHistoryPanel extends LitElement {
     ) as HistoryCardElement;
     chart.setConfig({
       entities: [entityId],
-      series_settings: this._buildMonitorAnomalySeriesRows([entityId]),
+      series_settings: this._buildMonitorAnomalySeriesRows([entityId], {
+        anomalyMethods: Array.isArray(detail?.anomalyMethods)
+          ? detail.anomalyMethods
+          : [],
+        anomalySensitivity:
+          typeof detail?.anomalySensitivity === "string"
+            ? detail.anomalySensitivity
+            : undefined,
+      }),
       start_time: start.toISOString(),
       end_time: end.toISOString(),
       show_correlated_anomalies: this._showCorrelatedAnomalies,
