@@ -11,4 +11,7 @@ export const translations: ComponentTranslations = {
   "Show data gaps": "显示数据缺口",
   "Highlight missing data ranges with dashed lines and boundary markers":
     "用虚线和边界标记突出显示缺失数据范围",
+  "Binary Sensor Display": "二元传感器显示",
+  "Background band": "背景条带",
+  "Row strip": "行条带",
 };
