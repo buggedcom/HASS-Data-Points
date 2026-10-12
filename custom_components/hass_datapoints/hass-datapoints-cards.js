@@ -22239,9 +22239,22 @@
 			end: parseDateValue(detail.endDate || value.endDate || source.endDate || source.target?.endDate)
 		};
 	}
+	var _dateTimeFormatCache = /* @__PURE__ */ new Map();
+	function getDateTimeFormat(locale, options) {
+		const key = `${locale ?? ""}|${JSON.stringify(options)}`;
+		let formatter = _dateTimeFormatCache.get(key);
+		if (!formatter) {
+			formatter = new Intl.DateTimeFormat(locale ? [locale] : [], options);
+			_dateTimeFormatCache.set(key, formatter);
+		}
+		return formatter;
+	}
+	function formatDateTime(value, locale, options) {
+		return getDateTimeFormat(locale, options).format(value);
+	}
 	function formatRangeDateTime(value, locale) {
 		if (!(value instanceof Date) || Number.isNaN(value.getTime())) return "--";
-		return value.toLocaleString(locale ? [locale] : [], {
+		return formatDateTime(value, locale, {
 			month: "short",
 			day: "numeric",
 			hour: "2-digit",
@@ -22250,7 +22263,7 @@
 	}
 	function formatRangeTick(value, locale) {
 		if (!(value instanceof Date) || Number.isNaN(value.getTime())) return "--";
-		return value.toLocaleString(locale ? [locale] : [], {
+		return formatDateTime(value, locale, {
 			month: "short",
 			day: "numeric",
 			hour: "2-digit",
@@ -22322,10 +22335,10 @@
 		return result;
 	}
 	function formatMonthLabel(value, locale) {
-		return value.toLocaleString(locale ? [locale] : [], { month: "short" });
+		return formatDateTime(value, locale, { month: "short" });
 	}
 	function formatYearLabel(value, locale) {
-		return value.toLocaleString(locale ? [locale] : [], { year: "numeric" });
+		return formatDateTime(value, locale, { year: "numeric" });
 	}
 	function getWeekOfYear(value) {
 		const date = new Date(value.getTime());
@@ -22336,16 +22349,16 @@
 		return Math.ceil(((date.getTime() - yearStart.getTime()) / DAY_MS + 1) / 7);
 	}
 	function getWeekLabel(value, locale) {
-		return value.toLocaleString(locale ? [locale] : [], {
+		return formatDateTime(value, locale, {
 			month: "short",
 			day: "numeric"
 		});
 	}
 	function formatDayLabel(value, locale) {
-		return value.toLocaleString(locale ? [locale] : [], { day: "numeric" });
+		return formatDateTime(value, locale, { day: "numeric" });
 	}
 	function formatHourLabel(value, locale) {
-		return value.toLocaleTimeString(locale ? [locale] : [], { hour: "2-digit" });
+		return formatDateTime(value, locale, { hour: "2-digit" });
 	}
 	function formatQuarterLabel(value, zoomLevel = "", locale) {
 		return zoomLevel === "quarterly" ? `Q${Math.floor(value.getMonth() / 3) + 1}` : formatMonthLabel(value, locale);
@@ -22363,11 +22376,11 @@
 	function formatContextLabel(value, unit, locale) {
 		switch (unit) {
 			case "year": return formatYearLabel(value, locale);
-			case "month": return value.toLocaleString(locale ? [locale] : [], {
+			case "month": return formatDateTime(value, locale, {
 				month: "short",
 				year: "numeric"
 			});
-			case "day": return value.toLocaleString(locale ? [locale] : [], {
+			case "day": return formatDateTime(value, locale, {
 				month: "short",
 				day: "numeric"
 			});
@@ -22378,21 +22391,21 @@
 		switch (unit) {
 			case "year": return formatYearLabel(value, locale);
 			case "quarter": return `${formatQuarterLabel(value, "", locale)} ${formatYearLabel(value, locale)}`;
-			case "month": return value.toLocaleString(locale ? [locale] : [], {
+			case "month": return formatDateTime(value, locale, {
 				month: "long",
 				year: "numeric"
 			});
-			case "week": return `${msg("Week of")} ${value.toLocaleString(locale ? [locale] : [], {
+			case "week": return `${msg("Week of")} ${formatDateTime(value, locale, {
 				month: "short",
 				day: "numeric",
 				year: "numeric"
 			})}`;
-			case "day": return value.toLocaleString(locale ? [locale] : [], {
+			case "day": return formatDateTime(value, locale, {
 				month: "short",
 				day: "numeric",
 				year: "numeric"
 			});
-			case "hour": return value.toLocaleString(locale ? [locale] : [], {
+			case "hour": return formatDateTime(value, locale, {
 				month: "short",
 				day: "numeric",
 				year: "numeric",
