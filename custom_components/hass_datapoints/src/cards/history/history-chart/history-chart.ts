@@ -2745,19 +2745,12 @@ export class HistoryChart extends HTMLElement {
     const visibleRows = binaryRows.filter(
       (row) => !this._hiddenSeries.has(row.entityId)
     );
-    // The scroll viewport is overflow-x:auto / overflow-y:hidden, so when the
-    // canvas is wider than the viewport its horizontal scrollbar occupies the
-    // bottom few px of the usable height. Keep a bottom margin below the last
-    // lane (at least the measured scrollbar height) so it isn't hidden there.
-    const laneScrollbarHeight =
-      scrollViewport instanceof HTMLElement
-        ? Math.max(0, scrollViewport.offsetHeight - scrollViewport.clientHeight)
-        : 0;
+    // A small breathing-room margin below the last lane.
     const binaryLaneBottomMargin = visibleRows.length
-      ? Math.max(laneScrollbarHeight, HISTORY_CHART_BINARY_LANE_GAP_PX)
+      ? HISTORY_CHART_BINARY_LANE_GAP_PX
       : 0;
     // Total vertical space the stacked binary row lanes reserve below the plot
-    // (lane stack + the scrollbar-clearing bottom margin).
+    // (lane stack + the bottom margin).
     const binaryLaneReserve =
       reserveLaneSpace(
         visibleRows.length,
@@ -2988,7 +2981,23 @@ export class HistoryChart extends HTMLElement {
       minChartHeight,
       binaryLaneReserve + HISTORY_CHART_BINARY_LANE_HEIGHT_PX
     );
-    const availableHeight = this._getAvailableChartHeight(minChartHeight);
+    let availableHeight = this._getAvailableChartHeight(minChartHeight);
+    // When row lanes are present they live at the very bottom of the canvas, so
+    // the canvas must fit entirely inside the scroll viewport (overflow-y:hidden)
+    // — otherwise minChartHeight (e.g. 280) can exceed the viewport's usable
+    // height and the bottom lane is clipped. Cap the canvas to the viewport's
+    // visible height so every lane stays on-screen; the numeric plot absorbs the
+    // difference. Keep a sane floor so the plot never collapses entirely.
+    if (visibleRows.length) {
+      const viewportInnerHeight =
+        scrollViewport instanceof HTMLElement ? scrollViewport.clientHeight : 0;
+      if (viewportInnerHeight > 0) {
+        availableHeight = Math.min(
+          availableHeight,
+          Math.max(viewportInnerHeight, binaryLaneReserve + 80)
+        );
+      }
+    }
     const viewportWidth = Math.max(
       (scrollViewport as Nullable<HTMLElement>)?.clientWidth ||
         (wrap as Nullable<HTMLElement>)?.clientWidth ||
