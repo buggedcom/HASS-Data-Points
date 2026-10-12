@@ -17,6 +17,7 @@ import "@/molecules/target-row-list/target-row-list";
  * ## Events from target rows (bubbled through from `target-row-list`):
  * @fires dp-row-color-change        — `{ index, color }`
  * @fires dp-row-visibility-change   — `{ entityId, visible }`
+ * @fires dp-row-binary-display-change — `{ index, entityId, mode }`
  * @fires dp-row-remove              — `{ index }`
  * @fires dp-row-toggle-analysis     — `{ entityId }`
  * @fires dp-row-analysis-change     — `{ entityId, key, value }`
@@ -172,6 +173,7 @@ export class HistoryTargets extends LitElement {
             .states=${this.states}
             .hass=${this.hass}
             .labelMap=${this.labelMap}
+            .showBinaryDisplay=${true}
             .canShowDeltaAnalysis=${this.canShowDeltaAnalysis}
             .comparisonWindows=${this.comparisonWindows}
             .computingEntityIds=${this.computingEntityIds}
