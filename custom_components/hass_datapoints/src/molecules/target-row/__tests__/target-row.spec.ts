@@ -582,13 +582,14 @@ describe("target-row", () => {
       context: { id: "d1", parent_id: null, user_id: null },
     };
 
-    describe("WHEN rendered in row mode", () => {
+    describe("WHEN expanded in row mode", () => {
       beforeEach(async () => {
         el = createElement({
           stateObj: BINARY_STATE,
           entityId: "binary_sensor.front_door",
           showBinaryDisplay: true,
           binaryDisplay: "row",
+          analysis: { ...BLANK_ANALYSIS, expanded: true },
         });
         await el.updateComplete;
       });
@@ -621,6 +622,32 @@ describe("target-row", () => {
         expect(handler.mock.calls[0][0].detail.entityId).toBe(
           "binary_sensor.front_door"
         );
+      });
+    });
+
+    describe("WHEN collapsed (not expanded)", () => {
+      beforeEach(async () => {
+        el = createElement({
+          stateObj: BINARY_STATE,
+          entityId: "binary_sensor.front_door",
+          showBinaryDisplay: true,
+          analysis: { ...BLANK_ANALYSIS, expanded: false },
+        });
+        await el.updateComplete;
+      });
+
+      it("THEN the expand toggle is shown", () => {
+        expect.assertions(1);
+        expect(
+          el.shadowRoot!.querySelector(".history-target-analysis-toggle")
+        ).not.toBeNull();
+      });
+
+      it("THEN the binary display select is hidden until expanded", () => {
+        expect.assertions(1);
+        expect(
+          el.shadowRoot!.querySelector(".history-target-binary-display")
+        ).toBeNull();
       });
     });
 

@@ -266,6 +266,19 @@ export class TargetRow extends LitElement {
     const a = this.analysis || ({} as NormalizedAnalysis);
     const hasConfigured = _hasConfiguredAnalysis(a);
     const hasActive = _hasActiveAnalysis(a, this.canShowDeltaAnalysis);
+    // Binary sensors have no analysis, but when the display toggle is enabled
+    // they still get an expandable options row that reuses the same chevron and
+    // expanded-panel mechanics as numeric sensors' analysis options.
+    const hasBinaryDisplayOption = this._isBinary && this.showBinaryDisplay;
+    const canExpand = this._supportsAnalysis || hasBinaryDisplayOption;
+    const expanded = this.analysis?.expanded === true;
+    const toggleNoun = this._supportsAnalysis ? "analysis" : "display";
+    let toggleTitle = msg("Chart display options");
+    if (this._supportsAnalysis) {
+      toggleTitle = hasConfigured
+        ? msg("Analysis configured")
+        : msg("Configure analysis");
+    }
 
     const rowClass = [
       "history-target-row",
@@ -293,8 +306,8 @@ export class TargetRow extends LitElement {
           class="history-target-name"
           role="cell"
           title=${this._entityName}
-          @click=${this._supportsAnalysis ? this._onAnalysisToggle : nothing}
-          style=${this._supportsAnalysis ? "cursor:pointer" : ""}
+          @click=${canExpand ? this._onAnalysisToggle : nothing}
+          style=${canExpand ? "cursor:pointer" : ""}
         >
           <div class="history-target-controls">
             <label
@@ -333,41 +346,24 @@ export class TargetRow extends LitElement {
         </div>
 
         <div class="history-target-actions" role="cell">
-          ${this._supportsAnalysis
+          ${canExpand
             ? html`
                 <button
                   type="button"
-                  class="history-target-analysis-toggle ${this.analysis
-                    ?.expanded
+                  class="history-target-analysis-toggle ${expanded
                     ? "is-open"
-                    : ""} ${hasConfigured ? "configured" : ""}"
-                  aria-label="${this.analysis?.expanded
+                    : ""} ${this._supportsAnalysis && hasConfigured
+                    ? "configured"
+                    : ""}"
+                  aria-label="${expanded
                     ? "Collapse"
-                    : "Expand"} analysis options for ${this._entityName}"
-                  aria-expanded=${this.analysis?.expanded}
-                  title=${hasConfigured
-                    ? msg("Analysis configured")
-                    : msg("Configure analysis")}
+                    : "Expand"} ${toggleNoun} options for ${this._entityName}"
+                  aria-expanded=${expanded}
+                  title=${toggleTitle}
                   @click=${this._onAnalysisToggle}
                 >
                   <ha-icon icon="mdi:chevron-down"></ha-icon>
                 </button>
-              `
-            : nothing}
-          ${this.showBinaryDisplay && this._isBinary
-            ? html`
-                <inline-select
-                  class="history-target-binary-display"
-                  data-binary-entity=${this._entityId}
-                  .value=${resolveBinaryDisplayMode(this.binaryDisplay)}
-                  .options=${[
-                    { value: "background", label: msg("Background band") },
-                    { value: "row", label: msg("Row strip") },
-                  ]}
-                  aria-label="Chart display style for ${this._entityName}"
-                  @click=${(e: Event) => e.stopPropagation()}
-                  @dp-change=${this._onBinaryDisplayChange}
-                ></inline-select>
               `
             : nothing}
 
@@ -486,6 +482,30 @@ export class TargetRow extends LitElement {
                         `
                       : nothing}
                   </div>
+                </div>
+              </div>
+            `
+          : nothing}
+        ${hasBinaryDisplayOption && expanded
+          ? html`
+              <div class="history-target-analysis" role="cell">
+                <div class="history-target-analysis-grid">
+                  <label
+                    class="history-target-analysis-option history-target-binary-display-option"
+                  >
+                    <span>${msg("Chart display")}</span>
+                    <inline-select
+                      class="history-target-binary-display"
+                      data-binary-entity=${this._entityId}
+                      .value=${resolveBinaryDisplayMode(this.binaryDisplay)}
+                      .options=${[
+                        { value: "background", label: msg("Background band") },
+                        { value: "row", label: msg("Row strip") },
+                      ]}
+                      aria-label="Chart display style for ${this._entityName}"
+                      @dp-change=${this._onBinaryDisplayChange}
+                    ></inline-select>
+                  </label>
                 </div>
               </div>
             `
