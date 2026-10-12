@@ -2745,12 +2745,25 @@ export class HistoryChart extends HTMLElement {
     const visibleRows = binaryRows.filter(
       (row) => !this._hiddenSeries.has(row.entityId)
     );
-    // Total vertical space the stacked binary row lanes reserve below the plot.
-    const binaryLaneReserve = reserveLaneSpace(
-      visibleRows.length,
-      HISTORY_CHART_BINARY_LANE_HEIGHT_PX,
-      HISTORY_CHART_BINARY_LANE_GAP_PX
-    );
+    // The scroll viewport is overflow-x:auto / overflow-y:hidden, so when the
+    // canvas is wider than the viewport its horizontal scrollbar occupies the
+    // bottom few px of the usable height. Keep a bottom margin below the last
+    // lane (at least the measured scrollbar height) so it isn't hidden there.
+    const laneScrollbarHeight =
+      scrollViewport instanceof HTMLElement
+        ? Math.max(0, scrollViewport.offsetHeight - scrollViewport.clientHeight)
+        : 0;
+    const binaryLaneBottomMargin = visibleRows.length
+      ? Math.max(laneScrollbarHeight, HISTORY_CHART_BINARY_LANE_GAP_PX)
+      : 0;
+    // Total vertical space the stacked binary row lanes reserve below the plot
+    // (lane stack + the scrollbar-clearing bottom margin).
+    const binaryLaneReserve =
+      reserveLaneSpace(
+        visibleRows.length,
+        HISTORY_CHART_BINARY_LANE_HEIGHT_PX,
+        HISTORY_CHART_BINARY_LANE_GAP_PX
+      ) + binaryLaneBottomMargin;
     const selectedComparisonResult =
       drawableComparisonResults.find(
         (window) => window.id === selectedComparisonWindowId
