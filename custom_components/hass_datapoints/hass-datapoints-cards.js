@@ -9172,7 +9172,7 @@
 			}
 			ctx.restore();
 		}
-		drawStateBands(spans, t0, t1, color = "#03a9f4", alpha = .12, options = {}) {
+		drawStateBands(spans, t0, t1, color = "#03a9f4", alpha = .12) {
 			if (!spans?.length) return;
 			const { ctx, pad } = this;
 			ctx.save();
@@ -9184,31 +9184,6 @@
 				const x0 = this.xOf(start, t0, t1);
 				const x1 = this.xOf(end, t0, t1);
 				ctx.fillRect(x0, pad.top, Math.max(1, x1 - x0), this.ch);
-			}
-			if (options.markers) {
-				const bottom = pad.top + this.ch;
-				const size = 4;
-				ctx.fillStyle = hexToRgba(color, 1);
-				ctx.strokeStyle = hexToRgba("#ffffff", .85);
-				ctx.lineWidth = 1;
-				const drawn = /* @__PURE__ */ new Set();
-				const marker = (t) => {
-					if (!(t > t0 && t < t1)) return;
-					const x = Math.round(this.xOf(t, t0, t1));
-					if (drawn.has(x)) return;
-					drawn.add(x);
-					ctx.beginPath();
-					ctx.moveTo(x, bottom - 8);
-					ctx.lineTo(x + size, bottom);
-					ctx.lineTo(x - size, bottom);
-					ctx.closePath();
-					ctx.fill();
-					ctx.stroke();
-				};
-				for (const span of spans) {
-					marker(span.start);
-					marker(span.end);
-				}
 			}
 			ctx.restore();
 		}
@@ -14284,7 +14259,8 @@
 		* with the plot above at any zoom/pan.
 		*/
 		_drawBinaryRowLanes(renderer, visibleRows, t0, t1, laneReserve) {
-			if (!visibleRows.length || laneReserve <= 0) return;
+			const laneCenters = /* @__PURE__ */ new Map();
+			if (!visibleRows.length || laneReserve <= 0) return laneCenters;
 			const laneHeight = HISTORY_CHART_BINARY_LANE_HEIGHT_PX;
 			const gap = HISTORY_CHART_BINARY_LANE_GAP_PX;
 			const regionTop = renderer.cssH - laneReserve;
@@ -14301,7 +14277,9 @@
 					color: row.color,
 					label: row.label
 				});
+				laneCenters.set(row.entityId, rect.y + rect.height / 2);
 			});
+			return laneCenters;
 		}
 		/** Draw a single series line onto the renderer, with optional data-gap rendering. */
 		_drawSeriesLine(renderer, pts, color, t0, t1, min, max, opts) {
@@ -14340,6 +14318,7 @@
 			const hits = [];
 			const { ctx } = renderer;
 			const showIcons = opts.showIcons !== false;
+			const binaryRowLaneCenters = opts.binaryRowLaneCenters instanceof Map ? opts.binaryRowLaneCenters : null;
 			const fallbackHighlightedIds = Array.isArray(this._config?.hovered_event_ids) ? this._config.hovered_event_ids : [];
 			const highlightedEventIds = new Set(Array.isArray(opts.highlightedEventIds) ? opts.highlightedEventIds : fallbackHighlightedIds);
 			for (const event of events) {
@@ -14367,8 +14346,17 @@
 				const hasNumericTarget = !!(targetSeries?.pts?.length && targetSeries.axis);
 				const value = hasNumericTarget ? fallbackSeriesHit?.value ?? null : null;
 				if (hasNumericTarget && value == null) continue;
+				let binaryLaneY = null;
+				if (!hasNumericTarget && binaryRowLaneCenters) for (const eid of eventEntityIds) {
+					const center = binaryRowLaneCenters.get(eid);
+					if (center != null) {
+						binaryLaneY = center;
+						break;
+					}
+				}
 				let y;
 				if (hasNumericTarget) y = renderer.yOf(value, targetSeries.axis.min, targetSeries.axis.max);
+				else if (binaryLaneY != null) y = binaryLaneY;
 				else if (linkedToOtherTarget) y = renderer.pad.top + renderer.ch;
 				else y = renderer.pad.top + 12;
 				const color = event.color || targetSeries?.color || "#03a9f4";
@@ -15411,9 +15399,9 @@
 			renderChartAxisOverlays(this, renderer, activeAxes);
 			this.style.setProperty("--dp-chart-axis-bottom-height", `${Math.max(0, renderer.pad.bottom)}px`);
 			binaryBackgrounds.forEach((binaryBackground) => {
-				if (binaryBackground?.spans?.length && !this._hiddenSeries.has(binaryBackground.entityId)) renderer.drawStateBands(binaryBackground.spans, renderT0, renderT1, binaryBackground.color, .12, { markers: true });
+				if (binaryBackground?.spans?.length && !this._hiddenSeries.has(binaryBackground.entityId)) renderer.drawStateBands(binaryBackground.spans, renderT0, renderT1, binaryBackground.color, .12);
 			});
-			this._drawBinaryRowLanes(renderer, visibleRows, renderT0, renderT1, binaryLaneReserve);
+			const binaryRowLaneCenters = this._drawBinaryRowLanes(renderer, visibleRows, renderT0, renderT1, binaryLaneReserve);
 			const shouldUseCorrelatedSpans = this._config?.show_correlated_anomalies === true || this._config?.anomaly_overlap_mode === "only";
 			const shouldDrawCorrelatedSpans = this._config?.show_correlated_anomalies === true;
 			const correlatedSpans = shouldUseCorrelatedSpans ? this._buildCorrelatedAnomalySpans(visibleSeries, anomalyClustersMap, analysisMap) : [];
@@ -15847,7 +15835,10 @@
 				showLines: this._config.show_event_lines !== false,
 				showMarkers: this._config.show_event_lines !== false
 			});
-			const eventHits = this._drawRecordedEventPoints(renderer, visibleSeries, chartEvents, renderT0, renderT1, { showIcons: this._config.show_event_markers !== false });
+			const eventHits = this._drawRecordedEventPoints(renderer, visibleSeries, chartEvents, renderT0, renderT1, {
+				showIcons: this._config.show_event_markers !== false,
+				binaryRowLaneCenters
+			});
 			this._renderLegend(series, binaryBackgrounds, binaryRows);
 			const eventValueMap = new Map(eventHits.map((hit) => [hit.event.id, hit]));
 			const enrichedEvents = chartEvents.map((event) => {
@@ -16231,7 +16222,7 @@
 				}
 				binaryBackgrounds.forEach((bg) => {
 					const bgItem = bg;
-					if (!this._hiddenSeries.has(bgItem.entityId) && bgItem.spans?.length) renderer.drawStateBands(bgItem.spans, renderT0, renderT1, bgItem.color, .1, { markers: true });
+					if (!this._hiddenSeries.has(bgItem.entityId) && bgItem.spans?.length) renderer.drawStateBands(bgItem.spans, renderT0, renderT1, bgItem.color, .1);
 				});
 				if (shouldDrawCorrelatedAnomalySpans && correlatedAnomalySpans.length) renderer.drawStateBands(correlatedAnomalySpans, renderT0, renderT1, "#ef4444", .1);
 				renderer.drawAnnotations(events, renderT0, renderT1, {
