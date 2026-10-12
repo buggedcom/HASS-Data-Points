@@ -55,6 +55,10 @@ export class PanelShell extends LitElement {
   @property({ type: String, attribute: "layout-mode" })
   accessor layoutMode: string = "desktop";
 
+  /** Number of enabled monitors currently firing — shown as a header badge. */
+  @property({ type: Number, attribute: false })
+  accessor monitorAnomalyCount: number = 0;
+
   @property({ type: Boolean, attribute: false })
   accessor collapsedOptionsOpen: boolean = false;
 
@@ -198,6 +202,10 @@ export class PanelShell extends LitElement {
     this._emit("dp-shell-menu-monitors");
   }
 
+  private _onMonitorsButtonClick(): void {
+    this._emit("dp-shell-menu-monitors");
+  }
+
   private _onSidebarToggle(): void {
     this._emit("dp-shell-sidebar-toggle");
   }
@@ -227,6 +235,20 @@ export class PanelShell extends LitElement {
         <div slot="title">${msg("Datapoints")}</div>
 
         <div slot="actionItems" class="page-header-actions">
+          <div class="monitors-wrap">
+            <ha-icon-button
+              class="monitors-button"
+              label=${msg("Anomaly monitors")}
+              @click=${this._onMonitorsButtonClick}
+            >
+              <ha-icon icon="mdi:bell-alert-outline"></ha-icon>
+            </ha-icon-button>
+            ${this.monitorAnomalyCount > 0
+              ? html`<span class="monitors-badge" aria-hidden="true"
+                  >${this.monitorAnomalyCount}</span
+                >`
+              : nothing}
+          </div>
           <div class="page-menu-wrap">
             <ha-icon-button
               id="page-menu-button"

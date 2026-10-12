@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "../panel-shell";
 import { setFrontendLocale } from "@/lib/i18n/localize";
 
@@ -6,6 +6,7 @@ type DpPanelShell = HTMLElement & {
   sidebarCollapsed: boolean;
   hasSavedState: boolean;
   layoutMode: string;
+  monitorAnomalyCount: number;
   updateComplete: Promise<boolean>;
   syncLayoutHeight(): void;
   closePageMenu(): void;
@@ -412,6 +413,69 @@ describe("panel-shell", () => {
         expect(
           el.shadowRoot!.querySelector("slot[name='controls']")
         ).not.toBeNull();
+      });
+    });
+  });
+
+  // ── Monitors header button ─────────────────────────────────────────────────
+
+  describe("GIVEN monitorAnomalyCount is 0", () => {
+    beforeEach(async () => {
+      el = createElement({ monitorAnomalyCount: 0 });
+      await el.updateComplete;
+    });
+
+    describe("WHEN rendered", () => {
+      it("THEN renders a labelled header monitors button with no badge", () => {
+        expect.assertions(2);
+        const btn = el.shadowRoot!.querySelector(".monitors-button");
+        expect(btn?.getAttribute("label")).toBe("Anomaly monitors");
+        expect(el.shadowRoot!.querySelector(".monitors-badge")).toBeNull();
+      });
+    });
+  });
+
+  describe("GIVEN monitorAnomalyCount is 3", () => {
+    beforeEach(async () => {
+      el = createElement({ monitorAnomalyCount: 3 });
+      await el.updateComplete;
+    });
+
+    describe("WHEN rendered", () => {
+      it("THEN shows a badge with the count", () => {
+        expect.assertions(1);
+        expect(
+          el.shadowRoot!.querySelector(".monitors-badge")?.textContent?.trim()
+        ).toBe("3");
+      });
+    });
+  });
+
+  describe("GIVEN the header monitors button", () => {
+    beforeEach(async () => {
+      el = createElement();
+      await el.updateComplete;
+    });
+
+    describe("WHEN it is clicked", () => {
+      it("THEN dp-shell-menu-monitors is emitted", () => {
+        expect.assertions(1);
+        const handler = vi.fn();
+        el.addEventListener("dp-shell-menu-monitors", handler);
+        el.shadowRoot!.querySelector<HTMLElement>(".monitors-button")!.click();
+        expect(handler).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe("WHEN the overflow menu item acts", () => {
+      it("THEN dp-shell-menu-monitors is still emitted", () => {
+        expect.assertions(1);
+        const handler = vi.fn();
+        el.addEventListener("dp-shell-menu-monitors", handler);
+        el.shadowRoot!.querySelector(
+          "page-menu-item[icon='mdi:bell-alert-outline']"
+        )!.dispatchEvent(new CustomEvent("dp-menu-action", { bubbles: true }));
+        expect(handler).toHaveBeenCalledTimes(1);
       });
     });
   });

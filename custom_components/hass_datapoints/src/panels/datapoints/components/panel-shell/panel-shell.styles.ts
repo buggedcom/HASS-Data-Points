@@ -96,6 +96,37 @@ export const styles = css`
     z-index: 40;
   }
 
+  .monitors-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    --mdc-icon-size: 24px;
+    --icon-primary-color: var(--secondary-text-color);
+  }
+
+  .monitors-button:hover,
+  .monitors-button:focus-visible {
+    --icon-primary-color: var(--primary-text-color);
+  }
+
+  .monitors-badge {
+    position: absolute;
+    top: 4px;
+    right: 2px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    box-sizing: border-box;
+    border-radius: 8px;
+    background: var(--error-color, #db4437);
+    color: var(--text-primary-color, #fff);
+    font-size: 11px;
+    line-height: 16px;
+    font-weight: 600;
+    text-align: center;
+    pointer-events: none;
+  }
+
   .page-menu-wrap {
     position: relative;
     display: inline-flex;
