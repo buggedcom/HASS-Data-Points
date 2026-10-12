@@ -1,8 +1,10 @@
+import type { AggregateDefinition } from "@/lib/domain/aggregation/types";
 // ---------------------------------------------------------------------------
 // Shared types for target-row and related components
 // ---------------------------------------------------------------------------
 
 export interface NormalizedAnalysis {
+  aggregates?: AggregateDefinition[];
   expanded: boolean;
   show_trend_lines: boolean;
   trend_method: string;
