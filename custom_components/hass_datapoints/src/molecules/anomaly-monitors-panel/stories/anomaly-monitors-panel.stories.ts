@@ -1,5 +1,6 @@
 import { html } from "lit";
 import "../anomaly-monitors-panel";
+import "@/panels/datapoints/components/panel-shell/panel-shell";
 import { expect, waitFor } from "storybook/test";
 import { setFrontendLocale } from "@/lib/i18n/localize";
 import { createMockHass } from "@/test-support/mock-hass";
@@ -347,5 +348,45 @@ export const WithDismissed = {
     const root = panelRoot(canvasElement);
     await expect(root.querySelectorAll(".dismissed-item")).toHaveLength(2);
     await expect(root.querySelectorAll(".undismiss-btn")).toHaveLength(2);
+  },
+};
+
+export const Scrolling = {
+  name: "GIVEN a long anomalies listing WHEN scrolling THEN the last monitor is reachable",
+  render: () => html`
+    <div style="height:500px;max-width:900px;">
+      <panel-shell>
+        <div id="content">
+          ${renderPanel({
+            monitors: Array.from({ length: 12 }, (_, i) =>
+              buildMonitor({ id: `monitor-${i}`, name: `Monitor ${i + 1}` })
+            ),
+          })}
+        </div>
+      </panel-shell>
+    </div>
+  `,
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    await waitFor(() =>
+      expect(
+        panelRoot(canvasElement).querySelectorAll(".monitor-card")
+      ).toHaveLength(12)
+    );
+    const panel = canvasElement.querySelector<HTMLElement>(
+      "anomaly-monitors-panel"
+    )!;
+    const last = panelRoot(canvasElement).querySelector<HTMLElement>(
+      ".monitor-card:last-child"
+    )!;
+    await expect(panel.clientHeight).toBeGreaterThan(0);
+    await expect(panel.clientHeight).toBeLessThanOrEqual(
+      panel.parentElement!.clientHeight
+    );
+    await expect(panel.scrollHeight).toBeGreaterThan(panel.clientHeight);
+    panel.scrollTop = panel.scrollHeight;
+    await expect(panel.scrollTop).toBeGreaterThan(0);
+    await expect(last.getBoundingClientRect().bottom).toBeLessThanOrEqual(
+      panel.getBoundingClientRect().bottom
+    );
   },
 };
