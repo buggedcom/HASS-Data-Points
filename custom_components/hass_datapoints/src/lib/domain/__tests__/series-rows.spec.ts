@@ -4,6 +4,7 @@ import {
   addSeriesRows,
   updateSeriesRowColor,
   updateSeriesRowVisibility,
+  updateSeriesRowBinaryDisplay,
   toggleSeriesAnalysisExpanded,
   computeNextAnalysis,
   copyAnalysisToAll,
@@ -365,6 +366,68 @@ describe("series-rows", () => {
     describe("WHEN index is undefined", () => {
       it("THEN returns null", () => {
         expect(removeSeriesRow(rows, undefined)).toBeNull();
+      });
+    });
+  });
+
+  describe("GIVEN updateSeriesRowBinaryDisplay", () => {
+    const makeRows = (): SeriesRow[] => [
+      {
+        entity_id: "binary_sensor.door",
+        color: "#ff0000",
+        visible: true,
+        analysis: normalizeHistorySeriesAnalysis(null),
+      },
+      {
+        entity_id: "sensor.temp",
+        color: "#00ff00",
+        visible: true,
+        analysis: normalizeHistorySeriesAnalysis(null),
+      },
+    ];
+
+    describe("WHEN a binary_sensor row is set to row mode", () => {
+      it("THEN writes binary_display: 'row' on that row only", () => {
+        expect.assertions(2);
+        const next = updateSeriesRowBinaryDisplay(makeRows(), 0, "row");
+        expect(next?.[0].binary_display).toBe("row");
+        expect(next?.[1].binary_display).toBeUndefined();
+      });
+    });
+
+    describe("WHEN a row-mode binary_sensor is set back to background", () => {
+      it("THEN clears the key rather than writing 'background'", () => {
+        expect.assertions(2);
+        const rows = makeRows();
+        rows[0].binary_display = "row";
+        const next = updateSeriesRowBinaryDisplay(rows, 0, "background");
+        expect(next).not.toBeNull();
+        expect(
+          Object.prototype.hasOwnProperty.call(next?.[0], "binary_display")
+        ).toBe(false);
+      });
+    });
+
+    describe("WHEN the target row is not a binary_sensor", () => {
+      it("THEN returns null (no change)", () => {
+        expect(updateSeriesRowBinaryDisplay(makeRows(), 1, "row")).toBeNull();
+      });
+    });
+
+    describe("WHEN the mode already matches", () => {
+      it("THEN returns null (no change)", () => {
+        expect(
+          updateSeriesRowBinaryDisplay(makeRows(), 0, "background")
+        ).toBeNull();
+      });
+    });
+
+    describe("WHEN the index is invalid", () => {
+      it("THEN returns null", () => {
+        expect(updateSeriesRowBinaryDisplay(makeRows(), 9, "row")).toBeNull();
+        expect(
+          updateSeriesRowBinaryDisplay(makeRows(), undefined, "row")
+        ).toBeNull();
       });
     });
   });

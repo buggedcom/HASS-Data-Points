@@ -571,4 +571,87 @@ describe("target-row", () => {
       });
     });
   });
+
+  describe("GIVEN a binary_sensor row with showBinaryDisplay enabled", () => {
+    const BINARY_STATE = {
+      entity_id: "binary_sensor.front_door",
+      state: "off",
+      attributes: { friendly_name: "Front Door", device_class: "door" },
+      last_changed: "2024-01-01T00:00:00.000Z",
+      last_updated: "2024-01-01T00:00:00.000Z",
+      context: { id: "d1", parent_id: null, user_id: null },
+    };
+
+    describe("WHEN rendered in row mode", () => {
+      beforeEach(async () => {
+        el = createElement({
+          stateObj: BINARY_STATE,
+          entityId: "binary_sensor.front_door",
+          showBinaryDisplay: true,
+          binaryDisplay: "row",
+        });
+        await el.updateComplete;
+      });
+
+      it("THEN the binary display select is shown with the current value", () => {
+        expect.assertions(2);
+        const select = el.shadowRoot!.querySelector(
+          ".history-target-binary-display"
+        ) as HTMLElement & { value: string };
+        expect(select).not.toBeNull();
+        expect(select.value).toBe("row");
+      });
+
+      it("THEN a dp-change emits dp-row-binary-display-change with the mode", async () => {
+        expect.assertions(3);
+        const handler = vi.fn();
+        el.addEventListener("dp-row-binary-display-change", handler);
+        const select = el.shadowRoot!.querySelector(
+          ".history-target-binary-display"
+        ) as HTMLElement;
+        select.dispatchEvent(
+          new CustomEvent("dp-change", {
+            detail: { value: "background" },
+            bubbles: true,
+            composed: true,
+          })
+        );
+        expect(handler).toHaveBeenCalledTimes(1);
+        expect(handler.mock.calls[0][0].detail.mode).toBe("background");
+        expect(handler.mock.calls[0][0].detail.entityId).toBe(
+          "binary_sensor.front_door"
+        );
+      });
+    });
+
+    describe("WHEN showBinaryDisplay is false", () => {
+      it("THEN no binary display select is rendered", async () => {
+        expect.assertions(1);
+        el = createElement({
+          stateObj: BINARY_STATE,
+          entityId: "binary_sensor.front_door",
+          showBinaryDisplay: false,
+        });
+        await el.updateComplete;
+        expect(
+          el.shadowRoot!.querySelector(".history-target-binary-display")
+        ).toBeNull();
+      });
+    });
+
+    describe("WHEN the entity is not a binary_sensor", () => {
+      it("THEN no binary display select is rendered even if enabled", async () => {
+        expect.assertions(1);
+        el = createElement({
+          stateObj: MOCK_STATE_OBJ,
+          entityId: "sensor.temperature",
+          showBinaryDisplay: true,
+        });
+        await el.updateComplete;
+        expect(
+          el.shadowRoot!.querySelector(".history-target-binary-display")
+        ).toBeNull();
+      });
+    });
+  });
 });

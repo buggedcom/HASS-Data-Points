@@ -7,8 +7,10 @@
 import {
   type BinaryDisplayMode,
   type HistorySeriesAnalysis,
+  isBinarySensorEntity,
   normalizeHistorySeriesAnalysis,
   normalizeHistorySeriesRows,
+  resolveBinaryDisplayMode,
 } from "@/lib/domain/history-series";
 import { COLORS } from "@/constants";
 
@@ -122,6 +124,37 @@ export function updateSeriesRowVisibility(
   return rows.map((row, i) =>
     i === index ? { ...row, visible: !!visible } : row
   );
+}
+
+// ── Update binary display mode ────────────────────────────────────────────
+
+/**
+ * Set a binary_sensor row's display mode. `"row"` is written explicitly;
+ * `"background"` (the default) clears the key so opted-out configs stay
+ * byte-for-byte identical. Returns null (no change) when the index is invalid,
+ * the row is not a binary_sensor, or the mode already matches.
+ */
+export function updateSeriesRowBinaryDisplay(
+  rows: SeriesRow[],
+  index: number | undefined,
+  mode: unknown
+): SeriesRow[] | null {
+  if (!isValidRowIndex(index, rows.length)) return null;
+  const row = rows[index];
+  if (!isBinarySensorEntity(row.entity_id)) return null;
+  const next = resolveBinaryDisplayMode(mode);
+  const current = resolveBinaryDisplayMode(row.binary_display);
+  if (current === next) return null;
+  return rows.map((r, i) => {
+    if (i !== index) return r;
+    const copy = { ...r };
+    if (next === "row") {
+      copy.binary_display = "row";
+    } else {
+      delete copy.binary_display;
+    }
+    return copy;
+  });
 }
 
 // ── Toggle analysis expanded ──────────────────────────────────────────────

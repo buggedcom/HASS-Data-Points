@@ -85,6 +85,7 @@ export interface RowConfig {
   color: string;
   visible: boolean;
   analysis: NormalizedAnalysis;
+  binary_display?: "background" | "row";
 }
 
 // ---------------------------------------------------------------------------
@@ -98,6 +99,7 @@ export interface RowConfig {
  * @fires dp-rows-reorder - `{ rows: RowConfig[] }` The updated rows array after a drag-drop reorder.
  * @fires dp-row-color-change - Bubbled from child `target-row`. `{ index, color }`
  * @fires dp-row-visibility-change - Bubbled from child `target-row`. `{ entityId, visible }`
+ * @fires dp-row-binary-display-change - Bubbled from child `target-row`. `{ index, entityId, mode }`
  * @fires dp-row-toggle-analysis - Bubbled from child `target-row`. `{ entityId }`
  * @fires dp-row-remove - Bubbled from child `target-row`. `{ index }`
  * @fires dp-row-analysis-change - Bubbled from child `target-row`. `{ entityId, key, value }`
@@ -119,6 +121,10 @@ export class TargetRowList extends LitElement {
 
   @property({ type: Boolean, attribute: "can-show-delta-analysis" })
   accessor canShowDeltaAnalysis: boolean = false;
+
+  /** Opt-in: expose the background/row display toggle on binary_sensor rows. */
+  @property({ type: Boolean, attribute: "show-binary-display" })
+  accessor showBinaryDisplay: boolean = false;
 
   @property({ type: Array, attribute: false })
   accessor comparisonWindows: ComparisonWindow[] = [];
@@ -253,6 +259,8 @@ export class TargetRowList extends LitElement {
                 .visible=${row.visible}
                 .analysis=${row.analysis}
                 .index=${index}
+                .binaryDisplay=${row.binary_display ?? "background"}
+                .showBinaryDisplay=${this.showBinaryDisplay}
                 entity-id=${row.entity_id}
                 .canShowDeltaAnalysis=${this.canShowDeltaAnalysis}
                 .stateObj=${this.states?.[row.entity_id] ?? null}

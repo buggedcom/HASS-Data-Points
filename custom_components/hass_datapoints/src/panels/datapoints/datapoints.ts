@@ -43,6 +43,7 @@ import {
   mergeSavedSeriesRows,
   removeSeriesRow,
   toggleSeriesAnalysisExpanded,
+  updateSeriesRowBinaryDisplay,
   updateSeriesRowColor,
   updateSeriesRowVisibility,
 } from "@/lib/domain/series-rows";
@@ -178,6 +179,8 @@ type TargetRowElement = HTMLElement & {
   hass: unknown;
   canShowDeltaAnalysis: boolean;
   comparisonWindows: NormalizedHistoryDateWindow[];
+  binaryDisplay: string;
+  showBinaryDisplay: boolean;
 };
 
 type DateWindowDraftRange = { start: Date; end: Date };
@@ -1661,6 +1664,14 @@ export class HassDatapointsHistoryPanel extends LitElement {
             const { entityId, visible } = ev.detail || {};
             this._updateSeriesRowVisibilityByEntityId(entityId, visible);
           }}
+          @dp-row-binary-display-change=${(
+            ev: DetailEvent<{ index?: number; mode?: string }>
+          ) => {
+            this._updateSeriesRowBinaryDisplay(
+              ev.detail?.index,
+              ev.detail?.mode
+            );
+          }}
           @dp-row-remove=${(ev: DetailEvent<{ index?: number }>) => {
             this._removeSeriesRow(ev.detail?.index);
           }}
@@ -3002,6 +3013,17 @@ export class HassDatapointsHistoryPanel extends LitElement {
     this._renderContent();
   }
 
+  _updateSeriesRowBinaryDisplay(index: number | undefined, mode: unknown) {
+    const next = updateSeriesRowBinaryDisplay(this._seriesRows, index, mode);
+    if (!next) return;
+    this._seriesRows = next as HistoryTargetRowState[];
+    this._saveUserPreferences();
+    this._saveSessionState();
+    this._updateUrl({ push: false });
+    this._renderTargetRows();
+    this._renderContent();
+  }
+
   /** Open (or re-render) the collapsed-sidebar target popup for *entityId*,
    *  anchored to *anchorEl*.  Wires all the same controls as the full sidebar row. */
   _showCollapsedTargetPopup(
@@ -3038,6 +3060,9 @@ export class HassDatapointsHistoryPanel extends LitElement {
     targetRow.hass = this._hass ?? null;
     targetRow.canShowDeltaAnalysis = !!this._selectedComparisonWindowId;
     targetRow.comparisonWindows = this._comparisonWindows || [];
+    targetRow.showBinaryDisplay = true;
+    targetRow.binaryDisplay =
+      (row as { binary_display?: string }).binary_display ?? "background";
     targetRow.addEventListener(
       "dp-row-color-change",
       (ev: DetailEvent<{ index?: number; color?: string }>) => {
@@ -3051,6 +3076,12 @@ export class HassDatapointsHistoryPanel extends LitElement {
           ev.detail?.entityId,
           ev.detail?.visible
         );
+      }
+    );
+    targetRow.addEventListener(
+      "dp-row-binary-display-change",
+      (ev: DetailEvent<{ index?: number; mode?: string }>) => {
+        this._updateSeriesRowBinaryDisplay(ev.detail?.index, ev.detail?.mode);
       }
     );
     targetRow.addEventListener(

@@ -229,6 +229,11 @@ export const styles = css`
     gap: calc(var(--spacing, 8px) * 0.75);
   }
 
+  .history-target-binary-display {
+    flex: 0 0 auto;
+    font-size: 0.8em;
+  }
+
   .history-target-analysis-toggle {
     display: inline-flex;
     align-items: center;

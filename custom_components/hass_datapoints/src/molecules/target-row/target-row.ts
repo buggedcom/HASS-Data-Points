@@ -4,6 +4,12 @@ import { localized, msg } from "@/lib/i18n/localize";
 
 import { styles } from "./target-row.styles";
 import type { HassLike, HassState } from "@/lib/types";
+import {
+  type BinaryDisplayMode,
+  isBinarySensorEntity,
+  resolveBinaryDisplayMode,
+} from "@/lib/domain/history-series";
+import "@/atoms/form/inline-select/inline-select";
 
 // ---------------------------------------------------------------------------
 // Types (defined in ./types, re-exported here for backwards compatibility)
@@ -89,6 +95,7 @@ export function _hasActiveAnalysis(
  * Single entity row in the target list with color, visibility, and analysis controls.
  * @fires dp-row-color-change - `{ index, color: string }` — color picker changed
  * @fires dp-row-visibility-change - `{ entityId, visible: boolean }` — visibility checkbox toggled
+ * @fires dp-row-binary-display-change - `{ index, entityId, mode: "background" | "row" }` — binary display toggle (binary_sensor rows only)
  * @fires dp-row-toggle-analysis - `{ entityId }` — analysis panel expand/collapse
  * @fires dp-row-remove - `{ index }` — row remove button clicked
  * @fires dp-row-analysis-change - `{ entityId, key, value }` — an analysis field changed
@@ -154,6 +161,18 @@ export class TargetRow extends LitElement {
   @property({ type: String, attribute: false })
   accessor label: Nullable<string> = null;
 
+  /** Current binary display mode for a binary_sensor row (ignored otherwise). */
+  @property({ type: String, attribute: "binary-display" })
+  accessor binaryDisplay: BinaryDisplayMode = "background";
+
+  /**
+   * Opt-in: show the background/row display toggle for binary_sensor rows.
+   * Off by default so the control only appears where it is wired up (the
+   * history target list), not in unrelated hosts (e.g. the anomaly wizard).
+   */
+  @property({ type: Boolean, attribute: "show-binary-display" })
+  accessor showBinaryDisplay: boolean = false;
+
   static styles = styles;
 
   // Derived from stateObj / entityId / label — recomputed in willUpdate, not getters,
@@ -165,6 +184,8 @@ export class TargetRow extends LitElement {
   private _unit = "";
 
   private _supportsAnalysis = false;
+
+  private _isBinary = false;
 
   override willUpdate(changed: PropertyValues) {
     if (
@@ -182,6 +203,7 @@ export class TargetRow extends LitElement {
       this._unit = (attrs?.unit_of_measurement as string) ?? "";
       this._supportsAnalysis =
         Boolean(this._entityId) && !this._entityId.startsWith("binary_sensor.");
+      this._isBinary = isBinarySensorEntity(this._entityId);
     }
   }
 
@@ -202,6 +224,14 @@ export class TargetRow extends LitElement {
     this._emit("dp-row-visibility-change", {
       entityId: this._entityId,
       visible: (e.target as HTMLInputElement).checked,
+    });
+  }
+
+  private _onBinaryDisplayChange(e: CustomEvent<{ value: string }>) {
+    this._emit("dp-row-binary-display-change", {
+      index: this.index,
+      entityId: this._entityId,
+      mode: resolveBinaryDisplayMode(e.detail?.value),
     });
   }
 
@@ -322,6 +352,22 @@ export class TargetRow extends LitElement {
                 >
                   <ha-icon icon="mdi:chevron-down"></ha-icon>
                 </button>
+              `
+            : nothing}
+          ${this.showBinaryDisplay && this._isBinary
+            ? html`
+                <inline-select
+                  class="history-target-binary-display"
+                  data-binary-entity=${this._entityId}
+                  .value=${resolveBinaryDisplayMode(this.binaryDisplay)}
+                  .options=${[
+                    { value: "background", label: msg("Background band") },
+                    { value: "row", label: msg("Row strip") },
+                  ]}
+                  aria-label="Chart display style for ${this._entityName}"
+                  @click=${(e: Event) => e.stopPropagation()}
+                  @dp-change=${this._onBinaryDisplayChange}
+                ></inline-select>
               `
             : nothing}
 
