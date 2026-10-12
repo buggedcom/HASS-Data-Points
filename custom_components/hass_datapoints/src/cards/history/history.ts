@@ -216,6 +216,22 @@ export class HassDatapointsHistoryCard extends ChartCardBase {
     super.disconnectedCallback();
   }
 
+  protected override firstUpdated(): void {
+    // HA configures cards before mounting, when the inner chart does not exist.
+    this._syncChartViewState();
+  }
+
+  private _syncChartViewState(): void {
+    this._chartEl()?.applyViewState({
+      hass: this._hass,
+      config: this._config,
+      hiddenSeries: this._hiddenSeries,
+      hiddenEventIds: this._hiddenEventIds,
+      zoomRange: this._zoomRange,
+      comparisonResults: this._getResolvedComparisonResults(),
+    });
+  }
+
   // ── Configuration ──────────────────────────────────────────────────────────
 
   override setConfig(config: CardConfig): void {
@@ -342,18 +358,10 @@ export class HassDatapointsHistoryCard extends ChartCardBase {
       this._pruneComparisonDataCache(nextConfig);
       this._lastComparisonResults = null;
     }
+    // Seed config-driven interaction state without drawing; data loads draw below.
+    this._syncChartViewState();
     const chartEl = this._chartEl();
     if (chartEl) {
-      // Config change: seed the chart's initial view state (incl. zoom / hidden)
-      // without drawing. Draws happen below via _load / _queueDrawChart.
-      chartEl.applyViewState({
-        hass: this._hass,
-        config: this._config,
-        hiddenSeries: this._hiddenSeries,
-        hiddenEventIds: this._hiddenEventIds,
-        zoomRange: this._zoomRange,
-        comparisonResults: this._getResolvedComparisonResults(),
-      });
       if (diff.comparisonOverlayChanged) {
         chartEl._renderComparisonPreviewOverlay();
       }

@@ -32,6 +32,34 @@ describe("card→chart draw contract", () => {
     vi.restoreAllMocks();
   });
 
+  describe("GIVEN saved chart settings with a disabled entity", () => {
+    describe("WHEN the card is configured before mounting after a refresh", () => {
+      it("THEN the chart restores the disabled entity and preserves subsequent visibility changes", async () => {
+        expect.assertions(3);
+        const card = createCard({
+          entities: ["sensor.example"],
+          series_settings: [{ entity_id: "sensor.example", visible: false }],
+        });
+        document.body.appendChild(card);
+        await card.updateComplete;
+        const chart = card.shadowRoot!.querySelector<HistoryChart>(
+          "hass-datapoints-history-chart"
+        )!;
+
+        expect(chart._hiddenSeries.has("sensor.example")).toBe(true);
+        chart._hiddenSeries.delete("sensor.example");
+        card.requestUpdate();
+        await card.updateComplete;
+        expect(chart._hiddenSeries.has("sensor.example")).toBe(false);
+        card.setConfig({
+          entities: ["sensor.example"],
+          series_settings: [{ entity_id: "sensor.example", visible: false }],
+        });
+        expect(chart._hiddenSeries.has("sensor.example")).toBe(false);
+      });
+    });
+  });
+
   // ── AC1 / AC3: the card draws via a single typed model ────────────────────
   describe("GIVEN the card queues a draw", () => {
     describe("WHEN it pushes data to the chart", () => {
