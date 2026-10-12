@@ -15175,7 +15175,7 @@
 			if (series.length) minChartHeight = 280;
 			else if (binaryBackgrounds.length || binaryRows.length) minChartHeight = 100;
 			else minChartHeight = 280;
-			minChartHeight += binaryLaneReserve;
+			minChartHeight = Math.max(minChartHeight, binaryLaneReserve + HISTORY_CHART_BINARY_LANE_HEIGHT_PX);
 			const availableHeight = this._getAvailableChartHeight(minChartHeight);
 			const viewportWidth = Math.max(scrollViewport?.clientWidth || wrap?.clientWidth || 360, 360);
 			const totalSpanMs = Math.max(1, t1 - t0);
