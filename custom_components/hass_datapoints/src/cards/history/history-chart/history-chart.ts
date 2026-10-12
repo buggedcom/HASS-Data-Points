@@ -59,10 +59,10 @@ import {
   type ResolvedAxis,
 } from "@/lib/chart/chart-renderer";
 import {
-  type BinaryDisplayMode,
   type HistorySeriesAnalysis,
   normalizeHistorySeriesAnalysis,
   type PartialHistorySeriesAnalysis,
+  resolveBinaryDisplayMode,
 } from "@/lib/domain/history-series";
 import {
   computeHistoryAnalysisInWorker,
@@ -2439,9 +2439,9 @@ export class HistoryChart extends HTMLElement {
           histResult,
           statsResult
         );
-        const binaryDisplay = (
-          seriesSetting.binary_display === "row" ? "row" : "background"
-        ) as BinaryDisplayMode;
+        const binaryDisplay = resolveBinaryDisplayMode(
+          seriesSetting.binary_display
+        );
         binaryEntities.push({
           entityId,
           label: entityLabelMap.get(entityId) || entityId,
@@ -2909,7 +2909,7 @@ export class HistoryChart extends HTMLElement {
       canvas.style.display = "";
     }
     chartStage
-      ?.querySelectorAll(".split-series-row")
+      ?.querySelectorAll(".split-series-row, .split-binary-lane-region")
       .forEach((el) => (el as HTMLElement).remove());
     chartStage?.querySelector("#chart-split-overlay")?.remove();
     const axisLeftEl = this.querySelector(
@@ -2982,6 +2982,8 @@ export class HistoryChart extends HTMLElement {
       await this._drawSplitChart({
         visibleSeries,
         binaryBackgrounds,
+        binaryRows,
+        binaryLaneReserve,
         events,
         renderT0: t0,
         renderT1: t1,
@@ -3361,7 +3363,7 @@ export class HistoryChart extends HTMLElement {
     renderChartAxisOverlays(this, renderer, activeAxes);
     this.style.setProperty(
       "--dp-chart-axis-bottom-height",
-      `${Math.max(0, (renderer as unknown as { pad: { bottom: number } }).pad.bottom)}px`
+      `${Math.max(0, renderer.pad.bottom)}px`
     );
     binaryBackgrounds.forEach((binaryBackground) => {
       if (
@@ -4301,10 +4303,7 @@ export class HistoryChart extends HTMLElement {
           ? (hover: unknown) => this._handleChartAddAnnotation(hover)
           : undefined,
         binaryStates: binaryHoverStates,
-        binaryLaneExtentPx:
-          binaryLaneReserve > 0
-            ? (renderer as unknown as { pad: { bottom: number } }).pad.bottom
-            : 0,
+        binaryLaneExtentPx: binaryLaneReserve > 0 ? renderer.pad.bottom : 0,
         comparisonSeries: effectiveComparisonHoverSeries as HoverSeriesLike[],
         trendSeries: [
           ...trendHoverSeries,
@@ -4755,6 +4754,8 @@ export class HistoryChart extends HTMLElement {
   async _drawSplitChart({
     visibleSeries,
     binaryBackgrounds,
+    binaryRows = [],
+    binaryLaneReserve = 0,
     events,
     renderT0,
     renderT1,
@@ -4775,6 +4776,8 @@ export class HistoryChart extends HTMLElement {
   }: {
     visibleSeries: unknown[];
     binaryBackgrounds: unknown[];
+    binaryRows?: BinaryRowModel[];
+    binaryLaneReserve?: number;
     events: unknown[];
     renderT0: number;
     renderT1: number;
@@ -4798,14 +4801,32 @@ export class HistoryChart extends HTMLElement {
       (canvas as HTMLElement).style.display = "none";
     }
 
+    // Row-mode binary sensors that are not toggled off. Hidden rows drop out so
+    // their lane is reclaimed on the next draw (legend toggle → relayout).
+    const visibleRows = (binaryRows as BinaryRowModel[]).filter(
+      (row) => !this._hiddenSeries.has(row.entityId)
+    );
+    // Reserve exactly the lane space actually drawn below the row stack. The
+    // caller's reserve is derived from the same visible-row set, so this keeps
+    // the two in lock-step (no empty gap when rows are hidden).
+    const laneReserve = visibleRows.length ? binaryLaneReserve : 0;
+
     const N = (visibleSeries as unknown[]).length;
     const MIN_ROW_HEIGHT = 200;
     const minTotalHeight = MIN_ROW_HEIGHT * N;
+    // The numeric row stack gets the available height minus the lane region, so
+    // the lanes sit in dedicated space beneath the stack rather than inflating
+    // the rows (which left an empty reserved gap before this fix).
+    const rowsAvailable = Math.max(
+      MIN_ROW_HEIGHT,
+      availableHeight - laneReserve
+    );
     const rowHeight =
-      minTotalHeight > availableHeight
+      minTotalHeight > rowsAvailable
         ? MIN_ROW_HEIGHT
-        : Math.max(MIN_ROW_HEIGHT, Math.floor(availableHeight / N));
-    const totalHeight = rowHeight * N;
+        : Math.max(MIN_ROW_HEIGHT, Math.floor(rowsAvailable / N));
+    const rowsHeight = rowHeight * N;
+    const totalHeight = rowsHeight + laneReserve;
 
     if (chartStage) {
       chartStage.style.width = `${canvasWidth}px`;
@@ -5481,6 +5502,60 @@ export class HistoryChart extends HTMLElement {
         deltaAxis: resolvedDeltaAxis,
         anomalyRegions: rowAnomalyRegions,
       });
+    }
+
+    // ── Binary row lanes ──────────────────────────────────────────────────────
+    // Draw the stacked row-mode binary lanes in the dedicated region beneath the
+    // numeric row stack (height === laneReserve, so there is no empty gap). The
+    // lane strip's x-mapping is aligned to the primary row's plot area (pad.left
+    // / cw) so the on/off segments line up with the time axis above at any
+    // zoom/pan. NOTE: binary hover readout is intentionally not wired into the
+    // split-view tooltip — that is a pre-existing limitation shared with
+    // background-mode binaries in split view; the crosshair overlay (inset:0)
+    // still spans the lane region so the guide line covers the lanes.
+    if (visibleRows.length && laneReserve > 0 && chartStage) {
+      const primaryRenderer = tracks.length
+        ? ((tracks[0] as RecordWithUnknownValues).renderer as InstanceType<
+            typeof ChartRenderer
+          >)
+        : null;
+      const laneDiv = document.createElement("div");
+      laneDiv.className = "split-binary-lane-region";
+      laneDiv.style.cssText = `position:absolute;left:0;top:${rowsHeight}px;width:${canvasWidth}px;height:${laneReserve}px;pointer-events:none;overflow:hidden;`;
+      const laneCanvas = document.createElement("canvas");
+      laneCanvas.className = "split-binary-lane-canvas";
+      laneDiv.appendChild(laneCanvas);
+      chartStage.appendChild(laneDiv);
+      const { w, h } = (
+        setupCanvas as (
+          canvas: HTMLCanvasElement,
+          container: HTMLElement,
+          cssHeight: number,
+          cssWidth?: Nullable<number>
+        ) => { w: number; h: number }
+      )(laneCanvas, (chartStage || wrap)!, laneReserve, canvasWidth);
+      const laneRenderer = new ChartRenderer(laneCanvas, w, h);
+      laneRenderer.labelColor = resolveChartLabelColor(this);
+      // Match the primary row's plot bounds so xOf lines the strip up with the
+      // plot above; top/bottom are zero so the lane region fills the canvas.
+      laneRenderer.pad = {
+        top: 0,
+        bottom: 0,
+        left: primaryRenderer
+          ? primaryRenderer.pad.left
+          : laneRenderer.pad.left,
+        right: primaryRenderer
+          ? primaryRenderer.pad.right
+          : laneRenderer.pad.right,
+      };
+      laneRenderer.clear();
+      this._drawBinaryRowLanes(
+        laneRenderer,
+        visibleRows,
+        renderT0,
+        renderT1,
+        laneReserve
+      );
     }
 
     this._renderSplitAxisOverlays(tracks);
