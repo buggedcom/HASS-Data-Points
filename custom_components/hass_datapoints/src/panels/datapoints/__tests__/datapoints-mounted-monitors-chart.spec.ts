@@ -26,7 +26,7 @@ async function openMonitorsPanel() {
 describe("GIVEN a mounted panel with the monitors overlay open", () => {
   describe("WHEN it receives dp-monitors-panel-open-chart", () => {
     it("THEN closes the overlay, loads those entities with the anomaly overlay, and sets the range", async () => {
-      expect.assertions(7);
+      expect.assertions(8);
       const { panel, monitorsPanel } = await openMonitorsPanel();
       const startMs = Date.parse("2025-01-06T00:00:00.000Z");
       const endMs = Date.parse("2025-01-07T00:00:00.000Z");
@@ -55,7 +55,7 @@ describe("GIVEN a mounted panel with the monitors overlay open", () => {
       expect(chart.config.end_time).toBe(new Date(endMs).toISOString());
       const series = chart.config.series_settings as Array<{
         entity_id: string;
-        analysis: { show_anomalies: boolean };
+        analysis: { show_anomalies: boolean; anomaly_methods: string[] };
       }>;
       expect(series.map((s) => s.entity_id)).toEqual([
         "sensor.temperature",
@@ -64,12 +64,46 @@ describe("GIVEN a mounted panel with the monitors overlay open", () => {
       expect(series.every((s) => s.analysis.show_anomalies === true)).toBe(
         true
       );
+      // The monitor's own method (from the event detail) drives the overlay,
+      // not the hardcoded chart default.
+      expect(
+        series.every(
+          (s) =>
+            s.analysis.anomaly_methods.length === 1 &&
+            s.analysis.anomaly_methods[0] === "iqr"
+        )
+      ).toBe(true);
+    });
+  });
+
+  describe("WHEN open-chart carries no anomaly methods", () => {
+    it("THEN the overlay falls back to the chart default method", async () => {
+      expect.assertions(2);
+      const { panel, monitorsPanel } = await openMonitorsPanel();
+
+      emitControlEvent(monitorsPanel, "dp-monitors-panel-open-chart", {
+        entityIds: ["sensor.temperature"],
+        startMs: Date.parse("2025-01-06T00:00:00.000Z"),
+        endMs: Date.parse("2025-01-07T00:00:00.000Z"),
+        monitorId: "monitor-1",
+        anomalyMethods: [],
+      });
+      await settlePanel();
+
+      const chart = control(
+        panel.shadowRoot!,
+        "hass-datapoints-history-card"
+      ) as PanelCardFixture;
+      const series = chart.config.series_settings as Array<{
+        analysis: { anomaly_methods: string[] };
+      }>;
+      expect(series[0].analysis.anomaly_methods).toEqual(["trend_residual"]);
     });
   });
 
   describe("WHEN it receives dp-monitors-panel-open-entity", () => {
     it("THEN mounts a dialog containing a chart configured for that single entity", async () => {
-      expect.assertions(4);
+      expect.assertions(5);
       const { panel, monitorsPanel } = await openMonitorsPanel();
 
       emitControlEvent(monitorsPanel, "dp-monitors-panel-open-entity", {
@@ -87,11 +121,13 @@ describe("GIVEN a mounted panel with the monitors overlay open", () => {
       expect(dialogChart.config.entities).toEqual(["sensor.humidity"]);
       const series = dialogChart.config.series_settings as Array<{
         entity_id: string;
-        analysis: { show_anomalies: boolean };
+        analysis: { show_anomalies: boolean; anomaly_methods: string[] };
       }>;
       expect(
         series.length === 1 && series[0].analysis.show_anomalies === true
       ).toBe(true);
+      // The dialog overlay uses the monitor's method from the event detail.
+      expect(series[0].analysis.anomaly_methods).toEqual(["iqr"]);
     });
   });
 });

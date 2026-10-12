@@ -23,9 +23,29 @@ import {
   type ScanHistoryEntry,
 } from "@/lib/data/monitors-api";
 import type { HassLike } from "@/lib/types";
+import type {
+  MonitorsOpenChartDetail,
+  MonitorsOpenEntityDetail,
+} from "@/lib/events";
+import { HOUR_MS } from "@/lib/timeline/timeline-scale";
 import { confirmDestructiveAction } from "@/lib/ha/ha-components";
 import "@/molecules/anomaly-monitor-wizard/anomaly-monitor-wizard";
 import "@/atoms/form/entity-chip/entity-chip";
+
+/**
+ * Fallback detection methods when a monitor has no configured methods. Mirrors
+ * the chart-side default so the overlay still renders anomalies for a monitor
+ * that somehow stored an empty method list.
+ */
+const PANEL_DEFAULT_ANOMALY_METHODS = ["trend_residual"];
+
+/** The monitor's detection methods, or the panel default when it has none. */
+function monitorAnomalyMethods(monitor: AnomalyMonitor): string[] {
+  return Array.isArray(monitor.anomaly_methods) &&
+    monitor.anomaly_methods.length > 0
+    ? monitor.anomaly_methods
+    : PANEL_DEFAULT_ANOMALY_METHODS;
+}
 
 /**
  * `anomaly-monitors-panel` shows a management view of all anomaly monitors.
@@ -155,7 +175,7 @@ export class AnomalyMonitorsPanel extends LitElement {
     }
   }
 
-  private _emit(name: string, detail: RecordWithUnknownValues = {}) {
+  private _emit(name: string, detail: unknown = {}) {
     this.dispatchEvent(
       new CustomEvent(name, { detail, bubbles: true, composed: true })
     );
@@ -194,21 +214,27 @@ export class AnomalyMonitorsPanel extends LitElement {
   }
 
   private _onOpenEntity(monitor: AnomalyMonitor, entityId: string) {
-    this._emit("dp-monitors-panel-open-entity", {
+    const detail: MonitorsOpenEntityDetail = {
       entityId,
       monitorId: monitor.id,
-    });
+      anomalyMethods: monitorAnomalyMethods(monitor),
+      anomalySensitivity: monitor.anomaly_sensitivity,
+    };
+    this._emit("dp-monitors-panel-open-entity", detail);
   }
 
   private _onViewSeries(monitor: AnomalyMonitor) {
     const endMs = Date.now();
-    const startMs = endMs - (monitor.look_back_hours ?? 24) * 3_600_000;
-    this._emit("dp-monitors-panel-open-chart", {
+    const startMs = endMs - (monitor.look_back_hours ?? 24) * HOUR_MS;
+    const detail: MonitorsOpenChartDetail = {
       entityIds: monitorEntityIds(monitor),
       startMs,
       endMs,
       monitorId: monitor.id,
-    });
+      anomalyMethods: monitorAnomalyMethods(monitor),
+      anomalySensitivity: monitor.anomaly_sensitivity,
+    };
+    this._emit("dp-monitors-panel-open-chart", detail);
   }
 
   private _onWizardClose() {
@@ -297,12 +323,15 @@ export class AnomalyMonitorsPanel extends LitElement {
   }
 
   private _onViewWindow(monitor: AnomalyMonitor, window: DismissedWindow) {
-    this._emit("dp-monitors-panel-open-chart", {
+    const detail: MonitorsOpenChartDetail = {
       entityIds: monitorEntityIds(monitor),
       startMs: window.start_ms,
       endMs: window.end_ms,
       monitorId: monitor.id,
-    });
+      anomalyMethods: monitorAnomalyMethods(monitor),
+      anomalySensitivity: monitor.anomaly_sensitivity,
+    };
+    this._emit("dp-monitors-panel-open-chart", detail);
   }
 
   private async _loadClusters(monitorId: string) {

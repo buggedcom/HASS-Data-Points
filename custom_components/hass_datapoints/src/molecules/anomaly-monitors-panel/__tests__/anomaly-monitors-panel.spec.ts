@@ -44,6 +44,10 @@ function buildCombinedMonitor() {
     overlap_mode: "all",
     entity_id: undefined,
     entity_ids: ["sensor.temperature", "sensor.humidity"],
+    // A non-default detection config, so tests prove the monitor's OWN methods
+    // flow through the open-chart/open-entity events (not the chart default).
+    anomaly_methods: ["rolling_zscore"],
+    anomaly_sensitivity: "high",
   };
 }
 
@@ -220,6 +224,8 @@ describe("anomaly-monitors-panel", () => {
         expect(detail).toEqual({
           entityId: "sensor.temperature",
           monitorId: "monitor-combined",
+          anomalyMethods: ["rolling_zscore"],
+          anomalySensitivity: "high",
         });
       });
     });
@@ -254,6 +260,8 @@ describe("anomaly-monitors-panel", () => {
         expect(detail).toEqual({
           entityId: "sensor.temperature",
           monitorId: "monitor-combined",
+          anomalyMethods: ["rolling_zscore"],
+          anomalySensitivity: "high",
         });
       });
     });
@@ -262,8 +270,13 @@ describe("anomaly-monitors-panel", () => {
   describe("GIVEN a monitor with a look-back window", () => {
     describe("WHEN the View series action is activated", () => {
       it("THEN it emits dp-monitors-panel-open-chart with the monitor entities and matching range", async () => {
-        expect.assertions(4);
-        const monitor = { ...buildMonitor(true), look_back_hours: 6 };
+        expect.assertions(6);
+        const monitor = {
+          ...buildMonitor(true),
+          look_back_hours: 6,
+          anomaly_methods: ["rolling_zscore"],
+          anomaly_sensitivity: "high",
+        };
         const hass = createMockHass({
           connection: {
             subscribeEvents: vi.fn(() => Promise.resolve(vi.fn())),
@@ -282,6 +295,8 @@ describe("anomaly-monitors-panel", () => {
           startMs: number;
           endMs: number;
           monitorId: string;
+          anomalyMethods: string[];
+          anomalySensitivity: string;
         } | null = null;
         el.addEventListener("dp-monitors-panel-open-chart", (e) => {
           detail = (e as CustomEvent).detail;
@@ -296,6 +311,9 @@ describe("anomaly-monitors-panel", () => {
         expect(detail!.entityIds).toEqual(["sensor.temperature"]);
         expect(detail!.endMs - detail!.startMs).toBe(6 * 3_600_000);
         expect(detail!.endMs >= before && detail!.endMs <= after).toBe(true);
+        // The monitor's OWN detection config rides along on the event.
+        expect(detail!.anomalyMethods).toEqual(["rolling_zscore"]);
+        expect(detail!.anomalySensitivity).toBe("high");
       });
     });
   });
