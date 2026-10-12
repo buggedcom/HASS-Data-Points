@@ -7,8 +7,11 @@ import { localized, msg } from "@/lib/i18n/localize";
 import { styles } from "./anomaly-monitors-panel.styles";
 import {
   fetchMonitors,
+  fetchDeletedMonitors,
   updateMonitor,
   deleteMonitor,
+  restoreMonitor,
+  purgeMonitor,
   monitorEntityIds,
   fetchMonitorAnomalies,
   dismissMonitorAnomaly,
@@ -29,10 +32,14 @@ import "@/atoms/form/entity-chip/entity-chip";
  *
  * @fires dp-monitors-panel-close        — user clicked the back/close button
  * @fires dp-monitors-panel-new          — user clicked "New monitor"
- * @fires dp-monitors-panel-open-chart   — user clicked "View series"
+ * @fires dp-monitors-panel-open-chart   — user clicked "View series" or
+ *   "View window on chart"
  *   (`{ entityIds: string[]; startMs: number; endMs: number; monitorId: string }`)
  * @fires dp-monitors-panel-open-entity  — user activated an entity chip
  *   (`{ entityId: string; monitorId: string }`)
+ * @fires hass-notification              — transient toast (undo after delete,
+ *   or a failure message) consumed by HA's global snackbar
+ *   (`{ message: string; action?: { text: string; action: () => void } }`)
  */
 @localized()
 export class AnomalyMonitorsPanel extends LitElement {
@@ -41,6 +48,9 @@ export class AnomalyMonitorsPanel extends LitElement {
   @property({ type: Object }) accessor hass: Nullable<HassLike> = null;
 
   @state() accessor _monitors: AnomalyMonitor[] = [];
+
+  /** Soft-deleted monitors still within the trash retention window. */
+  @state() accessor _deletedMonitors: AnomalyMonitor[] = [];
 
   @state() accessor _loading: boolean = true;
 
@@ -130,7 +140,14 @@ export class AnomalyMonitorsPanel extends LitElement {
       return;
     }
     try {
-      this._monitors = await fetchMonitors(this.hass);
+      // Both helpers swallow their own transport errors (→ []), so the active
+      // list and the trash list refresh independently in one pass.
+      const [active, deleted] = await Promise.all([
+        fetchMonitors(this.hass),
+        fetchDeletedMonitors(this.hass),
+      ]);
+      this._monitors = active;
+      this._deletedMonitors = deleted;
     } catch {
       // ignore
     } finally {
@@ -141,6 +158,24 @@ export class AnomalyMonitorsPanel extends LitElement {
   private _emit(name: string, detail: RecordWithUnknownValues = {}) {
     this.dispatchEvent(
       new CustomEvent(name, { detail, bubbles: true, composed: true })
+    );
+  }
+
+  /**
+   * Surface a transient message via HA's global notification snackbar. HA's
+   * frontend listens for `hass-notification` on the DOM and renders its own
+   * toast, with an optional action button when `action` is provided.
+   */
+  private _notify(
+    message: string,
+    action?: { text: string; action: () => void }
+  ) {
+    this.dispatchEvent(
+      new CustomEvent("hass-notification", {
+        detail: action ? { message, action } : { message },
+        bubbles: true,
+        composed: true,
+      })
     );
   }
 
@@ -202,15 +237,72 @@ export class AnomalyMonitorsPanel extends LitElement {
     const confirmed = await confirmDestructiveAction(this, {
       title: msg(`Delete "${monitor.name}"?`),
       message: msg(
-        "This cannot be undone. The monitor device and all its sensors will be removed."
+        "The monitor device and all its sensors will be removed. You can restore it from Recently deleted for a limited time."
       ),
       confirmLabel: msg("Delete"),
     });
     if (!confirmed) {
       return;
     }
-    await deleteMonitor(this.hass, monitor.id);
+
+    const id = monitor.id;
+    const name = monitor.name;
+    // Optimistically drop the card; the soft-delete + undo path reconciles.
+    this._monitors = this._monitors.filter((m) => m.id !== id);
+    try {
+      await deleteMonitor(this.hass, id);
+      this._notify(msg(`Deleted "${name}"`), {
+        text: msg("Undo"),
+        action: () => {
+          if (!this.hass) return;
+          restoreMonitor(this.hass, id)
+            .then(() => this._load())
+            .catch(() => this._notify(msg("Could not restore monitor")));
+        },
+      });
+    } catch {
+      this._notify(msg("Could not delete monitor"));
+    }
     await this._load();
+  }
+
+  private async _onRestore(monitor: AnomalyMonitor) {
+    if (!this.hass) return;
+    try {
+      await restoreMonitor(this.hass, monitor.id);
+      await this._load();
+    } catch {
+      this._notify(msg("Could not restore monitor"));
+    }
+  }
+
+  private async _onPurge(monitor: AnomalyMonitor) {
+    if (!this.hass) return;
+    const confirmed = await confirmDestructiveAction(this, {
+      title: msg(`Permanently delete "${monitor.name}"?`),
+      message: msg(
+        "This permanently removes the monitor and its history. This cannot be undone."
+      ),
+      confirmLabel: msg("Delete permanently"),
+    });
+    if (!confirmed) {
+      return;
+    }
+    try {
+      await purgeMonitor(this.hass, monitor.id);
+      await this._load();
+    } catch {
+      this._notify(msg("Could not permanently delete monitor"));
+    }
+  }
+
+  private _onViewWindow(monitor: AnomalyMonitor, window: DismissedWindow) {
+    this._emit("dp-monitors-panel-open-chart", {
+      entityIds: monitorEntityIds(monitor),
+      startMs: window.start_ms,
+      endMs: window.end_ms,
+      monitorId: monitor.id,
+    });
   }
 
   private async _loadClusters(monitorId: string) {
@@ -256,8 +348,12 @@ export class AnomalyMonitorsPanel extends LitElement {
 
   private async _onUndismiss(monitor: AnomalyMonitor, windowId: string) {
     if (!this.hass) return;
-    await undismissMonitorAnomaly(this.hass, monitor.id, windowId);
-    await this._load();
+    try {
+      await undismissMonitorAnomaly(this.hass, monitor.id, windowId);
+      await this._load();
+    } catch {
+      this._notify(msg("Could not restore dismissed detection"));
+    }
   }
 
   private _formatClusterRange(cluster: AnomalyCluster): string {
@@ -279,13 +375,17 @@ export class AnomalyMonitorsPanel extends LitElement {
 
     if (!isOpen) {
       return html`
-        <ha-button
-          class="dismiss-btn"
+        <button
+          class="icon-action dismiss-btn"
+          type="button"
+          title=${msg("Dismiss")}
+          aria-label=${msg("Dismiss this anomaly")}
           @click=${() => {
             this._dismissPickerKey = pickerKey;
           }}
-          >${msg("Dismiss")}</ha-button
         >
+          <ha-icon icon="mdi:bell-off-outline"></ha-icon>
+        </button>
       `;
     }
 
@@ -297,35 +397,51 @@ export class AnomalyMonitorsPanel extends LitElement {
     return html`
       <div class="dismiss-picker">
         <span class="dismiss-picker-label">${msg("Dismiss until:")}</span>
-        <ha-button @click=${() => this._onDismiss(monitor, cluster, undefined)}>
+        <button
+          class="text-action"
+          type="button"
+          @click=${() => this._onDismiss(monitor, cluster, undefined)}
+        >
           ${msg("Auto")} (${autoLabel})
-        </ha-button>
-        <ha-button
+        </button>
+        <button
+          class="text-action"
+          type="button"
           @click=${() => {
             const d = new Date();
             d.setDate(d.getDate() + 1);
             this._onDismiss(monitor, cluster, d.toISOString());
           }}
-          >${msg("1 day")}</ha-button
         >
-        <ha-button
+          ${msg("1 day")}
+        </button>
+        <button
+          class="text-action"
+          type="button"
           @click=${() => {
             const d = new Date();
             d.setDate(d.getDate() + 7);
             this._onDismiss(monitor, cluster, d.toISOString());
           }}
-          >${msg("1 week")}</ha-button
         >
-        <ha-button @click=${() => this._onDismiss(monitor, cluster, null)}>
+          ${msg("1 week")}
+        </button>
+        <button
+          class="text-action"
+          type="button"
+          @click=${() => this._onDismiss(monitor, cluster, null)}
+        >
           ${msg("Permanent")}
-        </ha-button>
-        <ha-button
+        </button>
+        <button
+          class="text-action"
+          type="button"
           @click=${() => {
             this._dismissPickerKey = null;
           }}
         >
           ${msg("Cancel")}
-        </ha-button>
+        </button>
       </div>
     `;
   }
@@ -368,31 +484,62 @@ export class AnomalyMonitorsPanel extends LitElement {
     if (windows.length === 0) return nothing;
 
     return html`
-      <details class="dismissed-windows">
-        <summary>${msg("Dismissed")} (${windows.length})</summary>
-        <div class="dismissed-list">
+      <div
+        class="dismissed-windows"
+        role="group"
+        aria-label=${msg("Dismissed detections")}
+      >
+        <span class="dismissed-heading"
+          >${msg("Dismissed")} (${windows.length})</span
+        >
+        <ul class="dismissed-list">
           ${windows.map((w) => {
             const start = new Date(w.start_ms).toLocaleString();
             const end = new Date(w.end_ms).toLocaleString();
+            const dismissedAt = w.dismissed_at
+              ? new Date(w.dismissed_at).toLocaleString()
+              : null;
             const expiry = w.expires_at
               ? new Date(w.expires_at).toLocaleString()
               : msg("Permanent");
             return html`
-              <div class="dismissed-item">
-                <span class="dismissed-range">${start} – ${end}</span>
-                <span class="dismissed-expiry"
-                  >${msg("Expires:")} ${expiry}</span
-                >
-                <ha-button
-                  class="undismiss-btn"
-                  @click=${() => this._onUndismiss(monitor, w.id)}
-                  >${msg("Remove")}</ha-button
-                >
-              </div>
+              <li class="dismissed-item">
+                <div class="dismissed-meta">
+                  <span class="dismissed-range">${start} – ${end}</span>
+                  ${dismissedAt
+                    ? html`<span class="dismissed-at"
+                        >${msg("Dismissed:")} ${dismissedAt}</span
+                      >`
+                    : nothing}
+                  <span class="dismissed-expiry"
+                    >${msg("Expires:")} ${expiry}</span
+                  >
+                </div>
+                <div class="dismissed-item-actions">
+                  <button
+                    class="icon-action view-window-btn"
+                    type="button"
+                    title=${msg("View window on chart")}
+                    aria-label=${msg("View dismissed window on chart")}
+                    @click=${() => this._onViewWindow(monitor, w)}
+                  >
+                    <ha-icon icon="mdi:chart-line"></ha-icon>
+                  </button>
+                  <button
+                    class="icon-action undismiss-btn"
+                    type="button"
+                    title=${msg("Restore detection")}
+                    aria-label=${msg("Restore dismissed detection")}
+                    @click=${() => this._onUndismiss(monitor, w.id)}
+                  >
+                    <ha-icon icon="mdi:bell-ring-outline"></ha-icon>
+                  </button>
+                </div>
+              </li>
             `;
           })}
-        </div>
-      </details>
+        </ul>
+      </div>
     `;
   }
 
@@ -613,32 +760,100 @@ export class AnomalyMonitorsPanel extends LitElement {
         ${this._renderDismissedWindows(monitor)}
 
         <div class="monitor-actions">
-          <ha-button
-            class="small-btn view-series-btn"
+          <button
+            class="icon-action view-series-btn"
+            type="button"
+            title=${msg("View series")}
+            aria-label=${msg("View series on chart")}
             @click=${() => this._onViewSeries(monitor)}
-            >${msg("View series")}</ha-button
           >
-          <ha-button class="small-btn" @click=${() => this._onEdit(monitor)}
-            >${msg("Edit")}</ha-button
+            <ha-icon icon="mdi:chart-line"></ha-icon>
+          </button>
+          <button
+            class="icon-action edit-btn"
+            type="button"
+            title=${msg("Edit monitor")}
+            aria-label=${msg("Edit monitor")}
+            @click=${() => this._onEdit(monitor)}
           >
+            <ha-icon icon="mdi:pencil"></ha-icon>
+          </button>
           ${monitor.device_id
             ? html`<a
-                class="device-link"
+                class="icon-action device-link"
                 href=${`/config/devices/device/${monitor.device_id}`}
                 title=${msg("View device")}
+                aria-label=${msg("View device")}
               >
                 <ha-icon icon="mdi:chip"></ha-icon>
-                ${msg("Device")}
               </a>`
             : nothing}
           <div class="monitor-actions-spacer"></div>
-          <ha-button
-            class="small-btn delete-btn"
+          <button
+            class="icon-action delete-btn"
+            type="button"
+            title=${msg("Delete monitor")}
+            aria-label=${msg("Delete monitor")}
             @click=${() => this._onDelete(monitor)}
-            >${msg("Delete")}</ha-button
           >
+            <ha-icon icon="mdi:trash-can-outline"></ha-icon>
+          </button>
         </div>
       </div>
+    `;
+  }
+
+  private _renderTrashItem(monitor: AnomalyMonitor) {
+    const deletedAt = monitor.deleted_at
+      ? new Date(monitor.deleted_at).toLocaleString()
+      : null;
+    return html`
+      <div class="trash-item" data-monitor-id=${monitor.id}>
+        <div class="trash-item-info">
+          <span class="trash-name">${monitor.name}</span>
+          ${deletedAt
+            ? html`<span class="trash-deleted-at"
+                >${msg("Deleted:")} ${deletedAt}</span
+              >`
+            : nothing}
+        </div>
+        <div class="trash-item-actions">
+          <button
+            class="icon-action restore-btn"
+            type="button"
+            title=${msg("Restore monitor")}
+            aria-label=${msg(`Restore "${monitor.name}"`)}
+            @click=${() => this._onRestore(monitor)}
+          >
+            <ha-icon icon="mdi:restore"></ha-icon>
+          </button>
+          <button
+            class="icon-action delete-btn purge-btn"
+            type="button"
+            title=${msg("Delete permanently")}
+            aria-label=${msg(`Permanently delete "${monitor.name}"`)}
+            @click=${() => this._onPurge(monitor)}
+          >
+            <ha-icon icon="mdi:delete-forever"></ha-icon>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+
+  private _renderTrashSection() {
+    if (this._deletedMonitors.length === 0) {
+      return nothing;
+    }
+    return html`
+      <section class="trash-section" aria-label=${msg("Recently deleted")}>
+        <h3 class="trash-heading">
+          ${msg("Recently deleted")} (${this._deletedMonitors.length})
+        </h3>
+        <div class="trash-list">
+          ${this._deletedMonitors.map((m) => this._renderTrashItem(m))}
+        </div>
+      </section>
     `;
   }
 
@@ -670,7 +885,7 @@ export class AnomalyMonitorsPanel extends LitElement {
           </button>
         </div>
 
-        ${this._renderMonitorList()}
+        ${this._renderMonitorList()} ${this._renderTrashSection()}
       </div>
 
       <anomaly-monitor-wizard
