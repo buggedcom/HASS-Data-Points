@@ -256,3 +256,71 @@ export const MixedBackgroundAndRow: Story = {
     );
   },
 };
+
+// ── (d) Split view + row mode ───────────────────────────────────────────────────
+/**
+ * Split view (one plot per numeric series) with a row-mode binary sensor. The
+ * row lane must render in its own dedicated region beneath the split row stack
+ * (no empty reserved gap, no dead legend entry — the #63 split-view fix).
+ * Toggling the row sensor off reclaims its lane region on the next draw.
+ */
+export const SplitViewRow: Story = {
+  render: () => makeChart(),
+  play: async ({ canvasElement }) => {
+    const el = canvasElement.querySelector(
+      "hass-datapoints-history-chart"
+    ) as DrawableChart;
+    el.draw(
+      drawArgs(
+        {
+          split_view: true,
+          series_settings: [
+            { entity_id: "sensor.temperature" },
+            { entity_id: "sensor.humidity" },
+            { entity_id: "binary_sensor.front_door", binary_display: "row" },
+          ],
+        },
+        {
+          "sensor.temperature": numericHistory([
+            { at: 0, v: 19 },
+            { at: 0.5, v: 21 },
+            { at: 1, v: 20 },
+          ]),
+          "sensor.humidity": numericHistory([
+            { at: 0, v: 55 },
+            { at: 0.5, v: 60 },
+            { at: 1, v: 58 },
+          ]),
+          "binary_sensor.front_door": binaryHistory([
+            { at: 0, s: "off" },
+            { at: 0.3, s: "on" },
+            { at: 0.6, s: "off" },
+          ]),
+        }
+      )
+    );
+
+    await waitFor(() =>
+      expect(legendLabels(el)).toEqual([
+        "Temperature",
+        "Humidity",
+        "Front Door",
+      ])
+    );
+
+    // The row lane renders in its own dedicated region beneath the split rows,
+    // with a canvas (not an empty reserved gap).
+    const laneRegion = () =>
+      el.querySelector<HTMLElement>(".split-binary-lane-region");
+    await waitFor(() => expect(laneRegion()).not.toBeNull());
+    expect(
+      laneRegion()!.querySelector(".split-binary-lane-canvas")
+    ).not.toBeNull();
+
+    // Toggling the row sensor off reclaims the lane region on the next draw.
+    const rowToggle = () =>
+      el.querySelectorAll<HTMLButtonElement>("#legend .legend-toggle")[2];
+    await userEvent.click(rowToggle());
+    await waitFor(() => expect(laneRegion()).toBeNull());
+  },
+};
