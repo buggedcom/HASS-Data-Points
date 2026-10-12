@@ -15084,8 +15084,7 @@
 			];
 			const visibleSeries = series.filter((entry) => !this._hiddenSeries.has(entry.legendEntityId || entry.entityId));
 			const visibleRows = binaryRows.filter((row) => !this._hiddenSeries.has(row.entityId));
-			const laneScrollbarHeight = scrollViewport instanceof HTMLElement ? Math.max(0, scrollViewport.offsetHeight - scrollViewport.clientHeight) : 0;
-			const binaryLaneBottomMargin = visibleRows.length ? Math.max(laneScrollbarHeight, HISTORY_CHART_BINARY_LANE_GAP_PX) : 0;
+			const binaryLaneBottomMargin = visibleRows.length ? HISTORY_CHART_BINARY_LANE_GAP_PX : 0;
 			const binaryLaneReserve = reserveLaneSpace(visibleRows.length, HISTORY_CHART_BINARY_LANE_HEIGHT_PX, HISTORY_CHART_BINARY_LANE_GAP_PX) + binaryLaneBottomMargin;
 			const selectedComparisonResult = drawableComparisonResults.find((window) => window.id === selectedComparisonWindowId) || null;
 			const selectedComparisonSeriesMap = /* @__PURE__ */ new Map();
@@ -15178,7 +15177,11 @@
 			else if (binaryBackgrounds.length || binaryRows.length) minChartHeight = 100;
 			else minChartHeight = 280;
 			minChartHeight = Math.max(minChartHeight, binaryLaneReserve + HISTORY_CHART_BINARY_LANE_HEIGHT_PX);
-			const availableHeight = this._getAvailableChartHeight(minChartHeight);
+			let availableHeight = this._getAvailableChartHeight(minChartHeight);
+			if (visibleRows.length) {
+				const viewportInnerHeight = scrollViewport instanceof HTMLElement ? scrollViewport.clientHeight : 0;
+				if (viewportInnerHeight > 0) availableHeight = Math.min(availableHeight, Math.max(viewportInnerHeight, binaryLaneReserve + 80));
+			}
 			const viewportWidth = Math.max(scrollViewport?.clientWidth || wrap?.clientWidth || 360, 360);
 			const totalSpanMs = Math.max(1, t1 - t0);
 			const zoomSpanMs = this._zoomRange ? Math.max(1, this._zoomRange.end - this._zoomRange.start) : null;
