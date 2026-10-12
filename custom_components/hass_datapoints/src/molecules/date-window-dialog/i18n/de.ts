@@ -11,5 +11,9 @@ export const translations: ComponentTranslations = {
   "Use previous range": "Vorherigen Bereich verwenden",
   "Use next range": "Nächsten Bereich verwenden",
   "Delete date window": "Datumsfenster löschen",
+  "Enter a name for this date window.":
+    "Geben Sie einen Namen für dieses Datumsfenster ein.",
+  "The start date must be before the end date.":
+    "Das Startdatum muss vor dem Enddatum liegen.",
   Cancel: "Abbrechen",
 };

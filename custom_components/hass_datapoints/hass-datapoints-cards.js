@@ -2696,6 +2696,8 @@
 			"Use previous range": "Käytä edellistä aluetta",
 			"Use next range": "Käytä seuraavaa aluetta",
 			"Delete date window": "Poista aikaikkuna",
+			"Enter a name for this date window.": "Anna tälle aikaikkunalle nimi.",
+			"The start date must be before the end date.": "Alkupäivän on oltava ennen loppupäivää.",
 			Cancel: "Peruuta"
 		};
 	}));
@@ -3356,6 +3358,8 @@
 			"Use previous range": "Utiliser la plage précédente",
 			"Use next range": "Utiliser la plage suivante",
 			"Delete date window": "Supprimer la fenêtre de dates",
+			"Enter a name for this date window.": "Saisissez un nom pour cette fenêtre de dates.",
+			"The start date must be before the end date.": "La date de début doit être antérieure à la date de fin.",
 			Cancel: "Annuler"
 		};
 	}));
@@ -4016,6 +4020,8 @@
 			"Use previous range": "Vorherigen Bereich verwenden",
 			"Use next range": "Nächsten Bereich verwenden",
 			"Delete date window": "Datumsfenster löschen",
+			"Enter a name for this date window.": "Geben Sie einen Namen für dieses Datumsfenster ein.",
+			"The start date must be before the end date.": "Das Startdatum muss vor dem Enddatum liegen.",
 			Cancel: "Abbrechen"
 		};
 	}));
@@ -4676,6 +4682,8 @@
 			"Use previous range": "Usar rango anterior",
 			"Use next range": "Usar rango siguiente",
 			"Delete date window": "Eliminar ventana de fechas",
+			"Enter a name for this date window.": "Introduce un nombre para esta ventana de fechas.",
+			"The start date must be before the end date.": "La fecha de inicio debe ser anterior a la fecha de fin.",
 			Cancel: "Cancelar"
 		};
 	}));
@@ -5336,6 +5344,8 @@
 			"Use previous range": "Usar intervalo anterior",
 			"Use next range": "Usar intervalo seguinte",
 			"Delete date window": "Eliminar janela de datas",
+			"Enter a name for this date window.": "Introduza um nome para esta janela de datas.",
+			"The start date must be before the end date.": "A data de início deve ser anterior à data de fim.",
 			Cancel: "Cancelar"
 		};
 	}));
@@ -5996,6 +6006,8 @@
 			"Use previous range": "使用上一个范围",
 			"Use next range": "使用下一个范围",
 			"Delete date window": "删除日期窗口",
+			"Enter a name for this date window.": "请为此日期窗口输入名称。",
+			"The start date must be before the end date.": "开始日期必须早于结束日期。",
 			Cancel: "取消"
 		};
 	}));
@@ -25635,17 +25647,21 @@
     --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
   }
 
+  /* --------------------------------------------------------------------------
+   * Layout — the dialog reads as a stack of distinct, well-spaced sections:
+   * intro blurb · name · date-range group (start/end + timeline) · shortcuts ·
+   * actions. Each section owns its own vertical rhythm via the content grid.
+   * ------------------------------------------------------------------------ */
   .date-window-dialog-content {
     display: grid;
-    gap: var(--dp-spacing-sm);
+    gap: var(--dp-spacing-lg);
     padding: var(--dp-spacing-sm) 0 0;
     overflow: visible;
   }
 
   .date-window-dialog-body {
     color: var(--secondary-text-color);
-    line-height: 1.4;
-    margin-bottom: calc(var(--dp-spacing-xs) * -1);
+    line-height: 1.45;
   }
 
   .date-window-dialog-field {
@@ -25655,7 +25671,7 @@
   }
 
   .date-window-dialog-field.name-field {
-    max-width: 320px;
+    max-width: 360px;
   }
 
   .date-window-dialog-field label {
@@ -25669,10 +25685,33 @@
     width: 100%;
   }
 
+  /* The "date range" group binds start/end and the timeline into one unit,
+   * set off from the rest of the form with a subtle surface + border. */
+  .date-range-group {
+    gap: var(--dp-spacing-md);
+    padding: var(--dp-spacing-md);
+    border: 1px solid
+      color-mix(
+        in srgb,
+        var(--divider-color, rgba(0, 0, 0, 0.12)) 80%,
+        transparent
+      );
+    border-radius: 14px;
+    background: color-mix(
+      in srgb,
+      var(--secondary-background-color, #f5f5f5) 45%,
+      transparent
+    );
+  }
+
+  .date-range-group > label {
+    font-size: 0.95rem;
+  }
+
   .date-window-dialog-dates {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--dp-spacing-sm);
+    gap: var(--dp-spacing-md);
   }
 
   .date-window-dialog-input {
@@ -25703,15 +25742,32 @@
     );
   }
 
+  .date-window-dialog-input[aria-invalid="true"] {
+    border-color: color-mix(
+      in srgb,
+      var(--error-color, #db4437) 70%,
+      transparent
+    );
+  }
+
+  /* The range timeline gets real breathing room inside the group. */
   .date-window-dialog-timeline {
-    border-radius: 8px;
+    border-radius: 10px;
     overflow: hidden;
-    margin: calc(var(--dp-spacing-xs) * -1) 0;
+    padding: var(--dp-spacing-xs) 0;
   }
 
   .date-window-dialog-timeline range-timeline {
     display: block;
     height: 64px;
+  }
+
+  /* Inline validation messages, keyed to the offending field. */
+  .date-window-dialog-error {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: var(--error-color, #db4437);
   }
 
   .date-window-dialog-shortcuts {
@@ -25720,16 +25776,27 @@
     gap: var(--dp-spacing-sm);
   }
 
+  /* --------------------------------------------------------------------------
+   * Actions — Delete sits apart on the left (destructive), Cancel + the primary
+   * Create/Save button are grouped on the right. A hairline separates the row.
+   * ------------------------------------------------------------------------ */
   .date-window-dialog-actions {
     display: flex;
+    align-items: center;
     justify-content: space-between;
     gap: var(--dp-spacing-sm);
-    padding-top: 0;
-    margin-top: calc(var(--dp-spacing-xs) * -1);
+    padding-top: var(--dp-spacing-md);
+    border-top: 1px solid
+      color-mix(
+        in srgb,
+        var(--divider-color, rgba(0, 0, 0, 0.12)) 60%,
+        transparent
+      );
   }
 
   .date-window-dialog-actions-right {
     display: flex;
+    align-items: center;
     justify-content: flex-end;
     gap: var(--dp-spacing-sm);
     margin-left: auto;
@@ -25776,8 +25843,21 @@
   }
 
   @media (max-width: 720px) {
+    .date-window-dialog-content {
+      gap: var(--dp-spacing-md);
+    }
+
     .date-window-dialog-dates {
       grid-template-columns: 1fr;
+    }
+
+    .date-window-dialog-actions {
+      flex-wrap: wrap;
+    }
+
+    .date-window-dialog-actions-right {
+      flex: 1 1 100%;
+      justify-content: flex-end;
     }
   }
 `;
@@ -27926,6 +28006,8 @@
 	var _startInput_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _endInput_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _shaking_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _nameValue_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _error_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var DateWindowDialog = (_DateWindowDialog = class DateWindowDialog extends i$2 {
 		constructor(..._args) {
 			super(..._args);
@@ -27945,6 +28027,14 @@
 			_classPrivateFieldInitSpec(this, _startInput_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _endInput_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _shaking_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _nameValue_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _error_accessor_storage$1, null);
+			_defineProperty(
+				this,
+				/** Tracks the previous `open` value so we only seed name on a false→true edge. */
+				"_wasOpen",
+				false
+			);
 		}
 		get open() {
 			return _classPrivateFieldGet2(_open_accessor_storage$3, this);
@@ -28042,7 +28132,42 @@
 		set _shaking(value) {
 			_classPrivateFieldSet2(_shaking_accessor_storage, this, value);
 		}
-		/** Shake the dialog — call this when the parent detects a validation error. */
+		get _nameValue() {
+			return _classPrivateFieldGet2(_nameValue_accessor_storage, this);
+		}
+		set _nameValue(value) {
+			_classPrivateFieldSet2(_nameValue_accessor_storage, this, value);
+		}
+		get _error() {
+			return _classPrivateFieldGet2(_error_accessor_storage$1, this);
+		}
+		set _error(value) {
+			_classPrivateFieldSet2(_error_accessor_storage$1, this, value);
+		}
+		/**
+		* Seed the internal name from the `name` prop only when the dialog opens.
+		* Binding `.value` directly to the reactive `name` prop would re-apply a
+		* stale value on every parent re-render (the original wipe bug).
+		*/
+		willUpdate(changed) {
+			if (changed.has("open")) {
+				if (this.open && !this._wasOpen) {
+					this._nameValue = this.name;
+					this._error = null;
+				}
+				this._wasOpen = this.open;
+			}
+		}
+		/** Localized text for the current inline error, or "" when there is none. */
+		get _errorMessage() {
+			if (this._error === "name") return msg("Enter a name for this date window.");
+			if (this._error === "range") return msg("The start date must be before the end date.");
+			return "";
+		}
+		/**
+		* Shake the dialog to signal an invalid submit. Now driven internally by
+		* `_onSubmit`; kept public for backwards compatibility with earlier callers.
+		*/
 		shake() {
 			if (!this._dialogEl) return;
 			this._shaking = false;
@@ -28065,13 +28190,46 @@
 		_onCancel() {
 			this._emit("dp-window-close");
 		}
+		_onNameInput(ev) {
+			const value = ev.target?.value ?? "";
+			this._nameValue = value;
+			if (this._error === "name" && value.trim()) this._error = null;
+		}
 		_onSubmit() {
-			const nameVal = this._nameInput?.value ?? this.name;
+			const name = String(this._nameInput?.value ?? this._nameValue ?? "").trim();
+			const start = this._startInput?.value ?? this.startValue;
+			const end = this._endInput?.value ?? this.endValue;
+			if (!name) {
+				this._showError("name");
+				return;
+			}
+			if (!this._isValidRange(start, end)) {
+				this._showError("range");
+				return;
+			}
+			this._error = null;
 			this._emit("dp-window-submit", {
-				name: String(nameVal ?? "").trim(),
-				start: this._startInput?.value ?? this.startValue,
-				end: this._endInput?.value ?? this.endValue
+				name,
+				start,
+				end
 			});
+		}
+		/** True when both values parse and the start is strictly before the end. */
+		_isValidRange(start, end) {
+			const startDate = this._parseValueToDate(start);
+			const endDate = this._parseValueToDate(end);
+			return !!startDate && !!endDate && startDate.getTime() < endDate.getTime();
+		}
+		/** Surface an inline error for a field, shake, and focus it for announcement. */
+		_showError(field) {
+			this._error = field;
+			this.shake();
+			(field === "name" ? this._nameInput : this._startInput)?.focus?.();
+		}
+		/** Clear a shown range error once the start/end become a valid range again. */
+		_maybeClearRangeError(start, end) {
+			if (this._error !== "range") return;
+			if (this._isValidRange(start, end)) this._error = null;
 		}
 		_onDelete() {
 			this._emit("dp-window-delete");
@@ -28083,9 +28241,12 @@
 			this._emit("dp-window-shortcut", { direction: 1 });
 		}
 		_onDateChange() {
+			const start = this._startInput?.value ?? "";
+			const end = this._endInput?.value ?? "";
+			this._maybeClearRangeError(start, end);
 			this._emit("dp-window-date-change", {
-				start: this._startInput?.value ?? "",
-				end: this._endInput?.value ?? ""
+				start,
+				end
 			});
 		}
 		_onRangeCommit(ev) {
@@ -28100,6 +28261,7 @@
 			const endStr = fmt(end);
 			if (this._startInput) this._startInput.value = startStr;
 			if (this._endInput) this._endInput.value = endStr;
+			this._maybeClearRangeError(startStr, endStr);
 			this._emit("dp-window-date-change", {
 				start: startStr,
 				end: endStr
@@ -28110,6 +28272,12 @@
 			if (!value) return null;
 			const d = new Date(value);
 			return Number.isNaN(d.getTime()) ? null : d;
+		}
+		/** Inline, localized validation message for the field named by `id`. */
+		_renderError(id) {
+			return b`<p id=${id} class="date-window-dialog-error" role="alert">
+      ${this._errorMessage}
+    </p>`;
 		}
 		render() {
 			return b`
@@ -28133,11 +28301,15 @@
               id="date-window-name"
               label=${msg("Name")}
               placeholder=${msg("e.g. Heating season start")}
-              .value=${this.name}
+              .value=${this._nameValue}
+              aria-invalid=${this._error === "name" ? "true" : "false"}
+              aria-describedby=${this._error === "name" ? "date-window-error-name" : A}
+              @input=${this._onNameInput}
             ></ha-textfield>
+            ${this._error === "name" ? this._renderError("date-window-error-name") : A}
           </div>
 
-          <div class="date-window-dialog-field">
+          <div class="date-window-dialog-field date-range-group">
             <label>${msg("Date range")}</label>
             <div class="date-window-dialog-dates">
               <div class="date-window-dialog-field">
@@ -28148,6 +28320,8 @@
                   type="datetime-local"
                   step="60"
                   .value=${this.startValue}
+                  aria-invalid=${this._error === "range" ? "true" : "false"}
+                  aria-describedby=${this._error === "range" ? "date-window-error-range" : A}
                   @change=${this._onDateChange}
                 />
               </div>
@@ -28159,10 +28333,13 @@
                   type="datetime-local"
                   step="60"
                   .value=${this.endValue}
+                  aria-invalid=${this._error === "range" ? "true" : "false"}
+                  aria-describedby=${this._error === "range" ? "date-window-error-range" : A}
                   @change=${this._onDateChange}
                 />
               </div>
             </div>
+            ${this._error === "range" ? this._renderError("date-window-error-range") : A}
           </div>
 
           ${this.rangeBounds ? b`
@@ -28252,6 +28429,8 @@
 	__decorate([e$4("#date-window-start")], DateWindowDialog.prototype, "_startInput", null);
 	__decorate([e$4("#date-window-end")], DateWindowDialog.prototype, "_endInput", null);
 	__decorate([r$2()], DateWindowDialog.prototype, "_shaking", null);
+	__decorate([r$2()], DateWindowDialog.prototype, "_nameValue", null);
+	__decorate([r$2()], DateWindowDialog.prototype, "_error", null);
 	DateWindowDialog = __decorate([localized()], DateWindowDialog);
 	customElements.define("date-window-dialog", DateWindowDialog);
 	//#endregion
