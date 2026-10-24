@@ -11350,6 +11350,52 @@
 		}));
 	}
 	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/domain/aggregation/types.ts
+	var AGGREGATE_OPERATIONS = [
+		"mean",
+		"min",
+		"max",
+		"median",
+		"first",
+		"last",
+		"consumption",
+		"transition_count",
+		"state_duration",
+		"state_percentage",
+		"event_count"
+	];
+	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/domain/aggregation/aggregation.ts
+	function normalizeAggregateDefinitions(value) {
+		if (!Array.isArray(value)) return [];
+		const ids = /* @__PURE__ */ new Set();
+		return value.flatMap((item) => {
+			if (!item || typeof item !== "object" || typeof item.id !== "string" || !item.id || ids.has(item.id) || !AGGREGATE_OPERATIONS.includes(item.operation) || ![
+				"hour",
+				"day",
+				"week",
+				"month"
+			].includes(item.interval)) return [];
+			ids.add(item.id);
+			const definition = {
+				id: item.id,
+				operation: item.operation,
+				interval: item.interval,
+				mode: item.mode === "cumulative" && [
+					"consumption",
+					"transition_count",
+					"state_duration",
+					"event_count"
+				].includes(item.operation) ? "cumulative" : "interval",
+				resetOnZoom: item.resetOnZoom === true
+			};
+			for (const key of ["states", "eventTypes"]) if (Array.isArray(item[key])) definition[key] = [...new Set(item[key].filter((v) => typeof v === "string" && v.length > 0))];
+			for (const key of ["color", "label"]) if (typeof item[key] === "string") definition[key] = item[key];
+			if (typeof item.visible === "boolean") definition.visible = item.visible;
+			return [definition];
+		});
+	}
+	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/anomaly-direction.ts
 	var DEFAULT_ANOMALY_DIRECTION = "both";
 	/** Narrow an unknown value to a valid direction, defaulting to "both". */
@@ -11427,6 +11473,7 @@
 	function normalizeHistorySeriesAnalysis(analysis) {
 		const source = analysis && typeof analysis === "object" ? analysis : {};
 		return {
+			...Array.isArray(source.aggregates) ? { aggregates: normalizeAggregateDefinitions(source.aggregates) } : {},
 			expanded: source.expanded === true,
 			show_trend_lines: source.show_trend_lines === true,
 			trend_method: [
