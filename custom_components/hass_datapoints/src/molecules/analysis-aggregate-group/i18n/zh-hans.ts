@@ -30,4 +30,5 @@ export const translations: ComponentTranslations = {
   Median: "中位数",
   "First reading": "首次读数",
   "Last reading": "最后读数",
+  "All event types": "所有事件类型",
 };

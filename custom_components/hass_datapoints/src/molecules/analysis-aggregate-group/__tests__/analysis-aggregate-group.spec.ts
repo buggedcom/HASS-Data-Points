@@ -234,3 +234,71 @@ describe("analysis-aggregate-group measurement variant", () => {
     });
   });
 });
+
+describe("analysis-aggregate-group event variant", () => {
+  let el: GroupElement & { eventTypes: string[]; variant: string };
+  afterEach(() => el?.remove());
+
+  async function mountEvent(aggregates: AggregateDefinition[]) {
+    el = document.createElement("analysis-aggregate-group") as typeof el;
+    Object.assign(el, {
+      variant: "event",
+      eventTypes: ["single_press", "double_press"],
+      analysis: { aggregates } as NormalizedAnalysis,
+      entityId: "event.button",
+    });
+    document.body.appendChild(el);
+    await el.updateComplete;
+  }
+  const eventDefinition = (eventTypes: string[]) =>
+    definition({ operation: "event_count", states: undefined, eventTypes });
+
+  describe("GIVEN a button reporting single and double presses", () => {
+    describe("WHEN an aggregate is added", () => {
+      it("THEN it counts all event types by default", async () => {
+        expect.assertions(1);
+        await mountEvent([]);
+        const handler = vi.fn();
+        el.addEventListener("dp-group-analysis-change", handler);
+        (el.shadowRoot!.querySelector(".add") as HTMLButtonElement).click();
+        expect(handler.mock.calls[0][0].detail.value[0]).toMatchObject({
+          operation: "event_count",
+          eventTypes: [],
+        });
+      });
+    });
+    describe("WHEN All event types is unchecked", () => {
+      it("THEN the first type is selected and type choices appear", async () => {
+        expect.assertions(2);
+        await mountEvent([eventDefinition([])]);
+        const handler = vi.fn();
+        el.addEventListener("dp-group-analysis-change", handler);
+        const all = el.shadowRoot!.querySelector(
+          ".all-types"
+        ) as HTMLInputElement;
+        all.checked = false;
+        all.dispatchEvent(new Event("change"));
+        expect(
+          handler.mock.calls[0][0].detail.value[0].eventTypes
+        ).toStrictEqual(["single_press"]);
+        expect(el.shadowRoot!.querySelectorAll(".event-type")).toHaveLength(0);
+      });
+    });
+    describe("WHEN specific types are selected", () => {
+      it("THEN each type is individually toggleable", async () => {
+        expect.assertions(2);
+        await mountEvent([eventDefinition(["single_press"])]);
+        const boxes = el.shadowRoot!.querySelectorAll(".event-type");
+        expect(boxes).toHaveLength(2);
+        const handler = vi.fn();
+        el.addEventListener("dp-group-analysis-change", handler);
+        const second = boxes[1] as HTMLInputElement;
+        second.checked = true;
+        second.dispatchEvent(new Event("change"));
+        expect(
+          handler.mock.calls[0][0].detail.value[0].eventTypes
+        ).toStrictEqual(["single_press", "double_press"]);
+      });
+    });
+  });
+});

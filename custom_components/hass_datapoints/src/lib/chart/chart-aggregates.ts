@@ -8,6 +8,7 @@ import {
   MEASUREMENT_OPERATIONS,
   isMeasurementOperation,
 } from "@/lib/domain/aggregation/labels";
+import type { HaStateEntry } from "@/cards/history/data/types";
 import type {
   AggregateDefinition,
   AggregateRange,
@@ -230,6 +231,116 @@ export function buildMeasurementAggregateSeries(
           periods: valued.map((p) => ({ start: p.start, end: p.end })),
           color: definition.color || args.colors[index % args.colors.length],
           axisKey: args.axisKey,
+          bars: result.presentation === "bar",
+          result,
+        },
+      ];
+    });
+}
+
+export interface BuildEventAggregateSeriesArgs {
+  entityId: string;
+  entityLabel: string;
+  color: string;
+  definitions: AggregateDefinition[];
+  /** Raw history states for the event entity, requested with attributes. */
+  states: HaStateEntry[];
+  range: AggregateRange;
+  timeZone: string;
+}
+
+/**
+ * Turn an event entity's recorded states into occurrences. The state value is
+ * the event timestamp and `event_type` is an attribute. States at or before the
+ * range start are the initial snapshot, not events that happened in range.
+ */
+export function extractEventSamples(
+  states: HaStateEntry[],
+  range: AggregateRange
+): AggregateSample[] {
+  return states.flatMap((entry): AggregateSample[] => {
+    const raw = entry.s ?? entry.state;
+    if (raw === undefined || UNKNOWN_STATES.has(raw)) {
+      return [];
+    }
+    const attributes = entry.a ?? entry.attributes;
+    const eventType = attributes?.event_type;
+    if (typeof eventType !== "string" || !eventType) {
+      return [];
+    }
+    const recordedAt =
+      typeof entry.lu === "number"
+        ? entry.lu * 1000
+        : Date.parse(entry.last_updated ?? "");
+    const parsed = Date.parse(raw);
+    const eventTime = Number.isFinite(parsed) ? parsed : recordedAt;
+    if (!Number.isFinite(eventTime)) {
+      return [];
+    }
+    return [
+      {
+        time: Number.isFinite(recordedAt) ? recordedAt : eventTime,
+        eventTime,
+        eventType,
+        boundary: Number.isFinite(recordedAt) && recordedAt <= range.start,
+      },
+    ];
+  });
+}
+
+/** Count event occurrences per calendar period as bars (or cumulative lines). */
+export function buildEventAggregateSeries(
+  args: BuildEventAggregateSeriesArgs
+): AggregateChartSeries[] {
+  if (!args.states.length) {
+    return [];
+  }
+  const samples = extractEventSamples(args.states, args.range);
+  return args.definitions
+    .filter(
+      (definition) =>
+        definition.visible !== false && definition.operation === "event_count"
+    )
+    .flatMap((definition) => {
+      const result = calculateAggregate({
+        definition,
+        samples,
+        range: args.range,
+        timeZone: args.timeZone,
+        coverage: [args.range],
+      });
+      const valued = result.points.filter(
+        (p): p is typeof p & { value: number } =>
+          typeof p.value === "number" && Number.isFinite(p.value)
+      );
+      if (!valued.length) {
+        return [];
+      }
+      const intervalLabel = msg(
+        AGGREGATE_INTERVAL_OPTIONS.find((o) => o.value === definition.interval)
+          ?.label ?? definition.interval
+      );
+      const typesLabel = definition.eventTypes?.length
+        ? definition.eventTypes.join(", ")
+        : msg("All event types");
+      const id = getAggregateSeriesId(args.entityId, definition.id);
+      return [
+        {
+          entityId: id,
+          legendEntityId: id,
+          sourceEntityId: args.entityId,
+          definitionId: definition.id,
+          label:
+            definition.label ||
+            `${args.entityLabel} · ${intervalLabel} · ${typesLabel}`,
+          unit: result.unit,
+          pts: valued.map((p): [number, number] => [
+            (p.start + p.end) / 2,
+            p.value,
+          ]),
+          periods: valued.map((p) => ({ start: p.start, end: p.end })),
+          color: definition.color || args.color,
+          axisKey: `aggregate:${result.unit || "count"}`,
           bars: result.presentation === "bar",
           result,
         },

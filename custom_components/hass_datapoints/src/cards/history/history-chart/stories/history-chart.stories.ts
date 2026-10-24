@@ -407,3 +407,53 @@ export const BinaryAggregateHidesSource: Story = {
     );
   },
 };
+
+// ── (e) Event counts ─────────────────────────────────────────────────────────────
+/** An event entity's presses are counted per day as bars, by selected type. */
+export const EventCountBars: Story = {
+  render: () => makeChart(),
+  play: async ({ canvasElement }) => {
+    const el = canvasElement.querySelector(
+      "hass-datapoints-history-chart"
+    ) as DrawableChart;
+    const press = (at: number, type: string) => ({
+      lu: SEC(at),
+      s: new Date(SEC(at) * 1000).toISOString(),
+      a: { event_type: type },
+    });
+    el.draw(
+      drawArgs(
+        {
+          series_settings: [
+            {
+              entity_id: "event.button",
+              analysis: {
+                aggregates: [
+                  {
+                    id: "presses",
+                    operation: "event_count",
+                    interval: "hour",
+                    mode: "interval",
+                    eventTypes: ["double_press"],
+                    resetOnZoom: false,
+                  },
+                ],
+              },
+            },
+          ],
+        },
+        {
+          "event.button": [
+            press(0.2, "single_press"),
+            press(0.4, "double_press"),
+            press(0.6, "double_press"),
+          ],
+        }
+      )
+    );
+
+    await waitFor(() =>
+      expect(legendLabels(el)).toEqual(["event.button · Hourly · double_press"])
+    );
+  },
+};

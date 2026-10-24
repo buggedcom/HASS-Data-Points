@@ -2537,7 +2537,8 @@
 			Maximum: "Suurin",
 			Median: "Mediaani",
 			"First reading": "Ensimmäinen lukema",
-			"Last reading": "Viimeisin lukema"
+			"Last reading": "Viimeisin lukema",
+			"All event types": "Kaikki tapahtumatyypit"
 		};
 	}));
 	//#endregion
@@ -3238,7 +3239,8 @@
 			Maximum: "Maximum",
 			Median: "Médiane",
 			"First reading": "Première mesure",
-			"Last reading": "Dernière mesure"
+			"Last reading": "Dernière mesure",
+			"All event types": "Tous les types d'événement"
 		};
 	}));
 	//#endregion
@@ -3939,7 +3941,8 @@
 			Maximum: "Maximum",
 			Median: "Median",
 			"First reading": "Erster Messwert",
-			"Last reading": "Letzter Messwert"
+			"Last reading": "Letzter Messwert",
+			"All event types": "Alle Ereignistypen"
 		};
 	}));
 	//#endregion
@@ -4640,7 +4643,8 @@
 			Maximum: "Máximo",
 			Median: "Mediana",
 			"First reading": "Primera lectura",
-			"Last reading": "Última lectura"
+			"Last reading": "Última lectura",
+			"All event types": "Todos los tipos de evento"
 		};
 	}));
 	//#endregion
@@ -5341,7 +5345,8 @@
 			Maximum: "Máximo",
 			Median: "Mediana",
 			"First reading": "Primeira leitura",
-			"Last reading": "Última leitura"
+			"Last reading": "Última leitura",
+			"All event types": "Todos os tipos de evento"
 		};
 	}));
 	//#endregion
@@ -6042,7 +6047,8 @@
 			Maximum: "最大值",
 			Median: "中位数",
 			"First reading": "首次读数",
-			"Last reading": "最后读数"
+			"Last reading": "最后读数",
+			"All event types": "所有事件类型"
 		};
 	}));
 	//#endregion
@@ -9176,6 +9182,14 @@
 			states: void 0
 		};
 	}
+	function createEventAggregate(existingIds, eventTypes = []) {
+		return {
+			...createBinaryAggregate(existingIds),
+			operation: "event_count",
+			states: void 0,
+			eventTypes
+		};
+	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/chart-aggregates.ts
 	var UNKNOWN_STATES = /* @__PURE__ */ new Set(["unknown", "unavailable"]);
@@ -9291,6 +9305,65 @@
 				})),
 				color: definition.color || args.colors[index % args.colors.length],
 				axisKey: args.axisKey,
+				bars: result.presentation === "bar",
+				result
+			}];
+		});
+	}
+	/**
+	* Turn an event entity's recorded states into occurrences. The state value is
+	* the event timestamp and `event_type` is an attribute. States at or before the
+	* range start are the initial snapshot, not events that happened in range.
+	*/
+	function extractEventSamples(states, range) {
+		return states.flatMap((entry) => {
+			const raw = entry.s ?? entry.state;
+			if (raw === void 0 || UNKNOWN_STATES.has(raw)) return [];
+			const eventType = (entry.a ?? entry.attributes)?.event_type;
+			if (typeof eventType !== "string" || !eventType) return [];
+			const recordedAt = typeof entry.lu === "number" ? entry.lu * 1e3 : Date.parse(entry.last_updated ?? "");
+			const parsed = Date.parse(raw);
+			const eventTime = Number.isFinite(parsed) ? parsed : recordedAt;
+			if (!Number.isFinite(eventTime)) return [];
+			return [{
+				time: Number.isFinite(recordedAt) ? recordedAt : eventTime,
+				eventTime,
+				eventType,
+				boundary: Number.isFinite(recordedAt) && recordedAt <= range.start
+			}];
+		});
+	}
+	/** Count event occurrences per calendar period as bars (or cumulative lines). */
+	function buildEventAggregateSeries(args) {
+		if (!args.states.length) return [];
+		const samples = extractEventSamples(args.states, args.range);
+		return args.definitions.filter((definition) => definition.visible !== false && definition.operation === "event_count").flatMap((definition) => {
+			const result = calculateAggregate({
+				definition,
+				samples,
+				range: args.range,
+				timeZone: args.timeZone,
+				coverage: [args.range]
+			});
+			const valued = result.points.filter((p) => typeof p.value === "number" && Number.isFinite(p.value));
+			if (!valued.length) return [];
+			const intervalLabel = msg(AGGREGATE_INTERVAL_OPTIONS.find((o) => o.value === definition.interval)?.label ?? definition.interval);
+			const typesLabel = definition.eventTypes?.length ? definition.eventTypes.join(", ") : msg("All event types");
+			const id = getAggregateSeriesId(args.entityId, definition.id);
+			return [{
+				entityId: id,
+				legendEntityId: id,
+				sourceEntityId: args.entityId,
+				definitionId: definition.id,
+				label: definition.label || `${args.entityLabel} · ${intervalLabel} · ${typesLabel}`,
+				unit: result.unit,
+				pts: valued.map((p) => [(p.start + p.end) / 2, p.value]),
+				periods: valued.map((p) => ({
+					start: p.start,
+					end: p.end
+				})),
+				color: definition.color || args.color,
+				axisKey: `aggregate:${result.unit || "count"}`,
 				bars: result.presentation === "bar",
 				result
 			}];
@@ -12207,6 +12280,25 @@
 			significant_changes_only: !!options.significant_changes_only,
 			no_attributes: options.no_attributes !== false
 		}));
+	}
+	/**
+	* Like {@link fetchHistoryDuringPeriod}, but keeps state attributes for HA
+	* `event.*` entities (their `event_type` attribute is what event counting
+	* needs). Every other entity keeps the lean `no_attributes` request.
+	*/
+	async function fetchHistoryWithEventAttributes(hass, startTime, endTime, entityIds, options = {}) {
+		const ids = normalizeCacheIdList(entityIds);
+		const eventIds = ids.filter((id) => id.startsWith("event."));
+		if (!eventIds.length) return await fetchHistoryDuringPeriod(hass, startTime, endTime, ids, options);
+		const otherIds = ids.filter((id) => !id.startsWith("event."));
+		const [others, events] = await Promise.all([otherIds.length ? fetchHistoryDuringPeriod(hass, startTime, endTime, otherIds, options) : Promise.resolve({}), fetchHistoryDuringPeriod(hass, startTime, endTime, eventIds, {
+			...options,
+			no_attributes: false
+		})]);
+		return {
+			...others,
+			...events
+		};
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/domain/aggregation/types.ts
@@ -15887,7 +15979,8 @@
 			const entityLabelMap = disambiguateEntityNames(this._hass, seriesSettings.map((s) => s.entity_id));
 			seriesSettings.forEach((seriesSetting, i) => {
 				const entityId = seriesSetting.entity_id;
-				if (entityId.split(".")[0] === "binary_sensor") {
+				const domain = entityId.split(".")[0];
+				if (domain === "binary_sensor") {
 					const stateList = this._buildEntityStateList(entityId, histResult, statsResult);
 					const binaryDisplay = resolveBinaryDisplayMode(seriesSetting.binary_display);
 					const binaryAnalysis = analysisMap.get(entityId) || normalizeHistorySeriesAnalysis(null);
@@ -15931,6 +16024,38 @@
 						binaryDisplay,
 						stateList
 					});
+					return;
+				}
+				if (domain === "event") {
+					const eventAnalysis = analysisMap.get(entityId) || normalizeHistorySeriesAnalysis(null);
+					const eventColor = seriesSetting.color || COLORS[i % COLORS.length];
+					for (const aggregate of buildEventAggregateSeries({
+						entityId,
+						entityLabel: entityLabelMap.get(entityId) || entityId,
+						color: eventColor,
+						definitions: eventAnalysis.aggregates ?? [],
+						states: getHistoryStatesForEntity$1(histResult, entityId, seriesSettings.map((setting) => setting.entity_id)),
+						range: {
+							start: t0,
+							end: t1
+						},
+						timeZone: this._getTimeZone()
+					})) {
+						let axis = axisMap.get(aggregate.axisKey);
+						if (!axis) {
+							axis = {
+								key: aggregate.axisKey,
+								unit: aggregate.unit,
+								color: aggregate.color,
+								side: axisMap.size === 0 ? "left" : "right",
+								values: []
+							};
+							axisMap.set(aggregate.axisKey, axis);
+							axes.push(axis);
+						}
+						axis.values.push(...aggregate.pts.map(([, v]) => v));
+						series.push(aggregate);
+					}
 					return;
 				}
 				const stateList = this._buildEntityStateList(entityId, histResult, statsResult);
@@ -19398,7 +19523,7 @@
 			const cacheKey = this._getComparisonCacheKey(win, start, end);
 			const cached = this._comparisonDataCache.get(cacheKey);
 			if (cached) return cached;
-			const historyPromise = fetchHistoryDuringPeriod(hass, start.toISOString(), end.toISOString(), this._entityIds, {
+			const historyPromise = fetchHistoryWithEventAttributes(hass, start.toISOString(), end.toISOString(), this._entityIds, {
 				include_start_time_state: true,
 				significant_changes_only: false,
 				no_attributes: true
@@ -19629,7 +19754,7 @@
 					this._setChartLoading(false);
 					return;
 				}
-				fetchHistoryDuringPeriod(hass, start.toISOString(), end.toISOString(), this._entityIds, {
+				fetchHistoryWithEventAttributes(hass, start.toISOString(), end.toISOString(), this._entityIds, {
 					include_start_time_state: true,
 					significant_changes_only: false,
 					no_attributes: true
@@ -24441,12 +24566,14 @@
 	var _deviceClass_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _variant_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _operations_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _eventTypes_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var AnalysisAggregateGroup = (_AnalysisAggregateGroup = class AnalysisAggregateGroup extends AnalysisGroupMixin(i$2) {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _deviceClass_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _variant_accessor_storage, "binary");
 			_classPrivateFieldInitSpec(this, _operations_accessor_storage, []);
+			_classPrivateFieldInitSpec(this, _eventTypes_accessor_storage, []);
 		}
 		get deviceClass() {
 			return _classPrivateFieldGet2(_deviceClass_accessor_storage, this);
@@ -24466,6 +24593,12 @@
 		set operations(value) {
 			_classPrivateFieldSet2(_operations_accessor_storage, this, value);
 		}
+		get eventTypes() {
+			return _classPrivateFieldGet2(_eventTypes_accessor_storage, this);
+		}
+		set eventTypes(value) {
+			_classPrivateFieldSet2(_eventTypes_accessor_storage, this, value);
+		}
 		get _definitions() {
 			return this.analysis.aggregates ?? [];
 		}
@@ -24476,6 +24609,10 @@
 			this._commit(this._definitions.map((d) => d.id === id ? patch(d) : d));
 		}
 		_onAdd() {
+			if (this.variant === "event") {
+				this._commit([...this._definitions, createEventAggregate(this._definitions.map((d) => d.id))]);
+				return;
+			}
 			if (this.variant === "measurement") {
 				const ids = this._definitions.map((d) => d.id);
 				this._commit([...this._definitions, createMeasurementAggregate(ids, this.operations[0] ?? "mean")]);
@@ -24527,7 +24664,68 @@
       </div>
     `;
 		}
+		_onEventTypeToggle(definition, type, checked) {
+			const current = definition.eventTypes ?? [];
+			const next = checked ? [.../* @__PURE__ */ new Set([...current, type])] : current.filter((t) => t !== type);
+			this._update(definition.id, (d) => ({
+				...d,
+				eventTypes: next
+			}));
+		}
+		_renderEventDefinition(definition) {
+			const selected = definition.eventTypes ?? [];
+			const allTypes = selected.length === 0;
+			return b`
+      <div
+        class="definition"
+        role="group"
+        aria-label=${msg("Aggregate series")}
+      >
+        <inline-select
+          .value=${definition.interval}
+          .options=${this._localizedOptions(AGGREGATE_INTERVAL_OPTIONS)}
+          aria-label=${msg("Aggregate interval")}
+          @dp-change=${(e) => this._update(definition.id, (d) => ({
+				...d,
+				interval: this._selectValue(e)
+			}))}
+        ></inline-select>
+        <label class="option">
+          <input
+            type="checkbox"
+            class="all-types"
+            .checked=${allTypes}
+            @change=${(e) => this._update(definition.id, (d) => ({
+				...d,
+				eventTypes: e.target.checked ? [] : this.eventTypes.slice(0, 1)
+			}))}
+          />
+          <span>${msg("All event types")}</span>
+        </label>
+        ${allTypes ? A : this.eventTypes.map((type) => b`
+                <label class="option">
+                  <input
+                    type="checkbox"
+                    class="event-type"
+                    .checked=${selected.includes(type)}
+                    @change=${(e) => this._onEventTypeToggle(definition, type, e.target.checked)}
+                  />
+                  <span>${type}</span>
+                </label>
+              `)}
+        <button
+          type="button"
+          class="button remove"
+          aria-label=${msg("Remove aggregate")}
+          @click=${() => this._onRemove(definition.id)}
+        >
+          <ha-icon icon="mdi:close"></ha-icon>
+        </button>
+      </div>
+    `;
+		}
 		_renderDefinition(definition) {
+			if (this.variant === "event") return this._renderEventDefinition(definition);
 			if (this.variant === "measurement") return this._renderMeasurementDefinition(definition);
 			const kind = getBinaryAggregateKind(definition);
 			const stateOptions = getBinaryStateOptions(this.deviceClass).map((o) => ({
@@ -24598,6 +24796,10 @@
 		type: Array,
 		attribute: false
 	})], AnalysisAggregateGroup.prototype, "operations", null);
+	__decorate([n$1({
+		type: Array,
+		attribute: false
+	})], AnalysisAggregateGroup.prototype, "eventTypes", null);
 	AnalysisAggregateGroup = __decorate([localized()], AnalysisAggregateGroup);
 	customElements.define("analysis-aggregate-group", AnalysisAggregateGroup);
 	//#endregion
@@ -24673,6 +24875,7 @@
 			_defineProperty(this, "_unit", "");
 			_defineProperty(this, "_supportsAnalysis", false);
 			_defineProperty(this, "_isBinary", false);
+			_defineProperty(this, "_isEvent", false);
 		}
 		get color() {
 			return _classPrivateFieldGet2(_color_accessor_storage$1, this);
@@ -24790,6 +24993,7 @@
 				this._unit = attrs?.unit_of_measurement ?? "";
 				this._supportsAnalysis = Boolean(this._entityId) && !this._entityId.startsWith("binary_sensor.");
 				this._isBinary = isBinarySensorEntity(this._entityId);
+				this._isEvent = this._entityId.startsWith("event.");
 			}
 		}
 		_emit(name, detail) {
@@ -24941,7 +25145,7 @@
           </button>
         </div>
 
-        ${this._supportsAnalysis && this.analysis?.expanded ? b`
+        ${this._supportsAnalysis && !this._isEvent && this.analysis?.expanded ? b`
               <div class="history-target-analysis" role="cell">
                 <div class="history-target-analysis-grid">
                   <analysis-sample-group
@@ -25030,6 +25234,19 @@
                           </button>
                         ` : A}
                   </div>
+                </div>
+              </div>
+            ` : A}
+        ${this._isEvent && expanded ? b`
+              <div class="history-target-analysis" role="cell">
+                <div class="history-target-analysis-grid">
+                  <analysis-aggregate-group
+                    variant="event"
+                    .analysis=${a}
+                    .entityId=${this._entityId}
+                    .eventTypes=${Array.isArray(this.stateObj?.attributes?.event_types) ? this.stateObj.attributes.event_types : []}
+                    @dp-group-analysis-change=${this._onGroupAnalysisChange}
+                  ></analysis-aggregate-group>
                 </div>
               </div>
             ` : A}

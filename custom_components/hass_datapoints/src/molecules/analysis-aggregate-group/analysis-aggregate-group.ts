@@ -12,6 +12,7 @@ import {
   applyBinaryAggregateKind,
   MEASUREMENT_OPERATIONS,
   createBinaryAggregate,
+  createEventAggregate,
   createMeasurementAggregate,
   getBinaryAggregateKind,
   getBinaryStateOptions,
@@ -33,13 +34,17 @@ export class AnalysisAggregateGroup extends AnalysisGroupMixin(LitElement) {
   @property({ type: String, attribute: "device-class" })
   accessor deviceClass: string = "";
 
-  /** `binary` offers state operations; `measurement` offers numeric summaries. */
+  /** `binary` offers state operations; `measurement` numeric summaries; `event` event counts. */
   @property({ type: String })
-  accessor variant: "binary" | "measurement" = "binary";
+  accessor variant: "binary" | "measurement" | "event" = "binary";
 
   /** Measurement operations suggested for the entity; the user still chooses. */
   @property({ type: Array, attribute: false })
   accessor operations: AggregateOperation[] = [];
+
+  /** Event types the entity can emit (HA `event_types` attribute). */
+  @property({ type: Array, attribute: false })
+  accessor eventTypes: string[] = [];
 
   static styles = [sharedStyles, styles];
 
@@ -59,6 +64,13 @@ export class AnalysisAggregateGroup extends AnalysisGroupMixin(LitElement) {
   }
 
   private _onAdd() {
+    if (this.variant === "event") {
+      this._commit([
+        ...this._definitions,
+        createEventAggregate(this._definitions.map((d) => d.id)),
+      ]);
+      return;
+    }
     if (this.variant === "measurement") {
       const ids = this._definitions.map((d) => d.id);
       this._commit([
@@ -128,7 +140,89 @@ export class AnalysisAggregateGroup extends AnalysisGroupMixin(LitElement) {
     `;
   }
 
+  private _onEventTypeToggle(
+    definition: AggregateDefinition,
+    type: string,
+    checked: boolean
+  ) {
+    const current = definition.eventTypes ?? [];
+    const next = checked
+      ? [...new Set([...current, type])]
+      : current.filter((t) => t !== type);
+    // Deselecting the last specific type falls back to All event types.
+    this._update(definition.id, (d) => ({ ...d, eventTypes: next }));
+  }
+
+  private _renderEventDefinition(definition: AggregateDefinition) {
+    const selected = definition.eventTypes ?? [];
+    const allTypes = selected.length === 0;
+    return html`
+      <div
+        class="definition"
+        role="group"
+        aria-label=${msg("Aggregate series")}
+      >
+        <inline-select
+          .value=${definition.interval}
+          .options=${this._localizedOptions(AGGREGATE_INTERVAL_OPTIONS)}
+          aria-label=${msg("Aggregate interval")}
+          @dp-change=${(e: Event) =>
+            this._update(definition.id, (d) => ({
+              ...d,
+              interval: this._selectValue(e) as AggregateInterval,
+            }))}
+        ></inline-select>
+        <label class="option">
+          <input
+            type="checkbox"
+            class="all-types"
+            .checked=${allTypes}
+            @change=${(e: Event) =>
+              this._update(definition.id, (d) => ({
+                ...d,
+                eventTypes: (e.target as HTMLInputElement).checked
+                  ? []
+                  : this.eventTypes.slice(0, 1),
+              }))}
+          />
+          <span>${msg("All event types")}</span>
+        </label>
+        ${allTypes
+          ? nothing
+          : this.eventTypes.map(
+              (type) => html`
+                <label class="option">
+                  <input
+                    type="checkbox"
+                    class="event-type"
+                    .checked=${selected.includes(type)}
+                    @change=${(e: Event) =>
+                      this._onEventTypeToggle(
+                        definition,
+                        type,
+                        (e.target as HTMLInputElement).checked
+                      )}
+                  />
+                  <span>${type}</span>
+                </label>
+              `
+            )}
+        <button
+          type="button"
+          class="button remove"
+          aria-label=${msg("Remove aggregate")}
+          @click=${() => this._onRemove(definition.id)}
+        >
+          <ha-icon icon="mdi:close"></ha-icon>
+        </button>
+      </div>
+    `;
+  }
+
   private _renderDefinition(definition: AggregateDefinition) {
+    if (this.variant === "event") {
+      return this._renderEventDefinition(definition);
+    }
     if (this.variant === "measurement") {
       return this._renderMeasurementDefinition(definition);
     }

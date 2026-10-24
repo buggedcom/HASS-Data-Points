@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildBinaryAggregateSeries,
+  buildEventAggregateSeries,
   buildMeasurementAggregateSeries,
 } from "@/lib/chart/chart-aggregates";
 import type { AggregateDefinition } from "@/lib/domain/aggregation/types";
@@ -154,6 +155,77 @@ describe("buildMeasurementAggregateSeries", () => {
           axisKey: "°C",
         });
         expect(out[0].pts).toHaveLength(1);
+      });
+    });
+  });
+});
+
+describe("buildEventAggregateSeries", () => {
+  const state = (type: string, at: number, recordedAt = at) => ({
+    s: new Date(at).toISOString(),
+    lu: sec(recordedAt),
+    a: { event_type: type },
+  });
+  const states = [
+    // Initial snapshot recorded at the start of the range: not an occurrence.
+    state("single_press", start - 5 * hour, start),
+    state("single_press", start + hour),
+    state("double_press", start + 2 * hour),
+    state("single_press", start + day + hour),
+    { s: "unavailable", lu: sec(start + day + 2 * hour) },
+  ];
+  const run = (eventTypes: string[]) =>
+    buildEventAggregateSeries({
+      entityId: "event.button",
+      entityLabel: "Button",
+      color: "#4caf50",
+      definitions: [
+        definition({
+          operation: "event_count",
+          states: undefined,
+          eventTypes,
+        }),
+      ],
+      states,
+      range: { start, end: start + 2 * day },
+      timeZone: "UTC",
+    });
+
+  describe("GIVEN single and double presses with an initial snapshot", () => {
+    describe("WHEN counting all event types", () => {
+      it("THEN occurrences are counted per day and the snapshot is ignored", () => {
+        expect.assertions(2);
+        const [series] = run([]);
+        expect(series.pts.map(([, v]) => v)).toStrictEqual([2, 1]);
+        expect(series.label).toBe("Button · Daily · All event types");
+      });
+    });
+    describe("WHEN selecting only double_press", () => {
+      it("THEN other types are not counted and zero-activity days stay zero", () => {
+        expect.assertions(1);
+        const [series] = run(["double_press"]);
+        expect(series.pts.map(([, v]) => v)).toStrictEqual([1, 0]);
+      });
+    });
+    describe("WHEN the required attribute is absent", () => {
+      it("THEN those states are not counted as events", () => {
+        expect.assertions(1);
+        const out = buildEventAggregateSeries({
+          entityId: "event.button",
+          entityLabel: "Button",
+          color: "#4caf50",
+          definitions: [
+            definition({ operation: "event_count", states: undefined }),
+          ],
+          states: [
+            { s: new Date(start + hour).toISOString(), lu: sec(start + hour) },
+          ],
+          range: { start, end: start + 2 * day },
+          timeZone: "UTC",
+        });
+        expect(out.flatMap((s) => s.pts.map(([, v]) => v))).toStrictEqual([
+          0, 0,
+        ]);
       });
     });
   });
