@@ -37,4 +37,10 @@ export const translations: ComponentTranslations = {
     "Reposição do contador ambígua, não contabilizada",
   Cumulative: "Acumulado",
   "Reset total to zoomed range": "Repor o total no intervalo ampliado",
+  "Partial period": "Período parcial",
+  "Incomplete history": "Histórico incompleto",
+  "Dashed outlines mark partial periods cut by the selected range; hatched or dotted marks show periods with gaps in recorded history.":
+    "Os contornos tracejados indicam períodos parciais cortados pelo intervalo selecionado; as marcas tracejadas finas ou pontilhadas indicam períodos com lacunas no histórico registado.",
+  "Counts only include activity in retained history; earlier activity is not shown.":
+    "As contagens só incluem a atividade do histórico retido; a atividade anterior não é mostrada.",
 };

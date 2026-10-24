@@ -32,6 +32,8 @@ export interface AggregateChartSeries {
   periods: { start: number; end: number }[];
   /** Localized caveats per point (e.g. a detected meter reset), aligned with `pts`. */
   periodNotes?: string[];
+  /** Per-point coverage: edge-clipped (partial) vs gaps in history (incomplete). */
+  periodFlags?: { partial: boolean; incomplete: boolean }[];
   color: string;
   axisKey: string;
   bars: boolean;
@@ -60,6 +62,34 @@ function withCumulativeSuffix(
   return definition.mode === "cumulative"
     ? `${label} · ${msg("Cumulative")}`
     : label;
+}
+
+interface ValuedPoint {
+  partial: boolean;
+  incomplete: boolean;
+  reasons: string[];
+}
+
+/** Coverage flags and tooltip notes for each plotted period. */
+function periodDetails(
+  valued: ValuedPoint[],
+  reasonNotes?: (reasons: string[]) => string
+) {
+  return {
+    periodFlags: valued.map((p) => ({
+      partial: p.partial,
+      incomplete: p.incomplete,
+    })),
+    periodNotes: valued.map((p) =>
+      [
+        p.partial ? msg("Partial period") : "",
+        p.incomplete ? msg("Incomplete history") : "",
+        reasonNotes ? reasonNotes(p.reasons) : "",
+      ]
+        .filter(Boolean)
+        .join(", ")
+    ),
+  };
 }
 
 export function getAggregateSeriesId(
@@ -166,6 +196,7 @@ export function buildBinaryAggregateSeries(
           unit: result.unit,
           pts,
           periods: valued.map((p) => ({ start: p.start, end: p.end })),
+          ...periodDetails(valued),
           color: definition.color || args.color,
           axisKey: `aggregate:${result.unit || "count"}`,
           bars: result.presentation === "bar",
@@ -254,6 +285,7 @@ export function buildMeasurementAggregateSeries(
             p.value,
           ]),
           periods: valued.map((p) => ({ start: p.start, end: p.end })),
+          ...periodDetails(valued),
           color: definition.color || args.colors[index % args.colors.length],
           axisKey: args.axisKey,
           bars: result.presentation === "bar",
@@ -370,6 +402,7 @@ export function buildEventAggregateSeries(
             p.value,
           ]),
           periods: valued.map((p) => ({ start: p.start, end: p.end })),
+          ...periodDetails(valued),
           color: definition.color || args.color,
           axisKey: `aggregate:${result.unit || "count"}`,
           bars: result.presentation === "bar",
@@ -489,7 +522,7 @@ export function buildConsumptionAggregateSeries(
             p.value,
           ]),
           periods: valued.map((p) => ({ start: p.start, end: p.end })),
-          periodNotes: valued.map((p) => describeConsumptionReasons(p.reasons)),
+          ...periodDetails(valued, describeConsumptionReasons),
           color: definition.color || args.color,
           axisKey: `aggregate:${args.unit || "count"}`,
           bars: result.presentation === "bar",

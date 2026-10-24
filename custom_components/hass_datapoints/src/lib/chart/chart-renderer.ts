@@ -81,9 +81,14 @@ type DrawLineOptions = {
   lineWidth?: number;
 };
 
+/** Coverage of one aggregate period: clipped by the range edge, or with gaps in history. */
+export type PeriodStyle = { partial: boolean; incomplete: boolean };
+
 type DrawBarsOptions = {
   fillAlpha?: number;
   widthFactor?: number;
+  /** Aligned with the points; partial bars are dashed, incomplete bars hatched. */
+  pointStyles?: PeriodStyle[];
 };
 
 type DrawAnnotationsOptions = {
@@ -850,8 +855,75 @@ export class ChartRenderer {
       const top = Math.min(y, baselineY);
       const height = Math.max(1, Math.abs(baselineY - y));
       const left = x - barWidth / 2;
+      const style = options.pointStyles?.[i];
+      if (style?.partial) {
+        ctx.fillStyle = hexToRgba(color, fillAlpha * 0.5);
+      } else {
+        ctx.fillStyle = hexToRgba(color, fillAlpha);
+      }
       ctx.fillRect(left, top, barWidth, height);
+      if (style?.incomplete) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(left, top, barWidth, height);
+        ctx.clip();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let d = -height; d < barWidth; d += 5) {
+          ctx.moveTo(left + d, top + height);
+          ctx.lineTo(left + d + height, top);
+        }
+        ctx.stroke();
+        ctx.restore();
+      }
+      if (style?.partial || style?.incomplete) {
+        ctx.save();
+        ctx.setLineDash(style.partial ? [4, 3] : [1, 2]);
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 1;
+        ctx.strokeRect(left + 0.5, top + 0.5, barWidth - 1, height - 1);
+        ctx.restore();
+      }
     }
+    ctx.restore();
+  }
+
+  /**
+   * Point markers for an aggregate line: filled when the period is complete,
+   * hollow when partial, dotted ring when history is incomplete.
+   */
+  drawPeriodMarkers(
+    points: ChartPoint[],
+    styles: PeriodStyle[],
+    color: string,
+    t0: number,
+    t1: number,
+    vMin: number,
+    vMax: number
+  ): void {
+    const { ctx } = this;
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = 1.5;
+    points.forEach(([t, v], i) => {
+      const style = styles[i];
+      const x = this.xOf(t, t0, t1);
+      const y = this.yOf(v, vMin, vMax);
+      ctx.beginPath();
+      ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+      if (style?.partial || style?.incomplete) {
+        ctx.setLineDash(style.partial ? [] : [1.5, 1.5]);
+        ctx.fillStyle = hexToRgba(color, 0.15);
+        ctx.fill();
+        ctx.stroke();
+      } else {
+        ctx.setLineDash([]);
+        ctx.fillStyle = color;
+        ctx.fill();
+      }
+    });
     ctx.restore();
   }
 

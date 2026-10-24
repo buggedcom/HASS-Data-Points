@@ -412,6 +412,16 @@ export const styles = `
     background: color-mix(in srgb, var(--primary-color, #03a9f4) 18%, var(--card-background-color, #fff));
     outline: none;
   }
+  .aggregate-note {
+    padding: var(--dp-spacing-xs, 4px) var(--dp-spacing-md);
+    padding-left: calc(var(--dp-spacing-md) + var(--dp-chart-axis-left-width, 0px));
+    font-size: 0.74em;
+    color: var(--secondary-text-color);
+    border-top: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 88%, transparent);
+  }
+  .aggregate-note[hidden] {
+    display: none;
+  }
   .legend {
     display: flex;
     flex-wrap: nowrap;

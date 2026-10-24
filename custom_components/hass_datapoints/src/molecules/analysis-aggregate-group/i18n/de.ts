@@ -37,4 +37,10 @@ export const translations: ComponentTranslations = {
     "Unklare Zählerrücksetzung, nicht gezählt",
   Cumulative: "Kumulativ",
   "Reset total to zoomed range": "Summe auf den gezoomten Bereich zurücksetzen",
+  "Partial period": "Teilperiode",
+  "Incomplete history": "Unvollständiger Verlauf",
+  "Dashed outlines mark partial periods cut by the selected range; hatched or dotted marks show periods with gaps in recorded history.":
+    "Gestrichelte Umrandungen kennzeichnen Teilperioden am Rand des gewählten Bereichs; schraffierte oder gepunktete Markierungen zeigen Zeiträume mit Lücken im aufgezeichneten Verlauf.",
+  "Counts only include activity in retained history; earlier activity is not shown.":
+    "Zählungen enthalten nur Aktivität im gespeicherten Verlauf; frühere Aktivität wird nicht angezeigt.",
 };
