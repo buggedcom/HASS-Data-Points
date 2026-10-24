@@ -1,3 +1,5 @@
+import { normalizeAggregateDefinitions } from "@/lib/domain/aggregation/aggregation";
+import type { AggregateDefinition } from "@/lib/domain/aggregation/types";
 import { COLORS } from "@/constants";
 import {
   type AnomalyDirection,
@@ -10,6 +12,7 @@ import { normalizeEntityIds } from "@/lib/domain/target-selection";
  */
 
 export interface HistorySeriesAnalysis {
+  aggregates?: AggregateDefinition[];
   expanded: boolean;
   show_trend_lines: boolean;
   trend_method:
@@ -164,6 +167,9 @@ export function normalizeHistorySeriesAnalysis(
 ): HistorySeriesAnalysis {
   const source = analysis && typeof analysis === "object" ? analysis : {};
   return {
+    ...(Array.isArray(source.aggregates)
+      ? { aggregates: normalizeAggregateDefinitions(source.aggregates) }
+      : {}),
     expanded: source.expanded === true,
     show_trend_lines: source.show_trend_lines === true,
     trend_method: (
