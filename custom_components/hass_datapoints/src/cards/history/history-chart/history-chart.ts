@@ -2524,6 +2524,7 @@ export class HistoryChart extends HTMLElement {
           stateList,
           range: { start: t0, end: t1 },
           timeZone: this._getTimeZone(),
+          zoom: this._zoomRange ?? undefined,
         });
         for (const aggregate of aggregateSeries) {
           let axis = axisMap.get(aggregate.axisKey);
@@ -2575,6 +2576,7 @@ export class HistoryChart extends HTMLElement {
           ),
           range: { start: t0, end: t1 },
           timeZone: this._getTimeZone(),
+          zoom: this._zoomRange ?? undefined,
         })) {
           let axis = axisMap.get(aggregate.axisKey);
           if (!axis) {
@@ -2640,6 +2642,7 @@ export class HistoryChart extends HTMLElement {
           stateList,
           range: { start: t0, end: t1 },
           timeZone: this._getTimeZone(),
+          zoom: this._zoomRange ?? undefined,
           unit,
           axisKey,
         });
@@ -2669,6 +2672,7 @@ export class HistoryChart extends HTMLElement {
           unit,
           range: { start: t0, end: t1 },
           timeZone: this._getTimeZone(),
+          zoom: this._zoomRange ?? undefined,
         });
         for (const aggregate of consumptionSeries) {
           let consumptionAxis = axisMap.get(aggregate.axisKey);

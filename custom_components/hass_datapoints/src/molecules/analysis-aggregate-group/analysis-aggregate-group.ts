@@ -128,6 +128,7 @@ export class AnalysisAggregateGroup extends AnalysisGroupMixin(LitElement) {
               interval: this._selectValue(e) as AggregateInterval,
             }))}
         ></inline-select>
+        ${this._renderCumulativeControls(definition)}
         <button
           type="button"
           class="button remove"
@@ -137,6 +138,55 @@ export class AnalysisAggregateGroup extends AnalysisGroupMixin(LitElement) {
           <ha-icon icon="mdi:close"></ha-icon>
         </button>
       </div>
+    `;
+  }
+
+  /** Counts, durations and consumption can accumulate; percentages cannot. */
+  private _canAccumulate(definition: AggregateDefinition): boolean {
+    return [
+      "consumption",
+      "transition_count",
+      "state_duration",
+      "event_count",
+    ].includes(definition.operation);
+  }
+
+  private _renderCumulativeControls(definition: AggregateDefinition) {
+    if (!this._canAccumulate(definition)) {
+      return nothing;
+    }
+    const cumulative = definition.mode === "cumulative";
+    return html`
+      <label class="option">
+        <input
+          type="checkbox"
+          class="cumulative"
+          .checked=${cumulative}
+          @change=${(e: Event) =>
+            this._update(definition.id, (d) => ({
+              ...d,
+              mode: (e.target as HTMLInputElement).checked
+                ? "cumulative"
+                : "interval",
+            }))}
+        />
+        <span>${msg("Cumulative")}</span>
+      </label>
+      ${cumulative
+        ? html`<label class="option">
+            <input
+              type="checkbox"
+              class="reset-on-zoom"
+              .checked=${definition.resetOnZoom}
+              @change=${(e: Event) =>
+                this._update(definition.id, (d) => ({
+                  ...d,
+                  resetOnZoom: (e.target as HTMLInputElement).checked,
+                }))}
+            />
+            <span>${msg("Reset total to zoomed range")}</span>
+          </label>`
+        : nothing}
     `;
   }
 
@@ -207,6 +257,7 @@ export class AnalysisAggregateGroup extends AnalysisGroupMixin(LitElement) {
                 </label>
               `
             )}
+        ${this._renderCumulativeControls(definition)}
         <button
           type="button"
           class="button remove"
@@ -273,6 +324,7 @@ export class AnalysisAggregateGroup extends AnalysisGroupMixin(LitElement) {
               interval: this._selectValue(e) as AggregateInterval,
             }))}
         ></inline-select>
+        ${this._renderCumulativeControls(definition)}
         <button
           type="button"
           class="button remove"

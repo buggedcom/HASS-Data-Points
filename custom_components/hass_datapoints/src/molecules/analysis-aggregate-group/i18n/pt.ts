@@ -35,4 +35,6 @@ export const translations: ComponentTranslations = {
   "Meter reset detected": "Reposição do contador detetada",
   "Ambiguous meter reset, not counted":
     "Reposição do contador ambígua, não contabilizada",
+  Cumulative: "Acumulado",
+  "Reset total to zoomed range": "Repor o total no intervalo ampliado",
 };

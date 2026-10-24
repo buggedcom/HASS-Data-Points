@@ -319,3 +319,56 @@ describe("buildConsumptionAggregateSeries", () => {
     });
   });
 });
+
+describe("cumulative aggregate series", () => {
+  const states = [
+    { s: "off", lu: sec(start) },
+    { s: "on", lu: sec(start + hour) },
+    { s: "off", lu: sec(start + 2 * hour) },
+    { s: "on", lu: sec(start + day + hour) },
+  ];
+  const run = (resetOnZoom: boolean, zoom?: { start: number; end: number }) =>
+    buildBinaryAggregateSeries({
+      entityId: "binary_sensor.front_door",
+      entityLabel: "Front Door",
+      color: "#ff9800",
+      deviceClass: "door",
+      definitions: [definition({ mode: "cumulative", resetOnZoom })],
+      stateList: states,
+      range: { start, end: start + 2 * day },
+      zoom,
+      timeZone: "UTC",
+    });
+
+  describe("GIVEN a cumulative count of openings across two days", () => {
+    describe("WHEN no zoom is applied", () => {
+      it("THEN draws a running total line labelled cumulative", () => {
+        expect.assertions(3);
+        const [series] = run(false);
+        expect(series.pts.map(([, v]) => v)).toStrictEqual([1, 2]);
+        expect(series.bars).toBe(false);
+        expect(series.label).toContain("Cumulative");
+      });
+    });
+    describe("WHEN zoomed to day two without reset", () => {
+      it("THEN the full-range baseline is kept", () => {
+        expect.assertions(1);
+        const [series] = run(false, {
+          start: start + day,
+          end: start + 2 * day,
+        });
+        expect(series.pts.map(([, v]) => v)).toStrictEqual([1, 2]);
+      });
+    });
+    describe("WHEN zoomed to day two with reset enabled", () => {
+      it("THEN accumulation restarts inside the zoom", () => {
+        expect.assertions(1);
+        const [series] = run(true, {
+          start: start + day,
+          end: start + 2 * day,
+        });
+        expect(series.pts.map(([, v]) => v)).toStrictEqual([1]);
+      });
+    });
+  });
+});

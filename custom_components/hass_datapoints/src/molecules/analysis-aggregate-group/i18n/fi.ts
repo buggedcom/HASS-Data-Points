@@ -35,4 +35,6 @@ export const translations: ComponentTranslations = {
   "Meter reset detected": "Mittarin nollaus havaittu",
   "Ambiguous meter reset, not counted":
     "Epäselvä mittarin nollaus, ei laskettu",
+  Cumulative: "Kumulatiivinen",
+  "Reset total to zoomed range": "Nollaa kokonaismäärä zoomattuun alueeseen",
 };

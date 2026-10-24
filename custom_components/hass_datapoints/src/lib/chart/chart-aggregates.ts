@@ -47,7 +47,19 @@ export interface BuildBinaryAggregateSeriesArgs {
   /** Recorded states; `lu` is the last-updated time in seconds. */
   stateList: { s: string; lu: number }[];
   range: AggregateRange;
+  /** Visible zoom window; only used by cumulative series that reset on zoom. */
+  zoom?: AggregateRange;
   timeZone: string;
+}
+
+/** Append the cumulative marker so the legend tells totals from per-period bars. */
+function withCumulativeSuffix(
+  definition: AggregateDefinition,
+  label: string
+): string {
+  return definition.mode === "cumulative"
+    ? `${label} · ${msg("Cumulative")}`
+    : label;
 }
 
 export function getAggregateSeriesId(
@@ -119,6 +131,7 @@ export function buildBinaryAggregateSeries(
         definition,
         samples,
         range: args.range,
+        zoom: args.zoom,
         timeZone: args.timeZone,
         coverage,
       });
@@ -146,7 +159,10 @@ export function buildBinaryAggregateSeries(
           definitionId: definition.id,
           label:
             definition.label ||
-            `${args.entityLabel} · ${describe(definition, stateLabel)}`,
+            withCumulativeSuffix(
+              definition,
+              `${args.entityLabel} · ${describe(definition, stateLabel)}`
+            ),
           unit: result.unit,
           pts,
           periods: valued.map((p) => ({ start: p.start, end: p.end })),
@@ -167,6 +183,8 @@ export interface BuildMeasurementAggregateSeriesArgs {
   definitions: AggregateDefinition[];
   stateList: { s: string; lu: number }[];
   range: AggregateRange;
+  /** Visible zoom window; only used by cumulative series that reset on zoom. */
+  zoom?: AggregateRange;
   timeZone: string;
   unit: string;
   /** Value axis shared with the source row (same unit). */
@@ -197,6 +215,7 @@ export function buildMeasurementAggregateSeries(
         definition,
         samples,
         range: args.range,
+        zoom: args.zoom,
         timeZone: args.timeZone,
         unit: args.unit,
         coverage: [args.range],
@@ -225,7 +244,10 @@ export function buildMeasurementAggregateSeries(
           definitionId: definition.id,
           label:
             definition.label ||
-            `${args.entityLabel} · ${intervalLabel} · ${operationLabel}`,
+            withCumulativeSuffix(
+              definition,
+              `${args.entityLabel} · ${intervalLabel} · ${operationLabel}`
+            ),
           unit: args.unit,
           pts: valued.map((p): [number, number] => [
             (p.start + p.end) / 2,
@@ -249,6 +271,8 @@ export interface BuildEventAggregateSeriesArgs {
   /** Raw history states for the event entity, requested with attributes. */
   states: HaStateEntry[];
   range: AggregateRange;
+  /** Visible zoom window; only used by cumulative series that reset on zoom. */
+  zoom?: AggregateRange;
   timeZone: string;
 }
 
@@ -309,6 +333,7 @@ export function buildEventAggregateSeries(
         definition,
         samples,
         range: args.range,
+        zoom: args.zoom,
         timeZone: args.timeZone,
         coverage: [args.range],
       });
@@ -335,7 +360,10 @@ export function buildEventAggregateSeries(
           definitionId: definition.id,
           label:
             definition.label ||
-            `${args.entityLabel} · ${intervalLabel} · ${typesLabel}`,
+            withCumulativeSuffix(
+              definition,
+              `${args.entityLabel} · ${intervalLabel} · ${typesLabel}`
+            ),
           unit: result.unit,
           pts: valued.map((p): [number, number] => [
             (p.start + p.end) / 2,
@@ -363,6 +391,8 @@ export interface BuildConsumptionAggregateSeriesArgs {
   stateClass?: string;
   unit: string;
   range: AggregateRange;
+  /** Visible zoom window; only used by cumulative series that reset on zoom. */
+  zoom?: AggregateRange;
   timeZone: string;
 }
 
@@ -423,6 +453,7 @@ export function buildConsumptionAggregateSeries(
         definition,
         samples,
         range: args.range,
+        zoom: args.zoom,
         timeZone: args.timeZone,
         stateClass: args.stateClass,
         unit: args.unit,
@@ -448,7 +479,10 @@ export function buildConsumptionAggregateSeries(
           definitionId: definition.id,
           label:
             definition.label ||
-            `${args.entityLabel} · ${intervalLabel} · ${msg("Consumption")}`,
+            withCumulativeSuffix(
+              definition,
+              `${args.entityLabel} · ${intervalLabel} · ${msg("Consumption")}`
+            ),
           unit: args.unit,
           pts: valued.map((p): [number, number] => [
             (p.start + p.end) / 2,
