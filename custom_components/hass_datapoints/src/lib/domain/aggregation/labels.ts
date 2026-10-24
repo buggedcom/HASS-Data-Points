@@ -131,3 +131,16 @@ export function createMeasurementAggregate(
   const base = createBinaryAggregate(existingIds);
   return { ...base, operation, states: undefined };
 }
+
+export function createEventAggregate(
+  existingIds: string[],
+  eventTypes: string[] = []
+): AggregateDefinition {
+  const base = createBinaryAggregate(existingIds);
+  return {
+    ...base,
+    operation: "event_count",
+    states: undefined,
+    eventTypes,
+  };
+}

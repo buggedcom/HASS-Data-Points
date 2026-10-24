@@ -5,6 +5,7 @@ import {
   fetchDownsampledHistory,
   fetchDownsampledHistoryProgressive,
   fetchHistoryDuringPeriod,
+  fetchHistoryWithEventAttributes,
 } from "@/lib/data/history-api";
 
 describe("history-api", () => {
@@ -349,6 +350,74 @@ describe("history-api", () => {
           no_attributes: false,
         });
         expect(result.entity_ids).toEqual(["sensor.a", "sensor.b"]);
+      });
+    });
+  });
+});
+
+describe("fetchHistoryWithEventAttributes", () => {
+  const makeHass = () => {
+    const sendMessagePromise = vi.fn(
+      async (message: { entity_ids: string[]; no_attributes: boolean }) =>
+        Object.fromEntries(
+          message.entity_ids.map((id) => [
+            id,
+            [
+              {
+                s: "x",
+                a: message.no_attributes ? undefined : { event_type: "t" },
+              },
+            ],
+          ])
+        )
+    );
+    return {
+      sendMessagePromise,
+      hass: { connection: { sendMessagePromise, sendMessage: vi.fn() } },
+    };
+  };
+
+  describe("GIVEN a mix of event and sensor entities", () => {
+    describe("WHEN history is fetched", () => {
+      it("THEN only event entities are requested with attributes and results merge", async () => {
+        expect.assertions(4);
+        const { hass, sendMessagePromise } = makeHass();
+        const result = await fetchHistoryWithEventAttributes(
+          hass,
+          "2026-01-01T00:00:00.000Z",
+          "2026-01-02T00:00:00.000Z",
+          ["event.button", "sensor.temp"],
+          { include_start_time_state: true, no_attributes: true }
+        );
+        const calls = sendMessagePromise.mock.calls.map(([m]) => m);
+        expect(calls).toHaveLength(2);
+        expect(
+          calls.find((m) => m.entity_ids.includes("event.button"))
+            ?.no_attributes
+        ).toBe(false);
+        expect(
+          calls.find((m) => m.entity_ids.includes("sensor.temp"))?.no_attributes
+        ).toBe(true);
+        expect(Object.keys(result).sort()).toStrictEqual([
+          "event.button",
+          "sensor.temp",
+        ]);
+      });
+    });
+  });
+
+  describe("GIVEN no event entities", () => {
+    describe("WHEN history is fetched", () => {
+      it("THEN a single lean request is made", async () => {
+        expect.assertions(1);
+        const { hass, sendMessagePromise } = makeHass();
+        await fetchHistoryWithEventAttributes(
+          hass,
+          "2026-02-01T00:00:00.000Z",
+          "2026-02-02T00:00:00.000Z",
+          ["sensor.only"]
+        );
+        expect(sendMessagePromise).toHaveBeenCalledTimes(1);
       });
     });
   });

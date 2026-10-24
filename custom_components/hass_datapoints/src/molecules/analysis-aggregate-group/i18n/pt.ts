@@ -30,4 +30,5 @@ export const translations: ComponentTranslations = {
   Median: "Mediana",
   "First reading": "Primeira leitura",
   "Last reading": "Última leitura",
+  "All event types": "Todos os tipos de evento",
 };

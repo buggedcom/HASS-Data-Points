@@ -30,4 +30,5 @@ export const translations: ComponentTranslations = {
   Median: "Median",
   "First reading": "Erster Messwert",
   "Last reading": "Letzter Messwert",
+  "All event types": "Alle Ereignistypen",
 };

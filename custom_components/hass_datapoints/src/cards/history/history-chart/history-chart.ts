@@ -12,6 +12,7 @@
 import { html, render } from "lit";
 import {
   buildBinaryAggregateSeries,
+  buildEventAggregateSeries,
   buildMeasurementAggregateSeries,
 } from "@/lib/chart/chart-aggregates";
 import { msg } from "@/lib/i18n/localize";
@@ -19,6 +20,7 @@ import {
   binaryOffLabel,
   binaryOnLabel,
   getAxisValueExtent,
+  getHistoryStatesForEntity,
   normalizeStatisticsHistory,
   SAMPLE_INTERVAL_MS,
 } from "../history-data";
@@ -2551,6 +2553,40 @@ export class HistoryChart extends HTMLElement {
             binaryDisplay,
             stateList,
           });
+        }
+        return;
+      }
+      if (domain === "event") {
+        const eventAnalysis = (analysisMap.get(entityId) ||
+          normalizeHistorySeriesAnalysis(null)) as SeriesAnalysis;
+        const eventColor = seriesSetting.color || COLORS[i % COLORS.length];
+        for (const aggregate of buildEventAggregateSeries({
+          entityId,
+          entityLabel: entityLabelMap.get(entityId) || entityId,
+          color: eventColor,
+          definitions: eventAnalysis.aggregates ?? [],
+          states: getHistoryStatesForEntity(
+            histResult,
+            entityId,
+            seriesSettings.map((setting) => setting.entity_id)
+          ),
+          range: { start: t0, end: t1 },
+          timeZone: this._getTimeZone(),
+        })) {
+          let axis = axisMap.get(aggregate.axisKey);
+          if (!axis) {
+            axis = {
+              key: aggregate.axisKey,
+              unit: aggregate.unit,
+              color: aggregate.color,
+              side: axisMap.size === 0 ? "left" : "right",
+              values: [],
+            };
+            axisMap.set(aggregate.axisKey, axis);
+            axes.push(axis);
+          }
+          axis.values.push(...aggregate.pts.map(([, v]) => v));
+          series.push(aggregate);
         }
         return;
       }

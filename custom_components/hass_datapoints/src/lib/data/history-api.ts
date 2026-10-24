@@ -324,3 +324,48 @@ export async function fetchHistoryDuringPeriod<TResponse = unknown>(
       }) as Promise<TResponse>
   );
 }
+
+/**
+ * Like {@link fetchHistoryDuringPeriod}, but keeps state attributes for HA
+ * `event.*` entities (their `event_type` attribute is what event counting
+ * needs). Every other entity keeps the lean `no_attributes` request.
+ */
+export async function fetchHistoryWithEventAttributes(
+  hass: Pick<HassLike, "connection">,
+  startTime: string,
+  endTime: string,
+  entityIds: unknown,
+  options: HistoryPeriodOptions = {}
+): Promise<Record<string, unknown>> {
+  const ids = normalizeCacheIdList(entityIds);
+  const eventIds = ids.filter((id) => id.startsWith("event."));
+  if (!eventIds.length) {
+    return (await fetchHistoryDuringPeriod(
+      hass,
+      startTime,
+      endTime,
+      ids,
+      options
+    )) as Record<string, unknown>;
+  }
+  const otherIds = ids.filter((id) => !id.startsWith("event."));
+  const [others, events] = await Promise.all([
+    otherIds.length
+      ? fetchHistoryDuringPeriod<Record<string, unknown>>(
+          hass,
+          startTime,
+          endTime,
+          otherIds,
+          options
+        )
+      : Promise.resolve({} as Record<string, unknown>),
+    fetchHistoryDuringPeriod<Record<string, unknown>>(
+      hass,
+      startTime,
+      endTime,
+      eventIds,
+      { ...options, no_attributes: false }
+    ),
+  ]);
+  return { ...others, ...events };
+}

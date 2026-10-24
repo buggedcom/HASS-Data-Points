@@ -196,6 +196,8 @@ export class TargetRow extends LitElement {
 
   private _isBinary = false;
 
+  private _isEvent = false;
+
   override willUpdate(changed: PropertyValues) {
     if (
       changed.has("stateObj") ||
@@ -213,6 +215,7 @@ export class TargetRow extends LitElement {
       this._supportsAnalysis =
         Boolean(this._entityId) && !this._entityId.startsWith("binary_sensor.");
       this._isBinary = isBinarySensorEntity(this._entityId);
+      this._isEvent = this._entityId.startsWith("event.");
     }
   }
 
@@ -400,7 +403,7 @@ export class TargetRow extends LitElement {
           </button>
         </div>
 
-        ${this._supportsAnalysis && this.analysis?.expanded
+        ${this._supportsAnalysis && !this._isEvent && this.analysis?.expanded
           ? html`
               <div class="history-target-analysis" role="cell">
                 <div class="history-target-analysis-grid">
@@ -502,6 +505,25 @@ export class TargetRow extends LitElement {
                         `
                       : nothing}
                   </div>
+                </div>
+              </div>
+            `
+          : nothing}
+        ${this._isEvent && expanded
+          ? html`
+              <div class="history-target-analysis" role="cell">
+                <div class="history-target-analysis-grid">
+                  <analysis-aggregate-group
+                    variant="event"
+                    .analysis=${a}
+                    .entityId=${this._entityId}
+                    .eventTypes=${(Array.isArray(
+                      this.stateObj?.attributes?.event_types
+                    )
+                      ? this.stateObj.attributes.event_types
+                      : []) as string[]}
+                    @dp-group-analysis-change=${this._onGroupAnalysisChange}
+                  ></analysis-aggregate-group>
                 </div>
               </div>
             `

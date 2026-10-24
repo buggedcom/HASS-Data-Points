@@ -17,7 +17,7 @@ import {
   resolveEntityIdsFromTarget,
 } from "@/lib/domain/target-selection";
 import { HistoryAnnotationDialogController } from "@/components/annotation-dialog/annotation-dialog";
-import { fetchHistoryDuringPeriod } from "@/lib/data/history-api";
+import { fetchHistoryWithEventAttributes } from "@/lib/data/history-api";
 import { fetchStatisticsDuringPeriod } from "@/lib/data/statistics-api";
 import { fetchEvents } from "@/lib/data/events-api";
 import { logger } from "@/lib/logger";
@@ -580,7 +580,7 @@ export class HassDatapointsHistoryCard extends ChartCardBase {
       return cached;
     }
 
-    const historyPromise = fetchHistoryDuringPeriod(
+    const historyPromise = fetchHistoryWithEventAttributes(
       hass,
       start.toISOString(),
       end.toISOString(),
@@ -1027,7 +1027,7 @@ export class HassDatapointsHistoryCard extends ChartCardBase {
         this._setChartLoading(false);
         return;
       }
-      fetchHistoryDuringPeriod(
+      fetchHistoryWithEventAttributes(
         hass,
         start.toISOString(),
         end.toISOString(),

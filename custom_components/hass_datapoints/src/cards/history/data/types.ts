@@ -10,6 +10,9 @@ export interface HaStateEntry {
   last_changed?: string;
   last_updated?: string;
   entity_id?: string;
+  /** State attributes; only present when requested (e.g. event entities). */
+  a?: Record<string, unknown>;
+  attributes?: Record<string, unknown>;
 }
 
 /** Normalised statistics entry returned by the HA statistics API. */

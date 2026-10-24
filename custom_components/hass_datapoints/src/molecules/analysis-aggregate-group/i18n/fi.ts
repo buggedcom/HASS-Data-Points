@@ -30,4 +30,5 @@ export const translations: ComponentTranslations = {
   Median: "Mediaani",
   "First reading": "Ensimmäinen lukema",
   "Last reading": "Viimeisin lukema",
+  "All event types": "Kaikki tapahtumatyypit",
 };
