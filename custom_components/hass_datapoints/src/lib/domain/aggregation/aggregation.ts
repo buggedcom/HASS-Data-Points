@@ -1,9 +1,7 @@
 import {
   AGGREGATE_OPERATIONS,
   type AggregateDefinition,
-  type AggregateInput,
   type AggregateOperation,
-  type AggregateResult,
 } from "@/lib/domain/aggregation/types";
 
 export function normalizeAggregateDefinitions(
@@ -97,28 +95,4 @@ export function getAggregateOperations(entity: {
   }
   return operations;
 }
-export function calculateAggregate(input: AggregateInput): AggregateResult {
-  const values = input.samples
-    .map((s) => s.value)
-    .filter((v): v is number => typeof v === "number" && Number.isFinite(v));
-  return {
-    points: [
-      {
-        time: input.range.start,
-        value: values.reduce((s, v) => s + v, 0) / values.length,
-        periodStart: input.range.start,
-        periodEnd: input.range.end,
-        start: input.range.start,
-        end: input.range.end,
-        partial: false,
-        incomplete: false,
-        knownDuration: input.range.end - input.range.start,
-        totalDuration: input.range.end - input.range.start,
-        reasons: [],
-      },
-    ],
-    unit: input.unit ?? "",
-    presentation: "line",
-    baseline: null,
-  };
-}
+export { calculateAggregate } from "@/lib/domain/aggregation/calculate";
