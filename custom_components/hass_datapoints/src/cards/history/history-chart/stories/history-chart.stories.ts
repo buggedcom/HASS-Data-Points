@@ -324,3 +324,86 @@ export const SplitViewRow: Story = {
     await waitFor(() => expect(laneRegion()).toBeNull());
   },
 };
+
+// ── (d) Binary aggregates as bars ───────────────────────────────────────────────
+const doorToggles = binaryHistory([
+  { at: 0, s: "off" },
+  { at: 0.2, s: "on" },
+  { at: 0.3, s: "off" },
+  { at: 0.6, s: "on" },
+  { at: 0.7, s: "off" },
+]);
+
+const dailyOpens = {
+  id: "opens",
+  operation: "transition_count",
+  interval: "day",
+  mode: "interval",
+  states: ["on"],
+  resetOnZoom: false,
+};
+
+/**
+ * A door sensor with a daily "changes to open" aggregate. The aggregate appears
+ * as a bar series in the legend alongside the source band.
+ */
+export const BinaryAggregateBars: Story = {
+  render: () => makeChart(),
+  play: async ({ canvasElement }) => {
+    const el = canvasElement.querySelector(
+      "hass-datapoints-history-chart"
+    ) as DrawableChart;
+    el.draw(
+      drawArgs(
+        {
+          series_settings: [
+            {
+              entity_id: "binary_sensor.front_door",
+              analysis: { aggregates: [dailyOpens] },
+            },
+          ],
+        },
+        { "binary_sensor.front_door": doorToggles }
+      )
+    );
+
+    await waitFor(() =>
+      expect(legendLabels(el)).toEqual([
+        "Front Door · Daily · Count changes to a state (Open)",
+        "Front Door",
+      ])
+    );
+  },
+};
+
+/** With Hide source series on, only the aggregate remains in the legend. */
+export const BinaryAggregateHidesSource: Story = {
+  render: () => makeChart(),
+  play: async ({ canvasElement }) => {
+    const el = canvasElement.querySelector(
+      "hass-datapoints-history-chart"
+    ) as DrawableChart;
+    el.draw(
+      drawArgs(
+        {
+          series_settings: [
+            {
+              entity_id: "binary_sensor.front_door",
+              analysis: {
+                aggregates: [dailyOpens],
+                hide_source_series: true,
+              },
+            },
+          ],
+        },
+        { "binary_sensor.front_door": doorToggles }
+      )
+    );
+
+    await waitFor(() =>
+      expect(legendLabels(el)).toEqual([
+        "Front Door · Daily · Count changes to a state (Open)",
+      ])
+    );
+  },
+};
