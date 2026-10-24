@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { createHistoryPageOrchestrationContext } from "../orchestration-context";
+import { resolveTargetPickerWidthPx } from "@/lib/ui/target-picker-width";
 
 describe("orchestration-context", () => {
   afterEach(() => {
@@ -44,7 +45,47 @@ describe("orchestration-context", () => {
         expect(focus).not.toHaveBeenCalled();
         expect(click).not.toHaveBeenCalled();
         expect(slotContainer.style.position).toBe("fixed");
-        expect(slotContainer.style.width).toBe("320px");
+        expect(slotContainer.style.width).toBe(
+          `${resolveTargetPickerWidthPx()}px`
+        );
+
+        slotContainer.remove();
+      });
+    });
+
+    describe("WHEN the picker slot is visible (expanded sidebar)", () => {
+      it("THEN it still floats the picker at the shared target-picker width", () => {
+        expect.assertions(3);
+        const context = createHistoryPageOrchestrationContext();
+        const open = vi.fn();
+        const slotContainer = document.createElement("div");
+        // Expanded sidebar: the slot container is NOT display:none.
+        slotContainer.style.display = "block";
+        const assignedSlot = document.createElement("slot");
+        slotContainer.appendChild(assignedSlot);
+        document.body.appendChild(slotContainer);
+        const targetControl = {
+          shadowRoot: { querySelector: vi.fn(() => ({ open })) },
+          assignedSlot,
+          style: {},
+        } as unknown as HTMLElement;
+        const anchorEl = {
+          getBoundingClientRect: () => ({
+            left: 40,
+            top: 60,
+            // A wide inline "Add target" button — must NOT drive the width.
+            width: 340,
+            height: 36,
+          }),
+        } as unknown as HTMLElement;
+
+        context.openTargetPicker(targetControl, anchorEl);
+
+        expect(open).toHaveBeenCalledTimes(1);
+        expect(slotContainer.style.position).toBe("fixed");
+        expect(slotContainer.style.width).toBe(
+          `${resolveTargetPickerWidthPx()}px`
+        );
 
         slotContainer.remove();
       });

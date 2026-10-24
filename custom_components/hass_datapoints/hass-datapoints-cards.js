@@ -28433,6 +28433,16 @@
 	__decorate([r$2()], DateWindowDialog.prototype, "_error", null);
 	DateWindowDialog = __decorate([localized()], DateWindowDialog);
 	customElements.define("date-window-dialog", DateWindowDialog);
+	/** CSS width expression: `min(480px, 90vw)`. */
+	var targetPickerWidthCss = i$5`min(${480}px, ${90}vw)`;
+	/**
+	* Resolves the CSS `min(480px, 90vw)` expression to a concrete pixel width for
+	* imperative (JS) layout, given a viewport width.
+	*/
+	function resolveTargetPickerWidthPx(viewportWidth = window.innerWidth) {
+		const viewportRelative = Math.round(viewportWidth * 90 / 100);
+		return Math.min(480, viewportRelative);
+	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/anomaly-monitor-wizard.styles.ts
 	var styles$27 = i$5`
@@ -28441,7 +28451,8 @@
   .wizard-shell {
     display: flex;
     flex-direction: column;
-    min-width: min(480px, 90vw);
+    /* Shared with the sidebar target picker so both present at one width. */
+    min-width: ${targetPickerWidthCss};
     max-height: 70vh;
   }
 
@@ -32456,17 +32467,57 @@
 
   .history-target-picker-row {
     display: flex;
-    align-items: baseline;
+    flex-direction: column;
+    align-items: flex-start;
     gap: var(--dp-spacing-sm);
     min-width: 0;
     margin-bottom: calc(var(--spacing, 8px) * 2);
   }
 
+  /*
+   * The picker is never shown inline: it is floated as a fixed-position
+   * popover (see orchestration-context) so it can present at its own width,
+   * escaping the sidebar's overflow-x clip (issue #89). The slot stays in the
+   * DOM purely as the mount point / anchor for that floated control.
+   */
   .history-target-picker-slot {
-    flex: 1 1 auto;
-    min-width: 0;
-    margin-top: 0;
-    margin-bottom: 0;
+    display: none;
+  }
+
+  /* Inline affordance that opens the floated target picker. */
+  .history-targets-add {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--dp-spacing-sm);
+    width: 100%;
+    box-sizing: border-box;
+    padding: var(--dp-spacing-sm) var(--dp-spacing-md);
+    border-radius: 10px;
+    border: 1px dashed
+      color-mix(in srgb, var(--primary-color, #3b82f6) 45%, transparent);
+    background: color-mix(
+      in srgb,
+      var(--primary-color, #3b82f6) 8%,
+      transparent
+    );
+    color: var(--primary-color, #3b82f6);
+    font-size: 0.85rem;
+    font-weight: 500;
+    --mdc-icon-size: 18px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: background 120ms ease;
+  }
+
+  .history-targets-add:hover,
+  .history-targets-add:focus-visible {
+    background: color-mix(
+      in srgb,
+      var(--primary-color, #3b82f6) 16%,
+      transparent
+    );
+    outline: none;
   }
 
   .history-targets-clear-all {
@@ -32829,6 +32880,14 @@
         </div>
 
         <div class="history-target-picker-row">
+          <button
+            type="button"
+            class="history-targets-add"
+            @click=${this._onAddTargetClick}
+          >
+            <ha-icon icon="mdi:plus"></ha-icon>
+            <span>${msg("Add target")}</span>
+          </button>
           <div class="history-target-picker-slot">
             <slot name="picker"> ${A} </slot>
           </div>
@@ -34598,16 +34657,27 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/context/orchestration-context.ts
-	function ensureCollapsedPickerAnchor(targetControl, anchorEl) {
+	/**
+	* Floats the slotted target picker as a fixed-position popover anchored next to
+	* `anchorEl`, at the shared target-picker width (see `target-picker-width`).
+	*
+	* This runs for both the collapsed sidebar (anchored to the "+" icon button)
+	* and the expanded sidebar (anchored to the inline "Add target" button). In
+	* both cases the picker must escape the sidebar's `overflow-x: hidden` scroll
+	* clip, so its width is driven by {@link resolveTargetPickerWidthPx}, never by
+	* the anchor or the sidebar column (issue #89). The actual picker UI is the
+	* generic picker's own top-layer overlay, which inherits this width; the
+	* floated host itself stays invisible (`opacity: 0`, `pointer-events: none`).
+	*
+	* Re-applied on every open so it is idempotent and repositions from a fresh
+	* anchor rect.
+	*/
+	function floatTargetPickerAnchor(targetControl, anchorEl) {
 		const assignedSlot = targetControl.assignedSlot ?? null;
 		if (!assignedSlot) return;
-		const slotContainer = assignedSlot.parentElement instanceof HTMLElement ? assignedSlot.parentElement : null;
-		let hiddenAnchorHost = null;
-		if (slotContainer && window.getComputedStyle(slotContainer).display === "none") hiddenAnchorHost = slotContainer;
-		else if (window.getComputedStyle(assignedSlot).display === "none") hiddenAnchorHost = assignedSlot;
-		if (!hiddenAnchorHost) return;
+		const hiddenAnchorHost = (assignedSlot.parentElement instanceof HTMLElement ? assignedSlot.parentElement : null) ?? assignedSlot;
 		const anchorRect = anchorEl?.getBoundingClientRect();
-		const popupWidth = Math.max(320, Math.round(anchorRect?.width ?? 1));
+		const popupWidth = resolveTargetPickerWidthPx();
 		const viewportPadding = 8;
 		const left = Math.max(viewportPadding, Math.min(Math.round(anchorRect?.left ?? 0), window.innerWidth - popupWidth - viewportPadding));
 		const top = Math.round(anchorRect?.top ?? 0);
@@ -34652,7 +34722,7 @@
 			},
 			openTargetPicker(targetControl, anchorEl) {
 				if (!targetControl) return;
-				ensureCollapsedPickerAnchor(targetControl, anchorEl);
+				floatTargetPickerAnchor(targetControl, anchorEl);
 				const genericPicker = targetControl.shadowRoot?.querySelector?.("ha-generic-picker") ?? null;
 				if (genericPicker && typeof genericPicker.open === "function") {
 					genericPicker.open();

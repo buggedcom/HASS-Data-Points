@@ -1,12 +1,15 @@
 import { css } from "lit";
 
+import { targetPickerWidthCss } from "@/lib/ui/target-picker-width";
+
 export const styles = css`
   /* ---- Dialog content wrapper ---- */
 
   .wizard-shell {
     display: flex;
     flex-direction: column;
-    min-width: min(480px, 90vw);
+    /* Shared with the sidebar target picker so both present at one width. */
+    min-width: ${targetPickerWidthCss};
     max-height: 70vh;
   }
 
