@@ -514,3 +514,110 @@ export const BinaryAggregateComparison: Story = {
     );
   },
 };
+
+// ── (g) Mixed units ─────────────────────────────────────────────────────────────
+const mixedSettings = () => [
+  {
+    entity_id: "sensor.temperature",
+    analysis: {
+      aggregates: [
+        {
+          id: "mean",
+          operation: "mean",
+          interval: "hour",
+          mode: "interval",
+          resetOnZoom: false,
+        },
+      ],
+    },
+  },
+  {
+    entity_id: "binary_sensor.front_door",
+    analysis: {
+      aggregates: [
+        dailyOpens,
+        {
+          ...dailyOpens,
+          id: "open-time",
+          operation: "state_duration",
+        },
+      ],
+    },
+  },
+];
+
+const mixedHistory = () => ({
+  "sensor.temperature": numericHistory([
+    { at: 0, v: 19 },
+    { at: 0.5, v: 21 },
+    { at: 1, v: 20 },
+  ]),
+  "binary_sensor.front_door": doorToggles,
+});
+
+/**
+ * Counts, minutes and temperature never share a value axis: each unit gets its
+ * own axis, while the mean line reuses the temperature axis.
+ */
+export const MixedUnitAggregatesCombined: Story = {
+  render: () => makeChart(),
+  play: async ({ canvasElement }) => {
+    const el = canvasElement.querySelector(
+      "hass-datapoints-history-chart"
+    ) as DrawableChart;
+    el.draw(drawArgs({ series_settings: mixedSettings() }, mixedHistory()));
+
+    await waitFor(() => expect(legendLabels(el)).toHaveLength(5));
+    const axisUnits = () =>
+      Array.from(el.querySelectorAll(".chart-axis-unit")).map((node) =>
+        node.textContent?.trim()
+      );
+    // Temperature and its mean share one axis; minutes get their own, so the
+    // two units are never drawn against a single scale.
+    await waitFor(() => {
+      expect(axisUnits()).toContain("min");
+      expect(axisUnits().filter((unit) => unit === "min")).toHaveLength(1);
+      expect(axisUnits().length).toBeGreaterThanOrEqual(2);
+    });
+
+    // Legend toggles hide an aggregate like any other series.
+    const toggles = () =>
+      Array.from(
+        el.querySelectorAll<HTMLButtonElement>("#legend .legend-toggle")
+      );
+    const minutesToggle = toggles().find((button) =>
+      button.textContent?.includes("Time in a state")
+    )!;
+    await userEvent.click(minutesToggle);
+    await waitFor(() =>
+      expect(
+        toggles()
+          .find((button) => button.textContent?.includes("Time in a state"))
+          ?.getAttribute("aria-pressed")
+      ).toBe("false")
+    );
+  },
+};
+
+/** In split view each aggregate series gets its own row with its own axis. */
+export const MixedUnitAggregatesSplit: Story = {
+  render: () => makeChart(),
+  play: async ({ canvasElement }) => {
+    const el = canvasElement.querySelector(
+      "hass-datapoints-history-chart"
+    ) as DrawableChart;
+    el.draw(
+      drawArgs(
+        { split_view: true, series_settings: mixedSettings() },
+        mixedHistory()
+      )
+    );
+
+    await waitFor(() => expect(legendLabels(el)).toHaveLength(5));
+    await waitFor(() =>
+      expect(
+        el.querySelectorAll(".split-series-row").length
+      ).toBeGreaterThanOrEqual(4)
+    );
+  },
+};
