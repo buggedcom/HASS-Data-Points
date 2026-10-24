@@ -32892,7 +32892,7 @@
           <div class="history-target-picker-slot">
             <slot name="picker"> ${A} </slot>
           </div>
-          ${this.rows.length > 1 ? b`<button
+          ${this.rows.length >= 1 ? b`<button
                 type="button"
                 class="history-targets-clear-all"
                 @click=${this._onClearAllTargets}

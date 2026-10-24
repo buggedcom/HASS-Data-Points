@@ -194,7 +194,7 @@ export class HistoryTargets extends LitElement {
           <div class="history-target-picker-slot">
             <slot name="picker"> ${nothing} </slot>
           </div>
-          ${this.rows.length > 1
+          ${this.rows.length >= 1
             ? html`<button
                 type="button"
                 class="history-targets-clear-all"
