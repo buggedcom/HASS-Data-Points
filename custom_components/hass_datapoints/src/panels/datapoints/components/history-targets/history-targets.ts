@@ -183,14 +183,14 @@ export class HistoryTargets extends LitElement {
         </div>
 
         <div class="history-target-picker-row">
-          <button
-            type="button"
+          <ha-button
+            outlined
             class="history-targets-add"
             @click=${this._onAddTargetClick}
           >
-            <ha-icon icon="mdi:plus"></ha-icon>
-            <span>${msg("Add target")}</span>
-          </button>
+            <ha-icon slot="icon" icon="mdi:plus"></ha-icon>
+            ${msg("Add target")}
+          </ha-button>
           <div class="history-target-picker-slot">
             <slot name="picker"> ${nothing} </slot>
           </div>
