@@ -8646,6 +8646,541 @@
   }
 `;
 	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/domain/aggregation/calendar.ts
+	var HOUR_MS$2 = 36e5;
+	var formatters = /* @__PURE__ */ new Map();
+	function getFormatter(timeZone) {
+		let formatter = formatters.get(timeZone);
+		if (!formatter) {
+			formatter = new Intl.DateTimeFormat("en-US", {
+				timeZone,
+				hourCycle: "h23",
+				year: "numeric",
+				month: "numeric",
+				day: "numeric",
+				hour: "numeric",
+				minute: "numeric",
+				second: "numeric"
+			});
+			formatters.set(timeZone, formatter);
+		}
+		return formatter;
+	}
+	function getLocalParts(ts, timeZone) {
+		const values = {};
+		for (const part of getFormatter(timeZone).formatToParts(ts)) if (part.type !== "literal") values[part.type] = Number(part.value);
+		return {
+			year: values.year,
+			month: values.month,
+			day: values.day,
+			minute: values.minute,
+			second: values.second,
+			weekday: new Date(Date.UTC(values.year, values.month - 1, values.day)).getUTCDay()
+		};
+	}
+	function getOffsetMs(ts, timeZone) {
+		const whole = Math.floor(ts / 1e3) * 1e3;
+		const values = {};
+		for (const part of getFormatter(timeZone).formatToParts(whole)) if (part.type !== "literal") values[part.type] = Number(part.value);
+		return Date.UTC(values.year, values.month - 1, values.day, values.hour, values.minute, values.second) - whole;
+	}
+	/** Local midnight (in `timeZone`) of a possibly un-normalised calendar date. */
+	function localMidnight(year, month, day, timeZone) {
+		const wall = Date.UTC(year, month - 1, day);
+		return wall - getOffsetMs(wall - getOffsetMs(wall, timeZone), timeZone);
+	}
+	function getPeriodStart(ts, interval, timeZone) {
+		const p = getLocalParts(ts, timeZone);
+		if (interval === "hour") {
+			const ms = (ts % 1e3 + 1e3) % 1e3;
+			return ts - ((p.minute * 60 + p.second) * 1e3 + ms);
+		}
+		if (interval === "day") return localMidnight(p.year, p.month, p.day, timeZone);
+		if (interval === "week") return localMidnight(p.year, p.month, p.day - (p.weekday + 6) % 7, timeZone);
+		return localMidnight(p.year, p.month, 1, timeZone);
+	}
+	function getNextPeriodStart(periodStart, interval, timeZone) {
+		if (interval === "hour") return periodStart + HOUR_MS$2;
+		const p = getLocalParts(periodStart + HOUR_MS$2 * 2, timeZone);
+		if (interval === "day") return localMidnight(p.year, p.month, p.day + 1, timeZone);
+		if (interval === "week") return localMidnight(p.year, p.month, p.day + 7, timeZone);
+		return localMidnight(p.year, p.month + 1, 1, timeZone);
+	}
+	/**
+	* Calendar periods overlapping `range`, clipped to it. Periods cut by the
+	* range edge are flagged partial; the full period bounds are preserved.
+	*/
+	function getPeriods(range, interval, timeZone) {
+		const periods = [];
+		if (!(range.end > range.start)) return periods;
+		let periodStart = getPeriodStart(range.start, interval, timeZone);
+		while (periodStart < range.end) {
+			const periodEnd = getNextPeriodStart(periodStart, interval, timeZone);
+			const start = Math.max(periodStart, range.start);
+			const end = Math.min(periodEnd, range.end);
+			periods.push({
+				periodStart,
+				periodEnd,
+				start,
+				end,
+				partial: start !== periodStart || end !== periodEnd
+			});
+			periodStart = periodEnd;
+		}
+		return periods;
+	}
+	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/domain/aggregation/calculate.ts
+	var MINUTE_MS$1 = 6e4;
+	var UNKNOWN_STATES$1 = /* @__PURE__ */ new Set(["unknown", "unavailable"]);
+	var CUMULATIVE_OPERATIONS = /* @__PURE__ */ new Set([
+		"consumption",
+		"transition_count",
+		"state_duration",
+		"event_count"
+	]);
+	function isKnownState(state) {
+		return typeof state === "string" && !UNKNOWN_STATES$1.has(state);
+	}
+	function overlap(a, b) {
+		return Math.max(0, Math.min(a.end, b.end) - Math.max(a.start, b.start));
+	}
+	function inPeriod(time, period) {
+		return time >= period.start && time < period.end;
+	}
+	function sortSamples(samples) {
+		return [...samples].sort((a, b) => a.time - b.time);
+	}
+	function knownDurationOf(period, coverage) {
+		if (!coverage) return period.end - period.start;
+		return coverage.reduce((sum, c) => sum + overlap(period, c), 0);
+	}
+	/** Known-state spans over `range`, seeded by the last sample at/before start. */
+	function buildStateSpans(samples, range, coverage) {
+		const stateful = sortSamples(samples).filter((s) => typeof s.state === "string");
+		const points = [];
+		let seed;
+		for (const s of stateful) if (s.time <= range.start) seed = {
+			time: range.start,
+			state: s.state
+		};
+		else if (s.time < range.end) points.push({
+			time: s.time,
+			state: s.state
+		});
+		if (seed) points.unshift(seed);
+		const spans = [];
+		points.forEach((point, i) => {
+			if (!isKnownState(point.state)) return;
+			const end = i + 1 < points.length ? points[i + 1].time : range.end;
+			const span = {
+				start: point.time,
+				end,
+				state: point.state
+			};
+			if (!coverage) {
+				spans.push(span);
+				return;
+			}
+			for (const c of coverage) {
+				const start = Math.max(span.start, c.start);
+				const clippedEnd = Math.min(span.end, c.end);
+				if (clippedEnd > start) spans.push({
+					start,
+					end: clippedEnd,
+					state: span.state
+				});
+			}
+		});
+		return spans;
+	}
+	function median(values) {
+		const sorted = [...values].sort((a, b) => a - b);
+		const mid = Math.floor(sorted.length / 2);
+		return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
+	}
+	function calculateMeasurement(input, periods) {
+		const readings = sortSamples(input.samples).filter((s) => !s.boundary && typeof s.value === "number" && Number.isFinite(s.value));
+		return periods.map((period) => {
+			const values = readings.filter((s) => inPeriod(s.time, period)).map((s) => s.value);
+			if (!values.length) return {
+				value: null,
+				reasons: ["no-data"]
+			};
+			const op = input.definition.operation;
+			let value;
+			if (op === "min") value = Math.min(...values);
+			else if (op === "max") value = Math.max(...values);
+			else if (op === "median") value = median(values);
+			else if (op === "first") value = values[0];
+			else if (op === "last") value = values[values.length - 1];
+			else value = values.reduce((sum, v) => sum + v, 0) / values.length;
+			return {
+				value,
+				reasons: []
+			};
+		});
+	}
+	function calculateTransitions(input, periods) {
+		const selected = input.definition.states ?? [];
+		const stateful = sortSamples(input.samples).filter((s) => typeof s.state === "string");
+		const times = [];
+		stateful.forEach((curr, i) => {
+			const prev = stateful[i - 1];
+			if (!prev || curr.time <= input.range.start || curr.time >= input.range.end || !isKnownState(prev.state) || !isKnownState(curr.state) || prev.state === curr.state || selected.length > 0 && !selected.includes(curr.state)) return;
+			times.push(curr.time);
+		});
+		return periods.map((period) => ({
+			value: times.filter((t) => inPeriod(t, period)).length,
+			reasons: []
+		}));
+	}
+	function calculateDurations(input, periods, percentage) {
+		const selected = input.definition.states ?? [];
+		if (!selected.length) return periods.map(() => ({
+			value: null,
+			reasons: ["no-state-selected"]
+		}));
+		const spans = buildStateSpans(input.samples, input.range, input.coverage);
+		return periods.map((period) => {
+			let known = 0;
+			let matching = 0;
+			for (const span of spans) {
+				const ms = overlap(period, span);
+				known += ms;
+				if (selected.includes(span.state)) matching += ms;
+			}
+			if (percentage) return known > 0 ? {
+				value: matching / known * 100,
+				reasons: []
+			} : {
+				value: null,
+				reasons: ["no-known-time"]
+			};
+			return known > 0 ? {
+				value: matching / MINUTE_MS$1,
+				reasons: []
+			} : {
+				value: null,
+				reasons: ["no-known-time"]
+			};
+		});
+	}
+	function calculateEvents(input, periods) {
+		const types = input.definition.eventTypes ?? [];
+		const times = input.samples.filter((s) => !s.boundary && typeof s.eventType === "string" && (types.length === 0 || types.includes(s.eventType))).map((s) => s.eventTime ?? s.time);
+		return periods.map((period) => ({
+			value: times.filter((t) => inPeriod(t, period)).length,
+			reasons: []
+		}));
+	}
+	function calculateConsumption(input, periods) {
+		const readings = sortSamples(input.samples).filter((s) => {
+			const v = s.sum ?? s.value;
+			return typeof v === "number" && Number.isFinite(v);
+		});
+		const deltas = [];
+		readings.forEach((curr, i) => {
+			const prev = readings[i - 1];
+			if (!prev || curr.time <= input.range.start || curr.time >= input.range.end) return;
+			const usesSum = typeof curr.sum === "number" && typeof prev.sum === "number";
+			const currValue = usesSum ? curr.sum : curr.value;
+			const delta = currValue - (usesSum ? prev.sum : prev.value);
+			if (usesSum || delta >= 0) deltas.push({
+				time: curr.time,
+				value: delta
+			});
+			else if (input.stateClass === "total_increasing" || curr.lastReset !== void 0 && curr.lastReset !== prev.lastReset) deltas.push({
+				time: curr.time,
+				value: currValue,
+				reason: "reset"
+			});
+			else if (input.stateClass === "total") deltas.push({
+				time: curr.time,
+				value: delta
+			});
+			else deltas.push({
+				time: curr.time,
+				value: 0,
+				reason: "ambiguous-reset"
+			});
+		});
+		return periods.map((period) => {
+			const inside = deltas.filter((d) => inPeriod(d.time, period));
+			if (!inside.length) return {
+				value: null,
+				reasons: ["no-data"]
+			};
+			return {
+				value: inside.reduce((sum, d) => sum + d.value, 0),
+				reasons: [...new Set(inside.flatMap((d) => d.reason ? [d.reason] : []))]
+			};
+		});
+	}
+	function toCumulative(operation, periods, buckets) {
+		const startsAtZeroActivity = operation !== "consumption";
+		let running = 0;
+		let started = false;
+		const keptBuckets = [];
+		const keptPeriods = [];
+		buckets.forEach((bucket, i) => {
+			if (!started) {
+				started = bucket.value !== null && (!startsAtZeroActivity || bucket.value > 0);
+				if (!started) return;
+			}
+			running += bucket.value ?? 0;
+			keptBuckets.push({
+				value: running,
+				reasons: bucket.reasons
+			});
+			keptPeriods.push(periods[i]);
+		});
+		return {
+			buckets: keptBuckets,
+			periods: keptPeriods,
+			started
+		};
+	}
+	function calculateAggregate(input) {
+		const { definition } = input;
+		const cumulative = definition.mode === "cumulative" && CUMULATIVE_OPERATIONS.has(definition.operation);
+		if (cumulative && definition.resetOnZoom && input.zoom) {
+			const start = Math.max(input.range.start, input.zoom.start);
+			const end = Math.min(input.range.end, input.zoom.end);
+			if (end > start) return calculateAggregate({
+				...input,
+				zoom: void 0,
+				range: {
+					start,
+					end
+				}
+			});
+		}
+		let periods = getPeriods(input.range, definition.interval, input.timeZone);
+		const op = definition.operation;
+		let buckets;
+		let unit = input.unit ?? "";
+		if (op === "transition_count") {
+			buckets = calculateTransitions(input, periods);
+			unit = "";
+		} else if (op === "state_duration") {
+			buckets = calculateDurations(input, periods, false);
+			unit = "min";
+		} else if (op === "state_percentage") {
+			buckets = calculateDurations(input, periods, true);
+			unit = "%";
+		} else if (op === "event_count") {
+			buckets = calculateEvents(input, periods);
+			unit = "";
+		} else if (op === "consumption") buckets = calculateConsumption(input, periods);
+		else buckets = calculateMeasurement(input, periods);
+		let started = true;
+		if (cumulative) {
+			const result = toCumulative(op, periods, buckets);
+			({buckets, periods, started} = result);
+		}
+		const points = periods.map((period, i) => {
+			const totalDuration = period.end - period.start;
+			const knownDuration = knownDurationOf(period, input.coverage);
+			const reasons = [...buckets[i].reasons];
+			const incomplete = knownDuration < totalDuration;
+			if (incomplete) reasons.push("incomplete-coverage");
+			return {
+				...period,
+				time: period.start,
+				value: knownDuration === 0 ? null : buckets[i].value,
+				incomplete: incomplete || reasons.includes("no-data"),
+				knownDuration,
+				totalDuration,
+				reasons
+			};
+		});
+		const isBar = !cumulative && ![
+			"mean",
+			"min",
+			"max",
+			"median",
+			"first",
+			"last"
+		].includes(op);
+		return {
+			points,
+			unit,
+			presentation: isBar ? "bar" : "line",
+			baseline: cumulative && started && points.length ? 0 : null
+		};
+	}
+	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/domain/aggregation/labels.ts
+	var BINARY_AGGREGATE_KINDS = [
+		{
+			value: "transition_count",
+			label: "Count changes to a state"
+		},
+		{
+			value: "all_changes",
+			label: "Count all state changes"
+		},
+		{
+			value: "state_duration",
+			label: "Time in a state"
+		},
+		{
+			value: "state_percentage",
+			label: "Percentage of time in a state"
+		}
+	];
+	var AGGREGATE_INTERVAL_OPTIONS = [
+		{
+			value: "hour",
+			label: "Hourly"
+		},
+		{
+			value: "day",
+			label: "Daily"
+		},
+		{
+			value: "week",
+			label: "Weekly"
+		},
+		{
+			value: "month",
+			label: "Monthly"
+		}
+	];
+	var STATE_LABELS = {
+		door: ["Open", "Closed"],
+		garage_door: ["Open", "Closed"],
+		window: ["Open", "Closed"],
+		opening: ["Open", "Closed"],
+		motion: ["Detected", "Clear"],
+		occupancy: ["Occupied", "Clear"],
+		lock: ["Unlocked", "Locked"]
+	};
+	/** On/off options labelled for the entity's device class (e.g. Open/Closed). */
+	function getBinaryStateOptions(deviceClass) {
+		const [on, off] = STATE_LABELS[deviceClass ?? ""] ?? ["On", "Off"];
+		return [{
+			value: "on",
+			label: on
+		}, {
+			value: "off",
+			label: off
+		}];
+	}
+	function getBinaryAggregateKind(definition) {
+		if (definition.operation === "transition_count") return definition.states?.length ? "transition_count" : "all_changes";
+		return definition.operation === "state_percentage" ? "state_percentage" : "state_duration";
+	}
+	/** Apply a user-facing kind to a definition, keeping states consistent. */
+	function applyBinaryAggregateKind(definition, kind, defaultState = "on") {
+		const states = definition.states?.length ? definition.states : [defaultState];
+		if (kind === "all_changes") return {
+			...definition,
+			operation: "transition_count",
+			states: []
+		};
+		const operation = kind;
+		const mode = operation === "state_percentage" ? "interval" : definition.mode;
+		return {
+			...definition,
+			operation,
+			mode,
+			states
+		};
+	}
+	function createBinaryAggregate(existingIds, defaultState = "on") {
+		let id;
+		do
+			id = `agg_${Math.random().toString(36).slice(2, 8)}`;
+		while (existingIds.includes(id));
+		return {
+			id,
+			operation: "transition_count",
+			interval: "day",
+			mode: "interval",
+			states: [defaultState],
+			resetOnZoom: false
+		};
+	}
+	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/chart/chart-aggregates.ts
+	var UNKNOWN_STATES = /* @__PURE__ */ new Set(["unknown", "unavailable"]);
+	function getAggregateSeriesId(entityId, definitionId) {
+		return `aggregate:${entityId}:${definitionId}`;
+	}
+	/** Spans where a known (not unknown/unavailable) state was recorded. */
+	function buildCoverage(samples, range) {
+		const sorted = [...samples].sort((a, b) => a.time - b.time);
+		const coverage = [];
+		let seed;
+		const inRange = [];
+		for (const sample of sorted) if (sample.time <= range.start) seed = sample;
+		else if (sample.time < range.end) inRange.push(sample);
+		const points = seed ? [{
+			...seed,
+			time: range.start
+		}, ...inRange] : inRange;
+		points.forEach((point, i) => {
+			if (!point.state || UNKNOWN_STATES.has(point.state)) return;
+			const end = i + 1 < points.length ? points[i + 1].time : range.end;
+			if (end > point.time) coverage.push({
+				start: point.time,
+				end
+			});
+		});
+		return coverage;
+	}
+	function describe(definition, stateLabel) {
+		const kind = getBinaryAggregateKind(definition);
+		const kindLabel = msg(BINARY_AGGREGATE_KINDS.find((k) => k.value === kind)?.label ?? kind);
+		return `${msg(AGGREGATE_INTERVAL_OPTIONS.find((o) => o.value === definition.interval)?.label ?? definition.interval)} · ${kindLabel}${kind === "all_changes" ? "" : ` (${stateLabel})`}`;
+	}
+	/**
+	* Calculate every configured aggregate for a binary row and shape the results
+	* as chart series. Periods with no known history have no bar (never zero).
+	*/
+	function buildBinaryAggregateSeries(args) {
+		const samples = args.stateList.map((entry) => ({
+			time: Math.round(entry.lu * 1e3),
+			state: entry.s
+		}));
+		const coverage = buildCoverage(samples, args.range);
+		const stateOptions = getBinaryStateOptions(args.deviceClass);
+		return args.definitions.filter((definition) => definition.visible !== false).flatMap((definition) => {
+			const result = calculateAggregate({
+				definition,
+				samples,
+				range: args.range,
+				timeZone: args.timeZone,
+				coverage
+			});
+			const valued = result.points.filter((p) => typeof p.value === "number" && Number.isFinite(p.value));
+			const pts = valued.map((p) => [(p.start + p.end) / 2, p.value]);
+			if (!pts.length) return [];
+			const stateValue = definition.states?.[0] ?? stateOptions[0].value;
+			const stateLabel = msg(stateOptions.find((o) => o.value === stateValue)?.label ?? stateValue);
+			const id = getAggregateSeriesId(args.entityId, definition.id);
+			return [{
+				entityId: id,
+				legendEntityId: id,
+				sourceEntityId: args.entityId,
+				definitionId: definition.id,
+				label: definition.label || `${args.entityLabel} · ${describe(definition, stateLabel)}`,
+				unit: result.unit,
+				pts,
+				periods: valued.map((p) => ({
+					start: p.start,
+					end: p.end
+				})),
+				color: definition.color || args.color,
+				axisKey: `aggregate:${result.unit || "count"}`,
+				bars: true,
+				result
+			}];
+		});
+	}
+	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/data/downsampling.ts
 	/**
 	* Map of human-readable interval strings to milliseconds.
@@ -10434,7 +10969,7 @@
 			if (isSubordinate || isComparisonDerived) return thresholdLabel;
 			return `${thresholdLabel}: ${entry.baseLabel || entry.label || ""}`;
 		}
-		return String(entry.label || "");
+		return entry.periodLabel ? `${String(entry.label || "")} (${entry.periodLabel})` : String(entry.label || "");
 	}
 	function showLineChartTooltip(card, hover, clientX, clientY) {
 		const root = getRoot(card);
@@ -10915,9 +11450,19 @@
 			const timeMs = resolveLineChartHoverTime(resolvedSeries, rawTimeMs, options.hoverSnapMode || "follow_series");
 			const x = renderer.xOf(timeMs, t0, t1);
 			const values = resolvedSeries.map((seriesItem) => {
-				const value = renderer._interpolateValue(seriesItem.pts || [], timeMs, seriesItem.stepped);
+				let value;
+				let periodLabel;
+				if (seriesItem.bars && seriesItem.periods) {
+					const index = seriesItem.periods.findIndex((period) => timeMs >= period.start && timeMs < period.end);
+					const point = index === -1 ? void 0 : seriesItem.pts?.[index];
+					value = point ? point[1] : null;
+					if (index !== -1) {
+						const { start, end } = seriesItem.periods[index];
+						periodLabel = `${formatTooltipDateTimeFromMs(start)} – ${formatTooltipDateTimeFromMs(end)}`;
+					}
+				} else value = renderer._interpolateValue(seriesItem.pts || [], timeMs, seriesItem.stepped);
 				const axis = resolveHoverAxis(seriesItem);
-				return buildHoverValueEntry(seriesItem, value, axis, {}, {
+				return buildHoverValueEntry(seriesItem, value, axis, periodLabel ? { periodLabel } : {}, {
 					includePosition: value != null,
 					x
 				});
@@ -14562,11 +15107,19 @@
 			return laneCenters;
 		}
 		/** Draw a single series line onto the renderer, with optional data-gap rendering. */
+		/** HA's configured timezone; aggregate calendar periods never use the browser's. */
+		_getTimeZone() {
+			return this._hass?.config?.time_zone || Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+		}
 		_drawSeriesLine(renderer, pts, color, t0, t1, min, max, opts) {
 			const r = renderer;
 			const config = this._config;
 			const showGaps = config?.show_data_gaps !== false;
 			const gapThresholdMs = SAMPLE_INTERVAL_MS[config?.data_gap_threshold || "2h"] ?? 72e5;
+			if (opts.bars === true) {
+				renderer.drawBars(pts, color, t0, t1, min, max, { fillAlpha: opts.lineOpacity ?? .78 });
+				return;
+			}
 			if (!showGaps || pts.length < 2 || !Number.isFinite(gapThresholdMs)) {
 				r.drawLine(pts, color, t0, t1, min, max, opts);
 				return;
@@ -15203,10 +15756,42 @@
 				if (entityId.split(".")[0] === "binary_sensor") {
 					const stateList = this._buildEntityStateList(entityId, histResult, statsResult);
 					const binaryDisplay = resolveBinaryDisplayMode(seriesSetting.binary_display);
-					binaryEntities.push({
+					const binaryAnalysis = analysisMap.get(entityId) || normalizeHistorySeriesAnalysis(null);
+					const binaryColor = seriesSetting.color || COLORS[i % COLORS.length];
+					const binaryLabel = entityLabelMap.get(entityId) || entityId;
+					const aggregateSeries = buildBinaryAggregateSeries({
 						entityId,
-						label: entityLabelMap.get(entityId) || entityId,
-						color: seriesSetting.color || COLORS[i % COLORS.length],
+						entityLabel: binaryLabel,
+						color: binaryColor,
+						deviceClass: String(this._hass?.states?.[entityId]?.attributes?.device_class ?? ""),
+						definitions: binaryAnalysis.aggregates ?? [],
+						stateList,
+						range: {
+							start: t0,
+							end: t1
+						},
+						timeZone: this._getTimeZone()
+					});
+					for (const aggregate of aggregateSeries) {
+						let axis = axisMap.get(aggregate.axisKey);
+						if (!axis) {
+							axis = {
+								key: aggregate.axisKey,
+								unit: aggregate.unit,
+								color: aggregate.color,
+								side: axisMap.size === 0 ? "left" : "right",
+								values: []
+							};
+							axisMap.set(aggregate.axisKey, axis);
+							axes.push(axis);
+						}
+						axis.values.push(...aggregate.pts.map(([, v]) => v));
+						series.push(aggregate);
+					}
+					if (!this._seriesShouldHideSource(binaryAnalysis, hasSelectedComparisonWindow)) binaryEntities.push({
+						entityId,
+						label: binaryLabel,
+						color: binaryColor,
 						onLabel: this._binaryOnLabel(entityId),
 						offLabel: this._binaryOffLabel(entityId),
 						binaryDisplay,
@@ -15625,12 +16210,13 @@
 				if (!extent) return null;
 				const { min, max } = extent;
 				const pad = (max - min) * .1 || 1;
+				const barsOnly = series.filter((entry) => entry.axisKey === axis.key).every((entry) => entry.bars === true);
 				return {
 					key: axis.key,
 					unit: axis.unit,
 					color: axis.color,
 					side: axis.side === "right" ? "right" : "left",
-					min: min - pad,
+					min: barsOnly ? Math.min(0, min) : min - pad,
 					max: max + pad
 				};
 			}).filter((ax) => ax !== null);
@@ -15956,7 +16542,8 @@
 				this._drawSeriesLine(renderer, s.pts, s.color, renderT0, renderT1, sWithAxis.axis.min, sWithAxis.axis.max, {
 					lineOpacity: mainSeriesHoverOpacity,
 					lineWidth: this._config?.comparison_hover_active === true ? 1.25 : void 0,
-					stepped: (analysisMap.get(s.entityId) || normalizeHistorySeriesAnalysis(null)).stepped_series === true
+					stepped: (analysisMap.get(s.entityId) || normalizeHistorySeriesAnalysis(null)).stepped_series === true,
+					bars: s.bars === true
 				});
 			}
 			const trendHoverSeries = trendSeries.map((seriesItem) => {
@@ -16410,7 +16997,7 @@
 				let axisMax = 1;
 				if (extent) {
 					const pad = (extent.max - extent.min) * .1 || 1;
-					axisMin = extent.min - pad;
+					axisMin = seriesItem.bars === true ? Math.min(0, extent.min) : extent.min - pad;
 					axisMax = extent.max + pad;
 				}
 				const primaryAxisKey = seriesItem.axisKey || seriesItem.unit || "__unitless__";
@@ -16476,7 +17063,8 @@
 				if (!rowHideSource) this._drawSeriesLine(renderer, seriesItem.pts, seriesItem.color, renderT0, renderT1, resolvedAxis.min, resolvedAxis.max, {
 					lineWidth: comparisonPreviewActive ? 1.25 : 1.75,
 					lineOpacity: mainSeriesOpacity,
-					stepped: rowAnalysis.stepped_series === true
+					stepped: rowAnalysis.stepped_series === true,
+					bars: seriesItem.bars === true
 				});
 				for (const win of drawableComparisonResults || []) {
 					const winPts = await this._resolveComparisonWindowPoints(seriesItem.entityId, win, rowAnalysis, renderT0, renderT1);
@@ -23692,99 +24280,6 @@
     margin-top: var(--dp-spacing-sm);
   }
 `;
-	//#endregion
-	//#region custom_components/hass_datapoints/src/lib/domain/aggregation/labels.ts
-	var BINARY_AGGREGATE_KINDS = [
-		{
-			value: "transition_count",
-			label: "Count changes to a state"
-		},
-		{
-			value: "all_changes",
-			label: "Count all state changes"
-		},
-		{
-			value: "state_duration",
-			label: "Time in a state"
-		},
-		{
-			value: "state_percentage",
-			label: "Percentage of time in a state"
-		}
-	];
-	var AGGREGATE_INTERVAL_OPTIONS = [
-		{
-			value: "hour",
-			label: "Hourly"
-		},
-		{
-			value: "day",
-			label: "Daily"
-		},
-		{
-			value: "week",
-			label: "Weekly"
-		},
-		{
-			value: "month",
-			label: "Monthly"
-		}
-	];
-	var STATE_LABELS = {
-		door: ["Open", "Closed"],
-		garage_door: ["Open", "Closed"],
-		window: ["Open", "Closed"],
-		opening: ["Open", "Closed"],
-		motion: ["Detected", "Clear"],
-		occupancy: ["Occupied", "Clear"],
-		lock: ["Unlocked", "Locked"]
-	};
-	/** On/off options labelled for the entity's device class (e.g. Open/Closed). */
-	function getBinaryStateOptions(deviceClass) {
-		const [on, off] = STATE_LABELS[deviceClass ?? ""] ?? ["On", "Off"];
-		return [{
-			value: "on",
-			label: on
-		}, {
-			value: "off",
-			label: off
-		}];
-	}
-	function getBinaryAggregateKind(definition) {
-		if (definition.operation === "transition_count") return definition.states?.length ? "transition_count" : "all_changes";
-		return definition.operation === "state_percentage" ? "state_percentage" : "state_duration";
-	}
-	/** Apply a user-facing kind to a definition, keeping states consistent. */
-	function applyBinaryAggregateKind(definition, kind, defaultState = "on") {
-		const states = definition.states?.length ? definition.states : [defaultState];
-		if (kind === "all_changes") return {
-			...definition,
-			operation: "transition_count",
-			states: []
-		};
-		const operation = kind;
-		const mode = operation === "state_percentage" ? "interval" : definition.mode;
-		return {
-			...definition,
-			operation,
-			mode,
-			states
-		};
-	}
-	function createBinaryAggregate(existingIds, defaultState = "on") {
-		let id;
-		do
-			id = `agg_${Math.random().toString(36).slice(2, 8)}`;
-		while (existingIds.includes(id));
-		return {
-			id,
-			operation: "transition_count",
-			interval: "day",
-			mode: "interval",
-			states: [defaultState],
-			resetOnZoom: false
-		};
-	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-aggregate-group/analysis-aggregate-group.ts
 	var _AnalysisAggregateGroup;

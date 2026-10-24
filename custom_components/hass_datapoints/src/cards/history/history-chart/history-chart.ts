@@ -10,6 +10,7 @@
  */
 
 import { html, render } from "lit";
+import { buildBinaryAggregateSeries } from "@/lib/chart/chart-aggregates";
 import { msg } from "@/lib/i18n/localize";
 import {
   binaryOffLabel,
@@ -954,6 +955,13 @@ export class HistoryChart extends HTMLElement {
   }
 
   /** Draw a single series line onto the renderer, with optional data-gap rendering. */
+  /** HA's configured timezone; aggregate calendar periods never use the browser's. */
+  _getTimeZone(): string {
+    const zone = (this._hass as Nullable<{ config?: { time_zone?: string } }>)
+      ?.config?.time_zone;
+    return zone || Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+  }
+
   _drawSeriesLine(
     renderer: unknown,
     pts: [number, number][],
@@ -989,6 +997,25 @@ export class HistoryChart extends HTMLElement {
     const gapThresholdKey = (config?.data_gap_threshold as string) || "2h";
     const gapThresholdMs =
       SAMPLE_INTERVAL_MS[gapThresholdKey] ?? 2 * 60 * 60_000;
+
+    if (opts.bars === true) {
+      (
+        renderer as {
+          drawBars: (
+            pts: [number, number][],
+            color: string,
+            t0: number,
+            t1: number,
+            min: number,
+            max: number,
+            opts: RecordWithUnknownValues
+          ) => void;
+        }
+      ).drawBars(pts, color, t0, t1, min, max, {
+        fillAlpha: (opts.lineOpacity as number | undefined) ?? 0.78,
+      });
+      return;
+    }
 
     if (!showGaps || pts.length < 2 || !Number.isFinite(gapThresholdMs)) {
       r.drawLine(pts, color, t0, t1, min, max, opts);
@@ -2402,6 +2429,8 @@ export class HistoryChart extends HTMLElement {
       axisKey: string;
       axis?: unknown;
       stepped?: boolean;
+      bars?: boolean;
+      periods?: { start: number; end: number }[];
     }> = [];
     const axes: Array<{
       key: string;
@@ -2465,15 +2494,61 @@ export class HistoryChart extends HTMLElement {
         const binaryDisplay = resolveBinaryDisplayMode(
           seriesSetting.binary_display
         );
-        binaryEntities.push({
+        const binaryAnalysis = (analysisMap.get(entityId) ||
+          normalizeHistorySeriesAnalysis(null)) as SeriesAnalysis;
+        const binaryColor = seriesSetting.color || COLORS[i % COLORS.length];
+        const binaryLabel = entityLabelMap.get(entityId) || entityId;
+        const aggregateSeries = buildBinaryAggregateSeries({
           entityId,
-          label: entityLabelMap.get(entityId) || entityId,
-          color: seriesSetting.color || COLORS[i % COLORS.length],
-          onLabel: this._binaryOnLabel(entityId),
-          offLabel: this._binaryOffLabel(entityId),
-          binaryDisplay,
+          entityLabel: binaryLabel,
+          color: binaryColor,
+          deviceClass: String(
+            (
+              this._hass as Nullable<{
+                states?: Record<
+                  string,
+                  { attributes: RecordWithUnknownValues }
+                >;
+              }>
+            )?.states?.[entityId]?.attributes?.device_class ?? ""
+          ),
+          definitions: binaryAnalysis.aggregates ?? [],
           stateList,
+          range: { start: t0, end: t1 },
+          timeZone: this._getTimeZone(),
         });
+        for (const aggregate of aggregateSeries) {
+          let axis = axisMap.get(aggregate.axisKey);
+          if (!axis) {
+            axis = {
+              key: aggregate.axisKey,
+              unit: aggregate.unit,
+              color: aggregate.color,
+              side: axisMap.size === 0 ? "left" : "right",
+              values: [],
+            };
+            axisMap.set(aggregate.axisKey, axis);
+            axes.push(axis);
+          }
+          axis.values.push(...aggregate.pts.map(([, v]) => v));
+          series.push(aggregate);
+        }
+        if (
+          !this._seriesShouldHideSource(
+            binaryAnalysis,
+            hasSelectedComparisonWindow
+          )
+        ) {
+          binaryEntities.push({
+            entityId,
+            label: binaryLabel,
+            color: binaryColor,
+            onLabel: this._binaryOnLabel(entityId),
+            offLabel: this._binaryOffLabel(entityId),
+            binaryDisplay,
+            stateList,
+          });
+        }
         return;
       }
       const stateList = this._buildEntityStateList(
@@ -3333,12 +3408,17 @@ export class HistoryChart extends HTMLElement {
         }
         const { min, max } = extent;
         const pad = (max - min) * 0.1 || 1;
+        // Bars grow from zero, so a bar-only axis is anchored at 0 (or the
+        // lowest negative value) instead of being padded around the data.
+        const barsOnly = series
+          .filter((entry) => entry.axisKey === axis.key)
+          .every((entry) => entry.bars === true);
         return {
           key: axis.key,
           unit: axis.unit,
           color: axis.color,
           side: axis.side === "right" ? "right" : "left",
-          min: min - pad,
+          min: barsOnly ? Math.min(0, min) : min - pad,
           max: max + pad,
         };
       })
@@ -3920,6 +4000,7 @@ export class HistoryChart extends HTMLElement {
               analysisMap.get(s.entityId) ||
               normalizeHistorySeriesAnalysis(null)
             ).stepped_series === true,
+          bars: s.bars === true,
         }
       );
     }
@@ -5069,7 +5150,10 @@ export class HistoryChart extends HTMLElement {
           ((extent as RecordWithNumericValues).max -
             (extent as RecordWithNumericValues).min) *
             0.1 || 1;
-        axisMin = (extent as RecordWithNumericValues).min - pad;
+        axisMin =
+          seriesItem.bars === true
+            ? Math.min(0, (extent as RecordWithNumericValues).min)
+            : (extent as RecordWithNumericValues).min - pad;
         axisMax = (extent as RecordWithNumericValues).max + pad;
       }
       const primaryAxisKey =
@@ -5178,6 +5262,7 @@ export class HistoryChart extends HTMLElement {
             lineWidth: comparisonPreviewActive ? 1.25 : 1.75,
             lineOpacity: mainSeriesOpacity,
             stepped: rowAnalysis.stepped_series === true,
+            bars: seriesItem.bars === true,
           }
         );
       }
