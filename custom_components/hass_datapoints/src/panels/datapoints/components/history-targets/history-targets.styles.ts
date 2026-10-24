@@ -69,6 +69,7 @@ export const styles = css`
    */
   .history-targets-add {
     width: 100%;
+    margin-top: var(--dp-spacing-sm);
     --mdc-icon-size: 18px;
   }
 
