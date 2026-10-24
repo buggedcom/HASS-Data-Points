@@ -45,17 +45,57 @@ export const styles = css`
 
   .history-target-picker-row {
     display: flex;
-    align-items: baseline;
+    flex-direction: column;
+    align-items: flex-start;
     gap: var(--dp-spacing-sm);
     min-width: 0;
     margin-bottom: calc(var(--spacing, 8px) * 2);
   }
 
+  /*
+   * The picker is never shown inline: it is floated as a fixed-position
+   * popover (see orchestration-context) so it can present at its own width,
+   * escaping the sidebar's overflow-x clip (issue #89). The slot stays in the
+   * DOM purely as the mount point / anchor for that floated control.
+   */
   .history-target-picker-slot {
-    flex: 1 1 auto;
-    min-width: 0;
-    margin-top: 0;
-    margin-bottom: 0;
+    display: none;
+  }
+
+  /* Inline affordance that opens the floated target picker. */
+  .history-targets-add {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--dp-spacing-sm);
+    width: 100%;
+    box-sizing: border-box;
+    padding: var(--dp-spacing-sm) var(--dp-spacing-md);
+    border-radius: 10px;
+    border: 1px dashed
+      color-mix(in srgb, var(--primary-color, #3b82f6) 45%, transparent);
+    background: color-mix(
+      in srgb,
+      var(--primary-color, #3b82f6) 8%,
+      transparent
+    );
+    color: var(--primary-color, #3b82f6);
+    font-size: 0.85rem;
+    font-weight: 500;
+    --mdc-icon-size: 18px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: background 120ms ease;
+  }
+
+  .history-targets-add:hover,
+  .history-targets-add:focus-visible {
+    background: color-mix(
+      in srgb,
+      var(--primary-color, #3b82f6) 16%,
+      transparent
+    );
+    outline: none;
   }
 
   .history-targets-clear-all {

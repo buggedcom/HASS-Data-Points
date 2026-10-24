@@ -87,6 +87,37 @@ describe("history-targets", () => {
         ).not.toBeNull();
       });
 
+      it("THEN renders the expanded 'Add target' button", () => {
+        expect.assertions(1);
+        expect(
+          el.shadowRoot!.querySelector(".history-targets-add")
+        ).not.toBeNull();
+      });
+
+      it("THEN does not show the picker inline (it floats on open)", () => {
+        expect.assertions(1);
+        const slot = el.shadowRoot!.querySelector<HTMLElement>(
+          ".history-target-picker-slot"
+        );
+        expect(getComputedStyle(slot!).display).toBe("none");
+      });
+    });
+
+    describe("WHEN the expanded add button is clicked", () => {
+      it("THEN fires dp-targets-add-click with its anchor button element", async () => {
+        expect.assertions(2);
+        const events: CustomEvent[] = [];
+        el.addEventListener("dp-targets-add-click", (ev) =>
+          events.push(ev as CustomEvent)
+        );
+        el.shadowRoot!.querySelector<HTMLElement>(
+          ".history-targets-add"
+        )!.click();
+        await el.updateComplete;
+        expect(events.length).toBe(1);
+        expect(events[0].detail.buttonEl).toBeInstanceOf(HTMLElement);
+      });
+
       it("THEN renders the collapsed preferences container", () => {
         expect.assertions(2);
         expect(

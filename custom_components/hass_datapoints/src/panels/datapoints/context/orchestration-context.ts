@@ -1,4 +1,5 @@
 import type { HistoryOrchestrationContext } from "./types";
+import { resolveTargetPickerWidthPx } from "@/lib/ui/target-picker-width";
 
 /**
  * Public seam the history card exposes so the panel orchestration can drive the
@@ -12,7 +13,22 @@ type ChartCardLike = HTMLElement & {
 
 type PickerLike = Element & { open?: () => void };
 
-function ensureCollapsedPickerAnchor(
+/**
+ * Floats the slotted target picker as a fixed-position popover anchored next to
+ * `anchorEl`, at the shared target-picker width (see `target-picker-width`).
+ *
+ * This runs for both the collapsed sidebar (anchored to the "+" icon button)
+ * and the expanded sidebar (anchored to the inline "Add target" button). In
+ * both cases the picker must escape the sidebar's `overflow-x: hidden` scroll
+ * clip, so its width is driven by {@link resolveTargetPickerWidthPx}, never by
+ * the anchor or the sidebar column (issue #89). The actual picker UI is the
+ * generic picker's own top-layer overlay, which inherits this width; the
+ * floated host itself stays invisible (`opacity: 0`, `pointer-events: none`).
+ *
+ * Re-applied on every open so it is idempotent and repositions from a fresh
+ * anchor rect.
+ */
+function floatTargetPickerAnchor(
   targetControl: HTMLElement,
   anchorEl: Nullable<HTMLElement> | undefined
 ): void {
@@ -30,21 +46,10 @@ function ensureCollapsedPickerAnchor(
     assignedSlot.parentElement instanceof HTMLElement
       ? assignedSlot.parentElement
       : null;
-  let hiddenAnchorHost: Nullable<HTMLElement> = null;
-  if (
-    slotContainer &&
-    window.getComputedStyle(slotContainer).display === "none"
-  ) {
-    hiddenAnchorHost = slotContainer;
-  } else if (window.getComputedStyle(assignedSlot).display === "none") {
-    hiddenAnchorHost = assignedSlot;
-  }
-  if (!hiddenAnchorHost) {
-    return;
-  }
+  const hiddenAnchorHost: HTMLElement = slotContainer ?? assignedSlot;
 
   const anchorRect = anchorEl?.getBoundingClientRect();
-  const popupWidth = Math.max(320, Math.round(anchorRect?.width ?? 1));
+  const popupWidth = resolveTargetPickerWidthPx();
   const viewportPadding = 8;
   const left = Math.max(
     viewportPadding,
@@ -111,7 +116,7 @@ export function createHistoryPageOrchestrationContext(): HistoryOrchestrationCon
         return;
       }
 
-      ensureCollapsedPickerAnchor(targetControl, anchorEl);
+      floatTargetPickerAnchor(targetControl, anchorEl);
 
       const genericPicker =
         (targetControl.shadowRoot?.querySelector?.(
