@@ -11262,7 +11262,7 @@
 		if (anomalyTooltip) anomalyTooltip.style.display = "none";
 		clearAnnotationTooltips(card);
 	}
-	function resolveTooltipSeriesLabel(entry) {
+	function resolveBaseTooltipSeriesLabel(entry) {
 		const isSubordinate = entry.grouped === true && entry.rawVisible === true;
 		const isComparisonDerived = entry.comparisonDerived === true && entry.grouped === true;
 		if (entry.comparison === true) {
@@ -11295,7 +11295,11 @@
 			if (isSubordinate || isComparisonDerived) return thresholdLabel;
 			return `${thresholdLabel}: ${entry.baseLabel || entry.label || ""}`;
 		}
-		return entry.periodLabel ? `${String(entry.label || "")} (${entry.periodLabel})` : String(entry.label || "");
+		return String(entry.label || "");
+	}
+	function resolveTooltipSeriesLabel(entry) {
+		const label = resolveBaseTooltipSeriesLabel(entry);
+		return entry.periodLabel ? `${label} (${entry.periodLabel})` : label;
 	}
 	function showLineChartTooltip(card, hover, clientX, clientY) {
 		const root = getRoot(card);
@@ -11775,19 +11779,20 @@
 			const rawTimeMs = t0 + ratio * (t1 - t0);
 			const timeMs = resolveLineChartHoverTime(resolvedSeries, rawTimeMs, options.hoverSnapMode || "follow_series");
 			const x = renderer.xOf(timeMs, t0, t1);
+			const resolveSeriesValue = (seriesItem) => {
+				if (!seriesItem.periods) return { value: renderer._interpolateValue(seriesItem.pts || [], timeMs, seriesItem.stepped) };
+				const index = seriesItem.periods.findIndex((period) => timeMs >= period.start && timeMs < period.end);
+				if (index === -1) return { value: null };
+				const point = seriesItem.pts?.[index];
+				const { start, end } = (seriesItem.labelPeriods ?? seriesItem.periods)[index];
+				const note = seriesItem.periodNotes?.[index];
+				return {
+					value: point ? point[1] : null,
+					periodLabel: `${formatTooltipDateTimeFromMs(start)} – ${formatTooltipDateTimeFromMs(end)}${note ? ` · ${note}` : ""}`
+				};
+			};
 			const values = resolvedSeries.map((seriesItem) => {
-				let value;
-				let periodLabel;
-				if (seriesItem.periods) {
-					const index = seriesItem.periods.findIndex((period) => timeMs >= period.start && timeMs < period.end);
-					const point = index === -1 ? void 0 : seriesItem.pts?.[index];
-					value = point ? point[1] : null;
-					if (index !== -1) {
-						const { start, end } = seriesItem.periods[index];
-						const note = seriesItem.periodNotes?.[index];
-						periodLabel = `${formatTooltipDateTimeFromMs(start)} – ${formatTooltipDateTimeFromMs(end)}${note ? ` · ${note}` : ""}`;
-					}
-				} else value = renderer._interpolateValue(seriesItem.pts || [], timeMs, seriesItem.stepped);
+				const { value, periodLabel } = resolveSeriesValue(seriesItem);
 				const axis = resolveHoverAxis(seriesItem);
 				return buildHoverValueEntry(seriesItem, value, axis, periodLabel ? { periodLabel } : {}, {
 					includePosition: value != null,
@@ -11795,9 +11800,12 @@
 				});
 			});
 			const comparisonValues = comparisonSeries.map((seriesItem) => {
-				const value = renderer._interpolateValue(seriesItem.pts || [], timeMs, seriesItem.stepped);
+				const { value, periodLabel } = resolveSeriesValue(seriesItem);
 				const axis = resolveHoverAxis(seriesItem);
-				return buildHoverValueEntry(seriesItem, value, axis, { comparison: true }, {
+				return buildHoverValueEntry(seriesItem, value, axis, {
+					comparison: true,
+					...periodLabel ? { periodLabel } : {}
+				}, {
 					includePosition: value != null,
 					x
 				});
@@ -15475,6 +15483,71 @@
 		_getTimeZone() {
 			return this._hass?.config?.time_zone || Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
 		}
+		/**
+		* Aggregate series configured on one row, calculated from the given history
+		* and statistics for `range`. Used for the main window and, with a window's
+		* own data and range, for each comparison window.
+		*/
+		_buildRowAggregates(args) {
+			const { entityId, definitions, range } = args;
+			if (!definitions.length) return [];
+			const domain = entityId.split(".")[0];
+			const timeZone = this._getTimeZone();
+			const entityIds = this._seriesSettings.map((setting) => setting.entity_id);
+			const attributes = this._hass?.states?.[entityId]?.attributes;
+			if (domain === "event") return buildEventAggregateSeries({
+				entityId,
+				entityLabel: args.label,
+				color: args.color,
+				definitions,
+				states: getHistoryStatesForEntity$1(args.histResult, entityId, entityIds),
+				range,
+				zoom: args.zoom,
+				timeZone
+			});
+			const stateList = args.stateList ?? this._buildEntityStateList(entityId, args.histResult, args.statsResult);
+			if (domain === "binary_sensor") return buildBinaryAggregateSeries({
+				entityId,
+				entityLabel: args.label,
+				color: args.color,
+				deviceClass: String(attributes?.device_class ?? ""),
+				definitions,
+				stateList,
+				range,
+				zoom: args.zoom,
+				timeZone
+			});
+			const unit = args.unit ?? "";
+			return [...buildMeasurementAggregateSeries({
+				entityId,
+				entityLabel: args.label,
+				colors: [
+					1,
+					2,
+					3,
+					4
+				].map((offset) => COLORS[(args.index + offset) % COLORS.length]),
+				definitions,
+				stateList,
+				range,
+				zoom: args.zoom,
+				timeZone,
+				unit,
+				axisKey: args.axisKey ?? (unit || "__unitless__")
+			}), ...buildConsumptionAggregateSeries({
+				entityId,
+				entityLabel: args.label,
+				color: args.color,
+				definitions,
+				changes: normalizeStatisticsChanges(entityId, args.statsResult),
+				readings: normalizeNumericHistory(entityId, getHistoryStatesForEntity$1(args.histResult, entityId, entityIds)),
+				stateClass: attributes?.state_class,
+				unit,
+				range,
+				zoom: args.zoom,
+				timeZone
+			})];
+		}
 		_drawSeriesLine(renderer, pts, color, t0, t1, min, max, opts) {
 			const r = renderer;
 			const config = this._config;
@@ -16102,6 +16175,22 @@
 			const series = [];
 			const axes = [];
 			const axisMap = /* @__PURE__ */ new Map();
+			const registerAggregateSeries = (aggregate) => {
+				let aggregateAxis = axisMap.get(aggregate.axisKey);
+				if (!aggregateAxis) {
+					aggregateAxis = {
+						key: aggregate.axisKey,
+						unit: aggregate.unit,
+						color: aggregate.color,
+						side: axisMap.size === 0 ? "left" : "right",
+						values: []
+					};
+					axisMap.set(aggregate.axisKey, aggregateAxis);
+					axes.push(aggregateAxis);
+				}
+				aggregateAxis.values.push(...aggregate.pts.map(([, v]) => v));
+				series.push(aggregate);
+			};
 			const binaryEntities = [];
 			const seriesSettings = this._seriesSettings;
 			const analysisMap = this._getSeriesAnalysisMap();
@@ -16124,36 +16213,21 @@
 					const binaryAnalysis = analysisMap.get(entityId) || normalizeHistorySeriesAnalysis(null);
 					const binaryColor = seriesSetting.color || COLORS[i % COLORS.length];
 					const binaryLabel = entityLabelMap.get(entityId) || entityId;
-					const aggregateSeries = buildBinaryAggregateSeries({
+					for (const aggregate of this._buildRowAggregates({
 						entityId,
-						entityLabel: binaryLabel,
+						label: binaryLabel,
 						color: binaryColor,
-						deviceClass: String(this._hass?.states?.[entityId]?.attributes?.device_class ?? ""),
+						index: i,
 						definitions: binaryAnalysis.aggregates ?? [],
-						stateList,
+						histResult,
+						statsResult,
 						range: {
 							start: t0,
 							end: t1
 						},
-						timeZone: this._getTimeZone(),
-						zoom: this._zoomRange ?? void 0
-					});
-					for (const aggregate of aggregateSeries) {
-						let axis = axisMap.get(aggregate.axisKey);
-						if (!axis) {
-							axis = {
-								key: aggregate.axisKey,
-								unit: aggregate.unit,
-								color: aggregate.color,
-								side: axisMap.size === 0 ? "left" : "right",
-								values: []
-							};
-							axisMap.set(aggregate.axisKey, axis);
-							axes.push(axis);
-						}
-						axis.values.push(...aggregate.pts.map(([, v]) => v));
-						series.push(aggregate);
-					}
+						zoom: this._zoomRange ?? void 0,
+						stateList
+					})) registerAggregateSeries(aggregate);
 					if (!this._seriesShouldHideSource(binaryAnalysis, hasSelectedComparisonWindow)) binaryEntities.push({
 						entityId,
 						label: binaryLabel,
@@ -16168,34 +16242,20 @@
 				if (domain === "event") {
 					const eventAnalysis = analysisMap.get(entityId) || normalizeHistorySeriesAnalysis(null);
 					const eventColor = seriesSetting.color || COLORS[i % COLORS.length];
-					for (const aggregate of buildEventAggregateSeries({
+					for (const aggregate of this._buildRowAggregates({
 						entityId,
-						entityLabel: entityLabelMap.get(entityId) || entityId,
+						label: entityLabelMap.get(entityId) || entityId,
 						color: eventColor,
+						index: i,
 						definitions: eventAnalysis.aggregates ?? [],
-						states: getHistoryStatesForEntity$1(histResult, entityId, seriesSettings.map((setting) => setting.entity_id)),
+						histResult,
+						statsResult,
 						range: {
 							start: t0,
 							end: t1
 						},
-						timeZone: this._getTimeZone(),
 						zoom: this._zoomRange ?? void 0
-					})) {
-						let axis = axisMap.get(aggregate.axisKey);
-						if (!axis) {
-							axis = {
-								key: aggregate.axisKey,
-								unit: aggregate.unit,
-								color: aggregate.color,
-								side: axisMap.size === 0 ? "left" : "right",
-								values: []
-							};
-							axisMap.set(aggregate.axisKey, axis);
-							axes.push(axis);
-						}
-						axis.values.push(...aggregate.pts.map(([, v]) => v));
-						series.push(aggregate);
-					}
+					})) registerAggregateSeries(aggregate);
 					return;
 				}
 				const stateList = this._buildEntityStateList(entityId, histResult, statsResult);
@@ -16223,59 +16283,23 @@
 				}
 				if (pts.length) {
 					const seriesAnalysis = analysisMap.get(entityId) || normalizeHistorySeriesAnalysis(null);
-					const aggregateSeries = buildMeasurementAggregateSeries({
+					const rowAggregates = this._buildRowAggregates({
 						entityId,
-						entityLabel: entityLabelMap.get(entityId) || entityId,
-						colors: [
-							1,
-							2,
-							3,
-							4
-						].map((offset) => COLORS[(i + offset) % COLORS.length]),
+						label: entityLabelMap.get(entityId) || entityId,
+						color: seriesSetting.color || COLORS[i % COLORS.length],
+						index: i,
 						definitions: seriesAnalysis.aggregates ?? [],
-						stateList,
+						histResult,
+						statsResult,
 						range: {
 							start: t0,
 							end: t1
 						},
-						timeZone: this._getTimeZone(),
 						zoom: this._zoomRange ?? void 0,
+						stateList,
 						unit,
 						axisKey
 					});
-					for (const aggregate of aggregateSeries) axis.values.push(...aggregate.pts.map(([, v]) => v));
-					const stateAttributes = this._hass?.states?.[entityId]?.attributes;
-					const consumptionSeries = buildConsumptionAggregateSeries({
-						entityId,
-						entityLabel: entityLabelMap.get(entityId) || entityId,
-						color: seriesSetting.color || COLORS[i % COLORS.length],
-						definitions: seriesAnalysis.aggregates ?? [],
-						changes: normalizeStatisticsChanges(entityId, statsResult),
-						readings: normalizeNumericHistory(entityId, getHistoryStatesForEntity$1(histResult, entityId, seriesSettings.map((setting) => setting.entity_id))),
-						stateClass: stateAttributes?.state_class,
-						unit,
-						range: {
-							start: t0,
-							end: t1
-						},
-						timeZone: this._getTimeZone(),
-						zoom: this._zoomRange ?? void 0
-					});
-					for (const aggregate of consumptionSeries) {
-						let consumptionAxis = axisMap.get(aggregate.axisKey);
-						if (!consumptionAxis) {
-							consumptionAxis = {
-								key: aggregate.axisKey,
-								unit: aggregate.unit,
-								color: aggregate.color,
-								side: axisMap.size === 0 ? "left" : "right",
-								values: []
-							};
-							axisMap.set(aggregate.axisKey, consumptionAxis);
-							axes.push(consumptionAxis);
-						}
-						consumptionAxis.values.push(...aggregate.pts.map(([, v]) => v));
-					}
 					series.push({
 						entityId,
 						legendEntityId: entityId,
@@ -16286,7 +16310,7 @@
 						axisKey,
 						stepped: seriesAnalysis.stepped_series === true
 					});
-					series.push(...aggregateSeries, ...consumptionSeries);
+					rowAggregates.forEach(registerAggregateSeries);
 				}
 			});
 			const binaryModel = buildBinaryRenderModel(binaryEntities, t0, t1);
@@ -16987,6 +17011,61 @@
 					events,
 					comparisonWindowId: win.id
 				});
+			}
+			for (const win of drawableComparisonResults) for (let rowIndex = 0; rowIndex < seriesSettings.length; rowIndex += 1) {
+				const seriesSetting = seriesSettings[rowIndex];
+				const entityId = seriesSetting.entity_id;
+				const rowAnalysis = analysisMap.get(entityId) || normalizeHistorySeriesAnalysis(null);
+				const baseColor = seriesSetting.color || COLORS[rowIndex % COLORS.length];
+				const comparisonAggregates = this._buildRowAggregates({
+					entityId,
+					label: entityLabelMap.get(entityId) || entityId,
+					color: baseColor,
+					index: rowIndex,
+					definitions: rowAnalysis.aggregates ?? [],
+					histResult: win.histResult,
+					statsResult: win.statsResult || {},
+					range: {
+						start: t0 + win.time_offset_ms,
+						end: t1 + win.time_offset_ms
+					}
+				});
+				for (const aggregate of comparisonAggregates) {
+					if (this._hiddenSeries.has(aggregate.entityId)) continue;
+					const aggregateAxis = axisLookup.get(aggregate.axisKey);
+					if (!aggregateAxis) continue;
+					const shift = (time) => time - win.time_offset_ms;
+					const shiftedPts = aggregate.pts.map(([time, value]) => [shift(time), value]);
+					const shiftedPeriods = aggregate.periods.map((period) => ({
+						start: shift(period.start),
+						end: shift(period.end)
+					}));
+					const style = this._getComparisonWindowLineStyle(!!hoveredComparisonWindowId && win.id === hoveredComparisonWindowId, !!selectedComparisonWindowId && win.id === selectedComparisonWindowId, hoveringDifferentComparison);
+					if (aggregate.bars) renderer.drawBars(shiftedPts, aggregate.color, renderT0, renderT1, aggregateAxis.min, aggregateAxis.max, {
+						fillAlpha: style.lineOpacity * .4,
+						widthFactor: .9
+					});
+					else renderer.drawLine(shiftedPts, aggregate.color, renderT0, renderT1, aggregateAxis.min, aggregateAxis.max, {
+						lineOpacity: style.lineOpacity,
+						lineWidth: style.lineWidth,
+						dashed: style.dashed,
+						dashPattern: style.dashPattern
+					});
+					comparisonHoverSeries.push({
+						entityId: `${win.id}:${aggregate.entityId}`,
+						relatedEntityId: aggregate.entityId,
+						label: aggregate.label,
+						windowLabel: win.label || "Date window",
+						unit: aggregate.unit,
+						pts: shiftedPts,
+						periods: shiftedPeriods,
+						labelPeriods: aggregate.periods,
+						periodNotes: aggregate.periodNotes,
+						color: aggregate.color,
+						axis: aggregateAxis,
+						hoverOpacity: style.hoverOpacity
+					});
+				}
 			}
 			this._setAdjustAxisButtonVisibility(comparisonPreviewActive && comparisonOutOfBounds && !this._adjustComparisonAxisScale && !autoAdjustHoveredComparisonAxis);
 			for (const s of visibleSeries) {

@@ -457,3 +457,52 @@ export const EventCountBars: Story = {
     );
   },
 };
+
+// ── (f) Comparison window aggregates ────────────────────────────────────────────
+/** A comparison window aggregates its own history and overlays the main bars. */
+export const BinaryAggregateComparison: Story = {
+  render: () => makeChart(),
+  play: async ({ canvasElement }) => {
+    const el = canvasElement.querySelector(
+      "hass-datapoints-history-chart"
+    ) as DrawableChart;
+    const week = 7 * 24 * 3600 * 1000;
+    const args = drawArgs(
+      {
+        comparison_windows: [
+          { id: "last-week", label: "Last week", time_offset_ms: -week },
+        ],
+        selected_comparison_window_id: "last-week",
+        series_settings: [
+          {
+            entity_id: "binary_sensor.front_door",
+            analysis: { aggregates: [dailyOpens] },
+          },
+        ],
+      },
+      { "binary_sensor.front_door": doorToggles }
+    ) as Record<string, unknown>;
+    args.comparisonResults = [
+      {
+        id: "last-week",
+        label: "Last week",
+        time_offset_ms: -week,
+        histResult: {
+          "binary_sensor.front_door": doorToggles.map((state) => ({
+            ...state,
+            lu: state.lu - week / 1000,
+          })),
+        },
+        statsResult: {},
+      },
+    ];
+    el.draw(args);
+
+    await waitFor(() =>
+      expect(legendLabels(el)).toEqual([
+        "Front Door · Daily · Count changes to a state (Open)",
+        "Front Door",
+      ])
+    );
+  },
+};
