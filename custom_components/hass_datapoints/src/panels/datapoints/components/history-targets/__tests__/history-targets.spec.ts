@@ -101,6 +101,20 @@ describe("history-targets", () => {
         );
         expect(getComputedStyle(slot!).display).toBe("none");
       });
+
+      it("THEN renders the collapsed preferences container", () => {
+        expect.assertions(2);
+        expect(
+          el.shadowRoot!.querySelector(
+            ".history-targets-collapsed-add-container"
+          )
+        ).not.toBeNull();
+        expect(
+          el.shadowRoot!.querySelector(
+            ".history-targets-collapsed-preferences-container"
+          )
+        ).not.toBeNull();
+      });
     });
 
     describe("WHEN the expanded add button is clicked", () => {
@@ -117,19 +131,38 @@ describe("history-targets", () => {
         expect(events.length).toBe(1);
         expect(events[0].detail.buttonEl).toBeInstanceOf(HTMLElement);
       });
+    });
+  });
 
-      it("THEN renders the collapsed preferences container", () => {
-        expect.assertions(2);
-        expect(
-          el.shadowRoot!.querySelector(
-            ".history-targets-collapsed-add-container"
-          )
-        ).not.toBeNull();
-        expect(
-          el.shadowRoot!.querySelector(
-            ".history-targets-collapsed-preferences-container"
-          )
-        ).not.toBeNull();
+  // ── Expanded add affordance alongside "Clear all" ──────────────────────────
+
+  describe("GIVEN more than one target row (expanded)", () => {
+    beforeEach(async () => {
+      el = createElement({
+        rows: MOCK_ROWS,
+        hass: createMockHass() as unknown as RecordWithUnknownValues,
+        states: createMockHass().states as unknown as RecordWithUnknownValues,
+      });
+      await el.updateComplete;
+    });
+
+    describe("WHEN rendered", () => {
+      it("THEN the 'Clear all' link and the full-width 'Add target' button coexist", () => {
+        expect.assertions(3);
+        const addBtn = el.shadowRoot!.querySelector<HTMLElement>(
+          ".history-targets-add"
+        );
+        const clearAll = el.shadowRoot!.querySelector<HTMLElement>(
+          ".history-targets-clear-all"
+        );
+        const row = el.shadowRoot!.querySelector<HTMLElement>(
+          ".history-target-picker-row"
+        );
+        expect(addBtn).not.toBeNull();
+        expect(clearAll).not.toBeNull();
+        // The row stacks vertically, so "Clear all" sits on its own line and
+        // never shares (and shrinks) the add affordance's row.
+        expect(getComputedStyle(row!).flexDirection).toBe("column");
       });
     });
   });

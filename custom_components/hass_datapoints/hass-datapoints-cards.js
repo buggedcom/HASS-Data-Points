@@ -39390,7 +39390,6 @@
 			const targetControl = document.createElement("ha-target-picker");
 			targetControl.slot = "picker";
 			targetControl.style.display = "block";
-			targetControl.style.width = "100%";
 			if (this._hass) targetControl.hass = this._hass;
 			targetControl.addEventListener("value-changed", (ev) => {
 				if (!(ev.detail && Object.hasOwn(ev.detail, "value"))) return;

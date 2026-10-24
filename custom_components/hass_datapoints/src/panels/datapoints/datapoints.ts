@@ -2866,7 +2866,8 @@ export class HassDatapointsHistoryPanel extends LitElement {
     ) as TargetPickerElement;
     targetControl.slot = "picker";
     targetControl.style.display = "block";
-    targetControl.style.width = "100%";
+    // Width is not set here: the picker is never shown inline — it is floated
+    // on open at the shared target-picker width (see orchestration-context).
     if (this._hass) {
       targetControl.hass = this._hass;
     }

@@ -26,7 +26,7 @@ import "@/molecules/target-row-list/target-row-list";
  *
  * ## Events from this component:
  * @fires dp-targets-add             — `{ entityIds: string[] }` when entity picker value changes
- * @fires dp-targets-add-click       — `{}` when the collapsed add button is clicked
+ * @fires dp-targets-add-click       — `{ buttonEl }` when an add-target button is clicked (expanded inline button or collapsed "+")
  * @fires dp-targets-prefs-click     — `{}` when the collapsed preferences button is clicked
  * @fires dp-targets-clear-all       — `{}` when the "Clear all" text link is clicked
  * @fires dp-collapsed-entity-click  — `{ entityId: string, buttonEl: HTMLElement }` when a collapsed summary icon is clicked
