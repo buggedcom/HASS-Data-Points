@@ -24,4 +24,10 @@ export const translations: ComponentTranslations = {
   Occupied: "有人",
   Unlocked: "已解锁",
   Locked: "已锁定",
+  Mean: "平均值",
+  Minimum: "最小值",
+  Maximum: "最大值",
+  Median: "中位数",
+  "First reading": "首次读数",
+  "Last reading": "最后读数",
 };

@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { buildBinaryAggregateSeries } from "@/lib/chart/chart-aggregates";
+import {
+  buildBinaryAggregateSeries,
+  buildMeasurementAggregateSeries,
+} from "@/lib/chart/chart-aggregates";
 import type { AggregateDefinition } from "@/lib/domain/aggregation/types";
 
 const start = Date.parse("2026-03-01T00:00:00Z");
@@ -94,6 +97,63 @@ describe("buildBinaryAggregateSeries", () => {
         expect(
           build([definition({ operation: "state_duration" })], [])
         ).toStrictEqual([]);
+      });
+    });
+  });
+});
+
+describe("buildMeasurementAggregateSeries", () => {
+  const readings = [2, 3, 10, 4, 6].map((v, i) => ({
+    s: String(v),
+    lu: sec(start + (i < 3 ? i : 24 + i) * hour),
+  }));
+  const run = (operation: AggregateDefinition["operation"]) =>
+    buildMeasurementAggregateSeries({
+      entityId: "sensor.temp",
+      entityLabel: "Temperature",
+      colors: ["#111111", "#222222"],
+      definitions: [
+        definition({ operation, states: undefined, interval: "day" }),
+      ],
+      stateList: readings,
+      range: { start, end: start + 2 * day },
+      timeZone: "UTC",
+      unit: "°C",
+      axisKey: "°C",
+    });
+
+  describe("GIVEN readings 2, 3, 10 on day one and 4, 6 on day two", () => {
+    describe("WHEN showing the daily mean", () => {
+      it("THEN draws a line of arithmetic means on the source axis", () => {
+        expect.assertions(4);
+        const [series] = run("mean");
+        expect(series.pts.map(([, v]) => v)).toStrictEqual([5, 5]);
+        expect(series.bars).toBe(false);
+        expect(series.axisKey).toBe("°C");
+        expect(series.color).toBe("#111111");
+      });
+    });
+    describe("WHEN showing the daily maximum", () => {
+      it("THEN reports the peak of each period", () => {
+        expect.assertions(1);
+        expect(run("max")[0].pts.map(([, v]) => v)).toStrictEqual([10, 6]);
+      });
+    });
+    describe("WHEN a period has no readings", () => {
+      it("THEN no point is produced for it", () => {
+        expect.assertions(1);
+        const out = buildMeasurementAggregateSeries({
+          entityId: "sensor.temp",
+          entityLabel: "Temperature",
+          colors: ["#111111"],
+          definitions: [definition({ operation: "mean", states: undefined })],
+          stateList: [{ s: "5", lu: sec(start + hour) }],
+          range: { start, end: start + 2 * day },
+          timeZone: "UTC",
+          unit: "°C",
+          axisKey: "°C",
+        });
+        expect(out[0].pts).toHaveLength(1);
       });
     });
   });

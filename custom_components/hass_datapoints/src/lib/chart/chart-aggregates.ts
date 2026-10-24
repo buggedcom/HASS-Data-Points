@@ -5,6 +5,8 @@ import {
   BINARY_AGGREGATE_KINDS,
   getBinaryAggregateKind,
   getBinaryStateOptions,
+  MEASUREMENT_OPERATIONS,
+  isMeasurementOperation,
 } from "@/lib/domain/aggregation/labels";
 import type {
   AggregateDefinition,
@@ -28,7 +30,7 @@ export interface AggregateChartSeries {
   periods: { start: number; end: number }[];
   color: string;
   axisKey: string;
-  bars: true;
+  bars: boolean;
   result: AggregateResult;
 }
 
@@ -146,7 +148,89 @@ export function buildBinaryAggregateSeries(
           periods: valued.map((p) => ({ start: p.start, end: p.end })),
           color: definition.color || args.color,
           axisKey: `aggregate:${result.unit || "count"}`,
-          bars: true as const,
+          bars: result.presentation === "bar",
+          result,
+        },
+      ];
+    });
+}
+
+export interface BuildMeasurementAggregateSeriesArgs {
+  entityId: string;
+  entityLabel: string;
+  /** Colours cycled across this row's aggregates so they differ from the source line. */
+  colors: string[];
+  definitions: AggregateDefinition[];
+  stateList: { s: string; lu: number }[];
+  range: AggregateRange;
+  timeZone: string;
+  unit: string;
+  /** Value axis shared with the source row (same unit). */
+  axisKey: string;
+}
+
+/** Aggregate numeric history into per-period measurement summaries (lines). */
+export function buildMeasurementAggregateSeries(
+  args: BuildMeasurementAggregateSeriesArgs
+): AggregateChartSeries[] {
+  const samples: AggregateSample[] = args.stateList.flatMap((entry) => {
+    const value = parseFloat(entry.s);
+    return Number.isNaN(value)
+      ? []
+      : [{ time: Math.round(entry.lu * 1000), value }];
+  });
+  if (!samples.length) {
+    return [];
+  }
+  return args.definitions
+    .filter(
+      (definition) =>
+        definition.visible !== false &&
+        isMeasurementOperation(definition.operation)
+    )
+    .flatMap((definition, index) => {
+      const result = calculateAggregate({
+        definition,
+        samples,
+        range: args.range,
+        timeZone: args.timeZone,
+        unit: args.unit,
+        coverage: [args.range],
+      });
+      const valued = result.points.filter(
+        (p): p is typeof p & { value: number } =>
+          typeof p.value === "number" && Number.isFinite(p.value)
+      );
+      if (!valued.length) {
+        return [];
+      }
+      const operationLabel = msg(
+        MEASUREMENT_OPERATIONS.find((o) => o.value === definition.operation)
+          ?.label ?? definition.operation
+      );
+      const intervalLabel = msg(
+        AGGREGATE_INTERVAL_OPTIONS.find((o) => o.value === definition.interval)
+          ?.label ?? definition.interval
+      );
+      const id = getAggregateSeriesId(args.entityId, definition.id);
+      return [
+        {
+          entityId: id,
+          legendEntityId: id,
+          sourceEntityId: args.entityId,
+          definitionId: definition.id,
+          label:
+            definition.label ||
+            `${args.entityLabel} · ${intervalLabel} · ${operationLabel}`,
+          unit: args.unit,
+          pts: valued.map((p): [number, number] => [
+            (p.start + p.end) / 2,
+            p.value,
+          ]),
+          periods: valued.map((p) => ({ start: p.start, end: p.end })),
+          color: definition.color || args.colors[index % args.colors.length],
+          axisKey: args.axisKey,
+          bars: result.presentation === "bar",
           result,
         },
       ];

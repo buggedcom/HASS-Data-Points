@@ -24,4 +24,10 @@ export const translations: ComponentTranslations = {
   Occupied: "Ocupado",
   Unlocked: "Desbloqueado",
   Locked: "Bloqueado",
+  Mean: "Média",
+  Minimum: "Mínimo",
+  Maximum: "Máximo",
+  Median: "Mediana",
+  "First reading": "Primeira leitura",
+  "Last reading": "Última leitura",
 };

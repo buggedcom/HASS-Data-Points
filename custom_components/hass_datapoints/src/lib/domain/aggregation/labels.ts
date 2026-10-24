@@ -1,6 +1,7 @@
 import type {
   AggregateDefinition,
   AggregateInterval,
+  AggregateOperation,
 } from "@/lib/domain/aggregation/types";
 
 export interface AggregateStateOption {
@@ -101,4 +102,32 @@ export function createBinaryAggregate(
     states: [defaultState],
     resetOnZoom: false,
   };
+}
+
+export const MEASUREMENT_OPERATIONS: {
+  value: AggregateOperation;
+  label: string;
+}[] = [
+  { value: "mean", label: "Mean" },
+  { value: "min", label: "Minimum" },
+  { value: "max", label: "Maximum" },
+  { value: "median", label: "Median" },
+  { value: "first", label: "First reading" },
+  { value: "last", label: "Last reading" },
+];
+
+const MEASUREMENT_VALUES = new Set<string>(
+  MEASUREMENT_OPERATIONS.map((o) => o.value)
+);
+
+export function isMeasurementOperation(operation: string): boolean {
+  return MEASUREMENT_VALUES.has(operation);
+}
+
+export function createMeasurementAggregate(
+  existingIds: string[],
+  operation: AggregateOperation = "mean"
+): AggregateDefinition {
+  const base = createBinaryAggregate(existingIds);
+  return { ...base, operation, states: undefined };
 }

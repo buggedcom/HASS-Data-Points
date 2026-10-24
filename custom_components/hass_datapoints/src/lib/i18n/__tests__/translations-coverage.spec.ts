@@ -52,6 +52,8 @@ const UNTRANSLATED_WHITELIST = new Set<string>([
   "Max",
   "Min",
   "Median",
+  "Minimum", // German / French "Minimum"
+  "Maximum", // German / French "Maximum"
 
   // Technical terms borrowed without translation
   "Auto",
