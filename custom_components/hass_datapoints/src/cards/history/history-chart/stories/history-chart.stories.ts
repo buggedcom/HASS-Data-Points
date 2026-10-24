@@ -14,9 +14,14 @@
  * HA connection.
  */
 import type { Meta, StoryObj } from "@storybook/web-components-vite";
-import { expect, userEvent, waitFor } from "storybook/test";
+import { expect, userEvent, waitFor as baseWaitFor } from "storybook/test";
 import { createMockHass } from "@/test-support/mock-hass";
 import "../history-chart";
+
+// The chart draws asynchronously (analysis, downsampling, layout); under a full
+// parallel storybook run the default 1s window is too tight.
+const waitFor = <T>(callback: () => T | Promise<T>) =>
+  baseWaitFor(callback, { timeout: 5000 });
 
 type DrawableChart = HTMLElement & {
   hass: unknown;
