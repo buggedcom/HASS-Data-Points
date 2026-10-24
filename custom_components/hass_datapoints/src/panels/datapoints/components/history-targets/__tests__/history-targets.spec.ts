@@ -167,6 +167,26 @@ describe("history-targets", () => {
     });
   });
 
+  describe("GIVEN a single target row (expanded)", () => {
+    beforeEach(async () => {
+      el = createElement({
+        rows: [MOCK_ROWS[0]],
+        hass: createMockHass() as unknown as RecordWithUnknownValues,
+        states: createMockHass().states as unknown as RecordWithUnknownValues,
+      });
+      await el.updateComplete;
+    });
+
+    describe("WHEN rendered", () => {
+      it("THEN 'Clear all' is shown (visible from the first target)", () => {
+        expect.assertions(1);
+        expect(
+          el.shadowRoot!.querySelector(".history-targets-clear-all")
+        ).not.toBeNull();
+      });
+    });
+  });
+
   // ── Collapsed preferences button ───────────────────────────────────────────
 
   describe("GIVEN sidebarCollapsed=true", () => {
