@@ -1,0 +1,27 @@
+import type { ComponentTranslations } from "@/lib/i18n/types";
+
+export const translations: ComponentTranslations = {
+  "Aggregate series": "Series agregadas",
+  "Add aggregate": "Añadir agregado",
+  "Remove aggregate": "Quitar agregado",
+  "Aggregate operation": "Operación del agregado",
+  "Aggregate state": "Estado del agregado",
+  "Aggregate interval": "Intervalo del agregado",
+  "Count changes to a state": "Contar cambios a un estado",
+  "Count all state changes": "Contar todos los cambios de estado",
+  "Time in a state": "Tiempo en un estado",
+  "Percentage of time in a state": "Porcentaje de tiempo en un estado",
+  Hourly: "Por hora",
+  Daily: "Diario",
+  Weekly: "Semanal",
+  Monthly: "Mensual",
+  On: "Encendido",
+  Off: "Apagado",
+  Open: "Abierto",
+  Closed: "Cerrado",
+  Detected: "Detectado",
+  Clear: "Libre",
+  Occupied: "Ocupado",
+  Unlocked: "Desbloqueado",
+  Locked: "Bloqueado",
+};

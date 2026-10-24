@@ -310,7 +310,8 @@ export function historySeriesRowHasConfiguredAnalysis(
     analysis.show_anomalies ||
     analysis.show_delta_analysis ||
     analysis.stepped_series ||
-    analysis.hide_source_series
+    analysis.hide_source_series ||
+    (analysis.aggregates?.length ?? 0) > 0
   );
 }
 

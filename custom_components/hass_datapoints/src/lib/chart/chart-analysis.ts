@@ -208,7 +208,8 @@ export function seriesHasActiveAnalysis(
     analysis.show_rate_of_change ||
     analysis.show_threshold_analysis ||
     analysis.show_anomalies ||
-    (analysis.show_delta_analysis && hasSelectedComparisonWindow)
+    (analysis.show_delta_analysis && hasSelectedComparisonWindow) ||
+    (analysis.aggregates?.length ?? 0) > 0
   );
 }
 

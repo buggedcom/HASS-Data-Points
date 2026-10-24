@@ -430,3 +430,45 @@ describe("series-rows", () => {
     });
   });
 });
+
+describe("series-rows aggregates", () => {
+  const aggregates = [
+    {
+      id: "a1",
+      operation: "transition_count",
+      interval: "day",
+      mode: "interval",
+      states: ["on"],
+      resetOnZoom: false,
+    },
+  ];
+
+  describe("GIVEN a row analysis", () => {
+    describe("WHEN the aggregates key is set", () => {
+      it("THEN the definitions are stored and survive row normalization", () => {
+        expect.assertions(2);
+        const next = computeNextAnalysis(
+          normalizeHistorySeriesAnalysis(null),
+          "aggregates",
+          aggregates
+        );
+        expect(next?.aggregates).toStrictEqual(aggregates);
+        expect(
+          normalizeHistorySeriesAnalysis(JSON.parse(JSON.stringify(next)))
+            .aggregates
+        ).toStrictEqual(aggregates);
+      });
+    });
+  });
+
+  describe("GIVEN a legacy analysis without aggregates", () => {
+    describe("WHEN normalized", () => {
+      it("THEN no aggregates key is introduced", () => {
+        expect.assertions(1);
+        expect(normalizeHistorySeriesAnalysis({})).not.toHaveProperty(
+          "aggregates"
+        );
+      });
+    });
+  });
+});

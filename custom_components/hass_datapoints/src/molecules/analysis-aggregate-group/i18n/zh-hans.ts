@@ -1,0 +1,27 @@
+import type { ComponentTranslations } from "@/lib/i18n/types";
+
+export const translations: ComponentTranslations = {
+  "Aggregate series": "聚合序列",
+  "Add aggregate": "添加聚合",
+  "Remove aggregate": "移除聚合",
+  "Aggregate operation": "聚合操作",
+  "Aggregate state": "聚合状态",
+  "Aggregate interval": "聚合间隔",
+  "Count changes to a state": "统计变为某状态的次数",
+  "Count all state changes": "统计所有状态变化次数",
+  "Time in a state": "处于某状态的时长",
+  "Percentage of time in a state": "处于某状态的时间百分比",
+  Hourly: "每小时",
+  Daily: "每天",
+  Weekly: "每周",
+  Monthly: "每月",
+  On: "开",
+  Off: "关",
+  Open: "打开",
+  Closed: "关闭",
+  Detected: "已检测到",
+  Clear: "无人",
+  Occupied: "有人",
+  Unlocked: "已解锁",
+  Locked: "已锁定",
+};

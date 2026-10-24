@@ -108,3 +108,69 @@ describe("HassDatapointsHistoryPanel URL sync", () => {
     });
   });
 });
+
+describe("datapoints panel aggregate series", () => {
+  const agg = (id: string, operation: string) => ({
+    id,
+    operation,
+    interval: "day",
+    mode: "interval",
+    states: ["on"],
+    resetOnZoom: false,
+  });
+  const makePanel = (analysis: unknown) => ({
+    _seriesRows: [
+      {
+        entity_id: "binary_sensor.door",
+        color: "#03a9f4",
+        visible: true,
+        analysis: normalizeHistorySeriesAnalysis(analysis),
+      },
+    ],
+    _saveSessionState: vi.fn(),
+    _updateUrl: vi.fn(),
+    _renderTargetRows: vi.fn(),
+    _renderSidebarOptions: vi.fn(),
+    _renderContent: vi.fn(),
+  });
+  const setAggregates = (panel: ReturnType<typeof makePanel>, value: unknown) =>
+    HassDatapointsHistoryPanel.prototype._setSeriesAnalysisOption.call(
+      panel,
+      "binary_sensor.door",
+      "aggregates",
+      value
+    );
+
+  describe("GIVEN a binary row with no aggregates", () => {
+    describe("WHEN two independent aggregates are added", () => {
+      it("THEN both are stored, the session saved and the chart re-rendered", () => {
+        expect.assertions(3);
+        const panel = makePanel(null);
+        setAggregates(panel, [
+          agg("a1", "transition_count"),
+          agg("a2", "state_duration"),
+        ]);
+        expect(
+          panel._seriesRows[0].analysis.aggregates?.map((d) => d.operation)
+        ).toStrictEqual(["transition_count", "state_duration"]);
+        expect(panel._saveSessionState).toHaveBeenCalledTimes(1);
+        expect(panel._renderContent).toHaveBeenCalledTimes(1);
+      });
+    });
+  });
+
+  describe("GIVEN a row hiding its source behind an aggregate", () => {
+    describe("WHEN the last aggregate is removed", () => {
+      it("THEN the stored hide preference is retained", () => {
+        expect.assertions(2);
+        const panel = makePanel({
+          aggregates: [agg("a1", "transition_count")],
+          hide_source_series: true,
+        });
+        setAggregates(panel, []);
+        expect(panel._seriesRows[0].analysis.aggregates).toStrictEqual([]);
+        expect(panel._seriesRows[0].analysis.hide_source_series).toBe(true);
+      });
+    });
+  });
+});
