@@ -311,6 +311,7 @@ export class HistoryChart extends HTMLElement {
         </div>
       </div>
       <div id="annotation-tooltips"></div>
+      <div class="aggregate-note" id="aggregate-note" role="note" hidden></div>
       <div class="legend" id="legend"></div>`;
   }
 
@@ -873,6 +874,58 @@ export class HistoryChart extends HTMLElement {
     return normalizeStatisticsHistory(entityId, statsData);
   }
 
+  /**
+   * Plain-text explanation of the partial/incomplete markers and of the limits
+   * of retained history, so the indicators do not rely on colour or shape alone.
+   */
+  _renderAggregateNote(series: unknown[]): void {
+    const noteEl = this.querySelector(
+      "#aggregate-note"
+    ) as Nullable<HTMLElement>;
+    if (!noteEl) {
+      return;
+    }
+    const aggregates = (series as AggregateChartSeries[]).filter(
+      (item) => item.definitionId && item.result
+    );
+    const flagged = aggregates.some((item) =>
+      item.periodFlags?.some((flag) => flag.partial || flag.incomplete)
+    );
+    const hasCounts = aggregates.some((item) =>
+      ["transition_count", "event_count"].includes(
+        item.result.points.length ? this._aggregateOperationOf(item) : ""
+      )
+    );
+    const lines: string[] = [];
+    if (flagged) {
+      lines.push(
+        msg(
+          "Dashed outlines mark partial periods cut by the selected range; hatched or dotted marks show periods with gaps in recorded history."
+        )
+      );
+    }
+    if (hasCounts) {
+      lines.push(
+        msg(
+          "Counts only include activity in retained history; earlier activity is not shown."
+        )
+      );
+    }
+    render(html`${lines.map((line) => html`<div>${line}</div>`)}`, noteEl);
+    noteEl.hidden = lines.length === 0;
+  }
+
+  _aggregateOperationOf(item: AggregateChartSeries): string {
+    const rows = this._seriesSettings as Array<{
+      entity_id: string;
+      analysis?: { aggregates?: AggregateDefinition[] };
+    }>;
+    const definition = rows
+      .find((row) => row.entity_id === item.sourceEntityId)
+      ?.analysis?.aggregates?.find((d) => d.id === item.definitionId);
+    return definition?.operation ?? "";
+  }
+
   /** Render legend items for the given series, binary backgrounds and rows. */
   _renderLegend(
     series: unknown[],
@@ -1119,7 +1172,27 @@ export class HistoryChart extends HTMLElement {
         }
       ).drawBars(pts, color, t0, t1, min, max, {
         fillAlpha: (opts.lineOpacity as number | undefined) ?? 0.78,
+        pointStyles: opts.periodFlags,
       });
+      return;
+    }
+    if (opts.periodFlags) {
+      // Aggregate lines have one point per calendar period, so the data-gap
+      // splitter (tuned for raw samples) must not break them up.
+      r.drawLine(pts, color, t0, t1, min, max, opts);
+      (
+        renderer as {
+          drawPeriodMarkers: (
+            pts: [number, number][],
+            styles: unknown,
+            color: string,
+            t0: number,
+            t1: number,
+            min: number,
+            max: number
+          ) => void;
+        }
+      ).drawPeriodMarkers(pts, opts.periodFlags, color, t0, t1, min, max);
       return;
     }
 
@@ -2537,6 +2610,7 @@ export class HistoryChart extends HTMLElement {
       stepped?: boolean;
       bars?: boolean;
       periods?: { start: number; end: number }[];
+      periodFlags?: { partial: boolean; incomplete: boolean }[];
     }> = [];
     const axes: Array<{
       key: string;
@@ -3242,6 +3316,7 @@ export class HistoryChart extends HTMLElement {
         zoomOutButton.onclick = () => this._clearZoomRange();
       }
       this._renderLegend(series, binaryBackgrounds, binaryRows);
+      this._renderAggregateNote(series);
       await this._drawSplitChart({
         visibleSeries,
         binaryBackgrounds,
@@ -4227,6 +4302,7 @@ export class HistoryChart extends HTMLElement {
               normalizeHistorySeriesAnalysis(null)
             ).stepped_series === true,
           bars: s.bars === true,
+          periodFlags: (s as { periodFlags?: unknown }).periodFlags,
         }
       );
     }
@@ -4605,6 +4681,7 @@ export class HistoryChart extends HTMLElement {
     );
 
     this._renderLegend(series, binaryBackgrounds, binaryRows);
+    this._renderAggregateNote(series);
 
     const eventValueMap = new Map(eventHits.map((hit) => [hit.event.id, hit]));
     const enrichedEvents: ChartEventRecord[] = chartEvents.map(
@@ -5489,6 +5566,7 @@ export class HistoryChart extends HTMLElement {
             lineOpacity: mainSeriesOpacity,
             stepped: rowAnalysis.stepped_series === true,
             bars: seriesItem.bars === true,
+            periodFlags: seriesItem.periodFlags,
           }
         );
       }

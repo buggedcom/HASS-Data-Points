@@ -36,4 +36,10 @@ export const translations: ComponentTranslations = {
   "Ambiguous meter reset, not counted": "重置情况不明确，未计入",
   Cumulative: "累计",
   "Reset total to zoomed range": "将累计值重置为缩放范围",
+  "Partial period": "部分时段",
+  "Incomplete history": "历史记录不完整",
+  "Dashed outlines mark partial periods cut by the selected range; hatched or dotted marks show periods with gaps in recorded history.":
+    "虚线轮廓表示被所选范围截断的部分时段；阴影或点状标记表示已记录历史中存在缺口的时段。",
+  "Counts only include activity in retained history; earlier activity is not shown.":
+    "计数仅包含保留历史中的活动；更早的活动不会显示。",
 };

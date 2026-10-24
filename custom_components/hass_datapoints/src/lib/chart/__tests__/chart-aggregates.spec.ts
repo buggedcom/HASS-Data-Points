@@ -425,3 +425,56 @@ describe("aggregates for a comparison window", () => {
     });
   });
 });
+
+describe("coverage flags", () => {
+  const stateList = [
+    { s: "off", lu: sec(start + 6 * hour) },
+    { s: "on", lu: sec(start + 8 * hour) },
+    { s: "unavailable", lu: sec(start + 12 * hour) },
+    { s: "on", lu: sec(start + 16 * hour) },
+  ];
+  const run = (range: { start: number; end: number }) =>
+    buildBinaryAggregateSeries({
+      entityId: "binary_sensor.front_door",
+      entityLabel: "Front Door",
+      color: "#ff9800",
+      deviceClass: "door",
+      definitions: [definition({ operation: "state_duration" })],
+      stateList,
+      range,
+      timeZone: "UTC",
+    })[0];
+
+  describe("GIVEN a range cutting the day short and an unavailable gap", () => {
+    describe("WHEN calculated", () => {
+      it("THEN partial and incomplete are flagged separately with tooltip notes", () => {
+        expect.assertions(4);
+        const series = run({ start, end: start + 20 * hour });
+        const [flags] = series.periodFlags!;
+        expect(flags.partial).toBe(true);
+        expect(flags.incomplete).toBe(true);
+        expect(series.periodNotes![0]).toContain("Partial period");
+        expect(series.periodNotes![0]).toContain("Incomplete history");
+      });
+    });
+    describe("WHEN the range covers the whole day with no gaps", () => {
+      it("THEN the period is neither partial nor incomplete", () => {
+        expect.assertions(2);
+        const series = buildBinaryAggregateSeries({
+          entityId: "binary_sensor.front_door",
+          entityLabel: "Front Door",
+          color: "#ff9800",
+          definitions: [definition({ operation: "state_duration" })],
+          stateList: [{ s: "on", lu: sec(start) }],
+          range: { start, end: start + day },
+          timeZone: "UTC",
+        })[0];
+        expect(series.periodFlags![0]).toStrictEqual({
+          partial: false,
+          incomplete: false,
+        });
+        expect(series.periodNotes![0]).toBe("");
+      });
+    });
+  });
+});

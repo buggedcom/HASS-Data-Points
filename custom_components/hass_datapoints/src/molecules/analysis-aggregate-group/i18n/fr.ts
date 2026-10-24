@@ -37,4 +37,10 @@ export const translations: ComponentTranslations = {
     "Réinitialisation du compteur ambiguë, non comptée",
   Cumulative: "Cumulé",
   "Reset total to zoomed range": "Réinitialiser le total sur la plage zoomée",
+  "Partial period": "Période partielle",
+  "Incomplete history": "Historique incomplet",
+  "Dashed outlines mark partial periods cut by the selected range; hatched or dotted marks show periods with gaps in recorded history.":
+    "Les contours en pointillés signalent les périodes partielles coupées par la plage sélectionnée ; les marques hachurées ou pointillées indiquent des périodes avec des lacunes dans l'historique enregistré.",
+  "Counts only include activity in retained history; earlier activity is not shown.":
+    "Les décomptes n'incluent que l'activité de l'historique conservé ; l'activité antérieure n'est pas affichée.",
 };

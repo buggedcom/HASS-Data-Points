@@ -2543,7 +2543,11 @@
 			"Meter reset detected": "Mittarin nollaus havaittu",
 			"Ambiguous meter reset, not counted": "Epäselvä mittarin nollaus, ei laskettu",
 			Cumulative: "Kumulatiivinen",
-			"Reset total to zoomed range": "Nollaa kokonaismäärä zoomattuun alueeseen"
+			"Reset total to zoomed range": "Nollaa kokonaismäärä zoomattuun alueeseen",
+			"Partial period": "Osittainen jakso",
+			"Incomplete history": "Puutteellinen historia",
+			"Dashed outlines mark partial periods cut by the selected range; hatched or dotted marks show periods with gaps in recorded history.": "Katkoviivareunat osoittavat valitun aikavälin reunoilla katkenneet osittaiset jaksot; viivoitetut tai pisteviivamerkinnät osoittavat jaksot, joiden tallennetussa historiassa on aukkoja.",
+			"Counts only include activity in retained history; earlier activity is not shown.": "Laskennat sisältävät vain säilytetyn historian toiminnan; aiempaa toimintaa ei näytetä."
 		};
 	}));
 	//#endregion
@@ -3250,7 +3254,11 @@
 			"Meter reset detected": "Réinitialisation du compteur détectée",
 			"Ambiguous meter reset, not counted": "Réinitialisation du compteur ambiguë, non comptée",
 			Cumulative: "Cumulé",
-			"Reset total to zoomed range": "Réinitialiser le total sur la plage zoomée"
+			"Reset total to zoomed range": "Réinitialiser le total sur la plage zoomée",
+			"Partial period": "Période partielle",
+			"Incomplete history": "Historique incomplet",
+			"Dashed outlines mark partial periods cut by the selected range; hatched or dotted marks show periods with gaps in recorded history.": "Les contours en pointillés signalent les périodes partielles coupées par la plage sélectionnée ; les marques hachurées ou pointillées indiquent des périodes avec des lacunes dans l'historique enregistré.",
+			"Counts only include activity in retained history; earlier activity is not shown.": "Les décomptes n'incluent que l'activité de l'historique conservé ; l'activité antérieure n'est pas affichée."
 		};
 	}));
 	//#endregion
@@ -3957,7 +3965,11 @@
 			"Meter reset detected": "Zählerrücksetzung erkannt",
 			"Ambiguous meter reset, not counted": "Unklare Zählerrücksetzung, nicht gezählt",
 			Cumulative: "Kumulativ",
-			"Reset total to zoomed range": "Summe auf den gezoomten Bereich zurücksetzen"
+			"Reset total to zoomed range": "Summe auf den gezoomten Bereich zurücksetzen",
+			"Partial period": "Teilperiode",
+			"Incomplete history": "Unvollständiger Verlauf",
+			"Dashed outlines mark partial periods cut by the selected range; hatched or dotted marks show periods with gaps in recorded history.": "Gestrichelte Umrandungen kennzeichnen Teilperioden am Rand des gewählten Bereichs; schraffierte oder gepunktete Markierungen zeigen Zeiträume mit Lücken im aufgezeichneten Verlauf.",
+			"Counts only include activity in retained history; earlier activity is not shown.": "Zählungen enthalten nur Aktivität im gespeicherten Verlauf; frühere Aktivität wird nicht angezeigt."
 		};
 	}));
 	//#endregion
@@ -4664,7 +4676,11 @@
 			"Meter reset detected": "Reinicio del contador detectado",
 			"Ambiguous meter reset, not counted": "Reinicio del contador ambiguo, no contabilizado",
 			Cumulative: "Acumulado",
-			"Reset total to zoomed range": "Reiniciar el total al rango ampliado"
+			"Reset total to zoomed range": "Reiniciar el total al rango ampliado",
+			"Partial period": "Periodo parcial",
+			"Incomplete history": "Historial incompleto",
+			"Dashed outlines mark partial periods cut by the selected range; hatched or dotted marks show periods with gaps in recorded history.": "Los contornos discontinuos marcan los periodos parciales cortados por el rango seleccionado; las marcas rayadas o punteadas indican periodos con huecos en el historial registrado.",
+			"Counts only include activity in retained history; earlier activity is not shown.": "Los recuentos solo incluyen la actividad del historial conservado; la actividad anterior no se muestra."
 		};
 	}));
 	//#endregion
@@ -5371,7 +5387,11 @@
 			"Meter reset detected": "Reposição do contador detetada",
 			"Ambiguous meter reset, not counted": "Reposição do contador ambígua, não contabilizada",
 			Cumulative: "Acumulado",
-			"Reset total to zoomed range": "Repor o total no intervalo ampliado"
+			"Reset total to zoomed range": "Repor o total no intervalo ampliado",
+			"Partial period": "Período parcial",
+			"Incomplete history": "Histórico incompleto",
+			"Dashed outlines mark partial periods cut by the selected range; hatched or dotted marks show periods with gaps in recorded history.": "Os contornos tracejados indicam períodos parciais cortados pelo intervalo selecionado; as marcas tracejadas finas ou pontilhadas indicam períodos com lacunas no histórico registado.",
+			"Counts only include activity in retained history; earlier activity is not shown.": "As contagens só incluem a atividade do histórico retido; a atividade anterior não é mostrada."
 		};
 	}));
 	//#endregion
@@ -6078,7 +6098,11 @@
 			"Meter reset detected": "检测到电表重置",
 			"Ambiguous meter reset, not counted": "重置情况不明确，未计入",
 			Cumulative: "累计",
-			"Reset total to zoomed range": "将累计值重置为缩放范围"
+			"Reset total to zoomed range": "将累计值重置为缩放范围",
+			"Partial period": "部分时段",
+			"Incomplete history": "历史记录不完整",
+			"Dashed outlines mark partial periods cut by the selected range; hatched or dotted marks show periods with gaps in recorded history.": "虚线轮廓表示被所选范围截断的部分时段；阴影或点状标记表示已记录历史中存在缺口的时段。",
+			"Counts only include activity in retained history; earlier activity is not shown.": "计数仅包含保留历史中的活动；更早的活动不会显示。"
 		};
 	}));
 	//#endregion
@@ -9239,6 +9263,20 @@
 	function withCumulativeSuffix(definition, label) {
 		return definition.mode === "cumulative" ? `${label} · ${msg("Cumulative")}` : label;
 	}
+	/** Coverage flags and tooltip notes for each plotted period. */
+	function periodDetails(valued, reasonNotes) {
+		return {
+			periodFlags: valued.map((p) => ({
+				partial: p.partial,
+				incomplete: p.incomplete
+			})),
+			periodNotes: valued.map((p) => [
+				p.partial ? msg("Partial period") : "",
+				p.incomplete ? msg("Incomplete history") : "",
+				reasonNotes ? reasonNotes(p.reasons) : ""
+			].filter(Boolean).join(", "))
+		};
+	}
 	function getAggregateSeriesId(entityId, definitionId) {
 		return `aggregate:${entityId}:${definitionId}`;
 	}
@@ -9307,6 +9345,7 @@
 					start: p.start,
 					end: p.end
 				})),
+				...periodDetails(valued),
 				color: definition.color || args.color,
 				axisKey: `aggregate:${result.unit || "count"}`,
 				bars: result.presentation === "bar",
@@ -9351,6 +9390,7 @@
 					start: p.start,
 					end: p.end
 				})),
+				...periodDetails(valued),
 				color: definition.color || args.colors[index % args.colors.length],
 				axisKey: args.axisKey,
 				bars: result.presentation === "bar",
@@ -9411,6 +9451,7 @@
 					start: p.start,
 					end: p.end
 				})),
+				...periodDetails(valued),
 				color: definition.color || args.color,
 				axisKey: `aggregate:${result.unit || "count"}`,
 				bars: result.presentation === "bar",
@@ -9480,7 +9521,7 @@
 					start: p.start,
 					end: p.end
 				})),
-				periodNotes: valued.map((p) => describeConsumptionReasons(p.reasons)),
+				...periodDetails(valued, describeConsumptionReasons),
 				color: definition.color || args.color,
 				axisKey: `aggregate:${args.unit || "count"}`,
 				bars: result.presentation === "bar",
@@ -10240,8 +10281,63 @@
 				const top = Math.min(y, baselineY);
 				const height = Math.max(1, Math.abs(baselineY - y));
 				const left = x - barWidth / 2;
+				const style = options.pointStyles?.[i];
+				if (style?.partial) ctx.fillStyle = hexToRgba(color, fillAlpha * .5);
+				else ctx.fillStyle = hexToRgba(color, fillAlpha);
 				ctx.fillRect(left, top, barWidth, height);
+				if (style?.incomplete) {
+					ctx.save();
+					ctx.beginPath();
+					ctx.rect(left, top, barWidth, height);
+					ctx.clip();
+					ctx.strokeStyle = color;
+					ctx.lineWidth = 1;
+					ctx.beginPath();
+					for (let d = -height; d < barWidth; d += 5) {
+						ctx.moveTo(left + d, top + height);
+						ctx.lineTo(left + d + height, top);
+					}
+					ctx.stroke();
+					ctx.restore();
+				}
+				if (style?.partial || style?.incomplete) {
+					ctx.save();
+					ctx.setLineDash(style.partial ? [4, 3] : [1, 2]);
+					ctx.strokeStyle = color;
+					ctx.lineWidth = 1;
+					ctx.strokeRect(left + .5, top + .5, barWidth - 1, height - 1);
+					ctx.restore();
+				}
 			}
+			ctx.restore();
+		}
+		/**
+		* Point markers for an aggregate line: filled when the period is complete,
+		* hollow when partial, dotted ring when history is incomplete.
+		*/
+		drawPeriodMarkers(points, styles, color, t0, t1, vMin, vMax) {
+			const { ctx } = this;
+			ctx.save();
+			ctx.strokeStyle = color;
+			ctx.fillStyle = color;
+			ctx.lineWidth = 1.5;
+			points.forEach(([t, v], i) => {
+				const style = styles[i];
+				const x = this.xOf(t, t0, t1);
+				const y = this.yOf(v, vMin, vMax);
+				ctx.beginPath();
+				ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+				if (style?.partial || style?.incomplete) {
+					ctx.setLineDash(style.partial ? [] : [1.5, 1.5]);
+					ctx.fillStyle = hexToRgba(color, .15);
+					ctx.fill();
+					ctx.stroke();
+				} else {
+					ctx.setLineDash([]);
+					ctx.fillStyle = color;
+					ctx.fill();
+				}
+			});
 			ctx.restore();
 		}
 		drawStateBands(spans, t0, t1, color = "#03a9f4", alpha = .12) {
@@ -14582,6 +14678,16 @@
     background: color-mix(in srgb, var(--primary-color, #03a9f4) 18%, var(--card-background-color, #fff));
     outline: none;
   }
+  .aggregate-note {
+    padding: var(--dp-spacing-xs, 4px) var(--dp-spacing-md);
+    padding-left: calc(var(--dp-spacing-md) + var(--dp-chart-axis-left-width, 0px));
+    font-size: 0.74em;
+    color: var(--secondary-text-color);
+    border-top: 1px solid color-mix(in srgb, var(--divider-color, rgba(0, 0, 0, 0.12)) 88%, transparent);
+  }
+  .aggregate-note[hidden] {
+    display: none;
+  }
   .legend {
     display: flex;
     flex-wrap: nowrap;
@@ -15146,6 +15252,7 @@
         </div>
       </div>
       <div id="annotation-tooltips"></div>
+      <div class="aggregate-note" id="aggregate-note" role="note" hidden></div>
       <div class="legend" id="legend"></div>`;
 		}
 		disconnectedCallback() {
@@ -15416,6 +15523,25 @@
 		_normalizeStatisticsHistory(entityId, statsData) {
 			return normalizeStatisticsHistory(entityId, statsData);
 		}
+		/**
+		* Plain-text explanation of the partial/incomplete markers and of the limits
+		* of retained history, so the indicators do not rely on colour or shape alone.
+		*/
+		_renderAggregateNote(series) {
+			const noteEl = this.querySelector("#aggregate-note");
+			if (!noteEl) return;
+			const aggregates = series.filter((item) => item.definitionId && item.result);
+			const flagged = aggregates.some((item) => item.periodFlags?.some((flag) => flag.partial || flag.incomplete));
+			const hasCounts = aggregates.some((item) => ["transition_count", "event_count"].includes(item.result.points.length ? this._aggregateOperationOf(item) : ""));
+			const lines = [];
+			if (flagged) lines.push(msg("Dashed outlines mark partial periods cut by the selected range; hatched or dotted marks show periods with gaps in recorded history."));
+			if (hasCounts) lines.push(msg("Counts only include activity in retained history; earlier activity is not shown."));
+			D(b`${lines.map((line) => b`<div>${line}</div>`)}`, noteEl);
+			noteEl.hidden = lines.length === 0;
+		}
+		_aggregateOperationOf(item) {
+			return (this._seriesSettings.find((row) => row.entity_id === item.sourceEntityId)?.analysis?.aggregates?.find((d) => d.id === item.definitionId))?.operation ?? "";
+		}
 		/** Render legend items for the given series, binary backgrounds and rows. */
 		_renderLegend(series, binaryBackgrounds, binaryRows = []) {
 			const legendEl = this.querySelector("#legend");
@@ -15554,7 +15680,15 @@
 			const showGaps = config?.show_data_gaps !== false;
 			const gapThresholdMs = SAMPLE_INTERVAL_MS[config?.data_gap_threshold || "2h"] ?? 72e5;
 			if (opts.bars === true) {
-				renderer.drawBars(pts, color, t0, t1, min, max, { fillAlpha: opts.lineOpacity ?? .78 });
+				renderer.drawBars(pts, color, t0, t1, min, max, {
+					fillAlpha: opts.lineOpacity ?? .78,
+					pointStyles: opts.periodFlags
+				});
+				return;
+			}
+			if (opts.periodFlags) {
+				r.drawLine(pts, color, t0, t1, min, max, opts);
+				renderer.drawPeriodMarkers(pts, opts.periodFlags, color, t0, t1, min, max);
 				return;
 			}
 			if (!showGaps || pts.length < 2 || !Number.isFinite(gapThresholdMs)) {
@@ -16535,6 +16669,7 @@
 					zoomOutButton.onclick = () => this._clearZoomRange();
 				}
 				this._renderLegend(series, binaryBackgrounds, binaryRows);
+				this._renderAggregateNote(series);
 				await this._drawSplitChart({
 					visibleSeries,
 					binaryBackgrounds,
@@ -17075,7 +17210,8 @@
 					lineOpacity: mainSeriesHoverOpacity,
 					lineWidth: this._config?.comparison_hover_active === true ? 1.25 : void 0,
 					stepped: (analysisMap.get(s.entityId) || normalizeHistorySeriesAnalysis(null)).stepped_series === true,
-					bars: s.bars === true
+					bars: s.bars === true,
+					periodFlags: s.periodFlags
 				});
 			}
 			const trendHoverSeries = trendSeries.map((seriesItem) => {
@@ -17244,6 +17380,7 @@
 				binaryRowLaneCenters
 			});
 			this._renderLegend(series, binaryBackgrounds, binaryRows);
+			this._renderAggregateNote(series);
 			const eventValueMap = new Map(eventHits.map((hit) => [hit.event.id, hit]));
 			const enrichedEvents = chartEvents.map((event) => {
 				const hit = eventValueMap.get(event.id || "");
@@ -17596,7 +17733,8 @@
 					lineWidth: comparisonPreviewActive ? 1.25 : 1.75,
 					lineOpacity: mainSeriesOpacity,
 					stepped: rowAnalysis.stepped_series === true,
-					bars: seriesItem.bars === true
+					bars: seriesItem.bars === true,
+					periodFlags: seriesItem.periodFlags
 				});
 				for (const win of drawableComparisonResults || []) {
 					const winPts = await this._resolveComparisonWindowPoints(seriesItem.entityId, win, rowAnalysis, renderT0, renderT1);

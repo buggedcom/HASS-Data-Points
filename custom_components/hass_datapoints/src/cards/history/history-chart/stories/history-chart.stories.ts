@@ -373,6 +373,14 @@ export const BinaryAggregateBars: Story = {
         "Front Door",
       ])
     );
+    // The 24h window cuts both days short, so the partial-period explanation
+    // and the retained-history limit are shown as text, not only as styling.
+    const note = el.querySelector("#aggregate-note") as HTMLElement;
+    await waitFor(() => {
+      expect(note.hidden).toBe(false);
+      expect(note.textContent).toContain("partial periods");
+      expect(note.textContent).toContain("retained history");
+    });
   },
 };
 

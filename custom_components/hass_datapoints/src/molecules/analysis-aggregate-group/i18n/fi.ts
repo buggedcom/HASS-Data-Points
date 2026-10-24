@@ -37,4 +37,10 @@ export const translations: ComponentTranslations = {
     "Epäselvä mittarin nollaus, ei laskettu",
   Cumulative: "Kumulatiivinen",
   "Reset total to zoomed range": "Nollaa kokonaismäärä zoomattuun alueeseen",
+  "Partial period": "Osittainen jakso",
+  "Incomplete history": "Puutteellinen historia",
+  "Dashed outlines mark partial periods cut by the selected range; hatched or dotted marks show periods with gaps in recorded history.":
+    "Katkoviivareunat osoittavat valitun aikavälin reunoilla katkenneet osittaiset jaksot; viivoitetut tai pisteviivamerkinnät osoittavat jaksot, joiden tallennetussa historiassa on aukkoja.",
+  "Counts only include activity in retained history; earlier activity is not shown.":
+    "Laskennat sisältävät vain säilytetyn historian toiminnan; aiempaa toimintaa ei näytetä.",
 };
