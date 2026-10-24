@@ -31,4 +31,8 @@ export const translations: ComponentTranslations = {
   "First reading": "Primera lectura",
   "Last reading": "Última lectura",
   "All event types": "Todos los tipos de evento",
+  Consumption: "Consumo",
+  "Meter reset detected": "Reinicio del contador detectado",
+  "Ambiguous meter reset, not counted":
+    "Reinicio del contador ambiguo, no contabilizado",
 };

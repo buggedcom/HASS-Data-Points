@@ -219,11 +219,24 @@ function calculateConsumption(
   input: AggregateInput,
   periods: AggregatePeriod[]
 ): Bucket[] {
+  const deltas: { time: number; value: number; reason?: string }[] = [];
+  // HA statistics supply per-period consumption directly (reset-aware).
+  for (const s of input.samples) {
+    if (
+      typeof s.change === "number" &&
+      Number.isFinite(s.change) &&
+      s.time >= input.range.start &&
+      s.time < input.range.end
+    ) {
+      deltas.push({ time: s.time, value: s.change });
+    }
+  }
   const readings = sortSamples(input.samples).filter((s) => {
     const v = s.sum ?? s.value;
-    return typeof v === "number" && Number.isFinite(v);
+    return (
+      s.change === undefined && typeof v === "number" && Number.isFinite(v)
+    );
   });
-  const deltas: { time: number; value: number; reason?: string }[] = [];
   readings.forEach((curr, i) => {
     const prev = readings[i - 1];
     if (

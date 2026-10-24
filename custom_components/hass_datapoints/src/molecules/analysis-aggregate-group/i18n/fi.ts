@@ -31,4 +31,8 @@ export const translations: ComponentTranslations = {
   "First reading": "Ensimmäinen lukema",
   "Last reading": "Viimeisin lukema",
   "All event types": "Kaikki tapahtumatyypit",
+  Consumption: "Kulutus",
+  "Meter reset detected": "Mittarin nollaus havaittu",
+  "Ambiguous meter reset, not counted":
+    "Epäselvä mittarin nollaus, ei laskettu",
 };

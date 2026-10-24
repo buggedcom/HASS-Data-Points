@@ -600,7 +600,7 @@ export class HassDatapointsHistoryCard extends ChartCardBase {
           this._statisticsEntityIds,
           {
             period: "hour",
-            types: ["mean"],
+            types: ["mean", "change"],
             units: {},
           }
         ).catch(() => ({}) as RecordWithUnknownValues)
@@ -1063,7 +1063,7 @@ export class HassDatapointsHistoryCard extends ChartCardBase {
           this._statisticsEntityIds,
           {
             period: "hour",
-            types: ["mean"],
+            types: ["mean", "change"],
             units: {},
           }
         )

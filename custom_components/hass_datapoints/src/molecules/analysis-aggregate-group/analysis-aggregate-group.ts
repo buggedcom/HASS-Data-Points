@@ -10,7 +10,7 @@ import {
   BINARY_AGGREGATE_KINDS,
   type BinaryAggregateKind,
   applyBinaryAggregateKind,
-  MEASUREMENT_OPERATIONS,
+  NUMERIC_AGGREGATE_OPERATIONS,
   createBinaryAggregate,
   createEventAggregate,
   createMeasurementAggregate,
@@ -98,7 +98,7 @@ export class AnalysisAggregateGroup extends AnalysisGroupMixin(LitElement) {
   }
 
   private _renderMeasurementDefinition(definition: AggregateDefinition) {
-    const available = MEASUREMENT_OPERATIONS.filter(
+    const available = NUMERIC_AGGREGATE_OPERATIONS.filter(
       (o) =>
         this.operations.includes(o.value) || o.value === definition.operation
     );

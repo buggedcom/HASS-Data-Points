@@ -2538,7 +2538,10 @@
 			Median: "Mediaani",
 			"First reading": "Ensimmäinen lukema",
 			"Last reading": "Viimeisin lukema",
-			"All event types": "Kaikki tapahtumatyypit"
+			"All event types": "Kaikki tapahtumatyypit",
+			Consumption: "Kulutus",
+			"Meter reset detected": "Mittarin nollaus havaittu",
+			"Ambiguous meter reset, not counted": "Epäselvä mittarin nollaus, ei laskettu"
 		};
 	}));
 	//#endregion
@@ -3240,7 +3243,10 @@
 			Median: "Médiane",
 			"First reading": "Première mesure",
 			"Last reading": "Dernière mesure",
-			"All event types": "Tous les types d'événement"
+			"All event types": "Tous les types d'événement",
+			Consumption: "Consommation",
+			"Meter reset detected": "Réinitialisation du compteur détectée",
+			"Ambiguous meter reset, not counted": "Réinitialisation du compteur ambiguë, non comptée"
 		};
 	}));
 	//#endregion
@@ -3942,7 +3948,10 @@
 			Median: "Median",
 			"First reading": "Erster Messwert",
 			"Last reading": "Letzter Messwert",
-			"All event types": "Alle Ereignistypen"
+			"All event types": "Alle Ereignistypen",
+			Consumption: "Verbrauch",
+			"Meter reset detected": "Zählerrücksetzung erkannt",
+			"Ambiguous meter reset, not counted": "Unklare Zählerrücksetzung, nicht gezählt"
 		};
 	}));
 	//#endregion
@@ -4644,7 +4653,10 @@
 			Median: "Mediana",
 			"First reading": "Primera lectura",
 			"Last reading": "Última lectura",
-			"All event types": "Todos los tipos de evento"
+			"All event types": "Todos los tipos de evento",
+			Consumption: "Consumo",
+			"Meter reset detected": "Reinicio del contador detectado",
+			"Ambiguous meter reset, not counted": "Reinicio del contador ambiguo, no contabilizado"
 		};
 	}));
 	//#endregion
@@ -5346,7 +5358,10 @@
 			Median: "Mediana",
 			"First reading": "Primeira leitura",
 			"Last reading": "Última leitura",
-			"All event types": "Todos os tipos de evento"
+			"All event types": "Todos os tipos de evento",
+			Consumption: "Consumo",
+			"Meter reset detected": "Reposição do contador detetada",
+			"Ambiguous meter reset, not counted": "Reposição do contador ambígua, não contabilizada"
 		};
 	}));
 	//#endregion
@@ -6048,7 +6063,10 @@
 			Median: "中位数",
 			"First reading": "首次读数",
 			"Last reading": "最后读数",
-			"All event types": "所有事件类型"
+			"All event types": "所有事件类型",
+			Consumption: "用量",
+			"Meter reset detected": "检测到电表重置",
+			"Ambiguous meter reset, not counted": "重置情况不明确，未计入"
 		};
 	}));
 	//#endregion
@@ -8917,11 +8935,15 @@
 		}));
 	}
 	function calculateConsumption(input, periods) {
+		const deltas = [];
+		for (const s of input.samples) if (typeof s.change === "number" && Number.isFinite(s.change) && s.time >= input.range.start && s.time < input.range.end) deltas.push({
+			time: s.time,
+			value: s.change
+		});
 		const readings = sortSamples(input.samples).filter((s) => {
 			const v = s.sum ?? s.value;
-			return typeof v === "number" && Number.isFinite(v);
+			return s.change === void 0 && typeof v === "number" && Number.isFinite(v);
 		});
-		const deltas = [];
 		readings.forEach((curr, i) => {
 			const prev = readings[i - 1];
 			if (!prev || curr.time <= input.range.start || curr.time >= input.range.end) return;
@@ -9171,6 +9193,14 @@
 			label: "Last reading"
 		}
 	];
+	/** Everything offered on a numeric row: measurement summaries plus consumption. */
+	var NUMERIC_AGGREGATE_OPERATIONS = [...MEASUREMENT_OPERATIONS, {
+		value: "consumption",
+		label: "Consumption"
+	}];
+	function isNumericAggregateOperation(operation) {
+		return NUMERIC_AGGREGATE_OPERATIONS.some((o) => o.value === operation);
+	}
 	var MEASUREMENT_VALUES = new Set(MEASUREMENT_OPERATIONS.map((o) => o.value));
 	function isMeasurementOperation(operation) {
 		return MEASUREMENT_VALUES.has(operation);
@@ -9364,6 +9394,75 @@
 				})),
 				color: definition.color || args.color,
 				axisKey: `aggregate:${result.unit || "count"}`,
+				bars: result.presentation === "bar",
+				result
+			}];
+		});
+	}
+	var STATISTICS_PERIOD_MS = 36e5;
+	function describeConsumptionReasons(reasons) {
+		const notes = [];
+		if (reasons.includes("reset")) notes.push(msg("Meter reset detected"));
+		if (reasons.includes("ambiguous-reset")) notes.push(msg("Ambiguous meter reset, not counted"));
+		return notes.join(", ");
+	}
+	/**
+	* Consumption per period for total / total_increasing meters. Statistics
+	* `change` is used where HA has compiled it; raw readings cover the rest.
+	*/
+	function buildConsumptionAggregateSeries(args) {
+		const readings = args.readings.flatMap((entry) => {
+			const value = parseFloat(entry.s);
+			return Number.isNaN(value) ? [] : [{
+				time: Math.round(entry.lu * 1e3),
+				value
+			}];
+		});
+		const changeSamples = args.changes.map((entry) => ({
+			time: entry.time,
+			change: entry.change
+		}));
+		let samples;
+		if (changeSamples.length) {
+			const cutoff = changeSamples[changeSamples.length - 1].time + STATISTICS_PERIOD_MS;
+			const before = readings.filter((r) => r.time < cutoff);
+			const seed = before[before.length - 1];
+			samples = [
+				...changeSamples,
+				...seed ? [seed] : [],
+				...readings.filter((r) => r.time >= cutoff)
+			];
+		} else samples = readings;
+		if (!samples.length) return [];
+		return args.definitions.filter((definition) => definition.visible !== false && definition.operation === "consumption").flatMap((definition) => {
+			const result = calculateAggregate({
+				definition,
+				samples,
+				range: args.range,
+				timeZone: args.timeZone,
+				stateClass: args.stateClass,
+				unit: args.unit,
+				coverage: [args.range]
+			});
+			const valued = result.points.filter((p) => typeof p.value === "number" && Number.isFinite(p.value));
+			if (!valued.length) return [];
+			const intervalLabel = msg(AGGREGATE_INTERVAL_OPTIONS.find((o) => o.value === definition.interval)?.label ?? definition.interval);
+			const id = getAggregateSeriesId(args.entityId, definition.id);
+			return [{
+				entityId: id,
+				legendEntityId: id,
+				sourceEntityId: args.entityId,
+				definitionId: definition.id,
+				label: definition.label || `${args.entityLabel} · ${intervalLabel} · ${msg("Consumption")}`,
+				unit: args.unit,
+				pts: valued.map((p) => [(p.start + p.end) / 2, p.value]),
+				periods: valued.map((p) => ({
+					start: p.start,
+					end: p.end
+				})),
+				periodNotes: valued.map((p) => describeConsumptionReasons(p.reasons)),
+				color: definition.color || args.color,
+				axisKey: `aggregate:${args.unit || "count"}`,
 				bars: result.presentation === "bar",
 				result
 			}];
@@ -9568,6 +9667,24 @@
 		}), ...raw];
 		merged.sort((a, b) => a.lu - b.lu);
 		return merged;
+	}
+	/**
+	* Per-period consumption from HA cumulative statistics (`change`). Entities
+	* without cumulative statistics yield an empty list.
+	*/
+	function normalizeStatisticsChanges(entityId, statsData) {
+		const statEntries = statsData && typeof statsData === "object" ? statsData[entityId] ?? [] : [];
+		return (Array.isArray(statEntries) ? statEntries : []).flatMap((entry) => {
+			const change = Number(entry?.change);
+			const raw = entry?.start;
+			let time;
+			if (typeof raw === "number") time = raw > 1e11 ? raw : raw * 1e3;
+			else time = new Date(raw).getTime();
+			return entry?.change == null || !Number.isFinite(change) || !Number.isFinite(time) ? [] : [{
+				time: Math.round(time),
+				change
+			}];
+		}).sort((a, b) => a.time - b.time);
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/data/axis-extent.ts
@@ -11647,7 +11764,8 @@
 					value = point ? point[1] : null;
 					if (index !== -1) {
 						const { start, end } = seriesItem.periods[index];
-						periodLabel = `${formatTooltipDateTimeFromMs(start)} – ${formatTooltipDateTimeFromMs(end)}`;
+						const note = seriesItem.periodNotes?.[index];
+						periodLabel = `${formatTooltipDateTimeFromMs(start)} – ${formatTooltipDateTimeFromMs(end)}${note ? ` · ${note}` : ""}`;
 					}
 				} else value = renderer._interpolateValue(seriesItem.pts || [], timeMs, seriesItem.stepped);
 				const axis = resolveHoverAxis(seriesItem);
@@ -16103,6 +16221,37 @@
 						axisKey
 					});
 					for (const aggregate of aggregateSeries) axis.values.push(...aggregate.pts.map(([, v]) => v));
+					const stateAttributes = this._hass?.states?.[entityId]?.attributes;
+					const consumptionSeries = buildConsumptionAggregateSeries({
+						entityId,
+						entityLabel: entityLabelMap.get(entityId) || entityId,
+						color: seriesSetting.color || COLORS[i % COLORS.length],
+						definitions: seriesAnalysis.aggregates ?? [],
+						changes: normalizeStatisticsChanges(entityId, statsResult),
+						readings: normalizeNumericHistory(entityId, getHistoryStatesForEntity$1(histResult, entityId, seriesSettings.map((setting) => setting.entity_id))),
+						stateClass: stateAttributes?.state_class,
+						unit,
+						range: {
+							start: t0,
+							end: t1
+						},
+						timeZone: this._getTimeZone()
+					});
+					for (const aggregate of consumptionSeries) {
+						let consumptionAxis = axisMap.get(aggregate.axisKey);
+						if (!consumptionAxis) {
+							consumptionAxis = {
+								key: aggregate.axisKey,
+								unit: aggregate.unit,
+								color: aggregate.color,
+								side: axisMap.size === 0 ? "left" : "right",
+								values: []
+							};
+							axisMap.set(aggregate.axisKey, consumptionAxis);
+							axes.push(consumptionAxis);
+						}
+						consumptionAxis.values.push(...aggregate.pts.map(([, v]) => v));
+					}
 					series.push({
 						entityId,
 						legendEntityId: entityId,
@@ -16113,7 +16262,7 @@
 						axisKey,
 						stepped: seriesAnalysis.stepped_series === true
 					});
-					series.push(...aggregateSeries);
+					series.push(...aggregateSeries, ...consumptionSeries);
 				}
 			});
 			const binaryModel = buildBinaryRenderModel(binaryEntities, t0, t1);
@@ -19530,7 +19679,7 @@
 			}).catch(() => ({}));
 			const statisticsPromise = this._statisticsEntityIds.length ? fetchStatisticsDuringPeriod(hass, start.toISOString(), end.toISOString(), this._statisticsEntityIds, {
 				period: "hour",
-				types: ["mean"],
+				types: ["mean", "change"],
 				units: {}
 			}).catch(() => ({})) : Promise.resolve({});
 			const [histResult, statsResult] = await Promise.all([historyPromise, statisticsPromise]);
@@ -19772,7 +19921,7 @@
 				});
 				if (this._statisticsEntityIds.length) fetchStatisticsDuringPeriod(hass, start.toISOString(), end.toISOString(), this._statisticsEntityIds, {
 					period: "hour",
-					types: ["mean"],
+					types: ["mean", "change"],
 					units: {}
 				}).then((statsResult) => {
 					partial.statsResult = statsResult || {};
@@ -24628,7 +24777,7 @@
 			return e.detail.value;
 		}
 		_renderMeasurementDefinition(definition) {
-			const available = MEASUREMENT_OPERATIONS.filter((o) => this.operations.includes(o.value) || o.value === definition.operation);
+			const available = NUMERIC_AGGREGATE_OPERATIONS.filter((o) => this.operations.includes(o.value) || o.value === definition.operation);
 			return b`
       <div
         class="definition"
@@ -25169,7 +25318,7 @@
 				entity_id: this._entityId,
 				state: this.stateObj?.state,
 				attributes: this.stateObj?.attributes
-			}).filter(isMeasurementOperation)}
+			}).filter(isNumericAggregateOperation)}
                     @dp-group-analysis-change=${this._onGroupAnalysisChange}
                   ></analysis-aggregate-group>
                   <analysis-trend-group

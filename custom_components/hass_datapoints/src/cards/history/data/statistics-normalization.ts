@@ -71,3 +71,41 @@ export function mergeNumericHistoryWithStatistics(
   merged.sort((a, b) => a.lu - b.lu);
   return merged;
 }
+
+export interface StatisticsChangeEntry {
+  /** Start of the statistics period, in ms. */
+  time: number;
+  /** Consumption during the period (HA `change`). */
+  change: number;
+}
+
+/**
+ * Per-period consumption from HA cumulative statistics (`change`). Entities
+ * without cumulative statistics yield an empty list.
+ */
+export function normalizeStatisticsChanges(
+  entityId: string,
+  statsData: unknown
+): StatisticsChangeEntry[] {
+  const statEntries =
+    statsData && typeof statsData === "object"
+      ? ((statsData as RecordWithUnknownValues)[entityId] ?? [])
+      : [];
+  return (Array.isArray(statEntries) ? (statEntries as HaStatEntry[]) : [])
+    .flatMap((entry) => {
+      const change = Number(entry?.change);
+      const raw = entry?.start;
+      let time: number;
+      if (typeof raw === "number") {
+        time = raw > 1e11 ? raw : raw * 1000;
+      } else {
+        time = new Date(raw as string).getTime();
+      }
+      return entry?.change == null ||
+        !Number.isFinite(change) ||
+        !Number.isFinite(time)
+        ? []
+        : [{ time: Math.round(time), change }];
+    })
+    .sort((a, b) => a.time - b.time);
+}

@@ -32,6 +32,8 @@ export interface AggregateSample {
   eventType?: string;
   eventTime?: number;
   sum?: number | null;
+  /** Consumption already computed by HA statistics for the period starting at `time`. */
+  change?: number | null;
   lastReset?: number;
   boundary?: boolean;
 }

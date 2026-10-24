@@ -9,6 +9,7 @@ import {
   isMeasurementOperation,
 } from "@/lib/domain/aggregation/labels";
 import type { HaStateEntry } from "@/cards/history/data/types";
+import type { StatisticsChangeEntry } from "@/cards/history/data/statistics-normalization";
 import type {
   AggregateDefinition,
   AggregateRange,
@@ -29,6 +30,8 @@ export interface AggregateChartSeries {
   pts: [number, number][];
   /** Calendar period behind each point, aligned with `pts`. */
   periods: { start: number; end: number }[];
+  /** Localized caveats per point (e.g. a detected meter reset), aligned with `pts`. */
+  periodNotes?: string[];
   color: string;
   axisKey: string;
   bars: boolean;
@@ -341,6 +344,120 @@ export function buildEventAggregateSeries(
           periods: valued.map((p) => ({ start: p.start, end: p.end })),
           color: definition.color || args.color,
           axisKey: `aggregate:${result.unit || "count"}`,
+          bars: result.presentation === "bar",
+          result,
+        },
+      ];
+    });
+}
+
+export interface BuildConsumptionAggregateSeriesArgs {
+  entityId: string;
+  entityLabel: string;
+  color: string;
+  definitions: AggregateDefinition[];
+  /** Per-period consumption from HA cumulative statistics (preferred). */
+  changes: StatisticsChangeEntry[];
+  /** Raw meter readings from history; bridges the period statistics lack. */
+  readings: { s: string; lu: number }[];
+  stateClass?: string;
+  unit: string;
+  range: AggregateRange;
+  timeZone: string;
+}
+
+const STATISTICS_PERIOD_MS = 3600000;
+
+function describeConsumptionReasons(reasons: string[]): string {
+  const notes: string[] = [];
+  if (reasons.includes("reset")) {
+    notes.push(msg("Meter reset detected"));
+  }
+  if (reasons.includes("ambiguous-reset")) {
+    notes.push(msg("Ambiguous meter reset, not counted"));
+  }
+  return notes.join(", ");
+}
+
+/**
+ * Consumption per period for total / total_increasing meters. Statistics
+ * `change` is used where HA has compiled it; raw readings cover the rest.
+ */
+export function buildConsumptionAggregateSeries(
+  args: BuildConsumptionAggregateSeriesArgs
+): AggregateChartSeries[] {
+  const readings: AggregateSample[] = args.readings.flatMap((entry) => {
+    const value = parseFloat(entry.s);
+    return Number.isNaN(value)
+      ? []
+      : [{ time: Math.round(entry.lu * 1000), value }];
+  });
+  const changeSamples: AggregateSample[] = args.changes.map((entry) => ({
+    time: entry.time,
+    change: entry.change,
+  }));
+  let samples: AggregateSample[];
+  if (changeSamples.length) {
+    const cutoff =
+      changeSamples[changeSamples.length - 1].time + STATISTICS_PERIOD_MS;
+    const before = readings.filter((r) => r.time < cutoff);
+    const seed = before[before.length - 1];
+    samples = [
+      ...changeSamples,
+      ...(seed ? [seed] : []),
+      ...readings.filter((r) => r.time >= cutoff),
+    ];
+  } else {
+    samples = readings;
+  }
+  if (!samples.length) {
+    return [];
+  }
+  return args.definitions
+    .filter(
+      (definition) =>
+        definition.visible !== false && definition.operation === "consumption"
+    )
+    .flatMap((definition) => {
+      const result = calculateAggregate({
+        definition,
+        samples,
+        range: args.range,
+        timeZone: args.timeZone,
+        stateClass: args.stateClass,
+        unit: args.unit,
+        coverage: [args.range],
+      });
+      const valued = result.points.filter(
+        (p): p is typeof p & { value: number } =>
+          typeof p.value === "number" && Number.isFinite(p.value)
+      );
+      if (!valued.length) {
+        return [];
+      }
+      const intervalLabel = msg(
+        AGGREGATE_INTERVAL_OPTIONS.find((o) => o.value === definition.interval)
+          ?.label ?? definition.interval
+      );
+      const id = getAggregateSeriesId(args.entityId, definition.id);
+      return [
+        {
+          entityId: id,
+          legendEntityId: id,
+          sourceEntityId: args.entityId,
+          definitionId: definition.id,
+          label:
+            definition.label ||
+            `${args.entityLabel} · ${intervalLabel} · ${msg("Consumption")}`,
+          unit: args.unit,
+          pts: valued.map((p): [number, number] => [
+            (p.start + p.end) / 2,
+            p.value,
+          ]),
+          periods: valued.map((p) => ({ start: p.start, end: p.end })),
+          periodNotes: valued.map((p) => describeConsumptionReasons(p.reasons)),
+          color: definition.color || args.color,
+          axisKey: `aggregate:${args.unit || "count"}`,
           bars: result.presentation === "bar",
           result,
         },

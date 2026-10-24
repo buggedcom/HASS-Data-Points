@@ -330,3 +330,22 @@ describe("GIVEN readings 1, 2, 3, 9 in one hour", () => {
     expect(result.presentation).toBe("line");
   });
 });
+
+describe("GIVEN HA statistics reporting hourly consumption", () => {
+  describe("WHEN summing a day", () => {
+    it("THEN uses the statistics change values directly", () => {
+      expect.assertions(1);
+      const base = dayInput({
+        samples: [0.5, 1.5, 2].map((change, i) => ({
+          time: start + i * hour,
+          change,
+        })),
+      });
+      const result = calculateAggregate({
+        ...base,
+        definition: { ...base.definition, operation: "consumption" },
+      });
+      expect(result.points[0].value).toBe(4);
+    });
+  });
+});
