@@ -35,4 +35,6 @@ export const translations: ComponentTranslations = {
   "Meter reset detected": "Zählerrücksetzung erkannt",
   "Ambiguous meter reset, not counted":
     "Unklare Zählerrücksetzung, nicht gezählt",
+  Cumulative: "Kumulativ",
+  "Reset total to zoomed range": "Summe auf den gezoomten Bereich zurücksetzen",
 };

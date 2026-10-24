@@ -2541,7 +2541,9 @@
 			"All event types": "Kaikki tapahtumatyypit",
 			Consumption: "Kulutus",
 			"Meter reset detected": "Mittarin nollaus havaittu",
-			"Ambiguous meter reset, not counted": "Epäselvä mittarin nollaus, ei laskettu"
+			"Ambiguous meter reset, not counted": "Epäselvä mittarin nollaus, ei laskettu",
+			Cumulative: "Kumulatiivinen",
+			"Reset total to zoomed range": "Nollaa kokonaismäärä zoomattuun alueeseen"
 		};
 	}));
 	//#endregion
@@ -3246,7 +3248,9 @@
 			"All event types": "Tous les types d'événement",
 			Consumption: "Consommation",
 			"Meter reset detected": "Réinitialisation du compteur détectée",
-			"Ambiguous meter reset, not counted": "Réinitialisation du compteur ambiguë, non comptée"
+			"Ambiguous meter reset, not counted": "Réinitialisation du compteur ambiguë, non comptée",
+			Cumulative: "Cumulé",
+			"Reset total to zoomed range": "Réinitialiser le total sur la plage zoomée"
 		};
 	}));
 	//#endregion
@@ -3951,7 +3955,9 @@
 			"All event types": "Alle Ereignistypen",
 			Consumption: "Verbrauch",
 			"Meter reset detected": "Zählerrücksetzung erkannt",
-			"Ambiguous meter reset, not counted": "Unklare Zählerrücksetzung, nicht gezählt"
+			"Ambiguous meter reset, not counted": "Unklare Zählerrücksetzung, nicht gezählt",
+			Cumulative: "Kumulativ",
+			"Reset total to zoomed range": "Summe auf den gezoomten Bereich zurücksetzen"
 		};
 	}));
 	//#endregion
@@ -4656,7 +4662,9 @@
 			"All event types": "Todos los tipos de evento",
 			Consumption: "Consumo",
 			"Meter reset detected": "Reinicio del contador detectado",
-			"Ambiguous meter reset, not counted": "Reinicio del contador ambiguo, no contabilizado"
+			"Ambiguous meter reset, not counted": "Reinicio del contador ambiguo, no contabilizado",
+			Cumulative: "Acumulado",
+			"Reset total to zoomed range": "Reiniciar el total al rango ampliado"
 		};
 	}));
 	//#endregion
@@ -5361,7 +5369,9 @@
 			"All event types": "Todos os tipos de evento",
 			Consumption: "Consumo",
 			"Meter reset detected": "Reposição do contador detetada",
-			"Ambiguous meter reset, not counted": "Reposição do contador ambígua, não contabilizada"
+			"Ambiguous meter reset, not counted": "Reposição do contador ambígua, não contabilizada",
+			Cumulative: "Acumulado",
+			"Reset total to zoomed range": "Repor o total no intervalo ampliado"
 		};
 	}));
 	//#endregion
@@ -6066,7 +6076,9 @@
 			"All event types": "所有事件类型",
 			Consumption: "用量",
 			"Meter reset detected": "检测到电表重置",
-			"Ambiguous meter reset, not counted": "重置情况不明确，未计入"
+			"Ambiguous meter reset, not counted": "重置情况不明确，未计入",
+			Cumulative: "累计",
+			"Reset total to zoomed range": "将累计值重置为缩放范围"
 		};
 	}));
 	//#endregion
@@ -9223,6 +9235,10 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/chart-aggregates.ts
 	var UNKNOWN_STATES = /* @__PURE__ */ new Set(["unknown", "unavailable"]);
+	/** Append the cumulative marker so the legend tells totals from per-period bars. */
+	function withCumulativeSuffix(definition, label) {
+		return definition.mode === "cumulative" ? `${label} · ${msg("Cumulative")}` : label;
+	}
 	function getAggregateSeriesId(entityId, definitionId) {
 		return `aggregate:${entityId}:${definitionId}`;
 	}
@@ -9269,6 +9285,7 @@
 				definition,
 				samples,
 				range: args.range,
+				zoom: args.zoom,
 				timeZone: args.timeZone,
 				coverage
 			});
@@ -9283,7 +9300,7 @@
 				legendEntityId: id,
 				sourceEntityId: args.entityId,
 				definitionId: definition.id,
-				label: definition.label || `${args.entityLabel} · ${describe(definition, stateLabel)}`,
+				label: definition.label || withCumulativeSuffix(definition, `${args.entityLabel} · ${describe(definition, stateLabel)}`),
 				unit: result.unit,
 				pts,
 				periods: valued.map((p) => ({
@@ -9312,6 +9329,7 @@
 				definition,
 				samples,
 				range: args.range,
+				zoom: args.zoom,
 				timeZone: args.timeZone,
 				unit: args.unit,
 				coverage: [args.range]
@@ -9326,7 +9344,7 @@
 				legendEntityId: id,
 				sourceEntityId: args.entityId,
 				definitionId: definition.id,
-				label: definition.label || `${args.entityLabel} · ${intervalLabel} · ${operationLabel}`,
+				label: definition.label || withCumulativeSuffix(definition, `${args.entityLabel} · ${intervalLabel} · ${operationLabel}`),
 				unit: args.unit,
 				pts: valued.map((p) => [(p.start + p.end) / 2, p.value]),
 				periods: valued.map((p) => ({
@@ -9372,6 +9390,7 @@
 				definition,
 				samples,
 				range: args.range,
+				zoom: args.zoom,
 				timeZone: args.timeZone,
 				coverage: [args.range]
 			});
@@ -9385,7 +9404,7 @@
 				legendEntityId: id,
 				sourceEntityId: args.entityId,
 				definitionId: definition.id,
-				label: definition.label || `${args.entityLabel} · ${intervalLabel} · ${typesLabel}`,
+				label: definition.label || withCumulativeSuffix(definition, `${args.entityLabel} · ${intervalLabel} · ${typesLabel}`),
 				unit: result.unit,
 				pts: valued.map((p) => [(p.start + p.end) / 2, p.value]),
 				periods: valued.map((p) => ({
@@ -9439,6 +9458,7 @@
 				definition,
 				samples,
 				range: args.range,
+				zoom: args.zoom,
 				timeZone: args.timeZone,
 				stateClass: args.stateClass,
 				unit: args.unit,
@@ -9453,7 +9473,7 @@
 				legendEntityId: id,
 				sourceEntityId: args.entityId,
 				definitionId: definition.id,
-				label: definition.label || `${args.entityLabel} · ${intervalLabel} · ${msg("Consumption")}`,
+				label: definition.label || withCumulativeSuffix(definition, `${args.entityLabel} · ${intervalLabel} · ${msg("Consumption")}`),
 				unit: args.unit,
 				pts: valued.map((p) => [(p.start + p.end) / 2, p.value]),
 				periods: valued.map((p) => ({
@@ -16115,7 +16135,8 @@
 							start: t0,
 							end: t1
 						},
-						timeZone: this._getTimeZone()
+						timeZone: this._getTimeZone(),
+						zoom: this._zoomRange ?? void 0
 					});
 					for (const aggregate of aggregateSeries) {
 						let axis = axisMap.get(aggregate.axisKey);
@@ -16157,7 +16178,8 @@
 							start: t0,
 							end: t1
 						},
-						timeZone: this._getTimeZone()
+						timeZone: this._getTimeZone(),
+						zoom: this._zoomRange ?? void 0
 					})) {
 						let axis = axisMap.get(aggregate.axisKey);
 						if (!axis) {
@@ -16217,6 +16239,7 @@
 							end: t1
 						},
 						timeZone: this._getTimeZone(),
+						zoom: this._zoomRange ?? void 0,
 						unit,
 						axisKey
 					});
@@ -16235,7 +16258,8 @@
 							start: t0,
 							end: t1
 						},
-						timeZone: this._getTimeZone()
+						timeZone: this._getTimeZone(),
+						zoom: this._zoomRange ?? void 0
 					});
 					for (const aggregate of consumptionSeries) {
 						let consumptionAxis = axisMap.get(aggregate.axisKey);
@@ -24802,6 +24826,7 @@
 				interval: this._selectValue(e)
 			}))}
         ></inline-select>
+        ${this._renderCumulativeControls(definition)}
         <button
           type="button"
           class="button remove"
@@ -24811,6 +24836,45 @@
           <ha-icon icon="mdi:close"></ha-icon>
         </button>
       </div>
+    `;
+		}
+		/** Counts, durations and consumption can accumulate; percentages cannot. */
+		_canAccumulate(definition) {
+			return [
+				"consumption",
+				"transition_count",
+				"state_duration",
+				"event_count"
+			].includes(definition.operation);
+		}
+		_renderCumulativeControls(definition) {
+			if (!this._canAccumulate(definition)) return A;
+			const cumulative = definition.mode === "cumulative";
+			return b`
+      <label class="option">
+        <input
+          type="checkbox"
+          class="cumulative"
+          .checked=${cumulative}
+          @change=${(e) => this._update(definition.id, (d) => ({
+				...d,
+				mode: e.target.checked ? "cumulative" : "interval"
+			}))}
+        />
+        <span>${msg("Cumulative")}</span>
+      </label>
+      ${cumulative ? b`<label class="option">
+            <input
+              type="checkbox"
+              class="reset-on-zoom"
+              .checked=${definition.resetOnZoom}
+              @change=${(e) => this._update(definition.id, (d) => ({
+				...d,
+				resetOnZoom: e.target.checked
+			}))}
+            />
+            <span>${msg("Reset total to zoomed range")}</span>
+          </label>` : A}
     `;
 		}
 		_onEventTypeToggle(definition, type, checked) {
@@ -24862,6 +24926,7 @@
                   <span>${type}</span>
                 </label>
               `)}
+        ${this._renderCumulativeControls(definition)}
         <button
           type="button"
           class="button remove"
@@ -24912,6 +24977,7 @@
 				interval: this._selectValue(e)
 			}))}
         ></inline-select>
+        ${this._renderCumulativeControls(definition)}
         <button
           type="button"
           class="button remove"

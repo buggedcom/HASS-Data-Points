@@ -34,4 +34,6 @@ export const translations: ComponentTranslations = {
   Consumption: "用量",
   "Meter reset detected": "检测到电表重置",
   "Ambiguous meter reset, not counted": "重置情况不明确，未计入",
+  Cumulative: "累计",
+  "Reset total to zoomed range": "将累计值重置为缩放范围",
 };

@@ -302,3 +302,58 @@ describe("analysis-aggregate-group event variant", () => {
     });
   });
 });
+
+describe("analysis-aggregate-group cumulative controls", () => {
+  let el: GroupElement;
+  afterEach(() => el?.remove());
+
+  const toggle = (selector: string, checked: boolean) => {
+    const box = el.shadowRoot!.querySelector(selector) as HTMLInputElement;
+    box.checked = checked;
+    box.dispatchEvent(new Event("change"));
+  };
+
+  describe("GIVEN a per-interval transition count", () => {
+    describe("WHEN Cumulative is checked", () => {
+      it("THEN the mode becomes cumulative and the zoom reset option stays off", async () => {
+        expect.assertions(2);
+        el = await mount([definition()]);
+        const handler = vi.fn();
+        el.addEventListener("dp-group-analysis-change", handler);
+        toggle(".cumulative", true);
+        expect(handler.mock.calls[0][0].detail.value[0].mode).toBe(
+          "cumulative"
+        );
+        expect(handler.mock.calls[0][0].detail.value[0].resetOnZoom).toBe(
+          false
+        );
+      });
+    });
+    it("THEN the zoom reset option is hidden until cumulative is on", async () => {
+      expect.assertions(1);
+      el = await mount([definition()]);
+      expect(el.shadowRoot!.querySelector(".reset-on-zoom")).toBeNull();
+    });
+  });
+
+  describe("GIVEN a cumulative aggregate", () => {
+    describe("WHEN Reset total to zoomed range is checked", () => {
+      it("THEN resetOnZoom is stored", async () => {
+        expect.assertions(1);
+        el = await mount([definition({ mode: "cumulative" })]);
+        const handler = vi.fn();
+        el.addEventListener("dp-group-analysis-change", handler);
+        toggle(".reset-on-zoom", true);
+        expect(handler.mock.calls[0][0].detail.value[0].resetOnZoom).toBe(true);
+      });
+    });
+  });
+
+  describe("GIVEN a percentage-of-time aggregate", () => {
+    it("THEN no cumulative option is offered", async () => {
+      expect.assertions(1);
+      el = await mount([definition({ operation: "state_percentage" })]);
+      expect(el.shadowRoot!.querySelector(".cumulative")).toBeNull();
+    });
+  });
+});
