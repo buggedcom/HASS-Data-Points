@@ -62,40 +62,14 @@ export const styles = css`
     display: none;
   }
 
-  /* Inline affordance that opens the floated target picker. */
+  /*
+   * Native HA outlined button that opens the floated target picker. It keeps
+   * HA's own button styling (the same control family as the original inline
+   * target picker); we only make it span the sidebar width.
+   */
   .history-targets-add {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--dp-spacing-sm);
     width: 100%;
-    box-sizing: border-box;
-    padding: var(--dp-spacing-sm) var(--dp-spacing-md);
-    border-radius: 10px;
-    border: 1px dashed
-      color-mix(in srgb, var(--primary-color, #3b82f6) 45%, transparent);
-    background: color-mix(
-      in srgb,
-      var(--primary-color, #3b82f6) 8%,
-      transparent
-    );
-    color: var(--primary-color, #3b82f6);
-    font-size: 0.85rem;
-    font-weight: 500;
     --mdc-icon-size: 18px;
-    cursor: pointer;
-    appearance: none;
-    -webkit-appearance: none;
-    transition: background 120ms ease;
-  }
-
-  .history-targets-add:hover,
-  .history-targets-add:focus-visible {
-    background: color-mix(
-      in srgb,
-      var(--primary-color, #3b82f6) 16%,
-      transparent
-    );
-    outline: none;
   }
 
   .history-targets-clear-all {
