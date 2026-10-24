@@ -147,8 +147,8 @@ describe("history-targets", () => {
     });
 
     describe("WHEN rendered", () => {
-      it("THEN the 'Clear all' link and the full-width 'Add target' button coexist", () => {
-        expect.assertions(3);
+      it("THEN the 'Add target' pill and the 'Clear all' link sit on one row", () => {
+        expect.assertions(4);
         const addBtn = el.shadowRoot!.querySelector<HTMLElement>(
           ".history-targets-add"
         );
@@ -160,9 +160,9 @@ describe("history-targets", () => {
         );
         expect(addBtn).not.toBeNull();
         expect(clearAll).not.toBeNull();
-        // The row stacks vertically, so "Clear all" sits on its own line and
-        // never shares (and shrinks) the add affordance's row.
-        expect(getComputedStyle(row!).flexDirection).toBe("column");
+        // Add pill on the left, "Clear all" pushed to the right, same line.
+        expect(getComputedStyle(row!).flexDirection).toBe("row");
+        expect(getComputedStyle(row!).justifyContent).toBe("space-between");
       });
     });
   });

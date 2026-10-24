@@ -45,10 +45,12 @@ export const styles = css`
 
   .history-target-picker-row {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
     gap: var(--dp-spacing-sm);
     min-width: 0;
+    margin-top: var(--dp-spacing-sm);
     margin-bottom: calc(var(--spacing, 8px) * 2);
   }
 
@@ -62,15 +64,39 @@ export const styles = css`
     display: none;
   }
 
-  /*
-   * Native HA outlined button that opens the floated target picker. It keeps
-   * HA's own button styling (the same control family as the original inline
-   * target picker); we only make it span the sidebar width.
-   */
+  /* Tonal pill that opens the floated target picker. */
   .history-targets-add {
-    width: 100%;
-    margin-top: var(--dp-spacing-sm);
-    --mdc-icon-size: 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: var(--dp-spacing-sm);
+    flex: 0 0 auto;
+    padding: var(--dp-spacing-sm) var(--dp-spacing-md);
+    border: 0;
+    border-radius: 999px;
+    background: color-mix(
+      in srgb,
+      var(--primary-color, #3b82f6) 16%,
+      transparent
+    );
+    color: var(--primary-color, #3b82f6);
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1;
+    --mdc-icon-size: 20px;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    transition: background 120ms ease;
+  }
+
+  .history-targets-add:hover,
+  .history-targets-add:focus-visible {
+    background: color-mix(
+      in srgb,
+      var(--primary-color, #3b82f6) 24%,
+      transparent
+    );
+    outline: none;
   }
 
   .history-targets-clear-all {
