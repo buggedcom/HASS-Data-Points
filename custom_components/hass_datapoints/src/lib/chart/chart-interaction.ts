@@ -149,6 +149,7 @@ export interface HoverSeriesLike {
   stepped?: boolean;
   /** Aggregate series: values are per calendar period, not interpolated. */
   periods?: Array<{ start: number; end: number }>;
+  periodNotes?: string[];
 }
 
 export interface HoverValueEntry {
@@ -1749,7 +1750,8 @@ export function attachLineChartHover(
         value = point ? point[1] : null;
         if (index !== -1) {
           const { start, end } = seriesItem.periods[index];
-          periodLabel = `${formatTooltipDateTimeFromMs(start)} – ${formatTooltipDateTimeFromMs(end)}`;
+          const note = seriesItem.periodNotes?.[index];
+          periodLabel = `${formatTooltipDateTimeFromMs(start)} – ${formatTooltipDateTimeFromMs(end)}${note ? ` · ${note}` : ""}`;
         }
       } else {
         value = renderer._interpolateValue(

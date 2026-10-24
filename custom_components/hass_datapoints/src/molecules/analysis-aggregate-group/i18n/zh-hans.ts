@@ -31,4 +31,7 @@ export const translations: ComponentTranslations = {
   "First reading": "首次读数",
   "Last reading": "最后读数",
   "All event types": "所有事件类型",
+  Consumption: "用量",
+  "Meter reset detected": "检测到电表重置",
+  "Ambiguous meter reset, not counted": "重置情况不明确，未计入",
 };

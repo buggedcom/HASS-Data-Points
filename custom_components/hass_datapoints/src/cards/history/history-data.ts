@@ -18,6 +18,7 @@ export {
 } from "./data/history-normalization";
 export {
   mergeNumericHistoryWithStatistics,
+  normalizeStatisticsChanges,
   normalizeStatisticsHistory,
 } from "./data/statistics-normalization";
 export { getAxisValueExtent } from "./data/axis-extent";

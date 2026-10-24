@@ -12,6 +12,7 @@
 import { html, render } from "lit";
 import {
   buildBinaryAggregateSeries,
+  buildConsumptionAggregateSeries,
   buildEventAggregateSeries,
   buildMeasurementAggregateSeries,
 } from "@/lib/chart/chart-aggregates";
@@ -21,6 +22,8 @@ import {
   binaryOnLabel,
   getAxisValueExtent,
   getHistoryStatesForEntity,
+  normalizeNumericHistory,
+  normalizeStatisticsChanges,
   normalizeStatisticsHistory,
   SAMPLE_INTERVAL_MS,
 } from "../history-data";
@@ -2643,6 +2646,45 @@ export class HistoryChart extends HTMLElement {
         for (const aggregate of aggregateSeries) {
           axis.values.push(...aggregate.pts.map(([, v]) => v));
         }
+        const stateAttributes = (
+          this._hass as Nullable<{
+            states?: Record<string, { attributes: RecordWithUnknownValues }>;
+          }>
+        )?.states?.[entityId]?.attributes;
+        const consumptionSeries = buildConsumptionAggregateSeries({
+          entityId,
+          entityLabel: entityLabelMap.get(entityId) || entityId,
+          color: seriesSetting.color || COLORS[i % COLORS.length],
+          definitions: (seriesAnalysis as SeriesAnalysis).aggregates ?? [],
+          changes: normalizeStatisticsChanges(entityId, statsResult),
+          readings: normalizeNumericHistory(
+            entityId,
+            getHistoryStatesForEntity(
+              histResult,
+              entityId,
+              seriesSettings.map((setting) => setting.entity_id)
+            )
+          ),
+          stateClass: stateAttributes?.state_class as string | undefined,
+          unit,
+          range: { start: t0, end: t1 },
+          timeZone: this._getTimeZone(),
+        });
+        for (const aggregate of consumptionSeries) {
+          let consumptionAxis = axisMap.get(aggregate.axisKey);
+          if (!consumptionAxis) {
+            consumptionAxis = {
+              key: aggregate.axisKey,
+              unit: aggregate.unit,
+              color: aggregate.color,
+              side: axisMap.size === 0 ? "left" : "right",
+              values: [],
+            };
+            axisMap.set(aggregate.axisKey, consumptionAxis);
+            axes.push(consumptionAxis);
+          }
+          consumptionAxis.values.push(...aggregate.pts.map(([, v]) => v));
+        }
         series.push({
           entityId,
           legendEntityId: entityId,
@@ -2653,7 +2695,7 @@ export class HistoryChart extends HTMLElement {
           axisKey,
           stepped: (seriesAnalysis as SeriesAnalysis).stepped_series === true,
         });
-        series.push(...aggregateSeries);
+        series.push(...aggregateSeries, ...consumptionSeries);
       }
     });
 

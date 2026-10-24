@@ -5,7 +5,7 @@ import { localized, msg } from "@/lib/i18n/localize";
 import { styles } from "./target-row.styles";
 import type { HassLike, HassState } from "@/lib/types";
 import { getAggregateOperations } from "@/lib/domain/aggregation/aggregation";
-import { isMeasurementOperation } from "@/lib/domain/aggregation/labels";
+import { isNumericAggregateOperation } from "@/lib/domain/aggregation/labels";
 import {
   type BinaryDisplayMode,
   isBinarySensorEntity,
@@ -429,7 +429,7 @@ export class TargetRow extends LitElement {
                       entity_id: this._entityId,
                       state: this.stateObj?.state,
                       attributes: this.stateObj?.attributes,
-                    }).filter(isMeasurementOperation)}
+                    }).filter(isNumericAggregateOperation)}
                     @dp-group-analysis-change=${this._onGroupAnalysisChange}
                   ></analysis-aggregate-group>
                   <analysis-trend-group

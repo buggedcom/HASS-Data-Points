@@ -19,6 +19,8 @@ export interface HaStateEntry {
 export interface HaStatEntry {
   start?: number | string;
   mean?: Nullable<number | string>;
+  sum?: Nullable<number | string>;
+  change?: Nullable<number | string>;
 }
 
 /** Internal intermediate state record used during normalisation. */

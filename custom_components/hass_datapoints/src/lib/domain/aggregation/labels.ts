@@ -116,6 +116,19 @@ export const MEASUREMENT_OPERATIONS: {
   { value: "last", label: "Last reading" },
 ];
 
+/** Everything offered on a numeric row: measurement summaries plus consumption. */
+export const NUMERIC_AGGREGATE_OPERATIONS: {
+  value: AggregateOperation;
+  label: string;
+}[] = [
+  ...MEASUREMENT_OPERATIONS,
+  { value: "consumption", label: "Consumption" },
+];
+
+export function isNumericAggregateOperation(operation: string): boolean {
+  return NUMERIC_AGGREGATE_OPERATIONS.some((o) => o.value === operation);
+}
+
 const MEASUREMENT_VALUES = new Set<string>(
   MEASUREMENT_OPERATIONS.map((o) => o.value)
 );

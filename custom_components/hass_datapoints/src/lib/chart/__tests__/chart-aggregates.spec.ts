@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildBinaryAggregateSeries,
+  buildConsumptionAggregateSeries,
   buildEventAggregateSeries,
   buildMeasurementAggregateSeries,
 } from "@/lib/chart/chart-aggregates";
@@ -226,6 +227,94 @@ describe("buildEventAggregateSeries", () => {
         expect(out.flatMap((s) => s.pts.map(([, v]) => v))).toStrictEqual([
           0, 0,
         ]);
+      });
+    });
+  });
+});
+
+describe("buildConsumptionAggregateSeries", () => {
+  const consumption = definition({
+    operation: "consumption",
+    states: undefined,
+  });
+  const run = (args: {
+    changes?: { time: number; change: number }[];
+    readings?: { s: string; lu: number }[];
+    stateClass?: string;
+  }) =>
+    buildConsumptionAggregateSeries({
+      entityId: "sensor.energy",
+      entityLabel: "Energy",
+      color: "#ff9800",
+      definitions: [consumption],
+      changes: args.changes ?? [],
+      readings: args.readings ?? [],
+      stateClass: args.stateClass,
+      unit: "kWh",
+      range: { start, end: start + 2 * day },
+      timeZone: "UTC",
+    });
+
+  describe("GIVEN a meter reading 1000 then 1010 then 1012", () => {
+    const readings = [
+      { s: "1000", lu: sec(start) },
+      { s: "1010", lu: sec(start + hour) },
+      { s: "1012", lu: sec(start + day + hour) },
+    ];
+    describe("WHEN showing daily consumption", () => {
+      it("THEN draws consumption bars on their own kWh axis, not the meter reading", () => {
+        expect.assertions(3);
+        const [series] = run({ readings, stateClass: "total_increasing" });
+        expect(series.pts.map(([, v]) => v)).toStrictEqual([10, 2]);
+        expect(series.axisKey).toBe("aggregate:kWh");
+        expect(series.bars).toBe(true);
+      });
+    });
+  });
+
+  describe("GIVEN a meter that resets mid-day", () => {
+    describe("WHEN showing daily consumption", () => {
+      it("THEN counts post-reset usage and notes the reset", () => {
+        expect.assertions(2);
+        const [series] = run({
+          readings: [
+            { s: "100", lu: sec(start) },
+            { s: "110", lu: sec(start + hour) },
+            { s: "5", lu: sec(start + 2 * hour) },
+          ],
+          stateClass: "total_increasing",
+        });
+        expect(series.pts[0][1]).toBe(15);
+        expect(series.periodNotes?.[0]).toBe("Meter reset detected");
+      });
+    });
+  });
+
+  describe("GIVEN statistics for day one and a raw reading after the last statistic", () => {
+    describe("WHEN showing daily consumption", () => {
+      it("THEN statistics cover compiled hours and readings bridge the rest", () => {
+        expect.assertions(1);
+        const [series] = run({
+          changes: [
+            { time: start, change: 1 },
+            { time: start + hour, change: 2 },
+          ],
+          readings: [
+            { s: "50", lu: sec(start + 2 * hour) },
+            { s: "53", lu: sec(start + 3 * hour) },
+          ],
+          stateClass: "total_increasing",
+        });
+        expect(series.pts[0][1]).toBe(6);
+      });
+    });
+  });
+
+  describe("GIVEN no statistics and no readings", () => {
+    describe("WHEN showing consumption", () => {
+      it("THEN no series is produced", () => {
+        expect.assertions(1);
+        expect(run({})).toStrictEqual([]);
       });
     });
   });
