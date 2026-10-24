@@ -149,6 +149,8 @@ export interface HoverSeriesLike {
   stepped?: boolean;
   /** Aggregate series: values are per calendar period, not interpolated. */
   periods?: Array<{ start: number; end: number }>;
+  /** Original (unshifted) periods shown in tooltips for comparison windows. */
+  labelPeriods?: Array<{ start: number; end: number }>;
   periodNotes?: string[];
 }
 
@@ -844,7 +846,7 @@ export function hideTooltip(card: ChartInteractionHost): void {
   clearAnnotationTooltips(card);
 }
 
-function resolveTooltipSeriesLabel(entry: HoverValueEntry): string {
+function resolveBaseTooltipSeriesLabel(entry: HoverValueEntry): string {
   const isSubordinate = entry.grouped === true && entry.rawVisible === true;
   const isComparisonDerived =
     entry.comparisonDerived === true && entry.grouped === true;
@@ -890,9 +892,12 @@ function resolveTooltipSeriesLabel(entry: HoverValueEntry): string {
     }
     return `${thresholdLabel}: ${entry.baseLabel || entry.label || ""}`;
   }
-  return entry.periodLabel
-    ? `${String(entry.label || "")} (${entry.periodLabel})`
-    : String(entry.label || "");
+  return String(entry.label || "");
+}
+
+function resolveTooltipSeriesLabel(entry: HoverValueEntry): string {
+  const label = resolveBaseTooltipSeriesLabel(entry);
+  return entry.periodLabel ? `${label} (${entry.periodLabel})` : label;
 }
 
 export function showLineChartTooltip(
@@ -1739,27 +1744,39 @@ export function attachLineChartHover(
     );
     const x = renderer.xOf(timeMs, t0, t1);
 
-    const values = resolvedSeries.map((seriesItem) => {
-      let value: Nullable<number>;
-      let periodLabel: string | undefined;
-      if (seriesItem.periods) {
-        const index = seriesItem.periods.findIndex(
-          (period) => timeMs >= period.start && timeMs < period.end
-        );
-        const point = index === -1 ? undefined : seriesItem.pts?.[index];
-        value = point ? point[1] : null;
-        if (index !== -1) {
-          const { start, end } = seriesItem.periods[index];
-          const note = seriesItem.periodNotes?.[index];
-          periodLabel = `${formatTooltipDateTimeFromMs(start)} – ${formatTooltipDateTimeFromMs(end)}${note ? ` · ${note}` : ""}`;
-        }
-      } else {
-        value = renderer._interpolateValue(
-          seriesItem.pts || [],
-          timeMs,
-          seriesItem.stepped
-        );
+    // Aggregate series hold one value per calendar period, so they are looked
+    // up by period rather than interpolated between points.
+    const resolveSeriesValue = (
+      seriesItem: HoverSeriesLike
+    ): { value: Nullable<number>; periodLabel?: string } => {
+      if (!seriesItem.periods) {
+        return {
+          value: renderer._interpolateValue(
+            seriesItem.pts || [],
+            timeMs,
+            seriesItem.stepped
+          ),
+        };
       }
+      const index = seriesItem.periods.findIndex(
+        (period) => timeMs >= period.start && timeMs < period.end
+      );
+      if (index === -1) {
+        return { value: null };
+      }
+      const point = seriesItem.pts?.[index];
+      const { start, end } = (seriesItem.labelPeriods ?? seriesItem.periods)[
+        index
+      ];
+      const note = seriesItem.periodNotes?.[index];
+      return {
+        value: point ? point[1] : null,
+        periodLabel: `${formatTooltipDateTimeFromMs(start)} – ${formatTooltipDateTimeFromMs(end)}${note ? ` · ${note}` : ""}`,
+      };
+    };
+
+    const values = resolvedSeries.map((seriesItem) => {
+      const { value, periodLabel } = resolveSeriesValue(seriesItem);
       const axis = resolveHoverAxis(seriesItem);
       return buildHoverValueEntry(
         seriesItem,
@@ -1774,17 +1791,13 @@ export function attachLineChartHover(
     });
 
     const comparisonValues = comparisonSeries.map((seriesItem) => {
-      const value = renderer._interpolateValue(
-        seriesItem.pts || [],
-        timeMs,
-        seriesItem.stepped
-      );
+      const { value, periodLabel } = resolveSeriesValue(seriesItem);
       const axis = resolveHoverAxis(seriesItem);
       return buildHoverValueEntry(
         seriesItem,
         value,
         axis,
-        { comparison: true },
+        { comparison: true, ...(periodLabel ? { periodLabel } : {}) },
         { includePosition: value != null, x }
       );
     });

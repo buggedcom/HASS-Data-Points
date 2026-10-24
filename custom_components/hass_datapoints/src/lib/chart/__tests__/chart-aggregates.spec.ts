@@ -372,3 +372,56 @@ describe("cumulative aggregate series", () => {
     });
   });
 });
+
+describe("aggregates for a comparison window", () => {
+  // London springs forward on 30 March 2025; the window is the week before.
+  const week = 7 * day;
+  const mainStart = Date.parse("2025-04-05T23:00:00Z");
+  const windowStart = mainStart - week;
+  const toggles = [
+    { s: "off", lu: sec(windowStart) },
+    { s: "on", lu: sec(Date.parse("2025-03-29T23:30:00Z")) },
+    { s: "off", lu: sec(Date.parse("2025-03-30T09:00:00Z")) },
+  ];
+  const run = (range: { start: number; end: number }) =>
+    buildBinaryAggregateSeries({
+      entityId: "binary_sensor.front_door",
+      entityLabel: "Front Door",
+      color: "#ff9800",
+      deviceClass: "door",
+      definitions: [
+        definition({ operation: "state_duration", states: ["on"] }),
+      ],
+      stateList: toggles,
+      range,
+      timeZone: "Europe/London",
+    })[0];
+
+  describe("GIVEN a window range spanning a spring-forward day", () => {
+    describe("WHEN calculated against its own calendar", () => {
+      it("THEN the 23-hour local day is a single period with original dates", () => {
+        expect.assertions(3);
+        const series = run({ start: windowStart, end: windowStart + 2 * day });
+        const spring = series.periods.find(
+          (period) => period.start === Date.parse("2025-03-30T00:00:00Z")
+        );
+        expect(spring).toBeDefined();
+        expect(spring!.end - spring!.start).toBe(23 * hour);
+        expect(series.result.points[1].partial).toBe(false);
+      });
+    });
+  });
+
+  describe("GIVEN a window result shifted onto the main range", () => {
+    describe("WHEN subtracting the window offset", () => {
+      it("THEN positions move while the calculated periods keep their dates", () => {
+        expect.assertions(2);
+        const series = run({ start: windowStart, end: windowStart + 2 * day });
+        const offset = -week;
+        const shifted = series.pts.map(([time]) => time - offset);
+        expect(shifted[0]).toBe(series.pts[0][0] + week);
+        expect(series.periods[0].start).toBeLessThan(mainStart);
+      });
+    });
+  });
+});
