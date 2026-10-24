@@ -168,3 +168,69 @@ describe("analysis-aggregate-group", () => {
     });
   });
 });
+
+describe("analysis-aggregate-group measurement variant", () => {
+  let el: GroupElement;
+  afterEach(() => el?.remove());
+
+  async function mountMeasurement(aggregates: AggregateDefinition[]) {
+    el = document.createElement("analysis-aggregate-group") as GroupElement;
+    Object.assign(el, {
+      variant: "measurement",
+      operations: ["mean", "min", "max"],
+      analysis: { aggregates } as NormalizedAnalysis,
+      entityId: "sensor.temp",
+    });
+    document.body.appendChild(el);
+    await el.updateComplete;
+    return el;
+  }
+
+  describe("GIVEN a numeric sensor suggesting mean, min and max", () => {
+    describe("WHEN an aggregate is added", () => {
+      it("THEN a daily mean is created without states", async () => {
+        expect.assertions(2);
+        await mountMeasurement([]);
+        const handler = vi.fn();
+        el.addEventListener("dp-group-analysis-change", handler);
+        (el.shadowRoot!.querySelector(".add") as HTMLButtonElement).click();
+        const [created] = handler.mock.calls[0][0].detail.value;
+        expect(created).toMatchObject({ operation: "mean", interval: "day" });
+        expect(created.states).toBeUndefined();
+      });
+    });
+    describe("WHEN the operation select is rendered", () => {
+      it("THEN offers only the suggested operations", async () => {
+        expect.assertions(1);
+        await mountMeasurement([
+          definition({ operation: "mean", states: undefined }),
+        ]);
+        expect(selects(el)[0].options.map((o) => o.value)).toStrictEqual([
+          "mean",
+          "min",
+          "max",
+        ]);
+      });
+    });
+    describe("WHEN the operation is changed to max", () => {
+      it("THEN the definition keeps its id and interval", async () => {
+        expect.assertions(1);
+        await mountMeasurement([
+          definition({
+            operation: "mean",
+            interval: "week",
+            states: undefined,
+          }),
+        ]);
+        const handler = vi.fn();
+        el.addEventListener("dp-group-analysis-change", handler);
+        choose(selects(el)[0], "max");
+        expect(handler.mock.calls[0][0].detail.value[0]).toMatchObject({
+          id: "a1",
+          operation: "max",
+          interval: "week",
+        });
+      });
+    });
+  });
+});

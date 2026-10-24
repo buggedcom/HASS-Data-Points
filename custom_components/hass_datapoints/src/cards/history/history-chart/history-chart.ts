@@ -10,7 +10,10 @@
  */
 
 import { html, render } from "lit";
-import { buildBinaryAggregateSeries } from "@/lib/chart/chart-aggregates";
+import {
+  buildBinaryAggregateSeries,
+  buildMeasurementAggregateSeries,
+} from "@/lib/chart/chart-aggregates";
 import { msg } from "@/lib/i18n/localize";
 import {
   binaryOffLabel,
@@ -2588,6 +2591,22 @@ export class HistoryChart extends HTMLElement {
       if (pts.length) {
         const seriesAnalysis =
           analysisMap.get(entityId) || normalizeHistorySeriesAnalysis(null);
+        const aggregateSeries = buildMeasurementAggregateSeries({
+          entityId,
+          entityLabel: entityLabelMap.get(entityId) || entityId,
+          colors: [1, 2, 3, 4].map(
+            (offset) => COLORS[(i + offset) % COLORS.length]
+          ),
+          definitions: (seriesAnalysis as SeriesAnalysis).aggregates ?? [],
+          stateList,
+          range: { start: t0, end: t1 },
+          timeZone: this._getTimeZone(),
+          unit,
+          axisKey,
+        });
+        for (const aggregate of aggregateSeries) {
+          axis.values.push(...aggregate.pts.map(([, v]) => v));
+        }
         series.push({
           entityId,
           legendEntityId: entityId,
@@ -2598,6 +2617,7 @@ export class HistoryChart extends HTMLElement {
           axisKey,
           stepped: (seriesAnalysis as SeriesAnalysis).stepped_series === true,
         });
+        series.push(...aggregateSeries);
       }
     });
 

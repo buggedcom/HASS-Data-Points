@@ -24,4 +24,10 @@ export const translations: ComponentTranslations = {
   Occupied: "Varattu",
   Unlocked: "Avattu",
   Locked: "Lukittu",
+  Mean: "Keskiarvo",
+  Minimum: "Pienin",
+  Maximum: "Suurin",
+  Median: "Mediaani",
+  "First reading": "Ensimmäinen lukema",
+  "Last reading": "Viimeisin lukema",
 };

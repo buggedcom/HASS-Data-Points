@@ -1059,14 +1059,14 @@
 	var _kind_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _text_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _visible_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
-	var _variant_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _variant_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var FeedbackBanner = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _kind_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _text_accessor_storage$2, "");
 			_classPrivateFieldInitSpec(this, _visible_accessor_storage$2, false);
-			_classPrivateFieldInitSpec(this, _variant_accessor_storage, "default");
+			_classPrivateFieldInitSpec(this, _variant_accessor_storage$1, "default");
 		}
 		get kind() {
 			return _classPrivateFieldGet2(_kind_accessor_storage, this);
@@ -1087,10 +1087,10 @@
 			_classPrivateFieldSet2(_visible_accessor_storage$2, this, value);
 		}
 		get variant() {
-			return _classPrivateFieldGet2(_variant_accessor_storage, this);
+			return _classPrivateFieldGet2(_variant_accessor_storage$1, this);
 		}
 		set variant(value) {
-			_classPrivateFieldSet2(_variant_accessor_storage, this, value);
+			_classPrivateFieldSet2(_variant_accessor_storage$1, this, value);
 		}
 		render() {
 			if (!this.text) return A;
@@ -2531,7 +2531,13 @@
 			Clear: "Vapaa",
 			Occupied: "Varattu",
 			Unlocked: "Avattu",
-			Locked: "Lukittu"
+			Locked: "Lukittu",
+			Mean: "Keskiarvo",
+			Minimum: "Pienin",
+			Maximum: "Suurin",
+			Median: "Mediaani",
+			"First reading": "Ensimmäinen lukema",
+			"Last reading": "Viimeisin lukema"
 		};
 	}));
 	//#endregion
@@ -3226,7 +3232,13 @@
 			Clear: "Libre",
 			Occupied: "Occupé",
 			Unlocked: "Déverrouillé",
-			Locked: "Verrouillé"
+			Locked: "Verrouillé",
+			Mean: "Moyenne",
+			Minimum: "Minimum",
+			Maximum: "Maximum",
+			Median: "Médiane",
+			"First reading": "Première mesure",
+			"Last reading": "Dernière mesure"
 		};
 	}));
 	//#endregion
@@ -3921,7 +3933,13 @@
 			Clear: "Frei",
 			Occupied: "Belegt",
 			Unlocked: "Entsperrt",
-			Locked: "Gesperrt"
+			Locked: "Gesperrt",
+			Mean: "Mittelwert",
+			Minimum: "Minimum",
+			Maximum: "Maximum",
+			Median: "Median",
+			"First reading": "Erster Messwert",
+			"Last reading": "Letzter Messwert"
 		};
 	}));
 	//#endregion
@@ -4616,7 +4634,13 @@
 			Clear: "Libre",
 			Occupied: "Ocupado",
 			Unlocked: "Desbloqueado",
-			Locked: "Bloqueado"
+			Locked: "Bloqueado",
+			Mean: "Media",
+			Minimum: "Mínimo",
+			Maximum: "Máximo",
+			Median: "Mediana",
+			"First reading": "Primera lectura",
+			"Last reading": "Última lectura"
 		};
 	}));
 	//#endregion
@@ -5311,7 +5335,13 @@
 			Clear: "Livre",
 			Occupied: "Ocupado",
 			Unlocked: "Desbloqueado",
-			Locked: "Bloqueado"
+			Locked: "Bloqueado",
+			Mean: "Média",
+			Minimum: "Mínimo",
+			Maximum: "Máximo",
+			Median: "Mediana",
+			"First reading": "Primeira leitura",
+			"Last reading": "Última leitura"
 		};
 	}));
 	//#endregion
@@ -6006,7 +6036,13 @@
 			Clear: "无人",
 			Occupied: "有人",
 			Unlocked: "已解锁",
-			Locked: "已锁定"
+			Locked: "已锁定",
+			Mean: "平均值",
+			Minimum: "最小值",
+			Maximum: "最大值",
+			Median: "中位数",
+			"First reading": "首次读数",
+			"Last reading": "最后读数"
 		};
 	}));
 	//#endregion
@@ -9103,6 +9139,43 @@
 			resetOnZoom: false
 		};
 	}
+	var MEASUREMENT_OPERATIONS = [
+		{
+			value: "mean",
+			label: "Mean"
+		},
+		{
+			value: "min",
+			label: "Minimum"
+		},
+		{
+			value: "max",
+			label: "Maximum"
+		},
+		{
+			value: "median",
+			label: "Median"
+		},
+		{
+			value: "first",
+			label: "First reading"
+		},
+		{
+			value: "last",
+			label: "Last reading"
+		}
+	];
+	var MEASUREMENT_VALUES = new Set(MEASUREMENT_OPERATIONS.map((o) => o.value));
+	function isMeasurementOperation(operation) {
+		return MEASUREMENT_VALUES.has(operation);
+	}
+	function createMeasurementAggregate(existingIds, operation = "mean") {
+		return {
+			...createBinaryAggregate(existingIds),
+			operation,
+			states: void 0
+		};
+	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/chart-aggregates.ts
 	var UNKNOWN_STATES = /* @__PURE__ */ new Set(["unknown", "unavailable"]);
@@ -9175,7 +9248,50 @@
 				})),
 				color: definition.color || args.color,
 				axisKey: `aggregate:${result.unit || "count"}`,
-				bars: true,
+				bars: result.presentation === "bar",
+				result
+			}];
+		});
+	}
+	/** Aggregate numeric history into per-period measurement summaries (lines). */
+	function buildMeasurementAggregateSeries(args) {
+		const samples = args.stateList.flatMap((entry) => {
+			const value = parseFloat(entry.s);
+			return Number.isNaN(value) ? [] : [{
+				time: Math.round(entry.lu * 1e3),
+				value
+			}];
+		});
+		if (!samples.length) return [];
+		return args.definitions.filter((definition) => definition.visible !== false && isMeasurementOperation(definition.operation)).flatMap((definition, index) => {
+			const result = calculateAggregate({
+				definition,
+				samples,
+				range: args.range,
+				timeZone: args.timeZone,
+				unit: args.unit,
+				coverage: [args.range]
+			});
+			const valued = result.points.filter((p) => typeof p.value === "number" && Number.isFinite(p.value));
+			if (!valued.length) return [];
+			const operationLabel = msg(MEASUREMENT_OPERATIONS.find((o) => o.value === definition.operation)?.label ?? definition.operation);
+			const intervalLabel = msg(AGGREGATE_INTERVAL_OPTIONS.find((o) => o.value === definition.interval)?.label ?? definition.interval);
+			const id = getAggregateSeriesId(args.entityId, definition.id);
+			return [{
+				entityId: id,
+				legendEntityId: id,
+				sourceEntityId: args.entityId,
+				definitionId: definition.id,
+				label: definition.label || `${args.entityLabel} · ${intervalLabel} · ${operationLabel}`,
+				unit: args.unit,
+				pts: valued.map((p) => [(p.start + p.end) / 2, p.value]),
+				periods: valued.map((p) => ({
+					start: p.start,
+					end: p.end
+				})),
+				color: definition.color || args.colors[index % args.colors.length],
+				axisKey: args.axisKey,
+				bars: result.presentation === "bar",
 				result
 			}];
 		});
@@ -11452,7 +11568,7 @@
 			const values = resolvedSeries.map((seriesItem) => {
 				let value;
 				let periodLabel;
-				if (seriesItem.bars && seriesItem.periods) {
+				if (seriesItem.periods) {
 					const index = seriesItem.periods.findIndex((period) => timeMs >= period.start && timeMs < period.end);
 					const point = index === -1 ? void 0 : seriesItem.pts?.[index];
 					value = point ? point[1] : null;
@@ -12137,6 +12253,24 @@
 			if (typeof item.visible === "boolean") definition.visible = item.visible;
 			return [definition];
 		});
+	}
+	function getAggregateOperations(entity) {
+		if (entity.entity_id.startsWith("event.")) return ["event_count"];
+		if (entity.entity_id.startsWith("binary_sensor.") || entity.state !== void 0 && !["unknown", "unavailable"].includes(entity.state) && !Number.isFinite(Number(entity.state))) return [
+			"transition_count",
+			"state_duration",
+			"state_percentage"
+		];
+		const operations = [
+			"mean",
+			"min",
+			"max",
+			"median",
+			"first",
+			"last"
+		];
+		if (["total", "total_increasing"].includes(String(entity.attributes?.state_class))) operations.push("consumption");
+		return operations;
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/anomaly-direction.ts
@@ -15824,6 +15958,26 @@
 				}
 				if (pts.length) {
 					const seriesAnalysis = analysisMap.get(entityId) || normalizeHistorySeriesAnalysis(null);
+					const aggregateSeries = buildMeasurementAggregateSeries({
+						entityId,
+						entityLabel: entityLabelMap.get(entityId) || entityId,
+						colors: [
+							1,
+							2,
+							3,
+							4
+						].map((offset) => COLORS[(i + offset) % COLORS.length]),
+						definitions: seriesAnalysis.aggregates ?? [],
+						stateList,
+						range: {
+							start: t0,
+							end: t1
+						},
+						timeZone: this._getTimeZone(),
+						unit,
+						axisKey
+					});
+					for (const aggregate of aggregateSeries) axis.values.push(...aggregate.pts.map(([, v]) => v));
 					series.push({
 						entityId,
 						legendEntityId: entityId,
@@ -15834,6 +15988,7 @@
 						axisKey,
 						stepped: seriesAnalysis.stepped_series === true
 					});
+					series.push(...aggregateSeries);
 				}
 			});
 			const binaryModel = buildBinaryRenderModel(binaryEntities, t0, t1);
@@ -24284,16 +24439,32 @@
 	//#region custom_components/hass_datapoints/src/molecules/analysis-aggregate-group/analysis-aggregate-group.ts
 	var _AnalysisAggregateGroup;
 	var _deviceClass_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _variant_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _operations_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var AnalysisAggregateGroup = (_AnalysisAggregateGroup = class AnalysisAggregateGroup extends AnalysisGroupMixin(i$2) {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _deviceClass_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _variant_accessor_storage, "binary");
+			_classPrivateFieldInitSpec(this, _operations_accessor_storage, []);
 		}
 		get deviceClass() {
 			return _classPrivateFieldGet2(_deviceClass_accessor_storage, this);
 		}
 		set deviceClass(value) {
 			_classPrivateFieldSet2(_deviceClass_accessor_storage, this, value);
+		}
+		get variant() {
+			return _classPrivateFieldGet2(_variant_accessor_storage, this);
+		}
+		set variant(value) {
+			_classPrivateFieldSet2(_variant_accessor_storage, this, value);
+		}
+		get operations() {
+			return _classPrivateFieldGet2(_operations_accessor_storage, this);
+		}
+		set operations(value) {
+			_classPrivateFieldSet2(_operations_accessor_storage, this, value);
 		}
 		get _definitions() {
 			return this.analysis.aggregates ?? [];
@@ -24305,6 +24476,11 @@
 			this._commit(this._definitions.map((d) => d.id === id ? patch(d) : d));
 		}
 		_onAdd() {
+			if (this.variant === "measurement") {
+				const ids = this._definitions.map((d) => d.id);
+				this._commit([...this._definitions, createMeasurementAggregate(ids, this.operations[0] ?? "mean")]);
+				return;
+			}
 			const defaultState = getBinaryStateOptions(this.deviceClass)[0].value;
 			this._commit([...this._definitions, createBinaryAggregate(this._definitions.map((d) => d.id), defaultState)]);
 		}
@@ -24314,7 +24490,45 @@
 		_selectValue(e) {
 			return e.detail.value;
 		}
+		_renderMeasurementDefinition(definition) {
+			const available = MEASUREMENT_OPERATIONS.filter((o) => this.operations.includes(o.value) || o.value === definition.operation);
+			return b`
+      <div
+        class="definition"
+        role="group"
+        aria-label=${msg("Aggregate series")}
+      >
+        <inline-select
+          .value=${definition.operation}
+          .options=${this._localizedOptions(available)}
+          aria-label=${msg("Aggregate operation")}
+          @dp-change=${(e) => this._update(definition.id, (d) => ({
+				...d,
+				operation: this._selectValue(e)
+			}))}
+        ></inline-select>
+        <inline-select
+          .value=${definition.interval}
+          .options=${this._localizedOptions(AGGREGATE_INTERVAL_OPTIONS)}
+          aria-label=${msg("Aggregate interval")}
+          @dp-change=${(e) => this._update(definition.id, (d) => ({
+				...d,
+				interval: this._selectValue(e)
+			}))}
+        ></inline-select>
+        <button
+          type="button"
+          class="button remove"
+          aria-label=${msg("Remove aggregate")}
+          @click=${() => this._onRemove(definition.id)}
+        >
+          <ha-icon icon="mdi:close"></ha-icon>
+        </button>
+      </div>
+    `;
+		}
 		_renderDefinition(definition) {
+			if (this.variant === "measurement") return this._renderMeasurementDefinition(definition);
 			const kind = getBinaryAggregateKind(definition);
 			const stateOptions = getBinaryStateOptions(this.deviceClass).map((o) => ({
 				value: o.value,
@@ -24379,6 +24593,11 @@
 		type: String,
 		attribute: "device-class"
 	})], AnalysisAggregateGroup.prototype, "deviceClass", null);
+	__decorate([n$1({ type: String })], AnalysisAggregateGroup.prototype, "variant", null);
+	__decorate([n$1({
+		type: Array,
+		attribute: false
+	})], AnalysisAggregateGroup.prototype, "operations", null);
 	AnalysisAggregateGroup = __decorate([localized()], AnalysisAggregateGroup);
 	customElements.define("analysis-aggregate-group", AnalysisAggregateGroup);
 	//#endregion
@@ -24738,6 +24957,17 @@
                     />
                     <span>${msg("Stepped series")}</span>
                   </label>
+                  <analysis-aggregate-group
+                    variant="measurement"
+                    .analysis=${a}
+                    .entityId=${this._entityId}
+                    .operations=${getAggregateOperations({
+				entity_id: this._entityId,
+				state: this.stateObj?.state,
+				attributes: this.stateObj?.attributes
+			}).filter(isMeasurementOperation)}
+                    @dp-group-analysis-change=${this._onGroupAnalysisChange}
+                  ></analysis-aggregate-group>
                   <analysis-trend-group
                     .analysis=${a}
                     .entityId=${this._entityId}

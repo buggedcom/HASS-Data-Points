@@ -147,8 +147,7 @@ export interface HoverSeriesLike {
   onLabel?: string;
   offLabel?: string;
   stepped?: boolean;
-  /** Bar series: values are per calendar period, not interpolated. */
-  bars?: boolean;
+  /** Aggregate series: values are per calendar period, not interpolated. */
   periods?: Array<{ start: number; end: number }>;
 }
 
@@ -1742,7 +1741,7 @@ export function attachLineChartHover(
     const values = resolvedSeries.map((seriesItem) => {
       let value: Nullable<number>;
       let periodLabel: string | undefined;
-      if (seriesItem.bars && seriesItem.periods) {
+      if (seriesItem.periods) {
         const index = seriesItem.periods.findIndex(
           (period) => timeMs >= period.start && timeMs < period.end
         );
