@@ -28,6 +28,7 @@ import "@/molecules/analysis-rate-group/analysis-rate-group";
 import "@/molecules/analysis-threshold-group/analysis-threshold-group";
 import "@/molecules/analysis-anomaly-group/analysis-anomaly-group";
 import "@/molecules/analysis-delta-group/analysis-delta-group";
+import "@/molecules/analysis-aggregate-group/analysis-aggregate-group";
 
 export type { NormalizedAnalysis, ComparisonWindow, HassEntityState };
 
@@ -60,6 +61,10 @@ export function deriveSwatchIconColor(color: string): string {
   return `rgb(${mixed[0]}, ${mixed[1]}, ${mixed[2]})`;
 }
 
+function hasAggregates(a: NormalizedAnalysis): boolean {
+  return (a.aggregates?.length ?? 0) > 0;
+}
+
 export function _hasConfiguredAnalysis(a: NormalizedAnalysis): boolean {
   return (
     a.show_trend_lines ||
@@ -69,7 +74,8 @@ export function _hasConfiguredAnalysis(a: NormalizedAnalysis): boolean {
     a.show_anomalies ||
     a.show_delta_analysis ||
     a.stepped_series ||
-    a.hide_source_series
+    a.hide_source_series ||
+    hasAggregates(a)
   );
 }
 
@@ -83,7 +89,8 @@ export function _hasActiveAnalysis(
     a.show_rate_of_change ||
     a.show_threshold_analysis ||
     a.show_anomalies ||
-    (a.show_delta_analysis && hasComparisonWindow)
+    (a.show_delta_analysis && hasComparisonWindow) ||
+    hasAggregates(a)
   );
 }
 
@@ -506,6 +513,30 @@ export class TargetRow extends LitElement {
                       @dp-change=${this._onBinaryDisplayChange}
                     ></inline-select>
                   </label>
+                  <analysis-aggregate-group
+                    .analysis=${a}
+                    .entityId=${this._entityId}
+                    .deviceClass=${String(
+                      this.stateObj?.attributes?.device_class ?? ""
+                    )}
+                    @dp-group-analysis-change=${this._onGroupAnalysisChange}
+                  ></analysis-aggregate-group>
+                  <div class="history-target-analysis-bottom-row">
+                    <label
+                      class="history-target-analysis-option ${!hasActive
+                        ? "is-disabled"
+                        : ""}"
+                    >
+                      <input
+                        type="checkbox"
+                        .checked=${a.hide_source_series && hasActive}
+                        ?disabled=${!hasActive}
+                        @change=${(e: Event) =>
+                          this._onCheckbox("hide_source_series", e)}
+                      />
+                      <span>${msg("Hide source series")}</span>
+                    </label>
+                  </div>
                 </div>
               </div>
             `

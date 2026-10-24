@@ -735,7 +735,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/action.styles.ts
-	var styles$78 = i$5`
+	var styles$79 = i$5`
   :host {
     display: block;
   }
@@ -844,7 +844,7 @@
 	];
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/display/color-swatch/color-swatch.styles.ts
-	var styles$77 = i$5`
+	var styles$78 = i$5`
   :host {
     display: block;
   }
@@ -1021,13 +1021,13 @@
     `;
 		}
 	};
-	_defineProperty(ColorSwatch, "styles", styles$77);
+	_defineProperty(ColorSwatch, "styles", styles$78);
 	__decorate([n$1({ type: String })], ColorSwatch.prototype, "color", null);
 	__decorate([n$1({ type: String })], ColorSwatch.prototype, "label", null);
 	customElements.define("color-swatch", ColorSwatch);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/display/feedback-banner/feedback-banner.styles.ts
-	var styles$76 = i$5`
+	var styles$77 = i$5`
   :host {
     display: block;
   }
@@ -1104,7 +1104,7 @@
     `;
 		}
 	};
-	_defineProperty(FeedbackBanner, "styles", styles$76);
+	_defineProperty(FeedbackBanner, "styles", styles$77);
 	__decorate([n$1({ type: String })], FeedbackBanner.prototype, "kind", null);
 	__decorate([n$1({ type: String })], FeedbackBanner.prototype, "text", null);
 	__decorate([n$1({ type: Boolean })], FeedbackBanner.prototype, "visible", null);
@@ -1112,7 +1112,7 @@
 	customElements.define("feedback-banner", FeedbackBanner);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/action-targets/action-targets.styles.ts
-	var styles$75 = i$5`
+	var styles$76 = i$5`
   :host {
     display: block;
   }
@@ -1124,7 +1124,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/chip-group/chip-group.styles.ts
-	var styles$74 = i$5`
+	var styles$75 = i$5`
   :host {
     display: block;
   }
@@ -1141,7 +1141,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/entity-chip/entity-chip.styles.ts
-	var styles$73 = i$5`
+	var styles$74 = i$5`
   :host {
     display: inline-flex;
   }
@@ -1272,7 +1272,7 @@
     `;
 		}
 	};
-	_defineProperty(EntityChip, "styles", styles$73);
+	_defineProperty(EntityChip, "styles", styles$74);
 	__decorate([n$1({ type: String })], EntityChip.prototype, "type", null);
 	__decorate([n$1({
 		type: String,
@@ -1346,7 +1346,7 @@
     `;
 		}
 	};
-	_defineProperty(ChipGroup, "styles", styles$74);
+	_defineProperty(ChipGroup, "styles", styles$75);
 	__decorate([n$1({ type: Array })], ChipGroup.prototype, "items", null);
 	__decorate([n$1({ type: Object })], ChipGroup.prototype, "hass", null);
 	__decorate([n$1({ type: Boolean })], ChipGroup.prototype, "removable", null);
@@ -1433,7 +1433,7 @@
     `;
 		}
 	};
-	_defineProperty(CardActionTargets, "styles", styles$75);
+	_defineProperty(CardActionTargets, "styles", styles$76);
 	__decorate([n$1({ attribute: false })], CardActionTargets.prototype, "hass", null);
 	__decorate([n$1({
 		type: Boolean,
@@ -1796,7 +1796,7 @@
 		_feedbackText: { state: true },
 		_feedbackVisible: { state: true }
 	});
-	_defineProperty(HassDatapointsActionCard, "styles", styles$78);
+	_defineProperty(HassDatapointsActionCard, "styles", styles$79);
 	__decorate([e$4("#msg")], HassDatapointsActionCard.prototype, "_msgEl", null);
 	__decorate([e$4("#btn")], HassDatapointsActionCard.prototype, "_btnEl", null);
 	__decorate([e$4("#ann")], HassDatapointsActionCard.prototype, "_annEl", null);
@@ -2223,10 +2223,10 @@
 	];
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/i18n/fi.ts
-	var fi_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$167 });
-	var translations$167;
-	var init_fi$28 = __esmMin((() => {
-		translations$167 = {
+	var fi_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$173 });
+	var translations$173;
+	var init_fi$29 = __esmMin((() => {
+		translations$173 = {
 			General: "Yleiset",
 			"Related items": "Liittyvät kohteet",
 			"Datapoint Appearance": "Datapisteen ulkoasu",
@@ -2243,20 +2243,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/i18n/fi.ts
-	var fi_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$166 });
-	var translations$166;
-	var init_fi$27 = __esmMin((() => {
-		translations$166 = {
+	var fi_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$172 });
+	var translations$172;
+	var init_fi$28 = __esmMin((() => {
+		translations$172 = {
 			"Date window:": "Aikaikkuna:",
 			"Actual:": "Todellinen:"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/i18n/fi.ts
-	var fi_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$165 });
-	var translations$165;
-	var init_fi$26 = __esmMin((() => {
-		translations$165 = {
+	var fi_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$171 });
+	var translations$171;
+	var init_fi$27 = __esmMin((() => {
+		translations$171 = {
 			General: "Yleiset",
 			Entity: "Entiteetti",
 			"Multiple entities": "Useita entiteettejä",
@@ -2273,10 +2273,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/i18n/fi.ts
-	var fi_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$164 });
-	var translations$164;
-	var init_fi$25 = __esmMin((() => {
-		translations$164 = {
+	var fi_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$170 });
+	var translations$170;
+	var init_fi$26 = __esmMin((() => {
+		translations$170 = {
 			"Search datapoints…": "Hae datapisteitä…",
 			"Delete record": "Poista tietue",
 			Delete: "Poista",
@@ -2294,10 +2294,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/i18n/fi.ts
-	var fi_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$163 });
-	var translations$163;
-	var init_fi$24 = __esmMin((() => {
-		translations$163 = {
+	var fi_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$169 });
+	var translations$169;
+	var init_fi$25 = __esmMin((() => {
+		translations$169 = {
 			General: "Yleiset",
 			"Icon & colour": "Kuvake ja väri",
 			"Related items": "Liittyvät kohteet",
@@ -2315,10 +2315,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/i18n/fi.ts
-	var fi_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$162 });
-	var translations$162;
-	var init_fi$23 = __esmMin((() => {
-		translations$162 = {
+	var fi_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$168 });
+	var translations$168;
+	var init_fi$24 = __esmMin((() => {
+		translations$168 = {
 			Entity: "Entiteetti",
 			Display: "Näyttö",
 			"Records list": "Tietueiden luettelo",
@@ -2338,10 +2338,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/i18n/fi.ts
-	var fi_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$161 });
-	var translations$161;
-	var init_fi$22 = __esmMin((() => {
-		translations$161 = {
+	var fi_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$167 });
+	var translations$167;
+	var init_fi$23 = __esmMin((() => {
+		translations$167 = {
 			"⚠️ Anomaly Insight": "⚠️ Poikkeavuushavainto",
 			"⚠️ Multi-method Anomaly": "⚠️ Monimenetelmäinen poikkeavuus",
 			"Click the highlighted circle to add an annotation.": "Klikkaa korostettua ympyrää lisätäksesi huomautuksen.",
@@ -2376,10 +2376,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/ha/i18n/fi.ts
-	var fi_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$160 });
-	var translations$160;
-	var init_fi$21 = __esmMin((() => {
-		translations$160 = {
+	var fi_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$166 });
+	var translations$166;
+	var init_fi$22 = __esmMin((() => {
+		translations$166 = {
 			"Confirm delete": "Vahvista poisto",
 			"Are you sure you want to delete this item?": "Oletko varma, että haluat poistaa tämän kohteen?",
 			Cancel: "Peruuta",
@@ -2394,10 +2394,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/history-page/i18n/fi.ts
-	var fi_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$159 });
-	var translations$159;
-	var init_fi$20 = __esmMin((() => {
-		translations$159 = {
+	var fi_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$165 });
+	var translations$165;
+	var init_fi$21 = __esmMin((() => {
+		translations$165 = {
 			"entity_id={0}": "entity_id={0}",
 			"device_id={0}": "device_id={0}",
 			"area_id={0}": "area_id={0}",
@@ -2495,20 +2495,51 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/timeline/i18n/fi.ts
-	var fi_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$158 });
-	var translations$158;
-	var init_fi$19 = __esmMin((() => {
-		translations$158 = {
+	var fi_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$164 });
+	var translations$164;
+	var init_fi$20 = __esmMin((() => {
+		translations$164 = {
 			Wk: "Vk",
 			"Week of": "Viikko"
 		};
 	}));
 	//#endregion
+	//#region custom_components/hass_datapoints/src/molecules/analysis-aggregate-group/i18n/fi.ts
+	var fi_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$163 });
+	var translations$163;
+	var init_fi$19 = __esmMin((() => {
+		translations$163 = {
+			"Aggregate series": "Koosteet",
+			"Add aggregate": "Lisää koostesarja",
+			"Remove aggregate": "Poista koostesarja",
+			"Aggregate operation": "Koosteen toiminto",
+			"Aggregate state": "Koosteen tila",
+			"Aggregate interval": "Koosteen jakso",
+			"Count changes to a state": "Laske muutokset tilaan",
+			"Count all state changes": "Laske kaikki tilamuutokset",
+			"Time in a state": "Aika tilassa",
+			"Percentage of time in a state": "Tilassa vietetyn ajan osuus prosentteina",
+			Hourly: "Tunneittain",
+			Daily: "Päivittäin",
+			Weekly: "Viikoittain",
+			Monthly: "Kuukausittain",
+			On: "Päällä",
+			Off: "Pois",
+			Open: "Auki",
+			Closed: "Kiinni",
+			Detected: "Havaittu",
+			Clear: "Vapaa",
+			Occupied: "Varattu",
+			Unlocked: "Avattu",
+			Locked: "Lukittu"
+		};
+	}));
+	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/i18n/fi.ts
-	var fi_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$157 });
-	var translations$157;
+	var fi_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$162 });
+	var translations$162;
 	var init_fi$18 = __esmMin((() => {
-		translations$157 = {
+		translations$162 = {
 			Direction: "Suunta",
 			Both: "Molemmat",
 			Above: "Yläpuolella",
@@ -2556,10 +2587,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-delta-group/i18n/fi.ts
-	var fi_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$156 });
-	var translations$156;
+	var fi_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$161 });
+	var translations$161;
 	var init_fi$17 = __esmMin((() => {
-		translations$156 = {
+		translations$161 = {
 			"Show delta vs selected date window": "Näytä delta vs. valittu aikaikkuna",
 			"Select a date window tab to enable delta analysis.": "Valitse aikaikkuna-välilehti ottaaksesi delta-analyysin käyttöön.",
 			"Show delta in tooltip": "Näytä delta työkaluvihjeessä",
@@ -2568,10 +2599,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/i18n/fi.ts
-	var fi_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$155 });
-	var translations$155;
+	var fi_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$160 });
+	var translations$160;
 	var init_fi$16 = __esmMin((() => {
-		translations$155 = {
+		translations$160 = {
 			"Show rate of change": "Näytä muutosnopeus",
 			"Show rate of change crosshairs": "Näytä muutosnopeuden tähtäin",
 			"Rate window": "Muutosikkuna",
@@ -2583,10 +2614,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-sample-group/i18n/fi.ts
-	var fi_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$154 });
-	var translations$154;
+	var fi_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$159 });
+	var translations$159;
 	var init_fi$15 = __esmMin((() => {
-		translations$154 = {
+		translations$159 = {
 			Downsampling: "Alasnäytteistys",
 			Interval: "Väli",
 			Aggregate: "Kooste",
@@ -2618,20 +2649,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/i18n/fi.ts
-	var fi_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$153 });
-	var translations$153;
+	var fi_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$158 });
+	var translations$158;
 	var init_fi$14 = __esmMin((() => {
-		translations$153 = {
+		translations$158 = {
 			"Show min / max / mean": "Näytä min / max / keskiarvo",
 			"Show range shading": "Näytä aluevarjostus"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/i18n/fi.ts
-	var fi_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$152 });
-	var translations$152;
+	var fi_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$157 });
+	var translations$157;
 	var init_fi$13 = __esmMin((() => {
-		translations$152 = {
+		translations$157 = {
 			"Show threshold analysis": "Näytä kynnysanalyysi",
 			"Shade threshold area": "Varjosta kynnysalue",
 			Threshold: "Kynnys",
@@ -2642,10 +2673,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/i18n/fi.ts
-	var fi_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$151 });
-	var translations$151;
+	var fi_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$156 });
+	var translations$156;
 	var init_fi$12 = __esmMin((() => {
-		translations$151 = {
+		translations$156 = {
 			"Show trend lines": "Näytä trendiviivat",
 			"Show trend crosshairs": "Näytä trenditähtäin",
 			"Trend method": "Trendimenetelmä",
@@ -2663,10 +2694,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/i18n/fi.ts
-	var fi_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$150 });
-	var translations$150;
+	var fi_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$155 });
+	var translations$155;
 	var init_fi$11 = __esmMin((() => {
-		translations$150 = {
+		translations$155 = {
 			"Add all series from chart": "Lisää kaikki sarjat kaaviosta",
 			"Add from current chart": "Lisää nykyisestä kaaviosta",
 			"Create anomaly monitor": "Luo poikkeamamonitori",
@@ -2676,17 +2707,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab-rail/i18n/fi.ts
-	var fi_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$149 });
-	var translations$149;
+	var fi_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$154 });
+	var translations$154;
 	var init_fi$10 = __esmMin((() => {
-		translations$149 = { "Add date window": "Lisää aikaikkuna" };
+		translations$154 = { "Add date window": "Lisää aikaikkuna" };
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/i18n/fi.ts
-	var fi_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$148 });
-	var translations$148;
+	var fi_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$153 });
+	var translations$153;
 	var init_fi$9 = __esmMin((() => {
-		translations$148 = {
+		translations$153 = {
 			"A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later.": "Aikaikkuna tallentaa nimetyn päivävälin välilehteksi, jotta voit nopeasti esikatsella sitä suhteessa valittuun alueeseen tai palata kaavion kyseiseen ajanjaksoon.",
 			Name: "Nimi",
 			"e.g. Heating season start": "esim. Lämmityskausi alkaa",
@@ -2703,10 +2734,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/i18n/fi.ts
-	var fi_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$147 });
-	var translations$147;
+	var fi_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$152 });
+	var translations$152;
 	var init_fi$8 = __esmMin((() => {
-		translations$147 = {
+		translations$152 = {
 			Datapoints: "Datapisteet",
 			"Choose which annotation datapoints appear on the chart.": "Valitse, mitkä huomautusten datapisteet näkyvät kaaviossa.",
 			"Linked to selected targets": "Linkitetty valittuihin kohteisiin",
@@ -2716,10 +2747,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/i18n/fi.ts
-	var fi_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$146 });
-	var translations$146;
+	var fi_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$151 });
+	var translations$151;
 	var init_fi$7 = __esmMin((() => {
-		translations$146 = {
+		translations$151 = {
 			"Analysis configured": "Analyysi määritetty",
 			"Configure analysis": "Määritä analyysi",
 			"Stepped series": "Porrastettu sarja",
@@ -2731,17 +2762,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/i18n/fi.ts
-	var fi_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$145 });
-	var translations$145;
+	var fi_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$150 });
+	var translations$150;
 	var init_fi$6 = __esmMin((() => {
-		translations$145 = {};
+		translations$150 = {};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/ai-query-brief-dialog/i18n/fi.ts
-	var fi_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$144 });
-	var translations$144;
+	var fi_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$149 });
+	var translations$149;
 	var init_fi$5 = __esmMin((() => {
-		translations$144 = {
+		translations$149 = {
 			"AI query brief": "AI-kyselytiivistelma",
 			"This brief is intended for another AI to fetch raw Home Assistant history and hass_datapoints anomaly details. Review it, then copy it into your AI tool of choice.": "Tama tiivistelma on tarkoitettu toiselle AI:lle Home Assistantin raakadat historian ja hass_datapointsin poikkeamien lisatietojen hakemista varten. Tarkista se ja kopioi sitten haluamaasi AI-tyokaluun.",
 			"Copy-ready brief": "Kopiointivalmis tiivistelma",
@@ -2753,10 +2784,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/history-targets/i18n/fi.ts
-	var fi_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$143 });
-	var translations$143;
+	var fi_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$148 });
+	var translations$148;
 	var init_fi$4 = __esmMin((() => {
-		translations$143 = {
+		translations$148 = {
 			Targets: "Kohteet",
 			"Each row controls one chart series.": "Jokainen rivi ohjaa yhtä kaaviosarjaa.",
 			"Add target": "Lisää kohde",
@@ -2765,10 +2796,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/panel-shell/i18n/fi.ts
-	var fi_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$142 });
-	var translations$142;
+	var fi_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$147 });
+	var translations$147;
 	var init_fi$3 = __esmMin((() => {
-		translations$142 = {
+		translations$147 = {
 			"Loading Datapoints…": "Ladataan Datapoints…",
 			Datapoints: "Datapoints",
 			"Page options": "Sivun asetukset",
@@ -2783,10 +2814,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/range-toolbar/i18n/fi.ts
-	var fi_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$141 });
-	var translations$141;
+	var fi_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$146 });
+	var translations$146;
 	var init_fi$2 = __esmMin((() => {
-		translations$141 = {
+		translations$146 = {
 			"Toggle sidebar": "Vaihda sivupalkki",
 			Start: "Alku",
 			End: "Loppu",
@@ -2811,16 +2842,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/i18n/fi.ts
-	var fi_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$140 });
-	var translations$140;
+	var fi_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$145 });
+	var translations$145;
 	var init_fi$1 = __esmMin((() => {
-		translations$140 = { "Selected range": "Valittu aikaväli" };
+		translations$145 = { "Selected range": "Valittu aikaväli" };
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/i18n/locales/fi.ts
 	var fi_exports = /* @__PURE__ */ __exportAll({ templates: () => templates$5 });
 	var modules$5, merged$5, templates$5;
 	var init_fi = __esmMin((() => {
+		init_fi$29();
 		init_fi$28();
 		init_fi$27();
 		init_fi$26();
@@ -2850,16 +2882,17 @@
 		init_fi$2();
 		init_fi$1();
 		modules$5 = /* #__PURE__ */ Object.assign({
-			"../../../cards/action/i18n/fi.ts": fi_exports$28,
-			"../../../cards/history/history-chart/i18n/fi.ts": fi_exports$27,
-			"../../../cards/history/i18n/fi.ts": fi_exports$26,
-			"../../../cards/list/i18n/fi.ts": fi_exports$25,
-			"../../../cards/quick/i18n/fi.ts": fi_exports$24,
-			"../../../cards/sensor/i18n/fi.ts": fi_exports$23,
-			"../../chart/i18n/fi.ts": fi_exports$22,
-			"../../ha/i18n/fi.ts": fi_exports$21,
-			"../../history-page/i18n/fi.ts": fi_exports$20,
-			"../../timeline/i18n/fi.ts": fi_exports$19,
+			"../../../cards/action/i18n/fi.ts": fi_exports$29,
+			"../../../cards/history/history-chart/i18n/fi.ts": fi_exports$28,
+			"../../../cards/history/i18n/fi.ts": fi_exports$27,
+			"../../../cards/list/i18n/fi.ts": fi_exports$26,
+			"../../../cards/quick/i18n/fi.ts": fi_exports$25,
+			"../../../cards/sensor/i18n/fi.ts": fi_exports$24,
+			"../../chart/i18n/fi.ts": fi_exports$23,
+			"../../ha/i18n/fi.ts": fi_exports$22,
+			"../../history-page/i18n/fi.ts": fi_exports$21,
+			"../../timeline/i18n/fi.ts": fi_exports$20,
+			"../../../molecules/analysis-aggregate-group/i18n/fi.ts": fi_exports$19,
 			"../../../molecules/analysis-anomaly-group/i18n/fi.ts": fi_exports$18,
 			"../../../molecules/analysis-delta-group/i18n/fi.ts": fi_exports$17,
 			"../../../molecules/analysis-rate-group/i18n/fi.ts": fi_exports$16,
@@ -2885,10 +2918,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/i18n/fr.ts
-	var fr_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$139 });
-	var translations$139;
-	var init_fr$28 = __esmMin((() => {
-		translations$139 = {
+	var fr_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$144 });
+	var translations$144;
+	var init_fr$29 = __esmMin((() => {
+		translations$144 = {
 			General: "Général",
 			"Related items": "Éléments liés",
 			"Datapoint Appearance": "Apparence du point de données",
@@ -2905,20 +2938,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/i18n/fr.ts
-	var fr_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$138 });
-	var translations$138;
-	var init_fr$27 = __esmMin((() => {
-		translations$138 = {
+	var fr_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$143 });
+	var translations$143;
+	var init_fr$28 = __esmMin((() => {
+		translations$143 = {
 			"Date window:": "Fenêtre de dates :",
 			"Actual:": "Réel :"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/i18n/fr.ts
-	var fr_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$137 });
-	var translations$137;
-	var init_fr$26 = __esmMin((() => {
-		translations$137 = {
+	var fr_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$142 });
+	var translations$142;
+	var init_fr$27 = __esmMin((() => {
+		translations$142 = {
 			General: "Général",
 			Entity: "Entité",
 			"Multiple entities": "Plusieurs entités",
@@ -2935,10 +2968,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/i18n/fr.ts
-	var fr_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$136 });
-	var translations$136;
-	var init_fr$25 = __esmMin((() => {
-		translations$136 = {
+	var fr_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$141 });
+	var translations$141;
+	var init_fr$26 = __esmMin((() => {
+		translations$141 = {
 			"Search datapoints…": "Rechercher des points de données…",
 			"Delete record": "Supprimer l’enregistrement",
 			Delete: "Supprimer",
@@ -2956,10 +2989,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/i18n/fr.ts
-	var fr_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$135 });
-	var translations$135;
-	var init_fr$24 = __esmMin((() => {
-		translations$135 = {
+	var fr_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$140 });
+	var translations$140;
+	var init_fr$25 = __esmMin((() => {
+		translations$140 = {
 			General: "Général",
 			"Icon & colour": "Icône et couleur",
 			"Related items": "Éléments liés",
@@ -2977,10 +3010,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/i18n/fr.ts
-	var fr_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$134 });
-	var translations$134;
-	var init_fr$23 = __esmMin((() => {
-		translations$134 = {
+	var fr_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$139 });
+	var translations$139;
+	var init_fr$24 = __esmMin((() => {
+		translations$139 = {
 			Entity: "Entité",
 			Display: "Affichage",
 			"Records list": "Liste des enregistrements",
@@ -3000,10 +3033,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/i18n/fr.ts
-	var fr_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$133 });
-	var translations$133;
-	var init_fr$22 = __esmMin((() => {
-		translations$133 = {
+	var fr_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$138 });
+	var translations$138;
+	var init_fr$23 = __esmMin((() => {
+		translations$138 = {
 			"⚠️ Anomaly Insight": "⚠️ Analyse d’anomalie",
 			"⚠️ Multi-method Anomaly": "⚠️ Anomalie multi-méthodes",
 			"Click the highlighted circle to add an annotation.": "Cliquez sur le cercle en surbrillance pour ajouter une annotation.",
@@ -3038,10 +3071,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/ha/i18n/fr.ts
-	var fr_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$132 });
-	var translations$132;
-	var init_fr$21 = __esmMin((() => {
-		translations$132 = {
+	var fr_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$137 });
+	var translations$137;
+	var init_fr$22 = __esmMin((() => {
+		translations$137 = {
 			"Confirm delete": "Confirmer la suppression",
 			"Are you sure you want to delete this item?": "Voulez-vous vraiment supprimer cet élément ?",
 			Cancel: "Annuler",
@@ -3056,10 +3089,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/history-page/i18n/fr.ts
-	var fr_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$131 });
-	var translations$131;
-	var init_fr$20 = __esmMin((() => {
-		translations$131 = {
+	var fr_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$136 });
+	var translations$136;
+	var init_fr$21 = __esmMin((() => {
+		translations$136 = {
 			"entity_id={0}": "entity_id={0}",
 			"device_id={0}": "device_id={0}",
 			"area_id={0}": "area_id={0}",
@@ -3157,20 +3190,51 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/timeline/i18n/fr.ts
-	var fr_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$130 });
-	var translations$130;
-	var init_fr$19 = __esmMin((() => {
-		translations$130 = {
+	var fr_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$135 });
+	var translations$135;
+	var init_fr$20 = __esmMin((() => {
+		translations$135 = {
 			Wk: "Sem.",
 			"Week of": "Semaine du"
 		};
 	}));
 	//#endregion
+	//#region custom_components/hass_datapoints/src/molecules/analysis-aggregate-group/i18n/fr.ts
+	var fr_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$134 });
+	var translations$134;
+	var init_fr$19 = __esmMin((() => {
+		translations$134 = {
+			"Aggregate series": "Séries agrégées",
+			"Add aggregate": "Ajouter un agrégat",
+			"Remove aggregate": "Supprimer l'agrégat",
+			"Aggregate operation": "Opération de l'agrégat",
+			"Aggregate state": "État de l'agrégat",
+			"Aggregate interval": "Intervalle de l'agrégat",
+			"Count changes to a state": "Compter les passages à un état",
+			"Count all state changes": "Compter tous les changements d'état",
+			"Time in a state": "Durée dans un état",
+			"Percentage of time in a state": "Pourcentage du temps dans un état",
+			Hourly: "Par heure",
+			Daily: "Par jour",
+			Weekly: "Par semaine",
+			Monthly: "Par mois",
+			On: "Allumé",
+			Off: "Éteint",
+			Open: "Ouvert",
+			Closed: "Fermé",
+			Detected: "Détecté",
+			Clear: "Libre",
+			Occupied: "Occupé",
+			Unlocked: "Déverrouillé",
+			Locked: "Verrouillé"
+		};
+	}));
+	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/i18n/fr.ts
-	var fr_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$129 });
-	var translations$129;
+	var fr_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$133 });
+	var translations$133;
 	var init_fr$18 = __esmMin((() => {
-		translations$129 = {
+		translations$133 = {
 			Direction: "Sens",
 			Both: "Les deux",
 			Above: "Au-dessus",
@@ -3218,10 +3282,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-delta-group/i18n/fr.ts
-	var fr_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$128 });
-	var translations$128;
+	var fr_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$132 });
+	var translations$132;
 	var init_fr$17 = __esmMin((() => {
-		translations$128 = {
+		translations$132 = {
 			"Show delta vs selected date window": "Afficher le delta par rapport à la fenêtre de dates sélectionnée",
 			"Select a date window tab to enable delta analysis.": "Sélectionnez un onglet de fenêtre de dates pour activer l’analyse delta.",
 			"Show delta in tooltip": "Afficher le delta dans l’infobulle",
@@ -3230,10 +3294,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/i18n/fr.ts
-	var fr_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$127 });
-	var translations$127;
+	var fr_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$131 });
+	var translations$131;
 	var init_fr$16 = __esmMin((() => {
-		translations$127 = {
+		translations$131 = {
 			"Show rate of change": "Afficher le taux de variation",
 			"Show rate of change crosshairs": "Afficher les repères du taux de variation",
 			"Rate window": "Fenêtre de variation",
@@ -3245,10 +3309,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-sample-group/i18n/fr.ts
-	var fr_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$126 });
-	var translations$126;
+	var fr_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$130 });
+	var translations$130;
 	var init_fr$15 = __esmMin((() => {
-		translations$126 = {
+		translations$130 = {
 			Downsampling: "Rééchantillonnage",
 			Interval: "Intervalle",
 			Aggregate: "Agrégat",
@@ -3280,20 +3344,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/i18n/fr.ts
-	var fr_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$125 });
-	var translations$125;
+	var fr_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$129 });
+	var translations$129;
 	var init_fr$14 = __esmMin((() => {
-		translations$125 = {
+		translations$129 = {
 			"Show min / max / mean": "Afficher min / max / moyenne",
 			"Show range shading": "Afficher l’ombrage de la plage"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/i18n/fr.ts
-	var fr_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$124 });
-	var translations$124;
+	var fr_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$128 });
+	var translations$128;
 	var init_fr$13 = __esmMin((() => {
-		translations$124 = {
+		translations$128 = {
 			"Show threshold analysis": "Afficher l’analyse de seuil",
 			"Shade threshold area": "Ombrer la zone du seuil",
 			Threshold: "Seuil",
@@ -3304,10 +3368,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/i18n/fr.ts
-	var fr_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$123 });
-	var translations$123;
+	var fr_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$127 });
+	var translations$127;
 	var init_fr$12 = __esmMin((() => {
-		translations$123 = {
+		translations$127 = {
 			"Show trend lines": "Afficher les lignes de tendance",
 			"Show trend crosshairs": "Afficher les repères de tendance",
 			"Trend method": "Méthode de tendance",
@@ -3325,10 +3389,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/i18n/fr.ts
-	var fr_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$122 });
-	var translations$122;
+	var fr_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$126 });
+	var translations$126;
 	var init_fr$11 = __esmMin((() => {
-		translations$122 = {
+		translations$126 = {
 			"Add all series from chart": "Ajouter toutes les séries du graphique",
 			"Add from current chart": "Ajouter depuis le graphique actuel",
 			"Create anomaly monitor": "Créer un moniteur d'anomalies",
@@ -3338,17 +3402,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab-rail/i18n/fr.ts
-	var fr_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$121 });
-	var translations$121;
+	var fr_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$125 });
+	var translations$125;
 	var init_fr$10 = __esmMin((() => {
-		translations$121 = { "Add date window": "Ajouter une fenêtre de dates" };
+		translations$125 = { "Add date window": "Ajouter une fenêtre de dates" };
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/i18n/fr.ts
-	var fr_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$120 });
-	var translations$120;
+	var fr_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$124 });
+	var translations$124;
 	var init_fr$9 = __esmMin((() => {
-		translations$120 = {
+		translations$124 = {
 			"A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later.": "Une fenêtre de dates enregistre une plage de dates nommée comme onglet afin que vous puissiez la prévisualiser rapidement par rapport à la plage sélectionnée ou y revenir plus tard dans le graphique.",
 			Name: "Nom",
 			"e.g. Heating season start": "ex. Début de la saison de chauffe",
@@ -3365,10 +3429,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/i18n/fr.ts
-	var fr_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$119 });
-	var translations$119;
+	var fr_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$123 });
+	var translations$123;
 	var init_fr$8 = __esmMin((() => {
-		translations$119 = {
+		translations$123 = {
 			Datapoints: "Points de données",
 			"Choose which annotation datapoints appear on the chart.": "Choisissez quels points de données d’annotation apparaissent sur le graphique.",
 			"Linked to selected targets": "Liés aux cibles sélectionnées",
@@ -3378,10 +3442,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/i18n/fr.ts
-	var fr_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$118 });
-	var translations$118;
+	var fr_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$122 });
+	var translations$122;
 	var init_fr$7 = __esmMin((() => {
-		translations$118 = {
+		translations$122 = {
 			"Analysis configured": "Analyse configurée",
 			"Configure analysis": "Configurer l’analyse",
 			"Stepped series": "Série en escalier",
@@ -3393,17 +3457,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/i18n/fr.ts
-	var fr_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$117 });
-	var translations$117;
+	var fr_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$121 });
+	var translations$121;
 	var init_fr$6 = __esmMin((() => {
-		translations$117 = {};
+		translations$121 = {};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/ai-query-brief-dialog/i18n/fr.ts
-	var fr_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$116 });
-	var translations$116;
+	var fr_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$120 });
+	var translations$120;
 	var init_fr$5 = __esmMin((() => {
-		translations$116 = {
+		translations$120 = {
 			"AI query brief": "Brief de requete IA",
 			"This brief is intended for another AI to fetch raw Home Assistant history and hass_datapoints anomaly details. Review it, then copy it into your AI tool of choice.": "Ce brief est destine a une autre IA afin de recuperer l'historique brut de Home Assistant et les details d'anomalie de hass_datapoints. Relisez-le, puis copiez-le dans l'outil IA de votre choix.",
 			"Copy-ready brief": "Brief pret a copier",
@@ -3415,10 +3479,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/history-targets/i18n/fr.ts
-	var fr_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$115 });
-	var translations$115;
+	var fr_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$119 });
+	var translations$119;
 	var init_fr$4 = __esmMin((() => {
-		translations$115 = {
+		translations$119 = {
 			Targets: "Cibles",
 			"Each row controls one chart series.": "Chaque ligne contrôle une série du graphique.",
 			"Add target": "Ajouter une cible",
@@ -3427,10 +3491,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/panel-shell/i18n/fr.ts
-	var fr_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$114 });
-	var translations$114;
+	var fr_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$118 });
+	var translations$118;
 	var init_fr$3 = __esmMin((() => {
-		translations$114 = {
+		translations$118 = {
 			"Loading Datapoints…": "Chargement des points de données…",
 			Datapoints: "Points de données",
 			"Page options": "Options de la page",
@@ -3445,10 +3509,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/range-toolbar/i18n/fr.ts
-	var fr_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$113 });
-	var translations$113;
+	var fr_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$117 });
+	var translations$117;
 	var init_fr$2 = __esmMin((() => {
-		translations$113 = {
+		translations$117 = {
 			"Toggle sidebar": "Basculer la barre latérale",
 			Start: "Début",
 			End: "Fin",
@@ -3473,16 +3537,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/i18n/fr.ts
-	var fr_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$112 });
-	var translations$112;
+	var fr_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$116 });
+	var translations$116;
 	var init_fr$1 = __esmMin((() => {
-		translations$112 = { "Selected range": "Période sélectionnée" };
+		translations$116 = { "Selected range": "Période sélectionnée" };
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/i18n/locales/fr.ts
 	var fr_exports = /* @__PURE__ */ __exportAll({ templates: () => templates$4 });
 	var modules$4, merged$4, templates$4;
 	var init_fr = __esmMin((() => {
+		init_fr$29();
 		init_fr$28();
 		init_fr$27();
 		init_fr$26();
@@ -3512,16 +3577,17 @@
 		init_fr$2();
 		init_fr$1();
 		modules$4 = /* #__PURE__ */ Object.assign({
-			"../../../cards/action/i18n/fr.ts": fr_exports$28,
-			"../../../cards/history/history-chart/i18n/fr.ts": fr_exports$27,
-			"../../../cards/history/i18n/fr.ts": fr_exports$26,
-			"../../../cards/list/i18n/fr.ts": fr_exports$25,
-			"../../../cards/quick/i18n/fr.ts": fr_exports$24,
-			"../../../cards/sensor/i18n/fr.ts": fr_exports$23,
-			"../../chart/i18n/fr.ts": fr_exports$22,
-			"../../ha/i18n/fr.ts": fr_exports$21,
-			"../../history-page/i18n/fr.ts": fr_exports$20,
-			"../../timeline/i18n/fr.ts": fr_exports$19,
+			"../../../cards/action/i18n/fr.ts": fr_exports$29,
+			"../../../cards/history/history-chart/i18n/fr.ts": fr_exports$28,
+			"../../../cards/history/i18n/fr.ts": fr_exports$27,
+			"../../../cards/list/i18n/fr.ts": fr_exports$26,
+			"../../../cards/quick/i18n/fr.ts": fr_exports$25,
+			"../../../cards/sensor/i18n/fr.ts": fr_exports$24,
+			"../../chart/i18n/fr.ts": fr_exports$23,
+			"../../ha/i18n/fr.ts": fr_exports$22,
+			"../../history-page/i18n/fr.ts": fr_exports$21,
+			"../../timeline/i18n/fr.ts": fr_exports$20,
+			"../../../molecules/analysis-aggregate-group/i18n/fr.ts": fr_exports$19,
 			"../../../molecules/analysis-anomaly-group/i18n/fr.ts": fr_exports$18,
 			"../../../molecules/analysis-delta-group/i18n/fr.ts": fr_exports$17,
 			"../../../molecules/analysis-rate-group/i18n/fr.ts": fr_exports$16,
@@ -3547,10 +3613,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/i18n/de.ts
-	var de_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$111 });
-	var translations$111;
-	var init_de$28 = __esmMin((() => {
-		translations$111 = {
+	var de_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$115 });
+	var translations$115;
+	var init_de$29 = __esmMin((() => {
+		translations$115 = {
 			General: "Allgemein",
 			"Related items": "Verknüpfte Elemente",
 			"Datapoint Appearance": "Darstellung des Datenpunkts",
@@ -3567,20 +3633,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/i18n/de.ts
-	var de_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$110 });
-	var translations$110;
-	var init_de$27 = __esmMin((() => {
-		translations$110 = {
+	var de_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$114 });
+	var translations$114;
+	var init_de$28 = __esmMin((() => {
+		translations$114 = {
 			"Date window:": "Datumsfenster:",
 			"Actual:": "Tatsächlich:"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/i18n/de.ts
-	var de_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$109 });
-	var translations$109;
-	var init_de$26 = __esmMin((() => {
-		translations$109 = {
+	var de_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$113 });
+	var translations$113;
+	var init_de$27 = __esmMin((() => {
+		translations$113 = {
 			General: "Allgemein",
 			Entity: "Entität",
 			"Multiple entities": "Mehrere Entitäten",
@@ -3597,10 +3663,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/i18n/de.ts
-	var de_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$108 });
-	var translations$108;
-	var init_de$25 = __esmMin((() => {
-		translations$108 = {
+	var de_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$112 });
+	var translations$112;
+	var init_de$26 = __esmMin((() => {
+		translations$112 = {
 			"Search datapoints…": "Datenpunkte suchen…",
 			"Delete record": "Eintrag löschen",
 			Delete: "Löschen",
@@ -3618,10 +3684,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/i18n/de.ts
-	var de_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$107 });
-	var translations$107;
-	var init_de$24 = __esmMin((() => {
-		translations$107 = {
+	var de_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$111 });
+	var translations$111;
+	var init_de$25 = __esmMin((() => {
+		translations$111 = {
 			General: "Allgemein",
 			"Icon & colour": "Symbol und Farbe",
 			"Related items": "Verknüpfte Elemente",
@@ -3639,10 +3705,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/i18n/de.ts
-	var de_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$106 });
-	var translations$106;
-	var init_de$23 = __esmMin((() => {
-		translations$106 = {
+	var de_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$110 });
+	var translations$110;
+	var init_de$24 = __esmMin((() => {
+		translations$110 = {
 			Entity: "Entität",
 			Display: "Anzeige",
 			"Records list": "Eintragsliste",
@@ -3662,10 +3728,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/i18n/de.ts
-	var de_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$105 });
-	var translations$105;
-	var init_de$22 = __esmMin((() => {
-		translations$105 = {
+	var de_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$109 });
+	var translations$109;
+	var init_de$23 = __esmMin((() => {
+		translations$109 = {
 			"⚠️ Anomaly Insight": "⚠️ Anomalie-Einblick",
 			"⚠️ Multi-method Anomaly": "⚠️ Anomalie mit mehreren Methoden",
 			"Click the highlighted circle to add an annotation.": "Klicken Sie auf den hervorgehobenen Kreis, um eine Anmerkung hinzuzufügen.",
@@ -3700,10 +3766,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/ha/i18n/de.ts
-	var de_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$104 });
-	var translations$104;
-	var init_de$21 = __esmMin((() => {
-		translations$104 = {
+	var de_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$108 });
+	var translations$108;
+	var init_de$22 = __esmMin((() => {
+		translations$108 = {
 			"Confirm delete": "Löschen bestätigen",
 			"Are you sure you want to delete this item?": "Möchten Sie dieses Element wirklich löschen?",
 			Cancel: "Abbrechen",
@@ -3718,10 +3784,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/history-page/i18n/de.ts
-	var de_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$103 });
-	var translations$103;
-	var init_de$20 = __esmMin((() => {
-		translations$103 = {
+	var de_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$107 });
+	var translations$107;
+	var init_de$21 = __esmMin((() => {
+		translations$107 = {
 			"entity_id={0}": "entity_id={0}",
 			"device_id={0}": "device_id={0}",
 			"area_id={0}": "area_id={0}",
@@ -3819,20 +3885,51 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/timeline/i18n/de.ts
-	var de_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$102 });
-	var translations$102;
-	var init_de$19 = __esmMin((() => {
-		translations$102 = {
+	var de_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$106 });
+	var translations$106;
+	var init_de$20 = __esmMin((() => {
+		translations$106 = {
 			Wk: "KW",
 			"Week of": "Woche von"
 		};
 	}));
 	//#endregion
+	//#region custom_components/hass_datapoints/src/molecules/analysis-aggregate-group/i18n/de.ts
+	var de_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$105 });
+	var translations$105;
+	var init_de$19 = __esmMin((() => {
+		translations$105 = {
+			"Aggregate series": "Aggregierte Serien",
+			"Add aggregate": "Aggregat hinzufügen",
+			"Remove aggregate": "Aggregat entfernen",
+			"Aggregate operation": "Aggregatoperation",
+			"Aggregate state": "Aggregatzustand",
+			"Aggregate interval": "Aggregatintervall",
+			"Count changes to a state": "Wechsel in einen Zustand zählen",
+			"Count all state changes": "Alle Zustandswechsel zählen",
+			"Time in a state": "Zeit in einem Zustand",
+			"Percentage of time in a state": "Zeitanteil in einem Zustand in Prozent",
+			Hourly: "Stündlich",
+			Daily: "Täglich",
+			Weekly: "Wöchentlich",
+			Monthly: "Monatlich",
+			On: "An",
+			Off: "Aus",
+			Open: "Offen",
+			Closed: "Geschlossen",
+			Detected: "Erkannt",
+			Clear: "Frei",
+			Occupied: "Belegt",
+			Unlocked: "Entsperrt",
+			Locked: "Gesperrt"
+		};
+	}));
+	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/i18n/de.ts
-	var de_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$101 });
-	var translations$101;
+	var de_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$104 });
+	var translations$104;
 	var init_de$18 = __esmMin((() => {
-		translations$101 = {
+		translations$104 = {
 			Direction: "Richtung",
 			Both: "Beide",
 			Above: "Oberhalb",
@@ -3880,10 +3977,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-delta-group/i18n/de.ts
-	var de_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$100 });
-	var translations$100;
+	var de_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$103 });
+	var translations$103;
 	var init_de$17 = __esmMin((() => {
-		translations$100 = {
+		translations$103 = {
 			"Show delta vs selected date window": "Delta gegenüber dem ausgewählten Datumsfenster anzeigen",
 			"Select a date window tab to enable delta analysis.": "Wählen Sie einen Tab für ein Datumsfenster, um die Delta-Analyse zu aktivieren.",
 			"Show delta in tooltip": "Delta im Tooltip anzeigen",
@@ -3892,10 +3989,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/i18n/de.ts
-	var de_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$99 });
-	var translations$99;
+	var de_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$102 });
+	var translations$102;
 	var init_de$16 = __esmMin((() => {
-		translations$99 = {
+		translations$102 = {
 			"Show rate of change": "Änderungsrate anzeigen",
 			"Show rate of change crosshairs": "Fadenkreuz für Änderungsrate anzeigen",
 			"Rate window": "Ratenfenster",
@@ -3907,10 +4004,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-sample-group/i18n/de.ts
-	var de_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$98 });
-	var translations$98;
+	var de_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$101 });
+	var translations$101;
 	var init_de$15 = __esmMin((() => {
-		translations$98 = {
+		translations$101 = {
 			Downsampling: "Downsampling",
 			Interval: "Intervall",
 			Aggregate: "Aggregation",
@@ -3942,20 +4039,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/i18n/de.ts
-	var de_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$97 });
-	var translations$97;
+	var de_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$100 });
+	var translations$100;
 	var init_de$14 = __esmMin((() => {
-		translations$97 = {
+		translations$100 = {
 			"Show min / max / mean": "Min / Max / Mittelwert anzeigen",
 			"Show range shading": "Bereichsschattierung anzeigen"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/i18n/de.ts
-	var de_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$96 });
-	var translations$96;
+	var de_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$99 });
+	var translations$99;
 	var init_de$13 = __esmMin((() => {
-		translations$96 = {
+		translations$99 = {
 			"Show threshold analysis": "Schwellwertanalyse anzeigen",
 			"Shade threshold area": "Schwellwertbereich schattieren",
 			Threshold: "Schwellenwert",
@@ -3966,10 +4063,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/i18n/de.ts
-	var de_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$95 });
-	var translations$95;
+	var de_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$98 });
+	var translations$98;
 	var init_de$12 = __esmMin((() => {
-		translations$95 = {
+		translations$98 = {
 			"Show trend lines": "Trendlinien anzeigen",
 			"Show trend crosshairs": "Fadenkreuz für Trend anzeigen",
 			"Trend method": "Trendmethode",
@@ -3987,10 +4084,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/i18n/de.ts
-	var de_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$94 });
-	var translations$94;
+	var de_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$97 });
+	var translations$97;
 	var init_de$11 = __esmMin((() => {
-		translations$94 = {
+		translations$97 = {
 			"Add all series from chart": "Alle Reihen aus dem Diagramm hinzufügen",
 			"Add from current chart": "Aus aktuellem Diagramm hinzufügen",
 			"Create anomaly monitor": "Anomaliemonitor erstellen",
@@ -4000,17 +4097,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab-rail/i18n/de.ts
-	var de_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$93 });
-	var translations$93;
+	var de_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$96 });
+	var translations$96;
 	var init_de$10 = __esmMin((() => {
-		translations$93 = { "Add date window": "Datumsfenster hinzufügen" };
+		translations$96 = { "Add date window": "Datumsfenster hinzufügen" };
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/i18n/de.ts
-	var de_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$92 });
-	var translations$92;
+	var de_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$95 });
+	var translations$95;
 	var init_de$9 = __esmMin((() => {
-		translations$92 = {
+		translations$95 = {
 			"A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later.": "Ein Datumsfenster speichert einen benannten Datumsbereich als Registerkarte, damit Sie ihn schnell mit dem ausgewählten Bereich vergleichen oder später im Diagramm wieder dorthin springen können.",
 			Name: "Name",
 			"e.g. Heating season start": "z. B. Beginn der Heizsaison",
@@ -4027,10 +4124,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/i18n/de.ts
-	var de_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$91 });
-	var translations$91;
+	var de_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$94 });
+	var translations$94;
 	var init_de$8 = __esmMin((() => {
-		translations$91 = {
+		translations$94 = {
 			Datapoints: "Datenpunkte",
 			"Choose which annotation datapoints appear on the chart.": "Wählen Sie aus, welche Anmerkungs-Datenpunkte im Diagramm angezeigt werden.",
 			"Linked to selected targets": "Mit ausgewählten Zielen verknüpft",
@@ -4040,10 +4137,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/i18n/de.ts
-	var de_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$90 });
-	var translations$90;
+	var de_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$93 });
+	var translations$93;
 	var init_de$7 = __esmMin((() => {
-		translations$90 = {
+		translations$93 = {
 			"Analysis configured": "Analyse konfiguriert",
 			"Configure analysis": "Analyse konfigurieren",
 			"Stepped series": "Stufenserie",
@@ -4055,17 +4152,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/i18n/de.ts
-	var de_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$89 });
-	var translations$89;
+	var de_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$92 });
+	var translations$92;
 	var init_de$6 = __esmMin((() => {
-		translations$89 = {};
+		translations$92 = {};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/ai-query-brief-dialog/i18n/de.ts
-	var de_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$88 });
-	var translations$88;
+	var de_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$91 });
+	var translations$91;
 	var init_de$5 = __esmMin((() => {
-		translations$88 = {
+		translations$91 = {
 			"AI query brief": "KI-Abfragebriefing",
 			"This brief is intended for another AI to fetch raw Home Assistant history and hass_datapoints anomaly details. Review it, then copy it into your AI tool of choice.": "Dieses Briefing ist fuer eine andere KI gedacht, damit sie rohe Home-Assistant-Verlaeufe und hass_datapoints-Anomaliedetails abrufen kann. Pruefe es und kopiere es dann in dein KI-Werkzeug deiner Wahl.",
 			"Copy-ready brief": "Kopierfertiges Briefing",
@@ -4077,10 +4174,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/history-targets/i18n/de.ts
-	var de_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$87 });
-	var translations$87;
+	var de_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$90 });
+	var translations$90;
 	var init_de$4 = __esmMin((() => {
-		translations$87 = {
+		translations$90 = {
 			Targets: "Ziele",
 			"Each row controls one chart series.": "Jede Zeile steuert eine Diagrammserie.",
 			"Add target": "Ziel hinzufügen",
@@ -4089,10 +4186,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/panel-shell/i18n/de.ts
-	var de_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$86 });
-	var translations$86;
+	var de_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$89 });
+	var translations$89;
 	var init_de$3 = __esmMin((() => {
-		translations$86 = {
+		translations$89 = {
 			"Loading Datapoints…": "Datenpunkte werden geladen…",
 			Datapoints: "Datenpunkte",
 			"Page options": "Seitenoptionen",
@@ -4107,10 +4204,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/range-toolbar/i18n/de.ts
-	var de_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$85 });
-	var translations$85;
+	var de_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$88 });
+	var translations$88;
 	var init_de$2 = __esmMin((() => {
-		translations$85 = {
+		translations$88 = {
 			"Toggle sidebar": "Seitenleiste umschalten",
 			Start: "Start",
 			End: "Ende",
@@ -4135,16 +4232,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/i18n/de.ts
-	var de_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$84 });
-	var translations$84;
+	var de_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$87 });
+	var translations$87;
 	var init_de$1 = __esmMin((() => {
-		translations$84 = { "Selected range": "Ausgewählter Zeitraum" };
+		translations$87 = { "Selected range": "Ausgewählter Zeitraum" };
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/i18n/locales/de.ts
 	var de_exports = /* @__PURE__ */ __exportAll({ templates: () => templates$3 });
 	var modules$3, merged$3, templates$3;
 	var init_de = __esmMin((() => {
+		init_de$29();
 		init_de$28();
 		init_de$27();
 		init_de$26();
@@ -4174,16 +4272,17 @@
 		init_de$2();
 		init_de$1();
 		modules$3 = /* #__PURE__ */ Object.assign({
-			"../../../cards/action/i18n/de.ts": de_exports$28,
-			"../../../cards/history/history-chart/i18n/de.ts": de_exports$27,
-			"../../../cards/history/i18n/de.ts": de_exports$26,
-			"../../../cards/list/i18n/de.ts": de_exports$25,
-			"../../../cards/quick/i18n/de.ts": de_exports$24,
-			"../../../cards/sensor/i18n/de.ts": de_exports$23,
-			"../../chart/i18n/de.ts": de_exports$22,
-			"../../ha/i18n/de.ts": de_exports$21,
-			"../../history-page/i18n/de.ts": de_exports$20,
-			"../../timeline/i18n/de.ts": de_exports$19,
+			"../../../cards/action/i18n/de.ts": de_exports$29,
+			"../../../cards/history/history-chart/i18n/de.ts": de_exports$28,
+			"../../../cards/history/i18n/de.ts": de_exports$27,
+			"../../../cards/list/i18n/de.ts": de_exports$26,
+			"../../../cards/quick/i18n/de.ts": de_exports$25,
+			"../../../cards/sensor/i18n/de.ts": de_exports$24,
+			"../../chart/i18n/de.ts": de_exports$23,
+			"../../ha/i18n/de.ts": de_exports$22,
+			"../../history-page/i18n/de.ts": de_exports$21,
+			"../../timeline/i18n/de.ts": de_exports$20,
+			"../../../molecules/analysis-aggregate-group/i18n/de.ts": de_exports$19,
 			"../../../molecules/analysis-anomaly-group/i18n/de.ts": de_exports$18,
 			"../../../molecules/analysis-delta-group/i18n/de.ts": de_exports$17,
 			"../../../molecules/analysis-rate-group/i18n/de.ts": de_exports$16,
@@ -4209,10 +4308,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/i18n/es.ts
-	var es_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$83 });
-	var translations$83;
-	var init_es$28 = __esmMin((() => {
-		translations$83 = {
+	var es_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$86 });
+	var translations$86;
+	var init_es$29 = __esmMin((() => {
+		translations$86 = {
 			General: "General",
 			"Related items": "Elementos relacionados",
 			"Datapoint Appearance": "Apariencia del punto de datos",
@@ -4229,20 +4328,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/i18n/es.ts
-	var es_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$82 });
-	var translations$82;
-	var init_es$27 = __esmMin((() => {
-		translations$82 = {
+	var es_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$85 });
+	var translations$85;
+	var init_es$28 = __esmMin((() => {
+		translations$85 = {
 			"Date window:": "Ventana de fechas:",
 			"Actual:": "Real:"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/i18n/es.ts
-	var es_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$81 });
-	var translations$81;
-	var init_es$26 = __esmMin((() => {
-		translations$81 = {
+	var es_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$84 });
+	var translations$84;
+	var init_es$27 = __esmMin((() => {
+		translations$84 = {
 			General: "General",
 			Entity: "Entidad",
 			"Multiple entities": "Varias entidades",
@@ -4259,10 +4358,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/i18n/es.ts
-	var es_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$80 });
-	var translations$80;
-	var init_es$25 = __esmMin((() => {
-		translations$80 = {
+	var es_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$83 });
+	var translations$83;
+	var init_es$26 = __esmMin((() => {
+		translations$83 = {
 			"Search datapoints…": "Buscar puntos de datos…",
 			"Delete record": "Eliminar registro",
 			Delete: "Eliminar",
@@ -4280,10 +4379,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/i18n/es.ts
-	var es_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$79 });
-	var translations$79;
-	var init_es$24 = __esmMin((() => {
-		translations$79 = {
+	var es_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$82 });
+	var translations$82;
+	var init_es$25 = __esmMin((() => {
+		translations$82 = {
 			General: "General",
 			"Icon & colour": "Icono y color",
 			"Related items": "Elementos relacionados",
@@ -4301,10 +4400,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/i18n/es.ts
-	var es_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$78 });
-	var translations$78;
-	var init_es$23 = __esmMin((() => {
-		translations$78 = {
+	var es_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$81 });
+	var translations$81;
+	var init_es$24 = __esmMin((() => {
+		translations$81 = {
 			Entity: "Entidad",
 			Display: "Visualización",
 			"Records list": "Lista de registros",
@@ -4324,10 +4423,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/i18n/es.ts
-	var es_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$77 });
-	var translations$77;
-	var init_es$22 = __esmMin((() => {
-		translations$77 = {
+	var es_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$80 });
+	var translations$80;
+	var init_es$23 = __esmMin((() => {
+		translations$80 = {
 			"⚠️ Anomaly Insight": "⚠️ Información de anomalía",
 			"⚠️ Multi-method Anomaly": "⚠️ Anomalía multimétodo",
 			"Click the highlighted circle to add an annotation.": "Haz clic en el círculo resaltado para añadir una anotación.",
@@ -4362,10 +4461,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/ha/i18n/es.ts
-	var es_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$76 });
-	var translations$76;
-	var init_es$21 = __esmMin((() => {
-		translations$76 = {
+	var es_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$79 });
+	var translations$79;
+	var init_es$22 = __esmMin((() => {
+		translations$79 = {
 			"Confirm delete": "Confirmar eliminación",
 			"Are you sure you want to delete this item?": "¿Seguro que quieres eliminar este elemento?",
 			Cancel: "Cancelar",
@@ -4380,10 +4479,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/history-page/i18n/es.ts
-	var es_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$75 });
-	var translations$75;
-	var init_es$20 = __esmMin((() => {
-		translations$75 = {
+	var es_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$78 });
+	var translations$78;
+	var init_es$21 = __esmMin((() => {
+		translations$78 = {
 			"entity_id={0}": "entity_id={0}",
 			"device_id={0}": "device_id={0}",
 			"area_id={0}": "area_id={0}",
@@ -4481,20 +4580,51 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/timeline/i18n/es.ts
-	var es_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$74 });
-	var translations$74;
-	var init_es$19 = __esmMin((() => {
-		translations$74 = {
+	var es_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$77 });
+	var translations$77;
+	var init_es$20 = __esmMin((() => {
+		translations$77 = {
 			Wk: "Sem.",
 			"Week of": "Semana del"
 		};
 	}));
 	//#endregion
+	//#region custom_components/hass_datapoints/src/molecules/analysis-aggregate-group/i18n/es.ts
+	var es_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$76 });
+	var translations$76;
+	var init_es$19 = __esmMin((() => {
+		translations$76 = {
+			"Aggregate series": "Series agregadas",
+			"Add aggregate": "Añadir agregado",
+			"Remove aggregate": "Quitar agregado",
+			"Aggregate operation": "Operación del agregado",
+			"Aggregate state": "Estado del agregado",
+			"Aggregate interval": "Intervalo del agregado",
+			"Count changes to a state": "Contar cambios a un estado",
+			"Count all state changes": "Contar todos los cambios de estado",
+			"Time in a state": "Tiempo en un estado",
+			"Percentage of time in a state": "Porcentaje de tiempo en un estado",
+			Hourly: "Por hora",
+			Daily: "Diario",
+			Weekly: "Semanal",
+			Monthly: "Mensual",
+			On: "Encendido",
+			Off: "Apagado",
+			Open: "Abierto",
+			Closed: "Cerrado",
+			Detected: "Detectado",
+			Clear: "Libre",
+			Occupied: "Ocupado",
+			Unlocked: "Desbloqueado",
+			Locked: "Bloqueado"
+		};
+	}));
+	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/i18n/es.ts
-	var es_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$73 });
-	var translations$73;
+	var es_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$75 });
+	var translations$75;
 	var init_es$18 = __esmMin((() => {
-		translations$73 = {
+		translations$75 = {
 			Direction: "Dirección",
 			Both: "Ambos",
 			Above: "Por encima",
@@ -4542,10 +4672,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-delta-group/i18n/es.ts
-	var es_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$72 });
-	var translations$72;
+	var es_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$74 });
+	var translations$74;
 	var init_es$17 = __esmMin((() => {
-		translations$72 = {
+		translations$74 = {
 			"Show delta vs selected date window": "Mostrar delta frente a la ventana de fechas seleccionada",
 			"Select a date window tab to enable delta analysis.": "Selecciona una pestaña de ventana de fechas para habilitar el análisis delta.",
 			"Show delta in tooltip": "Mostrar delta en la información sobre herramientas",
@@ -4554,10 +4684,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/i18n/es.ts
-	var es_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$71 });
-	var translations$71;
+	var es_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$73 });
+	var translations$73;
 	var init_es$16 = __esmMin((() => {
-		translations$71 = {
+		translations$73 = {
 			"Show rate of change": "Mostrar tasa de cambio",
 			"Show rate of change crosshairs": "Mostrar guías de la tasa de cambio",
 			"Rate window": "Ventana de tasa",
@@ -4569,10 +4699,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-sample-group/i18n/es.ts
-	var es_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$70 });
-	var translations$70;
+	var es_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$72 });
+	var translations$72;
 	var init_es$15 = __esmMin((() => {
-		translations$70 = {
+		translations$72 = {
 			Downsampling: "Submuestreo",
 			Interval: "Intervalo",
 			Aggregate: "Agregado",
@@ -4604,20 +4734,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/i18n/es.ts
-	var es_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$69 });
-	var translations$69;
+	var es_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$71 });
+	var translations$71;
 	var init_es$14 = __esmMin((() => {
-		translations$69 = {
+		translations$71 = {
 			"Show min / max / mean": "Mostrar mín. / máx. / media",
 			"Show range shading": "Mostrar sombreado del rango"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/i18n/es.ts
-	var es_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$68 });
-	var translations$68;
+	var es_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$70 });
+	var translations$70;
 	var init_es$13 = __esmMin((() => {
-		translations$68 = {
+		translations$70 = {
 			"Show threshold analysis": "Mostrar análisis de umbral",
 			"Shade threshold area": "Sombrear área del umbral",
 			Threshold: "Umbral",
@@ -4628,10 +4758,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/i18n/es.ts
-	var es_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$67 });
-	var translations$67;
+	var es_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$69 });
+	var translations$69;
 	var init_es$12 = __esmMin((() => {
-		translations$67 = {
+		translations$69 = {
 			"Show trend lines": "Mostrar líneas de tendencia",
 			"Show trend crosshairs": "Mostrar guías de tendencia",
 			"Trend method": "Método de tendencia",
@@ -4649,10 +4779,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/i18n/es.ts
-	var es_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$66 });
-	var translations$66;
+	var es_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$68 });
+	var translations$68;
 	var init_es$11 = __esmMin((() => {
-		translations$66 = {
+		translations$68 = {
 			"Add all series from chart": "Añadir todas las series del gráfico",
 			"Add from current chart": "Añadir desde el gráfico actual",
 			"Create anomaly monitor": "Crear monitor de anomalías",
@@ -4662,17 +4792,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab-rail/i18n/es.ts
-	var es_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$65 });
-	var translations$65;
+	var es_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$67 });
+	var translations$67;
 	var init_es$10 = __esmMin((() => {
-		translations$65 = { "Add date window": "Añadir ventana de fechas" };
+		translations$67 = { "Add date window": "Añadir ventana de fechas" };
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/i18n/es.ts
-	var es_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$64 });
-	var translations$64;
+	var es_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$66 });
+	var translations$66;
 	var init_es$9 = __esmMin((() => {
-		translations$64 = {
+		translations$66 = {
 			"A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later.": "Una ventana de fechas guarda un rango de fechas con nombre como pestaña, para que puedas previsualizarlo rápidamente frente al rango seleccionado o volver más tarde a él en el gráfico.",
 			Name: "Nombre",
 			"e.g. Heating season start": "p. ej., inicio de la temporada de calefacción",
@@ -4689,10 +4819,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/i18n/es.ts
-	var es_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$63 });
-	var translations$63;
+	var es_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$65 });
+	var translations$65;
 	var init_es$8 = __esmMin((() => {
-		translations$63 = {
+		translations$65 = {
 			Datapoints: "Puntos de datos",
 			"Choose which annotation datapoints appear on the chart.": "Elige qué puntos de datos de anotación aparecen en el gráfico.",
 			"Linked to selected targets": "Vinculados a los objetivos seleccionados",
@@ -4702,10 +4832,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/i18n/es.ts
-	var es_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$62 });
-	var translations$62;
+	var es_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$64 });
+	var translations$64;
 	var init_es$7 = __esmMin((() => {
-		translations$62 = {
+		translations$64 = {
 			"Analysis configured": "Análisis configurado",
 			"Configure analysis": "Configurar análisis",
 			"Stepped series": "Serie escalonada",
@@ -4717,17 +4847,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/i18n/es.ts
-	var es_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$61 });
-	var translations$61;
+	var es_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$63 });
+	var translations$63;
 	var init_es$6 = __esmMin((() => {
-		translations$61 = {};
+		translations$63 = {};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/ai-query-brief-dialog/i18n/es.ts
-	var es_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$60 });
-	var translations$60;
+	var es_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$62 });
+	var translations$62;
 	var init_es$5 = __esmMin((() => {
-		translations$60 = {
+		translations$62 = {
 			"AI query brief": "Resumen de consulta para IA",
 			"This brief is intended for another AI to fetch raw Home Assistant history and hass_datapoints anomaly details. Review it, then copy it into your AI tool of choice.": "Este resumen esta pensado para que otra IA obtenga el historial sin procesar de Home Assistant y los detalles de anomalias de hass_datapoints. Revisalo y luego copialo en la herramienta de IA que prefieras.",
 			"Copy-ready brief": "Resumen listo para copiar",
@@ -4739,10 +4869,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/history-targets/i18n/es.ts
-	var es_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$59 });
-	var translations$59;
+	var es_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$61 });
+	var translations$61;
 	var init_es$4 = __esmMin((() => {
-		translations$59 = {
+		translations$61 = {
 			Targets: "Objetivos",
 			"Each row controls one chart series.": "Cada fila controla una serie del gráfico.",
 			"Add target": "Añadir objetivo",
@@ -4751,10 +4881,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/panel-shell/i18n/es.ts
-	var es_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$58 });
-	var translations$58;
+	var es_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$60 });
+	var translations$60;
 	var init_es$3 = __esmMin((() => {
-		translations$58 = {
+		translations$60 = {
 			"Loading Datapoints…": "Cargando puntos de datos…",
 			Datapoints: "Puntos de datos",
 			"Page options": "Opciones de la página",
@@ -4769,10 +4899,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/range-toolbar/i18n/es.ts
-	var es_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$57 });
-	var translations$57;
+	var es_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$59 });
+	var translations$59;
 	var init_es$2 = __esmMin((() => {
-		translations$57 = {
+		translations$59 = {
 			"Toggle sidebar": "Alternar barra lateral",
 			Start: "Inicio",
 			End: "Fin",
@@ -4797,16 +4927,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/i18n/es.ts
-	var es_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$56 });
-	var translations$56;
+	var es_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$58 });
+	var translations$58;
 	var init_es$1 = __esmMin((() => {
-		translations$56 = { "Selected range": "Intervalo seleccionado" };
+		translations$58 = { "Selected range": "Intervalo seleccionado" };
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/i18n/locales/es.ts
 	var es_exports = /* @__PURE__ */ __exportAll({ templates: () => templates$2 });
 	var modules$2, merged$2, templates$2;
 	var init_es = __esmMin((() => {
+		init_es$29();
 		init_es$28();
 		init_es$27();
 		init_es$26();
@@ -4836,16 +4967,17 @@
 		init_es$2();
 		init_es$1();
 		modules$2 = /* #__PURE__ */ Object.assign({
-			"../../../cards/action/i18n/es.ts": es_exports$28,
-			"../../../cards/history/history-chart/i18n/es.ts": es_exports$27,
-			"../../../cards/history/i18n/es.ts": es_exports$26,
-			"../../../cards/list/i18n/es.ts": es_exports$25,
-			"../../../cards/quick/i18n/es.ts": es_exports$24,
-			"../../../cards/sensor/i18n/es.ts": es_exports$23,
-			"../../chart/i18n/es.ts": es_exports$22,
-			"../../ha/i18n/es.ts": es_exports$21,
-			"../../history-page/i18n/es.ts": es_exports$20,
-			"../../timeline/i18n/es.ts": es_exports$19,
+			"../../../cards/action/i18n/es.ts": es_exports$29,
+			"../../../cards/history/history-chart/i18n/es.ts": es_exports$28,
+			"../../../cards/history/i18n/es.ts": es_exports$27,
+			"../../../cards/list/i18n/es.ts": es_exports$26,
+			"../../../cards/quick/i18n/es.ts": es_exports$25,
+			"../../../cards/sensor/i18n/es.ts": es_exports$24,
+			"../../chart/i18n/es.ts": es_exports$23,
+			"../../ha/i18n/es.ts": es_exports$22,
+			"../../history-page/i18n/es.ts": es_exports$21,
+			"../../timeline/i18n/es.ts": es_exports$20,
+			"../../../molecules/analysis-aggregate-group/i18n/es.ts": es_exports$19,
 			"../../../molecules/analysis-anomaly-group/i18n/es.ts": es_exports$18,
 			"../../../molecules/analysis-delta-group/i18n/es.ts": es_exports$17,
 			"../../../molecules/analysis-rate-group/i18n/es.ts": es_exports$16,
@@ -4871,10 +5003,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/i18n/pt.ts
-	var pt_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$55 });
-	var translations$55;
-	var init_pt$28 = __esmMin((() => {
-		translations$55 = {
+	var pt_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$57 });
+	var translations$57;
+	var init_pt$29 = __esmMin((() => {
+		translations$57 = {
 			General: "Geral",
 			"Related items": "Itens relacionados",
 			"Datapoint Appearance": "Aspeto do ponto de dados",
@@ -4891,20 +5023,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/i18n/pt.ts
-	var pt_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$54 });
-	var translations$54;
-	var init_pt$27 = __esmMin((() => {
-		translations$54 = {
+	var pt_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$56 });
+	var translations$56;
+	var init_pt$28 = __esmMin((() => {
+		translations$56 = {
 			"Date window:": "Janela de datas:",
 			"Actual:": "Real:"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/i18n/pt.ts
-	var pt_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$53 });
-	var translations$53;
-	var init_pt$26 = __esmMin((() => {
-		translations$53 = {
+	var pt_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$55 });
+	var translations$55;
+	var init_pt$27 = __esmMin((() => {
+		translations$55 = {
 			General: "Geral",
 			Entity: "Entidade",
 			"Multiple entities": "Múltiplas entidades",
@@ -4921,10 +5053,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/i18n/pt.ts
-	var pt_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$52 });
-	var translations$52;
-	var init_pt$25 = __esmMin((() => {
-		translations$52 = {
+	var pt_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$54 });
+	var translations$54;
+	var init_pt$26 = __esmMin((() => {
+		translations$54 = {
 			"Search datapoints…": "Pesquisar pontos de dados…",
 			"Delete record": "Eliminar registo",
 			Delete: "Eliminar",
@@ -4942,10 +5074,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/i18n/pt.ts
-	var pt_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$51 });
-	var translations$51;
-	var init_pt$24 = __esmMin((() => {
-		translations$51 = {
+	var pt_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$53 });
+	var translations$53;
+	var init_pt$25 = __esmMin((() => {
+		translations$53 = {
 			General: "Geral",
 			"Icon & colour": "Ícone e cor",
 			"Related items": "Itens relacionados",
@@ -4963,10 +5095,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/i18n/pt.ts
-	var pt_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$50 });
-	var translations$50;
-	var init_pt$23 = __esmMin((() => {
-		translations$50 = {
+	var pt_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$52 });
+	var translations$52;
+	var init_pt$24 = __esmMin((() => {
+		translations$52 = {
 			Entity: "Entidade",
 			Display: "Visualização",
 			"Records list": "Lista de registos",
@@ -4986,10 +5118,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/i18n/pt.ts
-	var pt_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$49 });
-	var translations$49;
-	var init_pt$22 = __esmMin((() => {
-		translations$49 = {
+	var pt_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$51 });
+	var translations$51;
+	var init_pt$23 = __esmMin((() => {
+		translations$51 = {
 			"⚠️ Anomaly Insight": "⚠️ Informação de anomalia",
 			"⚠️ Multi-method Anomaly": "⚠️ Anomalia multimétodo",
 			"Click the highlighted circle to add an annotation.": "Clique no círculo destacado para adicionar uma anotação.",
@@ -5024,10 +5156,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/ha/i18n/pt.ts
-	var pt_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$48 });
-	var translations$48;
-	var init_pt$21 = __esmMin((() => {
-		translations$48 = {
+	var pt_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$50 });
+	var translations$50;
+	var init_pt$22 = __esmMin((() => {
+		translations$50 = {
 			"Confirm delete": "Confirmar eliminação",
 			"Are you sure you want to delete this item?": "Tem a certeza de que pretende eliminar este item?",
 			Cancel: "Cancelar",
@@ -5042,10 +5174,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/history-page/i18n/pt.ts
-	var pt_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$47 });
-	var translations$47;
-	var init_pt$20 = __esmMin((() => {
-		translations$47 = {
+	var pt_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$49 });
+	var translations$49;
+	var init_pt$21 = __esmMin((() => {
+		translations$49 = {
 			"entity_id={0}": "entity_id={0}",
 			"device_id={0}": "device_id={0}",
 			"area_id={0}": "area_id={0}",
@@ -5143,20 +5275,51 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/timeline/i18n/pt.ts
-	var pt_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$46 });
-	var translations$46;
-	var init_pt$19 = __esmMin((() => {
-		translations$46 = {
+	var pt_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$48 });
+	var translations$48;
+	var init_pt$20 = __esmMin((() => {
+		translations$48 = {
 			Wk: "Sem.",
 			"Week of": "Semana de"
 		};
 	}));
 	//#endregion
+	//#region custom_components/hass_datapoints/src/molecules/analysis-aggregate-group/i18n/pt.ts
+	var pt_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$47 });
+	var translations$47;
+	var init_pt$19 = __esmMin((() => {
+		translations$47 = {
+			"Aggregate series": "Séries agregadas",
+			"Add aggregate": "Adicionar agregado",
+			"Remove aggregate": "Remover agregado",
+			"Aggregate operation": "Operação do agregado",
+			"Aggregate state": "Estado do agregado",
+			"Aggregate interval": "Intervalo do agregado",
+			"Count changes to a state": "Contar mudanças para um estado",
+			"Count all state changes": "Contar todas as mudanças de estado",
+			"Time in a state": "Tempo num estado",
+			"Percentage of time in a state": "Percentagem de tempo num estado",
+			Hourly: "Por hora",
+			Daily: "Diário",
+			Weekly: "Semanal",
+			Monthly: "Mensal",
+			On: "Ligado",
+			Off: "Desligado",
+			Open: "Aberto",
+			Closed: "Fechado",
+			Detected: "Detetado",
+			Clear: "Livre",
+			Occupied: "Ocupado",
+			Unlocked: "Desbloqueado",
+			Locked: "Bloqueado"
+		};
+	}));
+	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/i18n/pt.ts
-	var pt_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$45 });
-	var translations$45;
+	var pt_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$46 });
+	var translations$46;
 	var init_pt$18 = __esmMin((() => {
-		translations$45 = {
+		translations$46 = {
 			Direction: "Direção",
 			Both: "Ambos",
 			Above: "Acima",
@@ -5204,10 +5367,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-delta-group/i18n/pt.ts
-	var pt_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$44 });
-	var translations$44;
+	var pt_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$45 });
+	var translations$45;
 	var init_pt$17 = __esmMin((() => {
-		translations$44 = {
+		translations$45 = {
 			"Show delta vs selected date window": "Mostrar delta face à janela de datas selecionada",
 			"Select a date window tab to enable delta analysis.": "Selecione um separador de janela de datas para ativar a análise delta.",
 			"Show delta in tooltip": "Mostrar delta na dica",
@@ -5216,10 +5379,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/i18n/pt.ts
-	var pt_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$43 });
-	var translations$43;
+	var pt_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$44 });
+	var translations$44;
 	var init_pt$16 = __esmMin((() => {
-		translations$43 = {
+		translations$44 = {
 			"Show rate of change": "Mostrar taxa de variação",
 			"Show rate of change crosshairs": "Mostrar guias da taxa de variação",
 			"Rate window": "Janela da taxa",
@@ -5231,10 +5394,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-sample-group/i18n/pt.ts
-	var pt_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$42 });
-	var translations$42;
+	var pt_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$43 });
+	var translations$43;
 	var init_pt$15 = __esmMin((() => {
-		translations$42 = {
+		translations$43 = {
 			Downsampling: "Reamostragem",
 			Interval: "Intervalo",
 			Aggregate: "Agregado",
@@ -5266,20 +5429,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/i18n/pt.ts
-	var pt_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$41 });
-	var translations$41;
+	var pt_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$42 });
+	var translations$42;
 	var init_pt$14 = __esmMin((() => {
-		translations$41 = {
+		translations$42 = {
 			"Show min / max / mean": "Mostrar mín. / máx. / média",
 			"Show range shading": "Mostrar sombreamento do intervalo"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/i18n/pt.ts
-	var pt_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$40 });
-	var translations$40;
+	var pt_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$41 });
+	var translations$41;
 	var init_pt$13 = __esmMin((() => {
-		translations$40 = {
+		translations$41 = {
 			"Show threshold analysis": "Mostrar análise de limiar",
 			"Shade threshold area": "Sombrear área do limiar",
 			Threshold: "Limiar",
@@ -5290,10 +5453,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/i18n/pt.ts
-	var pt_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$39 });
-	var translations$39;
+	var pt_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$40 });
+	var translations$40;
 	var init_pt$12 = __esmMin((() => {
-		translations$39 = {
+		translations$40 = {
 			"Show trend lines": "Mostrar linhas de tendência",
 			"Show trend crosshairs": "Mostrar guias da tendência",
 			"Trend method": "Método de tendência",
@@ -5311,10 +5474,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/i18n/pt.ts
-	var pt_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$38 });
-	var translations$38;
+	var pt_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$39 });
+	var translations$39;
 	var init_pt$11 = __esmMin((() => {
-		translations$38 = {
+		translations$39 = {
 			"Add all series from chart": "Adicionar todas as séries do gráfico",
 			"Add from current chart": "Adicionar do gráfico atual",
 			"Create anomaly monitor": "Criar monitor de anomalias",
@@ -5324,17 +5487,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab-rail/i18n/pt.ts
-	var pt_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$37 });
-	var translations$37;
+	var pt_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$38 });
+	var translations$38;
 	var init_pt$10 = __esmMin((() => {
-		translations$37 = { "Add date window": "Adicionar janela de datas" };
+		translations$38 = { "Add date window": "Adicionar janela de datas" };
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/i18n/pt.ts
-	var pt_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$36 });
-	var translations$36;
+	var pt_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$37 });
+	var translations$37;
 	var init_pt$9 = __esmMin((() => {
-		translations$36 = {
+		translations$37 = {
 			"A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later.": "Uma janela de datas guarda um intervalo de datas com nome como separador, para que possa pré-visualizá-lo rapidamente face ao intervalo selecionado ou regressar mais tarde a ele no gráfico.",
 			Name: "Nome",
 			"e.g. Heating season start": "ex.: início da época de aquecimento",
@@ -5351,10 +5514,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/i18n/pt.ts
-	var pt_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$35 });
-	var translations$35;
+	var pt_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$36 });
+	var translations$36;
 	var init_pt$8 = __esmMin((() => {
-		translations$35 = {
+		translations$36 = {
 			Datapoints: "Pontos de dados",
 			"Choose which annotation datapoints appear on the chart.": "Escolha quais os pontos de dados de anotação que aparecem no gráfico.",
 			"Linked to selected targets": "Ligados aos alvos selecionados",
@@ -5364,10 +5527,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/i18n/pt.ts
-	var pt_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$34 });
-	var translations$34;
+	var pt_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$35 });
+	var translations$35;
 	var init_pt$7 = __esmMin((() => {
-		translations$34 = {
+		translations$35 = {
 			"Analysis configured": "Análise configurada",
 			"Configure analysis": "Configurar análise",
 			"Stepped series": "Série em degraus",
@@ -5379,17 +5542,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/i18n/pt.ts
-	var pt_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$33 });
-	var translations$33;
+	var pt_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$34 });
+	var translations$34;
 	var init_pt$6 = __esmMin((() => {
-		translations$33 = {};
+		translations$34 = {};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/ai-query-brief-dialog/i18n/pt.ts
-	var pt_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$32 });
-	var translations$32;
+	var pt_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$33 });
+	var translations$33;
 	var init_pt$5 = __esmMin((() => {
-		translations$32 = {
+		translations$33 = {
 			"AI query brief": "Resumo de consulta para IA",
 			"This brief is intended for another AI to fetch raw Home Assistant history and hass_datapoints anomaly details. Review it, then copy it into your AI tool of choice.": "Este resumo foi feito para outra IA obter o historico bruto do Home Assistant e os detalhes de anomalias do hass_datapoints. Revise-o e depois copie-o para a ferramenta de IA de sua escolha.",
 			"Copy-ready brief": "Resumo pronto para copiar",
@@ -5401,10 +5564,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/history-targets/i18n/pt.ts
-	var pt_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$31 });
-	var translations$31;
+	var pt_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$32 });
+	var translations$32;
 	var init_pt$4 = __esmMin((() => {
-		translations$31 = {
+		translations$32 = {
 			Targets: "Alvos",
 			"Each row controls one chart series.": "Cada linha controla uma série do gráfico.",
 			"Add target": "Adicionar alvo",
@@ -5413,10 +5576,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/panel-shell/i18n/pt.ts
-	var pt_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$30 });
-	var translations$30;
+	var pt_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$31 });
+	var translations$31;
 	var init_pt$3 = __esmMin((() => {
-		translations$30 = {
+		translations$31 = {
 			"Loading Datapoints…": "A carregar pontos de dados…",
 			Datapoints: "Pontos de dados",
 			"Page options": "Opções da página",
@@ -5431,10 +5594,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/range-toolbar/i18n/pt.ts
-	var pt_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$29 });
-	var translations$29;
+	var pt_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$30 });
+	var translations$30;
 	var init_pt$2 = __esmMin((() => {
-		translations$29 = {
+		translations$30 = {
 			"Toggle sidebar": "Alternar barra lateral",
 			Start: "Início",
 			End: "Fim",
@@ -5459,16 +5622,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/i18n/pt.ts
-	var pt_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$28 });
-	var translations$28;
+	var pt_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$29 });
+	var translations$29;
 	var init_pt$1 = __esmMin((() => {
-		translations$28 = { "Selected range": "Intervalo selecionado" };
+		translations$29 = { "Selected range": "Intervalo selecionado" };
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/i18n/locales/pt.ts
 	var pt_exports = /* @__PURE__ */ __exportAll({ templates: () => templates$1 });
 	var modules$1, merged$1, templates$1;
 	var init_pt = __esmMin((() => {
+		init_pt$29();
 		init_pt$28();
 		init_pt$27();
 		init_pt$26();
@@ -5498,16 +5662,17 @@
 		init_pt$2();
 		init_pt$1();
 		modules$1 = /* #__PURE__ */ Object.assign({
-			"../../../cards/action/i18n/pt.ts": pt_exports$28,
-			"../../../cards/history/history-chart/i18n/pt.ts": pt_exports$27,
-			"../../../cards/history/i18n/pt.ts": pt_exports$26,
-			"../../../cards/list/i18n/pt.ts": pt_exports$25,
-			"../../../cards/quick/i18n/pt.ts": pt_exports$24,
-			"../../../cards/sensor/i18n/pt.ts": pt_exports$23,
-			"../../chart/i18n/pt.ts": pt_exports$22,
-			"../../ha/i18n/pt.ts": pt_exports$21,
-			"../../history-page/i18n/pt.ts": pt_exports$20,
-			"../../timeline/i18n/pt.ts": pt_exports$19,
+			"../../../cards/action/i18n/pt.ts": pt_exports$29,
+			"../../../cards/history/history-chart/i18n/pt.ts": pt_exports$28,
+			"../../../cards/history/i18n/pt.ts": pt_exports$27,
+			"../../../cards/list/i18n/pt.ts": pt_exports$26,
+			"../../../cards/quick/i18n/pt.ts": pt_exports$25,
+			"../../../cards/sensor/i18n/pt.ts": pt_exports$24,
+			"../../chart/i18n/pt.ts": pt_exports$23,
+			"../../ha/i18n/pt.ts": pt_exports$22,
+			"../../history-page/i18n/pt.ts": pt_exports$21,
+			"../../timeline/i18n/pt.ts": pt_exports$20,
+			"../../../molecules/analysis-aggregate-group/i18n/pt.ts": pt_exports$19,
 			"../../../molecules/analysis-anomaly-group/i18n/pt.ts": pt_exports$18,
 			"../../../molecules/analysis-delta-group/i18n/pt.ts": pt_exports$17,
 			"../../../molecules/analysis-rate-group/i18n/pt.ts": pt_exports$16,
@@ -5533,10 +5698,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/i18n/zh-hans.ts
-	var zh_hans_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$27 });
-	var translations$27;
-	var init_zh_hans$28 = __esmMin((() => {
-		translations$27 = {
+	var zh_hans_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$28 });
+	var translations$28;
+	var init_zh_hans$29 = __esmMin((() => {
+		translations$28 = {
 			General: "常规",
 			"Related items": "关联项",
 			"Datapoint Appearance": "数据点外观",
@@ -5553,20 +5718,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/i18n/zh-hans.ts
-	var zh_hans_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$26 });
-	var translations$26;
-	var init_zh_hans$27 = __esmMin((() => {
-		translations$26 = {
+	var zh_hans_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$27 });
+	var translations$27;
+	var init_zh_hans$28 = __esmMin((() => {
+		translations$27 = {
 			"Date window:": "日期窗口：",
 			"Actual:": "实际："
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/i18n/zh-hans.ts
-	var zh_hans_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$25 });
-	var translations$25;
-	var init_zh_hans$26 = __esmMin((() => {
-		translations$25 = {
+	var zh_hans_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$26 });
+	var translations$26;
+	var init_zh_hans$27 = __esmMin((() => {
+		translations$26 = {
 			General: "常规",
 			Entity: "实体",
 			"Multiple entities": "多个实体",
@@ -5583,10 +5748,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/i18n/zh-hans.ts
-	var zh_hans_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$24 });
-	var translations$24;
-	var init_zh_hans$25 = __esmMin((() => {
-		translations$24 = {
+	var zh_hans_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$25 });
+	var translations$25;
+	var init_zh_hans$26 = __esmMin((() => {
+		translations$25 = {
 			"Search datapoints…": "搜索数据点…",
 			"Delete record": "删除记录",
 			Delete: "删除",
@@ -5604,10 +5769,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/i18n/zh-hans.ts
-	var zh_hans_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$23 });
-	var translations$23;
-	var init_zh_hans$24 = __esmMin((() => {
-		translations$23 = {
+	var zh_hans_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$24 });
+	var translations$24;
+	var init_zh_hans$25 = __esmMin((() => {
+		translations$24 = {
 			General: "常规",
 			"Icon & colour": "图标和颜色",
 			"Related items": "关联项",
@@ -5625,10 +5790,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/i18n/zh-hans.ts
-	var zh_hans_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$22 });
-	var translations$22;
-	var init_zh_hans$23 = __esmMin((() => {
-		translations$22 = {
+	var zh_hans_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$23 });
+	var translations$23;
+	var init_zh_hans$24 = __esmMin((() => {
+		translations$23 = {
 			Entity: "实体",
 			Display: "显示",
 			"Records list": "记录列表",
@@ -5648,10 +5813,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/i18n/zh-hans.ts
-	var zh_hans_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$21 });
-	var translations$21;
-	var init_zh_hans$22 = __esmMin((() => {
-		translations$21 = {
+	var zh_hans_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$22 });
+	var translations$22;
+	var init_zh_hans$23 = __esmMin((() => {
+		translations$22 = {
 			"⚠️ Anomaly Insight": "⚠️ 异常洞察",
 			"⚠️ Multi-method Anomaly": "⚠️ 多方法异常",
 			"Click the highlighted circle to add an annotation.": "点击高亮圆圈以添加注释。",
@@ -5686,10 +5851,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/ha/i18n/zh-hans.ts
-	var zh_hans_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$20 });
-	var translations$20;
-	var init_zh_hans$21 = __esmMin((() => {
-		translations$20 = {
+	var zh_hans_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$21 });
+	var translations$21;
+	var init_zh_hans$22 = __esmMin((() => {
+		translations$21 = {
 			"Confirm delete": "确认删除",
 			"Are you sure you want to delete this item?": "确定要删除此项目吗？",
 			Cancel: "取消",
@@ -5704,10 +5869,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/history-page/i18n/zh-hans.ts
-	var zh_hans_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$19 });
-	var translations$19;
-	var init_zh_hans$20 = __esmMin((() => {
-		translations$19 = {
+	var zh_hans_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$20 });
+	var translations$20;
+	var init_zh_hans$21 = __esmMin((() => {
+		translations$20 = {
 			"entity_id={0}": "entity_id={0}",
 			"device_id={0}": "device_id={0}",
 			"area_id={0}": "area_id={0}",
@@ -5805,12 +5970,43 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/timeline/i18n/zh-hans.ts
+	var zh_hans_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$19 });
+	var translations$19;
+	var init_zh_hans$20 = __esmMin((() => {
+		translations$19 = {
+			Wk: "周",
+			"Week of": "所在周"
+		};
+	}));
+	//#endregion
+	//#region custom_components/hass_datapoints/src/molecules/analysis-aggregate-group/i18n/zh-hans.ts
 	var zh_hans_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$18 });
 	var translations$18;
 	var init_zh_hans$19 = __esmMin((() => {
 		translations$18 = {
-			Wk: "周",
-			"Week of": "所在周"
+			"Aggregate series": "聚合序列",
+			"Add aggregate": "添加聚合",
+			"Remove aggregate": "移除聚合",
+			"Aggregate operation": "聚合操作",
+			"Aggregate state": "聚合状态",
+			"Aggregate interval": "聚合间隔",
+			"Count changes to a state": "统计变为某状态的次数",
+			"Count all state changes": "统计所有状态变化次数",
+			"Time in a state": "处于某状态的时长",
+			"Percentage of time in a state": "处于某状态的时间百分比",
+			Hourly: "每小时",
+			Daily: "每天",
+			Weekly: "每周",
+			Monthly: "每月",
+			On: "开",
+			Off: "关",
+			Open: "打开",
+			Closed: "关闭",
+			Detected: "已检测到",
+			Clear: "无人",
+			Occupied: "有人",
+			Unlocked: "已解锁",
+			Locked: "已锁定"
 		};
 	}));
 	//#endregion
@@ -6131,6 +6327,7 @@
 	var zh_hans_exports = /* @__PURE__ */ __exportAll({ templates: () => templates });
 	var modules, merged, templates;
 	var init_zh_hans = __esmMin((() => {
+		init_zh_hans$29();
 		init_zh_hans$28();
 		init_zh_hans$27();
 		init_zh_hans$26();
@@ -6160,16 +6357,17 @@
 		init_zh_hans$2();
 		init_zh_hans$1();
 		modules = /* #__PURE__ */ Object.assign({
-			"../../../cards/action/i18n/zh-hans.ts": zh_hans_exports$28,
-			"../../../cards/history/history-chart/i18n/zh-hans.ts": zh_hans_exports$27,
-			"../../../cards/history/i18n/zh-hans.ts": zh_hans_exports$26,
-			"../../../cards/list/i18n/zh-hans.ts": zh_hans_exports$25,
-			"../../../cards/quick/i18n/zh-hans.ts": zh_hans_exports$24,
-			"../../../cards/sensor/i18n/zh-hans.ts": zh_hans_exports$23,
-			"../../chart/i18n/zh-hans.ts": zh_hans_exports$22,
-			"../../ha/i18n/zh-hans.ts": zh_hans_exports$21,
-			"../../history-page/i18n/zh-hans.ts": zh_hans_exports$20,
-			"../../timeline/i18n/zh-hans.ts": zh_hans_exports$19,
+			"../../../cards/action/i18n/zh-hans.ts": zh_hans_exports$29,
+			"../../../cards/history/history-chart/i18n/zh-hans.ts": zh_hans_exports$28,
+			"../../../cards/history/i18n/zh-hans.ts": zh_hans_exports$27,
+			"../../../cards/list/i18n/zh-hans.ts": zh_hans_exports$26,
+			"../../../cards/quick/i18n/zh-hans.ts": zh_hans_exports$25,
+			"../../../cards/sensor/i18n/zh-hans.ts": zh_hans_exports$24,
+			"../../chart/i18n/zh-hans.ts": zh_hans_exports$23,
+			"../../ha/i18n/zh-hans.ts": zh_hans_exports$22,
+			"../../history-page/i18n/zh-hans.ts": zh_hans_exports$21,
+			"../../timeline/i18n/zh-hans.ts": zh_hans_exports$20,
+			"../../../molecules/analysis-aggregate-group/i18n/zh-hans.ts": zh_hans_exports$19,
 			"../../../molecules/analysis-anomaly-group/i18n/zh-hans.ts": zh_hans_exports$18,
 			"../../../molecules/analysis-delta-group/i18n/zh-hans.ts": zh_hans_exports$17,
 			"../../../molecules/analysis-rate-group/i18n/zh-hans.ts": zh_hans_exports$16,
@@ -6240,7 +6438,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/editor.styles.ts
-	var styles$72 = i$5`
+	var styles$73 = i$5`
   .note {
     font-size: 0.78rem;
     color: var(--secondary-text-color);
@@ -6248,7 +6446,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/editor-base/editor-base.styles.ts
-	var styles$71 = i$5`
+	var styles$72 = i$5`
   :host {
     display: block;
   }
@@ -6299,7 +6497,7 @@
 			this._config = cfg;
 			this._fire(cfg);
 		}
-	}, _defineProperty(_EditorBase, "styles", styles$71), _EditorBase);
+	}, _defineProperty(_EditorBase, "styles", styles$72), _EditorBase);
 	__decorate([r$2()], EditorBase.prototype, "_config", null);
 	__decorate([n$1({ type: Object })], EditorBase.prototype, "hass", null);
 	EditorBase = __decorate([localized()], EditorBase);
@@ -6377,7 +6575,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/display/section-heading/section-heading.styles.ts
-	var styles$70 = i$5`
+	var styles$71 = i$5`
   :host {
     display: block;
   }
@@ -6407,12 +6605,12 @@
 			return b`<div class="heading">${this.text}</div>`;
 		}
 	};
-	_defineProperty(SectionHeading, "styles", styles$70);
+	_defineProperty(SectionHeading, "styles", styles$71);
 	__decorate([n$1({ type: String })], SectionHeading.prototype, "text", null);
 	customElements.define("section-heading", SectionHeading);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/editor-text-field/editor-text-field.styles.ts
-	var styles$69 = i$5`
+	var styles$70 = i$5`
   :host {
     display: block;
   }
@@ -6489,7 +6687,7 @@
     ></ha-textfield>`;
 		}
 	};
-	_defineProperty(EditorTextField, "styles", styles$69);
+	_defineProperty(EditorTextField, "styles", styles$70);
 	__decorate([n$1({ type: String })], EditorTextField.prototype, "label", null);
 	__decorate([n$1({ type: String })], EditorTextField.prototype, "value", null);
 	__decorate([n$1({ type: String })], EditorTextField.prototype, "type", null);
@@ -6498,7 +6696,7 @@
 	customElements.define("editor-text-field", EditorTextField);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/editor-switch/editor-switch.styles.ts
-	var styles$68 = i$5`
+	var styles$69 = i$5`
   :host {
     display: block;
   }
@@ -6596,14 +6794,14 @@
     `;
 		}
 	};
-	_defineProperty(EditorSwitch, "styles", styles$68);
+	_defineProperty(EditorSwitch, "styles", styles$69);
 	__decorate([n$1({ type: String })], EditorSwitch.prototype, "label", null);
 	__decorate([n$1({ type: Boolean })], EditorSwitch.prototype, "checked", null);
 	__decorate([n$1({ type: String })], EditorSwitch.prototype, "tooltip", null);
 	customElements.define("editor-switch", EditorSwitch);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/editor-icon-picker/editor-icon-picker.styles.ts
-	var styles$67 = i$5`
+	var styles$68 = i$5`
   :host {
     display: block;
   }
@@ -6661,7 +6859,7 @@
     ></ha-icon-picker>`;
 		}
 	};
-	_defineProperty(EditorIconPicker, "styles", styles$67);
+	_defineProperty(EditorIconPicker, "styles", styles$68);
 	__decorate([n$1({ type: String })], EditorIconPicker.prototype, "label", null);
 	__decorate([n$1({ type: String })], EditorIconPicker.prototype, "value", null);
 	__decorate([n$1({ type: Object })], EditorIconPicker.prototype, "hass", null);
@@ -6778,7 +6976,7 @@
     `;
 		}
 	};
-	_defineProperty(HassDatapointsActionCardEditor, "styles", [EditorBase.styles, styles$72]);
+	_defineProperty(HassDatapointsActionCardEditor, "styles", [EditorBase.styles, styles$73]);
 	__decorate([e$4("#target-picker")], HassDatapointsActionCardEditor.prototype, "_targetPickerEl", null);
 	__decorate([r$1("ha-selector")], HassDatapointsActionCardEditor.prototype, "_selectorEls", null);
 	//#endregion
@@ -7022,7 +7220,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/dev-tool/dev-tool.styles.ts
-	var styles$66 = i$5`
+	var styles$67 = i$5`
   :host {
     display: block;
   }
@@ -7097,7 +7295,7 @@
 	_defineProperty(HassDatapointsDevToolCardEditor, "styles", [EditorBase.styles]);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/dev-tool/dev-tool-results/dev-tool-results.styles.ts
-	var styles$65 = i$5`
+	var styles$66 = i$5`
   :host {
     display: block;
     margin-top: 18px;
@@ -7464,7 +7662,7 @@
     `;
 		}
 	};
-	_defineProperty(CardDevToolResults, "styles", styles$65);
+	_defineProperty(CardDevToolResults, "styles", styles$66);
 	__decorate([n$1({ attribute: false })], CardDevToolResults.prototype, "results", null);
 	__decorate([n$1({ type: Boolean })], CardDevToolResults.prototype, "isAdmin", null);
 	__decorate([n$1({ type: String })], CardDevToolResults.prototype, "statusKind", null);
@@ -7474,7 +7672,7 @@
 	customElements.define("dev-tool-results", CardDevToolResults);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/dev-tool/dev-tool-windows/dev-tool-windows.styles.ts
-	var styles$64 = i$5`
+	var styles$65 = i$5`
   :host {
     display: block;
   }
@@ -7717,7 +7915,7 @@
     `;
 		}
 	};
-	_defineProperty(CardDevToolWindows, "styles", styles$64);
+	_defineProperty(CardDevToolWindows, "styles", styles$65);
 	__decorate([n$1({ attribute: false })], CardDevToolWindows.prototype, "windows", null);
 	__decorate([r$2()], CardDevToolWindows.prototype, "_nextWindowId", null);
 	customElements.define("dev-tool-windows", CardDevToolWindows);
@@ -8228,7 +8426,7 @@
 			return document.createElement("hass-datapoints-dev-tool-card-editor");
 		}
 	};
-	_defineProperty(HassDatapointsDevToolCard, "styles", styles$66);
+	_defineProperty(HassDatapointsDevToolCard, "styles", styles$67);
 	__decorate([r$2()], HassDatapointsDevToolCard.prototype, "_config", null);
 	__decorate([r$2()], HassDatapointsDevToolCard.prototype, "_hass", null);
 	__decorate([r$2()], HassDatapointsDevToolCard.prototype, "_entities", null);
@@ -8401,7 +8599,7 @@
 	};
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history.styles.ts
-	var styles$63 = i$5`
+	var styles$64 = i$5`
   :host {
     display: block;
     height: 100%;
@@ -12519,7 +12717,7 @@
 		};
 	}
 	function seriesHasActiveAnalysis(analysis, hasSelectedComparisonWindow = false) {
-		return !!(analysis.show_trend_lines || analysis.show_summary_stats || analysis.show_rate_of_change || analysis.show_threshold_analysis || analysis.show_anomalies || analysis.show_delta_analysis && hasSelectedComparisonWindow);
+		return !!(analysis.show_trend_lines || analysis.show_summary_stats || analysis.show_rate_of_change || analysis.show_threshold_analysis || analysis.show_anomalies || analysis.show_delta_analysis && hasSelectedComparisonWindow || (analysis.aggregates?.length ?? 0) > 0);
 	}
 	function seriesShouldHideSource(analysis, hasSelectedComparisonWindow = false) {
 		return analysis.hide_source_series === true && seriesHasActiveAnalysis(analysis, hasSelectedComparisonWindow);
@@ -13053,7 +13251,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/history-chart.styles.ts
-	var styles$62 = `
+	var styles$63 = `
   hass-datapoints-history-chart {
     position: relative;
     display: flex;
@@ -13978,7 +14176,7 @@
 		connectedCallback() {
 			this.style.cssText = "position:relative;display:flex;flex-direction:column;height:100%;min-height:0;padding:var(--dp-spacing-sm,8px) var(--dp-spacing-md,12px) var(--dp-spacing-md,12px);box-sizing:border-box;overflow:visible;isolation:isolate;z-index:3;";
 			if (this.querySelector("#chart")) return;
-			this.innerHTML = `<style>${styles$62}</style>
+			this.innerHTML = `<style>${styles$63}</style>
       <div class="chart-top-slot" id="chart-top-slot" hidden></div>
       <div class="chart-preview-overlay" id="chart-preview-overlay" hidden></div>
       <div class="chart-scroll-viewport" id="chart-scroll-viewport">
@@ -17248,7 +17446,7 @@
 	});
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/annotation-chip-row/annotation-chip-row.styles.ts
-	var styles$61 = i$5`
+	var styles$62 = i$5`
   :host {
     display: block;
   }
@@ -17279,7 +17477,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/interactive/annotation-chip/annotation-chip.styles.ts
-	var styles$60 = i$5`
+	var styles$61 = i$5`
   :host {
     display: inline-flex;
   }
@@ -17449,7 +17647,7 @@
     `;
 		}
 	};
-	_defineProperty(AnnotationChip, "styles", styles$60);
+	_defineProperty(AnnotationChip, "styles", styles$61);
 	__decorate([n$1({ type: String })], AnnotationChip.prototype, "type", null);
 	__decorate([n$1({
 		type: String,
@@ -17564,7 +17762,7 @@
     `;
 		}
 	};
-	_defineProperty(AnnotationChipRow, "styles", styles$61);
+	_defineProperty(AnnotationChipRow, "styles", styles$62);
 	__decorate([n$1({ type: Array })], AnnotationChipRow.prototype, "chips", null);
 	__decorate([n$1({
 		type: Object,
@@ -19012,11 +19210,11 @@
 			return document.createElement("hass-datapoints-history-card-editor");
 		}
 	};
-	_defineProperty(HassDatapointsHistoryCard, "styles", styles$63);
+	_defineProperty(HassDatapointsHistoryCard, "styles", styles$64);
 	customElements.define("hass-datapoints-history-card", HassDatapointsHistoryCard);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/editor.styles.ts
-	var styles$59 = i$5`
+	var styles$60 = i$5`
   .binary-display-row {
     display: flex;
     align-items: center;
@@ -19181,10 +19379,10 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-sample-group/analysis-sample-group.styles.ts
-	var styles$58 = i$5``;
+	var styles$59 = i$5``;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/analysis/analysis-group/analysis-group.styles.ts
-	var styles$57 = i$5`
+	var styles$58 = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -19317,7 +19515,7 @@
     `;
 		}
 	};
-	_defineProperty(AnalysisGroup, "styles", styles$57);
+	_defineProperty(AnalysisGroup, "styles", styles$58);
 	__decorate([n$1({ type: String })], AnalysisGroup.prototype, "label", null);
 	__decorate([n$1({ type: Boolean })], AnalysisGroup.prototype, "checked", null);
 	__decorate([n$1({ type: Boolean })], AnalysisGroup.prototype, "disabled", null);
@@ -19328,7 +19526,7 @@
 	customElements.define("analysis-group", AnalysisGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/inline-select/inline-select.styles.ts
-	var styles$56 = i$5`
+	var styles$57 = i$5`
   :host {
     display: inline-block;
   }
@@ -19407,7 +19605,7 @@
     `;
 		}
 	};
-	_defineProperty(InlineSelect, "styles", styles$56);
+	_defineProperty(InlineSelect, "styles", styles$57);
 	__decorate([n$1({ type: String })], InlineSelect.prototype, "value", null);
 	__decorate([n$1({ type: Array })], InlineSelect.prototype, "options", null);
 	__decorate([n$1({ type: Boolean })], InlineSelect.prototype, "disabled", null);
@@ -19551,12 +19749,12 @@
       </analysis-group>
     `;
 		}
-	}, _defineProperty(_AnalysisSampleGroup, "styles", [sharedStyles, styles$58]), _AnalysisSampleGroup);
+	}, _defineProperty(_AnalysisSampleGroup, "styles", [sharedStyles, styles$59]), _AnalysisSampleGroup);
 	AnalysisSampleGroup = __decorate([localized()], AnalysisSampleGroup);
 	customElements.define("analysis-sample-group", AnalysisSampleGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/analysis-trend-group.styles.ts
-	var styles$55 = i$5``;
+	var styles$56 = i$5``;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/analysis-trend-group.ts
 	var _AnalysisTrendGroup;
@@ -19669,12 +19867,12 @@
       </analysis-group>
     `;
 		}
-	}, _defineProperty(_AnalysisTrendGroup, "styles", [sharedStyles, styles$55]), _AnalysisTrendGroup);
+	}, _defineProperty(_AnalysisTrendGroup, "styles", [sharedStyles, styles$56]), _AnalysisTrendGroup);
 	AnalysisTrendGroup = __decorate([localized()], AnalysisTrendGroup);
 	customElements.define("analysis-trend-group", AnalysisTrendGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/analysis-summary-group.styles.ts
-	var styles$54 = i$5``;
+	var styles$55 = i$5``;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/analysis-summary-group.ts
 	var _AnalysisSummaryGroup = class AnalysisSummaryGroup extends AnalysisGroupMixin(i$2) {
@@ -19701,12 +19899,12 @@
     `;
 		}
 	};
-	var AnalysisSummaryGroup = (_defineProperty(_AnalysisSummaryGroup, "styles", [sharedStyles, styles$54]), _AnalysisSummaryGroup);
+	var AnalysisSummaryGroup = (_defineProperty(_AnalysisSummaryGroup, "styles", [sharedStyles, styles$55]), _AnalysisSummaryGroup);
 	AnalysisSummaryGroup = __decorate([localized()], AnalysisSummaryGroup);
 	customElements.define("analysis-summary-group", AnalysisSummaryGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/analysis-rate-group.styles.ts
-	var styles$53 = i$5``;
+	var styles$54 = i$5``;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/analysis-rate-group.ts
 	var _AnalysisRateGroup;
@@ -19775,15 +19973,15 @@
       </analysis-group>
     `;
 		}
-	}, _defineProperty(_AnalysisRateGroup, "styles", [sharedStyles, styles$53]), _AnalysisRateGroup);
+	}, _defineProperty(_AnalysisRateGroup, "styles", [sharedStyles, styles$54]), _AnalysisRateGroup);
 	AnalysisRateGroup = __decorate([localized()], AnalysisRateGroup);
 	customElements.define("analysis-rate-group", AnalysisRateGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/analysis-threshold-group.styles.ts
-	var styles$52 = i$5``;
+	var styles$53 = i$5``;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/number-input/number-input.styles.ts
-	var styles$51 = i$5`
+	var styles$52 = i$5`
   :host {
     display: inline-flex;
     align-items: center;
@@ -19865,7 +20063,7 @@
     `;
 		}
 	};
-	_defineProperty(NumberInput, "styles", styles$51);
+	_defineProperty(NumberInput, "styles", styles$52);
 	__decorate([n$1({ type: String })], NumberInput.prototype, "value", null);
 	__decorate([n$1({ type: String })], NumberInput.prototype, "placeholder", null);
 	__decorate([n$1({ type: String })], NumberInput.prototype, "suffix", null);
@@ -19934,13 +20132,13 @@
       </analysis-group>
     `;
 		}
-	}, _defineProperty(_AnalysisThresholdGroup, "styles", [sharedStyles, styles$52]), _AnalysisThresholdGroup);
+	}, _defineProperty(_AnalysisThresholdGroup, "styles", [sharedStyles, styles$53]), _AnalysisThresholdGroup);
 	__decorate([n$1({ type: String })], AnalysisThresholdGroup.prototype, "unit", null);
 	AnalysisThresholdGroup = __decorate([localized()], AnalysisThresholdGroup);
 	customElements.define("analysis-threshold-group", AnalysisThresholdGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/analysis-anomaly-group.styles.ts
-	var styles$50 = i$5`
+	var styles$51 = i$5`
   .method-computing-indicator {
     display: inline-flex;
     align-items: center;
@@ -20081,7 +20279,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/analysis/analysis-method-subopts/analysis-method-subopts.styles.ts
-	var styles$49 = i$5`
+	var styles$50 = i$5`
   :host {
     display: block;
     --dp-spacing-sm: var(--spacing, 8px);
@@ -20103,7 +20301,7 @@
 			return b`<div class="subopts"><slot></slot></div>`;
 		}
 	};
-	_defineProperty(AnalysisMethodSubopts, "styles", styles$49);
+	_defineProperty(AnalysisMethodSubopts, "styles", styles$50);
 	customElements.define("analysis-method-subopts", AnalysisMethodSubopts);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/analysis-anomaly-group.ts
@@ -20609,7 +20807,7 @@
 				composed: true
 			}));
 		}
-	}, _defineProperty(_AnalysisAnomalyGroup, "styles", [sharedStyles, styles$50]), _AnalysisAnomalyGroup);
+	}, _defineProperty(_AnalysisAnomalyGroup, "styles", [sharedStyles, styles$51]), _AnalysisAnomalyGroup);
 	__decorate([n$1({
 		type: Array,
 		attribute: "comparison-windows"
@@ -20638,7 +20836,7 @@
 	customElements.define("analysis-anomaly-group", AnalysisAnomalyGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-delta-group/analysis-delta-group.styles.ts
-	var styles$48 = i$5`
+	var styles$49 = i$5`
   .help-text {
     display: inline-block;
     color: var(--secondary-text-color);
@@ -20701,7 +20899,7 @@
       </analysis-group>
     `;
 		}
-	}, _defineProperty(_AnalysisDeltaGroup, "styles", [sharedStyles, styles$48]), _AnalysisDeltaGroup);
+	}, _defineProperty(_AnalysisDeltaGroup, "styles", [sharedStyles, styles$49]), _AnalysisDeltaGroup);
 	__decorate([n$1({
 		type: Boolean,
 		attribute: "can-show-delta-analysis"
@@ -20710,14 +20908,14 @@
 	customElements.define("analysis-delta-group", AnalysisDeltaGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/sidebar-datapoints-section.styles.ts
-	var styles$47 = i$5`
+	var styles$48 = i$5`
   :host {
     display: block;
   }
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/display/sidebar-options-section/sidebar-options-section.styles.ts
-	var styles$46 = i$5`
+	var styles$47 = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -20731,7 +20929,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/display/sidebar-section-header/sidebar-section-header.styles.ts
-	var styles$45 = i$5`
+	var styles$46 = i$5`
   :host {
     display: block;
   }
@@ -20888,7 +21086,7 @@
     `;
 		}
 	};
-	_defineProperty(SidebarSectionHeader, "styles", styles$45);
+	_defineProperty(SidebarSectionHeader, "styles", styles$46);
 	__decorate([n$1({ type: String })], SidebarSectionHeader.prototype, "title", null);
 	__decorate([n$1({ type: String })], SidebarSectionHeader.prototype, "subtitle", null);
 	__decorate([n$1({ type: Boolean })], SidebarSectionHeader.prototype, "collapsible", null);
@@ -20966,7 +21164,7 @@
     `;
 		}
 	};
-	_defineProperty(SidebarOptionsSection, "styles", styles$46);
+	_defineProperty(SidebarOptionsSection, "styles", styles$47);
 	__decorate([n$1({ type: String })], SidebarOptionsSection.prototype, "title", null);
 	__decorate([n$1({ type: String })], SidebarOptionsSection.prototype, "subtitle", null);
 	__decorate([n$1({ type: Boolean })], SidebarOptionsSection.prototype, "collapsible", null);
@@ -20975,7 +21173,7 @@
 	customElements.define("sidebar-options-section", SidebarOptionsSection);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/radio-group/radio-group.styles.ts
-	var styles$44 = i$5`
+	var styles$45 = i$5`
   :host {
     display: block;
   }
@@ -21061,7 +21259,7 @@
     `;
 		}
 	};
-	_defineProperty(RadioGroup, "styles", styles$44);
+	_defineProperty(RadioGroup, "styles", styles$45);
 	__decorate([n$1({ type: String })], RadioGroup.prototype, "name", null);
 	__decorate([n$1({ type: String })], RadioGroup.prototype, "value", null);
 	__decorate([n$1({ type: Array })], RadioGroup.prototype, "options", null);
@@ -21141,7 +21339,7 @@
       </sidebar-options-section>
     `;
 		}
-	}, _defineProperty(_SidebarDatapointsSection, "styles", styles$47), _SidebarDatapointsSection);
+	}, _defineProperty(_SidebarDatapointsSection, "styles", styles$48), _SidebarDatapointsSection);
 	__decorate([n$1({
 		type: String,
 		attribute: "datapoint-scope"
@@ -21152,14 +21350,14 @@
 	customElements.define("sidebar-datapoints-section", SidebarDatapointsSection);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/sidebar-datapoint-display-section.styles.ts
-	var styles$43 = i$5`
+	var styles$44 = i$5`
   :host {
     display: block;
   }
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/checkbox-list/checkbox-list.styles.ts
-	var styles$42 = i$5`
+	var styles$43 = i$5`
   :host {
     display: block;
   }
@@ -21224,7 +21422,7 @@
     `;
 		}
 	};
-	_defineProperty(CheckboxList, "styles", styles$42);
+	_defineProperty(CheckboxList, "styles", styles$43);
 	__decorate([n$1({ type: Array })], CheckboxList.prototype, "items", null);
 	customElements.define("checkbox-list", CheckboxList);
 	//#endregion
@@ -21300,7 +21498,7 @@
       </sidebar-options-section>
     `;
 		}
-	}, _defineProperty(_SidebarDatapointDisplaySection, "styles", styles$43), _SidebarDatapointDisplaySection);
+	}, _defineProperty(_SidebarDatapointDisplaySection, "styles", styles$44), _SidebarDatapointDisplaySection);
 	__decorate([n$1({
 		type: Boolean,
 		attribute: "show-icons"
@@ -21315,7 +21513,7 @@
 	customElements.define("sidebar-datapoint-display-section", SidebarDatapointDisplaySection);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/sidebar-analysis-section.styles.ts
-	var styles$41 = i$5`
+	var styles$42 = i$5`
   :host {
     display: block;
   }
@@ -21456,7 +21654,7 @@
       </sidebar-options-section>
     `;
 		}
-	}, _defineProperty(_SidebarAnalysisSection, "styles", styles$41), _SidebarAnalysisSection);
+	}, _defineProperty(_SidebarAnalysisSection, "styles", styles$42), _SidebarAnalysisSection);
 	__decorate([n$1({
 		type: String,
 		attribute: "anomaly-overlap-mode"
@@ -21475,7 +21673,7 @@
 	customElements.define("sidebar-analysis-section", SidebarAnalysisSection);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/sidebar-chart-display-section.styles.ts
-	var styles$40 = i$5`
+	var styles$41 = i$5`
   :host {
     display: block;
     --dp-spacing-sm: var(--spacing, 8px);
@@ -21732,7 +21930,7 @@
       </sidebar-options-section>
     `;
 		}
-	}, _defineProperty(_SidebarChartDisplaySection, "styles", styles$40), _SidebarChartDisplaySection);
+	}, _defineProperty(_SidebarChartDisplaySection, "styles", styles$41), _SidebarChartDisplaySection);
 	__decorate([n$1({
 		type: Boolean,
 		attribute: "show-tooltips"
@@ -22138,7 +22336,7 @@
     `;
 		}
 	};
-	_defineProperty(HassDatapointsHistoryCardEditor, "styles", [EditorBase.styles, styles$59]);
+	_defineProperty(HassDatapointsHistoryCardEditor, "styles", [EditorBase.styles, styles$60]);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/data/preferences-api.ts
 	/** HA user-data key for the saved history page. Stored via frontend/set_user_data. */
@@ -22936,7 +23134,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/target-row.styles.ts
-	var styles$39 = i$5`
+	var styles$40 = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -23438,6 +23636,257 @@
   }
 `;
 	//#endregion
+	//#region custom_components/hass_datapoints/src/molecules/analysis-aggregate-group/analysis-aggregate-group.styles.ts
+	var styles$39 = i$5`
+  .heading {
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--primary-text-color);
+    margin-bottom: var(--dp-spacing-xs);
+  }
+
+  .list {
+    display: grid;
+    gap: var(--dp-spacing-sm);
+  }
+
+  .definition {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--dp-spacing-sm);
+    padding: var(--dp-spacing-sm);
+    border-radius: 10px;
+    border: 1px solid
+      color-mix(
+        in srgb,
+        var(--divider-color, rgba(0, 0, 0, 0.12)) 88%,
+        transparent
+      );
+  }
+
+  .button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--dp-spacing-xs);
+    padding: var(--dp-spacing-xs) var(--dp-spacing-sm);
+    border-radius: 8px;
+    border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
+    background: transparent;
+    color: var(--primary-text-color);
+    font: inherit;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+
+  .button:focus-visible {
+    outline: 2px solid var(--primary-color, #03a9f4);
+    outline-offset: 2px;
+  }
+
+  .remove {
+    margin-left: auto;
+  }
+
+  .add {
+    margin-top: var(--dp-spacing-sm);
+  }
+`;
+	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/domain/aggregation/labels.ts
+	var BINARY_AGGREGATE_KINDS = [
+		{
+			value: "transition_count",
+			label: "Count changes to a state"
+		},
+		{
+			value: "all_changes",
+			label: "Count all state changes"
+		},
+		{
+			value: "state_duration",
+			label: "Time in a state"
+		},
+		{
+			value: "state_percentage",
+			label: "Percentage of time in a state"
+		}
+	];
+	var AGGREGATE_INTERVAL_OPTIONS = [
+		{
+			value: "hour",
+			label: "Hourly"
+		},
+		{
+			value: "day",
+			label: "Daily"
+		},
+		{
+			value: "week",
+			label: "Weekly"
+		},
+		{
+			value: "month",
+			label: "Monthly"
+		}
+	];
+	var STATE_LABELS = {
+		door: ["Open", "Closed"],
+		garage_door: ["Open", "Closed"],
+		window: ["Open", "Closed"],
+		opening: ["Open", "Closed"],
+		motion: ["Detected", "Clear"],
+		occupancy: ["Occupied", "Clear"],
+		lock: ["Unlocked", "Locked"]
+	};
+	/** On/off options labelled for the entity's device class (e.g. Open/Closed). */
+	function getBinaryStateOptions(deviceClass) {
+		const [on, off] = STATE_LABELS[deviceClass ?? ""] ?? ["On", "Off"];
+		return [{
+			value: "on",
+			label: on
+		}, {
+			value: "off",
+			label: off
+		}];
+	}
+	function getBinaryAggregateKind(definition) {
+		if (definition.operation === "transition_count") return definition.states?.length ? "transition_count" : "all_changes";
+		return definition.operation === "state_percentage" ? "state_percentage" : "state_duration";
+	}
+	/** Apply a user-facing kind to a definition, keeping states consistent. */
+	function applyBinaryAggregateKind(definition, kind, defaultState = "on") {
+		const states = definition.states?.length ? definition.states : [defaultState];
+		if (kind === "all_changes") return {
+			...definition,
+			operation: "transition_count",
+			states: []
+		};
+		const operation = kind;
+		const mode = operation === "state_percentage" ? "interval" : definition.mode;
+		return {
+			...definition,
+			operation,
+			mode,
+			states
+		};
+	}
+	function createBinaryAggregate(existingIds, defaultState = "on") {
+		let id;
+		do
+			id = `agg_${Math.random().toString(36).slice(2, 8)}`;
+		while (existingIds.includes(id));
+		return {
+			id,
+			operation: "transition_count",
+			interval: "day",
+			mode: "interval",
+			states: [defaultState],
+			resetOnZoom: false
+		};
+	}
+	//#endregion
+	//#region custom_components/hass_datapoints/src/molecules/analysis-aggregate-group/analysis-aggregate-group.ts
+	var _AnalysisAggregateGroup;
+	var _deviceClass_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var AnalysisAggregateGroup = (_AnalysisAggregateGroup = class AnalysisAggregateGroup extends AnalysisGroupMixin(i$2) {
+		constructor(..._args) {
+			super(..._args);
+			_classPrivateFieldInitSpec(this, _deviceClass_accessor_storage, "");
+		}
+		get deviceClass() {
+			return _classPrivateFieldGet2(_deviceClass_accessor_storage, this);
+		}
+		set deviceClass(value) {
+			_classPrivateFieldSet2(_deviceClass_accessor_storage, this, value);
+		}
+		get _definitions() {
+			return this.analysis.aggregates ?? [];
+		}
+		_commit(next) {
+			this._emit("aggregates", next);
+		}
+		_update(id, patch) {
+			this._commit(this._definitions.map((d) => d.id === id ? patch(d) : d));
+		}
+		_onAdd() {
+			const defaultState = getBinaryStateOptions(this.deviceClass)[0].value;
+			this._commit([...this._definitions, createBinaryAggregate(this._definitions.map((d) => d.id), defaultState)]);
+		}
+		_onRemove(id) {
+			this._commit(this._definitions.filter((d) => d.id !== id));
+		}
+		_selectValue(e) {
+			return e.detail.value;
+		}
+		_renderDefinition(definition) {
+			const kind = getBinaryAggregateKind(definition);
+			const stateOptions = getBinaryStateOptions(this.deviceClass).map((o) => ({
+				value: o.value,
+				label: msg(o.label)
+			}));
+			const showState = kind !== "all_changes";
+			return b`
+      <div
+        class="definition"
+        role="group"
+        aria-label=${msg("Aggregate series")}
+      >
+        <inline-select
+          .value=${kind}
+          .options=${this._localizedOptions(BINARY_AGGREGATE_KINDS)}
+          aria-label=${msg("Aggregate operation")}
+          @dp-change=${(e) => this._update(definition.id, (d) => applyBinaryAggregateKind(d, this._selectValue(e), stateOptions[0].value))}
+        ></inline-select>
+        ${showState ? b`<inline-select
+              .value=${definition.states?.[0] ?? stateOptions[0].value}
+              .options=${stateOptions}
+              aria-label=${msg("Aggregate state")}
+              @dp-change=${(e) => this._update(definition.id, (d) => ({
+				...d,
+				states: [this._selectValue(e)]
+			}))}
+            ></inline-select>` : A}
+        <inline-select
+          .value=${definition.interval}
+          .options=${this._localizedOptions(AGGREGATE_INTERVAL_OPTIONS)}
+          aria-label=${msg("Aggregate interval")}
+          @dp-change=${(e) => this._update(definition.id, (d) => ({
+				...d,
+				interval: this._selectValue(e)
+			}))}
+        ></inline-select>
+        <button
+          type="button"
+          class="button remove"
+          aria-label=${msg("Remove aggregate")}
+          @click=${() => this._onRemove(definition.id)}
+        >
+          <ha-icon icon="mdi:close"></ha-icon>
+        </button>
+      </div>
+    `;
+		}
+		render() {
+			return b`
+      <div class="heading">${msg("Aggregate series")}</div>
+      <div class="list">
+        ${this._definitions.map((d) => this._renderDefinition(d))}
+      </div>
+      <button type="button" class="button add" @click=${this._onAdd}>
+        <ha-icon icon="mdi:plus"></ha-icon>
+        ${msg("Add aggregate")}
+      </button>
+    `;
+		}
+	}, _defineProperty(_AnalysisAggregateGroup, "styles", [sharedStyles, styles$39]), _AnalysisAggregateGroup);
+	__decorate([n$1({
+		type: String,
+		attribute: "device-class"
+	})], AnalysisAggregateGroup.prototype, "deviceClass", null);
+	AnalysisAggregateGroup = __decorate([localized()], AnalysisAggregateGroup);
+	customElements.define("analysis-aggregate-group", AnalysisAggregateGroup);
+	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/target-row.ts
 	var _TargetRow;
 	var _color_accessor_storage$1;
@@ -23475,11 +23924,14 @@
 		].map((c) => Math.max(0, Math.min(255, Math.round(c * (1 - mixStrength) + mixTarget * mixStrength))));
 		return `rgb(${mixed[0]}, ${mixed[1]}, ${mixed[2]})`;
 	}
+	function hasAggregates(a) {
+		return (a.aggregates?.length ?? 0) > 0;
+	}
 	function _hasConfiguredAnalysis(a) {
-		return a.show_trend_lines || a.show_summary_stats || a.show_rate_of_change || a.show_threshold_analysis || a.show_anomalies || a.show_delta_analysis || a.stepped_series || a.hide_source_series;
+		return a.show_trend_lines || a.show_summary_stats || a.show_rate_of_change || a.show_threshold_analysis || a.show_anomalies || a.show_delta_analysis || a.stepped_series || a.hide_source_series || hasAggregates(a);
 	}
 	function _hasActiveAnalysis(a, hasComparisonWindow) {
-		return a.show_trend_lines || a.show_summary_stats || a.show_rate_of_change || a.show_threshold_analysis || a.show_anomalies || a.show_delta_analysis && hasComparisonWindow;
+		return a.show_trend_lines || a.show_summary_stats || a.show_rate_of_change || a.show_threshold_analysis || a.show_anomalies || a.show_delta_analysis && hasComparisonWindow || hasAggregates(a);
 	}
 	var TargetRow = (_color_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _visible_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _analysis_accessor_storage = /* @__PURE__ */ new WeakMap(), _index_accessor_storage = /* @__PURE__ */ new WeakMap(), _entityId_accessor_storage = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _stateObj_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$10 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _computing_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingProgress_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingMethods_accessor_storage = /* @__PURE__ */ new WeakMap(), _rowCount_accessor_storage = /* @__PURE__ */ new WeakMap(), _allAnalysisSame_accessor_storage = /* @__PURE__ */ new WeakMap(), _hideDragHandle_accessor_storage = /* @__PURE__ */ new WeakMap(), _label_accessor_storage$8 = /* @__PURE__ */ new WeakMap(), _binaryDisplay_accessor_storage = /* @__PURE__ */ new WeakMap(), _showBinaryDisplay_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _TargetRow = class TargetRow extends i$2 {
 		constructor(..._args) {
@@ -23878,13 +24330,32 @@
                       @dp-change=${this._onBinaryDisplayChange}
                     ></inline-select>
                   </label>
+                  <analysis-aggregate-group
+                    .analysis=${a}
+                    .entityId=${this._entityId}
+                    .deviceClass=${String(this.stateObj?.attributes?.device_class ?? "")}
+                    @dp-group-analysis-change=${this._onGroupAnalysisChange}
+                  ></analysis-aggregate-group>
+                  <div class="history-target-analysis-bottom-row">
+                    <label
+                      class="history-target-analysis-option ${!hasActive ? "is-disabled" : ""}"
+                    >
+                      <input
+                        type="checkbox"
+                        .checked=${a.hide_source_series && hasActive}
+                        ?disabled=${!hasActive}
+                        @change=${(e) => this._onCheckbox("hide_source_series", e)}
+                      />
+                      <span>${msg("Hide source series")}</span>
+                    </label>
+                  </div>
                 </div>
               </div>
             ` : A}
       </div>
     `;
 		}
-	}, _defineProperty(_TargetRow, "styles", styles$39), _TargetRow);
+	}, _defineProperty(_TargetRow, "styles", styles$40), _TargetRow);
 	__decorate([n$1({ type: String })], TargetRow.prototype, "color", null);
 	__decorate([n$1({ type: Boolean })], TargetRow.prototype, "visible", null);
 	__decorate([n$1({ type: Object })], TargetRow.prototype, "analysis", null);

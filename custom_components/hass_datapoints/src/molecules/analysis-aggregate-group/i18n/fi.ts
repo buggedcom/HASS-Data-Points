@@ -1,0 +1,27 @@
+import type { ComponentTranslations } from "@/lib/i18n/types";
+
+export const translations: ComponentTranslations = {
+  "Aggregate series": "Koosteet",
+  "Add aggregate": "Lisää koostesarja",
+  "Remove aggregate": "Poista koostesarja",
+  "Aggregate operation": "Koosteen toiminto",
+  "Aggregate state": "Koosteen tila",
+  "Aggregate interval": "Koosteen jakso",
+  "Count changes to a state": "Laske muutokset tilaan",
+  "Count all state changes": "Laske kaikki tilamuutokset",
+  "Time in a state": "Aika tilassa",
+  "Percentage of time in a state": "Tilassa vietetyn ajan osuus prosentteina",
+  Hourly: "Tunneittain",
+  Daily: "Päivittäin",
+  Weekly: "Viikoittain",
+  Monthly: "Kuukausittain",
+  On: "Päällä",
+  Off: "Pois",
+  Open: "Auki",
+  Closed: "Kiinni",
+  Detected: "Havaittu",
+  Clear: "Vapaa",
+  Occupied: "Varattu",
+  Unlocked: "Avattu",
+  Locked: "Lukittu",
+};
