@@ -72,16 +72,6 @@ export const styles = css`
     flex: 1;
   }
 
-  .monitor-anomaly-indicator {
-    font-size: 0.78em;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-weight: 500;
-    white-space: nowrap;
-    background: var(--error-color, #db4437);
-    color: white;
-  }
-
   .monitor-toggle-btn {
     background: none;
     border: none;

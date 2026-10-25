@@ -29,8 +29,13 @@ import type {
 } from "@/lib/events";
 import { HOUR_MS } from "@/lib/timeline/timeline-scale";
 import { confirmDestructiveAction } from "@/lib/ha/ha-components";
+import {
+  deriveMonitorStatus,
+  type MonitorStatus,
+} from "@/lib/data/monitor-status";
 import "@/molecules/anomaly-monitor-wizard/anomaly-monitor-wizard";
 import "@/atoms/form/entity-chip/entity-chip";
+import "@/atoms/display/monitor-status-pill/monitor-status-pill";
 
 /**
  * Fallback detection methods when a monitor has no configured methods. Mirrors
@@ -725,10 +730,22 @@ export class AnomalyMonitorsPanel extends LitElement {
     `;
   }
 
+  /** The localized label for a derived display status. */
+  private _statusLabel(status: MonitorStatus): string {
+    const labels: Record<MonitorStatus, string> = {
+      paused: msg("Paused"),
+      healthy: msg("Healthy"),
+      warning: msg("Warning"),
+      triggered: msg("Triggered"),
+    };
+    return labels[status];
+  }
+
   private _renderMonitorCard(monitor: AnomalyMonitor) {
     const clusterCount = monitor.last_cluster_count ?? 0;
     const isDisabled = !monitor.enabled;
     const hasAnomaly = !isDisabled && clusterCount > 0;
+    const status = deriveMonitorStatus(monitor);
 
     // Consecutive anomalous scans
     const history = monitor.scan_history ?? [];
@@ -747,11 +764,10 @@ export class AnomalyMonitorsPanel extends LitElement {
       <div class="monitor-card" data-enabled=${monitor.enabled}>
         <div class="monitor-card-header">
           <span class="monitor-name">${monitor.name}</span>
-          ${hasAnomaly
-            ? html`<span class="monitor-anomaly-indicator"
-                >${msg("Anomaly detected")}</span
-              >`
-            : nothing}
+          <monitor-status-pill
+            .status=${status}
+            .label=${this._statusLabel(status)}
+          ></monitor-status-pill>
           <button
             class="monitor-toggle-btn"
             title=${monitor.enabled
