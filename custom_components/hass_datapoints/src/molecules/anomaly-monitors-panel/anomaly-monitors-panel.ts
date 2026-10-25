@@ -133,6 +133,9 @@ export class AnomalyMonitorsPanel extends LitElement {
   /** Monitor id whose header "more actions" overflow menu is currently open. */
   @state() accessor _overflowOpenId: string | null = null;
 
+  /** Whether the document-level listeners that close the overflow menu are active. */
+  private _overflowCloseHandlersActive = false;
+
   private _pollInterval: ReturnType<typeof setInterval> | null = null;
 
   private _monitorsEventUnsubscribe: Nullable<() => void> = null;
@@ -155,6 +158,9 @@ export class AnomalyMonitorsPanel extends LitElement {
       this._pollInterval = null;
     }
     this._teardownMonitorSubscription();
+    // Independent of the monitor subscription teardown above: drop the
+    // overflow-menu document listeners so a disconnected panel leaks nothing.
+    this._closeOverflow();
   }
 
   protected updated(changedProperties: PropertyValues<this>) {
@@ -255,15 +261,64 @@ export class AnomalyMonitorsPanel extends LitElement {
   }
 
   private _onEdit(monitor: AnomalyMonitor) {
-    this._overflowOpenId = null;
+    this._closeOverflow();
     this._editMonitor = monitor;
     this._wizardOpen = true;
   }
 
   private _toggleOverflow(monitor: AnomalyMonitor) {
-    this._overflowOpenId =
-      this._overflowOpenId === monitor.id ? null : monitor.id;
+    if (this._overflowOpenId === monitor.id) {
+      this._closeOverflow();
+    } else {
+      this._openOverflow(monitor.id);
+    }
   }
+
+  /** Open the given monitor's overflow menu and arm the outside-close listeners. */
+  private _openOverflow(id: string) {
+    this._overflowOpenId = id;
+    if (!this._overflowCloseHandlersActive) {
+      document.addEventListener("mousedown", this._onDocumentPointerDown, true);
+      document.addEventListener("keydown", this._onDocumentKeyDown, true);
+      this._overflowCloseHandlersActive = true;
+    }
+  }
+
+  /** Close any open overflow menu and remove the outside-close listeners. */
+  private _closeOverflow() {
+    if (this._overflowOpenId !== null) {
+      this._overflowOpenId = null;
+    }
+    if (this._overflowCloseHandlersActive) {
+      document.removeEventListener(
+        "mousedown",
+        this._onDocumentPointerDown,
+        true
+      );
+      document.removeEventListener("keydown", this._onDocumentKeyDown, true);
+      this._overflowCloseHandlersActive = false;
+    }
+  }
+
+  /** Close the overflow menu on a mousedown outside the menu or its toggle. */
+  private readonly _onDocumentPointerDown = (event: MouseEvent) => {
+    const insideOverflow = event
+      .composedPath()
+      .some(
+        (node) =>
+          node instanceof Element && node.classList.contains("monitor-overflow")
+      );
+    if (!insideOverflow) {
+      this._closeOverflow();
+    }
+  };
+
+  /** Close the overflow menu when Escape is pressed. */
+  private readonly _onDocumentKeyDown = (event: KeyboardEvent) => {
+    if (event.key === "Escape") {
+      this._closeOverflow();
+    }
+  };
 
   private _onOpenEntity(monitor: AnomalyMonitor, entityId: string) {
     const detail: MonitorsOpenEntityDetail = {
@@ -311,7 +366,7 @@ export class AnomalyMonitorsPanel extends LitElement {
 
   private async _onDelete(monitor: AnomalyMonitor) {
     if (!this.hass) return;
-    this._overflowOpenId = null;
+    this._closeOverflow();
 
     const confirmed = await confirmDestructiveAction(this, {
       title: msg(`Delete "${monitor.name}"?`),
@@ -733,11 +788,49 @@ export class AnomalyMonitorsPanel extends LitElement {
       return msg("Single-entity monitor");
     }
     const mode = (monitor as CombinedMonitor).overlap_mode ?? "all";
-    const isOr =
-      mode === "any" || /^any_/.test(mode) || mode === "any_two_plus";
+    const isOr = mode === "any" || /^any_/.test(mode);
     return isOr
       ? msg("Triggers when any entity is anomalous (OR)")
       : msg("Triggers when all entities are anomalous (AND)");
+  }
+
+  /**
+   * The edit + delete button pair. Rendered in two slots: the wide
+   * `.monitor-header-actions` set (`variant: "header"`, icon-only) and the
+   * mobile `.overflow-menu` (`variant: "menu"`, labelled menu items). A single
+   * source keeps the click handlers, icons and labels defined once.
+   */
+  private _renderEditDeleteActions(
+    monitor: AnomalyMonitor,
+    variant: "header" | "menu"
+  ) {
+    const menu = variant === "menu";
+    const btnClass = (name: string) =>
+      menu ? `overflow-item ${name}` : `icon-action ${name}`;
+    return html`
+      <button
+        class=${btnClass("edit-btn")}
+        type="button"
+        role=${menu ? "menuitem" : nothing}
+        title=${menu ? nothing : msg("Edit monitor")}
+        aria-label=${msg("Edit monitor")}
+        @click=${() => this._onEdit(monitor)}
+      >
+        <ha-icon icon="mdi:pencil"></ha-icon>
+        ${menu ? html`<span>${msg("Edit")}</span>` : nothing}
+      </button>
+      <button
+        class=${btnClass("delete-btn")}
+        type="button"
+        role=${menu ? "menuitem" : nothing}
+        title=${menu ? nothing : msg("Delete monitor")}
+        aria-label=${msg("Delete monitor")}
+        @click=${() => this._onDelete(monitor)}
+      >
+        <ha-icon icon="mdi:trash-can-outline"></ha-icon>
+        ${menu ? html`<span>${msg("Delete")}</span>` : nothing}
+      </button>
+    `;
   }
 
   private _renderCardHeader(monitor: AnomalyMonitor, status: MonitorStatus) {
@@ -766,24 +859,7 @@ export class AnomalyMonitorsPanel extends LitElement {
           <span class="switch-track"><span class="switch-thumb"></span></span>
         </button>
         <div class="monitor-header-actions">
-          <button
-            class="icon-action edit-btn"
-            type="button"
-            title=${msg("Edit monitor")}
-            aria-label=${msg("Edit monitor")}
-            @click=${() => this._onEdit(monitor)}
-          >
-            <ha-icon icon="mdi:pencil"></ha-icon>
-          </button>
-          <button
-            class="icon-action delete-btn"
-            type="button"
-            title=${msg("Delete monitor")}
-            aria-label=${msg("Delete monitor")}
-            @click=${() => this._onDelete(monitor)}
-          >
-            <ha-icon icon="mdi:trash-can-outline"></ha-icon>
-          </button>
+          ${this._renderEditDeleteActions(monitor, "header")}
         </div>
         <div class="monitor-overflow">
           <button
@@ -799,24 +875,7 @@ export class AnomalyMonitorsPanel extends LitElement {
           </button>
           ${overflowOpen
             ? html`<div class="overflow-menu" role="menu">
-                <button
-                  class="overflow-item edit-btn"
-                  type="button"
-                  role="menuitem"
-                  @click=${() => this._onEdit(monitor)}
-                >
-                  <ha-icon icon="mdi:pencil"></ha-icon>
-                  <span>${msg("Edit")}</span>
-                </button>
-                <button
-                  class="overflow-item delete-btn"
-                  type="button"
-                  role="menuitem"
-                  @click=${() => this._onDelete(monitor)}
-                >
-                  <ha-icon icon="mdi:trash-can-outline"></ha-icon>
-                  <span>${msg("Delete")}</span>
-                </button>
+                ${this._renderEditDeleteActions(monitor, "menu")}
               </div>`
             : nothing}
         </div>
