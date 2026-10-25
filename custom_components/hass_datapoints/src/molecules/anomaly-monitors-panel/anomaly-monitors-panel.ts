@@ -1,8 +1,9 @@
-import { html, LitElement, nothing, svg } from "lit";
+import { html, LitElement, nothing } from "lit";
 import { property, state } from "lit/decorators.js";
 import type { PropertyValues } from "lit";
-import { DOMAIN } from "@/constants";
+import { COLORS, DOMAIN } from "@/constants";
 import { localized, msg } from "@/lib/i18n/localize";
+import { fmtRelativeTime } from "@/lib/util/format";
 
 import { styles } from "./anomaly-monitors-panel.styles";
 import {
@@ -20,7 +21,6 @@ import {
   type CombinedMonitor,
   type AnomalyCluster,
   type DismissedWindow,
-  type ScanHistoryEntry,
 } from "@/lib/data/monitors-api";
 import type { HassLike } from "@/lib/types";
 import type {
@@ -50,6 +50,44 @@ function monitorAnomalyMethods(monitor: AnomalyMonitor): string[] {
     monitor.anomaly_methods.length > 0
     ? monitor.anomaly_methods
     : PANEL_DEFAULT_ANOMALY_METHODS;
+}
+
+/**
+ * Stable, non-negative string hash used only to pick a palette slot. Avoids
+ * bitwise ops (repo lint bans them) by staying in positive integer arithmetic.
+ */
+function hashCode(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash * 31 + str.charCodeAt(i)) % 2147483647;
+  }
+  return hash;
+}
+
+/**
+ * Deterministic series colour for a monitor: the same monitor always maps to
+ * the same palette slot, keyed off its first entity id (falling back to its id).
+ */
+function monitorSeriesColor(monitor: AnomalyMonitor): string {
+  const key = monitorEntityIds(monitor)[0] ?? monitor.id;
+  return COLORS[hashCode(key) % COLORS.length];
+}
+
+/** Format a scan interval in minutes as a compact "N min" / "N h" label. */
+function fmtScanInterval(minutes: number): string {
+  if (minutes < 60) {
+    return `${minutes} min`;
+  }
+  const hours = minutes / 60;
+  return `${Number.isInteger(hours) ? hours : hours.toFixed(1)} h`;
+}
+
+/** Format a look-back window in hours as a compact "N h" / "N d" label. */
+function fmtLookBack(hours: number): string {
+  if (hours >= 24 && hours % 24 === 0) {
+    return `${hours / 24} d`;
+  }
+  return `${hours} h`;
 }
 
 /**
@@ -91,6 +129,9 @@ export class AnomalyMonitorsPanel extends LitElement {
 
   /** Tracks which monitor+cluster is showing the dismiss expiry picker. Key: `${monitorId}:${clusterIndex}` */
   @state() accessor _dismissPickerKey: string | null = null;
+
+  /** Monitor id whose header "more actions" overflow menu is currently open. */
+  @state() accessor _overflowOpenId: string | null = null;
 
   private _pollInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -214,8 +255,14 @@ export class AnomalyMonitorsPanel extends LitElement {
   }
 
   private _onEdit(monitor: AnomalyMonitor) {
+    this._overflowOpenId = null;
     this._editMonitor = monitor;
     this._wizardOpen = true;
+  }
+
+  private _toggleOverflow(monitor: AnomalyMonitor) {
+    this._overflowOpenId =
+      this._overflowOpenId === monitor.id ? null : monitor.id;
   }
 
   private _onOpenEntity(monitor: AnomalyMonitor, entityId: string) {
@@ -264,6 +311,7 @@ export class AnomalyMonitorsPanel extends LitElement {
 
   private async _onDelete(monitor: AnomalyMonitor) {
     if (!this.hass) return;
+    this._overflowOpenId = null;
 
     const confirmed = await confirmDestructiveAction(this, {
       title: msg(`Delete "${monitor.name}"?`),
@@ -577,72 +625,6 @@ export class AnomalyMonitorsPanel extends LitElement {
     `;
   }
 
-  private _renderSparkline(history: ScanHistoryEntry[]) {
-    const W = 120;
-    const H = 28;
-    const PAD = 3;
-    const counts = history.map((e) => e.count);
-    if (counts.length < 2) {
-      return html`<div class="sparkline-empty">
-        ${msg("Not enough data yet")}
-      </div>`;
-    }
-    const max = Math.max(...counts, 1);
-    const coords = counts.map((c, i) => ({
-      x: PAD + (i / (counts.length - 1)) * (W - PAD * 2),
-      y: H - PAD - (c / max) * (H - PAD * 2),
-    }));
-    const pts = coords
-      .map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`)
-      .join(" ");
-    const baselineY = (H - PAD).toFixed(1);
-    const latest = counts[counts.length - 1];
-    const prev = counts[counts.length - 2];
-    let trend = msg("steady");
-    if (latest > prev) trend = msg("rising");
-    else if (latest < prev) trend = msg("falling");
-    const label = msg(
-      `Anomaly count over the last ${counts.length} scans: latest ${latest}, ${trend}`
-    );
-    return html`<div class="monitor-sparkline-wrap">
-      <svg
-        class="monitor-sparkline"
-        width=${W}
-        height=${H}
-        role="img"
-        aria-label=${label}
-      >
-        <line
-          class="sparkline-baseline"
-          x1=${PAD}
-          x2=${W - PAD}
-          y1=${baselineY}
-          y2=${baselineY}
-        />
-        <polyline
-          points=${pts}
-          fill="none"
-          stroke="var(--primary-color)"
-          stroke-width="1.5"
-        />
-        ${coords.map((p, i) => {
-          const isLast = i === coords.length - 1;
-          return svg`<circle
-            class=${isLast ? "sparkline-latest" : "sparkline-point"}
-            cx=${p.x.toFixed(1)}
-            cy=${p.y.toFixed(1)}
-            r=${isLast ? 3 : 4}
-          >
-            <title>${msg(`${counts[i]} anomalies at ${history[i].t}`)}</title>
-          </circle>`;
-        })}
-      </svg>
-      <span class="sparkline-caption"
-        >${msg(`anomaly count, last ${counts.length} scans`)}</span
-      >
-    </div>`;
-  }
-
   /**
    * Render a single entity chip wrapped in a keyboard-activatable button so a
    * user can open that entity's series. The `entity-chip` atom stays inert; the
@@ -741,79 +723,49 @@ export class AnomalyMonitorsPanel extends LitElement {
     return labels[status];
   }
 
-  private _renderMonitorCard(monitor: AnomalyMonitor) {
-    const clusterCount = monitor.last_cluster_count ?? 0;
-    const isDisabled = !monitor.enabled;
-    const hasAnomaly = !isDisabled && clusterCount > 0;
-    const status = deriveMonitorStatus(monitor);
-
-    // Consecutive anomalous scans
-    const history = monitor.scan_history ?? [];
-    let consecutive = 0;
-    for (let i = history.length - 1; i >= 0; i--) {
-      if ((history[i].count ?? 0) > 0) consecutive++;
-      else break;
+  /**
+   * The plain-language trigger rule shown in the card footer. Individual
+   * monitors watch a single entity; combined monitors either fire when any one
+   * entity is anomalous (OR) or require every entity to be anomalous (AND).
+   */
+  private _triggerLogicLabel(monitor: AnomalyMonitor): string {
+    if (monitor.type !== "combined") {
+      return msg("Single-entity monitor");
     }
+    const mode = (monitor as CombinedMonitor).overlap_mode ?? "all";
+    const isOr =
+      mode === "any" || /^any_/.test(mode) || mode === "any_two_plus";
+    return isOr
+      ? msg("Triggers when any entity is anomalous (OR)")
+      : msg("Triggers when all entities are anomalous (AND)");
+  }
 
-    // Lazily load clusters when anomaly is active
-    if (hasAnomaly && !this._monitorClusters.has(monitor.id)) {
-      this._loadClusters(monitor.id);
-    }
-
+  private _renderCardHeader(monitor: AnomalyMonitor, status: MonitorStatus) {
+    const overflowOpen = this._overflowOpenId === monitor.id;
     return html`
-      <div class="monitor-card" data-enabled=${monitor.enabled}>
-        <div class="monitor-card-header">
-          <span class="monitor-name">${monitor.name}</span>
-          <monitor-status-pill
-            .status=${status}
-            .label=${this._statusLabel(status)}
-          ></monitor-status-pill>
-          <button
-            class="monitor-toggle-btn"
-            title=${monitor.enabled
-              ? msg("Disable monitor")
-              : msg("Enable monitor")}
-            @click=${() => this._onToggleEnabled(monitor)}
-          >
-            <ha-icon
-              icon=${monitor.enabled
-                ? "mdi:toggle-switch"
-                : "mdi:toggle-switch-off-outline"}
-            ></ha-icon>
-          </button>
-        </div>
-
-        ${this._renderEntityDisplay(monitor)}
-
-        <div class="monitor-stats">
-          ${this._renderSparkline(history)}
-          <span>
-            ${clusterCount} ${msg("cluster(s)")}
-            ${consecutive > 0
-              ? html`· ${msg(`persistent for ${consecutive} scans`)}`
-              : nothing}
-          </span>
-          ${monitor.last_scan_at
-            ? html`<span
-                >${msg("Last scan:")}
-                ${new Date(monitor.last_scan_at).toLocaleString()}</span
-              >`
-            : nothing}
-        </div>
-
-        ${hasAnomaly ? this._renderClusterList(monitor) : nothing}
-        ${this._renderDismissedWindows(monitor)}
-
-        <div class="monitor-actions">
-          <button
-            class="icon-action view-series-btn"
-            type="button"
-            title=${msg("View series")}
-            aria-label=${msg("View series on chart")}
-            @click=${() => this._onViewSeries(monitor)}
-          >
-            <ha-icon icon="mdi:chart-line"></ha-icon>
-          </button>
+      <div class="monitor-card-header">
+        <monitor-status-pill
+          .status=${status}
+          .label=${this._statusLabel(status)}
+        ></monitor-status-pill>
+        <span class="monitor-name">${monitor.name}</span>
+        <span class="monitor-header-spacer"></span>
+        <button
+          class="monitor-switch"
+          type="button"
+          role="switch"
+          aria-checked=${monitor.enabled ? "true" : "false"}
+          title=${monitor.enabled
+            ? msg("Disable monitor")
+            : msg("Enable monitor")}
+          aria-label=${monitor.enabled
+            ? msg("Disable monitor")
+            : msg("Enable monitor")}
+          @click=${() => this._onToggleEnabled(monitor)}
+        >
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+        </button>
+        <div class="monitor-header-actions">
           <button
             class="icon-action edit-btn"
             type="button"
@@ -823,17 +775,6 @@ export class AnomalyMonitorsPanel extends LitElement {
           >
             <ha-icon icon="mdi:pencil"></ha-icon>
           </button>
-          ${monitor.device_id
-            ? html`<a
-                class="icon-action device-link"
-                href=${`/config/devices/device/${monitor.device_id}`}
-                title=${msg("View device")}
-                aria-label=${msg("View device")}
-              >
-                <ha-icon icon="mdi:chip"></ha-icon>
-              </a>`
-            : nothing}
-          <div class="monitor-actions-spacer"></div>
           <button
             class="icon-action delete-btn"
             type="button"
@@ -843,6 +784,137 @@ export class AnomalyMonitorsPanel extends LitElement {
           >
             <ha-icon icon="mdi:trash-can-outline"></ha-icon>
           </button>
+        </div>
+        <div class="monitor-overflow">
+          <button
+            class="icon-action overflow-toggle"
+            type="button"
+            aria-haspopup="menu"
+            aria-expanded=${overflowOpen ? "true" : "false"}
+            title=${msg("More actions")}
+            aria-label=${msg("More actions")}
+            @click=${() => this._toggleOverflow(monitor)}
+          >
+            <ha-icon icon="mdi:dots-vertical"></ha-icon>
+          </button>
+          ${overflowOpen
+            ? html`<div class="overflow-menu" role="menu">
+                <button
+                  class="overflow-item edit-btn"
+                  type="button"
+                  role="menuitem"
+                  @click=${() => this._onEdit(monitor)}
+                >
+                  <ha-icon icon="mdi:pencil"></ha-icon>
+                  <span>${msg("Edit")}</span>
+                </button>
+                <button
+                  class="overflow-item delete-btn"
+                  type="button"
+                  role="menuitem"
+                  @click=${() => this._onDelete(monitor)}
+                >
+                  <ha-icon icon="mdi:trash-can-outline"></ha-icon>
+                  <span>${msg("Delete")}</span>
+                </button>
+              </div>`
+            : nothing}
+        </div>
+      </div>
+    `;
+  }
+
+  private _renderStatsBlock(monitor: AnomalyMonitor) {
+    const anomalousReadings = monitor.scan_history?.at(-1)?.count ?? 0;
+    const incidents =
+      monitor.active_cluster_count ?? monitor.last_cluster_count ?? 0;
+    const lastAnomaly =
+      monitor.enabled && monitor.last_anomaly_at
+        ? fmtRelativeTime(monitor.last_anomaly_at)
+        : "—";
+    const seriesColor = monitorSeriesColor(monitor);
+
+    return html`
+      <div class="monitor-stats-block" role="group" aria-label=${msg("Stats")}>
+        <div class="monitor-stat stat-anomalous">
+          <span class="stat-label">${msg("Anomalous readings")}</span>
+          <span class="stat-value" style="color:${seriesColor}"
+            >${anomalousReadings}</span
+          >
+        </div>
+        <div class="monitor-stat stat-incidents">
+          <span class="stat-label">${msg("Incidents")}</span>
+          <span class="stat-value">${incidents}</span>
+          <span class="stat-caption"
+            >${msg("Group(s) of nearby readings")}</span
+          >
+        </div>
+        <div class="monitor-stat stat-last-anomaly">
+          <span class="stat-label">${msg("Last anomaly")}</span>
+          <span class="stat-value">${lastAnomaly}</span>
+        </div>
+        <div class="monitor-stat stat-interval">
+          <span class="stat-label">${msg("Checks every")}</span>
+          <span class="stat-value"
+            >${fmtScanInterval(monitor.scan_interval_minutes)}</span
+          >
+          <span class="stat-caption"
+            >${msg(`Looks back ${fmtLookBack(monitor.look_back_hours)}`)}</span
+          >
+        </div>
+      </div>
+    `;
+  }
+
+  private _renderMonitorCard(monitor: AnomalyMonitor) {
+    const clusterCount = monitor.last_cluster_count ?? 0;
+    const isDisabled = !monitor.enabled;
+    const hasAnomaly = !isDisabled && clusterCount > 0;
+    const status = deriveMonitorStatus(monitor);
+
+    // Lazily load clusters when anomaly is active
+    if (hasAnomaly && !this._monitorClusters.has(monitor.id)) {
+      this._loadClusters(monitor.id);
+    }
+
+    return html`
+      <div class="monitor-card" data-enabled=${monitor.enabled}>
+        ${this._renderCardHeader(monitor, status)}
+
+        <div class="monitor-body">
+          <div class="monitor-entity-area">
+            ${this._renderEntityDisplay(monitor)}
+          </div>
+          ${this._renderStatsBlock(monitor)}
+        </div>
+
+        ${hasAnomaly ? this._renderClusterList(monitor) : nothing}
+        ${this._renderDismissedWindows(monitor)}
+
+        <div class="monitor-footer">
+          <span class="monitor-trigger-logic"
+            >${this._triggerLogicLabel(monitor)}</span
+          >
+          <span class="monitor-footer-spacer"></span>
+          <button
+            class="icon-action view-series-btn"
+            type="button"
+            title=${msg("View series")}
+            aria-label=${msg("View series on chart")}
+            @click=${() => this._onViewSeries(monitor)}
+          >
+            <ha-icon icon="mdi:chart-line"></ha-icon>
+          </button>
+          ${monitor.device_id
+            ? html`<a
+                class="monitor-device-link"
+                href=${`/config/devices/device/${monitor.device_id}`}
+                title=${msg("Open HASS Datapoints device")}
+              >
+                <ha-icon icon="mdi:open-in-new"></ha-icon>
+                <span>${msg("Open HASS Datapoints device")}</span>
+              </a>`
+            : nothing}
         </div>
       </div>
     `;

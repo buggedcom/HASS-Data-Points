@@ -43,13 +43,16 @@ export const styles = css`
 
   .monitor-card {
     background: var(--card-background-color, var(--secondary-background-color));
-    border-radius: 8px;
+    border-radius: 12px;
     padding: var(--dp-spacing-sm) var(--dp-spacing-md);
     box-shadow: var(--ha-card-box-shadow, none);
     display: grid;
-    gap: var(--dp-spacing-xs);
+    gap: var(--dp-spacing-sm);
     transition: opacity 200ms ease;
     opacity: 1;
+    /* Card-level container so the body + header adapt to the card's own width
+       (the panel has no size prop). */
+    container-type: inline-size;
   }
 
   .monitor-card[data-enabled="false"] {
@@ -63,36 +66,247 @@ export const styles = css`
   .monitor-card-header {
     display: flex;
     align-items: center;
-    gap: var(--dp-spacing-sm);
+    gap: 10px;
     flex-wrap: wrap;
   }
 
   .monitor-name {
-    font-weight: 500;
-    flex: 1;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--primary-text-color);
+    min-width: 0;
+    flex: 0 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  .monitor-toggle-btn {
+  .monitor-header-spacer {
+    flex: 1 1 auto;
+  }
+
+  /* ---- Header on/off toggle switch (role="switch") ---- */
+
+  .monitor-switch {
+    appearance: none;
+    -webkit-appearance: none;
+    border: 0;
     background: none;
-    border: none;
     padding: 2px;
+    margin: 0;
     cursor: pointer;
-    color: var(--secondary-text-color);
     display: inline-flex;
     align-items: center;
-    border-radius: 4px;
-    transition: color 120ms ease;
-    --mdc-icon-size: 28px;
+    border-radius: 999px;
+  }
+
+  .switch-track {
+    display: inline-flex;
+    align-items: center;
+    width: 36px;
+    height: 20px;
+    border-radius: 999px;
+    background: var(--divider-color);
+    transition: background 120ms ease;
+  }
+
+  .switch-thumb {
+    width: 16px;
+    height: 16px;
+    margin: 0 2px;
+    border-radius: 50%;
+    background: var(--card-background-color, #fff);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    transition: transform 120ms ease;
+  }
+
+  .monitor-switch[aria-checked="true"] .switch-track {
+    background: var(--primary-color, #03a9f4);
+  }
+
+  .monitor-switch[aria-checked="true"] .switch-thumb {
+    transform: translateX(16px);
+  }
+
+  .monitor-switch:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+
+  .monitor-header-actions {
+    display: inline-flex;
+    gap: 2px;
+    align-items: center;
+  }
+
+  /* ---- Mobile "more actions" overflow menu (hidden on wide cards) ---- */
+
+  .monitor-overflow {
+    position: relative;
+    display: none;
+  }
+
+  .overflow-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    z-index: 2;
+    display: grid;
+    gap: 2px;
+    padding: 4px;
+    min-width: 160px;
+    background: var(--card-background-color, var(--secondary-background-color));
+    border: 1px solid var(--divider-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  .overflow-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--primary-text-color);
+    font: inherit;
+    font-size: 0.85rem;
+    text-align: left;
+    cursor: pointer;
+    --mdc-icon-size: 18px;
     appearance: none;
     -webkit-appearance: none;
   }
 
-  .monitor-card[data-enabled="true"] .monitor-toggle-btn {
-    color: var(--primary-color, #03a9f4);
+  .overflow-item:hover,
+  .overflow-item:focus-visible {
+    background: color-mix(
+      in srgb,
+      var(--primary-color, #03a9f4) 12%,
+      transparent
+    );
+    outline: none;
   }
 
-  .monitor-toggle-btn:hover {
-    color: var(--primary-color, #03a9f4);
+  .overflow-item.delete-btn {
+    color: var(--error-color, #db4437);
+  }
+
+  /* ---- Card body: entity area beside the stats block ---- */
+
+  .monitor-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 260px;
+    gap: var(--dp-spacing-md);
+    align-items: start;
+  }
+
+  .monitor-entity-area {
+    min-width: 0;
+  }
+
+  /* ---- Stats block ---- */
+
+  .monitor-stats-block {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--dp-spacing-sm) var(--dp-spacing-md);
+    background: var(--secondary-background-color);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+
+  .monitor-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--secondary-text-color);
+  }
+
+  .stat-value {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.1;
+    color: var(--primary-text-color);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat-caption {
+    font-size: 11px;
+    color: color-mix(in srgb, var(--secondary-text-color) 70%, transparent);
+  }
+
+  /* ---- Footer: trigger logic + device link ---- */
+
+  .monitor-footer {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--dp-spacing-sm);
+    border-top: 1px solid var(--divider-color);
+    padding-top: 10px;
+  }
+
+  .monitor-footer-spacer {
+    flex: 1 1 auto;
+  }
+
+  .monitor-trigger-logic {
+    font-size: 0.85em;
+    color: var(--secondary-text-color);
+  }
+
+  .monitor-device-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.85em;
+    font-weight: 500;
+    color: var(--primary-color);
+    text-decoration: none;
+    --mdc-icon-size: 18px;
+    transition: background 120ms ease;
+  }
+
+  .monitor-device-link:hover,
+  .monitor-device-link:focus-visible {
+    background: color-mix(
+      in srgb,
+      var(--primary-color, #03a9f4) 12%,
+      transparent
+    );
+    outline: none;
+  }
+
+  /* ---- Narrow cards: stack the body (stats first) and collapse actions ---- */
+
+  @container (max-width: 520px) {
+    .monitor-body {
+      grid-template-columns: 1fr;
+    }
+
+    .monitor-stats-block {
+      order: -1;
+    }
+
+    .monitor-header-actions {
+      display: none;
+    }
+
+    .monitor-overflow {
+      display: inline-flex;
+    }
   }
 
   .monitor-entities {
@@ -143,71 +357,6 @@ export const styles = css`
     letter-spacing: 0.06em;
   }
 
-  .monitor-stats {
-    display: flex;
-    gap: var(--dp-spacing-md);
-    align-items: center;
-    flex-wrap: wrap;
-    color: var(--secondary-text-color);
-    font-size: 0.85em;
-  }
-
-  .monitor-sparkline-wrap {
-    display: flex;
-    flex-direction: column;
-    flex: 0 0 auto;
-    gap: 2px;
-  }
-
-  .monitor-sparkline {
-    flex: 0 0 auto;
-    overflow: visible;
-  }
-
-  .sparkline-baseline {
-    stroke: var(--divider-color);
-    stroke-width: 1;
-    stroke-dasharray: 2 2;
-  }
-
-  .sparkline-latest {
-    fill: var(--primary-color);
-  }
-
-  .sparkline-point {
-    fill: transparent;
-  }
-
-  .sparkline-caption,
-  .sparkline-empty {
-    font-size: 0.75em;
-    color: var(--secondary-text-color);
-  }
-
-  .sparkline-empty {
-    flex: 0 0 auto;
-    min-width: 120px;
-    padding: 4px 6px;
-    border: 1px dashed var(--divider-color);
-    border-radius: 4px;
-    text-align: center;
-    font-style: italic;
-  }
-
-  .monitor-actions {
-    display: flex;
-    gap: 4px;
-    align-items: center;
-    flex-wrap: wrap;
-    margin-top: var(--dp-spacing-xs);
-    border-top: 1px solid var(--divider-color);
-    padding-top: var(--dp-spacing-xs);
-  }
-
-  .monitor-actions-spacer {
-    flex: 1;
-  }
-
   /* ---- Compact icon action buttons (view/edit/device/delete/dismiss) ---- */
 
   .icon-action {
@@ -245,10 +394,6 @@ export const styles = css`
   .icon-action:focus-visible {
     outline: 2px solid var(--primary-color);
     outline-offset: 2px;
-  }
-
-  a.device-link {
-    color: var(--primary-color);
   }
 
   .delete-btn {
