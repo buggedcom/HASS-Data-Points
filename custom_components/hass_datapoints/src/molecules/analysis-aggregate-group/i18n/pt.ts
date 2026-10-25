@@ -2,11 +2,6 @@ import type { ComponentTranslations } from "@/lib/i18n/types";
 
 export const translations: ComponentTranslations = {
   "Aggregate series": "Séries agregadas",
-  "Add aggregate": "Adicionar agregado",
-  "Remove aggregate": "Remover agregado",
-  "Aggregate operation": "Operação do agregado",
-  "Aggregate state": "Estado do agregado",
-  "Aggregate interval": "Intervalo do agregado",
   "Count changes to a state": "Contar mudanças para um estado",
   "Count all state changes": "Contar todas as mudanças de estado",
   "Time in a state": "Tempo num estado",
@@ -43,4 +38,7 @@ export const translations: ComponentTranslations = {
     "Os contornos tracejados indicam períodos parciais cortados pelo intervalo selecionado; as marcas tracejadas finas ou pontilhadas indicam períodos com lacunas no histórico registado.",
   "Counts only include activity in retained history; earlier activity is not shown.":
     "As contagens só incluem a atividade do histórico retido; a atividade anterior não é mostrada.",
+  "Count events": "Contar eventos",
+  Interval: "Intervalo",
+  State: "Estado",
 };

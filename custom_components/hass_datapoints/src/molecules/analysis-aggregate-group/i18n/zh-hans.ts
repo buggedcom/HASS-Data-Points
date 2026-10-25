@@ -2,11 +2,6 @@ import type { ComponentTranslations } from "@/lib/i18n/types";
 
 export const translations: ComponentTranslations = {
   "Aggregate series": "聚合序列",
-  "Add aggregate": "添加聚合",
-  "Remove aggregate": "移除聚合",
-  "Aggregate operation": "聚合操作",
-  "Aggregate state": "聚合状态",
-  "Aggregate interval": "聚合间隔",
   "Count changes to a state": "统计变为某状态的次数",
   "Count all state changes": "统计所有状态变化次数",
   "Time in a state": "处于某状态的时长",
@@ -42,4 +37,7 @@ export const translations: ComponentTranslations = {
     "虚线轮廓表示被所选范围截断的部分时段；阴影或点状标记表示已记录历史中存在缺口的时段。",
   "Counts only include activity in retained history; earlier activity is not shown.":
     "计数仅包含保留历史中的活动；更早的活动不会显示。",
+  "Count events": "统计事件数",
+  Interval: "间隔",
+  State: "状态",
 };

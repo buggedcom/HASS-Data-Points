@@ -2,11 +2,6 @@ import type { ComponentTranslations } from "@/lib/i18n/types";
 
 export const translations: ComponentTranslations = {
   "Aggregate series": "Koosteet",
-  "Add aggregate": "Lisää koostesarja",
-  "Remove aggregate": "Poista koostesarja",
-  "Aggregate operation": "Koosteen toiminto",
-  "Aggregate state": "Koosteen tila",
-  "Aggregate interval": "Koosteen jakso",
   "Count changes to a state": "Laske muutokset tilaan",
   "Count all state changes": "Laske kaikki tilamuutokset",
   "Time in a state": "Aika tilassa",
@@ -43,4 +38,7 @@ export const translations: ComponentTranslations = {
     "Katkoviivareunat osoittavat valitun aikavälin reunoilla katkenneet osittaiset jaksot; viivoitetut tai pisteviivamerkinnät osoittavat jaksot, joiden tallennetussa historiassa on aukkoja.",
   "Counts only include activity in retained history; earlier activity is not shown.":
     "Laskennat sisältävät vain säilytetyn historian toiminnan; aiempaa toimintaa ei näytetä.",
+  "Count events": "Laske tapahtumat",
+  Interval: "Jakso",
+  State: "Tila",
 };
