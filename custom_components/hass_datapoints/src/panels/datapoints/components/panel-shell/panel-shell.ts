@@ -49,6 +49,15 @@ export class PanelShell extends LitElement {
   accessor hasSavedState: boolean = false;
 
   /**
+   * Whether the full-page Anomaly monitors view is active. When `true`, the graph
+   * chrome (page sidebar, its collapse toggle, mobile scrim, and the range/date
+   * controls section) is hidden so the monitors view uses the full content area.
+   * Purely presentational — it does not mutate `sidebarCollapsed`.
+   */
+  @property({ type: Boolean, reflect: true, attribute: "monitors-active" })
+  accessor monitorsActive: boolean = false;
+
+  /**
    * Current layout mode. Used to determine scrim visibility.
    * "desktop" | "tablet" | "mobile"
    */
@@ -303,53 +312,62 @@ export class PanelShell extends LitElement {
           </div>
         </div>
 
-        <div class="controls-section">
-          <div class="controls-grid">
-            <div id="date-slot" class="control-date">
-              <slot name="controls"></slot>
-            </div>
-          </div>
-        </div>
+        ${this.monitorsActive
+          ? nothing
+          : html`
+              <div class="controls-section">
+                <div class="controls-grid">
+                  <div id="date-slot" class="control-date">
+                    <slot name="controls"></slot>
+                  </div>
+                </div>
+              </div>
+            `}
 
         <div
           id="page-content"
           class=${classMap({
             "page-content": true,
             "sidebar-collapsed": this.sidebarCollapsed,
+            "monitors-active": this.monitorsActive,
           })}
         >
-          <div
-            id="sidebar-scrim"
-            class=${classMap({
-              "sidebar-scrim": true,
-              visible: isOverlay && !this.sidebarCollapsed,
-            })}
-            @click=${this._onScrimClick}
-          ></div>
+          ${this.monitorsActive
+            ? nothing
+            : html`
+                <div
+                  id="sidebar-scrim"
+                  class=${classMap({
+                    "sidebar-scrim": true,
+                    visible: isOverlay && !this.sidebarCollapsed,
+                  })}
+                  @click=${this._onScrimClick}
+                ></div>
 
-          <div
-            id="page-sidebar"
-            class=${classMap({
-              "page-sidebar": true,
-              collapsed: this.sidebarCollapsed,
-            })}
-          >
-            <ha-icon-button
-              id="sidebar-toggle"
-              class="sidebar-toggle-button"
-              label=${sidebarLabel}
-              @click=${this._onSidebarToggle}
-            >
-              <ha-icon icon=${sidebarIcon}></ha-icon>
-            </ha-icon-button>
+                <div
+                  id="page-sidebar"
+                  class=${classMap({
+                    "page-sidebar": true,
+                    collapsed: this.sidebarCollapsed,
+                  })}
+                >
+                  <ha-icon-button
+                    id="sidebar-toggle"
+                    class="sidebar-toggle-button"
+                    label=${sidebarLabel}
+                    @click=${this._onSidebarToggle}
+                  >
+                    <ha-icon icon=${sidebarIcon}></ha-icon>
+                  </ha-icon-button>
 
-            <div id="target-slot" class="control-target">
-              <slot name="sidebar"></slot>
-            </div>
-            <div id="sidebar-options" class="sidebar-options">
-              <slot name="sidebar-options"></slot>
-            </div>
-          </div>
+                  <div id="target-slot" class="control-target">
+                    <slot name="sidebar"></slot>
+                  </div>
+                  <div id="sidebar-options" class="sidebar-options">
+                    <slot name="sidebar-options"></slot>
+                  </div>
+                </div>
+              `}
 
           <div class="content" id="content">
             <slot></slot>

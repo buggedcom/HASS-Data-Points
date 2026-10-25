@@ -1632,6 +1632,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
         .sidebarCollapsed=${this._sidebarCollapsed}
         .hasSavedState=${this._hasSavedPage}
         .layoutMode=${this._layoutMode}
+        .monitorsActive=${this._showMonitorsPanel}
         .monitorAnomalyCount=${this._monitorAnomalyCount}
         .collapsedOptionsOpen=${this._collapsedOptionsPopupOpen}
         @dp-shell-menu-download=${() => this._downloadSpreadsheet()}

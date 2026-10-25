@@ -174,6 +174,13 @@ export const styles = css`
     grid-template-columns: var(--sidebar-width-collapsed) minmax(0, 1fr);
   }
 
+  /* Monitors full-page view: the sidebar region is not rendered, so the content
+     spans the full width regardless of the collapsed state. */
+  .page-content.monitors-active,
+  .page-content.monitors-active.sidebar-collapsed {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .page-sidebar {
     position: relative;
     width: var(--sidebar-width-expanded);
