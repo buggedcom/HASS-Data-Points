@@ -235,8 +235,10 @@ export const Quiet = {
     await expect(
       pill?.shadowRoot?.querySelector(".status-healthy")
     ).not.toBeNull();
-    await expect(root.querySelector(".monitor-sparkline")).not.toBeNull();
-    await expect(root.querySelector(".sparkline-empty")).not.toBeNull();
+    // Structured stats block replaces the old sparkline.
+    await expect(root.querySelector(".monitor-stats-block")).not.toBeNull();
+    await expect(root.querySelector(".stat-anomalous")).not.toBeNull();
+    await expect(root.querySelector(".monitor-switch")).not.toBeNull();
     await expect(root.querySelector(".trash-section")).toBeNull();
   },
 };
@@ -283,7 +285,10 @@ export const Firing = {
       ).not.toBeNull()
     );
     const root = panelRoot(canvasElement);
-    await expect(root.querySelector(".sparkline-latest")).not.toBeNull();
+    // Incidents stat reflects the active clusters.
+    await expect(
+      root.querySelector(".stat-incidents .stat-value")
+    ).not.toBeNull();
     await waitFor(() =>
       expect(root.querySelectorAll(".cluster-item")).toHaveLength(2)
     );

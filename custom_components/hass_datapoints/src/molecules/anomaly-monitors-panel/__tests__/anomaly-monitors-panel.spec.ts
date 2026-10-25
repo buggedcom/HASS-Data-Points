@@ -34,6 +34,7 @@ const T = {
   restore: `${DOMAIN}/monitors/restore`,
   purge: `${DOMAIN}/monitors/purge`,
   undismiss: `${DOMAIN}/monitors/undismiss`,
+  update: `${DOMAIN}/monitors/update`,
 } as const;
 
 function buildCombinedMonitor() {
@@ -318,58 +319,204 @@ describe("anomaly-monitors-panel", () => {
     });
   });
 
-  describe("GIVEN a monitor with scan history", () => {
-    async function renderWithHistory(counts: number[]) {
-      const monitor = {
-        ...buildMonitor(true),
-        scan_history: counts.map((count, i) => ({
-          t: `2026-05-19T1${i % 10}:00:00Z`,
-          count,
-        })),
-      };
-      const hass = createMockHass({
-        connection: {
-          subscribeEvents: vi.fn(() => Promise.resolve(vi.fn())),
-          sendMessagePromise: vi
-            .fn()
-            .mockResolvedValue({ monitors: [monitor] }),
-        },
-      });
-      const el = createElement(hass);
-      await el.updateComplete;
-      await flushMicrotasks();
-      await el.updateComplete;
-      return el;
-    }
+  async function mountMonitor(overrides: Record<string, unknown> = {}) {
+    const monitor = { ...buildMonitor(true), ...overrides };
+    const send = routeSend({
+      [T.list]: () => ({ monitors: [monitor] }),
+      [T.trash]: () => ({ monitors: [] }),
+      [T.update]: () => ({
+        monitor: { ...monitor, enabled: !monitor.enabled },
+      }),
+    });
+    const hass = createMockHass({
+      connection: {
+        subscribeEvents: vi.fn(() => Promise.resolve(vi.fn())),
+        sendMessagePromise: send,
+      },
+    });
+    const el = createElement(hass);
+    await el.updateComplete;
+    await flushMicrotasks();
+    await el.updateComplete;
+    return { el, send };
+  }
 
-    describe.each([[[]], [[3]]])("WHEN it has %j scans", (counts) => {
-      it("THEN it shows a not-enough-data state that is not aria-hidden", async () => {
-        expect.assertions(4);
-        const el = await renderWithHistory(counts);
-        const empty = el.shadowRoot?.querySelector(".sparkline-empty");
-        expect(empty).not.toBeNull();
-        expect(empty?.textContent).toContain("Not enough data yet");
-        expect(empty?.hasAttribute("aria-hidden")).toBe(false);
-        expect(el.shadowRoot?.querySelector("polyline")).toBeNull();
+  describe("GIVEN the redesigned card header", () => {
+    describe("WHEN an enabled monitor is shown", () => {
+      it("THEN the toggle is a switch reporting the enabled state", async () => {
+        expect.assertions(3);
+        const { el } = await mountMonitor({ enabled: true });
+        const sw = el.shadowRoot?.querySelector(".monitor-switch");
+        expect(sw?.getAttribute("role")).toBe("switch");
+        expect(sw?.getAttribute("aria-checked")).toBe("true");
+        // Status pill and name still render in the header.
+        expect(
+          el.shadowRoot?.querySelector(
+            ".monitor-card-header monitor-status-pill"
+          )
+        ).not.toBeNull();
       });
     });
 
-    describe("WHEN it has many scans", () => {
-      it("THEN it draws a polyline, latest dot, baseline, caption and titles", async () => {
-        expect.assertions(7);
-        const el = await renderWithHistory([0, 2, 5, 1]);
-        const svg = el.shadowRoot?.querySelector(".monitor-sparkline");
-        expect(svg?.querySelector("polyline")).not.toBeNull();
-        expect(svg?.querySelectorAll("circle.sparkline-latest")).toHaveLength(
-          1
-        );
-        expect(svg?.querySelector(".sparkline-baseline")).not.toBeNull();
-        expect(svg?.querySelectorAll("title").length).toBeGreaterThanOrEqual(4);
-        expect(svg?.hasAttribute("aria-hidden")).toBe(false);
-        expect(svg?.getAttribute("aria-label")).toContain("1");
+    describe("WHEN a disabled monitor is shown", () => {
+      it("THEN the switch reports aria-checked false", async () => {
+        expect.assertions(1);
+        const { el } = await mountMonitor({ enabled: false });
         expect(
-          el.shadowRoot?.querySelector(".sparkline-caption")?.textContent
-        ).toContain("last 4 scans");
+          el.shadowRoot
+            ?.querySelector(".monitor-switch")
+            ?.getAttribute("aria-checked")
+        ).toBe("false");
+      });
+    });
+
+    describe("WHEN the toggle switch is activated", () => {
+      it("THEN updateMonitor is called flipping the enabled flag", async () => {
+        expect.assertions(1);
+        const { el, send } = await mountMonitor({ enabled: true });
+        el.shadowRoot?.querySelector<HTMLElement>(".monitor-switch")?.click();
+        await flushMicrotasks();
+        await flushMicrotasks();
+        expect(
+          send.mock.calls.some(
+            (c) =>
+              (c[0] as { type: string }).type === T.update &&
+              (c[0] as { enabled?: boolean }).enabled === false
+          )
+        ).toBe(true);
+      });
+    });
+
+    describe("WHEN the overflow (more actions) control is opened", () => {
+      it("THEN a menu exposes edit and delete actions", async () => {
+        expect.assertions(3);
+        const { el } = await mountMonitor();
+        const toggle =
+          el.shadowRoot?.querySelector<HTMLElement>(".overflow-toggle");
+        expect(toggle).not.toBeNull();
+        toggle?.click();
+        await el.updateComplete;
+        const menu = el.shadowRoot?.querySelector(".overflow-menu");
+        expect(menu?.querySelector(".edit-btn")).not.toBeNull();
+        expect(menu?.querySelector(".delete-btn")).not.toBeNull();
+      });
+    });
+  });
+
+  describe("GIVEN the redesigned stats block", () => {
+    describe("WHEN an active monitor with history and clusters is shown", () => {
+      it("THEN it shows anomalous readings, incidents, last anomaly and check interval", async () => {
+        expect.assertions(5);
+        const { el } = await mountMonitor({
+          enabled: true,
+          scan_history: [
+            { t: "2026-05-19T10:00:00Z", count: 1 },
+            { t: "2026-05-19T11:00:00Z", count: 5 },
+          ],
+          active_cluster_count: 2,
+          last_anomaly_at: "2026-10-25T18:00:00Z",
+          scan_interval_minutes: 30,
+          look_back_hours: 24,
+        });
+        const root = el.shadowRoot;
+        const anomalous = root?.querySelector(".stat-anomalous .stat-value");
+        expect(anomalous?.textContent?.trim()).toBe("5");
+        // The anomalous-readings value is tinted with the monitor's series colour.
+        expect((anomalous as HTMLElement | null)?.style.color).not.toBe("");
+        expect(
+          root
+            ?.querySelector(".stat-incidents .stat-value")
+            ?.textContent?.trim()
+        ).toBe("2");
+        expect(
+          root
+            ?.querySelector(".stat-interval .stat-value")
+            ?.textContent?.replace(/\s+/g, " ")
+        ).toContain("30 min");
+        expect(
+          root?.querySelector(".stat-last-anomaly .stat-value")?.textContent
+        ).not.toBe("—");
+      });
+    });
+
+    describe("WHEN the monitor is paused (disabled)", () => {
+      it("THEN the last-anomaly stat reads an em dash", async () => {
+        expect.assertions(1);
+        const { el } = await mountMonitor({
+          enabled: false,
+          last_anomaly_at: "2026-10-25T18:00:00Z",
+        });
+        expect(
+          el.shadowRoot
+            ?.querySelector(".stat-last-anomaly .stat-value")
+            ?.textContent?.trim()
+        ).toBe("—");
+      });
+    });
+  });
+
+  describe("GIVEN the redesigned card footer", () => {
+    describe("WHEN the monitor is individual", () => {
+      it("THEN the trigger logic reads as a single-entity monitor", async () => {
+        expect.assertions(1);
+        const { el } = await mountMonitor({ type: "individual" });
+        expect(
+          el.shadowRoot
+            ?.querySelector(".monitor-trigger-logic")
+            ?.textContent?.toLowerCase()
+        ).toContain("single-entity");
+      });
+    });
+
+    describe("WHEN the monitor is combined with all-entity overlap", () => {
+      it("THEN the trigger logic reads as an AND rule over all entities", async () => {
+        expect.assertions(2);
+        const { el } = await mountMonitor({
+          ...buildCombinedMonitor(),
+          overlap_mode: "all",
+        });
+        const text = el.shadowRoot
+          ?.querySelector(".monitor-trigger-logic")
+          ?.textContent?.toLowerCase();
+        expect(text).toContain("all entities");
+        expect(text).toContain("and");
+      });
+    });
+
+    describe("WHEN the monitor is combined with any-entity overlap", () => {
+      it("THEN the trigger logic reads as an OR rule over any entity", async () => {
+        expect.assertions(2);
+        const { el } = await mountMonitor({
+          ...buildCombinedMonitor(),
+          overlap_mode: "any",
+        });
+        const text = el.shadowRoot
+          ?.querySelector(".monitor-trigger-logic")
+          ?.textContent?.toLowerCase();
+        expect(text).toContain("any entity");
+        expect(text).toContain("or");
+      });
+    });
+
+    describe("WHEN the monitor has a device", () => {
+      it("THEN a prominent link opens the HA device page", async () => {
+        expect.assertions(2);
+        const { el } = await mountMonitor({ device_id: "device-1" });
+        const link = el.shadowRoot?.querySelector<HTMLAnchorElement>(
+          ".monitor-device-link"
+        );
+        expect(link?.getAttribute("href")).toBe(
+          "/config/devices/device/device-1"
+        );
+        expect(link?.textContent?.toLowerCase()).toContain("device");
+      });
+    });
+
+    describe("WHEN the monitor has no device", () => {
+      it("THEN no device link is rendered", async () => {
+        expect.assertions(1);
+        const { el } = await mountMonitor({ device_id: null });
+        expect(el.shadowRoot?.querySelector(".monitor-device-link")).toBeNull();
       });
     });
   });
