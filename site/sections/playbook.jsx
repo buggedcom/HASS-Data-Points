@@ -44,14 +44,11 @@ function Playbook() {
     <section className="section" id="playbook">
       <div className="container">
         <div className="section-head">
-          <div className="eyebrow">
-            <span className="dot"></span> Playbook
-          </div>
+          <div className="eyebrow"><span className="dot"></span> Playbook</div>
           <h2>So you found an anomaly. Now what?</h2>
           <p className="lead">
-            Anomaly detection tells you where to look — not what to do. Here's
-            the loop that turns a coloured region on a chart into operational
-            understanding.
+            Anomaly detection tells you where to look — not what to do. Here's the loop that turns
+            a coloured region on a chart into operational understanding.
           </p>
         </div>
 
