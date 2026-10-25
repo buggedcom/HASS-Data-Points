@@ -973,7 +973,9 @@ export class HistoryChart extends HTMLElement {
     this._updateLegendLayout(legendEl);
     render(
       html`${allItems.map((item) => {
-        const hidden = this._hiddenSeries?.has(item.entityId);
+        const hidden = this._hiddenSeries
+          ? this._isSeriesHidden(item as { entityId: string })
+          : false;
         return html`
           <div class="legend-item">
             <button
@@ -1041,6 +1043,22 @@ export class HistoryChart extends HTMLElement {
   }
 
   /** Draw a single series line onto the renderer, with optional data-gap rendering. */
+  /**
+   * Whether a series is hidden. Aggregate series follow their source row: when
+   * the row's visibility switch is off, its aggregates are hidden with it.
+   */
+  _isSeriesHidden(item: {
+    entityId: string;
+    legendEntityId?: string;
+    sourceEntityId?: string;
+  }): boolean {
+    return (
+      this._hiddenSeries.has(item.legendEntityId || item.entityId) ||
+      (item.sourceEntityId !== undefined &&
+        this._hiddenSeries.has(item.sourceEntityId))
+    );
+  }
+
   /** HA's configured timezone; aggregate calendar periods never use the browser's. */
   _getTimeZone(): string {
     const zone = (this._hass as Nullable<{ config?: { time_zone?: string } }>)
@@ -3032,7 +3050,7 @@ export class HistoryChart extends HTMLElement {
     ];
 
     const visibleSeries = series.filter(
-      (entry) => !this._hiddenSeries.has(entry.legendEntityId || entry.entityId)
+      (entry) => !this._isSeriesHidden(entry)
     );
     // Row-mode binary sensors that are not toggled off. Hidden rows are dropped
     // here so their lane is reclaimed on the next draw (legend toggle → relayout).
@@ -4213,7 +4231,7 @@ export class HistoryChart extends HTMLElement {
           },
         });
         for (const aggregate of comparisonAggregates) {
-          if (this._hiddenSeries.has(aggregate.entityId)) {
+          if (this._isSeriesHidden(aggregate)) {
             continue;
           }
           const aggregateAxis = axisLookup.get(aggregate.axisKey);
