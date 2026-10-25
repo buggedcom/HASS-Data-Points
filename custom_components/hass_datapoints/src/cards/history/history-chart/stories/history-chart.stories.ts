@@ -26,6 +26,7 @@ const waitFor = <T>(callback: () => T | Promise<T>) =>
 type DrawableChart = HTMLElement & {
   hass: unknown;
   draw(model: Record<string, unknown>): void;
+  applyViewState(model: Record<string, unknown>): void;
 };
 
 type BinaryState = { lu: number; s: string };
@@ -624,5 +625,31 @@ export const MixedUnitAggregatesSplit: Story = {
         el.querySelectorAll(".split-series-row").length
       ).toBeGreaterThanOrEqual(4)
     );
+  },
+};
+
+/** Switching a row off hides its aggregate series along with the source. */
+export const HiddenRowHidesAggregates: Story = {
+  render: () => makeChart(),
+  play: async ({ canvasElement }) => {
+    const el = canvasElement.querySelector(
+      "hass-datapoints-history-chart"
+    ) as DrawableChart;
+    el.applyViewState({ hiddenSeries: new Set(["sensor.temperature"]) });
+    el.draw(drawArgs({ series_settings: mixedSettings() }, mixedHistory()));
+
+    const pressed = (label: string) =>
+      Array.from(
+        el.querySelectorAll<HTMLButtonElement>("#legend .legend-toggle")
+      )
+        .find((button) => button.textContent?.includes(label))
+        ?.getAttribute("aria-pressed");
+    await waitFor(() => {
+      // The temperature row and its mean aggregate are both off.
+      expect(pressed("Temperature · Hourly · Mean")).toBe("false");
+      expect(pressed("Temperature")).toBe("false");
+      // The door row is untouched.
+      expect(pressed("Time in a state")).toBe("true");
+    });
   },
 };

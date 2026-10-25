@@ -15651,7 +15651,7 @@
             <button
               type="button"
               class="legend-toggle"
-              aria-pressed="${this._hiddenSeries?.has(item.entityId) ? "false" : "true"}"
+              aria-pressed="${(this._hiddenSeries ? this._isSeriesHidden(item) : false) ? "false" : "true"}"
               @click=${() => {
 					if (!this._hiddenSeries) return;
 					if (this._hiddenSeries.has(item.entityId)) this._hiddenSeries.delete(item.entityId);
@@ -15698,6 +15698,13 @@
 			return laneCenters;
 		}
 		/** Draw a single series line onto the renderer, with optional data-gap rendering. */
+		/**
+		* Whether a series is hidden. Aggregate series follow their source row: when
+		* the row's visibility switch is off, its aggregates are hidden with it.
+		*/
+		_isSeriesHidden(item) {
+			return this._hiddenSeries.has(item.legendEntityId || item.entityId) || item.sourceEntityId !== void 0 && this._hiddenSeries.has(item.sourceEntityId);
+		}
 		/** HA's configured timezone; aggregate calendar periods never use the browser's. */
 		_getTimeZone() {
 			return this._hass?.config?.time_zone || Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
@@ -16645,7 +16652,7 @@
 				t1,
 				options
 			];
-			const visibleSeries = series.filter((entry) => !this._hiddenSeries.has(entry.legendEntityId || entry.entityId));
+			const visibleSeries = series.filter((entry) => !this._isSeriesHidden(entry));
 			const visibleRows = binaryRows.filter((row) => !this._hiddenSeries.has(row.entityId));
 			const binaryLaneBottomMargin = visibleRows.length ? HISTORY_CHART_BINARY_LANE_GAP_PX : 0;
 			const binaryLaneReserve = reserveLaneSpace(visibleRows.length, HISTORY_CHART_BINARY_LANE_HEIGHT_PX, HISTORY_CHART_BINARY_LANE_GAP_PX) + binaryLaneBottomMargin;
@@ -17253,7 +17260,7 @@
 					}
 				});
 				for (const aggregate of comparisonAggregates) {
-					if (this._hiddenSeries.has(aggregate.entityId)) continue;
+					if (this._isSeriesHidden(aggregate)) continue;
 					const aggregateAxis = axisLookup.get(aggregate.axisKey);
 					if (!aggregateAxis) continue;
 					const shift = (time) => time - win.time_offset_ms;
