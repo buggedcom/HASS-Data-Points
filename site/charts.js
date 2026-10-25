@@ -5,10 +5,9 @@
 function makeRng(seed) {
   let s = seed >>> 0;
   return function () {
-    s |= 0;
-    s = (s + 0x6d2b79f5) | 0;
+    s |= 0; s = (s + 0x6D2B79F5) | 0;
     let t = Math.imul(s ^ (s >>> 15), 1 | s);
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    t = t + Math.imul(t ^ (t >>> 7), 61 | t) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 }
@@ -22,12 +21,7 @@ function makeRng(seed) {
 //   "flat"    — stuck/flat-line region
 //   "compare" — current period diverges vs baseline
 //   "mix"     — hero demo, multiple kinds
-function generateSeries({
-  n = 200,
-  seed = 1,
-  kind = "mix",
-  baseline = 21,
-} = {}) {
+function generateSeries({ n = 200, seed = 1, kind = "mix", baseline = 21 } = {}) {
   const rng = makeRng(seed);
   const t = [];
   for (let i = 0; i < n; i++) {
@@ -44,8 +38,7 @@ function generateSeries({
 
   const placeAnomaly = (start, end, delta, type) => {
     for (let i = start; i <= end && i < n; i++) {
-      const fade =
-        1 - Math.abs((i - (start + end) / 2) / ((end - start) / 2 + 0.001));
+      const fade = 1 - Math.abs((i - (start + end) / 2) / ((end - start) / 2 + 0.001));
       t[i] += delta * Math.max(0.4, fade);
     }
     anomalies.push({ start, end, type });
@@ -106,12 +99,8 @@ function generateSeries({
 function rollingAvg(vals, w) {
   const out = new Array(vals.length).fill(0);
   for (let i = 0; i < vals.length; i++) {
-    let s = 0,
-      c = 0;
-    for (let j = Math.max(0, i - w + 1); j <= i; j++) {
-      s += vals[j];
-      c++;
-    }
+    let s = 0, c = 0;
+    for (let j = Math.max(0, i - w + 1); j <= i; j++) { s += vals[j]; c++; }
     out[i] = s / c;
   }
   return out;
@@ -120,15 +109,9 @@ function rollingAvg(vals, w) {
 // Compute linear regression line
 function linearFit(vals) {
   const n = vals.length;
-  let sx = 0,
-    sy = 0,
-    sxy = 0,
-    sxx = 0;
+  let sx = 0, sy = 0, sxy = 0, sxx = 0;
   for (let i = 0; i < n; i++) {
-    sx += i;
-    sy += vals[i];
-    sxy += i * vals[i];
-    sxx += i * i;
+    sx += i; sy += vals[i]; sxy += i * vals[i]; sxx += i * i;
   }
   const m = (n * sxy - sx * sy) / (n * sxx - sx * sx);
   const b = (sy - m * sx) / n;
@@ -139,35 +122,21 @@ function linearFit(vals) {
 function polyFit(vals) {
   const n = vals.length;
   // build sums
-  let S0 = n,
-    S1 = 0,
-    S2 = 0,
-    S3 = 0,
-    S4 = 0;
-  let T0 = 0,
-    T1 = 0,
-    T2 = 0;
+  let S0 = n, S1 = 0, S2 = 0, S3 = 0, S4 = 0;
+  let T0 = 0, T1 = 0, T2 = 0;
   for (let i = 0; i < n; i++) {
-    const x = i,
-      y = vals[i];
-    S1 += x;
-    S2 += x * x;
-    S3 += x * x * x;
-    S4 += x * x * x * x;
-    T0 += y;
-    T1 += x * y;
-    T2 += x * x * y;
+    const x = i, y = vals[i];
+    S1 += x; S2 += x*x; S3 += x*x*x; S4 += x*x*x*x;
+    T0 += y; T1 += x*y; T2 += x*x*y;
   }
   // solve 3x3 by Cramer
   const det = (a, b, c, d, e, f, g, h, i) =>
-    a * (e * i - f * h) - b * (d * i - f * g) + c * (d * h - e * g);
+    a*(e*i - f*h) - b*(d*i - f*g) + c*(d*h - e*g);
   const D = det(S0, S1, S2, S1, S2, S3, S2, S3, S4);
   const Da = det(T0, S1, S2, T1, S2, S3, T2, S3, S4);
   const Db = det(S0, T0, S2, S1, T1, S3, S2, T2, S4);
   const Dc = det(S0, S1, T0, S1, S2, T1, S2, S3, T2);
-  const a = Da / D,
-    b = Db / D,
-    c = Dc / D;
+  const a = Da / D, b = Db / D, c = Dc / D;
   return vals.map((_, x) => a + b * x + c * x * x);
 }
 
@@ -184,13 +153,8 @@ function ema(vals, alpha) {
 function lowess(vals, bw) {
   const out = [];
   for (let i = 0; i < vals.length; i++) {
-    let sw = 0,
-      sv = 0;
-    for (
-      let j = Math.max(0, i - bw);
-      j <= Math.min(vals.length - 1, i + bw);
-      j++
-    ) {
+    let sw = 0, sv = 0;
+    for (let j = Math.max(0, i - bw); j <= Math.min(vals.length - 1, i + bw); j++) {
       const u = Math.abs(i - j) / (bw + 1);
       if (u >= 1) continue;
       const w = Math.pow(1 - u * u * u, 3);
@@ -235,21 +199,17 @@ function drawChart(canvas, opts) {
 
   const pad = { l: 36, r: 12, t: 10, b: 22 };
   const vals = opts.values;
-  let yMin = opts.yMin,
-    yMax = opts.yMax;
+  let yMin = opts.yMin, yMax = opts.yMax;
   if (yMin == null || yMax == null) {
     const all = [...vals];
     if (opts.baseline) {
-      const peers = Array.isArray(opts.baseline[0])
-        ? opts.baseline
-        : [opts.baseline];
+      const peers = Array.isArray(opts.baseline[0]) ? opts.baseline : [opts.baseline];
       for (const p of peers) all.push(...p);
     }
     yMin = Math.min(...all);
     yMax = Math.max(...all);
     const pad1 = (yMax - yMin) * 0.15 + 0.5;
-    yMin -= pad1;
-    yMax += pad1;
+    yMin -= pad1; yMax += pad1;
   }
 
   const W = cw - pad.l - pad.r;
@@ -308,11 +268,9 @@ function drawChart(canvas, opts) {
     };
 
     for (const a of opts.anomalies) {
-      const x0 = xs(a.start),
-        x1 = xs(a.end);
+      const x0 = xs(a.start), x1 = xs(a.end);
       // compute local y bounds for the slice
-      let vMin = Infinity,
-        vMax = -Infinity;
+      let vMin = Infinity, vMax = -Infinity;
       for (let i = a.start; i <= a.end; i++) {
         if (vals[i] < vMin) vMin = vals[i];
         if (vals[i] > vMax) vMax = vals[i];
@@ -333,9 +291,7 @@ function drawChart(canvas, opts) {
 
   // baseline (ghost) — supports single series or array of peer series
   if (opts.baseline) {
-    const peers = Array.isArray(opts.baseline[0])
-      ? opts.baseline
-      : [opts.baseline];
+    const peers = Array.isArray(opts.baseline[0]) ? opts.baseline : [opts.baseline];
     const baseColor = opts.baselineColor || "oklch(0.55 0.013 245 / 0.8)";
     for (const peer of peers) {
       ctx.strokeStyle = baseColor;
@@ -343,10 +299,8 @@ function drawChart(canvas, opts) {
       ctx.lineWidth = 1.2;
       ctx.beginPath();
       for (let i = 0; i < peer.length; i++) {
-        const x = xs(i),
-          y = ys(peer[i]);
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+        const x = xs(i), y = ys(peer[i]);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
       }
       ctx.stroke();
     }
@@ -360,10 +314,8 @@ function drawChart(canvas, opts) {
   ctx.lineCap = "round";
   ctx.beginPath();
   for (let i = 0; i < vals.length; i++) {
-    const x = xs(i),
-      y = ys(vals[i]);
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
+    const x = xs(i), y = ys(vals[i]);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
   }
   ctx.stroke();
 
@@ -374,10 +326,8 @@ function drawChart(canvas, opts) {
     ctx.setLineDash([5, 4]);
     ctx.beginPath();
     for (let i = 0; i < opts.trend.length; i++) {
-      const x = xs(i),
-        y = ys(opts.trend[i]);
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
+      const x = xs(i), y = ys(opts.trend[i]);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
     }
     ctx.stroke();
     ctx.setLineDash([]);

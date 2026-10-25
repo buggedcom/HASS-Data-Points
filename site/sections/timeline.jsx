@@ -1,85 +1,20 @@
 /* Interactive timeline dragger — the distinctive UX piece.
    Two draggable range handles + datapoint markers along the track. */
 
-const {
-  useEffect: tlEffect,
-  useRef: tlRef,
-  useState: tlState,
-  useMemo: tlMemo,
-} = React;
+const { useEffect: tlEffect, useRef: tlRef, useState: tlState, useMemo: tlMemo } = React;
 
 // Generate a synthetic set of datapoints spread across a 9-month range.
 const TL_DATAPOINTS = [
-  {
-    day: 12,
-    color: "var(--healthy)",
-    icon: "wrench",
-    label: "Boiler serviced",
-    time: "08 Jan · 09:14",
-  },
-  {
-    day: 38,
-    color: "var(--accent)",
-    icon: "snow",
-    label: "Cold snap began",
-    time: "07 Feb · 17:32",
-  },
-  {
-    day: 64,
-    color: "var(--warn)",
-    icon: "filter",
-    label: "HVAC filter replaced",
-    time: "05 Mar · 11:05",
-  },
-  {
-    day: 82,
-    color: "var(--anomaly)",
-    icon: "alert",
-    label: "Heating mode → away",
-    time: "23 Mar · 06:00",
-  },
-  {
-    day: 96,
-    color: "var(--purple)",
-    icon: "house",
-    label: "Insulation work · loft",
-    time: "06 Apr · 14:20",
-  },
-  {
-    day: 124,
-    color: "var(--accent)",
-    icon: "window",
-    label: "Bedroom window open > 15 min",
-    time: "04 May · 22:11",
-  },
-  {
-    day: 152,
-    color: "var(--anomaly)",
-    icon: "alert",
-    label: "Radiator temperature drift",
-    time: "01 Jun · 02:40",
-  },
-  {
-    day: 178,
-    color: "var(--healthy)",
-    icon: "wrench",
-    label: "Annual service complete",
-    time: "27 Jun · 10:00",
-  },
-  {
-    day: 198,
-    color: "var(--warn)",
-    icon: "filter",
-    label: "Pellet hopper refilled",
-    time: "17 Jul · 09:30",
-  },
-  {
-    day: 220,
-    color: "var(--accent)",
-    icon: "snow",
-    label: "Guests arrived · party of 12",
-    time: "08 Aug · 18:45",
-  },
+  { day: 12, color: "var(--healthy)", icon: "wrench", label: "Boiler serviced", time: "08 Jan · 09:14" },
+  { day: 38, color: "var(--accent)", icon: "snow", label: "Cold snap began", time: "07 Feb · 17:32" },
+  { day: 64, color: "var(--warn)", icon: "filter", label: "HVAC filter replaced", time: "05 Mar · 11:05" },
+  { day: 82, color: "var(--anomaly)", icon: "alert", label: "Heating mode → away", time: "23 Mar · 06:00" },
+  { day: 96, color: "var(--purple)", icon: "house", label: "Insulation work · loft", time: "06 Apr · 14:20" },
+  { day: 124, color: "var(--accent)", icon: "window", label: "Bedroom window open > 15 min", time: "04 May · 22:11" },
+  { day: 152, color: "var(--anomaly)", icon: "alert", label: "Radiator temperature drift", time: "01 Jun · 02:40" },
+  { day: 178, color: "var(--healthy)", icon: "wrench", label: "Annual service complete", time: "27 Jun · 10:00" },
+  { day: 198, color: "var(--warn)", icon: "filter", label: "Pellet hopper refilled", time: "17 Jul · 09:30" },
+  { day: 220, color: "var(--accent)", icon: "snow", label: "Guests arrived · party of 12", time: "08 Aug · 18:45" },
 ];
 
 // Tick layout: 9 months, with ~weekly ticks
@@ -121,19 +56,13 @@ function TimelineDragger() {
       const dxDays = ((x - startMouse) / r.width) * TL_TOTAL_DAYS;
 
       let { a, b } = startRange;
-      if (drag.kind === "a")
-        a = Math.max(0, Math.min(b - 4, Math.round(startRange.a + dxDays)));
-      else if (drag.kind === "b")
-        b = Math.min(
-          TL_TOTAL_DAYS,
-          Math.max(a + 4, Math.round(startRange.b + dxDays))
-        );
+      if (drag.kind === "a") a = Math.max(0, Math.min(b - 4, Math.round(startRange.a + dxDays)));
+      else if (drag.kind === "b") b = Math.min(TL_TOTAL_DAYS, Math.max(a + 4, Math.round(startRange.b + dxDays)));
       else if (drag.kind === "range") {
         const len = startRange.b - startRange.a;
         let na = Math.round(startRange.a + dxDays);
         na = Math.max(0, Math.min(TL_TOTAL_DAYS - len, na));
-        a = na;
-        b = na + len;
+        a = na; b = na + len;
       }
       setRange({ a, b });
     };
@@ -169,15 +98,13 @@ function TimelineDragger() {
     <section className="section" id="timeline">
       <div className="container">
         <div className="section-head">
-          <div className="eyebrow">
-            <span className="dot"></span> Timeline dragger
-          </div>
+          <div className="eyebrow"><span className="dot"></span> Timeline dragger</div>
           <h2>Drag the range. Everything follows.</h2>
           <p className="lead">
-            The timeline at the top of the panel is more than a date picker.
-            Drag either handle to expand or contract the range, drag the middle
-            to pan, or click a tick to jump. The chart, sidebar, datapoint list,
-            and anomaly detection all recompute against the visible window.
+            The timeline at the top of the panel is more than a date picker. Drag either handle
+            to expand or contract the range, drag the middle to pan, or click a tick to jump.
+            The chart, sidebar, datapoint list, and anomaly detection all recompute against the
+            visible window.
           </p>
         </div>
 
@@ -185,9 +112,7 @@ function TimelineDragger() {
           <div className="tl-readout">
             <div>
               <span className="card-title">RANGE</span>
-              <div className="tl-readout-v">
-                {startLabel} → {endLabel}
-              </div>
+              <div className="tl-readout-v">{startLabel} → {endLabel}</div>
             </div>
             <div className="right">
               <span className="card-title">SPAN</span>
@@ -195,9 +120,7 @@ function TimelineDragger() {
             </div>
             <div className="right">
               <span className="card-title">DATAPOINTS IN VIEW</span>
-              <div className="tl-readout-v">
-                {visiblePoints.length} of {TL_DATAPOINTS.length}
-              </div>
+              <div className="tl-readout-v">{visiblePoints.length} of {TL_DATAPOINTS.length}</div>
             </div>
           </div>
 
@@ -210,18 +133,13 @@ function TimelineDragger() {
             {/* Month labels */}
             <div className="tl-months">
               {TL_MONTHS.map((m) => (
-                <span key={m.label} style={{ left: `${dayToPct(m.day)}%` }}>
-                  {m.label}
-                </span>
+                <span key={m.label} style={{ left: `${dayToPct(m.day)}%` }}>{m.label}</span>
               ))}
             </div>
 
             {/* Tick rail */}
             <div className="tl-ticks">
-              {Array.from(
-                { length: TL_TOTAL_DAYS / 7 + 1 },
-                (_, i) => i * 7
-              ).map((d) => (
+              {Array.from({ length: TL_TOTAL_DAYS / 7 + 1 }, (_, i) => i * 7).map((d) => (
                 <span
                   key={d}
                   className={`tl-tick ${d % 28 === 0 ? "tl-tick--major" : ""}`}
@@ -272,13 +190,7 @@ function TimelineDragger() {
                     style={{ left: `${dayToPct(p.day)}%`, "--c": p.color }}
                     onMouseEnter={() => setHover(i)}
                     onFocus={() => setHover(i)}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setRange({
-                        a: Math.max(0, p.day - 10),
-                        b: Math.min(TL_TOTAL_DAYS, p.day + 10),
-                      });
-                    }}
+                    onClick={(e) => { e.stopPropagation(); setRange({ a: Math.max(0, p.day - 10), b: Math.min(TL_TOTAL_DAYS, p.day + 10) }); }}
                   >
                     <PointIcon icon={p.icon} />
                   </button>
@@ -289,12 +201,8 @@ function TimelineDragger() {
                   className="tl-tip"
                   style={{ left: `${dayToPct(TL_DATAPOINTS[hover].day)}%` }}
                 >
-                  <span className="tl-tip-time">
-                    {TL_DATAPOINTS[hover].time}
-                  </span>
-                  <span className="tl-tip-label">
-                    {TL_DATAPOINTS[hover].label}
-                  </span>
+                  <span className="tl-tip-time">{TL_DATAPOINTS[hover].time}</span>
+                  <span className="tl-tip-label">{TL_DATAPOINTS[hover].label}</span>
                 </div>
               )}
             </div>
@@ -302,44 +210,27 @@ function TimelineDragger() {
 
           {/* hint row */}
           <div className="tl-hints">
-            <span>
-              <kbd>drag</kbd> handles to resize
-            </span>
-            <span>
-              <kbd>drag</kbd> middle to pan
-            </span>
-            <span>
-              <kbd>click</kbd> a datapoint to zoom in
-            </span>
+            <span><kbd>drag</kbd> handles to resize</span>
+            <span><kbd>drag</kbd> middle to pan</span>
+            <span><kbd>click</kbd> a datapoint to zoom in</span>
           </div>
         </div>
 
         {/* Datapoints list view as a result of the timeline range */}
         <div className="tl-list">
           <div className="tl-list-head">
-            <div className="card-title">
-              DATAPOINTS · {startLabel} → {endLabel}
-            </div>
-            <div className="muted mono" style={{ fontSize: 12 }}>
-              {visiblePoints.length} shown
-            </div>
+            <div className="card-title">DATAPOINTS · {startLabel} → {endLabel}</div>
+            <div className="muted mono" style={{ fontSize: 12 }}>{visiblePoints.length} shown</div>
           </div>
           {visiblePoints.length === 0 ? (
             <div className="tl-list-empty">
-              No datapoints in this range. Drag the handles wider, or record
-              some new annotations.
+              No datapoints in this range. Drag the handles wider, or record some new annotations.
             </div>
           ) : (
             <div className="tl-list-rows">
               {visiblePoints.map((p, i) => (
                 <div key={i} className="tl-list-row">
-                  <span
-                    className="tl-list-icon"
-                    style={{
-                      background: `oklch(from ${p.color} l c h / 0.18)`,
-                      color: p.color,
-                    }}
-                  >
+                  <span className="tl-list-icon" style={{ background: `oklch(from ${p.color} l c h / 0.18)`, color: p.color }}>
                     <PointIcon icon={p.icon} />
                   </span>
                   <span className="tl-list-time">{p.time}</span>
@@ -371,59 +262,22 @@ function monthLabel(day) {
 }
 
 function PointIcon({ icon }) {
-  const common = {
-    width: 12,
-    height: 12,
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: 2.2,
-    strokeLinecap: "round",
-    strokeLinejoin: "round",
-  };
+  const common = { width: 12, height: 12, fill: "none", stroke: "currentColor", strokeWidth: 2.2, strokeLinecap: "round", strokeLinejoin: "round" };
   switch (icon) {
     case "wrench":
-      return (
-        <svg {...common} viewBox="0 0 24 24">
-          <path d="M14.7 6.3a4 4 0 11-5.4-5.4l2.7 2.7L9.3 6.3M4 20l4.5-4.5M14 13l7 7" />
-        </svg>
-      );
+      return <svg {...common} viewBox="0 0 24 24"><path d="M14.7 6.3a4 4 0 11-5.4-5.4l2.7 2.7L9.3 6.3M4 20l4.5-4.5M14 13l7 7"/></svg>;
     case "snow":
-      return (
-        <svg {...common} viewBox="0 0 24 24">
-          <path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19" />
-        </svg>
-      );
+      return <svg {...common} viewBox="0 0 24 24"><path d="M12 2v20M2 12h20M5 5l14 14M19 5L5 19"/></svg>;
     case "filter":
-      return (
-        <svg {...common} viewBox="0 0 24 24">
-          <path d="M3 4h18l-7 9v6l-4 2v-8z" />
-        </svg>
-      );
+      return <svg {...common} viewBox="0 0 24 24"><path d="M3 4h18l-7 9v6l-4 2v-8z"/></svg>;
     case "alert":
-      return (
-        <svg {...common} viewBox="0 0 24 24">
-          <path d="M10.3 3.86a2 2 0 013.4 0l8 14a2 2 0 01-1.7 3H4a2 2 0 01-1.7-3l8-14zM12 9v4M12 17h.01" />
-        </svg>
-      );
+      return <svg {...common} viewBox="0 0 24 24"><path d="M10.3 3.86a2 2 0 013.4 0l8 14a2 2 0 01-1.7 3H4a2 2 0 01-1.7-3l8-14zM12 9v4M12 17h.01"/></svg>;
     case "house":
-      return (
-        <svg {...common} viewBox="0 0 24 24">
-          <path d="M3 11l9-8 9 8M5 10v10h14V10" />
-        </svg>
-      );
+      return <svg {...common} viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg>;
     case "window":
-      return (
-        <svg {...common} viewBox="0 0 24 24">
-          <rect x="4" y="3" width="16" height="18" rx="2" />
-          <path d="M12 3v18M4 12h16" />
-        </svg>
-      );
+      return <svg {...common} viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M12 3v18M4 12h16"/></svg>;
     default:
-      return (
-        <svg {...common} viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="6" />
-        </svg>
-      );
+      return <svg {...common} viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/></svg>;
   }
 }
 
