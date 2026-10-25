@@ -34817,9 +34817,6 @@
             <ha-icon icon="mdi:playlist-plus"></ha-icon>
             <span>${msg("Add target")}</span>
           </button>
-          <div class="history-target-picker-slot">
-            <slot name="picker"> ${A} </slot>
-          </div>
           ${this.rows.length >= 1 ? b`<button
                 type="button"
                 class="history-targets-clear-all"
@@ -34827,6 +34824,20 @@
               >
                 ${msg("Clear all")}
               </button>` : A}
+        </div>
+
+        <!--
+          The picker mount point is a sibling of the picker row, never a child
+          of it. When the sidebar is collapsed the whole row is display:none,
+          which would remove the slot (and the floated picker anchored to it)
+          from the render tree — a display:none ancestor can't be escaped by
+          position:fixed, so the collapsed "+" would open nothing (#87/#88).
+          Kept out of the row, the slot is only hidden by its own rule, which
+          the float overrides, so the floated host always renders and the
+          picker's top-layer overlay can anchor to it. It is never shown inline.
+        -->
+        <div class="history-target-picker-slot">
+          <slot name="picker"> ${A} </slot>
         </div>
 
         <div class="history-targets-collapsed-summary">
@@ -36630,6 +36641,39 @@
 		targetControl.style.opacity = "0";
 		targetControl.style.pointerEvents = "none";
 	}
+	var ANCHOR_HOST_FLOATED_PROPS = [
+		"display",
+		"position",
+		"left",
+		"top",
+		"width",
+		"height",
+		"margin",
+		"padding",
+		"opacity",
+		"pointerEvents",
+		"overflow",
+		"zIndex"
+	];
+	var CONTROL_FLOATED_PROPS = [
+		"width",
+		"height",
+		"opacity",
+		"pointerEvents"
+	];
+	/**
+	* Reverts {@link floatTargetPickerAnchor}: clears every inline property the
+	* float wrote onto the floated anchor host and the shared control, letting the
+	* stylesheet reassert the resting (hidden) state. The control keeps its mount
+	* baseline of `display: block`. Idempotent and a no-op when nothing was floated.
+	*/
+	function clearFloatedTargetPickerAnchor(targetControl) {
+		const assignedSlot = targetControl.assignedSlot ?? null;
+		const hiddenAnchorHost = (assignedSlot?.parentElement instanceof HTMLElement ? assignedSlot.parentElement : null) ?? assignedSlot;
+		if (hiddenAnchorHost) for (const prop of ANCHOR_HOST_FLOATED_PROPS) hiddenAnchorHost.style[prop] = "";
+		for (const prop of CONTROL_FLOATED_PROPS) targetControl.style[prop] = "";
+		targetControl.style.display = "block";
+	}
 	function createHistoryPageOrchestrationContext() {
 		let chartResizeRaf = null;
 		return {
@@ -36659,6 +36703,10 @@
 				}
 				if (typeof targetControl.focus === "function") targetControl.focus();
 				if (typeof targetControl.click === "function") targetControl.click();
+			},
+			resetCollapsedPickerAnchor(targetControl) {
+				if (!targetControl) return;
+				clearFloatedTargetPickerAnchor(targetControl);
 			},
 			renderComparisonTabs(options) {
 				const tabsEl = options.chartEl?.getComparisonTabsHost?.() ?? null;
@@ -41155,7 +41203,10 @@
 		}
 		_toggleSidebarCollapsed() {
 			this._sidebarCollapsed = !this._sidebarCollapsed;
-			if (!this._sidebarCollapsed) this._hideCollapsedTargetPopup();
+			if (!this._sidebarCollapsed) {
+				this._hideCollapsedTargetPopup();
+				this._context.orchestration.resetCollapsedPickerAnchor(this._targetControl);
+			}
 			this._saveSessionState();
 			this._updateUrl({ push: false });
 			this._renderTargetRows();
