@@ -33318,9 +33318,9 @@
   }
 
   /* Monitors full-page view: the sidebar region is not rendered, so the content
-     spans the full width regardless of the collapsed state. */
-  .page-content.monitors-active,
-  .page-content.monitors-active.sidebar-collapsed {
+     spans the full width. Declared after the collapsed rule so it wins at equal
+     specificity when both classes are present. */
+  .page-content.monitors-active {
     grid-template-columns: minmax(0, 1fr);
   }
 
