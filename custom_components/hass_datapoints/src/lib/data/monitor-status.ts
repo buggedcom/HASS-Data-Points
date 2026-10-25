@@ -21,7 +21,14 @@ export type MonitorStatus = "paused" | "healthy" | "warning" | "triggered";
 export interface MonitorStatusInput {
   /** Whether the monitor is actively scanning. Disabled → Paused. */
   enabled: boolean;
-  /** Active (undismissed) anomaly clusters from the last scan. */
+  /**
+   * Undismissed anomaly clusters as of the last scan. This is the backend's
+   * dismissal-aware count (the same field its binary sensor uses), so it is the
+   * correct signal for Triggered. It is only recomputed on each scan, so a
+   * dismissal made between scans is not reflected until the next scan.
+   */
+  active_cluster_count?: number | null;
+  /** Raw cluster count from the last scan; fallback when active count is absent. */
   last_cluster_count?: number | null;
   /** ISO timestamp of the most recent anomaly ever seen, or null if none. */
   last_anomaly_at?: string | null;
@@ -29,6 +36,11 @@ export interface MonitorStatusInput {
   scan_history?: ScanHistoryEntry[];
   /** Detections the user has dismissed; their presence implies past anomalies. */
   dismissed_windows?: DismissedWindow[];
+}
+
+/** Undismissed cluster count, preferring the dismissal-aware backend field. */
+function activeClusterCount(monitor: MonitorStatusInput): number {
+  return monitor.active_cluster_count ?? monitor.last_cluster_count ?? 0;
 }
 
 /** True when the monitor has seen an anomaly at some point, dismissed or not. */
@@ -60,7 +72,7 @@ export function deriveMonitorStatus(
   if (!monitor.enabled) {
     return "paused";
   }
-  if ((monitor.last_cluster_count ?? 0) > 0) {
+  if (activeClusterCount(monitor) > 0) {
     return "triggered";
   }
   if (hasSeenAnomaly(monitor)) {

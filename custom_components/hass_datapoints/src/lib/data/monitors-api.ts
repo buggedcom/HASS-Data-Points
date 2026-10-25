@@ -54,6 +54,12 @@ interface MonitorBase {
   last_scan_at: string | null;
   last_anomaly_at: string | null;
   last_cluster_count: number;
+  /**
+   * Undismissed cluster count as of the last scan (dismissal-aware). The store
+   * backfills it from `last_cluster_count` for records created before the field
+   * existed, so it is optional on the wire.
+   */
+  active_cluster_count?: number;
   last_scan_data_points: number | null;
   scan_history: ScanHistoryEntry[];
   /** HA device registry ID — populated by the backend list endpoint. */

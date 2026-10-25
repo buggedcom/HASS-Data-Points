@@ -32005,6 +32005,10 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/data/monitor-status.ts
+	/** Undismissed cluster count, preferring the dismissal-aware backend field. */
+	function activeClusterCount(monitor) {
+		return monitor.active_cluster_count ?? monitor.last_cluster_count ?? 0;
+	}
 	/** True when the monitor has seen an anomaly at some point, dismissed or not. */
 	function hasSeenAnomaly(monitor) {
 		if (monitor.last_anomaly_at) return true;
@@ -32025,7 +32029,7 @@
 	*/
 	function deriveMonitorStatus(monitor) {
 		if (!monitor.enabled) return "paused";
-		if ((monitor.last_cluster_count ?? 0) > 0) return "triggered";
+		if (activeClusterCount(monitor) > 0) return "triggered";
 		if (hasSeenAnomaly(monitor)) return "warning";
 		return "healthy";
 	}
