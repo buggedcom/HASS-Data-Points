@@ -191,6 +191,7 @@ export interface HistoryOrchestrationContext {
     targetControl: Nullable<HTMLElement>,
     anchorEl?: Nullable<HTMLElement>
   ): void;
+  resetCollapsedPickerAnchor(targetControl: Nullable<HTMLElement>): void;
   renderComparisonTabs(options: {
     chartEl: Nullable<HTMLElement>;
     comparisonWindows: Array<{

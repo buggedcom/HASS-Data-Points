@@ -2609,6 +2609,11 @@ export class HassDatapointsHistoryPanel extends LitElement {
     this._sidebarCollapsed = !this._sidebarCollapsed;
     if (!this._sidebarCollapsed) {
       this._hideCollapsedTargetPopup();
+      // Expanding: drop any float the collapsed "+" left on the shared picker
+      // so the expanded "Add target" button floats it from a clean baseline.
+      this._context.orchestration.resetCollapsedPickerAnchor(
+        this._targetControl
+      );
     }
     this._saveSessionState();
     this._updateUrl({ push: false });

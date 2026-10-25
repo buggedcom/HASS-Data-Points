@@ -92,6 +92,60 @@ describe("orchestration-context", () => {
     });
   });
 
+  describe("GIVEN the collapsed picker was floated open", () => {
+    describe("WHEN the sidebar expands and the anchor is reset", () => {
+      it("THEN it clears every floated inline style back to the resting baseline", () => {
+        expect.assertions(8);
+        const context = createHistoryPageOrchestrationContext();
+        const slotContainer = document.createElement("div");
+        slotContainer.style.display = "none";
+        const assignedSlot = document.createElement("slot");
+        slotContainer.appendChild(assignedSlot);
+        document.body.appendChild(slotContainer);
+        const targetControl = {
+          shadowRoot: { querySelector: vi.fn(() => ({ open: vi.fn() })) },
+          assignedSlot,
+          style: {} as CSSStyleDeclaration,
+        } as unknown as HTMLElement;
+        const anchorEl = {
+          getBoundingClientRect: () => ({
+            left: 12,
+            top: 24,
+            width: 28,
+            height: 28,
+          }),
+        } as unknown as HTMLElement;
+
+        // Float it open (collapsed "+"), then tear it down (sidebar expands).
+        context.openTargetPicker(targetControl, anchorEl);
+        expect(slotContainer.style.position).toBe("fixed");
+        expect(targetControl.style.opacity).toBe("0");
+
+        context.resetCollapsedPickerAnchor(targetControl);
+
+        // The anchor host carries no residual float; the stylesheet reasserts.
+        expect(slotContainer.style.position).toBe("");
+        expect(slotContainer.style.opacity).toBe("");
+        expect(slotContainer.style.width).toBe("");
+        // The control is cleared but keeps its mount baseline.
+        expect(targetControl.style.opacity).toBe("");
+        expect(targetControl.style.pointerEvents).toBe("");
+        expect(targetControl.style.display).toBe("block");
+
+        slotContainer.remove();
+      });
+    });
+
+    describe("WHEN the flow was never used", () => {
+      it("THEN resetting with no control is a no-op", () => {
+        expect.assertions(1);
+        const context = createHistoryPageOrchestrationContext();
+
+        expect(() => context.resetCollapsedPickerAnchor(null)).not.toThrow();
+      });
+    });
+  });
+
   describe("GIVEN a chart resize redraw is requested", () => {
     describe("WHEN the chart card exposes a resize-replay seam", () => {
       it("THEN it asks the card to replay its last draw", () => {
