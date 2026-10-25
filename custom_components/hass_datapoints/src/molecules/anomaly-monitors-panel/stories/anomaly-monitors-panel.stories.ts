@@ -230,7 +230,11 @@ export const Quiet = {
       ).toHaveLength(2)
     );
     const root = panelRoot(canvasElement);
-    await expect(root.querySelector(".monitor-anomaly-indicator")).toBeNull();
+    const pill = root.querySelector("monitor-status-pill");
+    await expect(pill).not.toBeNull();
+    await expect(
+      pill?.shadowRoot?.querySelector(".status-healthy")
+    ).not.toBeNull();
     await expect(root.querySelector(".monitor-sparkline")).not.toBeNull();
     await expect(root.querySelector(".sparkline-empty")).not.toBeNull();
     await expect(root.querySelector(".trash-section")).toBeNull();
@@ -273,7 +277,9 @@ export const Firing = {
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
     await waitFor(() =>
       expect(
-        panelRoot(canvasElement).querySelector(".monitor-anomaly-indicator")
+        panelRoot(canvasElement)
+          .querySelector("monitor-status-pill")
+          ?.shadowRoot?.querySelector(".status-triggered")
       ).not.toBeNull()
     );
     const root = panelRoot(canvasElement);
