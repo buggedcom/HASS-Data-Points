@@ -401,6 +401,58 @@ describe("anomaly-monitors-panel", () => {
         expect(menu?.querySelector(".delete-btn")).not.toBeNull();
       });
     });
+
+    describe("WHEN the overflow menu is open and Escape is pressed", () => {
+      it("THEN the menu closes", async () => {
+        expect.assertions(2);
+        const { el } = await mountMonitor();
+        el.shadowRoot?.querySelector<HTMLElement>(".overflow-toggle")?.click();
+        await el.updateComplete;
+        expect(el.shadowRoot?.querySelector(".overflow-menu")).not.toBeNull();
+
+        document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+        await el.updateComplete;
+
+        expect(el.shadowRoot?.querySelector(".overflow-menu")).toBeNull();
+      });
+    });
+
+    describe("WHEN the overflow menu is open and an outside click occurs", () => {
+      it("THEN the menu closes", async () => {
+        expect.assertions(2);
+        const { el } = await mountMonitor();
+        el.shadowRoot?.querySelector<HTMLElement>(".overflow-toggle")?.click();
+        await el.updateComplete;
+        expect(el.shadowRoot?.querySelector(".overflow-menu")).not.toBeNull();
+
+        document.body.dispatchEvent(
+          new MouseEvent("mousedown", { bubbles: true })
+        );
+        await el.updateComplete;
+
+        expect(el.shadowRoot?.querySelector(".overflow-menu")).toBeNull();
+      });
+    });
+
+    describe("WHEN the overflow menu is open and its own toggle is clicked", () => {
+      it("THEN the outside-click handler does not fight the toggle", async () => {
+        expect.assertions(2);
+        const { el } = await mountMonitor();
+        const toggle =
+          el.shadowRoot?.querySelector<HTMLElement>(".overflow-toggle");
+        toggle?.click();
+        await el.updateComplete;
+        expect(el.shadowRoot?.querySelector(".overflow-menu")).not.toBeNull();
+
+        // A mousedown inside the overflow (its toggle/menu) must not close it.
+        el.shadowRoot
+          ?.querySelector(".monitor-overflow")
+          ?.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
+        await el.updateComplete;
+
+        expect(el.shadowRoot?.querySelector(".overflow-menu")).not.toBeNull();
+      });
+    });
   });
 
   describe("GIVEN the redesigned stats block", () => {
@@ -489,6 +541,21 @@ describe("anomaly-monitors-panel", () => {
         const { el } = await mountMonitor({
           ...buildCombinedMonitor(),
           overlap_mode: "any",
+        });
+        const text = el.shadowRoot
+          ?.querySelector(".monitor-trigger-logic")
+          ?.textContent?.toLowerCase();
+        expect(text).toContain("any entity");
+        expect(text).toContain("or");
+      });
+    });
+
+    describe("WHEN the monitor is combined with an at-least-N overlap", () => {
+      it("THEN the trigger logic still reads as an OR rule", async () => {
+        expect.assertions(2);
+        const { el } = await mountMonitor({
+          ...buildCombinedMonitor(),
+          overlap_mode: "any_2",
         });
         const text = el.shadowRoot
           ?.querySelector(".monitor-trigger-logic")
