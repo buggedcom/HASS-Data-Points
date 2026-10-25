@@ -42,6 +42,35 @@ export interface MonitorAnomaliesResult {
   cluster_count: number;
 }
 
+export interface AnomalyActivityBucket {
+  start_ms: number;
+  end_ms: number;
+  /** Anomalous readings inside this bucket. */
+  anomaly_count: number;
+  /** Incidents (clusters) that start inside this bucket. */
+  incident_count: number;
+}
+
+export interface EntityAnomalyActivity {
+  entity_id: string;
+  /** Anomalous readings for this entity across the whole range. */
+  total: number;
+  incident_count: number;
+  /** Contiguous, zero-filled buckets covering [start_ms, end_ms). */
+  buckets: AnomalyActivityBucket[];
+}
+
+export interface MonitorAnomalyActivityResult {
+  monitor_id: string;
+  start_ms: number;
+  end_ms: number;
+  bucket_ms: number;
+  total_anomalies: number;
+  /** Combined monitors: overlap incidents; individual: sum of entity incidents. */
+  incident_count: number;
+  entities: EntityAnomalyActivity[];
+}
+
 interface MonitorBase {
   id: string;
   deleted_at?: string | null;
@@ -258,6 +287,34 @@ export async function fetchMonitorAnomalies(
     monitor_id: monitorId,
   })) as MonitorAnomaliesResult;
   return result;
+}
+
+/**
+ * Per-entity anomaly activity buckets and counts for a monitor over an
+ * arbitrary range, using the monitor's own detection config.
+ * @param startMs Range start (epoch ms, inclusive).
+ * @param endMs Range end (epoch ms, exclusive).
+ * @param bucketCount Number of buckets per entity; server default (48) if omitted.
+ */
+export async function fetchMonitorAnomalyActivity(
+  hass: Pick<HassLike, "connection">,
+  monitorId: string,
+  startMs: number,
+  endMs: number,
+  bucketCount?: number
+): Promise<MonitorAnomalyActivityResult> {
+  const payload: Record<string, unknown> = {
+    type: `${DOMAIN}/monitors/anomaly_activity`,
+    monitor_id: monitorId,
+    start_time: new Date(startMs).toISOString(),
+    end_time: new Date(endMs).toISOString(),
+  };
+  if (bucketCount !== undefined) {
+    payload.bucket_count = bucketCount;
+  }
+  return (await hass.connection.sendMessagePromise(
+    payload
+  )) as MonitorAnomalyActivityResult;
 }
 
 /**

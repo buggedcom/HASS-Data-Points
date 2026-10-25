@@ -1,9 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   fetchDeletedMonitors,
+  fetchMonitorAnomalyActivity,
   purgeMonitor,
   restoreMonitor,
   type AnomalyMonitor,
+  type MonitorAnomalyActivityResult,
 } from "@/lib/data/monitors-api";
 
 const monitor = {
@@ -77,6 +79,55 @@ describe("monitors-api trash calls", () => {
           throw new Error("boom");
         });
         await expect(fetchDeletedMonitors(hass)).resolves.toEqual([]);
+      });
+    });
+  });
+});
+
+describe("fetchMonitorAnomalyActivity", () => {
+  const activity: MonitorAnomalyActivityResult = {
+    monitor_id: "m1",
+    start_ms: 1000,
+    end_ms: 2000,
+    bucket_ms: 500,
+    total_anomalies: 2,
+    incident_count: 1,
+    entities: [
+      {
+        entity_id: "sensor.a",
+        total: 2,
+        incident_count: 1,
+        buckets: [
+          { start_ms: 1000, end_ms: 1500, anomaly_count: 2, incident_count: 1 },
+          { start_ms: 1500, end_ms: 2000, anomaly_count: 0, incident_count: 0 },
+        ],
+      },
+    ],
+  };
+
+  describe("GIVEN a hass resolving an activity result", () => {
+    describe("WHEN called with a range and bucket count", () => {
+      it("THEN sends ISO bounds and bucket_count and resolves the result", async () => {
+        const { hass, sendMessagePromise } = makeHass(async () => activity);
+        await expect(
+          fetchMonitorAnomalyActivity(hass, "m1", 1000, 2000, 2)
+        ).resolves.toBe(activity);
+        expect(sendMessagePromise).toHaveBeenCalledWith({
+          type: "hass_datapoints/monitors/anomaly_activity",
+          monitor_id: "m1",
+          start_time: "1970-01-01T00:00:01.000Z",
+          end_time: "1970-01-01T00:00:02.000Z",
+          bucket_count: 2,
+        });
+      });
+    });
+    describe("WHEN called without a bucket count", () => {
+      it("THEN omits bucket_count so the server default applies", async () => {
+        const { hass, sendMessagePromise } = makeHass(async () => activity);
+        await fetchMonitorAnomalyActivity(hass, "m1", 1000, 2000);
+        expect(sendMessagePromise.mock.calls[0][0]).not.toHaveProperty(
+          "bucket_count"
+        );
       });
     });
   });
