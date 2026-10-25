@@ -42,6 +42,23 @@ describe("deriveMonitorStatus", () => {
         );
       });
     });
+
+    describe("WHEN the dismissal-aware active count is provided", () => {
+      it("THEN it is preferred over the raw last_cluster_count", () => {
+        // Last scan found clusters, but all are now dismissed: active is 0.
+        expect(
+          deriveMonitorStatus(
+            baseline({ last_cluster_count: 2, active_cluster_count: 0 })
+          )
+        ).not.toBe("triggered");
+        // And when active clusters remain, it is still Triggered.
+        expect(
+          deriveMonitorStatus(
+            baseline({ last_cluster_count: 2, active_cluster_count: 1 })
+          )
+        ).toBe("triggered");
+      });
+    });
   });
 
   describe("GIVEN an enabled monitor with no active clusters but past anomalies", () => {
