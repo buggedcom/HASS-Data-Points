@@ -168,6 +168,7 @@ def async_register_commands(hass: HomeAssistant) -> None:
     websocket_api.async_register_command(hass, ws_monitors_restore)
     websocket_api.async_register_command(hass, ws_monitors_purge)
     websocket_api.async_register_command(hass, ws_monitors_anomalies)
+    websocket_api.async_register_command(hass, ws_monitors_anomaly_activity)
     websocket_api.async_register_command(hass, ws_monitors_dismiss)
     websocket_api.async_register_command(hass, ws_monitors_undismiss)
 
@@ -1361,6 +1362,147 @@ def _validate_iso_datetime(value: str) -> str:
     except ValueError as err:
         raise vol.Invalid(f"Invalid ISO datetime: {value}") from err
     return value
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): f"{DOMAIN}/monitors/anomaly_activity",
+        vol.Required("monitor_id"): vol.All(str, _valid_uuid),
+        vol.Required("start_time"): vol.All(str, _validate_iso_datetime),
+        vol.Required("end_time"): vol.All(str, _validate_iso_datetime),
+        vol.Optional("bucket_count", default=48): vol.All(
+            int, vol.Range(min=1, max=500)
+        ),
+        vol.Optional("request_id"): str,
+    }
+)
+@websocket_api.async_response
+async def ws_monitors_anomaly_activity(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict,
+) -> None:
+    """Return per-entity anomaly activity buckets and counts over ``[start, end]``.
+
+    Runs the monitor's own detection config (methods, sensitivity, ...) over the
+    requested range for every member entity, so counts match the chart for the
+    same entities and range. Active dismissals are honoured, as for the monitor's
+    own scan counts.
+    """
+    from .anomaly_activity import compute_anomaly_activity  # noqa: PLC0415
+    from .sensor import (  # noqa: PLC0415
+        _apply_dismissals,
+        _build_detection_config,
+        _run_combined_detection,
+    )
+    from .store import DatapointsStore  # noqa: PLC0415
+
+    _require_admin(connection, msg)
+    store = hass.data[DOMAIN][KEY_STORE]
+    monitor_id: str = msg["monitor_id"]
+
+    monitor = store.get_monitor(monitor_id)
+    if monitor is None:
+        connection.send_error(msg["id"], "not_found", "Monitor not found")
+        return
+
+    start_time: str = msg["start_time"]
+    end_time: str = msg["end_time"]
+    start_ms = int(datetime.fromisoformat(start_time).timestamp() * 1000)
+    end_ms = int(datetime.fromisoformat(end_time).timestamp() * 1000)
+    if end_ms <= start_ms:
+        connection.send_error(
+            msg["id"], "invalid_range", "end_time must be after start_time"
+        )
+        return
+
+    monitor_type = monitor.get("type", "individual")
+    if monitor_type == "combined":
+        entity_ids = [e for e in monitor.get("entity_ids", []) if e]
+    else:
+        entity_ids = [e for e in [monitor.get("entity_id", "")] if e]
+
+    config = _build_detection_config(monitor)
+    pool = hass.data[DOMAIN].get("executor")
+    request_id: str | None = msg.get("request_id")
+    cancel_event = _register_cancel(hass, request_id)
+
+    entity_clusters: dict[str, list] = {}
+    incident_clusters: list | None = None
+    try:
+        recorder = get_instance(hass)
+        all_pts: dict[str, list] = {}
+        for entity_id in entity_ids:
+            pts = await async_prepare_entity_series(
+                hass,
+                entity_id,
+                start_time,
+                end_time,
+                sample_interval=monitor.get("sample_interval"),
+                sample_aggregate=monitor.get("sample_aggregate", "mean"),
+                max_pts=ANOMALY_MAX_PTS,
+            )
+            all_pts[entity_id] = pts
+            clusters: list = []
+            if len(pts) >= 3:
+                comparison_pts: list | None = None
+                baseline_entity_id = monitor.get("baseline_entity_id")
+                if (
+                    monitor_type != "combined"
+                    and baseline_entity_id
+                    and "comparison_window" in config.get("anomaly_methods", [])
+                ):
+                    comparison_pts = await recorder.async_add_executor_job(
+                        fetch_entity_pts, hass, baseline_entity_id, start_time, end_time
+                    )
+                clusters = await _run_detection_with_timeout(
+                    hass, pool, pts, config, comparison_pts, cancel_event
+                )
+            entity_clusters[entity_id] = clusters
+
+        if monitor_type == "combined":
+            incident_clusters = await asyncio.wait_for(
+                hass.loop.run_in_executor(
+                    pool,
+                    _run_combined_detection,
+                    all_pts,
+                    config,
+                    monitor.get("overlap_mode", "all"),
+                    cancel_event,
+                ),
+                timeout=30.0,
+            )
+    except TimeoutError:
+        cancel_event.set()
+        _unregister_cancel(hass, request_id)
+        _LOGGER.warning("ws_monitors_anomaly_activity timed out for %s", monitor_id)
+        connection.send_error(msg["id"], "scan_failed", "Detection timed out")
+        return
+    except Exception as err:  # noqa: BLE001
+        _unregister_cancel(hass, request_id)
+        _LOGGER.error("ws_monitors_anomaly_activity failed for %s: %s", monitor_id, err)
+        connection.send_error(msg["id"], "scan_failed", str(err))
+        return
+
+    _unregister_cancel(hass, request_id)
+
+    monitor_fresh = store.get_monitor(monitor_id) or monitor
+    DatapointsStore.prune_dismissed_windows(monitor_fresh, datetime.now(UTC))
+    dismissed = monitor_fresh.get("dismissed_windows", [])
+    entity_clusters = {
+        eid: _apply_dismissals(clusters, dismissed)
+        for eid, clusters in entity_clusters.items()
+    }
+    if incident_clusters is not None:
+        incident_clusters = _apply_dismissals(incident_clusters, dismissed)
+
+    activity = compute_anomaly_activity(
+        entity_clusters, incident_clusters, start_ms, end_ms, msg["bucket_count"]
+    )
+    connection.send_result(
+        msg["id"],
+        {"monitor_id": monitor_id, "start_ms": start_ms, "end_ms": end_ms, **activity},
+    )
 
 
 @websocket_api.websocket_command(
