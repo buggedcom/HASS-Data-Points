@@ -889,44 +889,6 @@ export class ChartRenderer {
     ctx.restore();
   }
 
-  /**
-   * Point markers for an aggregate line: filled when the period is complete,
-   * hollow when partial, dotted ring when history is incomplete.
-   */
-  drawPeriodMarkers(
-    points: ChartPoint[],
-    styles: PeriodStyle[],
-    color: string,
-    t0: number,
-    t1: number,
-    vMin: number,
-    vMax: number
-  ): void {
-    const { ctx } = this;
-    ctx.save();
-    ctx.strokeStyle = color;
-    ctx.fillStyle = color;
-    ctx.lineWidth = 1.5;
-    points.forEach(([t, v], i) => {
-      const style = styles[i];
-      const x = this.xOf(t, t0, t1);
-      const y = this.yOf(v, vMin, vMax);
-      ctx.beginPath();
-      ctx.arc(x, y, 3.5, 0, Math.PI * 2);
-      if (style?.partial || style?.incomplete) {
-        ctx.setLineDash(style.partial ? [] : [1.5, 1.5]);
-        ctx.fillStyle = hexToRgba(color, 0.15);
-        ctx.fill();
-        ctx.stroke();
-      } else {
-        ctx.setLineDash([]);
-        ctx.fillStyle = color;
-        ctx.fill();
-      }
-    });
-    ctx.restore();
-  }
-
   drawStateBands(
     spans: Nullable<Array<{ start: number; end: number }>> | undefined,
     t0: number,

@@ -1,4 +1,5 @@
 import {
+  AGGREGATE_INTERVALS,
   AGGREGATE_OPERATIONS,
   type AggregateDefinition,
   type AggregateOperation,
@@ -19,7 +20,7 @@ export function normalizeAggregateDefinitions(
       !item.id ||
       ids.has(item.id) ||
       !AGGREGATE_OPERATIONS.includes(item.operation) ||
-      !["hour", "day", "week", "month"].includes(item.interval)
+      !AGGREGATE_INTERVALS.includes(item.interval)
     ) {
       return [];
     }

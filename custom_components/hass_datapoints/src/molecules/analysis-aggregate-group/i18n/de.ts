@@ -41,4 +41,7 @@ export const translations: ComponentTranslations = {
   "Count events": "Ereignisse zählen",
   Interval: "Intervall",
   State: "Zustand",
+  "Every minute": "Jede Minute",
+  "Every 15 minutes": "Alle 15 Minuten",
+  "Every 30 minutes": "Alle 30 Minuten",
 };

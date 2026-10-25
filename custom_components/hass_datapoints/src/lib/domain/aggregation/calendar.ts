@@ -5,6 +5,15 @@ import type {
 } from "@/lib/domain/aggregation/types";
 
 const HOUR_MS = 3600000;
+const MINUTE_MS = 60000;
+
+/** Sub-day intervals of fixed length, aligned to the local wall clock. */
+const FIXED_INTERVAL_MS: Partial<Record<AggregateInterval, number>> = {
+  minute: MINUTE_MS,
+  "15min": 15 * MINUTE_MS,
+  "30min": 30 * MINUTE_MS,
+  hour: HOUR_MS,
+};
 const formatters = new Map<string, Intl.DateTimeFormat>();
 
 function getFormatter(timeZone: string): Intl.DateTimeFormat {
@@ -91,9 +100,12 @@ export function getPeriodStart(
   timeZone: string
 ): number {
   const p = getLocalParts(ts, timeZone);
-  if (interval === "hour") {
+  const fixedMs = FIXED_INTERVAL_MS[interval];
+  if (fixedMs) {
     const ms = ((ts % 1000) + 1000) % 1000;
-    return ts - ((p.minute * 60 + p.second) * 1000 + ms);
+    // Align on local minutes so half-hour offset zones still land on :00/:15/:30.
+    const offsetMinutes = p.minute % (fixedMs / MINUTE_MS);
+    return ts - ms - p.second * 1000 - offsetMinutes * MINUTE_MS;
   }
   if (interval === "day") {
     return localMidnight(p.year, p.month, p.day, timeZone);
@@ -114,8 +126,9 @@ export function getNextPeriodStart(
   interval: AggregateInterval,
   timeZone: string
 ): number {
-  if (interval === "hour") {
-    return periodStart + HOUR_MS;
+  const fixedMs = FIXED_INTERVAL_MS[interval];
+  if (fixedMs) {
+    return periodStart + fixedMs;
   }
   const p = getLocalParts(periodStart + HOUR_MS * 2, timeZone);
   if (interval === "day") {

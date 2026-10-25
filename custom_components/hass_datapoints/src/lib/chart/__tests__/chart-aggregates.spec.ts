@@ -113,7 +113,7 @@ describe("buildMeasurementAggregateSeries", () => {
     buildMeasurementAggregateSeries({
       entityId: "sensor.temp",
       entityLabel: "Temperature",
-      colors: ["#111111", "#222222"],
+      color: "#111111",
       definitions: [
         definition({ operation, states: undefined, interval: "day" }),
       ],
@@ -147,7 +147,7 @@ describe("buildMeasurementAggregateSeries", () => {
         const out = buildMeasurementAggregateSeries({
           entityId: "sensor.temp",
           entityLabel: "Temperature",
-          colors: ["#111111"],
+          color: "#111111",
           definitions: [definition({ operation: "mean", states: undefined })],
           stateList: [{ s: "5", lu: sec(start + hour) }],
           range: { start, end: start + 2 * day },
@@ -474,6 +474,41 @@ describe("coverage flags", () => {
           incomplete: false,
         });
         expect(series.periodNotes![0]).toBe("");
+      });
+    });
+  });
+});
+
+describe("aggregate line styling", () => {
+  const readings = [2, 3].map((v, i) => ({
+    s: String(v),
+    lu: sec(start + i * hour),
+  }));
+  const run = (operation: AggregateDefinition["operation"]) =>
+    buildMeasurementAggregateSeries({
+      entityId: "sensor.temp",
+      entityLabel: "Temperature",
+      color: "#ff9800",
+      definitions: [definition({ operation, states: undefined })],
+      stateList: readings,
+      range: { start, end: start + day },
+      timeZone: "UTC",
+      unit: "°C",
+      axisKey: "°C",
+    })[0];
+
+  describe("GIVEN aggregates of different types on the same row", () => {
+    describe("WHEN built", () => {
+      it("THEN they share the source colour but have distinct dash patterns", () => {
+        expect.assertions(2);
+        const ops = ["mean", "min", "max", "median", "first", "last"] as const;
+        const series = ops.map(run);
+        expect(new Set(series.map((s) => s.color))).toStrictEqual(
+          new Set(["#ff9800"])
+        );
+        expect(
+          new Set(series.map((s) => JSON.stringify(s.dashPattern))).size
+        ).toBe(ops.length);
       });
     });
   });

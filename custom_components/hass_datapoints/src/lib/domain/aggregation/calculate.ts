@@ -34,22 +34,59 @@ function overlap(a: AggregateRange, b: AggregateRange): number {
   return Math.max(0, Math.min(a.end, b.end) - Math.max(a.start, b.start));
 }
 
-function inPeriod(time: number, period: AggregatePeriod): boolean {
-  return time >= period.start && time < period.end;
+/**
+ * Bucket time-ordered items into periods in one sweep. Minute-level intervals
+ * over long ranges create tens of thousands of periods, so per-period filters
+ * over every item would be quadratic.
+ */
+function groupByPeriod<T>(
+  items: T[],
+  periods: AggregatePeriod[],
+  timeOf: (item: T) => number
+): T[][] {
+  const sorted = [...items].sort((a, b) => timeOf(a) - timeOf(b));
+  const groups: T[][] = periods.map(() => []);
+  let cursor = 0;
+  sorted.forEach((item) => {
+    const time = timeOf(item);
+    while (cursor < periods.length && time >= periods[cursor].end) {
+      cursor += 1;
+    }
+    if (cursor < periods.length && time >= periods[cursor].start) {
+      groups[cursor].push(item);
+    }
+  });
+  return groups;
 }
 
 function sortSamples(samples: AggregateSample[]): AggregateSample[] {
   return [...samples].sort((a, b) => a.time - b.time);
 }
 
-function knownDurationOf(
-  period: AggregatePeriod,
+/** Known (covered) time within each period, in one sweep over the coverage. */
+function knownDurationsOf(
+  periods: AggregatePeriod[],
   coverage: AggregateRange[] | undefined
-): number {
+): number[] {
   if (!coverage) {
-    return period.end - period.start;
+    return periods.map((period) => period.end - period.start);
   }
-  return coverage.reduce((sum, c) => sum + overlap(period, c), 0);
+  const sorted = [...coverage].sort((a, b) => a.start - b.start);
+  let first = 0;
+  return periods.map((period) => {
+    while (first < sorted.length && sorted[first].end <= period.start) {
+      first += 1;
+    }
+    let known = 0;
+    for (
+      let i = first;
+      i < sorted.length && sorted[i].start < period.end;
+      i += 1
+    ) {
+      known += overlap(period, sorted[i]);
+    }
+    return known;
+  });
 }
 
 /** Known-state spans over `range`, seeded by the last sample at/before start. */
@@ -109,10 +146,9 @@ function calculateMeasurement(
     (s) =>
       !s.boundary && typeof s.value === "number" && Number.isFinite(s.value)
   );
-  return periods.map((period) => {
-    const values = readings
-      .filter((s) => inPeriod(s.time, period))
-      .map((s) => s.value as number);
+  const grouped = groupByPeriod(readings, periods, (s) => s.time);
+  return periods.map((_period, index) => {
+    const values = grouped[index].map((s) => s.value as number);
     if (!values.length) {
       return { value: null, reasons: ["no-data"] };
     }
@@ -159,8 +195,9 @@ function calculateTransitions(
     }
     times.push(curr.time);
   });
-  return periods.map((period) => ({
-    value: times.filter((t) => inPeriod(t, period)).length,
+  const grouped = groupByPeriod(times, periods, (t) => t);
+  return periods.map((_period, index) => ({
+    value: grouped[index].length,
     reasons: [],
   }));
 }
@@ -174,14 +211,27 @@ function calculateDurations(
   if (!selected.length) {
     return periods.map(() => ({ value: null, reasons: ["no-state-selected"] }));
   }
-  const spans = buildStateSpans(input.samples, input.range, input.coverage);
+  const spans = buildStateSpans(
+    input.samples,
+    input.range,
+    input.coverage
+  ).sort((a, b) => a.start - b.start);
+  let first = 0;
   return periods.map((period) => {
     let known = 0;
     let matching = 0;
-    for (const span of spans) {
-      const ms = overlap(period, span);
+    // Spans are ordered and non-overlapping, so skip those already behind us.
+    while (first < spans.length && spans[first].end <= period.start) {
+      first += 1;
+    }
+    for (
+      let i = first;
+      i < spans.length && spans[i].start < period.end;
+      i += 1
+    ) {
+      const ms = overlap(period, spans[i]);
       known += ms;
-      if (selected.includes(span.state)) {
+      if (selected.includes(spans[i].state)) {
         matching += ms;
       }
     }
@@ -209,8 +259,9 @@ function calculateEvents(
         (types.length === 0 || types.includes(s.eventType))
     )
     .map((s) => s.eventTime ?? s.time);
-  return periods.map((period) => ({
-    value: times.filter((t) => inPeriod(t, period)).length,
+  const grouped = groupByPeriod(times, periods, (t) => t);
+  return periods.map((_period, index) => ({
+    value: grouped[index].length,
     reasons: [],
   }));
 }
@@ -264,8 +315,9 @@ function calculateConsumption(
       deltas.push({ time: curr.time, value: 0, reason: "ambiguous-reset" });
     }
   });
-  return periods.map((period) => {
-    const inside = deltas.filter((d) => inPeriod(d.time, period));
+  const grouped = groupByPeriod(deltas, periods, (d) => d.time);
+  return periods.map((_period, index) => {
+    const inside = grouped[index];
     if (!inside.length) {
       return { value: null, reasons: ["no-data"] };
     }
@@ -348,9 +400,10 @@ export function calculateAggregate(input: AggregateInput): AggregateResult {
     ({ buckets, periods, started } = result);
   }
 
+  const knownDurations = knownDurationsOf(periods, input.coverage);
   const points: AggregatePoint[] = periods.map((period, i) => {
     const totalDuration = period.end - period.start;
-    const knownDuration = knownDurationOf(period, input.coverage);
+    const knownDuration = knownDurations[i];
     const reasons = [...buckets[i].reasons];
     const incomplete = knownDuration < totalDuration;
     if (incomplete) {

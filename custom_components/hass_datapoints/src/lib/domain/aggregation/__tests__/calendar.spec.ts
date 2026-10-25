@@ -91,3 +91,47 @@ describe("GIVEN a range crossing February", () => {
     });
   });
 });
+
+describe("GIVEN sub-hour intervals", () => {
+  const range = {
+    start: Date.parse("2026-01-01T10:07:30Z"),
+    end: Date.parse("2026-01-01T11:00:00Z"),
+  };
+
+  describe("WHEN splitting into 15 minute periods", () => {
+    it("THEN periods align to :00/:15/:30/:45 and the first is partial", () => {
+      expect.assertions(3);
+      const periods = getPeriods(range, "15min", "UTC");
+      expect(
+        periods.map((p) => new Date(p.periodStart).getUTCMinutes())
+      ).toStrictEqual([0, 15, 30, 45]);
+      expect(periods[0].partial).toBe(true);
+      expect(periods[1].partial).toBe(false);
+    });
+  });
+
+  describe("WHEN splitting into minutes", () => {
+    it("THEN there is one period per started minute", () => {
+      expect.assertions(1);
+      expect(getPeriods(range, "minute", "UTC")).toHaveLength(53);
+    });
+  });
+
+  describe("WHEN splitting into 30 minute periods in a half-hour offset zone", () => {
+    it("THEN boundaries follow local :00/:30", () => {
+      expect.assertions(1);
+      // Kolkata is UTC+5:30, so local :00/:30 are UTC :30/:00.
+      const [first] = getPeriods(
+        {
+          start: Date.parse("2026-01-01T10:10:00Z"),
+          end: Date.parse("2026-01-01T11:00:00Z"),
+        },
+        "30min",
+        "Asia/Kolkata"
+      );
+      expect(new Date(first.periodStart).toISOString()).toBe(
+        "2026-01-01T10:00:00.000Z"
+      );
+    });
+  });
+});

@@ -4,6 +4,7 @@ import {
   AGGREGATE_INTERVAL_OPTIONS,
   BINARY_AGGREGATE_KINDS,
   getBinaryAggregateKind,
+  getAggregateDashPattern,
   getBinaryStateOptions,
   MEASUREMENT_OPERATIONS,
   isMeasurementOperation,
@@ -34,6 +35,8 @@ export interface AggregateChartSeries {
   periodNotes?: string[];
   /** Per-point coverage: edge-clipped (partial) vs gaps in history (incomplete). */
   periodFlags?: { partial: boolean; incomplete: boolean }[];
+  /** Line dash pattern for this aggregation type (ignored for bars). */
+  dashPattern: number[];
   color: string;
   axisKey: string;
   bars: boolean;
@@ -198,6 +201,7 @@ export function buildBinaryAggregateSeries(
           periods: valued.map((p) => ({ start: p.start, end: p.end })),
           ...periodDetails(valued),
           color: definition.color || args.color,
+          dashPattern: getAggregateDashPattern(definition.operation),
           axisKey: `aggregate:${result.unit || "count"}`,
           bars: result.presentation === "bar",
           result,
@@ -209,8 +213,7 @@ export function buildBinaryAggregateSeries(
 export interface BuildMeasurementAggregateSeriesArgs {
   entityId: string;
   entityLabel: string;
-  /** Colours cycled across this row's aggregates so they differ from the source line. */
-  colors: string[];
+  color: string;
   definitions: AggregateDefinition[];
   stateList: { s: string; lu: number }[];
   range: AggregateRange;
@@ -241,7 +244,7 @@ export function buildMeasurementAggregateSeries(
         definition.visible !== false &&
         isMeasurementOperation(definition.operation)
     )
-    .flatMap((definition, index) => {
+    .flatMap((definition) => {
       const result = calculateAggregate({
         definition,
         samples,
@@ -286,7 +289,8 @@ export function buildMeasurementAggregateSeries(
           ]),
           periods: valued.map((p) => ({ start: p.start, end: p.end })),
           ...periodDetails(valued),
-          color: definition.color || args.colors[index % args.colors.length],
+          color: definition.color || args.color,
+          dashPattern: getAggregateDashPattern(definition.operation),
           axisKey: args.axisKey,
           bars: result.presentation === "bar",
           result,
@@ -404,6 +408,7 @@ export function buildEventAggregateSeries(
           periods: valued.map((p) => ({ start: p.start, end: p.end })),
           ...periodDetails(valued),
           color: definition.color || args.color,
+          dashPattern: getAggregateDashPattern(definition.operation),
           axisKey: `aggregate:${result.unit || "count"}`,
           bars: result.presentation === "bar",
           result,
@@ -524,6 +529,7 @@ export function buildConsumptionAggregateSeries(
           periods: valued.map((p) => ({ start: p.start, end: p.end })),
           ...periodDetails(valued, describeConsumptionReasons),
           color: definition.color || args.color,
+          dashPattern: getAggregateDashPattern(definition.operation),
           axisKey: `aggregate:${args.unit || "count"}`,
           bars: result.presentation === "bar",
           result,

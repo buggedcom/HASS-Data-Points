@@ -32,6 +32,9 @@ export const AGGREGATE_INTERVAL_OPTIONS: {
   value: AggregateInterval;
   label: string;
 }[] = [
+  { value: "minute", label: "Every minute" },
+  { value: "15min", label: "Every 15 minutes" },
+  { value: "30min", label: "Every 30 minutes" },
   { value: "hour", label: "Hourly" },
   { value: "day", label: "Daily" },
   { value: "week", label: "Weekly" },
@@ -156,4 +159,28 @@ export function createEventAggregate(
     states: undefined,
     eventTypes,
   };
+}
+
+/**
+ * Dash pattern (px on/off) per aggregation type. Aggregate lines keep the
+ * source series' colour, so the pattern is what tells them apart.
+ */
+const DASH_PATTERNS: Partial<Record<AggregateOperation, number[]>> = {
+  mean: [10, 4],
+  min: [2, 4],
+  max: [2, 4, 10, 4],
+  median: [6, 3, 2, 3],
+  first: [1, 5],
+  last: [1, 3, 1, 3, 8, 3],
+  consumption: [10, 4],
+  transition_count: [10, 4],
+  state_duration: [2, 4],
+  state_percentage: [2, 4, 10, 4],
+  event_count: [6, 3, 2, 3],
+};
+
+export function getAggregateDashPattern(
+  operation: AggregateOperation
+): number[] {
+  return DASH_PATTERNS[operation] ?? [6, 3];
 }
