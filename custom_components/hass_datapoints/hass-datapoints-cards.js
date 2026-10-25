@@ -33317,6 +33317,13 @@
     grid-template-columns: var(--sidebar-width-collapsed) minmax(0, 1fr);
   }
 
+  /* Monitors full-page view: the sidebar region is not rendered, so the content
+     spans the full width regardless of the collapsed state. */
+  .page-content.monitors-active,
+  .page-content.monitors-active.sidebar-collapsed {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .page-sidebar {
     position: relative;
     width: var(--sidebar-width-expanded);
@@ -33781,6 +33788,7 @@
 	var _narrow_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _sidebarCollapsed_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _hasSavedState_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _monitorsActive_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _layoutMode_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _monitorAnomalyCount_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _collapsedOptionsOpen_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -33792,6 +33800,7 @@
 			_classPrivateFieldInitSpec(this, _narrow_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _sidebarCollapsed_accessor_storage$2, false);
 			_classPrivateFieldInitSpec(this, _hasSavedState_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _monitorsActive_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _layoutMode_accessor_storage$1, "desktop");
 			_classPrivateFieldInitSpec(this, _monitorAnomalyCount_accessor_storage, 0);
 			_classPrivateFieldInitSpec(this, _collapsedOptionsOpen_accessor_storage, false);
@@ -33820,6 +33829,12 @@
 		}
 		set hasSavedState(value) {
 			_classPrivateFieldSet2(_hasSavedState_accessor_storage, this, value);
+		}
+		get monitorsActive() {
+			return _classPrivateFieldGet2(_monitorsActive_accessor_storage, this);
+		}
+		set monitorsActive(value) {
+			_classPrivateFieldSet2(_monitorsActive_accessor_storage, this, value);
 		}
 		get layoutMode() {
 			return _classPrivateFieldGet2(_layoutMode_accessor_storage$1, this);
@@ -34022,53 +34037,58 @@
           </div>
         </div>
 
-        <div class="controls-section">
-          <div class="controls-grid">
-            <div id="date-slot" class="control-date">
-              <slot name="controls"></slot>
-            </div>
-          </div>
-        </div>
+        ${this.monitorsActive ? A : b`
+              <div class="controls-section">
+                <div class="controls-grid">
+                  <div id="date-slot" class="control-date">
+                    <slot name="controls"></slot>
+                  </div>
+                </div>
+              </div>
+            `}
 
         <div
           id="page-content"
           class=${e({
 				"page-content": true,
-				"sidebar-collapsed": this.sidebarCollapsed
+				"sidebar-collapsed": this.sidebarCollapsed,
+				"monitors-active": this.monitorsActive
 			})}
         >
-          <div
-            id="sidebar-scrim"
-            class=${e({
+          ${this.monitorsActive ? A : b`
+                <div
+                  id="sidebar-scrim"
+                  class=${e({
 				"sidebar-scrim": true,
 				visible: isOverlay && !this.sidebarCollapsed
 			})}
-            @click=${this._onScrimClick}
-          ></div>
+                  @click=${this._onScrimClick}
+                ></div>
 
-          <div
-            id="page-sidebar"
-            class=${e({
+                <div
+                  id="page-sidebar"
+                  class=${e({
 				"page-sidebar": true,
 				collapsed: this.sidebarCollapsed
 			})}
-          >
-            <ha-icon-button
-              id="sidebar-toggle"
-              class="sidebar-toggle-button"
-              label=${sidebarLabel}
-              @click=${this._onSidebarToggle}
-            >
-              <ha-icon icon=${sidebarIcon}></ha-icon>
-            </ha-icon-button>
+                >
+                  <ha-icon-button
+                    id="sidebar-toggle"
+                    class="sidebar-toggle-button"
+                    label=${sidebarLabel}
+                    @click=${this._onSidebarToggle}
+                  >
+                    <ha-icon icon=${sidebarIcon}></ha-icon>
+                  </ha-icon-button>
 
-            <div id="target-slot" class="control-target">
-              <slot name="sidebar"></slot>
-            </div>
-            <div id="sidebar-options" class="sidebar-options">
-              <slot name="sidebar-options"></slot>
-            </div>
-          </div>
+                  <div id="target-slot" class="control-target">
+                    <slot name="sidebar"></slot>
+                  </div>
+                  <div id="sidebar-options" class="sidebar-options">
+                    <slot name="sidebar-options"></slot>
+                  </div>
+                </div>
+              `}
 
           <div class="content" id="content">
             <slot></slot>
@@ -34101,6 +34121,11 @@
 		type: Boolean,
 		attribute: "has-saved-state"
 	})], PanelShell.prototype, "hasSavedState", null);
+	__decorate([n$1({
+		type: Boolean,
+		reflect: true,
+		attribute: "monitors-active"
+	})], PanelShell.prototype, "monitorsActive", null);
 	__decorate([n$1({
 		type: String,
 		attribute: "layout-mode"
@@ -40551,6 +40576,7 @@
         .sidebarCollapsed=${this._sidebarCollapsed}
         .hasSavedState=${this._hasSavedPage}
         .layoutMode=${this._layoutMode}
+        .monitorsActive=${this._showMonitorsPanel}
         .monitorAnomalyCount=${this._monitorAnomalyCount}
         .collapsedOptionsOpen=${this._collapsedOptionsPopupOpen}
         @dp-shell-menu-download=${() => this._downloadSpreadsheet()}

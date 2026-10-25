@@ -6,6 +6,7 @@ type DpPanelShell = HTMLElement & {
   sidebarCollapsed: boolean;
   hasSavedState: boolean;
   layoutMode: string;
+  monitorsActive: boolean;
   monitorAnomalyCount: number;
   updateComplete: Promise<boolean>;
   syncLayoutHeight(): void;
@@ -22,10 +23,33 @@ function createElement(props: Partial<DpPanelShell> = {}): DpPanelShell {
     sidebarCollapsed: false,
     hasSavedState: false,
     layoutMode: "desktop",
+    monitorsActive: false,
     ...props,
   });
   document.body.appendChild(el);
   return el;
+}
+
+/**
+ * Counts the number of top-level grid tracks in a computed
+ * `grid-template-columns` value, ignoring whitespace inside functions such as
+ * `minmax(0, 1fr)`.
+ */
+function countTopLevelTracks(gridTemplateColumns: string): number {
+  let depth = 0;
+  let tracks = 0;
+  let inTrack = false;
+  for (const char of gridTemplateColumns.trim()) {
+    if (char === "(") depth += 1;
+    else if (char === ")") depth -= 1;
+    if (depth === 0 && /\s/.test(char)) {
+      inTrack = false;
+    } else if (!inTrack) {
+      inTrack = true;
+      tracks += 1;
+    }
+  }
+  return tracks;
 }
 
 describe("panel-shell", () => {
@@ -476,6 +500,131 @@ describe("panel-shell", () => {
           "page-menu-item[icon='mdi:bell-alert-outline']"
         )!.dispatchEvent(new CustomEvent("dp-menu-action", { bubbles: true }));
         expect(handler).toHaveBeenCalledTimes(1);
+      });
+    });
+  });
+
+  // ── Monitors active (full-page chrome hide) ──────────────────────────────────
+
+  describe("GIVEN monitorsActive=true", () => {
+    beforeEach(async () => {
+      el = createElement({ monitorsActive: true });
+      await el.updateComplete;
+    });
+
+    describe("WHEN rendered", () => {
+      it("THEN does NOT render the page-sidebar", () => {
+        expect.assertions(1);
+        expect(el.shadowRoot!.querySelector("#page-sidebar")).toBeNull();
+      });
+
+      it("THEN does NOT render the sidebar-toggle button", () => {
+        expect.assertions(1);
+        expect(el.shadowRoot!.querySelector("#sidebar-toggle")).toBeNull();
+      });
+
+      it("THEN does NOT render the controls-section", () => {
+        expect.assertions(1);
+        expect(el.shadowRoot!.querySelector(".controls-section")).toBeNull();
+      });
+
+      it("THEN does NOT render the sidebar-scrim", () => {
+        expect.assertions(1);
+        expect(el.shadowRoot!.querySelector("#sidebar-scrim")).toBeNull();
+      });
+
+      it("THEN still renders the top app bar", () => {
+        expect.assertions(1);
+        expect(
+          el.shadowRoot!.querySelector("ha-top-app-bar-fixed")
+        ).not.toBeNull();
+      });
+
+      it("THEN still renders the header monitors button", () => {
+        expect.assertions(1);
+        expect(el.shadowRoot!.querySelector(".monitors-button")).not.toBeNull();
+      });
+
+      it("THEN still renders the page-menu-button", () => {
+        expect.assertions(1);
+        expect(
+          el.shadowRoot!.querySelector("#page-menu-button")
+        ).not.toBeNull();
+      });
+
+      it("THEN the content fills a single-column page-content", async () => {
+        expect.assertions(2);
+        const pageContent =
+          el.shadowRoot!.querySelector<HTMLElement>("#page-content");
+        const monitorsColumns = countTopLevelTracks(
+          getComputedStyle(pageContent!).gridTemplateColumns
+        );
+
+        // Reference: the same shell without the monitors view uses two tracks.
+        const reference = createElement({ monitorsActive: false });
+        await reference.updateComplete;
+        const referenceColumns = countTopLevelTracks(
+          getComputedStyle(
+            reference.shadowRoot!.querySelector<HTMLElement>("#page-content")!
+          ).gridTemplateColumns
+        );
+        reference.remove();
+
+        expect(referenceColumns).toBe(2);
+        expect(monitorsColumns).toBe(1);
+      });
+    });
+  });
+
+  describe("GIVEN monitorsActive=true AND an overlay layoutMode", () => {
+    beforeEach(async () => {
+      el = createElement({ monitorsActive: true, layoutMode: "tablet" });
+      await el.updateComplete;
+    });
+
+    describe("WHEN rendered", () => {
+      it("THEN the sidebar-scrim is still suppressed", () => {
+        expect.assertions(1);
+        expect(el.shadowRoot!.querySelector("#sidebar-scrim")).toBeNull();
+      });
+    });
+  });
+
+  describe("GIVEN monitorsActive=false (default)", () => {
+    beforeEach(async () => {
+      el = createElement({ monitorsActive: false });
+      await el.updateComplete;
+    });
+
+    describe("WHEN rendered", () => {
+      it("THEN the page-sidebar, sidebar-toggle, and controls-section render", () => {
+        expect.assertions(3);
+        expect(el.shadowRoot!.querySelector("#page-sidebar")).not.toBeNull();
+        expect(el.shadowRoot!.querySelector("#sidebar-toggle")).not.toBeNull();
+        expect(
+          el.shadowRoot!.querySelector(".controls-section")
+        ).not.toBeNull();
+      });
+    });
+
+    describe("WHEN sidebarCollapsed is also true", () => {
+      beforeEach(async () => {
+        el.sidebarCollapsed = true;
+        await el.updateComplete;
+      });
+
+      it("THEN existing sidebarCollapsed behavior is unchanged", () => {
+        expect.assertions(2);
+        expect(
+          el
+            .shadowRoot!.querySelector("#page-content")!
+            .classList.contains("sidebar-collapsed")
+        ).toBe(true);
+        expect(
+          el
+            .shadowRoot!.querySelector("#page-sidebar")!
+            .classList.contains("collapsed")
+        ).toBe(true);
       });
     });
   });
