@@ -2510,11 +2510,6 @@
 	var init_fi$19 = __esmMin((() => {
 		translations$163 = {
 			"Aggregate series": "Koosteet",
-			"Add aggregate": "Lisää koostesarja",
-			"Remove aggregate": "Poista koostesarja",
-			"Aggregate operation": "Koosteen toiminto",
-			"Aggregate state": "Koosteen tila",
-			"Aggregate interval": "Koosteen jakso",
 			"Count changes to a state": "Laske muutokset tilaan",
 			"Count all state changes": "Laske kaikki tilamuutokset",
 			"Time in a state": "Aika tilassa",
@@ -2547,7 +2542,10 @@
 			"Partial period": "Osittainen jakso",
 			"Incomplete history": "Puutteellinen historia",
 			"Dashed outlines mark partial periods cut by the selected range; hatched or dotted marks show periods with gaps in recorded history.": "Katkoviivareunat osoittavat valitun aikavälin reunoilla katkenneet osittaiset jaksot; viivoitetut tai pisteviivamerkinnät osoittavat jaksot, joiden tallennetussa historiassa on aukkoja.",
-			"Counts only include activity in retained history; earlier activity is not shown.": "Laskennat sisältävät vain säilytetyn historian toiminnan; aiempaa toimintaa ei näytetä."
+			"Counts only include activity in retained history; earlier activity is not shown.": "Laskennat sisältävät vain säilytetyn historian toiminnan; aiempaa toimintaa ei näytetä.",
+			"Count events": "Laske tapahtumat",
+			Interval: "Jakso",
+			State: "Tila"
 		};
 	}));
 	//#endregion
@@ -3221,11 +3219,6 @@
 	var init_fr$19 = __esmMin((() => {
 		translations$134 = {
 			"Aggregate series": "Séries agrégées",
-			"Add aggregate": "Ajouter un agrégat",
-			"Remove aggregate": "Supprimer l'agrégat",
-			"Aggregate operation": "Opération de l'agrégat",
-			"Aggregate state": "État de l'agrégat",
-			"Aggregate interval": "Intervalle de l'agrégat",
 			"Count changes to a state": "Compter les passages à un état",
 			"Count all state changes": "Compter tous les changements d'état",
 			"Time in a state": "Durée dans un état",
@@ -3258,7 +3251,10 @@
 			"Partial period": "Période partielle",
 			"Incomplete history": "Historique incomplet",
 			"Dashed outlines mark partial periods cut by the selected range; hatched or dotted marks show periods with gaps in recorded history.": "Les contours en pointillés signalent les périodes partielles coupées par la plage sélectionnée ; les marques hachurées ou pointillées indiquent des périodes avec des lacunes dans l'historique enregistré.",
-			"Counts only include activity in retained history; earlier activity is not shown.": "Les décomptes n'incluent que l'activité de l'historique conservé ; l'activité antérieure n'est pas affichée."
+			"Counts only include activity in retained history; earlier activity is not shown.": "Les décomptes n'incluent que l'activité de l'historique conservé ; l'activité antérieure n'est pas affichée.",
+			"Count events": "Compter les événements",
+			Interval: "Intervalle",
+			State: "État"
 		};
 	}));
 	//#endregion
@@ -3932,11 +3928,6 @@
 	var init_de$19 = __esmMin((() => {
 		translations$105 = {
 			"Aggregate series": "Aggregierte Serien",
-			"Add aggregate": "Aggregat hinzufügen",
-			"Remove aggregate": "Aggregat entfernen",
-			"Aggregate operation": "Aggregatoperation",
-			"Aggregate state": "Aggregatzustand",
-			"Aggregate interval": "Aggregatintervall",
 			"Count changes to a state": "Wechsel in einen Zustand zählen",
 			"Count all state changes": "Alle Zustandswechsel zählen",
 			"Time in a state": "Zeit in einem Zustand",
@@ -3969,7 +3960,10 @@
 			"Partial period": "Teilperiode",
 			"Incomplete history": "Unvollständiger Verlauf",
 			"Dashed outlines mark partial periods cut by the selected range; hatched or dotted marks show periods with gaps in recorded history.": "Gestrichelte Umrandungen kennzeichnen Teilperioden am Rand des gewählten Bereichs; schraffierte oder gepunktete Markierungen zeigen Zeiträume mit Lücken im aufgezeichneten Verlauf.",
-			"Counts only include activity in retained history; earlier activity is not shown.": "Zählungen enthalten nur Aktivität im gespeicherten Verlauf; frühere Aktivität wird nicht angezeigt."
+			"Counts only include activity in retained history; earlier activity is not shown.": "Zählungen enthalten nur Aktivität im gespeicherten Verlauf; frühere Aktivität wird nicht angezeigt.",
+			"Count events": "Ereignisse zählen",
+			Interval: "Intervall",
+			State: "Zustand"
 		};
 	}));
 	//#endregion
@@ -4643,11 +4637,6 @@
 	var init_es$19 = __esmMin((() => {
 		translations$76 = {
 			"Aggregate series": "Series agregadas",
-			"Add aggregate": "Añadir agregado",
-			"Remove aggregate": "Quitar agregado",
-			"Aggregate operation": "Operación del agregado",
-			"Aggregate state": "Estado del agregado",
-			"Aggregate interval": "Intervalo del agregado",
 			"Count changes to a state": "Contar cambios a un estado",
 			"Count all state changes": "Contar todos los cambios de estado",
 			"Time in a state": "Tiempo en un estado",
@@ -4680,7 +4669,10 @@
 			"Partial period": "Periodo parcial",
 			"Incomplete history": "Historial incompleto",
 			"Dashed outlines mark partial periods cut by the selected range; hatched or dotted marks show periods with gaps in recorded history.": "Los contornos discontinuos marcan los periodos parciales cortados por el rango seleccionado; las marcas rayadas o punteadas indican periodos con huecos en el historial registrado.",
-			"Counts only include activity in retained history; earlier activity is not shown.": "Los recuentos solo incluyen la actividad del historial conservado; la actividad anterior no se muestra."
+			"Counts only include activity in retained history; earlier activity is not shown.": "Los recuentos solo incluyen la actividad del historial conservado; la actividad anterior no se muestra.",
+			"Count events": "Contar eventos",
+			Interval: "Intervalo",
+			State: "Estado"
 		};
 	}));
 	//#endregion
@@ -5354,11 +5346,6 @@
 	var init_pt$19 = __esmMin((() => {
 		translations$47 = {
 			"Aggregate series": "Séries agregadas",
-			"Add aggregate": "Adicionar agregado",
-			"Remove aggregate": "Remover agregado",
-			"Aggregate operation": "Operação do agregado",
-			"Aggregate state": "Estado do agregado",
-			"Aggregate interval": "Intervalo do agregado",
 			"Count changes to a state": "Contar mudanças para um estado",
 			"Count all state changes": "Contar todas as mudanças de estado",
 			"Time in a state": "Tempo num estado",
@@ -5391,7 +5378,10 @@
 			"Partial period": "Período parcial",
 			"Incomplete history": "Histórico incompleto",
 			"Dashed outlines mark partial periods cut by the selected range; hatched or dotted marks show periods with gaps in recorded history.": "Os contornos tracejados indicam períodos parciais cortados pelo intervalo selecionado; as marcas tracejadas finas ou pontilhadas indicam períodos com lacunas no histórico registado.",
-			"Counts only include activity in retained history; earlier activity is not shown.": "As contagens só incluem a atividade do histórico retido; a atividade anterior não é mostrada."
+			"Counts only include activity in retained history; earlier activity is not shown.": "As contagens só incluem a atividade do histórico retido; a atividade anterior não é mostrada.",
+			"Count events": "Contar eventos",
+			Interval: "Intervalo",
+			State: "Estado"
 		};
 	}));
 	//#endregion
@@ -6065,11 +6055,6 @@
 	var init_zh_hans$19 = __esmMin((() => {
 		translations$18 = {
 			"Aggregate series": "聚合序列",
-			"Add aggregate": "添加聚合",
-			"Remove aggregate": "移除聚合",
-			"Aggregate operation": "聚合操作",
-			"Aggregate state": "聚合状态",
-			"Aggregate interval": "聚合间隔",
 			"Count changes to a state": "统计变为某状态的次数",
 			"Count all state changes": "统计所有状态变化次数",
 			"Time in a state": "处于某状态的时长",
@@ -6102,7 +6087,10 @@
 			"Partial period": "部分时段",
 			"Incomplete history": "历史记录不完整",
 			"Dashed outlines mark partial periods cut by the selected range; hatched or dotted marks show periods with gaps in recorded history.": "虚线轮廓表示被所选范围截断的部分时段；阴影或点状标记表示已记录历史中存在缺口的时段。",
-			"Counts only include activity in retained history; earlier activity is not shown.": "计数仅包含保留历史中的活动；更早的活动不会显示。"
+			"Counts only include activity in retained history; earlier activity is not shown.": "计数仅包含保留历史中的活动；更早的活动不会显示。",
+			"Count events": "统计事件数",
+			Interval: "间隔",
+			State: "状态"
 		};
 	}));
 	//#endregion
@@ -8829,7 +8817,7 @@
 	//#region custom_components/hass_datapoints/src/lib/domain/aggregation/calculate.ts
 	var MINUTE_MS$1 = 6e4;
 	var UNKNOWN_STATES$1 = /* @__PURE__ */ new Set(["unknown", "unavailable"]);
-	var CUMULATIVE_OPERATIONS = /* @__PURE__ */ new Set([
+	var CUMULATIVE_OPERATIONS$1 = /* @__PURE__ */ new Set([
 		"consumption",
 		"transition_count",
 		"state_duration",
@@ -9043,7 +9031,7 @@
 	}
 	function calculateAggregate(input) {
 		const { definition } = input;
-		const cumulative = definition.mode === "cumulative" && CUMULATIVE_OPERATIONS.has(definition.operation);
+		const cumulative = definition.mode === "cumulative" && CUMULATIVE_OPERATIONS$1.has(definition.operation);
 		if (cumulative && definition.resetOnZoom && input.zoom) {
 			const start = Math.max(input.range.start, input.zoom.start);
 			const end = Math.min(input.range.end, input.zoom.end);
@@ -22251,7 +22239,7 @@
 	var _title_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _subtitle_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _collapsible_accessor_storage$5 = /* @__PURE__ */ new WeakMap();
-	var _open_accessor_storage$9 = /* @__PURE__ */ new WeakMap();
+	var _open_accessor_storage$10 = /* @__PURE__ */ new WeakMap();
 	var _i18n_accessor_storage$6 = /* @__PURE__ */ new WeakMap();
 	var SidebarSectionHeader = class extends i$2 {
 		constructor(..._args) {
@@ -22259,7 +22247,7 @@
 			_classPrivateFieldInitSpec(this, _title_accessor_storage$1, "");
 			_classPrivateFieldInitSpec(this, _subtitle_accessor_storage$1, "");
 			_classPrivateFieldInitSpec(this, _collapsible_accessor_storage$5, false);
-			_classPrivateFieldInitSpec(this, _open_accessor_storage$9, true);
+			_classPrivateFieldInitSpec(this, _open_accessor_storage$10, true);
 			_classPrivateFieldInitSpec(this, _i18n_accessor_storage$6, DEFAULT_I18N$5);
 		}
 		get title() {
@@ -22281,10 +22269,10 @@
 			_classPrivateFieldSet2(_collapsible_accessor_storage$5, this, value);
 		}
 		get open() {
-			return _classPrivateFieldGet2(_open_accessor_storage$9, this);
+			return _classPrivateFieldGet2(_open_accessor_storage$10, this);
 		}
 		set open(value) {
-			_classPrivateFieldSet2(_open_accessor_storage$9, this, value);
+			_classPrivateFieldSet2(_open_accessor_storage$10, this, value);
 		}
 		get i18n() {
 			return _classPrivateFieldGet2(_i18n_accessor_storage$6, this);
@@ -22356,7 +22344,7 @@
 	var _title_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _subtitle_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _collapsible_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
-	var _open_accessor_storage$8 = /* @__PURE__ */ new WeakMap();
+	var _open_accessor_storage$9 = /* @__PURE__ */ new WeakMap();
 	var _i18n_accessor_storage$5 = /* @__PURE__ */ new WeakMap();
 	var SidebarOptionsSection = class extends i$2 {
 		constructor(..._args) {
@@ -22364,7 +22352,7 @@
 			_classPrivateFieldInitSpec(this, _title_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _subtitle_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _collapsible_accessor_storage$4, false);
-			_classPrivateFieldInitSpec(this, _open_accessor_storage$8, true);
+			_classPrivateFieldInitSpec(this, _open_accessor_storage$9, true);
 			_classPrivateFieldInitSpec(this, _i18n_accessor_storage$5, EMPTY_I18N);
 		}
 		get title() {
@@ -22386,10 +22374,10 @@
 			_classPrivateFieldSet2(_collapsible_accessor_storage$4, this, value);
 		}
 		get open() {
-			return _classPrivateFieldGet2(_open_accessor_storage$8, this);
+			return _classPrivateFieldGet2(_open_accessor_storage$9, this);
 		}
 		set open(value) {
-			_classPrivateFieldSet2(_open_accessor_storage$8, this, value);
+			_classPrivateFieldSet2(_open_accessor_storage$9, this, value);
 		}
 		get i18n() {
 			return _classPrivateFieldGet2(_i18n_accessor_storage$5, this);
@@ -22527,7 +22515,7 @@
 	var _SidebarDatapointsSection;
 	var _datapointScope_accessor_storage$3;
 	var _collapsible_accessor_storage$3;
-	var _open_accessor_storage$7;
+	var _open_accessor_storage$8;
 	var DATAPOINT_SCOPE_OPTIONS = [
 		{
 			value: "linked",
@@ -22542,12 +22530,12 @@
 			label: "Hide datapoints"
 		}
 	];
-	var SidebarDatapointsSection = (_datapointScope_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$7 = /* @__PURE__ */ new WeakMap(), _SidebarDatapointsSection = class SidebarDatapointsSection extends i$2 {
+	var SidebarDatapointsSection = (_datapointScope_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$8 = /* @__PURE__ */ new WeakMap(), _SidebarDatapointsSection = class SidebarDatapointsSection extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _datapointScope_accessor_storage$3, "linked");
 			_classPrivateFieldInitSpec(this, _collapsible_accessor_storage$3, false);
-			_classPrivateFieldInitSpec(this, _open_accessor_storage$7, true);
+			_classPrivateFieldInitSpec(this, _open_accessor_storage$8, true);
 		}
 		get datapointScope() {
 			return _classPrivateFieldGet2(_datapointScope_accessor_storage$3, this);
@@ -22562,10 +22550,10 @@
 			_classPrivateFieldSet2(_collapsible_accessor_storage$3, this, value);
 		}
 		get open() {
-			return _classPrivateFieldGet2(_open_accessor_storage$7, this);
+			return _classPrivateFieldGet2(_open_accessor_storage$8, this);
 		}
 		set open(value) {
-			_classPrivateFieldSet2(_open_accessor_storage$7, this, value);
+			_classPrivateFieldSet2(_open_accessor_storage$8, this, value);
 		}
 		_onScopeChange(e) {
 			this.dispatchEvent(new CustomEvent("dp-scope-change", {
@@ -22689,14 +22677,14 @@
 	var _showIcons_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _showLines_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _collapsible_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
-	var _open_accessor_storage$6 = /* @__PURE__ */ new WeakMap();
+	var _open_accessor_storage$7 = /* @__PURE__ */ new WeakMap();
 	var SidebarDatapointDisplaySection = (_SidebarDatapointDisplaySection = class SidebarDatapointDisplaySection extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _showIcons_accessor_storage$2, true);
 			_classPrivateFieldInitSpec(this, _showLines_accessor_storage$2, true);
 			_classPrivateFieldInitSpec(this, _collapsible_accessor_storage$2, false);
-			_classPrivateFieldInitSpec(this, _open_accessor_storage$6, true);
+			_classPrivateFieldInitSpec(this, _open_accessor_storage$7, true);
 		}
 		get showIcons() {
 			return _classPrivateFieldGet2(_showIcons_accessor_storage$2, this);
@@ -22717,10 +22705,10 @@
 			_classPrivateFieldSet2(_collapsible_accessor_storage$2, this, value);
 		}
 		get open() {
-			return _classPrivateFieldGet2(_open_accessor_storage$6, this);
+			return _classPrivateFieldGet2(_open_accessor_storage$7, this);
 		}
 		set open(value) {
-			_classPrivateFieldSet2(_open_accessor_storage$6, this, value);
+			_classPrivateFieldSet2(_open_accessor_storage$7, this, value);
 		}
 		_onCheckboxChange(e) {
 			const { value: name, checked } = e.detail;
@@ -22804,7 +22792,7 @@
 	var _showCorrelatedAnomalies_accessor_storage$3;
 	var _anyAnomaliesEnabled_accessor_storage$2;
 	var _collapsible_accessor_storage$1;
-	var _open_accessor_storage$5;
+	var _open_accessor_storage$6;
 	var ANALYSIS_ANOMALY_OVERLAP_MODE_OPTIONS$1 = [{
 		value: "all",
 		label: "Show all anomalies"
@@ -22812,14 +22800,14 @@
 		value: "only",
 		label: "Overlaps only"
 	}];
-	var SidebarAnalysisSection = (_anomalyOverlapMode_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showCorrelatedAnomalies_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _anyAnomaliesEnabled_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$5 = /* @__PURE__ */ new WeakMap(), _SidebarAnalysisSection = class SidebarAnalysisSection extends i$2 {
+	var SidebarAnalysisSection = (_anomalyOverlapMode_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showCorrelatedAnomalies_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _anyAnomaliesEnabled_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$6 = /* @__PURE__ */ new WeakMap(), _SidebarAnalysisSection = class SidebarAnalysisSection extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _anomalyOverlapMode_accessor_storage$2, "all");
 			_classPrivateFieldInitSpec(this, _showCorrelatedAnomalies_accessor_storage$3, false);
 			_classPrivateFieldInitSpec(this, _anyAnomaliesEnabled_accessor_storage$2, false);
 			_classPrivateFieldInitSpec(this, _collapsible_accessor_storage$1, false);
-			_classPrivateFieldInitSpec(this, _open_accessor_storage$5, true);
+			_classPrivateFieldInitSpec(this, _open_accessor_storage$6, true);
 		}
 		get anomalyOverlapMode() {
 			return _classPrivateFieldGet2(_anomalyOverlapMode_accessor_storage$2, this);
@@ -22846,10 +22834,10 @@
 			_classPrivateFieldSet2(_collapsible_accessor_storage$1, this, value);
 		}
 		get open() {
-			return _classPrivateFieldGet2(_open_accessor_storage$5, this);
+			return _classPrivateFieldGet2(_open_accessor_storage$6, this);
 		}
 		set open(value) {
-			_classPrivateFieldSet2(_open_accessor_storage$5, this, value);
+			_classPrivateFieldSet2(_open_accessor_storage$6, this, value);
 		}
 		_localizedOptions(options) {
 			return options.map((opt) => ({
@@ -22983,7 +22971,7 @@
 	var _yAxisMode_accessor_storage$2;
 	var _hoverSnapMode_accessor_storage$2;
 	var _collapsible_accessor_storage;
-	var _open_accessor_storage$4;
+	var _open_accessor_storage$5;
 	var DATA_GAP_THRESHOLD_OPTIONS$1 = [
 		{
 			value: "auto",
@@ -23043,7 +23031,7 @@
 		value: "snap_to_data_points",
 		label: "Snap to data points"
 	}];
-	var SidebarChartDisplaySection = (_showTooltips_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showHoverGuides_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showDataGaps_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _dataGapThreshold_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _yAxisMode_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _hoverSnapMode_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$4 = /* @__PURE__ */ new WeakMap(), _SidebarChartDisplaySection = class SidebarChartDisplaySection extends i$2 {
+	var SidebarChartDisplaySection = (_showTooltips_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showHoverGuides_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _showDataGaps_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _dataGapThreshold_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _yAxisMode_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _hoverSnapMode_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _collapsible_accessor_storage = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$5 = /* @__PURE__ */ new WeakMap(), _SidebarChartDisplaySection = class SidebarChartDisplaySection extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _showTooltips_accessor_storage$2, true);
@@ -23053,7 +23041,7 @@
 			_classPrivateFieldInitSpec(this, _yAxisMode_accessor_storage$2, "combined");
 			_classPrivateFieldInitSpec(this, _hoverSnapMode_accessor_storage$2, "follow_series");
 			_classPrivateFieldInitSpec(this, _collapsible_accessor_storage, false);
-			_classPrivateFieldInitSpec(this, _open_accessor_storage$4, true);
+			_classPrivateFieldInitSpec(this, _open_accessor_storage$5, true);
 		}
 		get showTooltips() {
 			return _classPrivateFieldGet2(_showTooltips_accessor_storage$2, this);
@@ -23098,10 +23086,10 @@
 			_classPrivateFieldSet2(_collapsible_accessor_storage, this, value);
 		}
 		get open() {
-			return _classPrivateFieldGet2(_open_accessor_storage$4, this);
+			return _classPrivateFieldGet2(_open_accessor_storage$5, this);
 		}
 		set open(value) {
-			_classPrivateFieldSet2(_open_accessor_storage$4, this, value);
+			_classPrivateFieldSet2(_open_accessor_storage$5, this, value);
 		}
 		_localizedOptions(options) {
 			return options.map((opt) => ({
@@ -24896,74 +24884,38 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-aggregate-group/analysis-aggregate-group.styles.ts
 	var styles$39 = i$5`
-  .heading {
-    font-size: 0.84rem;
-    font-weight: 600;
-    color: var(--primary-text-color);
-    margin-bottom: var(--dp-spacing-xs);
-  }
-
-  .list {
+  .method-list {
     display: grid;
-    gap: var(--dp-spacing-sm);
+    gap: calc(var(--dp-spacing-sm, 8px) * 0.75);
   }
 
-  .definition {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--dp-spacing-sm);
-    padding: var(--dp-spacing-sm);
-    border-radius: 10px;
-    border: 1px solid
-      color-mix(
-        in srgb,
-        var(--divider-color, rgba(0, 0, 0, 0.12)) 88%,
-        transparent
-      );
-  }
-
-  .button {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--dp-spacing-xs);
-    padding: var(--dp-spacing-xs) var(--dp-spacing-sm);
-    border-radius: 8px;
-    border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
-    background: transparent;
-    color: var(--primary-text-color);
-    font: inherit;
-    font-size: 0.8rem;
-    cursor: pointer;
-  }
-
-  .button:focus-visible {
-    outline: 2px solid var(--primary-color, #03a9f4);
-    outline-offset: 2px;
-  }
-
-  .remove {
-    margin-left: auto;
-  }
-
-  .add {
-    margin-top: var(--dp-spacing-sm);
+  .method-item {
+    display: grid;
+    gap: 6px;
   }
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-aggregate-group/analysis-aggregate-group.ts
 	var _AnalysisAggregateGroup;
-	var _deviceClass_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _variant_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _operations_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _eventTypes_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var AnalysisAggregateGroup = (_AnalysisAggregateGroup = class AnalysisAggregateGroup extends AnalysisGroupMixin(i$2) {
+	var _deviceClass_accessor_storage;
+	var _variant_accessor_storage;
+	var _operations_accessor_storage;
+	var _eventTypes_accessor_storage;
+	var _open_accessor_storage$4;
+	var CUMULATIVE_OPERATIONS = [
+		"consumption",
+		"transition_count",
+		"state_duration",
+		"event_count"
+	];
+	var AnalysisAggregateGroup = (_deviceClass_accessor_storage = /* @__PURE__ */ new WeakMap(), _variant_accessor_storage = /* @__PURE__ */ new WeakMap(), _operations_accessor_storage = /* @__PURE__ */ new WeakMap(), _eventTypes_accessor_storage = /* @__PURE__ */ new WeakMap(), _open_accessor_storage$4 = /* @__PURE__ */ new WeakMap(), _AnalysisAggregateGroup = class AnalysisAggregateGroup extends AnalysisGroupMixin(i$2) {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _deviceClass_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _variant_accessor_storage, "binary");
 			_classPrivateFieldInitSpec(this, _operations_accessor_storage, []);
 			_classPrivateFieldInitSpec(this, _eventTypes_accessor_storage, []);
+			_classPrivateFieldInitSpec(this, _open_accessor_storage$4, false);
 		}
 		get deviceClass() {
 			return _classPrivateFieldGet2(_deviceClass_accessor_storage, this);
@@ -24989,83 +24941,104 @@
 		set eventTypes(value) {
 			_classPrivateFieldSet2(_eventTypes_accessor_storage, this, value);
 		}
+		get _open() {
+			return _classPrivateFieldGet2(_open_accessor_storage$4, this);
+		}
+		set _open(value) {
+			_classPrivateFieldSet2(_open_accessor_storage$4, this, value);
+		}
 		get _definitions() {
 			return this.analysis.aggregates ?? [];
 		}
 		_commit(next) {
 			this._emit("aggregates", next);
 		}
+		_choices() {
+			if (this.variant === "event") return [{
+				key: "event_count",
+				label: msg("Count events")
+			}];
+			if (this.variant === "measurement") return NUMERIC_AGGREGATE_OPERATIONS.filter((o) => this.operations.includes(o.value)).map((o) => ({
+				key: o.value,
+				label: msg(o.label)
+			}));
+			return BINARY_AGGREGATE_KINDS.map((k) => ({
+				key: k.value,
+				label: msg(k.label)
+			}));
+		}
+		_keyOf(definition) {
+			if (this.variant === "binary") return getBinaryAggregateKind(definition);
+			return definition.operation;
+		}
+		_definitionFor(key) {
+			return this._definitions.find((d) => this._keyOf(d) === key);
+		}
+		_defaultState() {
+			return getBinaryStateOptions(this.deviceClass)[0].value;
+		}
+		_create(key) {
+			const ids = this._definitions.map((d) => d.id);
+			let created;
+			if (this.variant === "event") created = createEventAggregate(ids);
+			else if (this.variant === "measurement") created = createMeasurementAggregate(ids, key);
+			else created = applyBinaryAggregateKind(createBinaryAggregate(ids, this._defaultState()), key, this._defaultState());
+			return {
+				...created,
+				id: ids.includes(key) ? created.id : key
+			};
+		}
+		_onGroupChange(e) {
+			const checked = e.detail.checked;
+			this._open = checked;
+			if (!checked) this._commit([]);
+		}
+		_onToggle(key, checked) {
+			this._commit(checked ? [...this._definitions, this._create(key)] : this._definitions.filter((d) => this._keyOf(d) !== key));
+		}
 		_update(id, patch) {
 			this._commit(this._definitions.map((d) => d.id === id ? patch(d) : d));
-		}
-		_onAdd() {
-			if (this.variant === "event") {
-				this._commit([...this._definitions, createEventAggregate(this._definitions.map((d) => d.id))]);
-				return;
-			}
-			if (this.variant === "measurement") {
-				const ids = this._definitions.map((d) => d.id);
-				this._commit([...this._definitions, createMeasurementAggregate(ids, this.operations[0] ?? "mean")]);
-				return;
-			}
-			const defaultState = getBinaryStateOptions(this.deviceClass)[0].value;
-			this._commit([...this._definitions, createBinaryAggregate(this._definitions.map((d) => d.id), defaultState)]);
-		}
-		_onRemove(id) {
-			this._commit(this._definitions.filter((d) => d.id !== id));
 		}
 		_selectValue(e) {
 			return e.detail.value;
 		}
-		_renderMeasurementDefinition(definition) {
-			const available = NUMERIC_AGGREGATE_OPERATIONS.filter((o) => this.operations.includes(o.value) || o.value === definition.operation);
+		_renderIntervalField(definition) {
 			return b`
-      <div
-        class="definition"
-        role="group"
-        aria-label=${msg("Aggregate series")}
-      >
-        <inline-select
-          .value=${definition.operation}
-          .options=${this._localizedOptions(available)}
-          aria-label=${msg("Aggregate operation")}
-          @dp-change=${(e) => this._update(definition.id, (d) => ({
-				...d,
-				operation: this._selectValue(e)
-			}))}
-        ></inline-select>
+      <label class="field">
+        <span class="field-label">${msg("Interval")}</span>
         <inline-select
           .value=${definition.interval}
           .options=${this._localizedOptions(AGGREGATE_INTERVAL_OPTIONS)}
-          aria-label=${msg("Aggregate interval")}
           @dp-change=${(e) => this._update(definition.id, (d) => ({
 				...d,
 				interval: this._selectValue(e)
 			}))}
         ></inline-select>
-        ${this._renderCumulativeControls(definition)}
-        <button
-          type="button"
-          class="button remove"
-          aria-label=${msg("Remove aggregate")}
-          @click=${() => this._onRemove(definition.id)}
-        >
-          <ha-icon icon="mdi:close"></ha-icon>
-        </button>
-      </div>
+      </label>
+    `;
+		}
+		_renderStateField(definition) {
+			const options = getBinaryStateOptions(this.deviceClass).map((o) => ({
+				value: o.value,
+				label: msg(o.label)
+			}));
+			return b`
+      <label class="field">
+        <span class="field-label">${msg("State")}</span>
+        <inline-select
+          .value=${definition.states?.[0] ?? options[0].value}
+          .options=${options}
+          @dp-change=${(e) => this._update(definition.id, (d) => ({
+				...d,
+				states: [this._selectValue(e)]
+			}))}
+        ></inline-select>
+      </label>
     `;
 		}
 		/** Counts, durations and consumption can accumulate; percentages cannot. */
-		_canAccumulate(definition) {
-			return [
-				"consumption",
-				"transition_count",
-				"state_duration",
-				"event_count"
-			].includes(definition.operation);
-		}
-		_renderCumulativeControls(definition) {
-			if (!this._canAccumulate(definition)) return A;
+		_renderCumulativeFields(definition) {
+			if (!CUMULATIVE_OPERATIONS.includes(definition.operation)) return A;
 			const cumulative = definition.mode === "cumulative";
 			return b`
       <label class="option">
@@ -25102,120 +25075,74 @@
 				eventTypes: next
 			}));
 		}
-		_renderEventDefinition(definition) {
+		_renderEventTypeFields(definition) {
 			const selected = definition.eventTypes ?? [];
 			const allTypes = selected.length === 0;
 			return b`
-      <div
-        class="definition"
-        role="group"
-        aria-label=${msg("Aggregate series")}
-      >
-        <inline-select
-          .value=${definition.interval}
-          .options=${this._localizedOptions(AGGREGATE_INTERVAL_OPTIONS)}
-          aria-label=${msg("Aggregate interval")}
-          @dp-change=${(e) => this._update(definition.id, (d) => ({
-				...d,
-				interval: this._selectValue(e)
-			}))}
-        ></inline-select>
-        <label class="option">
-          <input
-            type="checkbox"
-            class="all-types"
-            .checked=${allTypes}
-            @change=${(e) => this._update(definition.id, (d) => ({
+      <label class="option">
+        <input
+          type="checkbox"
+          class="all-types"
+          .checked=${allTypes}
+          @change=${(e) => this._update(definition.id, (d) => ({
 				...d,
 				eventTypes: e.target.checked ? [] : this.eventTypes.slice(0, 1)
 			}))}
-          />
-          <span>${msg("All event types")}</span>
-        </label>
-        ${allTypes ? A : this.eventTypes.map((type) => b`
-                <label class="option">
-                  <input
-                    type="checkbox"
-                    class="event-type"
-                    .checked=${selected.includes(type)}
-                    @change=${(e) => this._onEventTypeToggle(definition, type, e.target.checked)}
-                  />
-                  <span>${type}</span>
-                </label>
-              `)}
-        ${this._renderCumulativeControls(definition)}
-        <button
-          type="button"
-          class="button remove"
-          aria-label=${msg("Remove aggregate")}
-          @click=${() => this._onRemove(definition.id)}
-        >
-          <ha-icon icon="mdi:close"></ha-icon>
-        </button>
-      </div>
+        />
+        <span>${msg("All event types")}</span>
+      </label>
+      ${allTypes ? A : this.eventTypes.map((type) => b`
+              <label class="option">
+                <input
+                  type="checkbox"
+                  class="event-type"
+                  .checked=${selected.includes(type)}
+                  @change=${(e) => this._onEventTypeToggle(definition, type, e.target.checked)}
+                />
+                <span>${type}</span>
+              </label>
+            `)}
     `;
 		}
-		_renderDefinition(definition) {
-			if (this.variant === "event") return this._renderEventDefinition(definition);
-			if (this.variant === "measurement") return this._renderMeasurementDefinition(definition);
-			const kind = getBinaryAggregateKind(definition);
-			const stateOptions = getBinaryStateOptions(this.deviceClass).map((o) => ({
-				value: o.value,
-				label: msg(o.label)
-			}));
-			const showState = kind !== "all_changes";
+		_renderSubopts(key, definition) {
 			return b`
-      <div
-        class="definition"
-        role="group"
-        aria-label=${msg("Aggregate series")}
-      >
-        <inline-select
-          .value=${kind}
-          .options=${this._localizedOptions(BINARY_AGGREGATE_KINDS)}
-          aria-label=${msg("Aggregate operation")}
-          @dp-change=${(e) => this._update(definition.id, (d) => applyBinaryAggregateKind(d, this._selectValue(e), stateOptions[0].value))}
-        ></inline-select>
-        ${showState ? b`<inline-select
-              .value=${definition.states?.[0] ?? stateOptions[0].value}
-              .options=${stateOptions}
-              aria-label=${msg("Aggregate state")}
-              @dp-change=${(e) => this._update(definition.id, (d) => ({
-				...d,
-				states: [this._selectValue(e)]
-			}))}
-            ></inline-select>` : A}
-        <inline-select
-          .value=${definition.interval}
-          .options=${this._localizedOptions(AGGREGATE_INTERVAL_OPTIONS)}
-          aria-label=${msg("Aggregate interval")}
-          @dp-change=${(e) => this._update(definition.id, (d) => ({
-				...d,
-				interval: this._selectValue(e)
-			}))}
-        ></inline-select>
-        ${this._renderCumulativeControls(definition)}
-        <button
-          type="button"
-          class="button remove"
-          aria-label=${msg("Remove aggregate")}
-          @click=${() => this._onRemove(definition.id)}
-        >
-          <ha-icon icon="mdi:close"></ha-icon>
-        </button>
-      </div>
+      <analysis-method-subopts>
+        ${this.variant === "binary" && key !== "all_changes" ? this._renderStateField(definition) : A}
+        ${this._renderIntervalField(definition)}
+        ${this.variant === "event" ? this._renderEventTypeFields(definition) : A}
+        ${this._renderCumulativeFields(definition)}
+      </analysis-method-subopts>
     `;
 		}
 		render() {
+			const choices = this._choices();
 			return b`
-      <div class="heading">${msg("Aggregate series")}</div>
-      <div class="list">
-        ${this._definitions.map((d) => this._renderDefinition(d))}
-      </div>
-      <button type="button" class="button add" @click=${this._onAdd}>
-        <ha-icon icon="mdi:plus"></ha-icon>
-        ${msg("Add aggregate")}
-      </button>
+      <analysis-group
+        .label=${msg("Aggregate series")}
+        .checked=${this._open || this._definitions.length > 0}
+        @dp-group-change=${this._onGroupChange}
+      >
+        <div class="method-list">
+          ${choices.map((choice) => {
+				const definition = this._definitionFor(choice.key);
+				return b`
+              <div class="method-item">
+                <label class="option">
+                  <input
+                    type="checkbox"
+                    class="aggregate-choice"
+                    data-key=${choice.key}
+                    .checked=${definition !== void 0}
+                    @change=${(e) => this._onToggle(choice.key, e.target.checked)}
+                  />
+                  <span>${choice.label}</span>
+                </label>
+                ${definition ? this._renderSubopts(choice.key, definition) : A}
+              </div>
+            `;
+			})}
+        </div>
+      </analysis-group>
     `;
 		}
 	}, _defineProperty(_AnalysisAggregateGroup, "styles", [sharedStyles, styles$39]), _AnalysisAggregateGroup);
@@ -25232,6 +25159,7 @@
 		type: Array,
 		attribute: false
 	})], AnalysisAggregateGroup.prototype, "eventTypes", null);
+	__decorate([r$2()], AnalysisAggregateGroup.prototype, "_open", null);
 	AnalysisAggregateGroup = __decorate([localized()], AnalysisAggregateGroup);
 	customElements.define("analysis-aggregate-group", AnalysisAggregateGroup);
 	//#endregion

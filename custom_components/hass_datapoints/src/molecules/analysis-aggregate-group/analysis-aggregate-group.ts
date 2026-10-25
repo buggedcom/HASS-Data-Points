@@ -1,5 +1,5 @@
-import { LitElement, html, nothing } from "lit";
-import { property } from "lit/decorators.js";
+import { LitElement, html, nothing, type TemplateResult } from "lit";
+import { property, state } from "lit/decorators.js";
 import { localized, msg } from "@/lib/i18n/localize";
 
 import { AnalysisGroupMixin } from "../analysis-group-shared/analysis-group.mixin";
@@ -8,9 +8,8 @@ import { styles } from "./analysis-aggregate-group.styles";
 import {
   AGGREGATE_INTERVAL_OPTIONS,
   BINARY_AGGREGATE_KINDS,
-  type BinaryAggregateKind,
-  applyBinaryAggregateKind,
   NUMERIC_AGGREGATE_OPERATIONS,
+  applyBinaryAggregateKind,
   createBinaryAggregate,
   createEventAggregate,
   createMeasurementAggregate,
@@ -22,10 +21,27 @@ import type {
   AggregateInterval,
   AggregateOperation,
 } from "@/lib/domain/aggregation/types";
+import "@/atoms/analysis/analysis-group/analysis-group";
+import "@/atoms/analysis/analysis-method-subopts/analysis-method-subopts";
 import "@/atoms/form/inline-select/inline-select";
 
+interface AggregateChoice {
+  /** Stable key; also the id of the definition this choice creates. */
+  key: string;
+  label: string;
+}
+
+const CUMULATIVE_OPERATIONS: AggregateOperation[] = [
+  "consumption",
+  "transition_count",
+  "state_duration",
+  "event_count",
+];
+
 /**
- * Add, edit and remove aggregate series definitions for a binary row.
+ * Aggregate series for a row. Like the anomaly group, each aggregate is a
+ * checkbox and its settings (state, interval, cumulative, ...) nest beneath it
+ * while it is checked. One definition exists per checked choice.
  * @fires dp-group-analysis-change - `{ entityId, key: "aggregates", value: AggregateDefinition[] }` — the full next list of definitions
  */
 @localized()
@@ -34,17 +50,20 @@ export class AnalysisAggregateGroup extends AnalysisGroupMixin(LitElement) {
   @property({ type: String, attribute: "device-class" })
   accessor deviceClass: string = "";
 
-  /** `binary` offers state operations; `measurement` numeric summaries; `event` event counts. */
+  /** `binary` offers state operations; `measurement` numeric ones; `event` event counts. */
   @property({ type: String })
   accessor variant: "binary" | "measurement" | "event" = "binary";
 
-  /** Measurement operations suggested for the entity; the user still chooses. */
+  /** Numeric operations suggested for the entity; the user still chooses. */
   @property({ type: Array, attribute: false })
   accessor operations: AggregateOperation[] = [];
 
   /** Event types the entity can emit (HA `event_types` attribute). */
   @property({ type: Array, attribute: false })
   accessor eventTypes: string[] = [];
+
+  /** Keeps the group open right after it is switched on, before any choice is checked. */
+  @state() private accessor _open = false;
 
   static styles = [sharedStyles, styles];
 
@@ -56,6 +75,69 @@ export class AnalysisAggregateGroup extends AnalysisGroupMixin(LitElement) {
     this._emit("aggregates", next);
   }
 
+  private _choices(): AggregateChoice[] {
+    if (this.variant === "event") {
+      return [{ key: "event_count", label: msg("Count events") }];
+    }
+    if (this.variant === "measurement") {
+      return NUMERIC_AGGREGATE_OPERATIONS.filter((o) =>
+        this.operations.includes(o.value)
+      ).map((o) => ({ key: o.value, label: msg(o.label) }));
+    }
+    return BINARY_AGGREGATE_KINDS.map((k) => ({
+      key: k.value,
+      label: msg(k.label),
+    }));
+  }
+
+  private _keyOf(definition: AggregateDefinition): string {
+    if (this.variant === "binary") {
+      return getBinaryAggregateKind(definition);
+    }
+    return definition.operation;
+  }
+
+  private _definitionFor(key: string): AggregateDefinition | undefined {
+    return this._definitions.find((d) => this._keyOf(d) === key);
+  }
+
+  private _defaultState(): string {
+    return getBinaryStateOptions(this.deviceClass)[0].value;
+  }
+
+  private _create(key: string): AggregateDefinition {
+    const ids = this._definitions.map((d) => d.id);
+    let created: AggregateDefinition;
+    if (this.variant === "event") {
+      created = createEventAggregate(ids);
+    } else if (this.variant === "measurement") {
+      created = createMeasurementAggregate(ids, key as AggregateOperation);
+    } else {
+      created = applyBinaryAggregateKind(
+        createBinaryAggregate(ids, this._defaultState()),
+        key as ReturnType<typeof getBinaryAggregateKind>,
+        this._defaultState()
+      );
+    }
+    return { ...created, id: ids.includes(key) ? created.id : key };
+  }
+
+  private _onGroupChange(e: CustomEvent) {
+    const checked = (e.detail as { checked: boolean }).checked;
+    this._open = checked;
+    if (!checked) {
+      this._commit([]);
+    }
+  }
+
+  private _onToggle(key: string, checked: boolean) {
+    this._commit(
+      checked
+        ? [...this._definitions, this._create(key)]
+        : this._definitions.filter((d) => this._keyOf(d) !== key)
+    );
+  }
+
   private _update(
     id: string,
     patch: (d: AggregateDefinition) => AggregateDefinition
@@ -63,96 +145,51 @@ export class AnalysisAggregateGroup extends AnalysisGroupMixin(LitElement) {
     this._commit(this._definitions.map((d) => (d.id === id ? patch(d) : d)));
   }
 
-  private _onAdd() {
-    if (this.variant === "event") {
-      this._commit([
-        ...this._definitions,
-        createEventAggregate(this._definitions.map((d) => d.id)),
-      ]);
-      return;
-    }
-    if (this.variant === "measurement") {
-      const ids = this._definitions.map((d) => d.id);
-      this._commit([
-        ...this._definitions,
-        createMeasurementAggregate(ids, this.operations[0] ?? "mean"),
-      ]);
-      return;
-    }
-    const defaultState = getBinaryStateOptions(this.deviceClass)[0].value;
-    this._commit([
-      ...this._definitions,
-      createBinaryAggregate(
-        this._definitions.map((d) => d.id),
-        defaultState
-      ),
-    ]);
-  }
-
-  private _onRemove(id: string) {
-    this._commit(this._definitions.filter((d) => d.id !== id));
-  }
-
   private _selectValue(e: Event): string {
     return (e as CustomEvent<{ type: "select"; value: string }>).detail.value;
   }
 
-  private _renderMeasurementDefinition(definition: AggregateDefinition) {
-    const available = NUMERIC_AGGREGATE_OPERATIONS.filter(
-      (o) =>
-        this.operations.includes(o.value) || o.value === definition.operation
-    );
+  private _renderIntervalField(definition: AggregateDefinition) {
     return html`
-      <div
-        class="definition"
-        role="group"
-        aria-label=${msg("Aggregate series")}
-      >
-        <inline-select
-          .value=${definition.operation}
-          .options=${this._localizedOptions(available)}
-          aria-label=${msg("Aggregate operation")}
-          @dp-change=${(e: Event) =>
-            this._update(definition.id, (d) => ({
-              ...d,
-              operation: this._selectValue(e) as AggregateOperation,
-            }))}
-        ></inline-select>
+      <label class="field">
+        <span class="field-label">${msg("Interval")}</span>
         <inline-select
           .value=${definition.interval}
           .options=${this._localizedOptions(AGGREGATE_INTERVAL_OPTIONS)}
-          aria-label=${msg("Aggregate interval")}
           @dp-change=${(e: Event) =>
             this._update(definition.id, (d) => ({
               ...d,
               interval: this._selectValue(e) as AggregateInterval,
             }))}
         ></inline-select>
-        ${this._renderCumulativeControls(definition)}
-        <button
-          type="button"
-          class="button remove"
-          aria-label=${msg("Remove aggregate")}
-          @click=${() => this._onRemove(definition.id)}
-        >
-          <ha-icon icon="mdi:close"></ha-icon>
-        </button>
-      </div>
+      </label>
+    `;
+  }
+
+  private _renderStateField(definition: AggregateDefinition) {
+    const options = getBinaryStateOptions(this.deviceClass).map((o) => ({
+      value: o.value,
+      label: msg(o.label),
+    }));
+    return html`
+      <label class="field">
+        <span class="field-label">${msg("State")}</span>
+        <inline-select
+          .value=${definition.states?.[0] ?? options[0].value}
+          .options=${options}
+          @dp-change=${(e: Event) =>
+            this._update(definition.id, (d) => ({
+              ...d,
+              states: [this._selectValue(e)],
+            }))}
+        ></inline-select>
+      </label>
     `;
   }
 
   /** Counts, durations and consumption can accumulate; percentages cannot. */
-  private _canAccumulate(definition: AggregateDefinition): boolean {
-    return [
-      "consumption",
-      "transition_count",
-      "state_duration",
-      "event_count",
-    ].includes(definition.operation);
-  }
-
-  private _renderCumulativeControls(definition: AggregateDefinition) {
-    if (!this._canAccumulate(definition)) {
+  private _renderCumulativeFields(definition: AggregateDefinition) {
+    if (!CUMULATIVE_OPERATIONS.includes(definition.operation)) {
       return nothing;
     }
     const cumulative = definition.mode === "cumulative";
@@ -203,150 +240,101 @@ export class AnalysisAggregateGroup extends AnalysisGroupMixin(LitElement) {
     this._update(definition.id, (d) => ({ ...d, eventTypes: next }));
   }
 
-  private _renderEventDefinition(definition: AggregateDefinition) {
+  private _renderEventTypeFields(definition: AggregateDefinition) {
     const selected = definition.eventTypes ?? [];
     const allTypes = selected.length === 0;
     return html`
-      <div
-        class="definition"
-        role="group"
-        aria-label=${msg("Aggregate series")}
-      >
-        <inline-select
-          .value=${definition.interval}
-          .options=${this._localizedOptions(AGGREGATE_INTERVAL_OPTIONS)}
-          aria-label=${msg("Aggregate interval")}
-          @dp-change=${(e: Event) =>
+      <label class="option">
+        <input
+          type="checkbox"
+          class="all-types"
+          .checked=${allTypes}
+          @change=${(e: Event) =>
             this._update(definition.id, (d) => ({
               ...d,
-              interval: this._selectValue(e) as AggregateInterval,
+              eventTypes: (e.target as HTMLInputElement).checked
+                ? []
+                : this.eventTypes.slice(0, 1),
             }))}
-        ></inline-select>
-        <label class="option">
-          <input
-            type="checkbox"
-            class="all-types"
-            .checked=${allTypes}
-            @change=${(e: Event) =>
-              this._update(definition.id, (d) => ({
-                ...d,
-                eventTypes: (e.target as HTMLInputElement).checked
-                  ? []
-                  : this.eventTypes.slice(0, 1),
-              }))}
-          />
-          <span>${msg("All event types")}</span>
-        </label>
-        ${allTypes
-          ? nothing
-          : this.eventTypes.map(
-              (type) => html`
-                <label class="option">
-                  <input
-                    type="checkbox"
-                    class="event-type"
-                    .checked=${selected.includes(type)}
-                    @change=${(e: Event) =>
-                      this._onEventTypeToggle(
-                        definition,
-                        type,
-                        (e.target as HTMLInputElement).checked
-                      )}
-                  />
-                  <span>${type}</span>
-                </label>
-              `
-            )}
-        ${this._renderCumulativeControls(definition)}
-        <button
-          type="button"
-          class="button remove"
-          aria-label=${msg("Remove aggregate")}
-          @click=${() => this._onRemove(definition.id)}
-        >
-          <ha-icon icon="mdi:close"></ha-icon>
-        </button>
-      </div>
+        />
+        <span>${msg("All event types")}</span>
+      </label>
+      ${allTypes
+        ? nothing
+        : this.eventTypes.map(
+            (type) => html`
+              <label class="option">
+                <input
+                  type="checkbox"
+                  class="event-type"
+                  .checked=${selected.includes(type)}
+                  @change=${(e: Event) =>
+                    this._onEventTypeToggle(
+                      definition,
+                      type,
+                      (e.target as HTMLInputElement).checked
+                    )}
+                />
+                <span>${type}</span>
+              </label>
+            `
+          )}
     `;
   }
 
-  private _renderDefinition(definition: AggregateDefinition) {
-    if (this.variant === "event") {
-      return this._renderEventDefinition(definition);
-    }
-    if (this.variant === "measurement") {
-      return this._renderMeasurementDefinition(definition);
-    }
-    const kind = getBinaryAggregateKind(definition);
-    const stateOptions = getBinaryStateOptions(this.deviceClass).map((o) => ({
-      value: o.value,
-      label: msg(o.label),
-    }));
-    const showState = kind !== "all_changes";
+  private _renderSubopts(
+    key: string,
+    definition: AggregateDefinition
+  ): TemplateResult {
     return html`
-      <div
-        class="definition"
-        role="group"
-        aria-label=${msg("Aggregate series")}
-      >
-        <inline-select
-          .value=${kind}
-          .options=${this._localizedOptions(BINARY_AGGREGATE_KINDS)}
-          aria-label=${msg("Aggregate operation")}
-          @dp-change=${(e: Event) =>
-            this._update(definition.id, (d) =>
-              applyBinaryAggregateKind(
-                d,
-                this._selectValue(e) as BinaryAggregateKind,
-                stateOptions[0].value
-              )
-            )}
-        ></inline-select>
-        ${showState
-          ? html`<inline-select
-              .value=${definition.states?.[0] ?? stateOptions[0].value}
-              .options=${stateOptions}
-              aria-label=${msg("Aggregate state")}
-              @dp-change=${(e: Event) =>
-                this._update(definition.id, (d) => ({
-                  ...d,
-                  states: [this._selectValue(e)],
-                }))}
-            ></inline-select>`
+      <analysis-method-subopts>
+        ${this.variant === "binary" && key !== "all_changes"
+          ? this._renderStateField(definition)
           : nothing}
-        <inline-select
-          .value=${definition.interval}
-          .options=${this._localizedOptions(AGGREGATE_INTERVAL_OPTIONS)}
-          aria-label=${msg("Aggregate interval")}
-          @dp-change=${(e: Event) =>
-            this._update(definition.id, (d) => ({
-              ...d,
-              interval: this._selectValue(e) as AggregateInterval,
-            }))}
-        ></inline-select>
-        ${this._renderCumulativeControls(definition)}
-        <button
-          type="button"
-          class="button remove"
-          aria-label=${msg("Remove aggregate")}
-          @click=${() => this._onRemove(definition.id)}
-        >
-          <ha-icon icon="mdi:close"></ha-icon>
-        </button>
-      </div>
+        ${this._renderIntervalField(definition)}
+        ${this.variant === "event"
+          ? this._renderEventTypeFields(definition)
+          : nothing}
+        ${this._renderCumulativeFields(definition)}
+      </analysis-method-subopts>
     `;
   }
 
   render() {
+    const choices = this._choices();
     return html`
-      <div class="heading">${msg("Aggregate series")}</div>
-      <div class="list">
-        ${this._definitions.map((d) => this._renderDefinition(d))}
-      </div>
-      <button type="button" class="button add" @click=${this._onAdd}>
-        <ha-icon icon="mdi:plus"></ha-icon>
-        ${msg("Add aggregate")}
-      </button>
+      <analysis-group
+        .label=${msg("Aggregate series")}
+        .checked=${this._open || this._definitions.length > 0}
+        @dp-group-change=${this._onGroupChange}
+      >
+        <div class="method-list">
+          ${choices.map((choice) => {
+            const definition = this._definitionFor(choice.key);
+            return html`
+              <div class="method-item">
+                <label class="option">
+                  <input
+                    type="checkbox"
+                    class="aggregate-choice"
+                    data-key=${choice.key}
+                    .checked=${definition !== undefined}
+                    @change=${(e: Event) =>
+                      this._onToggle(
+                        choice.key,
+                        (e.target as HTMLInputElement).checked
+                      )}
+                  />
+                  <span>${choice.label}</span>
+                </label>
+                ${definition
+                  ? this._renderSubopts(choice.key, definition)
+                  : nothing}
+              </div>
+            `;
+          })}
+        </div>
+      </analysis-group>
     `;
   }
 }

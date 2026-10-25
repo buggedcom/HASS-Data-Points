@@ -11,8 +11,8 @@ export default {
   },
 };
 
-const door: AggregateDefinition = {
-  id: "door-opens",
+const opens: AggregateDefinition = {
+  id: "transition_count",
   operation: "transition_count",
   interval: "day",
   mode: "interval",
@@ -20,7 +20,7 @@ const door: AggregateDefinition = {
   resetOnZoom: false,
 };
 
-export const Empty = {
+export const Off = {
   render: () => html`
     <analysis-aggregate-group
       .analysis=${{ aggregates: [] }}
@@ -30,15 +30,16 @@ export const Empty = {
   `,
 };
 
+/** Checked aggregates show their settings nested beneath them. */
 export const DoorSensorWithAggregates = {
   render: () => html`
     <analysis-aggregate-group
       .analysis=${{
         aggregates: [
-          door,
+          opens,
           {
-            ...door,
-            id: "door-open-time",
+            ...opens,
+            id: "state_duration",
             operation: "state_duration",
             interval: "week",
           },
@@ -56,9 +57,32 @@ export const DoorSensorWithAggregates = {
     group.addEventListener("dp-group-analysis-change", (e) =>
       events.push(e as CustomEvent)
     );
-    const add = group.shadowRoot!.querySelector(".add") as HTMLElement;
-    add.focus();
-    await userEvent.keyboard("{Enter}");
-    await expect(events[0].detail.value).toHaveLength(3);
+    // Keyboard: focus an unchecked choice and press space to enable it.
+    const percentage = group.shadowRoot!.querySelector(
+      '.aggregate-choice[data-key="state_percentage"]'
+    ) as HTMLInputElement;
+    percentage.focus();
+    await userEvent.keyboard(" ");
+    await expect(events.at(-1)!.detail.value).toHaveLength(3);
   },
+};
+
+export const NumericMeter = {
+  render: () => html`
+    <analysis-aggregate-group
+      variant="measurement"
+      .operations=${["mean", "min", "max", "consumption"]}
+      .analysis=${{
+        aggregates: [
+          {
+            ...opens,
+            id: "consumption",
+            operation: "consumption",
+            states: undefined,
+          },
+        ],
+      }}
+      .entityId=${"sensor.energy"}
+    ></analysis-aggregate-group>
+  `,
 };

@@ -2,11 +2,6 @@ import type { ComponentTranslations } from "@/lib/i18n/types";
 
 export const translations: ComponentTranslations = {
   "Aggregate series": "Séries agrégées",
-  "Add aggregate": "Ajouter un agrégat",
-  "Remove aggregate": "Supprimer l'agrégat",
-  "Aggregate operation": "Opération de l'agrégat",
-  "Aggregate state": "État de l'agrégat",
-  "Aggregate interval": "Intervalle de l'agrégat",
   "Count changes to a state": "Compter les passages à un état",
   "Count all state changes": "Compter tous les changements d'état",
   "Time in a state": "Durée dans un état",
@@ -43,4 +38,7 @@ export const translations: ComponentTranslations = {
     "Les contours en pointillés signalent les périodes partielles coupées par la plage sélectionnée ; les marques hachurées ou pointillées indiquent des périodes avec des lacunes dans l'historique enregistré.",
   "Counts only include activity in retained history; earlier activity is not shown.":
     "Les décomptes n'incluent que l'activité de l'historique conservé ; l'activité antérieure n'est pas affichée.",
+  "Count events": "Compter les événements",
+  Interval: "Intervalle",
+  State: "État",
 };
