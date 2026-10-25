@@ -2545,7 +2545,10 @@
 			"Counts only include activity in retained history; earlier activity is not shown.": "Laskennat sisältävät vain säilytetyn historian toiminnan; aiempaa toimintaa ei näytetä.",
 			"Count events": "Laske tapahtumat",
 			Interval: "Jakso",
-			State: "Tila"
+			State: "Tila",
+			"Every minute": "Joka minuutti",
+			"Every 15 minutes": "Joka 15. minuutti",
+			"Every 30 minutes": "Joka 30. minuutti"
 		};
 	}));
 	//#endregion
@@ -3254,7 +3257,10 @@
 			"Counts only include activity in retained history; earlier activity is not shown.": "Les décomptes n'incluent que l'activité de l'historique conservé ; l'activité antérieure n'est pas affichée.",
 			"Count events": "Compter les événements",
 			Interval: "Intervalle",
-			State: "État"
+			State: "État",
+			"Every minute": "Chaque minute",
+			"Every 15 minutes": "Toutes les 15 minutes",
+			"Every 30 minutes": "Toutes les 30 minutes"
 		};
 	}));
 	//#endregion
@@ -3963,7 +3969,10 @@
 			"Counts only include activity in retained history; earlier activity is not shown.": "Zählungen enthalten nur Aktivität im gespeicherten Verlauf; frühere Aktivität wird nicht angezeigt.",
 			"Count events": "Ereignisse zählen",
 			Interval: "Intervall",
-			State: "Zustand"
+			State: "Zustand",
+			"Every minute": "Jede Minute",
+			"Every 15 minutes": "Alle 15 Minuten",
+			"Every 30 minutes": "Alle 30 Minuten"
 		};
 	}));
 	//#endregion
@@ -4672,7 +4681,10 @@
 			"Counts only include activity in retained history; earlier activity is not shown.": "Los recuentos solo incluyen la actividad del historial conservado; la actividad anterior no se muestra.",
 			"Count events": "Contar eventos",
 			Interval: "Intervalo",
-			State: "Estado"
+			State: "Estado",
+			"Every minute": "Cada minuto",
+			"Every 15 minutes": "Cada 15 minutos",
+			"Every 30 minutes": "Cada 30 minutos"
 		};
 	}));
 	//#endregion
@@ -5381,7 +5393,10 @@
 			"Counts only include activity in retained history; earlier activity is not shown.": "As contagens só incluem a atividade do histórico retido; a atividade anterior não é mostrada.",
 			"Count events": "Contar eventos",
 			Interval: "Intervalo",
-			State: "Estado"
+			State: "Estado",
+			"Every minute": "A cada minuto",
+			"Every 15 minutes": "A cada 15 minutos",
+			"Every 30 minutes": "A cada 30 minutos"
 		};
 	}));
 	//#endregion
@@ -6090,7 +6105,10 @@
 			"Counts only include activity in retained history; earlier activity is not shown.": "计数仅包含保留历史中的活动；更早的活动不会显示。",
 			"Count events": "统计事件数",
 			Interval: "间隔",
-			State: "状态"
+			State: "状态",
+			"Every minute": "每分钟",
+			"Every 15 minutes": "每 15 分钟",
+			"Every 30 minutes": "每 30 分钟"
 		};
 	}));
 	//#endregion
@@ -8732,6 +8750,14 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/domain/aggregation/calendar.ts
 	var HOUR_MS$2 = 36e5;
+	var MINUTE_MS$2 = 6e4;
+	/** Sub-day intervals of fixed length, aligned to the local wall clock. */
+	var FIXED_INTERVAL_MS = {
+		minute: MINUTE_MS$2,
+		"15min": 15 * MINUTE_MS$2,
+		"30min": 30 * MINUTE_MS$2,
+		hour: HOUR_MS$2
+	};
 	var formatters = /* @__PURE__ */ new Map();
 	function getFormatter(timeZone) {
 		let formatter = formatters.get(timeZone);
@@ -8775,16 +8801,19 @@
 	}
 	function getPeriodStart(ts, interval, timeZone) {
 		const p = getLocalParts(ts, timeZone);
-		if (interval === "hour") {
+		const fixedMs = FIXED_INTERVAL_MS[interval];
+		if (fixedMs) {
 			const ms = (ts % 1e3 + 1e3) % 1e3;
-			return ts - ((p.minute * 60 + p.second) * 1e3 + ms);
+			const offsetMinutes = p.minute % (fixedMs / MINUTE_MS$2);
+			return ts - ms - p.second * 1e3 - offsetMinutes * MINUTE_MS$2;
 		}
 		if (interval === "day") return localMidnight(p.year, p.month, p.day, timeZone);
 		if (interval === "week") return localMidnight(p.year, p.month, p.day - (p.weekday + 6) % 7, timeZone);
 		return localMidnight(p.year, p.month, 1, timeZone);
 	}
 	function getNextPeriodStart(periodStart, interval, timeZone) {
-		if (interval === "hour") return periodStart + HOUR_MS$2;
+		const fixedMs = FIXED_INTERVAL_MS[interval];
+		if (fixedMs) return periodStart + fixedMs;
 		const p = getLocalParts(periodStart + HOUR_MS$2 * 2, timeZone);
 		if (interval === "day") return localMidnight(p.year, p.month, p.day + 1, timeZone);
 		if (interval === "week") return localMidnight(p.year, p.month, p.day + 7, timeZone);
@@ -8829,15 +8858,36 @@
 	function overlap(a, b) {
 		return Math.max(0, Math.min(a.end, b.end) - Math.max(a.start, b.start));
 	}
-	function inPeriod(time, period) {
-		return time >= period.start && time < period.end;
+	/**
+	* Bucket time-ordered items into periods in one sweep. Minute-level intervals
+	* over long ranges create tens of thousands of periods, so per-period filters
+	* over every item would be quadratic.
+	*/
+	function groupByPeriod(items, periods, timeOf) {
+		const sorted = [...items].sort((a, b) => timeOf(a) - timeOf(b));
+		const groups = periods.map(() => []);
+		let cursor = 0;
+		sorted.forEach((item) => {
+			const time = timeOf(item);
+			while (cursor < periods.length && time >= periods[cursor].end) cursor += 1;
+			if (cursor < periods.length && time >= periods[cursor].start) groups[cursor].push(item);
+		});
+		return groups;
 	}
 	function sortSamples(samples) {
 		return [...samples].sort((a, b) => a.time - b.time);
 	}
-	function knownDurationOf(period, coverage) {
-		if (!coverage) return period.end - period.start;
-		return coverage.reduce((sum, c) => sum + overlap(period, c), 0);
+	/** Known (covered) time within each period, in one sweep over the coverage. */
+	function knownDurationsOf(periods, coverage) {
+		if (!coverage) return periods.map((period) => period.end - period.start);
+		const sorted = [...coverage].sort((a, b) => a.start - b.start);
+		let first = 0;
+		return periods.map((period) => {
+			while (first < sorted.length && sorted[first].end <= period.start) first += 1;
+			let known = 0;
+			for (let i = first; i < sorted.length && sorted[i].start < period.end; i += 1) known += overlap(period, sorted[i]);
+			return known;
+		});
 	}
 	/** Known-state spans over `range`, seeded by the last sample at/before start. */
 	function buildStateSpans(samples, range, coverage) {
@@ -8884,9 +8934,9 @@
 		return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 	}
 	function calculateMeasurement(input, periods) {
-		const readings = sortSamples(input.samples).filter((s) => !s.boundary && typeof s.value === "number" && Number.isFinite(s.value));
-		return periods.map((period) => {
-			const values = readings.filter((s) => inPeriod(s.time, period)).map((s) => s.value);
+		const grouped = groupByPeriod(sortSamples(input.samples).filter((s) => !s.boundary && typeof s.value === "number" && Number.isFinite(s.value)), periods, (s) => s.time);
+		return periods.map((_period, index) => {
+			const values = grouped[index].map((s) => s.value);
 			if (!values.length) return {
 				value: null,
 				reasons: ["no-data"]
@@ -8914,8 +8964,9 @@
 			if (!prev || curr.time <= input.range.start || curr.time >= input.range.end || !isKnownState(prev.state) || !isKnownState(curr.state) || prev.state === curr.state || selected.length > 0 && !selected.includes(curr.state)) return;
 			times.push(curr.time);
 		});
-		return periods.map((period) => ({
-			value: times.filter((t) => inPeriod(t, period)).length,
+		const grouped = groupByPeriod(times, periods, (t) => t);
+		return periods.map((_period, index) => ({
+			value: grouped[index].length,
 			reasons: []
 		}));
 	}
@@ -8925,14 +8976,16 @@
 			value: null,
 			reasons: ["no-state-selected"]
 		}));
-		const spans = buildStateSpans(input.samples, input.range, input.coverage);
+		const spans = buildStateSpans(input.samples, input.range, input.coverage).sort((a, b) => a.start - b.start);
+		let first = 0;
 		return periods.map((period) => {
 			let known = 0;
 			let matching = 0;
-			for (const span of spans) {
-				const ms = overlap(period, span);
+			while (first < spans.length && spans[first].end <= period.start) first += 1;
+			for (let i = first; i < spans.length && spans[i].start < period.end; i += 1) {
+				const ms = overlap(period, spans[i]);
 				known += ms;
-				if (selected.includes(span.state)) matching += ms;
+				if (selected.includes(spans[i].state)) matching += ms;
 			}
 			if (percentage) return known > 0 ? {
 				value: matching / known * 100,
@@ -8952,9 +9005,9 @@
 	}
 	function calculateEvents(input, periods) {
 		const types = input.definition.eventTypes ?? [];
-		const times = input.samples.filter((s) => !s.boundary && typeof s.eventType === "string" && (types.length === 0 || types.includes(s.eventType))).map((s) => s.eventTime ?? s.time);
-		return periods.map((period) => ({
-			value: times.filter((t) => inPeriod(t, period)).length,
+		const grouped = groupByPeriod(input.samples.filter((s) => !s.boundary && typeof s.eventType === "string" && (types.length === 0 || types.includes(s.eventType))).map((s) => s.eventTime ?? s.time), periods, (t) => t);
+		return periods.map((_period, index) => ({
+			value: grouped[index].length,
 			reasons: []
 		}));
 	}
@@ -8993,8 +9046,9 @@
 				reason: "ambiguous-reset"
 			});
 		});
-		return periods.map((period) => {
-			const inside = deltas.filter((d) => inPeriod(d.time, period));
+		const grouped = groupByPeriod(deltas, periods, (d) => d.time);
+		return periods.map((_period, index) => {
+			const inside = grouped[index];
 			if (!inside.length) return {
 				value: null,
 				reasons: ["no-data"]
@@ -9067,9 +9121,10 @@
 			const result = toCumulative(op, periods, buckets);
 			({buckets, periods, started} = result);
 		}
+		const knownDurations = knownDurationsOf(periods, input.coverage);
 		const points = periods.map((period, i) => {
 			const totalDuration = period.end - period.start;
-			const knownDuration = knownDurationOf(period, input.coverage);
+			const knownDuration = knownDurations[i];
 			const reasons = [...buckets[i].reasons];
 			const incomplete = knownDuration < totalDuration;
 			if (incomplete) reasons.push("incomplete-coverage");
@@ -9119,6 +9174,18 @@
 		}
 	];
 	var AGGREGATE_INTERVAL_OPTIONS = [
+		{
+			value: "minute",
+			label: "Every minute"
+		},
+		{
+			value: "15min",
+			label: "Every 15 minutes"
+		},
+		{
+			value: "30min",
+			label: "Every 30 minutes"
+		},
 		{
 			value: "hour",
 			label: "Hourly"
@@ -9244,6 +9311,53 @@
 			eventTypes
 		};
 	}
+	/**
+	* Dash pattern (px on/off) per aggregation type. Aggregate lines keep the
+	* source series' colour, so the pattern is what tells them apart.
+	*/
+	var DASH_PATTERNS = {
+		mean: [10, 4],
+		min: [2, 4],
+		max: [
+			2,
+			4,
+			10,
+			4
+		],
+		median: [
+			6,
+			3,
+			2,
+			3
+		],
+		first: [1, 5],
+		last: [
+			1,
+			3,
+			1,
+			3,
+			8,
+			3
+		],
+		consumption: [10, 4],
+		transition_count: [10, 4],
+		state_duration: [2, 4],
+		state_percentage: [
+			2,
+			4,
+			10,
+			4
+		],
+		event_count: [
+			6,
+			3,
+			2,
+			3
+		]
+	};
+	function getAggregateDashPattern(operation) {
+		return DASH_PATTERNS[operation] ?? [6, 3];
+	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/chart-aggregates.ts
 	var UNKNOWN_STATES = /* @__PURE__ */ new Set(["unknown", "unavailable"]);
@@ -9335,6 +9449,7 @@
 				})),
 				...periodDetails(valued),
 				color: definition.color || args.color,
+				dashPattern: getAggregateDashPattern(definition.operation),
 				axisKey: `aggregate:${result.unit || "count"}`,
 				bars: result.presentation === "bar",
 				result
@@ -9351,7 +9466,7 @@
 			}];
 		});
 		if (!samples.length) return [];
-		return args.definitions.filter((definition) => definition.visible !== false && isMeasurementOperation(definition.operation)).flatMap((definition, index) => {
+		return args.definitions.filter((definition) => definition.visible !== false && isMeasurementOperation(definition.operation)).flatMap((definition) => {
 			const result = calculateAggregate({
 				definition,
 				samples,
@@ -9379,7 +9494,8 @@
 					end: p.end
 				})),
 				...periodDetails(valued),
-				color: definition.color || args.colors[index % args.colors.length],
+				color: definition.color || args.color,
+				dashPattern: getAggregateDashPattern(definition.operation),
 				axisKey: args.axisKey,
 				bars: result.presentation === "bar",
 				result
@@ -9441,6 +9557,7 @@
 				})),
 				...periodDetails(valued),
 				color: definition.color || args.color,
+				dashPattern: getAggregateDashPattern(definition.operation),
 				axisKey: `aggregate:${result.unit || "count"}`,
 				bars: result.presentation === "bar",
 				result
@@ -9511,6 +9628,7 @@
 				})),
 				...periodDetails(valued, describeConsumptionReasons),
 				color: definition.color || args.color,
+				dashPattern: getAggregateDashPattern(definition.operation),
 				axisKey: `aggregate:${args.unit || "count"}`,
 				bars: result.presentation === "bar",
 				result
@@ -10297,35 +10415,6 @@
 					ctx.restore();
 				}
 			}
-			ctx.restore();
-		}
-		/**
-		* Point markers for an aggregate line: filled when the period is complete,
-		* hollow when partial, dotted ring when history is incomplete.
-		*/
-		drawPeriodMarkers(points, styles, color, t0, t1, vMin, vMax) {
-			const { ctx } = this;
-			ctx.save();
-			ctx.strokeStyle = color;
-			ctx.fillStyle = color;
-			ctx.lineWidth = 1.5;
-			points.forEach(([t, v], i) => {
-				const style = styles[i];
-				const x = this.xOf(t, t0, t1);
-				const y = this.yOf(v, vMin, vMax);
-				ctx.beginPath();
-				ctx.arc(x, y, 3.5, 0, Math.PI * 2);
-				if (style?.partial || style?.incomplete) {
-					ctx.setLineDash(style.partial ? [] : [1.5, 1.5]);
-					ctx.fillStyle = hexToRgba(color, .15);
-					ctx.fill();
-					ctx.stroke();
-				} else {
-					ctx.setLineDash([]);
-					ctx.fillStyle = color;
-					ctx.fill();
-				}
-			});
 			ctx.restore();
 		}
 		drawStateBands(spans, t0, t1, color = "#03a9f4", alpha = .12) {
@@ -12545,18 +12634,22 @@
 		"state_percentage",
 		"event_count"
 	];
+	var AGGREGATE_INTERVALS = [
+		"minute",
+		"15min",
+		"30min",
+		"hour",
+		"day",
+		"week",
+		"month"
+	];
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/domain/aggregation/aggregation.ts
 	function normalizeAggregateDefinitions(value) {
 		if (!Array.isArray(value)) return [];
 		const ids = /* @__PURE__ */ new Set();
 		return value.flatMap((item) => {
-			if (!item || typeof item !== "object" || typeof item.id !== "string" || !item.id || ids.has(item.id) || !AGGREGATE_OPERATIONS.includes(item.operation) || ![
-				"hour",
-				"day",
-				"week",
-				"month"
-			].includes(item.interval)) return [];
+			if (!item || typeof item !== "object" || typeof item.id !== "string" || !item.id || ids.has(item.id) || !AGGREGATE_OPERATIONS.includes(item.operation) || !AGGREGATE_INTERVALS.includes(item.interval)) return [];
 			ids.add(item.id);
 			const definition = {
 				id: item.id,
@@ -14910,6 +15003,18 @@
 	var HISTORY_CHART_MAX_ZOOM_MULTIPLIER = 365;
 	var HISTORY_CHART_BINARY_LANE_HEIGHT_PX = 22;
 	var HISTORY_CHART_BINARY_LANE_GAP_PX = 6;
+	/**
+	* Aggregate lines are drawn in the source colour; their dash pattern (per
+	* aggregation type) tells them apart. Non-aggregate series get no extra style.
+	*/
+	function aggregateLineStyle(series) {
+		if (!series.periodFlags || series.bars === true) return {};
+		return {
+			aggregateLine: true,
+			dashed: true,
+			dashPattern: series.dashPattern
+		};
+	}
 	var HistoryChart$1 = class extends HTMLElement {
 		constructor(..._args) {
 			super(..._args);
@@ -15519,7 +15624,7 @@
 			const noteEl = this.querySelector("#aggregate-note");
 			if (!noteEl) return;
 			const aggregates = series.filter((item) => item.definitionId && item.result);
-			const flagged = aggregates.some((item) => item.periodFlags?.some((flag) => flag.partial || flag.incomplete));
+			const flagged = aggregates.some((item) => item.bars && item.periodFlags?.some((flag) => flag.partial || flag.incomplete));
 			const hasCounts = aggregates.some((item) => ["transition_count", "event_count"].includes(item.result.points.length ? this._aggregateOperationOf(item) : ""));
 			const lines = [];
 			if (flagged) lines.push(msg("Dashed outlines mark partial periods cut by the selected range; hatched or dotted marks show periods with gaps in recorded history."));
@@ -15635,12 +15740,7 @@
 			return [...buildMeasurementAggregateSeries({
 				entityId,
 				entityLabel: args.label,
-				colors: [
-					1,
-					2,
-					3,
-					4
-				].map((offset) => COLORS[(args.index + offset) % COLORS.length]),
+				color: args.color,
 				definitions,
 				stateList,
 				range,
@@ -15674,9 +15774,8 @@
 				});
 				return;
 			}
-			if (opts.periodFlags) {
+			if (opts.aggregateLine) {
 				r.drawLine(pts, color, t0, t1, min, max, opts);
-				renderer.drawPeriodMarkers(pts, opts.periodFlags, color, t0, t1, min, max);
 				return;
 			}
 			if (!showGaps || pts.length < 2 || !Number.isFinite(gapThresholdMs)) {
@@ -17171,8 +17270,8 @@
 					else renderer.drawLine(shiftedPts, aggregate.color, renderT0, renderT1, aggregateAxis.min, aggregateAxis.max, {
 						lineOpacity: style.lineOpacity,
 						lineWidth: style.lineWidth,
-						dashed: style.dashed,
-						dashPattern: style.dashPattern
+						dashed: true,
+						dashPattern: aggregate.dashPattern
 					});
 					comparisonHoverSeries.push({
 						entityId: `${win.id}:${aggregate.entityId}`,
@@ -17199,7 +17298,8 @@
 					lineWidth: this._config?.comparison_hover_active === true ? 1.25 : void 0,
 					stepped: (analysisMap.get(s.entityId) || normalizeHistorySeriesAnalysis(null)).stepped_series === true,
 					bars: s.bars === true,
-					periodFlags: s.periodFlags
+					periodFlags: s.periodFlags,
+					...aggregateLineStyle(s)
 				});
 			}
 			const trendHoverSeries = trendSeries.map((seriesItem) => {
@@ -17722,7 +17822,8 @@
 					lineOpacity: mainSeriesOpacity,
 					stepped: rowAnalysis.stepped_series === true,
 					bars: seriesItem.bars === true,
-					periodFlags: seriesItem.periodFlags
+					periodFlags: seriesItem.periodFlags,
+					...aggregateLineStyle(seriesItem)
 				});
 				for (const win of drawableComparisonResults || []) {
 					const winPts = await this._resolveComparisonWindowPoints(seriesItem.entityId, win, rowAnalysis, renderT0, renderT1);

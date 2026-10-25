@@ -40,4 +40,7 @@ export const translations: ComponentTranslations = {
   "Count events": "统计事件数",
   Interval: "间隔",
   State: "状态",
+  "Every minute": "每分钟",
+  "Every 15 minutes": "每 15 分钟",
+  "Every 30 minutes": "每 30 分钟",
 };

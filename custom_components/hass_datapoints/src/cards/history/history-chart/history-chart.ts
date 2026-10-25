@@ -241,6 +241,25 @@ export interface HistoryChartViewModel {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
+/**
+ * Aggregate lines are drawn in the source colour; their dash pattern (per
+ * aggregation type) tells them apart. Non-aggregate series get no extra style.
+ */
+function aggregateLineStyle(series: {
+  periodFlags?: unknown;
+  dashPattern?: number[];
+  bars?: boolean;
+}): RecordWithUnknownValues {
+  if (!series.periodFlags || series.bars === true) {
+    return {};
+  }
+  return {
+    aggregateLine: true,
+    dashed: true,
+    dashPattern: series.dashPattern,
+  };
+}
+
 export class HistoryChart extends HTMLElement {
   // ── No shadow DOM ───────────────────────────────────────────────────────────
   // Renders synchronously into its own children so the canvas and legend are
@@ -888,8 +907,12 @@ export class HistoryChart extends HTMLElement {
     const aggregates = (series as AggregateChartSeries[]).filter(
       (item) => item.definitionId && item.result
     );
-    const flagged = aggregates.some((item) =>
-      item.periodFlags?.some((flag) => flag.partial || flag.incomplete)
+    // Only bars carry the dashed/hatched markers; lines report partial and
+    // incomplete periods in their tooltips.
+    const flagged = aggregates.some(
+      (item) =>
+        item.bars &&
+        item.periodFlags?.some((flag) => flag.partial || flag.incomplete)
     );
     const hasCounts = aggregates.some((item) =>
       ["transition_count", "event_count"].includes(
@@ -1091,9 +1114,7 @@ export class HistoryChart extends HTMLElement {
       ...buildMeasurementAggregateSeries({
         entityId,
         entityLabel: args.label,
-        colors: [1, 2, 3, 4].map(
-          (offset) => COLORS[(args.index + offset) % COLORS.length]
-        ),
+        color: args.color,
         definitions,
         stateList,
         range,
@@ -1176,23 +1197,10 @@ export class HistoryChart extends HTMLElement {
       });
       return;
     }
-    if (opts.periodFlags) {
+    if (opts.aggregateLine) {
       // Aggregate lines have one point per calendar period, so the data-gap
       // splitter (tuned for raw samples) must not break them up.
       r.drawLine(pts, color, t0, t1, min, max, opts);
-      (
-        renderer as {
-          drawPeriodMarkers: (
-            pts: [number, number][],
-            styles: unknown,
-            color: string,
-            t0: number,
-            t1: number,
-            min: number,
-            max: number
-          ) => void;
-        }
-      ).drawPeriodMarkers(pts, opts.periodFlags, color, t0, t1, min, max);
       return;
     }
 
@@ -4247,8 +4255,8 @@ export class HistoryChart extends HTMLElement {
               {
                 lineOpacity: style.lineOpacity,
                 lineWidth: style.lineWidth,
-                dashed: style.dashed,
-                dashPattern: style.dashPattern,
+                dashed: true,
+                dashPattern: aggregate.dashPattern,
               }
             );
           }
@@ -4303,6 +4311,7 @@ export class HistoryChart extends HTMLElement {
             ).stepped_series === true,
           bars: s.bars === true,
           periodFlags: (s as { periodFlags?: unknown }).periodFlags,
+          ...aggregateLineStyle(s),
         }
       );
     }
@@ -5567,6 +5576,7 @@ export class HistoryChart extends HTMLElement {
             stepped: rowAnalysis.stepped_series === true,
             bars: seriesItem.bars === true,
             periodFlags: seriesItem.periodFlags,
+            ...aggregateLineStyle(seriesItem),
           }
         );
       }

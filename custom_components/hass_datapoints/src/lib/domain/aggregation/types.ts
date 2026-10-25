@@ -12,7 +12,16 @@ export const AGGREGATE_OPERATIONS = [
   "event_count",
 ] as const;
 export type AggregateOperation = (typeof AGGREGATE_OPERATIONS)[number];
-export type AggregateInterval = "hour" | "day" | "week" | "month";
+export const AGGREGATE_INTERVALS = [
+  "minute",
+  "15min",
+  "30min",
+  "hour",
+  "day",
+  "week",
+  "month",
+] as const;
+export type AggregateInterval = (typeof AGGREGATE_INTERVALS)[number];
 export interface AggregateDefinition {
   id: string;
   operation: AggregateOperation;

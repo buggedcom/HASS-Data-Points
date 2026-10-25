@@ -41,4 +41,7 @@ export const translations: ComponentTranslations = {
   "Count events": "Laske tapahtumat",
   Interval: "Jakso",
   State: "Tila",
+  "Every minute": "Joka minuutti",
+  "Every 15 minutes": "Joka 15. minuutti",
+  "Every 30 minutes": "Joka 30. minuutti",
 };
