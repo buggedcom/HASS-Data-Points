@@ -331,7 +331,6 @@
 		values: s
 	});
 	var b = x(1);
-	var w = x(2);
 	var E = Symbol.for("lit-noChange");
 	var A = Symbol.for("lit-nothing");
 	var C = /* @__PURE__ */ new WeakMap();
@@ -31611,13 +31610,16 @@
 
   .monitor-card {
     background: var(--card-background-color, var(--secondary-background-color));
-    border-radius: 8px;
+    border-radius: 12px;
     padding: var(--dp-spacing-sm) var(--dp-spacing-md);
     box-shadow: var(--ha-card-box-shadow, none);
     display: grid;
-    gap: var(--dp-spacing-xs);
+    gap: var(--dp-spacing-sm);
     transition: opacity 200ms ease;
     opacity: 1;
+    /* Card-level container so the body + header adapt to the card's own width
+       (the panel has no size prop). */
+    container-type: inline-size;
   }
 
   .monitor-card[data-enabled="false"] {
@@ -31631,36 +31633,247 @@
   .monitor-card-header {
     display: flex;
     align-items: center;
-    gap: var(--dp-spacing-sm);
+    gap: 10px;
     flex-wrap: wrap;
   }
 
   .monitor-name {
-    font-weight: 500;
-    flex: 1;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--primary-text-color);
+    min-width: 0;
+    flex: 0 1 auto;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
-  .monitor-toggle-btn {
+  .monitor-header-spacer {
+    flex: 1 1 auto;
+  }
+
+  /* ---- Header on/off toggle switch (role="switch") ---- */
+
+  .monitor-switch {
+    appearance: none;
+    -webkit-appearance: none;
+    border: 0;
     background: none;
-    border: none;
     padding: 2px;
+    margin: 0;
     cursor: pointer;
-    color: var(--secondary-text-color);
     display: inline-flex;
     align-items: center;
-    border-radius: 4px;
-    transition: color 120ms ease;
-    --mdc-icon-size: 28px;
+    border-radius: 999px;
+  }
+
+  .switch-track {
+    display: inline-flex;
+    align-items: center;
+    width: 36px;
+    height: 20px;
+    border-radius: 999px;
+    background: var(--divider-color);
+    transition: background 120ms ease;
+  }
+
+  .switch-thumb {
+    width: 16px;
+    height: 16px;
+    margin: 0 2px;
+    border-radius: 50%;
+    background: var(--card-background-color, #fff);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    transition: transform 120ms ease;
+  }
+
+  .monitor-switch[aria-checked="true"] .switch-track {
+    background: var(--primary-color, #03a9f4);
+  }
+
+  .monitor-switch[aria-checked="true"] .switch-thumb {
+    transform: translateX(16px);
+  }
+
+  .monitor-switch:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+
+  .monitor-header-actions {
+    display: inline-flex;
+    gap: 2px;
+    align-items: center;
+  }
+
+  /* ---- Mobile "more actions" overflow menu (hidden on wide cards) ---- */
+
+  .monitor-overflow {
+    position: relative;
+    display: none;
+  }
+
+  .overflow-menu {
+    position: absolute;
+    top: calc(100% + 4px);
+    right: 0;
+    z-index: 2;
+    display: grid;
+    gap: 2px;
+    padding: 4px;
+    min-width: 160px;
+    background: var(--card-background-color, var(--secondary-background-color));
+    border: 1px solid var(--divider-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  }
+
+  .overflow-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--primary-text-color);
+    font: inherit;
+    font-size: 0.85rem;
+    text-align: left;
+    cursor: pointer;
+    --mdc-icon-size: 18px;
     appearance: none;
     -webkit-appearance: none;
   }
 
-  .monitor-card[data-enabled="true"] .monitor-toggle-btn {
-    color: var(--primary-color, #03a9f4);
+  .overflow-item:hover,
+  .overflow-item:focus-visible {
+    background: color-mix(
+      in srgb,
+      var(--primary-color, #03a9f4) 12%,
+      transparent
+    );
+    outline: none;
   }
 
-  .monitor-toggle-btn:hover {
-    color: var(--primary-color, #03a9f4);
+  .overflow-item.delete-btn {
+    color: var(--error-color, #db4437);
+  }
+
+  /* ---- Card body: entity area beside the stats block ---- */
+
+  .monitor-body {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 260px;
+    gap: var(--dp-spacing-md);
+    align-items: start;
+  }
+
+  .monitor-entity-area {
+    min-width: 0;
+  }
+
+  /* ---- Stats block ---- */
+
+  .monitor-stats-block {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--dp-spacing-sm) var(--dp-spacing-md);
+    background: var(--secondary-background-color);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+
+  .monitor-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--secondary-text-color);
+  }
+
+  .stat-value {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.1;
+    color: var(--primary-text-color);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat-caption {
+    font-size: 11px;
+    color: color-mix(in srgb, var(--secondary-text-color) 70%, transparent);
+  }
+
+  /* ---- Footer: trigger logic + device link ---- */
+
+  .monitor-footer {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: var(--dp-spacing-sm);
+    border-top: 1px solid var(--divider-color);
+    padding-top: 10px;
+  }
+
+  .monitor-footer-spacer {
+    flex: 1 1 auto;
+  }
+
+  .monitor-trigger-logic {
+    font-size: 0.85em;
+    color: var(--secondary-text-color);
+  }
+
+  .monitor-device-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.85em;
+    font-weight: 500;
+    color: var(--primary-color);
+    text-decoration: none;
+    --mdc-icon-size: 18px;
+    transition: background 120ms ease;
+  }
+
+  .monitor-device-link:hover,
+  .monitor-device-link:focus-visible {
+    background: color-mix(
+      in srgb,
+      var(--primary-color, #03a9f4) 12%,
+      transparent
+    );
+    outline: none;
+  }
+
+  /* ---- Narrow cards: stack the body (stats first) and collapse actions ---- */
+
+  @container (max-width: 520px) {
+    .monitor-body {
+      grid-template-columns: 1fr;
+    }
+
+    .monitor-stats-block {
+      order: -1;
+    }
+
+    .monitor-header-actions {
+      display: none;
+    }
+
+    .monitor-overflow {
+      display: inline-flex;
+    }
   }
 
   .monitor-entities {
@@ -31711,71 +31924,6 @@
     letter-spacing: 0.06em;
   }
 
-  .monitor-stats {
-    display: flex;
-    gap: var(--dp-spacing-md);
-    align-items: center;
-    flex-wrap: wrap;
-    color: var(--secondary-text-color);
-    font-size: 0.85em;
-  }
-
-  .monitor-sparkline-wrap {
-    display: flex;
-    flex-direction: column;
-    flex: 0 0 auto;
-    gap: 2px;
-  }
-
-  .monitor-sparkline {
-    flex: 0 0 auto;
-    overflow: visible;
-  }
-
-  .sparkline-baseline {
-    stroke: var(--divider-color);
-    stroke-width: 1;
-    stroke-dasharray: 2 2;
-  }
-
-  .sparkline-latest {
-    fill: var(--primary-color);
-  }
-
-  .sparkline-point {
-    fill: transparent;
-  }
-
-  .sparkline-caption,
-  .sparkline-empty {
-    font-size: 0.75em;
-    color: var(--secondary-text-color);
-  }
-
-  .sparkline-empty {
-    flex: 0 0 auto;
-    min-width: 120px;
-    padding: 4px 6px;
-    border: 1px dashed var(--divider-color);
-    border-radius: 4px;
-    text-align: center;
-    font-style: italic;
-  }
-
-  .monitor-actions {
-    display: flex;
-    gap: 4px;
-    align-items: center;
-    flex-wrap: wrap;
-    margin-top: var(--dp-spacing-xs);
-    border-top: 1px solid var(--divider-color);
-    padding-top: var(--dp-spacing-xs);
-  }
-
-  .monitor-actions-spacer {
-    flex: 1;
-  }
-
   /* ---- Compact icon action buttons (view/edit/device/delete/dismiss) ---- */
 
   .icon-action {
@@ -31813,10 +31961,6 @@
   .icon-action:focus-visible {
     outline: 2px solid var(--primary-color);
     outline-offset: 2px;
-  }
-
-  a.device-link {
-    color: var(--primary-color);
   }
 
   .delete-btn {
@@ -32140,6 +32284,7 @@
 	var _monitorClusters_accessor_storage;
 	var _loadingClusters_accessor_storage;
 	var _dismissPickerKey_accessor_storage;
+	var _overflowOpenId_accessor_storage;
 	/**
 	* Fallback detection methods when a monitor has no configured methods. Mirrors
 	* the chart-side default so the overlay still renders anomalies for a monitor
@@ -32150,7 +32295,34 @@
 	function monitorAnomalyMethods(monitor) {
 		return Array.isArray(monitor.anomaly_methods) && monitor.anomaly_methods.length > 0 ? monitor.anomaly_methods : PANEL_DEFAULT_ANOMALY_METHODS;
 	}
-	var AnomalyMonitorsPanel = (_hass_accessor_storage$7 = /* @__PURE__ */ new WeakMap(), _monitors_accessor_storage = /* @__PURE__ */ new WeakMap(), _deletedMonitors_accessor_storage = /* @__PURE__ */ new WeakMap(), _loading_accessor_storage = /* @__PURE__ */ new WeakMap(), _editMonitor_accessor_storage = /* @__PURE__ */ new WeakMap(), _wizardOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitorClusters_accessor_storage = /* @__PURE__ */ new WeakMap(), _loadingClusters_accessor_storage = /* @__PURE__ */ new WeakMap(), _dismissPickerKey_accessor_storage = /* @__PURE__ */ new WeakMap(), _AnomalyMonitorsPanel = class AnomalyMonitorsPanel extends i$2 {
+	/**
+	* Stable, non-negative string hash used only to pick a palette slot. Avoids
+	* bitwise ops (repo lint bans them) by staying in positive integer arithmetic.
+	*/
+	function hashCode(str) {
+		let hash = 0;
+		for (let i = 0; i < str.length; i++) hash = (hash * 31 + str.charCodeAt(i)) % 2147483647;
+		return hash;
+	}
+	/**
+	* Deterministic series colour for a monitor: the same monitor always maps to
+	* the same palette slot, keyed off its first entity id (falling back to its id).
+	*/
+	function monitorSeriesColor(monitor) {
+		return COLORS[hashCode(monitorEntityIds(monitor)[0] ?? monitor.id) % COLORS.length];
+	}
+	/** Format a scan interval in minutes as a compact "N min" / "N h" label. */
+	function fmtScanInterval(minutes) {
+		if (minutes < 60) return `${minutes} min`;
+		const hours = minutes / 60;
+		return `${Number.isInteger(hours) ? hours : hours.toFixed(1)} h`;
+	}
+	/** Format a look-back window in hours as a compact "N h" / "N d" label. */
+	function fmtLookBack(hours) {
+		if (hours >= 24 && hours % 24 === 0) return `${hours / 24} d`;
+		return `${hours} h`;
+	}
+	var AnomalyMonitorsPanel = (_hass_accessor_storage$7 = /* @__PURE__ */ new WeakMap(), _monitors_accessor_storage = /* @__PURE__ */ new WeakMap(), _deletedMonitors_accessor_storage = /* @__PURE__ */ new WeakMap(), _loading_accessor_storage = /* @__PURE__ */ new WeakMap(), _editMonitor_accessor_storage = /* @__PURE__ */ new WeakMap(), _wizardOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitorClusters_accessor_storage = /* @__PURE__ */ new WeakMap(), _loadingClusters_accessor_storage = /* @__PURE__ */ new WeakMap(), _dismissPickerKey_accessor_storage = /* @__PURE__ */ new WeakMap(), _overflowOpenId_accessor_storage = /* @__PURE__ */ new WeakMap(), _AnomalyMonitorsPanel = class AnomalyMonitorsPanel extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _hass_accessor_storage$7, null);
@@ -32162,9 +32334,32 @@
 			_classPrivateFieldInitSpec(this, _monitorClusters_accessor_storage, /* @__PURE__ */ new Map());
 			_classPrivateFieldInitSpec(this, _loadingClusters_accessor_storage, /* @__PURE__ */ new Set());
 			_classPrivateFieldInitSpec(this, _dismissPickerKey_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _overflowOpenId_accessor_storage, null);
+			_defineProperty(
+				this,
+				/** Whether the document-level listeners that close the overflow menu are active. */
+				"_overflowCloseHandlersActive",
+				false
+			);
 			_defineProperty(this, "_pollInterval", null);
 			_defineProperty(this, "_monitorsEventUnsubscribe", null);
 			_defineProperty(this, "_monitorsSubscriptionToken", 0);
+			_defineProperty(
+				this,
+				/** Close the overflow menu on a mousedown outside the menu or its toggle. */
+				"_onDocumentPointerDown",
+				(event) => {
+					if (!event.composedPath().some((node) => node instanceof Element && node.classList.contains("monitor-overflow"))) this._closeOverflow();
+				}
+			);
+			_defineProperty(
+				this,
+				/** Close the overflow menu when Escape is pressed. */
+				"_onDocumentKeyDown",
+				(event) => {
+					if (event.key === "Escape") this._closeOverflow();
+				}
+			);
 		}
 		get hass() {
 			return _classPrivateFieldGet2(_hass_accessor_storage$7, this);
@@ -32220,6 +32415,12 @@
 		set _dismissPickerKey(value) {
 			_classPrivateFieldSet2(_dismissPickerKey_accessor_storage, this, value);
 		}
+		get _overflowOpenId() {
+			return _classPrivateFieldGet2(_overflowOpenId_accessor_storage, this);
+		}
+		set _overflowOpenId(value) {
+			_classPrivateFieldSet2(_overflowOpenId_accessor_storage, this, value);
+		}
 		connectedCallback() {
 			super.connectedCallback();
 			if (this.hasUpdated) {
@@ -32235,6 +32436,7 @@
 				this._pollInterval = null;
 			}
 			this._teardownMonitorSubscription();
+			this._closeOverflow();
 		}
 		updated(changedProperties) {
 			if (changedProperties.has("hass")) {
@@ -32310,8 +32512,31 @@
 			this._emit("dp-monitors-panel-close");
 		}
 		_onEdit(monitor) {
+			this._closeOverflow();
 			this._editMonitor = monitor;
 			this._wizardOpen = true;
+		}
+		_toggleOverflow(monitor) {
+			if (this._overflowOpenId === monitor.id) this._closeOverflow();
+			else this._openOverflow(monitor.id);
+		}
+		/** Open the given monitor's overflow menu and arm the outside-close listeners. */
+		_openOverflow(id) {
+			this._overflowOpenId = id;
+			if (!this._overflowCloseHandlersActive) {
+				document.addEventListener("mousedown", this._onDocumentPointerDown, true);
+				document.addEventListener("keydown", this._onDocumentKeyDown, true);
+				this._overflowCloseHandlersActive = true;
+			}
+		}
+		/** Close any open overflow menu and remove the outside-close listeners. */
+		_closeOverflow() {
+			if (this._overflowOpenId !== null) this._overflowOpenId = null;
+			if (this._overflowCloseHandlersActive) {
+				document.removeEventListener("mousedown", this._onDocumentPointerDown, true);
+				document.removeEventListener("keydown", this._onDocumentKeyDown, true);
+				this._overflowCloseHandlersActive = false;
+			}
 		}
 		_onOpenEntity(monitor, entityId) {
 			const detail = {
@@ -32354,6 +32579,7 @@
 		}
 		async _onDelete(monitor) {
 			if (!this.hass) return;
+			this._closeOverflow();
 			if (!await confirmDestructiveAction(this, {
 				title: msg(`Delete "${monitor.name}"?`),
 				message: msg("The monitor device and all its sensors will be removed. You can restore it from Recently deleted for a limited time."),
@@ -32600,64 +32826,6 @@
       </div>
     `;
 		}
-		_renderSparkline(history) {
-			const W = 120;
-			const H = 28;
-			const PAD = 3;
-			const counts = history.map((e) => e.count);
-			if (counts.length < 2) return b`<div class="sparkline-empty">
-        ${msg("Not enough data yet")}
-      </div>`;
-			const max = Math.max(...counts, 1);
-			const coords = counts.map((c, i) => ({
-				x: PAD + i / (counts.length - 1) * 114,
-				y: 25 - c / max * 22
-			}));
-			const pts = coords.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
-			const baselineY = 25 .toFixed(1);
-			const latest = counts[counts.length - 1];
-			const prev = counts[counts.length - 2];
-			let trend = msg("steady");
-			if (latest > prev) trend = msg("rising");
-			else if (latest < prev) trend = msg("falling");
-			return b`<div class="monitor-sparkline-wrap">
-      <svg
-        class="monitor-sparkline"
-        width=${W}
-        height=${H}
-        role="img"
-        aria-label=${msg(`Anomaly count over the last ${counts.length} scans: latest ${latest}, ${trend}`)}
-      >
-        <line
-          class="sparkline-baseline"
-          x1=${PAD}
-          x2=${117}
-          y1=${baselineY}
-          y2=${baselineY}
-        />
-        <polyline
-          points=${pts}
-          fill="none"
-          stroke="var(--primary-color)"
-          stroke-width="1.5"
-        />
-        ${coords.map((p, i) => {
-				const isLast = i === coords.length - 1;
-				return w`<circle
-            class=${isLast ? "sparkline-latest" : "sparkline-point"}
-            cx=${p.x.toFixed(1)}
-            cy=${p.y.toFixed(1)}
-            r=${isLast ? 3 : 4}
-          >
-            <title>${msg(`${counts[i]} anomalies at ${history[i].t}`)}</title>
-          </circle>`;
-			})}
-      </svg>
-      <span class="sparkline-caption"
-        >${msg(`anomaly count, last ${counts.length} scans`)}</span
-      >
-    </div>`;
-		}
 		/**
 		* Render a single entity chip wrapped in a keyboard-activatable button so a
 		* user can open that entity's series. The `entity-chip` atom stays inert; the
@@ -32731,52 +32899,153 @@
 				triggered: msg("Triggered")
 			}[status];
 		}
+		/**
+		* The plain-language trigger rule shown in the card footer. Individual
+		* monitors watch a single entity; combined monitors either fire when any one
+		* entity is anomalous (OR) or require every entity to be anomalous (AND).
+		*/
+		_triggerLogicLabel(monitor) {
+			if (monitor.type !== "combined") return msg("Single-entity monitor");
+			const mode = monitor.overlap_mode ?? "all";
+			return mode === "any" || /^any_/.test(mode) ? msg("Triggers when any entity is anomalous (OR)") : msg("Triggers when all entities are anomalous (AND)");
+		}
+		/**
+		* The edit + delete button pair. Rendered in two slots: the wide
+		* `.monitor-header-actions` set (`variant: "header"`, icon-only) and the
+		* mobile `.overflow-menu` (`variant: "menu"`, labelled menu items). A single
+		* source keeps the click handlers, icons and labels defined once.
+		*/
+		_renderEditDeleteActions(monitor, variant) {
+			const menu = variant === "menu";
+			const btnClass = (name) => menu ? `overflow-item ${name}` : `icon-action ${name}`;
+			return b`
+      <button
+        class=${btnClass("edit-btn")}
+        type="button"
+        role=${menu ? "menuitem" : A}
+        title=${menu ? A : msg("Edit monitor")}
+        aria-label=${msg("Edit monitor")}
+        @click=${() => this._onEdit(monitor)}
+      >
+        <ha-icon icon="mdi:pencil"></ha-icon>
+        ${menu ? b`<span>${msg("Edit")}</span>` : A}
+      </button>
+      <button
+        class=${btnClass("delete-btn")}
+        type="button"
+        role=${menu ? "menuitem" : A}
+        title=${menu ? A : msg("Delete monitor")}
+        aria-label=${msg("Delete monitor")}
+        @click=${() => this._onDelete(monitor)}
+      >
+        <ha-icon icon="mdi:trash-can-outline"></ha-icon>
+        ${menu ? b`<span>${msg("Delete")}</span>` : A}
+      </button>
+    `;
+		}
+		_renderCardHeader(monitor, status) {
+			const overflowOpen = this._overflowOpenId === monitor.id;
+			return b`
+      <div class="monitor-card-header">
+        <monitor-status-pill
+          .status=${status}
+          .label=${this._statusLabel(status)}
+        ></monitor-status-pill>
+        <span class="monitor-name">${monitor.name}</span>
+        <span class="monitor-header-spacer"></span>
+        <button
+          class="monitor-switch"
+          type="button"
+          role="switch"
+          aria-checked=${monitor.enabled ? "true" : "false"}
+          title=${monitor.enabled ? msg("Disable monitor") : msg("Enable monitor")}
+          aria-label=${monitor.enabled ? msg("Disable monitor") : msg("Enable monitor")}
+          @click=${() => this._onToggleEnabled(monitor)}
+        >
+          <span class="switch-track"><span class="switch-thumb"></span></span>
+        </button>
+        <div class="monitor-header-actions">
+          ${this._renderEditDeleteActions(monitor, "header")}
+        </div>
+        <div class="monitor-overflow">
+          <button
+            class="icon-action overflow-toggle"
+            type="button"
+            aria-haspopup="menu"
+            aria-expanded=${overflowOpen ? "true" : "false"}
+            title=${msg("More actions")}
+            aria-label=${msg("More actions")}
+            @click=${() => this._toggleOverflow(monitor)}
+          >
+            <ha-icon icon="mdi:dots-vertical"></ha-icon>
+          </button>
+          ${overflowOpen ? b`<div class="overflow-menu" role="menu">
+                ${this._renderEditDeleteActions(monitor, "menu")}
+              </div>` : A}
+        </div>
+      </div>
+    `;
+		}
+		_renderStatsBlock(monitor) {
+			const anomalousReadings = monitor.scan_history?.at(-1)?.count ?? 0;
+			const incidents = monitor.active_cluster_count ?? monitor.last_cluster_count ?? 0;
+			const lastAnomaly = monitor.enabled && monitor.last_anomaly_at ? fmtRelativeTime(monitor.last_anomaly_at) : "—";
+			const seriesColor = monitorSeriesColor(monitor);
+			return b`
+      <div class="monitor-stats-block" role="group" aria-label=${msg("Stats")}>
+        <div class="monitor-stat stat-anomalous">
+          <span class="stat-label">${msg("Anomalous readings")}</span>
+          <span class="stat-value" style="color:${seriesColor}"
+            >${anomalousReadings}</span
+          >
+        </div>
+        <div class="monitor-stat stat-incidents">
+          <span class="stat-label">${msg("Incidents")}</span>
+          <span class="stat-value">${incidents}</span>
+          <span class="stat-caption"
+            >${msg("Group(s) of nearby readings")}</span
+          >
+        </div>
+        <div class="monitor-stat stat-last-anomaly">
+          <span class="stat-label">${msg("Last anomaly")}</span>
+          <span class="stat-value">${lastAnomaly}</span>
+        </div>
+        <div class="monitor-stat stat-interval">
+          <span class="stat-label">${msg("Checks every")}</span>
+          <span class="stat-value"
+            >${fmtScanInterval(monitor.scan_interval_minutes)}</span
+          >
+          <span class="stat-caption"
+            >${msg(`Looks back ${fmtLookBack(monitor.look_back_hours)}`)}</span
+          >
+        </div>
+      </div>
+    `;
+		}
 		_renderMonitorCard(monitor) {
 			const clusterCount = monitor.last_cluster_count ?? 0;
 			const hasAnomaly = !!monitor.enabled && clusterCount > 0;
 			const status = deriveMonitorStatus(monitor);
-			const history = monitor.scan_history ?? [];
-			let consecutive = 0;
-			for (let i = history.length - 1; i >= 0; i--) if ((history[i].count ?? 0) > 0) consecutive++;
-			else break;
 			if (hasAnomaly && !this._monitorClusters.has(monitor.id)) this._loadClusters(monitor.id);
 			return b`
       <div class="monitor-card" data-enabled=${monitor.enabled}>
-        <div class="monitor-card-header">
-          <span class="monitor-name">${monitor.name}</span>
-          <monitor-status-pill
-            .status=${status}
-            .label=${this._statusLabel(status)}
-          ></monitor-status-pill>
-          <button
-            class="monitor-toggle-btn"
-            title=${monitor.enabled ? msg("Disable monitor") : msg("Enable monitor")}
-            @click=${() => this._onToggleEnabled(monitor)}
-          >
-            <ha-icon
-              icon=${monitor.enabled ? "mdi:toggle-switch" : "mdi:toggle-switch-off-outline"}
-            ></ha-icon>
-          </button>
-        </div>
+        ${this._renderCardHeader(monitor, status)}
 
-        ${this._renderEntityDisplay(monitor)}
-
-        <div class="monitor-stats">
-          ${this._renderSparkline(history)}
-          <span>
-            ${clusterCount} ${msg("cluster(s)")}
-            ${consecutive > 0 ? b`· ${msg(`persistent for ${consecutive} scans`)}` : A}
-          </span>
-          ${monitor.last_scan_at ? b`<span
-                >${msg("Last scan:")}
-                ${new Date(monitor.last_scan_at).toLocaleString()}</span
-              >` : A}
+        <div class="monitor-body">
+          <div class="monitor-entity-area">
+            ${this._renderEntityDisplay(monitor)}
+          </div>
+          ${this._renderStatsBlock(monitor)}
         </div>
 
         ${hasAnomaly ? this._renderClusterList(monitor) : A}
         ${this._renderDismissedWindows(monitor)}
 
-        <div class="monitor-actions">
+        <div class="monitor-footer">
+          <span class="monitor-trigger-logic"
+            >${this._triggerLogicLabel(monitor)}</span
+          >
+          <span class="monitor-footer-spacer"></span>
           <button
             class="icon-action view-series-btn"
             type="button"
@@ -32786,33 +33055,14 @@
           >
             <ha-icon icon="mdi:chart-line"></ha-icon>
           </button>
-          <button
-            class="icon-action edit-btn"
-            type="button"
-            title=${msg("Edit monitor")}
-            aria-label=${msg("Edit monitor")}
-            @click=${() => this._onEdit(monitor)}
-          >
-            <ha-icon icon="mdi:pencil"></ha-icon>
-          </button>
           ${monitor.device_id ? b`<a
-                class="icon-action device-link"
+                class="monitor-device-link"
                 href=${`/config/devices/device/${monitor.device_id}`}
-                title=${msg("View device")}
-                aria-label=${msg("View device")}
+                title=${msg("Open HASS Datapoints device")}
               >
-                <ha-icon icon="mdi:chip"></ha-icon>
+                <ha-icon icon="mdi:open-in-new"></ha-icon>
+                <span>${msg("Open HASS Datapoints device")}</span>
               </a>` : A}
-          <div class="monitor-actions-spacer"></div>
-          <button
-            class="icon-action delete-btn"
-            type="button"
-            title=${msg("Delete monitor")}
-            aria-label=${msg("Delete monitor")}
-            @click=${() => this._onDelete(monitor)}
-          >
-            <ha-icon icon="mdi:trash-can-outline"></ha-icon>
-          </button>
         </div>
       </div>
     `;
@@ -32908,6 +33158,7 @@
 	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_monitorClusters", null);
 	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_loadingClusters", null);
 	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_dismissPickerKey", null);
+	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_overflowOpenId", null);
 	AnomalyMonitorsPanel = __decorate([localized()], AnomalyMonitorsPanel);
 	customElements.define("anomaly-monitors-panel", AnomalyMonitorsPanel);
 	//#endregion
