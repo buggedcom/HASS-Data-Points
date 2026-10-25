@@ -87,6 +87,20 @@ describe("history-targets", () => {
         ).not.toBeNull();
       });
 
+      it("THEN keeps the picker slot OUT of the collapsible picker row", () => {
+        // The collapsed sidebar sets `.history-target-picker-row { display:none }`.
+        // A display:none ancestor is removed from the render tree, and
+        // position:fixed cannot escape it, so the floated picker would open
+        // nothing when collapsed (#87/#88). The slot mount point must therefore
+        // be a sibling of the row, never a descendant.
+        expect.assertions(2);
+        const slotContainer = el.shadowRoot!.querySelector(
+          ".history-target-picker-slot"
+        );
+        expect(slotContainer).not.toBeNull();
+        expect(slotContainer!.closest(".history-target-picker-row")).toBeNull();
+      });
+
       it("THEN renders the expanded 'Add target' button", () => {
         expect.assertions(1);
         expect(

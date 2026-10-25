@@ -82,6 +82,60 @@ function floatTargetPickerAnchor(
   targetControl.style.pointerEvents = "none";
 }
 
+// Inline properties {@link floatTargetPickerAnchor} writes onto the floated
+// anchor host and the shared control. Cleared on teardown so the stylesheet
+// reasserts the resting (hidden) state.
+const ANCHOR_HOST_FLOATED_PROPS = [
+  "display",
+  "position",
+  "left",
+  "top",
+  "width",
+  "height",
+  "margin",
+  "padding",
+  "opacity",
+  "pointerEvents",
+  "overflow",
+  "zIndex",
+] as const;
+const CONTROL_FLOATED_PROPS = [
+  "width",
+  "height",
+  "opacity",
+  "pointerEvents",
+] as const;
+
+/**
+ * Reverts {@link floatTargetPickerAnchor}: clears every inline property the
+ * float wrote onto the floated anchor host and the shared control, letting the
+ * stylesheet reassert the resting (hidden) state. The control keeps its mount
+ * baseline of `display: block`. Idempotent and a no-op when nothing was floated.
+ */
+function clearFloatedTargetPickerAnchor(targetControl: HTMLElement): void {
+  const assignedSlot =
+    (
+      targetControl as HTMLElement & {
+        assignedSlot?: Nullable<HTMLSlotElement>;
+      }
+    ).assignedSlot ?? null;
+  const slotContainer =
+    assignedSlot?.parentElement instanceof HTMLElement
+      ? assignedSlot.parentElement
+      : null;
+  const hiddenAnchorHost: Nullable<HTMLElement> = slotContainer ?? assignedSlot;
+  if (hiddenAnchorHost) {
+    for (const prop of ANCHOR_HOST_FLOATED_PROPS) {
+      hiddenAnchorHost.style[prop] = "";
+    }
+  }
+  for (const prop of CONTROL_FLOATED_PROPS) {
+    targetControl.style[prop] = "";
+  }
+  // Restore the mount baseline (see `_mountTargetPickerControl`).
+  targetControl.style.display = "block";
+}
+
 export function createHistoryPageOrchestrationContext(): HistoryOrchestrationContext {
   let chartResizeRaf: Nullable<number> = null;
 
@@ -136,6 +190,13 @@ export function createHistoryPageOrchestrationContext(): HistoryOrchestrationCon
       ) {
         (targetControl as { click: () => void }).click();
       }
+    },
+
+    resetCollapsedPickerAnchor(targetControl: Nullable<HTMLElement>): void {
+      if (!targetControl) {
+        return;
+      }
+      clearFloatedTargetPickerAnchor(targetControl);
     },
 
     renderComparisonTabs(options) {

@@ -191,9 +191,6 @@ export class HistoryTargets extends LitElement {
             <ha-icon icon="mdi:playlist-plus"></ha-icon>
             <span>${msg("Add target")}</span>
           </button>
-          <div class="history-target-picker-slot">
-            <slot name="picker"> ${nothing} </slot>
-          </div>
           ${this.rows.length >= 1
             ? html`<button
                 type="button"
@@ -203,6 +200,20 @@ export class HistoryTargets extends LitElement {
                 ${msg("Clear all")}
               </button>`
             : nothing}
+        </div>
+
+        <!--
+          The picker mount point is a sibling of the picker row, never a child
+          of it. When the sidebar is collapsed the whole row is display:none,
+          which would remove the slot (and the floated picker anchored to it)
+          from the render tree — a display:none ancestor can't be escaped by
+          position:fixed, so the collapsed "+" would open nothing (#87/#88).
+          Kept out of the row, the slot is only hidden by its own rule, which
+          the float overrides, so the floated host always renders and the
+          picker's top-layer overlay can anchor to it. It is never shown inline.
+        -->
+        <div class="history-target-picker-slot">
+          <slot name="picker"> ${nothing} </slot>
         </div>
 
         <div class="history-targets-collapsed-summary">
