@@ -7,6 +7,7 @@
 import type {
   AnomalyMonitor,
   CreateMonitorPayload,
+  MonitorType,
 } from "@/lib/data/monitors-api";
 
 // ── Constants ─────────────────────────────────────────────────────────────
@@ -293,7 +294,7 @@ export interface MonitorSummary {
 export function summarizeMonitors(
   entityIds: string[],
   configs: Map<string, EntityAnalysisConfig>,
-  monitorType: "individual" | "combined"
+  monitorType: MonitorType
 ): MonitorSummary {
   const count = (id: string) => {
     const cfg = configs.get(id);
@@ -308,13 +309,15 @@ export function summarizeMonitors(
   };
 }
 
+const DEFAULT_NAME_PREFIX = "Anomaly monitor";
+
 /** Name for one of many individual monitors: the prefix plus the entity. */
 export function individualMonitorName(
   prefix: string,
   entityId: string
 ): string {
   const baseName = entityId.split(".").pop() ?? entityId;
-  return `${prefix} ${baseName}`;
+  return `${prefix.trim() || DEFAULT_NAME_PREFIX} ${baseName}`;
 }
 
 // ── Build create/update payload ───────────────────────────────────────────
