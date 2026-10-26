@@ -61,6 +61,20 @@ export const styles = css`
     }
   }
 
+  .monitors-filter {
+    margin-bottom: var(--dp-spacing-md);
+  }
+
+  .filter-empty-clear {
+    font: inherit;
+    cursor: pointer;
+    color: var(--primary-color);
+    background: none;
+    border: 1px solid var(--divider-color);
+    border-radius: var(--ha-border-radius-pill, 999px);
+    padding: var(--dp-spacing-xs) var(--dp-spacing-md);
+  }
+
   .monitors-empty {
     text-align: center;
     color: var(--secondary-text-color);
