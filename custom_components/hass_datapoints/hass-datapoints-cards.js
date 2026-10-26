@@ -734,7 +734,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/action.styles.ts
-	var styles$80 = i$5`
+	var styles$81 = i$5`
   :host {
     display: block;
   }
@@ -843,7 +843,7 @@
 	];
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/display/color-swatch/color-swatch.styles.ts
-	var styles$79 = i$5`
+	var styles$80 = i$5`
   :host {
     display: block;
   }
@@ -1020,13 +1020,13 @@
     `;
 		}
 	};
-	_defineProperty(ColorSwatch, "styles", styles$79);
+	_defineProperty(ColorSwatch, "styles", styles$80);
 	__decorate([n$1({ type: String })], ColorSwatch.prototype, "color", null);
 	__decorate([n$1({ type: String })], ColorSwatch.prototype, "label", null);
 	customElements.define("color-swatch", ColorSwatch);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/display/feedback-banner/feedback-banner.styles.ts
-	var styles$78 = i$5`
+	var styles$79 = i$5`
   :host {
     display: block;
   }
@@ -1103,7 +1103,7 @@
     `;
 		}
 	};
-	_defineProperty(FeedbackBanner, "styles", styles$78);
+	_defineProperty(FeedbackBanner, "styles", styles$79);
 	__decorate([n$1({ type: String })], FeedbackBanner.prototype, "kind", null);
 	__decorate([n$1({ type: String })], FeedbackBanner.prototype, "text", null);
 	__decorate([n$1({ type: Boolean })], FeedbackBanner.prototype, "visible", null);
@@ -1111,7 +1111,7 @@
 	customElements.define("feedback-banner", FeedbackBanner);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/action-targets/action-targets.styles.ts
-	var styles$77 = i$5`
+	var styles$78 = i$5`
   :host {
     display: block;
   }
@@ -1123,7 +1123,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/chip-group/chip-group.styles.ts
-	var styles$76 = i$5`
+	var styles$77 = i$5`
   :host {
     display: block;
   }
@@ -1140,7 +1140,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/entity-chip/entity-chip.styles.ts
-	var styles$75 = i$5`
+	var styles$76 = i$5`
   :host {
     display: inline-flex;
   }
@@ -1193,7 +1193,7 @@
 	var DEFAULT_I18N$7 = createDefaultI18n(["Remove"]);
 	var _type_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _itemId_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$19 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$20 = /* @__PURE__ */ new WeakMap();
 	var _removable_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _i18n_accessor_storage$8 = /* @__PURE__ */ new WeakMap();
 	var EntityChip = class extends i$2 {
@@ -1201,7 +1201,7 @@
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _type_accessor_storage$2, "entity");
 			_classPrivateFieldInitSpec(this, _itemId_accessor_storage$1, "");
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$19, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$20, null);
 			_classPrivateFieldInitSpec(this, _removable_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _i18n_accessor_storage$8, DEFAULT_I18N$7);
 		}
@@ -1218,10 +1218,10 @@
 			_classPrivateFieldSet2(_itemId_accessor_storage$1, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$19, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$20, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$19, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$20, this, value);
 		}
 		get removable() {
 			return _classPrivateFieldGet2(_removable_accessor_storage$1, this);
@@ -1271,7 +1271,7 @@
     `;
 		}
 	};
-	_defineProperty(EntityChip, "styles", styles$75);
+	_defineProperty(EntityChip, "styles", styles$76);
 	__decorate([n$1({ type: String })], EntityChip.prototype, "type", null);
 	__decorate([n$1({
 		type: String,
@@ -1284,14 +1284,14 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/chip-group/chip-group.ts
 	var _items_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$18 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$19 = /* @__PURE__ */ new WeakMap();
 	var _removable_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _label_accessor_storage$15 = /* @__PURE__ */ new WeakMap();
 	var ChipGroup = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _items_accessor_storage$1, []);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$18, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$19, null);
 			_classPrivateFieldInitSpec(this, _removable_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _label_accessor_storage$15, "");
 		}
@@ -1302,10 +1302,10 @@
 			_classPrivateFieldSet2(_items_accessor_storage$1, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$18, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$19, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$18, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$19, this, value);
 		}
 		get removable() {
 			return _classPrivateFieldGet2(_removable_accessor_storage, this);
@@ -1345,7 +1345,7 @@
     `;
 		}
 	};
-	_defineProperty(ChipGroup, "styles", styles$76);
+	_defineProperty(ChipGroup, "styles", styles$77);
 	__decorate([n$1({ type: Array })], ChipGroup.prototype, "items", null);
 	__decorate([n$1({ type: Object })], ChipGroup.prototype, "hass", null);
 	__decorate([n$1({ type: Boolean })], ChipGroup.prototype, "removable", null);
@@ -1353,7 +1353,7 @@
 	customElements.define("chip-group", ChipGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/action-targets/action-targets.ts
-	var _hass_accessor_storage$17 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$18 = /* @__PURE__ */ new WeakMap();
 	var _showConfigTargets_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _showTargetPicker_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _configChips_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -1361,17 +1361,17 @@
 	var CardActionTargets = class extends i$2 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$17, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$18, null);
 			_classPrivateFieldInitSpec(this, _showConfigTargets_accessor_storage, true);
 			_classPrivateFieldInitSpec(this, _showTargetPicker_accessor_storage, true);
 			_classPrivateFieldInitSpec(this, _configChips_accessor_storage, []);
 			_classPrivateFieldInitSpec(this, _targetValue_accessor_storage, {});
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$17, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$18, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$17, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$18, this, value);
 		}
 		get showConfigTargets() {
 			return _classPrivateFieldGet2(_showConfigTargets_accessor_storage, this);
@@ -1432,7 +1432,7 @@
     `;
 		}
 	};
-	_defineProperty(CardActionTargets, "styles", styles$77);
+	_defineProperty(CardActionTargets, "styles", styles$78);
 	__decorate([n$1({ attribute: false })], CardActionTargets.prototype, "hass", null);
 	__decorate([n$1({
 		type: Boolean,
@@ -1795,7 +1795,7 @@
 		_feedbackText: { state: true },
 		_feedbackVisible: { state: true }
 	});
-	_defineProperty(HassDatapointsActionCard, "styles", styles$80);
+	_defineProperty(HassDatapointsActionCard, "styles", styles$81);
 	__decorate([e$4("#msg")], HassDatapointsActionCard.prototype, "_msgEl", null);
 	__decorate([e$4("#btn")], HassDatapointsActionCard.prototype, "_btnEl", null);
 	__decorate([e$4("#ann")], HassDatapointsActionCard.prototype, "_annEl", null);
@@ -6539,7 +6539,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/editor.styles.ts
-	var styles$74 = i$5`
+	var styles$75 = i$5`
   .note {
     font-size: 0.78rem;
     color: var(--secondary-text-color);
@@ -6547,7 +6547,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/editor-base/editor-base.styles.ts
-	var styles$73 = i$5`
+	var styles$74 = i$5`
   :host {
     display: block;
   }
@@ -6562,12 +6562,12 @@
 	//#region custom_components/hass_datapoints/src/molecules/editor-base/editor-base.ts
 	var _EditorBase;
 	var _config_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$16 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$17 = /* @__PURE__ */ new WeakMap();
 	var EditorBase = (_EditorBase = class EditorBase extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _config_accessor_storage$1, {});
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$16, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$17, null);
 		}
 		get _config() {
 			return _classPrivateFieldGet2(_config_accessor_storage$1, this);
@@ -6576,10 +6576,10 @@
 			_classPrivateFieldSet2(_config_accessor_storage$1, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$16, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$17, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$16, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$17, this, value);
 		}
 		setConfig(config) {
 			this._config = { ...config };
@@ -6598,7 +6598,7 @@
 			this._config = cfg;
 			this._fire(cfg);
 		}
-	}, _defineProperty(_EditorBase, "styles", styles$73), _EditorBase);
+	}, _defineProperty(_EditorBase, "styles", styles$74), _EditorBase);
 	__decorate([r$2()], EditorBase.prototype, "_config", null);
 	__decorate([n$1({ type: Object })], EditorBase.prototype, "hass", null);
 	EditorBase = __decorate([localized()], EditorBase);
@@ -6676,7 +6676,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/display/section-heading/section-heading.styles.ts
-	var styles$72 = i$5`
+	var styles$73 = i$5`
   :host {
     display: block;
   }
@@ -6706,12 +6706,12 @@
 			return b`<div class="heading">${this.text}</div>`;
 		}
 	};
-	_defineProperty(SectionHeading, "styles", styles$72);
+	_defineProperty(SectionHeading, "styles", styles$73);
 	__decorate([n$1({ type: String })], SectionHeading.prototype, "text", null);
 	customElements.define("section-heading", SectionHeading);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/editor-text-field/editor-text-field.styles.ts
-	var styles$71 = i$5`
+	var styles$72 = i$5`
   :host {
     display: block;
   }
@@ -6788,7 +6788,7 @@
     ></ha-textfield>`;
 		}
 	};
-	_defineProperty(EditorTextField, "styles", styles$71);
+	_defineProperty(EditorTextField, "styles", styles$72);
 	__decorate([n$1({ type: String })], EditorTextField.prototype, "label", null);
 	__decorate([n$1({ type: String })], EditorTextField.prototype, "value", null);
 	__decorate([n$1({ type: String })], EditorTextField.prototype, "type", null);
@@ -6797,7 +6797,7 @@
 	customElements.define("editor-text-field", EditorTextField);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/editor-switch/editor-switch.styles.ts
-	var styles$70 = i$5`
+	var styles$71 = i$5`
   :host {
     display: block;
   }
@@ -6895,14 +6895,14 @@
     `;
 		}
 	};
-	_defineProperty(EditorSwitch, "styles", styles$70);
+	_defineProperty(EditorSwitch, "styles", styles$71);
 	__decorate([n$1({ type: String })], EditorSwitch.prototype, "label", null);
 	__decorate([n$1({ type: Boolean })], EditorSwitch.prototype, "checked", null);
 	__decorate([n$1({ type: String })], EditorSwitch.prototype, "tooltip", null);
 	customElements.define("editor-switch", EditorSwitch);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/editor-icon-picker/editor-icon-picker.styles.ts
-	var styles$69 = i$5`
+	var styles$70 = i$5`
   :host {
     display: block;
   }
@@ -6915,7 +6915,7 @@
 	//#region custom_components/hass_datapoints/src/atoms/form/editor-icon-picker/editor-icon-picker.ts
 	var _label_accessor_storage$12 = /* @__PURE__ */ new WeakMap();
 	var _value_accessor_storage$8 = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$15 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$16 = /* @__PURE__ */ new WeakMap();
 	/**
 	* MDI icon picker backed by `ha-icon-picker`.
 	* @fires dp-change - `{ type: "icon", value: string }` — MDI icon string (e.g. `"mdi:home"`)
@@ -6925,7 +6925,7 @@
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _label_accessor_storage$12, "");
 			_classPrivateFieldInitSpec(this, _value_accessor_storage$8, "mdi:bookmark");
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$15, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$16, null);
 		}
 		get label() {
 			return _classPrivateFieldGet2(_label_accessor_storage$12, this);
@@ -6940,10 +6940,10 @@
 			_classPrivateFieldSet2(_value_accessor_storage$8, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$15, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$16, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$15, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$16, this, value);
 		}
 		_onValueChanged(e) {
 			dispatchChange(this, {
@@ -6960,7 +6960,7 @@
     ></ha-icon-picker>`;
 		}
 	};
-	_defineProperty(EditorIconPicker, "styles", styles$69);
+	_defineProperty(EditorIconPicker, "styles", styles$70);
 	__decorate([n$1({ type: String })], EditorIconPicker.prototype, "label", null);
 	__decorate([n$1({ type: String })], EditorIconPicker.prototype, "value", null);
 	__decorate([n$1({ type: Object })], EditorIconPicker.prototype, "hass", null);
@@ -7077,7 +7077,7 @@
     `;
 		}
 	};
-	_defineProperty(HassDatapointsActionCardEditor, "styles", [EditorBase.styles, styles$74]);
+	_defineProperty(HassDatapointsActionCardEditor, "styles", [EditorBase.styles, styles$75]);
 	__decorate([e$4("#target-picker")], HassDatapointsActionCardEditor.prototype, "_targetPickerEl", null);
 	__decorate([r$1("ha-selector")], HassDatapointsActionCardEditor.prototype, "_selectorEls", null);
 	//#endregion
@@ -7321,7 +7321,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/dev-tool/dev-tool.styles.ts
-	var styles$68 = i$5`
+	var styles$69 = i$5`
   :host {
     display: block;
   }
@@ -7396,7 +7396,7 @@
 	_defineProperty(HassDatapointsDevToolCardEditor, "styles", [EditorBase.styles]);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/dev-tool/dev-tool-results/dev-tool-results.styles.ts
-	var styles$67 = i$5`
+	var styles$68 = i$5`
   :host {
     display: block;
     margin-top: 18px;
@@ -7537,6 +7537,10 @@
 			hour: "2-digit",
 			minute: "2-digit"
 		});
+	}
+	/** Format a start/end pair as "<start> – <end>" using {@link fmtDateTime}. */
+	function fmtDateTimeRange(start, end) {
+		return `${fmtDateTime(start)} – ${fmtDateTime(end)}`;
 	}
 	function fmtRelativeTime(iso) {
 		const diff = Date.now() - new Date(iso).getTime();
@@ -7763,7 +7767,7 @@
     `;
 		}
 	};
-	_defineProperty(CardDevToolResults, "styles", styles$67);
+	_defineProperty(CardDevToolResults, "styles", styles$68);
 	__decorate([n$1({ attribute: false })], CardDevToolResults.prototype, "results", null);
 	__decorate([n$1({ type: Boolean })], CardDevToolResults.prototype, "isAdmin", null);
 	__decorate([n$1({ type: String })], CardDevToolResults.prototype, "statusKind", null);
@@ -7773,7 +7777,7 @@
 	customElements.define("dev-tool-results", CardDevToolResults);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/dev-tool/dev-tool-windows/dev-tool-windows.styles.ts
-	var styles$66 = i$5`
+	var styles$67 = i$5`
   :host {
     display: block;
   }
@@ -8016,14 +8020,14 @@
     `;
 		}
 	};
-	_defineProperty(CardDevToolWindows, "styles", styles$66);
+	_defineProperty(CardDevToolWindows, "styles", styles$67);
 	__decorate([n$1({ attribute: false })], CardDevToolWindows.prototype, "windows", null);
 	__decorate([r$2()], CardDevToolWindows.prototype, "_nextWindowId", null);
 	customElements.define("dev-tool-windows", CardDevToolWindows);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/dev-tool/dev-tool.ts
 	var _config_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$14 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$15 = /* @__PURE__ */ new WeakMap();
 	var _entities_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _results_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _analyzing_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -8043,7 +8047,7 @@
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _config_accessor_storage, {});
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$14, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$15, null);
 			_classPrivateFieldInitSpec(this, _entities_accessor_storage, []);
 			_classPrivateFieldInitSpec(this, _results_accessor_storage, []);
 			_classPrivateFieldInitSpec(this, _analyzing_accessor_storage, false);
@@ -8068,10 +8072,10 @@
 			_classPrivateFieldSet2(_config_accessor_storage, this, value);
 		}
 		get _hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$14, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$15, this);
 		}
 		set _hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$14, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$15, this, value);
 		}
 		get _entities() {
 			return _classPrivateFieldGet2(_entities_accessor_storage, this);
@@ -8527,7 +8531,7 @@
 			return document.createElement("hass-datapoints-dev-tool-card-editor");
 		}
 	};
-	_defineProperty(HassDatapointsDevToolCard, "styles", styles$68);
+	_defineProperty(HassDatapointsDevToolCard, "styles", styles$69);
 	__decorate([r$2()], HassDatapointsDevToolCard.prototype, "_config", null);
 	__decorate([r$2()], HassDatapointsDevToolCard.prototype, "_hass", null);
 	__decorate([r$2()], HassDatapointsDevToolCard.prototype, "_entities", null);
@@ -8700,7 +8704,7 @@
 	};
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history.styles.ts
-	var styles$65 = i$5`
+	var styles$66 = i$5`
   :host {
     display: block;
     height: 100%;
@@ -13921,6 +13925,23 @@
 		});
 	}
 	/**
+	* Per-entity anomaly activity buckets and counts for a monitor over an
+	* arbitrary range, using the monitor's own detection config.
+	* @param startMs Range start (epoch ms, inclusive).
+	* @param endMs Range end (epoch ms, exclusive).
+	* @param bucketCount Number of buckets per entity; server default (48) if omitted.
+	*/
+	async function fetchMonitorAnomalyActivity(hass, monitorId, startMs, endMs, bucketCount) {
+		const payload = {
+			type: `${DOMAIN}/monitors/anomaly_activity`,
+			monitor_id: monitorId,
+			start_time: new Date(startMs).toISOString(),
+			end_time: new Date(endMs).toISOString()
+		};
+		if (bucketCount !== void 0) payload.bucket_count = bucketCount;
+		return await hass.connection.sendMessagePromise(payload);
+	}
+	/**
 	* Dismiss an anomaly cluster window.
 	* @param expiresAt ISO datetime string for expiry, or null for permanent, or
 	*   undefined to use the server default (2× look_back_hours).
@@ -14344,7 +14365,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/history-chart.styles.ts
-	var styles$64 = `
+	var styles$65 = `
   hass-datapoints-history-chart {
     position: relative;
     display: flex;
@@ -15291,7 +15312,7 @@
 		connectedCallback() {
 			this.style.cssText = "position:relative;display:flex;flex-direction:column;height:100%;min-height:0;padding:var(--dp-spacing-sm,8px) var(--dp-spacing-md,12px) var(--dp-spacing-md,12px);box-sizing:border-box;overflow:visible;isolation:isolate;z-index:3;";
 			if (this.querySelector("#chart")) return;
-			this.innerHTML = `<style>${styles$64}</style>
+			this.innerHTML = `<style>${styles$65}</style>
       <div class="chart-top-slot" id="chart-top-slot" hidden></div>
       <div class="chart-preview-overlay" id="chart-preview-overlay" hidden></div>
       <div class="chart-scroll-viewport" id="chart-scroll-viewport">
@@ -18799,7 +18820,7 @@
 	});
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/annotation-chip-row/annotation-chip-row.styles.ts
-	var styles$63 = i$5`
+	var styles$64 = i$5`
   :host {
     display: block;
   }
@@ -18830,7 +18851,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/interactive/annotation-chip/annotation-chip.styles.ts
-	var styles$62 = i$5`
+	var styles$63 = i$5`
   :host {
     display: inline-flex;
   }
@@ -18900,7 +18921,7 @@
 	var _name_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
 	var _secondaryText_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _stateObj_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$13 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$14 = /* @__PURE__ */ new WeakMap();
 	var _i18n_accessor_storage$7 = /* @__PURE__ */ new WeakMap();
 	var AnnotationChip = class extends i$2 {
 		constructor(..._args) {
@@ -18911,7 +18932,7 @@
 			_classPrivateFieldInitSpec(this, _name_accessor_storage$4, "");
 			_classPrivateFieldInitSpec(this, _secondaryText_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _stateObj_accessor_storage$2, null);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$13, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$14, null);
 			_classPrivateFieldInitSpec(this, _i18n_accessor_storage$7, DEFAULT_I18N$6);
 		}
 		get type() {
@@ -18951,10 +18972,10 @@
 			_classPrivateFieldSet2(_stateObj_accessor_storage$2, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$13, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$14, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$13, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$14, this, value);
 		}
 		get i18n() {
 			return _classPrivateFieldGet2(_i18n_accessor_storage$7, this);
@@ -19000,7 +19021,7 @@
     `;
 		}
 	};
-	_defineProperty(AnnotationChip, "styles", styles$62);
+	_defineProperty(AnnotationChip, "styles", styles$63);
 	__decorate([n$1({ type: String })], AnnotationChip.prototype, "type", null);
 	__decorate([n$1({
 		type: String,
@@ -19025,7 +19046,7 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/annotation-chip-row/annotation-chip-row.ts
 	var _chips_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _hass_accessor_storage$12 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$13 = /* @__PURE__ */ new WeakMap();
 	var _label_accessor_storage$11 = /* @__PURE__ */ new WeakMap();
 	var _helpText_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _emptyText_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -19040,7 +19061,7 @@
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _chips_accessor_storage, []);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$12, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$13, null);
 			_classPrivateFieldInitSpec(this, _label_accessor_storage$11, "Linked targets");
 			_classPrivateFieldInitSpec(this, _helpText_accessor_storage, "These targets will be associated with the new data point by default. Remove any that should not be linked.");
 			_classPrivateFieldInitSpec(this, _emptyText_accessor_storage, "No linked targets will be associated with this data point.");
@@ -19052,10 +19073,10 @@
 			_classPrivateFieldSet2(_chips_accessor_storage, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$12, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$13, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$12, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$13, this, value);
 		}
 		get label() {
 			return _classPrivateFieldGet2(_label_accessor_storage$11, this);
@@ -19115,7 +19136,7 @@
     `;
 		}
 	};
-	_defineProperty(AnnotationChipRow, "styles", styles$63);
+	_defineProperty(AnnotationChipRow, "styles", styles$64);
 	__decorate([n$1({ type: Array })], AnnotationChipRow.prototype, "chips", null);
 	__decorate([n$1({
 		type: Object,
@@ -20563,11 +20584,11 @@
 			return document.createElement("hass-datapoints-history-card-editor");
 		}
 	};
-	_defineProperty(HassDatapointsHistoryCard, "styles", styles$65);
+	_defineProperty(HassDatapointsHistoryCard, "styles", styles$66);
 	customElements.define("hass-datapoints-history-card", HassDatapointsHistoryCard);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/editor.styles.ts
-	var styles$61 = i$5`
+	var styles$62 = i$5`
   .binary-display-row {
     display: flex;
     align-items: center;
@@ -20732,10 +20753,10 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-sample-group/analysis-sample-group.styles.ts
-	var styles$60 = i$5``;
+	var styles$61 = i$5``;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/analysis/analysis-group/analysis-group.styles.ts
-	var styles$59 = i$5`
+	var styles$60 = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -20868,7 +20889,7 @@
     `;
 		}
 	};
-	_defineProperty(AnalysisGroup, "styles", styles$59);
+	_defineProperty(AnalysisGroup, "styles", styles$60);
 	__decorate([n$1({ type: String })], AnalysisGroup.prototype, "label", null);
 	__decorate([n$1({ type: Boolean })], AnalysisGroup.prototype, "checked", null);
 	__decorate([n$1({ type: Boolean })], AnalysisGroup.prototype, "disabled", null);
@@ -20879,7 +20900,7 @@
 	customElements.define("analysis-group", AnalysisGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/inline-select/inline-select.styles.ts
-	var styles$58 = i$5`
+	var styles$59 = i$5`
   :host {
     display: inline-block;
   }
@@ -20958,7 +20979,7 @@
     `;
 		}
 	};
-	_defineProperty(InlineSelect, "styles", styles$58);
+	_defineProperty(InlineSelect, "styles", styles$59);
 	__decorate([n$1({ type: String })], InlineSelect.prototype, "value", null);
 	__decorate([n$1({ type: Array })], InlineSelect.prototype, "options", null);
 	__decorate([n$1({ type: Boolean })], InlineSelect.prototype, "disabled", null);
@@ -21102,12 +21123,12 @@
       </analysis-group>
     `;
 		}
-	}, _defineProperty(_AnalysisSampleGroup, "styles", [sharedStyles, styles$60]), _AnalysisSampleGroup);
+	}, _defineProperty(_AnalysisSampleGroup, "styles", [sharedStyles, styles$61]), _AnalysisSampleGroup);
 	AnalysisSampleGroup = __decorate([localized()], AnalysisSampleGroup);
 	customElements.define("analysis-sample-group", AnalysisSampleGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/analysis-trend-group.styles.ts
-	var styles$57 = i$5``;
+	var styles$58 = i$5``;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/analysis-trend-group.ts
 	var _AnalysisTrendGroup;
@@ -21220,12 +21241,12 @@
       </analysis-group>
     `;
 		}
-	}, _defineProperty(_AnalysisTrendGroup, "styles", [sharedStyles, styles$57]), _AnalysisTrendGroup);
+	}, _defineProperty(_AnalysisTrendGroup, "styles", [sharedStyles, styles$58]), _AnalysisTrendGroup);
 	AnalysisTrendGroup = __decorate([localized()], AnalysisTrendGroup);
 	customElements.define("analysis-trend-group", AnalysisTrendGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/analysis-summary-group.styles.ts
-	var styles$56 = i$5``;
+	var styles$57 = i$5``;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/analysis-summary-group.ts
 	var _AnalysisSummaryGroup = class AnalysisSummaryGroup extends AnalysisGroupMixin(i$2) {
@@ -21252,12 +21273,12 @@
     `;
 		}
 	};
-	var AnalysisSummaryGroup = (_defineProperty(_AnalysisSummaryGroup, "styles", [sharedStyles, styles$56]), _AnalysisSummaryGroup);
+	var AnalysisSummaryGroup = (_defineProperty(_AnalysisSummaryGroup, "styles", [sharedStyles, styles$57]), _AnalysisSummaryGroup);
 	AnalysisSummaryGroup = __decorate([localized()], AnalysisSummaryGroup);
 	customElements.define("analysis-summary-group", AnalysisSummaryGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/analysis-rate-group.styles.ts
-	var styles$55 = i$5``;
+	var styles$56 = i$5``;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/analysis-rate-group.ts
 	var _AnalysisRateGroup;
@@ -21326,15 +21347,15 @@
       </analysis-group>
     `;
 		}
-	}, _defineProperty(_AnalysisRateGroup, "styles", [sharedStyles, styles$55]), _AnalysisRateGroup);
+	}, _defineProperty(_AnalysisRateGroup, "styles", [sharedStyles, styles$56]), _AnalysisRateGroup);
 	AnalysisRateGroup = __decorate([localized()], AnalysisRateGroup);
 	customElements.define("analysis-rate-group", AnalysisRateGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/analysis-threshold-group.styles.ts
-	var styles$54 = i$5``;
+	var styles$55 = i$5``;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/number-input/number-input.styles.ts
-	var styles$53 = i$5`
+	var styles$54 = i$5`
   :host {
     display: inline-flex;
     align-items: center;
@@ -21416,7 +21437,7 @@
     `;
 		}
 	};
-	_defineProperty(NumberInput, "styles", styles$53);
+	_defineProperty(NumberInput, "styles", styles$54);
 	__decorate([n$1({ type: String })], NumberInput.prototype, "value", null);
 	__decorate([n$1({ type: String })], NumberInput.prototype, "placeholder", null);
 	__decorate([n$1({ type: String })], NumberInput.prototype, "suffix", null);
@@ -21485,13 +21506,13 @@
       </analysis-group>
     `;
 		}
-	}, _defineProperty(_AnalysisThresholdGroup, "styles", [sharedStyles, styles$54]), _AnalysisThresholdGroup);
+	}, _defineProperty(_AnalysisThresholdGroup, "styles", [sharedStyles, styles$55]), _AnalysisThresholdGroup);
 	__decorate([n$1({ type: String })], AnalysisThresholdGroup.prototype, "unit", null);
 	AnalysisThresholdGroup = __decorate([localized()], AnalysisThresholdGroup);
 	customElements.define("analysis-threshold-group", AnalysisThresholdGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/analysis-anomaly-group.styles.ts
-	var styles$52 = i$5`
+	var styles$53 = i$5`
   .method-computing-indicator {
     display: inline-flex;
     align-items: center;
@@ -21632,7 +21653,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/analysis/analysis-method-subopts/analysis-method-subopts.styles.ts
-	var styles$51 = i$5`
+	var styles$52 = i$5`
   :host {
     display: block;
     --dp-spacing-sm: var(--spacing, 8px);
@@ -21654,13 +21675,13 @@
 			return b`<div class="subopts"><slot></slot></div>`;
 		}
 	};
-	_defineProperty(AnalysisMethodSubopts, "styles", styles$51);
+	_defineProperty(AnalysisMethodSubopts, "styles", styles$52);
 	customElements.define("analysis-method-subopts", AnalysisMethodSubopts);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/analysis-anomaly-group.ts
 	var _AnalysisAnomalyGroup;
 	var _comparisonWindows_accessor_storage$3;
-	var _hass_accessor_storage$11;
+	var _hass_accessor_storage$12;
 	var _computing_accessor_storage$1;
 	var _computingProgress_accessor_storage$1;
 	var _computingMethods_accessor_storage$1;
@@ -21815,11 +21836,11 @@
 			label: "Below"
 		}
 	];
-	var AnalysisAnomalyGroup = (_comparisonWindows_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$11 = /* @__PURE__ */ new WeakMap(), _computing_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingProgress_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingMethods_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hideSaveMonitorCta_accessor_storage = /* @__PURE__ */ new WeakMap(), _AnalysisAnomalyGroup = class AnalysisAnomalyGroup extends AnalysisGroupMixin(i$2) {
+	var AnalysisAnomalyGroup = (_comparisonWindows_accessor_storage$3 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$12 = /* @__PURE__ */ new WeakMap(), _computing_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingProgress_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingMethods_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hideSaveMonitorCta_accessor_storage = /* @__PURE__ */ new WeakMap(), _AnalysisAnomalyGroup = class AnalysisAnomalyGroup extends AnalysisGroupMixin(i$2) {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _comparisonWindows_accessor_storage$3, []);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$11, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$12, null);
 			_classPrivateFieldInitSpec(this, _computing_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _computingProgress_accessor_storage$1, 0);
 			_classPrivateFieldInitSpec(this, _computingMethods_accessor_storage$1, /* @__PURE__ */ new Set());
@@ -21832,10 +21853,10 @@
 			_classPrivateFieldSet2(_comparisonWindows_accessor_storage$3, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$11, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$12, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$11, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$12, this, value);
 		}
 		get computing() {
 			return _classPrivateFieldGet2(_computing_accessor_storage$1, this);
@@ -22160,7 +22181,7 @@
 				composed: true
 			}));
 		}
-	}, _defineProperty(_AnalysisAnomalyGroup, "styles", [sharedStyles, styles$52]), _AnalysisAnomalyGroup);
+	}, _defineProperty(_AnalysisAnomalyGroup, "styles", [sharedStyles, styles$53]), _AnalysisAnomalyGroup);
 	__decorate([n$1({
 		type: Array,
 		attribute: "comparison-windows"
@@ -22189,7 +22210,7 @@
 	customElements.define("analysis-anomaly-group", AnalysisAnomalyGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-delta-group/analysis-delta-group.styles.ts
-	var styles$50 = i$5`
+	var styles$51 = i$5`
   .help-text {
     display: inline-block;
     color: var(--secondary-text-color);
@@ -22252,7 +22273,7 @@
       </analysis-group>
     `;
 		}
-	}, _defineProperty(_AnalysisDeltaGroup, "styles", [sharedStyles, styles$50]), _AnalysisDeltaGroup);
+	}, _defineProperty(_AnalysisDeltaGroup, "styles", [sharedStyles, styles$51]), _AnalysisDeltaGroup);
 	__decorate([n$1({
 		type: Boolean,
 		attribute: "can-show-delta-analysis"
@@ -22261,14 +22282,14 @@
 	customElements.define("analysis-delta-group", AnalysisDeltaGroup);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/sidebar-datapoints-section.styles.ts
-	var styles$49 = i$5`
+	var styles$50 = i$5`
   :host {
     display: block;
   }
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/display/sidebar-options-section/sidebar-options-section.styles.ts
-	var styles$48 = i$5`
+	var styles$49 = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -22282,7 +22303,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/display/sidebar-section-header/sidebar-section-header.styles.ts
-	var styles$47 = i$5`
+	var styles$48 = i$5`
   :host {
     display: block;
   }
@@ -22439,7 +22460,7 @@
     `;
 		}
 	};
-	_defineProperty(SidebarSectionHeader, "styles", styles$47);
+	_defineProperty(SidebarSectionHeader, "styles", styles$48);
 	__decorate([n$1({ type: String })], SidebarSectionHeader.prototype, "title", null);
 	__decorate([n$1({ type: String })], SidebarSectionHeader.prototype, "subtitle", null);
 	__decorate([n$1({ type: Boolean })], SidebarSectionHeader.prototype, "collapsible", null);
@@ -22517,7 +22538,7 @@
     `;
 		}
 	};
-	_defineProperty(SidebarOptionsSection, "styles", styles$48);
+	_defineProperty(SidebarOptionsSection, "styles", styles$49);
 	__decorate([n$1({ type: String })], SidebarOptionsSection.prototype, "title", null);
 	__decorate([n$1({ type: String })], SidebarOptionsSection.prototype, "subtitle", null);
 	__decorate([n$1({ type: Boolean })], SidebarOptionsSection.prototype, "collapsible", null);
@@ -22526,7 +22547,7 @@
 	customElements.define("sidebar-options-section", SidebarOptionsSection);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/radio-group/radio-group.styles.ts
-	var styles$46 = i$5`
+	var styles$47 = i$5`
   :host {
     display: block;
   }
@@ -22612,7 +22633,7 @@
     `;
 		}
 	};
-	_defineProperty(RadioGroup, "styles", styles$46);
+	_defineProperty(RadioGroup, "styles", styles$47);
 	__decorate([n$1({ type: String })], RadioGroup.prototype, "name", null);
 	__decorate([n$1({ type: String })], RadioGroup.prototype, "value", null);
 	__decorate([n$1({ type: Array })], RadioGroup.prototype, "options", null);
@@ -22692,7 +22713,7 @@
       </sidebar-options-section>
     `;
 		}
-	}, _defineProperty(_SidebarDatapointsSection, "styles", styles$49), _SidebarDatapointsSection);
+	}, _defineProperty(_SidebarDatapointsSection, "styles", styles$50), _SidebarDatapointsSection);
 	__decorate([n$1({
 		type: String,
 		attribute: "datapoint-scope"
@@ -22703,14 +22724,14 @@
 	customElements.define("sidebar-datapoints-section", SidebarDatapointsSection);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/sidebar-datapoint-display-section.styles.ts
-	var styles$45 = i$5`
+	var styles$46 = i$5`
   :host {
     display: block;
   }
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/form/checkbox-list/checkbox-list.styles.ts
-	var styles$44 = i$5`
+	var styles$45 = i$5`
   :host {
     display: block;
   }
@@ -22775,7 +22796,7 @@
     `;
 		}
 	};
-	_defineProperty(CheckboxList, "styles", styles$44);
+	_defineProperty(CheckboxList, "styles", styles$45);
 	__decorate([n$1({ type: Array })], CheckboxList.prototype, "items", null);
 	customElements.define("checkbox-list", CheckboxList);
 	//#endregion
@@ -22851,7 +22872,7 @@
       </sidebar-options-section>
     `;
 		}
-	}, _defineProperty(_SidebarDatapointDisplaySection, "styles", styles$45), _SidebarDatapointDisplaySection);
+	}, _defineProperty(_SidebarDatapointDisplaySection, "styles", styles$46), _SidebarDatapointDisplaySection);
 	__decorate([n$1({
 		type: Boolean,
 		attribute: "show-icons"
@@ -22866,7 +22887,7 @@
 	customElements.define("sidebar-datapoint-display-section", SidebarDatapointDisplaySection);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/sidebar-analysis-section.styles.ts
-	var styles$43 = i$5`
+	var styles$44 = i$5`
   :host {
     display: block;
   }
@@ -23007,7 +23028,7 @@
       </sidebar-options-section>
     `;
 		}
-	}, _defineProperty(_SidebarAnalysisSection, "styles", styles$43), _SidebarAnalysisSection);
+	}, _defineProperty(_SidebarAnalysisSection, "styles", styles$44), _SidebarAnalysisSection);
 	__decorate([n$1({
 		type: String,
 		attribute: "anomaly-overlap-mode"
@@ -23026,7 +23047,7 @@
 	customElements.define("sidebar-analysis-section", SidebarAnalysisSection);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/sidebar-chart-display-section.styles.ts
-	var styles$42 = i$5`
+	var styles$43 = i$5`
   :host {
     display: block;
     --dp-spacing-sm: var(--spacing, 8px);
@@ -23283,7 +23304,7 @@
       </sidebar-options-section>
     `;
 		}
-	}, _defineProperty(_SidebarChartDisplaySection, "styles", styles$42), _SidebarChartDisplaySection);
+	}, _defineProperty(_SidebarChartDisplaySection, "styles", styles$43), _SidebarChartDisplaySection);
 	__decorate([n$1({
 		type: Boolean,
 		attribute: "show-tooltips"
@@ -23689,7 +23710,7 @@
     `;
 		}
 	};
-	_defineProperty(HassDatapointsHistoryCardEditor, "styles", [EditorBase.styles, styles$61]);
+	_defineProperty(HassDatapointsHistoryCardEditor, "styles", [EditorBase.styles, styles$62]);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/data/preferences-api.ts
 	/** HA user-data key for the saved history page. Stored via frontend/set_user_data. */
@@ -24487,7 +24508,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/target-row.styles.ts
-	var styles$41 = i$5`
+	var styles$42 = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -24990,7 +25011,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-aggregate-group/analysis-aggregate-group.styles.ts
-	var styles$40 = i$5`
+	var styles$41 = i$5`
   .method-list {
     display: grid;
     gap: calc(var(--dp-spacing-sm, 8px) * 0.75);
@@ -25252,7 +25273,7 @@
       </analysis-group>
     `;
 		}
-	}, _defineProperty(_AnalysisAggregateGroup, "styles", [sharedStyles, styles$40]), _AnalysisAggregateGroup);
+	}, _defineProperty(_AnalysisAggregateGroup, "styles", [sharedStyles, styles$41]), _AnalysisAggregateGroup);
 	__decorate([n$1({
 		type: String,
 		attribute: "device-class"
@@ -25279,7 +25300,7 @@
 	var _entityId_accessor_storage;
 	var _canShowDeltaAnalysis_accessor_storage$2;
 	var _stateObj_accessor_storage$1;
-	var _hass_accessor_storage$10;
+	var _hass_accessor_storage$11;
 	var _comparisonWindows_accessor_storage$2;
 	var _computing_accessor_storage;
 	var _computingProgress_accessor_storage;
@@ -25316,7 +25337,7 @@
 	function _hasActiveAnalysis(a, hasComparisonWindow) {
 		return a.show_trend_lines || a.show_summary_stats || a.show_rate_of_change || a.show_threshold_analysis || a.show_anomalies || a.show_delta_analysis && hasComparisonWindow || hasAggregates(a);
 	}
-	var TargetRow = (_color_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _visible_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _analysis_accessor_storage = /* @__PURE__ */ new WeakMap(), _index_accessor_storage = /* @__PURE__ */ new WeakMap(), _entityId_accessor_storage = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _stateObj_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$10 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _computing_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingProgress_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingMethods_accessor_storage = /* @__PURE__ */ new WeakMap(), _rowCount_accessor_storage = /* @__PURE__ */ new WeakMap(), _allAnalysisSame_accessor_storage = /* @__PURE__ */ new WeakMap(), _hideDragHandle_accessor_storage = /* @__PURE__ */ new WeakMap(), _label_accessor_storage$9 = /* @__PURE__ */ new WeakMap(), _binaryDisplay_accessor_storage = /* @__PURE__ */ new WeakMap(), _showBinaryDisplay_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _TargetRow = class TargetRow extends i$2 {
+	var TargetRow = (_color_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _visible_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _analysis_accessor_storage = /* @__PURE__ */ new WeakMap(), _index_accessor_storage = /* @__PURE__ */ new WeakMap(), _entityId_accessor_storage = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _stateObj_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$11 = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _computing_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingProgress_accessor_storage = /* @__PURE__ */ new WeakMap(), _computingMethods_accessor_storage = /* @__PURE__ */ new WeakMap(), _rowCount_accessor_storage = /* @__PURE__ */ new WeakMap(), _allAnalysisSame_accessor_storage = /* @__PURE__ */ new WeakMap(), _hideDragHandle_accessor_storage = /* @__PURE__ */ new WeakMap(), _label_accessor_storage$9 = /* @__PURE__ */ new WeakMap(), _binaryDisplay_accessor_storage = /* @__PURE__ */ new WeakMap(), _showBinaryDisplay_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _TargetRow = class TargetRow extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _color_accessor_storage$1, "#03a9f4");
@@ -25326,7 +25347,7 @@
 			_classPrivateFieldInitSpec(this, _entityId_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _canShowDeltaAnalysis_accessor_storage$2, false);
 			_classPrivateFieldInitSpec(this, _stateObj_accessor_storage$1, null);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$10, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$11, null);
 			_classPrivateFieldInitSpec(this, _comparisonWindows_accessor_storage$2, []);
 			_classPrivateFieldInitSpec(this, _computing_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _computingProgress_accessor_storage, 0);
@@ -25387,10 +25408,10 @@
 			_classPrivateFieldSet2(_stateObj_accessor_storage$1, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$10, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$11, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$10, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$11, this, value);
 		}
 		get comparisonWindows() {
 			return _classPrivateFieldGet2(_comparisonWindows_accessor_storage$2, this);
@@ -25764,7 +25785,7 @@
       </div>
     `;
 		}
-	}, _defineProperty(_TargetRow, "styles", styles$41), _TargetRow);
+	}, _defineProperty(_TargetRow, "styles", styles$42), _TargetRow);
 	__decorate([n$1({ type: String })], TargetRow.prototype, "color", null);
 	__decorate([n$1({ type: Boolean })], TargetRow.prototype, "visible", null);
 	__decorate([n$1({ type: Object })], TargetRow.prototype, "analysis", null);
@@ -25829,7 +25850,7 @@
 	customElements.define("target-row", TargetRow);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/target-row-list.styles.ts
-	var styles$39 = i$5`
+	var styles$40 = i$5`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -25906,7 +25927,7 @@
 	var _TargetRowList;
 	var _rows_accessor_storage$1;
 	var _states_accessor_storage$1;
-	var _hass_accessor_storage$9;
+	var _hass_accessor_storage$10;
 	var _canShowDeltaAnalysis_accessor_storage$1;
 	var _showBinaryDisplay_accessor_storage;
 	var _comparisonWindows_accessor_storage$1;
@@ -25996,12 +26017,12 @@
 		}
 		return updates;
 	}
-	var TargetRowList = (_rows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _states_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$9 = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _showBinaryDisplay_accessor_storage = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingEntityIds_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _analysisProgress_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingMethodsByEntity_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _labelMap_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _targetRows_accessor_storage = /* @__PURE__ */ new WeakMap(), _TargetRowList = class TargetRowList extends i$2 {
+	var TargetRowList = (_rows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _states_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _hass_accessor_storage$10 = /* @__PURE__ */ new WeakMap(), _canShowDeltaAnalysis_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _showBinaryDisplay_accessor_storage = /* @__PURE__ */ new WeakMap(), _comparisonWindows_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingEntityIds_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _analysisProgress_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _computingMethodsByEntity_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _labelMap_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _targetRows_accessor_storage = /* @__PURE__ */ new WeakMap(), _TargetRowList = class TargetRowList extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _rows_accessor_storage$1, []);
 			_classPrivateFieldInitSpec(this, _states_accessor_storage$1, {});
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$9, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$10, null);
 			_classPrivateFieldInitSpec(this, _canShowDeltaAnalysis_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _showBinaryDisplay_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _comparisonWindows_accessor_storage$1, []);
@@ -26102,10 +26123,10 @@
 			_classPrivateFieldSet2(_states_accessor_storage$1, this, value);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$9, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$10, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$9, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$10, this, value);
 		}
 		get canShowDeltaAnalysis() {
 			return _classPrivateFieldGet2(_canShowDeltaAnalysis_accessor_storage$1, this);
@@ -26270,7 +26291,7 @@
 				r.classList.remove("is-drag-over-before", "is-drag-over-after");
 			});
 		}
-	}, _defineProperty(_TargetRowList, "styles", styles$39), _TargetRowList);
+	}, _defineProperty(_TargetRowList, "styles", styles$40), _TargetRowList);
 	__decorate([n$1({ type: Array })], TargetRowList.prototype, "rows", null);
 	__decorate([n$1({
 		type: Object,
@@ -26313,7 +26334,7 @@
 	customElements.define("target-row-list", TargetRowList);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sidebar-options.styles.ts
-	var styles$38 = i$5`
+	var styles$39 = i$5`
   :host {
     display: block;
     --dp-spacing-lg: calc(var(--spacing, 8px) * 2);
@@ -26525,7 +26546,7 @@
     `;
 		}
 	};
-	_defineProperty(SidebarOptions, "styles", styles$38);
+	_defineProperty(SidebarOptions, "styles", styles$39);
 	__decorate([n$1({
 		type: String,
 		attribute: "datapoint-scope"
@@ -26590,7 +26611,7 @@
 	customElements.define("sidebar-options", SidebarOptions);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/collapsed-options-menu/collapsed-options-menu.styles.ts
-	var styles$37 = i$5`
+	var styles$38 = i$5`
   :host {
     display: block;
   }
@@ -26914,7 +26935,7 @@
     `;
 		}
 	};
-	_defineProperty(CollapsedOptionsMenu, "styles", styles$37);
+	_defineProperty(CollapsedOptionsMenu, "styles", styles$38);
 	__decorate([n$1({ type: String })], CollapsedOptionsMenu.prototype, "datapointScope", null);
 	__decorate([n$1({ type: Boolean })], CollapsedOptionsMenu.prototype, "showIcons", null);
 	__decorate([n$1({ type: Boolean })], CollapsedOptionsMenu.prototype, "showLines", null);
@@ -26959,7 +26980,7 @@
 	});
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab-rail/comparison-tab-rail.styles.ts
-	var styles$36 = i$5`
+	var styles$37 = i$5`
   :host {
     display: block;
   }
@@ -27056,7 +27077,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab/comparison-tab.styles.ts
-	var styles$35 = i$5`
+	var styles$36 = i$5`
   :host {
     display: contents;
   }
@@ -27428,7 +27449,7 @@
     `;
 		}
 	};
-	_defineProperty(ComparisonTab, "styles", styles$35);
+	_defineProperty(ComparisonTab, "styles", styles$36);
 	__decorate([n$1({
 		type: String,
 		attribute: "tab-id"
@@ -27549,7 +27570,7 @@
       </div>
     `;
 		}
-	}, _defineProperty(_ComparisonTabRail, "styles", styles$36), _ComparisonTabRail);
+	}, _defineProperty(_ComparisonTabRail, "styles", styles$37), _ComparisonTabRail);
 	__decorate([n$1({ type: Array })], ComparisonTabRail.prototype, "tabs", null);
 	__decorate([n$1({
 		type: Array,
@@ -27566,7 +27587,7 @@
 	customElements.define("comparison-tab-rail", ComparisonTabRail);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/date-window-dialog.styles.ts
-	var styles$34 = i$5`
+	var styles$35 = i$5`
   :host {
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
     --dp-spacing-sm: var(--spacing, 8px);
@@ -27790,7 +27811,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-timeline.styles.ts
-	var styles$33 = i$5`
+	var styles$34 = i$5`
   :host {
     display: block;
     position: relative;
@@ -28033,7 +28054,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-handle.styles.ts
-	var styles$32 = i$5`
+	var styles$33 = i$5`
   :host {
     position: absolute;
     top: 26px;
@@ -28213,7 +28234,7 @@
     `;
 		}
 	};
-	_defineProperty(RangeHandle, "styles", styles$32);
+	_defineProperty(RangeHandle, "styles", styles$33);
 	__decorate([n$1({ type: Number })], RangeHandle.prototype, "position", null);
 	__decorate([n$1({ type: String })], RangeHandle.prototype, "label", null);
 	__decorate([n$1({ type: Boolean })], RangeHandle.prototype, "live", null);
@@ -28221,7 +28242,7 @@
 	customElements.define("range-handle", RangeHandle);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-scale.styles.ts
-	var styles$31 = i$5`
+	var styles$32 = i$5`
   :host {
     display: contents;
   }
@@ -28657,7 +28678,7 @@
 			}));
 		}
 	};
-	_defineProperty(RangeScale, "styles", styles$31);
+	_defineProperty(RangeScale, "styles", styles$32);
 	__decorate([n$1({ attribute: false })], RangeScale.prototype, "i18n", null);
 	__decorate([n$1({ type: Object })], RangeScale.prototype, "rangeBounds", null);
 	__decorate([n$1({ type: String })], RangeScale.prototype, "zoomLevel", null);
@@ -28666,7 +28687,7 @@
 	customElements.define("range-scale", RangeScale);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-tooltip.styles.ts
-	var styles$30 = i$5`
+	var styles$31 = i$5`
   :host {
     position: absolute;
     top: 43px;
@@ -28789,7 +28810,7 @@
 			return b`${this.content}${this.isLive ? b`<span class="live-hint">${this.liveHint}</span>` : A}`;
 		}
 	};
-	_defineProperty(RangeTooltip, "styles", styles$30);
+	_defineProperty(RangeTooltip, "styles", styles$31);
 	__decorate([n$1({ type: String })], RangeTooltip.prototype, "content", null);
 	__decorate([n$1({
 		type: Boolean,
@@ -28805,7 +28826,7 @@
 	customElements.define("range-tooltip", RangeTooltip);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-track.styles.ts
-	var styles$29 = i$5`
+	var styles$30 = i$5`
   :host {
     position: absolute;
     left: 0;
@@ -28882,7 +28903,7 @@
     `;
 		}
 	};
-	_defineProperty(RangeTrack, "styles", styles$29);
+	_defineProperty(RangeTrack, "styles", styles$30);
 	__decorate([n$1({ type: Number })], RangeTrack.prototype, "selectionLeftPct", null);
 	__decorate([n$1({ type: Number })], RangeTrack.prototype, "selectionWidthPct", null);
 	__decorate([n$1({ type: Boolean })], RangeTrack.prototype, "selectionDragging", null);
@@ -29880,7 +29901,7 @@
 			}
 		}
 	};
-	_defineProperty(RangeTimeline, "styles", styles$33);
+	_defineProperty(RangeTimeline, "styles", styles$34);
 	__decorate([n$1({ type: Object })], RangeTimeline.prototype, "startTime", null);
 	__decorate([n$1({ type: Object })], RangeTimeline.prototype, "endTime", null);
 	__decorate([n$1({ type: Object })], RangeTimeline.prototype, "rangeBounds", null);
@@ -30318,7 +30339,7 @@
       </ha-dialog>
     `;
 		}
-	}, _defineProperty(_DateWindowDialog, "styles", styles$34), _DateWindowDialog);
+	}, _defineProperty(_DateWindowDialog, "styles", styles$35), _DateWindowDialog);
 	__decorate([n$1({ type: Boolean })], DateWindowDialog.prototype, "open", null);
 	__decorate([n$1({ type: String })], DateWindowDialog.prototype, "heading", null);
 	__decorate([n$1({ type: String })], DateWindowDialog.prototype, "name", null);
@@ -30372,7 +30393,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/anomaly-monitor-wizard.styles.ts
-	var styles$28 = i$5`
+	var styles$29 = i$5`
   /* ---- Dialog content wrapper ---- */
 
   .wizard-shell {
@@ -30875,7 +30896,7 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/anomaly-monitor-wizard.ts
 	var _AnomalyMonitorWizard;
-	var _hass_accessor_storage$8 = /* @__PURE__ */ new WeakMap();
+	var _hass_accessor_storage$9 = /* @__PURE__ */ new WeakMap();
 	var _open_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _prefillEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _prefillAnalysis_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -30884,7 +30905,7 @@
 	var _allSeriesEntityIds_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _step_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _target_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _entityIds_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _entityIds_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _entityConfigs_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _activeEntityId_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _name_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
@@ -30897,7 +30918,7 @@
 	var AnomalyMonitorWizard = (_AnomalyMonitorWizard = class AnomalyMonitorWizard extends i$2 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _hass_accessor_storage$8, null);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$9, null);
 			_classPrivateFieldInitSpec(this, _open_accessor_storage$2, false);
 			_classPrivateFieldInitSpec(this, _prefillEntityIds_accessor_storage, []);
 			_classPrivateFieldInitSpec(this, _prefillAnalysis_accessor_storage, null);
@@ -30906,7 +30927,7 @@
 			_classPrivateFieldInitSpec(this, _allSeriesEntityIds_accessor_storage, []);
 			_classPrivateFieldInitSpec(this, _step_accessor_storage, 1);
 			_classPrivateFieldInitSpec(this, _target_accessor_storage, {});
-			_classPrivateFieldInitSpec(this, _entityIds_accessor_storage, []);
+			_classPrivateFieldInitSpec(this, _entityIds_accessor_storage$1, []);
 			_classPrivateFieldInitSpec(this, _entityConfigs_accessor_storage, /* @__PURE__ */ new Map());
 			_classPrivateFieldInitSpec(this, _activeEntityId_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _name_accessor_storage$1, "");
@@ -30918,10 +30939,10 @@
 			_classPrivateFieldInitSpec(this, _saving_accessor_storage, false);
 		}
 		get hass() {
-			return _classPrivateFieldGet2(_hass_accessor_storage$8, this);
+			return _classPrivateFieldGet2(_hass_accessor_storage$9, this);
 		}
 		set hass(value) {
-			_classPrivateFieldSet2(_hass_accessor_storage$8, this, value);
+			_classPrivateFieldSet2(_hass_accessor_storage$9, this, value);
 		}
 		get open() {
 			return _classPrivateFieldGet2(_open_accessor_storage$2, this);
@@ -30972,10 +30993,10 @@
 			_classPrivateFieldSet2(_target_accessor_storage, this, value);
 		}
 		get _entityIds() {
-			return _classPrivateFieldGet2(_entityIds_accessor_storage, this);
+			return _classPrivateFieldGet2(_entityIds_accessor_storage$1, this);
 		}
 		set _entityIds(value) {
-			_classPrivateFieldSet2(_entityIds_accessor_storage, this, value);
+			_classPrivateFieldSet2(_entityIds_accessor_storage$1, this, value);
 		}
 		get _entityConfigs() {
 			return _classPrivateFieldGet2(_entityConfigs_accessor_storage, this);
@@ -31543,7 +31564,7 @@
       </ha-dialog>
     `;
 		}
-	}, _defineProperty(_AnomalyMonitorWizard, "styles", styles$28), _AnomalyMonitorWizard);
+	}, _defineProperty(_AnomalyMonitorWizard, "styles", styles$29), _AnomalyMonitorWizard);
 	__decorate([n$1({ type: Object })], AnomalyMonitorWizard.prototype, "hass", null);
 	__decorate([n$1({ type: Boolean })], AnomalyMonitorWizard.prototype, "open", null);
 	__decorate([n$1({ type: Array })], AnomalyMonitorWizard.prototype, "prefillEntityIds", null);
@@ -31567,7 +31588,7 @@
 	customElements.define("anomaly-monitor-wizard", AnomalyMonitorWizard);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitors-panel/anomaly-monitors-panel.styles.ts
-	var styles$27 = i$5`
+	var styles$28 = i$5`
   :host {
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
     --dp-spacing-sm: var(--spacing, 8px);
@@ -31595,6 +31616,37 @@
     margin: 0;
     font-size: 1.1em;
     font-weight: 500;
+  }
+
+  .monitors-title {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    margin-left: var(--dp-spacing-sm);
+  }
+
+  .monitors-subtitle {
+    font-size: 12px;
+    color: var(--secondary-text-color);
+  }
+
+  .monitors-range-bar {
+    display: none;
+    align-items: center;
+    gap: var(--dp-spacing-sm);
+    margin-bottom: var(--dp-spacing-sm);
+    padding: var(--dp-spacing-xs) var(--dp-spacing-sm);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--secondary-text-color);
+    background: var(--secondary-background-color);
+  }
+
+  @media (max-width: 600px) {
+    .monitors-range-bar {
+      display: flex;
+    }
   }
 
   .monitors-empty {
@@ -32179,7 +32231,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/display/monitor-status-pill/monitor-status-pill.styles.ts
-	var styles$26 = i$5`
+	var styles$27 = i$5`
   :host {
     display: inline-flex;
   }
@@ -32268,14 +32320,326 @@
     `;
 		}
 	};
-	_defineProperty(MonitorStatusPill, "styles", styles$26);
+	_defineProperty(MonitorStatusPill, "styles", styles$27);
 	__decorate([n$1({ type: String })], MonitorStatusPill.prototype, "status", null);
 	__decorate([n$1({ type: String })], MonitorStatusPill.prototype, "label", null);
 	customElements.define("monitor-status-pill", MonitorStatusPill);
 	//#endregion
+	//#region custom_components/hass_datapoints/src/molecules/monitor-entity-heatmap/monitor-entity-heatmap.styles.ts
+	var styles$26 = i$5`
+  :host {
+    display: block;
+    min-width: 0;
+    --heatmap-color: var(--primary-color);
+  }
+
+  .heatmap {
+    position: relative;
+    display: grid;
+    gap: 8px;
+  }
+
+  .heatmap-row {
+    display: grid;
+    grid-template-columns: minmax(90px, 30%) minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .heatmap-label {
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .heatmap-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--primary-text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .heatmap-id {
+    font-size: 11px;
+    color: var(--secondary-text-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .heatmap-count {
+    font-size: 13px;
+    font-weight: 600;
+    min-width: 2ch;
+    text-align: right;
+    color: var(--primary-text-color);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .heatmap-track {
+    display: flex;
+    gap: 2px;
+    height: 22px;
+  }
+
+  .heatmap-block {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 2px;
+    cursor: pointer;
+    background: color-mix(
+      in srgb,
+      var(--heatmap-color) calc(var(--heat, 0) * 100%),
+      var(--secondary-background-color)
+    );
+  }
+
+  .heatmap-block[data-empty="true"] {
+    background: var(--secondary-background-color);
+    cursor: default;
+  }
+
+  .heatmap-block:hover:not([data-empty="true"]),
+  .heatmap-block:focus-visible {
+    outline: 2px solid var(--primary-text-color);
+    outline-offset: 1px;
+  }
+
+  .heatmap-flat {
+    height: 22px;
+    border-radius: 2px;
+    background: var(--secondary-background-color);
+  }
+
+  .heatmap-axis {
+    display: grid;
+    grid-template-columns: minmax(90px, 30%) minmax(0, 1fr) 2ch;
+    gap: 10px;
+  }
+
+  .heatmap-ticks {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--secondary-text-color);
+    grid-column: 2;
+  }
+
+  .heatmap-tooltip {
+    position: absolute;
+    z-index: 2;
+    transform: translate(-50%, -100%);
+    pointer-events: none;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    white-space: nowrap;
+    background: var(--card-background-color, var(--primary-background-color));
+    color: var(--primary-text-color);
+    border: 1px solid var(--divider-color);
+    box-shadow: var(--ha-card-box-shadow, 0 2px 8px rgb(0 0 0 / 20%));
+  }
+
+  .heatmap-tooltip-range {
+    color: var(--secondary-text-color);
+  }
+`;
+	//#endregion
+	//#region custom_components/hass_datapoints/src/molecules/monitor-entity-heatmap/monitor-entity-heatmap.ts
+	var _MonitorEntityHeatmap;
+	var _hass_accessor_storage$8;
+	var _entityIds_accessor_storage;
+	var _activity_accessor_storage$1;
+	var _startMs_accessor_storage;
+	var _endMs_accessor_storage;
+	var _hover_accessor_storage;
+	/** Number of shared x-axis date ticks. */
+	var TICK_COUNT = 5;
+	var MonitorEntityHeatmap = (_hass_accessor_storage$8 = /* @__PURE__ */ new WeakMap(), _entityIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _activity_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _startMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _endMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _hover_accessor_storage = /* @__PURE__ */ new WeakMap(), _MonitorEntityHeatmap = class MonitorEntityHeatmap extends i$2 {
+		constructor(..._args) {
+			super(..._args);
+			_classPrivateFieldInitSpec(this, _hass_accessor_storage$8, null);
+			_classPrivateFieldInitSpec(this, _entityIds_accessor_storage, []);
+			_classPrivateFieldInitSpec(this, _activity_accessor_storage$1, null);
+			_classPrivateFieldInitSpec(this, _startMs_accessor_storage, 0);
+			_classPrivateFieldInitSpec(this, _endMs_accessor_storage, 0);
+			_classPrivateFieldInitSpec(this, _hover_accessor_storage, null);
+			_defineProperty(this, "_maxCount", 0);
+		}
+		get hass() {
+			return _classPrivateFieldGet2(_hass_accessor_storage$8, this);
+		}
+		set hass(value) {
+			_classPrivateFieldSet2(_hass_accessor_storage$8, this, value);
+		}
+		get entityIds() {
+			return _classPrivateFieldGet2(_entityIds_accessor_storage, this);
+		}
+		set entityIds(value) {
+			_classPrivateFieldSet2(_entityIds_accessor_storage, this, value);
+		}
+		get activity() {
+			return _classPrivateFieldGet2(_activity_accessor_storage$1, this);
+		}
+		set activity(value) {
+			_classPrivateFieldSet2(_activity_accessor_storage$1, this, value);
+		}
+		get startMs() {
+			return _classPrivateFieldGet2(_startMs_accessor_storage, this);
+		}
+		set startMs(value) {
+			_classPrivateFieldSet2(_startMs_accessor_storage, this, value);
+		}
+		get endMs() {
+			return _classPrivateFieldGet2(_endMs_accessor_storage, this);
+		}
+		set endMs(value) {
+			_classPrivateFieldSet2(_endMs_accessor_storage, this, value);
+		}
+		get _hover() {
+			return _classPrivateFieldGet2(_hover_accessor_storage, this);
+		}
+		set _hover(value) {
+			_classPrivateFieldSet2(_hover_accessor_storage, this, value);
+		}
+		willUpdate() {
+			let max = 0;
+			for (const e of this.activity ?? []) for (const b of e.buckets ?? []) max = Math.max(max, b.anomaly_count);
+			this._maxCount = max;
+		}
+		_emit(name, detail) {
+			this.dispatchEvent(new CustomEvent(name, {
+				detail,
+				bubbles: true,
+				composed: true
+			}));
+		}
+		_emitBlockClick(entityId, bucket) {
+			const detail = {
+				entityId,
+				startMs: bucket.start_ms,
+				endMs: bucket.end_ms
+			};
+			this._emit("dp-heatmap-block-click", detail);
+		}
+		_emitEntityClick(entityId) {
+			this._emit("dp-heatmap-entity-click", { entityId });
+		}
+		_showTooltip(event, entityId, bucket) {
+			const block = event.currentTarget;
+			const host = this.getBoundingClientRect();
+			const rect = block.getBoundingClientRect();
+			const width = host.width || 1;
+			this._hover = {
+				entityId,
+				bucket,
+				leftPct: (rect.left + rect.width / 2 - host.left) / width * 100,
+				topPx: rect.top - host.top - 6
+			};
+		}
+		_hideTooltip() {
+			this._hover = null;
+		}
+		_renderBlock(entityId, bucket) {
+			const empty = bucket.anomaly_count <= 0;
+			const heat = empty ? 0 : .25 + .75 * (bucket.anomaly_count / (this._maxCount || 1));
+			const label = fmtDateTimeRange(bucket.start_ms, bucket.end_ms);
+			return b`<button
+      class="heatmap-block"
+      type="button"
+      data-empty=${empty ? "true" : "false"}
+      style="--heat:${heat}"
+      aria-label=${msg(`${label}: ${bucket.anomaly_count} anomalous readings`)}
+      @mouseenter=${(e) => this._showTooltip(e, entityId, bucket)}
+      @focus=${(e) => this._showTooltip(e, entityId, bucket)}
+      @mouseleave=${() => this._hideTooltip()}
+      @blur=${() => this._hideTooltip()}
+      @click=${() => {
+				if (!empty) this._emitBlockClick(entityId, bucket);
+			}}
+    ></button>`;
+		}
+		_renderRow(entityId) {
+			const data = this.activity?.find((e) => e.entity_id === entityId);
+			const buckets = data?.buckets ?? [];
+			const name = entityName(this.hass, entityId);
+			return b`
+      <div class="heatmap-row" data-entity-id=${entityId}>
+        <button
+          class="heatmap-label"
+          type="button"
+          aria-label=${msg(`View series for ${entityId}`)}
+          @click=${() => this._emitEntityClick(entityId)}
+        >
+          <span class="heatmap-name">${name}</span>
+          <span class="heatmap-id">${entityId}</span>
+        </button>
+        ${buckets.length > 0 ? b`<div class="heatmap-track">
+              ${buckets.map((b) => this._renderBlock(entityId, b))}
+            </div>` : b`<div class="heatmap-flat"></div>`}
+        <span class="heatmap-count">${data?.total ?? 0}</span>
+      </div>
+    `;
+		}
+		_renderAxis() {
+			if (!(this.endMs > this.startMs)) return A;
+			const span = this.endMs - this.startMs;
+			return b`<div class="heatmap-axis" aria-hidden="true">
+      <div class="heatmap-ticks">
+        ${Array.from({ length: TICK_COUNT }, (_, i) => fmtDateTime(this.startMs + span * i / 4)).map((t) => b`<span class="heatmap-tick">${t}</span>`)}
+      </div>
+    </div>`;
+		}
+		_renderTooltip() {
+			const hover = this._hover;
+			if (!hover) return A;
+			const { bucket } = hover;
+			return b`<div
+      class="heatmap-tooltip"
+      role="tooltip"
+      style="left:${hover.leftPct}%;top:${hover.topPx}px"
+    >
+      <div class="heatmap-tooltip-range">
+        ${fmtDateTimeRange(bucket.start_ms, bucket.end_ms)}
+      </div>
+      <div>
+        ${msg(`${bucket.anomaly_count} anomalous readings`)} ·
+        ${msg(`${bucket.incident_count} incident(s)`)}
+      </div>
+    </div>`;
+		}
+		render() {
+			return b`<div class="heatmap">
+      ${this.entityIds.map((id) => this._renderRow(id))} ${this._renderAxis()}
+      ${this._renderTooltip()}
+    </div>`;
+		}
+	}, _defineProperty(_MonitorEntityHeatmap, "styles", styles$26), _MonitorEntityHeatmap);
+	__decorate([n$1({ type: Object })], MonitorEntityHeatmap.prototype, "hass", null);
+	__decorate([n$1({ type: Array })], MonitorEntityHeatmap.prototype, "entityIds", null);
+	__decorate([n$1({ type: Array })], MonitorEntityHeatmap.prototype, "activity", null);
+	__decorate([n$1({ type: Number })], MonitorEntityHeatmap.prototype, "startMs", null);
+	__decorate([n$1({ type: Number })], MonitorEntityHeatmap.prototype, "endMs", null);
+	__decorate([r$2()], MonitorEntityHeatmap.prototype, "_hover", null);
+	MonitorEntityHeatmap = __decorate([localized()], MonitorEntityHeatmap);
+	customElements.define("monitor-entity-heatmap", MonitorEntityHeatmap);
+	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitors-panel/anomaly-monitors-panel.ts
 	var _AnomalyMonitorsPanel;
 	var _hass_accessor_storage$7;
+	var _rangeStartMs_accessor_storage;
+	var _rangeEndMs_accessor_storage;
+	var _activity_accessor_storage;
 	var _monitors_accessor_storage;
 	var _deletedMonitors_accessor_storage;
 	var _loading_accessor_storage;
@@ -32322,10 +32686,14 @@
 		if (hours >= 24 && hours % 24 === 0) return `${hours / 24} d`;
 		return `${hours} h`;
 	}
-	var AnomalyMonitorsPanel = (_hass_accessor_storage$7 = /* @__PURE__ */ new WeakMap(), _monitors_accessor_storage = /* @__PURE__ */ new WeakMap(), _deletedMonitors_accessor_storage = /* @__PURE__ */ new WeakMap(), _loading_accessor_storage = /* @__PURE__ */ new WeakMap(), _editMonitor_accessor_storage = /* @__PURE__ */ new WeakMap(), _wizardOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitorClusters_accessor_storage = /* @__PURE__ */ new WeakMap(), _loadingClusters_accessor_storage = /* @__PURE__ */ new WeakMap(), _dismissPickerKey_accessor_storage = /* @__PURE__ */ new WeakMap(), _overflowOpenId_accessor_storage = /* @__PURE__ */ new WeakMap(), _AnomalyMonitorsPanel = class AnomalyMonitorsPanel extends i$2 {
+	var AnomalyMonitorsPanel = (_hass_accessor_storage$7 = /* @__PURE__ */ new WeakMap(), _rangeStartMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _rangeEndMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _activity_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitors_accessor_storage = /* @__PURE__ */ new WeakMap(), _deletedMonitors_accessor_storage = /* @__PURE__ */ new WeakMap(), _loading_accessor_storage = /* @__PURE__ */ new WeakMap(), _editMonitor_accessor_storage = /* @__PURE__ */ new WeakMap(), _wizardOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitorClusters_accessor_storage = /* @__PURE__ */ new WeakMap(), _loadingClusters_accessor_storage = /* @__PURE__ */ new WeakMap(), _dismissPickerKey_accessor_storage = /* @__PURE__ */ new WeakMap(), _overflowOpenId_accessor_storage = /* @__PURE__ */ new WeakMap(), _AnomalyMonitorsPanel = class AnomalyMonitorsPanel extends i$2 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _hass_accessor_storage$7, null);
+			_classPrivateFieldInitSpec(this, _rangeStartMs_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _rangeEndMs_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _activity_accessor_storage, /* @__PURE__ */ new Map());
+			_defineProperty(this, "_activityToken", 0);
 			_classPrivateFieldInitSpec(this, _monitors_accessor_storage, []);
 			_classPrivateFieldInitSpec(this, _deletedMonitors_accessor_storage, []);
 			_classPrivateFieldInitSpec(this, _loading_accessor_storage, true);
@@ -32366,6 +32734,24 @@
 		}
 		set hass(value) {
 			_classPrivateFieldSet2(_hass_accessor_storage$7, this, value);
+		}
+		get rangeStartMs() {
+			return _classPrivateFieldGet2(_rangeStartMs_accessor_storage, this);
+		}
+		set rangeStartMs(value) {
+			_classPrivateFieldSet2(_rangeStartMs_accessor_storage, this, value);
+		}
+		get rangeEndMs() {
+			return _classPrivateFieldGet2(_rangeEndMs_accessor_storage, this);
+		}
+		set rangeEndMs(value) {
+			_classPrivateFieldSet2(_rangeEndMs_accessor_storage, this, value);
+		}
+		get _activity() {
+			return _classPrivateFieldGet2(_activity_accessor_storage, this);
+		}
+		set _activity(value) {
+			_classPrivateFieldSet2(_activity_accessor_storage, this, value);
 		}
 		get _monitors() {
 			return _classPrivateFieldGet2(_monitors_accessor_storage, this);
@@ -32439,6 +32825,7 @@
 			this._closeOverflow();
 		}
 		updated(changedProperties) {
+			if (changedProperties.has("rangeStartMs") || changedProperties.has("rangeEndMs")) this._scheduleActivityLoad();
 			if (changedProperties.has("hass")) {
 				this._teardownMonitorSubscription();
 				this._scheduleMonitorSubscription();
@@ -32447,6 +32834,44 @@
 		}
 		_scheduleLoad() {
 			this._load().catch(() => {});
+		}
+		_scheduleActivityLoad() {
+			this._loadActivity().catch(() => {});
+		}
+		/** The selected range, or null when the host has not provided a valid one. */
+		_selectedRange() {
+			const { rangeStartMs: startMs, rangeEndMs: endMs } = this;
+			return typeof startMs === "number" && typeof endMs === "number" && endMs > startMs ? {
+				startMs,
+				endMs
+			} : null;
+		}
+		/**
+		* Fetch range-scoped per-entity activity for each active monitor. Requests are
+		* per monitor (combined monitors are costlier server-side) and a failure for
+		* one monitor only drops that monitor to a flat zero row.
+		*/
+		async _loadActivity() {
+			const range = this._selectedRange();
+			const hass = this.hass;
+			if (!hass || !range) return;
+			const token = ++this._activityToken;
+			const results = await Promise.all(this._monitors.map(async (monitor) => {
+				if (!monitor.enabled) return null;
+				try {
+					const result = await fetchMonitorAnomalyActivity(hass, monitor.id, range.startMs, range.endMs);
+					return Array.isArray(result?.entities) ? result : null;
+				} catch {
+					return null;
+				}
+			}));
+			if (token !== this._activityToken) return;
+			const next = /* @__PURE__ */ new Map();
+			this._monitors.forEach((monitor, i) => {
+				const result = results[i];
+				if (result) next.set(monitor.id, result);
+			});
+			this._activity = next;
 		}
 		_scheduleMonitorSubscription() {
 			this._ensureMonitorSubscription().catch(() => {});
@@ -32478,6 +32903,7 @@
 				const [active, deleted] = await Promise.all([fetchMonitors(this.hass), fetchDeletedMonitors(this.hass)]);
 				this._monitors = active;
 				this._deletedMonitors = deleted;
+				this._scheduleActivityLoad();
 			} catch {} finally {
 				this._loading = false;
 			}
@@ -32546,6 +32972,17 @@
 				anomalySensitivity: monitor.anomaly_sensitivity
 			};
 			this._emit("dp-monitors-panel-open-entity", detail);
+		}
+		_onHeatmapBlockClick(monitor, detail) {
+			const chartDetail = {
+				entityIds: [detail.entityId],
+				startMs: detail.startMs,
+				endMs: detail.endMs,
+				monitorId: monitor.id,
+				anomalyMethods: monitorAnomalyMethods(monitor),
+				anomalySensitivity: monitor.anomaly_sensitivity
+			};
+			this._emit("dp-monitors-panel-open-chart", chartDetail);
 		}
 		_onViewSeries(monitor) {
 			const endMs = Date.now();
@@ -32853,7 +33290,22 @@
       </button>
     `;
 		}
+		/** Per-entity heatmap over the selected range (flat zero rows if no data). */
+		_renderEntityHeatmap(monitor) {
+			const range = this._selectedRange();
+			return b`<monitor-entity-heatmap
+      .hass=${this.hass}
+      .entityIds=${monitorEntityIds(monitor)}
+      .activity=${monitor.enabled && this._activity.get(monitor.id)?.entities || null}
+      .startMs=${range.startMs}
+      .endMs=${range.endMs}
+      style="--heatmap-color:${monitorSeriesColor(monitor)}"
+      @dp-heatmap-block-click=${(e) => this._onHeatmapBlockClick(monitor, e.detail)}
+      @dp-heatmap-entity-click=${(e) => this._onOpenEntity(monitor, e.detail.entityId)}
+    ></monitor-entity-heatmap>`;
+		}
 		_renderEntityDisplay(monitor) {
+			if (this._selectedRange()) return this._renderEntityHeatmap(monitor);
 			const entityIds = monitorEntityIds(monitor);
 			if (monitor.type === "individual" || entityIds.length <= 1) return b`
         <div class="monitor-entities">
@@ -32987,8 +33439,11 @@
     `;
 		}
 		_renderStatsBlock(monitor) {
-			const anomalousReadings = monitor.scan_history?.at(-1)?.count ?? 0;
-			const incidents = monitor.active_cluster_count ?? monitor.last_cluster_count ?? 0;
+			const activity = this._activity.get(monitor.id);
+			const ranged = this._selectedRange() !== null;
+			const rangedValue = (value) => !monitor.enabled ? 0 : value ?? "—";
+			const anomalousReadings = ranged ? rangedValue(activity?.total_anomalies) : monitor.scan_history?.at(-1)?.count ?? 0;
+			const incidents = ranged ? rangedValue(activity?.incident_count) : monitor.active_cluster_count ?? monitor.last_cluster_count ?? 0;
 			const lastAnomaly = monitor.enabled && monitor.last_anomaly_at ? fmtRelativeTime(monitor.last_anomaly_at) : "—";
 			const seriesColor = monitorSeriesColor(monitor);
 			return b`
@@ -33122,6 +33577,22 @@
       ${this._monitors.map((m) => this._renderMonitorCard(m))}
     </div>`;
 		}
+		_rangeLabel() {
+			const range = this._selectedRange();
+			return range ? fmtDateTimeRange(range.startMs, range.endMs) : "";
+		}
+		_renderSubtitle() {
+			if (!this._selectedRange()) return A;
+			return b`<span class="monitors-subtitle">${this._loading ? msg(`Counts cover ${this._rangeLabel()}`) : msg(`${this._monitors.length} monitors · counts cover ${this._rangeLabel()}`)}</span>`;
+		}
+		/** Compact range indicator shown only on narrow (mobile) viewports. */
+		_renderRangeBar() {
+			if (!this._selectedRange()) return A;
+			return b`<div class="monitors-range-bar" role="status">
+      <ha-icon icon="mdi:calendar-range"></ha-icon>
+      <span>${this._rangeLabel()}</span>
+    </div>`;
+		}
 		render() {
 			return b`
       <div class="monitors-panel">
@@ -33129,14 +33600,18 @@
           <ha-icon-button label=${msg("Back")} @click=${this._onClose}>
             <ha-icon icon="mdi:arrow-left"></ha-icon>
           </ha-icon-button>
-          <h2>${msg("Anomaly monitors")}</h2>
+          <div class="monitors-title">
+            <h2>${msg("Anomaly monitors")}</h2>
+            ${this._renderSubtitle()}
+          </div>
           <button class="new-monitor-btn" @click=${this._onNewMonitor}>
             <ha-icon icon="mdi:bell-plus-outline"></ha-icon>
             ${msg("New monitor")}
           </button>
         </div>
 
-        ${this._renderMonitorList()} ${this._renderTrashSection()}
+        ${this._renderRangeBar()} ${this._renderMonitorList()}
+        ${this._renderTrashSection()}
       </div>
 
       <anomaly-monitor-wizard
@@ -33148,8 +33623,11 @@
       ></anomaly-monitor-wizard>
     `;
 		}
-	}, _defineProperty(_AnomalyMonitorsPanel, "styles", styles$27), _AnomalyMonitorsPanel);
+	}, _defineProperty(_AnomalyMonitorsPanel, "styles", styles$28), _AnomalyMonitorsPanel);
 	__decorate([n$1({ type: Object })], AnomalyMonitorsPanel.prototype, "hass", null);
+	__decorate([n$1({ type: Number })], AnomalyMonitorsPanel.prototype, "rangeStartMs", null);
+	__decorate([n$1({ type: Number })], AnomalyMonitorsPanel.prototype, "rangeEndMs", null);
+	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_activity", null);
 	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_monitors", null);
 	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_deletedMonitors", null);
 	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_loading", null);
@@ -40437,12 +40915,24 @@
 		}
 		set _startTime(value) {
 			this._appState().setRange(value || null, this._endTime || null);
+			this._syncMonitorsPanelRange();
 		}
 		get _endTime() {
 			return this._appState().state.range.endTime;
 		}
 		set _endTime(value) {
 			this._appState().setRange(this._startTime || null, value || null);
+			this._syncMonitorsPanelRange();
+		}
+		/**
+		* Push the committed range to the monitors overlay (if open) so its
+		* range-aware counts and heatmap follow range changes live.
+		*/
+		_syncMonitorsPanelRange() {
+			const panel = this.shadowRoot?.querySelector("anomaly-monitors-panel");
+			if (!panel) return;
+			panel.rangeStartMs = this._startTime?.getTime() ?? null;
+			panel.rangeEndMs = this._endTime?.getTime() ?? null;
 		}
 		_stableStartTimeDate() {
 			const src = this._startTime;
@@ -42633,6 +43123,8 @@
 				content.innerHTML = "";
 				const panel = document.createElement("anomaly-monitors-panel");
 				panel.hass = this._hass;
+				panel.rangeStartMs = this._startTime?.getTime() ?? null;
+				panel.rangeEndMs = this._endTime?.getTime() ?? null;
 				panel.addEventListener("dp-monitors-panel-close", () => {
 					this._showMonitorsPanel = false;
 					this._contentKey = "";
