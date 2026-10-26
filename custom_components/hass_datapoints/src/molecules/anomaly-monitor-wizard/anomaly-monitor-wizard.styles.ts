@@ -42,24 +42,232 @@ export const styles = css`
     background: var(--card-background-color, #fff);
   }
 
-  .step {
-    font-size: 0.82rem;
+  .step-dot {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 4px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
     color: var(--secondary-text-color);
-    padding: 3px 8px;
-    border-radius: 4px;
+    font: inherit;
+    font-size: 0.82rem;
     white-space: nowrap;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
   }
 
-  .step.active {
+  .step-dot:disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+
+  .step-dot:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+
+  .step-dot-circle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid var(--divider-color, rgba(0, 0, 0, 0.2));
+    font-size: 0.78rem;
+    font-weight: 600;
+    --mdc-icon-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .step-dot.active {
     color: var(--primary-color);
     font-weight: 600;
-    background: color-mix(in srgb, var(--primary-color) 10%, transparent);
   }
 
-  .step-sep {
-    --mdc-icon-size: 14px;
-    color: var(--divider-color, rgba(0, 0, 0, 0.2));
+  .step-dot.active .step-dot-circle {
+    border-color: var(--primary-color);
+  }
+
+  .step-dot.done {
+    color: var(--primary-text-color);
+  }
+
+  .step-dot.done .step-dot-circle {
+    border-color: var(--primary-color);
+    background: var(--primary-color);
+    color: var(--text-primary-color, #fff);
+  }
+
+  .step-line {
+    flex: 1 1 16px;
+    min-width: 12px;
+    height: 2px;
+    background: var(--divider-color, rgba(0, 0, 0, 0.12));
+  }
+
+  /* ---- Step 1: info note ---- */
+
+  .step-info-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.4;
+    color: var(--secondary-text-color);
+    --mdc-icon-size: 18px;
+  }
+
+  /* ---- Step 2: tab badge + copy-from ---- */
+
+  .tab-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    margin-left: 8px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--primary-color) 16%, transparent);
+    color: var(--primary-color);
+    font-size: 0.72rem;
+    font-weight: 600;
+  }
+
+  .copy-from {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+    --mdc-icon-size: 16px;
+    color: var(--secondary-text-color);
+  }
+
+  /* ---- Step 3: radio cards, hints, summary ---- */
+
+  .radio-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+  }
+
+  .radio-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
+    border-radius: 10px;
+    background: transparent;
+    color: var(--primary-text-color);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  .radio-card:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+
+  .radio-card.checked {
+    border-color: var(--primary-color);
+    background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+  }
+
+  .radio-card-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--secondary-text-color);
     flex-shrink: 0;
+    box-sizing: border-box;
+  }
+
+  .radio-card.checked .radio-card-dot {
+    border-color: var(--primary-color);
+    border-width: 5px;
+  }
+
+  .radio-card-text {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .radio-card-title {
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .radio-card-subtitle {
+    font-size: 0.78rem;
+    color: var(--secondary-text-color);
+  }
+
+  .name-hint,
+  .overlap-help {
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.4;
+    color: var(--secondary-text-color);
+  }
+
+  .overlap-help {
+    padding-left: 16px;
+  }
+
+  .overlap-help li.selected {
+    color: var(--primary-text-color);
+  }
+
+  .summary-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--primary-color) 8%, transparent);
+    font-size: 0.86rem;
+    font-weight: 500;
+    --mdc-icon-size: 18px;
+  }
+
+  /* ---- Narrow / mobile: full-screen modal ---- */
+
+  @media (max-width: 600px) {
+    ha-dialog {
+      --mdc-dialog-min-width: 100vw;
+      --mdc-dialog-max-width: 100vw;
+      --mdc-dialog-min-height: 100dvh;
+      --mdc-dialog-max-height: 100dvh;
+      --dialog-surface-margin: 0px;
+      --dialog-surface-position: fixed;
+      --vertical-align-dialog: flex-start;
+      --ha-dialog-border-radius: 0px;
+    }
+
+    .wizard-shell {
+      min-width: 0;
+      max-height: none;
+      height: calc(100dvh - 96px);
+    }
+
+    .step-dot-label {
+      display: none;
+    }
+
+    .step-dot.active .step-dot-label {
+      display: inline;
+    }
   }
 
   /* ---- Generic sections ---- */
