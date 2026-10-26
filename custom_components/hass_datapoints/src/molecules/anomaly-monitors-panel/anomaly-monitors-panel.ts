@@ -43,14 +43,14 @@ import "@/molecules/monitor-entity-heatmap/monitor-entity-heatmap";
 import "@/molecules/monitor-entity-filter/monitor-entity-filter";
 import type { HeatmapBlockClickDetail } from "@/molecules/monitor-entity-heatmap/monitor-entity-heatmap";
 
+/** How long a just-created/edited row stays highlighted. */
+const FLASH_DURATION_MS = 2000;
+
 /**
  * Fallback detection methods when a monitor has no configured methods. Mirrors
  * the chart-side default so the overlay still renders anomalies for a monitor
  * that somehow stored an empty method list.
  */
-/** How long a just-created/edited row stays highlighted. */
-const FLASH_DURATION_MS = 2000;
-
 const PANEL_DEFAULT_ANOMALY_METHODS = ["trend_residual"];
 
 /** The monitor's detection methods, or the panel default when it has none. */
@@ -478,6 +478,16 @@ export class AnomalyMonitorsPanel extends LitElement {
     this._editMonitor = null;
     await this._load();
     if (saved.length === 0) return;
+    // A filter that hides a saved row would defeat the confirmation: drop it.
+    if (
+      this._entityFilter.length > 0 &&
+      saved.some(
+        (m) =>
+          !monitorEntityIds(m).some((id) => this._entityFilter.includes(id))
+      )
+    ) {
+      this._entityFilter = [];
+    }
     // HA's global snackbar shows one toast at a time and auto-dismisses, so
     // successive confirmations replace each other rather than stacking.
     if (saved.length > 1) {

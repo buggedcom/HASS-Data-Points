@@ -187,7 +187,7 @@ describe("anomaly-monitor-wizard polish (#106)", () => {
       expect(cards).toHaveLength(2);
       expect(cards[0].getAttribute("aria-checked")).toBe("true");
       expect(cards[0].textContent).toContain("2 devices");
-      expect(cards[1].textContent).toContain("1 device");
+      expect(cards[1].textContent).toContain("1 device covering 2 entities");
     });
 
     it("THEN the name field is labelled Name prefix with the appended-name hint", () => {

@@ -76,6 +76,22 @@ export class MonitorEntityFilter extends LitElement {
     this._emit(this.selected.filter((s) => s !== itemId));
   };
 
+  private _onDocumentClick = (e: MouseEvent) => {
+    if (this._open && !e.composedPath().includes(this)) {
+      this._open = false;
+    }
+  };
+
+  connectedCallback() {
+    super.connectedCallback();
+    document.addEventListener("click", this._onDocumentClick);
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    document.removeEventListener("click", this._onDocumentClick);
+  }
+
   private _onKeydown = (e: KeyboardEvent) => {
     if (e.key === "Escape" && this._open) {
       this._open = false;
@@ -138,7 +154,9 @@ export class MonitorEntityFilter extends LitElement {
             ${count > 0
               ? html`<span
                   class="filter-badge"
-                  aria-label=${msg(`${count} active filters`)}
+                  aria-label=${count === 1
+                    ? msg("1 active filter")
+                    : msg(`${count} active filters`)}
                   >${count}</span
                 >`
               : nothing}
