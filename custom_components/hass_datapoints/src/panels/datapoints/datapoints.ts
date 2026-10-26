@@ -690,6 +690,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
   @reactiveState()
   set _startTime(value) {
     this._appState().setRange(value || null, this._endTime || null);
+    this._syncMonitorsPanelRange();
   }
 
   get _endTime() {
@@ -699,6 +700,26 @@ export class HassDatapointsHistoryPanel extends LitElement {
   @reactiveState()
   set _endTime(value) {
     this._appState().setRange(this._startTime || null, value || null);
+    this._syncMonitorsPanelRange();
+  }
+
+  /**
+   * Push the committed range to the monitors overlay (if open) so its
+   * range-aware counts and heatmap follow range changes live.
+   */
+  private _syncMonitorsPanelRange() {
+    const panel = this.shadowRoot?.querySelector("anomaly-monitors-panel") as
+      | (HTMLElement & {
+          rangeStartMs: Nullable<number>;
+          rangeEndMs: Nullable<number>;
+        })
+      | null
+      | undefined;
+    if (!panel) {
+      return;
+    }
+    panel.rangeStartMs = this._startTime?.getTime() ?? null;
+    panel.rangeEndMs = this._endTime?.getTime() ?? null;
   }
 
   // Reuse defensive Date clones until their timestamps change so unrelated
@@ -4317,8 +4338,9 @@ export class HassDatapointsHistoryPanel extends LitElement {
       panel.hass = this._hass;
       // The monitors page hides the range toolbar, so hand the panel the
       // timeline's current selected range for its range-aware counts/heatmap.
-      panel.rangeStartMs = this._startTime ? this._startTime.getTime() : null;
-      panel.rangeEndMs = this._endTime ? this._endTime.getTime() : null;
+      // Later changes are pushed by _syncMonitorsPanelRange().
+      panel.rangeStartMs = this._startTime?.getTime() ?? null;
+      panel.rangeEndMs = this._endTime?.getTime() ?? null;
       panel.addEventListener("dp-monitors-panel-close", () => {
         this._showMonitorsPanel = false;
         this._contentKey = "";

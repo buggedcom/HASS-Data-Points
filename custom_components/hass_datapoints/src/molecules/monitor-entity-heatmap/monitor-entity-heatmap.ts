@@ -2,7 +2,7 @@ import { html, LitElement, nothing } from "lit";
 import { property, state } from "lit/decorators.js";
 import { localized, msg } from "@/lib/i18n/localize";
 import { entityName } from "@/lib/ha/entity-name";
-import { fmtDateTime } from "@/lib/util/format";
+import { fmtDateTime, fmtDateTimeRange } from "@/lib/util/format";
 import type {
   AnomalyActivityBucket,
   EntityAnomalyActivity,
@@ -58,7 +58,7 @@ export class MonitorEntityHeatmap extends LitElement {
 
   @property({ type: Number }) accessor endMs: number = 0;
 
-  @state() accessor _hover: HoverState | null = null;
+  @state() accessor _hover: Nullable<HoverState> = null;
 
   private _maxCount = 0;
 
@@ -72,29 +72,23 @@ export class MonitorEntityHeatmap extends LitElement {
     this._maxCount = max;
   }
 
-  private _emitClick(entityId: string, bucket: AnomalyActivityBucket) {
+  private _emit(name: string, detail: unknown) {
+    this.dispatchEvent(
+      new CustomEvent(name, { detail, bubbles: true, composed: true })
+    );
+  }
+
+  private _emitBlockClick(entityId: string, bucket: AnomalyActivityBucket) {
     const detail: HeatmapBlockClickDetail = {
       entityId,
       startMs: bucket.start_ms,
       endMs: bucket.end_ms,
     };
-    this.dispatchEvent(
-      new CustomEvent("dp-heatmap-block-click", {
-        detail,
-        bubbles: true,
-        composed: true,
-      })
-    );
+    this._emit("dp-heatmap-block-click", detail);
   }
 
   private _emitEntityClick(entityId: string) {
-    this.dispatchEvent(
-      new CustomEvent("dp-heatmap-entity-click", {
-        detail: { entityId },
-        bubbles: true,
-        composed: true,
-      })
-    );
+    this._emit("dp-heatmap-entity-click", { entityId });
   }
 
   private _showTooltip(
@@ -124,7 +118,7 @@ export class MonitorEntityHeatmap extends LitElement {
     const heat = empty
       ? 0
       : 0.25 + 0.75 * (bucket.anomaly_count / (this._maxCount || 1));
-    const label = `${fmtDateTime(bucket.start_ms)} – ${fmtDateTime(bucket.end_ms)}`;
+    const label = fmtDateTimeRange(bucket.start_ms, bucket.end_ms);
     return html`<button
       class="heatmap-block"
       type="button"
@@ -137,7 +131,7 @@ export class MonitorEntityHeatmap extends LitElement {
       @blur=${() => this._hideTooltip()}
       @click=${() => {
         if (!empty) {
-          this._emitClick(entityId, bucket);
+          this._emitBlockClick(entityId, bucket);
         }
       }}
     ></button>`;
@@ -195,7 +189,7 @@ export class MonitorEntityHeatmap extends LitElement {
       style="left:${hover.leftPct}%;top:${hover.topPx}px"
     >
       <div class="heatmap-tooltip-range">
-        ${fmtDateTime(bucket.start_ms)} – ${fmtDateTime(bucket.end_ms)}
+        ${fmtDateTimeRange(bucket.start_ms, bucket.end_ms)}
       </div>
       <div>
         ${msg(`${bucket.anomaly_count} anomalous readings`)} ·

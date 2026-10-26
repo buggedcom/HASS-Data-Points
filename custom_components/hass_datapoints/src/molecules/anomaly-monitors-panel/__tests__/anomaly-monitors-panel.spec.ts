@@ -1050,6 +1050,29 @@ describe("anomaly-monitors-panel", () => {
       return { el, send };
     }
 
+    describe("WHEN monitors are still loading", () => {
+      it("THEN the subtitle already shows the range it covers", async () => {
+        expect.assertions(1);
+        const never = () => new Promise<never>(() => {});
+        const hass = createMockHass({
+          connection: {
+            subscribeEvents: vi.fn(() => Promise.resolve(vi.fn())),
+            sendMessagePromise: never,
+          },
+        });
+        const el = createElement(hass) as ReturnType<typeof createElement> & {
+          rangeStartMs: number | null;
+          rangeEndMs: number | null;
+        };
+        el.rangeStartMs = RANGE_START;
+        el.rangeEndMs = RANGE_END;
+        await el.updateComplete;
+        expect(
+          el.shadowRoot!.querySelector(".monitors-subtitle")?.textContent
+        ).toContain("ounts cover");
+      });
+    });
+
     describe("WHEN monitors load", () => {
       it("THEN the header shows the monitor count and the range it covers", async () => {
         expect.assertions(2);
@@ -1114,7 +1137,61 @@ describe("anomaly-monitors-panel", () => {
       });
     });
 
+    describe("WHEN the monitor is paused", () => {
+      it("THEN no activity is requested and the card shows a flat row with zero counts", async () => {
+        expect.assertions(4);
+        const send = routeSend({
+          [T.list]: () => ({ monitors: [buildMonitor(false)] }),
+          [ACTIVITY_TYPE]: () => activityFor("monitor-1") as never,
+        });
+        const hass = createMockHass({
+          connection: {
+            subscribeEvents: vi.fn(() => Promise.resolve(vi.fn())),
+            sendMessagePromise: send,
+          },
+        });
+        const el = createElement(hass) as ReturnType<typeof createElement> & {
+          rangeStartMs: number | null;
+          rangeEndMs: number | null;
+        };
+        el.rangeStartMs = RANGE_START;
+        el.rangeEndMs = RANGE_END;
+        await el.updateComplete;
+        await flushMicrotasks();
+        await flushMicrotasks();
+        await el.updateComplete;
+        const root = el.shadowRoot!;
+        expect(send).not.toHaveBeenCalledWith(
+          expect.objectContaining({ type: ACTIVITY_TYPE })
+        );
+        const heatmap = root.querySelector("monitor-entity-heatmap")!;
+        expect(
+          heatmap.shadowRoot!.querySelector(".heatmap-flat")
+        ).not.toBeNull();
+        expect(
+          root.querySelector(".stat-anomalous .stat-value")?.textContent?.trim()
+        ).toBe("0");
+        expect(
+          root.querySelector(".stat-incidents .stat-value")?.textContent?.trim()
+        ).toBe("0");
+      });
+    });
+
     describe("WHEN the activity request fails", () => {
+      it("THEN the stats show an unavailable dash rather than zero", async () => {
+        expect.assertions(2);
+        const { el } = await mountWithRange(() => {
+          throw new Error("boom");
+        });
+        const root = el.shadowRoot!;
+        expect(
+          root.querySelector(".stat-anomalous .stat-value")?.textContent?.trim()
+        ).toBe("—");
+        expect(
+          root.querySelector(".stat-incidents .stat-value")?.textContent?.trim()
+        ).toBe("—");
+      });
+
       it("THEN the card shows a flat zero row and no error", async () => {
         expect.assertions(3);
         const { el } = await mountWithRange(() => {

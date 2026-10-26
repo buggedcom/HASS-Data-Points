@@ -3,7 +3,7 @@ import { property, state } from "lit/decorators.js";
 import type { PropertyValues } from "lit";
 import { COLORS, DOMAIN } from "@/constants";
 import { localized, msg } from "@/lib/i18n/localize";
-import { fmtDateTime, fmtRelativeTime } from "@/lib/util/format";
+import { fmtDateTimeRange, fmtRelativeTime } from "@/lib/util/format";
 
 import { styles } from "./anomaly-monitors-panel.styles";
 import {
@@ -121,8 +121,9 @@ export class AnomalyMonitorsPanel extends LitElement {
   @property({ type: Number }) accessor rangeEndMs: Nullable<number> = null;
 
   /**
-   * Range-scoped per-entity activity per monitor id. A monitor whose fetch
-   * failed is simply absent, which renders a flat zero row.
+   * Range-scoped per-entity activity per monitor id. A monitor that is paused
+   * or whose fetch failed is absent: it renders a flat row, and its stats show
+   * 0 (paused) or an unavailable dash (failed / not yet loaded).
    */
   @state() accessor _activity: Map<string, MonitorAnomalyActivityResult> =
     new Map();
@@ -205,7 +206,7 @@ export class AnomalyMonitorsPanel extends LitElement {
   }
 
   /** The selected range, or null when the host has not provided a valid one. */
-  private _range(): Nullable<{ startMs: number; endMs: number }> {
+  private _selectedRange(): Nullable<{ startMs: number; endMs: number }> {
     const { rangeStartMs: startMs, rangeEndMs: endMs } = this;
     return typeof startMs === "number" &&
       typeof endMs === "number" &&
@@ -220,7 +221,7 @@ export class AnomalyMonitorsPanel extends LitElement {
    * one monitor only drops that monitor to a flat zero row.
    */
   private async _loadActivity() {
-    const range = this._range();
+    const range = this._selectedRange();
     const hass = this.hass;
     if (!hass || !range) {
       return;
@@ -228,6 +229,10 @@ export class AnomalyMonitorsPanel extends LitElement {
     const token = ++this._activityToken;
     const results = await Promise.all(
       this._monitors.map(async (monitor) => {
+        // Paused monitors have no live detection: skip the request entirely.
+        if (!monitor.enabled) {
+          return null;
+        }
         try {
           const result = await fetchMonitorAnomalyActivity(
             hass,
@@ -805,11 +810,13 @@ export class AnomalyMonitorsPanel extends LitElement {
 
   /** Per-entity heatmap over the selected range (flat zero rows if no data). */
   private _renderEntityHeatmap(monitor: AnomalyMonitor) {
-    const range = this._range()!;
+    const range = this._selectedRange()!;
     return html`<monitor-entity-heatmap
       .hass=${this.hass}
       .entityIds=${monitorEntityIds(monitor)}
-      .activity=${this._activity.get(monitor.id)?.entities ?? null}
+      .activity=${(monitor.enabled &&
+        this._activity.get(monitor.id)?.entities) ||
+      null}
       .startMs=${range.startMs}
       .endMs=${range.endMs}
       style="--heatmap-color:${monitorSeriesColor(monitor)}"
@@ -821,7 +828,7 @@ export class AnomalyMonitorsPanel extends LitElement {
   }
 
   private _renderEntityDisplay(monitor: AnomalyMonitor) {
-    if (this._range()) {
+    if (this._selectedRange()) {
       return this._renderEntityHeatmap(monitor);
     }
     const entityIds = monitorEntityIds(monitor);
@@ -1002,12 +1009,16 @@ export class AnomalyMonitorsPanel extends LitElement {
     // With a selected range the counts cover that range (0 when the activity
     // is unavailable); otherwise fall back to the latest scan figures.
     const activity = this._activity.get(monitor.id);
-    const ranged = this._range() !== null;
+    const ranged = this._selectedRange() !== null;
+    // Ranged: paused monitors are 0; an enabled monitor without activity
+    // (failed or still loading) is unavailable, shown as a dash, never 0.
+    const rangedValue = (value: number | undefined): number | string =>
+      !monitor.enabled ? 0 : (value ?? "—");
     const anomalousReadings = ranged
-      ? (activity?.total_anomalies ?? 0)
+      ? rangedValue(activity?.total_anomalies)
       : (monitor.scan_history?.at(-1)?.count ?? 0);
     const incidents = ranged
-      ? (activity?.incident_count ?? 0)
+      ? rangedValue(activity?.incident_count)
       : (monitor.active_cluster_count ?? monitor.last_cluster_count ?? 0);
     const lastAnomaly =
       monitor.enabled && monitor.last_anomaly_at
@@ -1170,26 +1181,27 @@ export class AnomalyMonitorsPanel extends LitElement {
   }
 
   private _rangeLabel(): string {
-    const range = this._range();
-    return range
-      ? `${fmtDateTime(range.startMs)} – ${fmtDateTime(range.endMs)}`
-      : "";
+    const range = this._selectedRange();
+    return range ? fmtDateTimeRange(range.startMs, range.endMs) : "";
   }
 
   private _renderSubtitle() {
-    if (!this._range() || this._loading) {
+    if (!this._selectedRange()) {
       return nothing;
     }
-    return html`<span class="monitors-subtitle"
-      >${msg(
-        `${this._monitors.length} monitors · counts cover ${this._rangeLabel()}`
-      )}</span
-    >`;
+    // The count is only known once monitors have loaded; until then show the
+    // range alone so the subtitle never pops in late.
+    const text = this._loading
+      ? msg(`Counts cover ${this._rangeLabel()}`)
+      : msg(
+          `${this._monitors.length} monitors · counts cover ${this._rangeLabel()}`
+        );
+    return html`<span class="monitors-subtitle">${text}</span>`;
   }
 
   /** Compact range indicator shown only on narrow (mobile) viewports. */
   private _renderRangeBar() {
-    if (!this._range()) {
+    if (!this._selectedRange()) {
       return nothing;
     }
     return html`<div class="monitors-range-bar" role="status">

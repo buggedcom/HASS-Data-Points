@@ -1388,6 +1388,14 @@ async def ws_monitors_anomaly_activity(
     requested range for every member entity, so counts match the chart for the
     same entities and range. Active dismissals are honoured, as for the monitor's
     own scan counts.
+
+    Series preparation deliberately mirrors ``ws_monitors_anomalies`` and the
+    sensor scan (``async_prepare_entity_series`` with the monitor's own
+    ``sample_interval`` / ``sample_aggregate`` and ``ANOMALY_MAX_PTS``), so the
+    heatmap counts agree with the monitor's cards and the chart overlay for the
+    same entities and range. The wizard only stores a ``sample_interval`` when
+    ``anomaly_use_sampled_data`` is on, so honouring ``sample_interval`` here is
+    equivalent to honouring that flag.
     """
     from .anomaly_activity import compute_anomaly_activity  # noqa: PLC0415
     from .sensor import (  # noqa: PLC0415

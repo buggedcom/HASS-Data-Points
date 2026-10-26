@@ -34,7 +34,7 @@ def compute_anomaly_activity(
     span = max(end_ms - start_ms, 1)
     bucket_ms = max(span // bucket_count, 1)
 
-    def index(t: float) -> int:
+    def bucket_index(t: float) -> int:
         return min(int((t - start_ms) // bucket_ms), bucket_count - 1)
 
     entities: list[dict[str, Any]] = []
@@ -56,8 +56,8 @@ def compute_anomaly_activity(
             if not times:
                 continue
             for t in times:
-                buckets[index(t)]["anomaly_count"] += 1
-            buckets[index(times[0])]["incident_count"] += 1
+                buckets[bucket_index(t)]["anomaly_count"] += 1
+            buckets[bucket_index(times[0])]["incident_count"] += 1
             total += len(times)
             incidents += 1
         entities.append(
