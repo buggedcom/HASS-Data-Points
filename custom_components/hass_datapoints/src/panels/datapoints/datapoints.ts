@@ -4311,8 +4311,14 @@ export class HassDatapointsHistoryPanel extends LitElement {
         "anomaly-monitors-panel"
       ) as HTMLElement & {
         hass: unknown;
+        rangeStartMs: Nullable<number>;
+        rangeEndMs: Nullable<number>;
       };
       panel.hass = this._hass;
+      // The monitors page hides the range toolbar, so hand the panel the
+      // timeline's current selected range for its range-aware counts/heatmap.
+      panel.rangeStartMs = this._startTime ? this._startTime.getTime() : null;
+      panel.rangeEndMs = this._endTime ? this._endTime.getTime() : null;
       panel.addEventListener("dp-monitors-panel-close", () => {
         this._showMonitorsPanel = false;
         this._contentKey = "";

@@ -30,6 +30,37 @@ export const styles = css`
     font-weight: 500;
   }
 
+  .monitors-title {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    margin-left: var(--dp-spacing-sm);
+  }
+
+  .monitors-subtitle {
+    font-size: 12px;
+    color: var(--secondary-text-color);
+  }
+
+  .monitors-range-bar {
+    display: none;
+    align-items: center;
+    gap: var(--dp-spacing-sm);
+    margin-bottom: var(--dp-spacing-sm);
+    padding: var(--dp-spacing-xs) var(--dp-spacing-sm);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--secondary-text-color);
+    background: var(--secondary-background-color);
+  }
+
+  @media (max-width: 600px) {
+    .monitors-range-bar {
+      display: flex;
+    }
+  }
+
   .monitors-empty {
     text-align: center;
     color: var(--secondary-text-color);

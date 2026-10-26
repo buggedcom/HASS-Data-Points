@@ -102,6 +102,70 @@ export const WithMonitors = {
   },
 };
 
+export const WithRangeHeatmap = {
+  render: () => {
+    const start = Date.UTC(2026, 0, 1);
+    const hour = 3_600_000;
+    const monitor = {
+      id: "m1",
+      name: "Living room temp spike",
+      enabled: true,
+      entity_ids: ["sensor.living_room_temp", "sensor.hallway_temp"],
+      type: "combined",
+      overlap_mode: "any",
+      anomaly_methods: ["rolling_zscore"],
+      anomaly_sensitivity: "medium",
+      look_back_hours: 24,
+      scan_interval_minutes: 30,
+      scan_history: [],
+    };
+    const counts = [0, 0, 3, 5, 0, 1, 0, 0, 2, 0, 0, 0];
+    const activity = {
+      monitor_id: "m1",
+      start_ms: start,
+      end_ms: start + 12 * hour,
+      bucket_ms: hour,
+      total_anomalies: 11,
+      incident_count: 4,
+      entities: [
+        {
+          entity_id: "sensor.living_room_temp",
+          total: 11,
+          incident_count: 4,
+          buckets: counts.map((c, i) => ({
+            start_ms: start + i * hour,
+            end_ms: start + (i + 1) * hour,
+            anomaly_count: c,
+            incident_count: c > 0 ? 1 : 0,
+          })),
+        },
+      ],
+    };
+    const el = document.createElement(
+      "anomaly-monitors-panel"
+    ) as HTMLElement & {
+      hass: unknown;
+      rangeStartMs: number;
+      rangeEndMs: number;
+    };
+    el.hass = {
+      states: {},
+      connection: {
+        subscribeEvents: () => Promise.resolve(() => undefined),
+        sendMessagePromise: (m: { type: string }) =>
+          Promise.resolve(
+            m.type.endsWith("anomaly_activity")
+              ? activity
+              : { monitors: [monitor] }
+          ),
+      },
+    };
+    el.rangeStartMs = start;
+    el.rangeEndMs = start + 12 * hour;
+    return el;
+  },
+};
+
 export const Default = {
   render: () => html`
     <div style="width:700px;height:600px;border:1px solid #ccc;">
