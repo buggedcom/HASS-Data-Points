@@ -11,6 +11,10 @@ import {
   validateStep2,
   autoPopulateMonitorName,
   buildOverlapOptions,
+  enabledMethodCount,
+  copyEntityConfig,
+  summarizeMonitors,
+  individualMonitorName,
 } from "../monitor-wizard-logic";
 import type { AnomalyMonitor } from "@/lib/data/monitors-api";
 
@@ -506,6 +510,72 @@ describe("monitor-wizard-logic", () => {
           { value: "any", label: "Any sensor" },
         ]);
       });
+    });
+  });
+  // ── Polish helpers (#106) ────────────────────────────────────────────────
+
+  describe("GIVEN enabledMethodCount", () => {
+    it("WHEN methods contain duplicates THEN counts unique methods", () => {
+      const cfg = {
+        ...defaultEntityConfig(),
+        anomaly_methods: ["iqr", "iqr", "threshold"],
+      };
+      expect(enabledMethodCount(cfg)).toBe(2);
+    });
+
+    it("WHEN no methods THEN is 0", () => {
+      const cfg = { ...defaultEntityConfig(), anomaly_methods: [] };
+      expect(enabledMethodCount(cfg)).toBe(0);
+    });
+  });
+
+  describe("GIVEN copyEntityConfig", () => {
+    it("WHEN copying THEN returns an equal but independent config", () => {
+      const source = {
+        ...defaultEntityConfig(),
+        anomaly_methods: ["iqr"],
+        anomaly_sensitivity: "high",
+      };
+      const copy = copyEntityConfig(source);
+      copy.anomaly_methods.push("threshold");
+      expect(copy.anomaly_sensitivity).toBe("high");
+      expect(source.anomaly_methods).toEqual(["iqr"]);
+    });
+  });
+
+  describe("GIVEN summarizeMonitors", () => {
+    const two = { ...defaultEntityConfig(), anomaly_methods: ["a", "b"] };
+    const one = { ...defaultEntityConfig(), anomaly_methods: ["c"] };
+    const configs = new Map([
+      ["sensor.x", two],
+      ["sensor.y", one],
+    ]);
+
+    it("WHEN individual with two entities THEN 2 monitors and summed rules", () => {
+      expect(
+        summarizeMonitors(["sensor.x", "sensor.y"], configs, "individual")
+      ).toEqual({ monitors: 2, rules: 3 });
+    });
+
+    it("WHEN combined THEN 1 monitor using the primary entity's rules", () => {
+      expect(
+        summarizeMonitors(["sensor.x", "sensor.y"], configs, "combined")
+      ).toEqual({ monitors: 1, rules: 2 });
+    });
+
+    it("WHEN single entity THEN 1 monitor", () => {
+      expect(summarizeMonitors(["sensor.y"], configs, "individual")).toEqual({
+        monitors: 1,
+        rules: 1,
+      });
+    });
+  });
+
+  describe("GIVEN individualMonitorName", () => {
+    it("WHEN prefix given THEN appends entity object id", () => {
+      expect(individualMonitorName("Garden", "sensor.soil_moisture")).toBe(
+        "Garden soil_moisture"
+      );
     });
   });
 });

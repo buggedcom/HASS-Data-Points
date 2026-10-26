@@ -1,5 +1,6 @@
 import { html, LitElement, nothing } from "lit";
 import { property, state } from "lit/decorators.js";
+import { keyed } from "lit/directives/keyed.js";
 import { localized, msg } from "@/lib/i18n/localize";
 
 import { styles } from "./anomaly-monitor-wizard.styles";
@@ -28,6 +29,10 @@ import {
   configFromMonitor,
   entityConfigToAnalysis,
   toggleMethod,
+  enabledMethodCount,
+  copyEntityConfig,
+  summarizeMonitors,
+  individualMonitorName,
   buildConfigPayload,
   validateStep1,
   validateStep2,
@@ -108,6 +113,12 @@ export class AnomalyMonitorWizard extends LitElement {
 
   @state() accessor _saving: boolean = false;
 
+  /** Furthest step reached; steps up to this one are clickable in the step bar. */
+  private _maxStep: 1 | 2 | 3 = 1;
+
+  /** Bumped after each "Copy from" so the select element resets to its placeholder. */
+  private _copyKey = 0;
+
   // -------------------------------------------------------------------------
   // Lifecycle
   // -------------------------------------------------------------------------
@@ -122,6 +133,9 @@ export class AnomalyMonitorWizard extends LitElement {
       this._initFromProps();
     } else if (changed.has("editMonitor") && this.editMonitor) {
       this._initFromProps();
+    }
+    if (changed.has("_step") && this._step > this._maxStep) {
+      this._maxStep = this._step;
     }
   }
 
@@ -165,6 +179,7 @@ export class AnomalyMonitorWizard extends LitElement {
       this._monitorType = "individual";
       this._overlapMode = "all";
     }
+    this._maxStep = this._step;
     this._error = "";
     this._saving = false;
   }
@@ -196,6 +211,15 @@ export class AnomalyMonitorWizard extends LitElement {
       "anomaly_methods",
       updated.anomaly_methods
     );
+  }
+
+  private _copyConfigFrom(sourceId: string) {
+    const target = this._activeEntityId || this._entityIds[0] || "";
+    if (!sourceId || !target || sourceId === target) return;
+    const updated = new Map(this._entityConfigs);
+    updated.set(target, copyEntityConfig(this._getEntityConfig(sourceId)));
+    this._entityConfigs = updated;
+    this._copyKey += 1;
   }
 
   /** Convert the wizard's slim EntityAnalysisConfig into a full NormalizedAnalysis
@@ -324,6 +348,21 @@ export class AnomalyMonitorWizard extends LitElement {
     this._error = "";
   }
 
+  /** Jump to a reachable step, running the same validation as Next/Back. */
+  private _goToStep(target: number) {
+    if (target === this._step || target > this._maxStep) return;
+    while (this._step > target) {
+      const before = this._step;
+      this._onBack();
+      if (this._step === before) return;
+    }
+    while (this._step < target) {
+      const before = this._step;
+      this._onNext();
+      if (this._step === before) return;
+    }
+  }
+
   private _onNext() {
     if (this._step === 1) {
       const resolved = resolveEntityIdsFromTarget(this.hass, this._target);
@@ -450,17 +489,16 @@ export class AnomalyMonitorWizard extends LitElement {
       } else {
         // Individual monitors — one sensor per entity, each with its own config
         const results = await Promise.all(
-          this._entityIds.map((entityId) => {
-            const baseName = entityId.split(".").pop() ?? entityId;
-            return createMonitor(this.hass!, {
+          this._entityIds.map((entityId) =>
+            createMonitor(this.hass!, {
               monitor_type: "individual",
-              name: `${baseName} ${msg("anomalies")}`,
+              name: individualMonitorName(this._name.trim(), entityId),
               entity_id: entityId,
               look_back_hours: this._lookBackHours,
               scan_interval_minutes: this._scanIntervalMinutes,
               ...this._configPayload(entityId),
-            });
-          })
+            })
+          )
         );
         saved.push(...results);
       }
@@ -532,33 +570,40 @@ export class AnomalyMonitorWizard extends LitElement {
   // -------------------------------------------------------------------------
 
   private _renderStepBar() {
-    const isEdit = !!this.editMonitor;
-    if (isEdit) {
-      return html`
-        <div class="step-bar">
-          <span class=${`step${this._step === 2 ? " active" : ""}`}
-            >1. ${msg("Analysis")}</span
-          >
-          <ha-icon icon="mdi:chevron-right" class="step-sep"></ha-icon>
-          <span class=${`step${this._step === 3 ? " active" : ""}`}
-            >2. ${msg("Schedule")}</span
-          >
-        </div>
-      `;
-    }
+    const steps: { step: 1 | 2 | 3; label: string }[] = this.editMonitor
+      ? [
+          { step: 2, label: msg("Analysis") },
+          { step: 3, label: msg("Schedule") },
+        ]
+      : [
+          { step: 1, label: msg("Entities") },
+          { step: 2, label: msg("Analysis") },
+          { step: 3, label: msg("Schedule") },
+        ];
+    const reachable = Math.max(this._maxStep, this._step);
+
     return html`
-      <div class="step-bar">
-        <span class=${`step${this._step === 1 ? " active" : ""}`}
-          >1. ${msg("Entities")}</span
-        >
-        <ha-icon icon="mdi:chevron-right" class="step-sep"></ha-icon>
-        <span class=${`step${this._step === 2 ? " active" : ""}`}
-          >2. ${msg("Analysis")}</span
-        >
-        <ha-icon icon="mdi:chevron-right" class="step-sep"></ha-icon>
-        <span class=${`step${this._step === 3 ? " active" : ""}`}
-          >3. ${msg("Schedule")}</span
-        >
+      <div class="step-bar" role="list">
+        ${steps.map(({ step, label }, index) => {
+          const done = step < this._step;
+          const active = step === this._step;
+          return html`
+            ${index > 0 ? html`<span class="step-line"></span>` : nothing}
+            <button
+              type="button"
+              role="listitem"
+              class=${`step-dot${done ? " done" : ""}${active ? " active" : ""}`}
+              aria-current=${active ? "step" : "false"}
+              ?disabled=${step > reachable}
+              @click=${() => this._goToStep(step)}
+            >
+              <span class="step-dot-circle">
+                ${done ? html`<ha-icon icon="mdi:check"></ha-icon>` : index + 1}
+              </span>
+              <span class="step-dot-label">${label}</span>
+            </button>
+          `;
+        })}
       </div>
     `;
   }
@@ -583,6 +628,14 @@ export class AnomalyMonitorWizard extends LitElement {
           .value=${this._target}
           @value-changed=${this._onTargetChanged}
         ></ha-target-picker>
+        <p class="step-info-note">
+          <ha-icon icon="mdi:information-outline"></ha-icon>
+          <span
+            >${msg(
+              "Select more than one entity and you can choose whether to create individual or combined sensors in the last step."
+            )}</span
+          >
+        </p>
       </div>
 
       ${hasQuickAddOptions
@@ -645,6 +698,9 @@ export class AnomalyMonitorWizard extends LitElement {
                     }}
                   >
                     ${displayNames.get(id) ?? this._entityName(id)}
+                    <span class="tab-badge"
+                      >${enabledMethodCount(this._getEntityConfig(id))}</span
+                    >
                   </button>
                 `
               )}
@@ -652,7 +708,37 @@ export class AnomalyMonitorWizard extends LitElement {
           `
         : nothing}
       <div class=${showTabs ? "entity-tab-panel" : ""}>
+        ${showTabs ? this._renderCopyFrom(activeId, displayNames) : nothing}
         ${activeId ? this._renderEntityAnalysis(activeId) : nothing}
+      </div>
+    `;
+  }
+
+  private _renderCopyFrom(activeId: string, displayNames: Map<string, string>) {
+    const options = [
+      { value: "", label: msg("Copy detection settings from…") },
+      ...this._entityIds
+        .filter((id) => id !== activeId)
+        .map((id) => ({
+          value: id,
+          label: displayNames.get(id) ?? this._entityName(id),
+        })),
+    ];
+    return html`
+      <div class="copy-from">
+        <ha-icon icon="mdi:content-copy"></ha-icon>
+        <span class="field-label">${msg("Copy from")}</span>
+        ${keyed(
+          this._copyKey,
+          html`<inline-select
+            .value=${""}
+            .options=${options}
+            @dp-change=${(e: Event) => {
+              const val = (e as CustomEvent<{ value: string }>).detail?.value;
+              if (val) this._copyConfigFrom(val);
+            }}
+          ></inline-select>`
+        )}
       </div>
     `;
   }
@@ -686,6 +772,12 @@ export class AnomalyMonitorWizard extends LitElement {
   private _renderStep3() {
     const entityCount = this._entityIds.length;
     const isMulti = entityCount > 1;
+    const isMany =
+      !this.editMonitor && isMulti && this._monitorType === "individual";
+    const showOverlap =
+      (isMulti || this.editMonitor?.type === "combined") &&
+      (this._monitorType === "combined" ||
+        this.editMonitor?.type === "combined");
 
     return html`
       ${!this.editMonitor
@@ -700,12 +792,25 @@ export class AnomalyMonitorWizard extends LitElement {
 
       <div class="wizard-section">
         <ha-textfield
-          label=${msg("Monitor name")}
+          label=${isMany ? msg("Name prefix") : msg("Monitor name")}
           .value=${this._name}
           @input=${(e: Event) => {
             this._name = (e.target as HTMLInputElement).value;
           }}
         ></ha-textfield>
+        ${isMany
+          ? html`<p class="name-hint">
+              ${msg(
+                "The entity name is added to the end of the prefix for each monitor, e.g."
+              )}
+              <em
+                >${individualMonitorName(
+                  this._name || msg("Prefix"),
+                  this._entityIds[0] ?? ""
+                )}</em
+              >
+            </p>`
+          : nothing}
       </div>
 
       <div class="wizard-inline-row">
@@ -743,26 +848,22 @@ export class AnomalyMonitorWizard extends LitElement {
         ? html`
             <div class="wizard-field">
               <label class="field-label">${msg("Sensor type")}</label>
-              <inline-select
-                .value=${this._monitorType}
-                .options=${[
-                  { value: "individual", label: msg("Individual sensors") },
-                  { value: "combined", label: msg("Combined sensor") },
-                ]}
-                @dp-change=${(e: Event) => {
-                  const val = (e as CustomEvent<{ value: string }>).detail
-                    ?.value as MonitorType;
-                  this._monitorType = val;
-                  // Reset overlap mode to a sensible default when switching
-                  if (val === "combined") this._overlapMode = "all";
-                }}
-              ></inline-select>
+              <div class="radio-cards" role="radiogroup">
+                ${this._renderRadioCard(
+                  "individual",
+                  msg("Individual sensors"),
+                  this._deviceCount(entityCount)
+                )}
+                ${this._renderRadioCard(
+                  "combined",
+                  msg("Combined sensor"),
+                  this._deviceCount(1)
+                )}
+              </div>
             </div>
           `
         : nothing}
-      ${(isMulti || this.editMonitor?.type === "combined") &&
-      (this._monitorType === "combined" ||
-        this.editMonitor?.type === "combined")
+      ${showOverlap
         ? html`
             <div class="wizard-field">
               <label class="field-label">${msg("Overlap mode")}</label>
@@ -775,10 +876,89 @@ export class AnomalyMonitorWizard extends LitElement {
                   if (val) this._overlapMode = val;
                 }}
               ></inline-select>
+              <ul class="overlap-help">
+                ${this._overlapOptions().map(
+                  (o) => html`
+                    <li
+                      class=${o.value === this._overlapMode ? "selected" : ""}
+                    >
+                      <strong>${o.label}:</strong>
+                      ${this._overlapDescription(o.value)}
+                    </li>
+                  `
+                )}
+              </ul>
             </div>
           `
         : nothing}
+      ${this._renderSummary()}
     `;
+  }
+
+  private _deviceCount(n: number): string {
+    return `${n} ${n === 1 ? msg("device") : msg("devices")}`;
+  }
+
+  private _overlapDescription(value: string): string {
+    if (value === "all") {
+      return msg(
+        "Flags a period only when every selected series is anomalous at the same time."
+      );
+    }
+    if (value === "any") {
+      return msg("Flags a period when any one of the series is anomalous.");
+    }
+    const n = value.replace("any_", "");
+    return `${msg("Flags a period when at least")} ${n} ${msg("series are anomalous at the same time.")}`;
+  }
+
+  private _renderRadioCard(
+    value: MonitorType,
+    title: string,
+    subtitle: string
+  ) {
+    const checked = this._monitorType === value;
+    return html`
+      <button
+        type="button"
+        role="radio"
+        aria-checked=${checked ? "true" : "false"}
+        class=${`radio-card${checked ? " checked" : ""}`}
+        @click=${() => {
+          this._monitorType = value;
+          // Reset overlap mode to a sensible default when switching
+          if (value === "combined") this._overlapMode = "all";
+        }}
+      >
+        <span class="radio-card-dot"></span>
+        <span class="radio-card-text">
+          <span class="radio-card-title">${title}</span>
+          <span class="radio-card-subtitle">${subtitle}</span>
+        </span>
+      </button>
+    `;
+  }
+
+  private _renderSummary() {
+    const editMonitor = this.editMonitor;
+    const summary = editMonitor
+      ? summarizeMonitors(
+          [this._activeEntityId || this._entityIds[0] || ""],
+          this._entityConfigs,
+          editMonitor.type
+        )
+      : summarizeMonitors(
+          this._entityIds,
+          this._entityConfigs,
+          this._monitorType
+        );
+    const monitors = `${summary.monitors} ${summary.monitors === 1 ? msg("monitor") : msg("monitors")}`;
+    const rules = `${summary.rules} ${summary.rules === 1 ? msg("detection rule") : msg("detection rules")} ${msg("total")}`;
+    const lead = editMonitor ? msg("Updates") : msg("Will create");
+    return html`<div class="summary-row">
+      <ha-icon icon="mdi:check-circle-outline"></ha-icon>
+      <span>${`${lead} ${monitors} · ${rules}`}</span>
+    </div>`;
   }
 
   // -------------------------------------------------------------------------

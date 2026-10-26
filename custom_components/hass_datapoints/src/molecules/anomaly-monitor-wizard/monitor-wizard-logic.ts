@@ -269,6 +269,54 @@ export function toggleMethod(
   return { ...config, anomaly_methods: methods };
 }
 
+/** Number of distinct detection methods enabled on a config. */
+export function enabledMethodCount(config: EntityAnalysisConfig): number {
+  return new Set(config.anomaly_methods).size;
+}
+
+/** Independent clone of a config, for "Copy from <entity>". */
+export function copyEntityConfig(
+  config: EntityAnalysisConfig
+): EntityAnalysisConfig {
+  return { ...config, anomaly_methods: [...config.anomaly_methods] };
+}
+
+export interface MonitorSummary {
+  monitors: number;
+  rules: number;
+}
+
+/**
+ * How many monitors a save will create and how many detection rules they
+ * carry. A combined monitor is saved with the primary entity's config only.
+ */
+export function summarizeMonitors(
+  entityIds: string[],
+  configs: Map<string, EntityAnalysisConfig>,
+  monitorType: "individual" | "combined"
+): MonitorSummary {
+  const count = (id: string) => {
+    const cfg = configs.get(id);
+    return cfg ? enabledMethodCount(cfg) : 0;
+  };
+  if (monitorType === "combined" || entityIds.length <= 1) {
+    return { monitors: 1, rules: count(entityIds[0] ?? "") };
+  }
+  return {
+    monitors: entityIds.length,
+    rules: entityIds.reduce((total, id) => total + count(id), 0),
+  };
+}
+
+/** Name for one of many individual monitors: the prefix plus the entity. */
+export function individualMonitorName(
+  prefix: string,
+  entityId: string
+): string {
+  const baseName = entityId.split(".").pop() ?? entityId;
+  return `${prefix} ${baseName}`;
+}
+
 // ── Build create/update payload ───────────────────────────────────────────
 
 export function buildConfigPayload(
