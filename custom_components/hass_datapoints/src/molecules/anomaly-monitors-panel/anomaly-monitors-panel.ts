@@ -26,6 +26,7 @@ import {
 } from "@/lib/data/monitors-api";
 import type { HassLike } from "@/lib/types";
 import type {
+  DpChangeDetail,
   MonitorsOpenChartDetail,
   MonitorsOpenEntityDetail,
 } from "@/lib/events";
@@ -39,7 +40,11 @@ import "@/molecules/anomaly-monitor-wizard/anomaly-monitor-wizard";
 import "@/atoms/form/entity-chip/entity-chip";
 import "@/atoms/display/monitor-status-pill/monitor-status-pill";
 import "@/molecules/monitor-entity-heatmap/monitor-entity-heatmap";
+import "@/molecules/monitor-entity-filter/monitor-entity-filter";
 import type { HeatmapBlockClickDetail } from "@/molecules/monitor-entity-heatmap/monitor-entity-heatmap";
+
+/** How long a just-created/edited row stays highlighted. */
+const FLASH_DURATION_MS = 2000;
 
 /**
  * Fallback detection methods when a monitor has no configured methods. Mirrors
@@ -137,6 +142,9 @@ export class AnomalyMonitorsPanel extends LitElement {
 
   @state() accessor _loading: boolean = true;
 
+  /** Entity ids the list is narrowed to (empty = no filter). Local to the panel. */
+  @state() accessor _entityFilter: string[] = [];
+
   @state() accessor _editMonitor: AnomalyMonitor | null = null;
 
   @state() accessor _wizardOpen: boolean = false;
@@ -156,6 +164,11 @@ export class AnomalyMonitorsPanel extends LitElement {
   /** Whether the document-level listeners that close the overflow menu are active. */
   private _overflowCloseHandlersActive = false;
 
+  /** Monitor ids whose rows are currently flashing after a create/edit. */
+  @state() accessor _flashIds: Set<string> = new Set();
+
+  private _flashTimer: ReturnType<typeof setTimeout> | null = null;
+
   private _pollInterval: ReturnType<typeof setInterval> | null = null;
 
   private _monitorsEventUnsubscribe: Nullable<() => void> = null;
@@ -173,6 +186,13 @@ export class AnomalyMonitorsPanel extends LitElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
+    // Filter state is session-local: closing the panel resets it.
+    this._entityFilter = [];
+    if (this._flashTimer !== null) {
+      clearTimeout(this._flashTimer);
+      this._flashTimer = null;
+    }
+    this._flashIds = new Set();
     if (this._pollInterval !== null) {
       clearInterval(this._pollInterval);
       this._pollInterval = null;
@@ -449,10 +469,59 @@ export class AnomalyMonitorsPanel extends LitElement {
     this._editMonitor = null;
   }
 
-  private async _onWizardSaved() {
+  private async _onWizardSaved(
+    e: CustomEvent<{ monitors?: AnomalyMonitor[] }>
+  ) {
+    const saved = e.detail?.monitors ?? [];
+    const wasEdit = this._editMonitor !== null;
     this._wizardOpen = false;
     this._editMonitor = null;
     await this._load();
+    if (saved.length === 0) return;
+    // A filter that hides a saved row would defeat the confirmation: drop it.
+    if (
+      this._entityFilter.length > 0 &&
+      saved.some(
+        (m) =>
+          !monitorEntityIds(m).some((id) => this._entityFilter.includes(id))
+      )
+    ) {
+      this._entityFilter = [];
+    }
+    // HA's global snackbar shows one toast at a time and auto-dismisses, so
+    // successive confirmations replace each other rather than stacking.
+    if (saved.length > 1) {
+      this._notify(msg(`Created ${saved.length} anomaly monitors`));
+    } else if (wasEdit) {
+      this._notify(msg(`Saved "${saved[0].name}"`));
+    } else {
+      this._notify(msg(`Created "${saved[0].name}"`));
+    }
+    this._flash(saved.map((m) => m.id));
+  }
+
+  /** Briefly highlight the given rows and scroll the first into view. */
+  private _flash(ids: string[]) {
+    if (this._flashTimer !== null) clearTimeout(this._flashTimer);
+    this._flashIds = new Set(ids);
+    this._flashTimer = setTimeout(() => {
+      this._flashIds = new Set();
+      this._flashTimer = null;
+    }, FLASH_DURATION_MS);
+    this.updateComplete
+      .then(() => {
+        const card = this.shadowRoot?.querySelector(
+          ".monitor-card[data-flash]"
+        );
+        const reduced = window.matchMedia?.(
+          "(prefers-reduced-motion: reduce)"
+        ).matches;
+        card?.scrollIntoView?.({
+          block: "nearest",
+          behavior: reduced ? "auto" : "smooth",
+        });
+      })
+      .catch(() => {});
   }
 
   private async _onToggleEnabled(monitor: AnomalyMonitor) {
@@ -1070,7 +1139,11 @@ export class AnomalyMonitorsPanel extends LitElement {
     }
 
     return html`
-      <div class="monitor-card" data-enabled=${monitor.enabled}>
+      <div
+        class="monitor-card"
+        data-enabled=${monitor.enabled}
+        ?data-flash=${this._flashIds.has(monitor.id)}
+      >
         ${this._renderCardHeader(monitor, status)}
 
         <div class="monitor-body">
@@ -1175,9 +1248,49 @@ export class AnomalyMonitorsPanel extends LitElement {
         ${msg('No monitors configured. Click "New monitor" to get started.')}
       </div>`;
     }
-    return html`<div class="monitors-grid">
-      ${this._monitors.map((m) => this._renderMonitorCard(m))}
-    </div>`;
+    const visible = this._filteredMonitors();
+    return html`${this._renderEntityFilter()}
+    ${visible.length === 0
+      ? html`<div class="monitors-empty filter-empty">
+          <p>${msg("No monitors use the selected entities.")}</p>
+          <button
+            class="filter-empty-clear"
+            type="button"
+            @click=${() => {
+              this._entityFilter = [];
+            }}
+          >
+            ${msg("Clear filter")}
+          </button>
+        </div>`
+      : html`<div class="monitors-grid">
+          ${visible.map((m) => this._renderMonitorCard(m))}
+        </div>`}`;
+  }
+
+  /** Monitors using at least one selected entity (all when no filter). */
+  private _filteredMonitors(): AnomalyMonitor[] {
+    if (this._entityFilter.length === 0) {
+      return this._monitors;
+    }
+    return this._monitors.filter((m) =>
+      monitorEntityIds(m).some((id) => this._entityFilter.includes(id))
+    );
+  }
+
+  private _renderEntityFilter() {
+    const ids = [...new Set(this._monitors.flatMap(monitorEntityIds))];
+    return html`<monitor-entity-filter
+      class="monitors-filter"
+      .hass=${this.hass}
+      .entityIds=${ids}
+      .selected=${this._entityFilter}
+      @dp-change=${(e: CustomEvent<DpChangeDetail>) => {
+        this._entityFilter = (
+          e.detail as { type: "entity-list"; value: string[] }
+        ).value;
+      }}
+    ></monitor-entity-filter>`;
   }
 
   private _rangeLabel(): string {

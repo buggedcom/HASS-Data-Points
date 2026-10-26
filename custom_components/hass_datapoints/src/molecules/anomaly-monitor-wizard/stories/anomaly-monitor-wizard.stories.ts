@@ -221,3 +221,49 @@ export const CreateCtaVariants = {
     );
   },
 };
+
+export const MultiEntityAnalysisStep = {
+  render: () => html`
+    <anomaly-monitor-wizard
+      .hass=${mockHass}
+      .open=${true}
+      .prefillEntityIds=${["sensor.temperature", "sensor.humidity"]}
+    ></anomaly-monitor-wizard>
+  `,
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const wizard = getWizard(canvasElement);
+    await wizard.updateComplete;
+    wizard._step = 2;
+    await wizard.updateComplete;
+
+    const root = wizard.shadowRoot!;
+    expect(root.querySelectorAll(".step-dot")).toHaveLength(3);
+    expect(root.querySelectorAll(".entity-tab .tab-badge")).toHaveLength(2);
+    expect(root.querySelector(".copy-from")).not.toBeNull();
+  },
+};
+
+export const MultiEntityScheduleStep = {
+  render: () => html`
+    <anomaly-monitor-wizard
+      .hass=${mockHass}
+      .open=${true}
+      .prefillEntityIds=${["sensor.temperature", "sensor.humidity"]}
+    ></anomaly-monitor-wizard>
+  `,
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const wizard = getWizard(canvasElement);
+    await wizard.updateComplete;
+    wizard._step = 3;
+    await wizard.updateComplete;
+
+    const root = wizard.shadowRoot!;
+    expect(root.querySelectorAll(".radio-card")).toHaveLength(2);
+    expect(root.querySelector("ha-textfield")?.getAttribute("label")).toBe(
+      "Name prefix"
+    );
+    expect(root.querySelector(".summary-row")?.textContent).toContain(
+      "Will create 2 monitors"
+    );
+  },
+};

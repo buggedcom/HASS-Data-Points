@@ -61,6 +61,20 @@ export const styles = css`
     }
   }
 
+  .monitors-filter {
+    margin-bottom: var(--dp-spacing-md);
+  }
+
+  .filter-empty-clear {
+    font: inherit;
+    cursor: pointer;
+    color: var(--primary-color);
+    background: none;
+    border: 1px solid var(--divider-color);
+    border-radius: var(--ha-border-radius-pill, 999px);
+    padding: var(--dp-spacing-xs) var(--dp-spacing-md);
+  }
+
   .monitors-empty {
     text-align: center;
     color: var(--secondary-text-color);
@@ -92,6 +106,33 @@ export const styles = css`
 
   .monitor-card[data-enabled="false"]:hover {
     opacity: 0.85;
+  }
+
+  .monitor-card[data-flash] {
+    animation: monitor-flash 2s ease-out;
+  }
+
+  @keyframes monitor-flash {
+    0%,
+    30% {
+      box-shadow: 0 0 0 2px var(--primary-color, #03a9f4);
+      background: color-mix(
+        in srgb,
+        var(--primary-color, #03a9f4) 16%,
+        var(--card-background-color, var(--secondary-background-color))
+      );
+    }
+    100% {
+      box-shadow: var(--ha-card-box-shadow, none);
+    }
+  }
+
+  /* No motion: show a static highlight for the same duration instead. */
+  @media (prefers-reduced-motion: reduce) {
+    .monitor-card[data-flash] {
+      animation: none;
+      box-shadow: 0 0 0 2px var(--primary-color, #03a9f4);
+    }
   }
 
   .monitor-card-header {
