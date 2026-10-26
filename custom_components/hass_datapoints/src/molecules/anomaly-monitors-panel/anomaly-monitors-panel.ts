@@ -26,6 +26,7 @@ import {
 } from "@/lib/data/monitors-api";
 import type { HassLike } from "@/lib/types";
 import type {
+  DpChangeDetail,
   MonitorsOpenChartDetail,
   MonitorsOpenEntityDetail,
 } from "@/lib/events";
@@ -39,6 +40,7 @@ import "@/molecules/anomaly-monitor-wizard/anomaly-monitor-wizard";
 import "@/atoms/form/entity-chip/entity-chip";
 import "@/atoms/display/monitor-status-pill/monitor-status-pill";
 import "@/molecules/monitor-entity-heatmap/monitor-entity-heatmap";
+import "@/molecules/monitor-entity-filter/monitor-entity-filter";
 import type { HeatmapBlockClickDetail } from "@/molecules/monitor-entity-heatmap/monitor-entity-heatmap";
 
 /**
@@ -137,6 +139,9 @@ export class AnomalyMonitorsPanel extends LitElement {
 
   @state() accessor _loading: boolean = true;
 
+  /** Entity ids the list is narrowed to (empty = no filter). Local to the panel. */
+  @state() accessor _entityFilter: string[] = [];
+
   @state() accessor _editMonitor: AnomalyMonitor | null = null;
 
   @state() accessor _wizardOpen: boolean = false;
@@ -173,6 +178,8 @@ export class AnomalyMonitorsPanel extends LitElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
+    // Filter state is session-local: closing the panel resets it.
+    this._entityFilter = [];
     if (this._pollInterval !== null) {
       clearInterval(this._pollInterval);
       this._pollInterval = null;
@@ -1175,9 +1182,49 @@ export class AnomalyMonitorsPanel extends LitElement {
         ${msg('No monitors configured. Click "New monitor" to get started.')}
       </div>`;
     }
-    return html`<div class="monitors-grid">
-      ${this._monitors.map((m) => this._renderMonitorCard(m))}
-    </div>`;
+    const visible = this._filteredMonitors();
+    return html`${this._renderEntityFilter()}
+    ${visible.length === 0
+      ? html`<div class="monitors-empty filter-empty">
+          <p>${msg("No monitors use the selected entities.")}</p>
+          <button
+            class="filter-empty-clear"
+            type="button"
+            @click=${() => {
+              this._entityFilter = [];
+            }}
+          >
+            ${msg("Clear filter")}
+          </button>
+        </div>`
+      : html`<div class="monitors-grid">
+          ${visible.map((m) => this._renderMonitorCard(m))}
+        </div>`}`;
+  }
+
+  /** Monitors using at least one selected entity (all when no filter). */
+  private _filteredMonitors(): AnomalyMonitor[] {
+    if (this._entityFilter.length === 0) {
+      return this._monitors;
+    }
+    return this._monitors.filter((m) =>
+      monitorEntityIds(m).some((id) => this._entityFilter.includes(id))
+    );
+  }
+
+  private _renderEntityFilter() {
+    const ids = [...new Set(this._monitors.flatMap(monitorEntityIds))];
+    return html`<monitor-entity-filter
+      class="monitors-filter"
+      .hass=${this.hass}
+      .entityIds=${ids}
+      .selected=${this._entityFilter}
+      @dp-change=${(e: CustomEvent<DpChangeDetail>) => {
+        this._entityFilter = (
+          e.detail as { type: "entity-list"; value: string[] }
+        ).value;
+      }}
+    ></monitor-entity-filter>`;
   }
 
   private _rangeLabel(): string {
