@@ -989,4 +989,149 @@ describe("anomaly-monitors-panel", () => {
       });
     });
   });
+  describe("GIVEN a selected timeline range", () => {
+    const RANGE_START = Date.UTC(2026, 0, 1);
+    const RANGE_END = RANGE_START + 4 * 3_600_000;
+    const ACTIVITY_TYPE = `${DOMAIN}/monitors/anomaly_activity`;
+
+    function activityFor(monitorId: string) {
+      const bucket = (i: number, anomalies: number, incidents: number) => ({
+        start_ms: RANGE_START + i * 3_600_000,
+        end_ms: RANGE_START + (i + 1) * 3_600_000,
+        anomaly_count: anomalies,
+        incident_count: incidents,
+      });
+      return {
+        monitor_id: monitorId,
+        start_ms: RANGE_START,
+        end_ms: RANGE_END,
+        bucket_ms: 3_600_000,
+        total_anomalies: 7,
+        incident_count: 3,
+        entities: [
+          {
+            entity_id: "sensor.temperature",
+            total: 7,
+            incident_count: 3,
+            buckets: [
+              bucket(0, 0, 0),
+              bucket(1, 4, 2),
+              bucket(2, 0, 0),
+              bucket(3, 3, 1),
+            ],
+          },
+        ],
+      };
+    }
+
+    async function mountWithRange(
+      activity: (message: { monitor_id?: string }) => unknown
+    ) {
+      const send = routeSend({
+        [T.list]: () => ({ monitors: [buildMonitor(true)] }),
+        [ACTIVITY_TYPE]: activity as (m: { type: string }) => unknown,
+      });
+      const hass = createMockHass({
+        connection: {
+          subscribeEvents: vi.fn(() => Promise.resolve(vi.fn())),
+          sendMessagePromise: send,
+        },
+      });
+      const el = createElement(hass) as ReturnType<typeof createElement> & {
+        rangeStartMs: number | null;
+        rangeEndMs: number | null;
+      };
+      el.rangeStartMs = RANGE_START;
+      el.rangeEndMs = RANGE_END;
+      await el.updateComplete;
+      await flushMicrotasks();
+      await flushMicrotasks();
+      await el.updateComplete;
+      return { el, send };
+    }
+
+    describe("WHEN monitors load", () => {
+      it("THEN the header shows the monitor count and the range it covers", async () => {
+        expect.assertions(2);
+        const { el } = await mountWithRange((m) => activityFor(m.monitor_id!));
+        const subtitle = el.shadowRoot!.querySelector(".monitors-subtitle");
+        expect(subtitle?.textContent).toContain("1 monitors");
+        expect(subtitle?.textContent).toContain("counts cover");
+      });
+
+      it("THEN activity is fetched per monitor for exactly that range", async () => {
+        expect.assertions(1);
+        const { send } = await mountWithRange((m) =>
+          activityFor(m.monitor_id!)
+        );
+        expect(send).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: ACTIVITY_TYPE,
+            monitor_id: "monitor-1",
+            start_time: new Date(RANGE_START).toISOString(),
+            end_time: new Date(RANGE_END).toISOString(),
+          })
+        );
+      });
+
+      it("THEN the card renders a heatmap and the stats reflect the range totals", async () => {
+        expect.assertions(3);
+        const { el } = await mountWithRange((m) => activityFor(m.monitor_id!));
+        const root = el.shadowRoot!;
+        const heatmap = root.querySelector("monitor-entity-heatmap")!;
+        expect(
+          heatmap.shadowRoot!.querySelectorAll(".heatmap-block")
+        ).toHaveLength(4);
+        expect(
+          root.querySelector(".stat-anomalous .stat-value")?.textContent?.trim()
+        ).toBe("7");
+        expect(
+          root.querySelector(".stat-incidents .stat-value")?.textContent?.trim()
+        ).toBe("3");
+      });
+    });
+
+    describe("WHEN a heatmap block is clicked", () => {
+      it("THEN it emits dp-monitors-panel-open-chart for that entity and window", async () => {
+        expect.assertions(1);
+        const { el } = await mountWithRange((m) => activityFor(m.monitor_id!));
+        let detail: Record<string, unknown> | null = null;
+        el.addEventListener("dp-monitors-panel-open-chart", (e) => {
+          detail = (e as CustomEvent).detail;
+        });
+        const heatmap = el.shadowRoot!.querySelector("monitor-entity-heatmap")!;
+        (
+          heatmap.shadowRoot!.querySelectorAll(
+            ".heatmap-block"
+          )[1] as HTMLElement
+        ).click();
+        expect(detail).toMatchObject({
+          entityIds: ["sensor.temperature"],
+          startMs: RANGE_START + 3_600_000,
+          endMs: RANGE_START + 2 * 3_600_000,
+          monitorId: "monitor-1",
+        });
+      });
+    });
+
+    describe("WHEN the activity request fails", () => {
+      it("THEN the card shows a flat zero row and no error", async () => {
+        expect.assertions(3);
+        const { el } = await mountWithRange(() => {
+          throw new Error("boom");
+        });
+        const root = el.shadowRoot!;
+        const heatmap = root.querySelector("monitor-entity-heatmap")!;
+        expect(
+          heatmap.shadowRoot!.querySelector(".heatmap-flat")
+        ).not.toBeNull();
+        expect(
+          heatmap
+            .shadowRoot!.querySelector(".heatmap-count")
+            ?.textContent?.trim()
+        ).toBe("0");
+        expect(root.querySelector(".monitor-card")).not.toBeNull();
+      });
+    });
+  });
 });

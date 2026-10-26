@@ -3,7 +3,7 @@ import { property, state } from "lit/decorators.js";
 import type { PropertyValues } from "lit";
 import { COLORS, DOMAIN } from "@/constants";
 import { localized, msg } from "@/lib/i18n/localize";
-import { fmtRelativeTime } from "@/lib/util/format";
+import { fmtDateTime, fmtRelativeTime } from "@/lib/util/format";
 
 import { styles } from "./anomaly-monitors-panel.styles";
 import {
@@ -15,11 +15,13 @@ import {
   purgeMonitor,
   monitorEntityIds,
   fetchMonitorAnomalies,
+  fetchMonitorAnomalyActivity,
   dismissMonitorAnomaly,
   undismissMonitorAnomaly,
   type AnomalyMonitor,
   type CombinedMonitor,
   type AnomalyCluster,
+  type MonitorAnomalyActivityResult,
   type DismissedWindow,
 } from "@/lib/data/monitors-api";
 import type { HassLike } from "@/lib/types";
@@ -36,6 +38,8 @@ import {
 import "@/molecules/anomaly-monitor-wizard/anomaly-monitor-wizard";
 import "@/atoms/form/entity-chip/entity-chip";
 import "@/atoms/display/monitor-status-pill/monitor-status-pill";
+import "@/molecules/monitor-entity-heatmap/monitor-entity-heatmap";
+import type { HeatmapBlockClickDetail } from "@/molecules/monitor-entity-heatmap/monitor-entity-heatmap";
 
 /**
  * Fallback detection methods when a monitor has no configured methods. Mirrors
@@ -110,6 +114,21 @@ export class AnomalyMonitorsPanel extends LitElement {
 
   @property({ type: Object }) accessor hass: Nullable<HassLike> = null;
 
+  /** Start of the datapoints timeline's selected range (epoch ms). */
+  @property({ type: Number }) accessor rangeStartMs: Nullable<number> = null;
+
+  /** End of the datapoints timeline's selected range (epoch ms). */
+  @property({ type: Number }) accessor rangeEndMs: Nullable<number> = null;
+
+  /**
+   * Range-scoped per-entity activity per monitor id. A monitor whose fetch
+   * failed is simply absent, which renders a flat zero row.
+   */
+  @state() accessor _activity: Map<string, MonitorAnomalyActivityResult> =
+    new Map();
+
+  private _activityToken = 0;
+
   @state() accessor _monitors: AnomalyMonitor[] = [];
 
   /** Soft-deleted monitors still within the trash retention window. */
@@ -164,6 +183,12 @@ export class AnomalyMonitorsPanel extends LitElement {
   }
 
   protected updated(changedProperties: PropertyValues<this>) {
+    if (
+      changedProperties.has("rangeStartMs") ||
+      changedProperties.has("rangeEndMs")
+    ) {
+      this._scheduleActivityLoad();
+    }
     if (changedProperties.has("hass")) {
       this._teardownMonitorSubscription();
       this._scheduleMonitorSubscription();
@@ -173,6 +198,60 @@ export class AnomalyMonitorsPanel extends LitElement {
 
   private _scheduleLoad() {
     this._load().catch(() => {});
+  }
+
+  private _scheduleActivityLoad() {
+    this._loadActivity().catch(() => {});
+  }
+
+  /** The selected range, or null when the host has not provided a valid one. */
+  private _range(): Nullable<{ startMs: number; endMs: number }> {
+    const { rangeStartMs: startMs, rangeEndMs: endMs } = this;
+    return typeof startMs === "number" &&
+      typeof endMs === "number" &&
+      endMs > startMs
+      ? { startMs, endMs }
+      : null;
+  }
+
+  /**
+   * Fetch range-scoped per-entity activity for each active monitor. Requests are
+   * per monitor (combined monitors are costlier server-side) and a failure for
+   * one monitor only drops that monitor to a flat zero row.
+   */
+  private async _loadActivity() {
+    const range = this._range();
+    const hass = this.hass;
+    if (!hass || !range) {
+      return;
+    }
+    const token = ++this._activityToken;
+    const results = await Promise.all(
+      this._monitors.map(async (monitor) => {
+        try {
+          const result = await fetchMonitorAnomalyActivity(
+            hass,
+            monitor.id,
+            range.startMs,
+            range.endMs
+          );
+          return Array.isArray(result?.entities) ? result : null;
+        } catch {
+          return null;
+        }
+      })
+    );
+    if (token !== this._activityToken) {
+      return;
+    }
+    const next = new Map<string, MonitorAnomalyActivityResult>();
+    this._monitors.forEach((monitor, i) => {
+      const result = results[i];
+      if (result) {
+        next.set(monitor.id, result);
+      }
+    });
+    this._activity = next;
   }
 
   private _scheduleMonitorSubscription() {
@@ -220,6 +299,7 @@ export class AnomalyMonitorsPanel extends LitElement {
       ]);
       this._monitors = active;
       this._deletedMonitors = deleted;
+      this._scheduleActivityLoad();
     } catch {
       // ignore
     } finally {
@@ -328,6 +408,21 @@ export class AnomalyMonitorsPanel extends LitElement {
       anomalySensitivity: monitor.anomaly_sensitivity,
     };
     this._emit("dp-monitors-panel-open-entity", detail);
+  }
+
+  private _onHeatmapBlockClick(
+    monitor: AnomalyMonitor,
+    detail: HeatmapBlockClickDetail
+  ) {
+    const chartDetail: MonitorsOpenChartDetail = {
+      entityIds: [detail.entityId],
+      startMs: detail.startMs,
+      endMs: detail.endMs,
+      monitorId: monitor.id,
+      anomalyMethods: monitorAnomalyMethods(monitor),
+      anomalySensitivity: monitor.anomaly_sensitivity,
+    };
+    this._emit("dp-monitors-panel-open-chart", chartDetail);
   }
 
   private _onViewSeries(monitor: AnomalyMonitor) {
@@ -708,7 +803,27 @@ export class AnomalyMonitorsPanel extends LitElement {
     `;
   }
 
+  /** Per-entity heatmap over the selected range (flat zero rows if no data). */
+  private _renderEntityHeatmap(monitor: AnomalyMonitor) {
+    const range = this._range()!;
+    return html`<monitor-entity-heatmap
+      .hass=${this.hass}
+      .entityIds=${monitorEntityIds(monitor)}
+      .activity=${this._activity.get(monitor.id)?.entities ?? null}
+      .startMs=${range.startMs}
+      .endMs=${range.endMs}
+      style="--heatmap-color:${monitorSeriesColor(monitor)}"
+      @dp-heatmap-block-click=${(e: CustomEvent<HeatmapBlockClickDetail>) =>
+        this._onHeatmapBlockClick(monitor, e.detail)}
+      @dp-heatmap-entity-click=${(e: CustomEvent<{ entityId: string }>) =>
+        this._onOpenEntity(monitor, e.detail.entityId)}
+    ></monitor-entity-heatmap>`;
+  }
+
   private _renderEntityDisplay(monitor: AnomalyMonitor) {
+    if (this._range()) {
+      return this._renderEntityHeatmap(monitor);
+    }
     const entityIds = monitorEntityIds(monitor);
 
     if (monitor.type === "individual" || entityIds.length <= 1) {
@@ -884,9 +999,16 @@ export class AnomalyMonitorsPanel extends LitElement {
   }
 
   private _renderStatsBlock(monitor: AnomalyMonitor) {
-    const anomalousReadings = monitor.scan_history?.at(-1)?.count ?? 0;
-    const incidents =
-      monitor.active_cluster_count ?? monitor.last_cluster_count ?? 0;
+    // With a selected range the counts cover that range (0 when the activity
+    // is unavailable); otherwise fall back to the latest scan figures.
+    const activity = this._activity.get(monitor.id);
+    const ranged = this._range() !== null;
+    const anomalousReadings = ranged
+      ? (activity?.total_anomalies ?? 0)
+      : (monitor.scan_history?.at(-1)?.count ?? 0);
+    const incidents = ranged
+      ? (activity?.incident_count ?? 0)
+      : (monitor.active_cluster_count ?? monitor.last_cluster_count ?? 0);
     const lastAnomaly =
       monitor.enabled && monitor.last_anomaly_at
         ? fmtRelativeTime(monitor.last_anomaly_at)
@@ -1047,6 +1169,35 @@ export class AnomalyMonitorsPanel extends LitElement {
     </div>`;
   }
 
+  private _rangeLabel(): string {
+    const range = this._range();
+    return range
+      ? `${fmtDateTime(range.startMs)} – ${fmtDateTime(range.endMs)}`
+      : "";
+  }
+
+  private _renderSubtitle() {
+    if (!this._range() || this._loading) {
+      return nothing;
+    }
+    return html`<span class="monitors-subtitle"
+      >${msg(
+        `${this._monitors.length} monitors · counts cover ${this._rangeLabel()}`
+      )}</span
+    >`;
+  }
+
+  /** Compact range indicator shown only on narrow (mobile) viewports. */
+  private _renderRangeBar() {
+    if (!this._range()) {
+      return nothing;
+    }
+    return html`<div class="monitors-range-bar" role="status">
+      <ha-icon icon="mdi:calendar-range"></ha-icon>
+      <span>${this._rangeLabel()}</span>
+    </div>`;
+  }
+
   render() {
     return html`
       <div class="monitors-panel">
@@ -1054,14 +1205,18 @@ export class AnomalyMonitorsPanel extends LitElement {
           <ha-icon-button label=${msg("Back")} @click=${this._onClose}>
             <ha-icon icon="mdi:arrow-left"></ha-icon>
           </ha-icon-button>
-          <h2>${msg("Anomaly monitors")}</h2>
+          <div class="monitors-title">
+            <h2>${msg("Anomaly monitors")}</h2>
+            ${this._renderSubtitle()}
+          </div>
           <button class="new-monitor-btn" @click=${this._onNewMonitor}>
             <ha-icon icon="mdi:bell-plus-outline"></ha-icon>
             ${msg("New monitor")}
           </button>
         </div>
 
-        ${this._renderMonitorList()} ${this._renderTrashSection()}
+        ${this._renderRangeBar()} ${this._renderMonitorList()}
+        ${this._renderTrashSection()}
       </div>
 
       <anomaly-monitor-wizard
