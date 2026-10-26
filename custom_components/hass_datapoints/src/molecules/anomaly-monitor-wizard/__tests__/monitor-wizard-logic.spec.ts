@@ -577,5 +577,11 @@ describe("monitor-wizard-logic", () => {
         "Garden soil_moisture"
       );
     });
+
+    it("WHEN prefix is empty or blank THEN falls back to the default prefix", () => {
+      expect(individualMonitorName("  ", "sensor.soil_moisture")).toBe(
+        "Anomaly monitor soil_moisture"
+      );
+    });
   });
 });

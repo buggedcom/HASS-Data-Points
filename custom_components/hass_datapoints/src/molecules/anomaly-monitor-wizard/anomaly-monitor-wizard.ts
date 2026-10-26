@@ -213,8 +213,17 @@ export class AnomalyMonitorWizard extends LitElement {
     );
   }
 
+  /** The entity being edited: the active tab, else the first selected. */
+  private _primaryEntityId(): string {
+    return this._activeEntityId || this._entityIds[0] || "";
+  }
+
+  private _isCombined(): boolean {
+    return this._monitorType === "combined";
+  }
+
   private _copyConfigFrom(sourceId: string) {
-    const target = this._activeEntityId || this._entityIds[0] || "";
+    const target = this._primaryEntityId();
     if (!sourceId || !target || sourceId === target) return;
     const updated = new Map(this._entityConfigs);
     updated.set(target, copyEntityConfig(this._getEntityConfig(sourceId)));
@@ -400,7 +409,7 @@ export class AnomalyMonitorWizard extends LitElement {
         this._name =
           this._entityIds.length > 1
             ? msg("Anomaly monitor")
-            : `${baseName} ${msg("anomalies")}`;
+            : msg(`${baseName} anomalies`);
       }
       this._error = "";
       this._step = 3;
@@ -454,7 +463,7 @@ export class AnomalyMonitorWizard extends LitElement {
 
       if (this.editMonitor) {
         // Edit: use active entity's config
-        const cfgEntityId = this._activeEntityId || this._entityIds[0] || "";
+        const cfgEntityId = this._primaryEntityId();
         const result = await updateMonitor(this.hass, {
           monitor_id: this.editMonitor.id,
           name: this._name.trim(),
@@ -466,10 +475,7 @@ export class AnomalyMonitorWizard extends LitElement {
           ...this._configPayload(cfgEntityId),
         });
         saved.push(result);
-      } else if (
-        this._monitorType === "combined" ||
-        this._entityIds.length === 1
-      ) {
+      } else if (this._isCombined() || this._entityIds.length === 1) {
         // Single combined sensor (or one entity → always individual)
         const primaryId = this._entityIds[0] ?? "";
         const payload: CreateMonitorPayload = {
@@ -539,13 +545,13 @@ export class AnomalyMonitorWizard extends LitElement {
       label:
         n <= 2
           ? msg("All anomalies overlap")
-          : `${msg("All")} ${n} ${msg("anomalies overlap")}`,
+          : msg(`All ${n} anomalies overlap`),
     });
     if (n > 2) {
       for (let i = n - 1; i >= 2; i--) {
         opts.push({
           value: `any_${i}`,
-          label: `${msg("Any")} ${i}+ ${msg("entities overlap")}`,
+          label: msg(`Any ${i}+ entities overlap`),
         });
       }
     }
@@ -557,12 +563,12 @@ export class AnomalyMonitorWizard extends LitElement {
     if (this._saving) return msg("Saving…");
     if (this.editMonitor) return msg("Save changes");
     const count =
-      this._monitorType === "combined" || this._entityIds.length <= 1
+      this._isCombined() || this._entityIds.length <= 1
         ? 1
         : this._entityIds.length;
     return count === 1
       ? msg("Create anomaly monitor")
-      : `${msg("Create")} ${count} ${msg("anomaly monitors")}`;
+      : msg(`Create ${count} anomaly monitors`);
   }
 
   // -------------------------------------------------------------------------
@@ -682,7 +688,7 @@ export class AnomalyMonitorWizard extends LitElement {
 
   private _renderStep2() {
     const showTabs = this._entityIds.length > 1;
-    const activeId = this._activeEntityId || this._entityIds[0] || "";
+    const activeId = this._primaryEntityId();
     const displayNames = this._entityDisplayNames();
 
     return html`
@@ -772,12 +778,10 @@ export class AnomalyMonitorWizard extends LitElement {
   private _renderStep3() {
     const entityCount = this._entityIds.length;
     const isMulti = entityCount > 1;
-    const isMany =
-      !this.editMonitor && isMulti && this._monitorType === "individual";
+    const isMany = !this.editMonitor && isMulti && !this._isCombined();
     const showOverlap =
       (isMulti || this.editMonitor?.type === "combined") &&
-      (this._monitorType === "combined" ||
-        this.editMonitor?.type === "combined");
+      (this._isCombined() || this.editMonitor?.type === "combined");
 
     return html`
       ${!this.editMonitor
@@ -852,12 +856,12 @@ export class AnomalyMonitorWizard extends LitElement {
                 ${this._renderRadioCard(
                   "individual",
                   msg("Individual sensors"),
-                  this._deviceCount(entityCount)
+                  this._individualSubtitle(entityCount)
                 )}
                 ${this._renderRadioCard(
                   "combined",
                   msg("Combined sensor"),
-                  this._deviceCount(1)
+                  this._combinedSubtitle(entityCount)
                 )}
               </div>
             </div>
@@ -895,8 +899,13 @@ export class AnomalyMonitorWizard extends LitElement {
     `;
   }
 
-  private _deviceCount(n: number): string {
-    return `${n} ${n === 1 ? msg("device") : msg("devices")}`;
+  private _individualSubtitle(n: number): string {
+    return n === 1 ? msg("1 device") : msg(`${n} devices`);
+  }
+
+  /** A combined monitor is one device that covers every selected entity. */
+  private _combinedSubtitle(n: number): string {
+    return n === 1 ? msg("1 device") : msg(`1 device covering ${n} entities`);
   }
 
   private _overlapDescription(value: string): string {
@@ -909,7 +918,9 @@ export class AnomalyMonitorWizard extends LitElement {
       return msg("Flags a period when any one of the series is anomalous.");
     }
     const n = value.replace("any_", "");
-    return `${msg("Flags a period when at least")} ${n} ${msg("series are anomalous at the same time.")}`;
+    return msg(
+      `Flags a period when at least ${n} series are anomalous at the same time.`
+    );
   }
 
   private _renderRadioCard(
@@ -943,7 +954,7 @@ export class AnomalyMonitorWizard extends LitElement {
     const editMonitor = this.editMonitor;
     const summary = editMonitor
       ? summarizeMonitors(
-          [this._activeEntityId || this._entityIds[0] || ""],
+          [this._primaryEntityId()],
           this._entityConfigs,
           editMonitor.type
         )
@@ -952,12 +963,26 @@ export class AnomalyMonitorWizard extends LitElement {
           this._entityConfigs,
           this._monitorType
         );
-    const monitors = `${summary.monitors} ${summary.monitors === 1 ? msg("monitor") : msg("monitors")}`;
-    const rules = `${summary.rules} ${summary.rules === 1 ? msg("detection rule") : msg("detection rules")} ${msg("total")}`;
-    const lead = editMonitor ? msg("Updates") : msg("Will create");
+    const count = summary.monitors;
+    let monitors: string;
+    if (editMonitor) {
+      monitors =
+        count === 1
+          ? msg("Updates 1 monitor")
+          : msg(`Updates ${count} monitors`);
+    } else {
+      monitors =
+        count === 1
+          ? msg("Will create 1 monitor")
+          : msg(`Will create ${count} monitors`);
+    }
+    const rules =
+      summary.rules === 1
+        ? msg("1 detection rule total")
+        : msg(`${summary.rules} detection rules total`);
     return html`<div class="summary-row">
       <ha-icon icon="mdi:check-circle-outline"></ha-icon>
-      <span>${`${lead} ${monitors} · ${rules}`}</span>
+      <span>${`${monitors} · ${rules}`}</span>
     </div>`;
   }
 

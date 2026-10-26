@@ -104,6 +104,31 @@ describe("monitor-entity-filter", () => {
     });
   });
 
+  describe("GIVEN the picker is open", () => {
+    describe("WHEN the user clicks outside the filter", () => {
+      it("THEN the picker closes", async () => {
+        expect.assertions(2);
+        const el = await mount();
+        await openPicker(el);
+        expect(q(el, ".picker")).not.toBeNull();
+        document.body.click();
+        await el.updateComplete;
+        expect(q(el, ".picker")).toBeNull();
+      });
+    });
+
+    describe("WHEN the user clicks inside the picker", () => {
+      it("THEN the picker stays open", async () => {
+        expect.assertions(1);
+        const el = await mount();
+        await openPicker(el);
+        q<HTMLElement>(el, ".search")!.click();
+        await el.updateComplete;
+        expect(q(el, ".picker")).not.toBeNull();
+      });
+    });
+  });
+
   describe("GIVEN two entities are selected", () => {
     describe("WHEN rendered", () => {
       it("THEN the badge shows the count and a chip per entity", async () => {

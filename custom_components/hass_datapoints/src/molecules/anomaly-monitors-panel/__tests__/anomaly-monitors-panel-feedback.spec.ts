@@ -13,7 +13,7 @@ type Panel = HTMLElement & {
   _editMonitor: unknown;
 };
 
-function monitor(id: string, name: string) {
+function monitor(id: string, name: string, entityId = "sensor.temp") {
   return {
     id,
     type: "individual",
@@ -31,11 +31,14 @@ function monitor(id: string, name: string) {
     anomaly_methods: ["trend_residual"],
     anomaly_sensitivity: "medium",
     dismissed_windows: [],
-    entity_id: "sensor.temp",
+    entity_id: entityId,
   };
 }
 
-const MONITORS = [monitor("m1", "Kitchen"), monitor("m2", "Bathroom")];
+const MONITORS = [
+  monitor("m1", "Kitchen"),
+  monitor("m2", "Bathroom", "sensor.humidity"),
+];
 
 async function mount() {
   const hass = createMockHass({
@@ -88,44 +91,73 @@ describe("anomaly-monitors-panel create/edit feedback", () => {
     document.body.innerHTML = "";
   });
 
-  describe("given a single monitor was created", () => {
-    it("then toasts Created with its name and flashes its row", async () => {
-      const el = await mount();
-      const messages = toasts(el);
-      save(el, [MONITORS[0]]);
-      await vi.waitFor(() => expect(flashing(el)).toEqual(["Kitchen"]));
-      expect(messages).toEqual(['Created "Kitchen"']);
+  describe("GIVEN a single monitor was created", () => {
+    describe("WHEN the wizard reports it saved", () => {
+      it("THEN toasts Created with its name and flashes its row", async () => {
+        const el = await mount();
+        const messages = toasts(el);
+        save(el, [MONITORS[0]]);
+        await vi.waitFor(() => expect(flashing(el)).toEqual(["Kitchen"]));
+        expect(messages).toEqual(['Created "Kitchen"']);
+      });
     });
   });
 
-  describe("given several monitors were created at once", () => {
-    it("then toasts a count and flashes every new row", async () => {
-      const el = await mount();
-      const messages = toasts(el);
-      save(el, MONITORS);
-      await vi.waitFor(() => expect(flashing(el)).toHaveLength(2));
-      expect(messages).toEqual(["Created 2 anomaly monitors"]);
+  describe("GIVEN several monitors were created at once", () => {
+    describe("WHEN the wizard reports them saved", () => {
+      it("THEN toasts a count and flashes every new row", async () => {
+        const el = await mount();
+        const messages = toasts(el);
+        save(el, MONITORS);
+        await vi.waitFor(() => expect(flashing(el)).toHaveLength(2));
+        expect(messages).toEqual(["Created 2 anomaly monitors"]);
+      });
     });
   });
 
-  describe("given an existing monitor was edited", () => {
-    it("then toasts Saved with its name and flashes its row", async () => {
-      const el = await mount();
-      const messages = toasts(el);
-      el._editMonitor = MONITORS[1];
-      save(el, [MONITORS[1]]);
-      await vi.waitFor(() => expect(flashing(el)).toEqual(["Bathroom"]));
-      expect(messages).toEqual(['Saved "Bathroom"']);
+  describe("GIVEN an existing monitor was edited", () => {
+    describe("WHEN the wizard reports it saved", () => {
+      it("THEN toasts Saved with its name and flashes its row", async () => {
+        const el = await mount();
+        const messages = toasts(el);
+        el._editMonitor = MONITORS[1];
+        save(el, [MONITORS[1]]);
+        await vi.waitFor(() => expect(flashing(el)).toEqual(["Bathroom"]));
+        expect(messages).toEqual(['Saved "Bathroom"']);
+      });
     });
   });
 
-  describe("given the flash duration has elapsed", () => {
-    it("then the highlight is removed", async () => {
-      const el = await mount();
-      save(el, [MONITORS[0]]);
-      await vi.waitFor(() => expect(flashing(el)).toHaveLength(1));
-      await vi.waitFor(() => expect(flashing(el)).toHaveLength(0), {
-        timeout: 4000,
+  describe("GIVEN the flash duration has elapsed", () => {
+    describe("WHEN the row is checked again", () => {
+      it("THEN the highlight is removed", async () => {
+        const el = await mount();
+        save(el, [MONITORS[0]]);
+        await vi.waitFor(() => expect(flashing(el)).toHaveLength(1));
+        await vi.waitFor(() => expect(flashing(el)).toHaveLength(0), {
+          timeout: 4000,
+        });
+      });
+    });
+  });
+
+  describe("GIVEN an entity filter hides the saved monitor", () => {
+    describe("WHEN the wizard reports it saved", () => {
+      it("THEN the filter is cleared so the row is visible and flashes", async () => {
+        const el = await mount();
+        el.shadowRoot!.querySelector("monitor-entity-filter")!.dispatchEvent(
+          new CustomEvent("dp-change", {
+            detail: { type: "entity-list", value: ["sensor.humidity"] },
+            bubbles: true,
+            composed: true,
+          })
+        );
+        await el.updateComplete;
+        expect(el.shadowRoot!.querySelectorAll(".monitor-card")).toHaveLength(
+          1
+        );
+        save(el, [MONITORS[0]]);
+        await vi.waitFor(() => expect(flashing(el)).toEqual(["Kitchen"]));
       });
     });
   });
