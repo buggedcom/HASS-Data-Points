@@ -24,6 +24,30 @@ async function openMonitorsPanel() {
 }
 
 describe("GIVEN a mounted panel with the monitors overlay open", () => {
+  describe("WHEN the selected range changes while the overlay is open", () => {
+    it("THEN the monitors panel receives the new range live", async () => {
+      expect.assertions(4);
+      const { panel, monitorsPanel } = await openMonitorsPanel();
+      const target = monitorsPanel as HTMLElement & {
+        rangeStartMs: number | null;
+        rangeEndMs: number | null;
+      };
+      const host = panel as unknown as {
+        _startTime: Date;
+        _endTime: Date;
+      };
+      expect(target.rangeStartMs).toBe(host._startTime.getTime());
+
+      const start = new Date("2025-02-01T00:00:00.000Z");
+      const end = new Date("2025-02-03T00:00:00.000Z");
+      host._startTime = start;
+      host._endTime = end;
+
+      expect(target.rangeStartMs).toBe(start.getTime());
+      expect(target.rangeEndMs).toBe(end.getTime());
+    });
+  });
+
   describe("WHEN it receives dp-monitors-panel-open-chart", () => {
     it("THEN closes the overlay, loads those entities with the anomaly overlay, and sets the range", async () => {
       expect.assertions(8);

@@ -14,6 +14,14 @@ export function fmtDateTime(iso: string | number | Date): string {
   });
 }
 
+/** Format a start/end pair as "<start> – <end>" using {@link fmtDateTime}. */
+export function fmtDateTimeRange(
+  start: string | number | Date,
+  end: string | number | Date
+): string {
+  return `${fmtDateTime(start)} – ${fmtDateTime(end)}`;
+}
+
 export function fmtRelativeTime(iso: string | number | Date): string {
   const now = Date.now();
   const t = new Date(iso).getTime();

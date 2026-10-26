@@ -46,7 +46,9 @@ def _activity_msg(**overrides):
     return msg
 
 
-async def _run_activity(monitor, msg, clusters_by_entity, combined_clusters=None):
+async def _run_activity(
+    monitor, msg, clusters_by_entity, combined_clusters=None, kwargs_sink=None
+):
     store = _make_store([monitor])
     hass = _make_hass(store)
     hass.data[DOMAIN]["executor"] = None
@@ -61,6 +63,8 @@ async def _run_activity(monitor, msg, clusters_by_entity, combined_clusters=None
 
     async def fake_prepare(hass_, entity_id, start, end, **kwargs):
         seen_ranges.append((entity_id, start, end))
+        if kwargs_sink is not None:
+            kwargs_sink.append(kwargs)
         return [[i, 0.0] for i in range(5)]
 
     async def fake_detect(hass_, pool, pts, config, comparison_pts, cancel):
@@ -84,6 +88,30 @@ async def _run_activity(monitor, msg, clusters_by_entity, combined_clusters=None
 
 
 class DescribeWsMonitorsAnomalyActivity:
+    async def test_GIVEN_sampled_monitor_WHEN_called_THEN_series_prepared_like_scan(
+        self,
+    ):
+        from custom_components.hass_datapoints.const import ANOMALY_MAX_PTS
+
+        monitor = {
+            "id": _MID,
+            "type": "individual",
+            "entity_id": "sensor.a",
+            "sample_interval": "1h",
+            "sample_aggregate": "max",
+        }
+        sink: list = []
+
+        await _run_activity(monitor, _activity_msg(), {}, kwargs_sink=sink)
+
+        assert sink == [
+            {
+                "sample_interval": "1h",
+                "sample_aggregate": "max",
+                "max_pts": ANOMALY_MAX_PTS,
+            }
+        ]
+
     async def test_GIVEN_individual_monitor_WHEN_called_THEN_range_scoped_counts(
         self,
     ):
