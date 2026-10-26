@@ -108,6 +108,33 @@ export const styles = css`
     opacity: 0.85;
   }
 
+  .monitor-card[data-flash] {
+    animation: monitor-flash 2s ease-out;
+  }
+
+  @keyframes monitor-flash {
+    0%,
+    30% {
+      box-shadow: 0 0 0 2px var(--primary-color, #03a9f4);
+      background: color-mix(
+        in srgb,
+        var(--primary-color, #03a9f4) 16%,
+        var(--card-background-color, var(--secondary-background-color))
+      );
+    }
+    100% {
+      box-shadow: var(--ha-card-box-shadow, none);
+    }
+  }
+
+  /* No motion: show a static highlight for the same duration instead. */
+  @media (prefers-reduced-motion: reduce) {
+    .monitor-card[data-flash] {
+      animation: none;
+      box-shadow: 0 0 0 2px var(--primary-color, #03a9f4);
+    }
+  }
+
   .monitor-card-header {
     display: flex;
     align-items: center;

@@ -48,6 +48,9 @@ import type { HeatmapBlockClickDetail } from "@/molecules/monitor-entity-heatmap
  * the chart-side default so the overlay still renders anomalies for a monitor
  * that somehow stored an empty method list.
  */
+/** How long a just-created/edited row stays highlighted. */
+const FLASH_DURATION_MS = 2000;
+
 const PANEL_DEFAULT_ANOMALY_METHODS = ["trend_residual"];
 
 /** The monitor's detection methods, or the panel default when it has none. */
@@ -161,6 +164,11 @@ export class AnomalyMonitorsPanel extends LitElement {
   /** Whether the document-level listeners that close the overflow menu are active. */
   private _overflowCloseHandlersActive = false;
 
+  /** Monitor ids whose rows are currently flashing after a create/edit. */
+  @state() accessor _flashIds: Set<string> = new Set();
+
+  private _flashTimer: ReturnType<typeof setTimeout> | null = null;
+
   private _pollInterval: ReturnType<typeof setInterval> | null = null;
 
   private _monitorsEventUnsubscribe: Nullable<() => void> = null;
@@ -180,6 +188,11 @@ export class AnomalyMonitorsPanel extends LitElement {
     super.disconnectedCallback();
     // Filter state is session-local: closing the panel resets it.
     this._entityFilter = [];
+    if (this._flashTimer !== null) {
+      clearTimeout(this._flashTimer);
+      this._flashTimer = null;
+    }
+    this._flashIds = new Set();
     if (this._pollInterval !== null) {
       clearInterval(this._pollInterval);
       this._pollInterval = null;
@@ -456,10 +469,49 @@ export class AnomalyMonitorsPanel extends LitElement {
     this._editMonitor = null;
   }
 
-  private async _onWizardSaved() {
+  private async _onWizardSaved(
+    e: CustomEvent<{ monitors?: AnomalyMonitor[] }>
+  ) {
+    const saved = e.detail?.monitors ?? [];
+    const wasEdit = this._editMonitor !== null;
     this._wizardOpen = false;
     this._editMonitor = null;
     await this._load();
+    if (saved.length === 0) return;
+    // HA's global snackbar shows one toast at a time and auto-dismisses, so
+    // successive confirmations replace each other rather than stacking.
+    if (saved.length > 1) {
+      this._notify(msg(`Created ${saved.length} anomaly monitors`));
+    } else if (wasEdit) {
+      this._notify(msg(`Saved "${saved[0].name}"`));
+    } else {
+      this._notify(msg(`Created "${saved[0].name}"`));
+    }
+    this._flash(saved.map((m) => m.id));
+  }
+
+  /** Briefly highlight the given rows and scroll the first into view. */
+  private _flash(ids: string[]) {
+    if (this._flashTimer !== null) clearTimeout(this._flashTimer);
+    this._flashIds = new Set(ids);
+    this._flashTimer = setTimeout(() => {
+      this._flashIds = new Set();
+      this._flashTimer = null;
+    }, FLASH_DURATION_MS);
+    this.updateComplete
+      .then(() => {
+        const card = this.shadowRoot?.querySelector(
+          ".monitor-card[data-flash]"
+        );
+        const reduced = window.matchMedia?.(
+          "(prefers-reduced-motion: reduce)"
+        ).matches;
+        card?.scrollIntoView?.({
+          block: "nearest",
+          behavior: reduced ? "auto" : "smooth",
+        });
+      })
+      .catch(() => {});
   }
 
   private async _onToggleEnabled(monitor: AnomalyMonitor) {
@@ -1077,7 +1129,11 @@ export class AnomalyMonitorsPanel extends LitElement {
     }
 
     return html`
-      <div class="monitor-card" data-enabled=${monitor.enabled}>
+      <div
+        class="monitor-card"
+        data-enabled=${monitor.enabled}
+        ?data-flash=${this._flashIds.has(monitor.id)}
+      >
         ${this._renderCardHeader(monitor, status)}
 
         <div class="monitor-body">
