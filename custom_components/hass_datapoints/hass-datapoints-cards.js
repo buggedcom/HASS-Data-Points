@@ -10055,6 +10055,11 @@
 			const end = new Date(t1);
 			const sameDay = start.getFullYear() === end.getFullYear() && start.getMonth() === end.getMonth() && start.getDate() === end.getDate();
 			const sameMonth = start.getFullYear() === end.getFullYear() && start.getMonth() === end.getMonth();
+			if (detailSpanMs < 6e4) return value.toLocaleTimeString([], {
+				hour: "2-digit",
+				minute: "2-digit",
+				second: "2-digit"
+			});
 			if (detailSpanMs <= 72e5) return value.toLocaleTimeString([], {
 				hour: "2-digit",
 				minute: "2-digit"
@@ -10178,6 +10183,11 @@
 		}
 		_getTimeTickStep(targetStepMs) {
 			const candidates = [
+				1e4,
+				15e3,
+				3e4,
+				6e4,
+				12e4,
 				3e5,
 				6e5,
 				9e5,
@@ -11109,6 +11119,267 @@
 		if (value == null || value === "") return "No value";
 		if (typeof value === "string") return unit ? `${value} ${unit}` : value;
 		return formatTooltipValue(value, unit);
+	}
+	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/chart/chart-scroll.ts
+	/**
+	* Pure scroll position calculation extracted from history-chart.ts.
+	*/
+	function calculateViewportScrollPosition(t0, t1, canvasWidth, viewportWidth, zoomStart, zoomEnd) {
+		const totalMs = Math.max(1, t1 - t0);
+		const spanMs = Math.max(1, zoomEnd - zoomStart);
+		const maxScrollLeft = Math.max(0, Math.max(canvasWidth, viewportWidth) - viewportWidth);
+		const maxStartOffsetMs = Math.max(0, totalMs - spanMs);
+		const clampedStart = clampChartValue(zoomStart, t0, t1 - spanMs);
+		return (maxStartOffsetMs > 0 ? (clampedStart - t0) / maxStartOffsetMs : 0) * maxScrollLeft;
+	}
+	/**
+	* Work out which slice of the full range the chart canvas should cover.
+	*
+	* A zoomed chart is drawn on a canvas `viewportWidth * (total / span)` wide
+	* inside a horizontally scrolling viewport. Browsers cap canvas size, so when
+	* that width would exceed `maxCanvasWidth` the canvas instead covers only a
+	* window around the zoom range (as wide as the cap allows, clamped to the full
+	* range). Panning past the window's edge commits a new zoom range, which
+	* redraws with a window centred on it. This keeps the pixel scale exact at any
+	* zoom depth instead of silently capping how far you can zoom in.
+	*/
+	function resolveChartRenderWindow(t0, t1, zoomRange, viewportWidth, maxCanvasWidth) {
+		const total = Math.max(1, t1 - t0);
+		if (!zoomRange) return {
+			renderT0: t0,
+			renderT1: t1,
+			canvasWidth: viewportWidth
+		};
+		const span = clampChartValue(zoomRange.end - zoomRange.start, 1, total);
+		const desiredWidth = Math.max(viewportWidth, Math.round(viewportWidth * total / span));
+		if (desiredWidth <= maxCanvasWidth || maxCanvasWidth <= viewportWidth) return {
+			renderT0: t0,
+			renderT1: t1,
+			canvasWidth: Math.min(desiredWidth, Math.max(maxCanvasWidth, 1))
+		};
+		const windowSpan = Math.min(total, span * maxCanvasWidth / viewportWidth);
+		const renderT0 = clampChartValue((zoomRange.start + zoomRange.end) / 2 - windowSpan / 2, t0, t1 - windowSpan);
+		return {
+			renderT0,
+			renderT1: renderT0 + windowSpan,
+			canvasWidth: Math.round(viewportWidth * windowSpan / span)
+		};
+	}
+	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/chart/chart-pinch-zoom.ts
+	/**
+	* Pinch-to-zoom support for the history chart.
+	*
+	* The history chart zooms by widening its canvas inside a horizontally
+	* scrolling viewport: the visible window is `zoomRange`, the canvas width is
+	* `viewportWidth * (total / span)` and the scroll position maps linearly onto
+	* the zoom start (see `calculateViewportScrollPosition`). This module adds a
+	* two-finger pinch (and trackpad pinch / ctrl+wheel) gesture on top of that
+	* model. While the gesture runs the existing canvas is stretched with a CSS
+	* transform as a cheap preview; when it ends the resulting range is committed
+	* once, which triggers a single real redraw.
+	*/
+	/** Smallest and largest span the chart can zoom to. */
+	function getPinchSpanLimits(geometry) {
+		const total = Math.max(1, geometry.t1 - geometry.t0);
+		return {
+			min: Math.min(total, Math.max(1, geometry.minSpanMs)),
+			max: total
+		};
+	}
+	function clampPinchSpan(span, geometry) {
+		const { min, max } = getPinchSpanLimits(geometry);
+		return clampChartValue(span, min, max);
+	}
+	/** Time under a canvas-local x position on the currently drawn canvas. */
+	function timeAtCanvasX(canvasX, canvasWidth, geometry) {
+		const cw = Math.max(1, canvasWidth - geometry.padLeft - geometry.padRight);
+		const ratio = clampChartValue((canvasX - geometry.padLeft) / cw, 0, 1);
+		return geometry.renderT0 + ratio * (geometry.renderT1 - geometry.renderT0);
+	}
+	/**
+	* Given the render window the chart will draw, find the zoom start that puts
+	* `anchorTime` under `anchorViewportX`.
+	*/
+	function solveStartInWindow(geometry, window, anchorTime, anchorViewportX, span) {
+		const windowSpan = Math.max(1, window.renderT1 - window.renderT0);
+		const { canvasWidth } = window;
+		const cw = Math.max(1, canvasWidth - geometry.padLeft - geometry.padRight);
+		const anchorRatio = clampChartValue((anchorTime - window.renderT0) / windowSpan, 0, 1);
+		const anchorCanvasX = geometry.padLeft + anchorRatio * cw;
+		const maxScrollLeft = Math.max(0, canvasWidth - geometry.viewportWidth);
+		const scrollLeft = clampChartValue(anchorCanvasX - anchorViewportX, 0, maxScrollLeft);
+		const ratio = maxScrollLeft > 0 ? scrollLeft / maxScrollLeft : 0;
+		return clampChartValue(window.renderT0 + ratio * Math.max(0, windowSpan - Math.min(span, windowSpan)), geometry.t0, geometry.t1 - span);
+	}
+	/**
+	* Resolve the zoom range that keeps `anchorTime` under `anchorViewportX`
+	* (px from the viewport's left content edge) once the chart is redrawn with
+	* the given span. Returns null when the span covers the whole range, meaning
+	* the zoom should be cleared.
+	*/
+	function resolvePinchZoomRange(geometry, anchorTime, anchorViewportX, span) {
+		const total = Math.max(1, geometry.t1 - geometry.t0);
+		const nextSpan = clampPinchSpan(span, geometry);
+		if (nextSpan >= total * .999) return null;
+		const plotWidth = Math.max(1, geometry.viewportWidth - geometry.padLeft - geometry.padRight);
+		let start = clampChartValue(anchorTime - clampChartValue((anchorViewportX - geometry.padLeft) / plotWidth, 0, 1) * nextSpan, geometry.t0, geometry.t1 - nextSpan);
+		for (let i = 0; i < 2; i += 1) start = solveStartInWindow(geometry, resolveChartRenderWindow(geometry.t0, geometry.t1, {
+			start,
+			end: start + nextSpan
+		}, geometry.viewportWidth, geometry.maxCanvasWidth), anchorTime, anchorViewportX, nextSpan);
+		return {
+			start,
+			end: start + nextSpan
+		};
+	}
+	/** Wheel delta → span multiplier for trackpad pinch / ctrl+wheel. */
+	function wheelDeltaToSpanFactor(deltaY, deltaMode = 0) {
+		let px = deltaY;
+		if (deltaMode === 1) px = deltaY * 16;
+		else if (deltaMode === 2) px = deltaY * 400;
+		return Math.exp(clampChartValue(px, -100, 100) * .005);
+	}
+	var WHEEL_COMMIT_DELAY_MS = 220;
+	var PREVIEW_SAFETY_CLEAR_MS = 1500;
+	/** Remove any pinch preview transform from the chart stage. */
+	function clearPinchPreview(stage) {
+		if (!stage) return;
+		stage.style.transform = "";
+		stage.style.transformOrigin = "";
+	}
+	/**
+	* Attach pinch (two-finger touch) and trackpad pinch / ctrl+wheel zoom to the
+	* chart's scroll viewport. Returns a cleanup function.
+	*/
+	function attachPinchZoom(options) {
+		const { viewport, stage } = options;
+		let session = null;
+		let touchStartDistance = 0;
+		let touchStartSpan = 0;
+		let wheelTimer = null;
+		let safetyTimer = null;
+		const beginSession = (focusClientX) => {
+			const state = options.getState();
+			if (!state) return false;
+			if (safetyTimer !== null) {
+				clearTimeout(safetyTimer);
+				safetyTimer = null;
+			}
+			clearPinchPreview(stage);
+			const stageRect = stage.getBoundingClientRect();
+			const startCanvasWidth = Math.max(1, stage.offsetWidth || stageRect.width);
+			const anchorCanvasX = focusClientX - stageRect.left;
+			session = {
+				state,
+				stageOriginLeft: stageRect.left + viewport.scrollLeft,
+				anchorCanvasX,
+				anchorTime: timeAtCanvasX(anchorCanvasX, startCanvasWidth, state.geometry),
+				startCanvasWidth,
+				span: clampPinchSpan(state.span, state.geometry),
+				focusClientX
+			};
+			options.onStart?.();
+			return true;
+		};
+		const renderPreview = () => {
+			if (!session) return;
+			const scale = clampPinchSpan(session.state.span, session.state.geometry) / Math.max(1, session.span);
+			const stageLeft = session.stageOriginLeft - viewport.scrollLeft;
+			const tx = session.focusClientX - stageLeft - session.anchorCanvasX * scale;
+			stage.style.transformOrigin = "0 0";
+			stage.style.transform = `translateX(${tx}px) scaleX(${scale})`;
+		};
+		const endSession = (commit) => {
+			const current = session;
+			session = null;
+			if (!current) return;
+			let redrawing = false;
+			const startSpan = clampPinchSpan(current.state.span, current.state.geometry);
+			const changed = Math.abs(current.span - startSpan) > startSpan * .01;
+			if (commit && changed) {
+				const range = resolvePinchZoomRange(current.state.geometry, current.anchorTime, current.focusClientX - current.stageOriginLeft, current.span);
+				redrawing = options.onCommit(range);
+			}
+			if (redrawing) safetyTimer = setTimeout(() => {
+				safetyTimer = null;
+				clearPinchPreview(stage);
+			}, PREVIEW_SAFETY_CLEAR_MS);
+			else clearPinchPreview(stage);
+			options.onEnd?.();
+		};
+		const touchDistance = (touches) => {
+			const a = touches[0];
+			const b = touches[1];
+			return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+		};
+		const touchMidX = (touches) => (touches[0].clientX + touches[1].clientX) / 2;
+		const onTouchStart = (ev) => {
+			if (ev.touches.length !== 2) return;
+			if (wheelTimer !== null) {
+				clearTimeout(wheelTimer);
+				wheelTimer = null;
+				endSession(true);
+			}
+			if (!beginSession(touchMidX(ev.touches))) return;
+			touchStartDistance = Math.max(1, touchDistance(ev.touches));
+			touchStartSpan = session.span;
+			ev.preventDefault();
+		};
+		const onTouchMove = (ev) => {
+			if (!session || ev.touches.length < 2) return;
+			ev.preventDefault();
+			const distance = Math.max(1, touchDistance(ev.touches));
+			session.span = clampPinchSpan(touchStartSpan * (touchStartDistance / distance), session.state.geometry);
+			session.focusClientX = touchMidX(ev.touches);
+			renderPreview();
+		};
+		const onTouchEnd = (ev) => {
+			if (!session || ev.touches.length >= 2) return;
+			endSession(ev.type !== "touchcancel");
+		};
+		const onWheel = (ev) => {
+			if (!ev.ctrlKey || ev.deltaY === 0) return;
+			ev.preventDefault();
+			if (!session && !beginSession(ev.clientX)) return;
+			session.span = clampPinchSpan(session.span * wheelDeltaToSpanFactor(ev.deltaY, ev.deltaMode), session.state.geometry);
+			renderPreview();
+			if (wheelTimer !== null) clearTimeout(wheelTimer);
+			wheelTimer = setTimeout(() => {
+				wheelTimer = null;
+				endSession(true);
+			}, WHEEL_COMMIT_DELAY_MS);
+		};
+		const onGesture = (ev) => {
+			ev.preventDefault();
+		};
+		viewport.addEventListener("touchstart", onTouchStart, { passive: false });
+		viewport.addEventListener("touchmove", onTouchMove, { passive: false });
+		viewport.addEventListener("touchend", onTouchEnd);
+		viewport.addEventListener("touchcancel", onTouchEnd);
+		viewport.addEventListener("wheel", onWheel, { passive: false });
+		viewport.addEventListener("gesturestart", onGesture);
+		viewport.addEventListener("gesturechange", onGesture);
+		return () => {
+			viewport.removeEventListener("touchstart", onTouchStart);
+			viewport.removeEventListener("touchmove", onTouchMove);
+			viewport.removeEventListener("touchend", onTouchEnd);
+			viewport.removeEventListener("touchcancel", onTouchEnd);
+			viewport.removeEventListener("wheel", onWheel);
+			viewport.removeEventListener("gesturestart", onGesture);
+			viewport.removeEventListener("gesturechange", onGesture);
+			if (wheelTimer !== null) {
+				clearTimeout(wheelTimer);
+				wheelTimer = null;
+			}
+			if (safetyTimer !== null) {
+				clearTimeout(safetyTimer);
+				safetyTimer = null;
+			}
+			session = null;
+			clearPinchPreview(stage);
+		};
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/ha/entity-name.ts
@@ -12383,6 +12654,11 @@
 			ev.preventDefault();
 			const touch = ev.touches[0];
 			if (!touch) return;
+			if (ev.touches.length > 1 || interactionState._chartPinchActive) {
+				touchMoved = true;
+				hideHover();
+				return;
+			}
 			touchStartPoint = {
 				x: touch.clientX,
 				y: touch.clientY
@@ -12396,6 +12672,11 @@
 			ev.preventDefault();
 			const touch = ev.touches[0];
 			if (!touch) return;
+			if (ev.touches.length > 1 || interactionState._chartPinchActive) {
+				touchMoved = true;
+				hideHover();
+				return;
+			}
 			if (touchStartPoint && Math.hypot(touch.clientX - touchStartPoint.x, touch.clientY - touchStartPoint.y) > 10) touchMoved = true;
 			if (touchMoved && interactionState._chartTooltipPinned) unpinLineChartTooltip(card);
 			showFromPointer(touch.clientX, touch.clientY);
@@ -12519,6 +12800,13 @@
 		};
 		const onPointerMove = (ev) => {
 			if (pointerId == null || ev.pointerId !== pointerId) return;
+			if (interactionState._chartPinchActive) {
+				window.removeEventListener("pointermove", onPointerMove);
+				window.removeEventListener("pointerup", finish);
+				window.removeEventListener("pointercancel", finish);
+				resetDragging(true);
+				return;
+			}
 			currentX = clampChartValue(ev.clientX - canvas.getBoundingClientRect().left, renderer.pad.left, renderer.pad.left + renderer.cw);
 			const movedPx = Math.abs(currentX - startX);
 			if (!dragging && movedPx < 6) return;
@@ -12551,7 +12839,7 @@
 			resetDragging(false);
 		};
 		const onPointerDown = (ev) => {
-			if (ev.button !== 0 || !inPlotBounds(ev.clientX, ev.clientY)) return;
+			if (ev.button !== 0 || interactionState._chartPinchActive || !inPlotBounds(ev.clientX, ev.clientY)) return;
 			pointerId = ev.pointerId;
 			const rect = canvas.getBoundingClientRect();
 			startX = clampChartValue(ev.clientX - rect.left, renderer.pad.left, renderer.pad.left + renderer.cw);
@@ -14517,19 +14805,6 @@
 		};
 	}
 	//#endregion
-	//#region custom_components/hass_datapoints/src/lib/chart/chart-scroll.ts
-	/**
-	* Pure scroll position calculation extracted from history-chart.ts.
-	*/
-	function calculateViewportScrollPosition(t0, t1, canvasWidth, viewportWidth, zoomStart, zoomEnd) {
-		const totalMs = Math.max(1, t1 - t0);
-		const spanMs = Math.max(1, zoomEnd - zoomStart);
-		const maxScrollLeft = Math.max(0, Math.max(canvasWidth, viewportWidth) - viewportWidth);
-		const maxStartOffsetMs = Math.max(0, totalMs - spanMs);
-		const clampedStart = clampChartValue(zoomStart, t0, t1 - spanMs);
-		return (maxStartOffsetMs > 0 ? (clampedStart - t0) / maxStartOffsetMs : 0) * maxScrollLeft;
-	}
-	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/chart-series-gaps.ts
 	function splitSeriesByGaps(pts, gapThresholdMs) {
 		if (pts.length < 2 || !Number.isFinite(gapThresholdMs)) return {
@@ -14667,6 +14942,9 @@
     overflow-y: hidden;
     scrollbar-gutter: stable both-edges;
     -webkit-overflow-scrolling: touch;
+    /* Pinch gestures are handled by the chart (pinch to zoom in/out), so stop
+       the browser from zooming the whole page while still allowing panning. */
+    touch-action: pan-x pan-y;
   }
   .chart-stage {
     position: relative;
@@ -15306,7 +15584,7 @@
 	var HISTORY_LEGEND_WRAP_ENABLE_HEIGHT_PX = 500;
 	var HISTORY_LEGEND_WRAP_DISABLE_HEIGHT_PX = 440;
 	var HISTORY_CHART_MAX_CANVAS_WIDTH_PX = Math.floor(16383 / (window.devicePixelRatio || 1));
-	var HISTORY_CHART_MAX_ZOOM_MULTIPLIER = 365;
+	var HISTORY_CHART_MIN_ZOOM_SPAN_MS = 6e4;
 	var HISTORY_CHART_BINARY_LANE_HEIGHT_PX = 22;
 	var HISTORY_CHART_BINARY_LANE_GAP_PX = 6;
 	/**
@@ -15415,6 +15693,43 @@
 				this,
 				/** Removes the listeners that dismiss a pinned tooltip. */
 				"_chartTooltipPinCleanup",
+				null
+			);
+			_defineProperty(
+				this,
+				/** True while a pinch / ctrl+wheel zoom gesture is in progress. */
+				"_chartPinchActive",
+				false
+			);
+			_defineProperty(
+				this,
+				/**
+				* Until this timestamp (performance.now) viewport scroll events are ignored:
+				* a committed pinch keeps its stretched preview on screen until the redraw,
+				* and scroll clamping caused by that preview must not move the zoom range.
+				*/
+				"_pinchSuppressScrollUntil",
+				0
+			);
+			_defineProperty(
+				this,
+				/** Horizontal plot padding of the last drawn chart (for pinch anchoring). */
+				"_pinchPlotPad",
+				{
+					left: 0,
+					right: 0
+				}
+			);
+			_defineProperty(
+				this,
+				/** Cleanup for the pinch-zoom listeners on the scroll viewport. */
+				"_pinchZoomCleanup",
+				null
+			);
+			_defineProperty(
+				this,
+				/** Viewport element the pinch-zoom listeners are attached to. */
+				"_pinchZoomViewportEl",
 				null
 			);
 			_defineProperty(
@@ -15532,13 +15847,14 @@
 						this._ignoreNextProgrammaticScrollEvent = false;
 						return;
 					}
+					if (this._chartPinchActive || performance.now() < this._pinchSuppressScrollUntil) return;
 					if (!this._chartScrollViewportEl || !this._zoomRange) return;
 					const viewport = this._chartScrollViewportEl;
 					const ratio = viewport.scrollLeft / Math.max(1, viewport.scrollWidth - viewport.clientWidth);
-					const totalMs = Math.max(1, this._lastT1 - this._lastT0);
+					const totalMs = Math.max(1, this._renderT1 - this._renderT0);
 					const spanMs = this._zoomRange.end - this._zoomRange.start;
 					const maxStartOffsetMs = Math.max(0, totalMs - spanMs);
-					const newStart = this._lastT0 + ratio * maxStartOffsetMs;
+					const newStart = this._renderT0 + ratio * maxStartOffsetMs;
 					this._zoomRange = {
 						start: newStart,
 						end: newStart + spanMs
@@ -15551,7 +15867,10 @@
 					this._scrollZoomApplyTimer = setTimeout(() => {
 						this._scrollZoomApplyTimer = null;
 						if (!this._zoomRange) return;
-						this._skipNextScrollViewportSync = true;
+						if (this._renderT0 > this._lastT0 || this._renderT1 < this._lastT1) {
+							this._skipNextScrollViewportSync = false;
+							this._redrawLastDraw();
+						} else this._skipNextScrollViewportSync = true;
 						this.dispatchEvent(new CustomEvent("hass-datapoints-zoom-apply", {
 							bubbles: true,
 							composed: true,
@@ -15603,6 +15922,18 @@
 				this,
 				/** Cache of last draw time range end (ms). */
 				"_lastT1",
+				0
+			);
+			_defineProperty(
+				this,
+				/** Start of the time range the drawn canvas covers (ms). */
+				"_renderT0",
+				0
+			);
+			_defineProperty(
+				this,
+				/** End of the time range the drawn canvas covers (ms). */
+				"_renderT1",
 				0
 			);
 			_defineProperty(
@@ -15687,6 +16018,7 @@
 				clearTimeout(this._scrollZoomApplyTimer);
 				this._scrollZoomApplyTimer = null;
 			}
+			this._detachPinchZoom();
 		}
 		get hass() {
 			return this._hass;
@@ -16274,6 +16606,78 @@
 		_getComparisonWindowLineStyle(isHovered, isSelected, hoveringDifferentComparison) {
 			return getComparisonWindowLineStyle(isHovered, isSelected, hoveringDifferentComparison);
 		}
+		/** Attach pinch / ctrl+wheel zoom to the scroll viewport (once per element). */
+		_ensurePinchZoom(viewport, stage) {
+			if (!viewport || !stage) {
+				this._detachPinchZoom();
+				return;
+			}
+			if (this._pinchZoomCleanup && this._pinchZoomViewportEl === viewport) return;
+			this._detachPinchZoom();
+			this._pinchZoomViewportEl = viewport;
+			this._pinchZoomCleanup = attachPinchZoom({
+				viewport,
+				stage,
+				getState: () => {
+					const t0 = this._lastT0;
+					const t1 = this._lastT1;
+					if (!(t1 > t0)) return null;
+					const total = t1 - t0;
+					return {
+						geometry: {
+							t0,
+							t1,
+							renderT0: this._renderT1 > this._renderT0 ? this._renderT0 : t0,
+							renderT1: this._renderT1 > this._renderT0 ? this._renderT1 : t1,
+							viewportWidth: Math.max(viewport.clientWidth || 0, 360),
+							padLeft: this._pinchPlotPad.left,
+							padRight: this._pinchPlotPad.right,
+							maxCanvasWidth: HISTORY_CHART_MAX_CANVAS_WIDTH_PX,
+							minSpanMs: HISTORY_CHART_MIN_ZOOM_SPAN_MS
+						},
+						span: this._zoomRange ? Math.max(1, this._zoomRange.end - this._zoomRange.start) : total
+					};
+				},
+				onStart: () => {
+					this._chartPinchActive = true;
+					if (this._scrollZoomApplyTimer !== null) {
+						clearTimeout(this._scrollZoomApplyTimer);
+						this._scrollZoomApplyTimer = null;
+					}
+					unpinLineChartTooltip(this);
+					hideLineChartHover(this);
+					hideTooltip(this);
+				},
+				onCommit: (range) => {
+					if (!range) {
+						if (!this._zoomRange) return false;
+						this._pinchSuppressScrollUntil = performance.now() + 1500;
+						this._clearZoomRange();
+						return true;
+					}
+					this._pinchSuppressScrollUntil = performance.now() + 1500;
+					this._skipNextScrollViewportSync = false;
+					this._applyZoomRange(range.start, range.end);
+					return true;
+				},
+				onEnd: () => {
+					this._chartPinchActive = false;
+				}
+			});
+		}
+		_detachPinchZoom() {
+			if (this._pinchZoomCleanup) {
+				this._pinchZoomCleanup();
+				this._pinchZoomCleanup = null;
+			}
+			this._pinchZoomViewportEl = null;
+			this._chartPinchActive = false;
+		}
+		/** Drop the pinch preview transform right before the real redraw lands. */
+		_clearPinchPreview(stage) {
+			clearPinchPreview(stage);
+			this._pinchSuppressScrollUntil = Math.min(this._pinchSuppressScrollUntil, performance.now() + 300);
+		}
 		/** Sync chart viewport scroll to the current zoom range. */
 		_syncChartViewportScroll(_t0, _t1, _canvasWidth) {
 			if (!this._chartScrollViewportEl) return;
@@ -16418,9 +16822,14 @@
 		}
 		/** Apply a zoom range to the chart. */
 		_applyZoomRange(_startTime, _endTime) {
-			const start = Math.min(_startTime, _endTime);
-			const end = Math.max(_startTime, _endTime);
+			let start = Math.min(_startTime, _endTime);
+			let end = Math.max(_startTime, _endTime);
 			if (!(start < end)) return;
+			if (end - start < HISTORY_CHART_MIN_ZOOM_SPAN_MS) {
+				const centre = (start + end) / 2;
+				start = centre - HISTORY_CHART_MIN_ZOOM_SPAN_MS / 2;
+				end = centre + HISTORY_CHART_MIN_ZOOM_SPAN_MS / 2;
+			}
 			this._zoomRange = {
 				start,
 				end
@@ -16725,6 +17134,7 @@
 			const chartStage = this.querySelector("#chart-stage");
 			this._chartScrollViewportEl = scrollViewport;
 			this._chartStageEl = chartStage;
+			this._ensurePinchZoom(scrollViewport, chartStage);
 			const series = [];
 			const axes = [];
 			const axisMap = /* @__PURE__ */ new Map();
@@ -17078,10 +17488,10 @@
 				if (viewportInnerHeight > 0) availableHeight = Math.min(availableHeight, Math.max(viewportInnerHeight, binaryLaneReserve + 80));
 			}
 			const viewportWidth = Math.max(scrollViewport?.clientWidth || wrap?.clientWidth || 360, 360);
-			const totalSpanMs = Math.max(1, t1 - t0);
-			const zoomSpanMs = this._zoomRange ? Math.max(1, this._zoomRange.end - this._zoomRange.start) : null;
-			const zoomMultiplier = clampChartValue(zoomSpanMs ? totalSpanMs / zoomSpanMs : 1, 1, HISTORY_CHART_MAX_ZOOM_MULTIPLIER);
-			const canvasWidth = Math.min(HISTORY_CHART_MAX_CANVAS_WIDTH_PX, zoomSpanMs ? Math.max(viewportWidth, Math.round(viewportWidth * zoomMultiplier)) : viewportWidth);
+			const renderWindow = resolveChartRenderWindow(t0, t1, this._zoomRange, viewportWidth, HISTORY_CHART_MAX_CANVAS_WIDTH_PX);
+			const { canvasWidth } = renderWindow;
+			this._renderT0 = renderWindow.renderT0;
+			this._renderT1 = renderWindow.renderT1;
 			if (this._config?.split_view === true && visibleSeries.length >= 2) {
 				if (zoomOutButton) {
 					zoomOutButton.hidden = !this._zoomRange;
@@ -17095,8 +17505,8 @@
 					binaryRows,
 					binaryLaneReserve,
 					events,
-					renderT0: t0,
-					renderT1: t1,
+					renderT0: renderWindow.renderT0,
+					renderT1: renderWindow.renderT1,
 					canvasWidth,
 					availableHeight,
 					chartStage,
@@ -17115,12 +17525,13 @@
 				if (this._chartScrollViewportEl) {
 					this._chartScrollViewportEl.removeEventListener("scroll", this._onChartScroll);
 					this._chartScrollViewportEl.addEventListener("scroll", this._onChartScroll, { passive: true });
-					this._syncChartViewportScroll(t0, t1, canvasWidth);
+					this._syncChartViewportScroll(renderWindow.renderT0, renderWindow.renderT1, canvasWidth);
 				}
 				this._fireBackendAnomalyRequests(_anomalyEntityIds, analysisMap, _startIso, _endIso);
 				return;
 			}
 			if (chartStage) {
+				this._clearPinchPreview(chartStage);
 				chartStage.style.width = `${canvasWidth}px`;
 				chartStage.style.height = `${availableHeight}px`;
 			}
@@ -17142,8 +17553,8 @@
 			renderer.basePad.bottom += binaryLaneReserve;
 			renderer.pad.bottom = renderer.basePad.bottom;
 			renderer.clear();
-			const renderT0 = t0;
-			const renderT1 = t1;
+			const renderT0 = this._renderT0;
+			const renderT1 = this._renderT1;
 			const trendPointsMap = new Map((analysisResult?.trendSeries || []).map((entry) => [entry.entityId, entry.pts]));
 			const ratePointsMap = new Map((analysisResult?.rateSeries || []).map((entry) => [entry.entityId, entry.pts]));
 			const deltaPointsMap = new Map((analysisResult?.deltaSeries || []).map((entry) => [entry.entityId, entry.pts]));
@@ -17851,6 +18262,10 @@
 					showDeltaTooltip: deltaHoverSeries.length > 0,
 					onAnomalyClick: (regions) => this._handleAnomalyAddAnnotation(regions)
 				});
+				this._pinchPlotPad = {
+					left: renderer.pad.left,
+					right: renderer.pad.right
+				};
 				attachLineChartRangeZoom(this, canvas, renderer, renderT0, renderT1, {
 					onPreview: (range) => this._dispatchZoomPreview(range),
 					onZoom: ({ startTime, endTime }) => this._applyZoomRange(startTime, endTime),
@@ -17869,7 +18284,7 @@
 			if (this._chartScrollViewportEl) {
 				this._chartScrollViewportEl.removeEventListener("scroll", this._onChartScroll);
 				this._chartScrollViewportEl.addEventListener("scroll", this._onChartScroll, { passive: true });
-				this._syncChartViewportScroll(t0, t1, w);
+				this._syncChartViewportScroll(renderT0, renderT1, w);
 			}
 			this._fireBackendAnomalyRequests(_anomalyEntityIds, analysisMap, _startIso, _endIso);
 			this._fireComparisonBackendAnomalyRequests(drawableComparisonResults, analysisMap, renderT0, renderT1);
@@ -18025,6 +18440,7 @@
 			const rowsHeight = rowHeight * N;
 			const totalHeight = rowsHeight + laneReserve;
 			if (chartStage) {
+				this._clearPinchPreview(chartStage);
 				chartStage.style.width = `${canvasWidth}px`;
 				chartStage.style.height = `${totalHeight}px`;
 			}
@@ -18386,6 +18802,10 @@
 			const primaryRenderer = tracks[0].renderer;
 			const lastTrack = tracks[tracks.length - 1];
 			const eventThresholdMs = primaryRenderer.cw ? 14 * ((t1 - t0) / primaryRenderer.cw) : 0;
+			this._pinchPlotPad = {
+				left: primaryRenderer.pad.left,
+				right: primaryRenderer.pad.right
+			};
 			const splitSelTop = tracks[0].rowOffset + primaryRenderer.pad.top;
 			const splitSelHeight = lastTrack.rowOffset + lastTrack.renderer.pad.top + lastTrack.renderer.ch - splitSelTop;
 			const overlayEl = document.createElement("div");
@@ -18813,6 +19233,10 @@
 				hideHover();
 			};
 			const onTouchMove = (ev) => {
+				if (ev.touches.length > 1 || this._chartPinchActive) {
+					hideHover();
+					return;
+				}
 				if (ev.touches.length === 1) showFromPointer(ev.touches[0].clientX, ev.touches[0].clientY);
 			};
 			const onTouchEnd = () => hideHover();
@@ -18892,6 +19316,10 @@
 			let zoomDragging = false;
 			const onZoomPointerMove = (ev) => {
 				if (zoomPointerId == null || ev.pointerId !== zoomPointerId) return;
+				if (this._chartPinchActive) {
+					cancelZoomDrag();
+					return;
+				}
 				zoomCurrentX = overlayRelX(ev.clientX);
 				if (!zoomDragging && Math.abs(zoomCurrentX - zoomStartX) < 6) return;
 				zoomDragging = true;
@@ -18899,6 +19327,15 @@
 				hideLineChartHover(this);
 				renderZoomSelection(zoomStartX, zoomCurrentX);
 				ev.preventDefault();
+			};
+			const cancelZoomDrag = () => {
+				window.removeEventListener("pointermove", onZoomPointerMove);
+				window.removeEventListener("pointerup", finishZoom);
+				window.removeEventListener("pointercancel", finishZoom);
+				zoomPointerId = null;
+				zoomDragging = false;
+				this._chartZoomDragging = false;
+				hideZoomSelection();
 			};
 			const finishZoom = (ev) => {
 				if (zoomPointerId == null || ev.pointerId !== zoomPointerId) return;
@@ -18918,7 +19355,7 @@
 				this._applyZoomRange(startTime, endTime);
 			};
 			const onZoomPointerDown = (ev) => {
-				if (ev.button !== 0 || !inPlotBoundsX(ev.clientX)) return;
+				if (ev.button !== 0 || this._chartPinchActive || !inPlotBoundsX(ev.clientX)) return;
 				zoomPointerId = ev.pointerId;
 				zoomStartX = overlayRelX(ev.clientX);
 				zoomCurrentX = zoomStartX;
