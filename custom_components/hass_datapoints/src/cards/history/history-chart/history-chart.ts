@@ -31,6 +31,10 @@ import {
 } from "../history-data";
 import { clampChartValue } from "@/lib/chart/chart-shell";
 import {
+  attachPinchZoom,
+  clearPinchPreview,
+} from "@/lib/chart/chart-pinch-zoom";
+import {
   renderChartAxisOverlays,
   resolveChartLabelColor,
   setupCanvas,
@@ -358,6 +362,7 @@ export class HistoryChart extends HTMLElement {
       clearTimeout(this._scrollZoomApplyTimer);
       this._scrollZoomApplyTimer = null;
     }
+    this._detachPinchZoom();
   }
 
   // ── Public API — set by parent card after construction ──────────────────────
@@ -464,6 +469,25 @@ export class HistoryChart extends HTMLElement {
 
   /** Removes the listeners that dismiss a pinned tooltip. */
   _chartTooltipPinCleanup: NullableCleanup = null;
+
+  /** True while a pinch / ctrl+wheel zoom gesture is in progress. */
+  _chartPinchActive = false;
+
+  /**
+   * Until this timestamp (performance.now) viewport scroll events are ignored:
+   * a committed pinch keeps its stretched preview on screen until the redraw,
+   * and scroll clamping caused by that preview must not move the zoom range.
+   */
+  _pinchSuppressScrollUntil = 0;
+
+  /** Horizontal plot padding of the last drawn chart (for pinch anchoring). */
+  _pinchPlotPad: { left: number; right: number } = { left: 0, right: 0 };
+
+  /** Cleanup for the pinch-zoom listeners on the scroll viewport. */
+  _pinchZoomCleanup: NullableCleanup = null;
+
+  /** Viewport element the pinch-zoom listeners are attached to. */
+  _pinchZoomViewportEl: Nullable<HTMLElement> = null;
 
   /** Last computed hover object — used by split-chart crosshair/tooltip. */
   _chartLastHover: Nullable<HoverState> = null;
@@ -1560,6 +1584,96 @@ export class HistoryChart extends HTMLElement {
     );
   }
 
+  // ── Pinch zoom ──────────────────────────────────────────────────────────────
+
+  /** Attach pinch / ctrl+wheel zoom to the scroll viewport (once per element). */
+  _ensurePinchZoom(
+    viewport: Nullable<HTMLElement>,
+    stage: Nullable<HTMLElement>
+  ): void {
+    if (!viewport || !stage) {
+      this._detachPinchZoom();
+      return;
+    }
+    if (this._pinchZoomCleanup && this._pinchZoomViewportEl === viewport) {
+      return;
+    }
+    this._detachPinchZoom();
+    this._pinchZoomViewportEl = viewport;
+    this._pinchZoomCleanup = attachPinchZoom({
+      viewport,
+      stage,
+      getState: () => {
+        const t0 = this._lastT0;
+        const t1 = this._lastT1;
+        if (!(t1 > t0)) {
+          return null;
+        }
+        const total = t1 - t0;
+        return {
+          geometry: {
+            t0,
+            t1,
+            viewportWidth: Math.max(viewport.clientWidth || 0, 360),
+            padLeft: this._pinchPlotPad.left,
+            padRight: this._pinchPlotPad.right,
+            maxCanvasWidth: HISTORY_CHART_MAX_CANVAS_WIDTH_PX,
+            maxZoomMultiplier: HISTORY_CHART_MAX_ZOOM_MULTIPLIER,
+          },
+          span: this._zoomRange
+            ? Math.max(1, this._zoomRange.end - this._zoomRange.start)
+            : total,
+        };
+      },
+      onStart: () => {
+        this._chartPinchActive = true;
+        if (this._scrollZoomApplyTimer !== null) {
+          clearTimeout(this._scrollZoomApplyTimer);
+          this._scrollZoomApplyTimer = null;
+        }
+        hideLineChartHover(this);
+        hideTooltip(this);
+      },
+      onCommit: (range) => {
+        if (!range) {
+          if (!this._zoomRange) {
+            return false;
+          }
+          this._pinchSuppressScrollUntil = performance.now() + 1500;
+          this._clearZoomRange();
+          return true;
+        }
+        this._pinchSuppressScrollUntil = performance.now() + 1500;
+        this._skipNextScrollViewportSync = false;
+        this._applyZoomRange(range.start, range.end);
+        return true;
+      },
+      onEnd: () => {
+        this._chartPinchActive = false;
+      },
+    });
+  }
+
+  _detachPinchZoom(): void {
+    if (this._pinchZoomCleanup) {
+      this._pinchZoomCleanup();
+      this._pinchZoomCleanup = null;
+    }
+    this._pinchZoomViewportEl = null;
+    this._chartPinchActive = false;
+  }
+
+  /** Drop the pinch preview transform right before the real redraw lands. */
+  _clearPinchPreview(stage: Nullable<HTMLElement>): void {
+    clearPinchPreview(stage);
+    // Keep ignoring scroll events briefly: resizing the stage can clamp the
+    // viewport's scrollLeft before _syncChartViewportScroll positions it.
+    this._pinchSuppressScrollUntil = Math.min(
+      this._pinchSuppressScrollUntil,
+      performance.now() + 300
+    );
+  }
+
   /** Sync chart viewport scroll to the current zoom range. */
   _syncChartViewportScroll(
     _t0: number,
@@ -2544,6 +2658,12 @@ export class HistoryChart extends HTMLElement {
       this._ignoreNextProgrammaticScrollEvent = false;
       return;
     }
+    if (
+      this._chartPinchActive ||
+      performance.now() < this._pinchSuppressScrollUntil
+    ) {
+      return;
+    }
     if (!this._chartScrollViewportEl || !this._zoomRange) return;
     const viewport = this._chartScrollViewportEl as HTMLElement;
     const scrollLeft = viewport.scrollLeft;
@@ -2638,6 +2758,7 @@ export class HistoryChart extends HTMLElement {
     ) as Nullable<HTMLElement>;
     this._chartScrollViewportEl = scrollViewport;
     this._chartStageEl = chartStage;
+    this._ensurePinchZoom(scrollViewport, chartStage);
     const series: Array<{
       entityId: string;
       legendEntityId: string;
@@ -3402,6 +3523,7 @@ export class HistoryChart extends HTMLElement {
     }
 
     if (chartStage) {
+      this._clearPinchPreview(chartStage);
       chartStage.style.width = `${canvasWidth}px`;
       chartStage.style.height = `${availableHeight}px`;
     }
@@ -4824,6 +4946,10 @@ export class HistoryChart extends HTMLElement {
         onAnomalyClick: (regions: unknown) =>
           this._handleAnomalyAddAnnotation(regions),
       });
+      this._pinchPlotPad = {
+        left: renderer.pad.left,
+        right: renderer.pad.right,
+      };
       attachLineChartRangeZoom(this, canvas!, renderer, renderT0, renderT1, {
         onPreview: (range: unknown) => this._dispatchZoomPreview(range),
         onZoom: ({
@@ -5306,6 +5432,7 @@ export class HistoryChart extends HTMLElement {
     const totalHeight = rowsHeight + laneReserve;
 
     if (chartStage) {
+      this._clearPinchPreview(chartStage);
       chartStage.style.width = `${canvasWidth}px`;
       chartStage.style.height = `${totalHeight}px`;
     }
@@ -6191,6 +6318,11 @@ export class HistoryChart extends HTMLElement {
         ((t1 - t0) / (primaryRenderer as unknown as RecordWithNumericValues).cw)
       : 0;
 
+    this._pinchPlotPad = {
+      left: (primaryRenderer.pad as RecordWithNumericValues).left,
+      right: (primaryRenderer.pad as RecordWithNumericValues).right,
+    };
+
     // Vertical span of the plot area across all rows — used for the zoom selection highlight.
     const splitSelTop =
       ((tracks[0] as RecordWithUnknownValues).rowOffset as number) +
@@ -6998,6 +7130,10 @@ export class HistoryChart extends HTMLElement {
       hideHover();
     };
     const onTouchMove = (ev: TouchEvent) => {
+      if (ev.touches.length > 1 || this._chartPinchActive) {
+        hideHover();
+        return;
+      }
       if (ev.touches.length === 1) {
         showFromPointer(ev.touches[0].clientX, ev.touches[0].clientY);
       }
@@ -7114,6 +7250,10 @@ export class HistoryChart extends HTMLElement {
       if (zoomPointerId == null || ev.pointerId !== zoomPointerId) {
         return;
       }
+      if (this._chartPinchActive) {
+        cancelZoomDrag();
+        return;
+      }
       zoomCurrentX = overlayRelX(ev.clientX);
       if (!zoomDragging && Math.abs(zoomCurrentX - zoomStartX) < 6) {
         return;
@@ -7123,6 +7263,16 @@ export class HistoryChart extends HTMLElement {
       hideLineChartHover(this);
       renderZoomSelection(zoomStartX, zoomCurrentX);
       ev.preventDefault();
+    };
+
+    const cancelZoomDrag = () => {
+      window.removeEventListener("pointermove", onZoomPointerMove);
+      window.removeEventListener("pointerup", finishZoom);
+      window.removeEventListener("pointercancel", finishZoom);
+      zoomPointerId = null;
+      zoomDragging = false;
+      this._chartZoomDragging = false;
+      hideZoomSelection();
     };
 
     const finishZoom = (ev: PointerEvent) => {
@@ -7150,7 +7300,11 @@ export class HistoryChart extends HTMLElement {
     };
 
     const onZoomPointerDown = (ev: PointerEvent) => {
-      if (ev.button !== 0 || !inPlotBoundsX(ev.clientX)) {
+      if (
+        ev.button !== 0 ||
+        this._chartPinchActive ||
+        !inPlotBoundsX(ev.clientX)
+      ) {
         return;
       }
       zoomPointerId = ev.pointerId;
