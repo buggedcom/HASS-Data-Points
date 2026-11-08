@@ -38,6 +38,8 @@ type ChartInteractionState = {
   _chartTooltipPinned?: boolean;
   /** Removes the document/window listeners that dismiss a pinned tooltip. */
   _chartTooltipPinCleanup?: NullableCleanup;
+  /** True while a pinch-zoom gesture is in progress on the chart. */
+  _chartPinchActive?: boolean;
 };
 
 /**
@@ -2386,6 +2388,12 @@ export function attachLineChartHover(
     if (!touch) {
       return;
     }
+    if (ev.touches.length > 1 || interactionState._chartPinchActive) {
+      // A second finger means a pinch: never treat it as a tap-to-pin.
+      touchMoved = true;
+      hideHover();
+      return;
+    }
     touchStartPoint = { x: touch.clientX, y: touch.clientY };
     touchMoved = false;
     if (interactionState._chartTooltipPinned) {
@@ -2398,6 +2406,11 @@ export function attachLineChartHover(
     ev.preventDefault();
     const touch = ev.touches[0];
     if (!touch) {
+      return;
+    }
+    if (ev.touches.length > 1 || interactionState._chartPinchActive) {
+      touchMoved = true;
+      hideHover();
       return;
     }
     if (
@@ -2580,6 +2593,14 @@ export function attachLineChartRangeZoom(
     if (pointerId == null || ev.pointerId !== pointerId) {
       return;
     }
+    if (interactionState._chartPinchActive) {
+      // A second finger turned this into a pinch: abandon the drag-select.
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", finish);
+      window.removeEventListener("pointercancel", finish);
+      resetDragging(true);
+      return;
+    }
     currentX = clampChartValue(
       ev.clientX - canvas.getBoundingClientRect().left,
       renderer.pad.left,
@@ -2627,7 +2648,11 @@ export function attachLineChartRangeZoom(
   };
 
   const onPointerDown = (ev: PointerEvent): void => {
-    if (ev.button !== 0 || !inPlotBounds(ev.clientX, ev.clientY)) {
+    if (
+      ev.button !== 0 ||
+      interactionState._chartPinchActive ||
+      !inPlotBounds(ev.clientX, ev.clientY)
+    ) {
       return;
     }
     pointerId = ev.pointerId;

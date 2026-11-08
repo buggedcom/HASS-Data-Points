@@ -101,6 +101,9 @@ export const styles = `
     overflow-y: hidden;
     scrollbar-gutter: stable both-edges;
     -webkit-overflow-scrolling: touch;
+    /* Pinch gestures are handled by the chart (pinch to zoom in/out), so stop
+       the browser from zooming the whole page while still allowing panning. */
+    touch-action: pan-x pan-y;
   }
   .chart-stage {
     position: relative;
