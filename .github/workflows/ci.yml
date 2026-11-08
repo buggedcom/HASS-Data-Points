@@ -151,7 +151,9 @@ jobs:
   test-storybook:
     name: Test / Storybook
     needs: [lint-python, lint-frontend]
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest moved to 26.04, which Playwright 1.58 cannot
+    # install browser dependencies for. Revert once Playwright supports it.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
