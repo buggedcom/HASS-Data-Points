@@ -254,6 +254,10 @@ export const styles = `
     width: 1px;
     transform: translateX(-50%);
   }
+  .chart-crosshair.pinned .crosshair-line.vertical {
+    width: 2px;
+    background: var(--primary-color, #03a9f4);
+  }
   .crosshair-line.horizontal {
     height: 1px;
     transform: translateY(-50%);
@@ -596,6 +600,52 @@ export const styles = `
   }
   .tt-actions[hidden] {
     display: none;
+  }
+  .tt-actions {
+    display: grid;
+    gap: var(--dp-spacing-xs);
+  }
+  .tt-pin-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dp-spacing-sm);
+  }
+  .tt-pin-label {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--spacing, 8px) * 0.5);
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--primary-color, #03a9f4) 70%, #ffffff);
+  }
+  .tt-pin-label ha-icon {
+    --mdc-icon-size: 14px;
+  }
+  .tt-pin-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.72);
+    cursor: pointer;
+  }
+  .tt-pin-close ha-icon {
+    --mdc-icon-size: 16px;
+  }
+  .tt-pin-close:hover,
+  .tt-pin-close:focus-visible {
+    background: color-mix(in srgb, #ffffff 12%, transparent);
+    color: rgba(255, 255, 255, 0.96);
+    outline: none;
   }
   .tt-action {
     display: flex;

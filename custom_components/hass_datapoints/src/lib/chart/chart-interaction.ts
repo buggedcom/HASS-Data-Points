@@ -1452,30 +1452,57 @@ export function pinLineChartTooltip(
   interactionState._chartLastHover = hover;
   showLineChartTooltip(card, hover, clientX, clientY);
 
+  const dismiss = () => {
+    hideLineChartHover(card);
+    interactionState._chartLastHover = null;
+    options.onDismiss?.();
+  };
   const actions = root.getElementById("tt-actions") as Nullable<HTMLElement>;
   const { onAddAnnotation } = options;
-  if (actions && typeof onAddAnnotation === "function") {
+  if (actions) {
     const label = t("Add datapoint at {0}", fmtTime(hover.timeMs));
     render(
-      html`<button
-        type="button"
-        class="tt-action"
-        id="tt-add-annotation"
-        @click=${(ev: Event) => {
-          ev.preventDefault();
-          ev.stopPropagation();
-          hideLineChartHover(card);
-          interactionState._chartLastHover = null;
-          onAddAnnotation(hover, ev);
-        }}
-      >
-        <ha-icon icon="mdi:plus"></ha-icon>
-        <span>${label}</span>
-      </button>`,
+      html`<div class="tt-pin-row">
+          <span class="tt-pin-label">
+            <ha-icon icon="mdi:pin"></ha-icon>${msg("Pinned")}
+          </span>
+          <button
+            type="button"
+            class="tt-pin-close"
+            id="tt-unpin"
+            aria-label=${msg("Unpin tooltip")}
+            title=${msg("Unpin tooltip")}
+            @click=${(ev: Event) => {
+              ev.preventDefault();
+              ev.stopPropagation();
+              dismiss();
+            }}
+          >
+            <ha-icon icon="mdi:close"></ha-icon>
+          </button>
+        </div>
+        ${typeof onAddAnnotation === "function"
+          ? html`<button
+              type="button"
+              class="tt-action"
+              id="tt-add-annotation"
+              @click=${(ev: Event) => {
+                ev.preventDefault();
+                ev.stopPropagation();
+                hideLineChartHover(card);
+                interactionState._chartLastHover = null;
+                onAddAnnotation(hover, ev);
+              }}
+            >
+              <ha-icon icon="mdi:plus"></ha-icon>
+              <span>${label}</span>
+            </button>`
+          : ""}`,
       actions
     );
     actions.hidden = false;
   }
+  root.getElementById("chart-crosshair")?.classList.add("pinned");
 
   tooltip.classList.add("pinned");
   interactionState._chartTooltipPinned = true;
@@ -1488,11 +1515,6 @@ export function pinLineChartTooltip(
   const ignored = (options.ignoreElements ?? []).filter(
     (el): el is Element => el != null
   );
-  const dismiss = () => {
-    hideLineChartHover(card);
-    interactionState._chartLastHover = null;
-    options.onDismiss?.();
-  };
   const onDocumentPointerDown = (ev: Event) => {
     const path = ev.composedPath();
     if (path.includes(tooltip) || ignored.some((el) => path.includes(el))) {
@@ -1529,6 +1551,7 @@ export function unpinLineChartTooltip(card: ChartInteractionHost): void {
   interactionState._chartTooltipPinned = false;
   const root = getRoot(card);
   root.getElementById("tooltip")?.classList.remove("pinned");
+  root.getElementById("chart-crosshair")?.classList.remove("pinned");
   clearTooltipActions(root);
 }
 

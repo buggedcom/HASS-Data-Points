@@ -2342,6 +2342,8 @@
 	var init_fi$23 = __esmMin((() => {
 		translations$167 = {
 			"Add datapoint at {0}": "Lisää datapiste klo {0}",
+			Pinned: "Kiinnitetty",
+			"Unpin tooltip": "Irrota työkaluvihje",
 			"⚠️ Anomaly Insight": "⚠️ Poikkeavuushavainto",
 			"⚠️ Multi-method Anomaly": "⚠️ Monimenetelmäinen poikkeavuus",
 			"Click the highlighted circle to add an annotation.": "Klikkaa korostettua ympyrää lisätäksesi huomautuksen.",
@@ -3055,6 +3057,8 @@
 	var init_fr$23 = __esmMin((() => {
 		translations$138 = {
 			"Add datapoint at {0}": "Ajouter un point de données à {0}",
+			Pinned: "Épinglé",
+			"Unpin tooltip": "Désépingler l’info-bulle",
 			"⚠️ Anomaly Insight": "⚠️ Analyse d’anomalie",
 			"⚠️ Multi-method Anomaly": "⚠️ Anomalie multi-méthodes",
 			"Click the highlighted circle to add an annotation.": "Cliquez sur le cercle en surbrillance pour ajouter une annotation.",
@@ -3768,6 +3772,8 @@
 	var init_de$23 = __esmMin((() => {
 		translations$109 = {
 			"Add datapoint at {0}": "Datenpunkt um {0} hinzufügen",
+			Pinned: "Angeheftet",
+			"Unpin tooltip": "Tooltip lösen",
 			"⚠️ Anomaly Insight": "⚠️ Anomalie-Einblick",
 			"⚠️ Multi-method Anomaly": "⚠️ Anomalie mit mehreren Methoden",
 			"Click the highlighted circle to add an annotation.": "Klicken Sie auf den hervorgehobenen Kreis, um eine Anmerkung hinzuzufügen.",
@@ -4481,6 +4487,8 @@
 	var init_es$23 = __esmMin((() => {
 		translations$80 = {
 			"Add datapoint at {0}": "Añadir punto de datos a las {0}",
+			Pinned: "Fijado",
+			"Unpin tooltip": "Desfijar información",
 			"⚠️ Anomaly Insight": "⚠️ Información de anomalía",
 			"⚠️ Multi-method Anomaly": "⚠️ Anomalía multimétodo",
 			"Click the highlighted circle to add an annotation.": "Haz clic en el círculo resaltado para añadir una anotación.",
@@ -5194,6 +5202,8 @@
 	var init_pt$23 = __esmMin((() => {
 		translations$51 = {
 			"Add datapoint at {0}": "Adicionar ponto de dados às {0}",
+			Pinned: "Fixado",
+			"Unpin tooltip": "Desafixar dica",
 			"⚠️ Anomaly Insight": "⚠️ Informação de anomalia",
 			"⚠️ Multi-method Anomaly": "⚠️ Anomalia multimétodo",
 			"Click the highlighted circle to add an annotation.": "Clique no círculo destacado para adicionar uma anotação.",
@@ -5907,6 +5917,8 @@
 	var init_zh_hans$23 = __esmMin((() => {
 		translations$22 = {
 			"Add datapoint at {0}": "在 {0} 添加数据点",
+			Pinned: "已固定",
+			"Unpin tooltip": "取消固定提示",
 			"⚠️ Anomaly Insight": "⚠️ 异常洞察",
 			"⚠️ Multi-method Anomaly": "⚠️ 多方法异常",
 			"Click the highlighted circle to add an annotation.": "点击高亮圆圈以添加注释。",
@@ -11787,35 +11799,56 @@
 		unpinLineChartTooltip(card);
 		interactionState._chartLastHover = hover;
 		showLineChartTooltip(card, hover, clientX, clientY);
+		const dismiss = () => {
+			hideLineChartHover(card);
+			interactionState._chartLastHover = null;
+			options.onDismiss?.();
+		};
 		const actions = root.getElementById("tt-actions");
 		const { onAddAnnotation } = options;
-		if (actions && typeof onAddAnnotation === "function") {
-			D(b`<button
-        type="button"
-        class="tt-action"
-        id="tt-add-annotation"
-        @click=${(ev) => {
+		if (actions) {
+			const label = t$3("Add datapoint at {0}", fmtTime(hover.timeMs));
+			D(b`<div class="tt-pin-row">
+          <span class="tt-pin-label">
+            <ha-icon icon="mdi:pin"></ha-icon>${msg("Pinned")}
+          </span>
+          <button
+            type="button"
+            class="tt-pin-close"
+            id="tt-unpin"
+            aria-label=${msg("Unpin tooltip")}
+            title=${msg("Unpin tooltip")}
+            @click=${(ev) => {
+				ev.preventDefault();
+				ev.stopPropagation();
+				dismiss();
+			}}
+          >
+            <ha-icon icon="mdi:close"></ha-icon>
+          </button>
+        </div>
+        ${typeof onAddAnnotation === "function" ? b`<button
+              type="button"
+              class="tt-action"
+              id="tt-add-annotation"
+              @click=${(ev) => {
 				ev.preventDefault();
 				ev.stopPropagation();
 				hideLineChartHover(card);
 				interactionState._chartLastHover = null;
 				onAddAnnotation(hover, ev);
 			}}
-      >
-        <ha-icon icon="mdi:plus"></ha-icon>
-        <span>${t$3("Add datapoint at {0}", fmtTime(hover.timeMs))}</span>
-      </button>`, actions);
+            >
+              <ha-icon icon="mdi:plus"></ha-icon>
+              <span>${label}</span>
+            </button>` : ""}`, actions);
 			actions.hidden = false;
 		}
+		root.getElementById("chart-crosshair")?.classList.add("pinned");
 		tooltip.classList.add("pinned");
 		interactionState._chartTooltipPinned = true;
 		positionTooltip(tooltip, clientX, clientY, toChartBounds((root.querySelector(".chart-wrap") ?? card).getBoundingClientRect()));
 		const ignored = (options.ignoreElements ?? []).filter((el) => el != null);
-		const dismiss = () => {
-			hideLineChartHover(card);
-			interactionState._chartLastHover = null;
-			options.onDismiss?.();
-		};
 		const onDocumentPointerDown = (ev) => {
 			const path = ev.composedPath();
 			if (path.includes(tooltip) || ignored.some((el) => path.includes(el))) return;
@@ -11845,6 +11878,7 @@
 		interactionState._chartTooltipPinned = false;
 		const root = getRoot(card);
 		root.getElementById("tooltip")?.classList.remove("pinned");
+		root.getElementById("chart-crosshair")?.classList.remove("pinned");
 		clearTooltipActions(root);
 	}
 	function buildTooltipRelatedChips(hass, event) {
@@ -14786,6 +14820,10 @@
     width: 1px;
     transform: translateX(-50%);
   }
+  .chart-crosshair.pinned .crosshair-line.vertical {
+    width: 2px;
+    background: var(--primary-color, #03a9f4);
+  }
   .crosshair-line.horizontal {
     height: 1px;
     transform: translateY(-50%);
@@ -15128,6 +15166,52 @@
   }
   .tt-actions[hidden] {
     display: none;
+  }
+  .tt-actions {
+    display: grid;
+    gap: var(--dp-spacing-xs);
+  }
+  .tt-pin-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--dp-spacing-sm);
+  }
+  .tt-pin-label {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--spacing, 8px) * 0.5);
+    font-size: 0.74rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: color-mix(in srgb, var(--primary-color, #03a9f4) 70%, #ffffff);
+  }
+  .tt-pin-label ha-icon {
+    --mdc-icon-size: 14px;
+  }
+  .tt-pin-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.72);
+    cursor: pointer;
+  }
+  .tt-pin-close ha-icon {
+    --mdc-icon-size: 16px;
+  }
+  .tt-pin-close:hover,
+  .tt-pin-close:focus-visible {
+    background: color-mix(in srgb, #ffffff 12%, transparent);
+    color: rgba(255, 255, 255, 0.96);
+    outline: none;
   }
   .tt-action {
     display: flex;
