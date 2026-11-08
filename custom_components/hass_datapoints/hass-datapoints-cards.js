@@ -2341,6 +2341,7 @@
 	var translations$167;
 	var init_fi$23 = __esmMin((() => {
 		translations$167 = {
+			"Add datapoint at {0}": "Lisää datapiste klo {0}",
 			"⚠️ Anomaly Insight": "⚠️ Poikkeavuushavainto",
 			"⚠️ Multi-method Anomaly": "⚠️ Monimenetelmäinen poikkeavuus",
 			"Click the highlighted circle to add an annotation.": "Klikkaa korostettua ympyrää lisätäksesi huomautuksen.",
@@ -3053,6 +3054,7 @@
 	var translations$138;
 	var init_fr$23 = __esmMin((() => {
 		translations$138 = {
+			"Add datapoint at {0}": "Ajouter un point de données à {0}",
 			"⚠️ Anomaly Insight": "⚠️ Analyse d’anomalie",
 			"⚠️ Multi-method Anomaly": "⚠️ Anomalie multi-méthodes",
 			"Click the highlighted circle to add an annotation.": "Cliquez sur le cercle en surbrillance pour ajouter une annotation.",
@@ -3765,6 +3767,7 @@
 	var translations$109;
 	var init_de$23 = __esmMin((() => {
 		translations$109 = {
+			"Add datapoint at {0}": "Datenpunkt um {0} hinzufügen",
 			"⚠️ Anomaly Insight": "⚠️ Anomalie-Einblick",
 			"⚠️ Multi-method Anomaly": "⚠️ Anomalie mit mehreren Methoden",
 			"Click the highlighted circle to add an annotation.": "Klicken Sie auf den hervorgehobenen Kreis, um eine Anmerkung hinzuzufügen.",
@@ -4477,6 +4480,7 @@
 	var translations$80;
 	var init_es$23 = __esmMin((() => {
 		translations$80 = {
+			"Add datapoint at {0}": "Añadir punto de datos a las {0}",
 			"⚠️ Anomaly Insight": "⚠️ Información de anomalía",
 			"⚠️ Multi-method Anomaly": "⚠️ Anomalía multimétodo",
 			"Click the highlighted circle to add an annotation.": "Haz clic en el círculo resaltado para añadir una anotación.",
@@ -5189,6 +5193,7 @@
 	var translations$51;
 	var init_pt$23 = __esmMin((() => {
 		translations$51 = {
+			"Add datapoint at {0}": "Adicionar ponto de dados às {0}",
 			"⚠️ Anomaly Insight": "⚠️ Informação de anomalia",
 			"⚠️ Multi-method Anomaly": "⚠️ Anomalia multimétodo",
 			"Click the highlighted circle to add an annotation.": "Clique no círculo destacado para adicionar uma anotação.",
@@ -5901,6 +5906,7 @@
 	var translations$22;
 	var init_zh_hans$23 = __esmMin((() => {
 		translations$22 = {
+			"Add datapoint at {0}": "在 {0} 添加数据点",
 			"⚠️ Anomaly Insight": "⚠️ 异常洞察",
 			"⚠️ Multi-method Anomaly": "⚠️ 多方法异常",
 			"Click the highlighted circle to add an annotation.": "点击高亮圆圈以添加注释。",
@@ -11432,6 +11438,7 @@
 		return renderedTooltips;
 	}
 	function hideTooltip(card) {
+		unpinLineChartTooltip(card);
 		const tooltip = getRoot(card).getElementById("tooltip");
 		const anomalyTooltip = getRoot(card).getElementById("anomaly-tooltip");
 		if (tooltip) tooltip.style.display = "none";
@@ -11732,6 +11739,7 @@
 		ttAnn.style.display = "none";
 		D(b``, ttEntities);
 		ttEntities.style.display = "none";
+		clearTooltipActions(root);
 		if (anomalyTooltip && ttSecondaryTitle && ttSecondaryDescription && ttSecondaryAlert && ttSecondaryInstruction) {
 			const anomalyContent = buildAnomalyTooltipContent(hover.anomalyRegions);
 			if (anomalyContent) {
@@ -11752,6 +11760,92 @@
 		if (anomalyTooltip && (hover.anomalyRegions?.length ?? 0) > 0) positionAnomalyTooltip(anomalyTooltip, clientX, clientY, tooltip, toChartBounds(chartBounds));
 		if (Array.isArray(hover.events) && hover.events.length > 0) renderAnnotationTooltips(card, hover, tooltip, toChartBounds(chartBounds));
 		else clearAnnotationTooltips(card);
+	}
+	function clearTooltipActions(root) {
+		const actions = root.getElementById("tt-actions");
+		if (!actions) return;
+		D(b``, actions);
+		actions.hidden = true;
+	}
+	function isLineChartTooltipPinned(card) {
+		return getInteractionState(card)._chartTooltipPinned === true;
+	}
+	/**
+	* Freeze the hover tooltip at the given hover state so the pointer can move
+	* onto it. A tooltip that follows the cursor can never be clicked, so pinning
+	* is what makes the "Add datapoint at HH:MM" action reachable.
+	*
+	* The pin is released by `unpinLineChartTooltip` (also called from
+	* `hideTooltip`), by Escape, by scrolling, or by a pointerdown anywhere outside
+	* the tooltip and the `ignoreElements`.
+	*/
+	function pinLineChartTooltip(card, hover, clientX, clientY, options = {}) {
+		const root = getRoot(card);
+		const tooltip = root.getElementById("tooltip");
+		if (!tooltip) return;
+		const interactionState = getInteractionState(card);
+		unpinLineChartTooltip(card);
+		interactionState._chartLastHover = hover;
+		showLineChartTooltip(card, hover, clientX, clientY);
+		const actions = root.getElementById("tt-actions");
+		const { onAddAnnotation } = options;
+		if (actions && typeof onAddAnnotation === "function") {
+			D(b`<button
+        type="button"
+        class="tt-action"
+        id="tt-add-annotation"
+        @click=${(ev) => {
+				ev.preventDefault();
+				ev.stopPropagation();
+				hideLineChartHover(card);
+				interactionState._chartLastHover = null;
+				onAddAnnotation(hover, ev);
+			}}
+      >
+        <ha-icon icon="mdi:plus"></ha-icon>
+        <span>${t$3("Add datapoint at {0}", fmtTime(hover.timeMs))}</span>
+      </button>`, actions);
+			actions.hidden = false;
+		}
+		tooltip.classList.add("pinned");
+		interactionState._chartTooltipPinned = true;
+		positionTooltip(tooltip, clientX, clientY, toChartBounds((root.querySelector(".chart-wrap") ?? card).getBoundingClientRect()));
+		const ignored = (options.ignoreElements ?? []).filter((el) => el != null);
+		const dismiss = () => {
+			hideLineChartHover(card);
+			interactionState._chartLastHover = null;
+			options.onDismiss?.();
+		};
+		const onDocumentPointerDown = (ev) => {
+			const path = ev.composedPath();
+			if (path.includes(tooltip) || ignored.some((el) => path.includes(el))) return;
+			dismiss();
+		};
+		const onKeyDown = (ev) => {
+			if (ev.key === "Escape") dismiss();
+		};
+		const onScroll = () => dismiss();
+		document.addEventListener("pointerdown", onDocumentPointerDown, true);
+		window.addEventListener("keydown", onKeyDown);
+		window.addEventListener("scroll", onScroll, true);
+		interactionState._chartTooltipPinCleanup = () => {
+			document.removeEventListener("pointerdown", onDocumentPointerDown, true);
+			window.removeEventListener("keydown", onKeyDown);
+			window.removeEventListener("scroll", onScroll, true);
+		};
+	}
+	/** Release a pinned tooltip so it follows the pointer again. */
+	function unpinLineChartTooltip(card) {
+		const interactionState = getInteractionState(card);
+		if (interactionState._chartTooltipPinCleanup) {
+			interactionState._chartTooltipPinCleanup();
+			interactionState._chartTooltipPinCleanup = null;
+		}
+		if (!interactionState._chartTooltipPinned) return;
+		interactionState._chartTooltipPinned = false;
+		const root = getRoot(card);
+		root.getElementById("tooltip")?.classList.remove("pinned");
+		clearTooltipActions(root);
 	}
 	function buildTooltipRelatedChips(hass, event) {
 		const entities = Array.isArray(event?.entity_ids) ? event.entity_ids : [];
@@ -12127,7 +12221,7 @@
 			};
 		};
 		const showFromPointer = (clientX, clientY) => {
-			if (interactionState._chartZoomDragging) return;
+			if (interactionState._chartZoomDragging || interactionState._chartTooltipPinned) return;
 			const anomalyRegionsHit = findAnomalyRegions(clientX, clientY);
 			const hover = buildHoverState(clientX, clientY);
 			if (!hover) {
@@ -12145,6 +12239,7 @@
 			canvas.style.cursor = anomalyRegionsHit.length > 0 ? "pointer" : "crosshair";
 		};
 		const hideHover = () => {
+			if (interactionState._chartTooltipPinned) return;
 			interactionState._chartLastHover = null;
 			hideLineChartHover(card);
 			canvas.style.cursor = "default";
@@ -12192,29 +12287,74 @@
 			const hover = buildHoverState(ev.clientX, ev.clientY);
 			if (!hover) return;
 			ev.preventDefault();
+			unpinLineChartTooltip(card);
 			interactionState._chartLastHover = hover;
 			showLineChartCrosshair(card, renderer, hover);
 			showLineChartTooltip(card, hover, ev.clientX, ev.clientY);
 			dispatchLineChartHover(card, hover);
 			options.onContextMenu(hover, ev);
 		};
+		const pinAt = (clientX, clientY) => {
+			const hover = buildHoverState(clientX, clientY);
+			if (!hover) return;
+			hover.anomalyRegions = [];
+			showLineChartCrosshair(card, renderer, hover);
+			const { onAddAnnotation } = options;
+			pinLineChartTooltip(card, hover, clientX, clientY, {
+				onAddAnnotation: typeof onAddAnnotation === "function" ? (pinnedHover, event) => onAddAnnotation(pinnedHover, event) : void 0,
+				ignoreElements: [
+					canvas,
+					hoverSurfaceEl,
+					addAnnotationButton
+				],
+				onDismiss: () => {
+					canvas.style.cursor = "default";
+				}
+			});
+			dispatchLineChartHover(card, hover);
+		};
 		const onClick = (ev) => {
-			if (typeof options.onAnomalyClick !== "function") return;
-			const regions = findAnomalyRegions(ev.clientX, ev.clientY);
-			if (!regions.length) return;
-			ev.preventDefault();
-			ev.stopPropagation();
-			options.onAnomalyClick(regions, ev);
+			if (interactionState._chartZoomSuppressClick) return;
+			if (typeof options.onAnomalyClick === "function") {
+				const regions = findAnomalyRegions(ev.clientX, ev.clientY);
+				if (regions.length) {
+					ev.preventDefault();
+					ev.stopPropagation();
+					options.onAnomalyClick(regions, ev);
+					return;
+				}
+			}
+			if (options.showTooltip === false) return;
+			if (interactionState._chartTooltipPinned) {
+				unpinLineChartTooltip(card);
+				showFromPointer(ev.clientX, ev.clientY);
+				return;
+			}
+			pinAt(ev.clientX, ev.clientY);
 		};
 		let touchTimer = null;
+		let touchStartPoint = null;
+		let touchMoved = false;
+		const clearTouchTimer = () => {
+			if (touchTimer) {
+				window.clearTimeout(touchTimer);
+				touchTimer = null;
+			}
+		};
 		const scheduleTouchHide = () => {
-			if (touchTimer) window.clearTimeout(touchTimer);
+			clearTouchTimer();
 			touchTimer = window.setTimeout(() => hideHover(), 1800);
 		};
 		const onTouchStart = (ev) => {
 			ev.preventDefault();
 			const touch = ev.touches[0];
 			if (!touch) return;
+			touchStartPoint = {
+				x: touch.clientX,
+				y: touch.clientY
+			};
+			touchMoved = false;
+			if (interactionState._chartTooltipPinned) return;
 			showFromPointer(touch.clientX, touch.clientY);
 			scheduleTouchHide();
 		};
@@ -12222,10 +12362,26 @@
 			ev.preventDefault();
 			const touch = ev.touches[0];
 			if (!touch) return;
+			if (touchStartPoint && Math.hypot(touch.clientX - touchStartPoint.x, touch.clientY - touchStartPoint.y) > 10) touchMoved = true;
+			if (touchMoved && interactionState._chartTooltipPinned) unpinLineChartTooltip(card);
 			showFromPointer(touch.clientX, touch.clientY);
 			scheduleTouchHide();
 		};
-		const onTouchEnd = () => scheduleTouchHide();
+		const onTouchEnd = (ev) => {
+			const start = touchStartPoint;
+			touchStartPoint = null;
+			if (!(ev.type === "touchend" && start != null && !touchMoved) || options.showTooltip === false) {
+				scheduleTouchHide();
+				return;
+			}
+			clearTouchTimer();
+			if (interactionState._chartTooltipPinned) {
+				unpinLineChartTooltip(card);
+				hideHover();
+				return;
+			}
+			pinAt(start.x, start.y);
+		};
 		canvas.addEventListener("mousemove", onMouseMove);
 		canvas.addEventListener("mouseleave", onMouseLeave);
 		canvas.addEventListener("click", onClick);
@@ -12255,12 +12411,20 @@
 				cancelAnimationFrame(_rafHandle);
 				_rafHandle = null;
 			}
-			if (touchTimer) {
-				window.clearTimeout(touchTimer);
-				touchTimer = null;
-			}
+			clearTouchTimer();
+			unpinLineChartTooltip(card);
 			hideHover();
 		};
+	}
+	/**
+	* Swallow the `click` the browser fires right after the pointerup that ends a
+	* zoom drag, so finishing a drag never pins the tooltip.
+	*/
+	function suppressTrailingClick(interactionState) {
+		interactionState._chartZoomSuppressClick = true;
+		window.setTimeout(() => {
+			interactionState._chartZoomSuppressClick = false;
+		}, 0);
 	}
 	function attachLineChartRangeZoom(card, canvas, renderer, t0, t1, options = {}) {
 		const interactionState = getInteractionState(card);
@@ -12338,6 +12502,7 @@
 			window.removeEventListener("pointermove", onPointerMove);
 			window.removeEventListener("pointerup", finish);
 			window.removeEventListener("pointercancel", finish);
+			if (didDrag) suppressTrailingClick(interactionState);
 			if (!didDrag || Math.abs(endX - startX) < 8) {
 				resetDragging(true);
 				return;
@@ -14952,6 +15117,43 @@
     white-space: pre-wrap;
     line-height: 1.4;
   }
+  .tooltip.pinned {
+    pointer-events: auto;
+    border-color: color-mix(in srgb, var(--primary-color, #03a9f4) 55%, transparent);
+  }
+  .tt-actions {
+    margin-top: var(--dp-spacing-sm);
+    padding-top: var(--dp-spacing-sm);
+    border-top: 1px solid color-mix(in srgb, #ffffff 12%, transparent);
+  }
+  .tt-actions[hidden] {
+    display: none;
+  }
+  .tt-action {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--spacing, 8px) * 0.75);
+    width: 100%;
+    margin: 0;
+    padding: calc(var(--spacing, 8px) * 0.75) var(--dp-spacing-sm);
+    border: 0;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 22%, transparent);
+    color: rgba(255, 255, 255, 0.96);
+    font: inherit;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+  }
+  .tt-action ha-icon {
+    --mdc-icon-size: 16px;
+    flex-shrink: 0;
+  }
+  .tt-action:hover,
+  .tt-action:focus-visible {
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 36%, transparent);
+    outline: none;
+  }
   .tooltip.secondary {
     max-width: 260px;
   }
@@ -15112,6 +15314,24 @@
 				/** True while the user is drag-zooming on the split chart overlay. */
 				"_chartZoomDragging",
 				false
+			);
+			_defineProperty(
+				this,
+				/** Set briefly after a zoom drag so its trailing click does not pin. */
+				"_chartZoomSuppressClick",
+				false
+			);
+			_defineProperty(
+				this,
+				/** True while the hover tooltip is pinned (click-to-pin). */
+				"_chartTooltipPinned",
+				false
+			);
+			_defineProperty(
+				this,
+				/** Removes the listeners that dismiss a pinned tooltip. */
+				"_chartTooltipPinCleanup",
+				null
 			);
 			_defineProperty(
 				this,
@@ -15355,6 +15575,7 @@
         </div>
         <div class="tt-annotation" id="tt-annotation" style="display:none"></div>
         <div class="tt-entities" id="tt-entities" style="display:none"></div>
+        <div class="tt-actions" id="tt-actions" hidden></div>
       </div>
       <div class="tooltip secondary" id="anomaly-tooltip">
         <div class="tt-secondary">
@@ -18480,7 +18701,7 @@
 				};
 			};
 			const showFromPointer = (clientX, clientY) => {
-				if (this._chartZoomDragging) return;
+				if (this._chartZoomDragging || isLineChartTooltipPinned(this)) return;
 				const hover = buildSplitHover(clientX, clientY);
 				if (!hover) {
 					this._chartLastHover = null;
@@ -18496,6 +18717,7 @@
 				overlayEl.style.cursor = "crosshair";
 			};
 			const hideHover = () => {
+				if (isLineChartTooltipPinned(this)) return;
 				this._chartLastHover = null;
 				hideLineChartHover(this);
 			};
@@ -18511,12 +18733,28 @@
 			};
 			const onTouchEnd = () => hideHover();
 			const onOverlayClick = (ev) => {
-				if (this._chartZoomDragging) return;
+				if (this._chartZoomDragging || this._chartZoomSuppressClick) return;
 				const regions = this._chartLastHover?.anomalyRegions;
-				if (!regions?.length) return;
-				ev.preventDefault();
-				ev.stopPropagation();
-				this._handleAnomalyAddAnnotation(regions);
+				if (regions?.length && !isLineChartTooltipPinned(this)) {
+					ev.preventDefault();
+					ev.stopPropagation();
+					this._handleAnomalyAddAnnotation(regions);
+					return;
+				}
+				if (this._config.show_tooltips === false) return;
+				if (isLineChartTooltipPinned(this)) {
+					unpinLineChartTooltip(this);
+					showFromPointer(ev.clientX, ev.clientY);
+					return;
+				}
+				const hover = buildSplitHover(ev.clientX, ev.clientY);
+				if (!hover) return;
+				showLineChartCrosshair(this, primaryRenderer, hover);
+				pinLineChartTooltip(this, hover, ev.clientX, ev.clientY, {
+					onAddAnnotation: this._canAddAnnotation ? (pinnedHover) => this._handleChartAddAnnotation(pinnedHover) : void 0,
+					ignoreElements: [overlayEl, this.querySelector("#chart-add-annotation")]
+				});
+				dispatchLineChartHover(this, hover);
 			};
 			const addAnnotationBtn = this.querySelector("#chart-add-annotation");
 			const onAddBtnClick = (ev) => {
@@ -18538,6 +18776,7 @@
 			addAnnotationBtn?.addEventListener("click", onAddBtnClick);
 			addAnnotationBtn?.addEventListener("mouseleave", onAddBtnLeave);
 			this._chartHoverCleanup = () => {
+				unpinLineChartTooltip(this);
 				overlayEl.removeEventListener("mousemove", onMouseMove);
 				overlayEl.removeEventListener("mouseleave", onMouseLeave);
 				overlayEl.removeEventListener("touchmove", onTouchMove);
@@ -18588,6 +18827,7 @@
 				zoomDragging = false;
 				this._chartZoomDragging = false;
 				hideZoomSelection();
+				if (didDrag) suppressTrailingClick(this);
 				if (!didDrag || Math.abs(endX - zoomStartX) < 8) return;
 				const startTime = Math.min(stageXToTime(zoomStartX), stageXToTime(endX));
 				const endTime = Math.max(stageXToTime(zoomStartX), stageXToTime(endX));
