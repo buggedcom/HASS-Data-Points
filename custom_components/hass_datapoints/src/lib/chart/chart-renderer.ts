@@ -341,6 +341,13 @@ export class ChartRenderer {
       start.getFullYear() === end.getFullYear() &&
       start.getMonth() === end.getMonth();
 
+    if (detailSpanMs < 60 * 1000) {
+      return value.toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+    }
     if (detailSpanMs <= 2 * 60 * 60 * 1000) {
       return value.toLocaleTimeString([], {
         hour: "2-digit",
@@ -496,6 +503,11 @@ export class ChartRenderer {
 
   _getTimeTickStep(targetStepMs: number): number {
     const candidates = [
+      10 * 1000,
+      15 * 1000,
+      30 * 1000,
+      60 * 1000,
+      2 * 60 * 1000,
       5 * 60 * 1000,
       10 * 60 * 1000,
       15 * 60 * 1000,
