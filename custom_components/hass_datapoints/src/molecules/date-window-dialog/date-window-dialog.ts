@@ -169,12 +169,16 @@ export class DateWindowDialog extends LitElement {
     }
   }
 
+  /** Pressing Enter in the name field submits, like a regular form. */
+  private _onNameKeydown(ev: KeyboardEvent) {
+    if (ev.key === "Enter" && !ev.isComposing) {
+      ev.preventDefault();
+      this._onSubmit();
+    }
+  }
+
   private _onSubmit() {
-    const name = String(
-      (this._nameInput as HTMLElement & { value?: string })?.value ??
-        this._nameValue ??
-        ""
-    ).trim();
+    const name = String(this._nameInput?.value ?? this._nameValue ?? "").trim();
     const start = this._startInput?.value ?? this.startValue;
     const end = this._endInput?.value ?? this.endValue;
 
@@ -286,9 +290,12 @@ export class DateWindowDialog extends LitElement {
           </div>
 
           <div class="date-window-dialog-field name-field">
-            <ha-textfield
+            <label for="date-window-name">${msg("Name")}</label>
+            <input
               id="date-window-name"
-              label=${msg("Name")}
+              class="date-window-dialog-input"
+              type="text"
+              autocomplete="off"
               placeholder=${msg("e.g. Heating season start")}
               .value=${this._nameValue}
               aria-invalid=${this._error === "name" ? "true" : "false"}
@@ -296,7 +303,8 @@ export class DateWindowDialog extends LitElement {
                 ? "date-window-error-name"
                 : nothing}
               @input=${this._onNameInput}
-            ></ha-textfield>
+              @keydown=${this._onNameKeydown}
+            />
             ${this._error === "name"
               ? this._renderError("date-window-error-name")
               : nothing}

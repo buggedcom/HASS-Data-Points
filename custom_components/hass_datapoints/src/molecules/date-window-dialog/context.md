@@ -56,8 +56,11 @@ valid), `dp-window-delete {}`, `dp-window-shortcut { direction: -1 | 1 }`,
 
 - Delete is unaffected by validation — it fires `dp-window-delete` regardless of
   the current name/range so an existing window can always be removed.
-- The start/end controls use native `<input type="datetime-local">`; the name
-  uses `ha-textfield`. The submit path reads the name from the live input,
+- The start/end controls use native `<input type="datetime-local">` and the
+  name uses a native `<input type="text">` with the same styling. It used to be
+  `ha-textfield`, but that element is lazy-loaded by HA and is not guaranteed to
+  be defined on the datapoints panel, so it rendered as an empty, invisible tag
+  and the name could never be entered. Enter in the name field submits. The submit path reads the name from the live input,
   falling back to `_nameValue`, so an uncommitted keystroke is still captured.
 - Per ADR 0001 (no chart facade), the dialog drives everything through its
   public property/event seam and the panel's public handlers; it does not reach
