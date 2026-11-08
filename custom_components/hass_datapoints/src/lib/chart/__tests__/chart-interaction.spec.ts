@@ -818,6 +818,23 @@ describe("chart-interaction", () => {
         expect(card.shadowRoot.getElementById("tt-actions")?.hidden).toBe(true);
       });
 
+      it("THEN the close button releases the pin", () => {
+        expect.assertions(2);
+        const { card, canvas } = attachPinnable();
+
+        canvas.dispatchEvent(
+          new MouseEvent("click", { clientX: 200, clientY: 100 })
+        );
+        card.shadowRoot
+          .getElementById("tt-unpin")
+          ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+        expect(isLineChartTooltipPinned(card)).toBe(false);
+        expect(card.shadowRoot.getElementById("tooltip")?.style.display).toBe(
+          "none"
+        );
+      });
+
       it("THEN Escape releases the pin", () => {
         expect.assertions(1);
         const { card, canvas } = attachPinnable();

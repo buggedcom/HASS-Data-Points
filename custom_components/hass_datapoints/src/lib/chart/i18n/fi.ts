@@ -3,6 +3,8 @@ import type { ComponentTranslations } from "@/lib/i18n/types";
 export const translations: ComponentTranslations = {
   // Pinned hover tooltip action ({0} = time)
   "Add datapoint at {0}": "Lisää datapiste klo {0}",
+  Pinned: "Kiinnitetty",
+  "Unpin tooltip": "Irrota työkaluvihje",
 
   // Anomaly tooltip titles / meta
   "⚠️ Anomaly Insight": "⚠️ Poikkeavuushavainto",
