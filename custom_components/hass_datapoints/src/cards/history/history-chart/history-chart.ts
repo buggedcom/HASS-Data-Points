@@ -130,7 +130,10 @@ import {
   buildAiQueryBriefAnomalySnapshot,
   summarizeAnomalyClusterForAiBrief,
 } from "@/lib/history-page/ai-query-brief";
-import { calculateViewportScrollPosition } from "@/lib/chart/chart-scroll";
+import {
+  calculateViewportScrollPosition,
+  resolveChartRenderWindow,
+} from "@/lib/chart/chart-scroll";
 import {
   splitSeriesByGaps,
   buildGapBridgeColor,
@@ -145,7 +148,8 @@ const HISTORY_LEGEND_WRAP_DISABLE_HEIGHT_PX = 440;
 const HISTORY_CHART_MAX_CANVAS_WIDTH_PX = Math.floor(
   16383 / (window.devicePixelRatio || 1)
 );
-const HISTORY_CHART_MAX_ZOOM_MULTIPLIER = 365;
+// Narrowest visible span the chart can be zoomed into.
+const HISTORY_CHART_MIN_ZOOM_SPAN_MS = 60 * 1000;
 // Binary row-strip lane geometry (HA-style compact on/off timeline). Each
 // visible row-mode binary sensor gets a lane of this height stacked below the
 // numeric plot, separated by this gap.
@@ -1614,11 +1618,13 @@ export class HistoryChart extends HTMLElement {
           geometry: {
             t0,
             t1,
+            renderT0: this._renderT1 > this._renderT0 ? this._renderT0 : t0,
+            renderT1: this._renderT1 > this._renderT0 ? this._renderT1 : t1,
             viewportWidth: Math.max(viewport.clientWidth || 0, 360),
             padLeft: this._pinchPlotPad.left,
             padRight: this._pinchPlotPad.right,
             maxCanvasWidth: HISTORY_CHART_MAX_CANVAS_WIDTH_PX,
-            maxZoomMultiplier: HISTORY_CHART_MAX_ZOOM_MULTIPLIER,
+            minSpanMs: HISTORY_CHART_MIN_ZOOM_SPAN_MS,
           },
           span: this._zoomRange
             ? Math.max(1, this._zoomRange.end - this._zoomRange.start)
@@ -1937,10 +1943,16 @@ export class HistoryChart extends HTMLElement {
 
   /** Apply a zoom range to the chart. */
   _applyZoomRange(_startTime: number, _endTime: number): void {
-    const start = Math.min(_startTime, _endTime);
-    const end = Math.max(_startTime, _endTime);
+    let start = Math.min(_startTime, _endTime);
+    let end = Math.max(_startTime, _endTime);
     if (!(start < end)) {
       return;
+    }
+    if (end - start < HISTORY_CHART_MIN_ZOOM_SPAN_MS) {
+      // Widen tiny drag selections to the narrowest supported span.
+      const centre = (start + end) / 2;
+      start = centre - HISTORY_CHART_MIN_ZOOM_SPAN_MS / 2;
+      end = centre + HISTORY_CHART_MIN_ZOOM_SPAN_MS / 2;
     }
     this._zoomRange = { start, end };
     this.dispatchEvent(
@@ -2672,10 +2684,12 @@ export class HistoryChart extends HTMLElement {
       viewport.scrollWidth - viewport.clientWidth
     );
     const ratio = scrollLeft / maxScrollLeft;
-    const totalMs = Math.max(1, this._lastT1 - this._lastT0);
+    // Scroll maps onto the range the canvas covers (a window of the full
+    // range when deeply zoomed); see resolveChartRenderWindow.
+    const totalMs = Math.max(1, this._renderT1 - this._renderT0);
     const spanMs = this._zoomRange.end - this._zoomRange.start;
     const maxStartOffsetMs = Math.max(0, totalMs - spanMs);
-    const newStart = this._lastT0 + ratio * maxStartOffsetMs;
+    const newStart = this._renderT0 + ratio * maxStartOffsetMs;
     this._zoomRange = { start: newStart, end: newStart + spanMs };
     this._dispatchZoomPreview({
       startTime: newStart,
@@ -2687,9 +2701,18 @@ export class HistoryChart extends HTMLElement {
     this._scrollZoomApplyTimer = setTimeout(() => {
       this._scrollZoomApplyTimer = null;
       if (!this._zoomRange) return;
-      // Prevent _syncChartViewportScroll from snapping the viewport back to a
-      // slightly different position when the zoom-apply re-render fires.
-      this._skipNextScrollViewportSync = true;
+      const windowed =
+        this._renderT0 > this._lastT0 || this._renderT1 < this._lastT1;
+      if (windowed) {
+        // Deep zoom draws only a window of the range: redraw so the window
+        // re-centres on where the user panned to, letting them keep panning.
+        this._skipNextScrollViewportSync = false;
+        this._redrawLastDraw();
+      } else {
+        // Prevent _syncChartViewportScroll from snapping the viewport back to
+        // a slightly different position when the zoom-apply re-render fires.
+        this._skipNextScrollViewportSync = true;
+      }
       this.dispatchEvent(
         new CustomEvent("hass-datapoints-zoom-apply", {
           bubbles: true,
@@ -2720,6 +2743,12 @@ export class HistoryChart extends HTMLElement {
 
   /** Cache of last draw time range end (ms). */
   _lastT1: number = 0;
+
+  /** Start of the time range the drawn canvas covers (ms). */
+  _renderT0: number = 0;
+
+  /** End of the time range the drawn canvas covers (ms). */
+  _renderT1: number = 0;
 
   /** Cache of last _drawChart argument list. */
   _lastDrawArgs: DrawArgs | [] = [];
@@ -3451,22 +3480,18 @@ export class HistoryChart extends HTMLElement {
         360,
       360
     );
-    const totalSpanMs = Math.max(1, t1 - t0);
-    const zoomSpanMs = this._zoomRange
-      ? Math.max(1, this._zoomRange.end - this._zoomRange.start)
-      : null;
-    const rawZoomMultiplier = zoomSpanMs ? totalSpanMs / zoomSpanMs : 1;
-    const zoomMultiplier = clampChartValue(
-      rawZoomMultiplier,
-      1,
-      HISTORY_CHART_MAX_ZOOM_MULTIPLIER
+    // Deep zooms draw only a window of the full range so the canvas stays
+    // within the browser's size limit (see resolveChartRenderWindow).
+    const renderWindow = resolveChartRenderWindow(
+      t0,
+      t1,
+      this._zoomRange,
+      viewportWidth,
+      HISTORY_CHART_MAX_CANVAS_WIDTH_PX
     );
-    const canvasWidth = Math.min(
-      HISTORY_CHART_MAX_CANVAS_WIDTH_PX,
-      zoomSpanMs
-        ? Math.max(viewportWidth, Math.round(viewportWidth * zoomMultiplier))
-        : viewportWidth
-    );
+    const { canvasWidth } = renderWindow;
+    this._renderT0 = renderWindow.renderT0;
+    this._renderT1 = renderWindow.renderT1;
 
     if (
       (this._config as RecordWithUnknownValues)?.split_view === true &&
@@ -3484,8 +3509,8 @@ export class HistoryChart extends HTMLElement {
         binaryRows,
         binaryLaneReserve,
         events,
-        renderT0: t0,
-        renderT1: t1,
+        renderT0: renderWindow.renderT0,
+        renderT1: renderWindow.renderT1,
         canvasWidth,
         availableHeight,
         chartStage,
@@ -3511,7 +3536,11 @@ export class HistoryChart extends HTMLElement {
           this._onChartScroll,
           { passive: true }
         );
-        this._syncChartViewportScroll(t0, t1, canvasWidth);
+        this._syncChartViewportScroll(
+          renderWindow.renderT0,
+          renderWindow.renderT1,
+          canvasWidth
+        );
       }
       this._fireBackendAnomalyRequests(
         _anomalyEntityIds,
@@ -3558,8 +3587,8 @@ export class HistoryChart extends HTMLElement {
     renderer.basePad.bottom += binaryLaneReserve;
     renderer.pad.bottom = renderer.basePad.bottom;
     renderer.clear();
-    const renderT0 = t0;
-    const renderT1 = t1;
+    const renderT0 = this._renderT0;
+    const renderT1 = this._renderT1;
 
     const trendPointsMap = new Map<string, [number, number][]>(
       (analysisResult?.trendSeries || []).map((entry) => [
@@ -4982,7 +5011,7 @@ export class HistoryChart extends HTMLElement {
         this._onChartScroll,
         { passive: true }
       );
-      this._syncChartViewportScroll(t0, t1, w);
+      this._syncChartViewportScroll(renderT0, renderT1, w);
     }
     this._fireBackendAnomalyRequests(
       _anomalyEntityIds,

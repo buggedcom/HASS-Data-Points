@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   attachPinchZoom,
-  canvasWidthForSpan,
   clampPinchSpan,
   getPinchSpanLimits,
   resolvePinchZoomRange,
@@ -14,46 +13,34 @@ import {
 const geometry: PinchZoomGeometry = {
   t0: 0,
   t1: 100_000,
+  renderT0: 0,
+  renderT1: 100_000,
   viewportWidth: 1000,
   padLeft: 0,
   padRight: 0,
   maxCanvasWidth: 50_000,
-  maxZoomMultiplier: 365,
+  minSpanMs: 100,
 };
 
 describe("chart-pinch-zoom", () => {
   describe("GIVEN span limits", () => {
-    describe("WHEN the canvas cap is stricter than the zoom multiplier", () => {
-      it("THEN the minimum span follows the canvas cap", () => {
-        expect.assertions(2);
-        const limits = getPinchSpanLimits(geometry);
-        // 1000px viewport * 100000ms / 50000px cap = 2000ms
-        expect(limits.min).toBe(2000);
-        expect(limits.max).toBe(100_000);
-      });
-    });
-
     describe("WHEN a span outside the limits is clamped", () => {
-      it("THEN it is pulled back into range", () => {
-        expect.assertions(2);
-        expect(clampPinchSpan(10, geometry)).toBe(2000);
+      it("THEN it is pulled back to the minimum span or the full range", () => {
+        expect.assertions(3);
+        expect(getPinchSpanLimits(geometry)).toEqual({
+          min: 100,
+          max: 100_000,
+        });
+        expect(clampPinchSpan(10, geometry)).toBe(100);
         expect(clampPinchSpan(1e9, geometry)).toBe(100_000);
       });
     });
-  });
 
-  describe("GIVEN canvasWidthForSpan", () => {
-    describe("WHEN the span is the full range", () => {
-      it("THEN the canvas matches the viewport", () => {
+    describe("WHEN the zoom is far deeper than the canvas cap allows", () => {
+      it("THEN the span is not limited by the canvas size", () => {
         expect.assertions(1);
-        expect(canvasWidthForSpan(100_000, geometry)).toBe(1000);
-      });
-    });
-
-    describe("WHEN the span is a quarter of the range", () => {
-      it("THEN the canvas is four viewports wide", () => {
-        expect.assertions(1);
-        expect(canvasWidthForSpan(25_000, geometry)).toBe(4000);
+        // 1000px * 100000 / 50000px cap would have limited the old code to 2000ms.
+        expect(clampPinchSpan(500, geometry)).toBe(500);
       });
     });
   });
@@ -103,6 +90,16 @@ describe("chart-pinch-zoom", () => {
         const range = resolvePinchZoomRange(geometry, 50_000, 500, 50_000)!;
         expect(range.start).toBeCloseTo(25_000, 6);
         expect(range.end).toBeCloseTo(75_000, 6);
+      });
+    });
+
+    describe("WHEN zooming deeper than the canvas cap", () => {
+      it("THEN the anchor is kept under the fingers inside the render window", () => {
+        expect.assertions(2);
+        const range = resolvePinchZoomRange(geometry, 30_000, 250, 400)!;
+        expect(range.end - range.start).toBeCloseTo(400, 6);
+        // Anchor 25% across the viewport → 25% into the visible span.
+        expect(range.start).toBeCloseTo(30_000 - 100, 0);
       });
     });
   });

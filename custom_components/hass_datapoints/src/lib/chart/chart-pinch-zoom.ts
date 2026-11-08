@@ -11,13 +11,21 @@
  * once, which triggers a single real redraw.
  */
 
+import {
+  resolveChartRenderWindow,
+  type ChartRenderWindow,
+} from "@/lib/chart/chart-scroll";
 import { clampChartValue } from "@/lib/chart/chart-shell";
 
 export interface PinchZoomGeometry {
-  /** Full render range start (ms). */
+  /** Full data range start (ms). */
   t0: number;
-  /** Full render range end (ms). */
+  /** Full data range end (ms). */
   t1: number;
+  /** Start of the range the current canvas covers (ms). */
+  renderT0: number;
+  /** End of the range the current canvas covers (ms). */
+  renderT1: number;
   /** Visible viewport width in px (as used by the draw). */
   viewportWidth: number;
   /** Plot padding left of the time axis, in canvas px. */
@@ -26,8 +34,8 @@ export interface PinchZoomGeometry {
   padRight: number;
   /** Largest canvas width the chart will render, in px. */
   maxCanvasWidth: number;
-  /** Largest allowed total/span ratio. */
-  maxZoomMultiplier: number;
+  /** Smallest visible span the chart may zoom into (ms). */
+  minSpanMs: number;
 }
 
 export interface PinchZoomRange {
@@ -38,18 +46,13 @@ export interface PinchZoomRange {
 /** Spans within this fraction of the full range count as "fully zoomed out". */
 const FULL_RANGE_EPSILON = 0.001;
 
-/** Smallest and largest span the chart can actually display. */
+/** Smallest and largest span the chart can zoom to. */
 export function getPinchSpanLimits(geometry: PinchZoomGeometry): {
   min: number;
   max: number;
 } {
   const total = Math.max(1, geometry.t1 - geometry.t0);
-  const byMultiplier = total / Math.max(1, geometry.maxZoomMultiplier);
-  const byCanvas =
-    geometry.maxCanvasWidth > 0
-      ? (geometry.viewportWidth * total) / geometry.maxCanvasWidth
-      : 0;
-  return { min: Math.min(total, Math.max(byMultiplier, byCanvas)), max: total };
+  return { min: Math.min(total, Math.max(1, geometry.minSpanMs)), max: total };
 }
 
 export function clampPinchSpan(
@@ -60,26 +63,7 @@ export function clampPinchSpan(
   return clampChartValue(span, min, max);
 }
 
-/** Canvas width the chart draws for a given visible span. */
-export function canvasWidthForSpan(
-  span: number,
-  geometry: PinchZoomGeometry
-): number {
-  const total = Math.max(1, geometry.t1 - geometry.t0);
-  const clampedSpan = clampPinchSpan(span, geometry);
-  if (clampedSpan >= total * (1 - FULL_RANGE_EPSILON)) {
-    return geometry.viewportWidth;
-  }
-  return Math.min(
-    geometry.maxCanvasWidth,
-    Math.max(
-      geometry.viewportWidth,
-      Math.round((geometry.viewportWidth * total) / clampedSpan)
-    )
-  );
-}
-
-/** Time under a canvas-local x position for a canvas of the given width. */
+/** Time under a canvas-local x position on the currently drawn canvas. */
 export function timeAtCanvasX(
   canvasX: number,
   canvasWidth: number,
@@ -87,7 +71,40 @@ export function timeAtCanvasX(
 ): number {
   const cw = Math.max(1, canvasWidth - geometry.padLeft - geometry.padRight);
   const ratio = clampChartValue((canvasX - geometry.padLeft) / cw, 0, 1);
-  return geometry.t0 + ratio * (geometry.t1 - geometry.t0);
+  return geometry.renderT0 + ratio * (geometry.renderT1 - geometry.renderT0);
+}
+
+/**
+ * Given the render window the chart will draw, find the zoom start that puts
+ * `anchorTime` under `anchorViewportX`.
+ */
+function solveStartInWindow(
+  geometry: PinchZoomGeometry,
+  window: ChartRenderWindow,
+  anchorTime: number,
+  anchorViewportX: number,
+  span: number
+): number {
+  const windowSpan = Math.max(1, window.renderT1 - window.renderT0);
+  const { canvasWidth } = window;
+  const cw = Math.max(1, canvasWidth - geometry.padLeft - geometry.padRight);
+  const anchorRatio = clampChartValue(
+    (anchorTime - window.renderT0) / windowSpan,
+    0,
+    1
+  );
+  const anchorCanvasX = geometry.padLeft + anchorRatio * cw;
+  const maxScrollLeft = Math.max(0, canvasWidth - geometry.viewportWidth);
+  const scrollLeft = clampChartValue(
+    anchorCanvasX - anchorViewportX,
+    0,
+    maxScrollLeft
+  );
+  const ratio = maxScrollLeft > 0 ? scrollLeft / maxScrollLeft : 0;
+  const start =
+    window.renderT0 +
+    ratio * Math.max(0, windowSpan - Math.min(span, windowSpan));
+  return clampChartValue(start, geometry.t0, geometry.t1 - span);
 }
 
 /**
@@ -107,18 +124,39 @@ export function resolvePinchZoomRange(
   if (nextSpan >= total * (1 - FULL_RANGE_EPSILON)) {
     return null;
   }
-  const canvasWidth = canvasWidthForSpan(nextSpan, geometry);
-  const cw = Math.max(1, canvasWidth - geometry.padLeft - geometry.padRight);
-  const anchorRatio = clampChartValue((anchorTime - geometry.t0) / total, 0, 1);
-  const anchorCanvasX = geometry.padLeft + anchorRatio * cw;
-  const maxScrollLeft = Math.max(0, canvasWidth - geometry.viewportWidth);
-  const scrollLeft = clampChartValue(
-    anchorCanvasX - anchorViewportX,
-    0,
-    maxScrollLeft
+  // First guess: anchor sits at the same fraction of the plot width.
+  const plotWidth = Math.max(
+    1,
+    geometry.viewportWidth - geometry.padLeft - geometry.padRight
   );
-  const ratio = maxScrollLeft > 0 ? scrollLeft / maxScrollLeft : 0;
-  const start = geometry.t0 + ratio * (total - nextSpan);
+  const plotFraction = clampChartValue(
+    (anchorViewportX - geometry.padLeft) / plotWidth,
+    0,
+    1
+  );
+  let start = clampChartValue(
+    anchorTime - plotFraction * nextSpan,
+    geometry.t0,
+    geometry.t1 - nextSpan
+  );
+  // Refine against the render window the chart will actually draw for that
+  // range (deep zooms draw only a window of the full range).
+  for (let i = 0; i < 2; i += 1) {
+    const window = resolveChartRenderWindow(
+      geometry.t0,
+      geometry.t1,
+      { start, end: start + nextSpan },
+      geometry.viewportWidth,
+      geometry.maxCanvasWidth
+    );
+    start = solveStartInWindow(
+      geometry,
+      window,
+      anchorTime,
+      anchorViewportX,
+      nextSpan
+    );
+  }
   return { start, end: start + nextSpan };
 }
 
@@ -228,9 +266,11 @@ export function attachPinchZoom(options: AttachPinchZoomOptions): () => void {
     if (!session) {
       return;
     }
-    const { geometry } = session.state;
-    const nextWidth = canvasWidthForSpan(session.span, geometry);
-    const scale = nextWidth / session.startCanvasWidth;
+    const startSpan = clampPinchSpan(
+      session.state.span,
+      session.state.geometry
+    );
+    const scale = startSpan / Math.max(1, session.span);
     const stageLeft = session.stageOriginLeft - viewport.scrollLeft;
     const tx = session.focusClientX - stageLeft - session.anchorCanvasX * scale;
     stage.style.transformOrigin = "0 0";
