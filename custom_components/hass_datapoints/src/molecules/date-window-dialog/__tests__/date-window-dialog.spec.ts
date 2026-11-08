@@ -80,6 +80,21 @@ describe("date-window-dialog", () => {
         ).not.toBeNull();
       });
 
+      it("THEN the name field is a native text input that does not depend on lazy-loaded HA elements", () => {
+        expect.assertions(2);
+        const input = nameInput(el);
+        expect(input.tagName).toBe("INPUT");
+        expect(input.type).toBe("text");
+      });
+
+      it("THEN the name field has a visible label", () => {
+        expect.assertions(1);
+        const label = el.shadowRoot!.querySelector(
+          'label[for="date-window-name"]'
+        );
+        expect(label?.textContent?.trim()).toBe("Name");
+      });
+
       it("THEN renders the start datetime input", () => {
         expect.assertions(1);
         expect(
@@ -327,6 +342,19 @@ describe("date-window-dialog", () => {
         submitButton(el).click();
         await el.updateComplete;
         expect(errorRegion(el)).toBeNull();
+      });
+    });
+
+    describe("WHEN Enter is pressed in the name field", () => {
+      it("THEN fires dp-window-submit with the typed name", () => {
+        expect.assertions(2);
+        const handler = vi.fn();
+        el.addEventListener("dp-window-submit", handler);
+        nameInput(el).dispatchEvent(
+          new KeyboardEvent("keydown", { key: "Enter", bubbles: true })
+        );
+        expect(handler).toHaveBeenCalledOnce();
+        expect(handler.mock.calls[0][0].detail.name).toBe("My window");
       });
     });
   });

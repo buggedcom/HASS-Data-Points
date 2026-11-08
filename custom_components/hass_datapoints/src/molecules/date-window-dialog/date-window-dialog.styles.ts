@@ -41,7 +41,6 @@ export const styles = css`
     color: var(--primary-text-color);
   }
 
-  .date-window-dialog-field ha-textfield,
   .date-window-dialog-field input {
     width: 100%;
   }

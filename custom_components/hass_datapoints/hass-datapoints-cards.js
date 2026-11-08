@@ -27628,7 +27628,6 @@
     color: var(--primary-text-color);
   }
 
-  .date-window-dialog-field ha-textfield,
   .date-window-dialog-field input {
     width: 100%;
   }
@@ -30143,6 +30142,13 @@
 			this._nameValue = value;
 			if (this._error === "name" && value.trim()) this._error = null;
 		}
+		/** Pressing Enter in the name field submits, like a regular form. */
+		_onNameKeydown(ev) {
+			if (ev.key === "Enter" && !ev.isComposing) {
+				ev.preventDefault();
+				this._onSubmit();
+			}
+		}
 		_onSubmit() {
 			const name = String(this._nameInput?.value ?? this._nameValue ?? "").trim();
 			const start = this._startInput?.value ?? this.startValue;
@@ -30245,15 +30251,19 @@
           </div>
 
           <div class="date-window-dialog-field name-field">
-            <ha-textfield
+            <label for="date-window-name">${msg("Name")}</label>
+            <input
               id="date-window-name"
-              label=${msg("Name")}
+              class="date-window-dialog-input"
+              type="text"
+              autocomplete="off"
               placeholder=${msg("e.g. Heating season start")}
               .value=${this._nameValue}
               aria-invalid=${this._error === "name" ? "true" : "false"}
               aria-describedby=${this._error === "name" ? "date-window-error-name" : A}
               @input=${this._onNameInput}
-            ></ha-textfield>
+              @keydown=${this._onNameKeydown}
+            />
             ${this._error === "name" ? this._renderError("date-window-error-name") : A}
           </div>
 
@@ -39452,7 +39462,6 @@
     color: var(--primary-text-color);
   }
 
-  .date-window-dialog-field ha-textfield,
   .date-window-dialog-field input {
     width: 100%;
   }
