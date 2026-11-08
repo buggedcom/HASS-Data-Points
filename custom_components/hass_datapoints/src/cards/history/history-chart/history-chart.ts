@@ -1637,6 +1637,7 @@ export class HistoryChart extends HTMLElement {
           clearTimeout(this._scrollZoomApplyTimer);
           this._scrollZoomApplyTimer = null;
         }
+        unpinLineChartTooltip(this);
         hideLineChartHover(this);
         hideTooltip(this);
       },
