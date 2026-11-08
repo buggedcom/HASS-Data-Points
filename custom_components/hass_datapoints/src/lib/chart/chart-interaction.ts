@@ -10,7 +10,7 @@ import {
   labelIcon,
   labelName,
 } from "@/lib/ha/entity-name";
-import { fmtDateTime } from "@/lib/util/format";
+import { fmtDateTime, fmtTime } from "@/lib/util/format";
 import {
   clampChartValue,
   formatTooltipDisplayValue,
@@ -29,6 +29,15 @@ type ChartInteractionState = {
   _chartZoomCleanup?: NullableCleanup;
   _chartLastHover?: Nullable<HoverState>;
   _chartZoomDragging?: boolean;
+  /**
+   * Set briefly after a zoom drag finishes so the trailing `click` the browser
+   * fires on pointerup is not mistaken for a click-to-pin.
+   */
+  _chartZoomSuppressClick?: boolean;
+  /** True while the hover tooltip is pinned in place (see pinLineChartTooltip). */
+  _chartTooltipPinned?: boolean;
+  /** Removes the document/window listeners that dismiss a pinned tooltip. */
+  _chartTooltipPinCleanup?: NullableCleanup;
 };
 
 /**
@@ -835,6 +844,7 @@ export function showTooltip(
 }
 
 export function hideTooltip(card: ChartInteractionHost): void {
+  unpinLineChartTooltip(card);
   const tooltip = getRoot(card).getElementById("tooltip");
   const anomalyTooltip = getRoot(card).getElementById("anomaly-tooltip");
   if (tooltip) {
@@ -1344,6 +1354,7 @@ export function showLineChartTooltip(
   ttAnn.style.display = "none";
   render(html``, ttEntities);
   ttEntities.style.display = "none";
+  clearTooltipActions(root);
 
   if (
     anomalyTooltip &&
@@ -1385,6 +1396,140 @@ export function showLineChartTooltip(
   } else {
     clearAnnotationTooltips(card);
   }
+}
+
+interface PinLineChartTooltipOptions {
+  /**
+   * When provided, the pinned tooltip shows an "Add datapoint at HH:MM" action
+   * that calls this with the pinned hover state.
+   */
+  onAddAnnotation?: (hover: HoverState, event: Event) => void;
+  /** Called when the pinned tooltip is dismissed from outside the chart. */
+  onDismiss?: () => void;
+  /**
+   * Elements whose pointerdowns should not dismiss the pinned tooltip (the
+   * chart canvas/overlay, which handle their own click-to-unpin toggle).
+   */
+  ignoreElements?: Array<Nullable<Element>>;
+}
+
+function clearTooltipActions(root: Document | ShadowRoot): void {
+  const actions = root.getElementById("tt-actions") as Nullable<HTMLElement>;
+  if (!actions) {
+    return;
+  }
+  render(html``, actions);
+  actions.hidden = true;
+}
+
+export function isLineChartTooltipPinned(card: ChartInteractionHost): boolean {
+  return getInteractionState(card)._chartTooltipPinned === true;
+}
+
+/**
+ * Freeze the hover tooltip at the given hover state so the pointer can move
+ * onto it. A tooltip that follows the cursor can never be clicked, so pinning
+ * is what makes the "Add datapoint at HH:MM" action reachable.
+ *
+ * The pin is released by `unpinLineChartTooltip` (also called from
+ * `hideTooltip`), by Escape, by scrolling, or by a pointerdown anywhere outside
+ * the tooltip and the `ignoreElements`.
+ */
+export function pinLineChartTooltip(
+  card: ChartInteractionHost,
+  hover: HoverState,
+  clientX: number,
+  clientY: number,
+  options: PinLineChartTooltipOptions = {}
+): void {
+  const root = getRoot(card);
+  const tooltip = root.getElementById("tooltip") as Nullable<HTMLElement>;
+  if (!tooltip) {
+    return;
+  }
+  const interactionState = getInteractionState(card);
+  unpinLineChartTooltip(card);
+  interactionState._chartLastHover = hover;
+  showLineChartTooltip(card, hover, clientX, clientY);
+
+  const actions = root.getElementById("tt-actions") as Nullable<HTMLElement>;
+  const { onAddAnnotation } = options;
+  if (actions && typeof onAddAnnotation === "function") {
+    const label = t("Add datapoint at {0}", fmtTime(hover.timeMs));
+    render(
+      html`<button
+        type="button"
+        class="tt-action"
+        id="tt-add-annotation"
+        @click=${(ev: Event) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          hideLineChartHover(card);
+          interactionState._chartLastHover = null;
+          onAddAnnotation(hover, ev);
+        }}
+      >
+        <ha-icon icon="mdi:plus"></ha-icon>
+        <span>${label}</span>
+      </button>`,
+      actions
+    );
+    actions.hidden = false;
+  }
+
+  tooltip.classList.add("pinned");
+  interactionState._chartTooltipPinned = true;
+  // Re-position now that the action row may have changed the tooltip's size.
+  const chartBounds = (
+    root.querySelector(".chart-wrap") ?? card
+  ).getBoundingClientRect();
+  positionTooltip(tooltip, clientX, clientY, toChartBounds(chartBounds));
+
+  const ignored = (options.ignoreElements ?? []).filter(
+    (el): el is Element => el != null
+  );
+  const dismiss = () => {
+    hideLineChartHover(card);
+    interactionState._chartLastHover = null;
+    options.onDismiss?.();
+  };
+  const onDocumentPointerDown = (ev: Event) => {
+    const path = ev.composedPath();
+    if (path.includes(tooltip) || ignored.some((el) => path.includes(el))) {
+      return;
+    }
+    dismiss();
+  };
+  const onKeyDown = (ev: KeyboardEvent) => {
+    if (ev.key === "Escape") {
+      dismiss();
+    }
+  };
+  const onScroll = () => dismiss();
+  document.addEventListener("pointerdown", onDocumentPointerDown, true);
+  window.addEventListener("keydown", onKeyDown);
+  window.addEventListener("scroll", onScroll, true);
+  interactionState._chartTooltipPinCleanup = () => {
+    document.removeEventListener("pointerdown", onDocumentPointerDown, true);
+    window.removeEventListener("keydown", onKeyDown);
+    window.removeEventListener("scroll", onScroll, true);
+  };
+}
+
+/** Release a pinned tooltip so it follows the pointer again. */
+export function unpinLineChartTooltip(card: ChartInteractionHost): void {
+  const interactionState = getInteractionState(card);
+  if (interactionState._chartTooltipPinCleanup) {
+    interactionState._chartTooltipPinCleanup();
+    interactionState._chartTooltipPinCleanup = null;
+  }
+  if (!interactionState._chartTooltipPinned) {
+    return;
+  }
+  interactionState._chartTooltipPinned = false;
+  const root = getRoot(card);
+  root.getElementById("tooltip")?.classList.remove("pinned");
+  clearTooltipActions(root);
 }
 
 export function buildTooltipRelatedChips(
@@ -2023,7 +2168,10 @@ export function attachLineChartHover(
   };
 
   const showFromPointer = (clientX: number, clientY: number): void => {
-    if (interactionState._chartZoomDragging) {
+    if (
+      interactionState._chartZoomDragging ||
+      interactionState._chartTooltipPinned
+    ) {
       return;
     }
     const anomalyRegionsHit = findAnomalyRegions(clientX, clientY);
@@ -2051,6 +2199,9 @@ export function attachLineChartHover(
   };
 
   const hideHover = (): void => {
+    if (interactionState._chartTooltipPinned) {
+      return;
+    }
     interactionState._chartLastHover = null;
     hideLineChartHover(card);
     canvas.style.cursor = "default";
@@ -2138,36 +2289,83 @@ export function attachLineChartHover(
       return;
     }
     ev.preventDefault();
+    unpinLineChartTooltip(card);
     interactionState._chartLastHover = hover;
     showLineChartCrosshair(card, renderer, hover);
     showLineChartTooltip(card, hover, ev.clientX, ev.clientY);
     dispatchLineChartHover(card, hover);
     options.onContextMenu(hover, ev);
   };
+  const pinAt = (clientX: number, clientY: number): void => {
+    const hover = buildHoverState(clientX, clientY);
+    if (!hover) {
+      return;
+    }
+    hover.anomalyRegions = [];
+    showLineChartCrosshair(card, renderer, hover);
+    const { onAddAnnotation } = options;
+    pinLineChartTooltip(card, hover, clientX, clientY, {
+      onAddAnnotation:
+        typeof onAddAnnotation === "function"
+          ? (pinnedHover, event) => onAddAnnotation(pinnedHover, event)
+          : undefined,
+      ignoreElements: [canvas, hoverSurfaceEl, addAnnotationButton],
+      onDismiss: () => {
+        canvas.style.cursor = "default";
+      },
+    });
+    dispatchLineChartHover(card, hover);
+  };
   const onClick = (ev: MouseEvent): void => {
-    if (typeof options.onAnomalyClick !== "function") {
+    if (interactionState._chartZoomSuppressClick) {
       return;
     }
-    const regions = findAnomalyRegions(ev.clientX, ev.clientY);
-    if (!regions.length) {
+    if (typeof options.onAnomalyClick === "function") {
+      const regions = findAnomalyRegions(ev.clientX, ev.clientY);
+      if (regions.length) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        options.onAnomalyClick(regions, ev);
+        return;
+      }
+    }
+    if (options.showTooltip === false) {
       return;
     }
-    ev.preventDefault();
-    ev.stopPropagation();
-    options.onAnomalyClick(regions, ev);
+    // Click toggles the pin: a pinned tooltip stops following the cursor so
+    // its actions can be reached; clicking the chart again releases it.
+    if (interactionState._chartTooltipPinned) {
+      unpinLineChartTooltip(card);
+      showFromPointer(ev.clientX, ev.clientY);
+      return;
+    }
+    pinAt(ev.clientX, ev.clientY);
   };
 
   let touchTimer: TimerHandle = null;
-  const scheduleTouchHide = () => {
+  // A tap (touch without a drag) pins the tooltip, because touchstart's
+  // preventDefault() suppresses the synthetic click a mouse would get.
+  let touchStartPoint: Nullable<{ x: number; y: number }> = null;
+  let touchMoved = false;
+  const clearTouchTimer = () => {
     if (touchTimer) {
       window.clearTimeout(touchTimer);
+      touchTimer = null;
     }
+  };
+  const scheduleTouchHide = () => {
+    clearTouchTimer();
     touchTimer = window.setTimeout(() => hideHover(), 1800);
   };
   const onTouchStart = (ev: TouchEvent): void => {
     ev.preventDefault();
     const touch = ev.touches[0];
     if (!touch) {
+      return;
+    }
+    touchStartPoint = { x: touch.clientX, y: touch.clientY };
+    touchMoved = false;
+    if (interactionState._chartTooltipPinned) {
       return;
     }
     showFromPointer(touch.clientX, touch.clientY);
@@ -2179,10 +2377,37 @@ export function attachLineChartHover(
     if (!touch) {
       return;
     }
+    if (
+      touchStartPoint &&
+      Math.hypot(
+        touch.clientX - touchStartPoint.x,
+        touch.clientY - touchStartPoint.y
+      ) > 10
+    ) {
+      touchMoved = true;
+    }
+    if (touchMoved && interactionState._chartTooltipPinned) {
+      unpinLineChartTooltip(card);
+    }
     showFromPointer(touch.clientX, touch.clientY);
     scheduleTouchHide();
   };
-  const onTouchEnd = (): void => scheduleTouchHide();
+  const onTouchEnd = (ev: TouchEvent): void => {
+    const start = touchStartPoint;
+    touchStartPoint = null;
+    const isTap = ev.type === "touchend" && start != null && !touchMoved;
+    if (!isTap || options.showTooltip === false) {
+      scheduleTouchHide();
+      return;
+    }
+    clearTouchTimer();
+    if (interactionState._chartTooltipPinned) {
+      unpinLineChartTooltip(card);
+      hideHover();
+      return;
+    }
+    pinAt(start.x, start.y);
+  };
 
   canvas.addEventListener("mousemove", onMouseMove);
   canvas.addEventListener("mouseleave", onMouseLeave);
@@ -2214,12 +2439,23 @@ export function attachLineChartHover(
       cancelAnimationFrame(_rafHandle);
       _rafHandle = null;
     }
-    if (touchTimer) {
-      window.clearTimeout(touchTimer);
-      touchTimer = null;
-    }
+    clearTouchTimer();
+    unpinLineChartTooltip(card);
     hideHover();
   };
+}
+
+/**
+ * Swallow the `click` the browser fires right after the pointerup that ends a
+ * zoom drag, so finishing a drag never pins the tooltip.
+ */
+export function suppressTrailingClick(
+  interactionState: Pick<ChartInteractionState, "_chartZoomSuppressClick">
+): void {
+  interactionState._chartZoomSuppressClick = true;
+  window.setTimeout(() => {
+    interactionState._chartZoomSuppressClick = false;
+  }, 0);
 }
 
 export function attachLineChartRangeZoom(
@@ -2347,6 +2583,9 @@ export function attachLineChartRangeZoom(
     window.removeEventListener("pointermove", onPointerMove);
     window.removeEventListener("pointerup", finish);
     window.removeEventListener("pointercancel", finish);
+    if (didDrag) {
+      suppressTrailingClick(interactionState);
+    }
     if (!didDrag || Math.abs(endX - startX) < 8) {
       resetDragging(true);
       return;

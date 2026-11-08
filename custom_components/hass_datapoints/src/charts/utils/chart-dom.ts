@@ -739,6 +739,7 @@ export function buildChartCardShell(title?: Nullable<string>): string {
           </div>
           <div class="tt-annotation" id="tt-annotation" style="display:none"></div>
           <div class="tt-entities" id="tt-entities" style="display:none"></div>
+          <div class="tt-actions" id="tt-actions" hidden></div>
         </div>
         <div class="tooltip secondary" id="anomaly-tooltip">
           <div class="tt-secondary">

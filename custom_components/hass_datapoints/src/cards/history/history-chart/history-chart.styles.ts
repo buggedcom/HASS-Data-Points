@@ -585,6 +585,43 @@ export const styles = `
     white-space: pre-wrap;
     line-height: 1.4;
   }
+  .tooltip.pinned {
+    pointer-events: auto;
+    border-color: color-mix(in srgb, var(--primary-color, #03a9f4) 55%, transparent);
+  }
+  .tt-actions {
+    margin-top: var(--dp-spacing-sm);
+    padding-top: var(--dp-spacing-sm);
+    border-top: 1px solid color-mix(in srgb, #ffffff 12%, transparent);
+  }
+  .tt-actions[hidden] {
+    display: none;
+  }
+  .tt-action {
+    display: flex;
+    align-items: center;
+    gap: calc(var(--spacing, 8px) * 0.75);
+    width: 100%;
+    margin: 0;
+    padding: calc(var(--spacing, 8px) * 0.75) var(--dp-spacing-sm);
+    border: 0;
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 22%, transparent);
+    color: rgba(255, 255, 255, 0.96);
+    font: inherit;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+  }
+  .tt-action ha-icon {
+    --mdc-icon-size: 16px;
+    flex-shrink: 0;
+  }
+  .tt-action:hover,
+  .tt-action:focus-visible {
+    background: color-mix(in srgb, var(--primary-color, #03a9f4) 36%, transparent);
+    outline: none;
+  }
   .tooltip.secondary {
     max-width: 260px;
   }

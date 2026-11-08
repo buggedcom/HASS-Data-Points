@@ -6,10 +6,12 @@ import {
   buildTooltipRelatedChips,
   dispatchLineChartHover,
   hideTooltip,
+  isLineChartTooltipPinned,
   resolveLineChartHoverTime,
   showLineChartCrosshair,
   showLineChartTooltip,
   showTooltip,
+  suppressTrailingClick,
 } from "@/lib/chart/chart-interaction";
 
 function createCard() {
@@ -29,6 +31,7 @@ function createCard() {
       <div id="tt-message"></div>
       <div id="tt-annotation"></div>
       <div id="tt-entities"></div>
+      <div id="tt-actions" hidden></div>
     </div>
     <div id="anomaly-tooltip"></div>
     <div id="chart-crosshair" hidden>
@@ -702,6 +705,141 @@ describe("chart-interaction", () => {
           new MouseEvent("click", { clientX: 100, clientY: 80 })
         );
         expect(onAnomalyClick).toHaveBeenCalledTimes(1);
+      });
+    });
+
+    describe("WHEN the chart is clicked", () => {
+      function attachPinnable(onAddAnnotation = vi.fn()) {
+        const card = createCard() as ReturnType<typeof createCard> & {
+          _chartLastHover?: { timeMs: number } | null;
+          _chartZoomSuppressClick?: boolean;
+        };
+        const canvas = createHoverCanvas();
+        const renderer = {
+          cw: 360,
+          ch: 160,
+          pad: { left: 20, top: 20 },
+          xOf: (t: number, a: number, b: number) =>
+            20 + ((t - a) / (b - a)) * 360,
+          yOf: () => 80,
+          _interpolateValue: () => 10,
+        };
+        attachLineChartHover({
+          card,
+          canvas,
+          renderer,
+          series: [
+            {
+              entityId: "sensor.alpha",
+              label: "Alpha",
+              pts: [
+                [0, 10],
+                [360000, 10],
+              ],
+            },
+          ],
+          events: [],
+          t0: 0,
+          t1: 360000,
+          vMin: 0,
+          vMax: 100,
+          axes: null,
+          onAddAnnotation,
+        });
+        return { card, canvas, onAddAnnotation };
+      }
+
+      it("THEN it pins the tooltip with an add-datapoint action for that time", () => {
+        expect.assertions(4);
+        const { card, canvas } = attachPinnable();
+
+        canvas.dispatchEvent(
+          new MouseEvent("click", { clientX: 200, clientY: 100 })
+        );
+
+        const tooltip = card.shadowRoot.getElementById("tooltip");
+        const action = card.shadowRoot.getElementById("tt-add-annotation");
+        expect(isLineChartTooltipPinned(card)).toBe(true);
+        expect(tooltip?.classList.contains("pinned")).toBe(true);
+        expect(card.shadowRoot.getElementById("tt-actions")?.hidden).toBe(
+          false
+        );
+        expect(action?.textContent).toContain("Add datapoint at");
+      });
+
+      it("THEN moving the pointer afterwards does not move the pinned hover", async () => {
+        expect.assertions(1);
+        const { card, canvas } = attachPinnable();
+
+        canvas.dispatchEvent(
+          new MouseEvent("click", { clientX: 200, clientY: 100 })
+        );
+        const pinnedTime = card._chartLastHover?.timeMs;
+        canvas.dispatchEvent(
+          new MouseEvent("mousemove", { clientX: 40, clientY: 100 })
+        );
+        canvas.dispatchEvent(new MouseEvent("mouseleave"));
+        await new Promise((resolve) => {
+          requestAnimationFrame(resolve);
+        });
+
+        expect(card._chartLastHover?.timeMs).toBe(pinnedTime);
+      });
+
+      it("THEN the action opens the add-datapoint flow at the pinned time and unpins", () => {
+        expect.assertions(3);
+        const { card, canvas, onAddAnnotation } = attachPinnable();
+
+        canvas.dispatchEvent(
+          new MouseEvent("click", { clientX: 200, clientY: 100 })
+        );
+        const pinnedTime = card._chartLastHover?.timeMs;
+        card.shadowRoot
+          .getElementById("tt-add-annotation")
+          ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+
+        expect(onAddAnnotation).toHaveBeenCalledTimes(1);
+        expect(onAddAnnotation.mock.calls[0][0].timeMs).toBe(pinnedTime);
+        expect(isLineChartTooltipPinned(card)).toBe(false);
+      });
+
+      it("THEN a second click releases the pin", () => {
+        expect.assertions(2);
+        const { card, canvas } = attachPinnable();
+
+        canvas.dispatchEvent(
+          new MouseEvent("click", { clientX: 200, clientY: 100 })
+        );
+        canvas.dispatchEvent(
+          new MouseEvent("click", { clientX: 200, clientY: 100 })
+        );
+
+        expect(isLineChartTooltipPinned(card)).toBe(false);
+        expect(card.shadowRoot.getElementById("tt-actions")?.hidden).toBe(true);
+      });
+
+      it("THEN Escape releases the pin", () => {
+        expect.assertions(1);
+        const { card, canvas } = attachPinnable();
+
+        canvas.dispatchEvent(
+          new MouseEvent("click", { clientX: 200, clientY: 100 })
+        );
+        window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
+
+        expect(isLineChartTooltipPinned(card)).toBe(false);
+      });
+
+      it("THEN the click that ends a zoom drag does not pin", () => {
+        expect.assertions(1);
+        const { card, canvas } = attachPinnable();
+
+        suppressTrailingClick(card);
+        canvas.dispatchEvent(
+          new MouseEvent("click", { clientX: 200, clientY: 100 })
+        );
+
+        expect(isLineChartTooltipPinned(card)).toBe(false);
       });
     });
   });

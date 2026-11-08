@@ -45,12 +45,16 @@ import {
   dispatchLineChartHover,
   hideLineChartHover,
   hideTooltip,
+  isLineChartTooltipPinned,
+  pinLineChartTooltip,
   type HoverSeriesLike,
   type HoverState,
   type HoverValueEntry,
   resolveLineChartHoverTime,
   showLineChartCrosshair,
   showLineChartTooltip,
+  suppressTrailingClick,
+  unpinLineChartTooltip,
 } from "@/lib/chart/chart-interaction";
 import { disambiguateEntityNames, entityName } from "@/lib/ha/entity-name";
 import {
@@ -320,6 +324,7 @@ export class HistoryChart extends HTMLElement {
         </div>
         <div class="tt-annotation" id="tt-annotation" style="display:none"></div>
         <div class="tt-entities" id="tt-entities" style="display:none"></div>
+        <div class="tt-actions" id="tt-actions" hidden></div>
       </div>
       <div class="tooltip secondary" id="anomaly-tooltip">
         <div class="tt-secondary">
@@ -450,6 +455,15 @@ export class HistoryChart extends HTMLElement {
 
   /** True while the user is drag-zooming on the split chart overlay. */
   _chartZoomDragging = false;
+
+  /** Set briefly after a zoom drag so its trailing click does not pin. */
+  _chartZoomSuppressClick = false;
+
+  /** True while the hover tooltip is pinned (click-to-pin). */
+  _chartTooltipPinned = false;
+
+  /** Removes the listeners that dismiss a pinned tooltip. */
+  _chartTooltipPinCleanup: NullableCleanup = null;
 
   /** Last computed hover object — used by split-chart crosshair/tooltip. */
   _chartLastHover: Nullable<HoverState> = null;
@@ -6940,7 +6954,7 @@ export class HistoryChart extends HTMLElement {
     };
 
     const showFromPointer = (clientX: number, clientY: number) => {
-      if (this._chartZoomDragging) {
+      if (this._chartZoomDragging || isLineChartTooltipPinned(this)) {
         return;
       }
       const hover = buildSplitHover(clientX, clientY);
@@ -6962,6 +6976,9 @@ export class HistoryChart extends HTMLElement {
     };
 
     const hideHover = () => {
+      if (isLineChartTooltipPinned(this)) {
+        return;
+      }
       this._chartLastHover = null;
       hideLineChartHover(this);
     };
@@ -6988,15 +7005,40 @@ export class HistoryChart extends HTMLElement {
     const onTouchEnd = () => hideHover();
 
     const onOverlayClick = (ev: MouseEvent) => {
-      if (this._chartZoomDragging) return;
-      const hover = this._chartLastHover as Nullable<{
+      if (this._chartZoomDragging || this._chartZoomSuppressClick) return;
+      const lastHover = this._chartLastHover as Nullable<{
         anomalyRegions?: unknown[];
       }>;
-      const regions = hover?.anomalyRegions;
-      if (!regions?.length) return;
-      ev.preventDefault();
-      ev.stopPropagation();
-      this._handleAnomalyAddAnnotation(regions);
+      const regions = lastHover?.anomalyRegions;
+      if (regions?.length && !isLineChartTooltipPinned(this)) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        this._handleAnomalyAddAnnotation(regions);
+        return;
+      }
+      if ((this._config as RecordWithUnknownValues).show_tooltips === false) {
+        return;
+      }
+      // Click toggles the pin so the tooltip's "Add datapoint" action can be
+      // reached; clicking again releases it to follow the cursor.
+      if (isLineChartTooltipPinned(this)) {
+        unpinLineChartTooltip(this);
+        showFromPointer(ev.clientX, ev.clientY);
+        return;
+      }
+      const hover = buildSplitHover(ev.clientX, ev.clientY);
+      if (!hover) return;
+      showLineChartCrosshair(this, primaryRenderer, hover);
+      pinLineChartTooltip(this, hover, ev.clientX, ev.clientY, {
+        onAddAnnotation: this._canAddAnnotation
+          ? (pinnedHover) => this._handleChartAddAnnotation(pinnedHover)
+          : undefined,
+        ignoreElements: [
+          overlayEl,
+          this.querySelector("#chart-add-annotation"),
+        ],
+      });
+      dispatchLineChartHover(this, hover);
     };
 
     // Add annotation button — wire up click and preserve hover on mouseleave.
@@ -7028,6 +7070,7 @@ export class HistoryChart extends HTMLElement {
     addAnnotationBtn?.addEventListener("mouseleave", onAddBtnLeave);
 
     this._chartHoverCleanup = () => {
+      unpinLineChartTooltip(this);
       overlayEl.removeEventListener("mousemove", onMouseMove);
       overlayEl.removeEventListener("mouseleave", onMouseLeave);
       overlayEl.removeEventListener("touchmove", onTouchMove);
@@ -7095,6 +7138,9 @@ export class HistoryChart extends HTMLElement {
       zoomDragging = false;
       this._chartZoomDragging = false;
       hideZoomSelection();
+      if (didDrag) {
+        suppressTrailingClick(this);
+      }
       if (!didDrag || Math.abs(endX - zoomStartX) < 8) {
         return;
       }

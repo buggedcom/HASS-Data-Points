@@ -1,6 +1,9 @@
 import type { ComponentTranslations } from "@/lib/i18n/types";
 
 export const translations: ComponentTranslations = {
+  // Pinned hover tooltip action ({0} = time)
+  "Add datapoint at {0}": "Adicionar ponto de dados às {0}",
+
   "⚠️ Anomaly Insight": "⚠️ Informação de anomalia",
   "⚠️ Multi-method Anomaly": "⚠️ Anomalia multimétodo",
   "Click the highlighted circle to add an annotation.":
