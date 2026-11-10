@@ -275,13 +275,13 @@ export class DateWindowDialog extends LitElement {
       <ha-dialog
         class=${classMap({ "dp-shaking": this._shaking })}
         ?open=${this.open}
+        .headerTitle=${this.heading}
         hideActions
         .scrimClickAction=${"close"}
         .escapeKeyAction=${"close"}
         @closed=${this._onDialogClosed}
         @animationend=${this._onShakeEnd}
       >
-        <span slot="heading">${this.heading}</span>
         <div class="date-window-dialog-content">
           <div class="date-window-dialog-body">
             ${msg(

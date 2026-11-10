@@ -58,6 +58,23 @@ function typeName(el: HTMLElement, value: string) {
 }
 
 describe("date-window-dialog", () => {
+  describe("GIVEN the dialog is opened with a heading", () => {
+    describe("WHEN it renders", () => {
+      it("THEN it passes the heading to ha-dialog as its header title", async () => {
+        expect.assertions(1);
+        const el = createElement({ heading: "Edit date window" });
+        await el.updateComplete;
+        const dialog = el.shadowRoot!.querySelector(
+          "ha-dialog"
+        ) as HTMLElement & {
+          headerTitle?: string;
+        };
+        expect(dialog.headerTitle).toBe("Edit date window");
+        el.remove();
+      });
+    });
+  });
+
   let el: ReturnType<typeof createElement>;
 
   afterEach(() => el?.remove());

@@ -77,6 +77,16 @@ describe("anomaly-monitor-wizard", () => {
       expect.assertions(1);
       expect(el.shadowRoot!.querySelector("ha-dialog")).not.toBeNull();
     });
+
+    it("THEN sets the create title as the ha-dialog header title", () => {
+      expect.assertions(1);
+      const dialog = el.shadowRoot!.querySelector(
+        "ha-dialog"
+      ) as HTMLElement & {
+        headerTitle?: string;
+      };
+      expect(dialog.headerTitle).toBe("Create Anomaly Monitor");
+    });
   });
 
   // ---------------------------------------------------------------------------

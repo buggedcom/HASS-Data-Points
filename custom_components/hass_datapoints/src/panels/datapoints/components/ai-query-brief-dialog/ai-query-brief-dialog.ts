@@ -74,12 +74,12 @@ export class AiQueryBriefDialog extends LitElement {
     return html`
       <ha-dialog
         ?open=${this.open}
+        .headerTitle=${this.heading}
         hideActions
         .scrimClickAction=${"close"}
         .escapeKeyAction=${"close"}
         @closed=${this._onDialogClosed}
       >
-        <span slot="heading">${this.heading}</span>
         <div class="ai-query-brief-dialog-content">
           <div class="ai-query-brief-dialog-body">
             ${msg(

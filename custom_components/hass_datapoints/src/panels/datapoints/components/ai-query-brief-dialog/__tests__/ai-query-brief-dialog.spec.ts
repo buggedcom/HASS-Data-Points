@@ -39,6 +39,16 @@ describe("ai-query-brief-dialog", () => {
     });
 
     describe("WHEN it renders", () => {
+      it("THEN it passes the heading to ha-dialog as its header title", () => {
+        expect.assertions(1);
+        const dialog = el.shadowRoot!.querySelector(
+          "ha-dialog"
+        ) as HTMLElement & {
+          headerTitle?: string;
+        };
+        expect(dialog.headerTitle).toBe("AI query brief");
+      });
+
       it("THEN it shows the brief text in the textarea", () => {
         expect.assertions(1);
         const textarea = el.shadowRoot!.querySelector("textarea");
