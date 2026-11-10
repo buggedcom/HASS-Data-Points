@@ -7,18 +7,16 @@ import "../date-window-dialog";
  * `date-window-dialog` renders the Add / Edit date window dialog.
  * It wraps `ha-dialog` and provides a form for setting a named date range.
  *
- * The dialog owns its name state and validation: the `name` prop seeds the
- * field on open, start/end values stay parent-controlled, and submit only
- * fires when the inputs are valid (otherwise the dialog shakes and shows an
- * inline error).
+ * A Relative | Fixed dates tab bar sits at the top, Relative first. A
+ * relative window is a preset ("Previous period", "Same period last year", …)
+ * resolved against the selected range; a fixed window pins exact dates. The
+ * name is optional and defaults to the preset label or the dates. Create is
+ * disabled while the fixed range is invalid.
  *
  * @fires dp-window-close - `{}` fired when Cancel is clicked or the dialog is dismissed
- * In relative mode the window is a preset ("Previous period", "Same period
- * last year", …) resolved against the selected range instead of fixed dates.
- *
  * @fires dp-window-submit - `{ kind: "fixed", name, start, end }` or `{ kind: "relative", name, preset }`, fired only on a valid submit
  * @fires dp-window-delete - `{}` fired when the Delete button is clicked
- * @fires dp-window-shortcut - `{ direction: -1 | 1 }` fired when a shortcut button is clicked
+ * @fires dp-window-shortcut - `{ direction: -1 | 1 }` fired when the Previous / Next range fill chip is clicked
  * @fires dp-window-date-change - `{ start: string, end: string }` fired when a date input changes
  */
 export default {
@@ -70,7 +68,7 @@ export default {
     showShortcuts: {
       control: "boolean",
       description:
-        "Whether the 'Use previous/next range' shortcut buttons are shown.",
+        "Whether the 'Fill from' chips are shown on the Fixed dates tab.",
     },
     submitLabel: {
       control: "text",
@@ -89,7 +87,7 @@ export default {
     },
     allowRelative: {
       control: "boolean",
-      description: "Whether the fixed / relative type toggle is offered.",
+      description: "Whether the Relative / Fixed dates tabs are offered.",
     },
   },
   args: {
@@ -128,10 +126,11 @@ export default {
   `,
 };
 
-/** Add mode — empty name field, no delete button, shortcut buttons visible. */
+/** Add mode — opens on the Relative tab with "Previous period". */
 export const AddMode = {
   args: {
     heading: "Add date window",
+    kind: "relative",
     startValue: "2025-01-01T00:00",
     endValue: "2025-01-07T00:00",
     showShortcuts: true,
@@ -139,7 +138,18 @@ export const AddMode = {
   },
 };
 
-/** Edit mode — pre-filled name, delete button shown, no shortcuts. */
+/** Add mode on the Fixed dates tab — start/end, length and fill chips. */
+export const AddModeFixed = {
+  args: {
+    heading: "Add date window",
+    startValue: "2026-10-27T00:00",
+    endValue: "2026-11-03T00:00",
+    showShortcuts: true,
+    submitLabel: "Create date window",
+  },
+};
+
+/** Edit mode — pre-filled name, delete button shown, no fill chips. */
 export const EditMode = {
   args: {
     heading: "Edit date window",
@@ -186,14 +196,14 @@ export const EmitsSubmit = {
 };
 
 /**
- * Invalid submit — clicking Create with an empty name does not emit
- * dp-window-submit; the dialog shakes and shows an inline error instead.
+ * Invalid range — the end is before the start, so Create is disabled, an
+ * inline error is shown and clicking Create does not emit dp-window-submit.
  */
-export const InvalidSubmitShowsError = {
+export const InvalidRangeShowsError = {
   args: {
     name: "",
-    startValue: "2025-01-01T00:00",
-    endValue: "2025-01-07T00:00",
+    startValue: "2025-01-07T00:00",
+    endValue: "2025-01-01T00:00",
     submitLabel: "Create date window",
   },
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
@@ -202,12 +212,13 @@ export const InvalidSubmitShowsError = {
     ) as HTMLElement;
     const handler = fn();
     host.addEventListener("dp-window-submit", handler);
-    const canvas = within(host.shadowRoot as unknown as HTMLElement);
-    await userEvent.click(canvas.getByText("Create date window"));
-    await expect(handler).not.toHaveBeenCalled();
     await expect(
       host.shadowRoot!.querySelector(".date-window-dialog-error")
     ).not.toBeNull();
+    host
+      .shadowRoot!.querySelector<HTMLElement>(".date-window-dialog-submit")!
+      .click();
+    await expect(handler).not.toHaveBeenCalled();
   },
 };
 
@@ -250,7 +261,7 @@ export const RelativeMode = {
     const handler = fn();
     host.addEventListener("dp-window-submit", handler);
     const canvas = within(host.shadowRoot as unknown as HTMLElement);
-    await expect(canvas.getByText(/Currently/)).toBeTruthy();
+    await expect(canvas.getByText("This window")).toBeTruthy();
     await userEvent.click(canvas.getByText("Save date window"));
     await expect(handler).toHaveBeenCalledOnce();
     await expect((handler.mock.calls[0][0] as CustomEvent).detail).toEqual({
@@ -264,7 +275,6 @@ export const RelativeMode = {
 /** Relative, unavailable preset — "Next period" while the chart ends now. */
 export const RelativeUnavailablePreset = {
   args: {
-    name: "Next period",
     kind: "relative",
     preset: "next_period",
   },
@@ -274,6 +284,7 @@ export const RelativeUnavailablePreset = {
     ) as HTMLElement;
     await expect(
       host.shadowRoot!.querySelector(".date-window-dialog-preview-note")
-    ).not.toBeNull();
+        ?.textContent
+    ).toContain("No data yet");
   },
 };

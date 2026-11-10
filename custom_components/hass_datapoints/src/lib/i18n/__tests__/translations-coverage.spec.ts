@@ -65,6 +65,7 @@ const UNTRANSLATED_WHITELIST = new Set<string>([
   "Name", // German "Name"
   "Start", // German "Start"
   "Minute", // German "Minute" / French "Minute"
+  "(optional)", // German "(optional)"
 
   // French: time expressions that are identical in French
   "1 minute",
@@ -74,6 +75,7 @@ const UNTRANSLATED_WHITELIST = new Set<string>([
   "15 minutes",
   "30 minutes",
   "Message", // French "message"
+  "Relative", // French "Relative" (une fenêtre relative)
 
   // Spanish
   "General", // Spanish "General"

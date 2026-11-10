@@ -9,63 +9,99 @@ export const styles = css`
   }
 
   /* --------------------------------------------------------------------------
-   * Layout — the dialog reads as a stack of distinct, well-spaced sections:
-   * intro blurb · name · date-range group (start/end) · shortcuts ·
+   * Layout: type tabs · one-line hint · that type's fields · optional name ·
    * actions. Each section owns its own vertical rhythm via the content grid.
    * ------------------------------------------------------------------------ */
   .date-window-dialog-content {
     display: grid;
     gap: var(--dp-spacing-lg);
-    padding: var(--dp-spacing-sm) 0 0;
+    padding: 0;
     overflow: visible;
   }
 
-  .date-window-dialog-body {
-    color: var(--secondary-text-color);
-    line-height: 1.45;
-  }
-
-  .date-window-dialog-field {
+  .date-window-dialog-panel {
     display: grid;
-    gap: var(--dp-spacing-xs);
-    overflow: visible;
+    gap: var(--dp-spacing-lg);
   }
 
-  .date-window-dialog-field.name-field {
-    max-width: 360px;
+  /* Type tabs (Relative first). */
+  .date-window-dialog-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
   }
 
-  .date-window-dialog-field label {
-    font-size: 0.9rem;
-    font-weight: 600;
+  .date-window-dialog-tab {
+    flex: 1 1 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--dp-spacing-sm);
+    padding: 14px 8px 12px;
+    border: none;
+    background: none;
+    color: var(--secondary-text-color);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .date-window-dialog-tab ha-icon {
+    --mdc-icon-size: 18px;
+  }
+
+  .date-window-dialog-tab:hover {
     color: var(--primary-text-color);
-  }
-
-  .date-window-dialog-field input {
-    width: 100%;
-  }
-
-  /* The "date range" group binds the start/end inputs into one unit,
-   * set off from the rest of the form with a subtle surface + border. */
-  .date-range-group {
-    gap: var(--dp-spacing-md);
-    padding: var(--dp-spacing-md);
-    border: 1px solid
-      color-mix(
-        in srgb,
-        var(--divider-color, rgba(0, 0, 0, 0.12)) 80%,
-        transparent
-      );
-    border-radius: 14px;
     background: color-mix(
       in srgb,
-      var(--secondary-background-color, #f5f5f5) 45%,
+      var(--primary-text-color, #212121) 4%,
       transparent
     );
   }
 
-  .date-range-group > label {
-    font-size: 0.95rem;
+  .date-window-dialog-tab[aria-selected="true"] {
+    color: var(--primary-color, #03a9f4);
+  }
+
+  .date-window-dialog-tab[aria-selected="true"]::after {
+    content: "";
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: -1px;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: var(--primary-color, #03a9f4);
+  }
+
+  .date-window-dialog-tab:focus-visible,
+  .date-window-dialog-chip:focus-visible {
+    outline: 2px solid var(--primary-color, #03a9f4);
+    outline-offset: 2px;
+  }
+
+  .date-window-dialog-hint {
+    margin: 0;
+    color: var(--secondary-text-color);
+    line-height: 1.5;
+  }
+
+  .date-window-dialog-field {
+    display: grid;
+    gap: 6px;
+    overflow: visible;
+  }
+
+  .date-window-dialog-field label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--secondary-text-color);
+  }
+
+  .date-window-dialog-optional {
+    font-weight: 400;
+    opacity: 0.8;
   }
 
   .date-window-dialog-dates {
@@ -77,82 +113,131 @@ export const styles = css`
   .date-window-dialog-input {
     width: 100%;
     min-height: 44px;
-    padding: 0 12px;
-    border: 1px solid
-      color-mix(
-        in srgb,
-        var(--divider-color, rgba(0, 0, 0, 0.12)) 92%,
-        transparent
-      );
-    border-radius: 12px;
-    background: var(--card-background-color, #fff);
+    padding: 0 14px;
+    border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
+    border-radius: 10px;
+    background: var(--secondary-background-color, #f5f5f5);
     color: var(--primary-text-color);
     font: inherit;
     box-sizing: border-box;
   }
 
   .date-window-dialog-input:focus {
-    outline: 2px solid
-      color-mix(in srgb, var(--primary-color, #03a9f4) 36%, transparent);
-    outline-offset: 1px;
-    border-color: color-mix(
-      in srgb,
-      var(--primary-color, #03a9f4) 55%,
-      transparent
-    );
+    outline: 2px solid var(--primary-color, #03a9f4);
+    outline-offset: -1px;
+    border-color: transparent;
   }
 
   .date-window-dialog-input[aria-invalid="true"] {
-    border-color: color-mix(
+    border-color: var(--error-color, #db4437);
+  }
+
+  .date-window-dialog-length {
+    margin: calc(var(--dp-spacing-sm) * -1) 0 0;
+    font-size: 0.8125rem;
+    color: var(--secondary-text-color);
+  }
+
+  .date-window-dialog-error {
+    color: var(--error-color, #db4437);
+  }
+
+  /* "Fill from" chips (fixed dates only). */
+  .date-window-dialog-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--dp-spacing-sm);
+  }
+
+  .date-window-dialog-chips-label {
+    margin-right: 4px;
+    font-size: 0.8125rem;
+    color: var(--secondary-text-color);
+  }
+
+  .date-window-dialog-chip {
+    padding: 7px 14px;
+    border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
+    border-radius: 999px;
+    background: transparent;
+    color: var(--primary-text-color);
+    font: inherit;
+    font-size: 0.8125rem;
+    cursor: pointer;
+  }
+
+  .date-window-dialog-chip:hover {
+    background: var(--secondary-background-color, #f5f5f5);
+  }
+
+  /* Relative preview: selected range vs this window, plus a position strip. */
+  .date-window-dialog-preview {
+    display: grid;
+    gap: 10px;
+    padding: 14px 16px;
+    border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
+    border-radius: 14px;
+    background: var(--secondary-background-color, #f5f5f5);
+  }
+
+  .date-window-dialog-preview-row {
+    display: grid;
+    grid-template-columns: 12px 110px minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+  }
+
+  .date-window-dialog-preview-row .swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+  }
+
+  .date-window-dialog-preview-row .key {
+    color: var(--secondary-text-color);
+  }
+
+  .date-window-dialog-preview-row .value {
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .is-selected {
+    background: var(--primary-color, #03a9f4);
+  }
+
+  .is-window {
+    background: var(--warning-color, #f5a54a);
+  }
+
+  .date-window-dialog-strip {
+    position: relative;
+    height: 10px;
+    margin-top: 4px;
+    border-radius: 5px;
+    background: color-mix(
       in srgb,
-      var(--error-color, #db4437) 70%,
+      var(--primary-text-color, #212121) 10%,
       transparent
     );
   }
 
-  /* Inline validation messages, keyed to the offending field. */
-  /* Type toggle (fixed dates / relative to selected range). */
-  .date-window-dialog-label {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--primary-text-color);
+  .date-window-dialog-strip span {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-radius: 5px;
   }
 
-  /* Relative mode: live preview of the resolved dates + a short hint. */
-  .date-window-dialog-preview {
-    margin: 0;
-    color: var(--primary-text-color);
-    line-height: 1.45;
+  .date-window-dialog-strip .is-window {
+    opacity: 0.9;
   }
 
   .date-window-dialog-preview-note {
-    display: block;
-    color: var(--secondary-text-color);
-    font-size: 0.85rem;
-  }
-
-  .date-window-dialog-hint {
     margin: 0;
+    font-size: 0.8125rem;
     color: var(--secondary-text-color);
-    font-size: 0.85rem;
-    line-height: 1.45;
-  }
-
-  select.date-window-dialog-input {
-    max-width: 360px;
-  }
-
-  .date-window-dialog-error {
-    margin: 0;
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--error-color, #db4437);
-  }
-
-  .date-window-dialog-shortcuts {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--dp-spacing-sm);
   }
 
   /* --------------------------------------------------------------------------
@@ -222,8 +307,17 @@ export const styles = css`
   }
 
   @media (max-width: 720px) {
-    .date-window-dialog-content {
+    .date-window-dialog-content,
+    .date-window-dialog-panel {
       gap: var(--dp-spacing-md);
+    }
+
+    .date-window-dialog-preview-row {
+      grid-template-columns: 12px minmax(0, 1fr);
+    }
+
+    .date-window-dialog-preview-row .value {
+      grid-column: 2;
     }
 
     .date-window-dialog-dates {
