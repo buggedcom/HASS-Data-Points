@@ -259,9 +259,9 @@ export const MultiEntityScheduleStep = {
 
     const root = wizard.shadowRoot!;
     expect(root.querySelectorAll(".radio-card")).toHaveLength(2);
-    expect(root.querySelector("ha-textfield")?.getAttribute("label")).toBe(
-      "Name prefix"
-    );
+    expect(
+      root.querySelector('label[for="monitor-name"]')?.textContent?.trim()
+    ).toBe("Name prefix");
     expect(root.querySelector(".summary-row")?.textContent).toContain(
       "Will create 2 monitors"
     );

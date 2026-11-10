@@ -42,6 +42,7 @@ export type DpChangeDetail =
  * not a hardcoded chart default.
  * - `dp-monitors-panel-open-chart`: {@link MonitorsOpenChartDetail}
  * - `dp-monitors-panel-open-entity`: {@link MonitorsOpenEntityDetail}
+ * - `dp-monitors-panel-preview-series`: {@link MonitorsPreviewSeriesDetail}
  */
 
 /** Detail shape for the `dp-monitors-panel-open-chart` event (monitors panel). */
@@ -54,6 +55,15 @@ export interface MonitorsOpenChartDetail {
   anomalyMethods: string[];
   /** The monitor's configured sensitivity. */
   anomalySensitivity: string;
+}
+
+/**
+ * Detail shape for the `dp-monitors-panel-preview-series` event (monitors
+ * panel "View series" button): open a quick chart preview popup.
+ */
+export interface MonitorsPreviewSeriesDetail extends MonitorsOpenChartDetail {
+  /** Dialog heading, typically the monitor's name. */
+  title: string;
 }
 
 /** Detail shape for the `dp-monitors-panel-open-entity` event (monitors panel). */

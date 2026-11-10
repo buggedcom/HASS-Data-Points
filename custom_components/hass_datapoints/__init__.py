@@ -46,6 +46,7 @@ from .const import (
     PANEL_URL_PATH,
     SERVICE_RECORD,
 )
+from .monitor_device_sync import async_setup_monitor_device_name_sync
 from .store import DatapointsStore
 
 _LOGGER = logging.getLogger(__name__)
@@ -174,6 +175,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: DatapointsConfigEntry) -
 
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN]["store"] = store  # also referenced via KEY_STORE = "store"
+
+    # Keep monitor names in step with their HA devices when renamed in HA.
+    entry.async_on_unload(
+        async_setup_monitor_device_name_sync(hass, entry.entry_id, store)
+    )
 
     # Dedicated thread pool for CPU-bound detection and cache I/O.
     # Kept separate from HA's shared executor so detection work never starves
