@@ -2366,7 +2366,10 @@ export class HassDatapointsHistoryPanel extends LitElement {
   ) {
     this._editingDateWindowId = targetWindow?.id || null;
     const isRelative = isRelativeDateWindow(targetWindow);
-    this._dateWindowDialogKind = isRelative ? "relative" : "fixed";
+    // New windows start as relative (the dialog falls back to fixed when
+    // relative windows are not allowed); an edited window keeps its type.
+    this._dateWindowDialogKind =
+      !targetWindow || isRelative ? "relative" : "fixed";
     this._dateWindowDialogPreset = isRelative ? targetWindow.preset : null;
     // A relative window seeds the fixed-mode dates with what it resolves to
     // now, so switching it to fixed in the dialog starts from those dates.

@@ -164,6 +164,9 @@ export class DateWindowDialog extends LitElement {
         this._presetValue = isRelativeDateWindowPreset(this.preset)
           ? this.preset
           : DEFAULT_RELATIVE_DATE_WINDOW_PRESET;
+        if (this._kindValue === "relative") {
+          this._autoFillName();
+        }
       }
       this._wasOpen = this.open;
     }
@@ -539,11 +542,11 @@ export class DateWindowDialog extends LitElement {
                     name="date-window-type"
                     .value=${this._kindValue}
                     .options=${[
-                      { value: "fixed", label: msg("Fixed dates") },
                       {
                         value: "relative",
                         label: msg("Relative to selected range"),
                       },
+                      { value: "fixed", label: msg("Fixed dates") },
                     ]}
                     @dp-change=${this._onKindChange}
                   ></radio-group>
