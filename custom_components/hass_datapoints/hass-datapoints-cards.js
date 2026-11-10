@@ -30999,13 +30999,13 @@
       <ha-dialog
         class=${e({ "dp-shaking": this._shaking })}
         ?open=${this.open}
+        .headerTitle=${this.heading}
         hideActions
         .scrimClickAction=${"close"}
         .escapeKeyAction=${"close"}
         @closed=${this._onDialogClosed}
         @animationend=${this._onShakeEnd}
       >
-        <span slot="heading">${this.heading}</span>
         <div class="date-window-dialog-content">
           <div class="date-window-dialog-body">
             ${msg("A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later.")}
@@ -32706,15 +32706,12 @@
 			return b`
       <ha-dialog
         ?open=${this.open}
+        .headerTitle=${isEdit ? msg("Edit Anomaly Monitor") : msg("Create Anomaly Monitor")}
         hideActions
         .scrimClickAction=${"close"}
         .escapeKeyAction=${"close"}
         @closed=${this._onDialogClosed}
       >
-        <span slot="heading">
-          ${isEdit ? msg("Edit Anomaly Monitor") : msg("Create Anomaly Monitor")}
-        </span>
-
         <div class="wizard-shell">
           <div class="wizard-header">${this._renderStepBar()}</div>
           <div class="wizard-content">
@@ -36767,12 +36764,12 @@
 			return b`
       <ha-dialog
         ?open=${this.open}
+        .headerTitle=${this.heading}
         hideActions
         .scrimClickAction=${"close"}
         .escapeKeyAction=${"close"}
         @closed=${this._onDialogClosed}
       >
-        <span slot="heading">${this.heading}</span>
         <div class="ai-query-brief-dialog-content">
           <div class="ai-query-brief-dialog-body">
             ${msg("This brief is intended for another AI to fetch raw Home Assistant history and hass_datapoints anomaly details. Review it, then copy it into your AI tool of choice.")}
