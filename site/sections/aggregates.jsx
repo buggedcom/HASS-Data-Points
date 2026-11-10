@@ -350,10 +350,15 @@ function AggregateDemo() {
             {AGG_OPS[src.kind].map(([k, l]) => (
               <label
                 key={k}
-                className={"wiz-check" + (sel.includes(k) ? " on" : "")}
+                className={
+                  "wiz-check" +
+                  (multi ? "" : " is-radio") +
+                  (sel.includes(k) ? " on" : "")
+                }
               >
                 <input
-                  type="checkbox"
+                  type={multi ? "checkbox" : "radio"}
+                  name={multi ? undefined : "agg-op-" + srcId}
                   checked={sel.includes(k)}
                   onChange={() => pick(k)}
                 />

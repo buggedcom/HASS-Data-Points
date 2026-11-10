@@ -85,6 +85,7 @@ function App() {
             <a href="#aggregates">Aggregates</a>
             <a href="#monitors">Monitors</a>
             <a href="#playbook">Playbook</a>
+            <a href="#mcp">MCP</a>
             <a href="#install">Install</a>
           </div>
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -125,6 +126,7 @@ function App() {
         <PanelPowerTools />
         <Playbook />
         <Monitors />
+        <McpTools />
         <Install />
       </main>
 
