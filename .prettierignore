@@ -8,3 +8,6 @@ node_modules
 .git
 .claude
 .idea
+
+# Lockfile is written by pnpm (and dependabot) in its own style
+pnpm-lock.yaml
