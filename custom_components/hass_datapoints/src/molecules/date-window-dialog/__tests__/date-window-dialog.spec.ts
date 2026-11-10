@@ -600,6 +600,27 @@ describe("date-window-dialog", () => {
 
     afterEach(() => dialog?.remove());
 
+    describe("WHEN a new window is opened as relative", () => {
+      beforeEach(async () => {
+        dialog = createElement({ ...VALID_RANGE, ...RANGE, kind: "relative" });
+        await dialog.updateComplete;
+      });
+
+      it("THEN relative is the first type option and is selected", () => {
+        expect.assertions(2);
+        const group = dialog.shadowRoot!.querySelector("radio-group") as
+          | (HTMLElement & { options: Array<{ value: string }>; value: string })
+          | null;
+        expect(group!.options[0].value).toBe("relative");
+        expect(group!.value).toBe("relative");
+      });
+
+      it("THEN the empty name is auto-filled with the default preset label", () => {
+        expect.assertions(1);
+        expect(nameInput(dialog).value).toBe("Previous period");
+      });
+    });
+
     describe("WHEN a new window is switched to relative", () => {
       beforeEach(async () => {
         dialog = createElement({ ...VALID_RANGE, ...RANGE });

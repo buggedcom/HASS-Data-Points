@@ -14,7 +14,7 @@ usePanelFixture();
 describe("GIVEN a mounted panel's date-window dialog", () => {
   describe("WHEN the comparison rail requests a new window and it is cancelled", () => {
     it("THEN opens a prefilled dialog and closes it without adding a tab", async () => {
-      expect.assertions(4);
+      expect.assertions(5);
       const panel = await mountPanel(createHassFixture().hass);
       const chart = control(
         panel.shadowRoot!,
@@ -25,6 +25,7 @@ describe("GIVEN a mounted panel's date-window dialog", () => {
       await settlePanel();
       const dialog = control(panel.shadowRoot!, "date-window-dialog");
       expect(dialog.open).toBe(true);
+      expect(dialog.kind).toBe("relative");
       expect(dialog.startValue).toContain("2025-01-06");
       emitControlEvent(dialog, "dp-window-close");
       await settlePanel();
