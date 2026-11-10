@@ -4,34 +4,31 @@
 
 Renders the Add / Edit "date window" dialog opened from the comparison-tab rail
 (the **+** affordance) and from the anomaly flow. A date window is a named date
-range saved as a comparison tab. The molecule wraps `ha-dialog` and presents the
-name field, a start/end datetime pair (no timeline slider), optional range
-shortcuts, and the action row (Create/Save, Cancel, and Delete when editing).
+range saved as a comparison tab. The molecule wraps `ha-dialog` and presents,
+top to bottom: a **Relative | Fixed dates** tab bar (Relative first), one line
+explaining the chosen type, that type's fields, the optional name, and the
+action row (Create/Save, Cancel, and Delete when editing). There is no timeline
+slider.
 
 ## Ownership model
-
-The dialog owns **two** pieces of state that used to leak to the panel, which
-is what collapses the feature to a single test seam:
 
 - **Name.** The incoming `name` property is only a _seed_. On the `open`
   false→true transition (`willUpdate`, guarded by `_wasOpen`) it is copied into
   the internal `_nameValue` `@state`; thereafter the user's typed value is
   authoritative. Binding `.value` directly to the reactive `name` prop on every
-  render was the original wipe bug — a parent re-render (e.g. from a date change
-  updating the controlled start/end values) re-applied the stale `name` and
-  erased what the user typed.
-- **Validation.** On submit the dialog validates a non-empty trimmed name and a
-  parseable start strictly before a parseable end. Invalid submits call the
-  internal `shake()` (reusing the `dp-dialog-shake` animation), set `_error`
-  (`"name"` | `"range"`) which renders a localized inline message keyed to the
-  offending field, and do **not** emit `dp-window-submit`. The error clears as
-  soon as the offending field is corrected (name typed, or range made valid via
-  a date input). Only a valid submit emits
-  `dp-window-submit` with `{ name, start, end }`.
-
-Everything else — the draft range and start/end values — stays **controlled by the panel** and is passed down as
-properties. The dialog forwards date edits up via
-`dp-window-date-change` so the panel can keep the draft range in step.
+  render was the original wipe bug. The name is **optional**: left empty, it
+  defaults to `_defaultName` (the preset label, or the fixed dates via
+  `formatDateTimeRange`), shown as the field's placeholder and used on submit.
+  A relative window whose stored name equals its preset label opens with an
+  empty field, so its name keeps following the preset.
+- **Validation.** Only the fixed range is validated: both dates must parse and
+  start must be strictly before end. While it is invalid, Create is disabled,
+  the inputs are `aria-invalid` and "End must be after start." replaces the
+  length line. A forced submit still calls `shake()` and does not emit.
+- **Fixed dates.** `_fixedStart` / `_fixedEnd` mirror the controlled
+  `startValue` / `endValue` and the user's own edits, so validity, the length
+  line and the default name update as they type. The dialog forwards edits via
+  `dp-window-date-change` so the panel keeps its draft range in step.
 
 ## Panel relationship (`panels/datapoints/datapoints.ts`)
 
@@ -58,12 +55,15 @@ open-edge pattern as the name:
   create an anomaly comparison window, because anomalies only use fixed windows.
 - `_presetValue` is seeded from `preset`, defaulting to `previous_period`.
 
-In relative mode the name is auto-filled with the preset label until the user
-types in the field (`_nameEdited`; an existing name counts as typed). The date
-inputs and shortcuts are replaced by a native preset `<select>` and a
-"Currently …" preview, computed from `rangeStart` / `rangeEnd` / `now`.
+The Relative tab shows a native preset `<select>` and a preview of the
+selected range against the window it resolves to (computed from `rangeStart` /
+`rangeEnd` / `now`), a strip showing where the window sits, and the shared
+length. The Fixed dates tab shows start/end, the length, and (when
+`showShortcuts`) "Fill from" chips: Selected range (filled locally from
+`rangeStart` / `rangeEnd`), Previous range and Next range (`dp-window-shortcut`).
 Switching relative → fixed emits `dp-window-date-change` with the resolved
-dates, so the panel's draft range starts there.
+dates, so the panel's draft range starts there. The tabs follow the ARIA tab
+pattern, with arrow keys moving between them.
 
 ## Events
 

@@ -27,6 +27,27 @@ export function formatComparisonLabel(start: Date, end: Date): string {
     : `${fmtYear(start)} – ${fmtYear(end)}`;
 }
 
+/**
+ * Compact, localized "start – end" label that includes times, e.g.
+ * "Nov 9, 11:33 – 20:40" when both fall on the same day, otherwise
+ * "Nov 9, 11:33 – Nov 10, 20:40". The year is added when they differ.
+ */
+export function formatDateTimeRange(start: Date, end: Date): string {
+  const withYear = start.getFullYear() !== end.getFullYear();
+  const day = (d: Date) =>
+    d.toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+      ...(withYear ? { year: "numeric" } : {}),
+    });
+  const time = (d: Date) =>
+    d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+  const sameDay = start.toDateString() === end.toDateString();
+  return sameDay
+    ? `${day(start)}, ${time(start)} – ${time(end)}`
+    : `${day(start)}, ${time(start)} – ${day(end)}, ${time(end)}`;
+}
+
 // ── Shift date window by unit ──────────────────────────────────────────────
 
 export function shiftDateWindowByUnit(

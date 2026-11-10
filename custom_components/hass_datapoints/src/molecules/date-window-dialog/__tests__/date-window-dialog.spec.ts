@@ -109,7 +109,9 @@ describe("date-window-dialog", () => {
         const label = el.shadowRoot!.querySelector(
           'label[for="date-window-name"]'
         );
-        expect(label?.textContent?.trim()).toBe("Name");
+        expect(label?.textContent?.replace(/\s+/g, " ").trim()).toBe(
+          "Name (optional)"
+        );
       });
 
       it("THEN renders the start datetime input", () => {
@@ -146,11 +148,16 @@ describe("date-window-dialog", () => {
         ).toBeNull();
       });
 
-      it("THEN does not render shortcut buttons by default", () => {
+      it("THEN does not render the fill chips by default", () => {
         expect.assertions(1);
         expect(
-          el.shadowRoot!.querySelector(".date-window-dialog-shortcuts")
+          el.shadowRoot!.querySelector(".date-window-dialog-chips")
         ).toBeNull();
+      });
+
+      it("THEN does not render the timeline slider", () => {
+        expect.assertions(1);
+        expect(el.shadowRoot!.querySelector("range-timeline")).toBeNull();
       });
 
       it("THEN does not show an inline error", () => {
@@ -191,10 +198,10 @@ describe("date-window-dialog", () => {
     });
 
     describe("WHEN rendered", () => {
-      it("THEN renders the shortcuts container", () => {
+      it("THEN renders the fill chips", () => {
         expect.assertions(1);
         expect(
-          el.shadowRoot!.querySelector(".date-window-dialog-shortcuts")
+          el.shadowRoot!.querySelector(".date-window-dialog-chips")
         ).not.toBeNull();
       });
     });
@@ -294,10 +301,10 @@ describe("date-window-dialog", () => {
         expect.assertions(2);
         const handler = vi.fn();
         el.addEventListener("dp-window-shortcut", handler);
-        const shortcuts = el.shadowRoot!.querySelector(
-          ".date-window-dialog-shortcuts"
+        const chips = el.shadowRoot!.querySelectorAll<HTMLElement>(
+          ".date-window-dialog-chip"
         );
-        (shortcuts?.querySelectorAll("ha-button")[0] as HTMLElement)?.click();
+        chips[0].click();
         expect(handler).toHaveBeenCalledOnce();
         expect(handler.mock.calls[0][0].detail.direction).toBe(-1);
       });
@@ -308,10 +315,10 @@ describe("date-window-dialog", () => {
         expect.assertions(2);
         const handler = vi.fn();
         el.addEventListener("dp-window-shortcut", handler);
-        const shortcuts = el.shadowRoot!.querySelector(
-          ".date-window-dialog-shortcuts"
+        const chips = el.shadowRoot!.querySelectorAll<HTMLElement>(
+          ".date-window-dialog-chip"
         );
-        (shortcuts?.querySelectorAll("ha-button")[1] as HTMLElement)?.click();
+        chips[1].click();
         expect(handler).toHaveBeenCalledOnce();
         expect(handler.mock.calls[0][0].detail.direction).toBe(1);
       });
@@ -424,7 +431,7 @@ describe("date-window-dialog", () => {
   });
 
   // ---------------------------------------------------------------------------
-  // Invalid submit — empty name
+  // Empty name — the name is optional and defaults to the dates
   // ---------------------------------------------------------------------------
 
   describe("GIVEN a valid range but an empty name", () => {
@@ -433,39 +440,30 @@ describe("date-window-dialog", () => {
       await el.updateComplete;
     });
 
+    describe("WHEN rendered", () => {
+      it("THEN the name placeholder shows the fixed dates", () => {
+        expect.assertions(1);
+        expect(nameInput(el).placeholder).toContain("–");
+      });
+
+      it("THEN the length of the range is shown", () => {
+        expect.assertions(1);
+        expect(
+          el.shadowRoot!.querySelector(".date-window-dialog-length")
+            ?.textContent
+        ).toContain("6d");
+      });
+    });
+
     describe("WHEN the submit button is clicked", () => {
-      it("THEN does not fire dp-window-submit", () => {
+      it("THEN fires dp-window-submit named after the dates", () => {
         expect.assertions(1);
         const handler = vi.fn();
         el.addEventListener("dp-window-submit", handler);
         submitButton(el).click();
-        expect(handler).not.toHaveBeenCalled();
-      });
-
-      it("THEN shows an inline error", async () => {
-        expect.assertions(1);
-        submitButton(el).click();
-        await el.updateComplete;
-        expect(errorRegion(el)).not.toBeNull();
-      });
-
-      it("THEN applies the shake animation class to the dialog", async () => {
-        expect.assertions(1);
-        submitButton(el).click();
-        await el.updateComplete;
-        expect(
-          el.shadowRoot!.querySelector("ha-dialog.dp-shaking")
-        ).not.toBeNull();
-      });
-
-      it("THEN clears the error once a name is typed", async () => {
-        expect.assertions(2);
-        submitButton(el).click();
-        await el.updateComplete;
-        expect(errorRegion(el)).not.toBeNull();
-        typeName(el, "Now named");
-        await el.updateComplete;
-        expect(errorRegion(el)).toBeNull();
+        expect(handler.mock.calls[0][0].detail.name).toBe(
+          nameInput(el).placeholder
+        );
       });
     });
   });
@@ -494,11 +492,18 @@ describe("date-window-dialog", () => {
         expect(handler).not.toHaveBeenCalled();
       });
 
-      it("THEN shows an inline error and shakes", async () => {
+      it("THEN Create is disabled and an inline error is shown", () => {
         expect.assertions(2);
+        expect(submitButton(el).hasAttribute("disabled")).toBe(true);
+        expect(errorRegion(el)?.textContent).toContain(
+          "End must be after start."
+        );
+      });
+
+      it("THEN it shakes", async () => {
+        expect.assertions(1);
         submitButton(el).click();
         await el.updateComplete;
-        expect(errorRegion(el)).not.toBeNull();
         expect(
           el.shadowRoot!.querySelector("ha-dialog.dp-shaking")
         ).not.toBeNull();
@@ -551,16 +556,16 @@ describe("date-window-dialog", () => {
     });
 
     describe("WHEN the name is cleared and Save is clicked", () => {
-      it("THEN Save validates: no submit and an inline error is shown", async () => {
-        expect.assertions(2);
+      it("THEN Save falls back to the dates as the name", async () => {
+        expect.assertions(1);
         typeName(el, "");
         await el.updateComplete;
         const handler = vi.fn();
         el.addEventListener("dp-window-submit", handler);
         submitButton(el).click();
-        await el.updateComplete;
-        expect(handler).not.toHaveBeenCalled();
-        expect(errorRegion(el)).not.toBeNull();
+        expect(handler.mock.calls[0][0].detail.name).toBe(
+          nameInput(el).placeholder
+        );
       });
     });
   });
@@ -576,14 +581,14 @@ describe("date-window-dialog", () => {
     };
     let dialog: ReturnType<typeof createElement>;
 
+    function tab(target: HTMLElement, value: "fixed" | "relative") {
+      return target.shadowRoot!.querySelector<HTMLElement>(
+        `#date-window-tab-${value}`
+      )!;
+    }
+
     function chooseKind(target: HTMLElement, value: "fixed" | "relative") {
-      target.shadowRoot!.querySelector("radio-group")!.dispatchEvent(
-        new CustomEvent("dp-change", {
-          detail: { type: "radio", value },
-          bubbles: true,
-          composed: true,
-        })
-      );
+      tab(target, value).click();
     }
 
     function presetSelect(target: HTMLElement): HTMLSelectElement {
@@ -606,18 +611,26 @@ describe("date-window-dialog", () => {
         await dialog.updateComplete;
       });
 
-      it("THEN relative is the first type option and is selected", () => {
+      it("THEN Relative is the first tab and is selected", () => {
         expect.assertions(2);
-        const group = dialog.shadowRoot!.querySelector("radio-group") as
-          | (HTMLElement & { options: Array<{ value: string }>; value: string })
-          | null;
-        expect(group!.options[0].value).toBe("relative");
-        expect(group!.value).toBe("relative");
+        const tabs = dialog.shadowRoot!.querySelectorAll('[role="tab"]');
+        expect(tabs[0].id).toBe("date-window-tab-relative");
+        expect(tabs[0].getAttribute("aria-selected")).toBe("true");
       });
 
-      it("THEN the empty name is auto-filled with the default preset label", () => {
+      it("THEN the name is empty with the preset label as its placeholder", () => {
+        expect.assertions(2);
+        expect(nameInput(dialog).value).toBe("");
+        expect(nameInput(dialog).placeholder).toBe("Previous period");
+      });
+
+      it("THEN the arrow keys move to the Fixed dates tab", async () => {
         expect.assertions(1);
-        expect(nameInput(dialog).value).toBe("Previous period");
+        tab(dialog, "relative").dispatchEvent(
+          new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true })
+        );
+        await dialog.updateComplete;
+        expect(tab(dialog, "fixed").getAttribute("aria-selected")).toBe("true");
       });
     });
 
@@ -637,24 +650,21 @@ describe("date-window-dialog", () => {
         expect(presetSelect(dialog)).not.toBeNull();
       });
 
-      it("THEN the name is auto-filled with the default preset label", () => {
-        expect.assertions(1);
-        expect(nameInput(dialog).value).toBe("Previous period");
-      });
-
-      it("THEN the preview shows the dates the preset resolves to", () => {
-        expect.assertions(1);
-        expect(
+      it("THEN the preview compares the selected range with this window", () => {
+        expect.assertions(3);
+        const text =
           dialog.shadowRoot!.querySelector(".date-window-dialog-preview")
-            ?.textContent
-        ).toContain("Currently");
+            ?.textContent ?? "";
+        expect(text).toContain("Selected range");
+        expect(text).toContain("This window");
+        expect(text).toContain("Both are 7d long.");
       });
 
-      it("THEN changing the preset updates the untouched name", async () => {
+      it("THEN changing the preset updates the placeholder name", async () => {
         expect.assertions(1);
         choosePreset(dialog, "year_back_1");
         await dialog.updateComplete;
-        expect(nameInput(dialog).value).toBe("Same period last year");
+        expect(nameInput(dialog).placeholder).toBe("Same period last year");
       });
 
       it("THEN submit emits the relative payload", () => {
@@ -696,7 +706,8 @@ describe("date-window-dialog", () => {
         await dialog.updateComplete;
         expect(
           dialog.shadowRoot!.querySelector(".date-window-dialog-preview-note")
-        ).not.toBeNull();
+            ?.textContent
+        ).toContain("No data yet");
       });
     });
 
@@ -737,7 +748,7 @@ describe("date-window-dialog", () => {
     });
 
     describe("WHEN relative windows are not allowed", () => {
-      it("THEN the type toggle is hidden and a relative seed opens as fixed", async () => {
+      it("THEN the type tabs are hidden and a relative seed opens as fixed", async () => {
         expect.assertions(2);
         dialog = createElement({
           ...VALID_RANGE,
@@ -747,7 +758,7 @@ describe("date-window-dialog", () => {
           allowRelative: false,
         });
         await dialog.updateComplete;
-        expect(dialog.shadowRoot!.querySelector("radio-group")).toBeNull();
+        expect(dialog.shadowRoot!.querySelector('[role="tablist"]')).toBeNull();
         expect(
           dialog.shadowRoot!.querySelector("#date-window-start")
         ).not.toBeNull();
@@ -755,20 +766,59 @@ describe("date-window-dialog", () => {
     });
 
     describe("WHEN a relative window is submitted without a name", () => {
-      it("THEN it does not emit and shows the name error", async () => {
-        expect.assertions(2);
+      it("THEN it is named after its preset", async () => {
+        expect.assertions(1);
         dialog = createElement({ ...VALID_RANGE, ...RANGE });
         await dialog.updateComplete;
         chooseKind(dialog, "relative");
         await dialog.updateComplete;
-        typeName(dialog, "  ");
+        choosePreset(dialog, "previous_period_2");
         await dialog.updateComplete;
+        typeName(dialog, "  ");
         const handler = vi.fn();
         dialog.addEventListener("dp-window-submit", handler);
         submitButton(dialog).click();
+        expect(handler.mock.calls[0][0].detail.name).toBe("2 periods back");
+      });
+    });
+
+    describe("WHEN an existing relative window still named after its preset is edited", () => {
+      it("THEN its name follows the preset", async () => {
+        expect.assertions(2);
+        dialog = createElement({
+          ...VALID_RANGE,
+          ...RANGE,
+          name: "Same period last year",
+          kind: "relative",
+          preset: "year_back_1",
+        });
         await dialog.updateComplete;
-        expect(handler).not.toHaveBeenCalled();
-        expect(errorRegion(dialog)).not.toBeNull();
+        expect(nameInput(dialog).value).toBe("");
+        choosePreset(dialog, "year_back_2");
+        await dialog.updateComplete;
+        expect(nameInput(dialog).placeholder).toBe("Same period 2 years ago");
+      });
+    });
+
+    describe("WHEN the Selected range chip is clicked on the Fixed dates tab", () => {
+      it("THEN it fills the dates from the selected range", () => {
+        expect.assertions(1);
+        dialog = createElement({
+          ...VALID_RANGE,
+          ...RANGE,
+          showShortcuts: true,
+        });
+        return dialog.updateComplete.then(() => {
+          const handler = vi.fn();
+          dialog.addEventListener("dp-window-date-change", handler);
+          dialog
+            .shadowRoot!.querySelector<HTMLElement>(".date-window-dialog-chip")!
+            .click();
+          expect(handler.mock.calls[0][0].detail).toEqual({
+            start: "2026-11-03T00:00",
+            end: "2026-11-10T00:00",
+          });
+        });
       });
     });
   });
