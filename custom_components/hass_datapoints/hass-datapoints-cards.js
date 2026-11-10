@@ -1055,23 +1055,23 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/display/feedback-banner/feedback-banner.ts
-	var _kind_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _kind_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _text_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _visible_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	var _variant_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var FeedbackBanner = class extends i$3 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _kind_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _kind_accessor_storage$1, "");
 			_classPrivateFieldInitSpec(this, _text_accessor_storage$2, "");
 			_classPrivateFieldInitSpec(this, _visible_accessor_storage$2, false);
 			_classPrivateFieldInitSpec(this, _variant_accessor_storage$1, "default");
 		}
 		get kind() {
-			return _classPrivateFieldGet2(_kind_accessor_storage, this);
+			return _classPrivateFieldGet2(_kind_accessor_storage$1, this);
 		}
 		set kind(value) {
-			_classPrivateFieldSet2(_kind_accessor_storage, this, value);
+			_classPrivateFieldSet2(_kind_accessor_storage$1, this, value);
 		}
 		get text() {
 			return _classPrivateFieldGet2(_text_accessor_storage$2, this);
@@ -2222,10 +2222,10 @@
 	];
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/i18n/fi.ts
-	var fi_exports$30 = /* @__PURE__ */ __exportAll({ translations: () => translations$179 });
-	var translations$179;
-	var init_fi$30 = __esmMin((() => {
-		translations$179 = {
+	var fi_exports$31 = /* @__PURE__ */ __exportAll({ translations: () => translations$185 });
+	var translations$185;
+	var init_fi$31 = __esmMin((() => {
+		translations$185 = {
 			General: "Yleiset",
 			"Related items": "Liittyvät kohteet",
 			"Datapoint Appearance": "Datapisteen ulkoasu",
@@ -2242,20 +2242,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/i18n/fi.ts
-	var fi_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$178 });
-	var translations$178;
-	var init_fi$29 = __esmMin((() => {
-		translations$178 = {
+	var fi_exports$30 = /* @__PURE__ */ __exportAll({ translations: () => translations$184 });
+	var translations$184;
+	var init_fi$30 = __esmMin((() => {
+		translations$184 = {
 			"Date window:": "Aikaikkuna:",
 			"Actual:": "Todellinen:"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/i18n/fi.ts
-	var fi_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$177 });
-	var translations$177;
-	var init_fi$28 = __esmMin((() => {
-		translations$177 = {
+	var fi_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$183 });
+	var translations$183;
+	var init_fi$29 = __esmMin((() => {
+		translations$183 = {
 			General: "Yleiset",
 			Entity: "Entiteetti",
 			"Multiple entities": "Useita entiteettejä",
@@ -2272,10 +2272,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/i18n/fi.ts
-	var fi_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$176 });
-	var translations$176;
-	var init_fi$27 = __esmMin((() => {
-		translations$176 = {
+	var fi_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$182 });
+	var translations$182;
+	var init_fi$28 = __esmMin((() => {
+		translations$182 = {
 			"Search datapoints…": "Hae datapisteitä…",
 			"Delete record": "Poista tietue",
 			Delete: "Poista",
@@ -2293,10 +2293,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/i18n/fi.ts
-	var fi_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$175 });
-	var translations$175;
-	var init_fi$26 = __esmMin((() => {
-		translations$175 = {
+	var fi_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$181 });
+	var translations$181;
+	var init_fi$27 = __esmMin((() => {
+		translations$181 = {
 			General: "Yleiset",
 			"Icon & colour": "Kuvake ja väri",
 			"Related items": "Liittyvät kohteet",
@@ -2314,10 +2314,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/i18n/fi.ts
-	var fi_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$174 });
-	var translations$174;
-	var init_fi$25 = __esmMin((() => {
-		translations$174 = {
+	var fi_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$180 });
+	var translations$180;
+	var init_fi$26 = __esmMin((() => {
+		translations$180 = {
 			Entity: "Entiteetti",
 			Display: "Näyttö",
 			"Records list": "Tietueiden luettelo",
@@ -2337,10 +2337,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/i18n/fi.ts
-	var fi_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$173 });
-	var translations$173;
-	var init_fi$24 = __esmMin((() => {
-		translations$173 = {
+	var fi_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$179 });
+	var translations$179;
+	var init_fi$25 = __esmMin((() => {
+		translations$179 = {
 			"Add datapoint at {0}": "Lisää datapiste klo {0}",
 			Pinned: "Kiinnitetty",
 			"Unpin tooltip": "Irrota työkaluvihje",
@@ -2377,11 +2377,35 @@
 		};
 	}));
 	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/domain/i18n/fi.ts
+	var fi_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$178 });
+	var translations$178;
+	var init_fi$24 = __esmMin((() => {
+		translations$178 = {
+			"Previous period": "Edellinen jakso",
+			"Next period": "Seuraava jakso",
+			"2 periods back": "2 jaksoa taaksepäin",
+			"3 periods back": "3 jaksoa taaksepäin",
+			"2 periods ahead": "2 jaksoa eteenpäin",
+			"3 periods ahead": "3 jaksoa eteenpäin",
+			"Same period last month": "Sama jakso viime kuussa",
+			"Same period 2 months ago": "Sama jakso 2 kuukautta sitten",
+			"Same period 3 months ago": "Sama jakso 3 kuukautta sitten",
+			"Same period next month": "Sama jakso ensi kuussa",
+			"Same period in 2 months": "Sama jakso 2 kuukauden päästä",
+			"Same period in 3 months": "Sama jakso 3 kuukauden päästä",
+			"Same period last year": "Sama jakso viime vuonna",
+			"Same period next year": "Sama jakso ensi vuonna",
+			"Same weekdays last year": "Samat viikonpäivät viime vuonna",
+			"Same period 2 years ago": "Sama jakso 2 vuotta sitten"
+		};
+	}));
+	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/ha/i18n/fi.ts
-	var fi_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$172 });
-	var translations$172;
+	var fi_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$177 });
+	var translations$177;
 	var init_fi$23 = __esmMin((() => {
-		translations$172 = {
+		translations$177 = {
 			"Confirm delete": "Vahvista poisto",
 			"Are you sure you want to delete this item?": "Oletko varma, että haluat poistaa tämän kohteen?",
 			Cancel: "Peruuta",
@@ -2396,10 +2420,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/history-page/i18n/fi.ts
-	var fi_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$171 });
-	var translations$171;
+	var fi_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$176 });
+	var translations$176;
 	var init_fi$22 = __esmMin((() => {
-		translations$171 = {
+		translations$176 = {
 			"entity_id={0}": "entity_id={0}",
 			"device_id={0}": "device_id={0}",
 			"area_id={0}": "area_id={0}",
@@ -2497,20 +2521,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/timeline/i18n/fi.ts
-	var fi_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$170 });
-	var translations$170;
+	var fi_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$175 });
+	var translations$175;
 	var init_fi$21 = __esmMin((() => {
-		translations$170 = {
+		translations$175 = {
 			Wk: "Vk",
 			"Week of": "Viikko"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-aggregate-group/i18n/fi.ts
-	var fi_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$169 });
-	var translations$169;
+	var fi_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$174 });
+	var translations$174;
 	var init_fi$20 = __esmMin((() => {
-		translations$169 = {
+		translations$174 = {
 			"Aggregate series": "Koosteet",
 			"Count changes to a state": "Laske muutokset tilaan",
 			"Count all state changes": "Laske kaikki tilamuutokset",
@@ -2555,10 +2579,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/i18n/fi.ts
-	var fi_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$168 });
-	var translations$168;
+	var fi_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$173 });
+	var translations$173;
 	var init_fi$19 = __esmMin((() => {
-		translations$168 = {
+		translations$173 = {
 			Direction: "Suunta",
 			Both: "Molemmat",
 			Above: "Yläpuolella",
@@ -2606,10 +2630,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-delta-group/i18n/fi.ts
-	var fi_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$167 });
-	var translations$167;
+	var fi_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$172 });
+	var translations$172;
 	var init_fi$18 = __esmMin((() => {
-		translations$167 = {
+		translations$172 = {
 			"Show delta vs selected date window": "Näytä delta vs. valittu aikaikkuna",
 			"Select a date window tab to enable delta analysis.": "Valitse aikaikkuna-välilehti ottaaksesi delta-analyysin käyttöön.",
 			"Show delta in tooltip": "Näytä delta työkaluvihjeessä",
@@ -2618,10 +2642,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/i18n/fi.ts
-	var fi_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$166 });
-	var translations$166;
+	var fi_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$171 });
+	var translations$171;
 	var init_fi$17 = __esmMin((() => {
-		translations$166 = {
+		translations$171 = {
 			"Show rate of change": "Näytä muutosnopeus",
 			"Show rate of change crosshairs": "Näytä muutosnopeuden tähtäin",
 			"Rate window": "Muutosikkuna",
@@ -2633,10 +2657,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-sample-group/i18n/fi.ts
-	var fi_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$165 });
-	var translations$165;
+	var fi_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$170 });
+	var translations$170;
 	var init_fi$16 = __esmMin((() => {
-		translations$165 = {
+		translations$170 = {
 			Downsampling: "Alasnäytteistys",
 			Interval: "Väli",
 			Aggregate: "Kooste",
@@ -2668,20 +2692,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/i18n/fi.ts
-	var fi_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$164 });
-	var translations$164;
+	var fi_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$169 });
+	var translations$169;
 	var init_fi$15 = __esmMin((() => {
-		translations$164 = {
+		translations$169 = {
 			"Show min / max / mean": "Näytä min / max / keskiarvo",
 			"Show range shading": "Näytä aluevarjostus"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/i18n/fi.ts
-	var fi_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$163 });
-	var translations$163;
+	var fi_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$168 });
+	var translations$168;
 	var init_fi$14 = __esmMin((() => {
-		translations$163 = {
+		translations$168 = {
 			"Show threshold analysis": "Näytä kynnysanalyysi",
 			"Shade threshold area": "Varjosta kynnysalue",
 			Threshold: "Kynnys",
@@ -2692,10 +2716,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/i18n/fi.ts
-	var fi_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$162 });
-	var translations$162;
+	var fi_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$167 });
+	var translations$167;
 	var init_fi$13 = __esmMin((() => {
-		translations$162 = {
+		translations$167 = {
 			"Show trend lines": "Näytä trendiviivat",
 			"Show trend crosshairs": "Näytä trenditähtäin",
 			"Trend method": "Trendimenetelmä",
@@ -2713,10 +2737,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/i18n/fi.ts
-	var fi_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$161 });
-	var translations$161;
+	var fi_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$166 });
+	var translations$166;
 	var init_fi$12 = __esmMin((() => {
-		translations$161 = {
+		translations$166 = {
 			"Add all series from chart": "Lisää kaikki sarjat kaaviosta",
 			"Add from current chart": "Lisää nykyisestä kaaviosta",
 			"Create anomaly monitor": "Luo poikkeamamonitori",
@@ -2726,37 +2750,50 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab-rail/i18n/fi.ts
-	var fi_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$160 });
-	var translations$160;
+	var fi_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$165 });
+	var translations$165;
 	var init_fi$11 = __esmMin((() => {
-		translations$160 = { "Add date window": "Lisää aikaikkuna" };
+		translations$165 = {
+			"Add date window": "Lisää aikaikkuna",
+			"No data yet for this period": "Tälle jaksolle ei ole vielä tietoja"
+		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/i18n/fi.ts
-	var fi_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$159 });
-	var translations$159;
+	var fi_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$164 });
+	var translations$164;
 	var init_fi$10 = __esmMin((() => {
-		translations$159 = {
-			"A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later.": "Aikaikkuna tallentaa nimetyn päivävälin välilehteksi, jotta voit nopeasti esikatsella sitä suhteessa valittuun alueeseen tai palata kaavion kyseiseen ajanjaksoon.",
+		translations$164 = {
 			Name: "Nimi",
-			"e.g. Heating season start": "esim. Lämmityskausi alkaa",
-			"Date range": "Päiväväli",
 			Start: "Alku",
 			End: "Loppu",
-			"Use previous range": "Käytä edellistä aluetta",
-			"Use next range": "Käytä seuraavaa aluetta",
 			"Delete date window": "Poista aikaikkuna",
-			"Enter a name for this date window.": "Anna tälle aikaikkunalle nimi.",
-			"The start date must be before the end date.": "Alkupäivän on oltava ennen loppupäivää.",
-			Cancel: "Peruuta"
+			Cancel: "Peruuta",
+			"Fixed dates": "Kiinteät päivät",
+			Period: "Jakso",
+			"No data yet for this period while the chart is up to date.": "Tälle jaksolle ei ole vielä tietoja, kun kaavio on ajan tasalla.",
+			Relative: "Suhteellinen",
+			"Date window type": "Aikaikkunan tyyppi",
+			"Pins an exact start and end. The window stays put when the chart moves.": "Kiinnittää tarkan alun ja lopun. Ikkuna pysyy paikallaan, kun kaaviota siirretään.",
+			"Length {0}": "Pituus {0}",
+			"End must be after start.": "Lopun on oltava alun jälkeen.",
+			"Fill from": "Täytä",
+			"Selected range": "Valittu alue",
+			"Previous range": "Edellinen alue",
+			"Next range": "Seuraava alue",
+			"Follows the selected range. When you move the chart, this window moves with it and keeps the same length.": "Seuraa valittua aluetta. Kun siirrät kaaviota, tämä ikkuna siirtyy mukana ja pysyy yhtä pitkänä.",
+			"This window": "Tämä ikkuna",
+			"Both are {0} long.": "Molemmat ovat {0} pitkiä.",
+			"(optional)": "(valinnainen)",
+			"Custom range": "Mukautettu alue"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/i18n/fi.ts
-	var fi_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$158 });
-	var translations$158;
+	var fi_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$163 });
+	var translations$163;
 	var init_fi$9 = __esmMin((() => {
-		translations$158 = {
+		translations$163 = {
 			Datapoints: "Datapisteet",
 			"Choose which annotation datapoints appear on the chart.": "Valitse, mitkä huomautusten datapisteet näkyvät kaaviossa.",
 			"Linked to selected targets": "Linkitetty valittuihin kohteisiin",
@@ -2766,10 +2803,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/i18n/fi.ts
-	var fi_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$157 });
-	var translations$157;
+	var fi_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$162 });
+	var translations$162;
 	var init_fi$8 = __esmMin((() => {
-		translations$157 = {
+		translations$162 = {
 			"Analysis configured": "Analyysi määritetty",
 			"Configure analysis": "Määritä analyysi",
 			"Stepped series": "Porrastettu sarja",
@@ -2781,17 +2818,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/i18n/fi.ts
-	var fi_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$156 });
-	var translations$156;
+	var fi_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$161 });
+	var translations$161;
 	var init_fi$7 = __esmMin((() => {
-		translations$156 = {};
+		translations$161 = {};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/ai-query-brief-dialog/i18n/fi.ts
-	var fi_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$155 });
-	var translations$155;
+	var fi_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$160 });
+	var translations$160;
 	var init_fi$6 = __esmMin((() => {
-		translations$155 = {
+		translations$160 = {
 			"AI query brief": "AI-kyselytiivistelma",
 			"This brief is intended for another AI to fetch raw Home Assistant history and hass_datapoints anomaly details. Review it, then copy it into your AI tool of choice.": "Tama tiivistelma on tarkoitettu toiselle AI:lle Home Assistantin raakadat historian ja hass_datapointsin poikkeamien lisatietojen hakemista varten. Tarkista se ja kopioi sitten haluamaasi AI-tyokaluun.",
 			"Copy-ready brief": "Kopiointivalmis tiivistelma",
@@ -2803,10 +2840,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/history-targets/i18n/fi.ts
-	var fi_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$154 });
-	var translations$154;
+	var fi_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$159 });
+	var translations$159;
 	var init_fi$5 = __esmMin((() => {
-		translations$154 = {
+		translations$159 = {
 			Targets: "Kohteet",
 			"Each row controls one chart series.": "Jokainen rivi ohjaa yhtä kaaviosarjaa.",
 			"Add target": "Lisää kohde",
@@ -2815,10 +2852,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/panel-shell/i18n/fi.ts
-	var fi_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$153 });
-	var translations$153;
+	var fi_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$158 });
+	var translations$158;
 	var init_fi$4 = __esmMin((() => {
-		translations$153 = {
+		translations$158 = {
 			"Loading Datapoints…": "Ladataan Datapoints…",
 			Datapoints: "Datapoints",
 			"Page options": "Sivun asetukset",
@@ -2833,10 +2870,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/range-toolbar/i18n/fi.ts
-	var fi_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$152 });
-	var translations$152;
+	var fi_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$157 });
+	var translations$157;
 	var init_fi$3 = __esmMin((() => {
-		translations$152 = {
+		translations$157 = {
 			"Toggle sidebar": "Vaihda sivupalkki",
 			Start: "Alku",
 			End: "Loppu",
@@ -2861,26 +2898,27 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/series-preview-dialog/i18n/fi.ts
-	var fi_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$151 });
-	var translations$151;
+	var fi_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$156 });
+	var translations$156;
 	var init_fi$2 = __esmMin((() => {
-		translations$151 = {
+		translations$156 = {
 			Close: "Sulje",
 			"Open in chart": "Avaa kaaviossa"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/i18n/fi.ts
-	var fi_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$150 });
-	var translations$150;
+	var fi_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$155 });
+	var translations$155;
 	var init_fi$1 = __esmMin((() => {
-		translations$150 = { "Selected range": "Valittu aikaväli" };
+		translations$155 = { "Selected range": "Valittu aikaväli" };
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/i18n/locales/fi.ts
 	var fi_exports = /* @__PURE__ */ __exportAll({ templates: () => templates$5 });
 	var modules$5, merged$5, templates$5;
 	var init_fi = __esmMin((() => {
+		init_fi$31();
 		init_fi$30();
 		init_fi$29();
 		init_fi$28();
@@ -2912,13 +2950,14 @@
 		init_fi$2();
 		init_fi$1();
 		modules$5 = /* #__PURE__ */ Object.assign({
-			"../../../cards/action/i18n/fi.ts": fi_exports$30,
-			"../../../cards/history/history-chart/i18n/fi.ts": fi_exports$29,
-			"../../../cards/history/i18n/fi.ts": fi_exports$28,
-			"../../../cards/list/i18n/fi.ts": fi_exports$27,
-			"../../../cards/quick/i18n/fi.ts": fi_exports$26,
-			"../../../cards/sensor/i18n/fi.ts": fi_exports$25,
-			"../../chart/i18n/fi.ts": fi_exports$24,
+			"../../../cards/action/i18n/fi.ts": fi_exports$31,
+			"../../../cards/history/history-chart/i18n/fi.ts": fi_exports$30,
+			"../../../cards/history/i18n/fi.ts": fi_exports$29,
+			"../../../cards/list/i18n/fi.ts": fi_exports$28,
+			"../../../cards/quick/i18n/fi.ts": fi_exports$27,
+			"../../../cards/sensor/i18n/fi.ts": fi_exports$26,
+			"../../chart/i18n/fi.ts": fi_exports$25,
+			"../../domain/i18n/fi.ts": fi_exports$24,
 			"../../ha/i18n/fi.ts": fi_exports$23,
 			"../../history-page/i18n/fi.ts": fi_exports$22,
 			"../../timeline/i18n/fi.ts": fi_exports$21,
@@ -2949,10 +2988,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/i18n/fr.ts
-	var fr_exports$30 = /* @__PURE__ */ __exportAll({ translations: () => translations$149 });
-	var translations$149;
-	var init_fr$30 = __esmMin((() => {
-		translations$149 = {
+	var fr_exports$31 = /* @__PURE__ */ __exportAll({ translations: () => translations$154 });
+	var translations$154;
+	var init_fr$31 = __esmMin((() => {
+		translations$154 = {
 			General: "Général",
 			"Related items": "Éléments liés",
 			"Datapoint Appearance": "Apparence du point de données",
@@ -2969,20 +3008,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/i18n/fr.ts
-	var fr_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$148 });
-	var translations$148;
-	var init_fr$29 = __esmMin((() => {
-		translations$148 = {
+	var fr_exports$30 = /* @__PURE__ */ __exportAll({ translations: () => translations$153 });
+	var translations$153;
+	var init_fr$30 = __esmMin((() => {
+		translations$153 = {
 			"Date window:": "Fenêtre de dates :",
 			"Actual:": "Réel :"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/i18n/fr.ts
-	var fr_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$147 });
-	var translations$147;
-	var init_fr$28 = __esmMin((() => {
-		translations$147 = {
+	var fr_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$152 });
+	var translations$152;
+	var init_fr$29 = __esmMin((() => {
+		translations$152 = {
 			General: "Général",
 			Entity: "Entité",
 			"Multiple entities": "Plusieurs entités",
@@ -2999,10 +3038,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/i18n/fr.ts
-	var fr_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$146 });
-	var translations$146;
-	var init_fr$27 = __esmMin((() => {
-		translations$146 = {
+	var fr_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$151 });
+	var translations$151;
+	var init_fr$28 = __esmMin((() => {
+		translations$151 = {
 			"Search datapoints…": "Rechercher des points de données…",
 			"Delete record": "Supprimer l’enregistrement",
 			Delete: "Supprimer",
@@ -3020,10 +3059,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/i18n/fr.ts
-	var fr_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$145 });
-	var translations$145;
-	var init_fr$26 = __esmMin((() => {
-		translations$145 = {
+	var fr_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$150 });
+	var translations$150;
+	var init_fr$27 = __esmMin((() => {
+		translations$150 = {
 			General: "Général",
 			"Icon & colour": "Icône et couleur",
 			"Related items": "Éléments liés",
@@ -3041,10 +3080,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/i18n/fr.ts
-	var fr_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$144 });
-	var translations$144;
-	var init_fr$25 = __esmMin((() => {
-		translations$144 = {
+	var fr_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$149 });
+	var translations$149;
+	var init_fr$26 = __esmMin((() => {
+		translations$149 = {
 			Entity: "Entité",
 			Display: "Affichage",
 			"Records list": "Liste des enregistrements",
@@ -3064,10 +3103,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/i18n/fr.ts
-	var fr_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$143 });
-	var translations$143;
-	var init_fr$24 = __esmMin((() => {
-		translations$143 = {
+	var fr_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$148 });
+	var translations$148;
+	var init_fr$25 = __esmMin((() => {
+		translations$148 = {
 			"Add datapoint at {0}": "Ajouter un point de données à {0}",
 			Pinned: "Épinglé",
 			"Unpin tooltip": "Désépingler l’info-bulle",
@@ -3104,11 +3143,35 @@
 		};
 	}));
 	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/domain/i18n/fr.ts
+	var fr_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$147 });
+	var translations$147;
+	var init_fr$24 = __esmMin((() => {
+		translations$147 = {
+			"Previous period": "Période précédente",
+			"Next period": "Période suivante",
+			"2 periods back": "2 périodes avant",
+			"3 periods back": "3 périodes avant",
+			"2 periods ahead": "2 périodes après",
+			"3 periods ahead": "3 périodes après",
+			"Same period last month": "Même période le mois dernier",
+			"Same period 2 months ago": "Même période il y a 2 mois",
+			"Same period 3 months ago": "Même période il y a 3 mois",
+			"Same period next month": "Même période le mois prochain",
+			"Same period in 2 months": "Même période dans 2 mois",
+			"Same period in 3 months": "Même période dans 3 mois",
+			"Same period last year": "Même période l’année dernière",
+			"Same period next year": "Même période l’année prochaine",
+			"Same weekdays last year": "Mêmes jours de la semaine l’année dernière",
+			"Same period 2 years ago": "Même période il y a 2 ans"
+		};
+	}));
+	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/ha/i18n/fr.ts
-	var fr_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$142 });
-	var translations$142;
+	var fr_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$146 });
+	var translations$146;
 	var init_fr$23 = __esmMin((() => {
-		translations$142 = {
+		translations$146 = {
 			"Confirm delete": "Confirmer la suppression",
 			"Are you sure you want to delete this item?": "Voulez-vous vraiment supprimer cet élément ?",
 			Cancel: "Annuler",
@@ -3123,10 +3186,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/history-page/i18n/fr.ts
-	var fr_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$141 });
-	var translations$141;
+	var fr_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$145 });
+	var translations$145;
 	var init_fr$22 = __esmMin((() => {
-		translations$141 = {
+		translations$145 = {
 			"entity_id={0}": "entity_id={0}",
 			"device_id={0}": "device_id={0}",
 			"area_id={0}": "area_id={0}",
@@ -3224,20 +3287,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/timeline/i18n/fr.ts
-	var fr_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$140 });
-	var translations$140;
+	var fr_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$144 });
+	var translations$144;
 	var init_fr$21 = __esmMin((() => {
-		translations$140 = {
+		translations$144 = {
 			Wk: "Sem.",
 			"Week of": "Semaine du"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-aggregate-group/i18n/fr.ts
-	var fr_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$139 });
-	var translations$139;
+	var fr_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$143 });
+	var translations$143;
 	var init_fr$20 = __esmMin((() => {
-		translations$139 = {
+		translations$143 = {
 			"Aggregate series": "Séries agrégées",
 			"Count changes to a state": "Compter les passages à un état",
 			"Count all state changes": "Compter tous les changements d'état",
@@ -3282,10 +3345,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/i18n/fr.ts
-	var fr_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$138 });
-	var translations$138;
+	var fr_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$142 });
+	var translations$142;
 	var init_fr$19 = __esmMin((() => {
-		translations$138 = {
+		translations$142 = {
 			Direction: "Sens",
 			Both: "Les deux",
 			Above: "Au-dessus",
@@ -3333,10 +3396,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-delta-group/i18n/fr.ts
-	var fr_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$137 });
-	var translations$137;
+	var fr_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$141 });
+	var translations$141;
 	var init_fr$18 = __esmMin((() => {
-		translations$137 = {
+		translations$141 = {
 			"Show delta vs selected date window": "Afficher le delta par rapport à la fenêtre de dates sélectionnée",
 			"Select a date window tab to enable delta analysis.": "Sélectionnez un onglet de fenêtre de dates pour activer l’analyse delta.",
 			"Show delta in tooltip": "Afficher le delta dans l’infobulle",
@@ -3345,10 +3408,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/i18n/fr.ts
-	var fr_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$136 });
-	var translations$136;
+	var fr_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$140 });
+	var translations$140;
 	var init_fr$17 = __esmMin((() => {
-		translations$136 = {
+		translations$140 = {
 			"Show rate of change": "Afficher le taux de variation",
 			"Show rate of change crosshairs": "Afficher les repères du taux de variation",
 			"Rate window": "Fenêtre de variation",
@@ -3360,10 +3423,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-sample-group/i18n/fr.ts
-	var fr_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$135 });
-	var translations$135;
+	var fr_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$139 });
+	var translations$139;
 	var init_fr$16 = __esmMin((() => {
-		translations$135 = {
+		translations$139 = {
 			Downsampling: "Rééchantillonnage",
 			Interval: "Intervalle",
 			Aggregate: "Agrégat",
@@ -3395,20 +3458,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/i18n/fr.ts
-	var fr_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$134 });
-	var translations$134;
+	var fr_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$138 });
+	var translations$138;
 	var init_fr$15 = __esmMin((() => {
-		translations$134 = {
+		translations$138 = {
 			"Show min / max / mean": "Afficher min / max / moyenne",
 			"Show range shading": "Afficher l’ombrage de la plage"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/i18n/fr.ts
-	var fr_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$133 });
-	var translations$133;
+	var fr_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$137 });
+	var translations$137;
 	var init_fr$14 = __esmMin((() => {
-		translations$133 = {
+		translations$137 = {
 			"Show threshold analysis": "Afficher l’analyse de seuil",
 			"Shade threshold area": "Ombrer la zone du seuil",
 			Threshold: "Seuil",
@@ -3419,10 +3482,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/i18n/fr.ts
-	var fr_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$132 });
-	var translations$132;
+	var fr_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$136 });
+	var translations$136;
 	var init_fr$13 = __esmMin((() => {
-		translations$132 = {
+		translations$136 = {
 			"Show trend lines": "Afficher les lignes de tendance",
 			"Show trend crosshairs": "Afficher les repères de tendance",
 			"Trend method": "Méthode de tendance",
@@ -3440,10 +3503,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/i18n/fr.ts
-	var fr_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$131 });
-	var translations$131;
+	var fr_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$135 });
+	var translations$135;
 	var init_fr$12 = __esmMin((() => {
-		translations$131 = {
+		translations$135 = {
 			"Add all series from chart": "Ajouter toutes les séries du graphique",
 			"Add from current chart": "Ajouter depuis le graphique actuel",
 			"Create anomaly monitor": "Créer un moniteur d'anomalies",
@@ -3453,37 +3516,50 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab-rail/i18n/fr.ts
-	var fr_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$130 });
-	var translations$130;
+	var fr_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$134 });
+	var translations$134;
 	var init_fr$11 = __esmMin((() => {
-		translations$130 = { "Add date window": "Ajouter une fenêtre de dates" };
+		translations$134 = {
+			"Add date window": "Ajouter une fenêtre de dates",
+			"No data yet for this period": "Pas encore de données pour cette période"
+		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/i18n/fr.ts
-	var fr_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$129 });
-	var translations$129;
+	var fr_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$133 });
+	var translations$133;
 	var init_fr$10 = __esmMin((() => {
-		translations$129 = {
-			"A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later.": "Une fenêtre de dates enregistre une plage de dates nommée comme onglet afin que vous puissiez la prévisualiser rapidement par rapport à la plage sélectionnée ou y revenir plus tard dans le graphique.",
+		translations$133 = {
 			Name: "Nom",
-			"e.g. Heating season start": "ex. Début de la saison de chauffe",
-			"Date range": "Plage de dates",
 			Start: "Début",
 			End: "Fin",
-			"Use previous range": "Utiliser la plage précédente",
-			"Use next range": "Utiliser la plage suivante",
 			"Delete date window": "Supprimer la fenêtre de dates",
-			"Enter a name for this date window.": "Saisissez un nom pour cette fenêtre de dates.",
-			"The start date must be before the end date.": "La date de début doit être antérieure à la date de fin.",
-			Cancel: "Annuler"
+			Cancel: "Annuler",
+			"Fixed dates": "Dates fixes",
+			Period: "Période",
+			"No data yet for this period while the chart is up to date.": "Pas encore de données pour cette période tant que le graphique est à jour.",
+			Relative: "Relative",
+			"Date window type": "Type de fenêtre de dates",
+			"Pins an exact start and end. The window stays put when the chart moves.": "Fixe un début et une fin exacts. La fenêtre reste en place quand le graphique bouge.",
+			"Length {0}": "Durée {0}",
+			"End must be after start.": "La fin doit être après le début.",
+			"Fill from": "Remplir avec",
+			"Selected range": "Plage sélectionnée",
+			"Previous range": "Plage précédente",
+			"Next range": "Plage suivante",
+			"Follows the selected range. When you move the chart, this window moves with it and keeps the same length.": "Suit la plage sélectionnée. Quand vous déplacez le graphique, cette fenêtre se déplace avec lui et garde la même durée.",
+			"This window": "Cette fenêtre",
+			"Both are {0} long.": "Les deux durent {0}.",
+			"(optional)": "(facultatif)",
+			"Custom range": "Plage personnalisée"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/i18n/fr.ts
-	var fr_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$128 });
-	var translations$128;
+	var fr_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$132 });
+	var translations$132;
 	var init_fr$9 = __esmMin((() => {
-		translations$128 = {
+		translations$132 = {
 			Datapoints: "Points de données",
 			"Choose which annotation datapoints appear on the chart.": "Choisissez quels points de données d’annotation apparaissent sur le graphique.",
 			"Linked to selected targets": "Liés aux cibles sélectionnées",
@@ -3493,10 +3569,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/i18n/fr.ts
-	var fr_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$127 });
-	var translations$127;
+	var fr_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$131 });
+	var translations$131;
 	var init_fr$8 = __esmMin((() => {
-		translations$127 = {
+		translations$131 = {
 			"Analysis configured": "Analyse configurée",
 			"Configure analysis": "Configurer l’analyse",
 			"Stepped series": "Série en escalier",
@@ -3508,17 +3584,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/i18n/fr.ts
-	var fr_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$126 });
-	var translations$126;
+	var fr_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$130 });
+	var translations$130;
 	var init_fr$7 = __esmMin((() => {
-		translations$126 = {};
+		translations$130 = {};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/ai-query-brief-dialog/i18n/fr.ts
-	var fr_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$125 });
-	var translations$125;
+	var fr_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$129 });
+	var translations$129;
 	var init_fr$6 = __esmMin((() => {
-		translations$125 = {
+		translations$129 = {
 			"AI query brief": "Brief de requete IA",
 			"This brief is intended for another AI to fetch raw Home Assistant history and hass_datapoints anomaly details. Review it, then copy it into your AI tool of choice.": "Ce brief est destine a une autre IA afin de recuperer l'historique brut de Home Assistant et les details d'anomalie de hass_datapoints. Relisez-le, puis copiez-le dans l'outil IA de votre choix.",
 			"Copy-ready brief": "Brief pret a copier",
@@ -3530,10 +3606,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/history-targets/i18n/fr.ts
-	var fr_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$124 });
-	var translations$124;
+	var fr_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$128 });
+	var translations$128;
 	var init_fr$5 = __esmMin((() => {
-		translations$124 = {
+		translations$128 = {
 			Targets: "Cibles",
 			"Each row controls one chart series.": "Chaque ligne contrôle une série du graphique.",
 			"Add target": "Ajouter une cible",
@@ -3542,10 +3618,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/panel-shell/i18n/fr.ts
-	var fr_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$123 });
-	var translations$123;
+	var fr_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$127 });
+	var translations$127;
 	var init_fr$4 = __esmMin((() => {
-		translations$123 = {
+		translations$127 = {
 			"Loading Datapoints…": "Chargement des points de données…",
 			Datapoints: "Points de données",
 			"Page options": "Options de la page",
@@ -3560,10 +3636,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/range-toolbar/i18n/fr.ts
-	var fr_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$122 });
-	var translations$122;
+	var fr_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$126 });
+	var translations$126;
 	var init_fr$3 = __esmMin((() => {
-		translations$122 = {
+		translations$126 = {
 			"Toggle sidebar": "Basculer la barre latérale",
 			Start: "Début",
 			End: "Fin",
@@ -3588,26 +3664,27 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/series-preview-dialog/i18n/fr.ts
-	var fr_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$121 });
-	var translations$121;
+	var fr_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$125 });
+	var translations$125;
 	var init_fr$2 = __esmMin((() => {
-		translations$121 = {
+		translations$125 = {
 			Close: "Fermer",
 			"Open in chart": "Ouvrir dans le graphique"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/i18n/fr.ts
-	var fr_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$120 });
-	var translations$120;
+	var fr_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$124 });
+	var translations$124;
 	var init_fr$1 = __esmMin((() => {
-		translations$120 = { "Selected range": "Période sélectionnée" };
+		translations$124 = { "Selected range": "Période sélectionnée" };
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/i18n/locales/fr.ts
 	var fr_exports = /* @__PURE__ */ __exportAll({ templates: () => templates$4 });
 	var modules$4, merged$4, templates$4;
 	var init_fr = __esmMin((() => {
+		init_fr$31();
 		init_fr$30();
 		init_fr$29();
 		init_fr$28();
@@ -3639,13 +3716,14 @@
 		init_fr$2();
 		init_fr$1();
 		modules$4 = /* #__PURE__ */ Object.assign({
-			"../../../cards/action/i18n/fr.ts": fr_exports$30,
-			"../../../cards/history/history-chart/i18n/fr.ts": fr_exports$29,
-			"../../../cards/history/i18n/fr.ts": fr_exports$28,
-			"../../../cards/list/i18n/fr.ts": fr_exports$27,
-			"../../../cards/quick/i18n/fr.ts": fr_exports$26,
-			"../../../cards/sensor/i18n/fr.ts": fr_exports$25,
-			"../../chart/i18n/fr.ts": fr_exports$24,
+			"../../../cards/action/i18n/fr.ts": fr_exports$31,
+			"../../../cards/history/history-chart/i18n/fr.ts": fr_exports$30,
+			"../../../cards/history/i18n/fr.ts": fr_exports$29,
+			"../../../cards/list/i18n/fr.ts": fr_exports$28,
+			"../../../cards/quick/i18n/fr.ts": fr_exports$27,
+			"../../../cards/sensor/i18n/fr.ts": fr_exports$26,
+			"../../chart/i18n/fr.ts": fr_exports$25,
+			"../../domain/i18n/fr.ts": fr_exports$24,
 			"../../ha/i18n/fr.ts": fr_exports$23,
 			"../../history-page/i18n/fr.ts": fr_exports$22,
 			"../../timeline/i18n/fr.ts": fr_exports$21,
@@ -3676,10 +3754,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/i18n/de.ts
-	var de_exports$30 = /* @__PURE__ */ __exportAll({ translations: () => translations$119 });
-	var translations$119;
-	var init_de$30 = __esmMin((() => {
-		translations$119 = {
+	var de_exports$31 = /* @__PURE__ */ __exportAll({ translations: () => translations$123 });
+	var translations$123;
+	var init_de$31 = __esmMin((() => {
+		translations$123 = {
 			General: "Allgemein",
 			"Related items": "Verknüpfte Elemente",
 			"Datapoint Appearance": "Darstellung des Datenpunkts",
@@ -3696,20 +3774,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/i18n/de.ts
-	var de_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$118 });
-	var translations$118;
-	var init_de$29 = __esmMin((() => {
-		translations$118 = {
+	var de_exports$30 = /* @__PURE__ */ __exportAll({ translations: () => translations$122 });
+	var translations$122;
+	var init_de$30 = __esmMin((() => {
+		translations$122 = {
 			"Date window:": "Datumsfenster:",
 			"Actual:": "Tatsächlich:"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/i18n/de.ts
-	var de_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$117 });
-	var translations$117;
-	var init_de$28 = __esmMin((() => {
-		translations$117 = {
+	var de_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$121 });
+	var translations$121;
+	var init_de$29 = __esmMin((() => {
+		translations$121 = {
 			General: "Allgemein",
 			Entity: "Entität",
 			"Multiple entities": "Mehrere Entitäten",
@@ -3726,10 +3804,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/i18n/de.ts
-	var de_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$116 });
-	var translations$116;
-	var init_de$27 = __esmMin((() => {
-		translations$116 = {
+	var de_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$120 });
+	var translations$120;
+	var init_de$28 = __esmMin((() => {
+		translations$120 = {
 			"Search datapoints…": "Datenpunkte suchen…",
 			"Delete record": "Eintrag löschen",
 			Delete: "Löschen",
@@ -3747,10 +3825,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/i18n/de.ts
-	var de_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$115 });
-	var translations$115;
-	var init_de$26 = __esmMin((() => {
-		translations$115 = {
+	var de_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$119 });
+	var translations$119;
+	var init_de$27 = __esmMin((() => {
+		translations$119 = {
 			General: "Allgemein",
 			"Icon & colour": "Symbol und Farbe",
 			"Related items": "Verknüpfte Elemente",
@@ -3768,10 +3846,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/i18n/de.ts
-	var de_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$114 });
-	var translations$114;
-	var init_de$25 = __esmMin((() => {
-		translations$114 = {
+	var de_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$118 });
+	var translations$118;
+	var init_de$26 = __esmMin((() => {
+		translations$118 = {
 			Entity: "Entität",
 			Display: "Anzeige",
 			"Records list": "Eintragsliste",
@@ -3791,10 +3869,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/i18n/de.ts
-	var de_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$113 });
-	var translations$113;
-	var init_de$24 = __esmMin((() => {
-		translations$113 = {
+	var de_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$117 });
+	var translations$117;
+	var init_de$25 = __esmMin((() => {
+		translations$117 = {
 			"Add datapoint at {0}": "Datenpunkt um {0} hinzufügen",
 			Pinned: "Angeheftet",
 			"Unpin tooltip": "Tooltip lösen",
@@ -3831,11 +3909,35 @@
 		};
 	}));
 	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/domain/i18n/de.ts
+	var de_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$116 });
+	var translations$116;
+	var init_de$24 = __esmMin((() => {
+		translations$116 = {
+			"Previous period": "Vorheriger Zeitraum",
+			"Next period": "Nächster Zeitraum",
+			"2 periods back": "2 Zeiträume zurück",
+			"3 periods back": "3 Zeiträume zurück",
+			"2 periods ahead": "2 Zeiträume voraus",
+			"3 periods ahead": "3 Zeiträume voraus",
+			"Same period last month": "Gleicher Zeitraum im Vormonat",
+			"Same period 2 months ago": "Gleicher Zeitraum vor 2 Monaten",
+			"Same period 3 months ago": "Gleicher Zeitraum vor 3 Monaten",
+			"Same period next month": "Gleicher Zeitraum im nächsten Monat",
+			"Same period in 2 months": "Gleicher Zeitraum in 2 Monaten",
+			"Same period in 3 months": "Gleicher Zeitraum in 3 Monaten",
+			"Same period last year": "Gleicher Zeitraum im Vorjahr",
+			"Same period next year": "Gleicher Zeitraum im nächsten Jahr",
+			"Same weekdays last year": "Gleiche Wochentage im Vorjahr",
+			"Same period 2 years ago": "Gleicher Zeitraum vor 2 Jahren"
+		};
+	}));
+	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/ha/i18n/de.ts
-	var de_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$112 });
-	var translations$112;
+	var de_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$115 });
+	var translations$115;
 	var init_de$23 = __esmMin((() => {
-		translations$112 = {
+		translations$115 = {
 			"Confirm delete": "Löschen bestätigen",
 			"Are you sure you want to delete this item?": "Möchten Sie dieses Element wirklich löschen?",
 			Cancel: "Abbrechen",
@@ -3850,10 +3952,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/history-page/i18n/de.ts
-	var de_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$111 });
-	var translations$111;
+	var de_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$114 });
+	var translations$114;
 	var init_de$22 = __esmMin((() => {
-		translations$111 = {
+		translations$114 = {
 			"entity_id={0}": "entity_id={0}",
 			"device_id={0}": "device_id={0}",
 			"area_id={0}": "area_id={0}",
@@ -3951,20 +4053,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/timeline/i18n/de.ts
-	var de_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$110 });
-	var translations$110;
+	var de_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$113 });
+	var translations$113;
 	var init_de$21 = __esmMin((() => {
-		translations$110 = {
+		translations$113 = {
 			Wk: "KW",
 			"Week of": "Woche von"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-aggregate-group/i18n/de.ts
-	var de_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$109 });
-	var translations$109;
+	var de_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$112 });
+	var translations$112;
 	var init_de$20 = __esmMin((() => {
-		translations$109 = {
+		translations$112 = {
 			"Aggregate series": "Aggregierte Serien",
 			"Count changes to a state": "Wechsel in einen Zustand zählen",
 			"Count all state changes": "Alle Zustandswechsel zählen",
@@ -4009,10 +4111,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/i18n/de.ts
-	var de_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$108 });
-	var translations$108;
+	var de_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$111 });
+	var translations$111;
 	var init_de$19 = __esmMin((() => {
-		translations$108 = {
+		translations$111 = {
 			Direction: "Richtung",
 			Both: "Beide",
 			Above: "Oberhalb",
@@ -4060,10 +4162,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-delta-group/i18n/de.ts
-	var de_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$107 });
-	var translations$107;
+	var de_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$110 });
+	var translations$110;
 	var init_de$18 = __esmMin((() => {
-		translations$107 = {
+		translations$110 = {
 			"Show delta vs selected date window": "Delta gegenüber dem ausgewählten Datumsfenster anzeigen",
 			"Select a date window tab to enable delta analysis.": "Wählen Sie einen Tab für ein Datumsfenster, um die Delta-Analyse zu aktivieren.",
 			"Show delta in tooltip": "Delta im Tooltip anzeigen",
@@ -4072,10 +4174,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/i18n/de.ts
-	var de_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$106 });
-	var translations$106;
+	var de_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$109 });
+	var translations$109;
 	var init_de$17 = __esmMin((() => {
-		translations$106 = {
+		translations$109 = {
 			"Show rate of change": "Änderungsrate anzeigen",
 			"Show rate of change crosshairs": "Fadenkreuz für Änderungsrate anzeigen",
 			"Rate window": "Ratenfenster",
@@ -4087,10 +4189,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-sample-group/i18n/de.ts
-	var de_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$105 });
-	var translations$105;
+	var de_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$108 });
+	var translations$108;
 	var init_de$16 = __esmMin((() => {
-		translations$105 = {
+		translations$108 = {
 			Downsampling: "Downsampling",
 			Interval: "Intervall",
 			Aggregate: "Aggregation",
@@ -4122,20 +4224,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/i18n/de.ts
-	var de_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$104 });
-	var translations$104;
+	var de_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$107 });
+	var translations$107;
 	var init_de$15 = __esmMin((() => {
-		translations$104 = {
+		translations$107 = {
 			"Show min / max / mean": "Min / Max / Mittelwert anzeigen",
 			"Show range shading": "Bereichsschattierung anzeigen"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/i18n/de.ts
-	var de_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$103 });
-	var translations$103;
+	var de_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$106 });
+	var translations$106;
 	var init_de$14 = __esmMin((() => {
-		translations$103 = {
+		translations$106 = {
 			"Show threshold analysis": "Schwellwertanalyse anzeigen",
 			"Shade threshold area": "Schwellwertbereich schattieren",
 			Threshold: "Schwellenwert",
@@ -4146,10 +4248,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/i18n/de.ts
-	var de_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$102 });
-	var translations$102;
+	var de_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$105 });
+	var translations$105;
 	var init_de$13 = __esmMin((() => {
-		translations$102 = {
+		translations$105 = {
 			"Show trend lines": "Trendlinien anzeigen",
 			"Show trend crosshairs": "Fadenkreuz für Trend anzeigen",
 			"Trend method": "Trendmethode",
@@ -4167,10 +4269,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/i18n/de.ts
-	var de_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$101 });
-	var translations$101;
+	var de_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$104 });
+	var translations$104;
 	var init_de$12 = __esmMin((() => {
-		translations$101 = {
+		translations$104 = {
 			"Add all series from chart": "Alle Reihen aus dem Diagramm hinzufügen",
 			"Add from current chart": "Aus aktuellem Diagramm hinzufügen",
 			"Create anomaly monitor": "Anomaliemonitor erstellen",
@@ -4180,37 +4282,50 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab-rail/i18n/de.ts
-	var de_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$100 });
-	var translations$100;
+	var de_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$103 });
+	var translations$103;
 	var init_de$11 = __esmMin((() => {
-		translations$100 = { "Add date window": "Datumsfenster hinzufügen" };
+		translations$103 = {
+			"Add date window": "Datumsfenster hinzufügen",
+			"No data yet for this period": "Für diesen Zeitraum liegen noch keine Daten vor"
+		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/i18n/de.ts
-	var de_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$99 });
-	var translations$99;
+	var de_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$102 });
+	var translations$102;
 	var init_de$10 = __esmMin((() => {
-		translations$99 = {
-			"A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later.": "Ein Datumsfenster speichert einen benannten Datumsbereich als Registerkarte, damit Sie ihn schnell mit dem ausgewählten Bereich vergleichen oder später im Diagramm wieder dorthin springen können.",
+		translations$102 = {
 			Name: "Name",
-			"e.g. Heating season start": "z. B. Beginn der Heizsaison",
-			"Date range": "Datumsbereich",
 			Start: "Start",
 			End: "Ende",
-			"Use previous range": "Vorherigen Bereich verwenden",
-			"Use next range": "Nächsten Bereich verwenden",
 			"Delete date window": "Datumsfenster löschen",
-			"Enter a name for this date window.": "Geben Sie einen Namen für dieses Datumsfenster ein.",
-			"The start date must be before the end date.": "Das Startdatum muss vor dem Enddatum liegen.",
-			Cancel: "Abbrechen"
+			Cancel: "Abbrechen",
+			"Fixed dates": "Feste Daten",
+			Period: "Zeitraum",
+			"No data yet for this period while the chart is up to date.": "Für diesen Zeitraum liegen noch keine Daten vor, solange das Diagramm aktuell ist.",
+			Relative: "Relativ",
+			"Date window type": "Art des Zeitfensters",
+			"Pins an exact start and end. The window stays put when the chart moves.": "Legt einen genauen Beginn und ein genaues Ende fest. Das Fenster bleibt, wo es ist, wenn sich das Diagramm bewegt.",
+			"Length {0}": "Länge {0}",
+			"End must be after start.": "Das Ende muss nach dem Beginn liegen.",
+			"Fill from": "Übernehmen aus",
+			"Selected range": "Ausgewählter Bereich",
+			"Previous range": "Vorheriger Bereich",
+			"Next range": "Nächster Bereich",
+			"Follows the selected range. When you move the chart, this window moves with it and keeps the same length.": "Folgt dem ausgewählten Bereich. Wenn Sie das Diagramm verschieben, bewegt sich dieses Fenster mit und behält dieselbe Länge.",
+			"This window": "Dieses Fenster",
+			"Both are {0} long.": "Beide sind {0} lang.",
+			"(optional)": "(optional)",
+			"Custom range": "Eigener Bereich"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/i18n/de.ts
-	var de_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$98 });
-	var translations$98;
+	var de_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$101 });
+	var translations$101;
 	var init_de$9 = __esmMin((() => {
-		translations$98 = {
+		translations$101 = {
 			Datapoints: "Datenpunkte",
 			"Choose which annotation datapoints appear on the chart.": "Wählen Sie aus, welche Anmerkungs-Datenpunkte im Diagramm angezeigt werden.",
 			"Linked to selected targets": "Mit ausgewählten Zielen verknüpft",
@@ -4220,10 +4335,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/i18n/de.ts
-	var de_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$97 });
-	var translations$97;
+	var de_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$100 });
+	var translations$100;
 	var init_de$8 = __esmMin((() => {
-		translations$97 = {
+		translations$100 = {
 			"Analysis configured": "Analyse konfiguriert",
 			"Configure analysis": "Analyse konfigurieren",
 			"Stepped series": "Stufenserie",
@@ -4235,17 +4350,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/i18n/de.ts
-	var de_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$96 });
-	var translations$96;
+	var de_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$99 });
+	var translations$99;
 	var init_de$7 = __esmMin((() => {
-		translations$96 = {};
+		translations$99 = {};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/ai-query-brief-dialog/i18n/de.ts
-	var de_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$95 });
-	var translations$95;
+	var de_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$98 });
+	var translations$98;
 	var init_de$6 = __esmMin((() => {
-		translations$95 = {
+		translations$98 = {
 			"AI query brief": "KI-Abfragebriefing",
 			"This brief is intended for another AI to fetch raw Home Assistant history and hass_datapoints anomaly details. Review it, then copy it into your AI tool of choice.": "Dieses Briefing ist fuer eine andere KI gedacht, damit sie rohe Home-Assistant-Verlaeufe und hass_datapoints-Anomaliedetails abrufen kann. Pruefe es und kopiere es dann in dein KI-Werkzeug deiner Wahl.",
 			"Copy-ready brief": "Kopierfertiges Briefing",
@@ -4257,10 +4372,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/history-targets/i18n/de.ts
-	var de_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$94 });
-	var translations$94;
+	var de_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$97 });
+	var translations$97;
 	var init_de$5 = __esmMin((() => {
-		translations$94 = {
+		translations$97 = {
 			Targets: "Ziele",
 			"Each row controls one chart series.": "Jede Zeile steuert eine Diagrammserie.",
 			"Add target": "Ziel hinzufügen",
@@ -4269,10 +4384,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/panel-shell/i18n/de.ts
-	var de_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$93 });
-	var translations$93;
+	var de_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$96 });
+	var translations$96;
 	var init_de$4 = __esmMin((() => {
-		translations$93 = {
+		translations$96 = {
 			"Loading Datapoints…": "Datenpunkte werden geladen…",
 			Datapoints: "Datenpunkte",
 			"Page options": "Seitenoptionen",
@@ -4287,10 +4402,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/range-toolbar/i18n/de.ts
-	var de_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$92 });
-	var translations$92;
+	var de_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$95 });
+	var translations$95;
 	var init_de$3 = __esmMin((() => {
-		translations$92 = {
+		translations$95 = {
 			"Toggle sidebar": "Seitenleiste umschalten",
 			Start: "Start",
 			End: "Ende",
@@ -4315,26 +4430,27 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/series-preview-dialog/i18n/de.ts
-	var de_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$91 });
-	var translations$91;
+	var de_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$94 });
+	var translations$94;
 	var init_de$2 = __esmMin((() => {
-		translations$91 = {
+		translations$94 = {
 			Close: "Schliessen",
 			"Open in chart": "Im Diagramm öffnen"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/i18n/de.ts
-	var de_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$90 });
-	var translations$90;
+	var de_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$93 });
+	var translations$93;
 	var init_de$1 = __esmMin((() => {
-		translations$90 = { "Selected range": "Ausgewählter Zeitraum" };
+		translations$93 = { "Selected range": "Ausgewählter Zeitraum" };
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/i18n/locales/de.ts
 	var de_exports = /* @__PURE__ */ __exportAll({ templates: () => templates$3 });
 	var modules$3, merged$3, templates$3;
 	var init_de = __esmMin((() => {
+		init_de$31();
 		init_de$30();
 		init_de$29();
 		init_de$28();
@@ -4366,13 +4482,14 @@
 		init_de$2();
 		init_de$1();
 		modules$3 = /* #__PURE__ */ Object.assign({
-			"../../../cards/action/i18n/de.ts": de_exports$30,
-			"../../../cards/history/history-chart/i18n/de.ts": de_exports$29,
-			"../../../cards/history/i18n/de.ts": de_exports$28,
-			"../../../cards/list/i18n/de.ts": de_exports$27,
-			"../../../cards/quick/i18n/de.ts": de_exports$26,
-			"../../../cards/sensor/i18n/de.ts": de_exports$25,
-			"../../chart/i18n/de.ts": de_exports$24,
+			"../../../cards/action/i18n/de.ts": de_exports$31,
+			"../../../cards/history/history-chart/i18n/de.ts": de_exports$30,
+			"../../../cards/history/i18n/de.ts": de_exports$29,
+			"../../../cards/list/i18n/de.ts": de_exports$28,
+			"../../../cards/quick/i18n/de.ts": de_exports$27,
+			"../../../cards/sensor/i18n/de.ts": de_exports$26,
+			"../../chart/i18n/de.ts": de_exports$25,
+			"../../domain/i18n/de.ts": de_exports$24,
 			"../../ha/i18n/de.ts": de_exports$23,
 			"../../history-page/i18n/de.ts": de_exports$22,
 			"../../timeline/i18n/de.ts": de_exports$21,
@@ -4403,10 +4520,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/i18n/es.ts
-	var es_exports$30 = /* @__PURE__ */ __exportAll({ translations: () => translations$89 });
-	var translations$89;
-	var init_es$30 = __esmMin((() => {
-		translations$89 = {
+	var es_exports$31 = /* @__PURE__ */ __exportAll({ translations: () => translations$92 });
+	var translations$92;
+	var init_es$31 = __esmMin((() => {
+		translations$92 = {
 			General: "General",
 			"Related items": "Elementos relacionados",
 			"Datapoint Appearance": "Apariencia del punto de datos",
@@ -4423,20 +4540,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/i18n/es.ts
-	var es_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$88 });
-	var translations$88;
-	var init_es$29 = __esmMin((() => {
-		translations$88 = {
+	var es_exports$30 = /* @__PURE__ */ __exportAll({ translations: () => translations$91 });
+	var translations$91;
+	var init_es$30 = __esmMin((() => {
+		translations$91 = {
 			"Date window:": "Ventana de fechas:",
 			"Actual:": "Real:"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/i18n/es.ts
-	var es_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$87 });
-	var translations$87;
-	var init_es$28 = __esmMin((() => {
-		translations$87 = {
+	var es_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$90 });
+	var translations$90;
+	var init_es$29 = __esmMin((() => {
+		translations$90 = {
 			General: "General",
 			Entity: "Entidad",
 			"Multiple entities": "Varias entidades",
@@ -4453,10 +4570,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/i18n/es.ts
-	var es_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$86 });
-	var translations$86;
-	var init_es$27 = __esmMin((() => {
-		translations$86 = {
+	var es_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$89 });
+	var translations$89;
+	var init_es$28 = __esmMin((() => {
+		translations$89 = {
 			"Search datapoints…": "Buscar puntos de datos…",
 			"Delete record": "Eliminar registro",
 			Delete: "Eliminar",
@@ -4474,10 +4591,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/i18n/es.ts
-	var es_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$85 });
-	var translations$85;
-	var init_es$26 = __esmMin((() => {
-		translations$85 = {
+	var es_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$88 });
+	var translations$88;
+	var init_es$27 = __esmMin((() => {
+		translations$88 = {
 			General: "General",
 			"Icon & colour": "Icono y color",
 			"Related items": "Elementos relacionados",
@@ -4495,10 +4612,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/i18n/es.ts
-	var es_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$84 });
-	var translations$84;
-	var init_es$25 = __esmMin((() => {
-		translations$84 = {
+	var es_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$87 });
+	var translations$87;
+	var init_es$26 = __esmMin((() => {
+		translations$87 = {
 			Entity: "Entidad",
 			Display: "Visualización",
 			"Records list": "Lista de registros",
@@ -4518,10 +4635,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/i18n/es.ts
-	var es_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$83 });
-	var translations$83;
-	var init_es$24 = __esmMin((() => {
-		translations$83 = {
+	var es_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$86 });
+	var translations$86;
+	var init_es$25 = __esmMin((() => {
+		translations$86 = {
 			"Add datapoint at {0}": "Añadir punto de datos a las {0}",
 			Pinned: "Fijado",
 			"Unpin tooltip": "Desfijar información",
@@ -4558,11 +4675,35 @@
 		};
 	}));
 	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/domain/i18n/es.ts
+	var es_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$85 });
+	var translations$85;
+	var init_es$24 = __esmMin((() => {
+		translations$85 = {
+			"Previous period": "Periodo anterior",
+			"Next period": "Periodo siguiente",
+			"2 periods back": "2 periodos atrás",
+			"3 periods back": "3 periodos atrás",
+			"2 periods ahead": "2 periodos adelante",
+			"3 periods ahead": "3 periodos adelante",
+			"Same period last month": "Mismo periodo del mes pasado",
+			"Same period 2 months ago": "Mismo periodo hace 2 meses",
+			"Same period 3 months ago": "Mismo periodo hace 3 meses",
+			"Same period next month": "Mismo periodo del mes que viene",
+			"Same period in 2 months": "Mismo periodo dentro de 2 meses",
+			"Same period in 3 months": "Mismo periodo dentro de 3 meses",
+			"Same period last year": "Mismo periodo del año pasado",
+			"Same period next year": "Mismo periodo del año que viene",
+			"Same weekdays last year": "Mismos días de la semana del año pasado",
+			"Same period 2 years ago": "Mismo periodo hace 2 años"
+		};
+	}));
+	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/ha/i18n/es.ts
-	var es_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$82 });
-	var translations$82;
+	var es_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$84 });
+	var translations$84;
 	var init_es$23 = __esmMin((() => {
-		translations$82 = {
+		translations$84 = {
 			"Confirm delete": "Confirmar eliminación",
 			"Are you sure you want to delete this item?": "¿Seguro que quieres eliminar este elemento?",
 			Cancel: "Cancelar",
@@ -4577,10 +4718,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/history-page/i18n/es.ts
-	var es_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$81 });
-	var translations$81;
+	var es_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$83 });
+	var translations$83;
 	var init_es$22 = __esmMin((() => {
-		translations$81 = {
+		translations$83 = {
 			"entity_id={0}": "entity_id={0}",
 			"device_id={0}": "device_id={0}",
 			"area_id={0}": "area_id={0}",
@@ -4678,20 +4819,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/timeline/i18n/es.ts
-	var es_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$80 });
-	var translations$80;
+	var es_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$82 });
+	var translations$82;
 	var init_es$21 = __esmMin((() => {
-		translations$80 = {
+		translations$82 = {
 			Wk: "Sem.",
 			"Week of": "Semana del"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-aggregate-group/i18n/es.ts
-	var es_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$79 });
-	var translations$79;
+	var es_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$81 });
+	var translations$81;
 	var init_es$20 = __esmMin((() => {
-		translations$79 = {
+		translations$81 = {
 			"Aggregate series": "Series agregadas",
 			"Count changes to a state": "Contar cambios a un estado",
 			"Count all state changes": "Contar todos los cambios de estado",
@@ -4736,10 +4877,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/i18n/es.ts
-	var es_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$78 });
-	var translations$78;
+	var es_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$80 });
+	var translations$80;
 	var init_es$19 = __esmMin((() => {
-		translations$78 = {
+		translations$80 = {
 			Direction: "Dirección",
 			Both: "Ambos",
 			Above: "Por encima",
@@ -4787,10 +4928,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-delta-group/i18n/es.ts
-	var es_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$77 });
-	var translations$77;
+	var es_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$79 });
+	var translations$79;
 	var init_es$18 = __esmMin((() => {
-		translations$77 = {
+		translations$79 = {
 			"Show delta vs selected date window": "Mostrar delta frente a la ventana de fechas seleccionada",
 			"Select a date window tab to enable delta analysis.": "Selecciona una pestaña de ventana de fechas para habilitar el análisis delta.",
 			"Show delta in tooltip": "Mostrar delta en la información sobre herramientas",
@@ -4799,10 +4940,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/i18n/es.ts
-	var es_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$76 });
-	var translations$76;
+	var es_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$78 });
+	var translations$78;
 	var init_es$17 = __esmMin((() => {
-		translations$76 = {
+		translations$78 = {
 			"Show rate of change": "Mostrar tasa de cambio",
 			"Show rate of change crosshairs": "Mostrar guías de la tasa de cambio",
 			"Rate window": "Ventana de tasa",
@@ -4814,10 +4955,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-sample-group/i18n/es.ts
-	var es_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$75 });
-	var translations$75;
+	var es_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$77 });
+	var translations$77;
 	var init_es$16 = __esmMin((() => {
-		translations$75 = {
+		translations$77 = {
 			Downsampling: "Submuestreo",
 			Interval: "Intervalo",
 			Aggregate: "Agregado",
@@ -4849,20 +4990,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/i18n/es.ts
-	var es_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$74 });
-	var translations$74;
+	var es_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$76 });
+	var translations$76;
 	var init_es$15 = __esmMin((() => {
-		translations$74 = {
+		translations$76 = {
 			"Show min / max / mean": "Mostrar mín. / máx. / media",
 			"Show range shading": "Mostrar sombreado del rango"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/i18n/es.ts
-	var es_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$73 });
-	var translations$73;
+	var es_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$75 });
+	var translations$75;
 	var init_es$14 = __esmMin((() => {
-		translations$73 = {
+		translations$75 = {
 			"Show threshold analysis": "Mostrar análisis de umbral",
 			"Shade threshold area": "Sombrear área del umbral",
 			Threshold: "Umbral",
@@ -4873,10 +5014,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/i18n/es.ts
-	var es_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$72 });
-	var translations$72;
+	var es_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$74 });
+	var translations$74;
 	var init_es$13 = __esmMin((() => {
-		translations$72 = {
+		translations$74 = {
 			"Show trend lines": "Mostrar líneas de tendencia",
 			"Show trend crosshairs": "Mostrar guías de tendencia",
 			"Trend method": "Método de tendencia",
@@ -4894,10 +5035,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/i18n/es.ts
-	var es_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$71 });
-	var translations$71;
+	var es_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$73 });
+	var translations$73;
 	var init_es$12 = __esmMin((() => {
-		translations$71 = {
+		translations$73 = {
 			"Add all series from chart": "Añadir todas las series del gráfico",
 			"Add from current chart": "Añadir desde el gráfico actual",
 			"Create anomaly monitor": "Crear monitor de anomalías",
@@ -4907,37 +5048,50 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab-rail/i18n/es.ts
-	var es_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$70 });
-	var translations$70;
+	var es_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$72 });
+	var translations$72;
 	var init_es$11 = __esmMin((() => {
-		translations$70 = { "Add date window": "Añadir ventana de fechas" };
+		translations$72 = {
+			"Add date window": "Añadir ventana de fechas",
+			"No data yet for this period": "Aún no hay datos para este periodo"
+		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/i18n/es.ts
-	var es_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$69 });
-	var translations$69;
+	var es_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$71 });
+	var translations$71;
 	var init_es$10 = __esmMin((() => {
-		translations$69 = {
-			"A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later.": "Una ventana de fechas guarda un rango de fechas con nombre como pestaña, para que puedas previsualizarlo rápidamente frente al rango seleccionado o volver más tarde a él en el gráfico.",
+		translations$71 = {
 			Name: "Nombre",
-			"e.g. Heating season start": "p. ej., inicio de la temporada de calefacción",
-			"Date range": "Rango de fechas",
 			Start: "Inicio",
 			End: "Fin",
-			"Use previous range": "Usar rango anterior",
-			"Use next range": "Usar rango siguiente",
 			"Delete date window": "Eliminar ventana de fechas",
-			"Enter a name for this date window.": "Introduce un nombre para esta ventana de fechas.",
-			"The start date must be before the end date.": "La fecha de inicio debe ser anterior a la fecha de fin.",
-			Cancel: "Cancelar"
+			Cancel: "Cancelar",
+			"Fixed dates": "Fechas fijas",
+			Period: "Periodo",
+			"No data yet for this period while the chart is up to date.": "Aún no hay datos para este periodo mientras el gráfico esté actualizado.",
+			Relative: "Relativa",
+			"Date window type": "Tipo de ventana de fechas",
+			"Pins an exact start and end. The window stays put when the chart moves.": "Fija un inicio y un fin exactos. La ventana no se mueve cuando se mueve el gráfico.",
+			"Length {0}": "Duración {0}",
+			"End must be after start.": "El fin debe ser posterior al inicio.",
+			"Fill from": "Rellenar con",
+			"Selected range": "Rango seleccionado",
+			"Previous range": "Rango anterior",
+			"Next range": "Rango siguiente",
+			"Follows the selected range. When you move the chart, this window moves with it and keeps the same length.": "Sigue al rango seleccionado. Cuando mueves el gráfico, esta ventana se mueve con él y mantiene la misma duración.",
+			"This window": "Esta ventana",
+			"Both are {0} long.": "Ambos duran {0}.",
+			"(optional)": "(opcional)",
+			"Custom range": "Rango personalizado"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/i18n/es.ts
-	var es_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$68 });
-	var translations$68;
+	var es_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$70 });
+	var translations$70;
 	var init_es$9 = __esmMin((() => {
-		translations$68 = {
+		translations$70 = {
 			Datapoints: "Puntos de datos",
 			"Choose which annotation datapoints appear on the chart.": "Elige qué puntos de datos de anotación aparecen en el gráfico.",
 			"Linked to selected targets": "Vinculados a los objetivos seleccionados",
@@ -4947,10 +5101,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/i18n/es.ts
-	var es_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$67 });
-	var translations$67;
+	var es_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$69 });
+	var translations$69;
 	var init_es$8 = __esmMin((() => {
-		translations$67 = {
+		translations$69 = {
 			"Analysis configured": "Análisis configurado",
 			"Configure analysis": "Configurar análisis",
 			"Stepped series": "Serie escalonada",
@@ -4962,17 +5116,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/i18n/es.ts
-	var es_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$66 });
-	var translations$66;
+	var es_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$68 });
+	var translations$68;
 	var init_es$7 = __esmMin((() => {
-		translations$66 = {};
+		translations$68 = {};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/ai-query-brief-dialog/i18n/es.ts
-	var es_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$65 });
-	var translations$65;
+	var es_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$67 });
+	var translations$67;
 	var init_es$6 = __esmMin((() => {
-		translations$65 = {
+		translations$67 = {
 			"AI query brief": "Resumen de consulta para IA",
 			"This brief is intended for another AI to fetch raw Home Assistant history and hass_datapoints anomaly details. Review it, then copy it into your AI tool of choice.": "Este resumen esta pensado para que otra IA obtenga el historial sin procesar de Home Assistant y los detalles de anomalias de hass_datapoints. Revisalo y luego copialo en la herramienta de IA que prefieras.",
 			"Copy-ready brief": "Resumen listo para copiar",
@@ -4984,10 +5138,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/history-targets/i18n/es.ts
-	var es_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$64 });
-	var translations$64;
+	var es_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$66 });
+	var translations$66;
 	var init_es$5 = __esmMin((() => {
-		translations$64 = {
+		translations$66 = {
 			Targets: "Objetivos",
 			"Each row controls one chart series.": "Cada fila controla una serie del gráfico.",
 			"Add target": "Añadir objetivo",
@@ -4996,10 +5150,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/panel-shell/i18n/es.ts
-	var es_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$63 });
-	var translations$63;
+	var es_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$65 });
+	var translations$65;
 	var init_es$4 = __esmMin((() => {
-		translations$63 = {
+		translations$65 = {
 			"Loading Datapoints…": "Cargando puntos de datos…",
 			Datapoints: "Puntos de datos",
 			"Page options": "Opciones de la página",
@@ -5014,10 +5168,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/range-toolbar/i18n/es.ts
-	var es_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$62 });
-	var translations$62;
+	var es_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$64 });
+	var translations$64;
 	var init_es$3 = __esmMin((() => {
-		translations$62 = {
+		translations$64 = {
 			"Toggle sidebar": "Alternar barra lateral",
 			Start: "Inicio",
 			End: "Fin",
@@ -5042,26 +5196,27 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/series-preview-dialog/i18n/es.ts
-	var es_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$61 });
-	var translations$61;
+	var es_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$63 });
+	var translations$63;
 	var init_es$2 = __esmMin((() => {
-		translations$61 = {
+		translations$63 = {
 			Close: "Cerrar",
 			"Open in chart": "Abrir en el gráfico"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/i18n/es.ts
-	var es_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$60 });
-	var translations$60;
+	var es_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$62 });
+	var translations$62;
 	var init_es$1 = __esmMin((() => {
-		translations$60 = { "Selected range": "Intervalo seleccionado" };
+		translations$62 = { "Selected range": "Intervalo seleccionado" };
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/i18n/locales/es.ts
 	var es_exports = /* @__PURE__ */ __exportAll({ templates: () => templates$2 });
 	var modules$2, merged$2, templates$2;
 	var init_es = __esmMin((() => {
+		init_es$31();
 		init_es$30();
 		init_es$29();
 		init_es$28();
@@ -5093,13 +5248,14 @@
 		init_es$2();
 		init_es$1();
 		modules$2 = /* #__PURE__ */ Object.assign({
-			"../../../cards/action/i18n/es.ts": es_exports$30,
-			"../../../cards/history/history-chart/i18n/es.ts": es_exports$29,
-			"../../../cards/history/i18n/es.ts": es_exports$28,
-			"../../../cards/list/i18n/es.ts": es_exports$27,
-			"../../../cards/quick/i18n/es.ts": es_exports$26,
-			"../../../cards/sensor/i18n/es.ts": es_exports$25,
-			"../../chart/i18n/es.ts": es_exports$24,
+			"../../../cards/action/i18n/es.ts": es_exports$31,
+			"../../../cards/history/history-chart/i18n/es.ts": es_exports$30,
+			"../../../cards/history/i18n/es.ts": es_exports$29,
+			"../../../cards/list/i18n/es.ts": es_exports$28,
+			"../../../cards/quick/i18n/es.ts": es_exports$27,
+			"../../../cards/sensor/i18n/es.ts": es_exports$26,
+			"../../chart/i18n/es.ts": es_exports$25,
+			"../../domain/i18n/es.ts": es_exports$24,
 			"../../ha/i18n/es.ts": es_exports$23,
 			"../../history-page/i18n/es.ts": es_exports$22,
 			"../../timeline/i18n/es.ts": es_exports$21,
@@ -5130,10 +5286,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/i18n/pt.ts
-	var pt_exports$30 = /* @__PURE__ */ __exportAll({ translations: () => translations$59 });
-	var translations$59;
-	var init_pt$30 = __esmMin((() => {
-		translations$59 = {
+	var pt_exports$31 = /* @__PURE__ */ __exportAll({ translations: () => translations$61 });
+	var translations$61;
+	var init_pt$31 = __esmMin((() => {
+		translations$61 = {
 			General: "Geral",
 			"Related items": "Itens relacionados",
 			"Datapoint Appearance": "Aspeto do ponto de dados",
@@ -5150,20 +5306,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/i18n/pt.ts
-	var pt_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$58 });
-	var translations$58;
-	var init_pt$29 = __esmMin((() => {
-		translations$58 = {
+	var pt_exports$30 = /* @__PURE__ */ __exportAll({ translations: () => translations$60 });
+	var translations$60;
+	var init_pt$30 = __esmMin((() => {
+		translations$60 = {
 			"Date window:": "Janela de datas:",
 			"Actual:": "Real:"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/i18n/pt.ts
-	var pt_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$57 });
-	var translations$57;
-	var init_pt$28 = __esmMin((() => {
-		translations$57 = {
+	var pt_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$59 });
+	var translations$59;
+	var init_pt$29 = __esmMin((() => {
+		translations$59 = {
 			General: "Geral",
 			Entity: "Entidade",
 			"Multiple entities": "Múltiplas entidades",
@@ -5180,10 +5336,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/i18n/pt.ts
-	var pt_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$56 });
-	var translations$56;
-	var init_pt$27 = __esmMin((() => {
-		translations$56 = {
+	var pt_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$58 });
+	var translations$58;
+	var init_pt$28 = __esmMin((() => {
+		translations$58 = {
 			"Search datapoints…": "Pesquisar pontos de dados…",
 			"Delete record": "Eliminar registo",
 			Delete: "Eliminar",
@@ -5201,10 +5357,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/i18n/pt.ts
-	var pt_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$55 });
-	var translations$55;
-	var init_pt$26 = __esmMin((() => {
-		translations$55 = {
+	var pt_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$57 });
+	var translations$57;
+	var init_pt$27 = __esmMin((() => {
+		translations$57 = {
 			General: "Geral",
 			"Icon & colour": "Ícone e cor",
 			"Related items": "Itens relacionados",
@@ -5222,10 +5378,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/i18n/pt.ts
-	var pt_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$54 });
-	var translations$54;
-	var init_pt$25 = __esmMin((() => {
-		translations$54 = {
+	var pt_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$56 });
+	var translations$56;
+	var init_pt$26 = __esmMin((() => {
+		translations$56 = {
 			Entity: "Entidade",
 			Display: "Visualização",
 			"Records list": "Lista de registos",
@@ -5245,10 +5401,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/i18n/pt.ts
-	var pt_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$53 });
-	var translations$53;
-	var init_pt$24 = __esmMin((() => {
-		translations$53 = {
+	var pt_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$55 });
+	var translations$55;
+	var init_pt$25 = __esmMin((() => {
+		translations$55 = {
 			"Add datapoint at {0}": "Adicionar ponto de dados às {0}",
 			Pinned: "Fixado",
 			"Unpin tooltip": "Desafixar dica",
@@ -5285,11 +5441,35 @@
 		};
 	}));
 	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/domain/i18n/pt.ts
+	var pt_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$54 });
+	var translations$54;
+	var init_pt$24 = __esmMin((() => {
+		translations$54 = {
+			"Previous period": "Período anterior",
+			"Next period": "Período seguinte",
+			"2 periods back": "2 períodos atrás",
+			"3 periods back": "3 períodos atrás",
+			"2 periods ahead": "2 períodos à frente",
+			"3 periods ahead": "3 períodos à frente",
+			"Same period last month": "Mesmo período do mês passado",
+			"Same period 2 months ago": "Mesmo período há 2 meses",
+			"Same period 3 months ago": "Mesmo período há 3 meses",
+			"Same period next month": "Mesmo período do próximo mês",
+			"Same period in 2 months": "Mesmo período daqui a 2 meses",
+			"Same period in 3 months": "Mesmo período daqui a 3 meses",
+			"Same period last year": "Mesmo período do ano passado",
+			"Same period next year": "Mesmo período do próximo ano",
+			"Same weekdays last year": "Mesmos dias da semana do ano passado",
+			"Same period 2 years ago": "Mesmo período há 2 anos"
+		};
+	}));
+	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/ha/i18n/pt.ts
-	var pt_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$52 });
-	var translations$52;
+	var pt_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$53 });
+	var translations$53;
 	var init_pt$23 = __esmMin((() => {
-		translations$52 = {
+		translations$53 = {
 			"Confirm delete": "Confirmar eliminação",
 			"Are you sure you want to delete this item?": "Tem a certeza de que pretende eliminar este item?",
 			Cancel: "Cancelar",
@@ -5304,10 +5484,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/history-page/i18n/pt.ts
-	var pt_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$51 });
-	var translations$51;
+	var pt_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$52 });
+	var translations$52;
 	var init_pt$22 = __esmMin((() => {
-		translations$51 = {
+		translations$52 = {
 			"entity_id={0}": "entity_id={0}",
 			"device_id={0}": "device_id={0}",
 			"area_id={0}": "area_id={0}",
@@ -5405,20 +5585,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/timeline/i18n/pt.ts
-	var pt_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$50 });
-	var translations$50;
+	var pt_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$51 });
+	var translations$51;
 	var init_pt$21 = __esmMin((() => {
-		translations$50 = {
+		translations$51 = {
 			Wk: "Sem.",
 			"Week of": "Semana de"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-aggregate-group/i18n/pt.ts
-	var pt_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$49 });
-	var translations$49;
+	var pt_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$50 });
+	var translations$50;
 	var init_pt$20 = __esmMin((() => {
-		translations$49 = {
+		translations$50 = {
 			"Aggregate series": "Séries agregadas",
 			"Count changes to a state": "Contar mudanças para um estado",
 			"Count all state changes": "Contar todas as mudanças de estado",
@@ -5463,10 +5643,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/i18n/pt.ts
-	var pt_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$48 });
-	var translations$48;
+	var pt_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$49 });
+	var translations$49;
 	var init_pt$19 = __esmMin((() => {
-		translations$48 = {
+		translations$49 = {
 			Direction: "Direção",
 			Both: "Ambos",
 			Above: "Acima",
@@ -5514,10 +5694,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-delta-group/i18n/pt.ts
-	var pt_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$47 });
-	var translations$47;
+	var pt_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$48 });
+	var translations$48;
 	var init_pt$18 = __esmMin((() => {
-		translations$47 = {
+		translations$48 = {
 			"Show delta vs selected date window": "Mostrar delta face à janela de datas selecionada",
 			"Select a date window tab to enable delta analysis.": "Selecione um separador de janela de datas para ativar a análise delta.",
 			"Show delta in tooltip": "Mostrar delta na dica",
@@ -5526,10 +5706,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/i18n/pt.ts
-	var pt_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$46 });
-	var translations$46;
+	var pt_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$47 });
+	var translations$47;
 	var init_pt$17 = __esmMin((() => {
-		translations$46 = {
+		translations$47 = {
 			"Show rate of change": "Mostrar taxa de variação",
 			"Show rate of change crosshairs": "Mostrar guias da taxa de variação",
 			"Rate window": "Janela da taxa",
@@ -5541,10 +5721,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-sample-group/i18n/pt.ts
-	var pt_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$45 });
-	var translations$45;
+	var pt_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$46 });
+	var translations$46;
 	var init_pt$16 = __esmMin((() => {
-		translations$45 = {
+		translations$46 = {
 			Downsampling: "Reamostragem",
 			Interval: "Intervalo",
 			Aggregate: "Agregado",
@@ -5576,20 +5756,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/i18n/pt.ts
-	var pt_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$44 });
-	var translations$44;
+	var pt_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$45 });
+	var translations$45;
 	var init_pt$15 = __esmMin((() => {
-		translations$44 = {
+		translations$45 = {
 			"Show min / max / mean": "Mostrar mín. / máx. / média",
 			"Show range shading": "Mostrar sombreamento do intervalo"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/i18n/pt.ts
-	var pt_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$43 });
-	var translations$43;
+	var pt_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$44 });
+	var translations$44;
 	var init_pt$14 = __esmMin((() => {
-		translations$43 = {
+		translations$44 = {
 			"Show threshold analysis": "Mostrar análise de limiar",
 			"Shade threshold area": "Sombrear área do limiar",
 			Threshold: "Limiar",
@@ -5600,10 +5780,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/i18n/pt.ts
-	var pt_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$42 });
-	var translations$42;
+	var pt_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$43 });
+	var translations$43;
 	var init_pt$13 = __esmMin((() => {
-		translations$42 = {
+		translations$43 = {
 			"Show trend lines": "Mostrar linhas de tendência",
 			"Show trend crosshairs": "Mostrar guias da tendência",
 			"Trend method": "Método de tendência",
@@ -5621,10 +5801,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/i18n/pt.ts
-	var pt_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$41 });
-	var translations$41;
+	var pt_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$42 });
+	var translations$42;
 	var init_pt$12 = __esmMin((() => {
-		translations$41 = {
+		translations$42 = {
 			"Add all series from chart": "Adicionar todas as séries do gráfico",
 			"Add from current chart": "Adicionar do gráfico atual",
 			"Create anomaly monitor": "Criar monitor de anomalias",
@@ -5634,37 +5814,50 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab-rail/i18n/pt.ts
-	var pt_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$40 });
-	var translations$40;
+	var pt_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$41 });
+	var translations$41;
 	var init_pt$11 = __esmMin((() => {
-		translations$40 = { "Add date window": "Adicionar janela de datas" };
+		translations$41 = {
+			"Add date window": "Adicionar janela de datas",
+			"No data yet for this period": "Ainda não há dados para este período"
+		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/i18n/pt.ts
-	var pt_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$39 });
-	var translations$39;
+	var pt_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$40 });
+	var translations$40;
 	var init_pt$10 = __esmMin((() => {
-		translations$39 = {
-			"A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later.": "Uma janela de datas guarda um intervalo de datas com nome como separador, para que possa pré-visualizá-lo rapidamente face ao intervalo selecionado ou regressar mais tarde a ele no gráfico.",
+		translations$40 = {
 			Name: "Nome",
-			"e.g. Heating season start": "ex.: início da época de aquecimento",
-			"Date range": "Intervalo de datas",
 			Start: "Início",
 			End: "Fim",
-			"Use previous range": "Usar intervalo anterior",
-			"Use next range": "Usar intervalo seguinte",
 			"Delete date window": "Eliminar janela de datas",
-			"Enter a name for this date window.": "Introduza um nome para esta janela de datas.",
-			"The start date must be before the end date.": "A data de início deve ser anterior à data de fim.",
-			Cancel: "Cancelar"
+			Cancel: "Cancelar",
+			"Fixed dates": "Datas fixas",
+			Period: "Período",
+			"No data yet for this period while the chart is up to date.": "Ainda não há dados para este período enquanto o gráfico estiver atualizado.",
+			Relative: "Relativa",
+			"Date window type": "Tipo de janela de datas",
+			"Pins an exact start and end. The window stays put when the chart moves.": "Fixa um início e um fim exatos. A janela fica no lugar quando o gráfico se move.",
+			"Length {0}": "Duração {0}",
+			"End must be after start.": "O fim tem de ser depois do início.",
+			"Fill from": "Preencher com",
+			"Selected range": "Intervalo selecionado",
+			"Previous range": "Intervalo anterior",
+			"Next range": "Intervalo seguinte",
+			"Follows the selected range. When you move the chart, this window moves with it and keeps the same length.": "Segue o intervalo selecionado. Quando move o gráfico, esta janela move-se com ele e mantém a mesma duração.",
+			"This window": "Esta janela",
+			"Both are {0} long.": "Ambos duram {0}.",
+			"(optional)": "(opcional)",
+			"Custom range": "Intervalo personalizado"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/i18n/pt.ts
-	var pt_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$38 });
-	var translations$38;
+	var pt_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$39 });
+	var translations$39;
 	var init_pt$9 = __esmMin((() => {
-		translations$38 = {
+		translations$39 = {
 			Datapoints: "Pontos de dados",
 			"Choose which annotation datapoints appear on the chart.": "Escolha quais os pontos de dados de anotação que aparecem no gráfico.",
 			"Linked to selected targets": "Ligados aos alvos selecionados",
@@ -5674,10 +5867,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/i18n/pt.ts
-	var pt_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$37 });
-	var translations$37;
+	var pt_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$38 });
+	var translations$38;
 	var init_pt$8 = __esmMin((() => {
-		translations$37 = {
+		translations$38 = {
 			"Analysis configured": "Análise configurada",
 			"Configure analysis": "Configurar análise",
 			"Stepped series": "Série em degraus",
@@ -5689,17 +5882,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/i18n/pt.ts
-	var pt_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$36 });
-	var translations$36;
+	var pt_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$37 });
+	var translations$37;
 	var init_pt$7 = __esmMin((() => {
-		translations$36 = {};
+		translations$37 = {};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/ai-query-brief-dialog/i18n/pt.ts
-	var pt_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$35 });
-	var translations$35;
+	var pt_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$36 });
+	var translations$36;
 	var init_pt$6 = __esmMin((() => {
-		translations$35 = {
+		translations$36 = {
 			"AI query brief": "Resumo de consulta para IA",
 			"This brief is intended for another AI to fetch raw Home Assistant history and hass_datapoints anomaly details. Review it, then copy it into your AI tool of choice.": "Este resumo foi feito para outra IA obter o historico bruto do Home Assistant e os detalhes de anomalias do hass_datapoints. Revise-o e depois copie-o para a ferramenta de IA de sua escolha.",
 			"Copy-ready brief": "Resumo pronto para copiar",
@@ -5711,10 +5904,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/history-targets/i18n/pt.ts
-	var pt_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$34 });
-	var translations$34;
+	var pt_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$35 });
+	var translations$35;
 	var init_pt$5 = __esmMin((() => {
-		translations$34 = {
+		translations$35 = {
 			Targets: "Alvos",
 			"Each row controls one chart series.": "Cada linha controla uma série do gráfico.",
 			"Add target": "Adicionar alvo",
@@ -5723,10 +5916,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/panel-shell/i18n/pt.ts
-	var pt_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$33 });
-	var translations$33;
+	var pt_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$34 });
+	var translations$34;
 	var init_pt$4 = __esmMin((() => {
-		translations$33 = {
+		translations$34 = {
 			"Loading Datapoints…": "A carregar pontos de dados…",
 			Datapoints: "Pontos de dados",
 			"Page options": "Opções da página",
@@ -5741,10 +5934,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/range-toolbar/i18n/pt.ts
-	var pt_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$32 });
-	var translations$32;
+	var pt_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$33 });
+	var translations$33;
 	var init_pt$3 = __esmMin((() => {
-		translations$32 = {
+		translations$33 = {
 			"Toggle sidebar": "Alternar barra lateral",
 			Start: "Início",
 			End: "Fim",
@@ -5769,26 +5962,27 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/series-preview-dialog/i18n/pt.ts
-	var pt_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$31 });
-	var translations$31;
+	var pt_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$32 });
+	var translations$32;
 	var init_pt$2 = __esmMin((() => {
-		translations$31 = {
+		translations$32 = {
 			Close: "Fechar",
 			"Open in chart": "Abrir no gráfico"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/i18n/pt.ts
-	var pt_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$30 });
-	var translations$30;
+	var pt_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$31 });
+	var translations$31;
 	var init_pt$1 = __esmMin((() => {
-		translations$30 = { "Selected range": "Intervalo selecionado" };
+		translations$31 = { "Selected range": "Intervalo selecionado" };
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/i18n/locales/pt.ts
 	var pt_exports = /* @__PURE__ */ __exportAll({ templates: () => templates$1 });
 	var modules$1, merged$1, templates$1;
 	var init_pt = __esmMin((() => {
+		init_pt$31();
 		init_pt$30();
 		init_pt$29();
 		init_pt$28();
@@ -5820,13 +6014,14 @@
 		init_pt$2();
 		init_pt$1();
 		modules$1 = /* #__PURE__ */ Object.assign({
-			"../../../cards/action/i18n/pt.ts": pt_exports$30,
-			"../../../cards/history/history-chart/i18n/pt.ts": pt_exports$29,
-			"../../../cards/history/i18n/pt.ts": pt_exports$28,
-			"../../../cards/list/i18n/pt.ts": pt_exports$27,
-			"../../../cards/quick/i18n/pt.ts": pt_exports$26,
-			"../../../cards/sensor/i18n/pt.ts": pt_exports$25,
-			"../../chart/i18n/pt.ts": pt_exports$24,
+			"../../../cards/action/i18n/pt.ts": pt_exports$31,
+			"../../../cards/history/history-chart/i18n/pt.ts": pt_exports$30,
+			"../../../cards/history/i18n/pt.ts": pt_exports$29,
+			"../../../cards/list/i18n/pt.ts": pt_exports$28,
+			"../../../cards/quick/i18n/pt.ts": pt_exports$27,
+			"../../../cards/sensor/i18n/pt.ts": pt_exports$26,
+			"../../chart/i18n/pt.ts": pt_exports$25,
+			"../../domain/i18n/pt.ts": pt_exports$24,
 			"../../ha/i18n/pt.ts": pt_exports$23,
 			"../../history-page/i18n/pt.ts": pt_exports$22,
 			"../../timeline/i18n/pt.ts": pt_exports$21,
@@ -5857,10 +6052,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/i18n/zh-hans.ts
-	var zh_hans_exports$30 = /* @__PURE__ */ __exportAll({ translations: () => translations$29 });
-	var translations$29;
-	var init_zh_hans$30 = __esmMin((() => {
-		translations$29 = {
+	var zh_hans_exports$31 = /* @__PURE__ */ __exportAll({ translations: () => translations$30 });
+	var translations$30;
+	var init_zh_hans$31 = __esmMin((() => {
+		translations$30 = {
 			General: "常规",
 			"Related items": "关联项",
 			"Datapoint Appearance": "数据点外观",
@@ -5877,20 +6072,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/i18n/zh-hans.ts
-	var zh_hans_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$28 });
-	var translations$28;
-	var init_zh_hans$29 = __esmMin((() => {
-		translations$28 = {
+	var zh_hans_exports$30 = /* @__PURE__ */ __exportAll({ translations: () => translations$29 });
+	var translations$29;
+	var init_zh_hans$30 = __esmMin((() => {
+		translations$29 = {
 			"Date window:": "日期窗口：",
 			"Actual:": "实际："
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/i18n/zh-hans.ts
-	var zh_hans_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$27 });
-	var translations$27;
-	var init_zh_hans$28 = __esmMin((() => {
-		translations$27 = {
+	var zh_hans_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$28 });
+	var translations$28;
+	var init_zh_hans$29 = __esmMin((() => {
+		translations$28 = {
 			General: "常规",
 			Entity: "实体",
 			"Multiple entities": "多个实体",
@@ -5907,10 +6102,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/i18n/zh-hans.ts
-	var zh_hans_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$26 });
-	var translations$26;
-	var init_zh_hans$27 = __esmMin((() => {
-		translations$26 = {
+	var zh_hans_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$27 });
+	var translations$27;
+	var init_zh_hans$28 = __esmMin((() => {
+		translations$27 = {
 			"Search datapoints…": "搜索数据点…",
 			"Delete record": "删除记录",
 			Delete: "删除",
@@ -5928,10 +6123,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/i18n/zh-hans.ts
-	var zh_hans_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$25 });
-	var translations$25;
-	var init_zh_hans$26 = __esmMin((() => {
-		translations$25 = {
+	var zh_hans_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$26 });
+	var translations$26;
+	var init_zh_hans$27 = __esmMin((() => {
+		translations$26 = {
 			General: "常规",
 			"Icon & colour": "图标和颜色",
 			"Related items": "关联项",
@@ -5949,10 +6144,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/i18n/zh-hans.ts
-	var zh_hans_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$24 });
-	var translations$24;
-	var init_zh_hans$25 = __esmMin((() => {
-		translations$24 = {
+	var zh_hans_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$25 });
+	var translations$25;
+	var init_zh_hans$26 = __esmMin((() => {
+		translations$25 = {
 			Entity: "实体",
 			Display: "显示",
 			"Records list": "记录列表",
@@ -5972,10 +6167,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/i18n/zh-hans.ts
-	var zh_hans_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$23 });
-	var translations$23;
-	var init_zh_hans$24 = __esmMin((() => {
-		translations$23 = {
+	var zh_hans_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$24 });
+	var translations$24;
+	var init_zh_hans$25 = __esmMin((() => {
+		translations$24 = {
 			"Add datapoint at {0}": "在 {0} 添加数据点",
 			Pinned: "已固定",
 			"Unpin tooltip": "取消固定提示",
@@ -6009,6 +6204,30 @@
 			Rate: "变化率",
 			Delta: "差值",
 			Threshold: "阈值"
+		};
+	}));
+	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/domain/i18n/zh-hans.ts
+	var zh_hans_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$23 });
+	var translations$23;
+	var init_zh_hans$24 = __esmMin((() => {
+		translations$23 = {
+			"Previous period": "上一时段",
+			"Next period": "下一时段",
+			"2 periods back": "前 2 个时段",
+			"3 periods back": "前 3 个时段",
+			"2 periods ahead": "后 2 个时段",
+			"3 periods ahead": "后 3 个时段",
+			"Same period last month": "上月同期",
+			"Same period 2 months ago": "2 个月前同期",
+			"Same period 3 months ago": "3 个月前同期",
+			"Same period next month": "下月同期",
+			"Same period in 2 months": "2 个月后同期",
+			"Same period in 3 months": "3 个月后同期",
+			"Same period last year": "去年同期",
+			"Same period next year": "明年同期",
+			"Same weekdays last year": "去年相同星期",
+			"Same period 2 years ago": "2 年前同期"
 		};
 	}));
 	//#endregion
@@ -6364,7 +6583,10 @@
 	var zh_hans_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$10 });
 	var translations$10;
 	var init_zh_hans$11 = __esmMin((() => {
-		translations$10 = { "Add date window": "添加日期窗口" };
+		translations$10 = {
+			"Add date window": "添加日期窗口",
+			"No data yet for this period": "此时段尚无数据"
+		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/i18n/zh-hans.ts
@@ -6372,18 +6594,28 @@
 	var translations$9;
 	var init_zh_hans$10 = __esmMin((() => {
 		translations$9 = {
-			"A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later.": "日期窗口会将一个命名的日期范围保存为标签页，这样你就可以快速将其与所选范围进行预览对比，或稍后在图表中跳回该范围。",
 			Name: "名称",
-			"e.g. Heating season start": "例如：供暖季开始",
-			"Date range": "日期范围",
 			Start: "开始",
 			End: "结束",
-			"Use previous range": "使用上一个范围",
-			"Use next range": "使用下一个范围",
 			"Delete date window": "删除日期窗口",
-			"Enter a name for this date window.": "请为此日期窗口输入名称。",
-			"The start date must be before the end date.": "开始日期必须早于结束日期。",
-			Cancel: "取消"
+			Cancel: "取消",
+			"Fixed dates": "固定日期",
+			Period: "时段",
+			"No data yet for this period while the chart is up to date.": "图表保持最新时，此时段尚无数据。",
+			Relative: "相对",
+			"Date window type": "日期窗口类型",
+			"Pins an exact start and end. The window stays put when the chart moves.": "固定确切的开始和结束时间。图表移动时，窗口保持不变。",
+			"Length {0}": "时长 {0}",
+			"End must be after start.": "结束时间必须晚于开始时间。",
+			"Fill from": "填充自",
+			"Selected range": "所选范围",
+			"Previous range": "上一范围",
+			"Next range": "下一范围",
+			"Follows the selected range. When you move the chart, this window moves with it and keeps the same length.": "跟随所选范围。移动图表时，此窗口随之移动并保持相同时长。",
+			"This window": "此窗口",
+			"Both are {0} long.": "两者时长均为 {0}。",
+			"(optional)": "（可选）",
+			"Custom range": "自定义范围"
 		};
 	}));
 	//#endregion
@@ -6516,6 +6748,7 @@
 	var zh_hans_exports = /* @__PURE__ */ __exportAll({ templates: () => templates });
 	var modules, merged, templates;
 	var init_zh_hans = __esmMin((() => {
+		init_zh_hans$31();
 		init_zh_hans$30();
 		init_zh_hans$29();
 		init_zh_hans$28();
@@ -6547,13 +6780,14 @@
 		init_zh_hans$2();
 		init_zh_hans$1();
 		modules = /* #__PURE__ */ Object.assign({
-			"../../../cards/action/i18n/zh-hans.ts": zh_hans_exports$30,
-			"../../../cards/history/history-chart/i18n/zh-hans.ts": zh_hans_exports$29,
-			"../../../cards/history/i18n/zh-hans.ts": zh_hans_exports$28,
-			"../../../cards/list/i18n/zh-hans.ts": zh_hans_exports$27,
-			"../../../cards/quick/i18n/zh-hans.ts": zh_hans_exports$26,
-			"../../../cards/sensor/i18n/zh-hans.ts": zh_hans_exports$25,
-			"../../chart/i18n/zh-hans.ts": zh_hans_exports$24,
+			"../../../cards/action/i18n/zh-hans.ts": zh_hans_exports$31,
+			"../../../cards/history/history-chart/i18n/zh-hans.ts": zh_hans_exports$30,
+			"../../../cards/history/i18n/zh-hans.ts": zh_hans_exports$29,
+			"../../../cards/list/i18n/zh-hans.ts": zh_hans_exports$28,
+			"../../../cards/quick/i18n/zh-hans.ts": zh_hans_exports$27,
+			"../../../cards/sensor/i18n/zh-hans.ts": zh_hans_exports$26,
+			"../../chart/i18n/zh-hans.ts": zh_hans_exports$25,
+			"../../domain/i18n/zh-hans.ts": zh_hans_exports$24,
 			"../../ha/i18n/zh-hans.ts": zh_hans_exports$23,
 			"../../history-page/i18n/zh-hans.ts": zh_hans_exports$22,
 			"../../timeline/i18n/zh-hans.ts": zh_hans_exports$21,
@@ -13604,7 +13838,166 @@
 		return null;
 	}
 	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/domain/relative-date-window.ts
+	/**
+	* Relative date windows: comparison windows defined by a preset ("Previous
+	* period", "Same period last year", …) instead of fixed dates. A relative
+	* window is resolved against the range currently selected on the chart and
+	* always lasts exactly as long as that range.
+	*
+	* Pure and DOM-free. This module is the only place that does date maths on
+	* presets.
+	*/
+	var RELATIVE_DATE_WINDOW_PRESETS = [
+		"previous_period",
+		"previous_period_2",
+		"previous_period_3",
+		"next_period",
+		"next_period_2",
+		"next_period_3",
+		"months_back_1",
+		"months_back_2",
+		"months_back_3",
+		"months_ahead_1",
+		"months_ahead_2",
+		"months_ahead_3",
+		"year_back_1",
+		"year_ahead_1",
+		"weekdays_back_1y",
+		"year_back_2"
+	];
+	var DEFAULT_RELATIVE_DATE_WINDOW_PRESET = "previous_period";
+	var PRESET_SHIFTS = {
+		previous_period: {
+			kind: "period",
+			periods: -1
+		},
+		previous_period_2: {
+			kind: "period",
+			periods: -2
+		},
+		previous_period_3: {
+			kind: "period",
+			periods: -3
+		},
+		next_period: {
+			kind: "period",
+			periods: 1
+		},
+		next_period_2: {
+			kind: "period",
+			periods: 2
+		},
+		next_period_3: {
+			kind: "period",
+			periods: 3
+		},
+		months_back_1: {
+			kind: "months",
+			amount: -1
+		},
+		months_back_2: {
+			kind: "months",
+			amount: -2
+		},
+		months_back_3: {
+			kind: "months",
+			amount: -3
+		},
+		months_ahead_1: {
+			kind: "months",
+			amount: 1
+		},
+		months_ahead_2: {
+			kind: "months",
+			amount: 2
+		},
+		months_ahead_3: {
+			kind: "months",
+			amount: 3
+		},
+		year_back_1: {
+			kind: "months",
+			amount: -12
+		},
+		year_ahead_1: {
+			kind: "months",
+			amount: 12
+		},
+		weekdays_back_1y: {
+			kind: "ms",
+			amount: -314496e5
+		},
+		year_back_2: {
+			kind: "months",
+			amount: -24
+		}
+	};
+	function isRelativeDateWindowPreset(value) {
+		return typeof value === "string" && RELATIVE_DATE_WINDOW_PRESETS.includes(value);
+	}
+	/** Localized, user-facing label for a preset. */
+	function relativeDateWindowPresetLabel(preset) {
+		switch (preset) {
+			case "previous_period": return msg("Previous period");
+			case "previous_period_2": return msg("2 periods back");
+			case "previous_period_3": return msg("3 periods back");
+			case "next_period": return msg("Next period");
+			case "next_period_2": return msg("2 periods ahead");
+			case "next_period_3": return msg("3 periods ahead");
+			case "months_back_1": return msg("Same period last month");
+			case "months_back_2": return msg("Same period 2 months ago");
+			case "months_back_3": return msg("Same period 3 months ago");
+			case "months_ahead_1": return msg("Same period next month");
+			case "months_ahead_2": return msg("Same period in 2 months");
+			case "months_ahead_3": return msg("Same period in 3 months");
+			case "year_back_1": return msg("Same period last year");
+			case "year_ahead_1": return msg("Same period next year");
+			case "weekdays_back_1y": return msg("Same weekdays last year");
+			case "year_back_2": return msg("Same period 2 years ago");
+			default: return preset;
+		}
+	}
+	/**
+	* Shift `date` by whole calendar months, keeping the local wall-clock time and
+	* clamping the day to the target month's last day (31 Mar − 1 month = 28 Feb,
+	* 29 Feb − 12 months = 28 Feb).
+	*/
+	function addCalendarMonthsClamped(date, months) {
+		const year = date.getFullYear();
+		const monthIndex = date.getMonth() + months;
+		const targetYear = year + Math.floor(monthIndex / 12);
+		const targetMonth = (monthIndex % 12 + 12) % 12;
+		const lastDay = new Date(targetYear, targetMonth + 1, 0).getDate();
+		return new Date(targetYear, targetMonth, Math.min(date.getDate(), lastDay), date.getHours(), date.getMinutes(), date.getSeconds(), date.getMilliseconds());
+	}
+	/**
+	* Resolve a preset against the selected range. The resolved window always
+	* lasts exactly `rangeEnd - rangeStart`; only its start is shifted. Returns
+	* null for an invalid range.
+	*/
+	function resolveRelativeDateWindow(preset, rangeStart, rangeEnd, now = /* @__PURE__ */ new Date()) {
+		const startMs = rangeStart?.getTime?.();
+		const endMs = rangeEnd?.getTime?.();
+		if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs) return null;
+		const durationMs = endMs - startMs;
+		const shift = PRESET_SHIFTS[preset];
+		if (!shift) return null;
+		let resolvedStartMs;
+		if (shift.kind === "period") resolvedStartMs = startMs + shift.periods * durationMs;
+		else if (shift.kind === "ms") resolvedStartMs = startMs + shift.amount;
+		else resolvedStartMs = addCalendarMonthsClamped(rangeStart, shift.amount).getTime();
+		return {
+			start: new Date(resolvedStartMs),
+			end: new Date(resolvedStartMs + durationMs),
+			available: resolvedStartMs < now.getTime()
+		};
+	}
+	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/history-page/history-url-state.ts
+	function isRelativeDateWindow(window) {
+		return window?.kind === "relative" && "preset" in window && !!window.preset;
+	}
 	function makeDateWindowId(label, existingIds = /* @__PURE__ */ new Set()) {
 		const base = slugifySeriesName(label) || "date-window";
 		let candidate = base;
@@ -13621,29 +14014,85 @@
 		const normalized = [];
 		windows.forEach((window, index) => {
 			const label = String(window?.label || window?.name || "").trim();
-			const start = parseDateValue(window?.start_time || window?.start);
-			const end = parseDateValue(window?.end_time || window?.end);
-			if (!label || !start || !end || start >= end) return;
+			if (!label) return;
+			const isRelative = window?.kind === "relative";
+			let entry;
+			if (isRelative) {
+				if (!isRelativeDateWindowPreset(window?.preset)) return;
+				entry = {
+					label,
+					kind: "relative",
+					preset: window.preset
+				};
+			} else {
+				const start = parseDateValue(window?.start_time || window?.start);
+				const end = parseDateValue(window?.end_time || window?.end);
+				if (!start || !end || start >= end) return;
+				entry = {
+					label,
+					start_time: start.toISOString(),
+					end_time: end.toISOString()
+				};
+			}
 			const id = String(window?.id || "").trim() || makeDateWindowId(`${label}-${index + 1}`, seen);
 			if (seen.has(id)) return;
 			seen.add(id);
 			normalized.push({
 				id,
-				label,
-				start_time: start.toISOString(),
-				end_time: end.toISOString()
+				...entry
 			});
 		});
 		return normalized;
 	}
+	/**
+	* Resolve saved windows against the selected range. Fixed windows pass through
+	* unchanged (`available: true`); relative windows get the dates their preset
+	* resolves to. Relative windows are dropped when there is no valid range.
+	*/
+	function resolveDateWindows(windows, rangeStart, rangeEnd, now = /* @__PURE__ */ new Date()) {
+		if (!Array.isArray(windows)) return [];
+		const resolved = [];
+		windows.forEach((window) => {
+			if (!isRelativeDateWindow(window)) {
+				resolved.push({
+					...window,
+					available: true
+				});
+				return;
+			}
+			if (!rangeStart || !rangeEnd) return;
+			const range = resolveRelativeDateWindow(window.preset, rangeStart, rangeEnd, now);
+			if (!range) return;
+			resolved.push({
+				id: window.id,
+				label: window.label,
+				kind: "relative",
+				preset: window.preset,
+				start_time: range.start.toISOString(),
+				end_time: range.end.toISOString(),
+				available: range.available
+			});
+		});
+		return resolved;
+	}
+	var RELATIVE_URL_PREFIX = "@";
 	function parseDateWindowsParam(value) {
 		if (!value || typeof value !== "string") return [];
 		return normalizeDateWindows(value.split("|").map((entry) => {
 			const [rawId, rawLabel, rawStart, rawEnd] = String(entry).split("~");
+			const id = decodeURIComponent(rawId || "");
+			const label = decodeURIComponent(rawLabel || "");
+			const third = decodeURIComponent(rawStart || "");
+			if (third.startsWith(RELATIVE_URL_PREFIX)) return {
+				id,
+				label,
+				kind: "relative",
+				preset: third.slice(1)
+			};
 			return {
-				id: decodeURIComponent(rawId || ""),
-				label: decodeURIComponent(rawLabel || ""),
-				start_time: decodeURIComponent(rawStart || ""),
+				id,
+				label,
+				start_time: third,
 				end_time: decodeURIComponent(rawEnd || "")
 			};
 		}));
@@ -13651,12 +14100,16 @@
 	function serializeDateWindowsParam(windows) {
 		const normalized = normalizeDateWindows(windows);
 		if (!normalized.length) return "";
-		return normalized.map((window) => [
+		return normalized.map((window) => (isRelativeDateWindow(window) ? [
+			encodeURIComponent(window.id),
+			encodeURIComponent(window.label ?? ""),
+			encodeURIComponent(`${RELATIVE_URL_PREFIX}${window.preset}`)
+		] : [
 			encodeURIComponent(window.id),
 			encodeURIComponent(window.label ?? ""),
 			encodeURIComponent(window.start_time),
 			encodeURIComponent(window.end_time)
-		].join("~")).join("|");
+		]).join("~")).join("|");
 	}
 	function parseHistoryPageStateParam(value) {
 		if (!value || typeof value !== "string") return null;
@@ -19750,7 +20203,7 @@
 	var DEFAULT_I18N$6 = createDefaultI18n(["Remove {0}"]);
 	var _type_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _itemId_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _icon_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
+	var _icon_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
 	var _name_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
 	var _secondaryText_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _stateObj_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
@@ -19761,7 +20214,7 @@
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _type_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _itemId_accessor_storage, "");
-			_classPrivateFieldInitSpec(this, _icon_accessor_storage$2, "");
+			_classPrivateFieldInitSpec(this, _icon_accessor_storage$3, "");
 			_classPrivateFieldInitSpec(this, _name_accessor_storage$4, "");
 			_classPrivateFieldInitSpec(this, _secondaryText_accessor_storage, "");
 			_classPrivateFieldInitSpec(this, _stateObj_accessor_storage$2, null);
@@ -19781,10 +20234,10 @@
 			_classPrivateFieldSet2(_itemId_accessor_storage, this, value);
 		}
 		get icon() {
-			return _classPrivateFieldGet2(_icon_accessor_storage$2, this);
+			return _classPrivateFieldGet2(_icon_accessor_storage$3, this);
 		}
 		set icon(value) {
-			_classPrivateFieldSet2(_icon_accessor_storage$2, this, value);
+			_classPrivateFieldSet2(_icon_accessor_storage$3, this, value);
 		}
 		get name() {
 			return _classPrivateFieldGet2(_name_accessor_storage$4, this);
@@ -21648,7 +22101,7 @@
 	//#region custom_components/hass_datapoints/src/atoms/analysis/analysis-group/analysis-group.ts
 	var _label_accessor_storage$10 = /* @__PURE__ */ new WeakMap();
 	var _checked_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _disabled_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
+	var _disabled_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
 	var _alignTop_accessor_storage = /* @__PURE__ */ new WeakMap();
 	/**
 	* Toggle-style group container that shows/hides slotted sub-options.
@@ -21659,7 +22112,7 @@
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _label_accessor_storage$10, "");
 			_classPrivateFieldInitSpec(this, _checked_accessor_storage, false);
-			_classPrivateFieldInitSpec(this, _disabled_accessor_storage$2, false);
+			_classPrivateFieldInitSpec(this, _disabled_accessor_storage$3, false);
 			_classPrivateFieldInitSpec(this, _alignTop_accessor_storage, false);
 		}
 		get label() {
@@ -21675,10 +22128,10 @@
 			_classPrivateFieldSet2(_checked_accessor_storage, this, value);
 		}
 		get disabled() {
-			return _classPrivateFieldGet2(_disabled_accessor_storage$2, this);
+			return _classPrivateFieldGet2(_disabled_accessor_storage$3, this);
 		}
 		set disabled(value) {
-			_classPrivateFieldSet2(_disabled_accessor_storage$2, this, value);
+			_classPrivateFieldSet2(_disabled_accessor_storage$3, this, value);
 		}
 		get alignTop() {
 			return _classPrivateFieldGet2(_alignTop_accessor_storage, this);
@@ -21756,7 +22209,7 @@
 	//#region custom_components/hass_datapoints/src/atoms/form/inline-select/inline-select.ts
 	var _value_accessor_storage$7 = /* @__PURE__ */ new WeakMap();
 	var _options_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
-	var _disabled_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _disabled_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
 	/**
 	* Compact native `<select>` for use inside analysis groups and sidebar sections.
 	* @fires dp-change - `{ type: "select", value: string }`
@@ -21766,7 +22219,7 @@
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _value_accessor_storage$7, "");
 			_classPrivateFieldInitSpec(this, _options_accessor_storage$2, []);
-			_classPrivateFieldInitSpec(this, _disabled_accessor_storage$1, false);
+			_classPrivateFieldInitSpec(this, _disabled_accessor_storage$2, false);
 		}
 		get value() {
 			return _classPrivateFieldGet2(_value_accessor_storage$7, this);
@@ -21781,10 +22234,10 @@
 			_classPrivateFieldSet2(_options_accessor_storage$2, this, value);
 		}
 		get disabled() {
-			return _classPrivateFieldGet2(_disabled_accessor_storage$1, this);
+			return _classPrivateFieldGet2(_disabled_accessor_storage$2, this);
 		}
 		set disabled(value) {
-			_classPrivateFieldSet2(_disabled_accessor_storage$1, this, value);
+			_classPrivateFieldSet2(_disabled_accessor_storage$2, this, value);
 		}
 		_onChange(e) {
 			dispatchChange(this, {
@@ -24763,6 +25216,18 @@
 			minute: "2-digit"
 		});
 	}
+	function formatRangeDuration(start, end) {
+		if (!(start instanceof Date) || !(end instanceof Date)) return "--";
+		const totalMinutes = Math.max(0, Math.round((end.getTime() - start.getTime()) / 6e4));
+		const days = Math.floor(totalMinutes / 1440);
+		const hours = Math.floor(totalMinutes % 1440 / 60);
+		const minutes = totalMinutes % 60;
+		const parts = [];
+		if (days) parts.push(`${days}d`);
+		if (hours) parts.push(`${hours}h`);
+		if (minutes || !parts.length) parts.push(`${minutes}m`);
+		return parts.join(" ");
+	}
 	function clampNumber(value, min, max) {
 		return Math.min(max, Math.max(min, value));
 	}
@@ -25030,6 +25495,24 @@
 			year: "numeric"
 		});
 		return start.getFullYear() === end.getFullYear() ? `${fmt(start)} – ${fmt(end)}` : `${fmtYear(start)} – ${fmtYear(end)}`;
+	}
+	/**
+	* Compact, localized "start – end" label that includes times, e.g.
+	* "Nov 9, 11:33 – 20:40" when both fall on the same day, otherwise
+	* "Nov 9, 11:33 – Nov 10, 20:40". The year is added when they differ.
+	*/
+	function formatDateTimeRange(start, end) {
+		const withYear = start.getFullYear() !== end.getFullYear();
+		const day = (d) => d.toLocaleDateString(void 0, {
+			month: "short",
+			day: "numeric",
+			...withYear ? { year: "numeric" } : {}
+		});
+		const time = (d) => d.toLocaleTimeString(void 0, {
+			hour: "2-digit",
+			minute: "2-digit"
+		});
+		return start.toDateString() === end.toDateString() ? `${day(start)}, ${time(start)} – ${time(end)}` : `${day(start)}, ${time(start)} – ${day(end)}, ${time(end)}`;
 	}
 	function shiftDateWindowByUnit(date, unit, amount) {
 		const shifted = new Date(date);
@@ -27965,6 +28448,21 @@
     color: var(--secondary-text-color);
   }
 
+  .chart-tab.disabled .chart-tab-trigger {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .chart-tab.disabled:hover {
+    border-bottom-color: transparent;
+  }
+
+  .chart-tab-icon {
+    --mdc-icon-size: 14px;
+    flex: 0 0 auto;
+    color: var(--secondary-text-color);
+  }
+
   .chart-tab.active .chart-tab-trigger {
     color: var(--primary-text-color);
     font-weight: 600;
@@ -28130,9 +28628,16 @@
 	var _previewing_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _loading_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
 	var _editable_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _icon_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
+	var _disabled_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _disabledReason_accessor_storage = /* @__PURE__ */ new WeakMap();
 	/**
 	* `comparison-tab` renders a single comparison date-window tab in the chart
-	* tab rail, handling active, previewing, loading, and editable states.
+	* tab rail, handling active, previewing, loading, editable and disabled states.
+	*
+	* A disabled tab (e.g. a relative window that lies entirely in the future)
+	* is dimmed and ignores activate/hover, but its edit and delete actions still
+	* work so the window can always be changed or removed.
 	*
 	* @fires dp-tab-activate - `{ tabId: string }` fired when the trigger button is clicked
 	* @fires dp-tab-hover - `{ tabId: string }` fired on mouseenter / trigger focus
@@ -28150,6 +28655,9 @@
 			_classPrivateFieldInitSpec(this, _previewing_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _loading_accessor_storage$1, false);
 			_classPrivateFieldInitSpec(this, _editable_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _icon_accessor_storage$2, "");
+			_classPrivateFieldInitSpec(this, _disabled_accessor_storage$1, false);
+			_classPrivateFieldInitSpec(this, _disabledReason_accessor_storage, "");
 		}
 		get tabId() {
 			return _classPrivateFieldGet2(_tabId_accessor_storage, this);
@@ -28193,6 +28701,24 @@
 		set editable(value) {
 			_classPrivateFieldSet2(_editable_accessor_storage, this, value);
 		}
+		get icon() {
+			return _classPrivateFieldGet2(_icon_accessor_storage$2, this);
+		}
+		set icon(value) {
+			_classPrivateFieldSet2(_icon_accessor_storage$2, this, value);
+		}
+		get disabled() {
+			return _classPrivateFieldGet2(_disabled_accessor_storage$1, this);
+		}
+		set disabled(value) {
+			_classPrivateFieldSet2(_disabled_accessor_storage$1, this, value);
+		}
+		get disabledReason() {
+			return _classPrivateFieldGet2(_disabledReason_accessor_storage, this);
+		}
+		set disabledReason(value) {
+			_classPrivateFieldSet2(_disabledReason_accessor_storage, this, value);
+		}
 		_emit(name) {
 			this.dispatchEvent(new CustomEvent(name, {
 				detail: { tabId: this.tabId },
@@ -28201,18 +28727,23 @@
 			}));
 		}
 		_onTriggerClick() {
+			if (this.disabled) return;
 			this._emit("dp-tab-activate");
 		}
 		_onMouseEnter() {
+			if (this.disabled) return;
 			this._emit("dp-tab-hover");
 		}
 		_onMouseLeave() {
+			if (this.disabled) return;
 			this._emit("dp-tab-leave");
 		}
 		_onTriggerFocus() {
+			if (this.disabled) return;
 			this._emit("dp-tab-hover");
 		}
 		_onTriggerBlur() {
+			if (this.disabled) return;
 			this._emit("dp-tab-leave");
 		}
 		_onEditClick(ev) {
@@ -28232,7 +28763,8 @@
 				"chart-tab": true,
 				active: this.active,
 				previewing: this.previewing,
-				loading: this.loading
+				loading: this.loading,
+				disabled: this.disabled
 			})}
         @mouseenter=${this._onMouseEnter}
         @mouseleave=${this._onMouseLeave}
@@ -28241,6 +28773,8 @@
           type="button"
           class="chart-tab-trigger"
           ?aria-current=${this.active}
+          aria-disabled=${this.disabled ? "true" : "false"}
+          title=${this.disabled && this.disabledReason ? this.disabledReason : A}
           @click=${this._onTriggerClick}
           @focus=${this._onTriggerFocus}
           @blur=${this._onTriggerBlur}
@@ -28251,6 +28785,11 @@
                     class="chart-tab-spinner"
                     aria-hidden="true"
                   ></span>` : null}
+              ${this.icon ? b`<ha-icon
+                    class="chart-tab-icon"
+                    icon=${this.icon}
+                    aria-hidden="true"
+                  ></ha-icon>` : null}
               <span class="chart-tab-label">${this.label}</span>
             </span>
             <span class="chart-tab-detail-row">
@@ -28293,6 +28832,12 @@
 	__decorate([n$1({ type: Boolean })], ComparisonTab.prototype, "previewing", null);
 	__decorate([n$1({ type: Boolean })], ComparisonTab.prototype, "loading", null);
 	__decorate([n$1({ type: Boolean })], ComparisonTab.prototype, "editable", null);
+	__decorate([n$1({ type: String })], ComparisonTab.prototype, "icon", null);
+	__decorate([n$1({ type: Boolean })], ComparisonTab.prototype, "disabled", null);
+	__decorate([n$1({
+		type: String,
+		attribute: "disabled-reason"
+	})], ComparisonTab.prototype, "disabledReason", null);
 	customElements.define("comparison-tab", ComparisonTab);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab-rail/comparison-tab-rail.ts
@@ -28392,6 +28937,9 @@
                   .previewing=${this.hoveredId === tab.id}
                   .loading=${this.loadingIds.includes(tab.id)}
                   .editable=${tab.editable}
+                  .icon=${tab.icon ?? ""}
+                  .disabled=${!!tab.disabled}
+                  .disabledReason=${tab.disabled ? msg("No data yet for this period") : ""}
                 ></comparison-tab>
               `)}
           </div>
@@ -28429,63 +28977,99 @@
   }
 
   /* --------------------------------------------------------------------------
-   * Layout — the dialog reads as a stack of distinct, well-spaced sections:
-   * intro blurb · name · date-range group (start/end + timeline) · shortcuts ·
+   * Layout: type tabs · one-line hint · that type's fields · optional name ·
    * actions. Each section owns its own vertical rhythm via the content grid.
    * ------------------------------------------------------------------------ */
   .date-window-dialog-content {
     display: grid;
     gap: var(--dp-spacing-lg);
-    padding: var(--dp-spacing-sm) 0 0;
+    padding: 0;
     overflow: visible;
   }
 
-  .date-window-dialog-body {
-    color: var(--secondary-text-color);
-    line-height: 1.45;
-  }
-
-  .date-window-dialog-field {
+  .date-window-dialog-panel {
     display: grid;
-    gap: var(--dp-spacing-xs);
-    overflow: visible;
+    gap: var(--dp-spacing-lg);
   }
 
-  .date-window-dialog-field.name-field {
-    max-width: 360px;
+  /* Type tabs (Relative first). */
+  .date-window-dialog-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
   }
 
-  .date-window-dialog-field label {
-    font-size: 0.9rem;
-    font-weight: 600;
+  .date-window-dialog-tab {
+    flex: 1 1 0;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--dp-spacing-sm);
+    padding: 14px 8px 12px;
+    border: none;
+    background: none;
+    color: var(--secondary-text-color);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .date-window-dialog-tab ha-icon {
+    --mdc-icon-size: 18px;
+  }
+
+  .date-window-dialog-tab:hover {
     color: var(--primary-text-color);
-  }
-
-  .date-window-dialog-field input {
-    width: 100%;
-  }
-
-  /* The "date range" group binds start/end and the timeline into one unit,
-   * set off from the rest of the form with a subtle surface + border. */
-  .date-range-group {
-    gap: var(--dp-spacing-md);
-    padding: var(--dp-spacing-md);
-    border: 1px solid
-      color-mix(
-        in srgb,
-        var(--divider-color, rgba(0, 0, 0, 0.12)) 80%,
-        transparent
-      );
-    border-radius: 14px;
     background: color-mix(
       in srgb,
-      var(--secondary-background-color, #f5f5f5) 45%,
+      var(--primary-text-color, #212121) 4%,
       transparent
     );
   }
 
-  .date-range-group > label {
-    font-size: 0.95rem;
+  .date-window-dialog-tab[aria-selected="true"] {
+    color: var(--primary-color, #03a9f4);
+  }
+
+  .date-window-dialog-tab[aria-selected="true"]::after {
+    content: "";
+    position: absolute;
+    left: 16px;
+    right: 16px;
+    bottom: -1px;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: var(--primary-color, #03a9f4);
+  }
+
+  .date-window-dialog-tab:focus-visible,
+  .date-window-dialog-chip:focus-visible {
+    outline: 2px solid var(--primary-color, #03a9f4);
+    outline-offset: 2px;
+  }
+
+  .date-window-dialog-hint {
+    margin: 0;
+    color: var(--secondary-text-color);
+    line-height: 1.5;
+  }
+
+  .date-window-dialog-field {
+    display: grid;
+    gap: 6px;
+    overflow: visible;
+  }
+
+  .date-window-dialog-field label {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--secondary-text-color);
+  }
+
+  .date-window-dialog-optional {
+    font-weight: 400;
+    opacity: 0.8;
   }
 
   .date-window-dialog-dates {
@@ -28497,63 +29081,131 @@
   .date-window-dialog-input {
     width: 100%;
     min-height: 44px;
-    padding: 0 12px;
-    border: 1px solid
-      color-mix(
-        in srgb,
-        var(--divider-color, rgba(0, 0, 0, 0.12)) 92%,
-        transparent
-      );
-    border-radius: 12px;
-    background: var(--card-background-color, #fff);
+    padding: 0 14px;
+    border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
+    border-radius: 10px;
+    background: var(--secondary-background-color, #f5f5f5);
     color: var(--primary-text-color);
     font: inherit;
     box-sizing: border-box;
   }
 
   .date-window-dialog-input:focus {
-    outline: 2px solid
-      color-mix(in srgb, var(--primary-color, #03a9f4) 36%, transparent);
-    outline-offset: 1px;
-    border-color: color-mix(
-      in srgb,
-      var(--primary-color, #03a9f4) 55%,
-      transparent
-    );
+    outline: 2px solid var(--primary-color, #03a9f4);
+    outline-offset: -1px;
+    border-color: transparent;
   }
 
   .date-window-dialog-input[aria-invalid="true"] {
-    border-color: color-mix(
+    border-color: var(--error-color, #db4437);
+  }
+
+  .date-window-dialog-length {
+    margin: calc(var(--dp-spacing-sm) * -1) 0 0;
+    font-size: 0.8125rem;
+    color: var(--secondary-text-color);
+  }
+
+  .date-window-dialog-error {
+    color: var(--error-color, #db4437);
+  }
+
+  /* "Fill from" chips (fixed dates only). */
+  .date-window-dialog-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--dp-spacing-sm);
+  }
+
+  .date-window-dialog-chips-label {
+    margin-right: 4px;
+    font-size: 0.8125rem;
+    color: var(--secondary-text-color);
+  }
+
+  .date-window-dialog-chip {
+    padding: 7px 14px;
+    border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
+    border-radius: 999px;
+    background: transparent;
+    color: var(--primary-text-color);
+    font: inherit;
+    font-size: 0.8125rem;
+    cursor: pointer;
+  }
+
+  .date-window-dialog-chip:hover {
+    background: var(--secondary-background-color, #f5f5f5);
+  }
+
+  /* Relative preview: selected range vs this window, plus a position strip. */
+  .date-window-dialog-preview {
+    display: grid;
+    gap: 10px;
+    padding: 14px 16px;
+    border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
+    border-radius: 14px;
+    background: var(--secondary-background-color, #f5f5f5);
+  }
+
+  .date-window-dialog-preview-row {
+    display: grid;
+    grid-template-columns: 12px 110px minmax(0, 1fr);
+    align-items: center;
+    gap: 10px;
+  }
+
+  .date-window-dialog-preview-row .swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+  }
+
+  .date-window-dialog-preview-row .key {
+    color: var(--secondary-text-color);
+  }
+
+  .date-window-dialog-preview-row .value {
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .is-selected {
+    background: var(--primary-color, #03a9f4);
+  }
+
+  .is-window {
+    background: var(--warning-color, #f5a54a);
+  }
+
+  .date-window-dialog-strip {
+    position: relative;
+    height: 10px;
+    margin-top: 4px;
+    border-radius: 5px;
+    background: color-mix(
       in srgb,
-      var(--error-color, #db4437) 70%,
+      var(--primary-text-color, #212121) 10%,
       transparent
     );
   }
 
-  /* The range timeline gets real breathing room inside the group. */
-  .date-window-dialog-timeline {
-    border-radius: 10px;
-    overflow: hidden;
-    padding: var(--dp-spacing-xs) 0;
+  .date-window-dialog-strip span {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-radius: 5px;
   }
 
-  .date-window-dialog-timeline range-timeline {
-    display: block;
-    height: 64px;
+  .date-window-dialog-strip .is-window {
+    opacity: 0.9;
   }
 
-  /* Inline validation messages, keyed to the offending field. */
-  .date-window-dialog-error {
+  .date-window-dialog-preview-note {
     margin: 0;
-    font-size: 0.85rem;
-    font-weight: 500;
-    color: var(--error-color, #db4437);
-  }
-
-  .date-window-dialog-shortcuts {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--dp-spacing-sm);
+    font-size: 0.8125rem;
+    color: var(--secondary-text-color);
   }
 
   /* --------------------------------------------------------------------------
@@ -28623,8 +29275,17 @@
   }
 
   @media (max-width: 720px) {
-    .date-window-dialog-content {
+    .date-window-dialog-content,
+    .date-window-dialog-panel {
       gap: var(--dp-spacing-md);
+    }
+
+    .date-window-dialog-preview-row {
+      grid-template-columns: 12px minmax(0, 1fr);
+    }
+
+    .date-window-dialog-preview-row .value {
+      grid-column: 2;
     }
 
     .date-window-dialog-dates {
@@ -28642,2153 +29303,34 @@
   }
 `;
 	//#endregion
-	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-timeline.styles.ts
-	var styles$36 = i$6`
-  :host {
-    display: block;
-    position: relative;
-    flex: 1 1 auto;
-    min-width: 0;
-  }
-
-  .range-selection-jump {
-    position: absolute;
-    top: 50%;
-    width: 30px;
-    height: 30px;
-    transform: translateY(-50%);
-    border: 0;
-    border-radius: 999px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
-    background: color-mix(
-      in srgb,
-      var(--primary-text-color, #111) 94%,
-      transparent
-    );
-    box-shadow:
-      0 8px 18px rgba(0, 0, 0, 0.12),
-      inset 0 0 0 1px
-        color-mix(
-          in srgb,
-          var(--divider-color, rgba(0, 0, 0, 0.12)) 82%,
-          transparent
-        );
-    color: var(--text-primary-color, #fff);
-    cursor: pointer;
-    z-index: 12;
-  }
-
-  .range-selection-jump[hidden] {
-    display: none;
-  }
-
-  .range-selection-jump.left {
-    left: 6px;
-  }
-
-  .range-selection-jump.right {
-    right: 6px;
-  }
-
-  .range-selection-jump:hover,
-  .range-selection-jump:focus-visible {
-    background: color-mix(
-      in srgb,
-      var(--primary-text-color, #111) 100%,
-      transparent
-    );
-    outline: none;
-  }
-
-  .range-scroll-viewport {
-    overflow-x: auto;
-    overflow-y: hidden;
-    scrollbar-gutter: stable;
-    -webkit-overflow-scrolling: touch;
-    cursor: grab;
-    touch-action: pan-y;
-  }
-
-  .range-scroll-viewport {
-    scrollbar-color: transparent transparent;
-    transition: scrollbar-color 200ms ease;
-  }
-
-  .range-scroll-viewport.scrollbar-visible {
-    scrollbar-color: color-mix(
-        in srgb,
-        var(--primary-text-color, #111) 18%,
-        transparent
-      )
-      transparent;
-  }
-
-  .range-scroll-viewport::-webkit-scrollbar {
-    height: 8px;
-  }
-
-  .range-scroll-viewport::-webkit-scrollbar-thumb {
-    border-radius: 999px;
-    background: transparent;
-    transition: background 200ms ease;
-  }
-
-  .range-scroll-viewport.scrollbar-visible::-webkit-scrollbar-thumb {
-    background: color-mix(
-      in srgb,
-      var(--primary-text-color, #111) 18%,
-      transparent
-    );
-  }
-
-  .range-scroll-viewport.dragging {
-    cursor: grabbing;
-  }
-
-  .range-timeline {
-    position: relative;
-    height: 58px;
-    min-width: 100%;
-    touch-action: pan-y;
-  }
-`;
-	//#endregion
-	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/lib/range-pointer-math.ts
-	/**
-	* Convert a horizontal client coordinate to a timeline timestamp.
-	*
-	* Returns `null` when the track rectangle has no width.
-	*/
-	function timestampFromClientPosition(clientX, rectLeft, rectWidth, boundsMin, boundsMax) {
-		if (!rectWidth) return null;
-		return boundsMin + clampNumber((clientX - rectLeft) / rectWidth, 0, 1) * (boundsMax - boundsMin);
-	}
-	/**
-	* Calculate the snapped time delta for a selection drag.
-	*/
-	function computeSelectionDragDelta(currentTimestamp, startTimestamp, snapUnit) {
-		if (!snapUnit) return currentTimestamp - startTimestamp;
-		const snappedStart = snapDateToUnit(new Date(startTimestamp), snapUnit).getTime();
-		return snapDateToUnit(new Date(currentTimestamp), snapUnit).getTime() - snappedStart;
-	}
-	/**
-	* Compute the new draft range after moving a single handle to `timestamp`.
-	*
-	* The timestamp is snapped and clamped to bounds, and the opposing handle
-	* is preserved with a minimum separation of one snap span.
-	*/
-	function computeDraftRangeForHandle(handle, timestamp, currentStartMs, currentEndMs, boundsMin, boundsMax, snapUnit, snapSpanMs) {
-		let snappedTimestampMs = timestamp;
-		if (snapUnit !== null) snappedTimestampMs = snapDateToUnit(new Date(timestamp), snapUnit).getTime();
-		const snapped = clampNumber(snappedTimestampMs, boundsMin, boundsMax);
-		const minSpan = Math.max(snapSpanMs, SECOND_MS);
-		let startMs = currentStartMs;
-		let endMs = currentEndMs;
-		if (handle === "start") startMs = clampNumber(snapped, boundsMin, endMs - minSpan);
-		else endMs = clampNumber(snapped, startMs + minSpan, boundsMax);
-		return {
-			startMs,
-			endMs
-		};
-	}
-	/**
-	* Shift both handles by `deltaMs`, clamped so neither exceeds bounds.
-	*/
-	function computeShiftedDraftRange(deltaMs, dragStartMs, dragEndMs, boundsMin, boundsMax) {
-		const clamped = clampNumber(deltaMs, boundsMin - dragStartMs, boundsMax - dragEndMs);
-		return {
-			startMs: dragStartMs + clamped,
-			endMs: dragEndMs + clamped
-		};
-	}
-	/**
-	* Compute the draft range from an interval selection (two pointer positions
-	* snapped to unit boundaries).
-	*
-	* Returns `null` when the resulting range is empty.
-	*/
-	function computeIntervalSelectionRange(startTimestamp, endTimestamp, unit, boundsMin, boundsMax) {
-		const startValue = Math.min(startTimestamp, endTimestamp);
-		const endValue = Math.max(startTimestamp, endTimestamp);
-		const rangeStart = clampNumber(startOfUnit(new Date(startValue), unit).getTime(), boundsMin, boundsMax);
-		const rangeEnd = clampNumber(endOfUnit(new Date(endValue), unit).getTime(), boundsMin, boundsMax);
-		if (rangeStart >= rangeEnd) return null;
-		return {
-			startMs: rangeStart,
-			endMs: rangeEnd
-		};
-	}
-	/**
-	* Calculate the scroll delta for edge-proximity auto-scrolling during drag.
-	*
-	* Returns 0 when no scrolling is needed.
-	*/
-	function computeAutoScrollDelta(clientX, viewportLeft, viewportRight) {
-		const leftDistance = clientX - viewportLeft;
-		const rightDistance = viewportRight - clientX;
-		if (leftDistance < 48) {
-			const ratio = clampNumber((48 - leftDistance) / 48, 0, 1);
-			return -Math.max(1, Math.round(ratio * 28));
-		}
-		if (rightDistance < 48) {
-			const ratio = clampNumber((48 - rightDistance) / 48, 0, 1);
-			return Math.max(1, Math.round(ratio * 28));
-		}
-		return 0;
-	}
-	/**
-	* Determine which handle (`"start"` or `"end"`) is closer to the given timestamp.
-	*/
-	function resolveCloserHandle(timestamp, startMs, endMs) {
-		return Math.abs(timestamp - startMs) <= Math.abs(timestamp - endMs) ? "start" : "end";
-	}
-	//#endregion
-	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/lib/range-scroll-math.ts
-	/**
-	* Pure math functions for range-timeline scroll management.
-	*
-	* All functions are stateless data transformations — no DOM dependency.
-	*/
-	/**
-	* Determine whether the left/right "jump to selection" arrows should be shown.
-	*
-	* The left arrow is shown when the selection end is scrolled off the left edge;
-	* the right arrow when the selection start is scrolled off the right edge.
-	*/
-	function computeSelectionJumpVisibility(scrollLeft, viewportWidth, contentWidth, startTimeMs, endTimeMs, boundsMin, boundsMax) {
-		const total = Math.max(1, boundsMax - boundsMin);
-		const currentRight = scrollLeft + viewportWidth;
-		const startPx = (startTimeMs - boundsMin) / total * contentWidth;
-		return {
-			showLeft: (endTimeMs - boundsMin) / total * contentWidth < scrollLeft,
-			showRight: startPx > currentRight
-		};
-	}
-	/**
-	* Compute the target scrollLeft to bring a time range into view.
-	*
-	* With `center: true`, the midpoint of the range is centered in the viewport.
-	* With `center: false`, the range start is aligned to the viewport start.
-	*
-	* Returns `null` when scrolling is not possible (viewport wider than content).
-	*/
-	function computeScrollPositionForRange(rangeStartMs, rangeEndMs, boundsMin, boundsMax, contentWidth, viewportWidth, center) {
-		if (!viewportWidth || contentWidth <= viewportWidth) return null;
-		const totalMs = Math.max(1, boundsMax - boundsMin);
-		const visibleSpanMs = totalMs * Math.min(1, viewportWidth / contentWidth);
-		const maxScrollLeft = Math.max(0, contentWidth - viewportWidth);
-		const viewportRangeMs = Math.max(0, totalMs - visibleSpanMs);
-		if (viewportRangeMs <= 0) return null;
-		return clampNumber(((center ? clampNumber((rangeStartMs + rangeEndMs) / 2 - visibleSpanMs / 2, boundsMin, boundsMax - visibleSpanMs) : clampNumber(rangeStartMs, boundsMin, boundsMax - visibleSpanMs)) - boundsMin) / viewportRangeMs * maxScrollLeft, 0, maxScrollLeft);
-	}
-	//#endregion
-	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-handle.styles.ts
-	var styles$35 = i$6`
-  :host {
-    position: absolute;
-    top: 26px;
-    left: 0;
-    transform: translate(-50%, -50%);
-    display: block;
-    width: 20px;
-    height: 20px;
-  }
-
-  .handle {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    border: 2px solid var(--card-background-color, #fff);
-    background: color-mix(
-      in srgb,
-      var(--primary-text-color, #111) 84%,
-      transparent
-    );
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
-    padding: 0;
-    cursor: ew-resize;
-    touch-action: none;
-  }
-
-  .handle:focus-visible {
-    outline: 3px solid
-      color-mix(in srgb, var(--primary-color, #03a9f4) 24%, transparent);
-    outline-offset: 2px;
-  }
-
-  @keyframes dp-live-breathe {
-    0%,
-    100% {
-      box-shadow:
-        0 2px 8px rgba(0, 0, 0, 0.18),
-        0 0 0 0 rgba(239, 83, 80, 0);
-    }
-    50% {
-      box-shadow:
-        0 2px 8px rgba(0, 0, 0, 0.18),
-        0 0 0 5px rgba(239, 83, 80, 0.2);
-    }
-  }
-
-  .handle.is-live {
-    background: #ef5350;
-    animation: dp-live-breathe 3s ease-in-out infinite;
-  }
-`;
-	//#endregion
-	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-handle.ts
-	var _position_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _label_accessor_storage$7 = /* @__PURE__ */ new WeakMap();
-	var _live_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _zIndex_accessor_storage = /* @__PURE__ */ new WeakMap();
-	/**
-	* `range-handle` is a circular drag-handle button for a timeline range slider.
-	*
-	* The parent positions the handle by setting the `position` prop (reflected to
-	* `style.left` as a percentage). The handle fires events for all pointer and keyboard
-	* interactions; the parent owns drag logic and tooltips.
-	*
-	* @fires dp-handle-drag-start - `{ pointerId, clientX }` — pointer down on handle
-	* @fires dp-handle-keydown    - `{ key, shiftKey }` — navigation key pressed (arrows, Page, Home, End)
-	* @fires dp-handle-hover      - `{}` — pointer entered the handle
-	* @fires dp-handle-leave      - `{}` — pointer left the handle
-	* @fires dp-handle-focus      - `{}` — handle received focus
-	* @fires dp-handle-blur       - `{}` — handle lost focus
-	*/
-	var RangeHandle = class extends i$3 {
-		constructor(..._args) {
-			super(..._args);
-			_classPrivateFieldInitSpec(this, _position_accessor_storage$1, 0);
-			_classPrivateFieldInitSpec(this, _label_accessor_storage$7, "");
-			_classPrivateFieldInitSpec(this, _live_accessor_storage, false);
-			_classPrivateFieldInitSpec(this, _zIndex_accessor_storage, 3);
-		}
-		get position() {
-			return _classPrivateFieldGet2(_position_accessor_storage$1, this);
-		}
-		set position(value) {
-			_classPrivateFieldSet2(_position_accessor_storage$1, this, value);
-		}
-		get label() {
-			return _classPrivateFieldGet2(_label_accessor_storage$7, this);
-		}
-		set label(value) {
-			_classPrivateFieldSet2(_label_accessor_storage$7, this, value);
-		}
-		get live() {
-			return _classPrivateFieldGet2(_live_accessor_storage, this);
-		}
-		set live(value) {
-			_classPrivateFieldSet2(_live_accessor_storage, this, value);
-		}
-		get zIndex() {
-			return _classPrivateFieldGet2(_zIndex_accessor_storage, this);
-		}
-		set zIndex(value) {
-			_classPrivateFieldSet2(_zIndex_accessor_storage, this, value);
-		}
-		updated(changed) {
-			if (changed.has("position")) this.style.left = `${this.position}%`;
-			if (changed.has("zIndex")) this.style.zIndex = `${this.zIndex}`;
-		}
-		_onPointerDown(e) {
-			e.preventDefault();
-			this.dispatchEvent(new CustomEvent("dp-handle-drag-start", {
-				detail: {
-					pointerId: e.pointerId,
-					clientX: e.clientX
-				},
-				bubbles: true,
-				composed: true
-			}));
-		}
-		_onKeyDown(e) {
-			if (![
-				"ArrowLeft",
-				"ArrowRight",
-				"ArrowDown",
-				"ArrowUp",
-				"PageDown",
-				"PageUp",
-				"Home",
-				"End"
-			].includes(e.key)) return;
-			e.preventDefault();
-			this.dispatchEvent(new CustomEvent("dp-handle-keydown", {
-				detail: {
-					key: e.key,
-					shiftKey: e.shiftKey
-				},
-				bubbles: true,
-				composed: true
-			}));
-		}
-		_onPointerEnter() {
-			this.dispatchEvent(new CustomEvent("dp-handle-hover", {
-				bubbles: true,
-				composed: true
-			}));
-		}
-		_onPointerLeave() {
-			this.dispatchEvent(new CustomEvent("dp-handle-leave", {
-				bubbles: true,
-				composed: true
-			}));
-		}
-		_onFocus() {
-			this.dispatchEvent(new CustomEvent("dp-handle-focus", {
-				bubbles: true,
-				composed: true
-			}));
-		}
-		_onBlur() {
-			this.dispatchEvent(new CustomEvent("dp-handle-blur", {
-				bubbles: true,
-				composed: true
-			}));
-		}
-		render() {
-			return b`
-      <button
-        type="button"
-        class="handle ${this.live ? "is-live" : ""}"
-        aria-label="${this.label}"
-        @pointerdown=${this._onPointerDown}
-        @keydown=${this._onKeyDown}
-        @pointerenter=${this._onPointerEnter}
-        @pointerleave=${this._onPointerLeave}
-        @focus=${this._onFocus}
-        @blur=${this._onBlur}
-      ></button>
-    `;
-		}
-	};
-	_defineProperty(RangeHandle, "styles", styles$35);
-	__decorate([n$1({ type: Number })], RangeHandle.prototype, "position", null);
-	__decorate([n$1({ type: String })], RangeHandle.prototype, "label", null);
-	__decorate([n$1({ type: Boolean })], RangeHandle.prototype, "live", null);
-	__decorate([n$1({ type: Number })], RangeHandle.prototype, "zIndex", null);
-	customElements.define("range-handle", RangeHandle);
-	//#endregion
-	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-scale.styles.ts
-	var styles$34 = i$6`
-  :host {
-    display: contents;
-  }
-
-  .range-context-layer,
-  .range-label-layer,
-  .range-tick-layer {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-  }
-
-  .range-scale-label {
-    position: absolute;
-    bottom: 0;
-    opacity: 0.7;
-    transform: translateX(-50%);
-    font-size: 0.76rem;
-    line-height: 1;
-    color: var(--secondary-text-color);
-    white-space: nowrap;
-  }
-
-  .range-period-button {
-    padding: calc(var(--spacing, 8px) * 0.25) var(--dp-spacing-sm);
-    border: 0;
-    border-radius: 999px;
-    background: none;
-    font: inherit;
-    color: inherit;
-    pointer-events: auto;
-    cursor: pointer;
-    appearance: none;
-    -webkit-appearance: none;
-    user-select: none;
-    -webkit-user-select: none;
-    transition:
-      background-color 120ms ease,
-      box-shadow 120ms ease,
-      color 120ms ease;
-  }
-
-  .range-period-button:hover {
-    color: var(--primary-text-color);
-    background: color-mix(
-      in srgb,
-      var(--primary-text-color, #111) 7%,
-      var(--card-background-color, #fff)
-    );
-    box-shadow: inset 0 0 0 1px
-      color-mix(
-        in srgb,
-        var(--divider-color, rgba(0, 0, 0, 0.12)) 88%,
-        transparent
-      );
-  }
-
-  .range-period-button:focus-visible {
-    outline: 2px solid
-      color-mix(in srgb, var(--primary-color, #03a9f4) 24%, transparent);
-    outline-offset: 2px;
-    background: color-mix(
-      in srgb,
-      var(--primary-text-color, #111) 7%,
-      var(--card-background-color, #fff)
-    );
-    box-shadow: inset 0 0 0 1px
-      color-mix(
-        in srgb,
-        var(--divider-color, rgba(0, 0, 0, 0.12)) 88%,
-        transparent
-      );
-  }
-
-  .range-tick {
-    position: absolute;
-    top: 14px;
-    height: 14px;
-    width: 1px;
-    transform: translateX(-50%);
-    background: color-mix(
-      in srgb,
-      var(--primary-text-color, #111) 16%,
-      transparent
-    );
-  }
-
-  .range-tick.major {
-    top: 20px;
-    height: 18px;
-    background: color-mix(
-      in srgb,
-      var(--primary-text-color, #111) 24%,
-      transparent
-    );
-  }
-
-  .range-tick.fine {
-    top: 18px;
-    height: 8px;
-    background: color-mix(
-      in srgb,
-      var(--primary-text-color, #111) 14%,
-      transparent
-    );
-  }
-
-  .range-tick.context {
-    top: 2px;
-    height: 34px;
-    background: color-mix(
-      in srgb,
-      var(--primary-text-color, #111) 38%,
-      transparent
-    );
-  }
-
-  .range-divider {
-    position: absolute;
-    top: 8px;
-    bottom: 22px;
-    width: 2px;
-    transform: translateX(-50%);
-    background: color-mix(
-      in srgb,
-      var(--primary-text-color, #111) 42%,
-      transparent
-    );
-  }
-
-  .range-context-label {
-    font-weight: bold !important;
-    position: absolute;
-    top: 0;
-    transform: translateX(8px);
-    font-size: 0.92rem;
-    line-height: 1;
-    color: var(--primary-text-color);
-    white-space: nowrap;
-  }
-`;
-	//#endregion
-	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/lib/range-scale-math.ts
-	/**
-	* Pure scale computation utilities extracted from range-timeline.ts.
-	*
-	* All functions are stateless data transformations with no DOM dependency.
-	*/
-	function estimateRangeLabelWidth(text, className, minGap) {
-		const basePadding = className === "range-context-label" ? 20 : 14;
-		const charWidth = className === "range-context-label" ? 8.2 : 7.2;
-		return String(text).length * charWidth + basePadding + minGap;
-	}
-	function computeRangeLabelStride(boundsMin, boundsMax, contentWidth, unit, formatter, className, minGap) {
-		if (!contentWidth) return 1;
-		const total = Math.max(1, boundsMax - boundsMin);
-		let current = startOfUnit(new Date(boundsMin), unit);
-		let previousMs = null;
-		let minSpacingPx = Infinity;
-		let maxLabelWidthPx = 0;
-		let samples = 0;
-		while (current.getTime() < boundsMax && samples < 24) {
-			const currentMs = Math.max(current.getTime(), boundsMin);
-			const text = formatter(current);
-			maxLabelWidthPx = Math.max(maxLabelWidthPx, estimateRangeLabelWidth(text, className, minGap));
-			if (previousMs != null) {
-				const spacingPx = (currentMs - previousMs) / total * contentWidth;
-				if (spacingPx > 0) minSpacingPx = Math.min(minSpacingPx, spacingPx);
-			}
-			previousMs = currentMs;
-			current = addUnit(current, unit, 1);
-			samples += 1;
-		}
-		if (!Number.isFinite(minSpacingPx) || minSpacingPx <= 0) return 1;
-		return Math.max(1, Math.ceil(maxLabelWidthPx / minSpacingPx));
-	}
-	function getRangeUnitAnchorMs(startTime, unit, boundsMin, boundsMax, anchor = "auto") {
-		const unitStart = Math.max(startOfUnit(new Date(startTime), unit).getTime(), boundsMin);
-		const unitEnd = Math.min(endOfUnit(new Date(startTime), unit).getTime(), boundsMax);
-		let resolvedAnchor = anchor;
-		if (resolvedAnchor === "auto") resolvedAnchor = unit === "day" || unit === "week" ? "center" : "start";
-		if (resolvedAnchor === "center") return unitStart + Math.max(0, (unitEnd - unitStart) / 2);
-		return unitStart;
-	}
-	//#endregion
-	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-scale.ts
-	var DEFAULT_I18N$4 = createDefaultI18n(["Select"]);
-	var _i18n_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
-	var _rangeBounds_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
-	var _zoomLevel_accessor_storage$5 = /* @__PURE__ */ new WeakMap();
-	var _contentWidth_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _locale_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
-	/**
-	* `range-scale` renders the tick marks, scale labels, and context dividers
-	* for a range-timeline. All rendering is declarative via Lit templates.
-	*
-	* @fires dp-scale-period-select - `{ unit, startTime, originalEvent }` period button clicked
-	* @fires dp-scale-period-hover  - `{ unit, start, end }` period button hovered/focused
-	* @fires dp-scale-period-leave  - `{ unit, start, end }` period button left/blurred
-	*/
-	var RangeScale = class extends i$3 {
-		constructor(..._args) {
-			super(..._args);
-			_classPrivateFieldInitSpec(this, _i18n_accessor_storage$4, DEFAULT_I18N$4);
-			_classPrivateFieldInitSpec(this, _rangeBounds_accessor_storage$4, null);
-			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage$5, "day");
-			_classPrivateFieldInitSpec(this, _contentWidth_accessor_storage, 0);
-			_classPrivateFieldInitSpec(this, _locale_accessor_storage$2, "");
-			_defineProperty(this, "_scaleCache", null);
-			_defineProperty(this, "_scaleCacheKey", null);
-			_defineProperty(this, "_scaleCacheI18n", null);
-		}
-		get i18n() {
-			return _classPrivateFieldGet2(_i18n_accessor_storage$4, this);
-		}
-		set i18n(value) {
-			_classPrivateFieldSet2(_i18n_accessor_storage$4, this, value);
-		}
-		get rangeBounds() {
-			return _classPrivateFieldGet2(_rangeBounds_accessor_storage$4, this);
-		}
-		set rangeBounds(value) {
-			_classPrivateFieldSet2(_rangeBounds_accessor_storage$4, this, value);
-		}
-		get zoomLevel() {
-			return _classPrivateFieldGet2(_zoomLevel_accessor_storage$5, this);
-		}
-		set zoomLevel(value) {
-			_classPrivateFieldSet2(_zoomLevel_accessor_storage$5, this, value);
-		}
-		get contentWidth() {
-			return _classPrivateFieldGet2(_contentWidth_accessor_storage, this);
-		}
-		set contentWidth(value) {
-			_classPrivateFieldSet2(_contentWidth_accessor_storage, this, value);
-		}
-		get locale() {
-			return _classPrivateFieldGet2(_locale_accessor_storage$2, this);
-		}
-		set locale(value) {
-			_classPrivateFieldSet2(_locale_accessor_storage$2, this, value);
-		}
-		_t(key, ...values) {
-			return t$4(this.i18n, key, ...values);
-		}
-		_computeScaleData() {
-			const bounds = this.rangeBounds;
-			if (!bounds) return {
-				ticks: [],
-				labels: [],
-				dividers: [],
-				contextLabels: []
-			};
-			const key = `${bounds.min}|${bounds.max}|${this.contentWidth}|${this.zoomLevel}|${this.locale}|${JSON.stringify(bounds.config)}`;
-			if (this._scaleCache && this._scaleCacheKey === key && this._scaleCacheI18n === this.i18n) return this._scaleCache;
-			const ticks = this._computeTicks();
-			const labels = this._computeLabels();
-			const { dividers, contextLabels } = this._computeContext();
-			this._scaleCache = {
-				ticks,
-				labels,
-				dividers,
-				contextLabels
-			};
-			this._scaleCacheKey = key;
-			this._scaleCacheI18n = this.i18n;
-			return this._scaleCache;
-		}
-		render() {
-			if (!this.rangeBounds) return A;
-			const { ticks, labels, dividers, contextLabels } = this._computeScaleData();
-			return b`
-      <div class="range-context-layer">
-        ${dividers.map((d) => b`<span class="range-divider" style="left:${d.leftPct}%"></span>`)}
-        ${contextLabels.map((b) => this._renderPeriodButton(b))}
-      </div>
-      <div class="range-tick-layer">
-        ${ticks.map((t) => b`<span
-              class="range-tick ${t.className}"
-              style="left:${t.leftPct}%"
-            ></span>`)}
-      </div>
-      <div class="range-label-layer">
-        ${labels.map((b) => this._renderPeriodButton(b))}
-      </div>
-    `;
-		}
-		_renderPeriodButton(b$2) {
-			return b`<button
-      type="button"
-      class="range-period-button ${b$2.className}"
-      style="left:${b$2.leftPct}%"
-      title=${b$2.title}
-      aria-label=${b$2.title}
-      @click=${(ev) => this._onPeriodSelect(b$2, ev)}
-      @pointerenter=${() => this._onPeriodHover(b$2)}
-      @pointerleave=${() => this._onPeriodLeave(b$2)}
-      @focus=${() => this._onPeriodHover(b$2)}
-      @blur=${() => this._onPeriodLeave(b$2)}
-    >
-      ${b$2.text}
-    </button>`;
-		}
-		_getScaleLabelZoomLevel() {
-			if (this.zoomLevel === "quarterly" || this.zoomLevel === "month_short") return this.zoomLevel;
-			return "";
-		}
-		_computeTicksForUnit(unit, className, total, step = 1) {
-			if (!this.rangeBounds) return [];
-			const marks = [];
-			let markerTime = addUnit(startOfUnit(new Date(this.rangeBounds.min), unit), unit, 0);
-			if (markerTime.getTime() < this.rangeBounds.min) markerTime = addUnit(markerTime, unit, step);
-			while (markerTime.getTime() < this.rangeBounds.max) {
-				marks.push({
-					leftPct: (markerTime.getTime() - this.rangeBounds.min) / total * 100,
-					className
-				});
-				markerTime = addUnit(markerTime, unit, step);
-			}
-			return marks;
-		}
-		_computeTicks() {
-			if (!this.rangeBounds) return [];
-			const total = Math.max(1, this.rangeBounds.max - this.rangeBounds.min);
-			const { config } = this.rangeBounds;
-			const ticks = [];
-			if (config.detailUnit && config.detailUnit !== config.minorUnit && config.detailUnit !== config.majorUnit) ticks.push(...this._computeTicksForUnit(config.detailUnit, "fine", total, config.detailStep || 1));
-			if (config.minorUnit !== config.majorUnit) ticks.push(...this._computeTicksForUnit(config.minorUnit, "", total));
-			ticks.push(...this._computeTicksForUnit(config.majorUnit, "major", total));
-			return ticks;
-		}
-		_computeLabelStride(unit, formatter, className, minGap) {
-			if (!this.rangeBounds || !this.contentWidth) return 1;
-			return computeRangeLabelStride(this.rangeBounds.min, this.rangeBounds.max, this.contentWidth, unit, formatter, className, minGap);
-		}
-		_computeLabels() {
-			if (!this.rangeBounds) return [];
-			const total = Math.max(1, this.rangeBounds.max - this.rangeBounds.min);
-			const { config } = this.rangeBounds;
-			const scaleLabelZoomLevel = this._getScaleLabelZoomLevel();
-			const locale = this.locale || void 0;
-			const stride = config.labelUnit === "month" || config.labelUnit === "day" ? 1 : this._computeLabelStride(config.labelUnit, (value) => formatScaleLabel(value, config.labelUnit, scaleLabelZoomLevel, locale), "range-scale-label", 10);
-			const buttons = [];
-			let ref = startOfUnit(new Date(this.rangeBounds.min), config.labelUnit);
-			let index = 0;
-			while (ref.getTime() < this.rangeBounds.max) {
-				if (index % stride === 0) {
-					const leftValue = getRangeUnitAnchorMs(ref, config.labelUnit, this.rangeBounds.min, this.rangeBounds.max, "auto");
-					const text = formatScaleLabel(ref, config.labelUnit, scaleLabelZoomLevel, locale);
-					const selectionLabel = formatPeriodSelectionLabel(ref, config.labelUnit, locale);
-					buttons.push({
-						leftPct: (leftValue - this.rangeBounds.min) / total * 100,
-						text,
-						title: `${this._t("Select")} ${selectionLabel}`,
-						className: "range-scale-label",
-						unit: config.labelUnit,
-						startTime: new Date(ref)
-					});
-				}
-				ref = addUnit(ref, config.labelUnit, 1);
-				index += 1;
-			}
-			return buttons;
-		}
-		_computeContext() {
-			if (!this.rangeBounds) return {
-				dividers: [],
-				contextLabels: []
-			};
-			const total = Math.max(1, this.rangeBounds.max - this.rangeBounds.min);
-			const { config } = this.rangeBounds;
-			const locale = this.locale || void 0;
-			const stride = config.contextUnit === "month" || config.contextUnit === "day" ? 1 : this._computeLabelStride(config.contextUnit, (value) => formatContextLabel(value, config.contextUnit, locale), "range-context-label", 14);
-			const dividers = [];
-			const contextLabels = [];
-			let ref = startOfUnit(new Date(this.rangeBounds.min), config.contextUnit);
-			if (ref.getTime() < this.rangeBounds.min) ref = addUnit(ref, config.contextUnit, 1);
-			let index = 0;
-			while (ref.getTime() < this.rangeBounds.max) {
-				const leftPct = (ref.getTime() - this.rangeBounds.min) / total * 100;
-				dividers.push({ leftPct });
-				if (index % stride === 0) {
-					const text = formatContextLabel(ref, config.contextUnit, locale);
-					const selectionLabel = formatPeriodSelectionLabel(ref, config.contextUnit, locale);
-					contextLabels.push({
-						leftPct,
-						text,
-						title: `${this._t("Select")} ${selectionLabel}`,
-						className: "range-context-label",
-						unit: config.contextUnit,
-						startTime: new Date(ref)
-					});
-				}
-				ref = addUnit(ref, config.contextUnit, 1);
-				index += 1;
-			}
-			return {
-				dividers,
-				contextLabels
-			};
-		}
-		_onPeriodSelect(b, ev) {
-			ev.preventDefault();
-			ev.stopPropagation();
-			this.dispatchEvent(new CustomEvent("dp-scale-period-select", {
-				detail: {
-					unit: b.unit,
-					startTime: b.startTime,
-					originalEvent: ev
-				},
-				bubbles: true,
-				composed: true
-			}));
-		}
-		_onPeriodHover(b) {
-			this.dispatchEvent(new CustomEvent("dp-scale-period-hover", {
-				detail: {
-					unit: b.unit,
-					startTime: b.startTime
-				},
-				bubbles: true,
-				composed: true
-			}));
-		}
-		_onPeriodLeave(b) {
-			this.dispatchEvent(new CustomEvent("dp-scale-period-leave", {
-				detail: {
-					unit: b.unit,
-					startTime: b.startTime
-				},
-				bubbles: true,
-				composed: true
-			}));
-		}
-	};
-	_defineProperty(RangeScale, "styles", styles$34);
-	__decorate([n$1({ attribute: false })], RangeScale.prototype, "i18n", null);
-	__decorate([n$1({ type: Object })], RangeScale.prototype, "rangeBounds", null);
-	__decorate([n$1({ type: String })], RangeScale.prototype, "zoomLevel", null);
-	__decorate([n$1({ type: Number })], RangeScale.prototype, "contentWidth", null);
-	__decorate([n$1({ type: String })], RangeScale.prototype, "locale", null);
-	customElements.define("range-scale", RangeScale);
-	//#endregion
-	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-tooltip.styles.ts
-	var styles$33 = i$6`
-  :host {
-    position: absolute;
-    top: 43px;
-    left: 0;
-    transform: translate(-50%, 0);
-    padding: calc(var(--dp-spacing-sm) + 2px) calc(var(--dp-spacing-md) + 2px);
-    border-radius: 10px;
-    background: color-mix(in srgb, #0f1218 96%, transparent);
-    color: rgba(255, 255, 255, 0.96);
-    border: 1px solid color-mix(in srgb, #ffffff 14%, transparent);
-    font-size: 0.86rem;
-    line-height: 1.1;
-    white-space: nowrap;
-    pointer-events: none;
-    user-select: none;
-    -webkit-user-select: none;
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
-    opacity: 0;
-    visibility: hidden;
-    transition:
-      opacity 120ms ease,
-      visibility 120ms ease;
-    z-index: 8;
-  }
-
-  :host([visible]) {
-    opacity: 1;
-    visibility: visible;
-  }
-
-  :host([side="end"]) {
-    z-index: 9;
-  }
-
-  :host::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    top: 0;
-    width: 10px;
-    height: 10px;
-    background: inherit;
-    transform: translate(-50%, -50%) rotate(45deg);
-    border-radius: 2px;
-  }
-
-  .live-hint {
-    display: block;
-    font-size: 0.78rem;
-    opacity: 0.72;
-    margin-top: 4px;
-  }
-`;
-	//#endregion
-	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-tooltip.ts
-	var _content_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _visible_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _position_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _isLive_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _liveHint_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _side_accessor_storage = /* @__PURE__ */ new WeakMap();
-	/**
-	* `range-tooltip` is a pure display component for showing a formatted
-	* date/time tooltip anchored to a handle on the range-timeline.
-	*
-	* Visibility is controlled by the `visible` attribute (reflected property).
-	* Position is set via the `position` property (pixels from left of viewport).
-	*/
-	var RangeTooltip = class extends i$3 {
-		constructor(..._args) {
-			super(..._args);
-			_classPrivateFieldInitSpec(this, _content_accessor_storage, "");
-			_classPrivateFieldInitSpec(this, _visible_accessor_storage, false);
-			_classPrivateFieldInitSpec(this, _position_accessor_storage, 0);
-			_classPrivateFieldInitSpec(this, _isLive_accessor_storage, false);
-			_classPrivateFieldInitSpec(this, _liveHint_accessor_storage, "");
-			_classPrivateFieldInitSpec(this, _side_accessor_storage, "start");
-		}
-		get content() {
-			return _classPrivateFieldGet2(_content_accessor_storage, this);
-		}
-		set content(value) {
-			_classPrivateFieldSet2(_content_accessor_storage, this, value);
-		}
-		get visible() {
-			return _classPrivateFieldGet2(_visible_accessor_storage, this);
-		}
-		set visible(value) {
-			_classPrivateFieldSet2(_visible_accessor_storage, this, value);
-		}
-		get position() {
-			return _classPrivateFieldGet2(_position_accessor_storage, this);
-		}
-		set position(value) {
-			_classPrivateFieldSet2(_position_accessor_storage, this, value);
-		}
-		get isLive() {
-			return _classPrivateFieldGet2(_isLive_accessor_storage, this);
-		}
-		set isLive(value) {
-			_classPrivateFieldSet2(_isLive_accessor_storage, this, value);
-		}
-		get liveHint() {
-			return _classPrivateFieldGet2(_liveHint_accessor_storage, this);
-		}
-		set liveHint(value) {
-			_classPrivateFieldSet2(_liveHint_accessor_storage, this, value);
-		}
-		get side() {
-			return _classPrivateFieldGet2(_side_accessor_storage, this);
-		}
-		set side(value) {
-			_classPrivateFieldSet2(_side_accessor_storage, this, value);
-		}
-		updated(changed) {
-			if (changed.has("position")) this.style.left = `${this.position}px`;
-			this.setAttribute("aria-hidden", this.visible ? "false" : "true");
-		}
-		render() {
-			return b`${this.content}${this.isLive ? b`<span class="live-hint">${this.liveHint}</span>` : A}`;
-		}
-	};
-	_defineProperty(RangeTooltip, "styles", styles$33);
-	__decorate([n$1({ type: String })], RangeTooltip.prototype, "content", null);
-	__decorate([n$1({
-		type: Boolean,
-		reflect: true
-	})], RangeTooltip.prototype, "visible", null);
-	__decorate([n$1({ type: Number })], RangeTooltip.prototype, "position", null);
-	__decorate([n$1({ type: Boolean })], RangeTooltip.prototype, "isLive", null);
-	__decorate([n$1({ type: String })], RangeTooltip.prototype, "liveHint", null);
-	__decorate([n$1({
-		type: String,
-		reflect: true
-	})], RangeTooltip.prototype, "side", null);
-	customElements.define("range-tooltip", RangeTooltip);
-	//#endregion
-	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-track.styles.ts
-	var styles$32 = i$6`
-  :host {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 26px;
-    transform: translateY(-50%);
-    height: 4px;
-    border-radius: 999px;
-    background: transparent;
-    display: block;
-  }
-
-  .range-selection {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    z-index: 1;
-    border-radius: 999px;
-    background: color-mix(
-      in srgb,
-      var(--primary-text-color, #111) 82%,
-      transparent
-    );
-    cursor: grab;
-  }
-
-  .range-selection.dragging {
-    cursor: grabbing;
-  }
-`;
-	//#endregion
-	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-track.ts
-	var _selectionLeftPct_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _selectionWidthPct_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _selectionDragging_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	/**
-	* `range-track` renders the track bar with a positioned selection highlight.
-	*
-	* Pure display component — receives percentage positions as props.
-	* The parent positions handles and owns drag logic.
-	*/
-	var RangeTrack = class extends i$3 {
-		constructor(..._args) {
-			super(..._args);
-			_classPrivateFieldInitSpec(this, _selectionLeftPct_accessor_storage$1, 0);
-			_classPrivateFieldInitSpec(this, _selectionWidthPct_accessor_storage$1, 0);
-			_classPrivateFieldInitSpec(this, _selectionDragging_accessor_storage$1, false);
-		}
-		get selectionLeftPct() {
-			return _classPrivateFieldGet2(_selectionLeftPct_accessor_storage$1, this);
-		}
-		set selectionLeftPct(value) {
-			_classPrivateFieldSet2(_selectionLeftPct_accessor_storage$1, this, value);
-		}
-		get selectionWidthPct() {
-			return _classPrivateFieldGet2(_selectionWidthPct_accessor_storage$1, this);
-		}
-		set selectionWidthPct(value) {
-			_classPrivateFieldSet2(_selectionWidthPct_accessor_storage$1, this, value);
-		}
-		get selectionDragging() {
-			return _classPrivateFieldGet2(_selectionDragging_accessor_storage$1, this);
-		}
-		set selectionDragging(value) {
-			_classPrivateFieldSet2(_selectionDragging_accessor_storage$1, this, value);
-		}
-		render() {
-			return b`
-      <slot name="track-overlays"></slot>
-      <div
-        class="range-selection ${this.selectionDragging ? "dragging" : ""}"
-        style="left:${this.selectionLeftPct}%;width:${this.selectionWidthPct}%"
-      ></div>
-    `;
-		}
-	};
-	_defineProperty(RangeTrack, "styles", styles$32);
-	__decorate([n$1({ type: Number })], RangeTrack.prototype, "selectionLeftPct", null);
-	__decorate([n$1({ type: Number })], RangeTrack.prototype, "selectionWidthPct", null);
-	__decorate([n$1({ type: Boolean })], RangeTrack.prototype, "selectionDragging", null);
-	customElements.define("range-track", RangeTrack);
-	//#endregion
-	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-timeline.ts
-	var DEFAULT_I18N$3 = createDefaultI18n([
-		"Updates with new data",
-		"Scroll to selected range",
-		"Start date and time",
-		"End date and time"
-	]);
-	var _startTime_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
-	var _endTime_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
-	var _rangeBounds_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
-	var _zoomLevel_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
-	var _dateSnapping_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
-	var _isLiveEdge_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
-	var _locale_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _i18n_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
-	var _rangeContentWidth_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _startTooltipVisible_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _startTooltipLeftPx_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _startTooltipContent_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _endTooltipVisible_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _endTooltipLeftPx_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _endTooltipContent_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _endTooltipIsLive_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _endTooltipLiveHint_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _selectionLeftPct_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _selectionWidthPct_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _scrollbarVisible_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _viewportDragging_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _selectionDragging_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _startHandlePosition_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _endHandlePosition_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _startHandleZIndex_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _endHandleZIndex_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _rangeScrollViewportEl_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _rangeTrackEl_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _rangeStartHandleEl_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _rangeEndHandleEl_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _rangeJumpLeftEl_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _rangeJumpRightEl_accessor_storage = /* @__PURE__ */ new WeakMap();
-	/**
-	* `range-timeline` is a scrollable, interactive time range slider atom.
-	*
-	* The parent provides `startTime`, `endTime`, `rangeBounds` (pre-derived), the
-	* effective `zoomLevel` (already resolved from "auto"), and `dateSnapping`.
-	* Panel-specific overlays (hover preview, comparison preview, chart hover lines)
-	* are injected via named slots:
-	*
-	* - `timeline-overlays` — inside `.range-timeline`, for chart hover lines / event dots
-	* - `track-overlays`    — inside `.range-track`, for comparison/zoom/hover highlights
-	*
-	* @fires dp-range-draft         - `{ start, end }` fired on each drag frame for auto-zoom
-	* @fires dp-range-commit        - `{ start, end, push }` fired when range is committed
-	* @fires dp-range-period-select - `{ unit, startTime }` period button clicked
-	* @fires dp-range-period-hover  - `{ start, end }` period button hovered
-	* @fires dp-range-period-leave  - `{}` period button left
-	* @fires dp-range-scroll        - `{}` timeline scrolled
-	*/
-	var RangeTimeline = class extends i$3 {
-		get startTime() {
-			return _classPrivateFieldGet2(_startTime_accessor_storage$2, this);
-		}
-		set startTime(value) {
-			_classPrivateFieldSet2(_startTime_accessor_storage$2, this, value);
-		}
-		get endTime() {
-			return _classPrivateFieldGet2(_endTime_accessor_storage$2, this);
-		}
-		set endTime(value) {
-			_classPrivateFieldSet2(_endTime_accessor_storage$2, this, value);
-		}
-		get rangeBounds() {
-			return _classPrivateFieldGet2(_rangeBounds_accessor_storage$3, this);
-		}
-		set rangeBounds(value) {
-			_classPrivateFieldSet2(_rangeBounds_accessor_storage$3, this, value);
-		}
-		get zoomLevel() {
-			return _classPrivateFieldGet2(_zoomLevel_accessor_storage$4, this);
-		}
-		set zoomLevel(value) {
-			_classPrivateFieldSet2(_zoomLevel_accessor_storage$4, this, value);
-		}
-		get dateSnapping() {
-			return _classPrivateFieldGet2(_dateSnapping_accessor_storage$4, this);
-		}
-		set dateSnapping(value) {
-			_classPrivateFieldSet2(_dateSnapping_accessor_storage$4, this, value);
-		}
-		get isLiveEdge() {
-			return _classPrivateFieldGet2(_isLiveEdge_accessor_storage$2, this);
-		}
-		set isLiveEdge(value) {
-			_classPrivateFieldSet2(_isLiveEdge_accessor_storage$2, this, value);
-		}
-		get locale() {
-			return _classPrivateFieldGet2(_locale_accessor_storage$1, this);
-		}
-		set locale(value) {
-			_classPrivateFieldSet2(_locale_accessor_storage$1, this, value);
-		}
-		get i18n() {
-			return _classPrivateFieldGet2(_i18n_accessor_storage$3, this);
-		}
-		set i18n(value) {
-			_classPrivateFieldSet2(_i18n_accessor_storage$3, this, value);
-		}
-		_t(key, ...values) {
-			return t$4(this.i18n, key, ...values);
-		}
-		get _rangeContentWidth() {
-			return _classPrivateFieldGet2(_rangeContentWidth_accessor_storage, this);
-		}
-		set _rangeContentWidth(value) {
-			_classPrivateFieldSet2(_rangeContentWidth_accessor_storage, this, value);
-		}
-		get _startTooltipVisible() {
-			return _classPrivateFieldGet2(_startTooltipVisible_accessor_storage, this);
-		}
-		set _startTooltipVisible(value) {
-			_classPrivateFieldSet2(_startTooltipVisible_accessor_storage, this, value);
-		}
-		get _startTooltipLeftPx() {
-			return _classPrivateFieldGet2(_startTooltipLeftPx_accessor_storage, this);
-		}
-		set _startTooltipLeftPx(value) {
-			_classPrivateFieldSet2(_startTooltipLeftPx_accessor_storage, this, value);
-		}
-		get _startTooltipContent() {
-			return _classPrivateFieldGet2(_startTooltipContent_accessor_storage, this);
-		}
-		set _startTooltipContent(value) {
-			_classPrivateFieldSet2(_startTooltipContent_accessor_storage, this, value);
-		}
-		get _endTooltipVisible() {
-			return _classPrivateFieldGet2(_endTooltipVisible_accessor_storage, this);
-		}
-		set _endTooltipVisible(value) {
-			_classPrivateFieldSet2(_endTooltipVisible_accessor_storage, this, value);
-		}
-		get _endTooltipLeftPx() {
-			return _classPrivateFieldGet2(_endTooltipLeftPx_accessor_storage, this);
-		}
-		set _endTooltipLeftPx(value) {
-			_classPrivateFieldSet2(_endTooltipLeftPx_accessor_storage, this, value);
-		}
-		get _endTooltipContent() {
-			return _classPrivateFieldGet2(_endTooltipContent_accessor_storage, this);
-		}
-		set _endTooltipContent(value) {
-			_classPrivateFieldSet2(_endTooltipContent_accessor_storage, this, value);
-		}
-		get _endTooltipIsLive() {
-			return _classPrivateFieldGet2(_endTooltipIsLive_accessor_storage, this);
-		}
-		set _endTooltipIsLive(value) {
-			_classPrivateFieldSet2(_endTooltipIsLive_accessor_storage, this, value);
-		}
-		get _endTooltipLiveHint() {
-			return _classPrivateFieldGet2(_endTooltipLiveHint_accessor_storage, this);
-		}
-		set _endTooltipLiveHint(value) {
-			_classPrivateFieldSet2(_endTooltipLiveHint_accessor_storage, this, value);
-		}
-		get _selectionLeftPct() {
-			return _classPrivateFieldGet2(_selectionLeftPct_accessor_storage, this);
-		}
-		set _selectionLeftPct(value) {
-			_classPrivateFieldSet2(_selectionLeftPct_accessor_storage, this, value);
-		}
-		get _selectionWidthPct() {
-			return _classPrivateFieldGet2(_selectionWidthPct_accessor_storage, this);
-		}
-		set _selectionWidthPct(value) {
-			_classPrivateFieldSet2(_selectionWidthPct_accessor_storage, this, value);
-		}
-		get _scrollbarVisible() {
-			return _classPrivateFieldGet2(_scrollbarVisible_accessor_storage, this);
-		}
-		set _scrollbarVisible(value) {
-			_classPrivateFieldSet2(_scrollbarVisible_accessor_storage, this, value);
-		}
-		get _viewportDragging() {
-			return _classPrivateFieldGet2(_viewportDragging_accessor_storage, this);
-		}
-		set _viewportDragging(value) {
-			_classPrivateFieldSet2(_viewportDragging_accessor_storage, this, value);
-		}
-		get _selectionDragging() {
-			return _classPrivateFieldGet2(_selectionDragging_accessor_storage, this);
-		}
-		set _selectionDragging(value) {
-			_classPrivateFieldSet2(_selectionDragging_accessor_storage, this, value);
-		}
-		get _startHandlePosition() {
-			return _classPrivateFieldGet2(_startHandlePosition_accessor_storage, this);
-		}
-		set _startHandlePosition(value) {
-			_classPrivateFieldSet2(_startHandlePosition_accessor_storage, this, value);
-		}
-		get _endHandlePosition() {
-			return _classPrivateFieldGet2(_endHandlePosition_accessor_storage, this);
-		}
-		set _endHandlePosition(value) {
-			_classPrivateFieldSet2(_endHandlePosition_accessor_storage, this, value);
-		}
-		get _startHandleZIndex() {
-			return _classPrivateFieldGet2(_startHandleZIndex_accessor_storage, this);
-		}
-		set _startHandleZIndex(value) {
-			_classPrivateFieldSet2(_startHandleZIndex_accessor_storage, this, value);
-		}
-		get _endHandleZIndex() {
-			return _classPrivateFieldGet2(_endHandleZIndex_accessor_storage, this);
-		}
-		set _endHandleZIndex(value) {
-			_classPrivateFieldSet2(_endHandleZIndex_accessor_storage, this, value);
-		}
-		get _rangeScrollViewportEl() {
-			return _classPrivateFieldGet2(_rangeScrollViewportEl_accessor_storage, this);
-		}
-		set _rangeScrollViewportEl(value) {
-			_classPrivateFieldSet2(_rangeScrollViewportEl_accessor_storage, this, value);
-		}
-		get _rangeTrackEl() {
-			return _classPrivateFieldGet2(_rangeTrackEl_accessor_storage, this);
-		}
-		set _rangeTrackEl(value) {
-			_classPrivateFieldSet2(_rangeTrackEl_accessor_storage, this, value);
-		}
-		get _rangeStartHandleEl() {
-			return _classPrivateFieldGet2(_rangeStartHandleEl_accessor_storage, this);
-		}
-		set _rangeStartHandleEl(value) {
-			_classPrivateFieldSet2(_rangeStartHandleEl_accessor_storage, this, value);
-		}
-		get _rangeEndHandleEl() {
-			return _classPrivateFieldGet2(_rangeEndHandleEl_accessor_storage, this);
-		}
-		set _rangeEndHandleEl(value) {
-			_classPrivateFieldSet2(_rangeEndHandleEl_accessor_storage, this, value);
-		}
-		get _rangeJumpLeftEl() {
-			return _classPrivateFieldGet2(_rangeJumpLeftEl_accessor_storage, this);
-		}
-		set _rangeJumpLeftEl(value) {
-			_classPrivateFieldSet2(_rangeJumpLeftEl_accessor_storage, this, value);
-		}
-		get _rangeJumpRightEl() {
-			return _classPrivateFieldGet2(_rangeJumpRightEl_accessor_storage, this);
-		}
-		set _rangeJumpRightEl(value) {
-			_classPrivateFieldSet2(_rangeJumpRightEl_accessor_storage, this, value);
-		}
-		constructor() {
-			super();
-			_classPrivateFieldInitSpec(this, _startTime_accessor_storage$2, null);
-			_classPrivateFieldInitSpec(this, _endTime_accessor_storage$2, null);
-			_classPrivateFieldInitSpec(this, _rangeBounds_accessor_storage$3, null);
-			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage$4, "day");
-			_classPrivateFieldInitSpec(this, _dateSnapping_accessor_storage$4, "auto");
-			_classPrivateFieldInitSpec(this, _isLiveEdge_accessor_storage$2, false);
-			_classPrivateFieldInitSpec(this, _locale_accessor_storage$1, "");
-			_classPrivateFieldInitSpec(this, _i18n_accessor_storage$3, DEFAULT_I18N$3);
-			_defineProperty(this, "_draftStartTime", null);
-			_defineProperty(this, "_draftEndTime", null);
-			_defineProperty(this, "_activeRangeHandle", null);
-			_defineProperty(this, "_hoveredRangeHandle", null);
-			_defineProperty(this, "_focusedRangeHandle", null);
-			_defineProperty(this, "_hoveredPeriodRange", null);
-			_defineProperty(this, "_rangePointerId", null);
-			_defineProperty(this, "_rangeInteractionActive", false);
-			_classPrivateFieldInitSpec(this, _rangeContentWidth_accessor_storage, 0);
-			_defineProperty(this, "_rangeCommitTimer", null);
-			_classPrivateFieldInitSpec(this, _startTooltipVisible_accessor_storage, false);
-			_classPrivateFieldInitSpec(this, _startTooltipLeftPx_accessor_storage, 0);
-			_classPrivateFieldInitSpec(this, _startTooltipContent_accessor_storage, "");
-			_classPrivateFieldInitSpec(this, _endTooltipVisible_accessor_storage, false);
-			_classPrivateFieldInitSpec(this, _endTooltipLeftPx_accessor_storage, 0);
-			_classPrivateFieldInitSpec(this, _endTooltipContent_accessor_storage, "");
-			_classPrivateFieldInitSpec(this, _endTooltipIsLive_accessor_storage, false);
-			_classPrivateFieldInitSpec(this, _endTooltipLiveHint_accessor_storage, "");
-			_classPrivateFieldInitSpec(this, _selectionLeftPct_accessor_storage, 0);
-			_classPrivateFieldInitSpec(this, _selectionWidthPct_accessor_storage, 0);
-			_classPrivateFieldInitSpec(this, _scrollbarVisible_accessor_storage, false);
-			_classPrivateFieldInitSpec(this, _viewportDragging_accessor_storage, false);
-			_classPrivateFieldInitSpec(this, _selectionDragging_accessor_storage, false);
-			_classPrivateFieldInitSpec(this, _startHandlePosition_accessor_storage, 0);
-			_classPrivateFieldInitSpec(this, _endHandlePosition_accessor_storage, 0);
-			_classPrivateFieldInitSpec(this, _startHandleZIndex_accessor_storage, 3);
-			_classPrivateFieldInitSpec(this, _endHandleZIndex_accessor_storage, 4);
-			_defineProperty(this, "_isProgrammaticScroll", false);
-			_defineProperty(this, "_scrollbarHideTimer", null);
-			_defineProperty(this, "_timelinePointerId", null);
-			_defineProperty(this, "_timelinePointerStartX", 0);
-			_defineProperty(this, "_timelinePointerStartScrollLeft", 0);
-			_defineProperty(this, "_timelinePointerStartTimestamp", null);
-			_defineProperty(this, "_timelinePointerMode", null);
-			_defineProperty(this, "_timelineDragStartRangeMs", 0);
-			_defineProperty(this, "_timelineDragEndRangeMs", 0);
-			_defineProperty(this, "_timelineDragStartZoomRange", null);
-			_defineProperty(this, "_timelinePointerMoved", false);
-			_defineProperty(this, "_timelineTrackClickPending", false);
-			_classPrivateFieldInitSpec(this, _rangeScrollViewportEl_accessor_storage, null);
-			_classPrivateFieldInitSpec(this, _rangeTrackEl_accessor_storage, null);
-			_classPrivateFieldInitSpec(this, _rangeStartHandleEl_accessor_storage, null);
-			_classPrivateFieldInitSpec(this, _rangeEndHandleEl_accessor_storage, null);
-			_classPrivateFieldInitSpec(this, _rangeJumpLeftEl_accessor_storage, null);
-			_classPrivateFieldInitSpec(this, _rangeJumpRightEl_accessor_storage, null);
-			_defineProperty(this, "_resizeObserver", null);
-			_defineProperty(this, "_onRangeScroll", void 0);
-			_defineProperty(this, "_onRangePointerMove", void 0);
-			_defineProperty(this, "_onRangePointerUp", void 0);
-			_defineProperty(this, "_onTimelinePointerMove", void 0);
-			_defineProperty(this, "_onTimelinePointerUp", void 0);
-			this._onRangePointerMove = (ev) => this._handleRangePointerMove(ev);
-			this._onRangePointerUp = (ev) => this._finishRangePointerInteraction(ev);
-			this._onTimelinePointerMove = (ev) => this._handleTimelinePointerMove(ev);
-			this._onTimelinePointerUp = (ev) => this._finishTimelinePointerInteraction(ev);
-			this._onRangeScroll = () => {
-				this._updateSelectionJumpControls();
-				this._updateRangeTooltip();
-				this.dispatchEvent(new CustomEvent("dp-range-scroll", {
-					bubbles: true,
-					composed: true
-				}));
-				if (!this._isProgrammaticScroll) this._showScrollbar();
-			};
-		}
-		disconnectedCallback() {
-			super.disconnectedCallback();
-			this._detachRangePointerListeners();
-			this._detachTimelinePointerListeners();
-			if (this._rangeCommitTimer) {
-				window.clearTimeout(this._rangeCommitTimer);
-				this._rangeCommitTimer = null;
-			}
-			if (this._scrollbarHideTimer) {
-				window.clearTimeout(this._scrollbarHideTimer);
-				this._scrollbarHideTimer = null;
-			}
-			if (this._resizeObserver) {
-				this._resizeObserver.disconnect();
-				this._resizeObserver = null;
-			}
-		}
-		willUpdate(changed) {
-			if ([
-				"startTime",
-				"endTime",
-				"rangeBounds",
-				"zoomLevel",
-				"dateSnapping"
-			].some((p) => changed.has(p)) && this.rangeBounds) {
-				this._draftStartTime = this.startTime ? new Date(this.startTime) : null;
-				this._draftEndTime = this.endTime ? new Date(this.endTime) : null;
-				this._updateHandleStacking();
-				this._updateRangePreview();
-			}
-		}
-		firstUpdated() {
-			if (typeof ResizeObserver !== "undefined") {
-				this._resizeObserver = new ResizeObserver(() => {
-					this._syncTimelineWidth();
-					this._updateSelectionJumpControls();
-					this._revealSelectionInTimeline("auto");
-				});
-				if (this._rangeScrollViewportEl) this._resizeObserver.observe(this._rangeScrollViewportEl);
-			}
-			this._scheduleDomSync();
-		}
-		updated(changed) {
-			if ([
-				"startTime",
-				"endTime",
-				"rangeBounds",
-				"zoomLevel",
-				"dateSnapping"
-			].some((p) => changed.has(p))) this._scheduleDomSync();
-		}
-		_scheduleDomSync() {
-			this.updateComplete.then(() => {
-				if (this.isConnected && this._rangeTrackEl && this._rangeStartHandleEl && this._rangeEndHandleEl && this.rangeBounds) {
-					this._syncTimelineWidth();
-					this._updateSelectionJumpControls();
-					this._revealSelectionInTimeline("auto");
-				}
-			});
-		}
-		render() {
-			return b`
-      <ha-icon-button
-        id="range-jump-left"
-        class="range-selection-jump left"
-        .label=${this._t("Scroll to selected range")}
-        hidden
-        @click=${() => this._revealSelectionInTimeline("smooth")}
-      >
-        <ha-icon icon="mdi:chevron-left"></ha-icon>
-      </ha-icon-button>
-      <ha-icon-button
-        id="range-jump-right"
-        class="range-selection-jump right"
-        .label=${this._t("Scroll to selected range")}
-        hidden
-        @click=${() => this._revealSelectionInTimeline("smooth")}
-      >
-        <ha-icon icon="mdi:chevron-right"></ha-icon>
-      </ha-icon-button>
-      <div
-        id="range-scroll-viewport"
-        class="range-scroll-viewport ${this._scrollbarVisible ? "scrollbar-visible" : ""} ${this._viewportDragging ? "dragging" : ""}"
-        @scroll=${this._onRangeScroll}
-        @pointerdown=${this._handleTimelinePointerDown}
-        @pointermove=${this._handleRangeViewportPointerMove}
-        @pointerleave=${this._handleRangeViewportPointerLeave}
-      >
-        <div
-          id="range-timeline"
-          class="range-timeline"
-          style="width:${this._rangeContentWidth}px"
-        >
-          <slot name="timeline-overlays"></slot>
-          <range-scale
-            .rangeBounds=${this.rangeBounds}
-            .zoomLevel=${this.zoomLevel}
-            .contentWidth=${this._rangeContentWidth}
-            .locale=${this.locale}
-            .i18n=${this.i18n}
-            @dp-scale-period-select=${this._handleScalePeriodSelect}
-            @dp-scale-period-hover=${this._handleScalePeriodHover}
-            @dp-scale-period-leave=${this._handleScalePeriodLeave}
-          ></range-scale>
-          <range-track
-            id="range-track"
-            .selectionLeftPct=${this._selectionLeftPct}
-            .selectionWidthPct=${this._selectionWidthPct}
-            .selectionDragging=${this._selectionDragging}
-          >
-            <slot name="track-overlays" slot="track-overlays"></slot>
-          </range-track>
-          <range-handle
-            id="range-start-handle"
-            .label=${this._t("Start date and time")}
-            .position=${this._startHandlePosition}
-            .zIndex=${this._startHandleZIndex}
-            .i18n=${this.i18n}
-            @dp-handle-drag-start=${(e) => this._beginRangePointerInteraction("start", e.detail.pointerId, e.detail.clientX)}
-            @dp-handle-keydown=${(e) => this._handleRangeHandleKeyDown("start", e.detail)}
-            @dp-handle-hover=${() => this._setRangeTooltipHoverHandle("start")}
-            @dp-handle-leave=${() => this._clearRangeTooltipHoverHandle("start")}
-            @dp-handle-focus=${() => this._setRangeTooltipFocusHandle("start")}
-            @dp-handle-blur=${() => this._clearRangeTooltipFocusHandle("start")}
-          ></range-handle>
-          <range-handle
-            id="range-end-handle"
-            .label=${this._t("End date and time")}
-            .position=${this._endHandlePosition}
-            .live=${this.isLiveEdge}
-            .zIndex=${this._endHandleZIndex}
-            .i18n=${this.i18n}
-            @dp-handle-drag-start=${(e) => this._beginRangePointerInteraction("end", e.detail.pointerId, e.detail.clientX)}
-            @dp-handle-keydown=${(e) => this._handleRangeHandleKeyDown("end", e.detail)}
-            @dp-handle-hover=${() => this._setRangeTooltipHoverHandle("end")}
-            @dp-handle-leave=${() => this._clearRangeTooltipHoverHandle("end")}
-            @dp-handle-focus=${() => this._setRangeTooltipFocusHandle("end")}
-            @dp-handle-blur=${() => this._clearRangeTooltipFocusHandle("end")}
-          ></range-handle>
-        </div>
-      </div>
-      <range-tooltip
-        side="start"
-        .content=${this._startTooltipContent}
-        .visible=${this._startTooltipVisible}
-        .position=${this._startTooltipLeftPx}
-      ></range-tooltip>
-      <range-tooltip
-        side="end"
-        .content=${this._endTooltipContent}
-        .visible=${this._endTooltipVisible}
-        .position=${this._endTooltipLeftPx}
-        .isLive=${this._endTooltipIsLive}
-        .liveHint=${this._endTooltipLiveHint}
-      ></range-tooltip>
-    `;
-		}
-		_getZoomConfig() {
-			return RANGE_ZOOM_CONFIGS[this.zoomLevel] || RANGE_ZOOM_CONFIGS.month_short;
-		}
-		_getEffectiveSnapUnit() {
-			if (this.dateSnapping !== "auto") return this.dateSnapping;
-			switch (this.zoomLevel) {
-				case "quarterly":
-				case "month_compressed": return "month";
-				case "month_short":
-				case "month_expanded":
-				case "week_compressed": return "week";
-				case "week_expanded": return "day";
-				case "day": return "hour";
-				default: return "day";
-			}
-		}
-		_getSnapSpanMs(reference = /* @__PURE__ */ new Date()) {
-			const snapUnit = this._getEffectiveSnapUnit();
-			const start = startOfUnit(reference, snapUnit);
-			const end = endOfUnit(reference, snapUnit);
-			return Math.max(SECOND_MS, end.getTime() - start.getTime());
-		}
-		_countUnitsInRange(startMs, endMs, unit) {
-			const totalMs = Math.max(0, endMs - startMs);
-			const perMs = {
-				second: SECOND_MS,
-				minute: 60 * SECOND_MS,
-				hour: 3600 * SECOND_MS,
-				day: 86400 * SECOND_MS,
-				week: 604800 * SECOND_MS
-			};
-			if (perMs[unit]) return Math.ceil(totalMs / perMs[unit]);
-			if (unit === "month") return Math.ceil(totalMs / (30.44 * 24 * 60 * 60 * SECOND_MS));
-			if (unit === "quarter") return Math.ceil(totalMs / (7888320 * SECOND_MS));
-			if (unit === "year") return Math.ceil(totalMs / (31557600 * SECOND_MS));
-			return Math.max(1, Math.ceil(totalMs / (86400 * SECOND_MS)));
-		}
-		_syncRangeControl() {
-			if (!this._rangeTrackEl || !this._rangeStartHandleEl || !this._rangeEndHandleEl) return;
-			if (!this.rangeBounds) return;
-			this._draftStartTime = this.startTime ? new Date(this.startTime) : null;
-			this._draftEndTime = this.endTime ? new Date(this.endTime) : null;
-			this._syncTimelineWidth();
-			this._updateHandleStacking();
-			this._updateRangePreview();
-			this._updateSelectionJumpControls();
-			this._revealSelectionInTimeline("auto");
-		}
-		_syncTimelineWidth() {
-			if (!this.rangeBounds) return;
-			const { config } = this.rangeBounds;
-			const viewportWidth = Math.max(this._rangeScrollViewportEl?.clientWidth || 0, 320);
-			const unitCount = this._countUnitsInRange(this.rangeBounds.min, this.rangeBounds.max, config.majorUnit);
-			this._rangeContentWidth = Math.max(viewportWidth, unitCount * (config.pixelsPerUnit || 60));
-		}
-		_updateHandleStacking(activeHandle = this._activeRangeHandle) {
-			this._startHandleZIndex = activeHandle === "start" ? 5 : 3;
-			this._endHandleZIndex = activeHandle === "end" ? 5 : 4;
-		}
-		_updateRangePreview() {
-			if (!this.rangeBounds || !this._draftStartTime || !this._draftEndTime) return;
-			const total = Math.max(1, this.rangeBounds.max - this.rangeBounds.min);
-			const startPct = (this._draftStartTime.getTime() - this.rangeBounds.min) / total * 100;
-			const endPct = (this._draftEndTime.getTime() - this.rangeBounds.min) / total * 100;
-			this._selectionLeftPct = startPct;
-			this._selectionWidthPct = Math.max(0, endPct - startPct);
-			this._startHandlePosition = startPct;
-			this._endHandlePosition = endPct;
-			this._updateRangeTooltip();
-		}
-		_getVisibleRangeTooltipHandles() {
-			if (this._timelinePointerMode === "selection" || this._timelinePointerMode === "interval_select") return ["start", "end"];
-			const handle = this._activeRangeHandle || this._focusedRangeHandle || this._hoveredRangeHandle || null;
-			return handle ? [handle] : [];
-		}
-		_setRangeTooltipHoverHandle(handle) {
-			this._hoveredRangeHandle = handle;
-			this._updateRangeTooltip();
-		}
-		_clearRangeTooltipHoverHandle(handle) {
-			if (this._activeRangeHandle === handle) return;
-			if (this._hoveredRangeHandle === handle) this._hoveredRangeHandle = null;
-			this._updateRangeTooltip();
-		}
-		_setRangeTooltipFocusHandle(handle) {
-			this._focusedRangeHandle = handle;
-			this._updateRangeTooltip();
-		}
-		_clearRangeTooltipFocusHandle(handle) {
-			if (this._activeRangeHandle === handle) return;
-			if (this._focusedRangeHandle === handle) this._focusedRangeHandle = null;
-			this._updateRangeTooltip();
-		}
-		_updateRangeTooltip() {
-			if (!this.rangeBounds || !this._rangeScrollViewportEl) return;
-			const visibleHandles = new Set(this._getVisibleRangeTooltipHandles());
-			this._updateRangeTooltipForHandle("start", visibleHandles.has("start"));
-			this._updateRangeTooltipForHandle("end", visibleHandles.has("end"));
-		}
-		_updateRangeTooltipForHandle(handle, visible) {
-			const value = handle === "start" ? this._draftStartTime : this._draftEndTime;
-			if (!visible || !value || !this.rangeBounds || !this._rangeScrollViewportEl) {
-				if (handle === "start") this._startTooltipVisible = false;
-				else {
-					this._endTooltipVisible = false;
-					this._endTooltipIsLive = false;
-				}
-				return;
-			}
-			const total = Math.max(1, this.rangeBounds.max - this.rangeBounds.min);
-			const contentWidth = Math.max(this._rangeContentWidth || 0, this._rangeScrollViewportEl.clientWidth || 0, 1);
-			const clampedX = clampNumber((value.getTime() - this.rangeBounds.min) / total * contentWidth - this._rangeScrollViewportEl.scrollLeft, 0, this._rangeScrollViewportEl.clientWidth);
-			const content = formatRangeDateTime(value, this.locale || void 0);
-			if (handle === "start") {
-				this._startTooltipVisible = true;
-				this._startTooltipLeftPx = clampedX;
-				this._startTooltipContent = content;
-			} else {
-				this._endTooltipVisible = true;
-				this._endTooltipLeftPx = clampedX;
-				this._endTooltipContent = content;
-				this._endTooltipIsLive = this.isLiveEdge;
-				this._endTooltipLiveHint = this.isLiveEdge ? this._t("Updates with new data") : "";
-			}
-		}
-		_handleScalePeriodSelect(e) {
-			const { unit, startTime, originalEvent } = e.detail;
-			this._handleRangePeriodSelect(unit, startTime, originalEvent);
-		}
-		_handleScalePeriodHover(e) {
-			const { unit, startTime } = e.detail;
-			this._setHoveredPeriodRange(unit, startTime);
-		}
-		_handleScalePeriodLeave(e) {
-			const { unit, startTime } = e.detail;
-			this._clearHoveredPeriodRange(unit, startTime);
-		}
-		_handleRangePeriodSelect(unit, startTime, ev) {
-			ev.preventDefault();
-			ev.stopPropagation();
-			const periodStart = startOfUnit(new Date(startTime), unit);
-			const periodEnd = endOfUnit(new Date(startTime), unit);
-			if (this._rangeCommitTimer) {
-				window.clearTimeout(this._rangeCommitTimer);
-				this._rangeCommitTimer = null;
-			}
-			this._draftStartTime = new Date(periodStart);
-			this._draftEndTime = new Date(periodEnd);
-			this._updateRangePreview();
-			this.dispatchEvent(new CustomEvent("dp-range-period-select", {
-				detail: {
-					unit,
-					startTime: periodStart
-				},
-				bubbles: true,
-				composed: true
-			}));
-			this._commitRangeSelection({ push: true });
-		}
-		_setHoveredPeriodRange(unit, startTime) {
-			const start = startOfUnit(new Date(startTime), unit);
-			const end = endOfUnit(new Date(startTime), unit);
-			this._hoveredPeriodRange = {
-				unit,
-				start: start.getTime(),
-				end: end.getTime()
-			};
-			this.dispatchEvent(new CustomEvent("dp-range-period-hover", {
-				detail: {
-					start,
-					end
-				},
-				bubbles: true,
-				composed: true
-			}));
-		}
-		_clearHoveredPeriodRange(unit, startTime) {
-			if (!this._hoveredPeriodRange) return;
-			const start = startOfUnit(new Date(startTime), unit).getTime();
-			const end = endOfUnit(new Date(startTime), unit).getTime();
-			if (this._hoveredPeriodRange.start === start && this._hoveredPeriodRange.end === end) {
-				this._hoveredPeriodRange = null;
-				this.dispatchEvent(new CustomEvent("dp-range-period-leave", {
-					bubbles: true,
-					composed: true
-				}));
-			}
-		}
-		_updateSelectionJumpControls() {
-			if (!this._rangeScrollViewportEl || !this.rangeBounds || !this._rangeContentWidth || !this.startTime || !this.endTime) {
-				if (this._rangeJumpLeftEl) this._rangeJumpLeftEl.hidden = true;
-				if (this._rangeJumpRightEl) this._rangeJumpRightEl.hidden = true;
-				return;
-			}
-			const { showLeft, showRight } = computeSelectionJumpVisibility(this._rangeScrollViewportEl.scrollLeft, this._rangeScrollViewportEl.clientWidth, this._rangeContentWidth, this.startTime.getTime(), this.endTime.getTime(), this.rangeBounds.min, this.rangeBounds.max);
-			if (this._rangeJumpLeftEl) this._rangeJumpLeftEl.hidden = !showLeft;
-			if (this._rangeJumpRightEl) this._rangeJumpRightEl.hidden = !showRight;
-		}
-		_scrollTimelineToRange(range, behavior = "auto", { center = false } = {}) {
-			if (!this._rangeScrollViewportEl || !this.rangeBounds || !this._rangeContentWidth || !range) return;
-			const nextLeft = computeScrollPositionForRange(range.start, range.end, this.rangeBounds.min, this.rangeBounds.max, this._rangeContentWidth, this._rangeScrollViewportEl.clientWidth, center);
-			if (nextLeft == null) return;
-			this._rangeScrollViewportEl.scrollTo({
-				left: nextLeft,
-				behavior
-			});
-		}
-		revealSelection() {
-			this._revealSelectionInTimeline("smooth");
-		}
-		_revealSelectionInTimeline(behavior = "auto") {
-			if (!this.startTime || !this.endTime) return;
-			this._isProgrammaticScroll = true;
-			this._scrollTimelineToRange({
-				start: this.startTime.getTime(),
-				end: this.endTime.getTime()
-			}, behavior, { center: true });
-			window.setTimeout(() => {
-				this._isProgrammaticScroll = false;
-			}, 50);
-		}
-		_showScrollbar() {
-			this._scrollbarVisible = true;
-			if (this._scrollbarHideTimer) window.clearTimeout(this._scrollbarHideTimer);
-			this._scrollbarHideTimer = window.setTimeout(() => {
-				this._scrollbarHideTimer = null;
-				this._scrollbarVisible = false;
-			}, 1500);
-		}
-		_timestampFromClientX(clientX) {
-			if (!this.rangeBounds || !this._rangeTrackEl) return null;
-			const rect = this._rangeTrackEl.getBoundingClientRect();
-			return timestampFromClientPosition(clientX, rect.left, rect.width, this.rangeBounds.min, this.rangeBounds.max);
-		}
-		_getTimelineSelectionDragDeltaMs(timestamp) {
-			if (timestamp == null || this._timelinePointerStartTimestamp == null) return 0;
-			return computeSelectionDragDelta(timestamp, this._timelinePointerStartTimestamp, this._getEffectiveSnapUnit());
-		}
-		_setDraftRangeFromTimestamp(handle, timestamp) {
-			if (!this.rangeBounds) return;
-			const currentStartMs = this._draftStartTime?.getTime() ?? this.startTime?.getTime() ?? this.rangeBounds.min;
-			const currentEndMs = this._draftEndTime?.getTime() ?? this.endTime?.getTime() ?? this.rangeBounds.max;
-			const snapUnit = this._getEffectiveSnapUnit();
-			const snapSpanMs = this._getSnapSpanMs(new Date(snapDateToUnit(new Date(timestamp), snapUnit).getTime()));
-			const { startMs, endMs } = computeDraftRangeForHandle(handle, timestamp, currentStartMs, currentEndMs, this.rangeBounds.min, this.rangeBounds.max, snapUnit, snapSpanMs);
-			this._draftStartTime = new Date(startMs);
-			this._draftEndTime = new Date(endMs);
-			this._updateHandleStacking(handle);
-			this._updateRangePreview();
-			this._fireDraftEvent();
-			this._scheduleRangeCommit();
-		}
-		_shiftDraftRangeByDelta(deltaMs) {
-			if (!this.rangeBounds) return;
-			const { startMs, endMs } = computeShiftedDraftRange(deltaMs, this._timelineDragStartRangeMs, this._timelineDragEndRangeMs, this.rangeBounds.min, this.rangeBounds.max);
-			this._draftStartTime = new Date(startMs);
-			this._draftEndTime = new Date(endMs);
-			this._updateRangePreview();
-			this._fireDraftEvent();
-			this._scheduleRangeCommit();
-		}
-		_setDraftRangeFromIntervalSelection(startTimestamp, endTimestamp) {
-			if (!this.rangeBounds) return;
-			const result = computeIntervalSelectionRange(startTimestamp, endTimestamp, this.rangeBounds.config?.labelUnit || this._getEffectiveSnapUnit(), this.rangeBounds.min, this.rangeBounds.max);
-			if (!result) return;
-			this._draftStartTime = new Date(result.startMs);
-			this._draftEndTime = new Date(result.endMs);
-			this._updateRangePreview();
-		}
-		_fireDraftEvent() {
-			if (!this._draftStartTime || !this._draftEndTime) return;
-			this.dispatchEvent(new CustomEvent("dp-range-draft", {
-				detail: {
-					start: new Date(this._draftStartTime),
-					end: new Date(this._draftEndTime)
-				},
-				bubbles: true,
-				composed: true
-			}));
-		}
-		_scheduleRangeCommit() {
-			if (this._rangeInteractionActive || this._timelinePointerMode === "selection" || this._timelinePointerMode === "interval_select") return;
-			if (this._rangeCommitTimer) window.clearTimeout(this._rangeCommitTimer);
-			this._rangeCommitTimer = window.setTimeout(() => {
-				this._rangeCommitTimer = null;
-				this._commitRangeSelection({ push: false });
-			}, 240);
-		}
-		_commitRangeSelection({ push = false } = {}) {
-			if (!this._draftStartTime || !this._draftEndTime) return;
-			this.dispatchEvent(new CustomEvent("dp-range-commit", {
-				detail: {
-					start: new Date(this._draftStartTime),
-					end: new Date(this._draftEndTime),
-					push
-				},
-				bubbles: true,
-				composed: true
-			}));
-		}
-		_beginRangePointerInteraction(handle, pointerId, clientX) {
-			if (!this._rangeTrackEl) return;
-			this._rangeInteractionActive = true;
-			if (this._rangeCommitTimer) {
-				window.clearTimeout(this._rangeCommitTimer);
-				this._rangeCommitTimer = null;
-			}
-			this._activeRangeHandle = handle;
-			this._hoveredRangeHandle = handle;
-			this._rangePointerId = pointerId;
-			this._updateHandleStacking(handle);
-			this._updateRangeTooltip();
-			this._attachRangePointerListeners();
-			(handle === "start" ? this._rangeStartHandleEl : this._rangeEndHandleEl)?.focus?.();
-			const timestamp = this._timestampFromClientX(clientX);
-			if (timestamp != null) this._setDraftRangeFromTimestamp(handle, timestamp);
-		}
-		_maybeAutoScrollTimelineDuringHandleDrag(clientX) {
-			if (!this._rangeScrollViewportEl) return;
-			const viewport = this._rangeScrollViewportEl;
-			const rect = viewport.getBoundingClientRect();
-			if (!rect.width) return;
-			const maxScrollLeft = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
-			if (maxScrollLeft <= 0) return;
-			const delta = computeAutoScrollDelta(clientX, rect.left, rect.right);
-			if (!delta) return;
-			viewport.scrollLeft = clampNumber(viewport.scrollLeft + delta, 0, maxScrollLeft);
-		}
-		_attachRangePointerListeners() {
-			window.addEventListener("pointermove", this._onRangePointerMove);
-			window.addEventListener("pointerup", this._onRangePointerUp);
-			window.addEventListener("pointercancel", this._onRangePointerUp);
-		}
-		_detachRangePointerListeners() {
-			window.removeEventListener("pointermove", this._onRangePointerMove);
-			window.removeEventListener("pointerup", this._onRangePointerUp);
-			window.removeEventListener("pointercancel", this._onRangePointerUp);
-			this._rangePointerId = null;
-			this._activeRangeHandle = null;
-			this._rangeInteractionActive = false;
-			this._updateHandleStacking();
-			this._updateRangeTooltip();
-		}
-		_handleRangePointerMove(ev) {
-			if (!this._activeRangeHandle) return;
-			if (this._rangePointerId != null && ev.pointerId !== this._rangePointerId) return;
-			this._maybeAutoScrollTimelineDuringHandleDrag(ev.clientX);
-			const timestamp = this._timestampFromClientX(ev.clientX);
-			if (timestamp == null) return;
-			ev.preventDefault();
-			this._setDraftRangeFromTimestamp(this._activeRangeHandle, timestamp);
-		}
-		_finishRangePointerInteraction(ev) {
-			if (!this._activeRangeHandle) return;
-			if (this._rangePointerId != null && ev.pointerId !== this._rangePointerId) return;
-			this._detachRangePointerListeners();
-			this._focusedRangeHandle = null;
-			this._hoveredRangeHandle = null;
-			this._updateRangeTooltip();
-			this._commitRangeSelection({ push: true });
-		}
-		_handleRangeHandleKeyDown(handle, detail) {
-			if (!this.rangeBounds) return;
-			const snapUnit = this._getEffectiveSnapUnit();
-			const currentValue = handle === "start" ? this._draftStartTime?.getTime() ?? this.startTime?.getTime() : this._draftEndTime?.getTime() ?? this.endTime?.getTime();
-			if (currentValue == null) return;
-			const config = this._getZoomConfig();
-			let nextValue = null;
-			if (detail.key === "ArrowLeft" || detail.key === "ArrowDown") nextValue = addUnit(new Date(currentValue), snapUnit, -1).getTime();
-			if (detail.key === "ArrowRight" || detail.key === "ArrowUp") nextValue = addUnit(new Date(currentValue), snapUnit, 1).getTime();
-			if (detail.key === "PageDown") nextValue = addUnit(new Date(currentValue), config.majorUnit, -1).getTime();
-			if (detail.key === "PageUp") nextValue = addUnit(new Date(currentValue), config.majorUnit, 1).getTime();
-			if (detail.key === "Home") nextValue = this.rangeBounds.min;
-			if (detail.key === "End") nextValue = this.rangeBounds.max;
-			if (nextValue == null) return;
-			this._focusedRangeHandle = handle;
-			this._setDraftRangeFromTimestamp(handle, nextValue);
-		}
-		_handleTimelinePointerDown(ev) {
-			if (ev.button !== 0) return;
-			if (ev.composedPath().some((node) => node instanceof Element && (node.tagName === "RANGE-HANDLE" || node.closest?.("range-handle")))) return;
-			if (ev.target?.closest?.(".range-period-button")) return;
-			if (!this._rangeScrollViewportEl) return;
-			const isSelectionDrag = ev.composedPath().some((el) => el instanceof Element && el.classList?.contains?.("range-selection"));
-			const trackRect = this._rangeTrackEl?.getBoundingClientRect();
-			const isTrackRegion = !!trackRect && ev.clientY >= trackRect.top - 6 && ev.clientY <= trackRect.bottom + 6;
-			const isIntervalSelect = !isSelectionDrag && !isTrackRegion;
-			this._detachTimelinePointerListeners();
-			this._rangeInteractionActive = isSelectionDrag || isIntervalSelect;
-			if ((isSelectionDrag || isIntervalSelect) && this._rangeCommitTimer) {
-				window.clearTimeout(this._rangeCommitTimer);
-				this._rangeCommitTimer = null;
-			}
-			this._timelinePointerId = ev.pointerId;
-			this._timelinePointerStartX = ev.clientX;
-			this._timelinePointerStartScrollLeft = this._rangeScrollViewportEl.scrollLeft;
-			this._timelinePointerStartTimestamp = isSelectionDrag || isIntervalSelect ? this._timestampFromClientX(ev.clientX) : null;
-			if (isSelectionDrag) this._timelinePointerMode = "selection";
-			else if (isIntervalSelect) this._timelinePointerMode = "interval_select";
-			else this._timelinePointerMode = "pan";
-			this._timelineDragStartRangeMs = this._draftStartTime?.getTime() ?? this.startTime?.getTime() ?? 0;
-			this._timelineDragEndRangeMs = this._draftEndTime?.getTime() ?? this.endTime?.getTime() ?? 0;
-			this._timelinePointerMoved = false;
-			this._timelineTrackClickPending = !isSelectionDrag && !isIntervalSelect && !!ev.target?.closest?.("range-track");
-			this._viewportDragging = false;
-			this._selectionDragging = isSelectionDrag;
-			window.addEventListener("pointermove", this._onTimelinePointerMove);
-			window.addEventListener("pointerup", this._onTimelinePointerUp);
-			window.addEventListener("pointercancel", this._onTimelinePointerUp);
-		}
-		_detachTimelinePointerListeners() {
-			window.removeEventListener("pointermove", this._onTimelinePointerMove);
-			window.removeEventListener("pointerup", this._onTimelinePointerUp);
-			window.removeEventListener("pointercancel", this._onTimelinePointerUp);
-			this._viewportDragging = false;
-			this._selectionDragging = false;
-			this._timelinePointerId = null;
-			this._timelinePointerStartTimestamp = null;
-			this._timelinePointerMode = null;
-			this._rangeInteractionActive = false;
-			this._timelinePointerMoved = false;
-			this._timelineTrackClickPending = false;
-		}
-		_handleTimelinePointerMove(ev) {
-			if (this._timelinePointerId == null || ev.pointerId !== this._timelinePointerId || !this._rangeScrollViewportEl) return;
-			if (this._timelinePointerMode === "selection") {
-				const timestamp = this._timestampFromClientX(ev.clientX);
-				if (timestamp == null || this._timelinePointerStartTimestamp == null) return;
-				const deltaX = ev.clientX - this._timelinePointerStartX;
-				if (!this._timelinePointerMoved && Math.abs(deltaX) < 4) return;
-				this._timelinePointerMoved = true;
-				this._shiftDraftRangeByDelta(this._getTimelineSelectionDragDeltaMs(timestamp));
-				ev.preventDefault();
-				return;
-			}
-			if (this._timelinePointerMode === "interval_select") {
-				const timestamp = this._timestampFromClientX(ev.clientX);
-				if (timestamp == null || this._timelinePointerStartTimestamp == null) return;
-				const deltaX = ev.clientX - this._timelinePointerStartX;
-				if (!this._timelinePointerMoved && Math.abs(deltaX) < 4) return;
-				this._timelinePointerMoved = true;
-				this._setDraftRangeFromIntervalSelection(this._timelinePointerStartTimestamp, timestamp);
-				ev.preventDefault();
-				return;
-			}
-			const deltaX = ev.clientX - this._timelinePointerStartX;
-			if (!this._timelinePointerMoved && Math.abs(deltaX) < 4) return;
-			this._timelinePointerMoved = true;
-			this._timelineTrackClickPending = false;
-			this._viewportDragging = true;
-			const maxScrollLeft = Math.max(0, this._rangeScrollViewportEl.scrollWidth - this._rangeScrollViewportEl.clientWidth);
-			this._rangeScrollViewportEl.scrollLeft = clampNumber(this._timelinePointerStartScrollLeft - deltaX, 0, maxScrollLeft);
-			ev.preventDefault();
-		}
-		_finishTimelinePointerInteraction(ev) {
-			if (this._timelinePointerId == null || ev.pointerId !== this._timelinePointerId) return;
-			const mode = this._timelinePointerMode;
-			const didMove = this._timelinePointerMoved;
-			const shouldSelectTrack = this._timelineTrackClickPending && !didMove;
-			const clientX = ev.clientX;
-			this._detachTimelinePointerListeners();
-			if (mode === "selection") {
-				this._focusedRangeHandle = null;
-				this._hoveredRangeHandle = null;
-				this._updateRangeTooltip();
-				if (didMove) this._commitRangeSelection({ push: true });
-				return;
-			}
-			if (mode === "interval_select") {
-				this._hoveredPeriodRange = null;
-				this._updateRangeTooltip();
-				if (didMove) this._commitRangeSelection({ push: true });
-				return;
-			}
-			if (shouldSelectTrack) this._handleTrackSelectionAtClientX(clientX);
-		}
-		_handleTrackSelectionAtClientX(clientX) {
-			const timestamp = this._timestampFromClientX(clientX);
-			if (timestamp == null) return;
-			const startMs = this._draftStartTime?.getTime() ?? this.startTime?.getTime() ?? this.rangeBounds?.min;
-			const endMs = this._draftEndTime?.getTime() ?? this.endTime?.getTime() ?? this.rangeBounds?.max;
-			if (startMs == null || endMs == null) return;
-			const handle = resolveCloserHandle(timestamp, startMs, endMs);
-			this._setDraftRangeFromTimestamp(handle, timestamp);
-		}
-		_handleRangeViewportPointerMove(ev) {
-			if (this._timelinePointerId != null || this._rangePointerId != null) return;
-			if (ev.composedPath().some((el) => el.tagName === "DP-RANGE-HANDLE")) return;
-			if (ev.target?.closest?.(".range-period-button")) return;
-			if (ev.composedPath().some((el) => el instanceof Element && el.classList?.contains?.("range-selection"))) return;
-			const timestamp = this._timestampFromClientX(ev.clientX);
-			if (timestamp == null || !this.rangeBounds) return;
-			const unit = this.rangeBounds.config?.labelUnit || this._getEffectiveSnapUnit();
-			if (!unit) return;
-			this._setHoveredPeriodRange(unit, new Date(timestamp));
-		}
-		_handleRangeViewportPointerLeave() {
-			if (this._timelinePointerId != null || this._rangePointerId != null) return;
-			if (this._hoveredPeriodRange) {
-				this._hoveredPeriodRange = null;
-				this.dispatchEvent(new CustomEvent("dp-range-period-leave", {
-					bubbles: true,
-					composed: true
-				}));
-			}
-		}
-	};
-	_defineProperty(RangeTimeline, "styles", styles$36);
-	__decorate([n$1({ type: Object })], RangeTimeline.prototype, "startTime", null);
-	__decorate([n$1({ type: Object })], RangeTimeline.prototype, "endTime", null);
-	__decorate([n$1({ type: Object })], RangeTimeline.prototype, "rangeBounds", null);
-	__decorate([n$1({ type: String })], RangeTimeline.prototype, "zoomLevel", null);
-	__decorate([n$1({ type: String })], RangeTimeline.prototype, "dateSnapping", null);
-	__decorate([n$1({ type: Boolean })], RangeTimeline.prototype, "isLiveEdge", null);
-	__decorate([n$1({ type: String })], RangeTimeline.prototype, "locale", null);
-	__decorate([n$1({ attribute: false })], RangeTimeline.prototype, "i18n", null);
-	__decorate([r$2()], RangeTimeline.prototype, "_rangeContentWidth", null);
-	__decorate([r$2()], RangeTimeline.prototype, "_startTooltipVisible", null);
-	__decorate([r$2()], RangeTimeline.prototype, "_startTooltipLeftPx", null);
-	__decorate([r$2()], RangeTimeline.prototype, "_startTooltipContent", null);
-	__decorate([r$2()], RangeTimeline.prototype, "_endTooltipVisible", null);
-	__decorate([r$2()], RangeTimeline.prototype, "_endTooltipLeftPx", null);
-	__decorate([r$2()], RangeTimeline.prototype, "_endTooltipContent", null);
-	__decorate([r$2()], RangeTimeline.prototype, "_endTooltipIsLive", null);
-	__decorate([r$2()], RangeTimeline.prototype, "_endTooltipLiveHint", null);
-	__decorate([r$2()], RangeTimeline.prototype, "_selectionLeftPct", null);
-	__decorate([r$2()], RangeTimeline.prototype, "_selectionWidthPct", null);
-	__decorate([r$2()], RangeTimeline.prototype, "_scrollbarVisible", null);
-	__decorate([r$2()], RangeTimeline.prototype, "_viewportDragging", null);
-	__decorate([r$2()], RangeTimeline.prototype, "_selectionDragging", null);
-	__decorate([r$2()], RangeTimeline.prototype, "_startHandlePosition", null);
-	__decorate([r$2()], RangeTimeline.prototype, "_endHandlePosition", null);
-	__decorate([r$2()], RangeTimeline.prototype, "_startHandleZIndex", null);
-	__decorate([r$2()], RangeTimeline.prototype, "_endHandleZIndex", null);
-	__decorate([e$4("#range-scroll-viewport")], RangeTimeline.prototype, "_rangeScrollViewportEl", null);
-	__decorate([e$4("#range-track")], RangeTimeline.prototype, "_rangeTrackEl", null);
-	__decorate([e$4("#range-start-handle")], RangeTimeline.prototype, "_rangeStartHandleEl", null);
-	__decorate([e$4("#range-end-handle")], RangeTimeline.prototype, "_rangeEndHandleEl", null);
-	__decorate([e$4("#range-jump-left")], RangeTimeline.prototype, "_rangeJumpLeftEl", null);
-	__decorate([e$4("#range-jump-right")], RangeTimeline.prototype, "_rangeJumpRightEl", null);
-	customElements.define("range-timeline", RangeTimeline);
-	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/date-window-dialog.ts
 	var _DateWindowDialog;
-	var _open_accessor_storage$5 = /* @__PURE__ */ new WeakMap();
-	var _heading_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
-	var _name_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
-	var _startValue_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _endValue_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _showDelete_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _showShortcuts_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _submitLabel_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _rangeBounds_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
-	var _zoomLevel_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
-	var _dateSnapping_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
-	var _dialogEl_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _nameInput_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _startInput_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _endInput_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _shaking_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _nameValue_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _error_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var DateWindowDialog = (_DateWindowDialog = class DateWindowDialog extends i$3 {
+	var _open_accessor_storage$5;
+	var _heading_accessor_storage$2;
+	var _name_accessor_storage$2;
+	var _startValue_accessor_storage;
+	var _endValue_accessor_storage;
+	var _showDelete_accessor_storage;
+	var _showShortcuts_accessor_storage;
+	var _submitLabel_accessor_storage;
+	var _kind_accessor_storage;
+	var _preset_accessor_storage;
+	var _allowRelative_accessor_storage;
+	var _rangeStart_accessor_storage;
+	var _rangeEnd_accessor_storage;
+	var _now_accessor_storage;
+	var _dialogEl_accessor_storage;
+	var _nameInput_accessor_storage;
+	var _startInput_accessor_storage;
+	var _endInput_accessor_storage;
+	var _shaking_accessor_storage;
+	var _nameValue_accessor_storage;
+	var _kindValue_accessor_storage;
+	var _presetValue_accessor_storage;
+	var _fixedStart_accessor_storage;
+	var _fixedEnd_accessor_storage;
+	var KINDS = ["relative", "fixed"];
+	var DateWindowDialog = (_open_accessor_storage$5 = /* @__PURE__ */ new WeakMap(), _heading_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _name_accessor_storage$2 = /* @__PURE__ */ new WeakMap(), _startValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _endValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _showDelete_accessor_storage = /* @__PURE__ */ new WeakMap(), _showShortcuts_accessor_storage = /* @__PURE__ */ new WeakMap(), _submitLabel_accessor_storage = /* @__PURE__ */ new WeakMap(), _kind_accessor_storage = /* @__PURE__ */ new WeakMap(), _preset_accessor_storage = /* @__PURE__ */ new WeakMap(), _allowRelative_accessor_storage = /* @__PURE__ */ new WeakMap(), _rangeStart_accessor_storage = /* @__PURE__ */ new WeakMap(), _rangeEnd_accessor_storage = /* @__PURE__ */ new WeakMap(), _now_accessor_storage = /* @__PURE__ */ new WeakMap(), _dialogEl_accessor_storage = /* @__PURE__ */ new WeakMap(), _nameInput_accessor_storage = /* @__PURE__ */ new WeakMap(), _startInput_accessor_storage = /* @__PURE__ */ new WeakMap(), _endInput_accessor_storage = /* @__PURE__ */ new WeakMap(), _shaking_accessor_storage = /* @__PURE__ */ new WeakMap(), _nameValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _kindValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _presetValue_accessor_storage = /* @__PURE__ */ new WeakMap(), _fixedStart_accessor_storage = /* @__PURE__ */ new WeakMap(), _fixedEnd_accessor_storage = /* @__PURE__ */ new WeakMap(), _DateWindowDialog = class DateWindowDialog extends i$3 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _open_accessor_storage$5, false);
@@ -30799,19 +29341,25 @@
 			_classPrivateFieldInitSpec(this, _showDelete_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _showShortcuts_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _submitLabel_accessor_storage, "Create date window");
-			_classPrivateFieldInitSpec(this, _rangeBounds_accessor_storage$2, null);
-			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage$3, "auto");
-			_classPrivateFieldInitSpec(this, _dateSnapping_accessor_storage$3, "hour");
+			_classPrivateFieldInitSpec(this, _kind_accessor_storage, "fixed");
+			_classPrivateFieldInitSpec(this, _preset_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _allowRelative_accessor_storage, true);
+			_classPrivateFieldInitSpec(this, _rangeStart_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _rangeEnd_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _now_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _dialogEl_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _nameInput_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _startInput_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _endInput_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _shaking_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _nameValue_accessor_storage, "");
-			_classPrivateFieldInitSpec(this, _error_accessor_storage$1, null);
+			_classPrivateFieldInitSpec(this, _kindValue_accessor_storage, "fixed");
+			_classPrivateFieldInitSpec(this, _presetValue_accessor_storage, DEFAULT_RELATIVE_DATE_WINDOW_PRESET);
+			_classPrivateFieldInitSpec(this, _fixedStart_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _fixedEnd_accessor_storage, "");
 			_defineProperty(
 				this,
-				/** Tracks the previous `open` value so we only seed name on a false→true edge. */
+				/** Tracks the previous `open` value so we only seed on a false→true edge. */
 				"_wasOpen",
 				false
 			);
@@ -30864,23 +29412,41 @@
 		set submitLabel(value) {
 			_classPrivateFieldSet2(_submitLabel_accessor_storage, this, value);
 		}
-		get rangeBounds() {
-			return _classPrivateFieldGet2(_rangeBounds_accessor_storage$2, this);
+		get kind() {
+			return _classPrivateFieldGet2(_kind_accessor_storage, this);
 		}
-		set rangeBounds(value) {
-			_classPrivateFieldSet2(_rangeBounds_accessor_storage$2, this, value);
+		set kind(value) {
+			_classPrivateFieldSet2(_kind_accessor_storage, this, value);
 		}
-		get zoomLevel() {
-			return _classPrivateFieldGet2(_zoomLevel_accessor_storage$3, this);
+		get preset() {
+			return _classPrivateFieldGet2(_preset_accessor_storage, this);
 		}
-		set zoomLevel(value) {
-			_classPrivateFieldSet2(_zoomLevel_accessor_storage$3, this, value);
+		set preset(value) {
+			_classPrivateFieldSet2(_preset_accessor_storage, this, value);
 		}
-		get dateSnapping() {
-			return _classPrivateFieldGet2(_dateSnapping_accessor_storage$3, this);
+		get allowRelative() {
+			return _classPrivateFieldGet2(_allowRelative_accessor_storage, this);
 		}
-		set dateSnapping(value) {
-			_classPrivateFieldSet2(_dateSnapping_accessor_storage$3, this, value);
+		set allowRelative(value) {
+			_classPrivateFieldSet2(_allowRelative_accessor_storage, this, value);
+		}
+		get rangeStart() {
+			return _classPrivateFieldGet2(_rangeStart_accessor_storage, this);
+		}
+		set rangeStart(value) {
+			_classPrivateFieldSet2(_rangeStart_accessor_storage, this, value);
+		}
+		get rangeEnd() {
+			return _classPrivateFieldGet2(_rangeEnd_accessor_storage, this);
+		}
+		set rangeEnd(value) {
+			_classPrivateFieldSet2(_rangeEnd_accessor_storage, this, value);
+		}
+		get now() {
+			return _classPrivateFieldGet2(_now_accessor_storage, this);
+		}
+		set now(value) {
+			_classPrivateFieldSet2(_now_accessor_storage, this, value);
 		}
 		get _dialogEl() {
 			return _classPrivateFieldGet2(_dialogEl_accessor_storage, this);
@@ -30918,34 +29484,53 @@
 		set _nameValue(value) {
 			_classPrivateFieldSet2(_nameValue_accessor_storage, this, value);
 		}
-		get _error() {
-			return _classPrivateFieldGet2(_error_accessor_storage$1, this);
+		get _kindValue() {
+			return _classPrivateFieldGet2(_kindValue_accessor_storage, this);
 		}
-		set _error(value) {
-			_classPrivateFieldSet2(_error_accessor_storage$1, this, value);
+		set _kindValue(value) {
+			_classPrivateFieldSet2(_kindValue_accessor_storage, this, value);
 		}
-		/**
-		* Seed the internal name from the `name` prop only when the dialog opens.
-		* Binding `.value` directly to the reactive `name` prop would re-apply a
-		* stale value on every parent re-render (the original wipe bug).
-		*/
+		get _presetValue() {
+			return _classPrivateFieldGet2(_presetValue_accessor_storage, this);
+		}
+		set _presetValue(value) {
+			_classPrivateFieldSet2(_presetValue_accessor_storage, this, value);
+		}
+		get _fixedStart() {
+			return _classPrivateFieldGet2(_fixedStart_accessor_storage, this);
+		}
+		set _fixedStart(value) {
+			_classPrivateFieldSet2(_fixedStart_accessor_storage, this, value);
+		}
+		get _fixedEnd() {
+			return _classPrivateFieldGet2(_fixedEnd_accessor_storage, this);
+		}
+		set _fixedEnd(value) {
+			_classPrivateFieldSet2(_fixedEnd_accessor_storage, this, value);
+		}
 		willUpdate(changed) {
+			if (changed.has("startValue")) this._fixedStart = this.startValue;
+			if (changed.has("endValue")) this._fixedEnd = this.endValue;
 			if (changed.has("open")) {
 				if (this.open && !this._wasOpen) {
-					this._nameValue = this.name;
-					this._error = null;
+					this._kindValue = this.allowRelative && this.kind === "relative" ? "relative" : "fixed";
+					this._presetValue = isRelativeDateWindowPreset(this.preset) ? this.preset : DEFAULT_RELATIVE_DATE_WINDOW_PRESET;
+					const seeded = this.name.trim();
+					this._nameValue = this._kindValue === "relative" && seeded === relativeDateWindowPresetLabel(this._presetValue) ? "" : this.name;
 				}
 				this._wasOpen = this.open;
 			}
 		}
-		/** Localized text for the current inline error, or "" when there is none. */
-		get _errorMessage() {
-			if (this._error === "name") return msg("Enter a name for this date window.");
-			if (this._error === "range") return msg("The start date must be before the end date.");
-			return "";
+		/**
+		* Keep the native preset `<select>` in step with `_presetValue`. Options are
+		* rendered in the same pass as the select, so its `value` is set afterwards.
+		*/
+		updated() {
+			const select = this.renderRoot.querySelector("#date-window-preset");
+			if (select && select.value !== this._presetValue) select.value = this._presetValue;
 		}
 		/**
-		* Shake the dialog to signal an invalid submit. Now driven internally by
+		* Shake the dialog to signal an invalid submit. Driven internally by
 		* `_onSubmit`; kept public for backwards compatibility with earlier callers.
 		*/
 		shake() {
@@ -30971,9 +29556,7 @@
 			this._emit("dp-window-close");
 		}
 		_onNameInput(ev) {
-			const value = ev.target?.value ?? "";
-			this._nameValue = value;
-			if (this._error === "name" && value.trim()) this._error = null;
+			this._nameValue = ev.target?.value ?? "";
 		}
 		/** Pressing Enter in the name field submits, like a regular form. */
 		_onNameKeydown(ev) {
@@ -30982,44 +29565,85 @@
 				this._onSubmit();
 			}
 		}
-		_onSubmit() {
-			const name = String(this._nameInput?.value ?? this._nameValue ?? "").trim();
-			const start = this._startInput?.value ?? this.startValue;
-			const end = this._endInput?.value ?? this.endValue;
-			if (!name) {
-				this._showError("name");
-				return;
-			}
-			if (!this._isValidRange(start, end)) {
-				this._showError("range");
-				return;
-			}
-			this._error = null;
-			this._emit("dp-window-submit", {
-				name,
+		/** The parsed fixed range, or null while it is incomplete or inverted. */
+		get _fixedRange() {
+			const start = this._parseValueToDate(this._fixedStart);
+			const end = this._parseValueToDate(this._fixedEnd);
+			return start && end && start.getTime() < end.getTime() ? {
 				start,
 				end
+			} : null;
+		}
+		/** True when both fixed dates are filled in but the end is not after the start. */
+		get _fixedRangeInvalid() {
+			return !!this._fixedStart && !!this._fixedEnd && !this._fixedRange;
+		}
+		/** The name used when the field is left empty. */
+		get _defaultName() {
+			if (this._kindValue === "relative") return relativeDateWindowPresetLabel(this._presetValue);
+			const range = this._fixedRange;
+			return range ? formatDateTimeRange(range.start, range.end) : msg("Custom range");
+		}
+		get _canSubmit() {
+			return this._kindValue === "relative" || !!this._fixedRange;
+		}
+		_onSubmit() {
+			const typed = String(this._nameInput?.value ?? this._nameValue ?? "").trim();
+			if (this._kindValue === "relative") {
+				this._emit("dp-window-submit", {
+					kind: "relative",
+					name: typed || this._defaultName,
+					preset: this._presetValue
+				});
+				return;
+			}
+			this._fixedStart = this._startInput?.value ?? this._fixedStart;
+			this._fixedEnd = this._endInput?.value ?? this._fixedEnd;
+			if (!this._fixedRange) {
+				this.shake();
+				this._startInput?.focus?.();
+				return;
+			}
+			this._emit("dp-window-submit", {
+				kind: "fixed",
+				name: typed || this._defaultName,
+				start: this._fixedStart,
+				end: this._fixedEnd
 			});
 		}
-		/** True when both values parse and the start is strictly before the end. */
-		_isValidRange(start, end) {
-			const startDate = this._parseValueToDate(start);
-			const endDate = this._parseValueToDate(end);
-			return !!startDate && !!endDate && startDate.getTime() < endDate.getTime();
+		/** The selected preset resolved against the chart's selected range, or null. */
+		_resolvePreset() {
+			if (!this.rangeStart || !this.rangeEnd) return null;
+			return resolveRelativeDateWindow(this._presetValue, this.rangeStart, this.rangeEnd, this.now ?? /* @__PURE__ */ new Date());
 		}
-		/** Surface an inline error for a field, shake, and focus it for announcement. */
-		_showError(field) {
-			this._error = field;
-			this.shake();
-			(field === "name" ? this._nameInput : this._startInput)?.focus?.();
+		_selectKind(next) {
+			if (next === this._kindValue) return;
+			this._kindValue = next;
+			if (next === "relative") return;
+			const resolved = this._resolvePreset();
+			if (resolved) this._setFixedRange(resolved.start, resolved.end);
 		}
-		/** Clear a shown range error once the start/end become a valid range again. */
-		_maybeClearRangeError(start, end) {
-			if (this._error !== "range") return;
-			if (this._isValidRange(start, end)) this._error = null;
+		/** Arrow keys move between the type tabs, as in a standard tab list. */
+		_onTabKeydown(ev) {
+			if (ev.key !== "ArrowRight" && ev.key !== "ArrowLeft") return;
+			ev.preventDefault();
+			const next = KINDS[(KINDS.indexOf(this._kindValue) + (ev.key === "ArrowRight" ? 1 : -1) + KINDS.length) % KINDS.length];
+			this._selectKind(next);
+			this.updateComplete.then(() => {
+				this.renderRoot.querySelector(`#date-window-tab-${next}`)?.focus();
+			});
+		}
+		_onPresetChange(ev) {
+			const value = ev.target?.value;
+			if (!isRelativeDateWindowPreset(value)) return;
+			this._presetValue = value;
 		}
 		_onDelete() {
 			this._emit("dp-window-delete");
+		}
+		_onFillSelected() {
+			if (!this.rangeStart || !this.rangeEnd) return;
+			this._setFixedRange(this.rangeStart, this.rangeEnd);
 		}
 		_onPreviousShortcut() {
 			this._emit("dp-window-shortcut", { direction: -1 });
@@ -31027,44 +29651,204 @@
 		_onNextShortcut() {
 			this._emit("dp-window-shortcut", { direction: 1 });
 		}
+		_setFixedRange(start, end) {
+			this._fixedStart = this._formatInputValue(start.getTime());
+			this._fixedEnd = this._formatInputValue(end.getTime());
+			this._emit("dp-window-date-change", {
+				start: this._fixedStart,
+				end: this._fixedEnd
+			});
+		}
 		_onDateChange() {
-			const start = this._startInput?.value ?? "";
-			const end = this._endInput?.value ?? "";
-			this._maybeClearRangeError(start, end);
+			this._fixedStart = this._startInput?.value ?? "";
+			this._fixedEnd = this._endInput?.value ?? "";
 			this._emit("dp-window-date-change", {
-				start,
-				end
+				start: this._fixedStart,
+				end: this._fixedEnd
 			});
 		}
-		_onRangeCommit(ev) {
-			const { start, end } = ev.detail ?? {};
-			if (!start || !end) return;
-			const fmt = (ms) => {
-				const d = new Date(ms);
-				const pad = (n) => String(n).padStart(2, "0");
-				return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-			};
-			const startStr = fmt(start);
-			const endStr = fmt(end);
-			if (this._startInput) this._startInput.value = startStr;
-			if (this._endInput) this._endInput.value = endStr;
-			this._maybeClearRangeError(startStr, endStr);
-			this._emit("dp-window-date-change", {
-				start: startStr,
-				end: endStr
-			});
+		/** Format epoch ms as a datetime-local input value (YYYY-MM-DDTHH:MM). */
+		_formatInputValue(ms) {
+			const d = new Date(ms);
+			const pad = (n) => String(n).padStart(2, "0");
+			return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 		}
-		/** Parse the startValue / endValue strings to Date objects for the timeline. */
+		/** Parse a datetime-local value to a Date, or null when it is invalid. */
 		_parseValueToDate(value) {
 			if (!value) return null;
 			const d = new Date(value);
 			return Number.isNaN(d.getTime()) ? null : d;
 		}
-		/** Inline, localized validation message for the field named by `id`. */
-		_renderError(id) {
-			return b`<p id=${id} class="date-window-dialog-error" role="alert">
-      ${this._errorMessage}
+		_renderTabs() {
+			const tabs = [{
+				kind: "relative",
+				label: msg("Relative"),
+				icon: "mdi:calendar-sync"
+			}, {
+				kind: "fixed",
+				label: msg("Fixed dates"),
+				icon: "mdi:calendar-range"
+			}];
+			return b`
+      <div
+        class="date-window-dialog-tabs"
+        role="tablist"
+        aria-label=${msg("Date window type")}
+        @keydown=${this._onTabKeydown}
+      >
+        ${tabs.map(({ kind, label, icon }) => b`
+            <button
+              type="button"
+              id="date-window-tab-${kind}"
+              class="date-window-dialog-tab"
+              role="tab"
+              aria-selected=${this._kindValue === kind ? "true" : "false"}
+              aria-controls="date-window-panel"
+              tabindex=${this._kindValue === kind ? "0" : "-1"}
+              @click=${() => this._selectKind(kind)}
+            >
+              <ha-icon icon=${icon} aria-hidden="true"></ha-icon>
+              <span>${label}</span>
+            </button>
+          `)}
+      </div>
+    `;
+		}
+		/** "Length …" for a valid range, an error for an inverted one, else nothing. */
+		_renderLength(range) {
+			if (range) return b`<p id="date-window-length" class="date-window-dialog-length">
+        ${interpolatePlaceholders(msg("Length {0}"), [formatRangeDuration(range.start, range.end)])}
+      </p>`;
+			if (!this._fixedRangeInvalid) return A;
+			return b`<p
+      id="date-window-length"
+      class="date-window-dialog-length date-window-dialog-error"
+      role="alert"
+    >
+      ${msg("End must be after start.")}
     </p>`;
+		}
+		_renderFixedFields() {
+			const range = this._fixedRange;
+			return b`
+      <p class="date-window-dialog-hint">
+        ${msg("Pins an exact start and end. The window stays put when the chart moves.")}
+      </p>
+      <div class="date-window-dialog-dates">
+        <div class="date-window-dialog-field">
+          <label for="date-window-start">${msg("Start")}</label>
+          <input
+            id="date-window-start"
+            class="date-window-dialog-input"
+            type="datetime-local"
+            step="60"
+            .value=${this._fixedStart}
+            aria-invalid=${this._fixedRangeInvalid ? "true" : "false"}
+            aria-describedby="date-window-length"
+            @change=${this._onDateChange}
+          />
+        </div>
+        <div class="date-window-dialog-field">
+          <label for="date-window-end">${msg("End")}</label>
+          <input
+            id="date-window-end"
+            class="date-window-dialog-input"
+            type="datetime-local"
+            step="60"
+            .value=${this._fixedEnd}
+            aria-invalid=${this._fixedRangeInvalid ? "true" : "false"}
+            aria-describedby="date-window-length"
+            @change=${this._onDateChange}
+          />
+        </div>
+      </div>
+      ${this._renderLength(range)}
+      ${this.showShortcuts ? b`
+            <div class="date-window-dialog-chips">
+              <span class="date-window-dialog-chips-label"
+                >${msg("Fill from")}</span
+              >
+              ${this.rangeStart && this.rangeEnd ? b`<button
+                    type="button"
+                    class="date-window-dialog-chip"
+                    @click=${this._onFillSelected}
+                  >
+                    ${msg("Selected range")}
+                  </button>` : A}
+              <button
+                type="button"
+                class="date-window-dialog-chip"
+                @click=${this._onPreviousShortcut}
+              >
+                ${msg("Previous range")}
+              </button>
+              <button
+                type="button"
+                class="date-window-dialog-chip"
+                @click=${this._onNextShortcut}
+              >
+                ${msg("Next range")}
+              </button>
+            </div>
+          ` : A}
+    `;
+		}
+		/** Thin strip showing where the window sits against the selected range. */
+		_renderStrip(selStart, selEnd, win, winEnd) {
+			const lo = Math.min(selStart.getTime(), win.getTime());
+			const span = Math.max(selEnd.getTime(), winEnd.getTime()) - lo || 1;
+			const pos = (a, b) => `left:${(a.getTime() - lo) / span * 100}%;width:${Math.max((b.getTime() - a.getTime()) / span * 100, 1.5)}%`;
+			return b`
+      <div class="date-window-dialog-strip" aria-hidden="true">
+        <span class="is-selected" style=${pos(selStart, selEnd)}></span>
+        <span class="is-window" style=${pos(win, winEnd)}></span>
+      </div>
+    `;
+		}
+		_renderRelativeFields() {
+			const resolved = this._resolvePreset();
+			return b`
+      <p class="date-window-dialog-hint">
+        ${msg("Follows the selected range. When you move the chart, this window moves with it and keeps the same length.")}
+      </p>
+      <div class="date-window-dialog-field">
+        <label for="date-window-preset">${msg("Period")}</label>
+        <select
+          id="date-window-preset"
+          class="date-window-dialog-input date-window-dialog-select"
+          @change=${this._onPresetChange}
+        >
+          ${RELATIVE_DATE_WINDOW_PRESETS.map((preset) => b`
+              <option value=${preset}>
+                ${relativeDateWindowPresetLabel(preset)}
+              </option>
+            `)}
+        </select>
+      </div>
+      ${resolved && this.rangeStart && this.rangeEnd ? b`
+            <div class="date-window-dialog-preview" aria-live="polite">
+              <div class="date-window-dialog-preview-row">
+                <span class="swatch is-selected" aria-hidden="true"></span>
+                <span class="key">${msg("Selected range")}</span>
+                <span class="value"
+                  >${formatDateTimeRange(this.rangeStart, this.rangeEnd)}</span
+                >
+              </div>
+              <div class="date-window-dialog-preview-row">
+                <span class="swatch is-window" aria-hidden="true"></span>
+                <span class="key">${msg("This window")}</span>
+                <span class="value"
+                  >${formatDateTimeRange(resolved.start, resolved.end)}</span
+                >
+              </div>
+              ${this._renderStrip(this.rangeStart, this.rangeEnd, resolved.start, resolved.end)}
+              <p class="date-window-dialog-preview-note">
+                ${interpolatePlaceholders(msg("Both are {0} long."), [formatRangeDuration(this.rangeStart, this.rangeEnd)])}
+                ${resolved.available ? A : msg("No data yet for this period while the chart is up to date.")}
+              </p>
+            </div>
+          ` : A}
+    `;
 		}
 		render() {
 			return b`
@@ -31079,82 +29863,35 @@
         @animationend=${this._onShakeEnd}
       >
         <div class="date-window-dialog-content">
-          <div class="date-window-dialog-body">
-            ${msg("A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later.")}
-          </div>
+          ${this.allowRelative ? this._renderTabs() : A}
 
-          <div class="date-window-dialog-field name-field">
-            <label for="date-window-name">${msg("Name")}</label>
-            <input
-              id="date-window-name"
-              class="date-window-dialog-input"
-              type="text"
-              autocomplete="off"
-              placeholder=${msg("e.g. Heating season start")}
-              .value=${this._nameValue}
-              aria-invalid=${this._error === "name" ? "true" : "false"}
-              aria-describedby=${this._error === "name" ? "date-window-error-name" : A}
-              @input=${this._onNameInput}
-              @keydown=${this._onNameKeydown}
-            />
-            ${this._error === "name" ? this._renderError("date-window-error-name") : A}
-          </div>
+          <div
+            id="date-window-panel"
+            class="date-window-dialog-panel"
+            role=${this.allowRelative ? "tabpanel" : A}
+            aria-labelledby=${this.allowRelative ? `date-window-tab-${this._kindValue}` : A}
+          >
+            ${this._kindValue === "relative" ? this._renderRelativeFields() : this._renderFixedFields()}
 
-          <div class="date-window-dialog-field date-range-group">
-            <label>${msg("Date range")}</label>
-            <div class="date-window-dialog-dates">
-              <div class="date-window-dialog-field">
-                <label for="date-window-start">${msg("Start")}</label>
-                <input
-                  id="date-window-start"
-                  class="date-window-dialog-input"
-                  type="datetime-local"
-                  step="60"
-                  .value=${this.startValue}
-                  aria-invalid=${this._error === "range" ? "true" : "false"}
-                  aria-describedby=${this._error === "range" ? "date-window-error-range" : A}
-                  @change=${this._onDateChange}
-                />
-              </div>
-              <div class="date-window-dialog-field">
-                <label for="date-window-end">${msg("End")}</label>
-                <input
-                  id="date-window-end"
-                  class="date-window-dialog-input"
-                  type="datetime-local"
-                  step="60"
-                  .value=${this.endValue}
-                  aria-invalid=${this._error === "range" ? "true" : "false"}
-                  aria-describedby=${this._error === "range" ? "date-window-error-range" : A}
-                  @change=${this._onDateChange}
-                />
-              </div>
+            <div class="date-window-dialog-field name-field">
+              <label for="date-window-name"
+                >${msg("Name")}
+                <span class="date-window-dialog-optional"
+                  >${msg("(optional)")}</span
+                ></label
+              >
+              <input
+                id="date-window-name"
+                class="date-window-dialog-input"
+                type="text"
+                autocomplete="off"
+                placeholder=${this._defaultName}
+                .value=${this._nameValue}
+                @input=${this._onNameInput}
+                @keydown=${this._onNameKeydown}
+              />
             </div>
-            ${this._error === "range" ? this._renderError("date-window-error-range") : A}
           </div>
-
-          ${this.rangeBounds ? b`
-                <div class="date-window-dialog-timeline">
-                  <range-timeline
-                    .startTime=${this._parseValueToDate(this.startValue)}
-                    .endTime=${this._parseValueToDate(this.endValue)}
-                    .rangeBounds=${this.rangeBounds}
-                    .zoomLevel=${this.zoomLevel}
-                    .dateSnapping=${this.dateSnapping}
-                    @dp-range-commit=${this._onRangeCommit}
-                  ></range-timeline>
-                </div>
-              ` : A}
-          ${this.showShortcuts ? b`
-                <div class="date-window-dialog-shortcuts">
-                  <ha-button @click=${this._onPreviousShortcut}
-                    >${msg("Use previous range")}</ha-button
-                  >
-                  <ha-button @click=${this._onNextShortcut}
-                    >${msg("Use next range")}</ha-button
-                  >
-                </div>
-              ` : A}
 
           <div class="date-window-dialog-actions">
             ${this.showDelete ? b`
@@ -31173,6 +29910,7 @@
               <ha-button
                 raised
                 class="date-window-dialog-submit"
+                ?disabled=${!this._canSubmit}
                 @click=${this._onSubmit}
                 >${this.submitLabel}</ha-button
               >
@@ -31206,22 +29944,25 @@
 		type: String,
 		attribute: "submit-label"
 	})], DateWindowDialog.prototype, "submitLabel", null);
-	__decorate([n$1({ type: Object })], DateWindowDialog.prototype, "rangeBounds", null);
+	__decorate([n$1({ type: String })], DateWindowDialog.prototype, "kind", null);
+	__decorate([n$1({ type: String })], DateWindowDialog.prototype, "preset", null);
 	__decorate([n$1({
-		type: String,
-		attribute: "zoom-level"
-	})], DateWindowDialog.prototype, "zoomLevel", null);
-	__decorate([n$1({
-		type: String,
-		attribute: "date-snapping"
-	})], DateWindowDialog.prototype, "dateSnapping", null);
+		type: Boolean,
+		attribute: "allow-relative"
+	})], DateWindowDialog.prototype, "allowRelative", null);
+	__decorate([n$1({ attribute: false })], DateWindowDialog.prototype, "rangeStart", null);
+	__decorate([n$1({ attribute: false })], DateWindowDialog.prototype, "rangeEnd", null);
+	__decorate([n$1({ attribute: false })], DateWindowDialog.prototype, "now", null);
 	__decorate([e$4("ha-dialog")], DateWindowDialog.prototype, "_dialogEl", null);
 	__decorate([e$4("#date-window-name")], DateWindowDialog.prototype, "_nameInput", null);
 	__decorate([e$4("#date-window-start")], DateWindowDialog.prototype, "_startInput", null);
 	__decorate([e$4("#date-window-end")], DateWindowDialog.prototype, "_endInput", null);
 	__decorate([r$2()], DateWindowDialog.prototype, "_shaking", null);
 	__decorate([r$2()], DateWindowDialog.prototype, "_nameValue", null);
-	__decorate([r$2()], DateWindowDialog.prototype, "_error", null);
+	__decorate([r$2()], DateWindowDialog.prototype, "_kindValue", null);
+	__decorate([r$2()], DateWindowDialog.prototype, "_presetValue", null);
+	__decorate([r$2()], DateWindowDialog.prototype, "_fixedStart", null);
+	__decorate([r$2()], DateWindowDialog.prototype, "_fixedEnd", null);
 	DateWindowDialog = __decorate([localized()], DateWindowDialog);
 	customElements.define("date-window-dialog", DateWindowDialog);
 	//#endregion
@@ -31253,7 +29994,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/anomaly-monitor-wizard.styles.ts
-	var styles$31 = i$6`
+	var styles$36 = i$6`
   /* ---- Dialog content wrapper ---- */
 
   .wizard-shell {
@@ -32894,7 +31635,7 @@
       </ha-dialog>
     `;
 		}
-	}, _defineProperty(_AnomalyMonitorWizard, "styles", styles$31), _AnomalyMonitorWizard);
+	}, _defineProperty(_AnomalyMonitorWizard, "styles", styles$36), _AnomalyMonitorWizard);
 	__decorate([n$1({ type: Object })], AnomalyMonitorWizard.prototype, "hass", null);
 	__decorate([n$1({ type: Boolean })], AnomalyMonitorWizard.prototype, "open", null);
 	__decorate([n$1({ type: Array })], AnomalyMonitorWizard.prototype, "prefillEntityIds", null);
@@ -32918,7 +31659,7 @@
 	customElements.define("anomaly-monitor-wizard", AnomalyMonitorWizard);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitors-panel/anomaly-monitors-panel.styles.ts
-	var styles$30 = i$6`
+	var styles$35 = i$6`
   :host {
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
     --dp-spacing-sm: var(--spacing, 8px);
@@ -33602,7 +32343,7 @@
 	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/display/monitor-status-pill/monitor-status-pill.styles.ts
-	var styles$29 = i$6`
+	var styles$34 = i$6`
   :host {
     display: inline-flex;
   }
@@ -33654,7 +32395,7 @@
 		triggered: "Triggered"
 	};
 	var _status_accessor_storage = /* @__PURE__ */ new WeakMap();
-	var _label_accessor_storage$6 = /* @__PURE__ */ new WeakMap();
+	var _label_accessor_storage$7 = /* @__PURE__ */ new WeakMap();
 	/**
 	* `monitor-status-pill` renders a monitor's display status as a coloured dot
 	* plus a label, using the design-system semantic colours (success / warning /
@@ -33667,7 +32408,7 @@
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _status_accessor_storage, "healthy");
-			_classPrivateFieldInitSpec(this, _label_accessor_storage$6, "");
+			_classPrivateFieldInitSpec(this, _label_accessor_storage$7, "");
 		}
 		get status() {
 			return _classPrivateFieldGet2(_status_accessor_storage, this);
@@ -33676,10 +32417,10 @@
 			_classPrivateFieldSet2(_status_accessor_storage, this, value);
 		}
 		get label() {
-			return _classPrivateFieldGet2(_label_accessor_storage$6, this);
+			return _classPrivateFieldGet2(_label_accessor_storage$7, this);
 		}
 		set label(value) {
-			_classPrivateFieldSet2(_label_accessor_storage$6, this, value);
+			_classPrivateFieldSet2(_label_accessor_storage$7, this, value);
 		}
 		render() {
 			const text = this.label || DEFAULT_LABELS[this.status];
@@ -33691,13 +32432,13 @@
     `;
 		}
 	};
-	_defineProperty(MonitorStatusPill, "styles", styles$29);
+	_defineProperty(MonitorStatusPill, "styles", styles$34);
 	__decorate([n$1({ type: String })], MonitorStatusPill.prototype, "status", null);
 	__decorate([n$1({ type: String })], MonitorStatusPill.prototype, "label", null);
 	customElements.define("monitor-status-pill", MonitorStatusPill);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/monitor-entity-heatmap/monitor-entity-heatmap.styles.ts
-	var styles$28 = i$6`
+	var styles$33 = i$6`
   :host {
     display: block;
     min-width: 0;
@@ -33995,7 +32736,7 @@
       ${this._renderTooltip()}
     </div>`;
 		}
-	}, _defineProperty(_MonitorEntityHeatmap, "styles", styles$28), _MonitorEntityHeatmap);
+	}, _defineProperty(_MonitorEntityHeatmap, "styles", styles$33), _MonitorEntityHeatmap);
 	__decorate([n$1({ type: Object })], MonitorEntityHeatmap.prototype, "hass", null);
 	__decorate([n$1({ type: Array })], MonitorEntityHeatmap.prototype, "entityIds", null);
 	__decorate([n$1({ type: Array })], MonitorEntityHeatmap.prototype, "activity", null);
@@ -34006,7 +32747,7 @@
 	customElements.define("monitor-entity-heatmap", MonitorEntityHeatmap);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/monitor-entity-filter/monitor-entity-filter.styles.ts
-	var styles$27 = i$6`
+	var styles$32 = i$6`
   :host {
     display: block;
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
@@ -34283,7 +33024,7 @@
       </div>
     `;
 		}
-	}, _defineProperty(_MonitorEntityFilter, "styles", styles$27), _MonitorEntityFilter);
+	}, _defineProperty(_MonitorEntityFilter, "styles", styles$32), _MonitorEntityFilter);
 	__decorate([n$1({ type: Object })], MonitorEntityFilter.prototype, "hass", null);
 	__decorate([n$1({ attribute: false })], MonitorEntityFilter.prototype, "entityIds", null);
 	__decorate([n$1({ attribute: false })], MonitorEntityFilter.prototype, "selected", null);
@@ -35372,7 +34113,7 @@
       ></anomaly-monitor-wizard>
     `;
 		}
-	}, _defineProperty(_AnomalyMonitorsPanel, "styles", styles$30), _AnomalyMonitorsPanel);
+	}, _defineProperty(_AnomalyMonitorsPanel, "styles", styles$35), _AnomalyMonitorsPanel);
 	__decorate([n$1({ type: Object })], AnomalyMonitorsPanel.prototype, "hass", null);
 	__decorate([n$1({ type: Number })], AnomalyMonitorsPanel.prototype, "rangeStartMs", null);
 	__decorate([n$1({ type: Number })], AnomalyMonitorsPanel.prototype, "rangeEndMs", null);
@@ -35392,7 +34133,7 @@
 	customElements.define("anomaly-monitors-panel", AnomalyMonitorsPanel);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/interactive/resizable-panes/resizable-panes.styles.ts
-	var styles$26 = i$6`
+	var styles$31 = i$6`
   :host {
     display: grid;
     overflow: hidden;
@@ -35523,8 +34264,8 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/interactive/resizable-panes/resizable-panes.ts
-	var DEFAULT_I18N$2 = createDefaultI18n(["Resize panes"]);
-	var _i18n_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
+	var DEFAULT_I18N$4 = createDefaultI18n(["Resize panes"]);
+	var _i18n_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
 	var _direction_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _ratio_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var _min_accessor_storage = /* @__PURE__ */ new WeakMap();
@@ -35547,7 +34288,7 @@
 	var ResizablePanes = class extends i$3 {
 		constructor(..._args) {
 			super(..._args);
-			_classPrivateFieldInitSpec(this, _i18n_accessor_storage$2, DEFAULT_I18N$2);
+			_classPrivateFieldInitSpec(this, _i18n_accessor_storage$4, DEFAULT_I18N$4);
 			_classPrivateFieldInitSpec(this, _direction_accessor_storage, "vertical");
 			_classPrivateFieldInitSpec(this, _ratio_accessor_storage, .5);
 			_classPrivateFieldInitSpec(this, _min_accessor_storage, .25);
@@ -35598,10 +34339,10 @@
 			});
 		}
 		get i18n() {
-			return _classPrivateFieldGet2(_i18n_accessor_storage$2, this);
+			return _classPrivateFieldGet2(_i18n_accessor_storage$4, this);
 		}
 		set i18n(value) {
-			_classPrivateFieldSet2(_i18n_accessor_storage$2, this, value);
+			_classPrivateFieldSet2(_i18n_accessor_storage$4, this, value);
 		}
 		get direction() {
 			return _classPrivateFieldGet2(_direction_accessor_storage, this);
@@ -35676,7 +34417,7 @@
     `;
 		}
 	};
-	_defineProperty(ResizablePanes, "styles", styles$26);
+	_defineProperty(ResizablePanes, "styles", styles$31);
 	__decorate([n$1({ attribute: false })], ResizablePanes.prototype, "i18n", null);
 	__decorate([n$1({
 		type: String,
@@ -35749,7 +34490,7 @@
 	customElements.define("history-chart", HistoryChart);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/panel-shell/panel-shell.styles.ts
-	var styles$25 = i$6`
+	var styles$30 = i$6`
   :host {
     display: block;
     height: 100%;
@@ -36206,7 +34947,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/floating-menu/floating-menu.styles.ts
-	var styles$24 = i$6`
+	var styles$29 = i$6`
   :host {
     display: contents;
   }
@@ -36287,7 +35028,7 @@
     `;
 		}
 	};
-	_defineProperty(FloatingMenu, "styles", styles$24);
+	_defineProperty(FloatingMenu, "styles", styles$29);
 	__decorate([n$1({
 		type: Boolean,
 		reflect: true
@@ -36295,7 +35036,7 @@
 	customElements.define("floating-menu", FloatingMenu);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/interactive/page-menu-item/page-menu-item.styles.ts
-	var styles$23 = i$6`
+	var styles$28 = i$6`
   :host {
     display: block;
   }
@@ -36339,13 +35080,13 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/interactive/page-menu-item/page-menu-item.ts
 	var _icon_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
-	var _label_accessor_storage$5 = /* @__PURE__ */ new WeakMap();
+	var _label_accessor_storage$6 = /* @__PURE__ */ new WeakMap();
 	var _disabled_accessor_storage = /* @__PURE__ */ new WeakMap();
 	var PageMenuItem = class extends i$3 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _icon_accessor_storage$1, "");
-			_classPrivateFieldInitSpec(this, _label_accessor_storage$5, "");
+			_classPrivateFieldInitSpec(this, _label_accessor_storage$6, "");
 			_classPrivateFieldInitSpec(this, _disabled_accessor_storage, false);
 		}
 		get icon() {
@@ -36355,10 +35096,10 @@
 			_classPrivateFieldSet2(_icon_accessor_storage$1, this, value);
 		}
 		get label() {
-			return _classPrivateFieldGet2(_label_accessor_storage$5, this);
+			return _classPrivateFieldGet2(_label_accessor_storage$6, this);
 		}
 		set label(value) {
-			_classPrivateFieldSet2(_label_accessor_storage$5, this, value);
+			_classPrivateFieldSet2(_label_accessor_storage$6, this, value);
 		}
 		get disabled() {
 			return _classPrivateFieldGet2(_disabled_accessor_storage, this);
@@ -36382,7 +35123,7 @@
     `;
 		}
 	};
-	_defineProperty(PageMenuItem, "styles", styles$23);
+	_defineProperty(PageMenuItem, "styles", styles$28);
 	__decorate([n$1({ type: String })], PageMenuItem.prototype, "icon", null);
 	__decorate([n$1({ type: String })], PageMenuItem.prototype, "label", null);
 	__decorate([n$1({ type: Boolean })], PageMenuItem.prototype, "disabled", null);
@@ -36716,7 +35457,7 @@
       </ha-top-app-bar-fixed>
     `;
 		}
-	}, _defineProperty(_PanelShell, "styles", styles$25), _PanelShell);
+	}, _defineProperty(_PanelShell, "styles", styles$30), _PanelShell);
 	__decorate([n$1({ type: Object })], PanelShell.prototype, "hass", null);
 	__decorate([n$1({ type: Boolean })], PanelShell.prototype, "narrow", null);
 	__decorate([n$1({
@@ -36749,7 +35490,7 @@
 	customElements.define("panel-shell", PanelShell);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/ai-query-brief-dialog/ai-query-brief-dialog.styles.ts
-	var styles$22 = i$6`
+	var styles$27 = i$6`
   :host {
     --dp-spacing-xs: calc(var(--spacing, 8px) * 0.5);
     --dp-spacing-sm: var(--spacing, 8px);
@@ -36971,7 +35712,7 @@
       </ha-dialog>
     `;
 		}
-	}, _defineProperty(_AiQueryBriefDialog, "styles", styles$22), _AiQueryBriefDialog);
+	}, _defineProperty(_AiQueryBriefDialog, "styles", styles$27), _AiQueryBriefDialog);
 	__decorate([n$1({ type: Boolean })], AiQueryBriefDialog.prototype, "open", null);
 	__decorate([n$1({ type: String })], AiQueryBriefDialog.prototype, "heading", null);
 	__decorate([n$1({ type: String })], AiQueryBriefDialog.prototype, "text", null);
@@ -36981,7 +35722,7 @@
 	customElements.define("ai-query-brief-dialog", AiQueryBriefDialog);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/series-preview-dialog/series-preview-dialog.styles.ts
-	var styles$21 = i$6`
+	var styles$26 = i$6`
   :host {
     --dp-spacing-xs: 4px;
     --dp-spacing-sm: 8px;
@@ -37161,7 +35902,7 @@
       </ha-dialog>
     `;
 		}
-	}, _defineProperty(_SeriesPreviewDialog, "styles", styles$21), _SeriesPreviewDialog);
+	}, _defineProperty(_SeriesPreviewDialog, "styles", styles$26), _SeriesPreviewDialog);
 	__decorate([n$1({ type: Boolean })], SeriesPreviewDialog.prototype, "open", null);
 	__decorate([n$1({ type: String })], SeriesPreviewDialog.prototype, "heading", null);
 	__decorate([n$1({ type: String })], SeriesPreviewDialog.prototype, "subheading", null);
@@ -37176,7 +35917,7 @@
 	customElements.define("series-preview-dialog", SeriesPreviewDialog);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/history-targets/history-targets.styles.ts
-	var styles$20 = i$6`
+	var styles$25 = i$6`
   :host {
     display: block;
     height: 100%;
@@ -37694,7 +36435,7 @@
       </div>
     `;
 		}
-	}, _defineProperty(_HistoryTargets, "styles", styles$20), _HistoryTargets);
+	}, _defineProperty(_HistoryTargets, "styles", styles$25), _HistoryTargets);
 	__decorate([n$1({ type: Array })], HistoryTargets.prototype, "rows", null);
 	__decorate([n$1({ type: Object })], HistoryTargets.prototype, "states", null);
 	__decorate([n$1({ type: Object })], HistoryTargets.prototype, "hass", null);
@@ -37720,7 +36461,7 @@
 	customElements.define("history-targets", HistoryTargets);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/range-toolbar/range-toolbar.styles.ts
-	var styles$19 = i$6`
+	var styles$24 = i$6`
   :host {
     display: block;
     position: relative;
@@ -38016,7 +36757,7 @@
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/panel-timeline/panel-timeline.styles.ts
-	var styles$18 = i$6`
+	var styles$23 = i$6`
   :host {
     display: contents;
   }
@@ -38164,6 +36905,2132 @@
     opacity: 0.45;
   }
 `;
+	//#endregion
+	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-timeline.styles.ts
+	var styles$22 = i$6`
+  :host {
+    display: block;
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .range-selection-jump {
+    position: absolute;
+    top: 50%;
+    width: 30px;
+    height: 30px;
+    transform: translateY(-50%);
+    border: 0;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    background: color-mix(
+      in srgb,
+      var(--primary-text-color, #111) 94%,
+      transparent
+    );
+    box-shadow:
+      0 8px 18px rgba(0, 0, 0, 0.12),
+      inset 0 0 0 1px
+        color-mix(
+          in srgb,
+          var(--divider-color, rgba(0, 0, 0, 0.12)) 82%,
+          transparent
+        );
+    color: var(--text-primary-color, #fff);
+    cursor: pointer;
+    z-index: 12;
+  }
+
+  .range-selection-jump[hidden] {
+    display: none;
+  }
+
+  .range-selection-jump.left {
+    left: 6px;
+  }
+
+  .range-selection-jump.right {
+    right: 6px;
+  }
+
+  .range-selection-jump:hover,
+  .range-selection-jump:focus-visible {
+    background: color-mix(
+      in srgb,
+      var(--primary-text-color, #111) 100%,
+      transparent
+    );
+    outline: none;
+  }
+
+  .range-scroll-viewport {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-gutter: stable;
+    -webkit-overflow-scrolling: touch;
+    cursor: grab;
+    touch-action: pan-y;
+  }
+
+  .range-scroll-viewport {
+    scrollbar-color: transparent transparent;
+    transition: scrollbar-color 200ms ease;
+  }
+
+  .range-scroll-viewport.scrollbar-visible {
+    scrollbar-color: color-mix(
+        in srgb,
+        var(--primary-text-color, #111) 18%,
+        transparent
+      )
+      transparent;
+  }
+
+  .range-scroll-viewport::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .range-scroll-viewport::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: transparent;
+    transition: background 200ms ease;
+  }
+
+  .range-scroll-viewport.scrollbar-visible::-webkit-scrollbar-thumb {
+    background: color-mix(
+      in srgb,
+      var(--primary-text-color, #111) 18%,
+      transparent
+    );
+  }
+
+  .range-scroll-viewport.dragging {
+    cursor: grabbing;
+  }
+
+  .range-timeline {
+    position: relative;
+    height: 58px;
+    min-width: 100%;
+    touch-action: pan-y;
+  }
+`;
+	//#endregion
+	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/lib/range-pointer-math.ts
+	/**
+	* Convert a horizontal client coordinate to a timeline timestamp.
+	*
+	* Returns `null` when the track rectangle has no width.
+	*/
+	function timestampFromClientPosition(clientX, rectLeft, rectWidth, boundsMin, boundsMax) {
+		if (!rectWidth) return null;
+		return boundsMin + clampNumber((clientX - rectLeft) / rectWidth, 0, 1) * (boundsMax - boundsMin);
+	}
+	/**
+	* Calculate the snapped time delta for a selection drag.
+	*/
+	function computeSelectionDragDelta(currentTimestamp, startTimestamp, snapUnit) {
+		if (!snapUnit) return currentTimestamp - startTimestamp;
+		const snappedStart = snapDateToUnit(new Date(startTimestamp), snapUnit).getTime();
+		return snapDateToUnit(new Date(currentTimestamp), snapUnit).getTime() - snappedStart;
+	}
+	/**
+	* Compute the new draft range after moving a single handle to `timestamp`.
+	*
+	* The timestamp is snapped and clamped to bounds, and the opposing handle
+	* is preserved with a minimum separation of one snap span.
+	*/
+	function computeDraftRangeForHandle(handle, timestamp, currentStartMs, currentEndMs, boundsMin, boundsMax, snapUnit, snapSpanMs) {
+		let snappedTimestampMs = timestamp;
+		if (snapUnit !== null) snappedTimestampMs = snapDateToUnit(new Date(timestamp), snapUnit).getTime();
+		const snapped = clampNumber(snappedTimestampMs, boundsMin, boundsMax);
+		const minSpan = Math.max(snapSpanMs, SECOND_MS);
+		let startMs = currentStartMs;
+		let endMs = currentEndMs;
+		if (handle === "start") startMs = clampNumber(snapped, boundsMin, endMs - minSpan);
+		else endMs = clampNumber(snapped, startMs + minSpan, boundsMax);
+		return {
+			startMs,
+			endMs
+		};
+	}
+	/**
+	* Shift both handles by `deltaMs`, clamped so neither exceeds bounds.
+	*/
+	function computeShiftedDraftRange(deltaMs, dragStartMs, dragEndMs, boundsMin, boundsMax) {
+		const clamped = clampNumber(deltaMs, boundsMin - dragStartMs, boundsMax - dragEndMs);
+		return {
+			startMs: dragStartMs + clamped,
+			endMs: dragEndMs + clamped
+		};
+	}
+	/**
+	* Compute the draft range from an interval selection (two pointer positions
+	* snapped to unit boundaries).
+	*
+	* Returns `null` when the resulting range is empty.
+	*/
+	function computeIntervalSelectionRange(startTimestamp, endTimestamp, unit, boundsMin, boundsMax) {
+		const startValue = Math.min(startTimestamp, endTimestamp);
+		const endValue = Math.max(startTimestamp, endTimestamp);
+		const rangeStart = clampNumber(startOfUnit(new Date(startValue), unit).getTime(), boundsMin, boundsMax);
+		const rangeEnd = clampNumber(endOfUnit(new Date(endValue), unit).getTime(), boundsMin, boundsMax);
+		if (rangeStart >= rangeEnd) return null;
+		return {
+			startMs: rangeStart,
+			endMs: rangeEnd
+		};
+	}
+	/**
+	* Calculate the scroll delta for edge-proximity auto-scrolling during drag.
+	*
+	* Returns 0 when no scrolling is needed.
+	*/
+	function computeAutoScrollDelta(clientX, viewportLeft, viewportRight) {
+		const leftDistance = clientX - viewportLeft;
+		const rightDistance = viewportRight - clientX;
+		if (leftDistance < 48) {
+			const ratio = clampNumber((48 - leftDistance) / 48, 0, 1);
+			return -Math.max(1, Math.round(ratio * 28));
+		}
+		if (rightDistance < 48) {
+			const ratio = clampNumber((48 - rightDistance) / 48, 0, 1);
+			return Math.max(1, Math.round(ratio * 28));
+		}
+		return 0;
+	}
+	/**
+	* Determine which handle (`"start"` or `"end"`) is closer to the given timestamp.
+	*/
+	function resolveCloserHandle(timestamp, startMs, endMs) {
+		return Math.abs(timestamp - startMs) <= Math.abs(timestamp - endMs) ? "start" : "end";
+	}
+	//#endregion
+	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/lib/range-scroll-math.ts
+	/**
+	* Pure math functions for range-timeline scroll management.
+	*
+	* All functions are stateless data transformations — no DOM dependency.
+	*/
+	/**
+	* Determine whether the left/right "jump to selection" arrows should be shown.
+	*
+	* The left arrow is shown when the selection end is scrolled off the left edge;
+	* the right arrow when the selection start is scrolled off the right edge.
+	*/
+	function computeSelectionJumpVisibility(scrollLeft, viewportWidth, contentWidth, startTimeMs, endTimeMs, boundsMin, boundsMax) {
+		const total = Math.max(1, boundsMax - boundsMin);
+		const currentRight = scrollLeft + viewportWidth;
+		const startPx = (startTimeMs - boundsMin) / total * contentWidth;
+		return {
+			showLeft: (endTimeMs - boundsMin) / total * contentWidth < scrollLeft,
+			showRight: startPx > currentRight
+		};
+	}
+	/**
+	* Compute the target scrollLeft to bring a time range into view.
+	*
+	* With `center: true`, the midpoint of the range is centered in the viewport.
+	* With `center: false`, the range start is aligned to the viewport start.
+	*
+	* Returns `null` when scrolling is not possible (viewport wider than content).
+	*/
+	function computeScrollPositionForRange(rangeStartMs, rangeEndMs, boundsMin, boundsMax, contentWidth, viewportWidth, center) {
+		if (!viewportWidth || contentWidth <= viewportWidth) return null;
+		const totalMs = Math.max(1, boundsMax - boundsMin);
+		const visibleSpanMs = totalMs * Math.min(1, viewportWidth / contentWidth);
+		const maxScrollLeft = Math.max(0, contentWidth - viewportWidth);
+		const viewportRangeMs = Math.max(0, totalMs - visibleSpanMs);
+		if (viewportRangeMs <= 0) return null;
+		return clampNumber(((center ? clampNumber((rangeStartMs + rangeEndMs) / 2 - visibleSpanMs / 2, boundsMin, boundsMax - visibleSpanMs) : clampNumber(rangeStartMs, boundsMin, boundsMax - visibleSpanMs)) - boundsMin) / viewportRangeMs * maxScrollLeft, 0, maxScrollLeft);
+	}
+	//#endregion
+	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-handle.styles.ts
+	var styles$21 = i$6`
+  :host {
+    position: absolute;
+    top: 26px;
+    left: 0;
+    transform: translate(-50%, -50%);
+    display: block;
+    width: 20px;
+    height: 20px;
+  }
+
+  .handle {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 2px solid var(--card-background-color, #fff);
+    background: color-mix(
+      in srgb,
+      var(--primary-text-color, #111) 84%,
+      transparent
+    );
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
+    padding: 0;
+    cursor: ew-resize;
+    touch-action: none;
+  }
+
+  .handle:focus-visible {
+    outline: 3px solid
+      color-mix(in srgb, var(--primary-color, #03a9f4) 24%, transparent);
+    outline-offset: 2px;
+  }
+
+  @keyframes dp-live-breathe {
+    0%,
+    100% {
+      box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.18),
+        0 0 0 0 rgba(239, 83, 80, 0);
+    }
+    50% {
+      box-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.18),
+        0 0 0 5px rgba(239, 83, 80, 0.2);
+    }
+  }
+
+  .handle.is-live {
+    background: #ef5350;
+    animation: dp-live-breathe 3s ease-in-out infinite;
+  }
+`;
+	//#endregion
+	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-handle.ts
+	var _position_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _label_accessor_storage$5 = /* @__PURE__ */ new WeakMap();
+	var _live_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _zIndex_accessor_storage = /* @__PURE__ */ new WeakMap();
+	/**
+	* `range-handle` is a circular drag-handle button for a timeline range slider.
+	*
+	* The parent positions the handle by setting the `position` prop (reflected to
+	* `style.left` as a percentage). The handle fires events for all pointer and keyboard
+	* interactions; the parent owns drag logic and tooltips.
+	*
+	* @fires dp-handle-drag-start - `{ pointerId, clientX }` — pointer down on handle
+	* @fires dp-handle-keydown    - `{ key, shiftKey }` — navigation key pressed (arrows, Page, Home, End)
+	* @fires dp-handle-hover      - `{}` — pointer entered the handle
+	* @fires dp-handle-leave      - `{}` — pointer left the handle
+	* @fires dp-handle-focus      - `{}` — handle received focus
+	* @fires dp-handle-blur       - `{}` — handle lost focus
+	*/
+	var RangeHandle = class extends i$3 {
+		constructor(..._args) {
+			super(..._args);
+			_classPrivateFieldInitSpec(this, _position_accessor_storage$1, 0);
+			_classPrivateFieldInitSpec(this, _label_accessor_storage$5, "");
+			_classPrivateFieldInitSpec(this, _live_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _zIndex_accessor_storage, 3);
+		}
+		get position() {
+			return _classPrivateFieldGet2(_position_accessor_storage$1, this);
+		}
+		set position(value) {
+			_classPrivateFieldSet2(_position_accessor_storage$1, this, value);
+		}
+		get label() {
+			return _classPrivateFieldGet2(_label_accessor_storage$5, this);
+		}
+		set label(value) {
+			_classPrivateFieldSet2(_label_accessor_storage$5, this, value);
+		}
+		get live() {
+			return _classPrivateFieldGet2(_live_accessor_storage, this);
+		}
+		set live(value) {
+			_classPrivateFieldSet2(_live_accessor_storage, this, value);
+		}
+		get zIndex() {
+			return _classPrivateFieldGet2(_zIndex_accessor_storage, this);
+		}
+		set zIndex(value) {
+			_classPrivateFieldSet2(_zIndex_accessor_storage, this, value);
+		}
+		updated(changed) {
+			if (changed.has("position")) this.style.left = `${this.position}%`;
+			if (changed.has("zIndex")) this.style.zIndex = `${this.zIndex}`;
+		}
+		_onPointerDown(e) {
+			e.preventDefault();
+			this.dispatchEvent(new CustomEvent("dp-handle-drag-start", {
+				detail: {
+					pointerId: e.pointerId,
+					clientX: e.clientX
+				},
+				bubbles: true,
+				composed: true
+			}));
+		}
+		_onKeyDown(e) {
+			if (![
+				"ArrowLeft",
+				"ArrowRight",
+				"ArrowDown",
+				"ArrowUp",
+				"PageDown",
+				"PageUp",
+				"Home",
+				"End"
+			].includes(e.key)) return;
+			e.preventDefault();
+			this.dispatchEvent(new CustomEvent("dp-handle-keydown", {
+				detail: {
+					key: e.key,
+					shiftKey: e.shiftKey
+				},
+				bubbles: true,
+				composed: true
+			}));
+		}
+		_onPointerEnter() {
+			this.dispatchEvent(new CustomEvent("dp-handle-hover", {
+				bubbles: true,
+				composed: true
+			}));
+		}
+		_onPointerLeave() {
+			this.dispatchEvent(new CustomEvent("dp-handle-leave", {
+				bubbles: true,
+				composed: true
+			}));
+		}
+		_onFocus() {
+			this.dispatchEvent(new CustomEvent("dp-handle-focus", {
+				bubbles: true,
+				composed: true
+			}));
+		}
+		_onBlur() {
+			this.dispatchEvent(new CustomEvent("dp-handle-blur", {
+				bubbles: true,
+				composed: true
+			}));
+		}
+		render() {
+			return b`
+      <button
+        type="button"
+        class="handle ${this.live ? "is-live" : ""}"
+        aria-label="${this.label}"
+        @pointerdown=${this._onPointerDown}
+        @keydown=${this._onKeyDown}
+        @pointerenter=${this._onPointerEnter}
+        @pointerleave=${this._onPointerLeave}
+        @focus=${this._onFocus}
+        @blur=${this._onBlur}
+      ></button>
+    `;
+		}
+	};
+	_defineProperty(RangeHandle, "styles", styles$21);
+	__decorate([n$1({ type: Number })], RangeHandle.prototype, "position", null);
+	__decorate([n$1({ type: String })], RangeHandle.prototype, "label", null);
+	__decorate([n$1({ type: Boolean })], RangeHandle.prototype, "live", null);
+	__decorate([n$1({ type: Number })], RangeHandle.prototype, "zIndex", null);
+	customElements.define("range-handle", RangeHandle);
+	//#endregion
+	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-scale.styles.ts
+	var styles$20 = i$6`
+  :host {
+    display: contents;
+  }
+
+  .range-context-layer,
+  .range-label-layer,
+  .range-tick-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .range-scale-label {
+    position: absolute;
+    bottom: 0;
+    opacity: 0.7;
+    transform: translateX(-50%);
+    font-size: 0.76rem;
+    line-height: 1;
+    color: var(--secondary-text-color);
+    white-space: nowrap;
+  }
+
+  .range-period-button {
+    padding: calc(var(--spacing, 8px) * 0.25) var(--dp-spacing-sm);
+    border: 0;
+    border-radius: 999px;
+    background: none;
+    font: inherit;
+    color: inherit;
+    pointer-events: auto;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    user-select: none;
+    -webkit-user-select: none;
+    transition:
+      background-color 120ms ease,
+      box-shadow 120ms ease,
+      color 120ms ease;
+  }
+
+  .range-period-button:hover {
+    color: var(--primary-text-color);
+    background: color-mix(
+      in srgb,
+      var(--primary-text-color, #111) 7%,
+      var(--card-background-color, #fff)
+    );
+    box-shadow: inset 0 0 0 1px
+      color-mix(
+        in srgb,
+        var(--divider-color, rgba(0, 0, 0, 0.12)) 88%,
+        transparent
+      );
+  }
+
+  .range-period-button:focus-visible {
+    outline: 2px solid
+      color-mix(in srgb, var(--primary-color, #03a9f4) 24%, transparent);
+    outline-offset: 2px;
+    background: color-mix(
+      in srgb,
+      var(--primary-text-color, #111) 7%,
+      var(--card-background-color, #fff)
+    );
+    box-shadow: inset 0 0 0 1px
+      color-mix(
+        in srgb,
+        var(--divider-color, rgba(0, 0, 0, 0.12)) 88%,
+        transparent
+      );
+  }
+
+  .range-tick {
+    position: absolute;
+    top: 14px;
+    height: 14px;
+    width: 1px;
+    transform: translateX(-50%);
+    background: color-mix(
+      in srgb,
+      var(--primary-text-color, #111) 16%,
+      transparent
+    );
+  }
+
+  .range-tick.major {
+    top: 20px;
+    height: 18px;
+    background: color-mix(
+      in srgb,
+      var(--primary-text-color, #111) 24%,
+      transparent
+    );
+  }
+
+  .range-tick.fine {
+    top: 18px;
+    height: 8px;
+    background: color-mix(
+      in srgb,
+      var(--primary-text-color, #111) 14%,
+      transparent
+    );
+  }
+
+  .range-tick.context {
+    top: 2px;
+    height: 34px;
+    background: color-mix(
+      in srgb,
+      var(--primary-text-color, #111) 38%,
+      transparent
+    );
+  }
+
+  .range-divider {
+    position: absolute;
+    top: 8px;
+    bottom: 22px;
+    width: 2px;
+    transform: translateX(-50%);
+    background: color-mix(
+      in srgb,
+      var(--primary-text-color, #111) 42%,
+      transparent
+    );
+  }
+
+  .range-context-label {
+    font-weight: bold !important;
+    position: absolute;
+    top: 0;
+    transform: translateX(8px);
+    font-size: 0.92rem;
+    line-height: 1;
+    color: var(--primary-text-color);
+    white-space: nowrap;
+  }
+`;
+	//#endregion
+	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/lib/range-scale-math.ts
+	/**
+	* Pure scale computation utilities extracted from range-timeline.ts.
+	*
+	* All functions are stateless data transformations with no DOM dependency.
+	*/
+	function estimateRangeLabelWidth(text, className, minGap) {
+		const basePadding = className === "range-context-label" ? 20 : 14;
+		const charWidth = className === "range-context-label" ? 8.2 : 7.2;
+		return String(text).length * charWidth + basePadding + minGap;
+	}
+	function computeRangeLabelStride(boundsMin, boundsMax, contentWidth, unit, formatter, className, minGap) {
+		if (!contentWidth) return 1;
+		const total = Math.max(1, boundsMax - boundsMin);
+		let current = startOfUnit(new Date(boundsMin), unit);
+		let previousMs = null;
+		let minSpacingPx = Infinity;
+		let maxLabelWidthPx = 0;
+		let samples = 0;
+		while (current.getTime() < boundsMax && samples < 24) {
+			const currentMs = Math.max(current.getTime(), boundsMin);
+			const text = formatter(current);
+			maxLabelWidthPx = Math.max(maxLabelWidthPx, estimateRangeLabelWidth(text, className, minGap));
+			if (previousMs != null) {
+				const spacingPx = (currentMs - previousMs) / total * contentWidth;
+				if (spacingPx > 0) minSpacingPx = Math.min(minSpacingPx, spacingPx);
+			}
+			previousMs = currentMs;
+			current = addUnit(current, unit, 1);
+			samples += 1;
+		}
+		if (!Number.isFinite(minSpacingPx) || minSpacingPx <= 0) return 1;
+		return Math.max(1, Math.ceil(maxLabelWidthPx / minSpacingPx));
+	}
+	function getRangeUnitAnchorMs(startTime, unit, boundsMin, boundsMax, anchor = "auto") {
+		const unitStart = Math.max(startOfUnit(new Date(startTime), unit).getTime(), boundsMin);
+		const unitEnd = Math.min(endOfUnit(new Date(startTime), unit).getTime(), boundsMax);
+		let resolvedAnchor = anchor;
+		if (resolvedAnchor === "auto") resolvedAnchor = unit === "day" || unit === "week" ? "center" : "start";
+		if (resolvedAnchor === "center") return unitStart + Math.max(0, (unitEnd - unitStart) / 2);
+		return unitStart;
+	}
+	//#endregion
+	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-scale.ts
+	var DEFAULT_I18N$3 = createDefaultI18n(["Select"]);
+	var _i18n_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
+	var _rangeBounds_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
+	var _zoomLevel_accessor_storage$4 = /* @__PURE__ */ new WeakMap();
+	var _contentWidth_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _locale_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
+	/**
+	* `range-scale` renders the tick marks, scale labels, and context dividers
+	* for a range-timeline. All rendering is declarative via Lit templates.
+	*
+	* @fires dp-scale-period-select - `{ unit, startTime, originalEvent }` period button clicked
+	* @fires dp-scale-period-hover  - `{ unit, start, end }` period button hovered/focused
+	* @fires dp-scale-period-leave  - `{ unit, start, end }` period button left/blurred
+	*/
+	var RangeScale = class extends i$3 {
+		constructor(..._args) {
+			super(..._args);
+			_classPrivateFieldInitSpec(this, _i18n_accessor_storage$3, DEFAULT_I18N$3);
+			_classPrivateFieldInitSpec(this, _rangeBounds_accessor_storage$3, null);
+			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage$4, "day");
+			_classPrivateFieldInitSpec(this, _contentWidth_accessor_storage, 0);
+			_classPrivateFieldInitSpec(this, _locale_accessor_storage$2, "");
+			_defineProperty(this, "_scaleCache", null);
+			_defineProperty(this, "_scaleCacheKey", null);
+			_defineProperty(this, "_scaleCacheI18n", null);
+		}
+		get i18n() {
+			return _classPrivateFieldGet2(_i18n_accessor_storage$3, this);
+		}
+		set i18n(value) {
+			_classPrivateFieldSet2(_i18n_accessor_storage$3, this, value);
+		}
+		get rangeBounds() {
+			return _classPrivateFieldGet2(_rangeBounds_accessor_storage$3, this);
+		}
+		set rangeBounds(value) {
+			_classPrivateFieldSet2(_rangeBounds_accessor_storage$3, this, value);
+		}
+		get zoomLevel() {
+			return _classPrivateFieldGet2(_zoomLevel_accessor_storage$4, this);
+		}
+		set zoomLevel(value) {
+			_classPrivateFieldSet2(_zoomLevel_accessor_storage$4, this, value);
+		}
+		get contentWidth() {
+			return _classPrivateFieldGet2(_contentWidth_accessor_storage, this);
+		}
+		set contentWidth(value) {
+			_classPrivateFieldSet2(_contentWidth_accessor_storage, this, value);
+		}
+		get locale() {
+			return _classPrivateFieldGet2(_locale_accessor_storage$2, this);
+		}
+		set locale(value) {
+			_classPrivateFieldSet2(_locale_accessor_storage$2, this, value);
+		}
+		_t(key, ...values) {
+			return t$4(this.i18n, key, ...values);
+		}
+		_computeScaleData() {
+			const bounds = this.rangeBounds;
+			if (!bounds) return {
+				ticks: [],
+				labels: [],
+				dividers: [],
+				contextLabels: []
+			};
+			const key = `${bounds.min}|${bounds.max}|${this.contentWidth}|${this.zoomLevel}|${this.locale}|${JSON.stringify(bounds.config)}`;
+			if (this._scaleCache && this._scaleCacheKey === key && this._scaleCacheI18n === this.i18n) return this._scaleCache;
+			const ticks = this._computeTicks();
+			const labels = this._computeLabels();
+			const { dividers, contextLabels } = this._computeContext();
+			this._scaleCache = {
+				ticks,
+				labels,
+				dividers,
+				contextLabels
+			};
+			this._scaleCacheKey = key;
+			this._scaleCacheI18n = this.i18n;
+			return this._scaleCache;
+		}
+		render() {
+			if (!this.rangeBounds) return A;
+			const { ticks, labels, dividers, contextLabels } = this._computeScaleData();
+			return b`
+      <div class="range-context-layer">
+        ${dividers.map((d) => b`<span class="range-divider" style="left:${d.leftPct}%"></span>`)}
+        ${contextLabels.map((b) => this._renderPeriodButton(b))}
+      </div>
+      <div class="range-tick-layer">
+        ${ticks.map((t) => b`<span
+              class="range-tick ${t.className}"
+              style="left:${t.leftPct}%"
+            ></span>`)}
+      </div>
+      <div class="range-label-layer">
+        ${labels.map((b) => this._renderPeriodButton(b))}
+      </div>
+    `;
+		}
+		_renderPeriodButton(b$2) {
+			return b`<button
+      type="button"
+      class="range-period-button ${b$2.className}"
+      style="left:${b$2.leftPct}%"
+      title=${b$2.title}
+      aria-label=${b$2.title}
+      @click=${(ev) => this._onPeriodSelect(b$2, ev)}
+      @pointerenter=${() => this._onPeriodHover(b$2)}
+      @pointerleave=${() => this._onPeriodLeave(b$2)}
+      @focus=${() => this._onPeriodHover(b$2)}
+      @blur=${() => this._onPeriodLeave(b$2)}
+    >
+      ${b$2.text}
+    </button>`;
+		}
+		_getScaleLabelZoomLevel() {
+			if (this.zoomLevel === "quarterly" || this.zoomLevel === "month_short") return this.zoomLevel;
+			return "";
+		}
+		_computeTicksForUnit(unit, className, total, step = 1) {
+			if (!this.rangeBounds) return [];
+			const marks = [];
+			let markerTime = addUnit(startOfUnit(new Date(this.rangeBounds.min), unit), unit, 0);
+			if (markerTime.getTime() < this.rangeBounds.min) markerTime = addUnit(markerTime, unit, step);
+			while (markerTime.getTime() < this.rangeBounds.max) {
+				marks.push({
+					leftPct: (markerTime.getTime() - this.rangeBounds.min) / total * 100,
+					className
+				});
+				markerTime = addUnit(markerTime, unit, step);
+			}
+			return marks;
+		}
+		_computeTicks() {
+			if (!this.rangeBounds) return [];
+			const total = Math.max(1, this.rangeBounds.max - this.rangeBounds.min);
+			const { config } = this.rangeBounds;
+			const ticks = [];
+			if (config.detailUnit && config.detailUnit !== config.minorUnit && config.detailUnit !== config.majorUnit) ticks.push(...this._computeTicksForUnit(config.detailUnit, "fine", total, config.detailStep || 1));
+			if (config.minorUnit !== config.majorUnit) ticks.push(...this._computeTicksForUnit(config.minorUnit, "", total));
+			ticks.push(...this._computeTicksForUnit(config.majorUnit, "major", total));
+			return ticks;
+		}
+		_computeLabelStride(unit, formatter, className, minGap) {
+			if (!this.rangeBounds || !this.contentWidth) return 1;
+			return computeRangeLabelStride(this.rangeBounds.min, this.rangeBounds.max, this.contentWidth, unit, formatter, className, minGap);
+		}
+		_computeLabels() {
+			if (!this.rangeBounds) return [];
+			const total = Math.max(1, this.rangeBounds.max - this.rangeBounds.min);
+			const { config } = this.rangeBounds;
+			const scaleLabelZoomLevel = this._getScaleLabelZoomLevel();
+			const locale = this.locale || void 0;
+			const stride = config.labelUnit === "month" || config.labelUnit === "day" ? 1 : this._computeLabelStride(config.labelUnit, (value) => formatScaleLabel(value, config.labelUnit, scaleLabelZoomLevel, locale), "range-scale-label", 10);
+			const buttons = [];
+			let ref = startOfUnit(new Date(this.rangeBounds.min), config.labelUnit);
+			let index = 0;
+			while (ref.getTime() < this.rangeBounds.max) {
+				if (index % stride === 0) {
+					const leftValue = getRangeUnitAnchorMs(ref, config.labelUnit, this.rangeBounds.min, this.rangeBounds.max, "auto");
+					const text = formatScaleLabel(ref, config.labelUnit, scaleLabelZoomLevel, locale);
+					const selectionLabel = formatPeriodSelectionLabel(ref, config.labelUnit, locale);
+					buttons.push({
+						leftPct: (leftValue - this.rangeBounds.min) / total * 100,
+						text,
+						title: `${this._t("Select")} ${selectionLabel}`,
+						className: "range-scale-label",
+						unit: config.labelUnit,
+						startTime: new Date(ref)
+					});
+				}
+				ref = addUnit(ref, config.labelUnit, 1);
+				index += 1;
+			}
+			return buttons;
+		}
+		_computeContext() {
+			if (!this.rangeBounds) return {
+				dividers: [],
+				contextLabels: []
+			};
+			const total = Math.max(1, this.rangeBounds.max - this.rangeBounds.min);
+			const { config } = this.rangeBounds;
+			const locale = this.locale || void 0;
+			const stride = config.contextUnit === "month" || config.contextUnit === "day" ? 1 : this._computeLabelStride(config.contextUnit, (value) => formatContextLabel(value, config.contextUnit, locale), "range-context-label", 14);
+			const dividers = [];
+			const contextLabels = [];
+			let ref = startOfUnit(new Date(this.rangeBounds.min), config.contextUnit);
+			if (ref.getTime() < this.rangeBounds.min) ref = addUnit(ref, config.contextUnit, 1);
+			let index = 0;
+			while (ref.getTime() < this.rangeBounds.max) {
+				const leftPct = (ref.getTime() - this.rangeBounds.min) / total * 100;
+				dividers.push({ leftPct });
+				if (index % stride === 0) {
+					const text = formatContextLabel(ref, config.contextUnit, locale);
+					const selectionLabel = formatPeriodSelectionLabel(ref, config.contextUnit, locale);
+					contextLabels.push({
+						leftPct,
+						text,
+						title: `${this._t("Select")} ${selectionLabel}`,
+						className: "range-context-label",
+						unit: config.contextUnit,
+						startTime: new Date(ref)
+					});
+				}
+				ref = addUnit(ref, config.contextUnit, 1);
+				index += 1;
+			}
+			return {
+				dividers,
+				contextLabels
+			};
+		}
+		_onPeriodSelect(b, ev) {
+			ev.preventDefault();
+			ev.stopPropagation();
+			this.dispatchEvent(new CustomEvent("dp-scale-period-select", {
+				detail: {
+					unit: b.unit,
+					startTime: b.startTime,
+					originalEvent: ev
+				},
+				bubbles: true,
+				composed: true
+			}));
+		}
+		_onPeriodHover(b) {
+			this.dispatchEvent(new CustomEvent("dp-scale-period-hover", {
+				detail: {
+					unit: b.unit,
+					startTime: b.startTime
+				},
+				bubbles: true,
+				composed: true
+			}));
+		}
+		_onPeriodLeave(b) {
+			this.dispatchEvent(new CustomEvent("dp-scale-period-leave", {
+				detail: {
+					unit: b.unit,
+					startTime: b.startTime
+				},
+				bubbles: true,
+				composed: true
+			}));
+		}
+	};
+	_defineProperty(RangeScale, "styles", styles$20);
+	__decorate([n$1({ attribute: false })], RangeScale.prototype, "i18n", null);
+	__decorate([n$1({ type: Object })], RangeScale.prototype, "rangeBounds", null);
+	__decorate([n$1({ type: String })], RangeScale.prototype, "zoomLevel", null);
+	__decorate([n$1({ type: Number })], RangeScale.prototype, "contentWidth", null);
+	__decorate([n$1({ type: String })], RangeScale.prototype, "locale", null);
+	customElements.define("range-scale", RangeScale);
+	//#endregion
+	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-tooltip.styles.ts
+	var styles$19 = i$6`
+  :host {
+    position: absolute;
+    top: 43px;
+    left: 0;
+    transform: translate(-50%, 0);
+    padding: calc(var(--dp-spacing-sm) + 2px) calc(var(--dp-spacing-md) + 2px);
+    border-radius: 10px;
+    background: color-mix(in srgb, #0f1218 96%, transparent);
+    color: rgba(255, 255, 255, 0.96);
+    border: 1px solid color-mix(in srgb, #ffffff 14%, transparent);
+    font-size: 0.86rem;
+    line-height: 1.1;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 120ms ease,
+      visibility 120ms ease;
+    z-index: 8;
+  }
+
+  :host([visible]) {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  :host([side="end"]) {
+    z-index: 9;
+  }
+
+  :host::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 10px;
+    height: 10px;
+    background: inherit;
+    transform: translate(-50%, -50%) rotate(45deg);
+    border-radius: 2px;
+  }
+
+  .live-hint {
+    display: block;
+    font-size: 0.78rem;
+    opacity: 0.72;
+    margin-top: 4px;
+  }
+`;
+	//#endregion
+	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-tooltip.ts
+	var _content_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _visible_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _position_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _isLive_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _liveHint_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _side_accessor_storage = /* @__PURE__ */ new WeakMap();
+	/**
+	* `range-tooltip` is a pure display component for showing a formatted
+	* date/time tooltip anchored to a handle on the range-timeline.
+	*
+	* Visibility is controlled by the `visible` attribute (reflected property).
+	* Position is set via the `position` property (pixels from left of viewport).
+	*/
+	var RangeTooltip = class extends i$3 {
+		constructor(..._args) {
+			super(..._args);
+			_classPrivateFieldInitSpec(this, _content_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _visible_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _position_accessor_storage, 0);
+			_classPrivateFieldInitSpec(this, _isLive_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _liveHint_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _side_accessor_storage, "start");
+		}
+		get content() {
+			return _classPrivateFieldGet2(_content_accessor_storage, this);
+		}
+		set content(value) {
+			_classPrivateFieldSet2(_content_accessor_storage, this, value);
+		}
+		get visible() {
+			return _classPrivateFieldGet2(_visible_accessor_storage, this);
+		}
+		set visible(value) {
+			_classPrivateFieldSet2(_visible_accessor_storage, this, value);
+		}
+		get position() {
+			return _classPrivateFieldGet2(_position_accessor_storage, this);
+		}
+		set position(value) {
+			_classPrivateFieldSet2(_position_accessor_storage, this, value);
+		}
+		get isLive() {
+			return _classPrivateFieldGet2(_isLive_accessor_storage, this);
+		}
+		set isLive(value) {
+			_classPrivateFieldSet2(_isLive_accessor_storage, this, value);
+		}
+		get liveHint() {
+			return _classPrivateFieldGet2(_liveHint_accessor_storage, this);
+		}
+		set liveHint(value) {
+			_classPrivateFieldSet2(_liveHint_accessor_storage, this, value);
+		}
+		get side() {
+			return _classPrivateFieldGet2(_side_accessor_storage, this);
+		}
+		set side(value) {
+			_classPrivateFieldSet2(_side_accessor_storage, this, value);
+		}
+		updated(changed) {
+			if (changed.has("position")) this.style.left = `${this.position}px`;
+			this.setAttribute("aria-hidden", this.visible ? "false" : "true");
+		}
+		render() {
+			return b`${this.content}${this.isLive ? b`<span class="live-hint">${this.liveHint}</span>` : A}`;
+		}
+	};
+	_defineProperty(RangeTooltip, "styles", styles$19);
+	__decorate([n$1({ type: String })], RangeTooltip.prototype, "content", null);
+	__decorate([n$1({
+		type: Boolean,
+		reflect: true
+	})], RangeTooltip.prototype, "visible", null);
+	__decorate([n$1({ type: Number })], RangeTooltip.prototype, "position", null);
+	__decorate([n$1({ type: Boolean })], RangeTooltip.prototype, "isLive", null);
+	__decorate([n$1({ type: String })], RangeTooltip.prototype, "liveHint", null);
+	__decorate([n$1({
+		type: String,
+		reflect: true
+	})], RangeTooltip.prototype, "side", null);
+	customElements.define("range-tooltip", RangeTooltip);
+	//#endregion
+	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-track.styles.ts
+	var styles$18 = i$6`
+  :host {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 26px;
+    transform: translateY(-50%);
+    height: 4px;
+    border-radius: 999px;
+    background: transparent;
+    display: block;
+  }
+
+  .range-selection {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 1;
+    border-radius: 999px;
+    background: color-mix(
+      in srgb,
+      var(--primary-text-color, #111) 82%,
+      transparent
+    );
+    cursor: grab;
+  }
+
+  .range-selection.dragging {
+    cursor: grabbing;
+  }
+`;
+	//#endregion
+	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-track.ts
+	var _selectionLeftPct_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _selectionWidthPct_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _selectionDragging_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	/**
+	* `range-track` renders the track bar with a positioned selection highlight.
+	*
+	* Pure display component — receives percentage positions as props.
+	* The parent positions handles and owns drag logic.
+	*/
+	var RangeTrack = class extends i$3 {
+		constructor(..._args) {
+			super(..._args);
+			_classPrivateFieldInitSpec(this, _selectionLeftPct_accessor_storage$1, 0);
+			_classPrivateFieldInitSpec(this, _selectionWidthPct_accessor_storage$1, 0);
+			_classPrivateFieldInitSpec(this, _selectionDragging_accessor_storage$1, false);
+		}
+		get selectionLeftPct() {
+			return _classPrivateFieldGet2(_selectionLeftPct_accessor_storage$1, this);
+		}
+		set selectionLeftPct(value) {
+			_classPrivateFieldSet2(_selectionLeftPct_accessor_storage$1, this, value);
+		}
+		get selectionWidthPct() {
+			return _classPrivateFieldGet2(_selectionWidthPct_accessor_storage$1, this);
+		}
+		set selectionWidthPct(value) {
+			_classPrivateFieldSet2(_selectionWidthPct_accessor_storage$1, this, value);
+		}
+		get selectionDragging() {
+			return _classPrivateFieldGet2(_selectionDragging_accessor_storage$1, this);
+		}
+		set selectionDragging(value) {
+			_classPrivateFieldSet2(_selectionDragging_accessor_storage$1, this, value);
+		}
+		render() {
+			return b`
+      <slot name="track-overlays"></slot>
+      <div
+        class="range-selection ${this.selectionDragging ? "dragging" : ""}"
+        style="left:${this.selectionLeftPct}%;width:${this.selectionWidthPct}%"
+      ></div>
+    `;
+		}
+	};
+	_defineProperty(RangeTrack, "styles", styles$18);
+	__decorate([n$1({ type: Number })], RangeTrack.prototype, "selectionLeftPct", null);
+	__decorate([n$1({ type: Number })], RangeTrack.prototype, "selectionWidthPct", null);
+	__decorate([n$1({ type: Boolean })], RangeTrack.prototype, "selectionDragging", null);
+	customElements.define("range-track", RangeTrack);
+	//#endregion
+	//#region custom_components/hass_datapoints/src/atoms/interactive/range-timeline/range-timeline.ts
+	var DEFAULT_I18N$2 = createDefaultI18n([
+		"Updates with new data",
+		"Scroll to selected range",
+		"Start date and time",
+		"End date and time"
+	]);
+	var _startTime_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
+	var _endTime_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
+	var _rangeBounds_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
+	var _zoomLevel_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
+	var _dateSnapping_accessor_storage$3 = /* @__PURE__ */ new WeakMap();
+	var _isLiveEdge_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
+	var _locale_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
+	var _i18n_accessor_storage$2 = /* @__PURE__ */ new WeakMap();
+	var _rangeContentWidth_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _startTooltipVisible_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _startTooltipLeftPx_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _startTooltipContent_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _endTooltipVisible_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _endTooltipLeftPx_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _endTooltipContent_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _endTooltipIsLive_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _endTooltipLiveHint_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _selectionLeftPct_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _selectionWidthPct_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _scrollbarVisible_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _viewportDragging_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _selectionDragging_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _startHandlePosition_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _endHandlePosition_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _startHandleZIndex_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _endHandleZIndex_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _rangeScrollViewportEl_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _rangeTrackEl_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _rangeStartHandleEl_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _rangeEndHandleEl_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _rangeJumpLeftEl_accessor_storage = /* @__PURE__ */ new WeakMap();
+	var _rangeJumpRightEl_accessor_storage = /* @__PURE__ */ new WeakMap();
+	/**
+	* `range-timeline` is a scrollable, interactive time range slider atom.
+	*
+	* The parent provides `startTime`, `endTime`, `rangeBounds` (pre-derived), the
+	* effective `zoomLevel` (already resolved from "auto"), and `dateSnapping`.
+	* Panel-specific overlays (hover preview, comparison preview, chart hover lines)
+	* are injected via named slots:
+	*
+	* - `timeline-overlays` — inside `.range-timeline`, for chart hover lines / event dots
+	* - `track-overlays`    — inside `.range-track`, for comparison/zoom/hover highlights
+	*
+	* @fires dp-range-draft         - `{ start, end }` fired on each drag frame for auto-zoom
+	* @fires dp-range-commit        - `{ start, end, push }` fired when range is committed
+	* @fires dp-range-period-select - `{ unit, startTime }` period button clicked
+	* @fires dp-range-period-hover  - `{ start, end }` period button hovered
+	* @fires dp-range-period-leave  - `{}` period button left
+	* @fires dp-range-scroll        - `{}` timeline scrolled
+	*/
+	var RangeTimeline = class extends i$3 {
+		get startTime() {
+			return _classPrivateFieldGet2(_startTime_accessor_storage$2, this);
+		}
+		set startTime(value) {
+			_classPrivateFieldSet2(_startTime_accessor_storage$2, this, value);
+		}
+		get endTime() {
+			return _classPrivateFieldGet2(_endTime_accessor_storage$2, this);
+		}
+		set endTime(value) {
+			_classPrivateFieldSet2(_endTime_accessor_storage$2, this, value);
+		}
+		get rangeBounds() {
+			return _classPrivateFieldGet2(_rangeBounds_accessor_storage$2, this);
+		}
+		set rangeBounds(value) {
+			_classPrivateFieldSet2(_rangeBounds_accessor_storage$2, this, value);
+		}
+		get zoomLevel() {
+			return _classPrivateFieldGet2(_zoomLevel_accessor_storage$3, this);
+		}
+		set zoomLevel(value) {
+			_classPrivateFieldSet2(_zoomLevel_accessor_storage$3, this, value);
+		}
+		get dateSnapping() {
+			return _classPrivateFieldGet2(_dateSnapping_accessor_storage$3, this);
+		}
+		set dateSnapping(value) {
+			_classPrivateFieldSet2(_dateSnapping_accessor_storage$3, this, value);
+		}
+		get isLiveEdge() {
+			return _classPrivateFieldGet2(_isLiveEdge_accessor_storage$2, this);
+		}
+		set isLiveEdge(value) {
+			_classPrivateFieldSet2(_isLiveEdge_accessor_storage$2, this, value);
+		}
+		get locale() {
+			return _classPrivateFieldGet2(_locale_accessor_storage$1, this);
+		}
+		set locale(value) {
+			_classPrivateFieldSet2(_locale_accessor_storage$1, this, value);
+		}
+		get i18n() {
+			return _classPrivateFieldGet2(_i18n_accessor_storage$2, this);
+		}
+		set i18n(value) {
+			_classPrivateFieldSet2(_i18n_accessor_storage$2, this, value);
+		}
+		_t(key, ...values) {
+			return t$4(this.i18n, key, ...values);
+		}
+		get _rangeContentWidth() {
+			return _classPrivateFieldGet2(_rangeContentWidth_accessor_storage, this);
+		}
+		set _rangeContentWidth(value) {
+			_classPrivateFieldSet2(_rangeContentWidth_accessor_storage, this, value);
+		}
+		get _startTooltipVisible() {
+			return _classPrivateFieldGet2(_startTooltipVisible_accessor_storage, this);
+		}
+		set _startTooltipVisible(value) {
+			_classPrivateFieldSet2(_startTooltipVisible_accessor_storage, this, value);
+		}
+		get _startTooltipLeftPx() {
+			return _classPrivateFieldGet2(_startTooltipLeftPx_accessor_storage, this);
+		}
+		set _startTooltipLeftPx(value) {
+			_classPrivateFieldSet2(_startTooltipLeftPx_accessor_storage, this, value);
+		}
+		get _startTooltipContent() {
+			return _classPrivateFieldGet2(_startTooltipContent_accessor_storage, this);
+		}
+		set _startTooltipContent(value) {
+			_classPrivateFieldSet2(_startTooltipContent_accessor_storage, this, value);
+		}
+		get _endTooltipVisible() {
+			return _classPrivateFieldGet2(_endTooltipVisible_accessor_storage, this);
+		}
+		set _endTooltipVisible(value) {
+			_classPrivateFieldSet2(_endTooltipVisible_accessor_storage, this, value);
+		}
+		get _endTooltipLeftPx() {
+			return _classPrivateFieldGet2(_endTooltipLeftPx_accessor_storage, this);
+		}
+		set _endTooltipLeftPx(value) {
+			_classPrivateFieldSet2(_endTooltipLeftPx_accessor_storage, this, value);
+		}
+		get _endTooltipContent() {
+			return _classPrivateFieldGet2(_endTooltipContent_accessor_storage, this);
+		}
+		set _endTooltipContent(value) {
+			_classPrivateFieldSet2(_endTooltipContent_accessor_storage, this, value);
+		}
+		get _endTooltipIsLive() {
+			return _classPrivateFieldGet2(_endTooltipIsLive_accessor_storage, this);
+		}
+		set _endTooltipIsLive(value) {
+			_classPrivateFieldSet2(_endTooltipIsLive_accessor_storage, this, value);
+		}
+		get _endTooltipLiveHint() {
+			return _classPrivateFieldGet2(_endTooltipLiveHint_accessor_storage, this);
+		}
+		set _endTooltipLiveHint(value) {
+			_classPrivateFieldSet2(_endTooltipLiveHint_accessor_storage, this, value);
+		}
+		get _selectionLeftPct() {
+			return _classPrivateFieldGet2(_selectionLeftPct_accessor_storage, this);
+		}
+		set _selectionLeftPct(value) {
+			_classPrivateFieldSet2(_selectionLeftPct_accessor_storage, this, value);
+		}
+		get _selectionWidthPct() {
+			return _classPrivateFieldGet2(_selectionWidthPct_accessor_storage, this);
+		}
+		set _selectionWidthPct(value) {
+			_classPrivateFieldSet2(_selectionWidthPct_accessor_storage, this, value);
+		}
+		get _scrollbarVisible() {
+			return _classPrivateFieldGet2(_scrollbarVisible_accessor_storage, this);
+		}
+		set _scrollbarVisible(value) {
+			_classPrivateFieldSet2(_scrollbarVisible_accessor_storage, this, value);
+		}
+		get _viewportDragging() {
+			return _classPrivateFieldGet2(_viewportDragging_accessor_storage, this);
+		}
+		set _viewportDragging(value) {
+			_classPrivateFieldSet2(_viewportDragging_accessor_storage, this, value);
+		}
+		get _selectionDragging() {
+			return _classPrivateFieldGet2(_selectionDragging_accessor_storage, this);
+		}
+		set _selectionDragging(value) {
+			_classPrivateFieldSet2(_selectionDragging_accessor_storage, this, value);
+		}
+		get _startHandlePosition() {
+			return _classPrivateFieldGet2(_startHandlePosition_accessor_storage, this);
+		}
+		set _startHandlePosition(value) {
+			_classPrivateFieldSet2(_startHandlePosition_accessor_storage, this, value);
+		}
+		get _endHandlePosition() {
+			return _classPrivateFieldGet2(_endHandlePosition_accessor_storage, this);
+		}
+		set _endHandlePosition(value) {
+			_classPrivateFieldSet2(_endHandlePosition_accessor_storage, this, value);
+		}
+		get _startHandleZIndex() {
+			return _classPrivateFieldGet2(_startHandleZIndex_accessor_storage, this);
+		}
+		set _startHandleZIndex(value) {
+			_classPrivateFieldSet2(_startHandleZIndex_accessor_storage, this, value);
+		}
+		get _endHandleZIndex() {
+			return _classPrivateFieldGet2(_endHandleZIndex_accessor_storage, this);
+		}
+		set _endHandleZIndex(value) {
+			_classPrivateFieldSet2(_endHandleZIndex_accessor_storage, this, value);
+		}
+		get _rangeScrollViewportEl() {
+			return _classPrivateFieldGet2(_rangeScrollViewportEl_accessor_storage, this);
+		}
+		set _rangeScrollViewportEl(value) {
+			_classPrivateFieldSet2(_rangeScrollViewportEl_accessor_storage, this, value);
+		}
+		get _rangeTrackEl() {
+			return _classPrivateFieldGet2(_rangeTrackEl_accessor_storage, this);
+		}
+		set _rangeTrackEl(value) {
+			_classPrivateFieldSet2(_rangeTrackEl_accessor_storage, this, value);
+		}
+		get _rangeStartHandleEl() {
+			return _classPrivateFieldGet2(_rangeStartHandleEl_accessor_storage, this);
+		}
+		set _rangeStartHandleEl(value) {
+			_classPrivateFieldSet2(_rangeStartHandleEl_accessor_storage, this, value);
+		}
+		get _rangeEndHandleEl() {
+			return _classPrivateFieldGet2(_rangeEndHandleEl_accessor_storage, this);
+		}
+		set _rangeEndHandleEl(value) {
+			_classPrivateFieldSet2(_rangeEndHandleEl_accessor_storage, this, value);
+		}
+		get _rangeJumpLeftEl() {
+			return _classPrivateFieldGet2(_rangeJumpLeftEl_accessor_storage, this);
+		}
+		set _rangeJumpLeftEl(value) {
+			_classPrivateFieldSet2(_rangeJumpLeftEl_accessor_storage, this, value);
+		}
+		get _rangeJumpRightEl() {
+			return _classPrivateFieldGet2(_rangeJumpRightEl_accessor_storage, this);
+		}
+		set _rangeJumpRightEl(value) {
+			_classPrivateFieldSet2(_rangeJumpRightEl_accessor_storage, this, value);
+		}
+		constructor() {
+			super();
+			_classPrivateFieldInitSpec(this, _startTime_accessor_storage$2, null);
+			_classPrivateFieldInitSpec(this, _endTime_accessor_storage$2, null);
+			_classPrivateFieldInitSpec(this, _rangeBounds_accessor_storage$2, null);
+			_classPrivateFieldInitSpec(this, _zoomLevel_accessor_storage$3, "day");
+			_classPrivateFieldInitSpec(this, _dateSnapping_accessor_storage$3, "auto");
+			_classPrivateFieldInitSpec(this, _isLiveEdge_accessor_storage$2, false);
+			_classPrivateFieldInitSpec(this, _locale_accessor_storage$1, "");
+			_classPrivateFieldInitSpec(this, _i18n_accessor_storage$2, DEFAULT_I18N$2);
+			_defineProperty(this, "_draftStartTime", null);
+			_defineProperty(this, "_draftEndTime", null);
+			_defineProperty(this, "_activeRangeHandle", null);
+			_defineProperty(this, "_hoveredRangeHandle", null);
+			_defineProperty(this, "_focusedRangeHandle", null);
+			_defineProperty(this, "_hoveredPeriodRange", null);
+			_defineProperty(this, "_rangePointerId", null);
+			_defineProperty(this, "_rangeInteractionActive", false);
+			_classPrivateFieldInitSpec(this, _rangeContentWidth_accessor_storage, 0);
+			_defineProperty(this, "_rangeCommitTimer", null);
+			_classPrivateFieldInitSpec(this, _startTooltipVisible_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _startTooltipLeftPx_accessor_storage, 0);
+			_classPrivateFieldInitSpec(this, _startTooltipContent_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _endTooltipVisible_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _endTooltipLeftPx_accessor_storage, 0);
+			_classPrivateFieldInitSpec(this, _endTooltipContent_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _endTooltipIsLive_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _endTooltipLiveHint_accessor_storage, "");
+			_classPrivateFieldInitSpec(this, _selectionLeftPct_accessor_storage, 0);
+			_classPrivateFieldInitSpec(this, _selectionWidthPct_accessor_storage, 0);
+			_classPrivateFieldInitSpec(this, _scrollbarVisible_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _viewportDragging_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _selectionDragging_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _startHandlePosition_accessor_storage, 0);
+			_classPrivateFieldInitSpec(this, _endHandlePosition_accessor_storage, 0);
+			_classPrivateFieldInitSpec(this, _startHandleZIndex_accessor_storage, 3);
+			_classPrivateFieldInitSpec(this, _endHandleZIndex_accessor_storage, 4);
+			_defineProperty(this, "_isProgrammaticScroll", false);
+			_defineProperty(this, "_scrollbarHideTimer", null);
+			_defineProperty(this, "_timelinePointerId", null);
+			_defineProperty(this, "_timelinePointerStartX", 0);
+			_defineProperty(this, "_timelinePointerStartScrollLeft", 0);
+			_defineProperty(this, "_timelinePointerStartTimestamp", null);
+			_defineProperty(this, "_timelinePointerMode", null);
+			_defineProperty(this, "_timelineDragStartRangeMs", 0);
+			_defineProperty(this, "_timelineDragEndRangeMs", 0);
+			_defineProperty(this, "_timelineDragStartZoomRange", null);
+			_defineProperty(this, "_timelinePointerMoved", false);
+			_defineProperty(this, "_timelineTrackClickPending", false);
+			_classPrivateFieldInitSpec(this, _rangeScrollViewportEl_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _rangeTrackEl_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _rangeStartHandleEl_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _rangeEndHandleEl_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _rangeJumpLeftEl_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _rangeJumpRightEl_accessor_storage, null);
+			_defineProperty(this, "_resizeObserver", null);
+			_defineProperty(this, "_onRangeScroll", void 0);
+			_defineProperty(this, "_onRangePointerMove", void 0);
+			_defineProperty(this, "_onRangePointerUp", void 0);
+			_defineProperty(this, "_onTimelinePointerMove", void 0);
+			_defineProperty(this, "_onTimelinePointerUp", void 0);
+			this._onRangePointerMove = (ev) => this._handleRangePointerMove(ev);
+			this._onRangePointerUp = (ev) => this._finishRangePointerInteraction(ev);
+			this._onTimelinePointerMove = (ev) => this._handleTimelinePointerMove(ev);
+			this._onTimelinePointerUp = (ev) => this._finishTimelinePointerInteraction(ev);
+			this._onRangeScroll = () => {
+				this._updateSelectionJumpControls();
+				this._updateRangeTooltip();
+				this.dispatchEvent(new CustomEvent("dp-range-scroll", {
+					bubbles: true,
+					composed: true
+				}));
+				if (!this._isProgrammaticScroll) this._showScrollbar();
+			};
+		}
+		disconnectedCallback() {
+			super.disconnectedCallback();
+			this._detachRangePointerListeners();
+			this._detachTimelinePointerListeners();
+			if (this._rangeCommitTimer) {
+				window.clearTimeout(this._rangeCommitTimer);
+				this._rangeCommitTimer = null;
+			}
+			if (this._scrollbarHideTimer) {
+				window.clearTimeout(this._scrollbarHideTimer);
+				this._scrollbarHideTimer = null;
+			}
+			if (this._resizeObserver) {
+				this._resizeObserver.disconnect();
+				this._resizeObserver = null;
+			}
+		}
+		willUpdate(changed) {
+			if ([
+				"startTime",
+				"endTime",
+				"rangeBounds",
+				"zoomLevel",
+				"dateSnapping"
+			].some((p) => changed.has(p)) && this.rangeBounds) {
+				this._draftStartTime = this.startTime ? new Date(this.startTime) : null;
+				this._draftEndTime = this.endTime ? new Date(this.endTime) : null;
+				this._updateHandleStacking();
+				this._updateRangePreview();
+			}
+		}
+		firstUpdated() {
+			if (typeof ResizeObserver !== "undefined") {
+				this._resizeObserver = new ResizeObserver(() => {
+					this._syncTimelineWidth();
+					this._updateSelectionJumpControls();
+					this._revealSelectionInTimeline("auto");
+				});
+				if (this._rangeScrollViewportEl) this._resizeObserver.observe(this._rangeScrollViewportEl);
+			}
+			this._scheduleDomSync();
+		}
+		updated(changed) {
+			if ([
+				"startTime",
+				"endTime",
+				"rangeBounds",
+				"zoomLevel",
+				"dateSnapping"
+			].some((p) => changed.has(p))) this._scheduleDomSync();
+		}
+		_scheduleDomSync() {
+			this.updateComplete.then(() => {
+				if (this.isConnected && this._rangeTrackEl && this._rangeStartHandleEl && this._rangeEndHandleEl && this.rangeBounds) {
+					this._syncTimelineWidth();
+					this._updateSelectionJumpControls();
+					this._revealSelectionInTimeline("auto");
+				}
+			});
+		}
+		render() {
+			return b`
+      <ha-icon-button
+        id="range-jump-left"
+        class="range-selection-jump left"
+        .label=${this._t("Scroll to selected range")}
+        hidden
+        @click=${() => this._revealSelectionInTimeline("smooth")}
+      >
+        <ha-icon icon="mdi:chevron-left"></ha-icon>
+      </ha-icon-button>
+      <ha-icon-button
+        id="range-jump-right"
+        class="range-selection-jump right"
+        .label=${this._t("Scroll to selected range")}
+        hidden
+        @click=${() => this._revealSelectionInTimeline("smooth")}
+      >
+        <ha-icon icon="mdi:chevron-right"></ha-icon>
+      </ha-icon-button>
+      <div
+        id="range-scroll-viewport"
+        class="range-scroll-viewport ${this._scrollbarVisible ? "scrollbar-visible" : ""} ${this._viewportDragging ? "dragging" : ""}"
+        @scroll=${this._onRangeScroll}
+        @pointerdown=${this._handleTimelinePointerDown}
+        @pointermove=${this._handleRangeViewportPointerMove}
+        @pointerleave=${this._handleRangeViewportPointerLeave}
+      >
+        <div
+          id="range-timeline"
+          class="range-timeline"
+          style="width:${this._rangeContentWidth}px"
+        >
+          <slot name="timeline-overlays"></slot>
+          <range-scale
+            .rangeBounds=${this.rangeBounds}
+            .zoomLevel=${this.zoomLevel}
+            .contentWidth=${this._rangeContentWidth}
+            .locale=${this.locale}
+            .i18n=${this.i18n}
+            @dp-scale-period-select=${this._handleScalePeriodSelect}
+            @dp-scale-period-hover=${this._handleScalePeriodHover}
+            @dp-scale-period-leave=${this._handleScalePeriodLeave}
+          ></range-scale>
+          <range-track
+            id="range-track"
+            .selectionLeftPct=${this._selectionLeftPct}
+            .selectionWidthPct=${this._selectionWidthPct}
+            .selectionDragging=${this._selectionDragging}
+          >
+            <slot name="track-overlays" slot="track-overlays"></slot>
+          </range-track>
+          <range-handle
+            id="range-start-handle"
+            .label=${this._t("Start date and time")}
+            .position=${this._startHandlePosition}
+            .zIndex=${this._startHandleZIndex}
+            .i18n=${this.i18n}
+            @dp-handle-drag-start=${(e) => this._beginRangePointerInteraction("start", e.detail.pointerId, e.detail.clientX)}
+            @dp-handle-keydown=${(e) => this._handleRangeHandleKeyDown("start", e.detail)}
+            @dp-handle-hover=${() => this._setRangeTooltipHoverHandle("start")}
+            @dp-handle-leave=${() => this._clearRangeTooltipHoverHandle("start")}
+            @dp-handle-focus=${() => this._setRangeTooltipFocusHandle("start")}
+            @dp-handle-blur=${() => this._clearRangeTooltipFocusHandle("start")}
+          ></range-handle>
+          <range-handle
+            id="range-end-handle"
+            .label=${this._t("End date and time")}
+            .position=${this._endHandlePosition}
+            .live=${this.isLiveEdge}
+            .zIndex=${this._endHandleZIndex}
+            .i18n=${this.i18n}
+            @dp-handle-drag-start=${(e) => this._beginRangePointerInteraction("end", e.detail.pointerId, e.detail.clientX)}
+            @dp-handle-keydown=${(e) => this._handleRangeHandleKeyDown("end", e.detail)}
+            @dp-handle-hover=${() => this._setRangeTooltipHoverHandle("end")}
+            @dp-handle-leave=${() => this._clearRangeTooltipHoverHandle("end")}
+            @dp-handle-focus=${() => this._setRangeTooltipFocusHandle("end")}
+            @dp-handle-blur=${() => this._clearRangeTooltipFocusHandle("end")}
+          ></range-handle>
+        </div>
+      </div>
+      <range-tooltip
+        side="start"
+        .content=${this._startTooltipContent}
+        .visible=${this._startTooltipVisible}
+        .position=${this._startTooltipLeftPx}
+      ></range-tooltip>
+      <range-tooltip
+        side="end"
+        .content=${this._endTooltipContent}
+        .visible=${this._endTooltipVisible}
+        .position=${this._endTooltipLeftPx}
+        .isLive=${this._endTooltipIsLive}
+        .liveHint=${this._endTooltipLiveHint}
+      ></range-tooltip>
+    `;
+		}
+		_getZoomConfig() {
+			return RANGE_ZOOM_CONFIGS[this.zoomLevel] || RANGE_ZOOM_CONFIGS.month_short;
+		}
+		_getEffectiveSnapUnit() {
+			if (this.dateSnapping !== "auto") return this.dateSnapping;
+			switch (this.zoomLevel) {
+				case "quarterly":
+				case "month_compressed": return "month";
+				case "month_short":
+				case "month_expanded":
+				case "week_compressed": return "week";
+				case "week_expanded": return "day";
+				case "day": return "hour";
+				default: return "day";
+			}
+		}
+		_getSnapSpanMs(reference = /* @__PURE__ */ new Date()) {
+			const snapUnit = this._getEffectiveSnapUnit();
+			const start = startOfUnit(reference, snapUnit);
+			const end = endOfUnit(reference, snapUnit);
+			return Math.max(SECOND_MS, end.getTime() - start.getTime());
+		}
+		_countUnitsInRange(startMs, endMs, unit) {
+			const totalMs = Math.max(0, endMs - startMs);
+			const perMs = {
+				second: SECOND_MS,
+				minute: 60 * SECOND_MS,
+				hour: 3600 * SECOND_MS,
+				day: 86400 * SECOND_MS,
+				week: 604800 * SECOND_MS
+			};
+			if (perMs[unit]) return Math.ceil(totalMs / perMs[unit]);
+			if (unit === "month") return Math.ceil(totalMs / (30.44 * 24 * 60 * 60 * SECOND_MS));
+			if (unit === "quarter") return Math.ceil(totalMs / (7888320 * SECOND_MS));
+			if (unit === "year") return Math.ceil(totalMs / (31557600 * SECOND_MS));
+			return Math.max(1, Math.ceil(totalMs / (86400 * SECOND_MS)));
+		}
+		_syncRangeControl() {
+			if (!this._rangeTrackEl || !this._rangeStartHandleEl || !this._rangeEndHandleEl) return;
+			if (!this.rangeBounds) return;
+			this._draftStartTime = this.startTime ? new Date(this.startTime) : null;
+			this._draftEndTime = this.endTime ? new Date(this.endTime) : null;
+			this._syncTimelineWidth();
+			this._updateHandleStacking();
+			this._updateRangePreview();
+			this._updateSelectionJumpControls();
+			this._revealSelectionInTimeline("auto");
+		}
+		_syncTimelineWidth() {
+			if (!this.rangeBounds) return;
+			const { config } = this.rangeBounds;
+			const viewportWidth = Math.max(this._rangeScrollViewportEl?.clientWidth || 0, 320);
+			const unitCount = this._countUnitsInRange(this.rangeBounds.min, this.rangeBounds.max, config.majorUnit);
+			this._rangeContentWidth = Math.max(viewportWidth, unitCount * (config.pixelsPerUnit || 60));
+		}
+		_updateHandleStacking(activeHandle = this._activeRangeHandle) {
+			this._startHandleZIndex = activeHandle === "start" ? 5 : 3;
+			this._endHandleZIndex = activeHandle === "end" ? 5 : 4;
+		}
+		_updateRangePreview() {
+			if (!this.rangeBounds || !this._draftStartTime || !this._draftEndTime) return;
+			const total = Math.max(1, this.rangeBounds.max - this.rangeBounds.min);
+			const startPct = (this._draftStartTime.getTime() - this.rangeBounds.min) / total * 100;
+			const endPct = (this._draftEndTime.getTime() - this.rangeBounds.min) / total * 100;
+			this._selectionLeftPct = startPct;
+			this._selectionWidthPct = Math.max(0, endPct - startPct);
+			this._startHandlePosition = startPct;
+			this._endHandlePosition = endPct;
+			this._updateRangeTooltip();
+		}
+		_getVisibleRangeTooltipHandles() {
+			if (this._timelinePointerMode === "selection" || this._timelinePointerMode === "interval_select") return ["start", "end"];
+			const handle = this._activeRangeHandle || this._focusedRangeHandle || this._hoveredRangeHandle || null;
+			return handle ? [handle] : [];
+		}
+		_setRangeTooltipHoverHandle(handle) {
+			this._hoveredRangeHandle = handle;
+			this._updateRangeTooltip();
+		}
+		_clearRangeTooltipHoverHandle(handle) {
+			if (this._activeRangeHandle === handle) return;
+			if (this._hoveredRangeHandle === handle) this._hoveredRangeHandle = null;
+			this._updateRangeTooltip();
+		}
+		_setRangeTooltipFocusHandle(handle) {
+			this._focusedRangeHandle = handle;
+			this._updateRangeTooltip();
+		}
+		_clearRangeTooltipFocusHandle(handle) {
+			if (this._activeRangeHandle === handle) return;
+			if (this._focusedRangeHandle === handle) this._focusedRangeHandle = null;
+			this._updateRangeTooltip();
+		}
+		_updateRangeTooltip() {
+			if (!this.rangeBounds || !this._rangeScrollViewportEl) return;
+			const visibleHandles = new Set(this._getVisibleRangeTooltipHandles());
+			this._updateRangeTooltipForHandle("start", visibleHandles.has("start"));
+			this._updateRangeTooltipForHandle("end", visibleHandles.has("end"));
+		}
+		_updateRangeTooltipForHandle(handle, visible) {
+			const value = handle === "start" ? this._draftStartTime : this._draftEndTime;
+			if (!visible || !value || !this.rangeBounds || !this._rangeScrollViewportEl) {
+				if (handle === "start") this._startTooltipVisible = false;
+				else {
+					this._endTooltipVisible = false;
+					this._endTooltipIsLive = false;
+				}
+				return;
+			}
+			const total = Math.max(1, this.rangeBounds.max - this.rangeBounds.min);
+			const contentWidth = Math.max(this._rangeContentWidth || 0, this._rangeScrollViewportEl.clientWidth || 0, 1);
+			const clampedX = clampNumber((value.getTime() - this.rangeBounds.min) / total * contentWidth - this._rangeScrollViewportEl.scrollLeft, 0, this._rangeScrollViewportEl.clientWidth);
+			const content = formatRangeDateTime(value, this.locale || void 0);
+			if (handle === "start") {
+				this._startTooltipVisible = true;
+				this._startTooltipLeftPx = clampedX;
+				this._startTooltipContent = content;
+			} else {
+				this._endTooltipVisible = true;
+				this._endTooltipLeftPx = clampedX;
+				this._endTooltipContent = content;
+				this._endTooltipIsLive = this.isLiveEdge;
+				this._endTooltipLiveHint = this.isLiveEdge ? this._t("Updates with new data") : "";
+			}
+		}
+		_handleScalePeriodSelect(e) {
+			const { unit, startTime, originalEvent } = e.detail;
+			this._handleRangePeriodSelect(unit, startTime, originalEvent);
+		}
+		_handleScalePeriodHover(e) {
+			const { unit, startTime } = e.detail;
+			this._setHoveredPeriodRange(unit, startTime);
+		}
+		_handleScalePeriodLeave(e) {
+			const { unit, startTime } = e.detail;
+			this._clearHoveredPeriodRange(unit, startTime);
+		}
+		_handleRangePeriodSelect(unit, startTime, ev) {
+			ev.preventDefault();
+			ev.stopPropagation();
+			const periodStart = startOfUnit(new Date(startTime), unit);
+			const periodEnd = endOfUnit(new Date(startTime), unit);
+			if (this._rangeCommitTimer) {
+				window.clearTimeout(this._rangeCommitTimer);
+				this._rangeCommitTimer = null;
+			}
+			this._draftStartTime = new Date(periodStart);
+			this._draftEndTime = new Date(periodEnd);
+			this._updateRangePreview();
+			this.dispatchEvent(new CustomEvent("dp-range-period-select", {
+				detail: {
+					unit,
+					startTime: periodStart
+				},
+				bubbles: true,
+				composed: true
+			}));
+			this._commitRangeSelection({ push: true });
+		}
+		_setHoveredPeriodRange(unit, startTime) {
+			const start = startOfUnit(new Date(startTime), unit);
+			const end = endOfUnit(new Date(startTime), unit);
+			this._hoveredPeriodRange = {
+				unit,
+				start: start.getTime(),
+				end: end.getTime()
+			};
+			this.dispatchEvent(new CustomEvent("dp-range-period-hover", {
+				detail: {
+					start,
+					end
+				},
+				bubbles: true,
+				composed: true
+			}));
+		}
+		_clearHoveredPeriodRange(unit, startTime) {
+			if (!this._hoveredPeriodRange) return;
+			const start = startOfUnit(new Date(startTime), unit).getTime();
+			const end = endOfUnit(new Date(startTime), unit).getTime();
+			if (this._hoveredPeriodRange.start === start && this._hoveredPeriodRange.end === end) {
+				this._hoveredPeriodRange = null;
+				this.dispatchEvent(new CustomEvent("dp-range-period-leave", {
+					bubbles: true,
+					composed: true
+				}));
+			}
+		}
+		_updateSelectionJumpControls() {
+			if (!this._rangeScrollViewportEl || !this.rangeBounds || !this._rangeContentWidth || !this.startTime || !this.endTime) {
+				if (this._rangeJumpLeftEl) this._rangeJumpLeftEl.hidden = true;
+				if (this._rangeJumpRightEl) this._rangeJumpRightEl.hidden = true;
+				return;
+			}
+			const { showLeft, showRight } = computeSelectionJumpVisibility(this._rangeScrollViewportEl.scrollLeft, this._rangeScrollViewportEl.clientWidth, this._rangeContentWidth, this.startTime.getTime(), this.endTime.getTime(), this.rangeBounds.min, this.rangeBounds.max);
+			if (this._rangeJumpLeftEl) this._rangeJumpLeftEl.hidden = !showLeft;
+			if (this._rangeJumpRightEl) this._rangeJumpRightEl.hidden = !showRight;
+		}
+		_scrollTimelineToRange(range, behavior = "auto", { center = false } = {}) {
+			if (!this._rangeScrollViewportEl || !this.rangeBounds || !this._rangeContentWidth || !range) return;
+			const nextLeft = computeScrollPositionForRange(range.start, range.end, this.rangeBounds.min, this.rangeBounds.max, this._rangeContentWidth, this._rangeScrollViewportEl.clientWidth, center);
+			if (nextLeft == null) return;
+			this._rangeScrollViewportEl.scrollTo({
+				left: nextLeft,
+				behavior
+			});
+		}
+		revealSelection() {
+			this._revealSelectionInTimeline("smooth");
+		}
+		_revealSelectionInTimeline(behavior = "auto") {
+			if (!this.startTime || !this.endTime) return;
+			this._isProgrammaticScroll = true;
+			this._scrollTimelineToRange({
+				start: this.startTime.getTime(),
+				end: this.endTime.getTime()
+			}, behavior, { center: true });
+			window.setTimeout(() => {
+				this._isProgrammaticScroll = false;
+			}, 50);
+		}
+		_showScrollbar() {
+			this._scrollbarVisible = true;
+			if (this._scrollbarHideTimer) window.clearTimeout(this._scrollbarHideTimer);
+			this._scrollbarHideTimer = window.setTimeout(() => {
+				this._scrollbarHideTimer = null;
+				this._scrollbarVisible = false;
+			}, 1500);
+		}
+		_timestampFromClientX(clientX) {
+			if (!this.rangeBounds || !this._rangeTrackEl) return null;
+			const rect = this._rangeTrackEl.getBoundingClientRect();
+			return timestampFromClientPosition(clientX, rect.left, rect.width, this.rangeBounds.min, this.rangeBounds.max);
+		}
+		_getTimelineSelectionDragDeltaMs(timestamp) {
+			if (timestamp == null || this._timelinePointerStartTimestamp == null) return 0;
+			return computeSelectionDragDelta(timestamp, this._timelinePointerStartTimestamp, this._getEffectiveSnapUnit());
+		}
+		_setDraftRangeFromTimestamp(handle, timestamp) {
+			if (!this.rangeBounds) return;
+			const currentStartMs = this._draftStartTime?.getTime() ?? this.startTime?.getTime() ?? this.rangeBounds.min;
+			const currentEndMs = this._draftEndTime?.getTime() ?? this.endTime?.getTime() ?? this.rangeBounds.max;
+			const snapUnit = this._getEffectiveSnapUnit();
+			const snapSpanMs = this._getSnapSpanMs(new Date(snapDateToUnit(new Date(timestamp), snapUnit).getTime()));
+			const { startMs, endMs } = computeDraftRangeForHandle(handle, timestamp, currentStartMs, currentEndMs, this.rangeBounds.min, this.rangeBounds.max, snapUnit, snapSpanMs);
+			this._draftStartTime = new Date(startMs);
+			this._draftEndTime = new Date(endMs);
+			this._updateHandleStacking(handle);
+			this._updateRangePreview();
+			this._fireDraftEvent();
+			this._scheduleRangeCommit();
+		}
+		_shiftDraftRangeByDelta(deltaMs) {
+			if (!this.rangeBounds) return;
+			const { startMs, endMs } = computeShiftedDraftRange(deltaMs, this._timelineDragStartRangeMs, this._timelineDragEndRangeMs, this.rangeBounds.min, this.rangeBounds.max);
+			this._draftStartTime = new Date(startMs);
+			this._draftEndTime = new Date(endMs);
+			this._updateRangePreview();
+			this._fireDraftEvent();
+			this._scheduleRangeCommit();
+		}
+		_setDraftRangeFromIntervalSelection(startTimestamp, endTimestamp) {
+			if (!this.rangeBounds) return;
+			const result = computeIntervalSelectionRange(startTimestamp, endTimestamp, this.rangeBounds.config?.labelUnit || this._getEffectiveSnapUnit(), this.rangeBounds.min, this.rangeBounds.max);
+			if (!result) return;
+			this._draftStartTime = new Date(result.startMs);
+			this._draftEndTime = new Date(result.endMs);
+			this._updateRangePreview();
+		}
+		_fireDraftEvent() {
+			if (!this._draftStartTime || !this._draftEndTime) return;
+			this.dispatchEvent(new CustomEvent("dp-range-draft", {
+				detail: {
+					start: new Date(this._draftStartTime),
+					end: new Date(this._draftEndTime)
+				},
+				bubbles: true,
+				composed: true
+			}));
+		}
+		_scheduleRangeCommit() {
+			if (this._rangeInteractionActive || this._timelinePointerMode === "selection" || this._timelinePointerMode === "interval_select") return;
+			if (this._rangeCommitTimer) window.clearTimeout(this._rangeCommitTimer);
+			this._rangeCommitTimer = window.setTimeout(() => {
+				this._rangeCommitTimer = null;
+				this._commitRangeSelection({ push: false });
+			}, 240);
+		}
+		_commitRangeSelection({ push = false } = {}) {
+			if (!this._draftStartTime || !this._draftEndTime) return;
+			this.dispatchEvent(new CustomEvent("dp-range-commit", {
+				detail: {
+					start: new Date(this._draftStartTime),
+					end: new Date(this._draftEndTime),
+					push
+				},
+				bubbles: true,
+				composed: true
+			}));
+		}
+		_beginRangePointerInteraction(handle, pointerId, clientX) {
+			if (!this._rangeTrackEl) return;
+			this._rangeInteractionActive = true;
+			if (this._rangeCommitTimer) {
+				window.clearTimeout(this._rangeCommitTimer);
+				this._rangeCommitTimer = null;
+			}
+			this._activeRangeHandle = handle;
+			this._hoveredRangeHandle = handle;
+			this._rangePointerId = pointerId;
+			this._updateHandleStacking(handle);
+			this._updateRangeTooltip();
+			this._attachRangePointerListeners();
+			(handle === "start" ? this._rangeStartHandleEl : this._rangeEndHandleEl)?.focus?.();
+			const timestamp = this._timestampFromClientX(clientX);
+			if (timestamp != null) this._setDraftRangeFromTimestamp(handle, timestamp);
+		}
+		_maybeAutoScrollTimelineDuringHandleDrag(clientX) {
+			if (!this._rangeScrollViewportEl) return;
+			const viewport = this._rangeScrollViewportEl;
+			const rect = viewport.getBoundingClientRect();
+			if (!rect.width) return;
+			const maxScrollLeft = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+			if (maxScrollLeft <= 0) return;
+			const delta = computeAutoScrollDelta(clientX, rect.left, rect.right);
+			if (!delta) return;
+			viewport.scrollLeft = clampNumber(viewport.scrollLeft + delta, 0, maxScrollLeft);
+		}
+		_attachRangePointerListeners() {
+			window.addEventListener("pointermove", this._onRangePointerMove);
+			window.addEventListener("pointerup", this._onRangePointerUp);
+			window.addEventListener("pointercancel", this._onRangePointerUp);
+		}
+		_detachRangePointerListeners() {
+			window.removeEventListener("pointermove", this._onRangePointerMove);
+			window.removeEventListener("pointerup", this._onRangePointerUp);
+			window.removeEventListener("pointercancel", this._onRangePointerUp);
+			this._rangePointerId = null;
+			this._activeRangeHandle = null;
+			this._rangeInteractionActive = false;
+			this._updateHandleStacking();
+			this._updateRangeTooltip();
+		}
+		_handleRangePointerMove(ev) {
+			if (!this._activeRangeHandle) return;
+			if (this._rangePointerId != null && ev.pointerId !== this._rangePointerId) return;
+			this._maybeAutoScrollTimelineDuringHandleDrag(ev.clientX);
+			const timestamp = this._timestampFromClientX(ev.clientX);
+			if (timestamp == null) return;
+			ev.preventDefault();
+			this._setDraftRangeFromTimestamp(this._activeRangeHandle, timestamp);
+		}
+		_finishRangePointerInteraction(ev) {
+			if (!this._activeRangeHandle) return;
+			if (this._rangePointerId != null && ev.pointerId !== this._rangePointerId) return;
+			this._detachRangePointerListeners();
+			this._focusedRangeHandle = null;
+			this._hoveredRangeHandle = null;
+			this._updateRangeTooltip();
+			this._commitRangeSelection({ push: true });
+		}
+		_handleRangeHandleKeyDown(handle, detail) {
+			if (!this.rangeBounds) return;
+			const snapUnit = this._getEffectiveSnapUnit();
+			const currentValue = handle === "start" ? this._draftStartTime?.getTime() ?? this.startTime?.getTime() : this._draftEndTime?.getTime() ?? this.endTime?.getTime();
+			if (currentValue == null) return;
+			const config = this._getZoomConfig();
+			let nextValue = null;
+			if (detail.key === "ArrowLeft" || detail.key === "ArrowDown") nextValue = addUnit(new Date(currentValue), snapUnit, -1).getTime();
+			if (detail.key === "ArrowRight" || detail.key === "ArrowUp") nextValue = addUnit(new Date(currentValue), snapUnit, 1).getTime();
+			if (detail.key === "PageDown") nextValue = addUnit(new Date(currentValue), config.majorUnit, -1).getTime();
+			if (detail.key === "PageUp") nextValue = addUnit(new Date(currentValue), config.majorUnit, 1).getTime();
+			if (detail.key === "Home") nextValue = this.rangeBounds.min;
+			if (detail.key === "End") nextValue = this.rangeBounds.max;
+			if (nextValue == null) return;
+			this._focusedRangeHandle = handle;
+			this._setDraftRangeFromTimestamp(handle, nextValue);
+		}
+		_handleTimelinePointerDown(ev) {
+			if (ev.button !== 0) return;
+			if (ev.composedPath().some((node) => node instanceof Element && (node.tagName === "RANGE-HANDLE" || node.closest?.("range-handle")))) return;
+			if (ev.target?.closest?.(".range-period-button")) return;
+			if (!this._rangeScrollViewportEl) return;
+			const isSelectionDrag = ev.composedPath().some((el) => el instanceof Element && el.classList?.contains?.("range-selection"));
+			const trackRect = this._rangeTrackEl?.getBoundingClientRect();
+			const isTrackRegion = !!trackRect && ev.clientY >= trackRect.top - 6 && ev.clientY <= trackRect.bottom + 6;
+			const isIntervalSelect = !isSelectionDrag && !isTrackRegion;
+			this._detachTimelinePointerListeners();
+			this._rangeInteractionActive = isSelectionDrag || isIntervalSelect;
+			if ((isSelectionDrag || isIntervalSelect) && this._rangeCommitTimer) {
+				window.clearTimeout(this._rangeCommitTimer);
+				this._rangeCommitTimer = null;
+			}
+			this._timelinePointerId = ev.pointerId;
+			this._timelinePointerStartX = ev.clientX;
+			this._timelinePointerStartScrollLeft = this._rangeScrollViewportEl.scrollLeft;
+			this._timelinePointerStartTimestamp = isSelectionDrag || isIntervalSelect ? this._timestampFromClientX(ev.clientX) : null;
+			if (isSelectionDrag) this._timelinePointerMode = "selection";
+			else if (isIntervalSelect) this._timelinePointerMode = "interval_select";
+			else this._timelinePointerMode = "pan";
+			this._timelineDragStartRangeMs = this._draftStartTime?.getTime() ?? this.startTime?.getTime() ?? 0;
+			this._timelineDragEndRangeMs = this._draftEndTime?.getTime() ?? this.endTime?.getTime() ?? 0;
+			this._timelinePointerMoved = false;
+			this._timelineTrackClickPending = !isSelectionDrag && !isIntervalSelect && !!ev.target?.closest?.("range-track");
+			this._viewportDragging = false;
+			this._selectionDragging = isSelectionDrag;
+			window.addEventListener("pointermove", this._onTimelinePointerMove);
+			window.addEventListener("pointerup", this._onTimelinePointerUp);
+			window.addEventListener("pointercancel", this._onTimelinePointerUp);
+		}
+		_detachTimelinePointerListeners() {
+			window.removeEventListener("pointermove", this._onTimelinePointerMove);
+			window.removeEventListener("pointerup", this._onTimelinePointerUp);
+			window.removeEventListener("pointercancel", this._onTimelinePointerUp);
+			this._viewportDragging = false;
+			this._selectionDragging = false;
+			this._timelinePointerId = null;
+			this._timelinePointerStartTimestamp = null;
+			this._timelinePointerMode = null;
+			this._rangeInteractionActive = false;
+			this._timelinePointerMoved = false;
+			this._timelineTrackClickPending = false;
+		}
+		_handleTimelinePointerMove(ev) {
+			if (this._timelinePointerId == null || ev.pointerId !== this._timelinePointerId || !this._rangeScrollViewportEl) return;
+			if (this._timelinePointerMode === "selection") {
+				const timestamp = this._timestampFromClientX(ev.clientX);
+				if (timestamp == null || this._timelinePointerStartTimestamp == null) return;
+				const deltaX = ev.clientX - this._timelinePointerStartX;
+				if (!this._timelinePointerMoved && Math.abs(deltaX) < 4) return;
+				this._timelinePointerMoved = true;
+				this._shiftDraftRangeByDelta(this._getTimelineSelectionDragDeltaMs(timestamp));
+				ev.preventDefault();
+				return;
+			}
+			if (this._timelinePointerMode === "interval_select") {
+				const timestamp = this._timestampFromClientX(ev.clientX);
+				if (timestamp == null || this._timelinePointerStartTimestamp == null) return;
+				const deltaX = ev.clientX - this._timelinePointerStartX;
+				if (!this._timelinePointerMoved && Math.abs(deltaX) < 4) return;
+				this._timelinePointerMoved = true;
+				this._setDraftRangeFromIntervalSelection(this._timelinePointerStartTimestamp, timestamp);
+				ev.preventDefault();
+				return;
+			}
+			const deltaX = ev.clientX - this._timelinePointerStartX;
+			if (!this._timelinePointerMoved && Math.abs(deltaX) < 4) return;
+			this._timelinePointerMoved = true;
+			this._timelineTrackClickPending = false;
+			this._viewportDragging = true;
+			const maxScrollLeft = Math.max(0, this._rangeScrollViewportEl.scrollWidth - this._rangeScrollViewportEl.clientWidth);
+			this._rangeScrollViewportEl.scrollLeft = clampNumber(this._timelinePointerStartScrollLeft - deltaX, 0, maxScrollLeft);
+			ev.preventDefault();
+		}
+		_finishTimelinePointerInteraction(ev) {
+			if (this._timelinePointerId == null || ev.pointerId !== this._timelinePointerId) return;
+			const mode = this._timelinePointerMode;
+			const didMove = this._timelinePointerMoved;
+			const shouldSelectTrack = this._timelineTrackClickPending && !didMove;
+			const clientX = ev.clientX;
+			this._detachTimelinePointerListeners();
+			if (mode === "selection") {
+				this._focusedRangeHandle = null;
+				this._hoveredRangeHandle = null;
+				this._updateRangeTooltip();
+				if (didMove) this._commitRangeSelection({ push: true });
+				return;
+			}
+			if (mode === "interval_select") {
+				this._hoveredPeriodRange = null;
+				this._updateRangeTooltip();
+				if (didMove) this._commitRangeSelection({ push: true });
+				return;
+			}
+			if (shouldSelectTrack) this._handleTrackSelectionAtClientX(clientX);
+		}
+		_handleTrackSelectionAtClientX(clientX) {
+			const timestamp = this._timestampFromClientX(clientX);
+			if (timestamp == null) return;
+			const startMs = this._draftStartTime?.getTime() ?? this.startTime?.getTime() ?? this.rangeBounds?.min;
+			const endMs = this._draftEndTime?.getTime() ?? this.endTime?.getTime() ?? this.rangeBounds?.max;
+			if (startMs == null || endMs == null) return;
+			const handle = resolveCloserHandle(timestamp, startMs, endMs);
+			this._setDraftRangeFromTimestamp(handle, timestamp);
+		}
+		_handleRangeViewportPointerMove(ev) {
+			if (this._timelinePointerId != null || this._rangePointerId != null) return;
+			if (ev.composedPath().some((el) => el.tagName === "DP-RANGE-HANDLE")) return;
+			if (ev.target?.closest?.(".range-period-button")) return;
+			if (ev.composedPath().some((el) => el instanceof Element && el.classList?.contains?.("range-selection"))) return;
+			const timestamp = this._timestampFromClientX(ev.clientX);
+			if (timestamp == null || !this.rangeBounds) return;
+			const unit = this.rangeBounds.config?.labelUnit || this._getEffectiveSnapUnit();
+			if (!unit) return;
+			this._setHoveredPeriodRange(unit, new Date(timestamp));
+		}
+		_handleRangeViewportPointerLeave() {
+			if (this._timelinePointerId != null || this._rangePointerId != null) return;
+			if (this._hoveredPeriodRange) {
+				this._hoveredPeriodRange = null;
+				this.dispatchEvent(new CustomEvent("dp-range-period-leave", {
+					bubbles: true,
+					composed: true
+				}));
+			}
+		}
+	};
+	_defineProperty(RangeTimeline, "styles", styles$22);
+	__decorate([n$1({ type: Object })], RangeTimeline.prototype, "startTime", null);
+	__decorate([n$1({ type: Object })], RangeTimeline.prototype, "endTime", null);
+	__decorate([n$1({ type: Object })], RangeTimeline.prototype, "rangeBounds", null);
+	__decorate([n$1({ type: String })], RangeTimeline.prototype, "zoomLevel", null);
+	__decorate([n$1({ type: String })], RangeTimeline.prototype, "dateSnapping", null);
+	__decorate([n$1({ type: Boolean })], RangeTimeline.prototype, "isLiveEdge", null);
+	__decorate([n$1({ type: String })], RangeTimeline.prototype, "locale", null);
+	__decorate([n$1({ attribute: false })], RangeTimeline.prototype, "i18n", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_rangeContentWidth", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_startTooltipVisible", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_startTooltipLeftPx", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_startTooltipContent", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_endTooltipVisible", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_endTooltipLeftPx", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_endTooltipContent", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_endTooltipIsLive", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_endTooltipLiveHint", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_selectionLeftPct", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_selectionWidthPct", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_scrollbarVisible", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_viewportDragging", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_selectionDragging", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_startHandlePosition", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_endHandlePosition", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_startHandleZIndex", null);
+	__decorate([r$2()], RangeTimeline.prototype, "_endHandleZIndex", null);
+	__decorate([e$4("#range-scroll-viewport")], RangeTimeline.prototype, "_rangeScrollViewportEl", null);
+	__decorate([e$4("#range-track")], RangeTimeline.prototype, "_rangeTrackEl", null);
+	__decorate([e$4("#range-start-handle")], RangeTimeline.prototype, "_rangeStartHandleEl", null);
+	__decorate([e$4("#range-end-handle")], RangeTimeline.prototype, "_rangeEndHandleEl", null);
+	__decorate([e$4("#range-jump-left")], RangeTimeline.prototype, "_rangeJumpLeftEl", null);
+	__decorate([e$4("#range-jump-right")], RangeTimeline.prototype, "_rangeJumpRightEl", null);
+	customElements.define("range-timeline", RangeTimeline);
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/panel-timeline/panel-timeline.ts
 	var _startTime_accessor_storage$1 = /* @__PURE__ */ new WeakMap();
@@ -38526,7 +39393,7 @@
 			this._rangeEventLayerEl.appendChild(fragment);
 		}
 	};
-	_defineProperty(PanelTimeline, "styles", styles$18);
+	_defineProperty(PanelTimeline, "styles", styles$23);
 	__decorate([n$1({ type: Object })], PanelTimeline.prototype, "startTime", null);
 	__decorate([n$1({ type: Object })], PanelTimeline.prototype, "endTime", null);
 	__decorate([n$1({ type: Object })], PanelTimeline.prototype, "rangeBounds", null);
@@ -39130,7 +39997,7 @@
       </div>
     `;
 		}
-	}, _defineProperty(_RangeToolbar, "styles", styles$19), _RangeToolbar);
+	}, _defineProperty(_RangeToolbar, "styles", styles$24), _RangeToolbar);
 	__decorate([n$1({ attribute: false })], RangeToolbar.prototype, "hass", null);
 	__decorate([n$1({ type: Object })], RangeToolbar.prototype, "startTime", null);
 	__decorate([n$1({ type: Object })], RangeToolbar.prototype, "endTime", null);
@@ -42824,6 +43691,8 @@
 			this._pendingAnomalyComparisonWindowEntityId = null;
 			this._editingDateWindowId = null;
 			this._dateWindowDialogDraftRange = null;
+			this._dateWindowDialogKind = "fixed";
+			this._dateWindowDialogPreset = null;
 			this._uiReadyPromise = null;
 			this._uiReadyApplied = false;
 			this._chartEl = null;
@@ -42968,6 +43837,22 @@
 		}
 		set _comparisonWindows(value) {
 			this._appState().setComparisonWindows(Array.isArray(value) ? value : []);
+		}
+		/**
+		* Saved windows resolved against the selected range: fixed windows as they
+		* are, relative windows with the dates their preset resolves to right now.
+		* Each entry carries `available` (false = entirely in the future).
+		*/
+		get _resolvedComparisonWindows() {
+			return resolveDateWindows(this._comparisonWindows, this._startTime, this._endTime);
+		}
+		/** Resolved windows that can be drawn (relative windows not entirely in the future). */
+		get _availableComparisonWindows() {
+			return this._resolvedComparisonWindows.filter((window) => window.available !== false);
+		}
+		/** Fixed windows only: the anomaly comparison-window picker never offers relative ones. */
+		get _fixedComparisonWindows() {
+			return this._comparisonWindows.filter((window) => !isRelativeDateWindow(window));
 		}
 		get _selectedComparisonWindowId() {
 			return this._appState().state.comparison.selectedWindowId;
@@ -43561,7 +44446,7 @@
           .states=${this._hass?.states ?? {}}
           .hass=${this._hass ?? null}
           .labelMap=${this._rowLabelMap}
-          .comparisonWindows=${this._comparisonWindows}
+          .comparisonWindows=${this._fixedComparisonWindows}
           .canShowDeltaAnalysis=${!!this._selectedComparisonWindowId}
           .sidebarCollapsed=${this._sidebarCollapsed}
           .computingEntityIds=${this._computingEntityIds}
@@ -43632,9 +44517,11 @@
         .name=${this._dateWindowDialogName}
         .startValue=${this._dateWindowDialogStartValue}
         .endValue=${this._dateWindowDialogEndValue}
-        .rangeBounds=${this._rangeBounds ?? null}
-        .zoomLevel=${this._zoomLevel ?? "auto"}
-        .dateSnapping=${this._dateSnapping ?? "hour"}
+        .kind=${this._dateWindowDialogKind ?? "fixed"}
+        .preset=${this._dateWindowDialogPreset ?? null}
+        .allowRelative=${!this._pendingAnomalyComparisonWindowEntityId}
+        .rangeStart=${this._startTime ?? null}
+        .rangeEnd=${this._endTime ?? null}
         @dp-window-close=${() => this._closeDateWindowDialog()}
         @dp-window-submit=${(ev) => this._createDateWindowFromDialog(ev.detail || {})}
         @dp-window-delete=${() => this._deleteEditingDateWindow()}
@@ -43863,13 +44750,13 @@
 			return getComparisonPreviewOverlay(this._getActiveComparisonWindow(), this._startTime, this._endTime);
 		}
 		_getPreviewComparisonWindows() {
-			return getPreviewComparisonWindows(this._comparisonWindows, this._selectedComparisonWindowId, this._hoveredComparisonWindowId, this._startTime);
+			return getPreviewComparisonWindows(this._availableComparisonWindows, this._selectedComparisonWindowId, this._hoveredComparisonWindowId, this._startTime);
 		}
 		_getPreloadComparisonWindows() {
-			return getPreloadComparisonWindows(this._comparisonWindows, this._startTime);
+			return getPreloadComparisonWindows(this._availableComparisonWindows, this._startTime);
 		}
 		_getActiveComparisonWindow() {
-			return getActiveComparisonWindow(this._comparisonWindows, this._hoveredComparisonWindowId, this._selectedComparisonWindowId);
+			return getActiveComparisonWindow(this._availableComparisonWindows, this._hoveredComparisonWindowId, this._selectedComparisonWindowId);
 		}
 		_formatDateWindowInputValue(date) {
 			return formatDateWindowInputValue(date);
@@ -43897,8 +44784,12 @@
 		}
 		_openDateWindowDialog(targetWindow = null) {
 			this._editingDateWindowId = targetWindow?.id || null;
-			const dialogStart = targetWindow ? parseDateValue(targetWindow.start_time) : this._startTime;
-			const dialogEnd = targetWindow ? parseDateValue(targetWindow.end_time) : this._endTime;
+			const isRelative = isRelativeDateWindow(targetWindow);
+			this._dateWindowDialogKind = !targetWindow || isRelative ? "relative" : "fixed";
+			this._dateWindowDialogPreset = isRelative ? targetWindow.preset : null;
+			const seedWindow = targetWindow ? this._resolvedComparisonWindows.find((window) => window.id === targetWindow.id) || null : null;
+			const dialogStart = seedWindow ? parseDateValue(seedWindow.start_time) : this._startTime;
+			const dialogEnd = seedWindow ? parseDateValue(seedWindow.end_time) : this._endTime;
 			this._dateWindowDialogDraftRange = dialogStart && dialogEnd && dialogStart < dialogEnd ? {
 				start: new Date(dialogStart),
 				end: new Date(dialogEnd)
@@ -43911,23 +44802,41 @@
 			this._dateWindowDialogOpen = false;
 			this._editingDateWindowId = null;
 			this._dateWindowDialogDraftRange = null;
+			this._dateWindowDialogKind = "fixed";
+			this._dateWindowDialogPreset = null;
 			this._pendingAnomalyComparisonWindowEntityId = null;
 		}
 		_createDateWindowFromDialog(overrides = {}) {
 			const rawName = overrides.name != null ? overrides.name : "";
 			const label = String(rawName).trim();
+			if (overrides.kind === "relative") {
+				if (!label || typeof overrides.preset !== "string") return;
+				this._saveDateWindowFromDialog({
+					id: this._nextDateWindowId(label),
+					label,
+					kind: "relative",
+					preset: overrides.preset
+				});
+				return;
+			}
 			const parsedStart = overrides.start ? this._parseDateWindowInputValue(String(overrides.start)) : null;
 			const parsedEnd = overrides.end ? this._parseDateWindowInputValue(String(overrides.end)) : null;
 			const start = parsedStart || this._dateWindowDialogDraftRange?.start || null;
 			const end = parsedEnd || this._dateWindowDialogDraftRange?.end || null;
 			if (!label || !start || !end || start >= end) return;
-			const existingIds = new Set(this._comparisonWindows.map((window) => window.id));
-			const nextWindow = {
-				id: this._editingDateWindowId || makeDateWindowId(label, existingIds),
+			this._saveDateWindowFromDialog({
+				id: this._nextDateWindowId(label),
 				label,
 				start_time: start.toISOString(),
 				end_time: end.toISOString()
-			};
+			});
+		}
+		/** The edited window keeps its id; a new one gets a unique slug of its label. */
+		_nextDateWindowId(label) {
+			if (this._editingDateWindowId) return this._editingDateWindowId;
+			return makeDateWindowId(label, new Set(this._comparisonWindows.map((window) => window.id)));
+		}
+		_saveDateWindowFromDialog(nextWindow) {
 			this._comparisonWindows = normalizeDateWindows(this._editingDateWindowId ? this._comparisonWindows.map((window) => window.id === this._editingDateWindowId ? nextWindow : window) : [...this._comparisonWindows, nextWindow]);
 			this._saveUserPreferences();
 			this._saveSessionState();
@@ -44501,7 +45410,7 @@
 				startTime: this._startTime,
 				endTime: this._endTime,
 				committedZoomRange: this._chartZoomCommittedRange,
-				comparisonWindows: this._comparisonWindows,
+				comparisonWindows: resolveDateWindows(this._comparisonWindows, this._startTime, this._endTime),
 				selectedComparisonWindowId: this._selectedComparisonWindowId,
 				chartAnomalyOverlapMode: this._chartAnomalyOverlapMode,
 				monitorContext,
@@ -44573,7 +45482,7 @@
 			targetRow.stateObj = this._hass?.states?.[row.entity_id] ?? null;
 			targetRow.hass = this._hass ?? null;
 			targetRow.canShowDeltaAnalysis = !!this._selectedComparisonWindowId;
-			targetRow.comparisonWindows = this._comparisonWindows || [];
+			targetRow.comparisonWindows = this._fixedComparisonWindows;
 			targetRow.showBinaryDisplay = true;
 			targetRow.binaryDisplay = row.binary_display ?? "background";
 			targetRow.addEventListener("dp-row-color-change", (ev) => {
@@ -45118,11 +46027,14 @@
 				detail: this._formatComparisonLabel(this._startTime, this._endTime),
 				active: this._selectedComparisonWindowId == null,
 				editable: false
-			}, ...this._comparisonWindows.map((window) => ({
-				...window,
+			}, ...this._resolvedComparisonWindows.map((window) => ({
+				id: window.id,
+				label: window.label ?? "",
 				detail: this._formatComparisonLabel(new Date(window.start_time), new Date(window.end_time)),
 				active: window.id === this._selectedComparisonWindowId,
-				editable: true
+				editable: true,
+				icon: window.kind === "relative" ? "mdi:calendar-sync" : "",
+				disabled: window.available === false
 			}))]}
         .loadingIds=${this._loadingComparisonWindowIds}
         .hoveredId=${this._hoveredComparisonWindowId || ""}
