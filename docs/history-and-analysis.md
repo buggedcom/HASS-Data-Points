@@ -282,3 +282,22 @@ That turns anomalies from a visual warning into an actionable investigative tool
 When **Trend deviation** is enabled, it uses the same trend method as the chart display by default. You can override this independently — for example to detect trend-deviation anomalies using LOWESS while the chart itself shows a linear trend. The override is set in the trend method subopts within the anomaly panel.
 
 The "Same as display trend" option is only available when trend lines are enabled for the series.
+
+## Native MCP tools
+
+On Home Assistant 2026.11 or later, enable the [Model Context Protocol integration](https://www.home-assistant.io/integrations/mcp_server/). Connect your client as an administrator using the **Home Assistant** tool set URL from **Settings → System → AI**. If you use the main `/api/mcp` URL with selected tool sets, include **Home Assistant**. Clients discover the `hass_datapoints__` tools automatically. The main URL's read-only option exposes the analysis and lookup tools and omits annotation recording.
+
+| Tool                                     | What it returns                                                                                                                 |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `hass_datapoints__analyze_chart`         | Numeric history and sampling, summary statistics, trends, rates, threshold spans, aligned comparisons and deltas, and anomalies |
+| `hass_datapoints__aggregate_entity`      | Calendar aggregates for numeric measurements, state changes and durations, events, and meter consumption                        |
+| `hass_datapoints__list_events`           | Recorded annotations with optional entity and time filters                                                                      |
+| `hass_datapoints__list_monitors`         | Active monitor summaries and latest scan times                                                                                  |
+| `hass_datapoints__get_monitor_anomalies` | Saved findings and dismissal windows for a monitor                                                                              |
+| `hass_datapoints__record`                | Creates an annotation through the existing Data Points action                                                                   |
+
+`analyze_chart` accepts per-series settings for up to five rows over a requested window. Choose any of the five trend methods (rolling average, linear, EMA, quadratic, and LOWESS). Supply a comparison entity and time window to align a prior period or another entity. The default alignment matches the start of the two windows. Request additional baselines in separate rows or calls. Anomaly methods include comparison-window and similar-entity baselines, with temporal overlap reported across distinct entities.
+
+`aggregate_entity` supports calendar intervals from minute to month, with Home Assistant's time zone by default. It returns coverage, partial-period flags, and meter-reset notes. Supply a zoom range and enable reset on zoom to calculate a cumulative aggregate from the start of that window.
+
+Send ISO timestamps with offsets. Results use epoch milliseconds, and rates use units per hour. A call covers up to 90 days and 5,000 numeric analysis points per series. Use sampling or shorter windows for dense history. Arrays have independent totals and continuation offsets. `cluster_point_offset` pages points inside returned anomaly clusters. For questions about the chart you currently have open, copy its AI query brief into your client so it can reuse your selected entities and settings.
