@@ -50,8 +50,9 @@ export class PanelShell extends LitElement {
 
   /**
    * Whether the full-page Anomaly monitors view is active. When `true`, the graph
-   * chrome (page sidebar, its collapse toggle, mobile scrim, and the range/date
-   * controls section) is hidden so the monitors view uses the full content area.
+   * chrome (page sidebar, its collapse toggle and mobile scrim) is hidden so the
+   * monitors view uses the full content area. The range/date controls stay, as
+   * the monitors page's counts and heatmap follow the selected range.
    * Purely presentational — it does not mutate `sidebarCollapsed`.
    */
   @property({ type: Boolean, reflect: true, attribute: "monitors-active" })
@@ -312,17 +313,15 @@ export class PanelShell extends LitElement {
           </div>
         </div>
 
-        ${this.monitorsActive
-          ? nothing
-          : html`
-              <div class="controls-section">
-                <div class="controls-grid">
-                  <div id="date-slot" class="control-date">
-                    <slot name="controls"></slot>
-                  </div>
-                </div>
-              </div>
-            `}
+        <!-- The range toolbar stays on the monitors page: its counts and
+             heatmap follow the selected range, so it must stay adjustable. -->
+        <div class="controls-section">
+          <div class="controls-grid">
+            <div id="date-slot" class="control-date">
+              <slot name="controls"></slot>
+            </div>
+          </div>
+        </div>
 
         <div
           id="page-content"

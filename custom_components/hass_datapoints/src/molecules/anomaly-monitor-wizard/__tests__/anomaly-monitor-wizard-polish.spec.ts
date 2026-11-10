@@ -192,7 +192,9 @@ describe("anomaly-monitor-wizard polish (#106)", () => {
 
     it("THEN the name field is labelled Name prefix with the appended-name hint", () => {
       expect.assertions(2);
-      expect(q(el, "ha-textfield")?.getAttribute("label")).toBe("Name prefix");
+      expect(q(el, 'label[for="monitor-name"]')?.textContent?.trim()).toBe(
+        "Name prefix"
+      );
       expect(q(el, ".name-hint")).not.toBeNull();
     });
 
@@ -216,7 +218,7 @@ describe("anomaly-monitor-wizard polish (#106)", () => {
 
       it("THEN the name field is labelled Monitor name without the hint", () => {
         expect.assertions(2);
-        expect(q(el, "ha-textfield")?.getAttribute("label")).toBe(
+        expect(q(el, 'label[for="monitor-name"]')?.textContent?.trim()).toBe(
           "Monitor name"
         );
         expect(q(el, ".name-hint")).toBeNull();
@@ -242,7 +244,9 @@ describe("anomaly-monitor-wizard polish (#106)", () => {
       el = createWizard({ prefillEntityIds: ["sensor.a"] });
       await el.updateComplete;
       await goToStep(el, 3, ["sensor.a"]);
-      expect(q(el, "ha-textfield")?.getAttribute("label")).toBe("Monitor name");
+      expect(q(el, 'label[for="monitor-name"]')?.textContent?.trim()).toBe(
+        "Monitor name"
+      );
     });
   });
 
@@ -280,6 +284,42 @@ describe("anomaly-monitor-wizard polish (#106)", () => {
     it("THEN renders two dots", () => {
       expect.assertions(1);
       expect(qa(el, ".step-dot")).toHaveLength(2);
+    });
+
+    it("THEN the rename field is shown on the first (analysis) step", () => {
+      expect.assertions(2);
+      const input = q(el, "#monitor-name") as HTMLInputElement | null;
+      expect(el._step).toBe(2);
+      expect(input?.value).toBe("Edit Me");
+    });
+
+    it("THEN Save changes is available without visiting step 3", () => {
+      expect.assertions(1);
+      const labels = qa(el, ".dialog-actions ha-button").map((b) =>
+        b.textContent?.trim()
+      );
+      expect(labels).toContain("Save changes");
+    });
+
+    describe("WHEN the name is edited", () => {
+      beforeEach(async () => {
+        const input = q(el, "#monitor-name") as HTMLInputElement;
+        input.value = "Renamed";
+        input.dispatchEvent(new Event("input"));
+        await el.updateComplete;
+      });
+
+      it("THEN the wizard name state updates", () => {
+        expect.assertions(1);
+        expect(el._name).toBe("Renamed");
+      });
+
+      it("THEN step 3 does not render a second name field", async () => {
+        expect.assertions(1);
+        el._step = 3;
+        await el.updateComplete;
+        expect(qa(el, "#monitor-name")).toHaveLength(1);
+      });
     });
 
     it("THEN step 3 uses the Updates wording in the summary", async () => {

@@ -269,52 +269,89 @@ describe("anomaly-monitors-panel", () => {
   });
 
   describe("GIVEN a monitor with a look-back window", () => {
-    describe("WHEN the View series action is activated", () => {
-      it("THEN it emits dp-monitors-panel-open-chart with the monitor entities and matching range", async () => {
-        expect.assertions(6);
-        const monitor = {
-          ...buildMonitor(true),
-          look_back_hours: 6,
-          anomaly_methods: ["rolling_zscore"],
-          anomaly_sensitivity: "high",
-        };
-        const hass = createMockHass({
-          connection: {
-            subscribeEvents: vi.fn(() => Promise.resolve(vi.fn())),
-            sendMessagePromise: vi
-              .fn()
-              .mockResolvedValue({ monitors: [monitor] }),
-          },
-        });
-        const el = createElement(hass);
-        await el.updateComplete;
-        await flushMicrotasks();
-        await el.updateComplete;
+    const monitor = {
+      ...buildMonitor(true),
+      look_back_hours: 6,
+      anomaly_methods: ["rolling_zscore"],
+      anomaly_sensitivity: "high",
+    };
 
-        let detail: {
-          entityIds: string[];
-          startMs: number;
-          endMs: number;
-          monitorId: string;
-          anomalyMethods: string[];
-          anomalySensitivity: string;
-        } | null = null;
-        el.addEventListener("dp-monitors-panel-open-chart", (e) => {
+    async function mountWithRange(range?: { start: number; end: number }) {
+      const hass = createMockHass({
+        connection: {
+          subscribeEvents: vi.fn(() => Promise.resolve(vi.fn())),
+          sendMessagePromise: vi
+            .fn()
+            .mockResolvedValue({ monitors: [monitor] }),
+        },
+      });
+      const el = createElement(hass) as ReturnType<typeof createElement> & {
+        rangeStartMs: Nullable<number>;
+        rangeEndMs: Nullable<number>;
+      };
+      if (range) {
+        el.rangeStartMs = range.start;
+        el.rangeEndMs = range.end;
+      }
+      await el.updateComplete;
+      await flushMicrotasks();
+      await el.updateComplete;
+      return el;
+    }
+
+    type PreviewDetail = {
+      title: string;
+      entityIds: string[];
+      startMs: number;
+      endMs: number;
+      monitorId: string;
+      anomalyMethods: string[];
+      anomalySensitivity: string;
+    };
+
+    describe("WHEN the View series action is activated with no selected range", () => {
+      it("THEN it emits dp-monitors-panel-preview-series over the look-back window", async () => {
+        expect.assertions(7);
+        const el = await mountWithRange();
+        let detail: PreviewDetail | null = null;
+        let openedChart = false;
+        el.addEventListener("dp-monitors-panel-preview-series", (e) => {
           detail = (e as CustomEvent).detail;
         });
-        const viewSeriesButton =
-          el.shadowRoot?.querySelector<HTMLElement>(".view-series-btn");
+        el.addEventListener("dp-monitors-panel-open-chart", () => {
+          openedChart = true;
+        });
         const before = Date.now();
-        viewSeriesButton?.click();
+        el.shadowRoot?.querySelector<HTMLElement>(".view-series-btn")?.click();
         const after = Date.now();
 
-        expect(detail).not.toBeNull();
+        expect(openedChart).toBe(false);
+        expect(detail!.title).toBe(monitor.name);
         expect(detail!.entityIds).toEqual(["sensor.temperature"]);
         expect(detail!.endMs - detail!.startMs).toBe(6 * 3_600_000);
         expect(detail!.endMs >= before && detail!.endMs <= after).toBe(true);
         // The monitor's OWN detection config rides along on the event.
         expect(detail!.anomalyMethods).toEqual(["rolling_zscore"]);
         expect(detail!.anomalySensitivity).toBe("high");
+        el.remove();
+      });
+    });
+
+    describe("WHEN the View series action is activated with a selected range", () => {
+      it("THEN the preview uses the selected range", async () => {
+        expect.assertions(2);
+        const start = Date.UTC(2026, 0, 1);
+        const end = start + 3 * 3_600_000;
+        const el = await mountWithRange({ start, end });
+        let detail: PreviewDetail | null = null;
+        el.addEventListener("dp-monitors-panel-preview-series", (e) => {
+          detail = (e as CustomEvent).detail;
+        });
+        el.shadowRoot?.querySelector<HTMLElement>(".view-series-btn")?.click();
+
+        expect(detail!.startMs).toBe(start);
+        expect(detail!.endMs).toBe(end);
+        el.remove();
       });
     });
   });

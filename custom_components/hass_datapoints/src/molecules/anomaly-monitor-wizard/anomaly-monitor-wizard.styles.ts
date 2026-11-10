@@ -11,6 +11,15 @@ export const styles = css`
     /* Shared with the sidebar target picker so both present at one width. */
     min-width: ${targetPickerWidthCss};
     max-height: 70vh;
+    /* ha-dialog (Web Awesome) defines its own, much larger "--spacing" for
+     * its padding, and slotted content inherits it. The analysis groups size
+     * every gap and padding from "--spacing", so pin it back to the 8px the
+     * sidebar target picker uses so both read equally tight. */
+    --spacing: 8px;
+    --dp-spacing-xs: 4px;
+    --dp-spacing-sm: 8px;
+    --dp-spacing-md: 12px;
+    --dp-spacing-lg: 16px;
   }
 
   .wizard-header {
@@ -379,10 +388,16 @@ export const styles = css`
     border: 1px solid var(--divider-color, rgba(0, 0, 0, 0.12));
     border-top: none;
     border-radius: 0 0 8px 8px;
-    padding: 16px;
+    padding: 12px;
     display: flex;
     flex-direction: column;
     gap: 4px;
+  }
+
+  /* Same stacking as the sidebar target row's analysis section. */
+  .entity-analysis {
+    display: grid;
+    gap: var(--dp-spacing-sm);
   }
 
   /* ---- Step 2: Analysis sections ---- */
@@ -460,8 +475,45 @@ export const styles = css`
     gap: 4px;
   }
 
-  ha-textfield {
+  .name-field {
+    max-width: 360px;
+  }
+
+  .wizard-input {
     width: 100%;
+    min-height: 40px;
+    padding: 0 12px;
+    border: 1px solid
+      color-mix(
+        in srgb,
+        var(--divider-color, rgba(0, 0, 0, 0.12)) 92%,
+        transparent
+      );
+    border-radius: 10px;
+    background: var(--card-background-color, #fff);
+    color: var(--primary-text-color);
+    font: inherit;
+    font-size: 0.9rem;
+    box-sizing: border-box;
+  }
+
+  .wizard-input:focus {
+    outline: 2px solid
+      color-mix(in srgb, var(--primary-color, #03a9f4) 36%, transparent);
+    outline-offset: 1px;
+    border-color: color-mix(
+      in srgb,
+      var(--primary-color, #03a9f4) 55%,
+      transparent
+    );
+  }
+
+  .wizard-input[aria-invalid="true"] {
+    border-color: color-mix(
+      in srgb,
+      var(--error-color, #db4437) 70%,
+      transparent
+    );
   }
 
   /* ---- Notice ---- */

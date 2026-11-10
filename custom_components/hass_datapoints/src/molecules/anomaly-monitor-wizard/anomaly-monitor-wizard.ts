@@ -454,6 +454,15 @@ export class AnomalyMonitorWizard extends LitElement {
       this._error = msg("Name is required.");
       return;
     }
+    if (this.editMonitor && this._step === 2) {
+      const v2 = validateStep2(this._entityIds, (id) =>
+        this._getEntityConfig(id)
+      );
+      if (!v2.valid) {
+        this._error = msg(v2.error!);
+        return;
+      }
+    }
 
     this._saving = true;
     this._error = "";
@@ -753,7 +762,7 @@ export class AnomalyMonitorWizard extends LitElement {
     const cfg = this._getEntityConfig(entityId);
     const analysis = this._entityConfigToAnalysis(cfg);
 
-    return html`
+    return html`<div class="entity-analysis">
       <analysis-sample-group
         .analysis=${analysis}
         entity-id=${entityId}
@@ -768,7 +777,7 @@ export class AnomalyMonitorWizard extends LitElement {
         @dp-group-analysis-change=${(e: Event) =>
           this._onAnalysisGroupChange(entityId, e)}
       ></analysis-anomaly-group>
-    `;
+    </div>`;
   }
 
   // -------------------------------------------------------------------------
@@ -793,29 +802,7 @@ export class AnomalyMonitorWizard extends LitElement {
             </div>
           `
         : nothing}
-
-      <div class="wizard-section">
-        <ha-textfield
-          label=${isMany ? msg("Name prefix") : msg("Monitor name")}
-          .value=${this._name}
-          @input=${(e: Event) => {
-            this._name = (e.target as HTMLInputElement).value;
-          }}
-        ></ha-textfield>
-        ${isMany
-          ? html`<p class="name-hint">
-              ${msg(
-                "The entity name is added to the end of the prefix for each monitor, e.g."
-              )}
-              <em
-                >${individualMonitorName(
-                  this._name || msg("Prefix"),
-                  this._entityIds[0] ?? ""
-                )}</em
-              >
-            </p>`
-          : nothing}
-      </div>
+      ${this.editMonitor ? nothing : this._renderNameField(isMany)}
 
       <div class="wizard-inline-row">
         <div class="wizard-field">
@@ -896,6 +883,51 @@ export class AnomalyMonitorWizard extends LitElement {
           `
         : nothing}
       ${this._renderSummary()}
+    `;
+  }
+
+  /**
+   * Monitor name input. A native `<input>` rather than `ha-textfield`: HA
+   * lazy-loads that element and it is not guaranteed to be defined on the
+   * datapoints panel, where it rendered as an invisible empty tag.
+   */
+  private _renderNameField(isMany: boolean) {
+    return html`
+      <div class="wizard-field name-field">
+        <label class="field-label" for="monitor-name"
+          >${isMany ? msg("Name prefix") : msg("Monitor name")}</label
+        >
+        <input
+          id="monitor-name"
+          class="wizard-input"
+          type="text"
+          autocomplete="off"
+          .value=${this._name}
+          aria-invalid=${this._error && !this._name.trim() ? "true" : "false"}
+          @input=${(e: Event) => {
+            this._name = (e.target as HTMLInputElement).value;
+          }}
+          @keydown=${(e: KeyboardEvent) => {
+            if (e.key === "Enter" && (this.editMonitor || this._step === 3)) {
+              e.preventDefault();
+              this._onSubmit();
+            }
+          }}
+        />
+        ${isMany
+          ? html`<p class="name-hint">
+              ${msg(
+                "The entity name is added to the end of the prefix for each monitor, e.g."
+              )}
+              <em
+                >${individualMonitorName(
+                  this._name || msg("Prefix"),
+                  this._entityIds[0] ?? ""
+                )}</em
+              >
+            </p>`
+          : nothing}
+      </div>
     `;
   }
 
@@ -1009,6 +1041,7 @@ export class AnomalyMonitorWizard extends LitElement {
         <div class="wizard-shell">
           <div class="wizard-header">${this._renderStepBar()}</div>
           <div class="wizard-content">
+            ${isEdit ? this._renderNameField(false) : nothing}
             ${this._step === 1 ? this._renderStep1() : nothing}
             ${this._step === 2 ? this._renderStep2() : nothing}
             ${this._step === 3 ? this._renderStep3() : nothing}
@@ -1025,15 +1058,18 @@ export class AnomalyMonitorWizard extends LitElement {
                 >`
               : nothing}
             ${this._step < 3
-              ? html`<ha-button raised @click=${this._onNext}
+              ? html`<ha-button ?raised=${!isEdit} @click=${this._onNext}
                   >${msg("Next")}</ha-button
                 >`
-              : html`<ha-button
+              : nothing}
+            ${this._step === 3 || isEdit
+              ? html`<ha-button
                   raised
                   .disabled=${this._saving}
                   @click=${this._onSubmit}
                   >${this._saveLabel()}</ha-button
-                >`}
+                >`
+              : nothing}
           </div>
         </div>
       </ha-dialog>

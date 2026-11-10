@@ -523,9 +523,11 @@ describe("panel-shell", () => {
         expect(el.shadowRoot!.querySelector("#sidebar-toggle")).toBeNull();
       });
 
-      it("THEN does NOT render the controls-section", () => {
+      it("THEN still renders the controls-section (range toolbar)", () => {
         expect.assertions(1);
-        expect(el.shadowRoot!.querySelector(".controls-section")).toBeNull();
+        expect(
+          el.shadowRoot!.querySelector(".controls-section")
+        ).not.toBeNull();
       });
 
       it("THEN does NOT render the sidebar-scrim", () => {

@@ -1,4 +1,4 @@
-import { html, LitElement, type PropertyValues } from "lit";
+import { html, LitElement, nothing, type PropertyValues } from "lit";
 import { property, state } from "lit/decorators.js";
 import { formatDateWindowInputValue } from "@/lib/domain/date-window";
 
@@ -57,6 +57,10 @@ export class RangeToolbar extends LitElement {
   /** Whether the sidebar is collapsed — used to set the sidebar toggle icon direction. */
   @property({ type: Boolean, attribute: "sidebar-collapsed" })
   accessor sidebarCollapsed: boolean = false;
+
+  /** Hide the sidebar toggle (e.g. on the monitors page, which has no sidebar). */
+  @property({ type: Boolean, reflect: true, attribute: "hide-sidebar-toggle" })
+  accessor hideSidebarToggle: boolean = false;
 
   /** Whether the current range is at the live edge. */
   @property({ type: Boolean, attribute: "is-live-edge" })
@@ -365,14 +369,16 @@ export class RangeToolbar extends LitElement {
 
     return html`
       <div class="range-toolbar">
-        <ha-icon-button
-          id="range-sidebar-toggle"
-          class="range-sidebar-toggle"
-          label=${msg("Toggle sidebar")}
-          @click=${this._onSidebarToggle}
-        >
-          <ha-icon icon=${sidebarToggleIcon}></ha-icon>
-        </ha-icon-button>
+        ${this.hideSidebarToggle
+          ? nothing
+          : html`<ha-icon-button
+              id="range-sidebar-toggle"
+              class="range-sidebar-toggle"
+              label=${msg("Toggle sidebar")}
+              @click=${this._onSidebarToggle}
+            >
+              <ha-icon icon=${sidebarToggleIcon}></ha-icon>
+            </ha-icon-button>`}
 
         <div class="range-mobile-dates">
           <date-time-input

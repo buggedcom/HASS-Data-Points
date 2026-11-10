@@ -1113,7 +1113,10 @@ async def ws_monitors_update(
 
         device = _get_monitor_device(hass, monitor_id)
         if device is not None:
-            dr.async_get(hass).async_update_device(device.id, name=updates["name"])
+            # Clear any HA-side override so the new name is what HA displays.
+            dr.async_get(hass).async_update_device(
+                device.id, name=updates["name"], name_by_user=None
+            )
 
     connection.send_result(msg["id"], {"monitor": updated})
 

@@ -29,6 +29,7 @@ import type {
   DpChangeDetail,
   MonitorsOpenChartDetail,
   MonitorsOpenEntityDetail,
+  MonitorsPreviewSeriesDetail,
 } from "@/lib/events";
 import { HOUR_MS } from "@/lib/timeline/timeline-scale";
 import { confirmDestructiveAction } from "@/lib/ha/ha-components";
@@ -104,9 +105,11 @@ function fmtLookBack(hours: number): string {
  *
  * @fires dp-monitors-panel-close        — user clicked the back/close button
  * @fires dp-monitors-panel-new          — user clicked "New monitor"
- * @fires dp-monitors-panel-open-chart   — user clicked "View series" or
+ * @fires dp-monitors-panel-open-chart   — user clicked a heatmap block or
  *   "View window on chart"
  *   (`{ entityIds: string[]; startMs: number; endMs: number; monitorId: string }`)
+ * @fires dp-monitors-panel-preview-series — user clicked "View series": show a
+ *   quick chart preview popup ({@link MonitorsPreviewSeriesDetail})
  * @fires dp-monitors-panel-open-entity  — user activated an entity chip
  *   (`{ entityId: string; monitorId: string }`)
  * @fires hass-notification              — transient toast (undo after delete,
@@ -450,10 +453,22 @@ export class AnomalyMonitorsPanel extends LitElement {
     this._emit("dp-monitors-panel-open-chart", chartDetail);
   }
 
+  /**
+   * "View series": ask the host for a quick chart preview popup. Previews the
+   * timeline's selected range (the same range the counts here follow), falling
+   * back to the monitor's look-back window when no range is selected.
+   */
   private _onViewSeries(monitor: AnomalyMonitor) {
-    const endMs = Date.now();
-    const startMs = endMs - (monitor.look_back_hours ?? 24) * HOUR_MS;
-    const detail: MonitorsOpenChartDetail = {
+    const hasRange =
+      typeof this.rangeStartMs === "number" &&
+      typeof this.rangeEndMs === "number" &&
+      this.rangeStartMs < this.rangeEndMs;
+    const endMs = hasRange ? (this.rangeEndMs as number) : Date.now();
+    const startMs = hasRange
+      ? (this.rangeStartMs as number)
+      : endMs - (monitor.look_back_hours ?? 24) * HOUR_MS;
+    const detail: MonitorsPreviewSeriesDetail = {
+      title: monitor.name,
       entityIds: monitorEntityIds(monitor),
       startMs,
       endMs,
@@ -461,7 +476,7 @@ export class AnomalyMonitorsPanel extends LitElement {
       anomalyMethods: monitorAnomalyMethods(monitor),
       anomalySensitivity: monitor.anomaly_sensitivity,
     };
-    this._emit("dp-monitors-panel-open-chart", detail);
+    this._emit("dp-monitors-panel-preview-series", detail);
   }
 
   private _onWizardClose() {
@@ -1165,7 +1180,7 @@ export class AnomalyMonitorsPanel extends LitElement {
             class="icon-action view-series-btn"
             type="button"
             title=${msg("View series")}
-            aria-label=${msg("View series on chart")}
+            aria-label=${msg("Preview series chart")}
             @click=${() => this._onViewSeries(monitor)}
           >
             <ha-icon icon="mdi:chart-line"></ha-icon>

@@ -103,7 +103,9 @@ import type { HassLike } from "@/lib/types";
 import type {
   MonitorsOpenChartDetail,
   MonitorsOpenEntityDetail,
+  MonitorsPreviewSeriesDetail,
 } from "@/lib/events";
+import { fmtDateTimeRange } from "@/lib/util/format";
 
 import "@/molecules/target-row/target-row";
 import "@/molecules/target-row-list/target-row-list";
@@ -118,10 +120,15 @@ import "@/molecules/history-chart/history-chart";
 import "@/panels/datapoints/components/panel-shell/panel-shell";
 import type { PanelShell } from "@/panels/datapoints/components/panel-shell/panel-shell";
 import "@/panels/datapoints/components/ai-query-brief-dialog/ai-query-brief-dialog";
+import "@/panels/datapoints/components/series-preview-dialog/series-preview-dialog";
 import "@/panels/datapoints/components/history-targets/history-targets";
 import "@/panels/datapoints/components/range-toolbar/range-toolbar";
 import { createHistoryPageContext } from "@/panels/datapoints/context/create-history-page-context";
 import { HostResizeController } from "@/panels/datapoints/host-resize-controller";
+import {
+  readPageViewFromUrl,
+  writePageViewToUrl,
+} from "@/lib/history-page/page-view-url";
 import type {
   HistoryPageContext,
   HistoryTargetRowState,
@@ -539,6 +546,19 @@ export class HassDatapointsHistoryPanel extends LitElement {
   @reactiveState()
   accessor _aiQueryBriefDialogOpen: boolean = false;
 
+  /**
+   * Payload for the `<series-preview-dialog>` quick chart popup opened from the
+   * monitors page; `null` when closed. `openDetail` is what "Open in chart"
+   * hands to `_handleMonitorsOpenChart`.
+   */
+  @reactiveState()
+  accessor _seriesPreview: Nullable<{
+    heading: string;
+    subheading: string;
+    chartConfig: RecordWithUnknownValues;
+    openDetail: MonitorsOpenChartDetail;
+  }> = null;
+
   @reactiveState()
   accessor _aiQueryBriefHeading: string = "";
 
@@ -643,6 +663,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
       this._initFromContext();
       if (this._rendered) {
         this._syncControls();
+        this.requestUpdate();
         this._renderContent();
       }
     };
@@ -650,6 +671,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
       this._initFromContext();
       if (this._rendered) {
         this._syncControls();
+        this.requestUpdate();
         this._renderContent();
       }
     };
@@ -1293,6 +1315,9 @@ export class HassDatapointsHistoryPanel extends LitElement {
   }
 
   _initFromContext() {
+    // The URL decides which page shows, so back/forward moves between the
+    // history chart and the monitors page.
+    this._showMonitorsPanel = readPageViewFromUrl() === "monitors";
     const {
       entityFromUrl,
       deviceFromUrl,
@@ -1668,10 +1693,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
         @dp-shell-menu-save=${() => this._savePageState()}
         @dp-shell-menu-restore=${() => this._restorePageState()}
         @dp-shell-menu-clear=${() => this._clearSavedPageState()}
-        @dp-shell-menu-monitors=${() => {
-          this._showMonitorsPanel = true;
-          this._renderContent();
-        }}
+        @dp-shell-menu-monitors=${() => this._setMonitorsPageOpen(true)}
         @dp-shell-sidebar-toggle=${() => this._toggleSidebarCollapsed()}
         @dp-shell-scrim-click=${() => {
           if (!this._sidebarCollapsed) {
@@ -1689,6 +1711,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
           .zoomLevel=${this._getEffectiveZoomLevel()}
           .dateSnapping=${this._dateSnapping}
           .sidebarCollapsed=${this._sidebarCollapsed}
+          .hideSidebarToggle=${this._showMonitorsPanel}
           .isLiveEdge=${this._isOnLiveEdge()}
           .timelineEvents=${this._timelineEvents}
           .comparisonPreview=${this._getComparisonRangePreview()}
@@ -1930,6 +1953,23 @@ export class HassDatapointsHistoryPanel extends LitElement {
           this._monitorWizardOpen = false;
         }}
       ></anomaly-monitor-wizard>
+      <series-preview-dialog
+        ?open=${!!this._seriesPreview}
+        .hass=${this._hass}
+        .heading=${this._seriesPreview?.heading ?? ""}
+        .subheading=${this._seriesPreview?.subheading ?? ""}
+        .chartConfig=${this._seriesPreview?.chartConfig ?? null}
+        @dp-series-preview-close=${() => {
+          this._seriesPreview = null;
+        }}
+        @dp-series-preview-open-chart=${() => {
+          const openDetail = this._seriesPreview?.openDetail;
+          this._seriesPreview = null;
+          if (openDetail) {
+            this._handleMonitorsOpenChart(openDetail);
+          }
+        }}
+      ></series-preview-dialog>
       <ai-query-brief-dialog
         ?open=${this._aiQueryBriefDialogOpen}
         .heading=${this._aiQueryBriefHeading}
@@ -3092,7 +3132,11 @@ export class HassDatapointsHistoryPanel extends LitElement {
     if (!entityIds.length) {
       return;
     }
+    // Push a history-page entry first so the browser back button returns to
+    // the monitors page; the range/series writes below then replace it.
     this._showMonitorsPanel = false;
+    writePageViewToUrl("history", { push: true });
+    this.requestUpdate();
     this._contentKey = "";
     this._seriesRows = this._buildMonitorAnomalySeriesRows(entityIds, {
       anomalyMethods: Array.isArray(detail?.anomalyMethods)
@@ -3109,75 +3153,88 @@ export class HassDatapointsHistoryPanel extends LitElement {
       typeof detail?.startMs === "number" ? new Date(detail.startMs) : null;
     const end =
       typeof detail?.endMs === "number" ? new Date(detail.endMs) : null;
-    this._applyCommittedRange(start, end, { push: true });
+    this._applyCommittedRange(start, end, { push: false });
+    this._updateUrl({ push: false });
     // _applyCommittedRange only re-renders when the range actually changed; call
     // explicitly so a re-opened chart (unchanged range) still rebuilds content.
     this._renderContent();
   }
 
   /**
-   * `dp-monitors-panel-open-entity` handler: open an accessible `ha-dialog`
-   * containing a single-entity history card with the anomaly overlay on, so the
-   * same cluster overlay renders for one entity.
+   * `dp-monitors-panel-open-entity` handler: preview one entity of a monitor
+   * over the selected range in the quick chart popup.
    */
   _handleMonitorsOpenEntity(detail: Nullable<MonitorsOpenEntityDetail>) {
     const entityId = detail?.entityId;
     if (typeof entityId !== "string" || !entityId) {
       return;
     }
-    const root = this.shadowRoot;
-    if (!root) {
+    const now = Date.now();
+    const startMs = this._startTime?.getTime() ?? now - 24 * HOUR_MS;
+    const endMs = this._endTime?.getTime() ?? now;
+    this._openSeriesPreview(entityName(this._hass, entityId) || entityId, {
+      entityIds: [entityId],
+      startMs,
+      endMs,
+      monitorId: detail?.monitorId ?? "",
+      anomalyMethods: Array.isArray(detail?.anomalyMethods)
+        ? detail.anomalyMethods
+        : [],
+      anomalySensitivity:
+        typeof detail?.anomalySensitivity === "string"
+          ? detail.anomalySensitivity
+          : "",
+    });
+  }
+
+  /**
+   * `dp-monitors-panel-preview-series` handler ("View series"): preview all
+   * of a monitor's entities in the quick chart popup.
+   */
+  _handleMonitorsPreviewSeries(detail: Nullable<MonitorsPreviewSeriesDetail>) {
+    if (!detail || !Array.isArray(detail.entityIds)) {
       return;
     }
-
-    const now = Date.now();
-    const start = this._startTime
-      ? new Date(this._startTime)
-      : new Date(now - 24 * HOUR_MS);
-    const end = this._endTime ? new Date(this._endTime) : new Date(now);
-
-    const dialog = document.createElement("ha-dialog") as HTMLElement & {
-      scrimClickAction?: boolean;
-      escapeKeyAction?: boolean;
-      open?: boolean;
-      headerTitle?: string;
-      hass?: unknown;
-    };
-    dialog.scrimClickAction = true;
-    dialog.escapeKeyAction = true;
-    dialog.headerTitle = entityName(this._hass, entityId) || entityId;
-    if (this._hass) {
-      dialog.hass = this._hass;
+    const entityIds = detail.entityIds.filter(
+      (id): id is string => typeof id === "string" && id.length > 0
+    );
+    if (!entityIds.length) {
+      return;
     }
-    dialog.addEventListener("closed", () => dialog.remove());
-
-    const chart = document.createElement(
-      "hass-datapoints-history-card"
-    ) as HistoryCardElement;
-    chart.setConfig({
-      entities: [entityId],
-      series_settings: this._buildMonitorAnomalySeriesRows([entityId], {
-        anomalyMethods: Array.isArray(detail?.anomalyMethods)
-          ? detail.anomalyMethods
-          : [],
-        anomalySensitivity:
-          typeof detail?.anomalySensitivity === "string"
-            ? detail.anomalySensitivity
-            : undefined,
-      }),
-      start_time: start.toISOString(),
-      end_time: end.toISOString(),
-      show_correlated_anomalies: this._showCorrelatedAnomalies,
-      anomaly_overlap_mode: this._chartAnomalyOverlapMode,
+    const { title, ...openDetail } = detail;
+    this._openSeriesPreview(title || entityIds.join(", "), {
+      ...openDetail,
+      entityIds,
     });
-    if (this._hass) {
-      chart.hass = this._hass;
-    }
-    dialog.appendChild(chart);
-    root.appendChild(dialog);
-    dialog.open = true;
-    // Lazily upgrade the native ha-dialog element in the background; the chart
-    // is already mounted so the overlay renders without waiting on the loader.
+  }
+
+  /**
+   * Open the quick chart popup: the main history card for *openDetail*'s
+   * entities and range, with the monitor's anomaly overlay on.
+   */
+  _openSeriesPreview(heading: string, openDetail: MonitorsOpenChartDetail) {
+    const start = new Date(openDetail.startMs);
+    const end = new Date(openDetail.endMs);
+    this._seriesPreview = {
+      heading,
+      subheading: fmtDateTimeRange(start, end),
+      openDetail,
+      chartConfig: {
+        entities: [...openDetail.entityIds],
+        series_settings: this._buildMonitorAnomalySeriesRows(
+          openDetail.entityIds,
+          {
+            anomalyMethods: openDetail.anomalyMethods,
+            anomalySensitivity: openDetail.anomalySensitivity || undefined,
+          }
+        ),
+        start_time: start.toISOString(),
+        end_time: end.toISOString(),
+        show_correlated_anomalies: this._showCorrelatedAnomalies,
+        anomaly_overlap_mode: this._chartAnomalyOverlapMode,
+      },
+    };
+    // Lazily upgrade the native ha-dialog element in the background.
     ensureHaComponents(["ha-dialog"]).catch(() => {});
   }
 
@@ -4207,6 +4264,23 @@ export class HassDatapointsHistoryPanel extends LitElement {
     });
   }
 
+  /**
+   * Switch between the history chart and the monitors page, recording the
+   * switch as a browser history entry so back/forward move between them.
+   */
+  _setMonitorsPageOpen(open: boolean) {
+    if (this._showMonitorsPanel === open) {
+      return;
+    }
+    this._showMonitorsPanel = open;
+    writePageViewToUrl(open ? "monitors" : "history", { push: true });
+    if (!open) {
+      this._contentKey = "";
+    }
+    this.requestUpdate();
+    this._renderContent();
+  }
+
   _updateUrl({ push = false }: { push?: boolean } = {}) {
     this._context.navigation.updateUrl({
       entities: this._entities,
@@ -4336,15 +4410,13 @@ export class HassDatapointsHistoryPanel extends LitElement {
         rangeEndMs: Nullable<number>;
       };
       panel.hass = this._hass;
-      // The monitors page hides the range toolbar, so hand the panel the
-      // timeline's current selected range for its range-aware counts/heatmap.
-      // Later changes are pushed by _syncMonitorsPanelRange().
+      // Hand the panel the timeline's selected range for its range-aware
+      // counts/heatmap. Later range changes (from the range toolbar, which
+      // stays visible on this page) are pushed by _syncMonitorsPanelRange().
       panel.rangeStartMs = this._startTime?.getTime() ?? null;
       panel.rangeEndMs = this._endTime?.getTime() ?? null;
       panel.addEventListener("dp-monitors-panel-close", () => {
-        this._showMonitorsPanel = false;
-        this._contentKey = "";
-        this._renderContent();
+        this._setMonitorsPageOpen(false);
       });
       panel.addEventListener("dp-monitors-panel-new", () => {
         this._openMonitorWizard([], null);
@@ -4352,6 +4424,11 @@ export class HassDatapointsHistoryPanel extends LitElement {
       panel.addEventListener("dp-monitors-panel-open-chart", (event) => {
         this._handleMonitorsOpenChart(
           (event as CustomEvent).detail as MonitorsOpenChartDetail
+        );
+      });
+      panel.addEventListener("dp-monitors-panel-preview-series", (event) => {
+        this._handleMonitorsPreviewSeries(
+          (event as CustomEvent).detail as MonitorsPreviewSeriesDetail
         );
       });
       panel.addEventListener("dp-monitors-panel-open-entity", (event) => {
