@@ -69,10 +69,14 @@ import {
 } from "@/lib/history-page/ai-query-brief";
 import { fetchMonitors, type AnomalyMonitor } from "@/lib/data/monitors-api";
 import {
+  isRelativeDateWindow,
   type NormalizedHistoryDateWindow,
   makeDateWindowId,
   normalizeDateWindows,
+  resolveDateWindows,
+  type StoredHistoryDateWindow,
 } from "@/lib/history-page/history-url-state";
+import type { RelativeDateWindowPreset } from "@/lib/domain/relative-date-window";
 import {
   clampNumber,
   computeZoomLevelForSpan,
@@ -386,6 +390,12 @@ export class HassDatapointsHistoryPanel extends LitElement {
   @reactiveState()
   accessor _dateWindowDialogEndValue: string = "";
 
+  /** Seed for the dialog's window type (fixed dates or a relative preset). */
+  declare _dateWindowDialogKind: "fixed" | "relative";
+
+  /** Seed for the dialog's relative preset when editing a relative window. */
+  declare _dateWindowDialogPreset: Nullable<RelativeDateWindowPreset>;
+
   declare _dateWindowDialogDraftRange: Nullable<DateWindowDraftRange>;
 
   declare _uiReadyPromise: Nullable<Promise<unknown>>;
@@ -598,6 +608,8 @@ export class HassDatapointsHistoryPanel extends LitElement {
     this._pendingAnomalyComparisonWindowEntityId = null;
     this._editingDateWindowId = null;
     this._dateWindowDialogDraftRange = null;
+    this._dateWindowDialogKind = "fixed";
+    this._dateWindowDialogPreset = null;
     this._uiReadyPromise = null;
     this._uiReadyApplied = false;
     this._chartEl = null;
@@ -796,6 +808,34 @@ export class HassDatapointsHistoryPanel extends LitElement {
   @reactiveState()
   set _comparisonWindows(value) {
     this._appState().setComparisonWindows(Array.isArray(value) ? value : []);
+  }
+
+  /**
+   * Saved windows resolved against the selected range: fixed windows as they
+   * are, relative windows with the dates their preset resolves to right now.
+   * Each entry carries `available` (false = entirely in the future).
+   */
+  get _resolvedComparisonWindows(): NormalizedHistoryDateWindow[] {
+    return resolveDateWindows(
+      this._comparisonWindows,
+      this._startTime,
+      this._endTime
+    );
+  }
+
+  /** Resolved windows that can be drawn (relative windows not entirely in the future). */
+  get _availableComparisonWindows(): NormalizedHistoryDateWindow[] {
+    return this._resolvedComparisonWindows.filter(
+      (window) => window.available !== false
+    );
+  }
+
+  /** Fixed windows only: the anomaly comparison-window picker never offers relative ones. */
+  get _fixedComparisonWindows(): NormalizedHistoryDateWindow[] {
+    return this._comparisonWindows.filter(
+      (window): window is NormalizedHistoryDateWindow =>
+        !isRelativeDateWindow(window)
+    );
   }
 
   get _selectedComparisonWindowId() {
@@ -1805,7 +1845,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
           .states=${this._hass?.states ?? {}}
           .hass=${this._hass ?? null}
           .labelMap=${this._rowLabelMap}
-          .comparisonWindows=${this._comparisonWindows}
+          .comparisonWindows=${this._fixedComparisonWindows}
           .canShowDeltaAnalysis=${!!this._selectedComparisonWindowId}
           .sidebarCollapsed=${this._sidebarCollapsed}
           .computingEntityIds=${this._computingEntityIds}
@@ -1918,6 +1958,11 @@ export class HassDatapointsHistoryPanel extends LitElement {
         .name=${this._dateWindowDialogName}
         .startValue=${this._dateWindowDialogStartValue}
         .endValue=${this._dateWindowDialogEndValue}
+        .kind=${this._dateWindowDialogKind ?? "fixed"}
+        .preset=${this._dateWindowDialogPreset ?? null}
+        .allowRelative=${!this._pendingAnomalyComparisonWindowEntityId}
+        .rangeStart=${this._startTime ?? null}
+        .rangeEnd=${this._endTime ?? null}
         .rangeBounds=${this._rangeBounds ?? null}
         .zoomLevel=${this._zoomLevel ?? "auto"}
         .dateSnapping=${this._dateSnapping ?? "hour"}
@@ -2253,7 +2298,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
 
   _getPreviewComparisonWindows() {
     return getPreviewComparisonWindows(
-      this._comparisonWindows,
+      this._availableComparisonWindows,
       this._selectedComparisonWindowId,
       this._hoveredComparisonWindowId,
       this._startTime
@@ -2262,14 +2307,14 @@ export class HassDatapointsHistoryPanel extends LitElement {
 
   _getPreloadComparisonWindows() {
     return getPreloadComparisonWindows(
-      this._comparisonWindows,
+      this._availableComparisonWindows,
       this._startTime
     );
   }
 
   _getActiveComparisonWindow() {
     return getActiveComparisonWindow(
-      this._comparisonWindows,
+      this._availableComparisonWindows,
       this._hoveredComparisonWindowId,
       this._selectedComparisonWindowId
     );
@@ -2317,14 +2362,24 @@ export class HassDatapointsHistoryPanel extends LitElement {
   }
 
   _openDateWindowDialog(
-    targetWindow: Nullable<NormalizedHistoryDateWindow> = null
+    targetWindow: Nullable<StoredHistoryDateWindow> = null
   ) {
     this._editingDateWindowId = targetWindow?.id || null;
-    const dialogStart = targetWindow
-      ? parseDateValue(targetWindow.start_time)
+    const isRelative = isRelativeDateWindow(targetWindow);
+    this._dateWindowDialogKind = isRelative ? "relative" : "fixed";
+    this._dateWindowDialogPreset = isRelative ? targetWindow.preset : null;
+    // A relative window seeds the fixed-mode dates with what it resolves to
+    // now, so switching it to fixed in the dialog starts from those dates.
+    const seedWindow = targetWindow
+      ? this._resolvedComparisonWindows.find(
+          (window) => window.id === targetWindow.id
+        ) || null
+      : null;
+    const dialogStart = seedWindow
+      ? parseDateValue(seedWindow.start_time)
       : this._startTime;
-    const dialogEnd = targetWindow
-      ? parseDateValue(targetWindow.end_time)
+    const dialogEnd = seedWindow
+      ? parseDateValue(seedWindow.end_time)
       : this._endTime;
     this._dateWindowDialogDraftRange =
       dialogStart && dialogEnd && dialogStart < dialogEnd
@@ -2340,11 +2395,19 @@ export class HassDatapointsHistoryPanel extends LitElement {
     this._dateWindowDialogOpen = false;
     this._editingDateWindowId = null;
     this._dateWindowDialogDraftRange = null;
+    this._dateWindowDialogKind = "fixed";
+    this._dateWindowDialogPreset = null;
     this._pendingAnomalyComparisonWindowEntityId = null;
   }
 
   _createDateWindowFromDialog(
-    overrides: { name?: unknown; start?: unknown; end?: unknown } = {}
+    overrides: {
+      kind?: unknown;
+      name?: unknown;
+      preset?: unknown;
+      start?: unknown;
+      end?: unknown;
+    } = {}
   ) {
     // Values arrive from the date-window-dialog's dp-window-submit event, which
     // the dialog now only fires with a validated payload (non-empty name and a
@@ -2354,6 +2417,18 @@ export class HassDatapointsHistoryPanel extends LitElement {
     // because the dialog owns that (inline error + shake) before emitting.
     const rawName = overrides.name != null ? overrides.name : "";
     const label = String(rawName).trim();
+    if (overrides.kind === "relative") {
+      if (!label || typeof overrides.preset !== "string") {
+        return;
+      }
+      this._saveDateWindowFromDialog({
+        id: this._nextDateWindowId(label),
+        label,
+        kind: "relative",
+        preset: overrides.preset as RelativeDateWindowPreset,
+      });
+      return;
+    }
     const parsedStart = overrides.start
       ? this._parseDateWindowInputValue(String(overrides.start))
       : null;
@@ -2366,20 +2441,29 @@ export class HassDatapointsHistoryPanel extends LitElement {
     if (!label || !start || !end || start >= end) {
       return;
     }
-    const existingIds = new Set<string>(
-      this._comparisonWindows.map(
-        (window: NormalizedHistoryDateWindow) => window.id
-      )
-    );
-    const nextWindow = {
-      id: this._editingDateWindowId || makeDateWindowId(label, existingIds),
+    this._saveDateWindowFromDialog({
+      id: this._nextDateWindowId(label),
       label,
       start_time: start.toISOString(),
       end_time: end.toISOString(),
-    };
+    });
+  }
+
+  /** The edited window keeps its id; a new one gets a unique slug of its label. */
+  _nextDateWindowId(label: string): string {
+    if (this._editingDateWindowId) {
+      return this._editingDateWindowId;
+    }
+    const existingIds = new Set<string>(
+      this._comparisonWindows.map((window) => window.id)
+    );
+    return makeDateWindowId(label, existingIds);
+  }
+
+  _saveDateWindowFromDialog(nextWindow: StoredHistoryDateWindow) {
     this._comparisonWindows = normalizeDateWindows(
       this._editingDateWindowId
-        ? this._comparisonWindows.map((window: NormalizedHistoryDateWindow) =>
+        ? this._comparisonWindows.map((window) =>
             window.id === this._editingDateWindowId ? nextWindow : window
           )
         : [...this._comparisonWindows, nextWindow]
@@ -2406,7 +2490,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
       return;
     }
     const windowToDelete = this._comparisonWindows.find(
-      (window: NormalizedHistoryDateWindow) => window.id === id
+      (window) => window.id === id
     );
     const confirmed = await confirmDestructiveAction(this, {
       title: msg("Delete date window"),
@@ -2417,7 +2501,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
       return false;
     }
     const nextWindows = this._comparisonWindows.filter(
-      (window: NormalizedHistoryDateWindow) => window.id !== id
+      (window) => window.id !== id
     );
     if (nextWindows.length === this._comparisonWindows.length) {
       return false;
@@ -3301,7 +3385,11 @@ export class HassDatapointsHistoryPanel extends LitElement {
       startTime: this._startTime,
       endTime: this._endTime,
       committedZoomRange: this._chartZoomCommittedRange,
-      comparisonWindows: this._comparisonWindows,
+      comparisonWindows: resolveDateWindows(
+        this._comparisonWindows,
+        this._startTime,
+        this._endTime
+      ),
       selectedComparisonWindowId: this._selectedComparisonWindowId,
       chartAnomalyOverlapMode: this._chartAnomalyOverlapMode,
       monitorContext,
@@ -3399,7 +3487,7 @@ export class HassDatapointsHistoryPanel extends LitElement {
     targetRow.stateObj = this._hass?.states?.[row.entity_id] ?? null;
     targetRow.hass = this._hass ?? null;
     targetRow.canShowDeltaAnalysis = !!this._selectedComparisonWindowId;
-    targetRow.comparisonWindows = this._comparisonWindows || [];
+    targetRow.comparisonWindows = this._fixedComparisonWindows;
     targetRow.showBinaryDisplay = true;
     targetRow.binaryDisplay =
       (row as { binary_display?: string }).binary_display ?? "background";
@@ -4316,14 +4404,17 @@ export class HassDatapointsHistoryPanel extends LitElement {
         active: this._selectedComparisonWindowId == null,
         editable: false,
       },
-      ...this._comparisonWindows.map((window) => ({
-        ...window,
+      ...this._resolvedComparisonWindows.map((window) => ({
+        id: window.id,
+        label: window.label ?? "",
         detail: this._formatComparisonLabel(
           new Date(window.start_time),
           new Date(window.end_time)
         ),
         active: window.id === this._selectedComparisonWindowId,
         editable: true,
+        icon: window.kind === "relative" ? "mdi:calendar-sync" : "",
+        disabled: window.available === false,
       })),
     ];
     return html`

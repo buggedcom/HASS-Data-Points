@@ -123,6 +123,37 @@ export const styles = css`
   }
 
   /* Inline validation messages, keyed to the offending field. */
+  /* Type toggle (fixed dates / relative to selected range). */
+  .date-window-dialog-label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--primary-text-color);
+  }
+
+  /* Relative mode: live preview of the resolved dates + a short hint. */
+  .date-window-dialog-preview {
+    margin: 0;
+    color: var(--primary-text-color);
+    line-height: 1.45;
+  }
+
+  .date-window-dialog-preview-note {
+    display: block;
+    color: var(--secondary-text-color);
+    font-size: 0.85rem;
+  }
+
+  .date-window-dialog-hint {
+    margin: 0;
+    color: var(--secondary-text-color);
+    font-size: 0.85rem;
+    line-height: 1.45;
+  }
+
+  select.date-window-dialog-input {
+    max-width: 360px;
+  }
+
   .date-window-dialog-error {
     margin: 0;
     font-size: 0.85rem;

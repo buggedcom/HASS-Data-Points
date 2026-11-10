@@ -340,15 +340,17 @@ describe("date-window-dialog", () => {
       });
 
       it("THEN dp-window-submit detail carries the trimmed name, start and end", () => {
-        expect.assertions(3);
+        expect.assertions(4);
         const handler = vi.fn();
         el.addEventListener("dp-window-submit", handler);
         submitButton(el).click();
         const detail = handler.mock.calls[0][0].detail as {
+          kind: string;
           name: string;
           start: string;
           end: string;
         };
+        expect(detail.kind).toBe("fixed");
         expect(detail.name).toBe("My window");
         expect(detail.start).toBe(VALID_RANGE.startValue);
         expect(detail.end).toBe(VALID_RANGE.endValue);
@@ -559,6 +561,193 @@ describe("date-window-dialog", () => {
         await el.updateComplete;
         expect(handler).not.toHaveBeenCalled();
         expect(errorRegion(el)).not.toBeNull();
+      });
+    });
+  });
+  // ---------------------------------------------------------------------------
+  // Relative windows
+  // ---------------------------------------------------------------------------
+
+  describe("GIVEN relative windows", () => {
+    const RANGE = {
+      rangeStart: new Date(2026, 10, 3),
+      rangeEnd: new Date(2026, 10, 10),
+      now: new Date(2026, 10, 10),
+    };
+    let dialog: ReturnType<typeof createElement>;
+
+    function chooseKind(target: HTMLElement, value: "fixed" | "relative") {
+      target.shadowRoot!.querySelector("radio-group")!.dispatchEvent(
+        new CustomEvent("dp-change", {
+          detail: { type: "radio", value },
+          bubbles: true,
+          composed: true,
+        })
+      );
+    }
+
+    function presetSelect(target: HTMLElement): HTMLSelectElement {
+      return target.shadowRoot!.querySelector(
+        "#date-window-preset"
+      ) as HTMLSelectElement;
+    }
+
+    function choosePreset(target: HTMLElement, value: string) {
+      const select = presetSelect(target);
+      select.value = value;
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    afterEach(() => dialog?.remove());
+
+    describe("WHEN a new window is switched to relative", () => {
+      beforeEach(async () => {
+        dialog = createElement({ ...VALID_RANGE, ...RANGE });
+        await dialog.updateComplete;
+        chooseKind(dialog, "relative");
+        await dialog.updateComplete;
+      });
+
+      it("THEN the date inputs are replaced by the preset select", () => {
+        expect.assertions(2);
+        expect(
+          dialog.shadowRoot!.querySelector("#date-window-start")
+        ).toBeNull();
+        expect(presetSelect(dialog)).not.toBeNull();
+      });
+
+      it("THEN the name is auto-filled with the default preset label", () => {
+        expect.assertions(1);
+        expect(nameInput(dialog).value).toBe("Previous period");
+      });
+
+      it("THEN the preview shows the dates the preset resolves to", () => {
+        expect.assertions(1);
+        expect(
+          dialog.shadowRoot!.querySelector(".date-window-dialog-preview")
+            ?.textContent
+        ).toContain("Currently");
+      });
+
+      it("THEN changing the preset updates the untouched name", async () => {
+        expect.assertions(1);
+        choosePreset(dialog, "year_back_1");
+        await dialog.updateComplete;
+        expect(nameInput(dialog).value).toBe("Same period last year");
+      });
+
+      it("THEN submit emits the relative payload", () => {
+        expect.assertions(1);
+        const handler = vi.fn();
+        dialog.addEventListener("dp-window-submit", handler);
+        submitButton(dialog).click();
+        expect(handler.mock.calls[0][0].detail).toEqual({
+          kind: "relative",
+          name: "Previous period",
+          preset: "previous_period",
+        });
+      });
+    });
+
+    describe("WHEN the user has typed a name and then changes the preset", () => {
+      it("THEN the typed name is kept", async () => {
+        expect.assertions(1);
+        dialog = createElement({ ...VALID_RANGE, ...RANGE });
+        await dialog.updateComplete;
+        chooseKind(dialog, "relative");
+        await dialog.updateComplete;
+        typeName(dialog, "Last week's heating");
+        await dialog.updateComplete;
+        choosePreset(dialog, "months_back_1");
+        await dialog.updateComplete;
+        expect(nameInput(dialog).value).toBe("Last week's heating");
+      });
+    });
+
+    describe("WHEN a forward preset lies entirely in the future", () => {
+      it("THEN the preview says there is no data yet", async () => {
+        expect.assertions(1);
+        dialog = createElement({ ...VALID_RANGE, ...RANGE });
+        await dialog.updateComplete;
+        chooseKind(dialog, "relative");
+        await dialog.updateComplete;
+        choosePreset(dialog, "next_period");
+        await dialog.updateComplete;
+        expect(
+          dialog.shadowRoot!.querySelector(".date-window-dialog-preview-note")
+        ).not.toBeNull();
+      });
+    });
+
+    describe("WHEN an existing relative window is opened for editing", () => {
+      beforeEach(async () => {
+        dialog = createElement({
+          ...VALID_RANGE,
+          ...RANGE,
+          name: "Same time last year",
+          kind: "relative",
+          preset: "year_back_1",
+        });
+        await dialog.updateComplete;
+      });
+
+      it("THEN it opens in relative mode with its preset selected", () => {
+        expect.assertions(1);
+        expect(presetSelect(dialog).value).toBe("year_back_1");
+      });
+
+      it("THEN its own name is not replaced by the preset label", async () => {
+        expect.assertions(1);
+        choosePreset(dialog, "year_back_2");
+        await dialog.updateComplete;
+        expect(nameInput(dialog).value).toBe("Same time last year");
+      });
+
+      it("THEN switching to fixed asks the panel for the resolved dates", () => {
+        expect.assertions(1);
+        const handler = vi.fn();
+        dialog.addEventListener("dp-window-date-change", handler);
+        chooseKind(dialog, "fixed");
+        expect(handler.mock.calls[0][0].detail).toEqual({
+          start: "2025-11-03T00:00",
+          end: "2025-11-10T00:00",
+        });
+      });
+    });
+
+    describe("WHEN relative windows are not allowed", () => {
+      it("THEN the type toggle is hidden and a relative seed opens as fixed", async () => {
+        expect.assertions(2);
+        dialog = createElement({
+          ...VALID_RANGE,
+          ...RANGE,
+          kind: "relative",
+          preset: "previous_period",
+          allowRelative: false,
+        });
+        await dialog.updateComplete;
+        expect(dialog.shadowRoot!.querySelector("radio-group")).toBeNull();
+        expect(
+          dialog.shadowRoot!.querySelector("#date-window-start")
+        ).not.toBeNull();
+      });
+    });
+
+    describe("WHEN a relative window is submitted without a name", () => {
+      it("THEN it does not emit and shows the name error", async () => {
+        expect.assertions(2);
+        dialog = createElement({ ...VALID_RANGE, ...RANGE });
+        await dialog.updateComplete;
+        chooseKind(dialog, "relative");
+        await dialog.updateComplete;
+        typeName(dialog, "  ");
+        await dialog.updateComplete;
+        const handler = vi.fn();
+        dialog.addEventListener("dp-window-submit", handler);
+        submitButton(dialog).click();
+        await dialog.updateComplete;
+        expect(handler).not.toHaveBeenCalled();
+        expect(errorRegion(dialog)).not.toBeNull();
       });
     });
   });

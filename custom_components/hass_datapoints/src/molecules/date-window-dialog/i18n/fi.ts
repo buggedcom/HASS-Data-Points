@@ -1,8 +1,6 @@
 import type { ComponentTranslations } from "@/lib/i18n/types";
 
 export const translations: ComponentTranslations = {
-  "A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later.":
-    "Aikaikkuna tallentaa nimetyn päivävälin välilehteksi, jotta voit nopeasti esikatsella sitä suhteessa valittuun alueeseen tai palata kaavion kyseiseen ajanjaksoon.",
   Name: "Nimi",
   "e.g. Heating season start": "esim. Lämmityskausi alkaa",
   "Date range": "Päiväväli",
@@ -15,4 +13,15 @@ export const translations: ComponentTranslations = {
   "The start date must be before the end date.":
     "Alkupäivän on oltava ennen loppupäivää.",
   Cancel: "Peruuta",
+  "A date window saves a date range as a tab, either fixed dates or a period relative to the selected range, so you can preview it against the selected range or jump the chart to it.":
+    "Aikaikkuna tallentaa päivävälin välilehdeksi, joko kiinteinä päivinä tai valittuun alueeseen suhteutettuna jaksona, jotta voit verrata sitä valittuun alueeseen tai siirtää kaavion siihen.",
+  Type: "Tyyppi",
+  "Fixed dates": "Kiinteät päivät",
+  "Relative to selected range": "Suhteessa valittuun alueeseen",
+  Period: "Jakso",
+  Currently: "Nyt",
+  "No data yet for this period while the chart is up to date.":
+    "Tälle jaksolle ei ole vielä tietoja, kun kaavio on ajan tasalla.",
+  "The window always has the same length as the selected range and moves with it.":
+    "Ikkuna on aina yhtä pitkä kuin valittu alue ja liikkuu sen mukana.",
 };

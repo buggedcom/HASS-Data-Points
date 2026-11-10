@@ -1,6 +1,9 @@
 import type { HassLike } from "@/lib/types";
 import type { HistorySeriesAnalysis } from "@/lib/domain/history-series";
-import type { NormalizedHistoryDateWindow } from "@/lib/history-page/history-url-state";
+import type {
+  NormalizedHistoryDateWindow,
+  StoredHistoryDateWindow,
+} from "@/lib/history-page/history-url-state";
 
 export interface HistoryTargetRowState {
   entity_id: string;
@@ -16,15 +19,8 @@ export interface HistoryRangeState {
   committedZoomRange: Nullable<{ start: number; end: number }>;
 }
 
-export interface HistoryComparisonWindowState {
-  id: string;
-  name?: string;
-  label?: string;
-  start_time: string;
-  end_time: string;
-  color?: string;
-  [key: string]: unknown;
-}
+/** A saved comparison window: fixed dates, or a relative preset. */
+export type HistoryComparisonWindowState = StoredHistoryDateWindow;
 
 export interface HistoryComparisonState {
   windows: HistoryComparisonWindowState[];
@@ -261,7 +257,7 @@ export interface HistoryNavigationContext {
     endTime: Nullable<Date>;
     hours: number;
     committedZoomRange: Nullable<{ start: number; end: number }>;
-    comparisonWindows: Array<RecordWithUnknownValues>;
+    comparisonWindows: StoredHistoryDateWindow[];
     pageState: RecordWithUnknownValues;
     seriesRows: Array<{ entity_id: string; color: string }>;
     seriesColorQueryKey(entityId: string): string;
