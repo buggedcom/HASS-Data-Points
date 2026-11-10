@@ -26,7 +26,11 @@ describe("relative-date-window", () => {
       // Period shifts are exact millisecond offsets (they never drift across
       // DST), so the expected start is computed rather than a local midnight.
       ["previous_period", new Date(2 * start.getTime() - end.getTime())],
+      ["previous_period_2", new Date(3 * start.getTime() - 2 * end.getTime())],
+      ["previous_period_3", new Date(4 * start.getTime() - 3 * end.getTime())],
       ["next_period", local(2026, 11, 10)],
+      ["next_period_2", new Date(2 * end.getTime() - start.getTime())],
+      ["next_period_3", new Date(3 * end.getTime() - 2 * start.getTime())],
       ["months_back_1", local(2026, 10, 3)],
       ["months_back_2", local(2026, 9, 3)],
       ["months_back_3", local(2026, 8, 3)],

@@ -3,6 +3,10 @@ import type { ComponentTranslations } from "@/lib/i18n/types";
 export const translations: ComponentTranslations = {
   "Previous period": "上一时段",
   "Next period": "下一时段",
+  "2 periods back": "前 2 个时段",
+  "3 periods back": "前 3 个时段",
+  "2 periods ahead": "后 2 个时段",
+  "3 periods ahead": "后 3 个时段",
   "Same period last month": "上月同期",
   "Same period 2 months ago": "2 个月前同期",
   "Same period 3 months ago": "3 个月前同期",
