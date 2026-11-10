@@ -51,92 +51,85 @@ def _parse_dt(iso: str) -> datetime:
     return dt
 
 
+def fetch_entity_states(
+    hass,
+    entity_id: str,
+    start: str,
+    end: str,
+    *,
+    include_start: bool = False,
+    attributes: bool = False,
+) -> list:
+    """Fetch full recorder states without deciding how a caller handles errors."""
+    from homeassistant.components.recorder.history import (  # noqa: PLC0415
+        get_significant_states,
+    )
+
+    start_dt, end_dt = _parse_dt(start), _parse_dt(end)
+    signature = inspect.signature(get_significant_states)
+    positional_args = []
+    keyword_args = {}
+
+    for parameter in signature.parameters.values():
+        if parameter.kind in (
+            inspect.Parameter.VAR_POSITIONAL,
+            inspect.Parameter.VAR_KEYWORD,
+        ):
+            continue
+
+        if parameter.name in ("hass", "instance", "recorder", "recorder_instance"):
+            positional_args.append(hass)
+            continue
+
+        if parameter.name == "start_time":
+            positional_args.append(start_dt)
+            continue
+
+        if parameter.name == "end_time":
+            positional_args.append(end_dt)
+            continue
+
+        if parameter.name == "entity_ids":
+            positional_args.append([entity_id])
+            continue
+
+        if parameter.name == "entity_id":
+            positional_args.append(entity_id)
+            continue
+
+        if parameter.name == "include_start_time_state":
+            keyword_args["include_start_time_state"] = include_start
+            continue
+
+        if parameter.name == "significant_changes_only":
+            keyword_args["significant_changes_only"] = False
+            continue
+
+        if parameter.name == "minimal_response":
+            keyword_args["minimal_response"] = False
+            continue
+
+        if parameter.name == "no_attributes":
+            keyword_args["no_attributes"] = not attributes
+            continue
+
+    states_dict = get_significant_states(*positional_args, **keyword_args)
+    if isinstance(states_dict, dict):
+        return states_dict.get(entity_id, [])
+    return states_dict if isinstance(states_dict, list) else []
+
+
 def fetch_entity_pts(
     hass, entity_id: str, start_time_iso: str, end_time_iso: str
 ) -> list:
-    """Fetch raw [[timeMs, value], ...] from recorder.
-
-    Must be called via hass.async_add_executor_job — this function is blocking.
-    Returns an empty list on any error.
-    """
+    """Fetch raw [[timeMs, value], ...] in the recorder executor."""
     try:
-        from homeassistant.components.recorder.history import (  # noqa: PLC0415
-            get_significant_states,
-        )
-    except ImportError:
-        _LOGGER.warning("hass_datapoints: get_significant_states not available")
-        return []
-
-    try:
-        start_dt = _parse_dt(start_time_iso)
-        end_dt = _parse_dt(end_time_iso)
-    except ValueError:
-        _LOGGER.warning(
-            "hass_datapoints: invalid time range %s – %s", start_time_iso, end_time_iso
-        )
-        return []
-
-    try:
-        signature = inspect.signature(get_significant_states)
-        positional_args = []
-        keyword_args = {}
-
-        for parameter in signature.parameters.values():
-            if parameter.kind in (
-                inspect.Parameter.VAR_POSITIONAL,
-                inspect.Parameter.VAR_KEYWORD,
-            ):
-                continue
-
-            if parameter.name in ("hass", "instance", "recorder", "recorder_instance"):
-                positional_args.append(hass)
-                continue
-
-            if parameter.name == "start_time":
-                positional_args.append(start_dt)
-                continue
-
-            if parameter.name == "end_time":
-                positional_args.append(end_dt)
-                continue
-
-            if parameter.name == "entity_ids":
-                positional_args.append([entity_id])
-                continue
-
-            if parameter.name == "entity_id":
-                positional_args.append(entity_id)
-                continue
-
-            if parameter.name == "include_start_time_state":
-                keyword_args["include_start_time_state"] = False
-                continue
-
-            if parameter.name == "significant_changes_only":
-                keyword_args["significant_changes_only"] = False
-                continue
-
-            if parameter.name == "minimal_response":
-                keyword_args["minimal_response"] = False
-                continue
-
-            if parameter.name == "no_attributes":
-                keyword_args["no_attributes"] = True
-                continue
-
-        states_dict = get_significant_states(*positional_args, **keyword_args)
+        states = fetch_entity_states(hass, entity_id, start_time_iso, end_time_iso)
     except Exception as err:  # noqa: BLE001
         _LOGGER.warning(
             "hass_datapoints: get_significant_states failed for %s: %s", entity_id, err
         )
         return []
-
-    if isinstance(states_dict, dict):
-        states = states_dict.get(entity_id, [])
-    elif isinstance(states_dict, list):
-        states = states_dict
-    else:
-        states = []
     pts: list = []
     for state in states:
         try:
@@ -167,57 +160,37 @@ def fetch_entity_pts(
     return pts
 
 
-def fetch_entity_statistics_pts(
-    hass, entity_id: str, start_time_iso: str, end_time_iso: str
+def fetch_entity_statistics(
+    hass, entity_id: str, start: str, end: str, fields: set[str]
 ) -> list:
-    """Fetch hourly long-term statistics as [[timeMs, mean], ...].
+    """Fetch hourly statistics rows in the recorder executor."""
+    from homeassistant.components.recorder.statistics import (  # noqa: PLC0415
+        statistics_during_period,
+    )
 
-    Must be called via hass.async_add_executor_job — this function is blocking.
-    Returns an empty list on any error or if no statistics exist for the entity.
-    """
-    try:
-        from homeassistant.components.recorder.statistics import (  # noqa: PLC0415
-            statistics_during_period,
-        )
-    except ImportError:
-        _LOGGER.debug("hass_datapoints: statistics_during_period not available")
-        return []
+    return statistics_during_period(
+        hass,
+        _parse_dt(start),
+        _parse_dt(end),
+        {entity_id},
+        "hour",
+        {},
+        fields,
+    ).get(entity_id, [])
 
-    try:
-        start_dt = _parse_dt(start_time_iso)
-        end_dt = _parse_dt(end_time_iso)
-    except ValueError:
-        return []
 
-    try:
-        stats_dict = statistics_during_period(
-            hass,
-            start_dt,
-            end_dt,
-            [entity_id],
-            "hour",
-            {},
-            {"mean"},
-        )
-    except Exception as err:  # noqa: BLE001
-        _LOGGER.debug(
-            "hass_datapoints: statistics_during_period failed for %s: %s",
-            entity_id,
-            err,
-        )
-        return []
-
-    entries = stats_dict.get(entity_id, [])
+def statistics_points(entries: list, field: str) -> list:
+    """Project a statistics column to finite timestamp/value pairs."""
     pts: list = []
     for entry in entries:
-        mean = entry.get("mean")
-        if mean is None:
+        raw_value = entry.get(field)
+        if raw_value is None:
             continue
         try:
-            mean_f = float(mean)
+            value = float(raw_value)
         except (TypeError, ValueError):
             continue
-        if not math.isfinite(mean_f):
+        if not math.isfinite(value):
             continue
         start_val = entry.get("start")
         try:
@@ -231,12 +204,27 @@ def fetch_entity_statistics_pts(
                 continue
         except Exception:  # noqa: BLE001
             continue
-        pts.append([ts_ms, mean_f])
+        pts.append([ts_ms, value])
 
-    _LOGGER.debug(
-        "hass_datapoints: fetch_entity_statistics_pts %s → %d pts", entity_id, len(pts)
-    )
     return pts
+
+
+def fetch_entity_statistics_pts(
+    hass, entity_id: str, start_time_iso: str, end_time_iso: str
+) -> list:
+    """Fetch hourly long-term means, returning no points on recorder errors."""
+    try:
+        entries = fetch_entity_statistics(
+            hass, entity_id, start_time_iso, end_time_iso, {"mean"}
+        )
+    except Exception as err:  # noqa: BLE001
+        _LOGGER.debug(
+            "hass_datapoints: statistics_during_period failed for %s: %s",
+            entity_id,
+            err,
+        )
+        return []
+    return statistics_points(entries, "mean")
 
 
 def downsample_pts(pts: list, interval_seconds: int, aggregate: str) -> list:
