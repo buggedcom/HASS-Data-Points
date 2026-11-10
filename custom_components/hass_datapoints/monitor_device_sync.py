@@ -8,8 +8,8 @@ renamed to match so the Datapoints UI shows the same name.
 
 from __future__ import annotations
 
-from collections.abc import Callable, Iterable
 import logging
+from collections.abc import Callable, Iterable
 from typing import Any
 
 from homeassistant.core import Event, HomeAssistant, callback
