@@ -10,7 +10,7 @@ export const styles = css`
 
   /* --------------------------------------------------------------------------
    * Layout — the dialog reads as a stack of distinct, well-spaced sections:
-   * intro blurb · name · date-range group (start/end + timeline) · shortcuts ·
+   * intro blurb · name · date-range group (start/end) · shortcuts ·
    * actions. Each section owns its own vertical rhythm via the content grid.
    * ------------------------------------------------------------------------ */
   .date-window-dialog-content {
@@ -45,7 +45,7 @@ export const styles = css`
     width: 100%;
   }
 
-  /* The "date range" group binds start/end and the timeline into one unit,
+  /* The "date range" group binds the start/end inputs into one unit,
    * set off from the rest of the form with a subtle surface + border. */
   .date-range-group {
     gap: var(--dp-spacing-md);
@@ -108,18 +108,6 @@ export const styles = css`
       var(--error-color, #db4437) 70%,
       transparent
     );
-  }
-
-  /* The range timeline gets real breathing room inside the group. */
-  .date-window-dialog-timeline {
-    border-radius: 10px;
-    overflow: hidden;
-    padding: var(--dp-spacing-xs) 0;
-  }
-
-  .date-window-dialog-timeline range-timeline {
-    display: block;
-    height: 64px;
   }
 
   /* Inline validation messages, keyed to the offending field. */

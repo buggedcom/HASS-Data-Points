@@ -1963,9 +1963,6 @@ export class HassDatapointsHistoryPanel extends LitElement {
         .allowRelative=${!this._pendingAnomalyComparisonWindowEntityId}
         .rangeStart=${this._startTime ?? null}
         .rangeEnd=${this._endTime ?? null}
-        .rangeBounds=${this._rangeBounds ?? null}
-        .zoomLevel=${this._zoomLevel ?? "auto"}
-        .dateSnapping=${this._dateSnapping ?? "hour"}
         @dp-window-close=${() => this._closeDateWindowDialog()}
         @dp-window-submit=${(ev: DetailEvent<RecordWithUnknownValues>) =>
           this._createDateWindowFromDialog(ev.detail || {})}

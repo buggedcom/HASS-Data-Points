@@ -4,7 +4,6 @@ import { classMap } from "lit/directives/class-map.js";
 import { localized, msg } from "@/lib/i18n/localize";
 
 import { styles } from "./date-window-dialog.styles";
-import type { RangeBounds } from "@/atoms/interactive/range-timeline/types";
 import type { DpChangeDetail } from "@/lib/events";
 import { formatComparisonLabel } from "@/lib/domain/date-window";
 import {
@@ -15,7 +14,6 @@ import {
   relativeDateWindowPresetLabel,
   resolveRelativeDateWindow,
 } from "@/lib/domain/relative-date-window";
-import "@/atoms/interactive/range-timeline/range-timeline";
 import "@/atoms/form/radio-group/radio-group";
 
 export type DateWindowKind = "fixed" | "relative";
@@ -28,8 +26,8 @@ export type DateWindowKind = "fixed" | "relative";
  * own **validation**. The incoming `name` property is only a *seed* — it is
  * copied into internal `@state` on the open transition, after which the user's
  * typed value is authoritative and parent re-renders (e.g. from date changes)
- * no longer clobber it. The start/end values, range bounds, zoom level and
- * date snapping remain controlled by the parent panel.
+ * no longer clobber it. The start/end values remain controlled by the parent
+ * panel.
  *
  * On submit the dialog self-validates (non-empty trimmed name, parseable start
  * strictly before end). Invalid submits shake the dialog, surface an inline
@@ -78,18 +76,6 @@ export class DateWindowDialog extends LitElement {
   /** Label for the submit button (e.g. "Create date window" or "Save date window"). */
   @property({ type: String, attribute: "submit-label" })
   accessor submitLabel: string = "Create date window";
-
-  /** Optional range bounds from the parent panel — used to set the timeline slider context. */
-  @property({ type: Object }) accessor rangeBounds: Nullable<RangeBounds> =
-    null;
-
-  /** Effective zoom level for the timeline slider (already resolved from "auto"). */
-  @property({ type: String, attribute: "zoom-level" })
-  accessor zoomLevel: string = "auto";
-
-  /** Date snapping mode passed to the timeline slider. */
-  @property({ type: String, attribute: "date-snapping" })
-  accessor dateSnapping: string = "hour";
 
   /** Seed for the window type, copied into internal state when the dialog opens. */
   @property({ type: String }) accessor kind: DateWindowKind = "fixed";
@@ -367,18 +353,6 @@ export class DateWindowDialog extends LitElement {
     this._emit("dp-window-date-change", { start, end });
   }
 
-  private _onRangeCommit(ev: CustomEvent<{ start: number; end: number }>) {
-    const { start, end } = ev.detail ?? {};
-    if (!start || !end) return;
-    const startStr = this._formatInputValue(start);
-    const endStr = this._formatInputValue(end);
-    // Update the datetime-local inputs directly so they reflect the slider commit
-    if (this._startInput) this._startInput.value = startStr;
-    if (this._endInput) this._endInput.value = endStr;
-    this._maybeClearRangeError(startStr, endStr);
-    this._emit("dp-window-date-change", { start: startStr, end: endStr });
-  }
-
   /** Format epoch ms as a datetime-local input value (YYYY-MM-DDTHH:MM). */
   private _formatInputValue(ms: number): string {
     const d = new Date(ms);
@@ -386,7 +360,7 @@ export class DateWindowDialog extends LitElement {
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
 
-  /** Parse the startValue / endValue strings to Date objects for the timeline. */
+  /** Parse a datetime-local value to a Date, or null when it is invalid. */
   private _parseValueToDate(value: string): Nullable<Date> {
     if (!value) return null;
     const d = new Date(value);
@@ -441,20 +415,6 @@ export class DateWindowDialog extends LitElement {
           : nothing}
       </div>
 
-      ${this.rangeBounds
-        ? html`
-            <div class="date-window-dialog-timeline">
-              <range-timeline
-                .startTime=${this._parseValueToDate(this.startValue)}
-                .endTime=${this._parseValueToDate(this.endValue)}
-                .rangeBounds=${this.rangeBounds}
-                .zoomLevel=${this.zoomLevel}
-                .dateSnapping=${this.dateSnapping}
-                @dp-range-commit=${this._onRangeCommit}
-              ></range-timeline>
-            </div>
-          `
-        : nothing}
       ${this.showShortcuts
         ? html`
             <div class="date-window-dialog-shortcuts">
