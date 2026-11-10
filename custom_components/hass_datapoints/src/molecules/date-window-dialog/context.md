@@ -46,10 +46,30 @@ properties. The dialog forwards date edits and timeline commits up via
   `dp-window-shortcut` and `dp-window-date-change`, and no longer needs to call
   `shake()` or feed a controlled name value back into the dialog.
 
-## Events (unchanged shapes)
+## Relative windows
 
-`dp-window-close {}`, `dp-window-submit { name, start, end }` (now guaranteed
-valid), `dp-window-delete {}`, `dp-window-shortcut { direction: -1 | 1 }`,
+A window is either **fixed** (start/end dates) or **relative**: a preset from
+`lib/domain/relative-date-window.ts` ("Previous period", "Same period last
+year", …) resolved against the chart's selected range, always lasting as long
+as that range. The dialog owns two more pieces of seeded state, on the same
+open-edge pattern as the name:
+
+- `_kindValue` is seeded from `kind`, and forced to fixed when `allowRelative` is
+  false. The panel sets `allowRelative` to false when the dialog was opened to
+  create an anomaly comparison window, because anomalies only use fixed windows.
+- `_presetValue` is seeded from `preset`, defaulting to `previous_period`.
+
+In relative mode the name is auto-filled with the preset label until the user
+types in the field (`_nameEdited`; an existing name counts as typed). The date
+inputs, timeline and shortcuts are replaced by a native preset `<select>` and a
+"Currently …" preview, computed from `rangeStart` / `rangeEnd` / `now`.
+Switching relative → fixed emits `dp-window-date-change` with the resolved
+dates, so the panel's draft range starts there.
+
+## Events
+
+`dp-window-close {}`, `dp-window-submit` (guaranteed valid) as
+`{ kind: "fixed", name, start, end }` or `{ kind: "relative", name, preset }`, `dp-window-delete {}`, `dp-window-shortcut { direction: -1 | 1 }`,
 `dp-window-date-change { start, end }`.
 
 ## Non-obvious behaviors

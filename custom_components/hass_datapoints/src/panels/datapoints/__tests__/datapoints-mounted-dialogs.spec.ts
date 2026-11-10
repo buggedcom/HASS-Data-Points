@@ -56,6 +56,58 @@ describe("GIVEN a mounted panel's date-window dialog", () => {
       ).toContain("Yesterday");
     });
   });
+  describe("WHEN a relative date window is submitted", () => {
+    it("THEN saves it as a relative window that follows the range", async () => {
+      expect.assertions(3);
+      const panel = await mountPanel(createHassFixture().hass);
+      const chart = control(
+        panel.shadowRoot!,
+        "hass-datapoints-history-card"
+      ) as PanelCardFixture;
+      const rail = control(chart.shadowRoot!, "comparison-tab-rail");
+      emitControlEvent(rail, "dp-tab-add");
+      const dialog = control(panel.shadowRoot!, "date-window-dialog");
+      emitControlEvent(dialog, "dp-window-submit", {
+        kind: "relative",
+        name: "Same period last year",
+        preset: "year_back_1",
+      });
+      await settlePanel();
+      expect(dialog.open).toBe(false);
+      expect(
+        rail.tabs.find((tab) => tab.label === "Same period last year")?.icon
+      ).toBe("mdi:calendar-sync");
+      expect(
+        new URLSearchParams(window.location.search).get("date_windows")
+      ).toContain("%40year_back_1");
+    });
+  });
+  describe("WHEN a saved relative window is edited", () => {
+    it("THEN the dialog opens in relative mode with its preset", async () => {
+      expect.assertions(2);
+      const panel = await mountPanel(
+        createHassFixture({
+          preferences: {
+            date_windows: [
+              {
+                id: "prev",
+                label: "Previous period",
+                kind: "relative",
+                preset: "previous_period",
+              },
+            ],
+          },
+        }).hass
+      );
+      const chart = control(panel.shadowRoot!, "hass-datapoints-history-card");
+      const rail = control(chart.shadowRoot!, "comparison-tab-rail");
+      emitControlEvent(rail, "dp-tab-edit", { tabId: "prev" });
+      await settlePanel();
+      const dialog = control(panel.shadowRoot!, "date-window-dialog");
+      expect(dialog.kind).toBe("relative");
+      expect(dialog.preset).toBe("previous_period");
+    });
+  });
 });
 
 describe("GIVEN a mounted panel's anomaly-monitor wizard", () => {

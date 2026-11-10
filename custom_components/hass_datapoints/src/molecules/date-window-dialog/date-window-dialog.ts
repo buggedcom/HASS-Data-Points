@@ -5,7 +5,20 @@ import { localized, msg } from "@/lib/i18n/localize";
 
 import { styles } from "./date-window-dialog.styles";
 import type { RangeBounds } from "@/atoms/interactive/range-timeline/types";
+import type { DpChangeDetail } from "@/lib/events";
+import { formatComparisonLabel } from "@/lib/domain/date-window";
+import {
+  DEFAULT_RELATIVE_DATE_WINDOW_PRESET,
+  isRelativeDateWindowPreset,
+  RELATIVE_DATE_WINDOW_PRESETS,
+  type RelativeDateWindowPreset,
+  relativeDateWindowPresetLabel,
+  resolveRelativeDateWindow,
+} from "@/lib/domain/relative-date-window";
 import "@/atoms/interactive/range-timeline/range-timeline";
+import "@/atoms/form/radio-group/radio-group";
+
+export type DateWindowKind = "fixed" | "relative";
 
 /**
  * `date-window-dialog` renders the Add / Edit date window dialog.
@@ -22,8 +35,13 @@ import "@/atoms/interactive/range-timeline/range-timeline";
  * strictly before end). Invalid submits shake the dialog, surface an inline
  * error and do **not** emit `dp-window-submit`; only valid submits emit it.
  *
+ * The dialog also owns the window **type** (fixed dates or relative to the
+ * selected range) and the relative **preset**, seeded from `kind` / `preset`
+ * on open like the name. In relative mode the name is auto-filled with the
+ * preset label until the user types in the name field.
+ *
  * @fires dp-window-close - `{}` fired when Cancel is clicked or the dialog is dismissed
- * @fires dp-window-submit - `{ name: string, start: string, end: string }` fired only when the inputs are valid
+ * @fires dp-window-submit - `{ kind: "fixed", name, start, end }` or `{ kind: "relative", name, preset }`, fired only when the inputs are valid
  * @fires dp-window-delete - `{}` fired when the Delete button is clicked
  * @fires dp-window-shortcut - `{ direction: -1 | 1 }` fired when a "Use previous/next range" shortcut is clicked
  * @fires dp-window-date-change - `{ start: string, end: string }` fired when either datetime input changes
@@ -73,6 +91,25 @@ export class DateWindowDialog extends LitElement {
   @property({ type: String, attribute: "date-snapping" })
   accessor dateSnapping: string = "hour";
 
+  /** Seed for the window type, copied into internal state when the dialog opens. */
+  @property({ type: String }) accessor kind: DateWindowKind = "fixed";
+
+  /** Seed for the relative preset, copied into internal state when the dialog opens. */
+  @property({ type: String }) accessor preset: Nullable<string> = null;
+
+  /** Whether relative windows can be chosen (false when creating a window for an anomaly comparison). */
+  @property({ type: Boolean, attribute: "allow-relative" })
+  accessor allowRelative: boolean = true;
+
+  /** Start of the range selected on the chart; relative presets resolve against it. */
+  @property({ attribute: false }) accessor rangeStart: Nullable<Date> = null;
+
+  /** End of the range selected on the chart. */
+  @property({ attribute: false }) accessor rangeEnd: Nullable<Date> = null;
+
+  /** Override for "now" (tests and stories); defaults to the current time. */
+  @property({ attribute: false }) accessor now: Nullable<Date> = null;
+
   // DOM refs via @query
   @query("ha-dialog") accessor _dialogEl: Nullable<HTMLElement> = null;
 
@@ -97,6 +134,16 @@ export class DateWindowDialog extends LitElement {
   /** Which field (if any) currently has a validation error shown inline. */
   @state() accessor _error: Nullable<"name" | "range"> = null;
 
+  /** Internal, dialog-owned window type. Seeded from `kind` on open. */
+  @state() accessor _kindValue: DateWindowKind = "fixed";
+
+  /** Internal, dialog-owned relative preset. Seeded from `preset` on open. */
+  @state() accessor _presetValue: RelativeDateWindowPreset =
+    DEFAULT_RELATIVE_DATE_WINDOW_PRESET;
+
+  /** True once the user has typed in the name field (stops relative auto-fill). */
+  private _nameEdited = false;
+
   /** Tracks the previous `open` value so we only seed name on a false→true edge. */
   private _wasOpen = false;
 
@@ -110,8 +157,28 @@ export class DateWindowDialog extends LitElement {
       if (this.open && !this._wasOpen) {
         this._nameValue = this.name;
         this._error = null;
+        // An existing name is the user's; only an empty one may be auto-filled.
+        this._nameEdited = !!this.name.trim();
+        this._kindValue =
+          this.allowRelative && this.kind === "relative" ? "relative" : "fixed";
+        this._presetValue = isRelativeDateWindowPreset(this.preset)
+          ? this.preset
+          : DEFAULT_RELATIVE_DATE_WINDOW_PRESET;
       }
       this._wasOpen = this.open;
+    }
+  }
+
+  /**
+   * Keep the native preset `<select>` in step with `_presetValue`. Options are
+   * rendered in the same pass as the select, so its `value` is set afterwards.
+   */
+  protected updated() {
+    const select = this.renderRoot.querySelector<HTMLSelectElement>(
+      "#date-window-preset"
+    );
+    if (select && select.value !== this._presetValue) {
+      select.value = this._presetValue;
     }
   }
 
@@ -164,6 +231,7 @@ export class DateWindowDialog extends LitElement {
     const value =
       (ev.target as HTMLInputElement & { value?: string })?.value ?? "";
     this._nameValue = value;
+    this._nameEdited = true;
     if (this._error === "name" && value.trim()) {
       this._error = null;
     }
@@ -179,13 +247,24 @@ export class DateWindowDialog extends LitElement {
 
   private _onSubmit() {
     const name = String(this._nameInput?.value ?? this._nameValue ?? "").trim();
-    const start = this._startInput?.value ?? this.startValue;
-    const end = this._endInput?.value ?? this.endValue;
 
     if (!name) {
       this._showError("name");
       return;
     }
+
+    if (this._kindValue === "relative") {
+      this._error = null;
+      this._emit("dp-window-submit", {
+        kind: "relative",
+        name,
+        preset: this._presetValue,
+      });
+      return;
+    }
+
+    const start = this._startInput?.value ?? this.startValue;
+    const end = this._endInput?.value ?? this.endValue;
 
     if (!this._isValidRange(start, end)) {
       this._showError("range");
@@ -193,7 +272,7 @@ export class DateWindowDialog extends LitElement {
     }
 
     this._error = null;
-    this._emit("dp-window-submit", { name, start, end });
+    this._emit("dp-window-submit", { kind: "fixed", name, start, end });
   }
 
   /** True when both values parse and the start is strictly before the end. */
@@ -219,6 +298,53 @@ export class DateWindowDialog extends LitElement {
     }
   }
 
+  /** The selected preset resolved against the chart's selected range, or null. */
+  private _resolvePreset() {
+    if (!this.rangeStart || !this.rangeEnd) return null;
+    return resolveRelativeDateWindow(
+      this._presetValue,
+      this.rangeStart,
+      this.rangeEnd,
+      this.now ?? new Date()
+    );
+  }
+
+  /** Auto-fill the name with the preset label until the user types a name. */
+  private _autoFillName() {
+    if (this._nameEdited) return;
+    this._nameValue = relativeDateWindowPresetLabel(this._presetValue);
+    if (this._error === "name") {
+      this._error = null;
+    }
+  }
+
+  private _onKindChange(ev: CustomEvent<DpChangeDetail>) {
+    const next = (ev.detail as { type: "radio"; value: string }).value;
+    if (next !== "fixed" && next !== "relative") return;
+    if (next === this._kindValue) return;
+    this._kindValue = next;
+    this._error = null;
+    if (next === "relative") {
+      this._autoFillName();
+      return;
+    }
+    // Relative → fixed: start from the dates the preset resolves to now, so
+    // nothing visible jumps.
+    const resolved = this._resolvePreset();
+    if (resolved) {
+      const start = this._formatInputValue(resolved.start.getTime());
+      const end = this._formatInputValue(resolved.end.getTime());
+      this._emit("dp-window-date-change", { start, end });
+    }
+  }
+
+  private _onPresetChange(ev: Event) {
+    const value = (ev.target as HTMLSelectElement | null)?.value;
+    if (!isRelativeDateWindowPreset(value)) return;
+    this._presetValue = value;
+    this._autoFillName();
+  }
+
   private _onDelete() {
     this._emit("dp-window-delete");
   }
@@ -241,19 +367,20 @@ export class DateWindowDialog extends LitElement {
   private _onRangeCommit(ev: CustomEvent<{ start: number; end: number }>) {
     const { start, end } = ev.detail ?? {};
     if (!start || !end) return;
-    // Format as datetime-local value (YYYY-MM-DDTHH:MM) for the inputs
-    const fmt = (ms: number) => {
-      const d = new Date(ms);
-      const pad = (n: number) => String(n).padStart(2, "0");
-      return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-    };
-    const startStr = fmt(start);
-    const endStr = fmt(end);
+    const startStr = this._formatInputValue(start);
+    const endStr = this._formatInputValue(end);
     // Update the datetime-local inputs directly so they reflect the slider commit
     if (this._startInput) this._startInput.value = startStr;
     if (this._endInput) this._endInput.value = endStr;
     this._maybeClearRangeError(startStr, endStr);
     this._emit("dp-window-date-change", { start: startStr, end: endStr });
+  }
+
+  /** Format epoch ms as a datetime-local input value (YYYY-MM-DDTHH:MM). */
+  private _formatInputValue(ms: number): string {
+    const d = new Date(ms);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
 
   /** Parse the startValue / endValue strings to Date objects for the timeline. */
@@ -268,6 +395,118 @@ export class DateWindowDialog extends LitElement {
     return html`<p id=${id} class="date-window-dialog-error" role="alert">
       ${this._errorMessage}
     </p>`;
+  }
+
+  private _renderFixedFields() {
+    return html`
+      <div class="date-window-dialog-field date-range-group">
+        <label>${msg("Date range")}</label>
+        <div class="date-window-dialog-dates">
+          <div class="date-window-dialog-field">
+            <label for="date-window-start">${msg("Start")}</label>
+            <input
+              id="date-window-start"
+              class="date-window-dialog-input"
+              type="datetime-local"
+              step="60"
+              .value=${this.startValue}
+              aria-invalid=${this._error === "range" ? "true" : "false"}
+              aria-describedby=${this._error === "range"
+                ? "date-window-error-range"
+                : nothing}
+              @change=${this._onDateChange}
+            />
+          </div>
+          <div class="date-window-dialog-field">
+            <label for="date-window-end">${msg("End")}</label>
+            <input
+              id="date-window-end"
+              class="date-window-dialog-input"
+              type="datetime-local"
+              step="60"
+              .value=${this.endValue}
+              aria-invalid=${this._error === "range" ? "true" : "false"}
+              aria-describedby=${this._error === "range"
+                ? "date-window-error-range"
+                : nothing}
+              @change=${this._onDateChange}
+            />
+          </div>
+        </div>
+        ${this._error === "range"
+          ? this._renderError("date-window-error-range")
+          : nothing}
+      </div>
+
+      ${this.rangeBounds
+        ? html`
+            <div class="date-window-dialog-timeline">
+              <range-timeline
+                .startTime=${this._parseValueToDate(this.startValue)}
+                .endTime=${this._parseValueToDate(this.endValue)}
+                .rangeBounds=${this.rangeBounds}
+                .zoomLevel=${this.zoomLevel}
+                .dateSnapping=${this.dateSnapping}
+                @dp-range-commit=${this._onRangeCommit}
+              ></range-timeline>
+            </div>
+          `
+        : nothing}
+      ${this.showShortcuts
+        ? html`
+            <div class="date-window-dialog-shortcuts">
+              <ha-button @click=${this._onPreviousShortcut}
+                >${msg("Use previous range")}</ha-button
+              >
+              <ha-button @click=${this._onNextShortcut}
+                >${msg("Use next range")}</ha-button
+              >
+            </div>
+          `
+        : nothing}
+    `;
+  }
+
+  private _renderRelativeFields() {
+    const resolved = this._resolvePreset();
+    return html`
+      <div class="date-window-dialog-field date-range-group">
+        <label for="date-window-preset">${msg("Period")}</label>
+        <select
+          id="date-window-preset"
+          class="date-window-dialog-input"
+          @change=${this._onPresetChange}
+        >
+          ${RELATIVE_DATE_WINDOW_PRESETS.map(
+            (preset) => html`
+              <option value=${preset}>
+                ${relativeDateWindowPresetLabel(preset)}
+              </option>
+            `
+          )}
+        </select>
+        ${resolved
+          ? html`<p class="date-window-dialog-preview" aria-live="polite">
+              ${msg("Currently")}
+              <strong
+                >${formatComparisonLabel(resolved.start, resolved.end)}</strong
+              >
+              ${resolved.available
+                ? nothing
+                : html`<span class="date-window-dialog-preview-note"
+                    >${msg(
+                      "No data yet for this period while the chart is up to date."
+                    )}</span
+                  >`}
+            </p>`
+          : nothing}
+        <p class="date-window-dialog-hint">
+          ${msg(
+            "The window always has the same length as the selected range and moves with it."
+          )}
+        </p>
+      </div>
+    `;
   }
 
   render() {
@@ -285,9 +524,32 @@ export class DateWindowDialog extends LitElement {
         <div class="date-window-dialog-content">
           <div class="date-window-dialog-body">
             ${msg(
-              "A date window saves a named date range as a tab, so you can quickly preview it against the selected range or jump the chart back to it later."
+              "A date window saves a date range as a tab, either fixed dates or a period relative to the selected range, so you can preview it against the selected range or jump the chart to it."
             )}
           </div>
+
+          ${this.allowRelative
+            ? html`
+                <div class="date-window-dialog-field type-field">
+                  <span class="date-window-dialog-label" id="date-window-type"
+                    >${msg("Type")}</span
+                  >
+                  <radio-group
+                    aria-labelledby="date-window-type"
+                    name="date-window-type"
+                    .value=${this._kindValue}
+                    .options=${[
+                      { value: "fixed", label: msg("Fixed dates") },
+                      {
+                        value: "relative",
+                        label: msg("Relative to selected range"),
+                      },
+                    ]}
+                    @dp-change=${this._onKindChange}
+                  ></radio-group>
+                </div>
+              `
+            : nothing}
 
           <div class="date-window-dialog-field name-field">
             <label for="date-window-name">${msg("Name")}</label>
@@ -310,71 +572,9 @@ export class DateWindowDialog extends LitElement {
               : nothing}
           </div>
 
-          <div class="date-window-dialog-field date-range-group">
-            <label>${msg("Date range")}</label>
-            <div class="date-window-dialog-dates">
-              <div class="date-window-dialog-field">
-                <label for="date-window-start">${msg("Start")}</label>
-                <input
-                  id="date-window-start"
-                  class="date-window-dialog-input"
-                  type="datetime-local"
-                  step="60"
-                  .value=${this.startValue}
-                  aria-invalid=${this._error === "range" ? "true" : "false"}
-                  aria-describedby=${this._error === "range"
-                    ? "date-window-error-range"
-                    : nothing}
-                  @change=${this._onDateChange}
-                />
-              </div>
-              <div class="date-window-dialog-field">
-                <label for="date-window-end">${msg("End")}</label>
-                <input
-                  id="date-window-end"
-                  class="date-window-dialog-input"
-                  type="datetime-local"
-                  step="60"
-                  .value=${this.endValue}
-                  aria-invalid=${this._error === "range" ? "true" : "false"}
-                  aria-describedby=${this._error === "range"
-                    ? "date-window-error-range"
-                    : nothing}
-                  @change=${this._onDateChange}
-                />
-              </div>
-            </div>
-            ${this._error === "range"
-              ? this._renderError("date-window-error-range")
-              : nothing}
-          </div>
-
-          ${this.rangeBounds
-            ? html`
-                <div class="date-window-dialog-timeline">
-                  <range-timeline
-                    .startTime=${this._parseValueToDate(this.startValue)}
-                    .endTime=${this._parseValueToDate(this.endValue)}
-                    .rangeBounds=${this.rangeBounds}
-                    .zoomLevel=${this.zoomLevel}
-                    .dateSnapping=${this.dateSnapping}
-                    @dp-range-commit=${this._onRangeCommit}
-                  ></range-timeline>
-                </div>
-              `
-            : nothing}
-          ${this.showShortcuts
-            ? html`
-                <div class="date-window-dialog-shortcuts">
-                  <ha-button @click=${this._onPreviousShortcut}
-                    >${msg("Use previous range")}</ha-button
-                  >
-                  <ha-button @click=${this._onNextShortcut}
-                    >${msg("Use next range")}</ha-button
-                  >
-                </div>
-              `
-            : nothing}
+          ${this._kindValue === "relative"
+            ? this._renderRelativeFields()
+            : this._renderFixedFields()}
 
           <div class="date-window-dialog-actions">
             ${this.showDelete

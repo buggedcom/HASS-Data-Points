@@ -55,6 +55,21 @@ export const styles = css`
     color: var(--secondary-text-color);
   }
 
+  .chart-tab.disabled .chart-tab-trigger {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .chart-tab.disabled:hover {
+    border-bottom-color: transparent;
+  }
+
+  .chart-tab-icon {
+    --mdc-icon-size: 14px;
+    flex: 0 0 auto;
+    color: var(--secondary-text-color);
+  }
+
   .chart-tab.active .chart-tab-trigger {
     color: var(--primary-text-color);
     font-weight: 600;

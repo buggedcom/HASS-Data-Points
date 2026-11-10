@@ -4,6 +4,7 @@ import {
   control,
   createHassFixture,
   emitControlEvent,
+  END,
   mountPanel,
   PanelCardFixture,
   START,
@@ -83,6 +84,65 @@ describe("GIVEN a mounted panel with a saved comparison window", () => {
       expect(
         control(panel.shadowRoot!, "range-toolbar").comparisonPreview
       ).toBeNull();
+    });
+  });
+});
+
+describe("GIVEN a mounted panel with a saved relative window", () => {
+  const RELATIVE = {
+    id: "relative-previous",
+    label: "Previous period",
+    kind: "relative",
+    preset: "previous_period",
+  };
+
+  describe("WHEN the comparison tabs render", () => {
+    it("THEN the tab shows the dates it resolves to and the relative icon", async () => {
+      expect.assertions(3);
+      const panel = await mountPanel(
+        createHassFixture({ preferences: { date_windows: [RELATIVE] } }).hass
+      );
+      const chart = control(panel.shadowRoot!, "hass-datapoints-history-card");
+      const rail = control(chart.shadowRoot!, "comparison-tab-rail");
+      const tab = rail.tabs.find((entry) => entry.id === RELATIVE.id);
+      expect(tab?.label).toBe("Previous period");
+      expect(tab?.icon).toBe("mdi:calendar-sync");
+      expect(tab?.disabled).toBe(false);
+    });
+  });
+
+  describe("WHEN its tab is activated", () => {
+    it("THEN the preview covers the period of the same length before the range", async () => {
+      expect.assertions(1);
+      const panel = await mountPanel(
+        createHassFixture({ preferences: { date_windows: [RELATIVE] } }).hass
+      );
+      const chart = control(panel.shadowRoot!, "hass-datapoints-history-card");
+      const rail = control(chart.shadowRoot!, "comparison-tab-rail");
+      emitControlEvent(rail, "dp-tab-activate", { tabId: RELATIVE.id });
+      await settlePanel();
+      const spanMs = Date.parse(END) - Date.parse(START);
+      expect(
+        control(panel.shadowRoot!, "range-toolbar").comparisonPreview
+      ).toEqual({
+        start: Date.parse(START) - spanMs,
+        end: Date.parse(START),
+      });
+    });
+  });
+
+  describe("WHEN the series analysis rows render", () => {
+    it("THEN the relative window is not offered as an anomaly comparison window", async () => {
+      expect.assertions(1);
+      const panel = await mountPanel(
+        createHassFixture({
+          preferences: { date_windows: [RELATIVE, COMPARISON] },
+        }).hass
+      );
+      const targets = control(panel.shadowRoot!, "history-targets");
+      expect(
+        (targets.comparisonWindows as Array<{ id: string }>).map((w) => w.id)
+      ).toEqual([COMPARISON.id]);
     });
   });
 });

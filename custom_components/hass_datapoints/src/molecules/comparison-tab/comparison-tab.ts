@@ -1,4 +1,4 @@
-import { LitElement, html } from "lit";
+import { LitElement, html, nothing } from "lit";
 import { property } from "lit/decorators.js";
 
 import { classMap } from "lit/directives/class-map.js";
@@ -6,7 +6,11 @@ import { styles } from "./comparison-tab.styles";
 
 /**
  * `comparison-tab` renders a single comparison date-window tab in the chart
- * tab rail, handling active, previewing, loading, and editable states.
+ * tab rail, handling active, previewing, loading, editable and disabled states.
+ *
+ * A disabled tab (e.g. a relative window that lies entirely in the future)
+ * is dimmed and ignores activate/hover, but its edit and delete actions still
+ * work so the window can always be changed or removed.
  *
  * @fires dp-tab-activate - `{ tabId: string }` fired when the trigger button is clicked
  * @fires dp-tab-hover - `{ tabId: string }` fired on mouseenter / trigger focus
@@ -38,6 +42,16 @@ export class ComparisonTab extends LitElement {
   /** Whether edit and delete action buttons are shown. */
   @property({ type: Boolean }) accessor editable: boolean = false;
 
+  /** Optional icon shown before the label (e.g. `mdi:calendar-sync` for relative windows). */
+  @property({ type: String }) accessor icon: string = "";
+
+  /** Whether the tab cannot be activated or previewed. */
+  @property({ type: Boolean }) accessor disabled: boolean = false;
+
+  /** Tooltip explaining why the tab is disabled. */
+  @property({ type: String, attribute: "disabled-reason" })
+  accessor disabledReason: string = "";
+
   private _emit(name: string) {
     this.dispatchEvent(
       new CustomEvent(name, {
@@ -49,22 +63,27 @@ export class ComparisonTab extends LitElement {
   }
 
   private _onTriggerClick() {
+    if (this.disabled) return;
     this._emit("dp-tab-activate");
   }
 
   private _onMouseEnter() {
+    if (this.disabled) return;
     this._emit("dp-tab-hover");
   }
 
   private _onMouseLeave() {
+    if (this.disabled) return;
     this._emit("dp-tab-leave");
   }
 
   private _onTriggerFocus() {
+    if (this.disabled) return;
     this._emit("dp-tab-hover");
   }
 
   private _onTriggerBlur() {
+    if (this.disabled) return;
     this._emit("dp-tab-leave");
   }
 
@@ -86,6 +105,7 @@ export class ComparisonTab extends LitElement {
       active: this.active,
       previewing: this.previewing,
       loading: this.loading,
+      disabled: this.disabled,
     });
 
     return html`
@@ -98,6 +118,10 @@ export class ComparisonTab extends LitElement {
           type="button"
           class="chart-tab-trigger"
           ?aria-current=${this.active}
+          aria-disabled=${this.disabled ? "true" : "false"}
+          title=${this.disabled && this.disabledReason
+            ? this.disabledReason
+            : nothing}
           @click=${this._onTriggerClick}
           @focus=${this._onTriggerFocus}
           @blur=${this._onTriggerBlur}
@@ -109,6 +133,13 @@ export class ComparisonTab extends LitElement {
                     class="chart-tab-spinner"
                     aria-hidden="true"
                   ></span>`
+                : null}
+              ${this.icon
+                ? html`<ha-icon
+                    class="chart-tab-icon"
+                    icon=${this.icon}
+                    aria-hidden="true"
+                  ></ha-icon>`
                 : null}
               <span class="chart-tab-label">${this.label}</span>
             </span>

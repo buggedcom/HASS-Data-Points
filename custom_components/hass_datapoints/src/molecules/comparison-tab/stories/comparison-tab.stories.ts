@@ -59,6 +59,20 @@ export default {
       control: "boolean",
       description: "Whether edit and delete action buttons are displayed.",
     },
+    icon: {
+      control: "text",
+      description:
+        "Optional icon before the label (relative windows use mdi:calendar-sync).",
+    },
+    disabled: {
+      control: "boolean",
+      description:
+        "Whether the tab ignores activate/hover (a relative window entirely in the future).",
+    },
+    disabledReason: {
+      control: "text",
+      description: "Tooltip shown on a disabled tab.",
+    },
   },
   args: {
     tabId: "tab-1",
@@ -68,6 +82,9 @@ export default {
     previewing: false,
     loading: false,
     editable: false,
+    icon: "",
+    disabled: false,
+    disabledReason: "",
   },
   render: (args: RecordWithUnknownValues) => html`
     <div
@@ -81,6 +98,9 @@ export default {
         .previewing=${args.previewing}
         .loading=${args.loading}
         .editable=${args.editable}
+        .icon=${args.icon}
+        .disabled=${args.disabled}
+        .disabledReason=${args.disabledReason}
       ></comparison-tab>
     </div>
   `,
@@ -168,5 +188,44 @@ export const EmitsEditAndDelete = {
       canvas.getByRole("button", { name: /delete my window/i })
     );
     await expect(deleteHandler).toHaveBeenCalledOnce();
+  },
+};
+
+/** Relative window — calendar-sync icon before the label; dates follow the selected range. */
+export const Relative = {
+  args: {
+    tabId: "previous-period",
+    label: "Previous period",
+    detail: "27 Oct – 3 Nov 2026",
+    editable: true,
+    icon: "mdi:calendar-sync",
+  },
+};
+
+/**
+ * Disabled relative window — entirely in the future while the chart is up to
+ * date. Clicking the trigger does nothing, but edit still works.
+ */
+export const DisabledRelative = {
+  args: {
+    tabId: "next-period",
+    label: "Next period",
+    detail: "10 – 17 Nov 2026",
+    editable: true,
+    icon: "mdi:calendar-sync",
+    disabled: true,
+    disabledReason: "No data yet for this period",
+  },
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const host = canvasElement.querySelector("comparison-tab") as HTMLElement;
+    const activate = fn();
+    const edit = fn();
+    host.addEventListener("dp-tab-activate", activate);
+    host.addEventListener("dp-tab-edit", edit);
+    const canvas = within(host.shadowRoot as unknown as HTMLElement);
+    await userEvent.click(canvas.getByText("Next period"));
+    await expect(activate).not.toHaveBeenCalled();
+    await userEvent.click(canvas.getByLabelText("Edit Next period"));
+    await expect(edit).toHaveBeenCalledOnce();
   },
 };

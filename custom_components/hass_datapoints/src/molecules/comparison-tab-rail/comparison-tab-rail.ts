@@ -13,6 +13,10 @@ export interface TabItem {
   detail: string;
   active: boolean;
   editable: boolean;
+  /** Optional icon before the label (relative windows use `mdi:calendar-sync`). */
+  icon?: string;
+  /** Disabled tabs can't be activated or previewed (e.g. a window entirely in the future). */
+  disabled?: boolean;
 }
 
 /**
@@ -113,6 +117,11 @@ export class ComparisonTabRail extends LitElement {
                   .previewing=${this.hoveredId === tab.id}
                   .loading=${this.loadingIds.includes(tab.id)}
                   .editable=${tab.editable}
+                  .icon=${tab.icon ?? ""}
+                  .disabled=${!!tab.disabled}
+                  .disabledReason=${tab.disabled
+                    ? msg("No data yet for this period")
+                    : ""}
                 ></comparison-tab>
               `
             )}

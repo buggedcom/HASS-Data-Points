@@ -273,4 +273,78 @@ describe("comparison-tab", () => {
       });
     });
   });
+  // ---------------------------------------------------------------------------
+  // Icon and disabled state (relative windows)
+  // ---------------------------------------------------------------------------
+
+  describe("GIVEN an icon", () => {
+    beforeEach(async () => {
+      el = createElement({ icon: "mdi:calendar-sync" });
+      await el.updateComplete;
+    });
+
+    describe("WHEN rendered", () => {
+      it("THEN shows the icon before the label", () => {
+        expect.assertions(1);
+        expect(
+          el.shadowRoot!.querySelector(".chart-tab-icon")?.getAttribute("icon")
+        ).toBe("mdi:calendar-sync");
+      });
+    });
+  });
+
+  describe("GIVEN a disabled, editable tab", () => {
+    beforeEach(async () => {
+      el = createElement({
+        disabled: true,
+        editable: true,
+        disabledReason: "No data yet for this period",
+      });
+      await el.updateComplete;
+    });
+
+    describe("WHEN rendered", () => {
+      it("THEN marks the trigger as disabled with the reason as tooltip", () => {
+        expect.assertions(3);
+        const trigger = el.shadowRoot!.querySelector(".chart-tab-trigger")!;
+        expect(
+          el.shadowRoot!.querySelector(".chart-tab.disabled")
+        ).not.toBeNull();
+        expect(trigger.getAttribute("aria-disabled")).toBe("true");
+        expect(trigger.getAttribute("title")).toBe(
+          "No data yet for this period"
+        );
+      });
+    });
+
+    describe("WHEN the trigger is clicked or hovered", () => {
+      it("THEN fires neither dp-tab-activate nor dp-tab-hover", () => {
+        expect.assertions(2);
+        const activate = vi.fn();
+        const hover = vi.fn();
+        el.addEventListener("dp-tab-activate", activate);
+        el.addEventListener("dp-tab-hover", hover);
+        (
+          el.shadowRoot!.querySelector(".chart-tab-trigger") as HTMLElement
+        ).click();
+        el.shadowRoot!.querySelector(".chart-tab")!.dispatchEvent(
+          new MouseEvent("mouseenter")
+        );
+        expect(activate).not.toHaveBeenCalled();
+        expect(hover).not.toHaveBeenCalled();
+      });
+    });
+
+    describe("WHEN the edit action is clicked", () => {
+      it("THEN still fires dp-tab-edit", () => {
+        expect.assertions(1);
+        const handler = vi.fn();
+        el.addEventListener("dp-tab-edit", handler);
+        (
+          el.shadowRoot!.querySelector(".chart-tab-action.edit") as HTMLElement
+        ).click();
+        expect(handler).toHaveBeenCalledOnce();
+      });
+    });
+  });
 });
