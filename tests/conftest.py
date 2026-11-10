@@ -13,6 +13,7 @@ import contextlib
 import sys
 from datetime import UTC
 from datetime import datetime as _datetime
+from types import SimpleNamespace
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -134,6 +135,10 @@ _stub("homeassistant.config_entries", _ha_ce)
 # -- homeassistant.helpers ----------------------------------------------------
 _ha_helpers = MagicMock()
 _stub("homeassistant.helpers", _ha_helpers)
+_ha_helpers.llm = SimpleNamespace(
+    Tool=object, ToolAnnotations=SimpleNamespace, ToolResult=SimpleNamespace
+)
+_stub("homeassistant.helpers.llm", _ha_helpers.llm)
 
 _ha_cv = MagicMock()
 _ha_cv.string = MagicMock()

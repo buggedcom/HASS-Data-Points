@@ -68,6 +68,7 @@ That makes it much easier to investigate heating behavior, energy usage, sensor 
 - Anomaly monitors appear as Home Assistant integration devices, enabling automations to trigger when anomalies are detected
 - Compare a current period against saved historical windows to find drift and regressions
 - AI query brief: a structured panel context for AI assistants (MCP-connected or otherwise) containing entity metadata, query inputs, and current anomaly findings — localized into DE, ES, FR, PT, FI, and ZH-Hans
+- [Native MCP tools](docs/history-and-analysis.md#native-mcp-tools) expose chart analysis, annotations, and monitor findings through Home Assistant 2026.11 or later.
 
 ---
 

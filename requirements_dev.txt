@@ -3,3 +3,4 @@ pytest
 pytest-asyncio
 ruff
 voluptuous
+probatio==0.13.0
