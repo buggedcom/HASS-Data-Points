@@ -5,7 +5,7 @@
 Renders the Add / Edit "date window" dialog opened from the comparison-tab rail
 (the **+** affordance) and from the anomaly flow. A date window is a named date
 range saved as a comparison tab. The molecule wraps `ha-dialog` and presents the
-name field, a start/end datetime pair, a range timeline, optional range
+name field, a start/end datetime pair (no timeline slider), optional range
 shortcuts, and the action row (Create/Save, Cancel, and Delete when editing).
 
 ## Ownership model
@@ -26,12 +26,11 @@ is what collapses the feature to a single test seam:
   (`"name"` | `"range"`) which renders a localized inline message keyed to the
   offending field, and do **not** emit `dp-window-submit`. The error clears as
   soon as the offending field is corrected (name typed, or range made valid via
-  a date input / timeline commit). Only a valid submit emits
+  a date input). Only a valid submit emits
   `dp-window-submit` with `{ name, start, end }`.
 
-Everything else — the draft range, start/end values, range bounds, zoom level
-and date snapping — stays **controlled by the panel** and is passed down as
-properties. The dialog forwards date edits and timeline commits up via
+Everything else — the draft range and start/end values — stays **controlled by the panel** and is passed down as
+properties. The dialog forwards date edits up via
 `dp-window-date-change` so the panel can keep the draft range in step.
 
 ## Panel relationship (`panels/datapoints/datapoints.ts`)
@@ -61,7 +60,7 @@ open-edge pattern as the name:
 
 In relative mode the name is auto-filled with the preset label until the user
 types in the field (`_nameEdited`; an existing name counts as typed). The date
-inputs, timeline and shortcuts are replaced by a native preset `<select>` and a
+inputs and shortcuts are replaced by a native preset `<select>` and a
 "Currently …" preview, computed from `rangeStart` / `rangeEnd` / `now`.
 Switching relative → fixed emits `dp-window-date-change` with the resolved
 dates, so the panel's draft range starts there.

@@ -233,7 +233,7 @@ export const EmitsDelete = {
   },
 };
 
-/** Relative mode — preset select, live preview of the resolved dates, no timeline. */
+/** Relative mode — preset select and a live preview of the resolved dates. */
 export const RelativeMode = {
   args: {
     heading: "Edit date window",
