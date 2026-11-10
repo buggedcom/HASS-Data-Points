@@ -2,6 +2,12 @@
 
 const WN_ITEMS = [
   {
+    tag: "AI",
+    href: "#mcp",
+    h: "Native MCP tools",
+    p: "On Home Assistant 2026.11 or later, MCP clients can run chart analysis and aggregates, read datapoints and monitor findings, and record annotations through six built-in tools.",
+  },
+  {
     tag: "Monitors",
     href: "#monitors",
     h: "Anomaly monitors, redesigned",
