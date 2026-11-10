@@ -998,17 +998,14 @@ export class AnomalyMonitorWizard extends LitElement {
     return html`
       <ha-dialog
         ?open=${this.open}
+        .headerTitle=${isEdit
+          ? msg("Edit Anomaly Monitor")
+          : msg("Create Anomaly Monitor")}
         hideActions
         .scrimClickAction=${"close"}
         .escapeKeyAction=${"close"}
         @closed=${this._onDialogClosed}
       >
-        <span slot="heading">
-          ${isEdit
-            ? msg("Edit Anomaly Monitor")
-            : msg("Create Anomaly Monitor")}
-        </span>
-
         <div class="wizard-shell">
           <div class="wizard-header">${this._renderStepBar()}</div>
           <div class="wizard-content">
