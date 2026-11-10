@@ -8,13 +8,12 @@ from datetime import datetime
 from homeassistant.components.recorder import get_instance
 
 from .const import ANOMALY_MAX_PTS
-from .history_utils import prepare_series
-
-
-def _timestamp(value) -> float:
-    if isinstance(value, datetime):
-        return value.timestamp() * 1000
-    return value * 1000 if value < 1e11 else value
+from .history_utils import (
+    fetch_entity_states,
+    fetch_entity_statistics,
+    prepare_series,
+    statistics_points,
+)
 
 
 def fetch_analysis_data(
@@ -26,19 +25,14 @@ def fetch_analysis_data(
     The cap is checked before any sampling: aggregation must not silently lose
     transitions, consumption or events.
     """
-    from homeassistant.components.recorder.history import get_significant_states  # noqa: PLC0415
-    from homeassistant.components.recorder.statistics import statistics_during_period  # noqa: PLC0415
-
-    states = get_significant_states(
+    states = fetch_entity_states(
         hass,
-        datetime.fromisoformat(start),
-        datetime.fromisoformat(end),
-        [entity_id],
-        include_start_time_state=True,
-        significant_changes_only=False,
-        minimal_response=False,
-        no_attributes=not entity_id.startswith("event."),
-    ).get(entity_id, [])
+        entity_id,
+        start,
+        end,
+        include_start=True,
+        attributes=entity_id.startswith("event."),
+    )
     if len(states) > ANOMALY_MAX_PTS:
         raise ValueError("Too many history states; request a shorter time range")
     samples = []
@@ -68,29 +62,15 @@ def fetch_analysis_data(
                     boundary=time <= start_ms,
                 )
         samples.append(sample)
-    entries = []
-    if statistics:
-        entries = statistics_during_period(
-            hass,
-            datetime.fromisoformat(start),
-            datetime.fromisoformat(end),
-            {entity_id},
-            "hour",
-            {},
-            {"mean", "change"},
-        ).get(entity_id, [])
-    stats = []
-    changes = []
-    for entry in entries:
-        time = _timestamp(entry["start"])
-        for field, dest in (("mean", stats), ("change", changes)):
-            value = entry.get(field)
-            if isinstance(value, (int, float)) and math.isfinite(value):
-                dest.append([time, value])
+    entries = (
+        fetch_entity_statistics(hass, entity_id, start, end, {"mean", "change"})
+        if statistics
+        else []
+    )
     return {
         "samples": sorted(samples, key=lambda s: s["time"]),
-        "statistics": sorted(stats),
-        "changes": sorted(changes),
+        "statistics": sorted(statistics_points(entries, "mean")),
+        "changes": sorted(statistics_points(entries, "change")),
     }
 
 
