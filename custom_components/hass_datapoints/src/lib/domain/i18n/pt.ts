@@ -3,6 +3,10 @@ import type { ComponentTranslations } from "@/lib/i18n/types";
 export const translations: ComponentTranslations = {
   "Previous period": "Período anterior",
   "Next period": "Período seguinte",
+  "2 periods back": "2 períodos atrás",
+  "3 periods back": "3 períodos atrás",
+  "2 periods ahead": "2 períodos à frente",
+  "3 periods ahead": "3 períodos à frente",
   "Same period last month": "Mesmo período do mês passado",
   "Same period 2 months ago": "Mesmo período há 2 meses",
   "Same period 3 months ago": "Mesmo período há 3 meses",

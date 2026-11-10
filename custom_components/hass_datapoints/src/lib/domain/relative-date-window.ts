@@ -12,7 +12,11 @@ import { msg } from "@/lib/i18n/localize";
 
 export const RELATIVE_DATE_WINDOW_PRESETS = [
   "previous_period",
+  "previous_period_2",
+  "previous_period_3",
   "next_period",
+  "next_period_2",
+  "next_period_3",
   "months_back_1",
   "months_back_2",
   "months_back_3",
@@ -34,13 +38,17 @@ export const DEFAULT_RELATIVE_DATE_WINDOW_PRESET: RelativeDateWindowPreset =
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 type Shift =
-  | { kind: "period"; direction: -1 | 1 }
+  | { kind: "period"; periods: number }
   | { kind: "months"; amount: number }
   | { kind: "ms"; amount: number };
 
 const PRESET_SHIFTS: Record<RelativeDateWindowPreset, Shift> = {
-  previous_period: { kind: "period", direction: -1 },
-  next_period: { kind: "period", direction: 1 },
+  previous_period: { kind: "period", periods: -1 },
+  previous_period_2: { kind: "period", periods: -2 },
+  previous_period_3: { kind: "period", periods: -3 },
+  next_period: { kind: "period", periods: 1 },
+  next_period_2: { kind: "period", periods: 2 },
+  next_period_3: { kind: "period", periods: 3 },
   months_back_1: { kind: "months", amount: -1 },
   months_back_2: { kind: "months", amount: -2 },
   months_back_3: { kind: "months", amount: -3 },
@@ -69,8 +77,16 @@ export function relativeDateWindowPresetLabel(
   switch (preset) {
     case "previous_period":
       return msg("Previous period");
+    case "previous_period_2":
+      return msg("2 periods back");
+    case "previous_period_3":
+      return msg("3 periods back");
     case "next_period":
       return msg("Next period");
+    case "next_period_2":
+      return msg("2 periods ahead");
+    case "next_period_3":
+      return msg("3 periods ahead");
     case "months_back_1":
       return msg("Same period last month");
     case "months_back_2":
@@ -151,7 +167,7 @@ export function resolveRelativeDateWindow(
 
   let resolvedStartMs: number;
   if (shift.kind === "period") {
-    resolvedStartMs = startMs + shift.direction * durationMs;
+    resolvedStartMs = startMs + shift.periods * durationMs;
   } else if (shift.kind === "ms") {
     resolvedStartMs = startMs + shift.amount;
   } else {
