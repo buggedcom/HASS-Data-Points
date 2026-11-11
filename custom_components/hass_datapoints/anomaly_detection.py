@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import math
 import statistics
+from bisect import bisect_left
 
 try:
     from .const import DEFAULT_ANOMALY_DIRECTION
@@ -92,19 +93,20 @@ def _interpolate(pts: list, time_ms: int) -> float | None:
     """Linear interpolation into a sorted pts list [[timeMs, value], ...]."""
     if not pts:
         return None
-    if time_ms < pts[0][0] or time_ms > pts[-1][0]:
+    first_time, first_value = pts[0]
+    last_time, last_value = pts[-1]
+    if time_ms < first_time or time_ms > last_time:
         return None
-    if time_ms == pts[0][0]:
-        return pts[0][1]
-    if time_ms == pts[-1][0]:
-        return pts[-1][1]
-    for i in range(len(pts) - 1):
-        t0, v0 = pts[i]
-        t1, v1 = pts[i + 1]
-        if t0 <= time_ms <= t1:
-            frac = (time_ms - t0) / (t1 - t0)
-            return v0 + (v1 - v0) * frac
-    return None
+    if time_ms == first_time:
+        return first_value
+    if time_ms == last_time:
+        return last_value
+
+    right_index = bisect_left(pts, time_ms, key=lambda point: point[0])
+    t1, v1 = pts[right_index]
+    t0, v0 = pts[right_index - 1]
+    frac = (time_ms - t0) / (t1 - t0)
+    return v0 + (v1 - v0) * frac
 
 
 # ---------------------------------------------------------------------------
@@ -311,13 +313,13 @@ def _build_rate_pts(pts: list, rate_window: str) -> list:
 
     window_ms = _trend_window_ms(rate_window)
     rate_pts = []
+    comparison_index = 0
     for i in range(1, len(pts)):
         t, v = pts[i]
-        comp = pts[0]
-        for j in range(i - 1, -1, -1):
-            if (t - pts[j][0]) >= window_ms:
-                comp = pts[j]
-                break
+        cutoff = t - window_ms
+        while comparison_index + 1 < i and pts[comparison_index + 1][0] <= cutoff:
+            comparison_index += 1
+        comp = pts[comparison_index]
         delta_ms = t - comp[0]
         if not (delta_ms > 0 and math.isfinite(delta_ms)):
             continue
