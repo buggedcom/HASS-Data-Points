@@ -587,7 +587,8 @@ async def _run_connection_job(
     _register_cancel(hass, connection, request_id, token)
     connection.subscriptions[subscription_key] = partial(runner.cancel_token, token)
     try:
-        return await runner.submit(work, token=token)
+        label = f"{msg.get('type', '')} {msg.get('monitor_id') or msg.get('entity_id') or ''}"
+        return await runner.submit(work, token=token, label=label.strip())
     finally:
         _unregister_cancel(hass, connection, request_id, token)
         connection.subscriptions.pop(subscription_key, None)

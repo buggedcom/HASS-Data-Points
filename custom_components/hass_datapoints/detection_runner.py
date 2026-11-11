@@ -116,7 +116,10 @@ class DetectionJob:
     work: Callable[[DetectionJob], Awaitable[Any]]
     started: asyncio.Future[asyncio.Task[Any]]
     key: str | None = None
+    label: str | None = None
     task: asyncio.Task[Any] | None = None
+    admitted_at: float = 0.0
+    started_at: float = 0.0
 
     def check(self) -> None:
         self.token.raise_if_cancelled()
@@ -168,6 +171,7 @@ class DetectionRunner:
         *,
         key: str | None = None,
         token: CancellationToken | None = None,
+        label: str | None = None,
     ) -> Any:
         """Admit and run one pipeline under a single absolute deadline.
 
@@ -193,7 +197,9 @@ class DetectionRunner:
             token=token or self.new_token(),
             work=work,
             key=key,
+            label=label or key,
             started=asyncio.get_running_loop().create_future(),
+            admitted_at=time.monotonic(),
         )
         if key is not None:
             self._keys[key] = job
@@ -287,6 +293,7 @@ class DetectionRunner:
         return max(0.0, job.token.deadline - time.monotonic())
 
     def _start(self, job: DetectionJob) -> None:
+        job.started_at = time.monotonic()
         self._active[job.id] = job
         job.task = asyncio.get_running_loop().create_task(
             self._run_owned(job), name=f"datapoints_detection_job_{job.id}"
@@ -296,11 +303,25 @@ class DetectionRunner:
             job.started.set_result(job.task)
 
     async def _run_owned(self, job: DetectionJob) -> Any:
+        outcome = "success"
         try:
             job.check()
             return await job.work(job)
+        except BaseException as err:
+            outcome = error_code(err)
+            raise
         finally:
             self._finish(job)
+            if _LOGGER.isEnabledFor(logging.DEBUG):
+                finished = time.monotonic()
+                _LOGGER.debug(
+                    "hass_datapoints job %d (%s): queue=%.0fms run=%.0fms outcome=%s",
+                    job.id,
+                    job.label or "-",
+                    (job.started_at - job.admitted_at) * 1000,
+                    (finished - job.started_at) * 1000,
+                    outcome,
+                )
 
     def _finish(self, job: DetectionJob) -> None:
         self._active.pop(job.id, None)
