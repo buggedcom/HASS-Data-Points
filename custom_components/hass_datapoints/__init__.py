@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-import asyncio
-import concurrent.futures
 import logging
+import time
 from pathlib import Path
 
 import voluptuous as vol
@@ -46,6 +45,7 @@ from .const import (
     PANEL_URL_PATH,
     SERVICE_RECORD,
 )
+from .detection_runner import DetectionRunner
 from .monitor_device_sync import async_setup_monitor_device_name_sync
 from .store import DatapointsStore
 
@@ -181,27 +181,29 @@ async def async_setup_entry(hass: HomeAssistant, entry: DatapointsConfigEntry) -
         async_setup_monitor_device_name_sync(hass, entry.entry_id, store)
     )
 
-    # Dedicated thread pool for CPU-bound detection and cache I/O.
-    # Kept separate from HA's shared executor so detection work never starves
-    # HA's own state-write and integration callbacks.
-    pool = concurrent.futures.ThreadPoolExecutor(
-        max_workers=3, thread_name_prefix="datapoints"
-    )
-    hass.data[DOMAIN]["executor"] = pool
-    entry.async_on_unload(lambda: pool.shutdown(wait=False))
+    # Bounded, cancellable job runner owning the dedicated CPU pool for
+    # detection. Kept separate from HA's shared executor so detection never
+    # starves HA's own work; cache I/O uses HA's I/O executor instead.
+    runner = DetectionRunner()
+    hass.data[DOMAIN]["runner"] = runner
 
-    # Semaphore limiting concurrent background monitor scans.
-    hass.data[DOMAIN]["scan_semaphore"] = asyncio.Semaphore(2)
+    # Configuration/lifecycle edits cancel that monitor's scan and warmup;
+    # the store's revision check rejects anything they would still publish.
+    def _cancel_monitor_jobs(monitor_id: str) -> None:
+        runner.cancel_key(f"scan:{monitor_id}")
+        runner.cancel_key(f"warmup:{monitor_id}")
 
-    # Registry mapping request_id → threading.Event for cooperative cancellation.
+    entry.async_on_unload(store.async_add_revision_listener(_cancel_monitor_jobs))
+
+    # Registry mapping (connection, request_id) → CancellationToken.
     hass.data[DOMAIN]["in_flight"] = {}
 
     # Initialise anomaly result cache (SQLite, run in executor).
     db_path = hass.config.path(".storage", "hass_datapoints_cache.db")
     cache = AnomalyCache(db_path)
-    await hass.loop.run_in_executor(pool, cache.purge_old)
-    await hass.loop.run_in_executor(
-        pool, lambda: cache._connect().execute("PRAGMA optimize").connection.commit()
+    await hass.async_add_executor_job(cache.purge_old)
+    await hass.async_add_executor_job(
+        lambda: cache._connect().execute("PRAGMA optimize").connection.commit()
     )
     hass.data[DOMAIN]["anomaly_cache"] = cache
 
@@ -252,8 +254,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: DatapointsConfigEntry) -
     # Warm anomaly cache in background after sensors are set up (best-effort).
     from .sensor import async_warm_cache  # noqa: PLC0415
 
-    hass.async_create_background_task(
-        async_warm_cache(hass, store, pool, hass.data[DOMAIN]["in_flight"]),
+    hass.data[DOMAIN]["warmup_task"] = hass.async_create_background_task(
+        async_warm_cache(hass, store),
         "datapoints_cache_warmup",
     )
 
@@ -261,16 +263,43 @@ async def async_setup_entry(hass: HomeAssistant, entry: DatapointsConfigEntry) -
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: DatapointsConfigEntry) -> bool:
-    """Unload a config entry."""
+    """Unload a config entry.
+
+    Stop admission and cancel detection work, then drain workers and store
+    transactions BEFORE tearing down platforms or closing resources. If that
+    does not finish within five seconds, report the unload as failed and leave
+    everything in place (quiesced, not accepting work) rather than closing
+    resources still in use or starting a replacement pool.
+    """
+    # One five-second budget covers both drains.
+    deadline = time.monotonic() + 5.0
+    runner: DetectionRunner | None = hass.data[DOMAIN].get("runner")
+    if runner is not None and not await runner.shutdown(timeout=5.0):
+        _LOGGER.error(
+            "hass_datapoints unload failed: detection jobs did not finish within "
+            "5s; the integration stays quiesced until it is reloaded again"
+        )
+        return False
+    warmup = hass.data[DOMAIN].pop("warmup_task", None)
+    if warmup is not None and not warmup.done():
+        warmup.cancel()
+    store = hass.data[DOMAIN].get("store")
+    remaining = max(0.0, deadline - time.monotonic())
+    if store is not None and not await store.async_drain_commits(timeout=remaining):
+        _LOGGER.error(
+            "hass_datapoints unload failed: monitor store transactions did not "
+            "finish within 5s"
+        )
+        return False
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
+    if not unload_ok:
+        return False
     hass.services.async_remove(DOMAIN, SERVICE_RECORD)
     if store := hass.data[DOMAIN].pop("store", None):
         await hass.async_add_executor_job(store.close)
     hass.data[DOMAIN].pop("anomaly_cache", None)
     hass.data[DOMAIN].pop("in_flight", None)
-    hass.data[DOMAIN].pop("scan_semaphore", None)
-    if pool := hass.data[DOMAIN].pop("executor", None):
-        pool.shutdown(wait=False)
+    hass.data[DOMAIN].pop("runner", None)
     hass.data[DOMAIN].pop(KEY_ADD_SENSOR_ENTITIES, None)
     hass.data[DOMAIN].pop(KEY_ADD_BINARY_SENSOR_ENTITIES, None)
     hass.data[DOMAIN].pop(KEY_ADD_SWITCH_ENTITIES, None)

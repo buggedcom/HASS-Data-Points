@@ -13,11 +13,24 @@ from bisect import bisect_left
 
 try:
     from .const import DEFAULT_ANOMALY_DIRECTION
+    from .detection_runner import DetectionCancelled
 except ImportError:  # pragma: no cover
     # Loaded as a top-level module (e.g. scripts/trend_consistency.py adds this
     # package directory to sys.path), where the relative import has no parent
     # package. const.py is pure stdlib so a flat import is equivalent.
     from const import DEFAULT_ANOMALY_DIRECTION  # type: ignore[no-redef]
+    from detection_runner import DetectionCancelled  # type: ignore[no-redef]
+
+
+def check_cancel(cancel, index: int = 0) -> None:
+    """Raise promptly from long loops while retaining Event compatibility."""
+    if cancel is None or index % 256 != 0:
+        return
+    if hasattr(cancel, "raise_if_cancelled"):
+        cancel.raise_if_cancelled()
+    elif cancel.is_set():
+        raise DetectionCancelled
+
 
 # ---------------------------------------------------------------------------
 # Sensitivity helpers
@@ -114,13 +127,14 @@ def _interpolate(pts: list, time_ms: int) -> float | None:
 # ---------------------------------------------------------------------------
 
 
-def _build_rolling_average(pts: list, window_ms: int) -> list:
+def _build_rolling_average(pts: list, window_ms: int, cancel=None) -> list:
     if len(pts) < 2 or window_ms <= 0:
         return []
     result = []
     ws = 0
     w_sum = 0.0
     for i, (t, v) in enumerate(pts):
+        check_cancel(cancel, i)
         w_sum += v
         while ws < i and (t - pts[ws][0]) > window_ms:
             w_sum -= pts[ws][1]
@@ -130,12 +144,13 @@ def _build_rolling_average(pts: list, window_ms: int) -> list:
     return result
 
 
-def _build_linear_trend(pts: list) -> list:
+def _build_linear_trend(pts: list, cancel=None) -> list:
     if len(pts) < 2:
         return []
     origin = pts[0][0]
     sum_x = sum_y = sum_xx = sum_xy = 0.0
-    for t, v in pts:
+    for index, (t, v) in enumerate(pts):
+        check_cancel(cancel, index)
         x = (t - origin) / 3_600_000.0
         sum_x += x
         sum_y += v
@@ -182,25 +197,27 @@ _LOWESS_FRACTIONS = {
 }
 
 
-def _build_ema(pts: list, alpha: float) -> list:
+def _build_ema(pts: list, alpha: float, cancel=None) -> list:
     if len(pts) < 2:
         return []
     a = max(0.0, min(1.0, alpha))
     result = [[pts[0][0], pts[0][1]]]
     for i in range(1, len(pts)):
+        check_cancel(cancel, i)
         ema = a * pts[i][1] + (1 - a) * result[-1][1]
         result.append([pts[i][0], ema])
     return result
 
 
-def _build_polynomial_trend(pts: list) -> list:
+def _build_polynomial_trend(pts: list, cancel=None) -> list:
     if len(pts) < 3:
         return []
     origin = pts[0][0]
     scale = (pts[-1][0] - origin) or 1.0
     s0 = s1 = s2 = s3 = s4 = 0.0
     t0 = t1 = t2 = 0.0
-    for time, value in pts:
+    for index, (time, value) in enumerate(pts):
+        check_cancel(cancel, index)
         x = (time - origin) / scale
         x2 = x * x
         s0 += 1
@@ -229,7 +246,7 @@ def _build_polynomial_trend(pts: list) -> list:
     ]
 
 
-def _build_lowess(pts: list, bandwidth: float) -> list:
+def _build_lowess(pts: list, bandwidth: float, cancel=None) -> list:
     if len(pts) < 2:
         return []
     MAX_INPUT = 2000
@@ -245,10 +262,12 @@ def _build_lowess(pts: list, bandwidth: float) -> list:
     output_idx = subsample(n, MAX_OUTPUT)
 
     result = []
-    for oi in output_idx:
+    for output_position, oi in enumerate(output_idx):
+        check_cancel(cancel, output_position * len(input_idx))
         xi = pts[oi][0]
         sum_w = sum_wx = sum_wy = sum_wxx = sum_wxy = 0.0
         for k in range(len(input_idx)):
+            check_cancel(cancel, output_position * len(input_idx) + k)
             d = abs(pts[input_idx[k]][0] - xi)
             if d >= bandwidth:
                 continue
@@ -273,24 +292,24 @@ def _build_lowess(pts: list, bandwidth: float) -> list:
     return result
 
 
-def _build_trend_pts(pts: list, method: str, trend_window: str) -> list:
+def _build_trend_pts(pts: list, method: str, trend_window: str, cancel=None) -> list:
     if len(pts) < 2:
         return []
     if method == "linear_trend":
-        return _build_linear_trend(pts)
+        return _build_linear_trend(pts, cancel)
     if method == "ema":
-        return _build_ema(pts, _EMA_ALPHAS.get(trend_window, 0.5))
+        return _build_ema(pts, _EMA_ALPHAS.get(trend_window, 0.5), cancel)
     if method == "polynomial_trend":
-        return _build_polynomial_trend(pts)
+        return _build_polynomial_trend(pts, cancel)
     if method == "lowess":
         fraction = _LOWESS_FRACTIONS.get(trend_window, 0.3)
         span = (pts[-1][0] - pts[0][0]) if len(pts) >= 2 else 0
         bandwidth = fraction * span if span > 0 else fraction
-        return _build_lowess(pts, bandwidth)
-    return _build_rolling_average(pts, _trend_window_ms(trend_window))
+        return _build_lowess(pts, bandwidth, cancel)
+    return _build_rolling_average(pts, _trend_window_ms(trend_window), cancel)
 
 
-def _build_rate_pts(pts: list, rate_window: str) -> list:
+def _build_rate_pts(pts: list, rate_window: str, cancel=None) -> list:
     """Build rate-of-change points [[timeMs, rate_per_hour], ...]."""
     if len(pts) < 2:
         return []
@@ -300,6 +319,7 @@ def _build_rate_pts(pts: list, rate_window: str) -> list:
     if rate_window == "point_to_point":
         rate_pts = []
         for i in range(1, len(pts)):
+            check_cancel(cancel, i)
             t, v = pts[i]
             comp_t, comp_v = pts[i - 1]
             delta_ms = t - comp_t
@@ -315,6 +335,7 @@ def _build_rate_pts(pts: list, rate_window: str) -> list:
     rate_pts = []
     comparison_index = 0
     for i in range(1, len(pts)):
+        check_cancel(cancel, i)
         t, v = pts[i]
         cutoff = t - window_ms
         while comparison_index + 1 < i and pts[comparison_index + 1][0] <= cutoff:
@@ -335,11 +356,13 @@ def _build_rate_pts(pts: list, rate_window: str) -> list:
 # ---------------------------------------------------------------------------
 
 
-def detect_iqr(pts: list, sensitivity: str) -> list[dict]:
+def detect_iqr(pts: list, sensitivity: str, cancel=None) -> list[dict]:
     """Detect anomalies via interquartile range fencing."""
     if len(pts) < 4:
         return []
+    check_cancel(cancel)
     sorted_vals = sorted(p[1] for p in pts)
+    check_cancel(cancel)
     n = len(sorted_vals)
     q1 = sorted_vals[int(n * 0.25)]
     q2 = sorted_vals[int(n * 0.5)]
@@ -362,7 +385,8 @@ def detect_iqr(pts: list, sensitivity: str) -> list[dict]:
             )
             current.clear()
 
-    for t, v in pts:
+    for index, (t, v) in enumerate(pts):
+        check_cancel(cancel, index)
         if v < lower or v > upper:
             current.append(
                 {"timeMs": t, "value": v, "baselineValue": q2, "residual": v - q2}
@@ -379,7 +403,7 @@ def detect_iqr(pts: list, sensitivity: str) -> list[dict]:
 
 
 def detect_rolling_zscore(
-    pts: list, sensitivity: str, window_seconds: int
+    pts: list, sensitivity: str, window_seconds: int, cancel=None
 ) -> list[dict]:
     """Detect anomalies via rolling z-score within a sliding time window."""
     if len(pts) < 3:
@@ -391,6 +415,7 @@ def detect_rolling_zscore(
     w_sum = w_sumsq = 0.0
 
     for i, (t, v) in enumerate(pts):
+        check_cancel(cancel, i)
         w_sum += v
         w_sumsq += v * v
         while ws < i and (t - pts[ws][0]) > window_ms:
@@ -435,7 +460,8 @@ def detect_rolling_zscore(
             )
             current.clear()
 
-    for r in residuals:
+    for index, r in enumerate(residuals):
+        check_cancel(cancel, index)
         if r["flagged"]:
             current.append(r)
         else:
@@ -450,16 +476,17 @@ def detect_rolling_zscore(
 
 
 def detect_trend_residual(
-    pts: list, sensitivity: str, method: str, trend_window: str
+    pts: list, sensitivity: str, method: str, trend_window: str, cancel=None
 ) -> list[dict]:
     """Detect anomalies as residuals against a trend line / rolling average."""
     if len(pts) < 3:
         return []
-    baseline = _build_trend_pts(pts, method, trend_window)
+    baseline = _build_trend_pts(pts, method, trend_window, cancel)
     if len(baseline) < 2:
         return []
     res_pts: list[dict] = []
-    for t, v in pts:
+    for index, (t, v) in enumerate(pts):
+        check_cancel(cancel, index)
         bv = _interpolate(baseline, t)
         if bv is None or not math.isfinite(bv):
             continue
@@ -489,7 +516,8 @@ def detect_trend_residual(
             )
             current.clear()
 
-    for p in res_pts:
+    for index, p in enumerate(res_pts):
+        check_cancel(cancel, index)
         if abs(p["residual"]) >= threshold:
             current.append(p)
         else:
@@ -503,7 +531,9 @@ def detect_trend_residual(
 # ---------------------------------------------------------------------------
 
 
-def detect_persistence(pts: list, sensitivity: str, window_seconds: int) -> list[dict]:
+def detect_persistence(
+    pts: list, sensitivity: str, window_seconds: int, cancel=None
+) -> list[dict]:
     """Detect anomalies where the signal is stuck flat for longer than window_seconds."""
     if len(pts) < 3:
         return []
@@ -543,6 +573,7 @@ def detect_persistence(pts: list, sensitivity: str, window_seconds: int) -> list
             )
 
     for i in range(1, len(pts)):
+        check_cancel(cancel, i)
         v = pts[i][1]
         next_min = min(run_min, v)
         next_max = max(run_max, v)
@@ -562,11 +593,13 @@ def detect_persistence(pts: list, sensitivity: str, window_seconds: int) -> list
 # ---------------------------------------------------------------------------
 
 
-def detect_rate_of_change(pts: list, sensitivity: str, rate_window: str) -> list[dict]:
+def detect_rate_of_change(
+    pts: list, sensitivity: str, rate_window: str, cancel=None
+) -> list[dict]:
     """Detect anomalies via unusual rate-of-change."""
     if len(pts) < 3:
         return []
-    rate_pts = _build_rate_pts(pts, rate_window)
+    rate_pts = _build_rate_pts(pts, rate_window, cancel)
     if len(rate_pts) < 3:
         return []
 
@@ -592,7 +625,8 @@ def detect_rate_of_change(pts: list, sensitivity: str, rate_window: str) -> list
             )
             current.clear()
 
-    for t, rate in rate_pts:
+    for index, (t, rate) in enumerate(rate_pts):
+        check_cancel(cancel, index)
         residual = rate - mean_rate
         if abs(residual) >= threshold:
             src_val = _interpolate(pts, t)
@@ -623,13 +657,15 @@ def detect_comparison_window(
     comparison_pts: list,
     sensitivity: str,
     time_offset_ms: int = 0,
+    cancel=None,
 ) -> list[dict]:
     """Detect anomalies by comparing to a shifted comparison series."""
     if len(pts) < 3 or len(comparison_pts) < 3:
         return []
 
     delta_pts: list[dict] = []
-    for t, v in pts:
+    for index, (t, v) in enumerate(pts):
+        check_cancel(cancel, index)
         comp_t = t - time_offset_ms
         comp_v = _interpolate(comparison_pts, comp_t)
         if comp_v is None or not math.isfinite(comp_v):
@@ -663,7 +699,8 @@ def detect_comparison_window(
             )
             current.clear()
 
-    for p in delta_pts:
+    for index, p in enumerate(delta_pts):
+        check_cancel(cancel, index)
         residual = p["delta"] - mean_delta
         if abs(residual) >= threshold:
             current.append(
@@ -686,7 +723,7 @@ def detect_comparison_window(
 
 
 def apply_overlap_mode(
-    clusters_by_method: dict[str, list[dict]], mode: str
+    clusters_by_method: dict[str, list[dict]], mode: str, cancel=None
 ) -> list[dict]:
     """Apply overlap mode logic matching the JS worker's applyAnomalyOverlapMode."""
     method_keys = list(clusters_by_method.keys())
@@ -694,13 +731,15 @@ def apply_overlap_mode(
         return [c for clusters in clusters_by_method.values() for c in clusters]
 
     flagged_by_method: dict[str, set[int]] = {}
-    for m in method_keys:
+    for index, m in enumerate(method_keys):
+        check_cancel(cancel, index)
         flagged_by_method[m] = {
             p["timeMs"] for c in clusters_by_method[m] for p in c["points"]
         }
 
     overlap_times: set[int] = set()
-    for m in method_keys:
+    for index, m in enumerate(method_keys):
+        check_cancel(cancel, index)
         for t in flagged_by_method[m]:
             if any(
                 other != m and t in flagged_by_method[other] for other in method_keys
@@ -710,7 +749,8 @@ def apply_overlap_mode(
     if mode == "only":
         seen: set[str] = set()
         result: list[dict] = []
-        for m in method_keys:
+        for index, m in enumerate(method_keys):
+            check_cancel(cancel, index)
             for cluster in clusters_by_method[m]:
                 pts = [p for p in cluster["points"] if p["timeMs"] in overlap_times]
                 if not pts:
@@ -739,7 +779,8 @@ def apply_overlap_mode(
 
     # "highlight" mode
     result = []
-    for m in method_keys:
+    for index, m in enumerate(method_keys):
+        check_cancel(cancel, index)
         for cluster in clusters_by_method[m]:
             has_overlap = any(p["timeMs"] in overlap_times for p in cluster["points"])
             detected_by = (
@@ -896,52 +937,48 @@ def run_anomaly_detection(
 
     clusters_by_method: dict[str, list[dict]] = {}
 
-    if cancel and cancel.is_set():
-        return []
+    check_cancel(cancel)
 
     if "trend_residual" in methods:
-        result = detect_trend_residual(pts, sensitivity, trend_method, trend_window)
+        result = detect_trend_residual(
+            pts, sensitivity, trend_method, trend_window, cancel
+        )
         if result:
             clusters_by_method["trend_residual"] = result
 
-    if cancel and cancel.is_set():
-        return []
+    check_cancel(cancel)
 
     if "rate_of_change" in methods:
-        result = detect_rate_of_change(pts, sensitivity, rate_window)
+        result = detect_rate_of_change(pts, sensitivity, rate_window, cancel)
         if result:
             clusters_by_method["rate_of_change"] = result
 
-    if cancel and cancel.is_set():
-        return []
+    check_cancel(cancel)
 
     if "iqr" in methods:
-        result = detect_iqr(pts, sensitivity)
+        result = detect_iqr(pts, sensitivity, cancel)
         if result:
             clusters_by_method["iqr"] = result
 
-    if cancel and cancel.is_set():
-        return []
+    check_cancel(cancel)
 
     if "rolling_zscore" in methods:
-        result = detect_rolling_zscore(pts, sensitivity, zscore_seconds)
+        result = detect_rolling_zscore(pts, sensitivity, zscore_seconds, cancel)
         if result:
             clusters_by_method["rolling_zscore"] = result
 
-    if cancel and cancel.is_set():
-        return []
+    check_cancel(cancel)
 
     if "persistence" in methods:
-        result = detect_persistence(pts, sensitivity, persistence_seconds)
+        result = detect_persistence(pts, sensitivity, persistence_seconds, cancel)
         if result:
             clusters_by_method["persistence"] = result
 
-    if cancel and cancel.is_set():
-        return []
+    check_cancel(cancel)
 
     if "comparison_window" in methods and comparison_pts and len(comparison_pts) >= 3:
         result = detect_comparison_window(
-            pts, comparison_pts, sensitivity, time_offset_ms
+            pts, comparison_pts, sensitivity, time_offset_ms, cancel
         )
         if result:
             clusters_by_method["comparison_window"] = result
@@ -959,4 +996,4 @@ def run_anomaly_detection(
         else:
             del clusters_by_method[method]
 
-    return apply_overlap_mode(clusters_by_method, overlap_mode)
+    return apply_overlap_mode(clusters_by_method, overlap_mode, cancel)

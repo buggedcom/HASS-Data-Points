@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-import asyncio
 import logging
 import threading
 import time
 import uuid
 from datetime import UTC, datetime, timedelta
+from functools import partial
 
 import voluptuous as vol
 from homeassistant.auth.permissions.const import POLICY_READ
@@ -35,6 +35,16 @@ from .const import (
     MONITOR_DEFAULT_LOOK_BACK_HOURS,
     MONITOR_DEFAULT_SCAN_INTERVAL_MINUTES,
     VALID_ANOMALY_DIRECTIONS,
+)
+from .detection_runner import (
+    ERROR_BUSY,
+    ERROR_CANCELLED,
+    ERROR_DETECTION,
+    ERROR_TIMEOUT,
+    CancellationToken,
+    DetectionJob,
+    DetectionRunner,
+    error_code,
 )
 from .history_utils import (
     # _normalize_recorder_timestamp is re-exported (unused here) so existing
@@ -140,12 +150,16 @@ def ws_cancel_request(
     connection: websocket_api.ActiveConnection,
     msg: dict,
 ) -> None:
-    """Cancel an in-flight async request by request_id."""
+    """Cancel this connection's in-flight request with the given request_id."""
     in_flight: dict = hass.data.get(DOMAIN, {}).get("in_flight", {})
-    event: threading.Event | None = in_flight.get(msg["request_id"])
-    if event:
-        event.set()
-    connection.send_result(msg["id"], {"cancelled": event is not None})
+    token: CancellationToken | None = in_flight.get((id(connection), msg["request_id"]))
+    runner: DetectionRunner | None = hass.data.get(DOMAIN, {}).get("runner")
+    if token is not None:
+        if runner is not None:
+            runner.cancel_token(token)
+        else:
+            token.cancel()
+    connection.send_result(msg["id"], {"cancelled": token is not None})
 
 
 @callback
@@ -518,50 +532,105 @@ def _run_detection(
     return clusters
 
 
-def _register_cancel(hass: HomeAssistant, request_id: str | None) -> threading.Event:
-    """Create a cancel Event, register it under request_id if provided, and return it."""
-    event = threading.Event()
-    if request_id:
-        hass.data[DOMAIN].setdefault("in_flight", {})[request_id] = event
-    return event
-
-
-def _unregister_cancel(hass: HomeAssistant, request_id: str | None) -> None:
-    """Remove a cancel Event from the in-flight registry."""
-    if request_id:
-        hass.data[DOMAIN].get("in_flight", {}).pop(request_id, None)
-
-
-async def _run_detection_with_timeout(
+def _register_cancel(
     hass: HomeAssistant,
-    pool,
-    pts: list,
-    config: dict,
-    comparison_pts: list | None = None,
-    cancel: threading.Event | None = None,
-    timeout: float = 30.0,
-) -> list:
-    """Run anomaly detection in the dedicated pool with a hard timeout.
+    connection: websocket_api.ActiveConnection,
+    request_id: str | None,
+    token: CancellationToken,
+) -> CancellationToken:
+    """Register a token under (connection, client request_id).
 
-    If the timeout fires the cancel event is set so the thread can exit
-    cooperatively, then an empty list is returned.
+    Client request IDs are only unique per connection, so two browser tabs
+    using the same ID never cancel each other.
     """
-    cancel = cancel or threading.Event()
+    if request_id:
+        hass.data[DOMAIN].setdefault("in_flight", {})[(id(connection), request_id)] = (
+            token
+        )
+    return token
+
+
+def _unregister_cancel(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    request_id: str | None,
+    token: CancellationToken,
+) -> None:
+    """Remove the registration only if it still belongs to *token*.
+
+    A late cleanup from a superseded request must not erase the newer
+    request's registration that reused the same request_id.
+    """
+    if request_id:
+        registry = hass.data[DOMAIN].get("in_flight", {})
+        key = (id(connection), request_id)
+        if registry.get(key) is token:
+            registry.pop(key, None)
+
+
+async def _run_connection_job(
+    hass: HomeAssistant,
+    connection: websocket_api.ActiveConnection,
+    msg: dict,
+    work,
+):
+    """Run one request as a runner job owned by its WebSocket connection.
+
+    The job is cancellable by ``hass_datapoints/cancel`` with the request_id
+    and is cancelled automatically when the connection closes (HA calls every
+    ``connection.subscriptions`` callback on close).
+    """
+    runner: DetectionRunner = hass.data[DOMAIN]["runner"]
+    request_id: str | None = msg.get("request_id")
+    token = runner.new_token()
+    subscription_key = ("hass_datapoints_job", msg["id"])
+    _register_cancel(hass, connection, request_id, token)
+    connection.subscriptions[subscription_key] = partial(runner.cancel_token, token)
     try:
-        return await asyncio.wait_for(
-            hass.loop.run_in_executor(
-                pool, _run_detection, pts, config, comparison_pts, cancel
-            ),
-            timeout=timeout,
+        return await runner.submit(work, token=token)
+    finally:
+        _unregister_cancel(hass, connection, request_id, token)
+        connection.subscriptions.pop(subscription_key, None)
+
+
+_DETECTION_ERROR_MESSAGES = {
+    ERROR_TIMEOUT: "Anomaly detection timed out",
+    ERROR_CANCELLED: "Anomaly detection was cancelled",
+    ERROR_BUSY: "Anomaly detection is busy; try again shortly",
+    ERROR_DETECTION: "Failed to run anomaly detection",
+}
+
+
+def _send_detection_error(
+    connection: websocket_api.ActiveConnection,
+    msg: dict,
+    err: BaseException,
+    subject: str,
+) -> None:
+    """Send a stable detection error code; never forward raw exception text."""
+    code = error_code(err)
+    if code == ERROR_DETECTION:
+        _LOGGER.error("hass_datapoints: detection failed for %s: %r", subject, err)
+    else:
+        _LOGGER.debug("hass_datapoints: detection %s for %s", code, subject)
+    connection.send_error(msg["id"], code, _DETECTION_ERROR_MESSAGES[code])
+
+
+async def _async_cache_set(
+    hass: HomeAssistant,
+    cache: AnomalyCache,
+    cache_key: str,
+    entity_id: str,
+    end_ts: float,
+    clusters: list,
+) -> None:
+    """Store a successful result (including []) on HA's I/O executor."""
+    try:
+        await hass.async_add_executor_job(
+            cache.set, cache_key, entity_id, end_ts, clusters
         )
-    except TimeoutError:
-        cancel.set()
-        _LOGGER.warning(
-            "hass_datapoints: detection timed out after %.0fs for %d pts",
-            timeout,
-            len(pts),
-        )
-        return []
+    except Exception as err:  # noqa: BLE001
+        _LOGGER.warning("hass_datapoints: anomaly cache write failed: %r", err)
 
 
 @websocket_api.websocket_command(
@@ -670,14 +739,10 @@ async def ws_get_anomalies(
             make_cache_key(entity_id, start_time, end_time, config) if cache else None
         )
 
-        pool = hass.data[DOMAIN].get("executor")
-        request_id: str | None = msg.get("request_id")
-        cancel_event = _register_cancel(hass, request_id)
-
         if cache and cache_key and not is_live:
-            cached = await hass.loop.run_in_executor(pool, cache.get, cache_key)
+            # Cache reads bypass CPU admission and use HA's I/O executor.
+            cached = await hass.async_add_executor_job(cache.get, cache_key)
             if cached is not None:
-                _unregister_cancel(hass, request_id)
                 connection.send_result(
                     msg["id"],
                     {
@@ -687,9 +752,11 @@ async def ws_get_anomalies(
                     },
                 )
                 return
+    except Exception as err:  # noqa: BLE001
+        _send_detection_error(connection, msg, err, entity_id)
+        return
 
-        recorder = get_instance(hass)
-
+    async def work(job: DetectionJob) -> list:
         # Merge long-term statistics for the portion of the range that predates
         # the recorder window (HA default: ~10 days), downsample when requested,
         # and cap to ANOMALY_MAX_PTS — all owned by async_prepare_entity_series so
@@ -703,53 +770,46 @@ async def ws_get_anomalies(
             sample_aggregate=msg.get("sample_aggregate", "mean"),
             max_pts=ANOMALY_MAX_PTS,
         )
-
+        job.check()
         if len(pts) < 3:
             _LOGGER.info(
                 "hass_datapoints: anomaly detection skipped for %s — only %d pts",
                 entity_id,
                 len(pts),
             )
-            connection.send_result(
-                msg["id"],
-                {"entity_id": entity_id, "anomaly_clusters": [], "cached": False},
-            )
-            return
+            return []
 
         comparison_pts: list | None = None
-        comparison_entity_id = config.get("comparison_entity_id")
         comparison_start_time = config.get("comparison_start_time")
         comparison_end_time = config.get("comparison_end_time")
         if comparison_entity_id and comparison_start_time and comparison_end_time:
-            comparison_pts = await recorder.async_add_executor_job(
+            comparison_pts = await get_instance(hass).async_add_executor_job(
                 fetch_entity_pts,
                 hass,
                 comparison_entity_id,
                 comparison_start_time,
                 comparison_end_time,
             )
+            job.check()
 
-        clusters: list = await _run_detection_with_timeout(
-            hass, pool, pts, config, comparison_pts, cancel_event
+        runner: DetectionRunner = hass.data[DOMAIN]["runner"]
+        return await runner.run_cpu(
+            job, _run_detection, pts, config, comparison_pts, job.token
         )
 
-        if cache and cache_key and not is_live and clusters:
-            await hass.loop.run_in_executor(
-                pool, cache.set, cache_key, entity_id, end_ts, clusters
-            )
-
-        _unregister_cancel(hass, request_id)
-        connection.send_result(
-            msg["id"],
-            {"entity_id": entity_id, "anomaly_clusters": clusters, "cached": False},
-        )
-
+    try:
+        clusters: list = await _run_connection_job(hass, connection, msg, work)
     except Exception as err:  # noqa: BLE001
-        _unregister_cancel(hass, request_id)
-        _LOGGER.error("hass_datapoints/anomalies failed for %s: %s", entity_id, err)
-        connection.send_error(
-            msg["id"], "detection_error", "Failed to run anomaly detection"
-        )
+        _send_detection_error(connection, msg, err, entity_id)
+        return
+
+    if cache and cache_key and not is_live:
+        await _async_cache_set(hass, cache, cache_key, entity_id, end_ts, clusters)
+
+    connection.send_result(
+        msg["id"],
+        {"entity_id": entity_id, "anomaly_clusters": clusters, "cached": False},
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -776,12 +836,11 @@ async def ws_clear_cache(
         connection.send_result(msg["id"], {"cleared": 0})
         return
 
-    pool = hass.data[DOMAIN].get("executor")
     entity_id: str | None = msg.get("entity_id")
     if entity_id:
-        cleared = await hass.loop.run_in_executor(pool, cache.clear_entity, entity_id)
+        cleared = await hass.async_add_executor_job(cache.clear_entity, entity_id)
     else:
-        cleared = await hass.loop.run_in_executor(pool, cache.clear_all)
+        cleared = await hass.async_add_executor_job(cache.clear_all)
 
     connection.send_result(msg["id"], {"cleared": cleared})
 
@@ -1249,11 +1308,8 @@ async def ws_monitors_anomalies(
     msg: dict,
 ) -> None:
     """Run a live anomaly scan for a monitor and return clusters + dismissed windows."""
-    from .sensor import (  # noqa: PLC0415
-        _apply_dismissals,
-        _build_detection_config,
-        _run_combined_detection,
-    )
+    from .sensor import _apply_dismissals, async_detect_monitor  # noqa: PLC0415
+    from .store import DatapointsStore  # noqa: PLC0415
 
     _require_admin(connection, msg)
     store = hass.data[DOMAIN][KEY_STORE]
@@ -1264,84 +1320,23 @@ async def ws_monitors_anomalies(
         connection.send_error(msg["id"], "not_found", "Monitor not found")
         return
 
-    monitor_type = monitor.get("type", "individual")
     look_back_hours = monitor.get("look_back_hours", 24)
-    config = _build_detection_config(monitor)
     now = datetime.now(UTC)
     start_time = (now - timedelta(hours=look_back_hours)).isoformat()
     end_time = now.isoformat()
+    runner: DetectionRunner = hass.data[DOMAIN]["runner"]
 
-    pool = hass.data[DOMAIN].get("executor")
-    request_id: str | None = msg.get("request_id")
-    cancel_event = _register_cancel(hass, request_id)
+    async def work(job: DetectionJob) -> list:
+        detection = await async_detect_monitor(
+            hass, runner, job, monitor, start_time, end_time
+        )
+        return detection.clusters
 
     try:
-        recorder = get_instance(hass)
-
-        if monitor_type == "combined":
-            entity_ids = monitor.get("entity_ids", [])
-            all_pts: dict[str, list] = {}
-            for eid in entity_ids:
-                all_pts[eid] = await async_prepare_entity_series(
-                    hass,
-                    eid,
-                    start_time,
-                    end_time,
-                    sample_interval=monitor.get("sample_interval"),
-                    sample_aggregate=monitor.get("sample_aggregate", "mean"),
-                    max_pts=ANOMALY_MAX_PTS,
-                )
-            clusters = await asyncio.wait_for(
-                hass.loop.run_in_executor(
-                    pool,
-                    _run_combined_detection,
-                    all_pts,
-                    config,
-                    monitor.get("overlap_mode", "all"),
-                    cancel_event,
-                ),
-                timeout=30.0,
-            )
-        else:
-            entity_id = monitor.get("entity_id", "")
-            pts = await async_prepare_entity_series(
-                hass,
-                entity_id,
-                start_time,
-                end_time,
-                sample_interval=monitor.get("sample_interval"),
-                sample_aggregate=monitor.get("sample_aggregate", "mean"),
-                max_pts=ANOMALY_MAX_PTS,
-            )
-            clusters: list = []
-            if len(pts) >= 3:
-                comparison_pts: list | None = None
-                baseline_entity_id = monitor.get("baseline_entity_id")
-                if baseline_entity_id and "comparison_window" in config.get(
-                    "anomaly_methods", []
-                ):
-                    comparison_pts = await recorder.async_add_executor_job(
-                        fetch_entity_pts, hass, baseline_entity_id, start_time, end_time
-                    )
-                clusters = await _run_detection_with_timeout(
-                    hass, pool, pts, config, comparison_pts, cancel_event
-                )
-
-    except TimeoutError:
-        cancel_event.set()
-        _unregister_cancel(hass, request_id)
-        _LOGGER.warning("ws_monitors_anomalies timed out for %s", monitor_id)
-        connection.send_error(msg["id"], "scan_failed", "Detection timed out")
-        return
+        clusters = await _run_connection_job(hass, connection, msg, work)
     except Exception as err:  # noqa: BLE001
-        _unregister_cancel(hass, request_id)
-        _LOGGER.error("ws_monitors_anomalies failed for %s: %s", monitor_id, err)
-        connection.send_error(msg["id"], "scan_failed", str(err))
+        _send_detection_error(connection, msg, err, monitor_id)
         return
-
-    _unregister_cancel(hass, request_id)
-
-    from .store import DatapointsStore  # noqa: PLC0415
 
     monitor_fresh = store.get_monitor(monitor_id) or monitor
     DatapointsStore.prune_dismissed_windows(monitor_fresh, now)
@@ -1401,11 +1396,7 @@ async def ws_monitors_anomaly_activity(
     equivalent to honouring that flag.
     """
     from .anomaly_activity import compute_anomaly_activity  # noqa: PLC0415
-    from .sensor import (  # noqa: PLC0415
-        _apply_dismissals,
-        _build_detection_config,
-        _run_combined_detection,
-    )
+    from .sensor import _apply_dismissals, async_detect_monitor  # noqa: PLC0415
     from .store import DatapointsStore  # noqa: PLC0415
 
     _require_admin(connection, msg)
@@ -1427,85 +1418,32 @@ async def ws_monitors_anomaly_activity(
         )
         return
 
-    monitor_type = monitor.get("type", "individual")
-    if monitor_type == "combined":
-        entity_ids = [e for e in monitor.get("entity_ids", []) if e]
-    else:
-        entity_ids = [e for e in [monitor.get("entity_id", "")] if e]
+    combined = monitor.get("type", "individual") == "combined"
+    runner: DetectionRunner = hass.data[DOMAIN]["runner"]
 
-    config = _build_detection_config(monitor)
-    pool = hass.data[DOMAIN].get("executor")
-    request_id: str | None = msg.get("request_id")
-    cancel_event = _register_cancel(hass, request_id)
+    async def work(job: DetectionJob):
+        # Each entity is detected exactly once; combined incidents reuse those
+        # clusters for the overlap calculation.
+        return await async_detect_monitor(
+            hass, runner, job, monitor, start_time, end_time
+        )
 
-    entity_clusters: dict[str, list] = {}
-    incident_clusters: list | None = None
     try:
-        recorder = get_instance(hass)
-        all_pts: dict[str, list] = {}
-        for entity_id in entity_ids:
-            pts = await async_prepare_entity_series(
-                hass,
-                entity_id,
-                start_time,
-                end_time,
-                sample_interval=monitor.get("sample_interval"),
-                sample_aggregate=monitor.get("sample_aggregate", "mean"),
-                max_pts=ANOMALY_MAX_PTS,
-            )
-            all_pts[entity_id] = pts
-            clusters: list = []
-            if len(pts) >= 3:
-                comparison_pts: list | None = None
-                baseline_entity_id = monitor.get("baseline_entity_id")
-                if (
-                    monitor_type != "combined"
-                    and baseline_entity_id
-                    and "comparison_window" in config.get("anomaly_methods", [])
-                ):
-                    comparison_pts = await recorder.async_add_executor_job(
-                        fetch_entity_pts, hass, baseline_entity_id, start_time, end_time
-                    )
-                clusters = await _run_detection_with_timeout(
-                    hass, pool, pts, config, comparison_pts, cancel_event
-                )
-            entity_clusters[entity_id] = clusters
-
-        if monitor_type == "combined":
-            incident_clusters = await asyncio.wait_for(
-                hass.loop.run_in_executor(
-                    pool,
-                    _run_combined_detection,
-                    all_pts,
-                    config,
-                    monitor.get("overlap_mode", "all"),
-                    cancel_event,
-                ),
-                timeout=30.0,
-            )
-    except TimeoutError:
-        cancel_event.set()
-        _unregister_cancel(hass, request_id)
-        _LOGGER.warning("ws_monitors_anomaly_activity timed out for %s", monitor_id)
-        connection.send_error(msg["id"], "scan_failed", "Detection timed out")
-        return
+        detection = await _run_connection_job(hass, connection, msg, work)
     except Exception as err:  # noqa: BLE001
-        _unregister_cancel(hass, request_id)
-        _LOGGER.error("ws_monitors_anomaly_activity failed for %s: %s", monitor_id, err)
-        connection.send_error(msg["id"], "scan_failed", str(err))
+        _send_detection_error(connection, msg, err, monitor_id)
         return
-
-    _unregister_cancel(hass, request_id)
 
     monitor_fresh = store.get_monitor(monitor_id) or monitor
     DatapointsStore.prune_dismissed_windows(monitor_fresh, datetime.now(UTC))
     dismissed = monitor_fresh.get("dismissed_windows", [])
     entity_clusters = {
         eid: _apply_dismissals(clusters, dismissed)
-        for eid, clusters in entity_clusters.items()
+        for eid, clusters in detection.entity_clusters.items()
     }
-    if incident_clusters is not None:
-        incident_clusters = _apply_dismissals(incident_clusters, dismissed)
+    incident_clusters = (
+        _apply_dismissals(detection.clusters, dismissed) if combined else None
+    )
 
     activity = compute_anomaly_activity(
         entity_clusters, incident_clusters, start_ms, end_ms, msg["bucket_count"]

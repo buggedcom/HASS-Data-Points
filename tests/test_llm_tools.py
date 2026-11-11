@@ -13,6 +13,7 @@ from homeassistant.exceptions import Unauthorized
 from custom_components.hass_datapoints import llm_tools
 from custom_components.hass_datapoints.const import DOMAIN, KEY_STORE
 from custom_components.hass_datapoints.llm import async_get_tools
+from tests.conftest import make_inline_runner
 
 START = "2026-01-01T00:00:00+00:00"
 END = "2026-01-01T03:00:00+00:00"
@@ -26,8 +27,7 @@ async def hass():
     instance.data = {
         DOMAIN: {
             KEY_STORE: MagicMock(),
-            "scan_semaphore": asyncio.Semaphore(2),
-            "executor": None,
+            "runner": make_inline_runner(),
         }
     }
     instance.loop = asyncio.get_running_loop()

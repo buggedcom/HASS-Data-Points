@@ -78,8 +78,14 @@ def test_get_monitor_not_found(store):
 async def test_create_monitor(store):
     monitor = {"id": "m1", "name": "Mon 1", "type": "individual"}
     result = await store.async_create_monitor(monitor)
-    assert result == monitor
-    assert store._data["monitors"] == [monitor]
+    expected = {
+        **monitor,
+        "last_scan_attempt_at": None,
+        "last_scan_status": "unknown",
+        "last_scan_error": None,
+    }
+    assert result == expected
+    assert store._data["monitors"] == [expected]
     store._store.async_save.assert_awaited_once()
 
 

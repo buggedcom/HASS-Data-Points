@@ -7,6 +7,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from tests.conftest import make_inline_runner
+
 # ---------------------------------------------------------------------------
 # Helper imports
 # ---------------------------------------------------------------------------
@@ -802,41 +804,24 @@ def _prep_patch(return_value=None, *, side_effect=None):
 
 
 def _make_scan_sensor(monitor_dict):
-    """Create a DatapointsMonitorSensor wired for _run_scan() tests."""
-    import asyncio as _asyncio
+    """Create a DatapointsMonitorSensor wired for _run_scan() tests.
 
+    Uses the real store transaction path (with a mocked JSON save) and a real
+    DetectionRunner whose CPU work runs inline.
+    """
     from custom_components.hass_datapoints.sensor import DatapointsMonitorSensor
+    from tests.conftest import make_inline_runner
 
     store = _make_store(monitors=[monitor_dict])
 
-    async def fake_update_monitor(monitor_id, updates):
-        monitor = store.get_monitor(monitor_id)
-        if monitor is None:
-            return None
-        monitor.update(updates)
-        return monitor
-
-    store.async_update_monitor = AsyncMock(side_effect=fake_update_monitor)
-
     hass = MagicMock()
     hass.bus = MagicMock()
-    # Provide a scan semaphore so _run_scan uses the normal path
-    hass.data = {
-        "hass_datapoints": {"scan_semaphore": _asyncio.Semaphore(2), "executor": None}
-    }
+    hass.data = {"hass_datapoints": {"runner": make_inline_runner()}}
 
     async def fake_executor(fn, *args):
         return fn(*args)
 
     hass.async_add_executor_job = fake_executor
-
-    def fake_run_in_executor(pool, fn, *args):
-        result = fn(*args)
-        fut: _asyncio.Future = _asyncio.get_event_loop().create_future()
-        fut.set_result(result)
-        return fut
-
-    hass.loop.run_in_executor = fake_run_in_executor
 
     sensor = DatapointsMonitorSensor(_make_entry(), store, hass, monitor_dict["id"])
     sensor.async_write_ha_state = MagicMock()
@@ -1112,10 +1097,7 @@ async def test_run_scan_applies_dismissals_to_clusters():
         await sensor._run_scan()
 
     # Only 1 cluster (the non-dismissed one) should be counted
-    update_call = sensor._store.async_update_monitor.call_args
-    assert update_call is not None
-    updates = update_call[0][1]
-    assert updates["last_cluster_count"] == 1
+    assert sensor._store.get_monitor(monitor["id"])["last_cluster_count"] == 1
 
 
 # ---------------------------------------------------------------------------
@@ -1245,34 +1227,20 @@ async def test_async_warm_cache_populates_cache():
             cache_set_calls.append((cache_key, entity_id, end_ts, clusters))
 
     hass = MagicMock()
-    hass.data = {"hass_datapoints": {"anomaly_cache": FakeCache()}}
-
-    recorder = MagicMock()
+    hass.data = {
+        "hass_datapoints": {
+            "anomaly_cache": FakeCache(),
+            "runner": make_inline_runner(),
+        }
+    }
 
     async def fake_executor(fn, *args):
         return fn(*args)
 
-    recorder.async_add_executor_job = fake_executor
+    hass.async_add_executor_job = fake_executor
 
-    pool = MagicMock()
-    in_flight: dict = {}
-
-    import asyncio
-
-    from custom_components.hass_datapoints.sensor import _run_detection_sync
-
-    def fake_run_in_executor(pool_arg, fn, *args):
-        # Return fake_clusters for detection; call through for everything else (cache.set)
-        result = fake_clusters if fn is _run_detection_sync else fn(*args)
-        fut: asyncio.Future = asyncio.get_event_loop().create_future()
-        fut.set_result(result)
-        return fut
-
-    hass.loop = MagicMock()
-    hass.loop.run_in_executor = fake_run_in_executor
-
-    with _prep_patch(fake_pts):
-        await async_warm_cache(hass, store, pool, in_flight)
+    with _prep_patch(fake_pts), patch(_DETECT_PATCH, return_value=fake_clusters):
+        await async_warm_cache(hass, store)
 
     assert len(cache_set_calls) == 1
     _cache_key, entity_id, end_ts, clusters = cache_set_calls[0]
@@ -1308,32 +1276,21 @@ async def test_async_warm_cache_loops_all_combined_entity_ids():
 
     fake_cache = FakeCache()
     hass = MagicMock()
-    hass.data = {"hass_datapoints": {"anomaly_cache": fake_cache}}
-
-    recorder = MagicMock()
+    hass.data = {
+        "hass_datapoints": {"anomaly_cache": fake_cache, "runner": make_inline_runner()}
+    }
 
     async def fake_executor(fn, *args):
         return fn(*args)
 
-    recorder.async_add_executor_job = fake_executor
-
-    import asyncio
-
-    from custom_components.hass_datapoints.sensor import _run_detection_sync
-
+    hass.async_add_executor_job = fake_executor
     fake_clusters = [{"points": [{"timeMs": 1000, "value": 1.0}]}]
 
-    def fake_run_in_executor(pool_arg, fn, *args):
-        result = fake_clusters if fn is _run_detection_sync else fn(*args)
-        fut: asyncio.Future = asyncio.get_event_loop().create_future()
-        fut.set_result(result)
-        return fut
-
-    hass.loop = MagicMock()
-    hass.loop.run_in_executor = fake_run_in_executor
-
-    with _prep_patch([[1000, 1.0], [2000, 2.0], [3000, 3.0]]):
-        await async_warm_cache(hass, store, {}, {})
+    with (
+        _prep_patch([[1000, 1.0], [2000, 2.0], [3000, 3.0]]),
+        patch(_DETECT_PATCH, return_value=fake_clusters),
+    ):
+        await async_warm_cache(hass, store)
 
     assert set(fake_cache.set_calls) == {"sensor.a", "sensor.b", "sensor.c"}
 
@@ -1392,11 +1349,15 @@ async def test_combined_path_caps_per_entity():
     }
     sensor, _hass = _make_scan_sensor(monitor)
 
-    captured: dict = {}
+    from custom_components.hass_datapoints import history_utils
 
-    def fake_combined(all_pts, config, overlap_mode, cancel):
-        captured["all_pts"] = all_pts
-        return []
+    captured: dict = {"all_pts": {}}
+    real_prepare = history_utils.async_prepare_entity_series
+
+    async def spy_prepare(hass_ref, entity_id, *args, **kwargs):
+        pts = await real_prepare(hass_ref, entity_id, *args, **kwargs)
+        captured["all_pts"][entity_id] = pts
+        return pts
 
     with (
         patch(_RECORDER_PATCH, return_value=_recorder_mock()),
@@ -1407,10 +1368,8 @@ async def test_combined_path_caps_per_entity():
             "custom_components.hass_datapoints.sensor.ANOMALY_MAX_PTS",
             max_pts,
         ),
-        patch(
-            "custom_components.hass_datapoints.sensor._run_combined_detection",
-            side_effect=fake_combined,
-        ),
+        patch(_PREP_PATCH, side_effect=spy_prepare),
+        patch(_DETECT_PATCH, return_value=[]),
     ):
         await sensor._run_scan()
 
@@ -1441,13 +1400,17 @@ async def test_async_warm_cache_skips_disabled_monitors():
     store = _make_store(monitors=[monitor])
 
     hass = MagicMock()
-    hass.data = {"hass_datapoints": {"anomaly_cache": MagicMock()}}
-    pool = MagicMock()
+    hass.data = {
+        "hass_datapoints": {
+            "anomaly_cache": MagicMock(),
+            "runner": make_inline_runner(),
+        }
+    }
 
     with patch(
         "homeassistant.components.recorder.get_instance", return_value=MagicMock()
     ):
-        await async_warm_cache(hass, store, pool, {})
+        await async_warm_cache(hass, store)
 
     # No cache writes for disabled monitors
     hass.data["hass_datapoints"]["anomaly_cache"].set.assert_not_called()

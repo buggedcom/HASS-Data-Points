@@ -12,14 +12,15 @@ from custom_components.hass_datapoints.const import DOMAIN
 from custom_components.hass_datapoints.websocket_api import (
     ws_monitors_anomaly_activity,
 )
+from tests.conftest import make_inline_runner
 from tests.test_websocket_api_monitors import (
-    _WS,
     _make_connection,
     _make_hass,
     _make_store,
     _recorder_sync,
 )
 
+_SENSOR = "custom_components.hass_datapoints.sensor"
 _MID = "11111111-1111-4111-8111-111111111111"
 _T0 = 1_700_000_000_000  # range start (ms)
 _RANGE_MS = 10_000
@@ -51,15 +52,10 @@ async def _run_activity(
 ):
     store = _make_store([monitor])
     hass = _make_hass(store)
-    hass.data[DOMAIN]["executor"] = None
+    hass.data[DOMAIN]["runner"] = make_inline_runner()
     connection = _make_connection()
     seen_ranges = []
     detected = []
-
-    async def run_in_executor(pool, fn, *args):
-        return fn(*args)
-
-    hass.loop.run_in_executor = run_in_executor
 
     async def fake_prepare(hass_, entity_id, start, end, **kwargs):
         seen_ranges.append((entity_id, start, end))
@@ -67,18 +63,21 @@ async def _run_activity(
             kwargs_sink.append(kwargs)
         return [[i, 0.0] for i in range(5)]
 
-    async def fake_detect(hass_, pool, pts, config, comparison_pts, cancel):
+    def fake_detect(pts, config, comparison_pts, cancel):
         # Entities are prepared and detected in the same order.
         entity_id = seen_ranges[len(detected)][0]
         detected.append(entity_id)
         return clusters_by_entity.get(entity_id, [])
 
     with (
-        patch(f"{_WS}.async_prepare_entity_series", fake_prepare),
-        patch(f"{_WS}._run_detection_with_timeout", fake_detect),
-        patch(f"{_WS}.get_instance", return_value=_recorder_sync()),
+        patch(f"{_SENSOR}.async_prepare_entity_series", fake_prepare),
+        patch(f"{_SENSOR}._run_detection_sync", fake_detect),
         patch(
-            "custom_components.hass_datapoints.sensor._run_combined_detection",
+            "homeassistant.components.recorder.get_instance",
+            return_value=_recorder_sync(),
+        ),
+        patch(
+            f"{_SENSOR}._combined_overlap_from_clusters",
             return_value=combined_clusters or [],
         ),
     ):

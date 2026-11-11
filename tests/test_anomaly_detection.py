@@ -22,6 +22,7 @@ from custom_components.hass_datapoints.anomaly_detection import (
     detect_trend_residual,
     run_anomaly_detection,
 )
+from custom_components.hass_datapoints.detection_runner import DetectionCancelled
 
 
 class _CountingPoints:
@@ -35,6 +36,16 @@ class _CountingPoints:
     def __getitem__(self, index: int) -> list[float]:
         self.reads += 1
         return self._points[index]
+
+
+class _CancelAfterChecks:
+    def __init__(self, allowed_checks: int) -> None:
+        self._remaining = allowed_checks
+
+    def raise_if_cancelled(self) -> None:
+        self._remaining -= 1
+        if self._remaining <= 0:
+            raise DetectionCancelled
 
 
 def _legacy_interpolate(pts: list, time_ms: int) -> float | None:
@@ -55,7 +66,7 @@ def _legacy_interpolate(pts: list, time_ms: int) -> float | None:
     return None
 
 
-def _legacy_build_rate_pts(pts: list, rate_window: str) -> list:
+def _legacy_build_rate_pts(pts: list, rate_window: str, _cancel=None) -> list:
     if len(pts) < 2:
         return []
     if rate_window == "point_to_point":
@@ -542,6 +553,23 @@ class DescribeRunAnomalyDetection:
     ):
         pts = [[i * 1000, float(i)] for i in range(20)]
         assert run_anomaly_detection(pts, {"anomaly_methods": ["not_a_method"]}) == []
+
+    def test_GIVEN_cancellation_during_expensive_trend_WHEN_checked_THEN_detection_stops(
+        self,
+    ):
+        pts = [[i * 1000, float(i % 17)] for i in range(10_000)]
+        cancel = _CancelAfterChecks(4)
+
+        with pytest.raises(DetectionCancelled):
+            run_anomaly_detection(
+                pts,
+                {
+                    "anomaly_methods": ["trend_residual"],
+                    "trend_method": "lowess",
+                    "trend_window": "24h",
+                },
+                cancel=cancel,
+            )
 
     def test_GIVEN_oscillating_series_with_extreme_outlier_WHEN_iqr_method_THEN_returns_cluster(
         self,

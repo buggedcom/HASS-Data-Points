@@ -32,6 +32,7 @@ from custom_components.hass_datapoints.websocket_api import (
     ws_monitors_undismiss,
     ws_monitors_update,
 )
+from tests.conftest import make_inline_runner
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -865,19 +866,19 @@ class DescribeWsGetAnomaliesPreparedSeries:
     async def _capture_pts(self, msg, raw, stats, *, max_pts=None):
         captured: dict = {}
 
-        async def fake_detect(hass_ref, pool, pts, config, comparison_pts, cancel):
+        def fake_detect(pts, config, comparison_pts, cancel):
             captured["pts"] = pts
             return []
 
         hass = MagicMock()
-        hass.data = {DOMAIN: {}}  # no cache, no executor
+        hass.data = {DOMAIN: {"runner": make_inline_runner()}}  # no cache
         connection = _make_connection(is_admin=True)
 
         ctx = [
             patch(f"{_HU}.get_instance", return_value=_recorder_sync()),
             patch(f"{_HU}.fetch_entity_pts", return_value=raw),
             patch(f"{_HU}.fetch_entity_statistics_pts", return_value=stats),
-            patch(f"{_WS}._run_detection_with_timeout", fake_detect),
+            patch(f"{_WS}._run_detection", fake_detect),
         ]
         if max_pts is not None:
             ctx.append(patch(f"{_WS}.ANOMALY_MAX_PTS", max_pts))
@@ -929,15 +930,11 @@ class DescribeWsGetAnomaliesWarmCacheConsistency:
     """
 
     def _sync_run_in_executor(self, hass):
-        import asyncio
+        async def run(fn, *args):
+            return fn(*args)
 
-        def run(pool, fn, *args):
-            fut = asyncio.get_event_loop().create_future()
-            fut.set_result(fn(*args))
-            return fut
-
-        hass.loop = MagicMock()
-        hass.loop.run_in_executor = run
+        hass.async_add_executor_job = run
+        hass.data[DOMAIN]["runner"] = make_inline_runner()
 
     async def test_GIVEN_sampled_warm_WHEN_read_via_ws_THEN_cached_hit_is_consistent(
         self, tmp_path
@@ -1004,7 +1001,7 @@ class DescribeWsGetAnomaliesWarmCacheConsistency:
             patch("custom_components.hass_datapoints.sensor.datetime", _FrozenDatetime),
             patch("asyncio.sleep", new=AsyncMock()),
         ):
-            await async_warm_cache(warm_hass, store, MagicMock(), {})
+            await async_warm_cache(warm_hass, store)
 
         # Independently reconstruct the sampled series + its clusters.
         prepared = prepare_series(
@@ -1032,7 +1029,7 @@ class DescribeWsGetAnomaliesWarmCacheConsistency:
 
         # Now read via ws_get_anomalies with the SAME window + sampling → hit.
         read_hass = MagicMock()
-        read_hass.data = {DOMAIN: {"anomaly_cache": cache, "executor": MagicMock()}}
+        read_hass.data = {DOMAIN: {"anomaly_cache": cache}}
         self._sync_run_in_executor(read_hass)
         connection = _make_connection(is_admin=True)
         msg = _anomaly_msg(
@@ -1107,11 +1104,11 @@ class DescribeWsGetAnomaliesWarmCacheConsistency:
             patch("custom_components.hass_datapoints.sensor.datetime", _FrozenDatetime),
             patch("asyncio.sleep", new=AsyncMock()),
         ):
-            await async_warm_cache(warm_hass, store, MagicMock(), {})
+            await async_warm_cache(warm_hass, store)
 
         # Read with a DIFFERENT sample_interval → different key → miss (recomputes).
         read_hass = MagicMock()
-        read_hass.data = {DOMAIN: {"anomaly_cache": cache, "executor": MagicMock()}}
+        read_hass.data = {DOMAIN: {"anomaly_cache": cache}}
         self._sync_run_in_executor(read_hass)
         connection = _make_connection(is_admin=True)
         msg = _anomaly_msg(
@@ -1125,7 +1122,7 @@ class DescribeWsGetAnomaliesWarmCacheConsistency:
             patch(f"{_HU}.get_instance", return_value=_recorder_sync()),
             patch(f"{_HU}.fetch_entity_pts", return_value=list(raw)),
             patch(f"{_HU}.fetch_entity_statistics_pts", return_value=list(stats)),
-            patch(f"{_WS}._run_detection_with_timeout", new=AsyncMock(return_value=[])),
+            patch(f"{_WS}._run_detection", return_value=[]),
         ):
             await ws_get_anomalies(read_hass, connection, msg)
 

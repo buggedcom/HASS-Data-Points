@@ -5,7 +5,9 @@ from __future__ import annotations
 import asyncio
 import logging
 import threading
+from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
+from functools import partial
 from typing import Any
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity
@@ -17,7 +19,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_call_later, async_track_time_interval
 from homeassistant.util import dt as dt_util
 
-from .anomaly_detection import run_anomaly_detection
+from .anomaly_detection import check_cancel, run_anomaly_detection
 from .const import (
     ANOMALY_DIRECTION_FIELDS,
     ANOMALY_MAX_PTS,
@@ -29,6 +31,18 @@ from .const import (
     KEY_MONITOR_SENSORS,
     KEY_STORE,
     MONITOR_DEFAULT_LOOK_BACK_HOURS,
+)
+from .detection_runner import (
+    ERROR_BUSY,
+    ERROR_CANCELLED,
+    ERROR_TIMEOUT,
+    SCAN_ERROR_UNVERIFIED,
+    DetectionBusy,
+    DetectionCancelled,
+    DetectionJob,
+    DetectionRunner,
+    DetectionTimeout,
+    error_code,
 )
 from .history_utils import (
     async_prepare_entity_series,
@@ -503,18 +517,33 @@ def _run_combined_detection(
     if len(entity_ids) < 2:
         return []
 
-    import bisect  # noqa: PLC0415
-
-    # Build cluster time-windows per entity; pass cancel token between detections
-    entity_windows: list[list[tuple[int, int]]] = []
+    entity_clusters: dict[str, list[dict[str, Any]]] = {}
     for eid in entity_ids:
-        if cancel and cancel.is_set():
-            return []
+        check_cancel(cancel)
         pts = all_entity_pts[eid]
         if len(pts) < 3:
-            entity_windows.append([])
+            entity_clusters[eid] = []
             continue
-        clusters = run_anomaly_detection(pts, config, cancel=cancel)
+        entity_clusters[eid] = run_anomaly_detection(pts, config, cancel=cancel)
+
+    return _combined_overlap_from_clusters(entity_clusters, overlap_mode, cancel)
+
+
+def _combined_overlap_from_clusters(
+    entity_clusters: dict[str, list[dict[str, Any]]],
+    overlap_mode: str,
+    cancel=None,
+) -> list[dict[str, Any]]:
+    """Build combined overlap windows without recalculating entity clusters."""
+    import bisect  # noqa: PLC0415
+
+    entity_ids = list(entity_clusters)
+    if len(entity_ids) < 2:
+        return []
+
+    entity_windows: list[list[tuple[int, int]]] = []
+    for eid in entity_ids:
+        clusters = entity_clusters[eid]
         windows: list[tuple[int, int]] = []
         for cluster in clusters:
             pts_in_cluster = cluster.get("points", [])
@@ -533,6 +562,7 @@ def _run_combined_detection(
     overlap_clusters: list[dict[str, Any]] = []
     seen: set[tuple[int, int]] = set()
     for i, windows_i in enumerate(entity_windows):
+        check_cancel(cancel)
         for win_start, win_end in windows_i:
             if (win_start, win_end) in seen:
                 continue
@@ -560,21 +590,101 @@ def _run_combined_detection(
     return overlap_clusters
 
 
+@dataclass(slots=True)
+class MonitorDetection:
+    """Result of running a monitor's detection over one range (one job)."""
+
+    entity_clusters: dict[str, list[dict[str, Any]]]
+    clusters: list[dict[str, Any]]
+    data_point_count: int
+
+
+async def async_detect_monitor(
+    hass: HomeAssistant,
+    runner: DetectionRunner,
+    job: DetectionJob,
+    monitor: dict[str, Any],
+    start_time: str,
+    end_time: str,
+) -> MonitorDetection:
+    """Prepare history and run detection for every monitor entity, once each.
+
+    ``clusters`` is the monitor-level result: the entity's clusters for an
+    individual monitor, or the overlap windows for a combined one. Both are
+    derived from the same per-entity calculation, so activity and scans never
+    detect an entity twice. Raises a ``DetectionError`` on timeout/cancel;
+    never converts a failure into an empty result.
+    """
+    from homeassistant.components.recorder import get_instance  # noqa: PLC0415
+
+    config = _build_detection_config(monitor)
+    combined = monitor.get("type", "individual") == "combined"
+    if combined:
+        entity_ids = [e for e in monitor.get("entity_ids", []) if e]
+    else:
+        entity_ids = [e for e in [monitor.get("entity_id", "")] if e]
+
+    entity_clusters: dict[str, list[dict[str, Any]]] = {}
+    data_point_count = 0
+    for entity_id in entity_ids:
+        job.check()
+        pts = await async_prepare_entity_series(
+            hass,
+            entity_id,
+            start_time,
+            end_time,
+            sample_interval=monitor.get("sample_interval"),
+            sample_aggregate=monitor.get("sample_aggregate", "mean"),
+            max_pts=ANOMALY_MAX_PTS,
+        )
+        job.check()
+        data_point_count += len(pts)
+        if len(pts) < 3:
+            entity_clusters[entity_id] = []
+            continue
+        comparison_pts: list | None = None
+        baseline_entity_id = monitor.get("baseline_entity_id")
+        if (
+            not combined
+            and baseline_entity_id
+            and "comparison_window" in config.get("anomaly_methods", [])
+        ):
+            comparison_pts = await get_instance(hass).async_add_executor_job(
+                fetch_entity_pts, hass, baseline_entity_id, start_time, end_time
+            )
+        entity_clusters[entity_id] = await runner.run_cpu(
+            job, _run_detection_sync, pts, config, comparison_pts, job.token
+        )
+
+    if combined:
+        clusters = await runner.run_cpu(
+            job,
+            _combined_overlap_from_clusters,
+            entity_clusters,
+            monitor.get("overlap_mode", "all"),
+            job.token,
+        )
+    else:
+        clusters = next(iter(entity_clusters.values()), [])
+    return MonitorDetection(entity_clusters, clusters, data_point_count)
+
+
 async def async_warm_cache(
     hass: HomeAssistant,
     store: DatapointsStore,
-    pool,
-    in_flight: dict,
 ) -> None:
-    """Pre-populate anomaly cache for all enabled monitors at startup (best-effort)."""
-    import uuid as _uuid  # noqa: PLC0415
+    """Pre-populate anomaly cache for all enabled monitors at startup (best-effort).
 
+    Each monitor is one runner job; busy or failed warmups are skipped and the
+    loop stops when the runner shuts down.
+    """
     from .anomaly_cache import AnomalyCache, make_cache_key  # noqa: PLC0415
 
     cache: AnomalyCache = hass.data[DOMAIN]["anomaly_cache"]
+    runner: DetectionRunner = hass.data[DOMAIN]["runner"]
     now = datetime.now(UTC)
     for monitor in store.get_monitors():
-        if not monitor.get("enabled", True):
+        if not monitor.get("enabled", True) or monitor.get("deleted_at"):
             continue
         monitor_type = monitor.get("type", "individual")
         if monitor_type == "combined":
@@ -589,12 +699,23 @@ async def async_warm_cache(
         look_back = monitor.get("look_back_hours", MONITOR_DEFAULT_LOOK_BACK_HOURS)
         start_t = (now - timedelta(hours=look_back)).isoformat()
         end_t = now.isoformat()
-        config = _build_detection_config(monitor)
-        cancel_ev = threading.Event()
-        req_id = str(_uuid.uuid4())
-        in_flight[req_id] = cancel_ev
         try:
+            end_ts = datetime.fromisoformat(end_t).timestamp()
+        except ValueError:
+            continue
+        config = _build_detection_config(monitor)
+
+        async def warm(
+            job: DetectionJob,
+            monitor: dict[str, Any] = monitor,
+            entity_ids: list[str] = entity_ids,
+            start_t: str = start_t,
+            end_t: str = end_t,
+            end_ts: float = end_ts,
+            config: dict[str, Any] = config,
+        ) -> None:
             for entity_id in entity_ids:
+                job.check()
                 # Prepare the series exactly as ws_get_anomalies does (merge
                 # stats + downsample + cap) so the clusters we warm under this
                 # cache key match what a later ws_get_anomalies read computes.
@@ -611,24 +732,25 @@ async def async_warm_cache(
                 )
                 if len(pts) < 3:
                     continue
-                clusters = await asyncio.wait_for(
-                    hass.loop.run_in_executor(
-                        pool, _run_detection_sync, pts, config, None, cancel_ev
-                    ),
-                    timeout=30,
+                clusters = await runner.run_cpu(
+                    job, _run_detection_sync, pts, config, None, job.token
                 )
-                try:
-                    end_ts = datetime.fromisoformat(end_t).timestamp()
-                except ValueError:
-                    continue
                 cache_key = make_cache_key(entity_id, start_t, end_t, config)
-                await hass.loop.run_in_executor(
-                    pool, cache.set, cache_key, entity_id, end_ts, clusters
+                await hass.async_add_executor_job(
+                    cache.set, cache_key, entity_id, end_ts, clusters
                 )
-        except (TimeoutError, Exception):  # noqa: BLE001
-            cancel_ev.set()
-        finally:
-            in_flight.pop(req_id, None)
+
+        try:
+            await runner.submit(warm, key=f"warmup:{monitor.get('id', '')}")
+        except DetectionCancelled:
+            if not runner.accepting:
+                return
+        except Exception as err:  # noqa: BLE001
+            _LOGGER.debug(
+                "hass_datapoints: cache warmup skipped for monitor %s: %r",
+                monitor.get("id"),
+                err,
+            )
 
 
 # ---------------------------------------------------------------------------
@@ -743,214 +865,176 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
             )
 
     async def _run_scan(self) -> None:
-        """Fetch history, run detection, update state and store."""
-        from homeassistant.components.recorder import get_instance  # noqa: PLC0415
+        """Run one scheduled scan as a single runner job and record its outcome.
 
+        Success publishes counts/clusters/history; timeout, error and busy only
+        update scan health, preserving the last successful results and never
+        emitting a resolved event. Overlapping ticks for the same monitor are
+        skipped without touching its status; superseded scans publish nothing.
+        """
         monitor = self._store.get_monitor(self._monitor_id)
-        if not monitor or not monitor.get("enabled", True):
+        if not monitor or not monitor.get("enabled", True) or monitor.get("deleted_at"):
             return
+        runner: DetectionRunner | None = self._hass.data.get(DOMAIN, {}).get("runner")
+        if runner is None:
+            return
+        revision = self._store.get_monitor_revision(self._monitor_id)
+        attempt_time = datetime.now(UTC).isoformat()
 
-        # Limit concurrent scans across all monitor sensors to avoid saturating
-        # the dedicated executor pool during startup bursts or rapid rescans.
-        semaphore = self._hass.data.get(DOMAIN, {}).get("scan_semaphore")
-        pool = self._hass.data.get(DOMAIN, {}).get("executor")
-        cancel_event = threading.Event()
-
-        if semaphore:
-            async with semaphore:
-                await self._run_scan_inner(
-                    monitor, pool, cancel_event, get_instance(self._hass)
-                )
-        else:
-            await self._run_scan_inner(
-                monitor, pool, cancel_event, get_instance(self._hass)
+        async def scan(job: DetectionJob) -> None:
+            await self._store.async_commit_monitor_scan(
+                self._monitor_id,
+                revision,
+                _mark_scan_running(attempt_time, job.token),
             )
+            await self._run_scan_inner(monitor, revision, runner, job)
+
+        try:
+            await runner.submit(scan, key=f"scan:{self._monitor_id}")
+        except DetectionBusy as err:
+            if err.reason == "duplicate":
+                return
+            await self._publish_scan_failure(revision, attempt_time, err)
+        except DetectionCancelled:
+            return
+        except Exception as err:  # noqa: BLE001
+            if not isinstance(err, DetectionTimeout):
+                _LOGGER.exception(
+                    "DatapointsMonitorSensor scan failed for monitor %s",
+                    self._monitor_id,
+                )
+            await self._publish_scan_failure(revision, attempt_time, err)
+
+    async def _publish_scan_failure(
+        self,
+        revision: tuple[str, int],
+        attempt_time: str,
+        err: BaseException,
+    ) -> None:
+        code = error_code(err)
+        status = _SCAN_STATUS_BY_ERROR.get(code, "error")
+        await self._store.async_commit_monitor_scan(
+            self._monitor_id,
+            revision,
+            partial(_failure_updates, attempt_time, status, code),
+        )
 
     async def _run_scan_inner(
         self,
         monitor: dict,
-        pool,
-        cancel_event: threading.Event,
-        recorder,
+        revision: tuple[str, int],
+        runner: DetectionRunner,
+        job: DetectionJob,
     ) -> None:
-        """Inner scan body; called inside the semaphore context."""
+        """Detect over the look-back window and commit a successful result."""
         monitor_type = monitor.get("type", "individual")
         look_back_hours = monitor.get("look_back_hours", 24)
-        config = _build_detection_config(monitor)
         now = datetime.now(UTC)
         start_time = (now - timedelta(hours=look_back_hours)).isoformat()
         end_time = now.isoformat()
 
-        try:
-            if monitor_type == "combined":
-                entity_ids = monitor.get("entity_ids", [])
-                all_pts: dict[str, list] = {}
-                for eid in entity_ids:
-                    all_pts[eid] = await async_prepare_entity_series(
-                        self._hass,
-                        eid,
-                        start_time,
-                        end_time,
-                        sample_interval=monitor.get("sample_interval"),
-                        sample_aggregate=monitor.get("sample_aggregate", "mean"),
-                        max_pts=ANOMALY_MAX_PTS,
-                    )
-
-                data_point_count = sum(len(v) for v in all_pts.values())
-                overlap_mode = monitor.get("overlap_mode", "all")
-                try:
-                    clusters = await asyncio.wait_for(
-                        self._hass.loop.run_in_executor(
-                            pool,
-                            _run_combined_detection,
-                            all_pts,
-                            config,
-                            overlap_mode,
-                            cancel_event,
-                        ),
-                        timeout=30.0,
-                    )
-                except TimeoutError:
-                    cancel_event.set()
-                    _LOGGER.warning(
-                        "hass_datapoints: combined detection timed out for monitor %s",
-                        self._monitor_id,
-                    )
-                    clusters = []
-            else:
-                entity_id = monitor.get("entity_id", "")
-                pts = await async_prepare_entity_series(
-                    self._hass,
-                    entity_id,
-                    start_time,
-                    end_time,
-                    sample_interval=monitor.get("sample_interval"),
-                    sample_aggregate=monitor.get("sample_aggregate", "mean"),
-                    max_pts=ANOMALY_MAX_PTS,
-                )
-
-                data_point_count = len(pts)
-                clusters: list = []
-                if len(pts) >= 3:
-                    comparison_pts: list | None = None
-                    baseline_entity_id = monitor.get("baseline_entity_id")
-                    if baseline_entity_id and "comparison_window" in config.get(
-                        "anomaly_methods", []
-                    ):
-                        comparison_pts = await recorder.async_add_executor_job(
-                            fetch_entity_pts,
-                            self._hass,
-                            baseline_entity_id,
-                            start_time,
-                            end_time,
-                        )
-                    try:
-                        clusters = await asyncio.wait_for(
-                            self._hass.loop.run_in_executor(
-                                pool,
-                                _run_detection_sync,
-                                pts,
-                                config,
-                                comparison_pts,
-                                cancel_event,
-                            ),
-                            timeout=30.0,
-                        )
-                    except TimeoutError:
-                        cancel_event.set()
-                        _LOGGER.warning(
-                            "hass_datapoints: detection timed out for monitor %s",
-                            self._monitor_id,
-                        )
-                        clusters = []
-
-            # Apply dismissals (prune expired first, then filter clusters)
-            monitor_copy = self._store.get_monitor(self._monitor_id)
-            if monitor_copy is None:
-                return  # deleted while scan was running
-            DatapointsStore.prune_dismissed_windows(monitor_copy, now)
-            clusters = _apply_dismissals(
-                clusters, monitor_copy.get("dismissed_windows", [])
-            )
-
-        except Exception as err:  # noqa: BLE001
-            _LOGGER.error(
-                "DatapointsMonitorSensor scan failed for monitor %s: %s",
-                self._monitor_id,
-                err,
-            )
-            return
-
-        cluster_count = len(clusters)
-        cluster_summaries = _summarize_clusters(clusters)
+        detection = await async_detect_monitor(
+            self._hass, runner, job, monitor, start_time, end_time
+        )
+        job.check()
         scan_time = now.isoformat()
-        prev_count: int = monitor_copy.get("last_cluster_count", 0)
-        prev_cluster_summaries = monitor_copy.get("active_clusters_summary", [])
+        raw_clusters = detection.clusters
+        transition: dict[str, Any] = {}
 
-        DatapointsStore.append_scan_history(monitor_copy, scan_time, cluster_count)
-        scan_updates: dict[str, Any] = {
-            "last_scan_at": scan_time,
-            "last_cluster_count": cluster_count,
-            "active_cluster_count": cluster_count,
-            "active_clusters_summary": cluster_summaries,
-            "scan_history": monitor_copy["scan_history"],
-            "last_scan_data_points": data_point_count,
-            "dismissed_windows": monitor_copy.get("dismissed_windows", []),
-        }
-        if prev_count == 0 and cluster_count > 0:
-            scan_updates["last_anomaly_at"] = scan_time
-        if prev_count > 0 and cluster_count == 0:
-            scan_updates["last_resolved_clusters_summary"] = prev_cluster_summaries
-        await self._store.async_update_monitor(self._monitor_id, scan_updates)
-        self._attr_native_value = cluster_count
-        self.async_write_ha_state()
-
-        # Fire transition events on the HA event bus.
-        if prev_count == 0 and cluster_count > 0:
-            consecutive = 0
-            for entry in reversed(monitor_copy.get("scan_history", [])):
-                if entry.get("count", 0) > 0:
-                    consecutive += 1
-                else:
-                    break
-            base: dict = {
-                "monitor_id": self._monitor_id,
-                "monitor_name": monitor.get("name", ""),
-                "monitor_type": monitor_type,
-                "scan_time": scan_time,
+        def build_updates(current: dict[str, Any]) -> dict[str, Any] | None:
+            # Re-check the deadline under the store lock: a scan that timed
+            # out while waiting to commit must not publish after (or race
+            # with) its own timeout failure.
+            if job.token.is_set():
+                return None
+            # Dismissals and previous counts come from the committed record
+            # under the store lock, so transitions match the committed order.
+            DatapointsStore.prune_dismissed_windows(current, now)
+            clusters = _apply_dismissals(
+                raw_clusters, current.get("dismissed_windows", [])
+            )
+            cluster_count = len(clusters)
+            cluster_summaries = _summarize_clusters(clusters)
+            prev_count: int = current.get("last_cluster_count", 0) or 0
+            prev_summaries = current.get("active_clusters_summary", [])
+            DatapointsStore.append_scan_history(current, scan_time, cluster_count)
+            updates: dict[str, Any] = {
+                "last_scan_attempt_at": scan_time,
+                "last_scan_status": "success",
+                "last_scan_error": None,
+                "last_scan_at": scan_time,
+                "last_cluster_count": cluster_count,
+                "active_cluster_count": cluster_count,
+                "active_clusters_summary": cluster_summaries,
+                "scan_history": current["scan_history"],
+                "last_scan_data_points": detection.data_point_count,
+                "dismissed_windows": current.get("dismissed_windows", []),
             }
-            if monitor_type == "combined":
-                base["entity_ids"] = monitor.get("entity_ids", [])
-            else:
-                base["entity_id"] = monitor.get("entity_id", "")
+            if prev_count == 0 and cluster_count > 0:
+                updates["last_anomaly_at"] = scan_time
+            if prev_count > 0 and cluster_count == 0:
+                updates["last_resolved_clusters_summary"] = prev_summaries
+            transition.update(
+                prev_count=prev_count,
+                prev_summaries=prev_summaries,
+                cluster_count=cluster_count,
+                cluster_summaries=cluster_summaries,
+                scan_history=current["scan_history"],
+            )
+            return updates
+
+        def on_published(_committed: dict[str, Any]) -> None:
+            self._attr_native_value = transition["cluster_count"]
+            self.async_write_ha_state()
+            self._fire_transition(monitor, monitor_type, scan_time, transition)
+
+        await self._store.async_commit_monitor_scan(
+            self._monitor_id, revision, build_updates, on_published
+        )
+
+    def _fire_transition(
+        self,
+        monitor: dict[str, Any],
+        monitor_type: str,
+        scan_time: str,
+        transition: dict[str, Any],
+    ) -> None:
+        """Fire detected/resolved events for a committed successful scan."""
+        prev_count = transition["prev_count"]
+        cluster_count = transition["cluster_count"]
+        if (prev_count == 0) == (cluster_count == 0):
+            return
+        base: dict[str, Any] = {
+            "monitor_id": self._monitor_id,
+            "monitor_name": monitor.get("name", ""),
+            "monitor_type": monitor_type,
+            "scan_time": scan_time,
+        }
+        if monitor_type == "combined":
+            base["entity_ids"] = monitor.get("entity_ids", [])
+        else:
+            base["entity_id"] = monitor.get("entity_id", "")
+        if cluster_count > 0:
             self._hass.bus.async_fire(
                 EVENT_ANOMALY_DETECTED,
                 {
                     **base,
                     "cluster_count": cluster_count,
                     "active_cluster_count": cluster_count,
-                    "active_clusters": cluster_summaries,
-                    "consecutive_anomalous_scans": consecutive,
+                    "active_clusters": transition["cluster_summaries"],
+                    "consecutive_anomalous_scans": _consecutive_anomalous_scans(
+                        transition["scan_history"]
+                    ),
                 },
             )
-        elif prev_count > 0 and cluster_count == 0:
-            base = {
-                "monitor_id": self._monitor_id,
-                "monitor_name": monitor.get("name", ""),
-                "monitor_type": monitor_type,
-                "scan_time": scan_time,
-            }
-            if monitor_type == "combined":
-                base["entity_ids"] = monitor.get("entity_ids", [])
-            else:
-                base["entity_id"] = monitor.get("entity_id", "")
+        else:
             self._hass.bus.async_fire(
                 EVENT_ANOMALY_RESOLVED,
                 {
                     **base,
                     "active_cluster_count": 0,
                     "active_clusters": [],
-                    "resolved_clusters": prev_cluster_summaries,
+                    "resolved_clusters": transition["prev_summaries"],
                 },
             )
 
@@ -1001,6 +1085,9 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
             "active_clusters": monitor.get("active_clusters_summary", []),
             "last_scan_data_points": monitor.get("last_scan_data_points"),
             "last_scan_at": monitor.get("last_scan_at"),
+            "last_scan_attempt_at": monitor.get("last_scan_attempt_at"),
+            "last_scan_status": monitor.get("last_scan_status", "unknown"),
+            "last_scan_error": monitor.get("last_scan_error"),
             "last_anomaly_at": monitor.get("last_anomaly_at"),
             "dismissed_windows": monitor.get("dismissed_windows", []),
         }
@@ -1014,6 +1101,70 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
 # ---------------------------------------------------------------------------
 # Per-monitor device helper
 # ---------------------------------------------------------------------------
+
+
+_SCAN_STATUS_BY_ERROR = {
+    ERROR_TIMEOUT: "timeout",
+    ERROR_BUSY: "busy",
+    ERROR_CANCELLED: "cancelled",
+}
+
+
+def _mark_scan_running(attempt_time: str, token=None):
+    """Build the 'running' update, remembering whether prior evidence was verified.
+
+    ``last_scan_error`` is kept as the previous failure code (or ``unverified``
+    when the previous status was unknown), so diagnostics stay unavailable
+    while a scan that follows a failure is running, and stay available while a
+    scan that follows a success is running.
+    """
+
+    def build(current: dict[str, Any]) -> dict[str, Any] | None:
+        if token is not None and token.is_set():
+            # Timed out or cancelled while waiting for the store: the failure
+            # (if any) is recorded by the caller; never leave "running" behind.
+            return None
+        previous = current.get("last_scan_status", "unknown")
+        if previous == "success":
+            error = None
+        elif previous == "running":
+            error = current.get("last_scan_error")
+        else:
+            error = current.get("last_scan_error") or SCAN_ERROR_UNVERIFIED
+        return {
+            "last_scan_attempt_at": attempt_time,
+            "last_scan_status": "running",
+            "last_scan_error": error,
+        }
+
+    return build
+
+
+def _failure_updates(
+    attempt_time: str, status: str, code: str, current: dict[str, Any]
+) -> dict[str, Any] | None:
+    """Failure fields for one attempt, unless that attempt already succeeded.
+
+    The success commit may have started just before the deadline and finished
+    after the caller saw the timeout; the store lock orders the two writes,
+    and this keeps a committed success from being overwritten as failed.
+    """
+    last_success = current.get("last_scan_at") or ""
+    if current.get("last_scan_status") == "success" and last_success >= attempt_time:
+        return None
+    return {
+        "last_scan_attempt_at": attempt_time,
+        "last_scan_status": status,
+        "last_scan_error": code,
+    }
+
+
+def scan_evidence_verified(monitor: dict[str, Any]) -> bool:
+    """True when retained results come from a successful scan that still applies."""
+    status = monitor.get("last_scan_status", "unknown")
+    if status == "success":
+        return True
+    return status == "running" and monitor.get("last_scan_error") is None
 
 
 def _consecutive_anomalous_scans(scan_history: list[dict[str, Any]]) -> int:
@@ -1032,7 +1183,34 @@ def _consecutive_anomalous_scans(scan_history: list[dict[str, Any]]) -> int:
 # ---------------------------------------------------------------------------
 
 
-class DatapointsMonitorConsecutiveScansSensor(_DatapointsSensorBase):
+class _LastSuccessfulScanEvidenceMixin:
+    """Diagnostics derived from successful scans only.
+
+    They are unavailable while the latest scan outcome is unknown or failed
+    (including a scan running after a failure) rather than claiming failed
+    intervals were observed, and come back with the next successful scan.
+    """
+
+    _store: DatapointsStore
+    _monitor_id: str
+
+    @property
+    def available(self) -> bool:
+        monitor = self._store.get_monitor(self._monitor_id)
+        return bool(monitor) and scan_evidence_verified(monitor)
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        monitor = self._store.get_monitor(self._monitor_id) or {}
+        return {
+            "evidence": "last_successful_scan",
+            "last_successful_scan_at": monitor.get("last_scan_at"),
+        }
+
+
+class DatapointsMonitorConsecutiveScansSensor(
+    _LastSuccessfulScanEvidenceMixin, _DatapointsSensorBase
+):
     """Reports the number of consecutive anomalous scans for a monitor."""
 
     _attr_icon = "mdi:repeat-variant"
@@ -1140,7 +1318,7 @@ class DatapointsMonitorLastAnomalySensor(_DatapointsSensorBase):
 
 
 class DatapointsMonitorAnomalyDurationSensor(
-    _PeriodicRefreshMixin, _DatapointsSensorBase
+    _LastSuccessfulScanEvidenceMixin, _PeriodicRefreshMixin, _DatapointsSensorBase
 ):
     """Reports how many minutes the current anomaly has been active.
 
