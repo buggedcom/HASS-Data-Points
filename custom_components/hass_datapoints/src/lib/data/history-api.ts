@@ -1,8 +1,14 @@
 import {
+  beginOwnedRequest,
   cancelPending,
   clearRequest,
+  createRequestId,
   trackRequest,
 } from "@/lib/data/cancel-api";
+import {
+  DetectionRequestError,
+  detectionErrorCode,
+} from "@/lib/data/detection-errors";
 import { normalizeCacheIdList, withStableRangeCache } from "@/lib/data/cache";
 import type { HassLike } from "@/lib/types";
 
@@ -48,30 +54,6 @@ interface BackendAnomalyResult<TCluster> {
 }
 
 const MAX_DOWNSAMPLED_HISTORY_RANGE_MS = 90 * 24 * 60 * 60 * 1000;
-
-function createRequestId(): string {
-  const cryptoApi = globalThis.crypto;
-  if (typeof cryptoApi?.randomUUID === "function") {
-    return cryptoApi.randomUUID();
-  }
-
-  if (typeof cryptoApi?.getRandomValues === "function") {
-    const bytes = new Uint8Array(16);
-    cryptoApi.getRandomValues(bytes);
-    bytes[6] = (bytes[6] % 16) + 64;
-    bytes[8] = (bytes[8] % 64) + 128;
-    const hex = [...bytes].map((byte) => byte.toString(16).padStart(2, "0"));
-    return [
-      hex.slice(0, 4).join(""),
-      hex.slice(4, 6).join(""),
-      hex.slice(6, 8).join(""),
-      hex.slice(8, 10).join(""),
-      hex.slice(10, 16).join(""),
-    ].join("-");
-  }
-
-  return `req-${Date.now().toString(16)}-${Math.random().toString(16).slice(2, 10)}`;
-}
 
 function parseIsoTimeMs(value: string): Nullable<number> {
   const timeMs = Date.parse(value);
@@ -184,12 +166,17 @@ export function fetchAnomaliesFromBackend<TCluster = unknown>(
   entityId: string,
   startTime: string,
   endTime: string,
-  config: BackendAnomalyConfig
+  config: BackendAnomalyConfig,
+  ownerSlot?: string
 ): Promise<TCluster[]> {
-  const slotKey = `anomalies:${entityId}:${startTime}:${endTime}`;
-  cancelPending(hass, slotKey);
-  const requestId = createRequestId();
-  trackRequest(slotKey, requestId);
+  // The owner slot (component + purpose + series + comparison window) makes a
+  // newer range/config for the same series cancel this one, without touching
+  // other charts or series. Unowned callers get a per-request slot.
+  const request = beginOwnedRequest(
+    hass,
+    ownerSlot ?? `anomalies:${entityId}:${startTime}:${endTime}`
+  );
+  const requestId = request.requestId;
 
   return hass.connection
     .sendMessagePromise({
@@ -234,13 +221,18 @@ export function fetchAnomaliesFromBackend<TCluster = unknown>(
     })
     .then(
       (result) => {
-        clearRequest(slotKey);
+        const current = request.isCurrent();
+        request.release();
+        if (!current) {
+          // A newer generation replaced this one: never publish stale data.
+          throw new DetectionRequestError("detection_cancelled");
+        }
         return ((result as BackendAnomalyResult<TCluster>).anomaly_clusters ||
           []) as TCluster[];
       },
       (err) => {
-        clearRequest(slotKey);
-        throw err;
+        request.release();
+        throw new DetectionRequestError(detectionErrorCode(err));
       }
     );
 }

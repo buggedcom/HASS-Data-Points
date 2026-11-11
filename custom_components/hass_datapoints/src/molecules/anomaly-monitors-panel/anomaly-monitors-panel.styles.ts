@@ -651,4 +651,39 @@ export const styles = css`
     gap: 2px;
     flex: 0 0 auto;
   }
+
+  /* ---- Scan health / activity failure lines ---- */
+
+  .scan-health,
+  .activity-error,
+  .clusters-error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 0 16px 8px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    color: var(--primary-text-color);
+  }
+
+  .scan-health ha-icon {
+    --mdc-icon-size: 16px;
+    flex: 0 0 auto;
+  }
+
+  .scan-health[data-health="unverified"] {
+    background: color-mix(in srgb, var(--info-color, #039be5) 12%, transparent);
+  }
+
+  .scan-health[data-health="failed"],
+  .activity-error,
+  .clusters-error {
+    background: color-mix(
+      in srgb,
+      var(--warning-color, #f59e0b) 14%,
+      transparent
+    );
+  }
 `;

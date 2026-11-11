@@ -132,6 +132,186 @@ describe("hass-datapoints-history-chart", () => {
     });
   });
 
+  describe("GIVEN a backend anomaly request fails", () => {
+    const START = "2026-01-01T00:00:00.000Z";
+    const END = "2026-01-02T00:00:00.000Z";
+    type AnomalyChart = HistoryChartEl & {
+      _lastT0: number;
+      _lastT1: number;
+      _backendAnomalyByEntity: Map<string, unknown>;
+      _buildBackendAnomalyConfig(a: unknown): RecordWithUnknownValues;
+      _fireBackendAnomalyRequests(
+        ids: string[],
+        analysis: Map<string, unknown>,
+        start: string,
+        end: string
+      ): void;
+      _retryFailedAnomalies(): void;
+      _requestOwnerId: string;
+    };
+    const analysis = new Map([
+      [
+        "sensor.temperature",
+        { show_anomalies: true, anomaly_methods: ["trend_residual"] },
+      ],
+    ]);
+
+    function prepare(): AnomalyChart {
+      const chart = el as unknown as AnomalyChart;
+      chart._hass = { connection: { sendMessagePromise: vi.fn() } };
+      chart._lastT0 = Date.parse(START);
+      chart._lastT1 = Date.parse(END);
+      return chart;
+    }
+
+    const settle = () =>
+      new Promise((resolve) => {
+        setTimeout(resolve, 0);
+      });
+
+    describe("WHEN the chart redraws with the same range and config", () => {
+      it("THEN the failure is not retried automatically and a retry note is shown", async () => {
+        expect.assertions(3);
+        const chart = prepare();
+        const fetchSpy = vi
+          .spyOn(historyApi, "fetchAnomaliesFromBackend")
+          .mockRejectedValue({ code: "detection_timeout" });
+
+        chart._fireBackendAnomalyRequests(
+          ["sensor.temperature"],
+          analysis,
+          START,
+          END
+        );
+        await settle();
+        chart._fireBackendAnomalyRequests(
+          ["sensor.temperature"],
+          analysis,
+          START,
+          END
+        );
+        await settle();
+
+        expect(fetchSpy).toHaveBeenCalledTimes(1);
+        const note = el.querySelector<HTMLElement>("#anomaly-note")!;
+        expect(note.hidden).toBe(false);
+        expect(note.textContent).toContain("timed out");
+        fetchSpy.mockRestore();
+      });
+    });
+
+    describe("WHEN the user presses Retry", () => {
+      it("THEN the failed series is requested exactly once more", async () => {
+        expect.assertions(2);
+        const chart = prepare();
+        const fetchSpy = vi
+          .spyOn(historyApi, "fetchAnomaliesFromBackend")
+          .mockRejectedValueOnce({ code: "detection_busy" })
+          .mockResolvedValueOnce([]);
+        chart._fireBackendAnomalyRequests(
+          ["sensor.temperature"],
+          analysis,
+          START,
+          END
+        );
+        await settle();
+
+        chart._retryFailedAnomalies();
+        chart._fireBackendAnomalyRequests(
+          ["sensor.temperature"],
+          analysis,
+          START,
+          END
+        );
+        await settle();
+
+        expect(fetchSpy).toHaveBeenCalledTimes(2);
+        expect(el.querySelector<HTMLElement>("#anomaly-note")!.hidden).toBe(
+          true
+        );
+        fetchSpy.mockRestore();
+      });
+    });
+
+    describe("WHEN the request was superseded or cancelled", () => {
+      it("THEN nothing is cached as a failure and no note is shown", async () => {
+        expect.assertions(2);
+        const chart = prepare();
+        const fetchSpy = vi
+          .spyOn(historyApi, "fetchAnomaliesFromBackend")
+          .mockRejectedValue({ code: "detection_cancelled" });
+
+        chart._fireBackendAnomalyRequests(
+          ["sensor.temperature"],
+          analysis,
+          START,
+          END
+        );
+        await settle();
+
+        expect(chart._backendAnomalyByEntity.has("sensor.temperature")).toBe(
+          false
+        );
+        expect(el.querySelector<HTMLElement>("#anomaly-note")!.hidden).toBe(
+          true
+        );
+        fetchSpy.mockRestore();
+      });
+    });
+
+    describe("WHEN the range changes while the old range is still pending", () => {
+      it("THEN the new range is requested in the same slot instead of being skipped", () => {
+        expect.assertions(3);
+        const chart = prepare();
+        const fetchSpy = vi
+          .spyOn(historyApi, "fetchAnomaliesFromBackend")
+          .mockReturnValue(new Promise(() => {}));
+        const NEXT_END = "2026-01-03T00:00:00.000Z";
+
+        chart._fireBackendAnomalyRequests(
+          ["sensor.temperature"],
+          analysis,
+          START,
+          END
+        );
+        chart._lastT1 = Date.parse(NEXT_END);
+        chart._fireBackendAnomalyRequests(
+          ["sensor.temperature"],
+          analysis,
+          START,
+          NEXT_END
+        );
+
+        expect(fetchSpy).toHaveBeenCalledTimes(2);
+        expect(fetchSpy.mock.calls[1][3]).toBe(NEXT_END);
+        expect(fetchSpy.mock.calls[1][5]).toBe(fetchSpy.mock.calls[0][5]);
+        fetchSpy.mockRestore();
+      });
+    });
+
+    describe("WHEN requests are issued", () => {
+      it("THEN each series uses its own owner slot on this chart instance", () => {
+        expect.assertions(1);
+        const chart = prepare();
+        const fetchSpy = vi
+          .spyOn(historyApi, "fetchAnomaliesFromBackend")
+          .mockReturnValue(new Promise(() => {}));
+
+        chart._fireBackendAnomalyRequests(
+          ["sensor.temperature"],
+          analysis,
+          START,
+          END
+        );
+
+        expect(fetchSpy.mock.calls[0][5]).toBe(
+          `${chart._requestOwnerId}:anomalies:primary:sensor.temperature`
+        );
+        fetchSpy.mockRestore();
+      });
+    });
+  });
+
   describe("GIVEN the chart shell is initialized", () => {
     describe("WHEN the top slot host is inspected", () => {
       it("THEN it renders the comparison tab mount point", () => {

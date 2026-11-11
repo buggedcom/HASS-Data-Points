@@ -8,7 +8,7 @@ export default {
   argTypes: {
     status: {
       control: "select",
-      options: ["healthy", "warning", "triggered", "paused"],
+      options: ["healthy", "unverified", "warning", "triggered", "paused"],
     },
     label: { control: "text" },
   },
@@ -37,6 +37,19 @@ export const Triggered = {
     html`<monitor-status-pill .status=${"triggered"}></monitor-status-pill>`,
 };
 
+export const Unverified = {
+  render: () =>
+    html`<monitor-status-pill .status=${"unverified"}></monitor-status-pill>`,
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    const el = canvasElement.querySelector(
+      "monitor-status-pill"
+    ) as HTMLElement & {
+      shadowRoot: ShadowRoot;
+    };
+    expect(el.shadowRoot.textContent).toContain("Unverified");
+  },
+};
+
 export const Paused = {
   render: () =>
     html`<monitor-status-pill .status=${"paused"}></monitor-status-pill>`,
@@ -54,6 +67,7 @@ export const AllStatuses = {
   render: () => html`
     <div style="display: flex; gap: 8px; flex-wrap: wrap;">
       <monitor-status-pill .status=${"healthy"}></monitor-status-pill>
+      <monitor-status-pill .status=${"unverified"}></monitor-status-pill>
       <monitor-status-pill .status=${"warning"}></monitor-status-pill>
       <monitor-status-pill .status=${"triggered"}></monitor-status-pill>
       <monitor-status-pill .status=${"paused"}></monitor-status-pill>

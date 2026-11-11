@@ -8,6 +8,7 @@ import { styles } from "./monitor-status-pill.styles";
 const DEFAULT_LABELS: Record<MonitorStatus, string> = {
   paused: "Paused",
   healthy: "Healthy",
+  unverified: "Unverified",
   warning: "Warning",
   triggered: "Triggered",
 };

@@ -56,6 +56,82 @@ describe("history-api", () => {
     });
   });
 
+  describe("GIVEN two generations for the same owner slot", () => {
+    describe("WHEN the older one resolves after the newer one started", () => {
+      it("THEN the older result is rejected as cancelled, never published", async () => {
+        expect.assertions(2);
+        let resolveFirst: (v: unknown) => void = () => {};
+        const sendMessagePromise = vi.fn((message: { type: string }) => {
+          if (message.type === "hass_datapoints/anomalies") {
+            return new Promise((resolve) => {
+              if (
+                !sendMessagePromise.mock.calls
+                  .slice(0, -1)
+                  .some(
+                    ([m]) =>
+                      (m as { type: string }).type ===
+                      "hass_datapoints/anomalies"
+                  )
+              ) {
+                resolveFirst = resolve;
+              }
+            });
+          }
+          return Promise.resolve(undefined);
+        });
+        const hass = { connection: { sendMessagePromise } };
+
+        const first = fetchAnomaliesFromBackend(
+          hass,
+          "sensor.a",
+          "s1",
+          "e1",
+          { anomaly_methods: ["iqr"] },
+          "chart#1:anomalies:primary:sensor.a"
+        );
+        fetchAnomaliesFromBackend(
+          hass,
+          "sensor.a",
+          "s2",
+          "e2",
+          { anomaly_methods: ["iqr"] },
+          "chart#1:anomalies:primary:sensor.a"
+        );
+        resolveFirst({ anomaly_clusters: [{ stale: true }] });
+
+        await expect(first).rejects.toMatchObject({
+          code: "detection_cancelled",
+        });
+        expect(sendMessagePromise).toHaveBeenCalledWith(
+          expect.objectContaining({ type: "hass_datapoints/cancel" })
+        );
+      });
+    });
+  });
+
+  describe("GIVEN the backend reports a timeout", () => {
+    describe("WHEN fetchAnomaliesFromBackend rejects", () => {
+      it("THEN the rejection carries the stable code", async () => {
+        expect.assertions(1);
+        const hass = {
+          connection: {
+            sendMessagePromise: vi.fn(() =>
+              Promise.reject(
+                Object.assign(new Error("x"), { code: "detection_timeout" })
+              )
+            ),
+          },
+        };
+
+        await expect(
+          fetchAnomaliesFromBackend(hass, "sensor.a", "s", "e", {
+            anomaly_methods: ["iqr"],
+          })
+        ).rejects.toMatchObject({ code: "detection_timeout" });
+      });
+    });
+  });
+
   describe("GIVEN a downsample request", () => {
     describe("WHEN fetchDownsampledHistory is called", () => {
       it("THEN it sends the expected websocket payload", async () => {

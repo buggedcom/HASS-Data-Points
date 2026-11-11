@@ -429,6 +429,29 @@ export const styles = `
   .aggregate-note[hidden] {
     display: none;
   }
+  .anomaly-note {
+    display: flex;
+    align-items: center;
+    gap: var(--dp-spacing-sm, 8px);
+    flex-wrap: wrap;
+    padding: var(--dp-spacing-xs, 4px) var(--dp-spacing-md);
+    padding-left: calc(var(--dp-spacing-md) + var(--dp-chart-axis-left-width, 0px));
+    font-size: 0.74em;
+    color: var(--primary-text-color);
+    background: color-mix(in srgb, var(--warning-color, #f59e0b) 12%, transparent);
+  }
+  .anomaly-note[hidden] {
+    display: none;
+  }
+  .anomaly-retry {
+    border: 1px solid var(--divider-color);
+    border-radius: 6px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    padding: 2px 8px;
+    cursor: pointer;
+  }
   .legend {
     display: flex;
     flex-wrap: nowrap;

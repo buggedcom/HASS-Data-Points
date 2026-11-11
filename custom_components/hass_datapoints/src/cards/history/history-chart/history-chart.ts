@@ -9,7 +9,7 @@
  * legend remain accessible from the parent card's shadow root.
  */
 
-import { html, render } from "lit";
+import { html, nothing, render } from "lit";
 import {
   buildBinaryAggregateSeries,
   buildConsumptionAggregateSeries,
@@ -66,6 +66,16 @@ import {
   fetchAnomaliesFromBackend,
   fetchDownsampledHistory,
 } from "@/lib/data/history-api";
+import {
+  cancelOwnedRequests,
+  createRequestOwnerId,
+  ownerSlot,
+} from "@/lib/data/cancel-api";
+import {
+  detectionErrorCode,
+  isDetectionCancelled,
+  type DetectionErrorCode,
+} from "@/lib/data/detection-errors";
 import { COLORS } from "@/constants";
 import { contrastColor, hexToRgba } from "@/lib/util/color";
 import {
@@ -344,10 +354,16 @@ export class HistoryChart extends HTMLElement {
       </div>
       <div id="annotation-tooltips"></div>
       <div class="aggregate-note" id="aggregate-note" role="note" hidden></div>
+      <div class="anomaly-note" id="anomaly-note" role="status" hidden></div>
       <div class="legend" id="legend"></div>`;
   }
 
   disconnectedCallback(): void {
+    // Cancel this chart's own anomaly requests only; other charts and series
+    // keep theirs.
+    cancelOwnedRequests(this._hass, this._requestOwnerId);
+    this._pendingAnomalyEntityIds.clear();
+    this._pendingComparisonAnomalyKeys.clear();
     if (this._chartHoverCleanup) {
       this._chartHoverCleanup();
       this._chartHoverCleanup = null;
@@ -444,11 +460,22 @@ export class HistoryChart extends HTMLElement {
   /** Backend anomaly data keyed by comparison window ID + entity ID. */
   _backendComparisonAnomalyByKey: Map<string, unknown> = new Map();
 
-  /** Entity IDs whose anomaly fetch is currently in-flight. */
-  _pendingAnomalyEntityIds: Set<string> = new Set();
+  /**
+   * In-flight anomaly fetch per entity, keyed to its generation (config +
+   * range). A new range or config is a new generation: it is requested (and
+   * cancels the old one) instead of being skipped behind the stale request.
+   */
+  _pendingAnomalyEntityIds: Map<string, string> = new Map();
 
   /** Comparison window + entity keys whose anomaly fetch is currently in-flight. */
   _pendingComparisonAnomalyKeys: Set<string> = new Set();
+
+  /**
+   * Owner id for this chart instance's cancellable requests. Each series and
+   * comparison window gets its own slot under it, so a new range or config
+   * for one series cancels only that series' previous request.
+   */
+  readonly _requestOwnerId = createRequestOwnerId("history-chart");
 
   /**
    * Cleanup function returned by attachLineChartHover.
@@ -933,6 +960,88 @@ export class HistoryChart extends HTMLElement {
     statsData: unknown
   ): Array<{ lu: number; s: string }> {
     return normalizeStatisticsHistory(entityId, statsData);
+  }
+
+  /**
+   * Show which anomaly overlays are unavailable (failed, never zero) with an
+   * explicit Retry. Base history keeps rendering underneath.
+   */
+  _renderAnomalyNote(): void {
+    const noteEl = this.querySelector("#anomaly-note") as Nullable<HTMLElement>;
+    if (!noteEl) {
+      return;
+    }
+    const codes: DetectionErrorCode[] = [];
+    const collect = (entry: unknown) => {
+      const error = (entry as { error?: DetectionErrorCode } | undefined)
+        ?.error;
+      if (error) {
+        codes.push(error);
+      }
+    };
+    this._backendAnomalyByEntity.forEach(collect);
+    this._backendComparisonAnomalyByKey.forEach(collect);
+    if (codes.length === 0) {
+      noteEl.hidden = true;
+      render(nothing, noteEl);
+      return;
+    }
+    const reasons: Record<DetectionErrorCode, string> = {
+      detection_timeout: msg(
+        "Anomaly detection timed out for part of this chart."
+      ),
+      detection_busy: msg(
+        "Anomaly detection is busy; some anomalies are not shown."
+      ),
+      detection_cancelled: msg(
+        "Anomalies could not be loaded for part of this chart."
+      ),
+      detection_error: msg(
+        "Anomalies could not be loaded for part of this chart."
+      ),
+    };
+    // Most actionable first: a timeout, then busy, then anything else.
+    const code =
+      (["detection_timeout", "detection_busy"] as const).find((c) =>
+        codes.includes(c)
+      ) ?? codes[0];
+    const reason = reasons[code];
+    noteEl.hidden = false;
+    render(
+      html`<span>${reason}</span>
+        <button
+          class="anomaly-retry"
+          type="button"
+          @click=${() => this._retryFailedAnomalies()}
+        >
+          ${msg("Retry")}
+        </button>`,
+      noteEl
+    );
+  }
+
+  /** Explicit retry: forget cached failures and redraw (which refetches them). */
+  _retryFailedAnomalies(): void {
+    const dropFailures = (map: Map<string, unknown>) => {
+      for (const [key, entry] of [...map]) {
+        if ((entry as { error?: string } | undefined)?.error) {
+          map.delete(key);
+        }
+      }
+    };
+    dropFailures(this._backendAnomalyByEntity);
+    dropFailures(this._backendComparisonAnomalyByKey);
+    this._renderAnomalyNote();
+    if (this._lastHistResult && this._lastEvents) {
+      this._queueDrawChart(
+        this._lastHistResult,
+        this._lastStatsResult || {},
+        this._filterEvents(this._lastEvents),
+        this._lastT0,
+        this._lastT1,
+        { loading: false }
+      );
+    }
   }
 
   /**
@@ -1865,14 +1974,37 @@ export class HistoryChart extends HTMLElement {
         ].sort(),
       });
       const cached = this._backendAnomalyByEntity.get(entityId) as
-        | { configKey: string; clusters: unknown[] }
+        | {
+            configKey: string;
+            clusters: Nullable<unknown[]>;
+            error?: DetectionErrorCode;
+          }
         | undefined;
-      if (cached && cached.configKey === configKey) return;
-      this._pendingAnomalyEntityIds.add(entityId);
-      this._setChartLoading(true);
-      fetchAnomaliesFromBackend(hass, entityId, _startIso, _endIso, config)
-        .then((clusters) => {
+      // A failure is cached under its config too: redraws never auto-retry it.
+      if (cached && cached.configKey === configKey) {
+        return;
+      }
+      const generation = `${configKey}|${_startIso}|${_endIso}`;
+      if (this._pendingAnomalyEntityIds.get(entityId) === generation) {
+        return;
+      }
+      this._pendingAnomalyEntityIds.set(entityId, generation);
+      const settle = () => {
+        if (this._pendingAnomalyEntityIds.get(entityId) === generation) {
           this._pendingAnomalyEntityIds.delete(entityId);
+        }
+      };
+      this._setChartLoading(true);
+      fetchAnomaliesFromBackend(
+        hass,
+        entityId,
+        _startIso,
+        _endIso,
+        config,
+        ownerSlot(this._requestOwnerId, "anomalies", "primary", entityId)
+      )
+        .then((clusters) => {
+          settle();
           // Discard if the time range changed while this request was in-flight.
           if (
             _startIso !== new Date(this._lastT0).toISOString() ||
@@ -1884,6 +2016,7 @@ export class HistoryChart extends HTMLElement {
             return;
           }
           this._backendAnomalyByEntity.set(entityId, { configKey, clusters });
+          this._renderAnomalyNote();
           // Patch the cached analysisResult directly so the worker cache remains valid.
           if (this._analysisCache?.result) {
             const existing = (this._analysisCache.result.anomalySeries ||
@@ -1912,14 +2045,31 @@ export class HistoryChart extends HTMLElement {
           }
         })
         .catch((err) => {
-          this._pendingAnomalyEntityIds.delete(entityId);
+          settle();
           if (this._pendingAnomalyEntityIds.size === 0) {
             this._setChartLoading(false);
+          }
+          // Superseded or disconnected: silent, and never cached as a failure.
+          if (isDetectionCancelled(err)) {
+            return;
+          }
+          if (
+            _startIso !== new Date(this._lastT0).toISOString() ||
+            _endIso !== new Date(this._lastT1).toISOString()
+          ) {
+            return;
           }
           logger.warn(
             "[hass-datapoints history-card] backend anomaly fetch failed",
             { entityId, err }
           );
+          // Base history keeps rendering; the overlay is marked unavailable.
+          this._backendAnomalyByEntity.set(entityId, {
+            configKey,
+            clusters: null,
+            error: detectionErrorCode(err),
+          });
+          this._renderAnomalyNote();
         });
     });
   }
@@ -2092,7 +2242,14 @@ export class HistoryChart extends HTMLElement {
           entityId,
           comparisonStartIso,
           comparisonEndIso,
-          config
+          config,
+          ownerSlot(
+            this._requestOwnerId,
+            "anomalies",
+            "comparison",
+            comparisonWindow.id,
+            entityId
+          )
         )
           .then((clusters) => {
             this._pendingComparisonAnomalyKeys.delete(cacheKey);
@@ -2110,6 +2267,7 @@ export class HistoryChart extends HTMLElement {
               configKey,
               clusters: shiftedClusters,
             });
+            this._renderAnomalyNote();
             if (this._lastHistResult && this._lastEvents) {
               this._queueDrawChart(
                 this._lastHistResult,
@@ -2121,8 +2279,21 @@ export class HistoryChart extends HTMLElement {
               );
             }
           })
-          .catch(() => {
+          .catch((err) => {
             this._pendingComparisonAnomalyKeys.delete(cacheKey);
+            if (
+              isDetectionCancelled(err) ||
+              startIso !== new Date(this._lastT0).toISOString() ||
+              endIso !== new Date(this._lastT1).toISOString()
+            ) {
+              return;
+            }
+            this._backendComparisonAnomalyByKey.set(cacheKey, {
+              configKey,
+              clusters: [],
+              error: detectionErrorCode(err),
+            });
+            this._renderAnomalyNote();
           });
       });
     });
@@ -3019,6 +3190,7 @@ export class HistoryChart extends HTMLElement {
       if (t0 !== this._lastT0 || t1 !== this._lastT1) {
         this._backendAnomalyByEntity.clear();
         this._backendComparisonAnomalyByKey.clear();
+        this._renderAnomalyNote();
       }
       await Promise.all(
         series.map(async (seriesItem) => {
@@ -3395,9 +3567,11 @@ export class HistoryChart extends HTMLElement {
       const merged = _anomalyEntityIds
         .map((entityId) => {
           const cached = this._backendAnomalyByEntity.get(entityId) as
-            | { clusters: unknown[] }
+            | { clusters: Nullable<unknown[]> }
             | undefined;
-          if (!cached) return null;
+          if (!cached || !Array.isArray(cached.clusters)) {
+            return null;
+          }
           return { entityId, anomalyClusters: cached.clusters };
         })
         .filter(Boolean);

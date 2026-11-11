@@ -1229,22 +1229,196 @@ describe("anomaly-monitors-panel", () => {
         ).toBe("—");
       });
 
-      it("THEN the card shows a flat zero row and no error", async () => {
-        expect.assertions(3);
+      it("THEN the heatmap shows an unavailable row, not zero, with a retry", async () => {
+        expect.assertions(4);
         const { el } = await mountWithRange(() => {
-          throw new Error("boom");
+          throw Object.assign(new Error("timed out"), {
+            code: "detection_timeout",
+          });
         });
+        await flushMicrotasks();
+        await el.updateComplete;
         const root = el.shadowRoot!;
         const heatmap = root.querySelector("monitor-entity-heatmap")!;
-        expect(
-          heatmap.shadowRoot!.querySelector(".heatmap-flat")
-        ).not.toBeNull();
+        await (heatmap as unknown as { updateComplete: Promise<unknown> })
+          .updateComplete;
+        expect(heatmap.hasAttribute("unavailable")).toBe(true);
         expect(
           heatmap
             .shadowRoot!.querySelector(".heatmap-count")
             ?.textContent?.trim()
-        ).toBe("0");
-        expect(root.querySelector(".monitor-card")).not.toBeNull();
+        ).toBe("—");
+        expect(root.querySelector(".activity-error")?.textContent).toContain(
+          "timed out"
+        );
+        expect(root.querySelector(".retry-activity-btn")).not.toBeNull();
+      });
+
+      it("THEN later list polls do not retry it, but Retry does exactly once", async () => {
+        expect.assertions(2);
+        const activity = vi.fn(() => {
+          throw Object.assign(new Error("busy"), { code: "detection_busy" });
+        });
+        const { el, send } = await mountWithRange(activity);
+        await flushMicrotasks();
+        const internals = el as unknown as { _load(): Promise<void> };
+        await internals._load();
+        await internals._load();
+        expect(activity).toHaveBeenCalledTimes(1);
+
+        await el.updateComplete;
+        (
+          el.shadowRoot!.querySelector(".retry-activity-btn") as HTMLElement
+        ).click();
+        await flushMicrotasks();
+        expect(
+          send.mock.calls.filter(
+            ([message]) => (message as { type: string }).type === ACTIVITY_TYPE
+          )
+        ).toHaveLength(2);
+      });
+    });
+
+    describe("WHEN the list refreshes with only scan status and count changes", () => {
+      it("THEN no new activity request is made", async () => {
+        expect.assertions(1);
+        let listCalls = 0;
+        const send = routeSend({
+          [T.list]: () => {
+            listCalls += 1;
+            return {
+              monitors: [
+                {
+                  ...buildMonitor(true),
+                  last_scan_status: listCalls % 2 ? "running" : "success",
+                  last_scan_at: `2026-01-01T0${listCalls % 10}:00:00Z`,
+                  last_cluster_count: listCalls,
+                },
+              ],
+            };
+          },
+          [ACTIVITY_TYPE]: () => activityFor("monitor-1"),
+        });
+        const hass = createMockHass({
+          connection: {
+            subscribeEvents: vi.fn(() => Promise.resolve(vi.fn())),
+            sendMessagePromise: send,
+          },
+        });
+        const el = createElement(hass) as ReturnType<typeof createElement> & {
+          rangeStartMs: number | null;
+          rangeEndMs: number | null;
+          _load(): Promise<void>;
+        };
+        el.rangeStartMs = RANGE_START;
+        el.rangeEndMs = RANGE_END;
+        await el.updateComplete;
+        await flushMicrotasks();
+        await el._load();
+        await el._load();
+        await el._load();
+
+        expect(
+          send.mock.calls.filter(
+            ([message]) => (message as { type: string }).type === ACTIVITY_TYPE
+          )
+        ).toHaveLength(1);
+      });
+    });
+
+    describe("WHEN a monitor-list poll fails after an activity failure", () => {
+      it("THEN the failure is kept and the next good poll does not retry it", async () => {
+        expect.assertions(3);
+        let listFails = false;
+        const activity = vi.fn(() => {
+          throw Object.assign(new Error("busy"), { code: "detection_busy" });
+        });
+        const send = routeSend({
+          [T.list]: () => {
+            if (listFails) {
+              throw Object.assign(new Error("socket"), { code: "unknown" });
+            }
+            return { monitors: [buildMonitor(true)] };
+          },
+          [ACTIVITY_TYPE]: activity as (m: { type: string }) => unknown,
+        });
+        const hass = createMockHass({
+          connection: {
+            subscribeEvents: vi.fn(() => Promise.resolve(vi.fn())),
+            sendMessagePromise: send,
+          },
+        });
+        const el = createElement(hass) as ReturnType<typeof createElement> & {
+          rangeStartMs: number | null;
+          rangeEndMs: number | null;
+          _load(): Promise<void>;
+        };
+        el.rangeStartMs = RANGE_START;
+        el.rangeEndMs = RANGE_END;
+        await el.updateComplete;
+        await flushMicrotasks();
+        await flushMicrotasks();
+
+        listFails = true;
+        await el._load();
+        listFails = false;
+        await el._load();
+        await el.updateComplete;
+
+        expect(activity).toHaveBeenCalledTimes(1);
+        expect(el.shadowRoot!.querySelectorAll(".monitor-card")).toHaveLength(
+          1
+        );
+        expect(el.shadowRoot!.querySelector(".activity-error")).not.toBeNull();
+      });
+    });
+
+    describe("WHEN one monitor's activity fails and another's succeeds", () => {
+      it("THEN only the failed monitor shows unavailable", async () => {
+        expect.assertions(2);
+        const second = {
+          ...buildMonitor(true),
+          id: "monitor-2",
+          name: "Other",
+        };
+        const send = routeSend({
+          [T.list]: () => ({ monitors: [buildMonitor(true), second] }),
+          [ACTIVITY_TYPE]: (message) => {
+            if (
+              (message as { monitor_id?: string }).monitor_id === "monitor-1"
+            ) {
+              throw Object.assign(new Error("x"), { code: "detection_error" });
+            }
+            return activityFor("monitor-2");
+          },
+        });
+        const hass = createMockHass({
+          connection: {
+            subscribeEvents: vi.fn(() => Promise.resolve(vi.fn())),
+            sendMessagePromise: send,
+          },
+        });
+        const el = createElement(hass) as ReturnType<typeof createElement> & {
+          rangeStartMs: number | null;
+          rangeEndMs: number | null;
+        };
+        el.rangeStartMs = RANGE_START;
+        el.rangeEndMs = RANGE_END;
+        await el.updateComplete;
+        await flushMicrotasks();
+        await flushMicrotasks();
+        await el.updateComplete;
+
+        const heatmaps = [
+          ...el.shadowRoot!.querySelectorAll("monitor-entity-heatmap"),
+        ];
+        expect(heatmaps.map((h) => h.hasAttribute("unavailable"))).toEqual([
+          true,
+          false,
+        ]);
+        expect(el.shadowRoot!.querySelectorAll(".activity-error")).toHaveLength(
+          1
+        );
       });
     });
   });

@@ -1,7 +1,12 @@
 import type {
   DismissedWindow,
   ScanHistoryEntry,
+  ScanStatus,
 } from "@/lib/data/monitors-api";
+import {
+  SCAN_ERROR_UNVERIFIED,
+  type ScanErrorCode,
+} from "@/lib/data/detection-errors";
 
 /**
  * Monitor display-status model.
@@ -11,7 +16,24 @@ import type {
  * atom (`monitor-status-pill`) renders this; the monitors panel derives it per
  * card. Keep this pure and side-effect free so it is trivially unit-testable.
  */
-export type MonitorStatus = "paused" | "healthy" | "warning" | "triggered";
+export type MonitorStatus =
+  | "paused"
+  | "healthy"
+  | "unverified"
+  | "warning"
+  | "triggered";
+
+/**
+ * Health of the monitor's *scanning*, kept separate from its anomaly state.
+ *
+ * - ok:         the latest scan succeeded (or one is running after a success)
+ * - running:    a scan is running after a success; results still verified
+ * - unverified: no successful scan since load/upgrade/config change
+ * - failed:     the latest scan (or the one before the running one) failed;
+ *               counts are the last successful scan's, not current
+ * - paused:     the monitor is disabled
+ */
+export type ScanHealth = "ok" | "running" | "unverified" | "failed" | "paused";
 
 /**
  * The subset of a monitor needed to decide its display status. `AnomalyMonitor`
@@ -36,6 +58,40 @@ export interface MonitorStatusInput {
   scan_history?: ScanHistoryEntry[];
   /** Detections the user has dismissed; their presence implies past anomalies. */
   dismissed_windows?: DismissedWindow[];
+  /** Latest scan outcome; absent on legacy records (treated as unknown). */
+  last_scan_status?: ScanStatus | null;
+  /** Failure code of the latest attempt (kept while a retry scan is running). */
+  last_scan_error?: ScanErrorCode | null;
+}
+
+/** Mirrors FAILED_SCAN_STATUSES in the backend's detection_runner.py. */
+const FAILED_SCAN_STATUSES: ReadonlySet<string> = new Set([
+  "timeout",
+  "error",
+  "busy",
+  "cancelled",
+]);
+
+/** Derive the scanning health shown separately from the anomaly counts. */
+export function deriveScanHealth(monitor: MonitorStatusInput): ScanHealth {
+  if (!monitor.enabled) {
+    return "paused";
+  }
+  const status = monitor.last_scan_status ?? "unknown";
+  if (status === "success") {
+    return "ok";
+  }
+  if (FAILED_SCAN_STATUSES.has(status)) {
+    return "failed";
+  }
+  if (status === "running") {
+    const error = monitor.last_scan_error ?? null;
+    if (error === null) {
+      return "running";
+    }
+    return error === SCAN_ERROR_UNVERIFIED ? "unverified" : "failed";
+  }
+  return "unverified";
 }
 
 /** Undismissed cluster count, preferring the dismissal-aware backend field. */
@@ -60,8 +116,9 @@ function hasSeenAnomaly(monitor: MonitorStatusInput): boolean {
  * Default rule (adjust here if the product rule changes):
  *   1. disabled                                   → Paused
  *   2. active (undismissed) anomaly clusters      → Triggered
- *   3. anomalies seen before but none active now  → Warning
- *   4. otherwise                                  → Healthy
+ *   3. latest scan failed or not yet verified     → Unverified
+ *   4. anomalies seen before but none active now  → Warning
+ *   5. otherwise                                  → Healthy
  *
  * Paused always wins: a disabled monitor is not scanning, so its stale anomaly
  * state should not surface as Triggered/Warning.
@@ -73,7 +130,14 @@ export function deriveMonitorStatus(
     return "paused";
   }
   if (activeClusterCount(monitor) > 0) {
+    // Last-known anomalies stay visible even when the latest scan failed; the
+    // separate scan-health line says they are not current.
     return "triggered";
+  }
+  const health = deriveScanHealth(monitor);
+  if (health === "unverified" || health === "failed") {
+    // Never present an unverified zero as Healthy.
+    return "unverified";
   }
   if (hasSeenAnomaly(monitor)) {
     return "warning";

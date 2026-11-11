@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   deriveMonitorStatus,
+  deriveScanHealth,
   type MonitorStatusInput,
 } from "@/lib/data/monitor-status";
 
@@ -14,6 +15,7 @@ function baseline(
     last_anomaly_at: null,
     scan_history: [],
     dismissed_windows: [],
+    last_scan_status: "success",
     ...overrides,
   };
 }
@@ -140,6 +142,85 @@ describe("deriveMonitorStatus", () => {
             })
           )
         ).toBe("paused");
+      });
+    });
+  });
+});
+
+describe("deriveScanHealth and unverified status", () => {
+  describe("GIVEN a legacy monitor without a scan status", () => {
+    describe("WHEN its status is derived", () => {
+      it("THEN it is Unverified, never Healthy", () => {
+        expect.assertions(2);
+        expect(
+          deriveMonitorStatus(baseline({ last_scan_status: undefined }))
+        ).toBe("unverified");
+        expect(
+          deriveScanHealth(baseline({ last_scan_status: undefined }))
+        ).toBe("unverified");
+      });
+    });
+  });
+
+  describe("GIVEN the latest scan timed out", () => {
+    describe("WHEN the monitor still has last-known active clusters", () => {
+      it("THEN it stays Triggered and the scan health is failed", () => {
+        expect.assertions(2);
+        const monitor = baseline({
+          last_scan_status: "timeout",
+          last_scan_error: "detection_timeout",
+          last_cluster_count: 2,
+        });
+        expect(deriveMonitorStatus(monitor)).toBe("triggered");
+        expect(deriveScanHealth(monitor)).toBe("failed");
+      });
+    });
+
+    describe("WHEN it has no active clusters", () => {
+      it("THEN it is Unverified rather than Healthy", () => {
+        expect.assertions(1);
+        expect(
+          deriveMonitorStatus(
+            baseline({
+              last_scan_status: "timeout",
+              last_scan_error: "detection_timeout",
+            })
+          )
+        ).toBe("unverified");
+      });
+    });
+  });
+
+  describe("GIVEN a scan is running", () => {
+    describe("WHEN the previous scan succeeded", () => {
+      it("THEN health is running and the status stays Healthy", () => {
+        expect.assertions(2);
+        const monitor = baseline({ last_scan_status: "running" });
+        expect(deriveScanHealth(monitor)).toBe("running");
+        expect(deriveMonitorStatus(monitor)).toBe("healthy");
+      });
+    });
+
+    describe("WHEN the previous scan failed", () => {
+      it("THEN health is still failed", () => {
+        expect.assertions(1);
+        expect(
+          deriveScanHealth(
+            baseline({
+              last_scan_status: "running",
+              last_scan_error: "detection_busy",
+            })
+          )
+        ).toBe("failed");
+      });
+    });
+  });
+
+  describe("GIVEN a paused monitor", () => {
+    describe("WHEN its scan health is derived", () => {
+      it("THEN it is paused", () => {
+        expect.assertions(1);
+        expect(deriveScanHealth(baseline({ enabled: false }))).toBe("paused");
       });
     });
   });
