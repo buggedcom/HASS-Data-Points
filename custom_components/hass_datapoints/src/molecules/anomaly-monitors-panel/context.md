@@ -34,11 +34,19 @@ Styling relies on HA theme vars + `color-mix` so cards read correctly in light a
 
 ### Refresh behavior
 
-- The panel still polls every 30 seconds as a safety net.
-- Immediate consistency should come from the websocket event subscription, which reloads the list when a monitor is toggled or otherwise changed from outside this panel, such as from the Devices & Integrations view.
+- The panel still polls the cheap monitor list every 30 seconds as a safety net.
+- Immediate consistency should come from the websocket event subscription, which reloads the list when a monitor is toggled or otherwise changed from outside this panel, such as from the Devices & Integrations view. Every scheduled scan publishes such an event (once when it starts, once when it finishes).
+- Range activity runs full detection on the backend, so it is **not** tied to list refreshes. `MonitorActivityController` (`src/lib/data/monitor-activity.ts`) owns it: each list refresh or range change calls `sync()`, which only requests activity when the identity changes (range, bucket count, detection/sampling config, or the _effective_ dismissals at the current time — so a timed dismissal expiring triggers exactly one reload even when the monitor JSON is unchanged), when a live-edge success is older than 60 s, or on explicit Retry. Name, scan status, `last_scan_at` and counts are not identity inputs. Failures are never retried automatically and never render as zeros.
+- Each monitor has a tagged `loading | success | error` activity state; a failure keeps a previous same-identity result only as explicitly stale.
+
+### Scan health
+
+- `last_scan_status` / `last_scan_error` / `last_scan_attempt_at` describe the latest scheduled scan; counts, clusters and history are always from the last _successful_ scan (`last_scan_at`).
+- `deriveScanHealth` drives a separate `.scan-health` line; the status pill never says Healthy for an unverified (legacy/changed) or failed monitor — it shows Unverified, while last-known anomalies stay Triggered.
 
 ### Testing focus
 
 - Subscribes to `hass_datapoints_monitors_updated` once `hass.connection` is available.
 - Tears down the subscription on disconnect.
 - Reloads monitor records when the backend pushes a monitor-updated event.
+- Status-only refreshes cause no activity requests; failures show unavailable (not zero) with an explicit Retry; one monitor failing does not affect another.

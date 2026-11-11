@@ -95,6 +95,18 @@ export const styles = css`
     background: var(--secondary-background-color);
   }
 
+  :host([unavailable]) .heatmap-flat {
+    background: repeating-linear-gradient(
+      -45deg,
+      var(--secondary-background-color) 0 6px,
+      transparent 6px 12px
+    );
+  }
+
+  :host([stale]) .heatmap-track {
+    opacity: 0.5;
+  }
+
   .heatmap-axis {
     display: grid;
     grid-template-columns: minmax(90px, 30%) minmax(0, 1fr) 2ch;

@@ -2,12 +2,12 @@ import { html, LitElement, nothing } from "lit";
 import { property, state } from "lit/decorators.js";
 import type { PropertyValues } from "lit";
 import { COLORS, DOMAIN } from "@/constants";
-import { localized, msg } from "@/lib/i18n/localize";
+import { interpolatePlaceholders, localized, msg } from "@/lib/i18n/localize";
 import { fmtDateTimeRange, fmtRelativeTime } from "@/lib/util/format";
 
 import { styles } from "./anomaly-monitors-panel.styles";
 import {
-  fetchMonitors,
+  fetchMonitorsOrThrow,
   fetchDeletedMonitors,
   updateMonitor,
   deleteMonitor,
@@ -21,7 +21,6 @@ import {
   type AnomalyMonitor,
   type CombinedMonitor,
   type AnomalyCluster,
-  type MonitorAnomalyActivityResult,
   type DismissedWindow,
 } from "@/lib/data/monitors-api";
 import type { HassLike } from "@/lib/types";
@@ -35,8 +34,26 @@ import { HOUR_MS } from "@/lib/timeline/timeline-scale";
 import { confirmDestructiveAction } from "@/lib/ha/ha-components";
 import {
   deriveMonitorStatus,
+  deriveScanHealth,
   type MonitorStatus,
 } from "@/lib/data/monitor-status";
+import {
+  beginOwnedRequest,
+  cancelOwnedRequests,
+  createRequestId,
+  createRequestOwnerId,
+  ownerSlot,
+  sendCancelRequest,
+} from "@/lib/data/cancel-api";
+import {
+  detectionErrorCode,
+  isDetectionCancelled,
+  type DetectionErrorCode,
+} from "@/lib/data/detection-errors";
+import {
+  MonitorActivityController,
+  type ActivityState,
+} from "@/lib/data/monitor-activity";
 import "@/molecules/anomaly-monitor-wizard/anomaly-monitor-wizard";
 import "@/atoms/form/entity-chip/entity-chip";
 import "@/atoms/display/monitor-status-pill/monitor-status-pill";
@@ -129,14 +146,16 @@ export class AnomalyMonitorsPanel extends LitElement {
   @property({ type: Number }) accessor rangeEndMs: Nullable<number> = null;
 
   /**
-   * Range-scoped per-entity activity per monitor id. A monitor that is paused
-   * or whose fetch failed is absent: it renders a flat row, and its stats show
-   * 0 (paused) or an unavailable dash (failed / not yet loaded).
+   * Range-scoped activity per monitor, owned by a controller that only
+   * recalculates when the range, detection config or effective dismissals
+   * change (or on explicit retry) — never on list polls or status events.
+   * Bumped whenever the controller's states change, to re-render.
    */
-  @state() accessor _activity: Map<string, MonitorAnomalyActivityResult> =
-    new Map();
+  @state() accessor _activityVersion = 0;
 
-  private _activityToken = 0;
+  private _activityController: Nullable<MonitorActivityController> = null;
+
+  private readonly _ownerId = createRequestOwnerId("monitors-panel");
 
   @state() accessor _monitors: AnomalyMonitor[] = [];
 
@@ -157,6 +176,9 @@ export class AnomalyMonitorsPanel extends LitElement {
 
   /** Monitor IDs currently loading their cluster list. */
   @state() accessor _loadingClusters: Set<string> = new Set();
+
+  /** Cluster-list failures per monitor; cleared only by an explicit retry. */
+  @state() accessor _clusterErrors: Map<string, DetectionErrorCode> = new Map();
 
   /** Tracks which monitor+cluster is showing the dismiss expiry picker. Key: `${monitorId}:${clusterIndex}` */
   @state() accessor _dismissPickerKey: string | null = null;
@@ -201,31 +223,36 @@ export class AnomalyMonitorsPanel extends LitElement {
       this._pollInterval = null;
     }
     this._teardownMonitorSubscription();
+    this._disposeActivity();
+    cancelOwnedRequests(this.hass, this._ownerId);
+    this._loadingClusters = new Set();
     // Independent of the monitor subscription teardown above: drop the
     // overflow-menu document listeners so a disconnected panel leaks nothing.
     this._closeOverflow();
   }
 
   protected updated(changedProperties: PropertyValues<this>) {
+    if (changedProperties.has("hass")) {
+      const previous = changedProperties.get("hass") as Nullable<HassLike>;
+      if (previous?.connection !== this.hass?.connection) {
+        // Activity identity is connection-scoped: start over on a new socket.
+        this._disposeActivity();
+        cancelOwnedRequests(previous ?? null, this._ownerId);
+        this._teardownMonitorSubscription();
+        this._scheduleMonitorSubscription();
+        this._scheduleLoad();
+      }
+    }
     if (
       changedProperties.has("rangeStartMs") ||
       changedProperties.has("rangeEndMs")
     ) {
-      this._scheduleActivityLoad();
-    }
-    if (changedProperties.has("hass")) {
-      this._teardownMonitorSubscription();
-      this._scheduleMonitorSubscription();
-      this._scheduleLoad();
+      this._syncActivity();
     }
   }
 
   private _scheduleLoad() {
     this._load().catch(() => {});
-  }
-
-  private _scheduleActivityLoad() {
-    this._loadActivity().catch(() => {});
   }
 
   /** The selected range, or null when the host has not provided a valid one. */
@@ -238,48 +265,73 @@ export class AnomalyMonitorsPanel extends LitElement {
       : null;
   }
 
-  /**
-   * Fetch range-scoped per-entity activity for each active monitor. Requests are
-   * per monitor (combined monitors are costlier server-side) and a failure for
-   * one monitor only drops that monitor to a flat zero row.
-   */
-  private async _loadActivity() {
-    const range = this._selectedRange();
+  private _ensureActivityController(): Nullable<MonitorActivityController> {
     const hass = this.hass;
-    if (!hass || !range) {
-      return;
+    if (!hass?.connection) {
+      return null;
     }
-    const token = ++this._activityToken;
-    const results = await Promise.all(
-      this._monitors.map(async (monitor) => {
-        // Paused monitors have no live detection: skip the request entirely.
-        if (!monitor.enabled) {
-          return null;
-        }
-        try {
-          const result = await fetchMonitorAnomalyActivity(
-            hass,
-            monitor.id,
-            range.startMs,
-            range.endMs
-          );
-          return Array.isArray(result?.entities) ? result : null;
-        } catch {
-          return null;
-        }
-      })
+    if (!this._activityController) {
+      this._activityController = new MonitorActivityController(
+        {
+          fetch: (monitorId, range, bucketCount, requestId) =>
+            fetchMonitorAnomalyActivity(
+              hass,
+              monitorId,
+              range.startMs,
+              range.endMs,
+              bucketCount ?? undefined,
+              requestId
+            ),
+          cancel: (requestId) => sendCancelRequest(hass, requestId),
+          createRequestId,
+        },
+        () => {
+          this._activityVersion += 1;
+        },
+        Date.now,
+        // A live-edge success or a dismissal expiring: re-sync with the
+        // current inputs instead of waiting for the next 30 s poll.
+        () => this._syncActivity()
+      );
+    }
+    return this._activityController;
+  }
+
+  private _disposeActivity() {
+    this._activityController?.dispose();
+    this._activityController = null;
+    this._activityVersion += 1;
+  }
+
+  /**
+   * Bring range activity in line with the current monitors and range. Cheap
+   * and idempotent: only a changed identity (range, detection config,
+   * effective dismissals incl. expiry), an expired live-edge success or an
+   * explicit retry issues a request; one monitor failing never clears another.
+   */
+  private _syncActivity() {
+    this._ensureActivityController()?.sync(
+      this._monitors,
+      this._selectedRange()
     );
-    if (token !== this._activityToken) {
-      return;
-    }
-    const next = new Map<string, MonitorAnomalyActivityResult>();
-    this._monitors.forEach((monitor, i) => {
-      const result = results[i];
-      if (result) {
-        next.set(monitor.id, result);
-      }
-    });
-    this._activity = next;
+  }
+
+  private _activityState(monitorId: string): Nullable<ActivityState> {
+    return this._activityController?.state(monitorId) ?? null;
+  }
+
+  private _retryActivity(monitor: AnomalyMonitor) {
+    this._ensureActivityController()?.retry(monitor, this._selectedRange());
+  }
+
+  private _activityErrorLabel(code: DetectionErrorCode): string {
+    const labels: Record<DetectionErrorCode, string> = {
+      detection_timeout: msg("Anomaly activity timed out."),
+      detection_busy: msg("Anomaly detection is busy."),
+      detection_cancelled: msg("Anomaly activity was cancelled."),
+      detection_error: msg("Anomaly activity could not be loaded."),
+    };
+    return labels[code];
   }
 
   private _scheduleMonitorSubscription() {
@@ -319,15 +371,19 @@ export class AnomalyMonitorsPanel extends LitElement {
       return;
     }
     try {
-      // Both helpers swallow their own transport errors (→ []), so the active
-      // list and the trash list refresh independently in one pass.
+      // The trash helper swallows its own errors (→ []). The active list must
+      // not: a failed poll returning [] would cancel and reset every
+      // monitor's activity state, and the next good poll would then silently
+      // retry failures. On failure keep the previous list and states.
       const [active, deleted] = await Promise.all([
-        fetchMonitors(this.hass),
+        fetchMonitorsOrThrow(this.hass).catch(() => null),
         fetchDeletedMonitors(this.hass),
       ]);
-      this._monitors = active;
       this._deletedMonitors = deleted;
-      this._scheduleActivityLoad();
+      if (active !== null) {
+        this._monitors = active;
+        this._syncActivity();
+      }
     } catch {
       // ignore
     } finally {
@@ -627,20 +683,51 @@ export class AnomalyMonitorsPanel extends LitElement {
   }
 
   private async _loadClusters(monitorId: string) {
-    if (!this.hass || this._loadingClusters.has(monitorId)) return;
+    const hass = this.hass;
+    if (
+      !hass ||
+      this._loadingClusters.has(monitorId) ||
+      this._clusterErrors.has(monitorId)
+    ) {
+      return;
+    }
     this._loadingClusters = new Set([...this._loadingClusters, monitorId]);
+    const request = beginOwnedRequest(
+      hass,
+      ownerSlot(this._ownerId, "clusters", monitorId)
+    );
     try {
-      const result = await fetchMonitorAnomalies(this.hass, monitorId);
-      const updated = new Map(this._monitorClusters);
-      updated.set(monitorId, result.anomaly_clusters);
-      this._monitorClusters = updated;
-    } catch {
-      // ignore — UI will fall back to count display
+      const result = await fetchMonitorAnomalies(
+        hass,
+        monitorId,
+        request.requestId
+      );
+      if (request.isCurrent()) {
+        const updated = new Map(this._monitorClusters);
+        updated.set(monitorId, result.anomaly_clusters);
+        this._monitorClusters = updated;
+      }
+    } catch (err) {
+      // Record the failure so render does not refetch it in a loop; the user
+      // can retry explicitly. A cancellation (disconnect) is not a failure.
+      if (request.isCurrent() && !isDetectionCancelled(err)) {
+        const errors = new Map(this._clusterErrors);
+        errors.set(monitorId, detectionErrorCode(err));
+        this._clusterErrors = errors;
+      }
     } finally {
+      request.release();
       const next = new Set(this._loadingClusters);
       next.delete(monitorId);
       this._loadingClusters = next;
     }
+  }
+
+  private _retryClusters(monitorId: string) {
+    const errors = new Map(this._clusterErrors);
+    errors.delete(monitorId);
+    this._clusterErrors = errors;
+    this._loadClusters(monitorId);
   }
 
   private async _onDismiss(
@@ -776,6 +863,19 @@ export class AnomalyMonitorsPanel extends LitElement {
         ${msg("Loading anomaly details…")}
       </div>`;
     }
+    const clusterError = this._clusterErrors.get(monitor.id);
+    if (!clusters && clusterError) {
+      return html`<div class="clusters-error" role="status">
+        <span>${msg("Anomaly details could not be loaded.")}</span>
+        <button
+          class="text-action retry-clusters-btn"
+          type="button"
+          @click=${() => this._retryClusters(monitor.id)}
+        >
+          ${msg("Retry")}
+        </button>
+      </div>`;
+    }
     if (!clusters) return nothing;
     if (clusters.length === 0) {
       return html`<div class="clusters-empty">
@@ -895,12 +995,21 @@ export class AnomalyMonitorsPanel extends LitElement {
   /** Per-entity heatmap over the selected range (flat zero rows if no data). */
   private _renderEntityHeatmap(monitor: AnomalyMonitor) {
     const range = this._selectedRange()!;
+    const activityState = monitor.enabled
+      ? this._activityState(monitor.id)
+      : null;
+    const shown =
+      activityState?.status === "success"
+        ? activityState.result
+        : (activityState?.stale ?? null);
     return html`<monitor-entity-heatmap
       .hass=${this.hass}
       .entityIds=${monitorEntityIds(monitor)}
-      .activity=${(monitor.enabled &&
-        this._activity.get(monitor.id)?.entities) ||
-      null}
+      .activity=${shown?.entities ?? null}
+      ?unavailable=${monitor.enabled && activityState?.status !== "success"}
+      ?stale=${monitor.enabled &&
+      activityState?.status !== "success" &&
+      shown !== null}
       .startMs=${range.startMs}
       .endMs=${range.endMs}
       style="--heatmap-color:${monitorSeriesColor(monitor)}"
@@ -978,6 +1087,7 @@ export class AnomalyMonitorsPanel extends LitElement {
     const labels: Record<MonitorStatus, string> = {
       paused: msg("Paused"),
       healthy: msg("Healthy"),
+      unverified: msg("Unverified"),
       warning: msg("Warning"),
       triggered: msg("Triggered"),
     };
@@ -1092,10 +1202,12 @@ export class AnomalyMonitorsPanel extends LitElement {
   private _renderStatsBlock(monitor: AnomalyMonitor) {
     // With a selected range the counts cover that range (0 when the activity
     // is unavailable); otherwise fall back to the latest scan figures.
-    const activity = this._activity.get(monitor.id);
+    const activityState = this._activityState(monitor.id);
+    const activity =
+      activityState?.status === "success" ? activityState.result : null;
     const ranged = this._selectedRange() !== null;
-    // Ranged: paused monitors are 0; an enabled monitor without activity
-    // (failed or still loading) is unavailable, shown as a dash, never 0.
+    // Ranged: paused monitors are 0; an enabled monitor without a current
+    // success (loading, failed or stale) is unavailable, shown as a dash, never 0.
     const rangedValue = (value: number | undefined): number | string =>
       !monitor.enabled ? 0 : (value ?? "—");
     const anomalousReadings = ranged
@@ -1142,6 +1254,75 @@ export class AnomalyMonitorsPanel extends LitElement {
     `;
   }
 
+  /**
+   * Scan health, shown separately from the (last-known) anomaly counts so a
+   * failed or unverified scan never reads as a fresh, healthy result.
+   */
+  private _renderScanHealth(monitor: AnomalyMonitor) {
+    const health = deriveScanHealth(monitor);
+    if (health === "ok" || health === "running" || health === "paused") {
+      return nothing;
+    }
+    const lastSuccess = monitor.last_scan_at
+      ? interpolatePlaceholders(
+          msg("Counts are from the last successful scan, {0}."),
+          [fmtRelativeTime(monitor.last_scan_at)]
+        )
+      : msg("No successful scan yet.");
+    if (health === "unverified") {
+      return html`<div
+        class="scan-health"
+        data-health="unverified"
+        role="status"
+      >
+        <ha-icon icon="mdi:timer-sand"></ha-icon>
+        <span
+          >${msg("Waiting for a scan with the current settings.")}
+          ${lastSuccess}</span
+        >
+      </div>`;
+    }
+    const reasons: Record<string, string> = {
+      detection_timeout: msg("The latest scan timed out."),
+      detection_busy: msg(
+        "The latest scan was skipped because detection was busy."
+      ),
+      detection_cancelled: msg("The latest scan was cancelled."),
+    };
+    const reason =
+      reasons[monitor.last_scan_error ?? ""] ?? msg("The latest scan failed.");
+    return html`<div class="scan-health" data-health="failed" role="status">
+      <ha-icon icon="mdi:alert-outline"></ha-icon>
+      <span>${reason} ${lastSuccess}</span>
+    </div>`;
+  }
+
+  /** Range activity failure for one monitor, with an explicit retry. */
+  private _renderActivityError(monitor: AnomalyMonitor) {
+    if (!monitor.enabled || !this._selectedRange()) {
+      return nothing;
+    }
+    const activityState = this._activityState(monitor.id);
+    if (activityState?.status !== "error") {
+      return nothing;
+    }
+    return html`<div class="activity-error" role="status">
+      <span
+        >${this._activityErrorLabel(activityState.code)}
+        ${activityState.stale
+          ? msg("Showing the previous result for this range.")
+          : msg("Activity for this range is unavailable.")}</span
+      >
+      <button
+        class="text-action retry-activity-btn"
+        type="button"
+        @click=${() => this._retryActivity(monitor)}
+      >
+        ${msg("Retry")}
+      </button>
+    </div>`;
+  }
+
   private _renderMonitorCard(monitor: AnomalyMonitor) {
     const clusterCount = monitor.last_cluster_count ?? 0;
     const isDisabled = !monitor.enabled;
@@ -1168,6 +1349,7 @@ export class AnomalyMonitorsPanel extends LitElement {
           ${this._renderStatsBlock(monitor)}
         </div>
 
+        ${this._renderScanHealth(monitor)} ${this._renderActivityError(monitor)}
         ${hasAnomaly ? this._renderClusterList(monitor) : nothing}
         ${this._renderDismissedWindows(monitor)}
 

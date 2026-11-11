@@ -33,7 +33,9 @@ interface HoverState {
  * `monitor-entity-heatmap` renders one activity row per entity over a time
  * range: coloured blocks (one per bucket), the entity name + id, a per-entity
  * anomaly count and a shared x-axis of date ticks. Entities without activity
- * (empty/paused monitor, or a failed fetch) render a flat zero row.
+ * (empty/paused monitor) render a flat zero row. When `unavailable` is set
+ * (loading or failed fetch) rows render flat with a dash instead of a zero
+ * count, and `stale` dims a retained previous result.
  *
  * @fires dp-heatmap-entity-click — user clicked an entity label
  *   (`{ entityId: string }`)
@@ -53,6 +55,13 @@ export class MonitorEntityHeatmap extends LitElement {
   @property({ type: Array }) accessor activity: Nullable<
     EntityAnomalyActivity[]
   > = null;
+
+  /** Activity could not be loaded (or is loading): never show it as zero. */
+  @property({ type: Boolean, reflect: true }) accessor unavailable: boolean =
+    false;
+
+  /** The activity shown is a retained previous result, not a current one. */
+  @property({ type: Boolean, reflect: true }) accessor stale: boolean = false;
 
   @property({ type: Number }) accessor startMs: number = 0;
 
@@ -157,7 +166,9 @@ export class MonitorEntityHeatmap extends LitElement {
               ${buckets.map((b) => this._renderBlock(entityId, b))}
             </div>`
           : html`<div class="heatmap-flat"></div>`}
-        <span class="heatmap-count">${data?.total ?? 0}</span>
+        <span class="heatmap-count"
+          >${this.unavailable && !data ? "—" : (data?.total ?? 0)}</span
+        >
       </div>
     `;
   }

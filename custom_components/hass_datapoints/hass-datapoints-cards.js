@@ -2222,10 +2222,10 @@
 	];
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/i18n/fi.ts
-	var fi_exports$31 = /* @__PURE__ */ __exportAll({ translations: () => translations$185 });
-	var translations$185;
-	var init_fi$31 = __esmMin((() => {
-		translations$185 = {
+	var fi_exports$32 = /* @__PURE__ */ __exportAll({ translations: () => translations$191 });
+	var translations$191;
+	var init_fi$32 = __esmMin((() => {
+		translations$191 = {
 			General: "Yleiset",
 			"Related items": "Liittyvät kohteet",
 			"Datapoint Appearance": "Datapisteen ulkoasu",
@@ -2242,20 +2242,24 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/i18n/fi.ts
-	var fi_exports$30 = /* @__PURE__ */ __exportAll({ translations: () => translations$184 });
-	var translations$184;
-	var init_fi$30 = __esmMin((() => {
-		translations$184 = {
+	var fi_exports$31 = /* @__PURE__ */ __exportAll({ translations: () => translations$190 });
+	var translations$190;
+	var init_fi$31 = __esmMin((() => {
+		translations$190 = {
 			"Date window:": "Aikaikkuna:",
-			"Actual:": "Todellinen:"
+			"Actual:": "Todellinen:",
+			"Anomaly detection timed out for part of this chart.": "Poikkeamien tunnistus aikakatkaistiin osalle tästä kaaviosta.",
+			"Anomaly detection is busy; some anomalies are not shown.": "Poikkeamien tunnistus on varattu; osaa poikkeamista ei näytetä.",
+			"Anomalies could not be loaded for part of this chart.": "Osalle tästä kaaviosta ei voitu ladata poikkeamia.",
+			Retry: "Yritä uudelleen"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/i18n/fi.ts
-	var fi_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$183 });
-	var translations$183;
-	var init_fi$29 = __esmMin((() => {
-		translations$183 = {
+	var fi_exports$30 = /* @__PURE__ */ __exportAll({ translations: () => translations$189 });
+	var translations$189;
+	var init_fi$30 = __esmMin((() => {
+		translations$189 = {
 			General: "Yleiset",
 			Entity: "Entiteetti",
 			"Multiple entities": "Useita entiteettejä",
@@ -2272,10 +2276,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/i18n/fi.ts
-	var fi_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$182 });
-	var translations$182;
-	var init_fi$28 = __esmMin((() => {
-		translations$182 = {
+	var fi_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$188 });
+	var translations$188;
+	var init_fi$29 = __esmMin((() => {
+		translations$188 = {
 			"Search datapoints…": "Hae datapisteitä…",
 			"Delete record": "Poista tietue",
 			Delete: "Poista",
@@ -2293,10 +2297,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/i18n/fi.ts
-	var fi_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$181 });
-	var translations$181;
-	var init_fi$27 = __esmMin((() => {
-		translations$181 = {
+	var fi_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$187 });
+	var translations$187;
+	var init_fi$28 = __esmMin((() => {
+		translations$187 = {
 			General: "Yleiset",
 			"Icon & colour": "Kuvake ja väri",
 			"Related items": "Liittyvät kohteet",
@@ -2314,10 +2318,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/i18n/fi.ts
-	var fi_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$180 });
-	var translations$180;
-	var init_fi$26 = __esmMin((() => {
-		translations$180 = {
+	var fi_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$186 });
+	var translations$186;
+	var init_fi$27 = __esmMin((() => {
+		translations$186 = {
 			Entity: "Entiteetti",
 			Display: "Näyttö",
 			"Records list": "Tietueiden luettelo",
@@ -2337,10 +2341,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/i18n/fi.ts
-	var fi_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$179 });
-	var translations$179;
-	var init_fi$25 = __esmMin((() => {
-		translations$179 = {
+	var fi_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$185 });
+	var translations$185;
+	var init_fi$26 = __esmMin((() => {
+		translations$185 = {
 			"Add datapoint at {0}": "Lisää datapiste klo {0}",
 			Pinned: "Kiinnitetty",
 			"Unpin tooltip": "Irrota työkaluvihje",
@@ -2378,10 +2382,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/domain/i18n/fi.ts
-	var fi_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$178 });
-	var translations$178;
-	var init_fi$24 = __esmMin((() => {
-		translations$178 = {
+	var fi_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$184 });
+	var translations$184;
+	var init_fi$25 = __esmMin((() => {
+		translations$184 = {
 			"Previous period": "Edellinen jakso",
 			"Next period": "Seuraava jakso",
 			"2 periods back": "2 jaksoa taaksepäin",
@@ -2402,10 +2406,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/ha/i18n/fi.ts
-	var fi_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$177 });
-	var translations$177;
-	var init_fi$23 = __esmMin((() => {
-		translations$177 = {
+	var fi_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$183 });
+	var translations$183;
+	var init_fi$24 = __esmMin((() => {
+		translations$183 = {
 			"Confirm delete": "Vahvista poisto",
 			"Are you sure you want to delete this item?": "Oletko varma, että haluat poistaa tämän kohteen?",
 			Cancel: "Peruuta",
@@ -2420,10 +2424,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/history-page/i18n/fi.ts
-	var fi_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$176 });
-	var translations$176;
-	var init_fi$22 = __esmMin((() => {
-		translations$176 = {
+	var fi_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$182 });
+	var translations$182;
+	var init_fi$23 = __esmMin((() => {
+		translations$182 = {
 			"entity_id={0}": "entity_id={0}",
 			"device_id={0}": "device_id={0}",
 			"area_id={0}": "area_id={0}",
@@ -2521,20 +2525,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/timeline/i18n/fi.ts
-	var fi_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$175 });
-	var translations$175;
-	var init_fi$21 = __esmMin((() => {
-		translations$175 = {
+	var fi_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$181 });
+	var translations$181;
+	var init_fi$22 = __esmMin((() => {
+		translations$181 = {
 			Wk: "Vk",
 			"Week of": "Viikko"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-aggregate-group/i18n/fi.ts
-	var fi_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$174 });
-	var translations$174;
-	var init_fi$20 = __esmMin((() => {
-		translations$174 = {
+	var fi_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$180 });
+	var translations$180;
+	var init_fi$21 = __esmMin((() => {
+		translations$180 = {
 			"Aggregate series": "Koosteet",
 			"Count changes to a state": "Laske muutokset tilaan",
 			"Count all state changes": "Laske kaikki tilamuutokset",
@@ -2579,10 +2583,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/i18n/fi.ts
-	var fi_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$173 });
-	var translations$173;
-	var init_fi$19 = __esmMin((() => {
-		translations$173 = {
+	var fi_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$179 });
+	var translations$179;
+	var init_fi$20 = __esmMin((() => {
+		translations$179 = {
 			Direction: "Suunta",
 			Both: "Molemmat",
 			Above: "Yläpuolella",
@@ -2630,10 +2634,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-delta-group/i18n/fi.ts
-	var fi_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$172 });
-	var translations$172;
-	var init_fi$18 = __esmMin((() => {
-		translations$172 = {
+	var fi_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$178 });
+	var translations$178;
+	var init_fi$19 = __esmMin((() => {
+		translations$178 = {
 			"Show delta vs selected date window": "Näytä delta vs. valittu aikaikkuna",
 			"Select a date window tab to enable delta analysis.": "Valitse aikaikkuna-välilehti ottaaksesi delta-analyysin käyttöön.",
 			"Show delta in tooltip": "Näytä delta työkaluvihjeessä",
@@ -2642,10 +2646,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/i18n/fi.ts
-	var fi_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$171 });
-	var translations$171;
-	var init_fi$17 = __esmMin((() => {
-		translations$171 = {
+	var fi_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$177 });
+	var translations$177;
+	var init_fi$18 = __esmMin((() => {
+		translations$177 = {
 			"Show rate of change": "Näytä muutosnopeus",
 			"Show rate of change crosshairs": "Näytä muutosnopeuden tähtäin",
 			"Rate window": "Muutosikkuna",
@@ -2657,10 +2661,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-sample-group/i18n/fi.ts
-	var fi_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$170 });
-	var translations$170;
-	var init_fi$16 = __esmMin((() => {
-		translations$170 = {
+	var fi_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$176 });
+	var translations$176;
+	var init_fi$17 = __esmMin((() => {
+		translations$176 = {
 			Downsampling: "Alasnäytteistys",
 			Interval: "Väli",
 			Aggregate: "Kooste",
@@ -2692,20 +2696,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/i18n/fi.ts
-	var fi_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$169 });
-	var translations$169;
-	var init_fi$15 = __esmMin((() => {
-		translations$169 = {
+	var fi_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$175 });
+	var translations$175;
+	var init_fi$16 = __esmMin((() => {
+		translations$175 = {
 			"Show min / max / mean": "Näytä min / max / keskiarvo",
 			"Show range shading": "Näytä aluevarjostus"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/i18n/fi.ts
-	var fi_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$168 });
-	var translations$168;
-	var init_fi$14 = __esmMin((() => {
-		translations$168 = {
+	var fi_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$174 });
+	var translations$174;
+	var init_fi$15 = __esmMin((() => {
+		translations$174 = {
 			"Show threshold analysis": "Näytä kynnysanalyysi",
 			"Shade threshold area": "Varjosta kynnysalue",
 			Threshold: "Kynnys",
@@ -2716,10 +2720,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/i18n/fi.ts
-	var fi_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$167 });
-	var translations$167;
-	var init_fi$13 = __esmMin((() => {
-		translations$167 = {
+	var fi_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$173 });
+	var translations$173;
+	var init_fi$14 = __esmMin((() => {
+		translations$173 = {
 			"Show trend lines": "Näytä trendiviivat",
 			"Show trend crosshairs": "Näytä trenditähtäin",
 			"Trend method": "Trendimenetelmä",
@@ -2737,10 +2741,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/i18n/fi.ts
-	var fi_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$166 });
-	var translations$166;
-	var init_fi$12 = __esmMin((() => {
-		translations$166 = {
+	var fi_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$172 });
+	var translations$172;
+	var init_fi$13 = __esmMin((() => {
+		translations$172 = {
 			"Add all series from chart": "Lisää kaikki sarjat kaaviosta",
 			"Add from current chart": "Lisää nykyisestä kaaviosta",
 			"Create anomaly monitor": "Luo poikkeamamonitori",
@@ -2749,21 +2753,45 @@
 		};
 	}));
 	//#endregion
+	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitors-panel/i18n/fi.ts
+	var fi_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$171 });
+	var translations$171;
+	var init_fi$12 = __esmMin((() => {
+		translations$171 = {
+			Unverified: "Vahvistamaton",
+			Retry: "Yritä uudelleen",
+			"Anomaly activity timed out.": "Poikkeama-aktiivisuuden haku aikakatkaistiin.",
+			"Anomaly detection is busy.": "Poikkeamien tunnistus on varattu.",
+			"Anomaly activity was cancelled.": "Poikkeama-aktiivisuuden haku peruttiin.",
+			"Anomaly activity could not be loaded.": "Poikkeama-aktiivisuutta ei voitu ladata.",
+			"Anomaly details could not be loaded.": "Poikkeamien tietoja ei voitu ladata.",
+			"Counts are from the last successful scan, {0}.": "Määrät ovat viimeisimmästä onnistuneesta tarkistuksesta, {0}.",
+			"No successful scan yet.": "Onnistunutta tarkistusta ei ole vielä tehty.",
+			"Waiting for a scan with the current settings.": "Odotetaan tarkistusta nykyisillä asetuksilla.",
+			"The latest scan timed out.": "Viimeisin tarkistus aikakatkaistiin.",
+			"The latest scan was skipped because detection was busy.": "Viimeisin tarkistus ohitettiin, koska tunnistus oli varattu.",
+			"The latest scan was cancelled.": "Viimeisin tarkistus peruttiin.",
+			"The latest scan failed.": "Viimeisin tarkistus epäonnistui.",
+			"Showing the previous result for this range.": "Näytetään tämän aikavälin edellinen tulos.",
+			"Activity for this range is unavailable.": "Tämän aikavälin aktiivisuus ei ole saatavilla."
+		};
+	}));
+	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab-rail/i18n/fi.ts
-	var fi_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$165 });
-	var translations$165;
+	var fi_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$170 });
+	var translations$170;
 	var init_fi$11 = __esmMin((() => {
-		translations$165 = {
+		translations$170 = {
 			"Add date window": "Lisää aikaikkuna",
 			"No data yet for this period": "Tälle jaksolle ei ole vielä tietoja"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/i18n/fi.ts
-	var fi_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$164 });
-	var translations$164;
+	var fi_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$169 });
+	var translations$169;
 	var init_fi$10 = __esmMin((() => {
-		translations$164 = {
+		translations$169 = {
 			Name: "Nimi",
 			Start: "Alku",
 			End: "Loppu",
@@ -2790,10 +2818,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/i18n/fi.ts
-	var fi_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$163 });
-	var translations$163;
+	var fi_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$168 });
+	var translations$168;
 	var init_fi$9 = __esmMin((() => {
-		translations$163 = {
+		translations$168 = {
 			Datapoints: "Datapisteet",
 			"Choose which annotation datapoints appear on the chart.": "Valitse, mitkä huomautusten datapisteet näkyvät kaaviossa.",
 			"Linked to selected targets": "Linkitetty valittuihin kohteisiin",
@@ -2803,10 +2831,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/i18n/fi.ts
-	var fi_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$162 });
-	var translations$162;
+	var fi_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$167 });
+	var translations$167;
 	var init_fi$8 = __esmMin((() => {
-		translations$162 = {
+		translations$167 = {
 			"Analysis configured": "Analyysi määritetty",
 			"Configure analysis": "Määritä analyysi",
 			"Stepped series": "Porrastettu sarja",
@@ -2818,17 +2846,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/i18n/fi.ts
-	var fi_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$161 });
-	var translations$161;
+	var fi_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$166 });
+	var translations$166;
 	var init_fi$7 = __esmMin((() => {
-		translations$161 = {};
+		translations$166 = {};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/ai-query-brief-dialog/i18n/fi.ts
-	var fi_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$160 });
-	var translations$160;
+	var fi_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$165 });
+	var translations$165;
 	var init_fi$6 = __esmMin((() => {
-		translations$160 = {
+		translations$165 = {
 			"AI query brief": "AI-kyselytiivistelma",
 			"This brief is intended for another AI to fetch raw Home Assistant history and hass_datapoints anomaly details. Review it, then copy it into your AI tool of choice.": "Tama tiivistelma on tarkoitettu toiselle AI:lle Home Assistantin raakadat historian ja hass_datapointsin poikkeamien lisatietojen hakemista varten. Tarkista se ja kopioi sitten haluamaasi AI-tyokaluun.",
 			"Copy-ready brief": "Kopiointivalmis tiivistelma",
@@ -2840,10 +2868,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/history-targets/i18n/fi.ts
-	var fi_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$159 });
-	var translations$159;
+	var fi_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$164 });
+	var translations$164;
 	var init_fi$5 = __esmMin((() => {
-		translations$159 = {
+		translations$164 = {
 			Targets: "Kohteet",
 			"Each row controls one chart series.": "Jokainen rivi ohjaa yhtä kaaviosarjaa.",
 			"Add target": "Lisää kohde",
@@ -2852,10 +2880,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/panel-shell/i18n/fi.ts
-	var fi_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$158 });
-	var translations$158;
+	var fi_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$163 });
+	var translations$163;
 	var init_fi$4 = __esmMin((() => {
-		translations$158 = {
+		translations$163 = {
 			"Loading Datapoints…": "Ladataan Datapoints…",
 			Datapoints: "Datapoints",
 			"Page options": "Sivun asetukset",
@@ -2870,10 +2898,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/range-toolbar/i18n/fi.ts
-	var fi_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$157 });
-	var translations$157;
+	var fi_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$162 });
+	var translations$162;
 	var init_fi$3 = __esmMin((() => {
-		translations$157 = {
+		translations$162 = {
 			"Toggle sidebar": "Vaihda sivupalkki",
 			Start: "Alku",
 			End: "Loppu",
@@ -2898,26 +2926,27 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/series-preview-dialog/i18n/fi.ts
-	var fi_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$156 });
-	var translations$156;
+	var fi_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$161 });
+	var translations$161;
 	var init_fi$2 = __esmMin((() => {
-		translations$156 = {
+		translations$161 = {
 			Close: "Sulje",
 			"Open in chart": "Avaa kaaviossa"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/i18n/fi.ts
-	var fi_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$155 });
-	var translations$155;
+	var fi_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$160 });
+	var translations$160;
 	var init_fi$1 = __esmMin((() => {
-		translations$155 = { "Selected range": "Valittu aikaväli" };
+		translations$160 = { "Selected range": "Valittu aikaväli" };
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/i18n/locales/fi.ts
 	var fi_exports = /* @__PURE__ */ __exportAll({ templates: () => templates$5 });
 	var modules$5, merged$5, templates$5;
 	var init_fi = __esmMin((() => {
+		init_fi$32();
 		init_fi$31();
 		init_fi$30();
 		init_fi$29();
@@ -2950,26 +2979,27 @@
 		init_fi$2();
 		init_fi$1();
 		modules$5 = /* #__PURE__ */ Object.assign({
-			"../../../cards/action/i18n/fi.ts": fi_exports$31,
-			"../../../cards/history/history-chart/i18n/fi.ts": fi_exports$30,
-			"../../../cards/history/i18n/fi.ts": fi_exports$29,
-			"../../../cards/list/i18n/fi.ts": fi_exports$28,
-			"../../../cards/quick/i18n/fi.ts": fi_exports$27,
-			"../../../cards/sensor/i18n/fi.ts": fi_exports$26,
-			"../../chart/i18n/fi.ts": fi_exports$25,
-			"../../domain/i18n/fi.ts": fi_exports$24,
-			"../../ha/i18n/fi.ts": fi_exports$23,
-			"../../history-page/i18n/fi.ts": fi_exports$22,
-			"../../timeline/i18n/fi.ts": fi_exports$21,
-			"../../../molecules/analysis-aggregate-group/i18n/fi.ts": fi_exports$20,
-			"../../../molecules/analysis-anomaly-group/i18n/fi.ts": fi_exports$19,
-			"../../../molecules/analysis-delta-group/i18n/fi.ts": fi_exports$18,
-			"../../../molecules/analysis-rate-group/i18n/fi.ts": fi_exports$17,
-			"../../../molecules/analysis-sample-group/i18n/fi.ts": fi_exports$16,
-			"../../../molecules/analysis-summary-group/i18n/fi.ts": fi_exports$15,
-			"../../../molecules/analysis-threshold-group/i18n/fi.ts": fi_exports$14,
-			"../../../molecules/analysis-trend-group/i18n/fi.ts": fi_exports$13,
-			"../../../molecules/anomaly-monitor-wizard/i18n/fi.ts": fi_exports$12,
+			"../../../cards/action/i18n/fi.ts": fi_exports$32,
+			"../../../cards/history/history-chart/i18n/fi.ts": fi_exports$31,
+			"../../../cards/history/i18n/fi.ts": fi_exports$30,
+			"../../../cards/list/i18n/fi.ts": fi_exports$29,
+			"../../../cards/quick/i18n/fi.ts": fi_exports$28,
+			"../../../cards/sensor/i18n/fi.ts": fi_exports$27,
+			"../../chart/i18n/fi.ts": fi_exports$26,
+			"../../domain/i18n/fi.ts": fi_exports$25,
+			"../../ha/i18n/fi.ts": fi_exports$24,
+			"../../history-page/i18n/fi.ts": fi_exports$23,
+			"../../timeline/i18n/fi.ts": fi_exports$22,
+			"../../../molecules/analysis-aggregate-group/i18n/fi.ts": fi_exports$21,
+			"../../../molecules/analysis-anomaly-group/i18n/fi.ts": fi_exports$20,
+			"../../../molecules/analysis-delta-group/i18n/fi.ts": fi_exports$19,
+			"../../../molecules/analysis-rate-group/i18n/fi.ts": fi_exports$18,
+			"../../../molecules/analysis-sample-group/i18n/fi.ts": fi_exports$17,
+			"../../../molecules/analysis-summary-group/i18n/fi.ts": fi_exports$16,
+			"../../../molecules/analysis-threshold-group/i18n/fi.ts": fi_exports$15,
+			"../../../molecules/analysis-trend-group/i18n/fi.ts": fi_exports$14,
+			"../../../molecules/anomaly-monitor-wizard/i18n/fi.ts": fi_exports$13,
+			"../../../molecules/anomaly-monitors-panel/i18n/fi.ts": fi_exports$12,
 			"../../../molecules/comparison-tab-rail/i18n/fi.ts": fi_exports$11,
 			"../../../molecules/date-window-dialog/i18n/fi.ts": fi_exports$10,
 			"../../../molecules/sidebar-options/sections/i18n/fi.ts": fi_exports$9,
@@ -2988,10 +3018,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/i18n/fr.ts
-	var fr_exports$31 = /* @__PURE__ */ __exportAll({ translations: () => translations$154 });
-	var translations$154;
-	var init_fr$31 = __esmMin((() => {
-		translations$154 = {
+	var fr_exports$32 = /* @__PURE__ */ __exportAll({ translations: () => translations$159 });
+	var translations$159;
+	var init_fr$32 = __esmMin((() => {
+		translations$159 = {
 			General: "Général",
 			"Related items": "Éléments liés",
 			"Datapoint Appearance": "Apparence du point de données",
@@ -3008,20 +3038,24 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/i18n/fr.ts
-	var fr_exports$30 = /* @__PURE__ */ __exportAll({ translations: () => translations$153 });
-	var translations$153;
-	var init_fr$30 = __esmMin((() => {
-		translations$153 = {
+	var fr_exports$31 = /* @__PURE__ */ __exportAll({ translations: () => translations$158 });
+	var translations$158;
+	var init_fr$31 = __esmMin((() => {
+		translations$158 = {
 			"Date window:": "Fenêtre de dates :",
-			"Actual:": "Réel :"
+			"Actual:": "Réel :",
+			"Anomaly detection timed out for part of this chart.": "La détection d’anomalies a expiré pour une partie de ce graphique.",
+			"Anomaly detection is busy; some anomalies are not shown.": "La détection d’anomalies est occupée ; certaines anomalies ne sont pas affichées.",
+			"Anomalies could not be loaded for part of this chart.": "Impossible de charger les anomalies pour une partie de ce graphique.",
+			Retry: "Réessayer"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/i18n/fr.ts
-	var fr_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$152 });
-	var translations$152;
-	var init_fr$29 = __esmMin((() => {
-		translations$152 = {
+	var fr_exports$30 = /* @__PURE__ */ __exportAll({ translations: () => translations$157 });
+	var translations$157;
+	var init_fr$30 = __esmMin((() => {
+		translations$157 = {
 			General: "Général",
 			Entity: "Entité",
 			"Multiple entities": "Plusieurs entités",
@@ -3038,10 +3072,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/i18n/fr.ts
-	var fr_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$151 });
-	var translations$151;
-	var init_fr$28 = __esmMin((() => {
-		translations$151 = {
+	var fr_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$156 });
+	var translations$156;
+	var init_fr$29 = __esmMin((() => {
+		translations$156 = {
 			"Search datapoints…": "Rechercher des points de données…",
 			"Delete record": "Supprimer l’enregistrement",
 			Delete: "Supprimer",
@@ -3059,10 +3093,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/i18n/fr.ts
-	var fr_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$150 });
-	var translations$150;
-	var init_fr$27 = __esmMin((() => {
-		translations$150 = {
+	var fr_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$155 });
+	var translations$155;
+	var init_fr$28 = __esmMin((() => {
+		translations$155 = {
 			General: "Général",
 			"Icon & colour": "Icône et couleur",
 			"Related items": "Éléments liés",
@@ -3080,10 +3114,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/i18n/fr.ts
-	var fr_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$149 });
-	var translations$149;
-	var init_fr$26 = __esmMin((() => {
-		translations$149 = {
+	var fr_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$154 });
+	var translations$154;
+	var init_fr$27 = __esmMin((() => {
+		translations$154 = {
 			Entity: "Entité",
 			Display: "Affichage",
 			"Records list": "Liste des enregistrements",
@@ -3103,10 +3137,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/i18n/fr.ts
-	var fr_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$148 });
-	var translations$148;
-	var init_fr$25 = __esmMin((() => {
-		translations$148 = {
+	var fr_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$153 });
+	var translations$153;
+	var init_fr$26 = __esmMin((() => {
+		translations$153 = {
 			"Add datapoint at {0}": "Ajouter un point de données à {0}",
 			Pinned: "Épinglé",
 			"Unpin tooltip": "Désépingler l’info-bulle",
@@ -3144,10 +3178,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/domain/i18n/fr.ts
-	var fr_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$147 });
-	var translations$147;
-	var init_fr$24 = __esmMin((() => {
-		translations$147 = {
+	var fr_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$152 });
+	var translations$152;
+	var init_fr$25 = __esmMin((() => {
+		translations$152 = {
 			"Previous period": "Période précédente",
 			"Next period": "Période suivante",
 			"2 periods back": "2 périodes avant",
@@ -3168,10 +3202,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/ha/i18n/fr.ts
-	var fr_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$146 });
-	var translations$146;
-	var init_fr$23 = __esmMin((() => {
-		translations$146 = {
+	var fr_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$151 });
+	var translations$151;
+	var init_fr$24 = __esmMin((() => {
+		translations$151 = {
 			"Confirm delete": "Confirmer la suppression",
 			"Are you sure you want to delete this item?": "Voulez-vous vraiment supprimer cet élément ?",
 			Cancel: "Annuler",
@@ -3186,10 +3220,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/history-page/i18n/fr.ts
-	var fr_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$145 });
-	var translations$145;
-	var init_fr$22 = __esmMin((() => {
-		translations$145 = {
+	var fr_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$150 });
+	var translations$150;
+	var init_fr$23 = __esmMin((() => {
+		translations$150 = {
 			"entity_id={0}": "entity_id={0}",
 			"device_id={0}": "device_id={0}",
 			"area_id={0}": "area_id={0}",
@@ -3287,20 +3321,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/timeline/i18n/fr.ts
-	var fr_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$144 });
-	var translations$144;
-	var init_fr$21 = __esmMin((() => {
-		translations$144 = {
+	var fr_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$149 });
+	var translations$149;
+	var init_fr$22 = __esmMin((() => {
+		translations$149 = {
 			Wk: "Sem.",
 			"Week of": "Semaine du"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-aggregate-group/i18n/fr.ts
-	var fr_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$143 });
-	var translations$143;
-	var init_fr$20 = __esmMin((() => {
-		translations$143 = {
+	var fr_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$148 });
+	var translations$148;
+	var init_fr$21 = __esmMin((() => {
+		translations$148 = {
 			"Aggregate series": "Séries agrégées",
 			"Count changes to a state": "Compter les passages à un état",
 			"Count all state changes": "Compter tous les changements d'état",
@@ -3345,10 +3379,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/i18n/fr.ts
-	var fr_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$142 });
-	var translations$142;
-	var init_fr$19 = __esmMin((() => {
-		translations$142 = {
+	var fr_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$147 });
+	var translations$147;
+	var init_fr$20 = __esmMin((() => {
+		translations$147 = {
 			Direction: "Sens",
 			Both: "Les deux",
 			Above: "Au-dessus",
@@ -3396,10 +3430,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-delta-group/i18n/fr.ts
-	var fr_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$141 });
-	var translations$141;
-	var init_fr$18 = __esmMin((() => {
-		translations$141 = {
+	var fr_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$146 });
+	var translations$146;
+	var init_fr$19 = __esmMin((() => {
+		translations$146 = {
 			"Show delta vs selected date window": "Afficher le delta par rapport à la fenêtre de dates sélectionnée",
 			"Select a date window tab to enable delta analysis.": "Sélectionnez un onglet de fenêtre de dates pour activer l’analyse delta.",
 			"Show delta in tooltip": "Afficher le delta dans l’infobulle",
@@ -3408,10 +3442,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/i18n/fr.ts
-	var fr_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$140 });
-	var translations$140;
-	var init_fr$17 = __esmMin((() => {
-		translations$140 = {
+	var fr_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$145 });
+	var translations$145;
+	var init_fr$18 = __esmMin((() => {
+		translations$145 = {
 			"Show rate of change": "Afficher le taux de variation",
 			"Show rate of change crosshairs": "Afficher les repères du taux de variation",
 			"Rate window": "Fenêtre de variation",
@@ -3423,10 +3457,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-sample-group/i18n/fr.ts
-	var fr_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$139 });
-	var translations$139;
-	var init_fr$16 = __esmMin((() => {
-		translations$139 = {
+	var fr_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$144 });
+	var translations$144;
+	var init_fr$17 = __esmMin((() => {
+		translations$144 = {
 			Downsampling: "Rééchantillonnage",
 			Interval: "Intervalle",
 			Aggregate: "Agrégat",
@@ -3458,20 +3492,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/i18n/fr.ts
-	var fr_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$138 });
-	var translations$138;
-	var init_fr$15 = __esmMin((() => {
-		translations$138 = {
+	var fr_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$143 });
+	var translations$143;
+	var init_fr$16 = __esmMin((() => {
+		translations$143 = {
 			"Show min / max / mean": "Afficher min / max / moyenne",
 			"Show range shading": "Afficher l’ombrage de la plage"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/i18n/fr.ts
-	var fr_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$137 });
-	var translations$137;
-	var init_fr$14 = __esmMin((() => {
-		translations$137 = {
+	var fr_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$142 });
+	var translations$142;
+	var init_fr$15 = __esmMin((() => {
+		translations$142 = {
 			"Show threshold analysis": "Afficher l’analyse de seuil",
 			"Shade threshold area": "Ombrer la zone du seuil",
 			Threshold: "Seuil",
@@ -3482,10 +3516,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/i18n/fr.ts
-	var fr_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$136 });
-	var translations$136;
-	var init_fr$13 = __esmMin((() => {
-		translations$136 = {
+	var fr_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$141 });
+	var translations$141;
+	var init_fr$14 = __esmMin((() => {
+		translations$141 = {
 			"Show trend lines": "Afficher les lignes de tendance",
 			"Show trend crosshairs": "Afficher les repères de tendance",
 			"Trend method": "Méthode de tendance",
@@ -3503,10 +3537,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/i18n/fr.ts
-	var fr_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$135 });
-	var translations$135;
-	var init_fr$12 = __esmMin((() => {
-		translations$135 = {
+	var fr_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$140 });
+	var translations$140;
+	var init_fr$13 = __esmMin((() => {
+		translations$140 = {
 			"Add all series from chart": "Ajouter toutes les séries du graphique",
 			"Add from current chart": "Ajouter depuis le graphique actuel",
 			"Create anomaly monitor": "Créer un moniteur d'anomalies",
@@ -3515,21 +3549,45 @@
 		};
 	}));
 	//#endregion
+	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitors-panel/i18n/fr.ts
+	var fr_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$139 });
+	var translations$139;
+	var init_fr$12 = __esmMin((() => {
+		translations$139 = {
+			Unverified: "Non vérifié",
+			Retry: "Réessayer",
+			"Anomaly activity timed out.": "L’activité des anomalies a expiré.",
+			"Anomaly detection is busy.": "La détection d’anomalies est occupée.",
+			"Anomaly activity was cancelled.": "L’activité des anomalies a été annulée.",
+			"Anomaly activity could not be loaded.": "Impossible de charger l’activité des anomalies.",
+			"Anomaly details could not be loaded.": "Impossible de charger le détail des anomalies.",
+			"Counts are from the last successful scan, {0}.": "Les chiffres proviennent de la dernière analyse réussie, {0}.",
+			"No successful scan yet.": "Aucune analyse réussie pour l’instant.",
+			"Waiting for a scan with the current settings.": "En attente d’une analyse avec les paramètres actuels.",
+			"The latest scan timed out.": "La dernière analyse a expiré.",
+			"The latest scan was skipped because detection was busy.": "La dernière analyse a été ignorée car la détection était occupée.",
+			"The latest scan was cancelled.": "La dernière analyse a été annulée.",
+			"The latest scan failed.": "La dernière analyse a échoué.",
+			"Showing the previous result for this range.": "Affichage du résultat précédent pour cette période.",
+			"Activity for this range is unavailable.": "L’activité pour cette période n’est pas disponible."
+		};
+	}));
+	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab-rail/i18n/fr.ts
-	var fr_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$134 });
-	var translations$134;
+	var fr_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$138 });
+	var translations$138;
 	var init_fr$11 = __esmMin((() => {
-		translations$134 = {
+		translations$138 = {
 			"Add date window": "Ajouter une fenêtre de dates",
 			"No data yet for this period": "Pas encore de données pour cette période"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/i18n/fr.ts
-	var fr_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$133 });
-	var translations$133;
+	var fr_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$137 });
+	var translations$137;
 	var init_fr$10 = __esmMin((() => {
-		translations$133 = {
+		translations$137 = {
 			Name: "Nom",
 			Start: "Début",
 			End: "Fin",
@@ -3556,10 +3614,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/i18n/fr.ts
-	var fr_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$132 });
-	var translations$132;
+	var fr_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$136 });
+	var translations$136;
 	var init_fr$9 = __esmMin((() => {
-		translations$132 = {
+		translations$136 = {
 			Datapoints: "Points de données",
 			"Choose which annotation datapoints appear on the chart.": "Choisissez quels points de données d’annotation apparaissent sur le graphique.",
 			"Linked to selected targets": "Liés aux cibles sélectionnées",
@@ -3569,10 +3627,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/i18n/fr.ts
-	var fr_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$131 });
-	var translations$131;
+	var fr_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$135 });
+	var translations$135;
 	var init_fr$8 = __esmMin((() => {
-		translations$131 = {
+		translations$135 = {
 			"Analysis configured": "Analyse configurée",
 			"Configure analysis": "Configurer l’analyse",
 			"Stepped series": "Série en escalier",
@@ -3584,17 +3642,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/i18n/fr.ts
-	var fr_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$130 });
-	var translations$130;
+	var fr_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$134 });
+	var translations$134;
 	var init_fr$7 = __esmMin((() => {
-		translations$130 = {};
+		translations$134 = {};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/ai-query-brief-dialog/i18n/fr.ts
-	var fr_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$129 });
-	var translations$129;
+	var fr_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$133 });
+	var translations$133;
 	var init_fr$6 = __esmMin((() => {
-		translations$129 = {
+		translations$133 = {
 			"AI query brief": "Brief de requete IA",
 			"This brief is intended for another AI to fetch raw Home Assistant history and hass_datapoints anomaly details. Review it, then copy it into your AI tool of choice.": "Ce brief est destine a une autre IA afin de recuperer l'historique brut de Home Assistant et les details d'anomalie de hass_datapoints. Relisez-le, puis copiez-le dans l'outil IA de votre choix.",
 			"Copy-ready brief": "Brief pret a copier",
@@ -3606,10 +3664,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/history-targets/i18n/fr.ts
-	var fr_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$128 });
-	var translations$128;
+	var fr_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$132 });
+	var translations$132;
 	var init_fr$5 = __esmMin((() => {
-		translations$128 = {
+		translations$132 = {
 			Targets: "Cibles",
 			"Each row controls one chart series.": "Chaque ligne contrôle une série du graphique.",
 			"Add target": "Ajouter une cible",
@@ -3618,10 +3676,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/panel-shell/i18n/fr.ts
-	var fr_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$127 });
-	var translations$127;
+	var fr_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$131 });
+	var translations$131;
 	var init_fr$4 = __esmMin((() => {
-		translations$127 = {
+		translations$131 = {
 			"Loading Datapoints…": "Chargement des points de données…",
 			Datapoints: "Points de données",
 			"Page options": "Options de la page",
@@ -3636,10 +3694,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/range-toolbar/i18n/fr.ts
-	var fr_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$126 });
-	var translations$126;
+	var fr_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$130 });
+	var translations$130;
 	var init_fr$3 = __esmMin((() => {
-		translations$126 = {
+		translations$130 = {
 			"Toggle sidebar": "Basculer la barre latérale",
 			Start: "Début",
 			End: "Fin",
@@ -3664,26 +3722,27 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/series-preview-dialog/i18n/fr.ts
-	var fr_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$125 });
-	var translations$125;
+	var fr_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$129 });
+	var translations$129;
 	var init_fr$2 = __esmMin((() => {
-		translations$125 = {
+		translations$129 = {
 			Close: "Fermer",
 			"Open in chart": "Ouvrir dans le graphique"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/i18n/fr.ts
-	var fr_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$124 });
-	var translations$124;
+	var fr_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$128 });
+	var translations$128;
 	var init_fr$1 = __esmMin((() => {
-		translations$124 = { "Selected range": "Période sélectionnée" };
+		translations$128 = { "Selected range": "Période sélectionnée" };
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/i18n/locales/fr.ts
 	var fr_exports = /* @__PURE__ */ __exportAll({ templates: () => templates$4 });
 	var modules$4, merged$4, templates$4;
 	var init_fr = __esmMin((() => {
+		init_fr$32();
 		init_fr$31();
 		init_fr$30();
 		init_fr$29();
@@ -3716,26 +3775,27 @@
 		init_fr$2();
 		init_fr$1();
 		modules$4 = /* #__PURE__ */ Object.assign({
-			"../../../cards/action/i18n/fr.ts": fr_exports$31,
-			"../../../cards/history/history-chart/i18n/fr.ts": fr_exports$30,
-			"../../../cards/history/i18n/fr.ts": fr_exports$29,
-			"../../../cards/list/i18n/fr.ts": fr_exports$28,
-			"../../../cards/quick/i18n/fr.ts": fr_exports$27,
-			"../../../cards/sensor/i18n/fr.ts": fr_exports$26,
-			"../../chart/i18n/fr.ts": fr_exports$25,
-			"../../domain/i18n/fr.ts": fr_exports$24,
-			"../../ha/i18n/fr.ts": fr_exports$23,
-			"../../history-page/i18n/fr.ts": fr_exports$22,
-			"../../timeline/i18n/fr.ts": fr_exports$21,
-			"../../../molecules/analysis-aggregate-group/i18n/fr.ts": fr_exports$20,
-			"../../../molecules/analysis-anomaly-group/i18n/fr.ts": fr_exports$19,
-			"../../../molecules/analysis-delta-group/i18n/fr.ts": fr_exports$18,
-			"../../../molecules/analysis-rate-group/i18n/fr.ts": fr_exports$17,
-			"../../../molecules/analysis-sample-group/i18n/fr.ts": fr_exports$16,
-			"../../../molecules/analysis-summary-group/i18n/fr.ts": fr_exports$15,
-			"../../../molecules/analysis-threshold-group/i18n/fr.ts": fr_exports$14,
-			"../../../molecules/analysis-trend-group/i18n/fr.ts": fr_exports$13,
-			"../../../molecules/anomaly-monitor-wizard/i18n/fr.ts": fr_exports$12,
+			"../../../cards/action/i18n/fr.ts": fr_exports$32,
+			"../../../cards/history/history-chart/i18n/fr.ts": fr_exports$31,
+			"../../../cards/history/i18n/fr.ts": fr_exports$30,
+			"../../../cards/list/i18n/fr.ts": fr_exports$29,
+			"../../../cards/quick/i18n/fr.ts": fr_exports$28,
+			"../../../cards/sensor/i18n/fr.ts": fr_exports$27,
+			"../../chart/i18n/fr.ts": fr_exports$26,
+			"../../domain/i18n/fr.ts": fr_exports$25,
+			"../../ha/i18n/fr.ts": fr_exports$24,
+			"../../history-page/i18n/fr.ts": fr_exports$23,
+			"../../timeline/i18n/fr.ts": fr_exports$22,
+			"../../../molecules/analysis-aggregate-group/i18n/fr.ts": fr_exports$21,
+			"../../../molecules/analysis-anomaly-group/i18n/fr.ts": fr_exports$20,
+			"../../../molecules/analysis-delta-group/i18n/fr.ts": fr_exports$19,
+			"../../../molecules/analysis-rate-group/i18n/fr.ts": fr_exports$18,
+			"../../../molecules/analysis-sample-group/i18n/fr.ts": fr_exports$17,
+			"../../../molecules/analysis-summary-group/i18n/fr.ts": fr_exports$16,
+			"../../../molecules/analysis-threshold-group/i18n/fr.ts": fr_exports$15,
+			"../../../molecules/analysis-trend-group/i18n/fr.ts": fr_exports$14,
+			"../../../molecules/anomaly-monitor-wizard/i18n/fr.ts": fr_exports$13,
+			"../../../molecules/anomaly-monitors-panel/i18n/fr.ts": fr_exports$12,
 			"../../../molecules/comparison-tab-rail/i18n/fr.ts": fr_exports$11,
 			"../../../molecules/date-window-dialog/i18n/fr.ts": fr_exports$10,
 			"../../../molecules/sidebar-options/sections/i18n/fr.ts": fr_exports$9,
@@ -3754,10 +3814,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/i18n/de.ts
-	var de_exports$31 = /* @__PURE__ */ __exportAll({ translations: () => translations$123 });
-	var translations$123;
-	var init_de$31 = __esmMin((() => {
-		translations$123 = {
+	var de_exports$32 = /* @__PURE__ */ __exportAll({ translations: () => translations$127 });
+	var translations$127;
+	var init_de$32 = __esmMin((() => {
+		translations$127 = {
 			General: "Allgemein",
 			"Related items": "Verknüpfte Elemente",
 			"Datapoint Appearance": "Darstellung des Datenpunkts",
@@ -3774,20 +3834,24 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/i18n/de.ts
-	var de_exports$30 = /* @__PURE__ */ __exportAll({ translations: () => translations$122 });
-	var translations$122;
-	var init_de$30 = __esmMin((() => {
-		translations$122 = {
+	var de_exports$31 = /* @__PURE__ */ __exportAll({ translations: () => translations$126 });
+	var translations$126;
+	var init_de$31 = __esmMin((() => {
+		translations$126 = {
 			"Date window:": "Datumsfenster:",
-			"Actual:": "Tatsächlich:"
+			"Actual:": "Tatsächlich:",
+			"Anomaly detection timed out for part of this chart.": "Die Anomalieerkennung hat für einen Teil dieses Diagramms das Zeitlimit überschritten.",
+			"Anomaly detection is busy; some anomalies are not shown.": "Die Anomalieerkennung ist ausgelastet; einige Anomalien werden nicht angezeigt.",
+			"Anomalies could not be loaded for part of this chart.": "Für einen Teil dieses Diagramms konnten keine Anomalien geladen werden.",
+			Retry: "Erneut versuchen"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/i18n/de.ts
-	var de_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$121 });
-	var translations$121;
-	var init_de$29 = __esmMin((() => {
-		translations$121 = {
+	var de_exports$30 = /* @__PURE__ */ __exportAll({ translations: () => translations$125 });
+	var translations$125;
+	var init_de$30 = __esmMin((() => {
+		translations$125 = {
 			General: "Allgemein",
 			Entity: "Entität",
 			"Multiple entities": "Mehrere Entitäten",
@@ -3804,10 +3868,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/i18n/de.ts
-	var de_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$120 });
-	var translations$120;
-	var init_de$28 = __esmMin((() => {
-		translations$120 = {
+	var de_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$124 });
+	var translations$124;
+	var init_de$29 = __esmMin((() => {
+		translations$124 = {
 			"Search datapoints…": "Datenpunkte suchen…",
 			"Delete record": "Eintrag löschen",
 			Delete: "Löschen",
@@ -3825,10 +3889,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/i18n/de.ts
-	var de_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$119 });
-	var translations$119;
-	var init_de$27 = __esmMin((() => {
-		translations$119 = {
+	var de_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$123 });
+	var translations$123;
+	var init_de$28 = __esmMin((() => {
+		translations$123 = {
 			General: "Allgemein",
 			"Icon & colour": "Symbol und Farbe",
 			"Related items": "Verknüpfte Elemente",
@@ -3846,10 +3910,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/i18n/de.ts
-	var de_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$118 });
-	var translations$118;
-	var init_de$26 = __esmMin((() => {
-		translations$118 = {
+	var de_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$122 });
+	var translations$122;
+	var init_de$27 = __esmMin((() => {
+		translations$122 = {
 			Entity: "Entität",
 			Display: "Anzeige",
 			"Records list": "Eintragsliste",
@@ -3869,10 +3933,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/i18n/de.ts
-	var de_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$117 });
-	var translations$117;
-	var init_de$25 = __esmMin((() => {
-		translations$117 = {
+	var de_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$121 });
+	var translations$121;
+	var init_de$26 = __esmMin((() => {
+		translations$121 = {
 			"Add datapoint at {0}": "Datenpunkt um {0} hinzufügen",
 			Pinned: "Angeheftet",
 			"Unpin tooltip": "Tooltip lösen",
@@ -3910,10 +3974,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/domain/i18n/de.ts
-	var de_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$116 });
-	var translations$116;
-	var init_de$24 = __esmMin((() => {
-		translations$116 = {
+	var de_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$120 });
+	var translations$120;
+	var init_de$25 = __esmMin((() => {
+		translations$120 = {
 			"Previous period": "Vorheriger Zeitraum",
 			"Next period": "Nächster Zeitraum",
 			"2 periods back": "2 Zeiträume zurück",
@@ -3934,10 +3998,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/ha/i18n/de.ts
-	var de_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$115 });
-	var translations$115;
-	var init_de$23 = __esmMin((() => {
-		translations$115 = {
+	var de_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$119 });
+	var translations$119;
+	var init_de$24 = __esmMin((() => {
+		translations$119 = {
 			"Confirm delete": "Löschen bestätigen",
 			"Are you sure you want to delete this item?": "Möchten Sie dieses Element wirklich löschen?",
 			Cancel: "Abbrechen",
@@ -3952,10 +4016,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/history-page/i18n/de.ts
-	var de_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$114 });
-	var translations$114;
-	var init_de$22 = __esmMin((() => {
-		translations$114 = {
+	var de_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$118 });
+	var translations$118;
+	var init_de$23 = __esmMin((() => {
+		translations$118 = {
 			"entity_id={0}": "entity_id={0}",
 			"device_id={0}": "device_id={0}",
 			"area_id={0}": "area_id={0}",
@@ -4053,20 +4117,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/timeline/i18n/de.ts
-	var de_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$113 });
-	var translations$113;
-	var init_de$21 = __esmMin((() => {
-		translations$113 = {
+	var de_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$117 });
+	var translations$117;
+	var init_de$22 = __esmMin((() => {
+		translations$117 = {
 			Wk: "KW",
 			"Week of": "Woche von"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-aggregate-group/i18n/de.ts
-	var de_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$112 });
-	var translations$112;
-	var init_de$20 = __esmMin((() => {
-		translations$112 = {
+	var de_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$116 });
+	var translations$116;
+	var init_de$21 = __esmMin((() => {
+		translations$116 = {
 			"Aggregate series": "Aggregierte Serien",
 			"Count changes to a state": "Wechsel in einen Zustand zählen",
 			"Count all state changes": "Alle Zustandswechsel zählen",
@@ -4111,10 +4175,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/i18n/de.ts
-	var de_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$111 });
-	var translations$111;
-	var init_de$19 = __esmMin((() => {
-		translations$111 = {
+	var de_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$115 });
+	var translations$115;
+	var init_de$20 = __esmMin((() => {
+		translations$115 = {
 			Direction: "Richtung",
 			Both: "Beide",
 			Above: "Oberhalb",
@@ -4162,10 +4226,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-delta-group/i18n/de.ts
-	var de_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$110 });
-	var translations$110;
-	var init_de$18 = __esmMin((() => {
-		translations$110 = {
+	var de_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$114 });
+	var translations$114;
+	var init_de$19 = __esmMin((() => {
+		translations$114 = {
 			"Show delta vs selected date window": "Delta gegenüber dem ausgewählten Datumsfenster anzeigen",
 			"Select a date window tab to enable delta analysis.": "Wählen Sie einen Tab für ein Datumsfenster, um die Delta-Analyse zu aktivieren.",
 			"Show delta in tooltip": "Delta im Tooltip anzeigen",
@@ -4174,10 +4238,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/i18n/de.ts
-	var de_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$109 });
-	var translations$109;
-	var init_de$17 = __esmMin((() => {
-		translations$109 = {
+	var de_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$113 });
+	var translations$113;
+	var init_de$18 = __esmMin((() => {
+		translations$113 = {
 			"Show rate of change": "Änderungsrate anzeigen",
 			"Show rate of change crosshairs": "Fadenkreuz für Änderungsrate anzeigen",
 			"Rate window": "Ratenfenster",
@@ -4189,10 +4253,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-sample-group/i18n/de.ts
-	var de_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$108 });
-	var translations$108;
-	var init_de$16 = __esmMin((() => {
-		translations$108 = {
+	var de_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$112 });
+	var translations$112;
+	var init_de$17 = __esmMin((() => {
+		translations$112 = {
 			Downsampling: "Downsampling",
 			Interval: "Intervall",
 			Aggregate: "Aggregation",
@@ -4224,20 +4288,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/i18n/de.ts
-	var de_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$107 });
-	var translations$107;
-	var init_de$15 = __esmMin((() => {
-		translations$107 = {
+	var de_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$111 });
+	var translations$111;
+	var init_de$16 = __esmMin((() => {
+		translations$111 = {
 			"Show min / max / mean": "Min / Max / Mittelwert anzeigen",
 			"Show range shading": "Bereichsschattierung anzeigen"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/i18n/de.ts
-	var de_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$106 });
-	var translations$106;
-	var init_de$14 = __esmMin((() => {
-		translations$106 = {
+	var de_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$110 });
+	var translations$110;
+	var init_de$15 = __esmMin((() => {
+		translations$110 = {
 			"Show threshold analysis": "Schwellwertanalyse anzeigen",
 			"Shade threshold area": "Schwellwertbereich schattieren",
 			Threshold: "Schwellenwert",
@@ -4248,10 +4312,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/i18n/de.ts
-	var de_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$105 });
-	var translations$105;
-	var init_de$13 = __esmMin((() => {
-		translations$105 = {
+	var de_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$109 });
+	var translations$109;
+	var init_de$14 = __esmMin((() => {
+		translations$109 = {
 			"Show trend lines": "Trendlinien anzeigen",
 			"Show trend crosshairs": "Fadenkreuz für Trend anzeigen",
 			"Trend method": "Trendmethode",
@@ -4269,10 +4333,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/i18n/de.ts
-	var de_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$104 });
-	var translations$104;
-	var init_de$12 = __esmMin((() => {
-		translations$104 = {
+	var de_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$108 });
+	var translations$108;
+	var init_de$13 = __esmMin((() => {
+		translations$108 = {
 			"Add all series from chart": "Alle Reihen aus dem Diagramm hinzufügen",
 			"Add from current chart": "Aus aktuellem Diagramm hinzufügen",
 			"Create anomaly monitor": "Anomaliemonitor erstellen",
@@ -4281,21 +4345,45 @@
 		};
 	}));
 	//#endregion
+	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitors-panel/i18n/de.ts
+	var de_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$107 });
+	var translations$107;
+	var init_de$12 = __esmMin((() => {
+		translations$107 = {
+			Unverified: "Unbestätigt",
+			Retry: "Erneut versuchen",
+			"Anomaly activity timed out.": "Die Anomalieaktivität hat das Zeitlimit überschritten.",
+			"Anomaly detection is busy.": "Die Anomalieerkennung ist ausgelastet.",
+			"Anomaly activity was cancelled.": "Die Anomalieaktivität wurde abgebrochen.",
+			"Anomaly activity could not be loaded.": "Die Anomalieaktivität konnte nicht geladen werden.",
+			"Anomaly details could not be loaded.": "Anomaliedetails konnten nicht geladen werden.",
+			"Counts are from the last successful scan, {0}.": "Die Zahlen stammen aus dem letzten erfolgreichen Scan, {0}.",
+			"No successful scan yet.": "Noch kein erfolgreicher Scan.",
+			"Waiting for a scan with the current settings.": "Warte auf einen Scan mit den aktuellen Einstellungen.",
+			"The latest scan timed out.": "Der letzte Scan hat das Zeitlimit überschritten.",
+			"The latest scan was skipped because detection was busy.": "Der letzte Scan wurde übersprungen, weil die Erkennung ausgelastet war.",
+			"The latest scan was cancelled.": "Der letzte Scan wurde abgebrochen.",
+			"The latest scan failed.": "Der letzte Scan ist fehlgeschlagen.",
+			"Showing the previous result for this range.": "Es wird das vorherige Ergebnis für diesen Zeitraum angezeigt.",
+			"Activity for this range is unavailable.": "Die Aktivität für diesen Zeitraum ist nicht verfügbar."
+		};
+	}));
+	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab-rail/i18n/de.ts
-	var de_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$103 });
-	var translations$103;
+	var de_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$106 });
+	var translations$106;
 	var init_de$11 = __esmMin((() => {
-		translations$103 = {
+		translations$106 = {
 			"Add date window": "Datumsfenster hinzufügen",
 			"No data yet for this period": "Für diesen Zeitraum liegen noch keine Daten vor"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/i18n/de.ts
-	var de_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$102 });
-	var translations$102;
+	var de_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$105 });
+	var translations$105;
 	var init_de$10 = __esmMin((() => {
-		translations$102 = {
+		translations$105 = {
 			Name: "Name",
 			Start: "Start",
 			End: "Ende",
@@ -4322,10 +4410,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/i18n/de.ts
-	var de_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$101 });
-	var translations$101;
+	var de_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$104 });
+	var translations$104;
 	var init_de$9 = __esmMin((() => {
-		translations$101 = {
+		translations$104 = {
 			Datapoints: "Datenpunkte",
 			"Choose which annotation datapoints appear on the chart.": "Wählen Sie aus, welche Anmerkungs-Datenpunkte im Diagramm angezeigt werden.",
 			"Linked to selected targets": "Mit ausgewählten Zielen verknüpft",
@@ -4335,10 +4423,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/i18n/de.ts
-	var de_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$100 });
-	var translations$100;
+	var de_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$103 });
+	var translations$103;
 	var init_de$8 = __esmMin((() => {
-		translations$100 = {
+		translations$103 = {
 			"Analysis configured": "Analyse konfiguriert",
 			"Configure analysis": "Analyse konfigurieren",
 			"Stepped series": "Stufenserie",
@@ -4350,17 +4438,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/i18n/de.ts
-	var de_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$99 });
-	var translations$99;
+	var de_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$102 });
+	var translations$102;
 	var init_de$7 = __esmMin((() => {
-		translations$99 = {};
+		translations$102 = {};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/ai-query-brief-dialog/i18n/de.ts
-	var de_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$98 });
-	var translations$98;
+	var de_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$101 });
+	var translations$101;
 	var init_de$6 = __esmMin((() => {
-		translations$98 = {
+		translations$101 = {
 			"AI query brief": "KI-Abfragebriefing",
 			"This brief is intended for another AI to fetch raw Home Assistant history and hass_datapoints anomaly details. Review it, then copy it into your AI tool of choice.": "Dieses Briefing ist fuer eine andere KI gedacht, damit sie rohe Home-Assistant-Verlaeufe und hass_datapoints-Anomaliedetails abrufen kann. Pruefe es und kopiere es dann in dein KI-Werkzeug deiner Wahl.",
 			"Copy-ready brief": "Kopierfertiges Briefing",
@@ -4372,10 +4460,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/history-targets/i18n/de.ts
-	var de_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$97 });
-	var translations$97;
+	var de_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$100 });
+	var translations$100;
 	var init_de$5 = __esmMin((() => {
-		translations$97 = {
+		translations$100 = {
 			Targets: "Ziele",
 			"Each row controls one chart series.": "Jede Zeile steuert eine Diagrammserie.",
 			"Add target": "Ziel hinzufügen",
@@ -4384,10 +4472,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/panel-shell/i18n/de.ts
-	var de_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$96 });
-	var translations$96;
+	var de_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$99 });
+	var translations$99;
 	var init_de$4 = __esmMin((() => {
-		translations$96 = {
+		translations$99 = {
 			"Loading Datapoints…": "Datenpunkte werden geladen…",
 			Datapoints: "Datenpunkte",
 			"Page options": "Seitenoptionen",
@@ -4402,10 +4490,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/range-toolbar/i18n/de.ts
-	var de_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$95 });
-	var translations$95;
+	var de_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$98 });
+	var translations$98;
 	var init_de$3 = __esmMin((() => {
-		translations$95 = {
+		translations$98 = {
 			"Toggle sidebar": "Seitenleiste umschalten",
 			Start: "Start",
 			End: "Ende",
@@ -4430,26 +4518,27 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/series-preview-dialog/i18n/de.ts
-	var de_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$94 });
-	var translations$94;
+	var de_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$97 });
+	var translations$97;
 	var init_de$2 = __esmMin((() => {
-		translations$94 = {
+		translations$97 = {
 			Close: "Schliessen",
 			"Open in chart": "Im Diagramm öffnen"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/i18n/de.ts
-	var de_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$93 });
-	var translations$93;
+	var de_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$96 });
+	var translations$96;
 	var init_de$1 = __esmMin((() => {
-		translations$93 = { "Selected range": "Ausgewählter Zeitraum" };
+		translations$96 = { "Selected range": "Ausgewählter Zeitraum" };
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/i18n/locales/de.ts
 	var de_exports = /* @__PURE__ */ __exportAll({ templates: () => templates$3 });
 	var modules$3, merged$3, templates$3;
 	var init_de = __esmMin((() => {
+		init_de$32();
 		init_de$31();
 		init_de$30();
 		init_de$29();
@@ -4482,26 +4571,27 @@
 		init_de$2();
 		init_de$1();
 		modules$3 = /* #__PURE__ */ Object.assign({
-			"../../../cards/action/i18n/de.ts": de_exports$31,
-			"../../../cards/history/history-chart/i18n/de.ts": de_exports$30,
-			"../../../cards/history/i18n/de.ts": de_exports$29,
-			"../../../cards/list/i18n/de.ts": de_exports$28,
-			"../../../cards/quick/i18n/de.ts": de_exports$27,
-			"../../../cards/sensor/i18n/de.ts": de_exports$26,
-			"../../chart/i18n/de.ts": de_exports$25,
-			"../../domain/i18n/de.ts": de_exports$24,
-			"../../ha/i18n/de.ts": de_exports$23,
-			"../../history-page/i18n/de.ts": de_exports$22,
-			"../../timeline/i18n/de.ts": de_exports$21,
-			"../../../molecules/analysis-aggregate-group/i18n/de.ts": de_exports$20,
-			"../../../molecules/analysis-anomaly-group/i18n/de.ts": de_exports$19,
-			"../../../molecules/analysis-delta-group/i18n/de.ts": de_exports$18,
-			"../../../molecules/analysis-rate-group/i18n/de.ts": de_exports$17,
-			"../../../molecules/analysis-sample-group/i18n/de.ts": de_exports$16,
-			"../../../molecules/analysis-summary-group/i18n/de.ts": de_exports$15,
-			"../../../molecules/analysis-threshold-group/i18n/de.ts": de_exports$14,
-			"../../../molecules/analysis-trend-group/i18n/de.ts": de_exports$13,
-			"../../../molecules/anomaly-monitor-wizard/i18n/de.ts": de_exports$12,
+			"../../../cards/action/i18n/de.ts": de_exports$32,
+			"../../../cards/history/history-chart/i18n/de.ts": de_exports$31,
+			"../../../cards/history/i18n/de.ts": de_exports$30,
+			"../../../cards/list/i18n/de.ts": de_exports$29,
+			"../../../cards/quick/i18n/de.ts": de_exports$28,
+			"../../../cards/sensor/i18n/de.ts": de_exports$27,
+			"../../chart/i18n/de.ts": de_exports$26,
+			"../../domain/i18n/de.ts": de_exports$25,
+			"../../ha/i18n/de.ts": de_exports$24,
+			"../../history-page/i18n/de.ts": de_exports$23,
+			"../../timeline/i18n/de.ts": de_exports$22,
+			"../../../molecules/analysis-aggregate-group/i18n/de.ts": de_exports$21,
+			"../../../molecules/analysis-anomaly-group/i18n/de.ts": de_exports$20,
+			"../../../molecules/analysis-delta-group/i18n/de.ts": de_exports$19,
+			"../../../molecules/analysis-rate-group/i18n/de.ts": de_exports$18,
+			"../../../molecules/analysis-sample-group/i18n/de.ts": de_exports$17,
+			"../../../molecules/analysis-summary-group/i18n/de.ts": de_exports$16,
+			"../../../molecules/analysis-threshold-group/i18n/de.ts": de_exports$15,
+			"../../../molecules/analysis-trend-group/i18n/de.ts": de_exports$14,
+			"../../../molecules/anomaly-monitor-wizard/i18n/de.ts": de_exports$13,
+			"../../../molecules/anomaly-monitors-panel/i18n/de.ts": de_exports$12,
 			"../../../molecules/comparison-tab-rail/i18n/de.ts": de_exports$11,
 			"../../../molecules/date-window-dialog/i18n/de.ts": de_exports$10,
 			"../../../molecules/sidebar-options/sections/i18n/de.ts": de_exports$9,
@@ -4520,10 +4610,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/i18n/es.ts
-	var es_exports$31 = /* @__PURE__ */ __exportAll({ translations: () => translations$92 });
-	var translations$92;
-	var init_es$31 = __esmMin((() => {
-		translations$92 = {
+	var es_exports$32 = /* @__PURE__ */ __exportAll({ translations: () => translations$95 });
+	var translations$95;
+	var init_es$32 = __esmMin((() => {
+		translations$95 = {
 			General: "General",
 			"Related items": "Elementos relacionados",
 			"Datapoint Appearance": "Apariencia del punto de datos",
@@ -4540,20 +4630,24 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/i18n/es.ts
-	var es_exports$30 = /* @__PURE__ */ __exportAll({ translations: () => translations$91 });
-	var translations$91;
-	var init_es$30 = __esmMin((() => {
-		translations$91 = {
+	var es_exports$31 = /* @__PURE__ */ __exportAll({ translations: () => translations$94 });
+	var translations$94;
+	var init_es$31 = __esmMin((() => {
+		translations$94 = {
 			"Date window:": "Ventana de fechas:",
-			"Actual:": "Real:"
+			"Actual:": "Real:",
+			"Anomaly detection timed out for part of this chart.": "Se agotó el tiempo de la detección de anomalías en parte de este gráfico.",
+			"Anomaly detection is busy; some anomalies are not shown.": "La detección de anomalías está ocupada; algunas anomalías no se muestran.",
+			"Anomalies could not be loaded for part of this chart.": "No se pudieron cargar las anomalías de parte de este gráfico.",
+			Retry: "Reintentar"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/i18n/es.ts
-	var es_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$90 });
-	var translations$90;
-	var init_es$29 = __esmMin((() => {
-		translations$90 = {
+	var es_exports$30 = /* @__PURE__ */ __exportAll({ translations: () => translations$93 });
+	var translations$93;
+	var init_es$30 = __esmMin((() => {
+		translations$93 = {
 			General: "General",
 			Entity: "Entidad",
 			"Multiple entities": "Varias entidades",
@@ -4570,10 +4664,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/i18n/es.ts
-	var es_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$89 });
-	var translations$89;
-	var init_es$28 = __esmMin((() => {
-		translations$89 = {
+	var es_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$92 });
+	var translations$92;
+	var init_es$29 = __esmMin((() => {
+		translations$92 = {
 			"Search datapoints…": "Buscar puntos de datos…",
 			"Delete record": "Eliminar registro",
 			Delete: "Eliminar",
@@ -4591,10 +4685,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/i18n/es.ts
-	var es_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$88 });
-	var translations$88;
-	var init_es$27 = __esmMin((() => {
-		translations$88 = {
+	var es_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$91 });
+	var translations$91;
+	var init_es$28 = __esmMin((() => {
+		translations$91 = {
 			General: "General",
 			"Icon & colour": "Icono y color",
 			"Related items": "Elementos relacionados",
@@ -4612,10 +4706,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/i18n/es.ts
-	var es_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$87 });
-	var translations$87;
-	var init_es$26 = __esmMin((() => {
-		translations$87 = {
+	var es_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$90 });
+	var translations$90;
+	var init_es$27 = __esmMin((() => {
+		translations$90 = {
 			Entity: "Entidad",
 			Display: "Visualización",
 			"Records list": "Lista de registros",
@@ -4635,10 +4729,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/i18n/es.ts
-	var es_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$86 });
-	var translations$86;
-	var init_es$25 = __esmMin((() => {
-		translations$86 = {
+	var es_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$89 });
+	var translations$89;
+	var init_es$26 = __esmMin((() => {
+		translations$89 = {
 			"Add datapoint at {0}": "Añadir punto de datos a las {0}",
 			Pinned: "Fijado",
 			"Unpin tooltip": "Desfijar información",
@@ -4676,10 +4770,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/domain/i18n/es.ts
-	var es_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$85 });
-	var translations$85;
-	var init_es$24 = __esmMin((() => {
-		translations$85 = {
+	var es_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$88 });
+	var translations$88;
+	var init_es$25 = __esmMin((() => {
+		translations$88 = {
 			"Previous period": "Periodo anterior",
 			"Next period": "Periodo siguiente",
 			"2 periods back": "2 periodos atrás",
@@ -4700,10 +4794,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/ha/i18n/es.ts
-	var es_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$84 });
-	var translations$84;
-	var init_es$23 = __esmMin((() => {
-		translations$84 = {
+	var es_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$87 });
+	var translations$87;
+	var init_es$24 = __esmMin((() => {
+		translations$87 = {
 			"Confirm delete": "Confirmar eliminación",
 			"Are you sure you want to delete this item?": "¿Seguro que quieres eliminar este elemento?",
 			Cancel: "Cancelar",
@@ -4718,10 +4812,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/history-page/i18n/es.ts
-	var es_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$83 });
-	var translations$83;
-	var init_es$22 = __esmMin((() => {
-		translations$83 = {
+	var es_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$86 });
+	var translations$86;
+	var init_es$23 = __esmMin((() => {
+		translations$86 = {
 			"entity_id={0}": "entity_id={0}",
 			"device_id={0}": "device_id={0}",
 			"area_id={0}": "area_id={0}",
@@ -4819,20 +4913,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/timeline/i18n/es.ts
-	var es_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$82 });
-	var translations$82;
-	var init_es$21 = __esmMin((() => {
-		translations$82 = {
+	var es_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$85 });
+	var translations$85;
+	var init_es$22 = __esmMin((() => {
+		translations$85 = {
 			Wk: "Sem.",
 			"Week of": "Semana del"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-aggregate-group/i18n/es.ts
-	var es_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$81 });
-	var translations$81;
-	var init_es$20 = __esmMin((() => {
-		translations$81 = {
+	var es_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$84 });
+	var translations$84;
+	var init_es$21 = __esmMin((() => {
+		translations$84 = {
 			"Aggregate series": "Series agregadas",
 			"Count changes to a state": "Contar cambios a un estado",
 			"Count all state changes": "Contar todos los cambios de estado",
@@ -4877,10 +4971,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/i18n/es.ts
-	var es_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$80 });
-	var translations$80;
-	var init_es$19 = __esmMin((() => {
-		translations$80 = {
+	var es_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$83 });
+	var translations$83;
+	var init_es$20 = __esmMin((() => {
+		translations$83 = {
 			Direction: "Dirección",
 			Both: "Ambos",
 			Above: "Por encima",
@@ -4928,10 +5022,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-delta-group/i18n/es.ts
-	var es_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$79 });
-	var translations$79;
-	var init_es$18 = __esmMin((() => {
-		translations$79 = {
+	var es_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$82 });
+	var translations$82;
+	var init_es$19 = __esmMin((() => {
+		translations$82 = {
 			"Show delta vs selected date window": "Mostrar delta frente a la ventana de fechas seleccionada",
 			"Select a date window tab to enable delta analysis.": "Selecciona una pestaña de ventana de fechas para habilitar el análisis delta.",
 			"Show delta in tooltip": "Mostrar delta en la información sobre herramientas",
@@ -4940,10 +5034,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/i18n/es.ts
-	var es_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$78 });
-	var translations$78;
-	var init_es$17 = __esmMin((() => {
-		translations$78 = {
+	var es_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$81 });
+	var translations$81;
+	var init_es$18 = __esmMin((() => {
+		translations$81 = {
 			"Show rate of change": "Mostrar tasa de cambio",
 			"Show rate of change crosshairs": "Mostrar guías de la tasa de cambio",
 			"Rate window": "Ventana de tasa",
@@ -4955,10 +5049,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-sample-group/i18n/es.ts
-	var es_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$77 });
-	var translations$77;
-	var init_es$16 = __esmMin((() => {
-		translations$77 = {
+	var es_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$80 });
+	var translations$80;
+	var init_es$17 = __esmMin((() => {
+		translations$80 = {
 			Downsampling: "Submuestreo",
 			Interval: "Intervalo",
 			Aggregate: "Agregado",
@@ -4990,20 +5084,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/i18n/es.ts
-	var es_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$76 });
-	var translations$76;
-	var init_es$15 = __esmMin((() => {
-		translations$76 = {
+	var es_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$79 });
+	var translations$79;
+	var init_es$16 = __esmMin((() => {
+		translations$79 = {
 			"Show min / max / mean": "Mostrar mín. / máx. / media",
 			"Show range shading": "Mostrar sombreado del rango"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/i18n/es.ts
-	var es_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$75 });
-	var translations$75;
-	var init_es$14 = __esmMin((() => {
-		translations$75 = {
+	var es_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$78 });
+	var translations$78;
+	var init_es$15 = __esmMin((() => {
+		translations$78 = {
 			"Show threshold analysis": "Mostrar análisis de umbral",
 			"Shade threshold area": "Sombrear área del umbral",
 			Threshold: "Umbral",
@@ -5014,10 +5108,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/i18n/es.ts
-	var es_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$74 });
-	var translations$74;
-	var init_es$13 = __esmMin((() => {
-		translations$74 = {
+	var es_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$77 });
+	var translations$77;
+	var init_es$14 = __esmMin((() => {
+		translations$77 = {
 			"Show trend lines": "Mostrar líneas de tendencia",
 			"Show trend crosshairs": "Mostrar guías de tendencia",
 			"Trend method": "Método de tendencia",
@@ -5035,10 +5129,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/i18n/es.ts
-	var es_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$73 });
-	var translations$73;
-	var init_es$12 = __esmMin((() => {
-		translations$73 = {
+	var es_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$76 });
+	var translations$76;
+	var init_es$13 = __esmMin((() => {
+		translations$76 = {
 			"Add all series from chart": "Añadir todas las series del gráfico",
 			"Add from current chart": "Añadir desde el gráfico actual",
 			"Create anomaly monitor": "Crear monitor de anomalías",
@@ -5047,21 +5141,45 @@
 		};
 	}));
 	//#endregion
+	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitors-panel/i18n/es.ts
+	var es_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$75 });
+	var translations$75;
+	var init_es$12 = __esmMin((() => {
+		translations$75 = {
+			Unverified: "Sin verificar",
+			Retry: "Reintentar",
+			"Anomaly activity timed out.": "Se agotó el tiempo de la actividad de anomalías.",
+			"Anomaly detection is busy.": "La detección de anomalías está ocupada.",
+			"Anomaly activity was cancelled.": "Se canceló la actividad de anomalías.",
+			"Anomaly activity could not be loaded.": "No se pudo cargar la actividad de anomalías.",
+			"Anomaly details could not be loaded.": "No se pudieron cargar los detalles de las anomalías.",
+			"Counts are from the last successful scan, {0}.": "Los recuentos son del último análisis correcto, {0}.",
+			"No successful scan yet.": "Todavía no hay ningún análisis correcto.",
+			"Waiting for a scan with the current settings.": "Esperando un análisis con la configuración actual.",
+			"The latest scan timed out.": "Se agotó el tiempo del último análisis.",
+			"The latest scan was skipped because detection was busy.": "Se omitió el último análisis porque la detección estaba ocupada.",
+			"The latest scan was cancelled.": "Se canceló el último análisis.",
+			"The latest scan failed.": "El último análisis falló.",
+			"Showing the previous result for this range.": "Se muestra el resultado anterior para este intervalo.",
+			"Activity for this range is unavailable.": "La actividad de este intervalo no está disponible."
+		};
+	}));
+	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab-rail/i18n/es.ts
-	var es_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$72 });
-	var translations$72;
+	var es_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$74 });
+	var translations$74;
 	var init_es$11 = __esmMin((() => {
-		translations$72 = {
+		translations$74 = {
 			"Add date window": "Añadir ventana de fechas",
 			"No data yet for this period": "Aún no hay datos para este periodo"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/i18n/es.ts
-	var es_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$71 });
-	var translations$71;
+	var es_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$73 });
+	var translations$73;
 	var init_es$10 = __esmMin((() => {
-		translations$71 = {
+		translations$73 = {
 			Name: "Nombre",
 			Start: "Inicio",
 			End: "Fin",
@@ -5088,10 +5206,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/i18n/es.ts
-	var es_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$70 });
-	var translations$70;
+	var es_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$72 });
+	var translations$72;
 	var init_es$9 = __esmMin((() => {
-		translations$70 = {
+		translations$72 = {
 			Datapoints: "Puntos de datos",
 			"Choose which annotation datapoints appear on the chart.": "Elige qué puntos de datos de anotación aparecen en el gráfico.",
 			"Linked to selected targets": "Vinculados a los objetivos seleccionados",
@@ -5101,10 +5219,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/i18n/es.ts
-	var es_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$69 });
-	var translations$69;
+	var es_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$71 });
+	var translations$71;
 	var init_es$8 = __esmMin((() => {
-		translations$69 = {
+		translations$71 = {
 			"Analysis configured": "Análisis configurado",
 			"Configure analysis": "Configurar análisis",
 			"Stepped series": "Serie escalonada",
@@ -5116,17 +5234,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/i18n/es.ts
-	var es_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$68 });
-	var translations$68;
+	var es_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$70 });
+	var translations$70;
 	var init_es$7 = __esmMin((() => {
-		translations$68 = {};
+		translations$70 = {};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/ai-query-brief-dialog/i18n/es.ts
-	var es_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$67 });
-	var translations$67;
+	var es_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$69 });
+	var translations$69;
 	var init_es$6 = __esmMin((() => {
-		translations$67 = {
+		translations$69 = {
 			"AI query brief": "Resumen de consulta para IA",
 			"This brief is intended for another AI to fetch raw Home Assistant history and hass_datapoints anomaly details. Review it, then copy it into your AI tool of choice.": "Este resumen esta pensado para que otra IA obtenga el historial sin procesar de Home Assistant y los detalles de anomalias de hass_datapoints. Revisalo y luego copialo en la herramienta de IA que prefieras.",
 			"Copy-ready brief": "Resumen listo para copiar",
@@ -5138,10 +5256,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/history-targets/i18n/es.ts
-	var es_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$66 });
-	var translations$66;
+	var es_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$68 });
+	var translations$68;
 	var init_es$5 = __esmMin((() => {
-		translations$66 = {
+		translations$68 = {
 			Targets: "Objetivos",
 			"Each row controls one chart series.": "Cada fila controla una serie del gráfico.",
 			"Add target": "Añadir objetivo",
@@ -5150,10 +5268,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/panel-shell/i18n/es.ts
-	var es_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$65 });
-	var translations$65;
+	var es_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$67 });
+	var translations$67;
 	var init_es$4 = __esmMin((() => {
-		translations$65 = {
+		translations$67 = {
 			"Loading Datapoints…": "Cargando puntos de datos…",
 			Datapoints: "Puntos de datos",
 			"Page options": "Opciones de la página",
@@ -5168,10 +5286,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/range-toolbar/i18n/es.ts
-	var es_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$64 });
-	var translations$64;
+	var es_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$66 });
+	var translations$66;
 	var init_es$3 = __esmMin((() => {
-		translations$64 = {
+		translations$66 = {
 			"Toggle sidebar": "Alternar barra lateral",
 			Start: "Inicio",
 			End: "Fin",
@@ -5196,26 +5314,27 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/series-preview-dialog/i18n/es.ts
-	var es_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$63 });
-	var translations$63;
+	var es_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$65 });
+	var translations$65;
 	var init_es$2 = __esmMin((() => {
-		translations$63 = {
+		translations$65 = {
 			Close: "Cerrar",
 			"Open in chart": "Abrir en el gráfico"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/i18n/es.ts
-	var es_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$62 });
-	var translations$62;
+	var es_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$64 });
+	var translations$64;
 	var init_es$1 = __esmMin((() => {
-		translations$62 = { "Selected range": "Intervalo seleccionado" };
+		translations$64 = { "Selected range": "Intervalo seleccionado" };
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/i18n/locales/es.ts
 	var es_exports = /* @__PURE__ */ __exportAll({ templates: () => templates$2 });
 	var modules$2, merged$2, templates$2;
 	var init_es = __esmMin((() => {
+		init_es$32();
 		init_es$31();
 		init_es$30();
 		init_es$29();
@@ -5248,26 +5367,27 @@
 		init_es$2();
 		init_es$1();
 		modules$2 = /* #__PURE__ */ Object.assign({
-			"../../../cards/action/i18n/es.ts": es_exports$31,
-			"../../../cards/history/history-chart/i18n/es.ts": es_exports$30,
-			"../../../cards/history/i18n/es.ts": es_exports$29,
-			"../../../cards/list/i18n/es.ts": es_exports$28,
-			"../../../cards/quick/i18n/es.ts": es_exports$27,
-			"../../../cards/sensor/i18n/es.ts": es_exports$26,
-			"../../chart/i18n/es.ts": es_exports$25,
-			"../../domain/i18n/es.ts": es_exports$24,
-			"../../ha/i18n/es.ts": es_exports$23,
-			"../../history-page/i18n/es.ts": es_exports$22,
-			"../../timeline/i18n/es.ts": es_exports$21,
-			"../../../molecules/analysis-aggregate-group/i18n/es.ts": es_exports$20,
-			"../../../molecules/analysis-anomaly-group/i18n/es.ts": es_exports$19,
-			"../../../molecules/analysis-delta-group/i18n/es.ts": es_exports$18,
-			"../../../molecules/analysis-rate-group/i18n/es.ts": es_exports$17,
-			"../../../molecules/analysis-sample-group/i18n/es.ts": es_exports$16,
-			"../../../molecules/analysis-summary-group/i18n/es.ts": es_exports$15,
-			"../../../molecules/analysis-threshold-group/i18n/es.ts": es_exports$14,
-			"../../../molecules/analysis-trend-group/i18n/es.ts": es_exports$13,
-			"../../../molecules/anomaly-monitor-wizard/i18n/es.ts": es_exports$12,
+			"../../../cards/action/i18n/es.ts": es_exports$32,
+			"../../../cards/history/history-chart/i18n/es.ts": es_exports$31,
+			"../../../cards/history/i18n/es.ts": es_exports$30,
+			"../../../cards/list/i18n/es.ts": es_exports$29,
+			"../../../cards/quick/i18n/es.ts": es_exports$28,
+			"../../../cards/sensor/i18n/es.ts": es_exports$27,
+			"../../chart/i18n/es.ts": es_exports$26,
+			"../../domain/i18n/es.ts": es_exports$25,
+			"../../ha/i18n/es.ts": es_exports$24,
+			"../../history-page/i18n/es.ts": es_exports$23,
+			"../../timeline/i18n/es.ts": es_exports$22,
+			"../../../molecules/analysis-aggregate-group/i18n/es.ts": es_exports$21,
+			"../../../molecules/analysis-anomaly-group/i18n/es.ts": es_exports$20,
+			"../../../molecules/analysis-delta-group/i18n/es.ts": es_exports$19,
+			"../../../molecules/analysis-rate-group/i18n/es.ts": es_exports$18,
+			"../../../molecules/analysis-sample-group/i18n/es.ts": es_exports$17,
+			"../../../molecules/analysis-summary-group/i18n/es.ts": es_exports$16,
+			"../../../molecules/analysis-threshold-group/i18n/es.ts": es_exports$15,
+			"../../../molecules/analysis-trend-group/i18n/es.ts": es_exports$14,
+			"../../../molecules/anomaly-monitor-wizard/i18n/es.ts": es_exports$13,
+			"../../../molecules/anomaly-monitors-panel/i18n/es.ts": es_exports$12,
 			"../../../molecules/comparison-tab-rail/i18n/es.ts": es_exports$11,
 			"../../../molecules/date-window-dialog/i18n/es.ts": es_exports$10,
 			"../../../molecules/sidebar-options/sections/i18n/es.ts": es_exports$9,
@@ -5286,10 +5406,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/i18n/pt.ts
-	var pt_exports$31 = /* @__PURE__ */ __exportAll({ translations: () => translations$61 });
-	var translations$61;
-	var init_pt$31 = __esmMin((() => {
-		translations$61 = {
+	var pt_exports$32 = /* @__PURE__ */ __exportAll({ translations: () => translations$63 });
+	var translations$63;
+	var init_pt$32 = __esmMin((() => {
+		translations$63 = {
 			General: "Geral",
 			"Related items": "Itens relacionados",
 			"Datapoint Appearance": "Aspeto do ponto de dados",
@@ -5306,20 +5426,24 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/i18n/pt.ts
-	var pt_exports$30 = /* @__PURE__ */ __exportAll({ translations: () => translations$60 });
-	var translations$60;
-	var init_pt$30 = __esmMin((() => {
-		translations$60 = {
+	var pt_exports$31 = /* @__PURE__ */ __exportAll({ translations: () => translations$62 });
+	var translations$62;
+	var init_pt$31 = __esmMin((() => {
+		translations$62 = {
 			"Date window:": "Janela de datas:",
-			"Actual:": "Real:"
+			"Actual:": "Real:",
+			"Anomaly detection timed out for part of this chart.": "A deteção de anomalias excedeu o tempo limite em parte deste gráfico.",
+			"Anomaly detection is busy; some anomalies are not shown.": "A deteção de anomalias está ocupada; algumas anomalias não são mostradas.",
+			"Anomalies could not be loaded for part of this chart.": "Não foi possível carregar as anomalias de parte deste gráfico.",
+			Retry: "Tentar novamente"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/i18n/pt.ts
-	var pt_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$59 });
-	var translations$59;
-	var init_pt$29 = __esmMin((() => {
-		translations$59 = {
+	var pt_exports$30 = /* @__PURE__ */ __exportAll({ translations: () => translations$61 });
+	var translations$61;
+	var init_pt$30 = __esmMin((() => {
+		translations$61 = {
 			General: "Geral",
 			Entity: "Entidade",
 			"Multiple entities": "Múltiplas entidades",
@@ -5336,10 +5460,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/i18n/pt.ts
-	var pt_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$58 });
-	var translations$58;
-	var init_pt$28 = __esmMin((() => {
-		translations$58 = {
+	var pt_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$60 });
+	var translations$60;
+	var init_pt$29 = __esmMin((() => {
+		translations$60 = {
 			"Search datapoints…": "Pesquisar pontos de dados…",
 			"Delete record": "Eliminar registo",
 			Delete: "Eliminar",
@@ -5357,10 +5481,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/i18n/pt.ts
-	var pt_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$57 });
-	var translations$57;
-	var init_pt$27 = __esmMin((() => {
-		translations$57 = {
+	var pt_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$59 });
+	var translations$59;
+	var init_pt$28 = __esmMin((() => {
+		translations$59 = {
 			General: "Geral",
 			"Icon & colour": "Ícone e cor",
 			"Related items": "Itens relacionados",
@@ -5378,10 +5502,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/i18n/pt.ts
-	var pt_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$56 });
-	var translations$56;
-	var init_pt$26 = __esmMin((() => {
-		translations$56 = {
+	var pt_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$58 });
+	var translations$58;
+	var init_pt$27 = __esmMin((() => {
+		translations$58 = {
 			Entity: "Entidade",
 			Display: "Visualização",
 			"Records list": "Lista de registos",
@@ -5401,10 +5525,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/i18n/pt.ts
-	var pt_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$55 });
-	var translations$55;
-	var init_pt$25 = __esmMin((() => {
-		translations$55 = {
+	var pt_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$57 });
+	var translations$57;
+	var init_pt$26 = __esmMin((() => {
+		translations$57 = {
 			"Add datapoint at {0}": "Adicionar ponto de dados às {0}",
 			Pinned: "Fixado",
 			"Unpin tooltip": "Desafixar dica",
@@ -5442,10 +5566,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/domain/i18n/pt.ts
-	var pt_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$54 });
-	var translations$54;
-	var init_pt$24 = __esmMin((() => {
-		translations$54 = {
+	var pt_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$56 });
+	var translations$56;
+	var init_pt$25 = __esmMin((() => {
+		translations$56 = {
 			"Previous period": "Período anterior",
 			"Next period": "Período seguinte",
 			"2 periods back": "2 períodos atrás",
@@ -5466,10 +5590,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/ha/i18n/pt.ts
-	var pt_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$53 });
-	var translations$53;
-	var init_pt$23 = __esmMin((() => {
-		translations$53 = {
+	var pt_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$55 });
+	var translations$55;
+	var init_pt$24 = __esmMin((() => {
+		translations$55 = {
 			"Confirm delete": "Confirmar eliminação",
 			"Are you sure you want to delete this item?": "Tem a certeza de que pretende eliminar este item?",
 			Cancel: "Cancelar",
@@ -5484,10 +5608,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/history-page/i18n/pt.ts
-	var pt_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$52 });
-	var translations$52;
-	var init_pt$22 = __esmMin((() => {
-		translations$52 = {
+	var pt_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$54 });
+	var translations$54;
+	var init_pt$23 = __esmMin((() => {
+		translations$54 = {
 			"entity_id={0}": "entity_id={0}",
 			"device_id={0}": "device_id={0}",
 			"area_id={0}": "area_id={0}",
@@ -5585,20 +5709,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/timeline/i18n/pt.ts
-	var pt_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$51 });
-	var translations$51;
-	var init_pt$21 = __esmMin((() => {
-		translations$51 = {
+	var pt_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$53 });
+	var translations$53;
+	var init_pt$22 = __esmMin((() => {
+		translations$53 = {
 			Wk: "Sem.",
 			"Week of": "Semana de"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-aggregate-group/i18n/pt.ts
-	var pt_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$50 });
-	var translations$50;
-	var init_pt$20 = __esmMin((() => {
-		translations$50 = {
+	var pt_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$52 });
+	var translations$52;
+	var init_pt$21 = __esmMin((() => {
+		translations$52 = {
 			"Aggregate series": "Séries agregadas",
 			"Count changes to a state": "Contar mudanças para um estado",
 			"Count all state changes": "Contar todas as mudanças de estado",
@@ -5643,10 +5767,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/i18n/pt.ts
-	var pt_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$49 });
-	var translations$49;
-	var init_pt$19 = __esmMin((() => {
-		translations$49 = {
+	var pt_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$51 });
+	var translations$51;
+	var init_pt$20 = __esmMin((() => {
+		translations$51 = {
 			Direction: "Direção",
 			Both: "Ambos",
 			Above: "Acima",
@@ -5694,10 +5818,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-delta-group/i18n/pt.ts
-	var pt_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$48 });
-	var translations$48;
-	var init_pt$18 = __esmMin((() => {
-		translations$48 = {
+	var pt_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$50 });
+	var translations$50;
+	var init_pt$19 = __esmMin((() => {
+		translations$50 = {
 			"Show delta vs selected date window": "Mostrar delta face à janela de datas selecionada",
 			"Select a date window tab to enable delta analysis.": "Selecione um separador de janela de datas para ativar a análise delta.",
 			"Show delta in tooltip": "Mostrar delta na dica",
@@ -5706,10 +5830,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/i18n/pt.ts
-	var pt_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$47 });
-	var translations$47;
-	var init_pt$17 = __esmMin((() => {
-		translations$47 = {
+	var pt_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$49 });
+	var translations$49;
+	var init_pt$18 = __esmMin((() => {
+		translations$49 = {
 			"Show rate of change": "Mostrar taxa de variação",
 			"Show rate of change crosshairs": "Mostrar guias da taxa de variação",
 			"Rate window": "Janela da taxa",
@@ -5721,10 +5845,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-sample-group/i18n/pt.ts
-	var pt_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$46 });
-	var translations$46;
-	var init_pt$16 = __esmMin((() => {
-		translations$46 = {
+	var pt_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$48 });
+	var translations$48;
+	var init_pt$17 = __esmMin((() => {
+		translations$48 = {
 			Downsampling: "Reamostragem",
 			Interval: "Intervalo",
 			Aggregate: "Agregado",
@@ -5756,20 +5880,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/i18n/pt.ts
-	var pt_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$45 });
-	var translations$45;
-	var init_pt$15 = __esmMin((() => {
-		translations$45 = {
+	var pt_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$47 });
+	var translations$47;
+	var init_pt$16 = __esmMin((() => {
+		translations$47 = {
 			"Show min / max / mean": "Mostrar mín. / máx. / média",
 			"Show range shading": "Mostrar sombreamento do intervalo"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/i18n/pt.ts
-	var pt_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$44 });
-	var translations$44;
-	var init_pt$14 = __esmMin((() => {
-		translations$44 = {
+	var pt_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$46 });
+	var translations$46;
+	var init_pt$15 = __esmMin((() => {
+		translations$46 = {
 			"Show threshold analysis": "Mostrar análise de limiar",
 			"Shade threshold area": "Sombrear área do limiar",
 			Threshold: "Limiar",
@@ -5780,10 +5904,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/i18n/pt.ts
-	var pt_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$43 });
-	var translations$43;
-	var init_pt$13 = __esmMin((() => {
-		translations$43 = {
+	var pt_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$45 });
+	var translations$45;
+	var init_pt$14 = __esmMin((() => {
+		translations$45 = {
 			"Show trend lines": "Mostrar linhas de tendência",
 			"Show trend crosshairs": "Mostrar guias da tendência",
 			"Trend method": "Método de tendência",
@@ -5801,10 +5925,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/i18n/pt.ts
-	var pt_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$42 });
-	var translations$42;
-	var init_pt$12 = __esmMin((() => {
-		translations$42 = {
+	var pt_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$44 });
+	var translations$44;
+	var init_pt$13 = __esmMin((() => {
+		translations$44 = {
 			"Add all series from chart": "Adicionar todas as séries do gráfico",
 			"Add from current chart": "Adicionar do gráfico atual",
 			"Create anomaly monitor": "Criar monitor de anomalias",
@@ -5813,21 +5937,45 @@
 		};
 	}));
 	//#endregion
+	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitors-panel/i18n/pt.ts
+	var pt_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$43 });
+	var translations$43;
+	var init_pt$12 = __esmMin((() => {
+		translations$43 = {
+			Unverified: "Não verificado",
+			Retry: "Tentar novamente",
+			"Anomaly activity timed out.": "A atividade de anomalias excedeu o tempo limite.",
+			"Anomaly detection is busy.": "A deteção de anomalias está ocupada.",
+			"Anomaly activity was cancelled.": "A atividade de anomalias foi cancelada.",
+			"Anomaly activity could not be loaded.": "Não foi possível carregar a atividade de anomalias.",
+			"Anomaly details could not be loaded.": "Não foi possível carregar os detalhes das anomalias.",
+			"Counts are from the last successful scan, {0}.": "As contagens são da última verificação bem-sucedida, {0}.",
+			"No successful scan yet.": "Ainda não há nenhuma verificação bem-sucedida.",
+			"Waiting for a scan with the current settings.": "A aguardar uma verificação com as definições atuais.",
+			"The latest scan timed out.": "A última verificação excedeu o tempo limite.",
+			"The latest scan was skipped because detection was busy.": "A última verificação foi ignorada porque a deteção estava ocupada.",
+			"The latest scan was cancelled.": "A última verificação foi cancelada.",
+			"The latest scan failed.": "A última verificação falhou.",
+			"Showing the previous result for this range.": "A mostrar o resultado anterior para este intervalo.",
+			"Activity for this range is unavailable.": "A atividade para este intervalo não está disponível."
+		};
+	}));
+	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/comparison-tab-rail/i18n/pt.ts
-	var pt_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$41 });
-	var translations$41;
+	var pt_exports$11 = /* @__PURE__ */ __exportAll({ translations: () => translations$42 });
+	var translations$42;
 	var init_pt$11 = __esmMin((() => {
-		translations$41 = {
+		translations$42 = {
 			"Add date window": "Adicionar janela de datas",
 			"No data yet for this period": "Ainda não há dados para este período"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/date-window-dialog/i18n/pt.ts
-	var pt_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$40 });
-	var translations$40;
+	var pt_exports$10 = /* @__PURE__ */ __exportAll({ translations: () => translations$41 });
+	var translations$41;
 	var init_pt$10 = __esmMin((() => {
-		translations$40 = {
+		translations$41 = {
 			Name: "Nome",
 			Start: "Início",
 			End: "Fim",
@@ -5854,10 +6002,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/sidebar-options/sections/i18n/pt.ts
-	var pt_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$39 });
-	var translations$39;
+	var pt_exports$9 = /* @__PURE__ */ __exportAll({ translations: () => translations$40 });
+	var translations$40;
 	var init_pt$9 = __esmMin((() => {
-		translations$39 = {
+		translations$40 = {
 			Datapoints: "Pontos de dados",
 			"Choose which annotation datapoints appear on the chart.": "Escolha quais os pontos de dados de anotação que aparecem no gráfico.",
 			"Linked to selected targets": "Ligados aos alvos selecionados",
@@ -5867,10 +6015,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row/i18n/pt.ts
-	var pt_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$38 });
-	var translations$38;
+	var pt_exports$8 = /* @__PURE__ */ __exportAll({ translations: () => translations$39 });
+	var translations$39;
 	var init_pt$8 = __esmMin((() => {
-		translations$38 = {
+		translations$39 = {
 			"Analysis configured": "Análise configurada",
 			"Configure analysis": "Configurar análise",
 			"Stepped series": "Série em degraus",
@@ -5882,17 +6030,17 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/target-row-list/i18n/pt.ts
-	var pt_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$37 });
-	var translations$37;
+	var pt_exports$7 = /* @__PURE__ */ __exportAll({ translations: () => translations$38 });
+	var translations$38;
 	var init_pt$7 = __esmMin((() => {
-		translations$37 = {};
+		translations$38 = {};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/ai-query-brief-dialog/i18n/pt.ts
-	var pt_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$36 });
-	var translations$36;
+	var pt_exports$6 = /* @__PURE__ */ __exportAll({ translations: () => translations$37 });
+	var translations$37;
 	var init_pt$6 = __esmMin((() => {
-		translations$36 = {
+		translations$37 = {
 			"AI query brief": "Resumo de consulta para IA",
 			"This brief is intended for another AI to fetch raw Home Assistant history and hass_datapoints anomaly details. Review it, then copy it into your AI tool of choice.": "Este resumo foi feito para outra IA obter o historico bruto do Home Assistant e os detalhes de anomalias do hass_datapoints. Revise-o e depois copie-o para a ferramenta de IA de sua escolha.",
 			"Copy-ready brief": "Resumo pronto para copiar",
@@ -5904,10 +6052,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/history-targets/i18n/pt.ts
-	var pt_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$35 });
-	var translations$35;
+	var pt_exports$5 = /* @__PURE__ */ __exportAll({ translations: () => translations$36 });
+	var translations$36;
 	var init_pt$5 = __esmMin((() => {
-		translations$35 = {
+		translations$36 = {
 			Targets: "Alvos",
 			"Each row controls one chart series.": "Cada linha controla uma série do gráfico.",
 			"Add target": "Adicionar alvo",
@@ -5916,10 +6064,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/panel-shell/i18n/pt.ts
-	var pt_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$34 });
-	var translations$34;
+	var pt_exports$4 = /* @__PURE__ */ __exportAll({ translations: () => translations$35 });
+	var translations$35;
 	var init_pt$4 = __esmMin((() => {
-		translations$34 = {
+		translations$35 = {
 			"Loading Datapoints…": "A carregar pontos de dados…",
 			Datapoints: "Pontos de dados",
 			"Page options": "Opções da página",
@@ -5934,10 +6082,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/range-toolbar/i18n/pt.ts
-	var pt_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$33 });
-	var translations$33;
+	var pt_exports$3 = /* @__PURE__ */ __exportAll({ translations: () => translations$34 });
+	var translations$34;
 	var init_pt$3 = __esmMin((() => {
-		translations$33 = {
+		translations$34 = {
 			"Toggle sidebar": "Alternar barra lateral",
 			Start: "Início",
 			End: "Fim",
@@ -5962,26 +6110,27 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/components/series-preview-dialog/i18n/pt.ts
-	var pt_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$32 });
-	var translations$32;
+	var pt_exports$2 = /* @__PURE__ */ __exportAll({ translations: () => translations$33 });
+	var translations$33;
 	var init_pt$2 = __esmMin((() => {
-		translations$32 = {
+		translations$33 = {
 			Close: "Fechar",
 			"Open in chart": "Abrir no gráfico"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/panels/datapoints/i18n/pt.ts
-	var pt_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$31 });
-	var translations$31;
+	var pt_exports$1 = /* @__PURE__ */ __exportAll({ translations: () => translations$32 });
+	var translations$32;
 	var init_pt$1 = __esmMin((() => {
-		translations$31 = { "Selected range": "Intervalo selecionado" };
+		translations$32 = { "Selected range": "Intervalo selecionado" };
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/i18n/locales/pt.ts
 	var pt_exports = /* @__PURE__ */ __exportAll({ templates: () => templates$1 });
 	var modules$1, merged$1, templates$1;
 	var init_pt = __esmMin((() => {
+		init_pt$32();
 		init_pt$31();
 		init_pt$30();
 		init_pt$29();
@@ -6014,26 +6163,27 @@
 		init_pt$2();
 		init_pt$1();
 		modules$1 = /* #__PURE__ */ Object.assign({
-			"../../../cards/action/i18n/pt.ts": pt_exports$31,
-			"../../../cards/history/history-chart/i18n/pt.ts": pt_exports$30,
-			"../../../cards/history/i18n/pt.ts": pt_exports$29,
-			"../../../cards/list/i18n/pt.ts": pt_exports$28,
-			"../../../cards/quick/i18n/pt.ts": pt_exports$27,
-			"../../../cards/sensor/i18n/pt.ts": pt_exports$26,
-			"../../chart/i18n/pt.ts": pt_exports$25,
-			"../../domain/i18n/pt.ts": pt_exports$24,
-			"../../ha/i18n/pt.ts": pt_exports$23,
-			"../../history-page/i18n/pt.ts": pt_exports$22,
-			"../../timeline/i18n/pt.ts": pt_exports$21,
-			"../../../molecules/analysis-aggregate-group/i18n/pt.ts": pt_exports$20,
-			"../../../molecules/analysis-anomaly-group/i18n/pt.ts": pt_exports$19,
-			"../../../molecules/analysis-delta-group/i18n/pt.ts": pt_exports$18,
-			"../../../molecules/analysis-rate-group/i18n/pt.ts": pt_exports$17,
-			"../../../molecules/analysis-sample-group/i18n/pt.ts": pt_exports$16,
-			"../../../molecules/analysis-summary-group/i18n/pt.ts": pt_exports$15,
-			"../../../molecules/analysis-threshold-group/i18n/pt.ts": pt_exports$14,
-			"../../../molecules/analysis-trend-group/i18n/pt.ts": pt_exports$13,
-			"../../../molecules/anomaly-monitor-wizard/i18n/pt.ts": pt_exports$12,
+			"../../../cards/action/i18n/pt.ts": pt_exports$32,
+			"../../../cards/history/history-chart/i18n/pt.ts": pt_exports$31,
+			"../../../cards/history/i18n/pt.ts": pt_exports$30,
+			"../../../cards/list/i18n/pt.ts": pt_exports$29,
+			"../../../cards/quick/i18n/pt.ts": pt_exports$28,
+			"../../../cards/sensor/i18n/pt.ts": pt_exports$27,
+			"../../chart/i18n/pt.ts": pt_exports$26,
+			"../../domain/i18n/pt.ts": pt_exports$25,
+			"../../ha/i18n/pt.ts": pt_exports$24,
+			"../../history-page/i18n/pt.ts": pt_exports$23,
+			"../../timeline/i18n/pt.ts": pt_exports$22,
+			"../../../molecules/analysis-aggregate-group/i18n/pt.ts": pt_exports$21,
+			"../../../molecules/analysis-anomaly-group/i18n/pt.ts": pt_exports$20,
+			"../../../molecules/analysis-delta-group/i18n/pt.ts": pt_exports$19,
+			"../../../molecules/analysis-rate-group/i18n/pt.ts": pt_exports$18,
+			"../../../molecules/analysis-sample-group/i18n/pt.ts": pt_exports$17,
+			"../../../molecules/analysis-summary-group/i18n/pt.ts": pt_exports$16,
+			"../../../molecules/analysis-threshold-group/i18n/pt.ts": pt_exports$15,
+			"../../../molecules/analysis-trend-group/i18n/pt.ts": pt_exports$14,
+			"../../../molecules/anomaly-monitor-wizard/i18n/pt.ts": pt_exports$13,
+			"../../../molecules/anomaly-monitors-panel/i18n/pt.ts": pt_exports$12,
 			"../../../molecules/comparison-tab-rail/i18n/pt.ts": pt_exports$11,
 			"../../../molecules/date-window-dialog/i18n/pt.ts": pt_exports$10,
 			"../../../molecules/sidebar-options/sections/i18n/pt.ts": pt_exports$9,
@@ -6052,10 +6202,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/action/i18n/zh-hans.ts
-	var zh_hans_exports$31 = /* @__PURE__ */ __exportAll({ translations: () => translations$30 });
-	var translations$30;
-	var init_zh_hans$31 = __esmMin((() => {
-		translations$30 = {
+	var zh_hans_exports$32 = /* @__PURE__ */ __exportAll({ translations: () => translations$31 });
+	var translations$31;
+	var init_zh_hans$32 = __esmMin((() => {
+		translations$31 = {
 			General: "常规",
 			"Related items": "关联项",
 			"Datapoint Appearance": "数据点外观",
@@ -6072,20 +6222,24 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/history-chart/i18n/zh-hans.ts
-	var zh_hans_exports$30 = /* @__PURE__ */ __exportAll({ translations: () => translations$29 });
-	var translations$29;
-	var init_zh_hans$30 = __esmMin((() => {
-		translations$29 = {
+	var zh_hans_exports$31 = /* @__PURE__ */ __exportAll({ translations: () => translations$30 });
+	var translations$30;
+	var init_zh_hans$31 = __esmMin((() => {
+		translations$30 = {
 			"Date window:": "日期窗口：",
-			"Actual:": "实际："
+			"Actual:": "实际：",
+			"Anomaly detection timed out for part of this chart.": "此图表的部分异常检测超时。",
+			"Anomaly detection is busy; some anomalies are not shown.": "异常检测正忙；部分异常未显示。",
+			"Anomalies could not be loaded for part of this chart.": "无法加载此图表部分的异常。",
+			Retry: "重试"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/history/i18n/zh-hans.ts
-	var zh_hans_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$28 });
-	var translations$28;
-	var init_zh_hans$29 = __esmMin((() => {
-		translations$28 = {
+	var zh_hans_exports$30 = /* @__PURE__ */ __exportAll({ translations: () => translations$29 });
+	var translations$29;
+	var init_zh_hans$30 = __esmMin((() => {
+		translations$29 = {
 			General: "常规",
 			Entity: "实体",
 			"Multiple entities": "多个实体",
@@ -6102,10 +6256,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/list/i18n/zh-hans.ts
-	var zh_hans_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$27 });
-	var translations$27;
-	var init_zh_hans$28 = __esmMin((() => {
-		translations$27 = {
+	var zh_hans_exports$29 = /* @__PURE__ */ __exportAll({ translations: () => translations$28 });
+	var translations$28;
+	var init_zh_hans$29 = __esmMin((() => {
+		translations$28 = {
 			"Search datapoints…": "搜索数据点…",
 			"Delete record": "删除记录",
 			Delete: "删除",
@@ -6123,10 +6277,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/quick/i18n/zh-hans.ts
-	var zh_hans_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$26 });
-	var translations$26;
-	var init_zh_hans$27 = __esmMin((() => {
-		translations$26 = {
+	var zh_hans_exports$28 = /* @__PURE__ */ __exportAll({ translations: () => translations$27 });
+	var translations$27;
+	var init_zh_hans$28 = __esmMin((() => {
+		translations$27 = {
 			General: "常规",
 			"Icon & colour": "图标和颜色",
 			"Related items": "关联项",
@@ -6144,10 +6298,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/cards/sensor/i18n/zh-hans.ts
-	var zh_hans_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$25 });
-	var translations$25;
-	var init_zh_hans$26 = __esmMin((() => {
-		translations$25 = {
+	var zh_hans_exports$27 = /* @__PURE__ */ __exportAll({ translations: () => translations$26 });
+	var translations$26;
+	var init_zh_hans$27 = __esmMin((() => {
+		translations$26 = {
 			Entity: "实体",
 			Display: "显示",
 			"Records list": "记录列表",
@@ -6167,10 +6321,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/chart/i18n/zh-hans.ts
-	var zh_hans_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$24 });
-	var translations$24;
-	var init_zh_hans$25 = __esmMin((() => {
-		translations$24 = {
+	var zh_hans_exports$26 = /* @__PURE__ */ __exportAll({ translations: () => translations$25 });
+	var translations$25;
+	var init_zh_hans$26 = __esmMin((() => {
+		translations$25 = {
 			"Add datapoint at {0}": "在 {0} 添加数据点",
 			Pinned: "已固定",
 			"Unpin tooltip": "取消固定提示",
@@ -6208,10 +6362,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/domain/i18n/zh-hans.ts
-	var zh_hans_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$23 });
-	var translations$23;
-	var init_zh_hans$24 = __esmMin((() => {
-		translations$23 = {
+	var zh_hans_exports$25 = /* @__PURE__ */ __exportAll({ translations: () => translations$24 });
+	var translations$24;
+	var init_zh_hans$25 = __esmMin((() => {
+		translations$24 = {
 			"Previous period": "上一时段",
 			"Next period": "下一时段",
 			"2 periods back": "前 2 个时段",
@@ -6232,10 +6386,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/ha/i18n/zh-hans.ts
-	var zh_hans_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$22 });
-	var translations$22;
-	var init_zh_hans$23 = __esmMin((() => {
-		translations$22 = {
+	var zh_hans_exports$24 = /* @__PURE__ */ __exportAll({ translations: () => translations$23 });
+	var translations$23;
+	var init_zh_hans$24 = __esmMin((() => {
+		translations$23 = {
 			"Confirm delete": "确认删除",
 			"Are you sure you want to delete this item?": "确定要删除此项目吗？",
 			Cancel: "取消",
@@ -6250,10 +6404,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/history-page/i18n/zh-hans.ts
-	var zh_hans_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$21 });
-	var translations$21;
-	var init_zh_hans$22 = __esmMin((() => {
-		translations$21 = {
+	var zh_hans_exports$23 = /* @__PURE__ */ __exportAll({ translations: () => translations$22 });
+	var translations$22;
+	var init_zh_hans$23 = __esmMin((() => {
+		translations$22 = {
 			"entity_id={0}": "entity_id={0}",
 			"device_id={0}": "device_id={0}",
 			"area_id={0}": "area_id={0}",
@@ -6351,20 +6505,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/timeline/i18n/zh-hans.ts
-	var zh_hans_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$20 });
-	var translations$20;
-	var init_zh_hans$21 = __esmMin((() => {
-		translations$20 = {
+	var zh_hans_exports$22 = /* @__PURE__ */ __exportAll({ translations: () => translations$21 });
+	var translations$21;
+	var init_zh_hans$22 = __esmMin((() => {
+		translations$21 = {
 			Wk: "周",
 			"Week of": "所在周"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-aggregate-group/i18n/zh-hans.ts
-	var zh_hans_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$19 });
-	var translations$19;
-	var init_zh_hans$20 = __esmMin((() => {
-		translations$19 = {
+	var zh_hans_exports$21 = /* @__PURE__ */ __exportAll({ translations: () => translations$20 });
+	var translations$20;
+	var init_zh_hans$21 = __esmMin((() => {
+		translations$20 = {
 			"Aggregate series": "聚合序列",
 			"Count changes to a state": "统计变为某状态的次数",
 			"Count all state changes": "统计所有状态变化次数",
@@ -6409,10 +6563,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-anomaly-group/i18n/zh-hans.ts
-	var zh_hans_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$18 });
-	var translations$18;
-	var init_zh_hans$19 = __esmMin((() => {
-		translations$18 = {
+	var zh_hans_exports$20 = /* @__PURE__ */ __exportAll({ translations: () => translations$19 });
+	var translations$19;
+	var init_zh_hans$20 = __esmMin((() => {
+		translations$19 = {
 			Direction: "方向",
 			Both: "两者",
 			Above: "高于",
@@ -6460,10 +6614,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-delta-group/i18n/zh-hans.ts
-	var zh_hans_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$17 });
-	var translations$17;
-	var init_zh_hans$18 = __esmMin((() => {
-		translations$17 = {
+	var zh_hans_exports$19 = /* @__PURE__ */ __exportAll({ translations: () => translations$18 });
+	var translations$18;
+	var init_zh_hans$19 = __esmMin((() => {
+		translations$18 = {
 			"Show delta vs selected date window": "显示相对于所选日期窗口的差值",
 			"Select a date window tab to enable delta analysis.": "选择一个日期窗口标签以启用差值分析。",
 			"Show delta in tooltip": "在提示中显示差值",
@@ -6472,10 +6626,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-rate-group/i18n/zh-hans.ts
-	var zh_hans_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$16 });
-	var translations$16;
-	var init_zh_hans$17 = __esmMin((() => {
-		translations$16 = {
+	var zh_hans_exports$18 = /* @__PURE__ */ __exportAll({ translations: () => translations$17 });
+	var translations$17;
+	var init_zh_hans$18 = __esmMin((() => {
+		translations$17 = {
 			"Show rate of change": "显示变化率",
 			"Show rate of change crosshairs": "显示变化率准星",
 			"Rate window": "变化率窗口",
@@ -6487,10 +6641,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-sample-group/i18n/zh-hans.ts
-	var zh_hans_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$15 });
-	var translations$15;
-	var init_zh_hans$16 = __esmMin((() => {
-		translations$15 = {
+	var zh_hans_exports$17 = /* @__PURE__ */ __exportAll({ translations: () => translations$16 });
+	var translations$16;
+	var init_zh_hans$17 = __esmMin((() => {
+		translations$16 = {
 			Downsampling: "降采样",
 			Interval: "间隔",
 			Aggregate: "聚合",
@@ -6522,20 +6676,20 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-summary-group/i18n/zh-hans.ts
-	var zh_hans_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$14 });
-	var translations$14;
-	var init_zh_hans$15 = __esmMin((() => {
-		translations$14 = {
+	var zh_hans_exports$16 = /* @__PURE__ */ __exportAll({ translations: () => translations$15 });
+	var translations$15;
+	var init_zh_hans$16 = __esmMin((() => {
+		translations$15 = {
 			"Show min / max / mean": "显示最小 / 最大 / 平均值",
 			"Show range shading": "显示范围阴影"
 		};
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-threshold-group/i18n/zh-hans.ts
-	var zh_hans_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$13 });
-	var translations$13;
-	var init_zh_hans$14 = __esmMin((() => {
-		translations$13 = {
+	var zh_hans_exports$15 = /* @__PURE__ */ __exportAll({ translations: () => translations$14 });
+	var translations$14;
+	var init_zh_hans$15 = __esmMin((() => {
+		translations$14 = {
 			"Show threshold analysis": "显示阈值分析",
 			"Shade threshold area": "为阈值区域着色",
 			Threshold: "阈值",
@@ -6546,10 +6700,10 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/analysis-trend-group/i18n/zh-hans.ts
-	var zh_hans_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$12 });
-	var translations$12;
-	var init_zh_hans$13 = __esmMin((() => {
-		translations$12 = {
+	var zh_hans_exports$14 = /* @__PURE__ */ __exportAll({ translations: () => translations$13 });
+	var translations$13;
+	var init_zh_hans$14 = __esmMin((() => {
+		translations$13 = {
 			"Show trend lines": "显示趋势线",
 			"Show trend crosshairs": "显示趋势准星",
 			"Trend method": "趋势方法",
@@ -6567,15 +6721,39 @@
 	}));
 	//#endregion
 	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitor-wizard/i18n/zh-hans.ts
-	var zh_hans_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$11 });
-	var translations$11;
-	var init_zh_hans$12 = __esmMin((() => {
-		translations$11 = {
+	var zh_hans_exports$13 = /* @__PURE__ */ __exportAll({ translations: () => translations$12 });
+	var translations$12;
+	var init_zh_hans$13 = __esmMin((() => {
+		translations$12 = {
 			"Add all series from chart": "添加图表中的所有序列",
 			"Add from current chart": "从当前图表添加",
 			"Create anomaly monitor": "创建异常监视器",
 			"Unable to save anomaly monitor.": "无法保存异常监视器。",
 			"anomaly monitors": "异常监视器"
+		};
+	}));
+	//#endregion
+	//#region custom_components/hass_datapoints/src/molecules/anomaly-monitors-panel/i18n/zh-hans.ts
+	var zh_hans_exports$12 = /* @__PURE__ */ __exportAll({ translations: () => translations$11 });
+	var translations$11;
+	var init_zh_hans$12 = __esmMin((() => {
+		translations$11 = {
+			Unverified: "未验证",
+			Retry: "重试",
+			"Anomaly activity timed out.": "异常活动加载超时。",
+			"Anomaly detection is busy.": "异常检测正忙。",
+			"Anomaly activity was cancelled.": "异常活动已取消。",
+			"Anomaly activity could not be loaded.": "无法加载异常活动。",
+			"Anomaly details could not be loaded.": "无法加载异常详情。",
+			"Counts are from the last successful scan, {0}.": "计数来自上次成功的扫描（{0}）。",
+			"No successful scan yet.": "尚无成功的扫描。",
+			"Waiting for a scan with the current settings.": "正在等待使用当前设置进行扫描。",
+			"The latest scan timed out.": "最近一次扫描超时。",
+			"The latest scan was skipped because detection was busy.": "由于检测繁忙，已跳过最近一次扫描。",
+			"The latest scan was cancelled.": "最近一次扫描已取消。",
+			"The latest scan failed.": "最近一次扫描失败。",
+			"Showing the previous result for this range.": "正在显示此范围的上一个结果。",
+			"Activity for this range is unavailable.": "此范围的活动不可用。"
 		};
 	}));
 	//#endregion
@@ -6748,6 +6926,7 @@
 	var zh_hans_exports = /* @__PURE__ */ __exportAll({ templates: () => templates });
 	var modules, merged, templates;
 	var init_zh_hans = __esmMin((() => {
+		init_zh_hans$32();
 		init_zh_hans$31();
 		init_zh_hans$30();
 		init_zh_hans$29();
@@ -6780,26 +6959,27 @@
 		init_zh_hans$2();
 		init_zh_hans$1();
 		modules = /* #__PURE__ */ Object.assign({
-			"../../../cards/action/i18n/zh-hans.ts": zh_hans_exports$31,
-			"../../../cards/history/history-chart/i18n/zh-hans.ts": zh_hans_exports$30,
-			"../../../cards/history/i18n/zh-hans.ts": zh_hans_exports$29,
-			"../../../cards/list/i18n/zh-hans.ts": zh_hans_exports$28,
-			"../../../cards/quick/i18n/zh-hans.ts": zh_hans_exports$27,
-			"../../../cards/sensor/i18n/zh-hans.ts": zh_hans_exports$26,
-			"../../chart/i18n/zh-hans.ts": zh_hans_exports$25,
-			"../../domain/i18n/zh-hans.ts": zh_hans_exports$24,
-			"../../ha/i18n/zh-hans.ts": zh_hans_exports$23,
-			"../../history-page/i18n/zh-hans.ts": zh_hans_exports$22,
-			"../../timeline/i18n/zh-hans.ts": zh_hans_exports$21,
-			"../../../molecules/analysis-aggregate-group/i18n/zh-hans.ts": zh_hans_exports$20,
-			"../../../molecules/analysis-anomaly-group/i18n/zh-hans.ts": zh_hans_exports$19,
-			"../../../molecules/analysis-delta-group/i18n/zh-hans.ts": zh_hans_exports$18,
-			"../../../molecules/analysis-rate-group/i18n/zh-hans.ts": zh_hans_exports$17,
-			"../../../molecules/analysis-sample-group/i18n/zh-hans.ts": zh_hans_exports$16,
-			"../../../molecules/analysis-summary-group/i18n/zh-hans.ts": zh_hans_exports$15,
-			"../../../molecules/analysis-threshold-group/i18n/zh-hans.ts": zh_hans_exports$14,
-			"../../../molecules/analysis-trend-group/i18n/zh-hans.ts": zh_hans_exports$13,
-			"../../../molecules/anomaly-monitor-wizard/i18n/zh-hans.ts": zh_hans_exports$12,
+			"../../../cards/action/i18n/zh-hans.ts": zh_hans_exports$32,
+			"../../../cards/history/history-chart/i18n/zh-hans.ts": zh_hans_exports$31,
+			"../../../cards/history/i18n/zh-hans.ts": zh_hans_exports$30,
+			"../../../cards/list/i18n/zh-hans.ts": zh_hans_exports$29,
+			"../../../cards/quick/i18n/zh-hans.ts": zh_hans_exports$28,
+			"../../../cards/sensor/i18n/zh-hans.ts": zh_hans_exports$27,
+			"../../chart/i18n/zh-hans.ts": zh_hans_exports$26,
+			"../../domain/i18n/zh-hans.ts": zh_hans_exports$25,
+			"../../ha/i18n/zh-hans.ts": zh_hans_exports$24,
+			"../../history-page/i18n/zh-hans.ts": zh_hans_exports$23,
+			"../../timeline/i18n/zh-hans.ts": zh_hans_exports$22,
+			"../../../molecules/analysis-aggregate-group/i18n/zh-hans.ts": zh_hans_exports$21,
+			"../../../molecules/analysis-anomaly-group/i18n/zh-hans.ts": zh_hans_exports$20,
+			"../../../molecules/analysis-delta-group/i18n/zh-hans.ts": zh_hans_exports$19,
+			"../../../molecules/analysis-rate-group/i18n/zh-hans.ts": zh_hans_exports$18,
+			"../../../molecules/analysis-sample-group/i18n/zh-hans.ts": zh_hans_exports$17,
+			"../../../molecules/analysis-summary-group/i18n/zh-hans.ts": zh_hans_exports$16,
+			"../../../molecules/analysis-threshold-group/i18n/zh-hans.ts": zh_hans_exports$15,
+			"../../../molecules/analysis-trend-group/i18n/zh-hans.ts": zh_hans_exports$14,
+			"../../../molecules/anomaly-monitor-wizard/i18n/zh-hans.ts": zh_hans_exports$13,
+			"../../../molecules/anomaly-monitors-panel/i18n/zh-hans.ts": zh_hans_exports$12,
 			"../../../molecules/comparison-tab-rail/i18n/zh-hans.ts": zh_hans_exports$11,
 			"../../../molecules/date-window-dialog/i18n/zh-hans.ts": zh_hans_exports$10,
 			"../../../molecules/sidebar-options/sections/i18n/zh-hans.ts": zh_hans_exports$9,
@@ -13200,6 +13380,95 @@
 	function clearRequest(slotKey) {
 		inFlightRequests.delete(slotKey);
 	}
+	function createRequestId() {
+		const cryptoApi = globalThis.crypto;
+		if (typeof cryptoApi?.randomUUID === "function") return cryptoApi.randomUUID();
+		if (typeof cryptoApi?.getRandomValues === "function") {
+			const bytes = /* @__PURE__ */ new Uint8Array(16);
+			cryptoApi.getRandomValues(bytes);
+			bytes[6] = bytes[6] % 16 + 64;
+			bytes[8] = bytes[8] % 64 + 128;
+			const hex = [...bytes].map((byte) => byte.toString(16).padStart(2, "0"));
+			return [
+				hex.slice(0, 4).join(""),
+				hex.slice(4, 6).join(""),
+				hex.slice(6, 8).join(""),
+				hex.slice(8, 10).join(""),
+				hex.slice(10, 16).join("")
+			].join("-");
+		}
+		return `req-${Date.now().toString(16)}-${Math.random().toString(16).slice(2, 10)}`;
+	}
+	var ownedSlots = /* @__PURE__ */ new Map();
+	var ownerSequence = 0;
+	/** A unique owner id for one component instance (prefix every slot with it). */
+	function createRequestOwnerId(kind) {
+		ownerSequence += 1;
+		return `${kind}#${ownerSequence}`;
+	}
+	/** Build an owner slot key: owner id, then purpose/series/window parts. */
+	function ownerSlot(ownerId, ...parts) {
+		return [ownerId, ...parts].join(":");
+	}
+	/** Ask the backend to cancel one request on this connection (fire and forget). */
+	function sendCancelRequest(hass, requestId) {
+		hass.connection.sendMessagePromise({
+			type: "hass_datapoints/cancel",
+			request_id: requestId
+		}).catch(() => {});
+	}
+	/**
+	* Start a new generation in ``slotKey``, cancelling the previous generation
+	* (if any) on the backend.
+	*/
+	function beginOwnedRequest(hass, slotKey) {
+		const previous = ownedSlots.get(slotKey);
+		if (previous) sendCancelRequest(hass, previous);
+		const requestId = createRequestId();
+		ownedSlots.set(slotKey, requestId);
+		return {
+			requestId,
+			isCurrent: () => ownedSlots.get(slotKey) === requestId,
+			release: () => {
+				if (ownedSlots.get(slotKey) === requestId) ownedSlots.delete(slotKey);
+			}
+		};
+	}
+	/** Cancel every in-flight generation whose slot starts with ``ownerId``. */
+	function cancelOwnedRequests(hass, ownerId) {
+		const prefix = `${ownerId}:`;
+		for (const [slotKey, requestId] of [...ownedSlots]) if (slotKey.startsWith(prefix)) {
+			ownedSlots.delete(slotKey);
+			if (hass) sendCancelRequest(hass, requestId);
+		}
+	}
+	var KNOWN_CODES = /* @__PURE__ */ new Set([
+		"detection_timeout",
+		"detection_cancelled",
+		"detection_busy",
+		"detection_error"
+	]);
+	/** A failed or superseded detection request, tagged with its stable code. */
+	var DetectionRequestError = class extends Error {
+		constructor(code) {
+			super(code);
+			_defineProperty(this, "code", void 0);
+			this.name = "DetectionRequestError";
+			this.code = code;
+		}
+	};
+	/**
+	* Map any rejection (HA websocket error object, DetectionRequestError or a
+	* transport failure) to a stable detection code.
+	*/
+	function detectionErrorCode(err) {
+		const code = err && typeof err === "object" && "code" in err ? String(err.code) : "";
+		return KNOWN_CODES.has(code) ? code : "detection_error";
+	}
+	/** Cancellation is the caller's own doing and is never shown as a failure. */
+	function isDetectionCancelled(err) {
+		return detectionErrorCode(err) === "detection_cancelled";
+	}
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/data/cache.ts
 	/**
@@ -13255,25 +13524,6 @@
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/data/history-api.ts
 	var MAX_DOWNSAMPLED_HISTORY_RANGE_MS = 7776e6;
-	function createRequestId() {
-		const cryptoApi = globalThis.crypto;
-		if (typeof cryptoApi?.randomUUID === "function") return cryptoApi.randomUUID();
-		if (typeof cryptoApi?.getRandomValues === "function") {
-			const bytes = /* @__PURE__ */ new Uint8Array(16);
-			cryptoApi.getRandomValues(bytes);
-			bytes[6] = bytes[6] % 16 + 64;
-			bytes[8] = bytes[8] % 64 + 128;
-			const hex = [...bytes].map((byte) => byte.toString(16).padStart(2, "0"));
-			return [
-				hex.slice(0, 4).join(""),
-				hex.slice(4, 6).join(""),
-				hex.slice(6, 8).join(""),
-				hex.slice(8, 10).join(""),
-				hex.slice(10, 16).join("")
-			].join("-");
-		}
-		return `req-${Date.now().toString(16)}-${Math.random().toString(16).slice(2, 10)}`;
-	}
 	function parseIsoTimeMs(value) {
 		const timeMs = Date.parse(value);
 		if (!Number.isFinite(timeMs)) return null;
@@ -13334,11 +13584,9 @@
 			}
 		});
 	}
-	function fetchAnomaliesFromBackend(hass, entityId, startTime, endTime, config) {
-		const slotKey = `anomalies:${entityId}:${startTime}:${endTime}`;
-		cancelPending(hass, slotKey);
-		const requestId = createRequestId();
-		trackRequest(slotKey, requestId);
+	function fetchAnomaliesFromBackend(hass, entityId, startTime, endTime, config, ownerSlot) {
+		const request = beginOwnedRequest(hass, ownerSlot ?? `anomalies:${entityId}:${startTime}:${endTime}`);
+		const requestId = request.requestId;
 		return hass.connection.sendMessagePromise({
 			type: "hass_datapoints/anomalies",
 			entity_id: entityId,
@@ -13369,11 +13617,13 @@
 				comparison_time_offset_ms: config.comparison_time_offset_ms || 0
 			} : {}
 		}).then((result) => {
-			clearRequest(slotKey);
+			const current = request.isCurrent();
+			request.release();
+			if (!current) throw new DetectionRequestError("detection_cancelled");
 			return result.anomaly_clusters || [];
 		}, (err) => {
-			clearRequest(slotKey);
-			throw err;
+			request.release();
+			throw new DetectionRequestError(detectionErrorCode(err));
 		});
 	}
 	async function fetchHistoryDuringPeriod(hass, startTime, endTime, entityIds, options = {}) {
@@ -14878,9 +15128,16 @@
 		if (monitor.type === "combined") return monitor.entity_ids;
 		return [monitor.entity_id];
 	}
+	/**
+	* Fetch the active monitor list, rejecting on failure. Use this when an empty
+	* list must not be mistaken for "no monitors" (e.g. it would reset state).
+	*/
+	async function fetchMonitorsOrThrow(hass) {
+		return (await hass.connection.sendMessagePromise({ type: `hass_datapoints/monitors/list` })).monitors ?? [];
+	}
 	async function fetchMonitors(hass) {
 		try {
-			return (await hass.connection.sendMessagePromise({ type: `hass_datapoints/monitors/list` })).monitors ?? [];
+			return await fetchMonitorsOrThrow(hass);
 		} catch (err) {
 			logger$1.warn("[hass-datapoints] fetchMonitors failed:", err);
 			return [];
@@ -14930,10 +15187,11 @@
 			return [];
 		}
 	}
-	async function fetchMonitorAnomalies(hass, monitorId) {
+	async function fetchMonitorAnomalies(hass, monitorId, requestId) {
 		return await hass.connection.sendMessagePromise({
 			type: `${DOMAIN}/monitors/anomalies`,
-			monitor_id: monitorId
+			monitor_id: monitorId,
+			...requestId ? { request_id: requestId } : {}
 		});
 	}
 	/**
@@ -14942,8 +15200,9 @@
 	* @param startMs Range start (epoch ms, inclusive).
 	* @param endMs Range end (epoch ms, exclusive).
 	* @param bucketCount Number of buckets per entity; server default (48) if omitted.
+	* @param requestId Cancellable via `hass_datapoints/cancel` on this connection.
 	*/
-	async function fetchMonitorAnomalyActivity(hass, monitorId, startMs, endMs, bucketCount) {
+	async function fetchMonitorAnomalyActivity(hass, monitorId, startMs, endMs, bucketCount, requestId) {
 		const payload = {
 			type: `${DOMAIN}/monitors/anomaly_activity`,
 			monitor_id: monitorId,
@@ -14951,6 +15210,7 @@
 			end_time: new Date(endMs).toISOString()
 		};
 		if (bucketCount !== void 0) payload.bucket_count = bucketCount;
+		if (requestId) payload.request_id = requestId;
 		return await hass.connection.sendMessagePromise(payload);
 	}
 	/**
@@ -15795,6 +16055,29 @@
   .aggregate-note[hidden] {
     display: none;
   }
+  .anomaly-note {
+    display: flex;
+    align-items: center;
+    gap: var(--dp-spacing-sm, 8px);
+    flex-wrap: wrap;
+    padding: var(--dp-spacing-xs, 4px) var(--dp-spacing-md);
+    padding-left: calc(var(--dp-spacing-md) + var(--dp-chart-axis-left-width, 0px));
+    font-size: 0.74em;
+    color: var(--primary-text-color);
+    background: color-mix(in srgb, var(--warning-color, #f59e0b) 12%, transparent);
+  }
+  .anomaly-note[hidden] {
+    display: none;
+  }
+  .anomaly-retry {
+    border: 1px solid var(--divider-color);
+    border-radius: 6px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    padding: 2px 8px;
+    cursor: pointer;
+  }
   .legend {
     display: flex;
     flex-wrap: nowrap;
@@ -16168,15 +16451,29 @@
 			);
 			_defineProperty(
 				this,
-				/** Entity IDs whose anomaly fetch is currently in-flight. */
+				/**
+				* In-flight anomaly fetch per entity, keyed to its generation (config +
+				* range). A new range or config is a new generation: it is requested (and
+				* cancels the old one) instead of being skipped behind the stale request.
+				*/
 				"_pendingAnomalyEntityIds",
-				/* @__PURE__ */ new Set()
+				/* @__PURE__ */ new Map()
 			);
 			_defineProperty(
 				this,
 				/** Comparison window + entity keys whose anomaly fetch is currently in-flight. */
 				"_pendingComparisonAnomalyKeys",
 				/* @__PURE__ */ new Set()
+			);
+			_defineProperty(
+				this,
+				/**
+				* Owner id for this chart instance's cancellable requests. Each series and
+				* comparison window gets its own slot under it, so a new range or config
+				* for one series cancels only that series' previous request.
+				*/
+				"_requestOwnerId",
+				createRequestOwnerId("history-chart")
 			);
 			_defineProperty(
 				this,
@@ -16527,9 +16824,13 @@
       </div>
       <div id="annotation-tooltips"></div>
       <div class="aggregate-note" id="aggregate-note" role="note" hidden></div>
+      <div class="anomaly-note" id="anomaly-note" role="status" hidden></div>
       <div class="legend" id="legend"></div>`;
 		}
 		disconnectedCallback() {
+			cancelOwnedRequests(this._hass, this._requestOwnerId);
+			this._pendingAnomalyEntityIds.clear();
+			this._pendingComparisonAnomalyKeys.clear();
 			if (this._chartHoverCleanup) {
 				this._chartHoverCleanup();
 				this._chartHoverCleanup = null;
@@ -16797,6 +17098,51 @@
 		/** Normalise the statistics history array for an entity. */
 		_normalizeStatisticsHistory(entityId, statsData) {
 			return normalizeStatisticsHistory(entityId, statsData);
+		}
+		/**
+		* Show which anomaly overlays are unavailable (failed, never zero) with an
+		* explicit Retry. Base history keeps rendering underneath.
+		*/
+		_renderAnomalyNote() {
+			const noteEl = this.querySelector("#anomaly-note");
+			if (!noteEl) return;
+			const codes = [];
+			const collect = (entry) => {
+				const error = entry?.error;
+				if (error) codes.push(error);
+			};
+			this._backendAnomalyByEntity.forEach(collect);
+			this._backendComparisonAnomalyByKey.forEach(collect);
+			if (codes.length === 0) {
+				noteEl.hidden = true;
+				D(A, noteEl);
+				return;
+			}
+			const reason = {
+				detection_timeout: msg("Anomaly detection timed out for part of this chart."),
+				detection_busy: msg("Anomaly detection is busy; some anomalies are not shown."),
+				detection_cancelled: msg("Anomalies could not be loaded for part of this chart."),
+				detection_error: msg("Anomalies could not be loaded for part of this chart.")
+			}[["detection_timeout", "detection_busy"].find((c) => codes.includes(c)) ?? codes[0]];
+			noteEl.hidden = false;
+			D(b`<span>${reason}</span>
+        <button
+          class="anomaly-retry"
+          type="button"
+          @click=${() => this._retryFailedAnomalies()}
+        >
+          ${msg("Retry")}
+        </button>`, noteEl);
+		}
+		/** Explicit retry: forget cached failures and redraw (which refetches them). */
+		_retryFailedAnomalies() {
+			const dropFailures = (map) => {
+				for (const [key, entry] of [...map]) if (entry?.error) map.delete(key);
+			};
+			dropFailures(this._backendAnomalyByEntity);
+			dropFailures(this._backendComparisonAnomalyByKey);
+			this._renderAnomalyNote();
+			if (this._lastHistResult && this._lastEvents) this._queueDrawChart(this._lastHistResult, this._lastStatsResult || {}, this._filterEvents(this._lastEvents), this._lastT0, this._lastT1, { loading: false });
 		}
 		/**
 		* Plain-text explanation of the partial/incomplete markers and of the limits
@@ -17294,10 +17640,15 @@
 				});
 				const cached = this._backendAnomalyByEntity.get(entityId);
 				if (cached && cached.configKey === configKey) return;
-				this._pendingAnomalyEntityIds.add(entityId);
+				const generation = `${configKey}|${_startIso}|${_endIso}`;
+				if (this._pendingAnomalyEntityIds.get(entityId) === generation) return;
+				this._pendingAnomalyEntityIds.set(entityId, generation);
+				const settle = () => {
+					if (this._pendingAnomalyEntityIds.get(entityId) === generation) this._pendingAnomalyEntityIds.delete(entityId);
+				};
 				this._setChartLoading(true);
-				fetchAnomaliesFromBackend(hass, entityId, _startIso, _endIso, config).then((clusters) => {
-					this._pendingAnomalyEntityIds.delete(entityId);
+				fetchAnomaliesFromBackend(hass, entityId, _startIso, _endIso, config, ownerSlot(this._requestOwnerId, "anomalies", "primary", entityId)).then((clusters) => {
+					settle();
 					if (_startIso !== new Date(this._lastT0).toISOString() || _endIso !== new Date(this._lastT1).toISOString()) {
 						if (this._pendingAnomalyEntityIds.size === 0) this._setChartLoading(false);
 						return;
@@ -17306,6 +17657,7 @@
 						configKey,
 						clusters
 					});
+					this._renderAnomalyNote();
 					if (this._analysisCache?.result) {
 						const existing = this._analysisCache.result.anomalySeries || [];
 						const idx = existing.findIndex((entry) => entry.entityId === entityId);
@@ -17319,12 +17671,20 @@
 					if (this._lastHistResult && this._lastEvents) this._queueDrawChart(this._lastHistResult, this._lastStatsResult || {}, this._filterEvents(this._lastEvents), this._lastT0, this._lastT1, { loading: this._pendingAnomalyEntityIds.size > 0 });
 					else if (this._pendingAnomalyEntityIds.size === 0) this._setChartLoading(false);
 				}).catch((err) => {
-					this._pendingAnomalyEntityIds.delete(entityId);
+					settle();
 					if (this._pendingAnomalyEntityIds.size === 0) this._setChartLoading(false);
+					if (isDetectionCancelled(err)) return;
+					if (_startIso !== new Date(this._lastT0).toISOString() || _endIso !== new Date(this._lastT1).toISOString()) return;
 					logger$1.warn("[hass-datapoints history-card] backend anomaly fetch failed", {
 						entityId,
 						err
 					});
+					this._backendAnomalyByEntity.set(entityId, {
+						configKey,
+						clusters: null,
+						error: detectionErrorCode(err)
+					});
+					this._renderAnomalyNote();
 				});
 			});
 		}
@@ -17422,7 +17782,7 @@
 						this._pendingComparisonAnomalyKeys.delete(cacheKey);
 						return;
 					}
-					fetchAnomaliesFromBackend(hass, entityId, comparisonStartIso, comparisonEndIso, config).then((clusters) => {
+					fetchAnomaliesFromBackend(hass, entityId, comparisonStartIso, comparisonEndIso, config, ownerSlot(this._requestOwnerId, "anomalies", "comparison", comparisonWindow.id, entityId)).then((clusters) => {
 						this._pendingComparisonAnomalyKeys.delete(cacheKey);
 						if (startIso !== new Date(this._lastT0).toISOString() || endIso !== new Date(this._lastT1).toISOString()) return;
 						const shiftedClusters = this._shiftComparisonAnomalyClusters(Array.isArray(clusters) ? clusters : [], comparisonWindow.time_offset_ms);
@@ -17430,9 +17790,17 @@
 							configKey,
 							clusters: shiftedClusters
 						});
+						this._renderAnomalyNote();
 						if (this._lastHistResult && this._lastEvents) this._queueDrawChart(this._lastHistResult, this._lastStatsResult || {}, this._filterEvents(this._lastEvents), this._lastT0, this._lastT1, { loading: false });
-					}).catch(() => {
+					}).catch((err) => {
 						this._pendingComparisonAnomalyKeys.delete(cacheKey);
+						if (isDetectionCancelled(err) || startIso !== new Date(this._lastT0).toISOString() || endIso !== new Date(this._lastT1).toISOString()) return;
+						this._backendComparisonAnomalyByKey.set(cacheKey, {
+							configKey,
+							clusters: [],
+							error: detectionErrorCode(err)
+						});
+						this._renderAnomalyNote();
 					});
 				});
 			});
@@ -17810,6 +18178,7 @@
 				if (t0 !== this._lastT0 || t1 !== this._lastT1) {
 					this._backendAnomalyByEntity.clear();
 					this._backendComparisonAnomalyByKey.clear();
+					this._renderAnomalyNote();
 				}
 				await Promise.all(series.map(async (seriesItem) => {
 					const analysis = analysisMap.get(seriesItem.entityId) || normalizeHistorySeriesAnalysis(null);
@@ -17980,7 +18349,7 @@
 			}).map((s) => s.entityId);
 			if (_anomalyEntityIds.length > 0) analysisResult.anomalySeries = _anomalyEntityIds.map((entityId) => {
 				const cached = this._backendAnomalyByEntity.get(entityId);
-				if (!cached) return null;
+				if (!cached || !Array.isArray(cached.clusters)) return null;
 				return {
 					entityId,
 					anomalyClusters: cached.clusters
@@ -32310,9 +32679,64 @@
     gap: 2px;
     flex: 0 0 auto;
   }
+
+  /* ---- Scan health / activity failure lines ---- */
+
+  .scan-health,
+  .activity-error,
+  .clusters-error {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 0 16px 8px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    color: var(--primary-text-color);
+  }
+
+  .scan-health ha-icon {
+    --mdc-icon-size: 16px;
+    flex: 0 0 auto;
+  }
+
+  .scan-health[data-health="unverified"] {
+    background: color-mix(in srgb, var(--info-color, #039be5) 12%, transparent);
+  }
+
+  .scan-health[data-health="failed"],
+  .activity-error,
+  .clusters-error {
+    background: color-mix(
+      in srgb,
+      var(--warning-color, #f59e0b) 14%,
+      transparent
+    );
+  }
 `;
 	//#endregion
 	//#region custom_components/hass_datapoints/src/lib/data/monitor-status.ts
+	/** Mirrors FAILED_SCAN_STATUSES in the backend's detection_runner.py. */
+	var FAILED_SCAN_STATUSES = /* @__PURE__ */ new Set([
+		"timeout",
+		"error",
+		"busy",
+		"cancelled"
+	]);
+	/** Derive the scanning health shown separately from the anomaly counts. */
+	function deriveScanHealth(monitor) {
+		if (!monitor.enabled) return "paused";
+		const status = monitor.last_scan_status ?? "unknown";
+		if (status === "success") return "ok";
+		if (FAILED_SCAN_STATUSES.has(status)) return "failed";
+		if (status === "running") {
+			const error = monitor.last_scan_error ?? null;
+			if (error === null) return "running";
+			return error === "unverified" ? "unverified" : "failed";
+		}
+		return "unverified";
+	}
 	/** Undismissed cluster count, preferring the dismissal-aware backend field. */
 	function activeClusterCount(monitor) {
 		return monitor.active_cluster_count ?? monitor.last_cluster_count ?? 0;
@@ -32329,8 +32753,9 @@
 	* Default rule (adjust here if the product rule changes):
 	*   1. disabled                                   → Paused
 	*   2. active (undismissed) anomaly clusters      → Triggered
-	*   3. anomalies seen before but none active now  → Warning
-	*   4. otherwise                                  → Healthy
+	*   3. latest scan failed or not yet verified     → Unverified
+	*   4. anomalies seen before but none active now  → Warning
+	*   5. otherwise                                  → Healthy
 	*
 	* Paused always wins: a disabled monitor is not scanning, so its stale anomaly
 	* state should not surface as Triggered/Warning.
@@ -32338,9 +32763,265 @@
 	function deriveMonitorStatus(monitor) {
 		if (!monitor.enabled) return "paused";
 		if (activeClusterCount(monitor) > 0) return "triggered";
+		const health = deriveScanHealth(monitor);
+		if (health === "unverified" || health === "failed") return "unverified";
 		if (hasSeenAnomaly(monitor)) return "warning";
 		return "healthy";
 	}
+	//#endregion
+	//#region custom_components/hass_datapoints/src/lib/data/monitor-activity.ts
+	/**
+	* Range-scoped monitor activity, decoupled from monitor-list polling.
+	*
+	* The monitors panel polls the cheap monitor list every 30 seconds and on
+	* every `monitors_updated` event (each scan publishes one). Activity, however,
+	* runs full detection on the backend, so it must only be requested when the
+	* *answer* could change: a new range, a detection/sampling config change, a
+	* change in the effective dismissals (including one expiring), a live-edge
+	* success going stale, or an explicit retry. Name, scan status and counts are
+	* deliberately not part of that identity.
+	*/
+	/** How long a success for a range touching "now" stays fresh. */
+	var LIVE_ACTIVITY_TTL_MS = 6e4;
+	/** Detection/sampling fields that change what activity detection computes. */
+	var DETECTION_FIELDS = [
+		"type",
+		"anomaly_methods",
+		"anomaly_sensitivity",
+		"anomaly_overlap_mode",
+		"anomaly_rate_window",
+		"anomaly_zscore_window",
+		"anomaly_persistence_window",
+		"anomaly_trend_method",
+		"anomaly_trend_window",
+		"anomaly_trend_residual_direction",
+		"anomaly_rate_of_change_direction",
+		"anomaly_iqr_direction",
+		"anomaly_rolling_zscore_direction",
+		"anomaly_comparison_window_direction",
+		"sample_interval",
+		"sample_aggregate",
+		"anomaly_use_sampled_data",
+		"baseline_entity_id",
+		"baseline_time_offset_hours"
+	];
+	function expiresAtMs(window) {
+		if (window.expires_at === null || window.expires_at === void 0) return null;
+		const ms = Date.parse(window.expires_at);
+		return Number.isFinite(ms) ? ms : Number.NEGATIVE_INFINITY;
+	}
+	/** Dismissals still in effect at ``nowMs`` (permanent or not yet expired). */
+	function effectiveDismissals(windows, nowMs) {
+		return (windows ?? []).filter((window) => {
+			const expires = expiresAtMs(window);
+			return expires === null || expires > nowMs;
+		});
+	}
+	function isLiveRange(range, nowMs) {
+		return range.endMs >= nowMs - DATA_RANGE_CACHE_LIVE_EDGE_MS;
+	}
+	/**
+	* Identity of the activity answer for one monitor/range/bucket count at
+	* ``nowMs``. ``validUntil`` is the earlier of the next dismissal expiry and,
+	* for a live-edge range, the live TTL measured from ``nowMs``.
+	*/
+	function activityIdentity(monitor, range, bucketCount, nowMs) {
+		const dismissals = effectiveDismissals(monitor.dismissed_windows, nowMs);
+		const record = monitor;
+		const detection = {};
+		for (const field of DETECTION_FIELDS) {
+			const value = record[field];
+			detection[field] = field === "anomaly_methods" && Array.isArray(value) ? [...value].sort() : value ?? null;
+		}
+		const entities = monitor.type === "combined" ? [...monitor.entity_ids ?? []] : [monitor.entity_id];
+		if (monitor.type === "combined") detection.overlap_mode = monitor.overlap_mode ?? null;
+		const key = JSON.stringify({
+			id: monitor.id,
+			start: range.startMs,
+			end: range.endMs,
+			buckets: bucketCount,
+			entities,
+			detection,
+			dismissals: dismissals.map((w) => [
+				w.id,
+				w.start_ms,
+				w.end_ms
+			]).sort((a, b) => String(a[0]).localeCompare(String(b[0])))
+		});
+		const candidates = [...dismissals.map(expiresAtMs).filter((ms) => ms !== null && Number.isFinite(ms))];
+		if (isLiveRange(range, nowMs)) candidates.push(nowMs + LIVE_ACTIVITY_TTL_MS);
+		return {
+			key,
+			validUntil: candidates.length > 0 ? Math.min(...candidates) : null
+		};
+	}
+	/**
+	* Owns activity requests for one component instance.
+	*
+	* ``sync`` is cheap and idempotent: call it on every list refresh, range
+	* change or poll tick. It starts at most one request per monitor whose
+	* identity changed (or whose success expired), coalesces identical in-flight
+	* requests, cancels a monitor's superseded request, and never retries a
+	* failure on its own. Successes are cached for the component's lifetime.
+	*/
+	var MonitorActivityController = class {
+		/**
+		* @param _onExpire Called when the earliest success expires (live-edge TTL
+		*   or a dismissal expiry), so the owner can re-``sync`` with fresh inputs
+		*   instead of waiting for its next poll.
+		*/
+		constructor(_fetcher, _onChange, _now = Date.now, _onExpire = null) {
+			_defineProperty(this, "_fetcher", void 0);
+			_defineProperty(this, "_onChange", void 0);
+			_defineProperty(this, "_now", void 0);
+			_defineProperty(this, "_onExpire", void 0);
+			_defineProperty(this, "_states", /* @__PURE__ */ new Map());
+			_defineProperty(this, "_inFlight", /* @__PURE__ */ new Map());
+			_defineProperty(this, "_cache", /* @__PURE__ */ new Map());
+			_defineProperty(this, "_disposed", false);
+			_defineProperty(this, "_expiryTimer", null);
+			this._fetcher = _fetcher;
+			this._onChange = _onChange;
+			this._now = _now;
+			this._onExpire = _onExpire;
+		}
+		state(monitorId) {
+			return this._states.get(monitorId) ?? null;
+		}
+		/** Bring every enabled monitor's activity in line with the current inputs. */
+		sync(monitors, range, bucketCount = null) {
+			if (this._disposed) return;
+			let changed = false;
+			const live = /* @__PURE__ */ new Set();
+			if (range) {
+				const nowMs = this._now();
+				for (const monitor of monitors) {
+					if (!monitor.enabled) continue;
+					live.add(monitor.id);
+					changed = this._syncMonitor(monitor, range, bucketCount, nowMs, false) || changed;
+				}
+			}
+			for (const monitorId of [...this._states.keys(), ...this._inFlight.keys()]) if (!live.has(monitorId)) {
+				this._cancelInFlight(monitorId);
+				changed = this._states.delete(monitorId) || changed;
+			}
+			if (changed) this._onChange();
+			this._scheduleExpiry();
+		}
+		/** Explicit retry for one monitor (the only way a failure is refetched). */
+		retry(monitor, range, bucketCount = null) {
+			if (this._disposed || !range || !monitor.enabled) return;
+			if (this._syncMonitor(monitor, range, bucketCount, this._now(), true)) this._onChange();
+		}
+		/** Cancel everything and stop accepting work (component disconnect). */
+		dispose() {
+			this._disposed = true;
+			this._clearExpiry();
+			for (const monitorId of [...this._inFlight.keys()]) this._cancelInFlight(monitorId);
+			this._states.clear();
+			this._cache.clear();
+		}
+		_syncMonitor(monitor, range, bucketCount, nowMs, force) {
+			const identity = activityIdentity(monitor, range, bucketCount, nowMs);
+			const current = this._states.get(monitor.id);
+			const inFlight = this._inFlight.get(monitor.id);
+			if (inFlight && inFlight.identity === identity.key) return false;
+			if (current && current.identity === identity.key && !force) {
+				if (current.status === "error") return false;
+				if (current.status === "success" && (current.validUntil === null || current.validUntil > nowMs)) return false;
+			}
+			const cached = this._cache.get(identity.key);
+			if (cached && !force && (cached.validUntil === null || cached.validUntil > nowMs)) {
+				this._cancelInFlight(monitor.id);
+				this._states.set(monitor.id, {
+					status: "success",
+					identity: identity.key,
+					result: cached.result,
+					validUntil: cached.validUntil
+				});
+				return true;
+			}
+			let stale = null;
+			if (current && current.identity === identity.key) stale = current.status === "success" ? current.result : current.stale;
+			this._cancelInFlight(monitor.id);
+			this._states.set(monitor.id, {
+				status: "loading",
+				identity: identity.key,
+				stale
+			});
+			this._start(monitor.id, identity, range, bucketCount);
+			return true;
+		}
+		_start(monitorId, identity, range, bucketCount) {
+			const requestId = this._fetcher.createRequestId();
+			this._inFlight.set(monitorId, {
+				identity: identity.key,
+				requestId
+			});
+			const isCurrent = () => !this._disposed && this._inFlight.get(monitorId)?.requestId === requestId;
+			this._fetcher.fetch(monitorId, range, bucketCount, requestId).then((result) => {
+				if (!isCurrent()) return;
+				this._inFlight.delete(monitorId);
+				if (!Array.isArray(result?.entities)) {
+					this._fail(monitorId, identity.key, "detection_error");
+					return;
+				}
+				this._cache.set(identity.key, {
+					result,
+					validUntil: identity.validUntil
+				});
+				this._states.set(monitorId, {
+					status: "success",
+					identity: identity.key,
+					result,
+					validUntil: identity.validUntil
+				});
+				this._onChange();
+				this._scheduleExpiry();
+			}, (err) => {
+				if (!isCurrent()) return;
+				this._inFlight.delete(monitorId);
+				this._fail(monitorId, identity.key, detectionErrorCode(err));
+			});
+		}
+		_fail(monitorId, identity, code) {
+			const current = this._states.get(monitorId);
+			const stale = current && current.identity === identity && current.status === "loading" ? current.stale : null;
+			this._states.set(monitorId, {
+				status: "error",
+				identity,
+				code,
+				stale
+			});
+			this._onChange();
+		}
+		_clearExpiry() {
+			if (this._expiryTimer !== null) {
+				clearTimeout(this._expiryTimer);
+				this._expiryTimer = null;
+			}
+		}
+		/** Arm one timer for the earliest success expiry across all monitors. */
+		_scheduleExpiry() {
+			this._clearExpiry();
+			if (this._disposed || !this._onExpire) return;
+			let earliest = null;
+			for (const state of this._states.values()) if (state.status === "success" && state.validUntil !== null) earliest = earliest === null ? state.validUntil : Math.min(earliest, state.validUntil);
+			if (earliest === null) return;
+			const onExpire = this._onExpire;
+			this._expiryTimer = setTimeout(() => {
+				this._expiryTimer = null;
+				onExpire();
+			}, Math.max(0, earliest - this._now()) + 1);
+		}
+		_cancelInFlight(monitorId) {
+			const inFlight = this._inFlight.get(monitorId);
+			if (inFlight) {
+				this._inFlight.delete(monitorId);
+				this._fetcher.cancel(inFlight.requestId);
+			}
+		}
+	};
 	//#endregion
 	//#region custom_components/hass_datapoints/src/atoms/display/monitor-status-pill/monitor-status-pill.styles.ts
 	var styles$34 = i$6`
@@ -32381,6 +33062,9 @@
   .status-triggered {
     --pill-color: var(--error-color, #f44336);
   }
+  .status-unverified {
+    --pill-color: var(--info-color, #039be5);
+  }
   .status-paused {
     --pill-color: var(--secondary-text-color, #9e9e9e);
   }
@@ -32391,6 +33075,7 @@
 	var DEFAULT_LABELS = {
 		paused: "Paused",
 		healthy: "Healthy",
+		unverified: "Unverified",
 		warning: "Warning",
 		triggered: "Triggered"
 	};
@@ -32533,6 +33218,18 @@
     background: var(--secondary-background-color);
   }
 
+  :host([unavailable]) .heatmap-flat {
+    background: repeating-linear-gradient(
+      -45deg,
+      var(--secondary-background-color) 0 6px,
+      transparent 6px 12px
+    );
+  }
+
+  :host([stale]) .heatmap-track {
+    opacity: 0.5;
+  }
+
   .heatmap-axis {
     display: grid;
     grid-template-columns: minmax(90px, 30%) minmax(0, 1fr) 2ch;
@@ -32571,18 +33268,22 @@
 	var _MonitorEntityHeatmap;
 	var _hass_accessor_storage$10;
 	var _entityIds_accessor_storage$1;
-	var _activity_accessor_storage$1;
+	var _activity_accessor_storage;
+	var _unavailable_accessor_storage;
+	var _stale_accessor_storage;
 	var _startMs_accessor_storage;
 	var _endMs_accessor_storage;
 	var _hover_accessor_storage;
 	/** Number of shared x-axis date ticks. */
 	var TICK_COUNT = 5;
-	var MonitorEntityHeatmap = (_hass_accessor_storage$10 = /* @__PURE__ */ new WeakMap(), _entityIds_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _activity_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _startMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _endMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _hover_accessor_storage = /* @__PURE__ */ new WeakMap(), _MonitorEntityHeatmap = class MonitorEntityHeatmap extends i$3 {
+	var MonitorEntityHeatmap = (_hass_accessor_storage$10 = /* @__PURE__ */ new WeakMap(), _entityIds_accessor_storage$1 = /* @__PURE__ */ new WeakMap(), _activity_accessor_storage = /* @__PURE__ */ new WeakMap(), _unavailable_accessor_storage = /* @__PURE__ */ new WeakMap(), _stale_accessor_storage = /* @__PURE__ */ new WeakMap(), _startMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _endMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _hover_accessor_storage = /* @__PURE__ */ new WeakMap(), _MonitorEntityHeatmap = class MonitorEntityHeatmap extends i$3 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _hass_accessor_storage$10, null);
 			_classPrivateFieldInitSpec(this, _entityIds_accessor_storage$1, []);
-			_classPrivateFieldInitSpec(this, _activity_accessor_storage$1, null);
+			_classPrivateFieldInitSpec(this, _activity_accessor_storage, null);
+			_classPrivateFieldInitSpec(this, _unavailable_accessor_storage, false);
+			_classPrivateFieldInitSpec(this, _stale_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _startMs_accessor_storage, 0);
 			_classPrivateFieldInitSpec(this, _endMs_accessor_storage, 0);
 			_classPrivateFieldInitSpec(this, _hover_accessor_storage, null);
@@ -32601,10 +33302,22 @@
 			_classPrivateFieldSet2(_entityIds_accessor_storage$1, this, value);
 		}
 		get activity() {
-			return _classPrivateFieldGet2(_activity_accessor_storage$1, this);
+			return _classPrivateFieldGet2(_activity_accessor_storage, this);
 		}
 		set activity(value) {
-			_classPrivateFieldSet2(_activity_accessor_storage$1, this, value);
+			_classPrivateFieldSet2(_activity_accessor_storage, this, value);
+		}
+		get unavailable() {
+			return _classPrivateFieldGet2(_unavailable_accessor_storage, this);
+		}
+		set unavailable(value) {
+			_classPrivateFieldSet2(_unavailable_accessor_storage, this, value);
+		}
+		get stale() {
+			return _classPrivateFieldGet2(_stale_accessor_storage, this);
+		}
+		set stale(value) {
+			_classPrivateFieldSet2(_stale_accessor_storage, this, value);
 		}
 		get startMs() {
 			return _classPrivateFieldGet2(_startMs_accessor_storage, this);
@@ -32699,7 +33412,9 @@
         ${buckets.length > 0 ? b`<div class="heatmap-track">
               ${buckets.map((b) => this._renderBlock(entityId, b))}
             </div>` : b`<div class="heatmap-flat"></div>`}
-        <span class="heatmap-count">${data?.total ?? 0}</span>
+        <span class="heatmap-count"
+          >${this.unavailable && !data ? "—" : data?.total ?? 0}</span
+        >
       </div>
     `;
 		}
@@ -32740,6 +33455,14 @@
 	__decorate([n$1({ type: Object })], MonitorEntityHeatmap.prototype, "hass", null);
 	__decorate([n$1({ type: Array })], MonitorEntityHeatmap.prototype, "entityIds", null);
 	__decorate([n$1({ type: Array })], MonitorEntityHeatmap.prototype, "activity", null);
+	__decorate([n$1({
+		type: Boolean,
+		reflect: true
+	})], MonitorEntityHeatmap.prototype, "unavailable", null);
+	__decorate([n$1({
+		type: Boolean,
+		reflect: true
+	})], MonitorEntityHeatmap.prototype, "stale", null);
 	__decorate([n$1({ type: Number })], MonitorEntityHeatmap.prototype, "startMs", null);
 	__decorate([n$1({ type: Number })], MonitorEntityHeatmap.prototype, "endMs", null);
 	__decorate([r$2()], MonitorEntityHeatmap.prototype, "_hover", null);
@@ -33038,7 +33761,7 @@
 	var _hass_accessor_storage$8;
 	var _rangeStartMs_accessor_storage;
 	var _rangeEndMs_accessor_storage;
-	var _activity_accessor_storage;
+	var _activityVersion_accessor_storage;
 	var _monitors_accessor_storage;
 	var _deletedMonitors_accessor_storage;
 	var _loading_accessor_storage;
@@ -33047,6 +33770,7 @@
 	var _wizardOpen_accessor_storage;
 	var _monitorClusters_accessor_storage;
 	var _loadingClusters_accessor_storage;
+	var _clusterErrors_accessor_storage;
 	var _dismissPickerKey_accessor_storage;
 	var _overflowOpenId_accessor_storage;
 	var _flashIds_accessor_storage;
@@ -33089,14 +33813,15 @@
 		if (hours >= 24 && hours % 24 === 0) return `${hours / 24} d`;
 		return `${hours} h`;
 	}
-	var AnomalyMonitorsPanel = (_hass_accessor_storage$8 = /* @__PURE__ */ new WeakMap(), _rangeStartMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _rangeEndMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _activity_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitors_accessor_storage = /* @__PURE__ */ new WeakMap(), _deletedMonitors_accessor_storage = /* @__PURE__ */ new WeakMap(), _loading_accessor_storage = /* @__PURE__ */ new WeakMap(), _entityFilter_accessor_storage = /* @__PURE__ */ new WeakMap(), _editMonitor_accessor_storage = /* @__PURE__ */ new WeakMap(), _wizardOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitorClusters_accessor_storage = /* @__PURE__ */ new WeakMap(), _loadingClusters_accessor_storage = /* @__PURE__ */ new WeakMap(), _dismissPickerKey_accessor_storage = /* @__PURE__ */ new WeakMap(), _overflowOpenId_accessor_storage = /* @__PURE__ */ new WeakMap(), _flashIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _AnomalyMonitorsPanel = class AnomalyMonitorsPanel extends i$3 {
+	var AnomalyMonitorsPanel = (_hass_accessor_storage$8 = /* @__PURE__ */ new WeakMap(), _rangeStartMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _rangeEndMs_accessor_storage = /* @__PURE__ */ new WeakMap(), _activityVersion_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitors_accessor_storage = /* @__PURE__ */ new WeakMap(), _deletedMonitors_accessor_storage = /* @__PURE__ */ new WeakMap(), _loading_accessor_storage = /* @__PURE__ */ new WeakMap(), _entityFilter_accessor_storage = /* @__PURE__ */ new WeakMap(), _editMonitor_accessor_storage = /* @__PURE__ */ new WeakMap(), _wizardOpen_accessor_storage = /* @__PURE__ */ new WeakMap(), _monitorClusters_accessor_storage = /* @__PURE__ */ new WeakMap(), _loadingClusters_accessor_storage = /* @__PURE__ */ new WeakMap(), _clusterErrors_accessor_storage = /* @__PURE__ */ new WeakMap(), _dismissPickerKey_accessor_storage = /* @__PURE__ */ new WeakMap(), _overflowOpenId_accessor_storage = /* @__PURE__ */ new WeakMap(), _flashIds_accessor_storage = /* @__PURE__ */ new WeakMap(), _AnomalyMonitorsPanel = class AnomalyMonitorsPanel extends i$3 {
 		constructor(..._args) {
 			super(..._args);
 			_classPrivateFieldInitSpec(this, _hass_accessor_storage$8, null);
 			_classPrivateFieldInitSpec(this, _rangeStartMs_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _rangeEndMs_accessor_storage, null);
-			_classPrivateFieldInitSpec(this, _activity_accessor_storage, /* @__PURE__ */ new Map());
-			_defineProperty(this, "_activityToken", 0);
+			_classPrivateFieldInitSpec(this, _activityVersion_accessor_storage, 0);
+			_defineProperty(this, "_activityController", null);
+			_defineProperty(this, "_ownerId", createRequestOwnerId("monitors-panel"));
 			_classPrivateFieldInitSpec(this, _monitors_accessor_storage, []);
 			_classPrivateFieldInitSpec(this, _deletedMonitors_accessor_storage, []);
 			_classPrivateFieldInitSpec(this, _loading_accessor_storage, true);
@@ -33105,6 +33830,7 @@
 			_classPrivateFieldInitSpec(this, _wizardOpen_accessor_storage, false);
 			_classPrivateFieldInitSpec(this, _monitorClusters_accessor_storage, /* @__PURE__ */ new Map());
 			_classPrivateFieldInitSpec(this, _loadingClusters_accessor_storage, /* @__PURE__ */ new Set());
+			_classPrivateFieldInitSpec(this, _clusterErrors_accessor_storage, /* @__PURE__ */ new Map());
 			_classPrivateFieldInitSpec(this, _dismissPickerKey_accessor_storage, null);
 			_classPrivateFieldInitSpec(this, _overflowOpenId_accessor_storage, null);
 			_defineProperty(
@@ -33153,11 +33879,11 @@
 		set rangeEndMs(value) {
 			_classPrivateFieldSet2(_rangeEndMs_accessor_storage, this, value);
 		}
-		get _activity() {
-			return _classPrivateFieldGet2(_activity_accessor_storage, this);
+		get _activityVersion() {
+			return _classPrivateFieldGet2(_activityVersion_accessor_storage, this);
 		}
-		set _activity(value) {
-			_classPrivateFieldSet2(_activity_accessor_storage, this, value);
+		set _activityVersion(value) {
+			_classPrivateFieldSet2(_activityVersion_accessor_storage, this, value);
 		}
 		get _monitors() {
 			return _classPrivateFieldGet2(_monitors_accessor_storage, this);
@@ -33207,6 +33933,12 @@
 		set _loadingClusters(value) {
 			_classPrivateFieldSet2(_loadingClusters_accessor_storage, this, value);
 		}
+		get _clusterErrors() {
+			return _classPrivateFieldGet2(_clusterErrors_accessor_storage, this);
+		}
+		set _clusterErrors(value) {
+			_classPrivateFieldSet2(_clusterErrors_accessor_storage, this, value);
+		}
 		get _dismissPickerKey() {
 			return _classPrivateFieldGet2(_dismissPickerKey_accessor_storage, this);
 		}
@@ -33246,21 +33978,26 @@
 				this._pollInterval = null;
 			}
 			this._teardownMonitorSubscription();
+			this._disposeActivity();
+			cancelOwnedRequests(this.hass, this._ownerId);
+			this._loadingClusters = /* @__PURE__ */ new Set();
 			this._closeOverflow();
 		}
 		updated(changedProperties) {
-			if (changedProperties.has("rangeStartMs") || changedProperties.has("rangeEndMs")) this._scheduleActivityLoad();
 			if (changedProperties.has("hass")) {
-				this._teardownMonitorSubscription();
-				this._scheduleMonitorSubscription();
-				this._scheduleLoad();
+				const previous = changedProperties.get("hass");
+				if (previous?.connection !== this.hass?.connection) {
+					this._disposeActivity();
+					cancelOwnedRequests(previous ?? null, this._ownerId);
+					this._teardownMonitorSubscription();
+					this._scheduleMonitorSubscription();
+					this._scheduleLoad();
+				}
 			}
+			if (changedProperties.has("rangeStartMs") || changedProperties.has("rangeEndMs")) this._syncActivity();
 		}
 		_scheduleLoad() {
 			this._load().catch(() => {});
-		}
-		_scheduleActivityLoad() {
-			this._loadActivity().catch(() => {});
 		}
 		/** The selected range, or null when the host has not provided a valid one. */
 		_selectedRange() {
@@ -33270,32 +34007,45 @@
 				endMs
 			} : null;
 		}
-		/**
-		* Fetch range-scoped per-entity activity for each active monitor. Requests are
-		* per monitor (combined monitors are costlier server-side) and a failure for
-		* one monitor only drops that monitor to a flat zero row.
-		*/
-		async _loadActivity() {
-			const range = this._selectedRange();
+		_ensureActivityController() {
 			const hass = this.hass;
-			if (!hass || !range) return;
-			const token = ++this._activityToken;
-			const results = await Promise.all(this._monitors.map(async (monitor) => {
-				if (!monitor.enabled) return null;
-				try {
-					const result = await fetchMonitorAnomalyActivity(hass, monitor.id, range.startMs, range.endMs);
-					return Array.isArray(result?.entities) ? result : null;
-				} catch {
-					return null;
-				}
-			}));
-			if (token !== this._activityToken) return;
-			const next = /* @__PURE__ */ new Map();
-			this._monitors.forEach((monitor, i) => {
-				const result = results[i];
-				if (result) next.set(monitor.id, result);
-			});
-			this._activity = next;
+			if (!hass?.connection) return null;
+			if (!this._activityController) this._activityController = new MonitorActivityController({
+				fetch: (monitorId, range, bucketCount, requestId) => fetchMonitorAnomalyActivity(hass, monitorId, range.startMs, range.endMs, bucketCount ?? void 0, requestId),
+				cancel: (requestId) => sendCancelRequest(hass, requestId),
+				createRequestId
+			}, () => {
+				this._activityVersion += 1;
+			}, Date.now, () => this._syncActivity());
+			return this._activityController;
+		}
+		_disposeActivity() {
+			this._activityController?.dispose();
+			this._activityController = null;
+			this._activityVersion += 1;
+		}
+		/**
+		* Bring range activity in line with the current monitors and range. Cheap
+		* and idempotent: only a changed identity (range, detection config,
+		* effective dismissals incl. expiry), an expired live-edge success or an
+		* explicit retry issues a request; one monitor failing never clears another.
+		*/
+		_syncActivity() {
+			this._ensureActivityController()?.sync(this._monitors, this._selectedRange());
+		}
+		_activityState(monitorId) {
+			return this._activityController?.state(monitorId) ?? null;
+		}
+		_retryActivity(monitor) {
+			this._ensureActivityController()?.retry(monitor, this._selectedRange());
+		}
+		_activityErrorLabel(code) {
+			return {
+				detection_timeout: msg("Anomaly activity timed out."),
+				detection_busy: msg("Anomaly detection is busy."),
+				detection_cancelled: msg("Anomaly activity was cancelled."),
+				detection_error: msg("Anomaly activity could not be loaded.")
+			}[code];
 		}
 		_scheduleMonitorSubscription() {
 			this._ensureMonitorSubscription().catch(() => {});
@@ -33324,10 +34074,12 @@
 		async _load() {
 			if (!this.hass) return;
 			try {
-				const [active, deleted] = await Promise.all([fetchMonitors(this.hass), fetchDeletedMonitors(this.hass)]);
-				this._monitors = active;
+				const [active, deleted] = await Promise.all([fetchMonitorsOrThrow(this.hass).catch(() => null), fetchDeletedMonitors(this.hass)]);
 				this._deletedMonitors = deleted;
-				this._scheduleActivityLoad();
+				if (active !== null) {
+					this._monitors = active;
+					this._syncActivity();
+				}
 			} catch {} finally {
 				this._loading = false;
 			}
@@ -33530,18 +34282,35 @@
 			this._emit("dp-monitors-panel-open-chart", detail);
 		}
 		async _loadClusters(monitorId) {
-			if (!this.hass || this._loadingClusters.has(monitorId)) return;
+			const hass = this.hass;
+			if (!hass || this._loadingClusters.has(monitorId) || this._clusterErrors.has(monitorId)) return;
 			this._loadingClusters = /* @__PURE__ */ new Set([...this._loadingClusters, monitorId]);
+			const request = beginOwnedRequest(hass, ownerSlot(this._ownerId, "clusters", monitorId));
 			try {
-				const result = await fetchMonitorAnomalies(this.hass, monitorId);
-				const updated = new Map(this._monitorClusters);
-				updated.set(monitorId, result.anomaly_clusters);
-				this._monitorClusters = updated;
-			} catch {} finally {
+				const result = await fetchMonitorAnomalies(hass, monitorId, request.requestId);
+				if (request.isCurrent()) {
+					const updated = new Map(this._monitorClusters);
+					updated.set(monitorId, result.anomaly_clusters);
+					this._monitorClusters = updated;
+				}
+			} catch (err) {
+				if (request.isCurrent() && !isDetectionCancelled(err)) {
+					const errors = new Map(this._clusterErrors);
+					errors.set(monitorId, detectionErrorCode(err));
+					this._clusterErrors = errors;
+				}
+			} finally {
+				request.release();
 				const next = new Set(this._loadingClusters);
 				next.delete(monitorId);
 				this._loadingClusters = next;
 			}
+		}
+		_retryClusters(monitorId) {
+			const errors = new Map(this._clusterErrors);
+			errors.delete(monitorId);
+			this._clusterErrors = errors;
+			this._loadClusters(monitorId);
 		}
 		async _onDismiss(monitor, cluster, expiresAt) {
 			if (!this.hass) return;
@@ -33644,6 +34413,17 @@
 			const clusters = this._monitorClusters.get(monitor.id);
 			if (this._loadingClusters.has(monitor.id)) return b`<div class="clusters-loading">
         ${msg("Loading anomaly details…")}
+      </div>`;
+			const clusterError = this._clusterErrors.get(monitor.id);
+			if (!clusters && clusterError) return b`<div class="clusters-error" role="status">
+        <span>${msg("Anomaly details could not be loaded.")}</span>
+        <button
+          class="text-action retry-clusters-btn"
+          type="button"
+          @click=${() => this._retryClusters(monitor.id)}
+        >
+          ${msg("Retry")}
+        </button>
       </div>`;
 			if (!clusters) return A;
 			if (clusters.length === 0) return b`<div class="clusters-empty">
@@ -33749,10 +34529,14 @@
 		/** Per-entity heatmap over the selected range (flat zero rows if no data). */
 		_renderEntityHeatmap(monitor) {
 			const range = this._selectedRange();
+			const activityState = monitor.enabled ? this._activityState(monitor.id) : null;
+			const shown = activityState?.status === "success" ? activityState.result : activityState?.stale ?? null;
 			return b`<monitor-entity-heatmap
       .hass=${this.hass}
       .entityIds=${monitorEntityIds(monitor)}
-      .activity=${monitor.enabled && this._activity.get(monitor.id)?.entities || null}
+      .activity=${shown?.entities ?? null}
+      ?unavailable=${monitor.enabled && activityState?.status !== "success"}
+      ?stale=${monitor.enabled && activityState?.status !== "success" && shown !== null}
       .startMs=${range.startMs}
       .endMs=${range.endMs}
       style="--heatmap-color:${monitorSeriesColor(monitor)}"
@@ -33803,6 +34587,7 @@
 			return {
 				paused: msg("Paused"),
 				healthy: msg("Healthy"),
+				unverified: msg("Unverified"),
 				warning: msg("Warning"),
 				triggered: msg("Triggered")
 			}[status];
@@ -33895,7 +34680,8 @@
     `;
 		}
 		_renderStatsBlock(monitor) {
-			const activity = this._activity.get(monitor.id);
+			const activityState = this._activityState(monitor.id);
+			const activity = activityState?.status === "success" ? activityState.result : null;
 			const ranged = this._selectedRange() !== null;
 			const rangedValue = (value) => !monitor.enabled ? 0 : value ?? "—";
 			const anomalousReadings = ranged ? rangedValue(activity?.total_anomalies) : monitor.scan_history?.at(-1)?.count ?? 0;
@@ -33933,6 +34719,53 @@
       </div>
     `;
 		}
+		/**
+		* Scan health, shown separately from the (last-known) anomaly counts so a
+		* failed or unverified scan never reads as a fresh, healthy result.
+		*/
+		_renderScanHealth(monitor) {
+			const health = deriveScanHealth(monitor);
+			if (health === "ok" || health === "running" || health === "paused") return A;
+			const lastSuccess = monitor.last_scan_at ? interpolatePlaceholders(msg("Counts are from the last successful scan, {0}."), [fmtRelativeTime(monitor.last_scan_at)]) : msg("No successful scan yet.");
+			if (health === "unverified") return b`<div
+        class="scan-health"
+        data-health="unverified"
+        role="status"
+      >
+        <ha-icon icon="mdi:timer-sand"></ha-icon>
+        <span
+          >${msg("Waiting for a scan with the current settings.")}
+          ${lastSuccess}</span
+        >
+      </div>`;
+			return b`<div class="scan-health" data-health="failed" role="status">
+      <ha-icon icon="mdi:alert-outline"></ha-icon>
+      <span>${{
+				detection_timeout: msg("The latest scan timed out."),
+				detection_busy: msg("The latest scan was skipped because detection was busy."),
+				detection_cancelled: msg("The latest scan was cancelled.")
+			}[monitor.last_scan_error ?? ""] ?? msg("The latest scan failed.")} ${lastSuccess}</span>
+    </div>`;
+		}
+		/** Range activity failure for one monitor, with an explicit retry. */
+		_renderActivityError(monitor) {
+			if (!monitor.enabled || !this._selectedRange()) return A;
+			const activityState = this._activityState(monitor.id);
+			if (activityState?.status !== "error") return A;
+			return b`<div class="activity-error" role="status">
+      <span
+        >${this._activityErrorLabel(activityState.code)}
+        ${activityState.stale ? msg("Showing the previous result for this range.") : msg("Activity for this range is unavailable.")}</span
+      >
+      <button
+        class="text-action retry-activity-btn"
+        type="button"
+        @click=${() => this._retryActivity(monitor)}
+      >
+        ${msg("Retry")}
+      </button>
+    </div>`;
+		}
 		_renderMonitorCard(monitor) {
 			const clusterCount = monitor.last_cluster_count ?? 0;
 			const hasAnomaly = !!monitor.enabled && clusterCount > 0;
@@ -33953,6 +34786,7 @@
           ${this._renderStatsBlock(monitor)}
         </div>
 
+        ${this._renderScanHealth(monitor)} ${this._renderActivityError(monitor)}
         ${hasAnomaly ? this._renderClusterList(monitor) : A}
         ${this._renderDismissedWindows(monitor)}
 
@@ -34117,7 +34951,7 @@
 	__decorate([n$1({ type: Object })], AnomalyMonitorsPanel.prototype, "hass", null);
 	__decorate([n$1({ type: Number })], AnomalyMonitorsPanel.prototype, "rangeStartMs", null);
 	__decorate([n$1({ type: Number })], AnomalyMonitorsPanel.prototype, "rangeEndMs", null);
-	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_activity", null);
+	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_activityVersion", null);
 	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_monitors", null);
 	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_deletedMonitors", null);
 	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_loading", null);
@@ -34126,6 +34960,7 @@
 	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_wizardOpen", null);
 	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_monitorClusters", null);
 	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_loadingClusters", null);
+	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_clusterErrors", null);
 	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_dismissPickerKey", null);
 	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_overflowOpenId", null);
 	__decorate([r$2()], AnomalyMonitorsPanel.prototype, "_flashIds", null);

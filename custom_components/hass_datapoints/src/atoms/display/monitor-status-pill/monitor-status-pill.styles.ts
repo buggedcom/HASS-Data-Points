@@ -38,6 +38,9 @@ export const styles = css`
   .status-triggered {
     --pill-color: var(--error-color, #f44336);
   }
+  .status-unverified {
+    --pill-color: var(--info-color, #039be5);
+  }
   .status-paused {
     --pill-color: var(--secondary-text-color, #9e9e9e);
   }

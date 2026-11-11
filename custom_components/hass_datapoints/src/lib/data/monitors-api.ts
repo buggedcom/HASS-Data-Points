@@ -1,6 +1,7 @@
 import { DOMAIN } from "@/constants";
 import { logger } from "@/lib/logger";
 import type { HassLike } from "@/lib/types";
+import type { ScanErrorCode } from "@/lib/data/detection-errors";
 
 /**
  * Anomaly Monitors data access layer.
@@ -13,6 +14,15 @@ import type { HassLike } from "@/lib/types";
 export type MonitorType = "individual" | "combined";
 /** "all", "any", "any_N" (N>=2), or legacy "any_two_plus" */
 export type OverlapMode = string;
+
+export type ScanStatus =
+  | "unknown"
+  | "running"
+  | "success"
+  | "timeout"
+  | "error"
+  | "cancelled"
+  | "busy";
 
 export interface ScanHistoryEntry {
   t: string;
@@ -80,7 +90,14 @@ interface MonitorBase {
   look_back_hours: number;
   scan_interval_minutes: number;
   created_at: string;
+  /** Last *successful* scan. Counts, clusters and history are from that scan. */
   last_scan_at: string | null;
+  /** Most recent scan attempt, successful or not. Absent on legacy records. */
+  last_scan_attempt_at?: string | null;
+  /** Health of the latest scan; absent/unknown means retained results are unverified. */
+  last_scan_status?: ScanStatus;
+  /** Stable failure code of the latest attempt, or null. */
+  last_scan_error?: ScanErrorCode | null;
   last_anomaly_at: string | null;
   last_cluster_count: number;
   /**
@@ -188,14 +205,24 @@ interface MonitorResult {
   monitor?: AnomalyMonitor;
 }
 
+/**
+ * Fetch the active monitor list, rejecting on failure. Use this when an empty
+ * list must not be mistaken for "no monitors" (e.g. it would reset state).
+ */
+export async function fetchMonitorsOrThrow(
+  hass: Pick<HassLike, "connection">
+): Promise<AnomalyMonitor[]> {
+  const result = (await hass.connection.sendMessagePromise({
+    type: `${DOMAIN}/monitors/list`,
+  })) as MonitorsListResult;
+  return result.monitors ?? [];
+}
+
 export async function fetchMonitors(
   hass: Pick<HassLike, "connection">
 ): Promise<AnomalyMonitor[]> {
   try {
-    const result = (await hass.connection.sendMessagePromise({
-      type: `${DOMAIN}/monitors/list`,
-    })) as MonitorsListResult;
-    return result.monitors ?? [];
+    return await fetchMonitorsOrThrow(hass);
   } catch (err) {
     logger.warn("[hass-datapoints] fetchMonitors failed:", err);
     return [];
@@ -280,11 +307,13 @@ export async function fetchDeletedMonitors(
 
 export async function fetchMonitorAnomalies(
   hass: Pick<HassLike, "connection">,
-  monitorId: string
+  monitorId: string,
+  requestId?: string
 ): Promise<MonitorAnomaliesResult> {
   const result = (await hass.connection.sendMessagePromise({
     type: `${DOMAIN}/monitors/anomalies`,
     monitor_id: monitorId,
+    ...(requestId ? { request_id: requestId } : {}),
   })) as MonitorAnomaliesResult;
   return result;
 }
@@ -295,13 +324,15 @@ export async function fetchMonitorAnomalies(
  * @param startMs Range start (epoch ms, inclusive).
  * @param endMs Range end (epoch ms, exclusive).
  * @param bucketCount Number of buckets per entity; server default (48) if omitted.
+ * @param requestId Cancellable via `hass_datapoints/cancel` on this connection.
  */
 export async function fetchMonitorAnomalyActivity(
   hass: Pick<HassLike, "connection">,
   monitorId: string,
   startMs: number,
   endMs: number,
-  bucketCount?: number
+  bucketCount?: number,
+  requestId?: string
 ): Promise<MonitorAnomalyActivityResult> {
   const payload: Record<string, unknown> = {
     type: `${DOMAIN}/monitors/anomaly_activity`,
@@ -311,6 +342,9 @@ export async function fetchMonitorAnomalyActivity(
   };
   if (bucketCount !== undefined) {
     payload.bucket_count = bucketCount;
+  }
+  if (requestId) {
+    payload.request_id = requestId;
   }
   return (await hass.connection.sendMessagePromise(
     payload

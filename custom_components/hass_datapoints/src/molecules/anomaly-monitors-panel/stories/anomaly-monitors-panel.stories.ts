@@ -190,6 +190,9 @@ function buildMonitor(overrides: Record<string, unknown> = {}) {
     scan_interval_minutes: 30,
     created_at: "2026-05-19T10:00:00Z",
     last_scan_at: "2026-05-20T10:00:00Z",
+    last_scan_attempt_at: "2026-05-20T10:00:00Z",
+    last_scan_status: "success",
+    last_scan_error: null,
     last_anomaly_at: null,
     last_cluster_count: 0,
     last_scan_data_points: 120,
@@ -341,6 +344,8 @@ export const Firing = {
       },
     }),
   play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    // Storybook can remount the story once while loading, so re-query the
+    // root inside each wait instead of holding a possibly stale one.
     await waitFor(() =>
       expect(
         panelRoot(canvasElement)
@@ -348,14 +353,12 @@ export const Firing = {
           ?.shadowRoot?.querySelector(".status-triggered")
       ).not.toBeNull()
     );
-    const root = panelRoot(canvasElement);
-    // Incidents stat reflects the active clusters.
-    await expect(
-      root.querySelector(".stat-incidents .stat-value")
-    ).not.toBeNull();
-    await waitFor(() =>
-      expect(root.querySelectorAll(".cluster-item")).toHaveLength(2)
-    );
+    await waitFor(() => {
+      const root = panelRoot(canvasElement);
+      // Incidents stat reflects the active clusters.
+      expect(root.querySelector(".stat-incidents .stat-value")).not.toBeNull();
+      expect(root.querySelectorAll(".cluster-item")).toHaveLength(2);
+    });
   },
 };
 
@@ -463,5 +466,168 @@ export const Scrolling = {
     await expect(last.getBoundingClientRect().bottom).toBeLessThanOrEqual(
       panel.getBoundingClientRect().bottom
     );
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Failure and recovery
+// ---------------------------------------------------------------------------
+
+/**
+ * The latest scheduled scan timed out: the last-known anomaly stays visible
+ * (Triggered) while a separate line says the counts are from the last
+ * successful scan, never presenting the failure as a fresh result.
+ */
+export const ScanTimedOutWithRetainedAnomaly = {
+  render: () =>
+    renderPanel({
+      monitors: [
+        buildMonitor({
+          id: "timeout-1",
+          name: "Household climate",
+          last_cluster_count: 1,
+          last_anomaly_at: "2026-05-20T09:30:00Z",
+          last_scan_attempt_at: "2026-05-20T10:15:00Z",
+          last_scan_status: "timeout",
+          last_scan_error: "detection_timeout",
+          scan_history: history([0, 1]),
+        }),
+      ],
+    }),
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    await waitFor(() =>
+      expect(
+        panelRoot(canvasElement).querySelector(
+          '.scan-health[data-health="failed"]'
+        )
+      ).not.toBeNull()
+    );
+    const root = panelRoot(canvasElement);
+    await expect(root.querySelector(".scan-health")?.textContent).toContain(
+      "timed out"
+    );
+    await expect(
+      root
+        .querySelector("monitor-status-pill")
+        ?.shadowRoot?.querySelector(".status-triggered")
+    ).not.toBeNull();
+  },
+};
+
+/** A legacy record (no scan status yet) is Unverified, never Healthy. */
+export const LegacyUnverified = {
+  render: () =>
+    renderPanel({
+      monitors: [
+        buildMonitor({
+          id: "legacy-1",
+          name: "Upgraded monitor",
+          last_scan_status: undefined,
+          last_scan_attempt_at: undefined,
+          last_scan_error: undefined,
+        }),
+      ],
+    }),
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    // Storybook can remount the story once while loading, so wait for the
+    // whole settled card (pill and scan-health line) in one condition.
+    await waitFor(() => {
+      const root = panelRoot(canvasElement);
+      expect(
+        root
+          .querySelector("monitor-status-pill")
+          ?.shadowRoot?.querySelector(".status-unverified")
+      ).not.toBeNull();
+      expect(
+        root.querySelector('.scan-health[data-health="unverified"]')
+      ).not.toBeNull();
+    });
+  },
+};
+
+/**
+ * Range activity fails for the selected range, then recovers on Retry: the
+ * heatmap shows an unavailable row (a dash, not zero) until the retry lands.
+ */
+export const ActivityFailureThenRetry = {
+  render: () => {
+    const start = Date.UTC(2026, 0, 1);
+    const hour = 3_600_000;
+    let attempts = 0;
+    const monitor = buildMonitor({ id: "activity-1", name: "Office climate" });
+    const activity = {
+      monitor_id: "activity-1",
+      start_ms: start,
+      end_ms: start + 4 * hour,
+      bucket_ms: hour,
+      total_anomalies: 3,
+      incident_count: 1,
+      entities: [
+        {
+          entity_id: "sensor.temperature",
+          total: 3,
+          incident_count: 1,
+          buckets: [0, 3, 0, 0].map((c, i) => ({
+            start_ms: start + i * hour,
+            end_ms: start + (i + 1) * hour,
+            anomaly_count: c,
+            incident_count: c > 0 ? 1 : 0,
+          })),
+        },
+      ],
+    };
+    const el = document.createElement("anomaly-monitors-panel") as PanelEl & {
+      rangeStartMs: number;
+      rangeEndMs: number;
+    };
+    el.hass = createMockHass({
+      connection: {
+        subscribeEvents: () => Promise.resolve(() => undefined),
+        sendMessagePromise: (message: { type: string }) => {
+          if (message.type === `${DOMAIN}/monitors/anomaly_activity`) {
+            attempts += 1;
+            return attempts === 1
+              ? Promise.reject(
+                  Object.assign(new Error("Anomaly detection timed out"), {
+                    code: "detection_timeout",
+                  })
+                )
+              : Promise.resolve(activity);
+          }
+          if (message.type === `${DOMAIN}/monitors/list`) {
+            return Promise.resolve({ monitors: [monitor] });
+          }
+          return Promise.resolve({ monitors: [] });
+        },
+      },
+    });
+    el.rangeStartMs = start;
+    el.rangeEndMs = start + 4 * hour;
+    return el;
+  },
+  play: async ({ canvasElement }: { canvasElement: HTMLElement }) => {
+    await waitFor(() =>
+      expect(
+        panelRoot(canvasElement).querySelector(".retry-activity-btn")
+      ).not.toBeNull()
+    );
+    const root = panelRoot(canvasElement);
+    const heatmap = root.querySelector("monitor-entity-heatmap");
+    await expect(heatmap?.hasAttribute("unavailable")).toBe(true);
+    await expect(
+      root.querySelector(".stat-anomalous .stat-value")?.textContent?.trim()
+    ).toBe("—");
+
+    (root.querySelector(".retry-activity-btn") as HTMLElement).click();
+
+    await waitFor(() =>
+      expect(
+        root.querySelector(".stat-anomalous .stat-value")?.textContent?.trim()
+      ).toBe("3")
+    );
+    await expect(root.querySelector(".activity-error")).toBeNull();
+    await expect(
+      root.querySelector("monitor-entity-heatmap")?.hasAttribute("unavailable")
+    ).toBe(false);
   },
 };
