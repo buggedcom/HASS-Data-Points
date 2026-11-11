@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import asyncio
+import copy
 import json
 import logging
 import sqlite3
@@ -22,8 +24,10 @@ from .const import (
     STORAGE_KEY,
     STORAGE_VERSION,
 )
+from .detection_runner import consume_task_result
 
 _LOGGER = logging.getLogger(__name__)
+
 
 _SCHEMA_SQL = """
 CREATE TABLE IF NOT EXISTS events (
@@ -282,6 +286,11 @@ class DatapointsStore:
         self._data: dict[str, Any] = {"monitors": []}
         self._listeners: list[Callable[[], None]] = []
         self._event_db = _EventDb(db_path)
+        self._monitor_lock = asyncio.Lock()
+        self._monitor_revisions: dict[str, int] = {}
+        self._entry_lifetime = str(uuid.uuid4())
+        self._commit_tasks: set[asyncio.Task[Any]] = set()
+        self._revision_listeners: list[Callable[[str], None]] = []
 
     async def async_load(self) -> None:
         """Load data from persistent storage."""
@@ -323,6 +332,13 @@ class DatapointsStore:
                 m["last_resolved_clusters_summary"] = []
             if "deleted_at" not in m:
                 m["deleted_at"] = None
+            if m.get("last_scan_status") == "running" or "last_scan_status" not in m:
+                m["last_scan_status"] = "unknown"
+            if "last_scan_attempt_at" not in m:
+                m["last_scan_attempt_at"] = None
+            if "last_scan_error" not in m:
+                m["last_scan_error"] = None
+            self._monitor_revisions[m.get("id", "")] = 0
 
         # Permanently drop trashed monitors whose retention has elapsed.
         self._data["monitors"] = self.purge_expired_trash(
@@ -332,6 +348,14 @@ class DatapointsStore:
     def close(self) -> None:
         """Release the SQLite connection. Called when the config entry unloads."""
         self._event_db.close()
+
+    async def async_drain_commits(self, timeout: float = 5.0) -> bool:
+        """Wait for cancellation-shielded JSON-store commits to finish."""
+        tasks = list(self._commit_tasks)
+        if not tasks:
+            return True
+        _, pending = await asyncio.wait(tasks, timeout=timeout)
+        return not pending
 
     async def async_record(
         self,
@@ -534,32 +558,113 @@ class DatapointsStore:
 
     def get_monitors(self) -> list[dict[str, Any]]:
         """Return the full list of anomaly monitor records (active and trashed)."""
-        return list(self._data.get("monitors", []))
+        return copy.deepcopy(self._data.get("monitors", []))
 
     def get_active_monitors(self) -> list[dict[str, Any]]:
         """Return monitor records that have not been soft-deleted."""
-        return [m for m in self._data.get("monitors", []) if not m.get("deleted_at")]
+        return copy.deepcopy(
+            [m for m in self._data.get("monitors", []) if not m.get("deleted_at")]
+        )
 
     def get_trashed_monitors(self) -> list[dict[str, Any]]:
         """Return monitor records that have been soft-deleted (in the trash)."""
-        return [m for m in self._data.get("monitors", []) if m.get("deleted_at")]
+        return copy.deepcopy(
+            [m for m in self._data.get("monitors", []) if m.get("deleted_at")]
+        )
 
     def get_monitor(self, monitor_id: str) -> dict[str, Any] | None:
         """Return a single monitor record by ID, or None if not found."""
         for m in self._data.get("monitors", []):
             if m.get("id") == monitor_id:
-                return m
+                return copy.deepcopy(m)
         return None
+
+    def get_monitor_revision(self, monitor_id: str) -> tuple[str, int]:
+        """Return the entry-lifetime and configuration revision for a snapshot."""
+        return self._entry_lifetime, self._monitor_revisions.get(monitor_id, 0)
+
+    async def _async_commit_monitor_mutation(
+        self,
+        mutate: Callable[[dict[str, Any]], tuple[bool, Any]],
+        *,
+        action: str,
+        monitor_id: str | None,
+        bump_revision: bool,
+        on_published: Callable[[Any], None] | None = None,
+    ) -> Any:
+        """Serialize, stage, persist, then publish and notify in committed order.
+
+        Waiting for the lock is cancellable and publishes nothing. Once the
+        lock is held, staging -> save -> in-memory publish -> notification runs
+        in an owned task shielded from the caller: cancelling the caller stops
+        it waiting but cannot abandon the commit or release the lock early.
+        ``on_published(result)`` runs synchronously inside that transaction, so
+        events observe exactly the committed state and order.
+        """
+        await self._monitor_lock.acquire()
+
+        async def commit() -> Any:
+            try:
+                staged = copy.deepcopy(self._data)
+                changed, result = mutate(staged)
+                if not changed:
+                    return copy.deepcopy(result)
+                await self._store.async_save(staged)
+                self._data = staged
+                if bump_revision and monitor_id is not None:
+                    self._monitor_revisions[monitor_id] = (
+                        self._monitor_revisions.get(monitor_id, 0) + 1
+                    )
+                    for listener in list(self._revision_listeners):
+                        listener(monitor_id)
+                self._notify_listeners()
+                self._fire_monitors_updated(action, monitor_id)
+                if on_published is not None:
+                    on_published(copy.deepcopy(result))
+                return copy.deepcopy(result)
+            finally:
+                self._monitor_lock.release()
+
+        try:
+            task = asyncio.get_running_loop().create_task(commit())
+        except BaseException:
+            self._monitor_lock.release()
+            raise
+        self._commit_tasks.add(task)
+        task.add_done_callback(self._commit_tasks.discard)
+        task.add_done_callback(consume_task_result)
+        return await asyncio.shield(task)
+
+    def async_add_revision_listener(
+        self, listener: Callable[[str], None]
+    ) -> Callable[[], None]:
+        """Call ``listener(monitor_id)`` after each configuration/lifecycle commit."""
+        self._revision_listeners.append(listener)
+
+        def remove() -> None:
+            if listener in self._revision_listeners:
+                self._revision_listeners.remove(listener)
+
+        return remove
 
     async def async_create_monitor(self, monitor: dict[str, Any]) -> dict[str, Any]:
         """Persist a new monitor record and notify listeners."""
-        if "monitors" not in self._data:
-            self._data["monitors"] = []
-        self._data["monitors"].append(monitor)
-        await self._store.async_save(self._data)
-        self._notify_listeners()
-        self._fire_monitors_updated("created", monitor.get("id"))
-        return monitor
+        monitor_id = monitor.get("id")
+
+        def mutate(staged: dict[str, Any]) -> tuple[bool, Any]:
+            created = copy.deepcopy(monitor)
+            created.setdefault("last_scan_attempt_at", None)
+            created.setdefault("last_scan_status", "unknown")
+            created.setdefault("last_scan_error", None)
+            staged.setdefault("monitors", []).append(created)
+            return True, created
+
+        return await self._async_commit_monitor_mutation(
+            mutate,
+            action="created",
+            monitor_id=monitor_id,
+            bump_revision=True,
+        )
 
     async def async_update_monitor(
         self, monitor_id: str, updates: dict[str, Any]
@@ -568,14 +673,78 @@ class DatapointsStore:
 
         Returns the updated record, or None if the monitor was not found.
         """
-        for m in self._data.get("monitors", []):
-            if m.get("id") == monitor_id:
-                m.update(updates)
-                await self._store.async_save(self._data)
-                self._notify_listeners()
-                self._fire_monitors_updated("updated", monitor_id)
-                return m
-        return None
+        result_fields = {
+            "last_scan_attempt_at",
+            "last_scan_status",
+            "last_scan_error",
+            "last_scan_at",
+            "last_cluster_count",
+            "active_cluster_count",
+            "active_clusters_summary",
+            "last_resolved_clusters_summary",
+            "scan_history",
+            "last_scan_data_points",
+            "last_anomaly_at",
+        }
+        # Renames don't invalidate detection results; every other
+        # configuration/lifecycle field does.
+        cosmetic_fields = {"name"}
+        bump_revision = not set(updates).issubset(result_fields | cosmetic_fields)
+
+        def mutate(staged: dict[str, Any]) -> tuple[bool, Any]:
+            for monitor in staged.get("monitors", []):
+                if monitor.get("id") == monitor_id:
+                    monitor.update(copy.deepcopy(updates))
+                    if bump_revision:
+                        monitor["last_scan_status"] = "unknown"
+                        monitor["last_scan_error"] = None
+                    return True, monitor
+            return False, None
+
+        return await self._async_commit_monitor_mutation(
+            mutate,
+            action="updated",
+            monitor_id=monitor_id,
+            bump_revision=bump_revision,
+        )
+
+    async def async_commit_monitor_scan(
+        self,
+        monitor_id: str,
+        captured_revision: tuple[str, int],
+        build_updates: Callable[[dict[str, Any]], dict[str, Any] | None],
+        on_published: Callable[[dict[str, Any]], None] | None = None,
+    ) -> dict[str, Any] | None:
+        """Commit scan data only while its copied configuration is still current.
+
+        ``build_updates(current)`` receives a private copy of the committed
+        monitor under the store lock and returns the fields to write (or None
+        to skip). Returns the committed monitor, or None when the scan was
+        superseded by a configuration/lifecycle change, a disable or a delete.
+        """
+
+        def mutate(staged: dict[str, Any]) -> tuple[bool, Any]:
+            if captured_revision != self.get_monitor_revision(monitor_id):
+                return False, None
+            for monitor in staged.get("monitors", []):
+                if monitor.get("id") != monitor_id:
+                    continue
+                if monitor.get("deleted_at") or not monitor.get("enabled", True):
+                    return False, None
+                updates = build_updates(copy.deepcopy(monitor))
+                if updates is None:
+                    return False, None
+                monitor.update(copy.deepcopy(updates))
+                return True, monitor
+            return False, None
+
+        return await self._async_commit_monitor_mutation(
+            mutate,
+            action="updated",
+            monitor_id=monitor_id,
+            bump_revision=False,
+            on_published=on_published,
+        )
 
     async def async_soft_delete_monitor(self, monitor_id: str) -> bool:
         """Soft-delete a monitor by stamping ``deleted_at`` with the current time.
@@ -583,28 +752,43 @@ class DatapointsStore:
         The record is retained (so it can be restored) but excluded from the
         active monitor list. Returns True if the monitor was found.
         """
-        for m in self._data.get("monitors", []):
-            if m.get("id") == monitor_id:
-                m["deleted_at"] = datetime.now(UTC).isoformat()
-                await self._store.async_save(self._data)
-                self._notify_listeners()
-                self._fire_monitors_updated("deleted", monitor_id)
-                return True
-        return False
+        deleted_at = datetime.now(UTC).isoformat()
+
+        def mutate(staged: dict[str, Any]) -> tuple[bool, Any]:
+            for monitor in staged.get("monitors", []):
+                if monitor.get("id") == monitor_id:
+                    monitor["deleted_at"] = deleted_at
+                    return True, True
+            return False, False
+
+        return await self._async_commit_monitor_mutation(
+            mutate,
+            action="deleted",
+            monitor_id=monitor_id,
+            bump_revision=True,
+        )
 
     async def async_restore_monitor(self, monitor_id: str) -> dict[str, Any] | None:
         """Restore a soft-deleted monitor by clearing its ``deleted_at`` stamp.
 
         Returns the restored record, or None if the monitor was not found.
         """
-        for m in self._data.get("monitors", []):
-            if m.get("id") == monitor_id:
-                m["deleted_at"] = None
-                await self._store.async_save(self._data)
-                self._notify_listeners()
-                self._fire_monitors_updated("restored", monitor_id)
-                return m
-        return None
+
+        def mutate(staged: dict[str, Any]) -> tuple[bool, Any]:
+            for monitor in staged.get("monitors", []):
+                if monitor.get("id") == monitor_id:
+                    monitor["deleted_at"] = None
+                    monitor["last_scan_status"] = "unknown"
+                    monitor["last_scan_error"] = None
+                    return True, monitor
+            return False, None
+
+        return await self._async_commit_monitor_mutation(
+            mutate,
+            action="restored",
+            monitor_id=monitor_id,
+            bump_revision=True,
+        )
 
     async def async_delete_monitor(self, monitor_id: str) -> bool:
         """Permanently remove the monitor identified by *monitor_id*.
@@ -615,16 +799,21 @@ class DatapointsStore:
 
         Returns True if the monitor was found and deleted.
         """
-        original_len = len(self._data.get("monitors", []))
-        self._data["monitors"] = [
-            m for m in self._data.get("monitors", []) if m.get("id") != monitor_id
-        ]
-        if len(self._data["monitors"]) < original_len:
-            await self._store.async_save(self._data)
-            self._notify_listeners()
-            self._fire_monitors_updated("deleted", monitor_id)
-            return True
-        return False
+
+        def mutate(staged: dict[str, Any]) -> tuple[bool, Any]:
+            monitors = staged.get("monitors", [])
+            kept = [m for m in monitors if m.get("id") != monitor_id]
+            if len(kept) == len(monitors):
+                return False, False
+            staged["monitors"] = kept
+            return True, True
+
+        return await self._async_commit_monitor_mutation(
+            mutate,
+            action="deleted",
+            monitor_id=monitor_id,
+            bump_revision=True,
+        )
 
     @staticmethod
     def purge_expired_trash(
@@ -689,21 +878,27 @@ class DatapointsStore:
         *expires_at* is an ISO datetime string, or None for a permanent dismissal.
         Returns the updated monitor record, or None if the monitor was not found.
         """
-        for m in self._data.get("monitors", []):
-            if m.get("id") == monitor_id:
-                window: dict[str, Any] = {
-                    "id": str(uuid.uuid4()),
-                    "start_ms": start_ms,
-                    "end_ms": end_ms,
-                    "dismissed_at": datetime.now(UTC).isoformat(),
-                    "expires_at": expires_at,
-                }
-                m.setdefault("dismissed_windows", []).append(window)
-                await self._store.async_save(self._data)
-                self._notify_listeners()
-                self._fire_monitors_updated("dismissed", monitor_id)
-                return m
-        return None
+        window: dict[str, Any] = {
+            "id": str(uuid.uuid4()),
+            "start_ms": start_ms,
+            "end_ms": end_ms,
+            "dismissed_at": datetime.now(UTC).isoformat(),
+            "expires_at": expires_at,
+        }
+
+        def mutate(staged: dict[str, Any]) -> tuple[bool, Any]:
+            for monitor in staged.get("monitors", []):
+                if monitor.get("id") == monitor_id:
+                    monitor.setdefault("dismissed_windows", []).append(window)
+                    return True, monitor
+            return False, None
+
+        return await self._async_commit_monitor_mutation(
+            mutate,
+            action="dismissed",
+            monitor_id=monitor_id,
+            bump_revision=False,
+        )
 
     async def async_undismiss_window(
         self, monitor_id: str, window_id: str
@@ -712,20 +907,24 @@ class DatapointsStore:
 
         Returns the updated monitor record, or None if the monitor was not found.
         """
-        for m in self._data.get("monitors", []):
-            if m.get("id") == monitor_id:
-                original_len = len(m.get("dismissed_windows", []))
-                m["dismissed_windows"] = [
-                    w
-                    for w in m.get("dismissed_windows", [])
-                    if w.get("id") != window_id
-                ]
-                if len(m["dismissed_windows"]) < original_len:
-                    await self._store.async_save(self._data)
-                    self._notify_listeners()
-                    self._fire_monitors_updated("undismissed", monitor_id)
-                return m
-        return None
+
+        def mutate(staged: dict[str, Any]) -> tuple[bool, Any]:
+            for monitor in staged.get("monitors", []):
+                if monitor.get("id") != monitor_id:
+                    continue
+                windows = monitor.get("dismissed_windows", [])
+                kept = [w for w in windows if w.get("id") != window_id]
+                changed = len(kept) < len(windows)
+                monitor["dismissed_windows"] = kept
+                return changed, monitor
+            return False, None
+
+        return await self._async_commit_monitor_mutation(
+            mutate,
+            action="undismissed",
+            monitor_id=monitor_id,
+            bump_revision=False,
+        )
 
     @staticmethod
     def append_scan_history(

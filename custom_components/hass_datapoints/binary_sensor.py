@@ -18,6 +18,7 @@ from .const import (
     KEY_MONITOR_BINARY_SENSORS,
     KEY_STORE,
 )
+from .detection_runner import FAILED_SCAN_ERRORS, FAILED_SCAN_STATUSES
 from .monitor_entities import monitor_device_info
 from .store import DatapointsStore
 
@@ -165,7 +166,8 @@ class DatapointsMonitorStalledBinarySensor(_MonitorBinarySensorBase):
 class DatapointsMonitorProblemBinarySensor(_MonitorBinarySensorBase):
     """True when any operational issue affects the monitor.
 
-    Covers: stalled, insufficient data in last scan, or last scan found no points.
+    Covers: stalled, failed latest scan (timeout/error/busy), insufficient data
+    in last scan, or last scan found no points.
     A disabled monitor is not considered to have a problem.
     """
 
@@ -201,6 +203,13 @@ class DatapointsMonitorProblemBinarySensor(_MonitorBinarySensorBase):
                     return True
             except ValueError:
                 pass
+
+        # Failed scans: the retained results are last-known, not current.
+        status = monitor.get("last_scan_status", "unknown")
+        if status in FAILED_SCAN_STATUSES:
+            return True
+        if status == "running" and monitor.get("last_scan_error") in FAILED_SCAN_ERRORS:
+            return True
 
         # Insufficient data check (last scan ran but found too few points)
         data_points = monitor.get("last_scan_data_points")

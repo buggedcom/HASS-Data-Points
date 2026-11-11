@@ -9,6 +9,7 @@ and tested in isolation.
 
 from __future__ import annotations
 
+import concurrent.futures as _futures
 import contextlib
 import sys
 from datetime import UTC
@@ -350,3 +351,33 @@ def mock_store(tmp_path):
     store._store = inner
 
     return store
+
+
+# ---------------------------------------------------------------------------
+# Detection runner helpers
+# ---------------------------------------------------------------------------
+
+
+class InlineExecutor(_futures.Executor):
+    """Executor that runs work synchronously on the submitting thread.
+
+    Only for tests that check *what* is computed. Concurrency, cancellation and
+    worker-release tests must use a real ThreadPoolExecutor with barriers.
+    """
+
+    def submit(self, fn, /, *args, **kwargs):
+        future: _futures.Future = _futures.Future()
+        try:
+            future.set_result(fn(*args, **kwargs))
+        except BaseException as err:  # noqa: BLE001
+            future.set_exception(err)
+        return future
+
+
+def make_inline_runner():
+    """Return a DetectionRunner whose CPU work runs inline."""
+    from custom_components.hass_datapoints.detection_runner import (  # noqa: PLC0415
+        DetectionRunner,
+    )
+
+    return DetectionRunner(executor=InlineExecutor())

@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import threading
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock
 
@@ -38,6 +37,7 @@ from custom_components.hass_datapoints.websocket_api import (
     ws_get_history,
     ws_update_event,
 )
+from tests.conftest import make_inline_runner
 
 # ---------------------------------------------------------------------------
 # _normalize_recorder_timestamp — pure function
@@ -398,20 +398,16 @@ class DescribeWsClearCache:
     async def test_GIVEN_cache_present_and_no_entity_id_WHEN_called_THEN_clears_all(
         self,
     ):
-        import asyncio
 
         cache = MagicMock()
         cache.clear_all = MagicMock(return_value=5)
         hass = MagicMock()
         hass.data = {DOMAIN: {"anomaly_cache": cache}}
 
-        def fake_run_in_executor(pool, fn, *args):
-            result = fn(*args)
-            fut: asyncio.Future = asyncio.get_event_loop().create_future()
-            fut.set_result(result)
-            return fut
+        async def fake_executor(fn, *args):
+            return fn(*args)
 
-        hass.loop.run_in_executor = fake_run_in_executor
+        hass.async_add_executor_job = fake_executor
         connection = _make_connection()
         msg = {"id": 1}
 
@@ -424,20 +420,16 @@ class DescribeWsClearCache:
     async def test_GIVEN_cache_present_and_entity_id_provided_WHEN_called_THEN_clears_entity(
         self,
     ):
-        import asyncio
 
         cache = MagicMock()
         cache.clear_entity = MagicMock(return_value=2)
         hass = MagicMock()
         hass.data = {DOMAIN: {"anomaly_cache": cache}}
 
-        def fake_run_in_executor(pool, fn, *args):
-            result = fn(*args)
-            fut: asyncio.Future = asyncio.get_event_loop().create_future()
-            fut.set_result(result)
-            return fut
+        async def fake_executor(fn, *args):
+            return fn(*args)
 
-        hass.loop.run_in_executor = fake_run_in_executor
+        hass.async_add_executor_job = fake_executor
         connection = _make_connection()
         msg = {"id": 1, "entity_id": "sensor.temp"}
 
@@ -826,6 +818,7 @@ def _make_hass_for_anomalies() -> MagicMock:
     # get_instance from history_utils, so stub it there too.
     hu_mod.get_instance = MagicMock(return_value=recorder_instance)
     hass.async_add_executor_job = AsyncMock(return_value=[])
+    hass.data[DOMAIN]["runner"] = make_inline_runner()
     return hass
 
 
@@ -922,31 +915,72 @@ def _make_hass_with_in_flight():
     return hass
 
 
-class DescribeRegisterCancel:
-    def test_GIVEN_request_id_WHEN_registered_THEN_event_stored_in_in_flight(self):
-        hass = _make_hass_with_in_flight()
-        event = _register_cancel(hass, "req-123")
+def _token():
+    from custom_components.hass_datapoints.detection_runner import (  # noqa: PLC0415
+        DetectionRunner,
+    )
 
-        assert isinstance(event, threading.Event)
-        assert hass.data[DOMAIN]["in_flight"]["req-123"] is event
+    return DetectionRunner.new_token()
+
+
+class DescribeRegisterCancel:
+    def test_GIVEN_request_id_WHEN_registered_THEN_token_stored_under_connection_and_request_id(
+        self,
+    ):
+        hass = _make_hass_with_in_flight()
+        connection = MagicMock()
+        token = _token()
+
+        _register_cancel(hass, connection, "req-123", token)
+
+        assert hass.data[DOMAIN]["in_flight"] == {(id(connection), "req-123"): token}
 
     def test_GIVEN_none_request_id_WHEN_registered_THEN_in_flight_not_modified(self):
         hass = _make_hass_with_in_flight()
-        _register_cancel(hass, None)
+        _register_cancel(hass, MagicMock(), None, _token())
 
         assert hass.data[DOMAIN]["in_flight"] == {}
 
     def test_GIVEN_registered_request_id_WHEN_unregistered_THEN_removed(self):
         hass = _make_hass_with_in_flight()
-        _register_cancel(hass, "req-456")
-        _unregister_cancel(hass, "req-456")
+        connection = MagicMock()
+        token = _token()
+        _register_cancel(hass, connection, "req-456", token)
 
-        assert "req-456" not in hass.data[DOMAIN]["in_flight"]
+        _unregister_cancel(hass, connection, "req-456", token)
+
+        assert hass.data[DOMAIN]["in_flight"] == {}
 
     def test_GIVEN_unknown_request_id_WHEN_unregistered_THEN_no_error(self):
         hass = _make_hass_with_in_flight()
         # Must not raise
-        _unregister_cancel(hass, "nonexistent")
+        _unregister_cancel(hass, MagicMock(), "nonexistent", _token())
+
+    def test_GIVEN_same_request_id_on_two_connections_WHEN_registered_THEN_both_are_kept(
+        self,
+    ):
+        hass = _make_hass_with_in_flight()
+        first, second = MagicMock(), MagicMock()
+        first_token, second_token = _token(), _token()
+
+        _register_cancel(hass, first, "chart-1", first_token)
+        _register_cancel(hass, second, "chart-1", second_token)
+
+        assert hass.data[DOMAIN]["in_flight"][(id(first), "chart-1")] is first_token
+        assert hass.data[DOMAIN]["in_flight"][(id(second), "chart-1")] is second_token
+
+    def test_GIVEN_request_id_reused_WHEN_old_request_cleans_up_late_THEN_new_registration_survives(
+        self,
+    ):
+        hass = _make_hass_with_in_flight()
+        connection = MagicMock()
+        old_token, new_token = _token(), _token()
+        _register_cancel(hass, connection, "chart-1", old_token)
+        _register_cancel(hass, connection, "chart-1", new_token)
+
+        _unregister_cancel(hass, connection, "chart-1", old_token)
+
+        assert hass.data[DOMAIN]["in_flight"][(id(connection), "chart-1")] is new_token
 
 
 # ---------------------------------------------------------------------------
@@ -955,16 +989,31 @@ class DescribeRegisterCancel:
 
 
 class DescribeWsCancelRequest:
-    def test_GIVEN_known_request_id_WHEN_cancelled_THEN_event_set_and_result_true(self):
+    def test_GIVEN_known_request_id_WHEN_cancelled_THEN_token_cancelled_and_result_true(
+        self,
+    ):
         hass = _make_hass_with_in_flight()
-        event = threading.Event()
-        hass.data[DOMAIN]["in_flight"]["req-abc"] = event
         connection = MagicMock()
+        token = _token()
+        hass.data[DOMAIN]["in_flight"][(id(connection), "req-abc")] = token
 
         ws_cancel_request(hass, connection, {"id": 1, "request_id": "req-abc"})
 
-        assert event.is_set()
+        assert token.cancelled is True
         connection.send_result.assert_called_once_with(1, {"cancelled": True})
+
+    def test_GIVEN_request_id_owned_by_another_connection_WHEN_cancelled_THEN_untouched(
+        self,
+    ):
+        hass = _make_hass_with_in_flight()
+        owner, other = MagicMock(), MagicMock()
+        token = _token()
+        hass.data[DOMAIN]["in_flight"][(id(owner), "req-abc")] = token
+
+        ws_cancel_request(hass, other, {"id": 3, "request_id": "req-abc"})
+
+        assert token.cancelled is False
+        other.send_result.assert_called_once_with(3, {"cancelled": False})
 
     def test_GIVEN_unknown_request_id_WHEN_cancelled_THEN_result_false_no_raise(self):
         hass = _make_hass_with_in_flight()

@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-import asyncio
 import math
-import threading
 from datetime import datetime, timedelta
 from functools import partial
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -19,6 +17,12 @@ from .aggregation import calculate_aggregate
 from .analysis_data import aggregate_input, async_fetch_analysis_data, numeric_points
 from .chart_analysis import analyze_series, correlated_spans
 from .const import DOMAIN, KEY_STORE
+from .detection_runner import (
+    DetectionBusy,
+    DetectionJob,
+    DetectionRunner,
+    DetectionTimeout,
+)
 
 MAX_ANALYSIS_POINTS = 5000
 ANALYSIS_TIMEOUT = 30
@@ -58,16 +62,18 @@ def _check_size(points: list) -> None:
 
 
 async def _compute(hass, function, *args):
-    cancel = threading.Event()
+    """Run CPU analysis as one bounded, cancellable runner job."""
+    runner: DetectionRunner = hass.data[DOMAIN]["runner"]
+
+    async def work(job: DetectionJob):
+        return await runner.run_cpu(job, partial(function, *args, cancel=job.token))
+
     try:
-        async with asyncio.timeout(ANALYSIS_TIMEOUT):
-            async with hass.data[DOMAIN]["scan_semaphore"]:
-                return await hass.loop.run_in_executor(
-                    hass.data[DOMAIN]["executor"],
-                    partial(function, *args, cancel=cancel),
-                )
-    finally:
-        cancel.set()
+        return await runner.submit(work, token=runner.new_token(ANALYSIS_TIMEOUT))
+    except DetectionTimeout as err:
+        raise TimeoutError from err
+    except DetectionBusy as err:
+        raise HomeAssistantError("Analysis is busy; try again shortly") from err
 
 
 async def _events(hass, args, context):
@@ -122,6 +128,7 @@ async def _findings(hass, args, context):
     return {
         "monitor_id": monitor["id"],
         "last_scan_at": monitor.get("last_scan_at"),
+        "last_scan_status": monitor.get("last_scan_status", "unknown"),
         "source": "saved_monitor_scan",
         "enabled": monitor.get("enabled", False),
         "active_cluster_count": monitor.get("active_cluster_count", 0),
