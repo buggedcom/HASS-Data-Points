@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import threading
+import time
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from functools import partial
@@ -628,6 +629,7 @@ async def async_detect_monitor(
     data_point_count = 0
     for entity_id in entity_ids:
         job.check()
+        prepare_started = time.monotonic()
         pts = await async_prepare_entity_series(
             hass,
             entity_id,
@@ -652,8 +654,20 @@ async def async_detect_monitor(
             comparison_pts = await get_instance(hass).async_add_executor_job(
                 fetch_entity_pts, hass, baseline_entity_id, start_time, end_time
             )
+        detect_started = time.monotonic()
         entity_clusters[entity_id] = await runner.run_cpu(
             job, _run_detection_sync, pts, config, comparison_pts, job.token
+        )
+        _LOGGER.debug(
+            "hass_datapoints job %d entity %s: methods=%s points=%d "
+            "prepare=%.0fms detect=%.0fms clusters=%d",
+            job.id,
+            entity_id,
+            config.get("anomaly_methods"),
+            len(pts),
+            (detect_started - prepare_started) * 1000,
+            (time.monotonic() - detect_started) * 1000,
+            len(entity_clusters[entity_id]),
         )
 
     if combined:
@@ -890,7 +904,11 @@ class DatapointsMonitorSensor(_DatapointsSensorBase):
             await self._run_scan_inner(monitor, revision, runner, job)
 
         try:
-            await runner.submit(scan, key=f"scan:{self._monitor_id}")
+            await runner.submit(
+                scan,
+                key=f"scan:{self._monitor_id}",
+                label=f"scheduled scan {self._monitor_id}",
+            )
         except DetectionBusy as err:
             if err.reason == "duplicate":
                 return
