@@ -1,13 +1,16 @@
 """Tests for custom_components.hass_datapoints.anomaly_detection."""
+
 from __future__ import annotations
 
 import pytest
 
+import custom_components.hass_datapoints.anomaly_detection as anomaly_detection
 from custom_components.hass_datapoints.anomaly_detection import (
     _build_linear_trend,
+    _build_rate_pts,
     _build_rolling_average,
-    _iqr_k,
     _interpolate,
+    _iqr_k,
     _persistence_flat_fraction,
     _zscore_threshold,
     apply_overlap_mode,
@@ -21,9 +24,71 @@ from custom_components.hass_datapoints.anomaly_detection import (
 )
 
 
+class _CountingPoints:
+    def __init__(self, points: list[list[float]]) -> None:
+        self._points = points
+        self.reads = 0
+
+    def __len__(self) -> int:
+        return len(self._points)
+
+    def __getitem__(self, index: int) -> list[float]:
+        self.reads += 1
+        return self._points[index]
+
+
+def _legacy_interpolate(pts: list, time_ms: int) -> float | None:
+    if not pts:
+        return None
+    if time_ms < pts[0][0] or time_ms > pts[-1][0]:
+        return None
+    if time_ms == pts[0][0]:
+        return pts[0][1]
+    if time_ms == pts[-1][0]:
+        return pts[-1][1]
+    for i in range(len(pts) - 1):
+        t0, v0 = pts[i]
+        t1, v1 = pts[i + 1]
+        if t0 <= time_ms <= t1:
+            frac = (time_ms - t0) / (t1 - t0)
+            return v0 + (v1 - v0) * frac
+    return None
+
+
+def _legacy_build_rate_pts(pts: list, rate_window: str) -> list:
+    if len(pts) < 2:
+        return []
+    if rate_window == "point_to_point":
+        rate_pts = []
+        for i in range(1, len(pts)):
+            t, v = pts[i]
+            comp_t, comp_v = pts[i - 1]
+            delta_ms = t - comp_t
+            if not (delta_ms > 0):
+                continue
+            rate_pts.append([t, (v - comp_v) / (delta_ms / 3_600_000.0)])
+        return rate_pts
+
+    window_ms = 3_600_000
+    rate_pts = []
+    for i in range(1, len(pts)):
+        t, v = pts[i]
+        comp = pts[0]
+        for j in range(i - 1, -1, -1):
+            if (t - pts[j][0]) >= window_ms:
+                comp = pts[j]
+                break
+        delta_ms = t - comp[0]
+        if not (delta_ms > 0):
+            continue
+        rate_pts.append([t, (v - comp[1]) / (delta_ms / 3_600_000.0)])
+    return rate_pts
+
+
 # ---------------------------------------------------------------------------
 # _zscore_threshold
 # ---------------------------------------------------------------------------
+
 
 class DescribeZscoreThreshold:
     def test_GIVEN_low_sensitivity_WHEN_called_THEN_returns_higher_threshold(self):
@@ -65,6 +130,7 @@ class DescribePersistenceFlatFraction:
 # _interpolate
 # ---------------------------------------------------------------------------
 
+
 class DescribeInterpolate:
     def test_GIVEN_empty_list_WHEN_called_THEN_returns_none(self):
         assert _interpolate([], 1000) is None
@@ -85,7 +151,9 @@ class DescribeInterpolate:
         pts = [[100, 5.0], [200, 10.0]]
         assert _interpolate(pts, 200) == 10.0
 
-    def test_GIVEN_time_at_midpoint_WHEN_called_THEN_returns_linearly_interpolated_value(self):
+    def test_GIVEN_time_at_midpoint_WHEN_called_THEN_returns_linearly_interpolated_value(
+        self,
+    ):
         pts = [[0, 0.0], [100, 10.0]]
         assert _interpolate(pts, 50) == pytest.approx(5.0)
 
@@ -93,10 +161,29 @@ class DescribeInterpolate:
         pts = [[0, 0.0], [100, 100.0]]
         assert _interpolate(pts, 25) == pytest.approx(25.0)
 
+    def test_GIVEN_duplicate_interior_timestamps_WHEN_called_THEN_preserves_first_matching_value(
+        self,
+    ):
+        pts = [[0, 0.0], [100, 10.0], [100, 99.0], [200, 20.0]]
+
+        result = _interpolate(pts, 100)
+
+        assert result == 10.0
+
+    def test_GIVEN_large_sorted_series_WHEN_interpolated_THEN_uses_logarithmic_point_reads(
+        self,
+    ):
+        pts = _CountingPoints([[i * 10, float(i)] for i in range(65_536)])
+
+        _interpolate(pts, 327_681)
+
+        assert pts.reads <= 24
+
 
 # ---------------------------------------------------------------------------
 # _build_rolling_average
 # ---------------------------------------------------------------------------
+
 
 class DescribeBuildRollingAverage:
     def test_GIVEN_single_point_WHEN_called_THEN_returns_empty(self):
@@ -120,6 +207,7 @@ class DescribeBuildRollingAverage:
 # ---------------------------------------------------------------------------
 # _build_linear_trend
 # ---------------------------------------------------------------------------
+
 
 class DescribeBuildLinearTrend:
     def test_GIVEN_single_point_WHEN_called_THEN_returns_empty(self):
@@ -147,6 +235,7 @@ class DescribeBuildLinearTrend:
 # ---------------------------------------------------------------------------
 # detect_iqr
 # ---------------------------------------------------------------------------
+
 
 class DescribeDetectIqr:
     def test_GIVEN_fewer_than_4_points_WHEN_called_THEN_returns_empty(self):
@@ -178,6 +267,7 @@ class DescribeDetectIqr:
 # detect_rolling_zscore
 # ---------------------------------------------------------------------------
 
+
 class DescribeDetectRollingZscore:
     def test_GIVEN_fewer_than_3_points_WHEN_called_THEN_returns_empty(self):
         assert detect_rolling_zscore([[0, 1], [1, 2]], "medium", 3600) == []
@@ -202,18 +292,26 @@ class DescribeDetectRollingZscore:
 # detect_trend_residual
 # ---------------------------------------------------------------------------
 
+
 class DescribeDetectTrendResidual:
     def test_GIVEN_fewer_than_3_points_WHEN_called_THEN_returns_empty(self):
-        assert detect_trend_residual([[0, 1], [1, 2]], "medium", "rolling_average", "24h") == []
+        assert (
+            detect_trend_residual([[0, 1], [1, 2]], "medium", "rolling_average", "24h")
+            == []
+        )
 
-    def test_GIVEN_flatline_with_spike_WHEN_rolling_average_method_THEN_returns_cluster(self):
+    def test_GIVEN_flatline_with_spike_WHEN_rolling_average_method_THEN_returns_cluster(
+        self,
+    ):
         base = [[i * 3_600_000, 10.0] for i in range(48)]
         base[24] = [24 * 3_600_000, 10_000.0]
         result = detect_trend_residual(base, "medium", "rolling_average", "6h")
         assert len(result) >= 1
         assert result[0]["anomalyMethod"] == "trend_residual"
 
-    def test_GIVEN_perfectly_linear_series_WHEN_linear_trend_method_THEN_returns_empty(self):
+    def test_GIVEN_perfectly_linear_series_WHEN_linear_trend_method_THEN_returns_empty(
+        self,
+    ):
         pts = [[i * 3_600_000, float(i)] for i in range(24)]
         assert detect_trend_residual(pts, "medium", "linear_trend", "24h") == []
 
@@ -226,18 +324,23 @@ class DescribeDetectTrendResidual:
 # detect_persistence
 # ---------------------------------------------------------------------------
 
+
 class DescribeDetectPersistence:
     def test_GIVEN_fewer_than_3_points_WHEN_called_THEN_returns_empty(self):
         assert detect_persistence([[0, 1], [1, 2]], "medium", 3600) == []
 
-    def test_GIVEN_flat_segment_longer_than_window_WHEN_called_THEN_returns_cluster(self):
+    def test_GIVEN_flat_segment_longer_than_window_WHEN_called_THEN_returns_cluster(
+        self,
+    ):
         flat = [[i * 3_600_000, 5.0] for i in range(5)]
         change = [[5 * 3_600_000 + i * 3_600_000, float(10 + i)] for i in range(10)]
         result = detect_persistence(flat + change, "medium", 3600)
         assert len(result) >= 1
         assert result[0]["anomalyMethod"] == "persistence"
 
-    def test_GIVEN_flat_segment_shorter_than_window_WHEN_called_THEN_returns_empty(self):
+    def test_GIVEN_flat_segment_shorter_than_window_WHEN_called_THEN_returns_empty(
+        self,
+    ):
         flat = [[i * 60_000, 5.0] for i in range(10)]
         change = [[10 * 60_000 + i * 60_000, float(10 + i)] for i in range(20)]
         assert detect_persistence(flat + change, "medium", 3600) == []
@@ -257,13 +360,18 @@ class DescribeDetectPersistence:
 # detect_rate_of_change
 # ---------------------------------------------------------------------------
 
+
 class DescribeDetectRateOfChange:
     def test_GIVEN_fewer_than_3_points_WHEN_called_THEN_returns_empty(self):
         assert detect_rate_of_change([[0, 1], [1, 2]], "medium", "1h") == []
 
     def test_GIVEN_slow_ramp_then_sudden_jump_WHEN_called_THEN_returns_cluster(self):
         pts = [[i * 3_600_000, float(i)] for i in range(20)]
-        pts += [[20 * 3_600_000, 1_000.0], [21 * 3_600_000, 1_001.0], [22 * 3_600_000, 1_002.0]]
+        pts += [
+            [20 * 3_600_000, 1_000.0],
+            [21 * 3_600_000, 1_001.0],
+            [22 * 3_600_000, 1_002.0],
+        ]
         result = detect_rate_of_change(pts, "medium", "1h")
         assert len(result) >= 1
         assert result[0]["anomalyMethod"] == "rate_of_change"
@@ -278,11 +386,17 @@ class DescribeDetectRateOfChange:
 
     def test_GIVEN_single_sudden_jump_WHEN_called_THEN_returns_one_cluster(self):
         pts = [[i * 3_600_000, float(i)] for i in range(10)]
-        pts += [[10 * 3_600_000, 100.0], [11 * 3_600_000, 101.0], [12 * 3_600_000, 102.0]]
+        pts += [
+            [10 * 3_600_000, 100.0],
+            [11 * 3_600_000, 101.0],
+            [12 * 3_600_000, 102.0],
+        ]
         result = detect_rate_of_change(pts, "medium", "1h")
         assert len(result) == 1
 
-    def test_GIVEN_point_to_point_window_and_sudden_spike_WHEN_called_THEN_detects_anomaly(self):
+    def test_GIVEN_point_to_point_window_and_sudden_spike_WHEN_called_THEN_detects_anomaly(
+        self,
+    ):
         # Steady 1-unit/hour ramp, then a sudden 180-unit jump between two consecutive points
         pts = [[i * 3_600_000, float(i)] for i in range(20)]
         pts += [[20 * 3_600_000, 200.0], [21 * 3_600_000, 201.0]]
@@ -290,14 +404,29 @@ class DescribeDetectRateOfChange:
         assert len(result) >= 1
         assert result[0]["anomalyMethod"] == "rate_of_change"
 
-    def test_GIVEN_point_to_point_window_and_constant_rate_WHEN_called_THEN_returns_empty(self):
+    def test_GIVEN_point_to_point_window_and_constant_rate_WHEN_called_THEN_returns_empty(
+        self,
+    ):
         pts = [[i * 3_600_000, float(i * 10)] for i in range(24)]
         assert detect_rate_of_change(pts, "medium", "point_to_point") == []
+
+
+class DescribeBuildRatePointsComplexity:
+    def test_GIVEN_large_series_inside_rate_window_WHEN_built_THEN_reads_points_linearly(
+        self,
+    ):
+        pts = _CountingPoints([[i * 1000, float(i)] for i in range(1024)])
+
+        result = _build_rate_pts(pts, "24h")
+
+        assert len(result) == 1023
+        assert pts.reads <= 6 * len(pts)
 
 
 # ---------------------------------------------------------------------------
 # detect_comparison_window
 # ---------------------------------------------------------------------------
+
 
 class DescribeDetectComparisonWindow:
     def test_GIVEN_fewer_than_3_primary_points_WHEN_called_THEN_returns_empty(self):
@@ -305,7 +434,9 @@ class DescribeDetectComparisonWindow:
         comp = [[0, 1], [1, 2], [2, 2]]
         assert detect_comparison_window(pts, comp, "medium") == []
 
-    def test_GIVEN_primary_diverges_from_comparison_WHEN_called_THEN_returns_cluster(self):
+    def test_GIVEN_primary_diverges_from_comparison_WHEN_called_THEN_returns_cluster(
+        self,
+    ):
         n = 24
         comp = [[i * 3_600_000, 10.0] for i in range(n)]
         pts = [[i * 3_600_000, 10.0] for i in range(n)]
@@ -314,7 +445,9 @@ class DescribeDetectComparisonWindow:
         assert len(result) >= 1
         assert result[0]["anomalyMethod"] == "comparison_window"
 
-    def test_GIVEN_identical_primary_and_comparison_WHEN_called_THEN_returns_empty(self):
+    def test_GIVEN_identical_primary_and_comparison_WHEN_called_THEN_returns_empty(
+        self,
+    ):
         series = [[i * 3_600_000, float(i)] for i in range(24)]
         assert detect_comparison_window(series, series, "medium") == []
 
@@ -323,7 +456,9 @@ class DescribeDetectComparisonWindow:
         comp = [[i * 3_600_000, 10.0] for i in range(24)]
         assert detect_comparison_window(pts, comp, "medium") == []
 
-    def test_GIVEN_single_spike_against_comparison_WHEN_called_THEN_returns_one_cluster(self):
+    def test_GIVEN_single_spike_against_comparison_WHEN_called_THEN_returns_one_cluster(
+        self,
+    ):
         pts = [[i * 3_600_000, 10.0] for i in range(24)]
         comp = [[i * 3_600_000, 10.0] for i in range(24)]
         pts[8] = [8 * 3_600_000, 1000.0]
@@ -335,9 +470,12 @@ class DescribeDetectComparisonWindow:
 # apply_overlap_mode
 # ---------------------------------------------------------------------------
 
+
 def _make_cluster(method: str, time_ms: int, value: float = 1.0) -> dict:
     return {
-        "points": [{"timeMs": time_ms, "value": value, "residual": value, "baselineValue": 0}],
+        "points": [
+            {"timeMs": time_ms, "value": value, "residual": value, "baselineValue": 0}
+        ],
         "maxDeviation": value,
         "anomalyMethod": method,
     }
@@ -348,13 +486,17 @@ class DescribeApplyOverlapMode:
         clusters = [_make_cluster("iqr", 1000)]
         assert apply_overlap_mode({"iqr": clusters}, "all") == clusters
 
-    def test_GIVEN_two_methods_flagging_different_times_WHEN_all_mode_THEN_returns_every_cluster(self):
+    def test_GIVEN_two_methods_flagging_different_times_WHEN_all_mode_THEN_returns_every_cluster(
+        self,
+    ):
         c1 = _make_cluster("iqr", 1000)
         c2 = _make_cluster("rolling_zscore", 2000)
         result = apply_overlap_mode({"iqr": [c1], "rolling_zscore": [c2]}, "all")
         assert len(result) == 2
 
-    def test_GIVEN_overlap_at_one_time_WHEN_only_mode_THEN_returns_only_overlapping_clusters(self):
+    def test_GIVEN_overlap_at_one_time_WHEN_only_mode_THEN_returns_only_overlapping_clusters(
+        self,
+    ):
         c_iqr_shared = _make_cluster("iqr", 1000)
         c_iqr_only = _make_cluster("iqr", 2000)
         c_zscore_shared = _make_cluster("rolling_zscore", 1000)
@@ -365,10 +507,14 @@ class DescribeApplyOverlapMode:
         assert len(result) >= 1
         assert all(r.get("isOverlap") for r in result)
 
-    def test_GIVEN_overlap_at_shared_time_WHEN_highlight_mode_THEN_marks_clusters_as_overlapping(self):
+    def test_GIVEN_overlap_at_shared_time_WHEN_highlight_mode_THEN_marks_clusters_as_overlapping(
+        self,
+    ):
         c_iqr = _make_cluster("iqr", 1000)
         c_zscore = _make_cluster("rolling_zscore", 1000)
-        result = apply_overlap_mode({"iqr": [c_iqr], "rolling_zscore": [c_zscore]}, "highlight")
+        result = apply_overlap_mode(
+            {"iqr": [c_iqr], "rolling_zscore": [c_zscore]}, "highlight"
+        )
         assert len(result) == 2
         assert all(r.get("isOverlap") for r in result)
 
@@ -377,22 +523,29 @@ class DescribeApplyOverlapMode:
 # run_anomaly_detection
 # ---------------------------------------------------------------------------
 
+
 class DescribeRunAnomalyDetection:
     def test_GIVEN_empty_pts_WHEN_called_THEN_returns_empty(self):
         assert run_anomaly_detection([], {"anomaly_methods": ["iqr"]}) == []
 
     def test_GIVEN_fewer_than_3_pts_WHEN_called_THEN_returns_empty(self):
-        assert run_anomaly_detection([[0, 1], [1, 2]], {"anomaly_methods": ["iqr"]}) == []
+        assert (
+            run_anomaly_detection([[0, 1], [1, 2]], {"anomaly_methods": ["iqr"]}) == []
+        )
 
     def test_GIVEN_empty_methods_list_WHEN_called_THEN_returns_empty(self):
         pts = [[i * 1000, float(i)] for i in range(20)]
         assert run_anomaly_detection(pts, {"anomaly_methods": []}) == []
 
-    def test_GIVEN_unknown_method_name_WHEN_called_THEN_ignores_it_and_returns_empty(self):
+    def test_GIVEN_unknown_method_name_WHEN_called_THEN_ignores_it_and_returns_empty(
+        self,
+    ):
         pts = [[i * 1000, float(i)] for i in range(20)]
         assert run_anomaly_detection(pts, {"anomaly_methods": ["not_a_method"]}) == []
 
-    def test_GIVEN_oscillating_series_with_extreme_outlier_WHEN_iqr_method_THEN_returns_cluster(self):
+    def test_GIVEN_oscillating_series_with_extreme_outlier_WHEN_iqr_method_THEN_returns_cluster(
+        self,
+    ):
         pts = [[i * 1000, float(i % 10)] for i in range(30)]
         pts[15] = [15000, 10_000.0]
         result = run_anomaly_detection(
@@ -400,16 +553,90 @@ class DescribeRunAnomalyDetection:
         )
         assert len(result) >= 1
 
-    def test_GIVEN_flatline_with_spike_WHEN_two_methods_and_all_overlap_mode_THEN_returns_clusters(self):
+    def test_GIVEN_flatline_with_spike_WHEN_two_methods_and_all_overlap_mode_THEN_returns_clusters(
+        self,
+    ):
         pts = [[i * 3_600_000, 0.0] for i in range(48)]
         pts[24] = [24 * 3_600_000, 10_000.0]
-        result = run_anomaly_detection(pts, {
-            "anomaly_methods": ["iqr", "rolling_zscore"],
-            "anomaly_overlap_mode": "all",
-            "anomaly_sensitivity": "medium",
-            "anomaly_zscore_window": "24h",
-        })
+        result = run_anomaly_detection(
+            pts,
+            {
+                "anomaly_methods": ["iqr", "rolling_zscore"],
+                "anomaly_overlap_mode": "all",
+                "anomaly_sensitivity": "medium",
+                "anomaly_zscore_window": "24h",
+            },
+        )
         assert len(result) >= 1
+
+    @pytest.mark.parametrize(
+        "trend_method",
+        ["rolling_average", "linear_trend", "ema", "polynomial_trend", "lowess"],
+    )
+    @pytest.mark.parametrize("series_kind", ["irregular", "gaps", "flat"])
+    @pytest.mark.parametrize("with_comparison", [False, True])
+    def test_GIVEN_supported_series_shapes_WHEN_searches_are_optimized_THEN_cluster_output_is_unchanged(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        trend_method: str,
+        series_kind: str,
+        with_comparison: bool,
+    ):
+        timestamps = [
+            0,
+            900_000,
+            1_800_000,
+            3_600_000,
+            3_600_000,
+            5_400_000,
+            7_200_000,
+            18_000_000,
+            21_600_000,
+            25_200_000,
+            28_800_000,
+            32_400_000,
+        ]
+        if series_kind == "gaps":
+            timestamps = [value * 4 for value in timestamps]
+        if series_kind == "flat":
+            values = [12.0 for _ in timestamps]
+        else:
+            values = [10.0 + (index % 4) for index in range(len(timestamps))]
+            values[8] = 80.0
+        pts = [[time, values[index]] for index, time in enumerate(timestamps)]
+        comparison = (
+            [
+                [time, values[index] - (20.0 if index == 8 else 1.0)]
+                for index, time in enumerate(timestamps)
+            ]
+            if with_comparison
+            else None
+        )
+        config = {
+            "anomaly_methods": [
+                "trend_residual",
+                "rate_of_change",
+                "iqr",
+                "rolling_zscore",
+                "persistence",
+                "comparison_window",
+            ],
+            "anomaly_sensitivity": "medium",
+            "anomaly_overlap_mode": "all",
+            "anomaly_rate_window": "1h",
+            "anomaly_zscore_window": "1h",
+            "anomaly_persistence_window": "1h",
+            "trend_method": trend_method,
+            "trend_window": "1h",
+        }
+        with monkeypatch.context() as legacy:
+            legacy.setattr(anomaly_detection, "_interpolate", _legacy_interpolate)
+            legacy.setattr(anomaly_detection, "_build_rate_pts", _legacy_build_rate_pts)
+            expected = run_anomaly_detection(pts, config, comparison)
+
+        result = run_anomaly_detection(pts, config, comparison)
+
+        assert result == expected
 
 
 # ---------------------------------------------------------------------------
@@ -433,8 +660,8 @@ def _straddling_iqr_pts() -> list:
 def _separate_up_then_down_iqr_pts() -> list:
     """Up-spike and down-spike split by an in-fence point -> two clusters."""
     pts = [[i * 1000, float(i % 5)] for i in range(10)]
-    pts.append([10000, 1000.0])   # up -> cluster A (residual +998)
-    pts.append([11000, 2.0])      # in-fence -> flush
+    pts.append([10000, 1000.0])  # up -> cluster A (residual +998)
+    pts.append([11000, 2.0])  # in-fence -> flush
     pts.append([12000, -1000.0])  # down -> cluster B (residual -1002)
     pts += [[(13 + i) * 1000, float(i % 5)] for i in range(8)]
     return pts
@@ -506,7 +733,9 @@ class DescribeRunAnomalyDetectionDirection:
         assert kept
         assert all(r < 0 for r in kept)
 
-    def test_GIVEN_straddling_cluster_WHEN_up_direction_THEN_trims_and_recomputes_max_deviation(self):
+    def test_GIVEN_straddling_cluster_WHEN_up_direction_THEN_trims_and_recomputes_max_deviation(
+        self,
+    ):
         pts = _straddling_iqr_pts()
         result = run_anomaly_detection(
             pts,
@@ -521,7 +750,9 @@ class DescribeRunAnomalyDetectionDirection:
         assert residuals == [998.0]
         assert result[0]["maxDeviation"] == pytest.approx(998.0)
 
-    def test_GIVEN_cluster_with_no_matching_points_WHEN_up_direction_THEN_cluster_dropped(self):
+    def test_GIVEN_cluster_with_no_matching_points_WHEN_up_direction_THEN_cluster_dropped(
+        self,
+    ):
         pts = _only_down_iqr_pts()
         result = run_anomaly_detection(
             pts,
@@ -555,7 +786,9 @@ class DescribeRunAnomalyDetectionDirection:
         assert len(with_direction) == 1
         assert with_direction[0]["anomalyMethod"] == "persistence"
 
-    def test_GIVEN_overlap_only_mode_WHEN_direction_set_THEN_filter_runs_before_overlap(self):
+    def test_GIVEN_overlap_only_mode_WHEN_direction_set_THEN_filter_runs_before_overlap(
+        self,
+    ):
         # iqr and rolling_zscore both flag an up-spike (t=600000) and a
         # down-spike (t=1800000). In "only" mode both overlap, so both survive.
         pts = [[i * 60_000, float(i % 5)] for i in range(40)]
@@ -573,8 +806,6 @@ class DescribeRunAnomalyDetectionDirection:
 
         # Filtering iqr to "up" removes its down point BEFORE overlap, so the
         # down-spike is no longer a cross-method overlap and drops out.
-        result = run_anomaly_detection(
-            pts, {**base_cfg, "anomaly_iqr_direction": "up"}
-        )
+        result = run_anomaly_detection(pts, {**base_cfg, "anomaly_iqr_direction": "up"})
         times = {p["timeMs"] for c in result for p in c["points"]}
         assert times == {600000}
